@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "dsmod_debug",
+  "version": "${version}",
+  "name": "ds-mod debug tools",
+  "description": "Developer tools for ds-mod. Bundles the release build.",
+  "license": "Apache-2.0",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.debug.DsModDebug"
+      }
+    ]
+  },
+  "accessWidener": "dsmod_debug.accesswidener",
+  "mixins": [
+    "dsmod_debug.mixins.json"
+  ],
+  "jars": [
+    {
+      "file": "META-INF/jars/dsmod-${version}.jar"
+    }
+  ],
+  "depends": {
+    "dsmod": "${version}"
+  }
+}

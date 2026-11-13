@@ -1,0 +1,10 @@
+.gradle/
+.kotlin/
+build/
+run/
+.idea/
+*.iml
+.vscode/
+hs_err_*.log
+specs/states/
+specs/*_TTrace_*

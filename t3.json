@@ -1,0 +1,33 @@
+{
+  "$schema": "https://t3.codes/schema/t3.json",
+  "iconPath": "assets/icon.svg",
+  "scripts": [
+    {
+      "name": "Setup Worktree",
+      "command": "mise trust && mise install",
+      "icon": "configure",
+      "runOnWorktreeCreate": true
+    },
+    {
+      "name": "Run Client",
+      "command": "mise exec -- ./gradlew runClient",
+      "icon": "play",
+      "stopOnSettle": true
+    },
+    {
+      "name": "Check",
+      "command": "mise exec -- ./gradlew check",
+      "icon": "test"
+    },
+    {
+      "name": "Game Tests",
+      "command": "mise exec -- ./gradlew runClientGameTest runProdClientGameTest",
+      "icon": "debug"
+    },
+    {
+      "name": "Build",
+      "command": "mise exec -- ./gradlew build",
+      "icon": "build"
+    }
+  ]
+}

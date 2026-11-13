@@ -1,0 +1,12 @@
+accessWidener v2 official
+
+accessible field net/minecraft/client/gui/Hud overlayMessageString Lnet/minecraft/network/chat/Component;
+accessible field net/minecraft/client/gui/Hud overlayMessageTime I
+accessible field net/minecraft/client/gui/Hud title Lnet/minecraft/network/chat/Component;
+accessible field net/minecraft/client/gui/Hud subtitle Lnet/minecraft/network/chat/Component;
+accessible field net/minecraft/client/gui/Hud titleTime I
+accessible field net/minecraft/client/gui/Hud tabList Lnet/minecraft/client/gui/components/PlayerTabOverlay;
+accessible field net/minecraft/client/gui/Hud bossOverlay Lnet/minecraft/client/gui/components/BossHealthOverlay;
+accessible field net/minecraft/client/gui/components/PlayerTabOverlay header Lnet/minecraft/network/chat/Component;
+accessible field net/minecraft/client/gui/components/PlayerTabOverlay footer Lnet/minecraft/network/chat/Component;
+accessible field net/minecraft/client/gui/components/BossHealthOverlay events Ljava/util/Map;

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "dsmod",
+  "version": "${version}",
+  "name": "ds-mod",
+  "description": "Quality-of-life features for Dragon Simulator.",
+  "license": "Apache-2.0",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.edge.DsModClient"
+      }
+    ]
+  },
+  "accessWidener": "moulconfig.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.20.1",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "fabric-api": "*",
+    "fabric-language-kotlin": "*"
+  }
+}
