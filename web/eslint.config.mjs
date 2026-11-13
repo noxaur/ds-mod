@@ -20,6 +20,12 @@ const uiSdkElements = {
   progress: "@ui-sdk/react/progress",
 };
 
+// Roles ui-sdk has a component for. A plain element with one of them hand-rolls that component.
+const uiSdkRoles = [
+  "listbox", "option", "menu", "menubar", "menuitem", "dialog", "alertdialog", "tablist", "tab", "tabpanel",
+  "separator", "switch", "slider", "radiogroup", "radio", "checkbox", "toolbar", "tree", "treeitem", "combobox", "tooltip",
+].join("|");
+
 export default defineConfig(
   globalIgnores([".next/**", "out/**", "next-env.d.ts"]),
   js.configs.recommended,
@@ -45,6 +51,10 @@ export default defineConfig(
         "error",
         { selector: "TryStatement", message: "Model failure with Effect (Effect.try, Effect.tryPromise) instead of try/catch." },
         { selector: "JSXAttribute[name.name='popover']", message: `Use @ui-sdk/react/popover. ${uiSdk}` },
+        {
+          selector: `JSXAttribute[name.name='role'][value.value=/^(${uiSdkRoles})$/]`,
+          message: `ui-sdk ships a component for this role; find it in the ui-sdk skill's build-interface table. ${uiSdk}`,
+        },
       ],
       "no-restricted-imports": [
         "error",
