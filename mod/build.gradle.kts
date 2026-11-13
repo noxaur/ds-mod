@@ -142,7 +142,7 @@ tasks.shadowJar {
     relocate("io.github.notenoughupdates.moulconfig", "io.github.noxaur.dsmod.deps.moulconfig")
     mergeServiceFiles()
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    from("LICENSE", "NOTICE")
+    from("../LICENSE", "NOTICE")
     val archives = archives
     val shaded = shade.elements.map { jars -> jars.map { archives.zipTree(it) } }
     // MoulConfig's jar carries LibNinePatch's fabric.mod.json and LICENSE, which would replace ours.
@@ -157,7 +157,7 @@ tasks.shadowJar {
 val debugJar = tasks.register<Jar>("debugJar") {
     archiveClassifier = "debug"
     from(debug.output)
-    from("LICENSE", "NOTICE")
+    from("../LICENSE", "NOTICE")
     from(tasks.shadowJar) { into("META-INF/jars") }
 }
 
@@ -196,7 +196,7 @@ tasks.test {
 }
 
 // One TLC run per specs/<Name>.tla that has a specs/<Name>.cfg beside it.
-val specs = fileTree("specs") { include("*.cfg") }.files.sortedBy { it.name }
+val specs = fileTree("../specs") { include("*.cfg") }.files.sortedBy { it.name }
 val tlc = tasks.register("tlc") {
     group = "verification"
     description = "Model-checks every TLA+ spec in specs/."
@@ -208,10 +208,10 @@ specs.forEach { cfg ->
         description = "Model-checks specs/$name.tla."
         classpath = tla
         mainClass = "tlc2.TLC"
-        workingDir = file("specs")
+        workingDir = file("../specs")
         val meta = layout.buildDirectory.dir("tlc/$name")
         args("-config", cfg.name, "-metadir", meta.get().asFile.path, "-deadlock", "$name.tla")
-        inputs.files(cfg, file("specs/$name.tla"))
+        inputs.files(cfg, file("../specs/$name.tla"))
         outputs.dir(meta)
     }
     tlc.configure { dependsOn(run) }
