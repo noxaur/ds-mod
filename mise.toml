@@ -1,2 +1,21 @@
 [tools]
 java = "temurin-25"
+go = "1.27"
+node = "24"
+pnpm = "10.34.9"
+
+[tasks."check:mod"]
+dir = "mod"
+run = "./gradlew check"
+
+[tasks."check:backend"]
+dir = "backend"
+run = ["test -z \"$(gofmt -l .)\" || { gofmt -l .; echo 'run gofmt -w .'; exit 1; }", "go vet ./...", "go test ./..."]
+
+[tasks."check:web"]
+dir = "web"
+run = ["pnpm install --frozen-lockfile", "pnpm check"]
+
+[tasks.check]
+description = "Runs every project's checks"
+depends = ["check:mod", "check:backend", "check:web"]

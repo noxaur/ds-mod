@@ -1,0 +1,6 @@
+# Refuse packages published less than 14 days ago. ui-sdk is in beta and only has fresh releases.
+minimumReleaseAge: 20160
+minimumReleaseAgeExclude:
+  - "@ui-sdk/*"
+ignoredBuiltDependencies:
+  - unrs-resolver
