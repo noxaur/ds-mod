@@ -61,7 +61,7 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | The website is type-safe | `tsc` with `strict` and the extra flags in `web/tsconfig.json` |
 | Website code passes strict lint with no warnings | `typescript-eslint` strict-type-checked in `web/eslint.config.mjs` |
 | Website failures are modeled with Effect, not `try` | `no-restricted-syntax` in `web/eslint.config.mjs` |
-| Every interactive control comes from ui-sdk | `react/forbid-elements` and `no-restricted-imports` in `web/eslint.config.mjs` |
+| Every interactive control comes from ui-sdk | `react/forbid-elements`, `no-restricted-imports` and the `role` ban in `web/eslint.config.mjs` |
 | Web dependencies are at least 14 days old | `minimumReleaseAge` in `web/pnpm-workspace.yaml` |
 
 When a mistake happens a second time, stop it at the highest level that works:
