@@ -22,6 +22,12 @@
       "unit": "µs",
       "cap": 150
     },
+    "sidebar-poll": {
+      "group": "Tick",
+      "label": "Sidebar poll, 15 lines",
+      "unit": "µs",
+      "cap": 150
+    },
     "container-poll": {
       "group": "Tick",
       "label": "Container poll",

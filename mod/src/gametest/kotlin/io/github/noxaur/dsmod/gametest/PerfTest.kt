@@ -28,11 +28,12 @@ private const val WINDOW_TICKS = 10
 private const val HUD_BLOCKS = 8
 private const val FIRST_MARKED_SLOT = 9
 private const val MARKED_SLOTS = 36
+private const val SIDEBAR_LINES = 15
 
 /**
  * Measures the mod in a real game and checks each row against `perf-budgets.json`. The numbers are the mod's
  * own [Metrics] timers, read over [WINDOWS] windows of [WINDOW_TICKS] ticks while the HUD shows [HUD_BLOCKS]
- * blocks and the open inventory has [MARKED_SLOTS] marked slots.
+ * blocks, the open inventory has [MARKED_SLOTS] marked slots and the sidebar has [SIDEBAR_LINES] lines.
  *
  * The caps are for the device in the budgets file. A fixed loop measures how fast this machine is next to
  * that device, and each time is scaled to it before the check, so a slower runner needs no caps of its own.
@@ -52,7 +53,16 @@ class PerfTest : FabricClientGameTest {
         val budgets = Json.decodeFromString<Budgets>(checkNotNull(javaClass.getResource("/perf-budgets.json")).readText())
         val samples = HashMap<String, MutableList<Double>>()
 
-        context.worldBuilder().create().use {
+        context.worldBuilder().create().use { world ->
+            // A full sidebar, each line in a team's prefix as dragsim.co sends it.
+            world.server.runCommand("""scoreboard objectives add perf dummy "DragSim"""")
+            world.server.runCommand("scoreboard objectives setdisplay sidebar perf")
+            repeat(SIDEBAR_LINES) { line ->
+                world.server.runCommand("team add line$line")
+                world.server.runCommand("""team modify line$line prefix "Purse: 527,042,$line"""")
+                world.server.runCommand("team join line$line §$line")
+                world.server.runCommand("scoreboard players set §$line perf $line")
+            }
             context.waitTicks(20)
             context.runOnClient<Nothing> {
                 val group = HudGroup("perf", 6, 6, background = true)
