@@ -5,6 +5,7 @@ import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.features
+import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import net.fabricmc.api.ClientModInitializer
@@ -15,10 +16,13 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLevelEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Field
+import java.net.InetAddress
+import java.net.InetSocketAddress
 
 object DsModClient : ClientModInitializer {
     private const val FLUSH_TICKS = 20 * 60
@@ -37,6 +41,22 @@ object DsModClient : ClientModInitializer {
     private lateinit var sidebars: SidebarPoller
     private lateinit var containers: ContainerPoller
     private var ticks = 0
+    private var onDragSim = false
+
+    /** dragsim.co's addresses, so a player who joins by IP is on it too. Looked up off the client thread, and empty until then. */
+    @Volatile
+    private var dragSimAt = emptySet<InetAddress>()
+
+    /** Looks dragsim.co up again for the next join, so a move to a new IP is followed and a failed lookup is retried. */
+    private fun lookUpDragSim() {
+        Thread.ofVirtual().start { runCatching { dragSimAt = InetAddress.getAllByName(DragSim.HOST).toSet() } }
+    }
+
+    /** Lets the mod run on any server whatever the setting says. The debug build sets it, so `runClient` and the game tests run anywhere. */
+    var anyServer = false
+
+    /** Whether the mod runs on the server the player is on. A feature in the edge asks this before its own switch. */
+    val active: Boolean get() = anyServer || onDragSim || !config.instance.general.onlyOnDragSim
 
     /** Opens the settings, scrolled to [setting] of `DsModConfig` when it is given. */
     fun openSettings(setting: Field? = null) {
@@ -57,7 +77,7 @@ object DsModClient : ClientModInitializer {
             FabricLoader.getInstance().configDir.resolve("dsmod/config.json").toFile(),
             DsModConfig::class.java,
         )
-        game = Game(features(config.instance))
+        game = Game(features(config.instance)) { active }
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
         Hud.register()
         Slots.register(config.instance.inventory)
@@ -81,6 +101,15 @@ object DsModClient : ClientModInitializer {
             if (overlay) Packets.actionBar(message)
             overlay || !game.wants(SystemMessage::class.java) || game.post(System.currentTimeMillis(), SystemMessage(message.toText()))
         }
+        // Read once per connection, because the Fullbright mixin asks [active] every frame.
+        lookUpDragSim()
+        ClientPlayConnectionEvents.JOIN.register { handler, _, _ ->
+            val reached = (handler.connection.remoteAddress as? InetSocketAddress)?.address
+            onDragSim = DragSim.serves(handler.serverData?.ip, reached, dragSimAt)
+            log.info("Joined {} at {}, which is {}dragsim.co", handler.serverData?.ip ?: "singleplayer", reached, if (onDragSim) "" else "not ")
+            lookUpDragSim()
+        }
+        ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> onDragSim = false }
         ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ ->
             Packets.worldChanged()
             game.post(System.currentTimeMillis(), WorldChanged)

@@ -46,6 +46,12 @@ A tab list is one event with every row, because it is small and features read it
 
 Reading an item out of Minecraft is the costly part of a menu: a chest of 54 items with long lore took 5.5 ms in one tick. So the poll reads for at most a millisecond a tick, and a big menu arrives over a few ticks. A slot that is still null just after the menu opened may only be unread.
 
+## The mod runs only on dragsim.co
+
+Every feature reads lines in dragsim.co's own words, so on another server it can only misread one, and a wrong count is saved for good. The gate lives in `Game`, which treats every feature as switched off while it is closed, so a feature can't forget it, and opening it replays the tab list and sidebar the same way switching one feature back on does. A feature in the edge has no `Game` between it and Minecraft, so it asks `DsModClient.active` itself.
+
+The edge decides once per connection, because Fullbright asks the gate every frame. A player may join by the IP or by a name of their own, so besides the name they typed, the edge compares the machine the connection reached with dragsim.co's addresses. It looks those up at start and again after each join, off the client thread, because a lookup can stall for seconds and the join can't wait for it. A hardcoded IP would stop matching the day the server moves, and nothing would say so. A player who wants the mod elsewhere turns the setting off. The debug build lifts the gate instead, because `runClient` and the game tests run in singleplayer, and a test that had to turn a setting off first would be one more thing to forget. `Game` is open by default for the same reason, so a unit test or a replay never meets the gate.
+
 ## Packets that leave no state are posted as they arrive
 
 The tab list and the open container are client state, so the edge polls them. An action bar or an entity's death leaves nothing to poll, and their order against each other carries meaning: the server sends the Combat XP in the action bar right after the death of the mob the player killed, and that pairing is the only sign of whose kill it was. So `ServerPacketsMixin` posts both from the packet handler, with the time each was handled. Polled once a tick, the two would arrive in the poll's order and not the server's.

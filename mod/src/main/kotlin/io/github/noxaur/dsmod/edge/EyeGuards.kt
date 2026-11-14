@@ -22,7 +22,7 @@ object EyeGuards {
 
     fun register(settings: DsModConfig.End) {
         UseBlockCallback.EVENT.register { player, level, hand, hit ->
-            if (!level.isClientSide || !settings.protectPlacedEyes) return@register InteractionResult.PASS
+            if (!level.isClientSide || !DsModClient.active || !settings.protectPlacedEyes) return@register InteractionResult.PASS
             val now = System.currentTimeMillis()
             val again = now < until && hit.blockPos == guarded
             // The name carries the server's color code in front, so match its end.

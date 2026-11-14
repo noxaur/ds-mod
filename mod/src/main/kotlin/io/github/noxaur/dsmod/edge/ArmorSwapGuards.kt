@@ -13,7 +13,7 @@ import net.minecraft.world.InteractionResult
 object ArmorSwapGuards {
     fun register(settings: DsModConfig.Inventory) {
         UseItemCallback.EVENT.register { player, level, hand ->
-            val swaps = level.isClientSide && settings.armorSwapGuard && !player.isShiftKeyDown &&
+            val swaps = level.isClientSide && DsModClient.active && settings.armorSwapGuard && !player.isShiftKeyDown &&
                 player.getItemInHand(hand).get(DataComponents.EQUIPPABLE)?.swappable == true
             // Fabric sends nothing to the server for a failed use.
             if (swaps) InteractionResult.FAIL else InteractionResult.PASS
