@@ -19,7 +19,7 @@ private const val PADDING = 4
 
 object Hud {
     private class Row(val text: Component, val bar: BarRow?, val barColor: Int)
-    private class Block(val header: Component, val rows: List<Row>, val width: Int, val height: Int)
+    private class Block(val header: Component, val rows: List<Row>, val width: Int, val height: Int, val placeable: Boolean)
     private class Group(var place: HudGroup) {
         val blocks = LinkedHashMap<String, Block>()
 
@@ -41,8 +41,11 @@ object Hud {
     private var shown = emptyList<Group>()
     private var placed = emptyList<Placed>()
 
-    /** Puts [block] in [group], replacing what [id] showed before. The group's corner is its plate's corner. */
-    fun show(id: String, group: HudGroup, block: HudBlock) {
+    /**
+     * Puts [block] in [group], replacing what [id] showed before. The group's corner is its plate's corner.
+     * A block that is not [placeable] is one no feature owns, so the HUD editor cannot grab it.
+     */
+    fun show(id: String, group: HudGroup, block: HudBlock, placeable: Boolean = true) {
         val font = Minecraft.getInstance().font
         val line = font.lineHeight + 1
         val header = block.header.toComponent()
@@ -56,7 +59,7 @@ object Hud {
         groups.values.forEach { if (it.place.id != group.id) it.blocks.remove(id) }
         val target = groups.getOrPut(group.id) { Group(group) }
         target.place = group
-        target.blocks[id] = Block(header, rows, maxOf(width, font.width(header)), height)
+        target.blocks[id] = Block(header, rows, maxOf(width, font.width(header)), height, placeable)
         layout()
     }
 
@@ -89,7 +92,7 @@ object Hud {
             val scale = group.place.scale
             var y = 0
             for ((id, block) in group.blocks) {
-                all += Placed(id, group.place.x.toFloat(), group.place.y + y * scale, plate(block.width), plate(block.height), scale)
+                if (block.placeable) all += Placed(id, group.place.x.toFloat(), group.place.y + y * scale, plate(block.width), plate(block.height), scale)
                 y += block.height + BLOCK_GAP
             }
         }

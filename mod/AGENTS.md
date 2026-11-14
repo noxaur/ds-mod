@@ -77,11 +77,13 @@ Raw records are for you to read. No feature sees one until it is promoted:
 - `skulls` for skull blocks within four chunks, with `state` (rotation) and `profile`, and `blockstates` for the blocks in `BlockScan.kt`'s watch-list there. Both are entries like `entities`, keyed `x,y,z`, and include what stood there before the capture began.
 - `map` for a map the player carries or an item frame holds, when it changes: `colors` is base64 of the zlib-deflated 128x128 color bytes, present only when the pixels changed, and `decorations` are the markers.
 - `hud` for the rows of each HUD block ds-mod showed, and `metrics` for how long each feature took and what it counted.
+- `step` for the brief's step that starts on that line, with its `index` and `do`, and `done` after the last one. Cut a fixture's window from these.
 
 An event's text is `plain` plus `spans`, with `§` codes already resolved into the spans. A raw record's text is plain `text` plus the full `component`. `itemcomponents` and `entities` record all entries once with `"full": true`, then only the entries that changed, with null for a removed one.
 
-- Work from captures. When none covers the case, name the screen or action you need and ask the user to record it.
-- The live server has real players on it, so only the user connects there.
+- Work from captures. When none covers the case, write a brief: a name for the window, and the ordered steps the user plays, each with a note or a timer where it needs one. [Record a capture](../docs/operations/development.md#record-a-capture) has the format.
+- Finish the work that needs no capture, then end the response with one line the user answers with yes or no, such as "Record Golem tiers now? It takes about 3 minutes." On yes, start the client with the brief yourself and read the capture when the run ends.
+- The live server has real players on it, so the user does all the playing there. You start the client and they join.
 - Captures hold player names and private chat, so only a fixture goes in git.
 - `actionbar` and `death` were raw records until 2026-11-14, with another shape, so an older capture cannot be cut for them.
 - To promote a raw type, design the `GameEvent` from a capture that shows the data, post it from `edge`, and delete its recorder in `CaptureSession`. A type has one producer, and `CaptureWriter` rejects a raw record that uses an event's type.

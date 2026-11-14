@@ -34,7 +34,32 @@ In T3 Code, `t3.json` has an action for each command.
 
 With the debug build, type `/dscapture` in game to start a capture, and type it again to save it. The file lands in `dsmod/captures/` in the game folder, which is `mod/run/` for `runClient`. `mod/run/` is ignored by git.
 
-The live server has real players on it, so a person records there. Agents never connect to it.
+The live server has real players on it, so the user does all the playing there.
+
+### Record from a brief
+
+A brief tells the user what to play, in order, and names the window, so that the user can tell one agent's client from another's. Write it as JSON outside the worktree:
+
+```json
+{
+  "name": "Golem tiers",
+  "steps": [
+    { "do": "Warp to the End" },
+    { "do": "Stand still next to the Protector until it spawns", "note": "Do not hit it.", "seconds": 90 },
+    { "do": "Kill it" }
+  ]
+}
+```
+
+`note` is shown under the step while it is the current one. A step with `seconds` counts down and moves on by itself, and any other step waits for the user. A key the brief does not know fails the launch.
+
+Once the user has agreed, start the client with the absolute path of the brief:
+
+```sh
+cd mod && ./gradlew runClient -Pbrief=/tmp/golem-tiers.json
+```
+
+The window's title starts with the brief's name, and the steps sit in the top right corner of the screen. The user presses the key the HUD names to start, which starts the capture, and again after each step. It is `]` on a US layout, and Next Recording Step in the game's controls. After the last step the capture is saved and the HUD names its file, so the user closes the game and the command returns. The capture is the newest file in `mod/run/dsmod/captures/`, and a `step` line marks where each step began.
 
 ## Add a feature
 
