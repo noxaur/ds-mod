@@ -18,8 +18,9 @@ val rules = listOf(
     Rule(
         id = "core-is-pure",
         files = "src/main/kotlin/**/core/**.kt",
-        forbid = Regex("""^import (net\.minecraft|net\.fabricmc|com\.mojang)\."""),
-        fix = "core takes plain data. Read Minecraft in the edge package and pass the values in.",
+        forbid = Regex("""^import (net\.minecraft|net\.fabricmc|com\.mojang|io\.github\.noxaur\.dsmod\.edge)\."""),
+        fix = "core takes plain data and returns plain models. Read Minecraft in the edge package and pass the values in, " +
+            "and return what the player should see for the edge to draw.",
         example = "import net.minecraft.client.Minecraft",
     ),
     Rule(
@@ -30,8 +31,8 @@ val rules = listOf(
                 """continueDestroyBlock|destroyBlock|useItemOn|useItem|interact|attack|piercingAttack|releaseUsingItem|handleInventoryButtonClick)\(|""" +
                 """KeyMapping\.(click|set)\(|\.setDown\(|\bconnection\??\.send\(""",
         ),
-        fix = "ds-mod shows information and the player makes every move. The server bans automated actions, " +
-            "so ask the user before the mod sends anything for the player.",
+        fix = "ds-mod shows information and the player makes every move. Only a feature that DragSim Utils has may " +
+            "send for the player. End its line with `rule:no-automation <the feature>`, and ask the user about anything else.",
         example = "client.connection?.sendCommand(\"warp end\")",
     ),
     Rule(

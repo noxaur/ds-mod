@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.debug.mixin;
 import io.github.noxaur.dsmod.debug.DsModDebug;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
@@ -24,6 +25,11 @@ abstract class CapturePacketsMixin {
 
     @Inject(method = "handleSoundEvent", at = @At("TAIL"))
     private void dsmod$sound(ClientboundSoundPacket packet, CallbackInfo ci) {
+        DsModDebug.INSTANCE.onPacket(packet);
+    }
+
+    @Inject(method = "handleEntityEvent", at = @At("TAIL"))
+    private void dsmod$entityEvent(ClientboundEntityEventPacket packet, CallbackInfo ci) {
         DsModDebug.INSTANCE.onPacket(packet);
     }
 

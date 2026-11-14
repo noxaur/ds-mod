@@ -31,6 +31,9 @@ object Hud {
         var height = 0
     }
 
+    /** A block as it sits on the screen, in GUI pixels. */
+    class Placed(val id: String, val x: Float, val y: Float, val width: Float, val height: Float, val scale: Float)
+
     private val groups = LinkedHashMap<String, Group>()
     private var shown = emptyList<Group>()
 
@@ -55,6 +58,20 @@ object Hud {
         layout()
     }
 
+    /** The block under a point, topmost first. The HUD editor asks, so it may allocate. */
+    fun at(px: Double, py: Double): Placed? {
+        for (group in groups.values.reversed()) {
+            val scale = group.place.scale
+            var y = group.place.y.toFloat()
+            for ((id, block) in group.blocks) {
+                val placed = Placed(id, group.place.x.toFloat(), y, block.width * scale, block.height * scale, scale)
+                if (px >= placed.x && px <= placed.x + placed.width && py >= y && py <= y + placed.height) return placed
+                y += (block.height + BLOCK_GAP) * scale
+            }
+        }
+        return null
+    }
+
     private fun layout() {
         groups.values.removeIf { it.blocks.isEmpty() }
         groups.values.forEach { group ->
@@ -67,29 +84,36 @@ object Hud {
 
     fun register() {
         HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, Identifier.fromNamespaceAndPath("dsmod", "hud")) { graphics, _ ->
-            val font = Minecraft.getInstance().font
-            val line = font.lineHeight + 1
-            for (g in shown.indices) {
-                val group = shown[g]
-                val x = group.place.x
-                var y = group.place.y
-                if (group.place.background) {
-                    graphics.fill(x - PADDING, y - PADDING, x + group.width + PADDING, y + group.height + PADDING - 1, PANEL)
-                }
-                for (b in group.shown.indices) {
-                    val block = group.shown[b]
-                    graphics.text(font, block.header, x, y, -1, true)
-                    y += line
-                    for (r in block.rows.indices) {
-                        val row = block.rows[r]
-                        graphics.text(font, row.text, x, y, -1, true)
+            if (shown.isEmpty()) return@attachElementBefore
+            DsModClient.game.metrics.time("hud.draw") {
+                val font = Minecraft.getInstance().font
+                val line = font.lineHeight + 1
+                val pose = graphics.pose()
+                for (g in shown.indices) {
+                    val group = shown[g]
+                    pose.pushMatrix()
+                    pose.translate(group.place.x.toFloat(), group.place.y.toFloat())
+                    pose.scale(group.place.scale, group.place.scale)
+                    if (group.place.background) graphics.fill(-PADDING, -PADDING, group.width + PADDING, group.height + PADDING - 1, PANEL)
+                    var y = 0
+                    for (b in group.shown.indices) {
+                        val block = group.shown[b]
+                        graphics.text(font, block.header, 0, y, -1, true)
                         y += line
-                        val bar = row.bar ?: continue
-                        graphics.fill(x, y, x + BAR_WIDTH, y + BAR_HEIGHT, Role.MUTED.argb(120))
-                        graphics.fill(x, y, x + (BAR_WIDTH * bar.fraction).toInt(), y + BAR_HEIGHT, bar.role.argb())
-                        y += BAR_HEIGHT + BAR_GAP
+                        for (r in block.rows.indices) {
+                            val row = block.rows[r]
+                            graphics.text(font, row.text, 0, y, -1, true)
+                            y += line
+                            val bar = row.bar
+                            if (bar != null) {
+                                graphics.fill(0, y, BAR_WIDTH, y + BAR_HEIGHT, Role.MUTED.argb(120))
+                                graphics.fill(0, y, (BAR_WIDTH * bar.fraction).toInt(), y + BAR_HEIGHT, bar.role.argb())
+                                y += BAR_HEIGHT + BAR_GAP
+                            }
+                        }
+                        y += BLOCK_GAP
                     }
-                    y += BLOCK_GAP
+                    pose.popMatrix()
                 }
             }
         }

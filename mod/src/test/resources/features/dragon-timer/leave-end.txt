@@ -1,0 +1,20 @@
++   0.0s > (tab list) Area: The End; Lobby: #1; Egg: Respawning; Protector: Rising (Tier 2/5, 105); Purse: 531,664,909
++   0.5s > ✦ The Egg has Spawned!
+             Dragon Timer
+               Eyes: 0/8
++   0.8s > » Player21 placed a Summoning Eye! (1/8)
+             Dragon Timer
+               Eyes: 1/8
++   2.7s > » [MVP+] Player5 placed a Summoning Eye! (8/8)
+             Dragon Timer
+               Eyes: 8/8
++  11.2s > ☠ The Protector Dragon has spawned!
+             Dragon Timer
+               Protector Dragon: 0:00
++  33.9s > ☠ The Protector Dragon has de-spawned.
+             (nothing)
++  34.1s > The Dragon Egg is respawning in 10 seconds.
+             Dragon Timer
+               Egg: 10s
++  44.0s > (tab list) Area: Village; Instance: main; Coins: 531,698,678
+             (nothing)

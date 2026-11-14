@@ -1,0 +1,33 @@
++   0.0s > ⚠ Revenant Sycophant has appeared!
++   0.1s > ⚠ Deformed Revenant has appeared!
++   1.4s > ⚠ Revenant Champion has appeared!
++   1.4s > ☠ SLAYER BOSS SPAWNING!
+             Slayer Tracker
+               Slain: 0
+               Spawn to Slain: -
+               All-Time: 0
++   1.7s > [DRAGON] Player1: hello
++   2.5s > RARE DROP! Zombie Talisman
++   2.5s > You have 1 item stashed away!!
++   2.5s > CLICK HERE to pick it up!
++   2.5s > or /viewstash to see what's in it.
++   5.4s > Player2: hello
++  10.3s > Player3: hello
++  18.0s > Player2: hello
++  18.5s > Player3: hello
++  26.5s > [DRAGON] Player4: hello
++  33.4s > [DRAGON] Player4: hello
++  36.5s > [VIP+] Player5: hello
++  42.3s > [MVP+] Player6: hello
++  42.4s > [-] [MVP+] Player7
++  46.2s > [MOD] Player8: hello
++  48.7s > Player3: hello
++  49.3s > [MVP+] Player6: hello
++  53.3s > [MVP+] Player9: hello
++  53.7s > [DRAGON] Player10: hello
++  55.7s > You hear something falling from the sky.
++  58.7s >  ☠ [MVP+] Player11 was killed by Revenant Horror IV.
++  58.7s >   SLAYER QUEST FAILED
++  58.7s >   » You died! Wait... if you are dead, how are you reading this?
++  63.9s > [DRAGON] Player1: hello
+saved slayer-tracker.json = {"slain":0}

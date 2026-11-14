@@ -1,0 +1,15 @@
++   0.0s > (tab list) Area: The End; Lobby: #1; Dragon: Spawned; Protector: Rising (Tier 3/5, 51); Purse: 531,698,679
+             Golem Status
+               Stage: Rising 3/5
+               Kills Left: 51
++   2.8s > ☠ The Endstone Protector is rising from the ground! (Tier 4/5)
++   4.0s > (tab list) Egg: Respawning; Protector: Rising (Tier 4/5, 48)
+             Golem Status
+               Stage: Rising 4/5
+               Kills Left: 48
++   8.0s > (tab list) Protector: Rising (Tier 4/5, 37)
+             Golem Status
+               Stage: Rising 4/5
+               Kills Left: 37
++  12.0s > (tab list) Area: Village; Instance: main; Coins: 531,698,678
+             (nothing)

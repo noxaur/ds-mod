@@ -1,0 +1,78 @@
++   0.0s > (tab list) Area: The End; Lobby: #1; Dragon: Spawned; Protector: Rising (Tier 2/5, 115); Purse: 531,176,124
+             Zealot Tracker
+               Eyes: 0
+               Eyes per Hour: -
+               All-Time Eyes: 0
++   2.2s > RARE DROP! (Summoning Eye) (✯ 90%)
+             Zealot Tracker
+               Eyes: 1
+               Eyes per Hour: -
+               All-Time Eyes: 1
++  31.0s > RARE DROP! (Summoning Eye) (✯ 90%)
+             Zealot Tracker
+               Eyes: 2
+               Eyes per Hour: -
+               All-Time Eyes: 2
++  42.2s > RARE DROP! (Summoning Eye) (✯ 90%)
+             Zealot Tracker
+               Eyes: 3
+               Eyes per Hour: -
+               All-Time Eyes: 3
++  56.1s > RARE DROP! (Summoning Eye) (✯ 90%)
+             Zealot Tracker
+               Eyes: 4
+               Eyes per Hour: -
+               All-Time Eyes: 4
++  69.9s > RARE DROP! (Summoning Eye) (✯ 90%)
+             Zealot Tracker
+               Eyes: 5
+               Eyes per Hour: 257.7
+               All-Time Eyes: 5
++  78.3s > RARE DROP! (Summoning Eye) (✯ 90%)
+             Zealot Tracker
+               Eyes: 6
+               Eyes per Hour: 276.0
+               All-Time Eyes: 6
++  90.2s > RARE DROP! (Summoning Eye) (✯ 90%)
+             Zealot Tracker
+               Eyes: 7
+               Eyes per Hour: 279.5
+               All-Time Eyes: 7
++ 107.9s > RARE DROP! (Summoning Eye) (✯ 90%)
+             Zealot Tracker
+               Eyes: 8
+               Eyes per Hour: 266.9
+               All-Time Eyes: 8
++ 526.2s > RARE DROP! (Summoning Eye) (✯ 90%)
+             Zealot Tracker
+               Eyes: 9
+               Eyes per Hour: 61.6
+               All-Time Eyes: 9
++ 545.7s > RARE DROP! (Summoning Eye) (✯ 90%)
+             Zealot Tracker
+               Eyes: 10
+               Eyes per Hour: 66.0
+               All-Time Eyes: 10
++ 558.1s > RARE DROP! (Summoning Eye) (✯ 90%)
+             Zealot Tracker
+               Eyes: 11
+               Eyes per Hour: 71.0
+               All-Time Eyes: 11
++ 560.5s > RNGESUS DROP! [Lvl 1] Enderman
+             Zealot Tracker
+               Eyes: 11
+               Eyes per Hour: 70.7
+               All-Time Eyes: 11
+               [Lvl 1] Enderman: 1 (1 all-time)
++ 596.0s > (tab list) Area: Village; Instance: main; Coins: 531,698,678
+             (nothing)
++ 653.4s > (tab list) no info row changed
++ 676.7s > (tab list) Area: Village; Instance: main; Coins: 531,698,678
++ 689.4s > [VIP] Player1: RNGESUS DROP! [Lvl 1] Enderman
++ 714.4s > (tab list) Area: The End; Lobby: #2; Eyes Placed: 0/8; Protector: Rising (Tier 3/5, 61); Purse: 531,673,679
+             Zealot Tracker
+               Eyes: 11
+               Eyes per Hour: 66.4
+               All-Time Eyes: 11
+               [Lvl 1] Enderman: 1 (1 all-time)
+saved zealot-tracker.json = {"drops":{"Summoning Eye":11,"[Lvl 1] Enderman":1}}

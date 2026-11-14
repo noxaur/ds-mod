@@ -2,32 +2,92 @@ package io.github.noxaur.dsmod.edge
 
 import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.feature.Game
+import io.github.noxaur.dsmod.core.feature.features
+import io.github.noxaur.dsmod.core.game.SystemMessage
+import io.github.noxaur.dsmod.core.game.WorldChanged
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLevelEvents
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.client.Minecraft
+import org.slf4j.LoggerFactory
 
 object DsModClient : ClientModInitializer {
+    private const val FLUSH_TICKS = 20 * 60
+    private const val TAB_POLL_TICKS = 5
+
     private lateinit var config: ManagedConfig<DsModConfig>
 
+    // The jar relocates MoulConfig, so a type from it in a signature would not link for a mod built outside.
+    val settings: DsModConfig get() = config.instance
+    lateinit var game: Game
+        private set
+    private lateinit var readouts: Readouts
+    lateinit var saved: SavedFiles
+        private set
+    private lateinit var tabs: TabListPoller
+    private lateinit var containers: ContainerPoller
+    private var ticks = 0
+
     fun openSettings() = config.openConfigGui()
+
+    fun openHudEditor() = Minecraft.getInstance().setScreenAndShow(HudEditorScreen(readouts, config::saveToFile))
 
     override fun onInitializeClient() {
         config = ManagedConfig.create(
             FabricLoader.getInstance().configDir.resolve("dsmod/config.json").toFile(),
             DsModConfig::class.java,
         )
+        game = Game(features(config.instance))
+        saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
         Hud.register()
         Slots.register()
         Tooltips.register()
         World.register()
+        readouts = Readouts(game, config.instance.hud.positions).also { it.register() }
+        tabs = TabListPoller(game)
+        containers = ContainerPoller(game)
+        config.instance.hud.edit = Runnable { openHudEditor() }
+        val log = LoggerFactory.getLogger("dsmod")
+        game.metrics.sinks += { snapshot ->
+            snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }
+        }
+
+        ClientReceiveMessageEvents.GAME.register { message, overlay ->
+            // The action bar is not chat, so features do not see it.
+            if (!overlay && game.wants(SystemMessage::class.java)) game.post(System.currentTimeMillis(), SystemMessage(message.toText()))
+        }
+        ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ -> game.post(System.currentTimeMillis(), WorldChanged) }
+        ClientTickEvents.END_CLIENT_TICK.register {
+            if (ticks % TAB_POLL_TICKS == 0) game.metrics.time("tab-poll") { tabs.poll(it) }
+            game.metrics.time("container-poll") { containers.poll(it) }
+            game.tick(System.currentTimeMillis())
+            readouts.push()
+            if (++ticks % FLUSH_TICKS == 0) {
+                saved.flush()
+                game.metrics.flush()
+            }
+        }
+        ClientLifecycleEvents.CLIENT_STOPPING.register { saved.close() }
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
             dispatcher.register(
-                ClientCommands.literal("dsmod").executes { context ->
-                    // The chat screen closes after the command returns, so open on the next tick.
-                    context.source.client.schedule { openSettings() }
-                    1
-                },
+                ClientCommands.literal("dsmod")
+                    .executes { context ->
+                        // The chat screen closes after the command returns, so open on the next tick.
+                        context.source.client.schedule { openSettings() }
+                        1
+                    }
+                    .then(
+                        ClientCommands.literal("hud").executes { context ->
+                            context.source.client.schedule { openHudEditor() }
+                            1
+                        },
+                    ),
             )
         }
     }

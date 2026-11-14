@@ -1,6 +1,7 @@
 plugins {
     id("net.fabricmc.fabric-loom")
     kotlin("jvm")
+    kotlin("plugin.serialization")
     id("com.gradleup.shadow")
 }
 
@@ -173,7 +174,12 @@ val gametestJar = tasks.register<Jar>("gametestJar") {
     destinationDirectory = layout.buildDirectory.dir("devlibs")
     from(sourceSets["gametest"].output)
 }
+// Loom keeps this run folder, and a config a test saved last time would change what the tests see.
+val cleanProdClientGameTest = tasks.register<Delete>("cleanProdClientGameTest") {
+    delete(layout.buildDirectory.dir("run/prodClientGameTest/config"))
+}
 tasks.register<net.fabricmc.loom.task.prod.ClientProductionRunTask>("runProdClientGameTest") {
+    dependsOn(cleanProdClientGameTest)
     group = "verification"
     description = "Runs the client game tests against the release and debug jars."
     // Loom would add the unshaded jar by default, so list the mods explicitly.
@@ -181,6 +187,14 @@ tasks.register<net.fabricmc.loom.task.prod.ClientProductionRunTask>("runProdClie
     jvmArgs.add("-Dfabric.client.gametest")
     runDir = layout.buildDirectory.dir("run/prodClientGameTest")
     useXVFB = false
+}
+
+// `./gradlew cutFixture --args="<capture> <feature id> <name> <from>-<to> [--types a,b] [--info Key,Key] [--system regex]"`
+tasks.register<JavaExec>("cutFixture") {
+    group = "development"
+    description = "Cuts a redacted fixture out of a capture. See CutFixture.kt."
+    classpath = sourceSets["debug"].runtimeClasspath
+    mainClass = "io.github.noxaur.dsmod.debug.capture.CutFixtureKt"
 }
 
 tasks.test {

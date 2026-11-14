@@ -1,11 +1,14 @@
 package io.github.noxaur.dsmod.rules
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.feature.features
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.readLines
+import kotlin.io.path.readText
 import kotlin.io.path.relativeTo
 import kotlin.streams.asSequence
 import kotlin.test.Test
@@ -48,6 +51,13 @@ class RulesTest {
         val rule = rules.first()
         assertTrue(!breaks(rule, "${rule.example} // rule:${rule.id} the user asked for this"))
         assertTrue(breaks(rule, "${rule.example} // rule:${rule.id}"))
+    }
+
+    @Test
+    fun `every feature has a section in the player docs`() {
+        val docs = Path.of("../docs/user/features.md").readText()
+        val missing = features(DsModConfig()).map { it.title }.filter { "### $it\n" !in docs }
+        assertEquals(emptyList(), missing, "docs/user/features.md needs a `### <Name>` section that tells the player what each of these shows: $missing\n")
     }
 
     @Test

@@ -1,0 +1,46 @@
++   0.0s > (tab list) Area: The End; Lobby: #1; Eyes Placed: 0/8; Protector: Rising (Tier 4/5, 20); Purse: 532,016,054
+             Zealot Tracker
+               Eyes: 0
+               Eyes per Hour: -
+               All-Time Eyes: 0
++   0.1s > [-] [VIP+] Player13
++   1.2s > ☠ The Young Dragon has spawned!
++   7.0s > RARE DROP! (Summoning Eye) (✯ 90%)
+             Zealot Tracker
+               Eyes: 1
+               Eyes per Hour: -
+               All-Time Eyes: 1
++   7.8s > ☠ The Endstone Protector has emerged from the ground! (Tier 5/5)
++   7.8s > Endstone Protector has spawned.
++   7.8s > EPIC DROP! Golden Eye
+             Zealot Tracker
+               Eyes: 1
+               Eyes per Hour: -
+               All-Time Eyes: 1
+               Golden Eye: 1 (1 all-time)
++  11.2s > [BOSS] Young Dragon: You are weak young padowan, you will never kill me. FIREBALL!!
++  11.4s > Player14: hello
++  17.3s > Player9: hello
++  18.6s > [DRAGON] Player15: hello
++  19.1s > [+] Player16
++  19.6s > [MVP+] Player17: hello
++  24.9s > The Endstone Protector has been defeated!
++  24.9s >                                                                                 
+                       ENDSTONE PROTECTOR DOWN!
+
+                [VIP] Player18 dealt the final blow.
+
+               1st Damager [MVP+] Player19 - 113.5M
+                2nd Damager [VIP] Player18 - 81.0M
+               3rd Damager Player3 - 29.7M
+
+                  Your Damage: 113.5M (Position #1)
+                                                                                
++  32.7s > RARE DROP! (Summoning Eye) (✯ 90%)
+             Zealot Tracker
+               Eyes: 2
+               Eyes per Hour: -
+               All-Time Eyes: 2
+               Golden Eye: 1 (1 all-time)
++  33.3s > [-] [VIP+] Player20
+saved zealot-tracker.json = {"drops":{"Summoning Eye":2,"Golden Eye":1}}

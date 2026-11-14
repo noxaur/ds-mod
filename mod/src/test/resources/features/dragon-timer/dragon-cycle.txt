@@ -1,0 +1,93 @@
++   0.0s > [VIP+] Player1: ☠ The Young Dragon has spawned!
++   4.2s > [BOSS] Young Dragon: You are weak young padowan, you will never kill me. FIREBALL!!
++   5.4s > [VIP+] Player2: hello
++   6.2s > [MVP+] Player3: hello
++   6.9s > [-] [DRAGON] Player4
++   7.4s > [-] [VIP+] Player5
++   7.9s > [+] Player6
++  12.1s > ☠ The Young Dragon has de-spawned.
++  12.3s > The Dragon Egg is respawning in 10 seconds.
+             Dragon Timer
+               Egg: 10s
++  13.1s > [MVP+] Player7 has obtained Young Dragon Helmet!
++  14.0s > [-] [DRAGON] Player8
+             Dragon Timer
+               Egg: 9s
++  16.2s > [-] Player6
+             Dragon Timer
+               Egg: 7s
++  17.9s > Player9 has obtained Dragon Claw!
+             Dragon Timer
+               Egg: 5s
++  19.1s > [-] Player10
+             Dragon Timer
+               Egg: 4s
++  22.0s > ✦ The Egg has Spawned!
+             Dragon Timer
+               Eyes: 0/8
++  25.9s > » [VIP] Player11 placed a Summoning Eye! (1/8)
+             Dragon Timer
+               Eyes: 1/8
++  26.3s > » [VIP] Player11 placed a Summoning Eye! (2/8)
+             Dragon Timer
+               Eyes: 2/8
++  27.7s > » [MVP+] Player7 placed a Summoning Eye! (3/8)
+             Dragon Timer
+               Eyes: 3/8
++  27.9s > » [MVP+] Player7 placed a Summoning Eye! (4/8)
+             Dragon Timer
+               Eyes: 4/8
++  28.7s > » [MVP+] Player7 placed a Summoning Eye! (5/8)
+             Dragon Timer
+               Eyes: 5/8
++  32.5s > [MVP+] Player3: hello
++  32.6s > [MVP+] Player12: hello
++  33.4s > [+] [DRAGON] Player13
++  38.8s > [MVP+] Player3: hello
++  39.9s > [MVP+] Player12: hello
++  40.6s > » [VIP+] Player14 placed a Summoning Eye! (6/8)
+             Dragon Timer
+               Eyes: 6/8
++  40.9s > » [VIP+] Player14 placed a Summoning Eye! (7/8)
+             Dragon Timer
+               Eyes: 7/8
++  41.6s > » [VIP+] Player14 placed a Summoning Eye! (8/8)
+             Dragon Timer
+               Eyes: 8/8
++  41.6s > Your Sleeping Eyes have been awoken by the magic of the dragon.
++  42.8s > [DRAGON] Player15: hello
++  46.4s > [+] [MVP+] Player12
++  49.2s > [-] [MVP+] Player16
++  50.0s > ☠ The Protector Dragon has spawned!
+             Dragon Timer
+               Protector Dragon: 0:00
++  54.0s > [+] [DRAGON] Player17 ♲
+             Dragon Timer
+               Protector Dragon: 0:03
++  54.1s > RARE DROP! (Summoning Eye) (✯ 90%)
+             Dragon Timer
+               Protector Dragon: 0:04
++  54.1s > [DRAGON] Player18: hello
++  56.2s > [DRAGON] Player19: hello
+             Dragon Timer
+               Protector Dragon: 0:06
++  57.8s > [-] [DRAGON] Player13
+             Dragon Timer
+               Protector Dragon: 0:07
++  59.1s > [+] Player20
+             Dragon Timer
+               Protector Dragon: 0:09
++  60.1s > [BOSS] Protector Dragon: I call upon the god of thunder.. Kill them all!
+             Dragon Timer
+               Protector Dragon: 0:10
++  60.2s > ☠ The Endstone Protector has emerged from the ground! (Tier 5/5)
++  60.2s > Endstone Protector has spawned.
++  61.8s > [DRAGON] Player21: hello
+             Dragon Timer
+               Protector Dragon: 0:11
++  69.1s > RARE DROP! (Summoning Eye) (✯ 90%)
+             Dragon Timer
+               Protector Dragon: 0:19
++  70.1s > [+] [VIP] Player22
+             Dragon Timer
+               Protector Dragon: 0:20

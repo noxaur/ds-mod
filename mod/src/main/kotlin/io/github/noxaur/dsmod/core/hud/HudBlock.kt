@@ -7,21 +7,21 @@ import io.github.noxaur.dsmod.core.text.text
 
 /**
  * A place on the HUD, in GUI pixels. Blocks shown in the same group stack under each other in the
- * order they were first shown, and share the group's background.
+ * order they were first shown, and share the group's background and [scale].
  */
-class HudGroup(val id: String, val x: Int, val y: Int, val background: Boolean = false)
+class HudGroup(val id: String, val x: Int, val y: Int, val background: Boolean = false, val scale: Float = 1f)
 
 /** One block on the HUD: a header and the rows under it. */
-class HudBlock(val header: Text, val rows: List<HudRow>)
+data class HudBlock(val header: Text, val rows: List<HudRow>)
 
 sealed interface HudRow {
     val text: Text
 }
 
-class TextRow(override val text: Text) : HudRow
+data class TextRow(override val text: Text) : HudRow
 
 /** A row with a bar under it, filled from 0 to 1. */
-class BarRow(override val text: Text, val fraction: Float, val role: Role) : HudRow
+data class BarRow(override val text: Text, val fraction: Float, val role: Role) : HudRow
 
 class HudBuilder {
     val rows = mutableListOf<HudRow>()

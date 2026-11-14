@@ -11,6 +11,18 @@ enum class Role(val rgb: Int) {
     GOOD(0x55FF55),
     BAD(0xFF5555),
     WARNING(0xFFFF55),
+
+    // An item's rarity, in the color the server gives that rarity's item names.
+    COMMON(0xFFFFFF),
+    UNCOMMON(0x55FF55),
+    RARE(0x5555FF),
+    EPIC(0xAA00AA),
+    LEGENDARY(0xFFAA00),
+    MYTHIC(0xFF55FF),
+    DIVINE(0x55FFFF),
+
+    // The server names these in red and in green alike, so neither is the Special color. Red is Dungeonbreaker's.
+    SPECIAL(0xFF5555),
     ;
 
     /** The color with an alpha from 0 to 255, for shapes that sit over the game. */
@@ -20,9 +32,9 @@ enum class Role(val rgb: Int) {
 /** The blue of the logo, left to right. */
 private val brandStops = intArrayOf(0x6064F9, 0x63A0F5, 0xAADCF8)
 
-class Span(val text: String, val rgb: Int)
+data class Span(val text: String, val rgb: Int)
 
-class Text(val spans: List<Span>) {
+data class Text(val spans: List<Span>) {
     val plain get() = spans.joinToString("") { it.text }
 }
 
@@ -56,6 +68,9 @@ class TextBuilder {
 }
 
 fun text(build: TextBuilder.() -> Unit) = TextBuilder().apply(build).build()
+
+/** [millis] as `m:ss`. */
+fun clock(millis: Long) = (millis / 1000).let { "%d:%02d".format(it / 60, it % 60) }
 
 private fun mix(from: Int, to: Int, amount: Float): Int {
     fun channel(shift: Int): Int {

@@ -2,11 +2,13 @@ package io.github.noxaur.dsmod.debug
 
 import io.github.noxaur.dsmod.debug.capture.CaptureSession
 import io.github.noxaur.dsmod.debug.capture.toCaptureJson
+import io.github.noxaur.dsmod.edge.DsModClient
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
@@ -27,7 +29,7 @@ object DsModDebug : ClientModInitializer {
             running.close()
             return running.file
         }
-        return CaptureSession(client.gameDirectory.toPath().resolve("dsmod/captures")).also { capture = it }.file
+        return CaptureSession(client.gameDirectory.toPath().resolve("dsmod/captures"), DsModClient.game).also { capture = it }.file
     }
 
     /** Called by CapturePacketsMixin on the client thread. */
@@ -35,11 +37,13 @@ object DsModDebug : ClientModInitializer {
         capture?.packet(packet)
     }
 
+    /** Called by CaptureInputMixin on the client thread, for `swing` or `use`. */
+    fun onInput(client: Minecraft, type: String) {
+        capture?.input(client, type)
+    }
+
     override fun onInitializeClient() {
-        ClientReceiveMessageEvents.GAME.register { message, overlay ->
-            // The action bar is read from the HUD in CaptureSession, which also sees the dedicated packet.
-            if (!overlay) capture?.record("system") { message.toCaptureJson() }
-        }
+        ClientEntityEvents.ENTITY_UNLOAD.register { entity, _ -> capture?.unload(entity) }
         ClientReceiveMessageEvents.CHAT.register { message, _, sender, _, _ ->
             capture?.record("chat") {
                 buildJsonObject {
