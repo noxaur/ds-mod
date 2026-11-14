@@ -1,0 +1,44 @@
+{
+  "device": {
+    "name": "Ryzen 7 3700X",
+    "calibrate": 58
+  },
+  "rows": {
+    "hud.draw": {
+      "group": "Frame",
+      "label": "HUD draw, 8 blocks",
+      "unit": "µs",
+      "cap": 300
+    },
+    "slots.draw": {
+      "group": "Frame",
+      "label": "Slot marks pass, 36 slots",
+      "unit": "µs",
+      "cap": 120
+    },
+    "tab-poll": {
+      "group": "Tick",
+      "label": "Tab list poll",
+      "unit": "µs",
+      "cap": 150
+    },
+    "container-poll": {
+      "group": "Tick",
+      "label": "Container poll",
+      "unit": "µs",
+      "cap": 50
+    },
+    "features": {
+      "group": "Tick",
+      "label": "Feature handlers and readouts per tick",
+      "unit": "µs",
+      "cap": 10
+    },
+    "jar": {
+      "group": "Size",
+      "label": "Release jar",
+      "unit": "KB",
+      "cap": 1500
+    }
+  }
+}

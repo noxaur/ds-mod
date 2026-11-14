@@ -1,0 +1,66 @@
+name: beta
+
+on:
+  # Cron has no "every second day": */2 runs on the 31st and again on the 1st. This fires daily, and the
+  # gate step keeps every other day.
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beta
+
+jobs:
+  beta:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+    steps:
+      - id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = schedule ] && [ $(( $(date +%s) / 86400 % 2 )) -ne 0 ]; then
+            echo "beta: skipped, a scheduled beta goes out every second day." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          last=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1 --json tagName --jq '.[0].tagName // empty')
+          if [ -n "$last" ] && [ "$(gh api "repos/$GITHUB_REPOSITORY/commits/$last" --jq .sha)" = "$GITHUB_SHA" ]; then
+            echo "beta: skipped, no commit since $last." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "release=true" >> "$GITHUB_OUTPUT"
+      - if: steps.gate.outputs.release
+        uses: actions/checkout@v7
+      - if: steps.gate.outputs.release
+        uses: ./.github/actions/setup-mod
+      - id: version
+        if: steps.gate.outputs.release
+        run: echo "version=$(sed -n 's/^version=//p' mod/gradle.properties)-beta.$GITHUB_RUN_NUMBER" >> "$GITHUB_OUTPUT"
+      # Every check and every game test, PerfTest among them, against the jars about to be released.
+      - if: steps.gate.outputs.release
+        working-directory: mod
+        run: ./gradlew check build runProdClientGameTest -Pversion=${{ steps.version.outputs.version }}
+      - if: always() && steps.gate.outputs.release
+        run: cat mod/build/run/prodClientGameTest/perf.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+      - if: failure()
+        run: |
+          echo "beta: not released. A check, a game test or a perf cap failed. See the table above and the log." >> "$GITHUB_STEP_SUMMARY"
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: beta
+          path: |
+            mod/build/reports/tests
+            mod/build/run/prodClientGameTest/logs
+            mod/build/run/prodClientGameTest/screenshots
+          if-no-files-found: ignore
+      - if: steps.gate.outputs.release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release create "v$VERSION" "mod/build/libs/dsmod-$VERSION.jar" --target "$GITHUB_SHA" \
+            --title "ds-mod $VERSION" --prerelease --generate-notes
