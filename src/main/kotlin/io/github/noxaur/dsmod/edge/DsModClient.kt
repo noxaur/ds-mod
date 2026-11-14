@@ -17,6 +17,10 @@ object DsModClient : ClientModInitializer {
             FabricLoader.getInstance().configDir.resolve("dsmod/config.json").toFile(),
             DsModConfig::class.java,
         )
+        Hud.register()
+        Slots.register()
+        Tooltips.register()
+        World.register()
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
             dispatcher.register(
                 ClientCommands.literal("dsmod").executes { context ->

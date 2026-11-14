@@ -22,7 +22,8 @@ class RulesTest {
         val root = Path.of("").toAbsolutePath()
         val violations = Files.walk(root.resolve("src")).asSequence().filter { it.isRegularFile() }.flatMap { file ->
             val path = file.relativeTo(root)
-            rules.filter { FileSystems.getDefault().getPathMatcher("glob:${it.files}").matches(path) }.flatMap { rule ->
+            fun matches(glob: String) = FileSystems.getDefault().getPathMatcher("glob:$glob").matches(path)
+            rules.filter { matches(it.files) && it.except?.let(::matches) != true }.flatMap { rule ->
                 file.readLines().withIndex().filter { breaks(rule, it.value) }.map {
                     "${path.invariantSeparatorsPathString}:${it.index + 1}: [${rule.id}] ${rule.fix}"
                 }

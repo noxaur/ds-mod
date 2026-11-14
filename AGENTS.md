@@ -27,6 +27,8 @@ The server is someone else's, closed and custom, so everything ds-mod knows abou
 
 Settings use MoulConfig, the settings screen SkyHanni uses. A setting is an annotated field in `DsModConfig`, and `/dsmod` opens the screen.
 
+Load the `ui` skill before you add or change anything the player sees or hears. It is at `.claude/skills/ui/SKILL.md`.
+
 ## Release and debug
 
 The code is split into two source sets, and each becomes its own mod.
@@ -71,6 +73,7 @@ Each rule is paired with what enforces it. All of them run in `./gradlew check`,
 | --- | --- |
 | `core` imports nothing from Minecraft or Fabric | `core-is-pure` in `Rules.kt` |
 | The release build sends nothing for the player | `no-automation` in `Rules.kt` |
+| Release text and colors come from the text layer | `text-by-role` in `Rules.kt` |
 | Release code cannot use debug tools | The `main` and `debug` source sets |
 | Captures stay out of git | They are written to `run/`, which is git-ignored |
 | The jars a player installs boot and open settings | `runProdClientGameTest` |

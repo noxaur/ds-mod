@@ -15,6 +15,9 @@
     ]
   },
   "accessWidener": "moulconfig.accesswidener",
+  "mixins": [
+    "dsmod.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.20.1",
     "minecraft": "~26.2",
