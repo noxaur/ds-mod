@@ -29,3 +29,16 @@ Shows where the Endstone Protector stands:
 - `Stage: Defeated` with `Fight: 0:10` shows for a moment after it falls.
 
 It shows nothing outside The End.
+
+### Zealot Tracker
+
+Counts your Summoning Eyes and your other rare drops while you grind in The End:
+
+- `Eyes: 11` is the eyes you have had since you started the game.
+- `Eyes per Hour: 66.0` is those eyes divided by the time you have spent in The End, so standing in the hub does not pull it down. It shows `-` for the first minute in The End.
+- `All-Time Eyes: 54` is every eye the tracker has seen, across sessions.
+- A row such as `[Lvl 1] Enderman: 1 (1 all-time)` appears once you get another rare drop.
+
+It counts only your own drop messages, such as `RARE DROP!`, `EPIC DROP!` and `RNGESUS DROP!`, never what another player types in chat. It does not count kills or show profit. It shows nothing outside The End.
+
+The all-time numbers are saved about once a minute and when you close the game, in `config/dsmod/data/zealot-tracker.json` in your game folder. Delete the file to start again.

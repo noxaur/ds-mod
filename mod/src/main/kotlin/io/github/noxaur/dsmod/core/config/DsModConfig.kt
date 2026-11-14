@@ -37,6 +37,12 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var golemStatus = true
+
+        @Expose
+        @ConfigOption(name = "Zealot Tracker", desc = "Count your Summoning Eyes and other rare drops this session, per hour in The End and all-time.")
+        @ConfigEditorBoolean
+        @JvmField
+        var zealotTracker = true
     }
 
     /** Where a feature's HUD block has its top-left corner, as fractions of the scaled screen, and how big it is. */
