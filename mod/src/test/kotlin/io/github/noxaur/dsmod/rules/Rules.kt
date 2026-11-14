@@ -38,7 +38,7 @@ val rules = listOf(
     Rule(
         id = "text-by-role",
         files = "src/main/**.{kt,java}",
-        except = "src/main/kotlin/**/{core/text/Text,edge/Chat}.kt",
+        except = "src/main/kotlin/**/{core/text/Text,edge/Chat,core/ui/Theme}.kt",
         forbid = Regex(
             """§|\bChatFormatting\.|\bTextColor\.|\.withColor\(|\bComponent\.(literal|translatable)\(|""" +
                 """\b0x[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?\b""",
@@ -46,5 +46,15 @@ val rules = listOf(
         fix = "Say what the text means and let the text layer color it: build it with `text { body(..); value(..) }` " +
             "from core.text and print it with `Chat.send`. If no role fits, add one to `Role`.",
         example = "Component.literal(\"§eSold 5 scales!\")",
+    ),
+    Rule(
+        id = "draw-with-kit",
+        files = "src/main/**.{kt,java}",
+        except = "src/main/kotlin/**/edge/ui/Kit.kt",
+        // A drawing call takes a position and a size, so `IntArray.fill(-1)` with one argument is left alone.
+        forbid = Regex("""\.(fill|fillGradient|outline|blit|blitSprite|horizontalLine|verticalLine|textHighlight|textWithBackdrop)\([^)]*,"""),
+        fix = "Draw chrome with `Kit` in edge/ui, so it follows the grid and the player's theme. If the kit lacks a shape, " +
+            "add it there, to kit.md and to the gallery.",
+        example = "graphics.fill(0, 0, 80, 2, Role.MUTED.argb(120))",
     ),
 )

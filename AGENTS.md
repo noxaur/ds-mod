@@ -64,6 +64,7 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | `core` imports nothing from Minecraft, Fabric or `edge` | `core-is-pure` in `mod/…/Rules.kt` |
 | The release build sends for the player only in a feature DragSim Utils has | `no-automation` in `mod/…/Rules.kt` |
 | The mod's text and colors come from its text layer | `text-by-role` in `mod/…/Rules.kt` |
+| The mod's shapes are drawn by its kit, in the player's theme | `draw-with-kit` in `mod/…/Rules.kt` |
 | Release code cannot use debug tools | The `main` and `debug` source sets |
 | Raw captures stay out of git | They are written to `mod/run/`, which is git-ignored |
 | A fixture holds no player name from a capture on this machine | `FixtureLeakTest` |

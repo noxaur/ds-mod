@@ -1,11 +1,11 @@
 ---
 name: ui
-description: Use when adding or changing anything the player sees or hears from ds-mod - chat lines, HUD, alerts, container overlays, tooltips, world rendering, edits to the server's HUD, settings text.
+description: Use when adding or changing anything the player sees or hears from ds-mod - chat lines, HUD, alerts, container overlays, tooltips, world rendering, edits to the server's HUD, settings text, the mod's own screens and their controls.
 ---
 
 ds-mod looks and reads like SkyHanni and SkyOcean, the mods its players already know. Minecraft mods have their own conventions, so follow those two over web or app design habits. Their wording is the model for ours, and SkyOcean's named colors are the model for the text layer.
 
-Minecraft looks Swiss and 16-bit: flat color, hard pixel edges, one font, a grid. Draw in that language, with text and flat shapes. Cards, rounded corners, soft shadows and slide-in panels belong to apps, and Minecraft's own toast box is one of them, so ds-mod has no toast.
+Minecraft looks Swiss and 16-bit: flat color, hard pixel edges, one font, a grid. Draw in that language, with text by role and chrome from the kit. Cards, rounded corners, soft shadows, gradients and slide-in panels belong to apps, and Minecraft's own toast box is one of them, so ds-mod has no toast.
 
 ## Pick the surface
 
@@ -21,6 +21,7 @@ A surface is a place the mod can put information. Choose it by how long the info
 | About a place, block or entity | World |
 | Already shown by the server, but badly | Edit the server's HUD, so the player sees it once |
 | A choice the player makes | Settings |
+| A task with several controls, such as placing the HUD | Own screen |
 
 [`surfaces.md`](surfaces.md) lists every type within each surface. Read it when the table leaves you between two, or when you build a surface for the first time.
 
@@ -38,8 +39,24 @@ A feature lives in `core` and cannot call a layer. It returns its HUD block from
 | Container overlay | `SlotMark` | `Slots.mark`, `Slots.clear` |
 | Tooltip | `text { }` per line | `Tooltips.add` |
 | World | `Waypoint`, `BlockBox`, `Path`, `Ring` | `World.show`, `World.hide` |
+| Own screen | `Theme` | The kit in `edge/ui` |
 
-A type in `surfaces.md` that no layer draws yet is added to that surface's layer, with its case in `SurfacesTest`. Edits to the server's HUD and the mod's own screens have no layer yet, so the first feature there builds it the same way.
+A type in `surfaces.md` that no layer draws yet is added to that surface's layer, with its case in `SurfacesTest`. Edits to the server's HUD have no layer yet, so the first feature there builds it the same way.
+
+## Draw chrome with the kit
+
+Chrome is everything that is not text: panels, buttons, slots, bars, marks. It is pixel art drawn in code by `Kit` in `edge/ui`, in the colors of the player's `Theme`. The `draw-with-kit` rule fails the build on a shape drawn anywhere else.
+
+- **Grid:** one kit pixel is one GUI pixel, so chrome grows with Minecraft's GUI scale as vanilla's does. Every size and position is a whole number. The HUD alone has its own scale, which the player sets and `Readouts` snaps to whole screen pixels, so a 1px edge stays one pixel wide.
+- **Frame:** a 1px outline with its four corner pixels left out, and inside it a 1px bevel, light on the top and left and shade on the bottom and right. That is a raised thing: a panel, a button, a tab, a scrollbar thumb. A sunk thing swaps the two edges and has no outline: a slot, a well, a bar's track, a checkbox.
+- **Theme:** `Theme` in `core/ui` holds one color per token. Charcoal is the default and the one to design in. Vanilla matches Minecraft's own light gray screens, and the player picks between them in the settings. Draw with a token and both themes work. Check both in the screenshot.
+- **Ink:** a label on a panel or a button is chrome. It is a plain string that `Kit.label` draws in the theme's ink, which is light in Charcoal and dark in Vanilla. Text colored by role reads only on a dark surface, so it sits on a well or on the HUD's plate, which are dark in both themes.
+- **State:** a control shows idle, hover, pressed and off with its face and edges. Pressed also moves the label down 1px. Focus looks like hover, so the keyboard works without another style.
+- **Icons:** white sprites of at most 7x7 in `textures/gui/sprites/`, which `Kit.icon` tints with ink or a role.
+
+A screen is a vanilla `Screen` holding the kit's widgets. They are vanilla widgets with a kit face, so focus, narration and the keyboard work as they do in Minecraft. The settings screen is MoulConfig's and keeps its own look.
+
+[`kit.md`](kit.md) lists every token, component and size. Read it before you build a screen, or when you need a component it may not have.
 
 ## Color by role
 
@@ -65,7 +82,8 @@ One line has one `value`. A line where everything is highlighted has no highligh
 - **Click hints:** "Click to <verb>." in `action`.
 - **Titles:** one to three words in one role, such as "Boss Ready". `Alerts.title` takes the chat line that goes with it, which says which feature fired so the player can turn it off.
 - **HUD:** a Title Case header, then `Label: value` rows. `hud { }` colors the header and the labels.
-- **HUD groups:** blocks that belong to one activity share a `HudGroup`, which stacks them and can put one flat background behind them all. Turn the background on where the group sits over busy scenery, and leave it off for a single line.
+- **HUD groups:** blocks that belong to one activity share a `HudGroup`, which stacks them on one plate. The player owns the plate, the scale and the place of every block, so a feature sets none of them.
+- **Buttons:** one or two words in Title Case that name what the press does. "Reset", "Done".
 - **Setting names:** Title Case, one to three words. "Scale Tracker".
 - **Setting descriptions:** one sentence that starts with a verb and ends with a period. "Show the scales you earn per hour." A requirement or warning follows as its own sentence.
 - **Changed defaults:** when a feature changes something the server shows, tell the player once in chat and name the setting.
@@ -73,4 +91,4 @@ One line has one `value`. A line where everything is highlighted has no highligh
 
 ## Done when
 
-A client game test shows the surface in a screenshot, as `SurfacesTest` does, and you have looked at the image. A feature that only fills a layer `SurfacesTest` already shows is done when its replay transcript reads right.
+A client game test shows the surface in a screenshot, as `SurfacesTest` does, and you have looked at the image. A screen or a kit component is shown in both themes. A feature that only fills a layer `SurfacesTest` already shows is done when its replay transcript reads right.

@@ -12,6 +12,7 @@ import io.github.noxaur.dsmod.core.world.Ring
 import io.github.noxaur.dsmod.core.world.Waypoint
 import io.github.noxaur.dsmod.edge.Alerts
 import io.github.noxaur.dsmod.edge.Chat
+import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.edge.Slots
 import io.github.noxaur.dsmod.edge.Tooltips
@@ -86,6 +87,23 @@ class SurfacesTest : FabricClientGameTest {
                 listOf("scales", "boss", "plain").forEach(Hud::hide)
                 World.hide("test")
             }
+
+            // At GUI scale 2 a HUD scale of 1.3 snaps to 1.5, three screen pixels per HUD pixel, so every edge stays whole.
+            world.server.runCommand("""tellraw @a "§5✦ §dThe Egg has Spawned!"""")
+            context.runOnClient<Nothing> { client ->
+                client.options.guiScale().set(2)
+                client.resizeGui()
+                DsModClient.settings.hud.scale = 1.3f
+            }
+            context.waitTicks(5)
+            context.runOnClient<Nothing> {
+                val scale = Hud.find("dragon-timer")?.scale
+                check(scale == 1.5f) { "The HUD scale snapped to $scale, not 1.5" }
+            }
+            context.takeScreenshot("hud-scale-1.5")
+            context.runOnClient<Nothing> { DsModClient.settings.hud.scale = 1f }
+            context.restoreDefaultGameOptions()
+            context.runOnClient<Nothing> { it.resizeGui() }
         }
     }
 }

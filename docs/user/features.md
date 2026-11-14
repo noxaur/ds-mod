@@ -4,9 +4,21 @@ Every feature has a switch in the settings, which `/dsmod` opens.
 
 ## HUD
 
-A feature shows a block on the HUD: its name, then rows such as `Eyes: 5/8`. Blocks start in the top-left corner.
+A feature shows a block on the HUD: its name, then rows such as `Eyes: 5/8`. Blocks start in the top-left corner, on a dark plate.
 
-To move them, type `/dsmod hud`, or press Edit under HUD in the settings. Drag a block to move it, and scroll over it to resize it. Press Esc to save.
+To arrange them, type `/dsmod hud`, or press Edit under Interface in the settings.
+
+- Drag a block to move it.
+- Scroll over a block to resize it. You can also click it and press the plus and minus beside Scale. Reset sends it back to the corner.
+- HUD Scale resizes every block at once.
+- Background turns the plate behind the blocks on or off.
+- Press Done or Esc to save.
+
+HUD Scale and HUD Background are also under Interface in the settings. The HUD grows with Minecraft's own GUI Scale as well, like the rest of the game.
+
+## Theme
+
+ds-mod's own screens come in two looks. Charcoal is dark and is the default. Vanilla matches Minecraft's light gray menus. Pick one with Theme under Interface in the settings.
 
 ## The End
 

@@ -13,6 +13,11 @@ class SettingsScreenTest : FabricClientGameTest {
         val screen = context.computeOnClient<Any?, Nothing> { it.gui.screen() }
         check(screen != null && screen !is TitleScreen) { "Settings screen did not open, got $screen" }
         context.takeScreenshot("settings")
+        // MoulConfig lays out its own screen, so this clicks where it draws the last category, Interface.
+        context.input.setCursorPos(200.0, 279.0)
+        context.input.pressMouse(0)
+        context.waitTicks(2)
+        context.takeScreenshot("settings-interface")
         context.setScreen { TitleScreen() }
     }
 }

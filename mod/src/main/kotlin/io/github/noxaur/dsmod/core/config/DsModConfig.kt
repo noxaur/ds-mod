@@ -5,8 +5,11 @@ import io.github.notenoughupdates.moulconfig.Config
 import io.github.notenoughupdates.moulconfig.annotations.Category
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorButton
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDropdown
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorSlider
 import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText
+import io.github.noxaur.dsmod.core.ui.Theme
 
 /**
  * One category per area of the game. MoulConfig reads the fields directly, so every one it shows
@@ -31,7 +34,7 @@ class DsModConfig : Config() {
     val slayer = Slayer()
 
     @Expose
-    @Category(name = "HUD", desc = "Where each block sits on the screen.")
+    @Category(name = "Interface", desc = "How ds-mod's HUD and screens look.")
     @JvmField
     val hud = Hud()
 
@@ -71,13 +74,31 @@ class DsModConfig : Config() {
         var slayerTracker = true
     }
 
-    /** Where a feature's HUD block has its top-left corner, as fractions of the scaled screen, and how big it is. */
+    /** Where a feature's HUD block has its plate's top-left corner, as fractions of the scaled screen, and how big it is. */
     data class Position(@Expose val x: Float = 0f, @Expose val y: Float = 0f, @Expose val scale: Float = 1f)
 
     class Hud {
         /** The feature id to its saved position. A block with none is stacked down from the top-left. */
         @Expose
         val positions = HashMap<String, Position>()
+
+        @Expose
+        @ConfigOption(name = "Theme", desc = "Pick the colors of ds-mod's screens and controls.")
+        @ConfigEditorDropdown
+        @JvmField
+        var theme = Theme.CHARCOAL
+
+        @Expose
+        @ConfigOption(name = "HUD Scale", desc = "Make every HUD block bigger or smaller.")
+        @ConfigEditorSlider(minValue = 0.5f, maxValue = 3f, minStep = 0.25f)
+        @JvmField
+        var scale = 1f
+
+        @Expose
+        @ConfigOption(name = "HUD Background", desc = "Show a dark plate behind the HUD, so it reads over a bright world.")
+        @ConfigEditorBoolean
+        @JvmField
+        var background = true
 
         /** The edge sets this to open the editor, so the config itself needs no Minecraft. */
         @ConfigOption(name = "Move HUD", desc = "Drag a block to move it, and scroll over it to resize it.")
