@@ -51,7 +51,7 @@ Most code changes need no doc change. Before you change an area, read its page i
 
 - `docs/internals/` records why: each architectural decision, the constraint that decided it, and traps the source can't show. Before you add a paragraph, ask what a maintainer would get wrong without it. Leave out how-to steps, code tours, file lists and test results.
 - `docs/user/` helps players do a task, in the mod's voice, with no implementation details or contributor tooling. Update the section when how to use a feature changes.
-- `docs/operations/` holds setup, run and release procedures for contributors.
+- `docs/operations/` holds setup, run and release procedures. Its reader is an agent, and the machine, desktop and accounts belong to the user, so write "the user's".
 - State each fact once, in the page that owns it, and link to the source instead of copying it. When a decision changes, rewrite or delete the text in the same change.
 - `CONTRIBUTING.md` holds only the policy for outside contributors and links `docs/operations/development.md` for setup, running and checks. `docs/README.md` links every page with one line on what it covers.
 
@@ -88,6 +88,7 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | Web dependencies are at least 14 days old | `minimumReleaseAge` in `web/pnpm-workspace.yaml` |
 | `docs/README.md` links every page in `docs/` | `check:docs` |
 | `docs/internals/` records why, not steps | `check:docs` rejects a recipe heading |
+| `docs/operations/` addresses an agent, who owns no machine or account | `check:docs` rejects "your" |
 
 When a mistake happens a second time, stop it at the highest level that works:
 
