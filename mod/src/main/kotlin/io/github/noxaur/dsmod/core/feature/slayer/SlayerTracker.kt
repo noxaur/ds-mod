@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.slayer
 
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
@@ -18,7 +19,7 @@ data class SlayerKills(val slain: Int = 0)
  * indented, which a player's chat line never is, and give the quest's goal and the XP left to the next level. The
  * readout stays hidden until the first quest or boss, so it never shows for a player who does no slayers.
  */
-class SlayerTracker(toggle: KMutableProperty0<Boolean>) : Feature("slayer-tracker", toggle) {
+class SlayerTracker(toggle: KMutableProperty0<Boolean>) : Feature("slayer-tracker", toggle, Area.ANYWHERE) {
     private val allTime = saved(SlayerKills())
     private var slain = 0
     private var timed = 0

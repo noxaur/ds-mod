@@ -1,0 +1,147 @@
++   0.0s > (tab list) no info row changed
++   0.0s > (sidebar) 
++   0.1s > (the world changed)
++   0.2s > ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
++   0.2s > 
++   0.2s >                           ✦ ACTIVE BOOSTERS ✦
++   0.2s > 
++   0.2s >            Magic Find Boost (3 Hours) by [DRAGON] Player1
++   0.2s > 
++   0.2s >                          +60 ✯ Magic Find (1.2x)
++   0.2s > 
++   0.2s >                              Expires in 1h 40m
++   0.2s > 
++   0.2s >        Whale Booster (3 Hours) by [DRAGON] Player2
++   0.2s > 
++   0.2s >                          +90 ✯ Magic Find (1.2x)
++   0.2s >                           +2.4 ✧ Pristine (1.2x)
++   0.2s >                            +90 ☯ Wisdom (1.2x)
++   0.2s >                       +120 ☘ Mining Fortune (1.2x)
++   0.2s > 
++   0.2s >                              Expires in 2h 41m
++   0.2s > 
++   0.2s > ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
++   0.2s > ⚠ You have 44 item(s) in your stash! Use /stash to claim them.
++   0.2s > (tab list) Area: The End; Lobby: #2; Egg: Respawning; Protector: Rising (Tier 3/5, 78); Purse: 527,099,929
+             Golem Status
+               Stage: Rising 3/5
+               Kills Left: 78
++   0.2s > (sidebar) 
++   0.7s > (sidebar) Name: Player20; Purse: 527,099,929; Pet: [Lvl 100] Ender Dragon; Booster: Magic Find Boost; ⏣ Dragon's Den; Quest: Market Trader; Use the Auction House 0/1; dragsim.co
++   2.0s > [+] [MVP+] Player21
++   2.2s > (tab list) Protector: Rising (Tier 3/5, 72)
+             Golem Status
+               Stage: Rising 3/5
+               Kills Left: 72
++   3.1s > You have 44 items stashed away!!
++   3.1s > CLICK HERE to pick them up!
++   3.1s > or /viewstash to see what's in it.
++   4.2s > (tab list) Protector: Rising (Tier 3/5, 69)
+             Golem Status
+               Stage: Rising 3/5
+               Kills Left: 69
++   6.2s > (tab list) Protector: Rising (Tier 3/5, 68)
+             Golem Status
+               Stage: Rising 3/5
+               Kills Left: 68
++   7.2s > ✦ The Egg has Spawned!
++   8.2s > (tab list) Eyes Placed: 0/8; Protector: Rising (Tier 3/5, 67)
+             Golem Status
+               Stage: Rising 3/5
+               Kills Left: 67
++   8.2s > (sidebar) Name: Player20; Purse: 527,099,929; Pet: [Lvl 100] Ender Dragon; Booster: Magic Find Boost; ⏣ Void Sepulture; Quest: Market Trader; Use the Auction House 0/1; dragsim.co
++   8.5s > [DRAGON] Player17: hello
++   8.9s > » [VIP] Player39 placed a Summoning Eye! (1/8)
++   9.3s > » [VIP] Player39 placed a Summoning Eye! (2/8)
++   9.7s > » [VIP] Player39 placed a Summoning Eye! (3/8)
++   9.9s > » [VIP] Player39 placed a Summoning Eye! (4/8)
++  10.2s > (tab list) Eyes Placed: 4/8; Protector: Rising (Tier 3/5, 61)
+             Golem Status
+               Stage: Rising 3/5
+               Kills Left: 61
++  10.2s > [-] [VIP+] Player33
++  10.3s > [+] Player58
++  12.2s > (tab list) Protector: Rising (Tier 3/5, 57)
+             Golem Status
+               Stage: Rising 3/5
+               Kills Left: 57
++  12.4s > Player59: hello
++  12.7s > (sidebar) Name: Player20; Purse: 527,101,799; Pet: [Lvl 100] Ender Dragon; Booster: Magic Find Boost; ⏣ Void Sepulture; Quest: Market Trader; Use the Auction House 0/1; dragsim.co
++  14.2s > (tab list) Protector: Rising (Tier 3/5, 51); Purse: 527,101,799
+             Golem Status
+               Stage: Rising 3/5
+               Kills Left: 51
++  14.2s > (sidebar) Name: Player20; Purse: 527,101,799; Pet: [Lvl 100] Ender Dragon; Booster: Magic Find Boost; ⏣ Dragon's Den; Quest: Market Trader; Use the Auction House 0/1; dragsim.co
++  14.6s > ☠ The Endstone Protector is rising from the ground! (Tier 4/5)
++  15.1s > [DRAGON] Player24: hello
++  15.8s > [DRAGON] Player60: hello
++  16.2s > (tab list) Protector: Rising (Tier 4/5, 49)
+             Golem Status
+               Stage: Rising 4/5
+               Kills Left: 49
++  16.3s > [DRAGON] Player8: hello
++  18.2s > (tab list) Protector: Rising (Tier 4/5, 42)
+             Golem Status
+               Stage: Rising 4/5
+               Kills Left: 42
++  18.3s > [+] [VIP+] Player79
++  20.2s > (tab list) Protector: Rising (Tier 4/5, 38)
+             Golem Status
+               Stage: Rising 4/5
+               Kills Left: 38
++  22.1s > [DRAGON] Player8: hello
++  22.2s > (tab list) Protector: Rising (Tier 4/5, 30)
+             Golem Status
+               Stage: Rising 4/5
+               Kills Left: 30
++  24.2s > (tab list) Protector: Rising (Tier 4/5, 28)
+             Golem Status
+               Stage: Rising 4/5
+               Kills Left: 28
++  24.7s > (tab list) no info row changed
+             (nothing)
++  24.7s > (sidebar) 
++  25.1s > (the world changed)
++  25.2s > ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
++  25.2s > 
++  25.2s >                           ✦ ACTIVE BOOSTERS ✦
++  25.2s > 
++  25.2s >            Magic Find Boost (3 Hours) by [DRAGON] Player1
++  25.2s > 
++  25.2s >                          +60 ✯ Magic Find (1.2x)
++  25.2s > 
++  25.2s >                              Expires in 1h 40m
++  25.2s > 
++  25.2s >        Whale Booster (3 Hours) by [DRAGON] Player2
++  25.2s > 
++  25.2s >                            +90 ☯ Wisdom (1.2x)
++  25.2s >                          +90 ✯ Magic Find (1.2x)
++  25.2s >                       +120 ☘ Mining Fortune (1.2x)
++  25.2s >                           +2.4 ✧ Pristine (1.2x)
++  25.2s > 
++  25.2s >                              Expires in 2h 40m
++  25.2s > 
++  25.2s > ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
++  25.2s > ⚠ You have 44 item(s) in your stash! Use /stash to claim them.
++  25.2s > (sidebar) 
++  25.2s > [DRAGON] Player8: hello
++  25.7s > (sidebar) 11/14/26 m284; ⏣ Dungeon Hub; Purse: 527,101,799; Catacombs: 0; Class: Mage; dragsim.co
++  26.6s > [DRAGON] Player17: hello
++  28.1s > You have 44 items stashed away!!
++  28.1s > CLICK HERE to pick them up!
++  28.1s > or /viewstash to see what's in it.
++  31.5s > [DRAGON] Player17: hello
++  33.2s > [DRAGON] Player96: hello
++  33.3s > Generating Floor I...
++  33.5s > [NPC] Player97: hello
++  33.7s > (the world changed)
++  33.7s > [MVP+] Player29: hello
++  33.7s > (sidebar) 11/14/26 dungeons-1 282,66; Spring 12th; 11:20pm ☽; ⏣ The Catacombs (F1); [M] Player20 [Lv0]; Auto-closing in: 02:00; dragsim.co
++  34.7s > (sidebar) 11/14/26 dungeons-1 282,66; Spring 12th; 11:30pm ☽; ⏣ The Catacombs (F1); [M] Player20 [Lv0]; Auto-closing in: 01:59; dragsim.co
++  35.2s > (tab list) Class: Mage; Revive Stones: 0; Downed: NONE; Time: N/A; Revive: N/A; Team Deaths: 0; Team Damage Dealt: 0⚔; Team Healing Done: 0❤; Your Milestone: 0; Crypts: 0; Dungeon: Catacombs; Opened Rooms: 0; Completed Rooms: 0; Rooms Cleared: 0%; Time: 0s; Puzzles: (4); ???: [✖]; Profile: Old; Pet Sitter: N/A; Interest: N/A; Catacombs: 0; Speed: 234; Strength: ❁154; Crit Chance: ☣142; Crit Damage: 111; Bonus Attack Speed: 0
++  35.4s > [DRAGON] Player96: hello
++  35.7s > (sidebar) 11/14/26 dungeons-1 282,66; Spring 12th; 11:30pm ☽; ⏣ The Catacombs (F1); [M] Player20 [Lv0]; Auto-closing in: 01:58; dragsim.co
++  36.1s > [DRAGON] Player98: hello
++  36.7s > (sidebar) 11/14/26 dungeons-1 282,66; Spring 12th; 11:30pm ☽; ⏣ The Catacombs (F1); [M] Player20 [Lv0]; Auto-closing in: 01:57; dragsim.co
++  36.8s > Player20 is now ready!
++  36.8s > Dungeon starts in 5 seconds.

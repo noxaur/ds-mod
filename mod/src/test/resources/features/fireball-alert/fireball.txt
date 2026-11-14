@@ -1,9 +1,10 @@
++   0.0s > (tab list) Area: The End
 +   0.0s > RARE DROP! (Summoning Eye) (✯ 90%)
 +   0.7s > ☠ The Endstone Protector has emerged from the ground! (Tier 5/5)
 +   0.7s > Endstone Protector has spawned.
 +   0.8s > EPIC DROP! Golden Eye
 +   4.2s > [BOSS] Young Dragon: You are weak young padowan, you will never kill me. FIREBALL!!
-             (title) Fireball, (chat) Alerts | Young Dragon is throwing fireballs.
+             (title) Fireball, (chat) Fireball Alert | Young Dragon is throwing fireballs.
 +   4.3s > Player1: hello
 +  10.3s > Player2: hello
 +  11.5s > [DRAGON] Player3: hello

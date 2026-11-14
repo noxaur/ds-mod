@@ -17,15 +17,16 @@ A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with 
 | To | Copy |
 | --- | --- |
 | Follow lines in chat | `DragonTimer` |
-| Read the tab list's info rows | `GolemStatus` |
+| Read the tab list's info rows, or the sidebar's the same way | `GolemStatus` |
 | Read items and mark slots | `RarityOutlines` |
 | Change how the game draws, reading nothing from the server | `Fullbright` |
 | Count something and keep the total | `SlayerTracker` |
 | Hide a line the server sends, and tell the player once that you did | `AbilitySpam` |
 | Tell the player something once, and read a setting besides the switch | `LootAlerts` |
-| Track a rate, in one area only | `ZealotTracker` |
+| Track a rate, and follow the player into and out of its area | `ZealotTracker` |
 
-- A feature reads `GameEvent`s and the shared state, `tab` and `container`. It returns its HUD block from `hud(now)`, built with `block { row("Label") { value(..) } }`, and its slot marks from `slots(now)`. `Readouts` in `edge` hands both to the UI layers when they change. Minecraft, the clock, the disk, placement and drawing belong to the shared layers, so extend the layer when a feature needs more from it.
+- A feature reads `GameEvent`s and the shared state: `tab`, `sidebar` and `container`. `sidebar` has every line as the server styled it, its `Key: value` lines through `info`, and the place. It returns its HUD block from `hud(now)`, built with `block { row("Label") { value(..) } }`, and its slot marks from `slots(now)`. `Readouts` in `edge` hands both to the UI layers when they change. Minecraft, the clock, the disk, placement and drawing belong to the shared layers, so extend the layer when a feature needs more from it.
+- A feature passes its `Area` to `Feature(..)`. Outside it, `Game` gives the feature no event but the tab list, the sidebar and a change of world, and shows no readout, so a feature never asks where the player is. A feature locked to an area lives in that area's folder. For a new place, add an `Area` entry with the tab list row or the sidebar place a capture shows. A dungeon, the Dungeon Hub and a part of an area, such as the Void Sepulture, are told by the sidebar's `⏣` line. Prefer whichever of the two a capture shows arriving first. A feature in `edge` that sends or blocks input must ask the same lock, and none does yet.
 - To say something once, a handler calls `notice(detail)` for a chat line or `alert(title, detail)` for a title with a sound. `Readouts` delivers both at the end of the tick.
 - To keep a server line out of chat, its handler calls `hide()`. Every feature still sees the line. A feature that hides by default tells the player once and names its setting, as `AbilitySpam` does.
 - A feature that reads nothing from the server, such as a camera or lighting change, is a mixin in `edge/mixin` that asks its setting, and an empty class in `core` that lists it. It has no fixture, so its game test `<Class>Test` proves the change with a check and a screenshot, as `FullbrightTest` does.
@@ -34,10 +35,10 @@ A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with 
 - State that outlives the session is one immutable `@Serializable` class given to `saved()`, with a default for every field. Replace its `value` to change it, because a change made in place is never written.
 - Text the server sent is a `ServerText`, and text the mod shows is a `Text` from `core.text`. Match the server's text on `ServerText.plain`, anchored at the start of the line, because a player can type anything after their name.
 - When a line reaches a feature's branch and then fails to parse, call `count("unparsed")`. That counter is how a format change on the server shows up.
-- Clear the state that belongs to one world on `WorldChanged`. `Game` runs that handler too when the player switches the feature off, because a feature that is off sees no events, and runs its `TabList` handler with the current tab list when it is switched back on.
+- Clear the state that belongs to one world on `WorldChanged`. `Game` runs that handler too when the player switches the feature off, because a feature that is off sees no events, and runs its `TabList` and `Sidebar` handlers with the current ones when it is switched back on.
 - Every feature has a fixture, `src/test/resources/features/<id>/<name>.jsonl`, cut from a real capture. `FeatureReplayTest` replays it and writes the transcript `<name>.txt`: each event, whether the feature hid it, what the feature said, and the HUD block and slot marks each time they changed. The run that writes a transcript fails once, so that you read it before you keep it. To accept a changed readout, delete the transcript and run the test again.
 - A feature that only reads events and returns a HUD block or slot marks needs no game test, because the replay covers it and `SurfacesTest` covers the layers. Write a game test when you add to `edge`.
-- Cut a fixture with `./gradlew cutFixture`, never by hand. The window is in seconds from the capture's first line, and `--types system` keeps only the chat lines. Keep the lines your feature must ignore, since they prove it ignores them. It redacts every player name from the whole capture, each typed chat message and each skin, and `FixtureLeakTest` compares every fixture with the captures in `run/`, so run the check before you delete the capture. Read the fixture before you keep it, because a name the server writes in a line no rule knows is not redacted. `PlayerNames` is the one place that knows where names sit, so teach it there.
+- Cut a fixture with `./gradlew cutFixture`, never by hand. The window is in seconds from the capture's first line, and `--types system` keeps only the chat lines. Keep the lines your feature must ignore, since they prove it ignores them. Keep the tab list for a feature locked to an area, and the sidebar with `--types ..,sidebar` when the sidebar tells its area, because a fixture without them replays as if the player never left it. It redacts every player name from the whole capture, each typed chat message and each skin, and `FixtureLeakTest` compares every fixture with the captures in `run/`, so run the check before you delete the capture. Read the fixture before you keep it, because a name the server writes in a line no rule knows is not redacted. `PlayerNames` is the one place that knows where names sit, so teach it there.
 - DragSim Utils is all rights reserved, and its source is published to be read. Read it to learn what the server sends and how a feature should behave, then write ds-mod's own code and prove it with a capture. Copy no code and no data file from it. When a feature needs a table the game can't show, tell the user.
 
 ## Release and debug
@@ -60,6 +61,7 @@ Events are the `GameEvent`s that features see, recorded as they were posted, and
 - `system` for a line in chat. Player chat arrives this way too.
 - `world` for entering a world.
 - `tablist` for the rows of the tab list in the order the client draws them, when one changes.
+- `sidebar` for the sidebar's title and its lines from the top, when one changes.
 - `actionbar` for the line above the hotbar, each time the server sends it.
 - `death` for the server's death event on an entity that is not a player, with its type, name and position.
 - `container` for a menu the player opened, or their own inventory again, and `slot` for each slot that changed. A slot carries the item's id, count, name, lore and `custom_data`. A big menu's slots arrive over a few ticks.
@@ -67,7 +69,7 @@ Events are the `GameEvent`s that features see, recorded as they were posted, and
 Raw records are for you to read. No feature sees one until it is promoted:
 
 - `chat` and `title`.
-- `sidebar`, `bossbars` and `tabheader`, the tab list's header and footer.
+- `bossbars` and `tabheader`, the tab list's header and footer.
 - `itemcomponents` for the components a `slot` leaves out, such as `tooltip_style`, `profile` and `item_model`, in Minecraft's own codec JSON.
 - `entities` for players, named entities and anything wearing or holding an item, each with the block it stands in. Glowing entities, silverfish and creepers, displays (`text`, `item`), item frames (`item`, `rotation`, `facing`) and dropped named items come too.
 - `status` for the player's block, health and XP.
@@ -85,7 +87,7 @@ An event's text is `plain` plus `spans`, with `§` codes already resolved into t
 - Finish the work that needs no capture, then end the response with one line the user answers with yes or no, such as "Record Golem tiers now? It takes about 3 minutes." On yes, start the client with the brief yourself and read the capture when the run ends.
 - The live server has real players on it, so the user does all the playing there. You start the client and they join.
 - Captures hold player names and private chat, so only a fixture goes in git.
-- `actionbar` and `death` were raw records until 2026-11-14, with another shape, so an older capture cannot be cut for them.
+- `actionbar`, `death` and `sidebar` were raw records until 2026-11-14, with another shape, so an older capture cannot be cut for them.
 - To promote a raw type, design the `GameEvent` from a capture that shows the data, post it from `edge`, and delete its recorder in `CaptureSession`. A type has one producer, and `CaptureWriter` rejects a raw record that uses an event's type.
 - When you add a capture type, add it to `CaptureTest`, which makes a real server send each type and checks the file.
 - To see a screen, write a client game test in `src/gametest` that opens it and calls `takeScreenshot`. The image lands in `build/run/clientGameTest/screenshots/`.

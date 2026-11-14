@@ -2,7 +2,7 @@
 +   1.0s >   SLAYER QUEST STARTED!
 +   1.0s >    » Slay 250 Combat XP worth of Zombies.
 +   3.0s > ☠ SLAYER BOSS SPAWNING!
-             (title) Boss Spawned, (chat) Alerts | Your slayer boss spawned.
+             (title) Boss Spawned, (chat) Slayer Boss Alert | Your slayer boss spawned.
 +   6.0s > ☠ NICE! SLAYER BOSS SLAIN!
 +   6.0s >   » Collecting reward...
 +   6.0s >   SLAYER QUEST COMPLETE!
@@ -12,7 +12,7 @@
 +  10.8s > [DRAGON] Player1: hello
 +  13.2s > [MVP+] Player2: hello
 +  17.6s > ☠ SLAYER BOSS SPAWNING!
-             (title) Boss Spawned, (chat) Alerts | Your slayer boss spawned.
+             (title) Boss Spawned, (chat) Slayer Boss Alert | Your slayer boss spawned.
 +  17.6s > EPIC DROP! Golden Ghoul Talisman
 +  20.3s > ☠ NICE! SLAYER BOSS SLAIN!
 +  20.3s >   » Collecting reward...

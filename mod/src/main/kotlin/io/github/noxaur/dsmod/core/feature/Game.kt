@@ -5,6 +5,8 @@ import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Metrics
+import io.github.noxaur.dsmod.core.game.Sidebar
+import io.github.noxaur.dsmod.core.game.SidebarState
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.TabState
@@ -15,6 +17,7 @@ import io.github.noxaur.dsmod.core.hud.HudBlock
  * Runs the features. The edge calls [post] for each event and [tick] once a tick, then hands each
  * changed [Readout] to the shared layers, so a feature's own code never runs inside the render loop. A
  * readout is rebuilt after an event its feature could see, and otherwise a few times a second for its clocks.
+ * A feature locked to an [io.github.noxaur.dsmod.core.game.Area] gets its events and shows its readout only there.
  */
 class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()) {
     class Readout(val feature: Feature) {
@@ -41,6 +44,10 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     private val tab = TabState()
     private var lastTab: TabList? = null
 
+    /** The sidebar, as of the last event the edge posted. */
+    val sidebar = SidebarState()
+    private var lastSidebar: Sidebar? = null
+
     /** What the features said since the edge last delivered and cleared it. */
     val messages = ArrayList<Message>()
 
@@ -51,6 +58,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         features.forEach {
             it.metrics = metrics
             it.tab = tab
+            it.sidebar = sidebar
             it.container = container
             it.messages = messages
         }
@@ -58,11 +66,11 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
 
     /**
      * Whether anything would read an event of [type]. A source that costs something asks before it builds
-     * one. Every feature may read [tab], so a tab list is wanted while any feature is on. A container is
-     * wanted only while a feature that handles one is on.
+     * one. Every feature may read [tab] and [sidebar], and they decide its area, so both are wanted while any
+     * feature is on. A container is wanted only while a feature that handles one is on.
      */
     fun wants(type: Class<out GameEvent>) =
-        tap != null || features.any { it.enabled && (type == TabList::class.java || type in it.handlers) }
+        tap != null || features.any { it.enabled && (type == TabList::class.java || type == Sidebar::class.java || type in it.handlers) }
 
     /** Returns false when a feature hid [event], which the edge honors for a chat line. */
     fun post(time: Long, event: GameEvent): Boolean {
@@ -74,14 +82,27 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
                 lastTab = event
                 metrics.time("tab-list") { tab.update(event.rows) }
             }
+            is Sidebar -> true.also {
+                lastSidebar = event
+                metrics.time("sidebar") { sidebar.update(event) }
+            }
             is ContainerOpened -> true.also { metrics.time("container") { container.opened(event) } }
             is SlotChanged -> true.also { metrics.time("container") { container.changed(event) } }
+            // The new world's tab list and sidebar have not arrived, so the old one's area must not outlive the hop.
+            WorldChanged -> true.also {
+                lastTab = null
+                lastSidebar = null
+                tab.update(emptyList())
+                sidebar.update(Sidebar())
+            }
             else -> false
         }
         for (i in features.indices) {
             val feature = features[i]
             if (!feature.enabled) continue
-            val handler = feature.handlers[event.javaClass]
+            // Outside its area a feature still follows the tab list, the sidebar and the world, which is how it knows it left.
+            val reaches = event is TabList || event is Sidebar || event is WorldChanged || feature.area.holds(tab, sidebar)
+            val handler = if (reaches) feature.handlers[event.javaClass] else null
             if (handler != null) metrics.time(feature.id) { handler(event, time) }
             if (handler != null || shared) readouts[i].stale = true
             if (feature.hides) {
@@ -98,16 +119,17 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             if (readout.on != feature.enabled) {
                 readout.on = feature.enabled
                 // A feature that is off sees no events. It forgets its world when it goes off, and hears the tab
-                // list again when it comes back, because the next one arrives only when a row changes.
-                val missed: GameEvent? = if (readout.on) lastTab else WorldChanged
-                if (missed != null) feature.handlers[missed.javaClass]?.let { metrics.time(feature.id) { it(missed, time) } }
+                // list and the sidebar again when it comes back, because the next ones arrive only when a row changes.
+                for (missed in if (readout.on) listOfNotNull(lastTab, lastSidebar) else listOf(WorldChanged)) {
+                    feature.handlers[missed.javaClass]?.let { metrics.time(feature.id) { it(missed, time) } }
+                }
             }
             if (!readout.stale && feature.enabled && time - readout.refreshedAt in 0 until REFRESH_MILLIS) continue
             readout.stale = !feature.enabled
             readout.refreshedAt = time
             var hud: HudBlock? = null
             var slots = emptyMap<Int, SlotMark>()
-            if (feature.enabled) {
+            if (feature.enabled && feature.area.holds(tab, sidebar)) {
                 metrics.time(readout.metric) { hud = feature.hud(time) }
                 metrics.time(readout.slotsMetric) { slots = feature.slots(time) }
             }

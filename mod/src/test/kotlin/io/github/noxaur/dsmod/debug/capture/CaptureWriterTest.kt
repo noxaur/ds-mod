@@ -20,7 +20,7 @@ class CaptureWriterTest {
         var now = 1_000L
         val writer = CaptureWriter(dir) { now }
 
-        writer.record("sidebar") { buildJsonObject { put("title", "first") } }
+        writer.record("bossbars") { buildJsonObject { put("title", "first") } }
         now = 2_000L
         writer.record(1_500L, drop)
         writer.close()
@@ -28,7 +28,7 @@ class CaptureWriterTest {
         assertEquals("1970-01-01T00-00-01Z.jsonl", writer.file.fileName.toString())
         assertEquals(
             listOf(
-                """{"t":1000,"type":"sidebar","data":{"title":"first"}}""",
+                """{"t":1000,"type":"bossbars","data":{"title":"first"}}""",
                 """{"t":1500,"type":"system","data":{"text":{"plain":"RARE DROP! Summoning Eye",""" +
                     """"spans":[{"text":"RARE DROP! ","color":"#FFAA00","bold":true},{"text":"Summoning Eye"}]}}}""",
             ),
@@ -39,7 +39,7 @@ class CaptureWriterTest {
     @Test
     fun `readCapture gives back the events and skips raw records`() {
         val writer = CaptureWriter(dir) { 1_000L }
-        writer.record("sidebar") { buildJsonObject { put("title", "first") } }
+        writer.record("bossbars") { buildJsonObject { put("title", "first") } }
         writer.record(1_500L, drop)
         writer.close()
 
