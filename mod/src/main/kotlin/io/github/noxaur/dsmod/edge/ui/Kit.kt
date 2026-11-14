@@ -157,10 +157,6 @@ object Kit {
         if (state == State.DOWN) frame(g, x, y, width, height, outline, face, shade, face) else frame(g, x, y, width, height, outline, face, light, shade)
     }
 
-    /** A white wash over something the player just acted on, fading as [strength] goes from 1 to 0. */
-    fun flash(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, strength: Float) =
-        rect(g, x, y, width, height, ARGB.white(strength.coerceIn(0f, 1f)))
-
     /** A 1px mark across a track, where a scale changes. */
     fun tick(g: GuiGraphicsExtractor, x: Int, y: Int, height: Int) = rect(g, x, y, 1, height, theme.wellLight)
 

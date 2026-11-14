@@ -28,12 +28,6 @@ Hides the message the server sends each time you use an ability that is still on
 
 The first time it hides one, a line in chat says so. Turn off Ability Spam in the settings to see the messages again.
 
-### Copy Chat
-
-Right-click a message in the open chat to copy it. The whole message is copied as plain text, also when it runs over several lines, and it flashes with `Copied` beside your mouse.
-
-It is on from the start. Turn off Copy Chat under Chat in the settings to stop it.
-
 ## The End
 
 ### Dragon Timer

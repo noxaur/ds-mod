@@ -3,7 +3,6 @@
   "package": "io.github.noxaur.dsmod.edge.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
-    "ChatComponentAccessor",
     "ContainerScreenAccessor",
     "ExplosionParticleMixin",
     "FullbrightMixin",
