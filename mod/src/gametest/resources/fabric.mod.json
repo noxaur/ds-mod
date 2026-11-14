@@ -13,6 +13,14 @@
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.CaptureTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.ChatTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.SurfacesTest"
       }
     ]
   }

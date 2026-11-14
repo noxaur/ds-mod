@@ -63,6 +63,7 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | --- | --- |
 | `core` imports nothing from Minecraft or Fabric | `core-is-pure` in `mod/…/Rules.kt` |
 | The release build sends nothing for the player | `no-automation` in `mod/…/Rules.kt` |
+| The mod's text and colors come from its text layer | `text-by-role` in `mod/…/Rules.kt` |
 | Release code cannot use debug tools | The `main` and `debug` source sets |
 | Captures stay out of git | They are written to `mod/run/`, which is git-ignored |
 | The jars a player installs boot and open settings | `runProdClientGameTest` |

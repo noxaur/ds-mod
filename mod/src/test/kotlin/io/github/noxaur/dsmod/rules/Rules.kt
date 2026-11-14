@@ -2,9 +2,17 @@ package io.github.noxaur.dsmod.rules
 
 /**
  * A line of source that must not exist. [files] is a glob under the repo root, [fix] tells the
- * author what to write instead, and [example] is a line the rule must catch.
+ * author what to write instead, and [example] is a line the rule must catch. [except] is a glob for
+ * the shared layer that the rule sends everyone else to.
  */
-class Rule(val id: String, val files: String, val forbid: Regex, val fix: String, val example: String)
+class Rule(
+    val id: String,
+    val files: String,
+    val forbid: Regex,
+    val fix: String,
+    val example: String,
+    val except: String? = null,
+)
 
 val rules = listOf(
     Rule(
@@ -25,5 +33,17 @@ val rules = listOf(
         fix = "ds-mod shows information and the player makes every move. The server bans automated actions, " +
             "so ask the user before the mod sends anything for the player.",
         example = "client.connection?.sendCommand(\"warp end\")",
+    ),
+    Rule(
+        id = "text-by-role",
+        files = "src/main/**.{kt,java}",
+        except = "src/main/kotlin/**/{core/text/Text,edge/Chat}.kt",
+        forbid = Regex(
+            """§|\bChatFormatting\.|\bTextColor\.|\.withColor\(|\bComponent\.(literal|translatable)\(|""" +
+                """\b0x[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?\b""",
+        ),
+        fix = "Say what the text means and let the text layer color it: build it with `text { body(..); value(..) }` " +
+            "from core.text and print it with `Chat.send`. If no role fits, add one to `Role`.",
+        example = "Component.literal(\"§eSold 5 scales!\")",
     ),
 )

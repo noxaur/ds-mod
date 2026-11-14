@@ -1,0 +1,56 @@
+package io.github.noxaur.dsmod.edge
+
+import io.github.noxaur.dsmod.core.container.SlotMark
+import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
+import net.minecraft.network.chat.Component
+import net.minecraft.world.inventory.Slot
+
+private const val SLOT_SIZE = 16
+
+/** Marks on the slots of the open container. They go away when the container closes. */
+object Slots {
+    private class Shown(val fill: Int, val label: Component?)
+
+    private val marks = HashMap<String, Map<Int, Shown>>()
+
+    /** Marks slots by their index in the open container's menu, replacing what [id] marked before. */
+    fun mark(id: String, slots: Map<Int, SlotMark>) {
+        marks[id] = slots.mapValues { Shown(it.value.role.argb(110), it.value.label?.toComponent()) }
+    }
+
+    fun clear(id: String) {
+        marks.remove(id)
+    }
+
+    fun register() {
+        // Fabric drops a screen's listeners on every init, so they are added again here.
+        ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
+            if (screen !is AbstractContainerScreen<*>) return@register
+            val font = Minecraft.getInstance().font
+            ScreenEvents.afterBackground(screen).register { _, graphics, _, _, _ ->
+                each(screen, graphics) { slot, shown -> graphics.fill(slot.x, slot.y, slot.x + SLOT_SIZE, slot.y + SLOT_SIZE, shown.fill) }
+            }
+            ScreenEvents.afterForeground(screen).register { _, graphics, _, _, _ ->
+                each(screen, graphics) { slot, shown -> shown.label?.let { graphics.text(font, it, slot.x, slot.y, -1, true) } }
+            }
+            ScreenEvents.remove(screen).register { marks.clear() }
+        }
+    }
+
+    private inline fun each(screen: AbstractContainerScreen<*>, graphics: GuiGraphicsExtractor, draw: (Slot, Shown) -> Unit) {
+        if (marks.isEmpty()) return
+        screen as ContainerScreenAccessor
+        graphics.pose().pushMatrix()
+        graphics.pose().translate(screen.leftPos.toFloat(), screen.topPos.toFloat())
+        for (slots in marks.values) {
+            for ((index, shown) in slots) {
+                draw(screen.menu.slots.getOrNull(index) ?: continue, shown)
+            }
+        }
+        graphics.pose().popMatrix()
+    }
+}

@@ -8,6 +8,8 @@ The server is someone else's, closed and custom, so everything ds-mod knows abou
 
 Settings use MoulConfig, the settings screen SkyHanni uses. A setting is an annotated field in `DsModConfig`, and `/dsmod` opens the screen.
 
+Load the `ui` skill before you add or change anything the player sees or hears. It is at `mod/.claude/skills/ui/SKILL.md`.
+
 ## Release and debug
 
 The code is split into two source sets, and each becomes its own mod.
