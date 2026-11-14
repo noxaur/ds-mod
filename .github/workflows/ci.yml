@@ -1,0 +1,125 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Every job ends with time-limit, which fails a job that took over 3 minutes. timeout-minutes only stops
+# a job that hangs.
+jobs:
+  # The mod's jobs run on ARM: the same game boot measured 25 seconds faster there than on ubuntu-latest.
+  mod:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - id: setup
+        uses: ./.github/actions/setup-mod
+      # The unit tests, the rules and the specs.
+      - working-directory: mod
+        run: ./gradlew check
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mod
+          path: mod/build/reports/tests
+          if-no-files-found: ignore
+      - uses: ./.github/actions/time-limit
+        with:
+          warm: ${{ steps.setup.outputs.warm }}
+
+  # Its own job, because the game takes a minute to boot on a runner and the unit tests need not wait for it.
+  perf:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - id: setup
+        uses: ./.github/actions/setup-mod
+      # The built jars in a real game, for PerfTest alone. The other game tests run in the beta pipeline,
+      # because together they take minutes.
+      - working-directory: mod
+        run: ./gradlew runProdClientGameTest -Pgametests=PerfTest
+      - if: always()
+        run: cat mod/build/run/prodClientGameTest/perf.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+      - if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && hashFiles('mod/build/run/prodClientGameTest/perf.md') != ''
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs')
+            const { owner, repo } = context.repo
+            const issue_number = context.payload.pull_request.number
+            const marker = '<!-- dsmod-perf -->'
+            const body = `${marker}\n${fs.readFileSync('mod/build/run/prodClientGameTest/perf.md', 'utf8')}`
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 })
+            const existing = comments.find(c => c.body?.includes(marker))
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body })
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body })
+            }
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: perf
+          path: |
+            mod/build/run/prodClientGameTest/logs
+            mod/build/run/prodClientGameTest/screenshots
+          if-no-files-found: ignore
+      - uses: ./.github/actions/time-limit
+        with:
+          warm: ${{ steps.setup.outputs.warm }}
+
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+        with:
+          install_args: go
+      - run: mise run check:backend
+      - uses: ./.github/actions/time-limit
+
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+        with:
+          install_args: node pnpm
+      - id: store
+        run: echo "path=$(pnpm store path)" >> "$GITHUB_OUTPUT"
+      - id: cache
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.store.outputs.path }}
+          key: web-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('mise.toml', 'web/pnpm-lock.yaml') }}
+      - run: mise run check:web
+      - uses: ./.github/actions/time-limit
+        with:
+          warm: ${{ steps.cache.outputs.cache-hit }}
+
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+        with:
+          install: false
+      - run: mise run check:docs
+        env:
+          MISE_TASK_RUN_AUTO_INSTALL: "false"
+      - uses: ./.github/actions/time-limit

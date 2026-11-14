@@ -10,7 +10,7 @@ run = "./gradlew check"
 
 [tasks."check:backend"]
 dir = "backend"
-run = ["test -z \"$(gofmt -l .)\" || { gofmt -l .; echo 'run gofmt -w .'; exit 1; }", "go vet ./...", "go test ./..."]
+run = ["test -z \"$(gofmt -l .)\" || { gofmt -l .; echo 'run gofmt -w .'; exit 1; }", "go vet ./...", "go test -timeout 30s ./..."]
 
 [tasks."check:web"]
 dir = "web"

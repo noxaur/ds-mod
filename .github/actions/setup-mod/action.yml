@@ -1,0 +1,22 @@
+name: Set up the mod build
+description: Installs the pinned JDK and restores everything Gradle and Loom download or remap.
+outputs:
+  warm:
+    description: "'true' when the cache held everything, so the job has nothing to download."
+    value: ${{ steps.cache.outputs.cache-hit }}
+runs:
+  using: composite
+  steps:
+    - uses: jdx/mise-action@v5
+      with:
+        install_args: java
+    # One cache for the dependencies, the Gradle distribution, Minecraft and its remapped jars. The key is
+    # every file that decides what gets downloaded, so a hit means the build needs no network.
+    - id: cache
+      uses: actions/cache@v6
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          mod/.gradle/loom-cache
+        key: mod-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('mise.toml', 'mod/gradle.properties', 'mod/gradle/wrapper/gradle-wrapper.properties', 'mod/build.gradle.kts', 'mod/settings.gradle.kts') }}

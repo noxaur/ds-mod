@@ -1,0 +1,29 @@
+name: Time limit
+description: Fails the job when it has run longer than the limit. Put it last.
+inputs:
+  warm:
+    description: "'true' when the job's cache was hit. A job that had to download its dependencies is not held to the limit."
+    default: "true"
+  seconds:
+    description: The limit.
+    default: "180"
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        WARM: ${{ inputs.warm }}
+        LIMIT: ${{ inputs.seconds }}
+      run: |
+        started=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs" \
+          --jq "[.jobs[] | select(.name == \"$GITHUB_JOB\" or (.name | startswith(\"$GITHUB_JOB (\"))) | .started_at] | min")
+        took=$(( $(date +%s) - $(date -d "$started" +%s) ))
+        echo "$GITHUB_JOB took ${took}s of ${LIMIT}s." | tee -a "$GITHUB_STEP_SUMMARY"
+        [ "$took" -le "$LIMIT" ] && exit 0
+        if [ "$WARM" != true ]; then
+          echo "Over the limit, and allowed: the cache was cold, so this run downloaded its dependencies." | tee -a "$GITHUB_STEP_SUMMARY"
+          exit 0
+        fi
+        echo "::error::$GITHUB_JOB took ${took}s. CI has ${LIMIT}s. Make the job faster or move the slow part to the beta pipeline. Do not raise the limit."
+        exit 1
