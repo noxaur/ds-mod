@@ -37,10 +37,17 @@ class FeatureReplayTest {
 
     private fun fresh(id: String) = Game(listOf(features(DsModConfig()).single { it.id == id }.also { it.enabled = true }))
 
-    private fun fixtures(id: String): List<Path> {
-        val dir = root.resolve(id)
+    /** A feature that reads nothing from the server has nothing to replay, so a game test must show it instead. */
+    private fun fixtures(feature: Feature): List<Path> {
+        val dir = root.resolve(feature.id)
         val fixtures = if (dir.isDirectory()) dir.listDirectoryEntries("*.jsonl").sorted() else emptyList()
-        assertTrue(fixtures.isNotEmpty(), "$id has no fixture. Put an excerpt of a capture at $dir/<name>.jsonl.")
+        if (fixtures.isNotEmpty()) return fixtures
+        assertTrue(
+            feature.handlers.isEmpty() && !feature.hasHud,
+            "${feature.id} has no fixture. Put an excerpt of a capture at $dir/<name>.jsonl.",
+        )
+        val gameTest = Path.of("src/gametest/kotlin/io/github/noxaur/dsmod/gametest/${feature.javaClass.simpleName}Test.kt")
+        assertTrue(gameTest.exists(), "${feature.id} reads nothing from the server, so it needs a game test at $gameTest.")
         return fixtures
     }
 
@@ -65,7 +72,7 @@ class FeatureReplayTest {
     fun `every feature shows what its transcript says`(): List<DynamicTest> = features(DsModConfig()).map { feature ->
         dynamicTest(feature.id) {
             val written = ArrayList<Path>()
-            for (fixture in fixtures(feature.id)) {
+            for (fixture in fixtures(feature)) {
                 val game = fresh(feature.id)
                 val events = readCapture(fixture)
                 val start = events.first().first
@@ -129,7 +136,7 @@ class FeatureReplayTest {
     @TestFactory
     fun `every feature stays inside the time budget`(): List<DynamicTest> = features(DsModConfig()).map { feature ->
         dynamicTest(feature.id) {
-            for (fixture in fixtures(feature.id)) {
+            for (fixture in fixtures(feature)) {
                 val game = fresh(feature.id)
                 val events = readCapture(fixture)
                 fun replay(times: Int) = repeat(times) {

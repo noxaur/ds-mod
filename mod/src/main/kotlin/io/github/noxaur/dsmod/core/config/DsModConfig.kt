@@ -27,6 +27,11 @@ class DsModConfig : Config() {
     val end = End()
 
     @Expose
+    @Category(name = "General", desc = "How the game looks.")
+    @JvmField
+    val general = General()
+
+    @Expose
     @Category(name = "Inventory", desc = "What the slots of a menu show.")
     @JvmField
     val inventory = Inventory()
@@ -72,6 +77,14 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var zealotTracker = true
+    }
+
+    class General {
+        @Expose
+        @ConfigOption(name = "Fullbright", desc = "Light the whole world, so caves and nights are as bright as day.")
+        @ConfigEditorBoolean
+        @JvmField
+        var fullbright = false
     }
 
     class Inventory {

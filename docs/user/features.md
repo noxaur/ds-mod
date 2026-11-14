@@ -75,6 +75,12 @@ A quest you fail counts for nothing. It shows nothing until the first boss spawn
 
 The all-time number is saved about once a minute and when you close the game, in `config/dsmod/data/slayer-tracker.json` in your game folder. Delete the file to start again.
 
+## General
+
+### Fullbright
+
+Lights the whole world, so a cave or the night is as bright as day. It is off until you turn it on.
+
 ## Inventory
 
 ### Rarity Outlines
