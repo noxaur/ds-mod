@@ -2,8 +2,10 @@ package io.github.noxaur.dsmod.core.feature
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.container.SlotMark
+import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
+import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.ServerSpan
@@ -82,6 +84,8 @@ class FeatureReplayTest {
             "(tab list) " + changed.joinToString("; ")
         }
         is ContainerOpened -> "(opened ${event.title?.let { "\"${it.plain}\"" } ?: "your inventory"}, ${event.size} slots)"
+        is ActionBar -> "(action bar) ${event.text.plain}"
+        is EntityDied -> "(died) ${event.name.plain}"
         is SlotChanged -> "(slot ${event.slot}) " + (event.item?.let { "${it.count} x ${name(it)}" } ?: "emptied")
     }
 

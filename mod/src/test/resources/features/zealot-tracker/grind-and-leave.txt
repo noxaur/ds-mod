@@ -75,4 +75,4 @@
                Eyes per Hour: 66.4
                All-Time Eyes: 11
                [Lvl 1] Enderman: 1 (1 all-time)
-saved zealot-tracker.json = {"drops":{"Summoning Eye":11,"[Lvl 1] Enderman":1}}
+saved zealot-tracker.json = {"drops":{"Summoning Eye":11,"[Lvl 1] Enderman":1},"kills":0}

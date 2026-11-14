@@ -37,6 +37,23 @@ data class TabList(val rows: List<ServerText>) : GameEvent
 @SerialName("container")
 data class ContainerOpened(val id: Int, val title: ServerText? = null, val size: Int) : GameEvent
 
+/**
+ * The line above the hotbar, each time the server sends it, even with the text it sent before. The server sends
+ * one every half second, and one more the moment something changes it. Posted only while a feature reads it.
+ */
+@Serializable
+@SerialName("actionbar")
+data class ActionBar(val text: ServerText) : GameEvent
+
+/**
+ * The server's death event on an entity that is not a player: its [entity] type such as `minecraft:enderman`,
+ * the [name] over its head and where it stood. A mob that only left the client's view has none. Posted only
+ * while a feature reads it.
+ */
+@Serializable
+@SerialName("death")
+data class EntityDied(val entity: String, val name: ServerText, val x: Double, val y: Double, val z: Double) : GameEvent
+
 /** A slot of the open container now holds [item], or is empty when it is null. Posted only for a slot that changed. */
 @Serializable
 @SerialName("slot")
