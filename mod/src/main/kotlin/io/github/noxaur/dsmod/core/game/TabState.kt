@@ -5,7 +5,7 @@ class TabState {
     private val info = HashMap<String, String>()
 
     /** Whether the server says the player is in [area]. Before it names any area, the player is in none. */
-    fun isIn(area: Area) = area.row == null || area.row == info["Area"]
+    fun isIn(area: Area) = area.key == null || info[area.key] == area.value
 
     /** The value of the info row `key: value`, or null when the tab list has no such row. */
     fun info(key: String): String? = info[key]

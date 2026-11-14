@@ -26,9 +26,9 @@ val rules = listOf(
     Rule(
         id = "area-by-declaration",
         files = "src/main/kotlin/**/core/feature/**.kt",
-        forbid = Regex("""\binfo\("Area"\)|\.row\b|"(The End|Village|Hub|Crypts|Void Sepulture|The Catacombs)""""),
+        forbid = Regex("""\binfo\("(Area|Dungeon)"\)|\.row\b|"(The End|Village|The Crypts|Catacombs)""""),
         fix = "A feature never asks where the player is. Pass its `Area` to `Feature(..)` and `Game` gives it events and a " +
-            "readout only there. For a place `Area` lacks, add an entry with the `Area` row a capture shows.",
+            "readout only there. For a place `Area` lacks, add an entry with the tab list row a capture shows.",
         example = """if (tab.info("Area") != "The End") return null""",
     ),
     Rule(

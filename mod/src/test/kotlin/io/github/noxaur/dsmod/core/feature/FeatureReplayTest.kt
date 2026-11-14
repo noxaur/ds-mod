@@ -67,7 +67,7 @@ class FeatureReplayTest {
         val events = readCapture(fixture)
         val row = feature.area.row
         if (row == null || events.any { it.second is TabList }) return events
-        return listOf(events.first().first to tabList("Area: $row")) + events
+        return listOf(events.first().first to tabList(row)) + events
     }
 
     private fun name(item: Item) = item.name?.plain?.ifBlank { null } ?: item.id
