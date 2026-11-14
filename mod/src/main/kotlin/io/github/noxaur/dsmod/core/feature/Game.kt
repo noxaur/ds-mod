@@ -61,8 +61,10 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     fun wants(type: Class<out GameEvent>) =
         tap != null || features.any { it.enabled && (type == TabList::class.java || type in it.handlers) }
 
-    fun post(time: Long, event: GameEvent) {
+    /** Returns false when a feature hid [event], which the edge honors for a chat line. */
+    fun post(time: Long, event: GameEvent): Boolean {
         tap?.invoke(time, event)
+        var shown = true
         // Any feature may read the shared state, so a change to it makes every readout stale.
         val shared = when (event) {
             is TabList -> true.also { metrics.time("tab-list") { tab.update(event.rows) } }
@@ -76,7 +78,12 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             val handler = feature.handlers[event.javaClass]
             if (handler != null) metrics.time(feature.id) { handler(event, time) }
             if (handler != null || shared) readouts[i].stale = true
+            if (feature.hides) {
+                feature.hides = false
+                shown = false
+            }
         }
+        return shown
     }
 
     fun tick(time: Long) {

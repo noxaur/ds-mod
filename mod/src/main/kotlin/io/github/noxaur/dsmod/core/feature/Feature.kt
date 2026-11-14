@@ -15,8 +15,8 @@ import kotlin.reflect.KMutableProperty0
 
 /**
  * One thing the mod does for the player. A feature turns events into its own state in [on], and
- * turns that state into what the player sees in [hud] and [slots], or says something once with [notice] and
- * [alert]. The shared layers draw and print all of it, so a feature touches no screen itself. [toggle] is its switch in the settings, and while that is off, none of these run.
+ * turns that state into what the player sees in [hud] and [slots], says something once with [notice] and
+ * [alert], or keeps a server line out of chat with [hide]. The shared layers draw and print all of it, so a feature touches no screen itself. [toggle] is its switch in the settings, and while that is off, none of these run.
  */
 abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boolean>) {
     /** The name the player knows the feature by: [id] in Title Case. */
@@ -32,6 +32,7 @@ abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boo
     internal lateinit var tab: TabState
     internal lateinit var container: ContainerState
     internal lateinit var messages: MutableList<Message>
+    internal var hides = false
 
     /** What this feature keeps between sessions, or null when it keeps nothing. The edge loads and writes it. */
     var state: Saved<*>? = null
@@ -57,6 +58,11 @@ abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boo
 
     /** Adds to the counter `<id>.<name>`. Count a line that should have parsed and did not as `unparsed`. */
     protected fun count(name: String) = metrics.count("$id.$name")
+
+    /** Keeps the chat line this handler is reading out of the player's chat. Every feature still sees the line. */
+    protected fun hide() {
+        hides = true
+    }
 
     /** Prints a line to chat that needs no action: this feature's name, then [detail]. Call it from a handler. */
     protected fun notice(detail: Text) {

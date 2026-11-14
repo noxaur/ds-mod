@@ -26,8 +26,8 @@ import kotlin.test.fail
 
 /**
  * Replays capture excerpts through each feature. `features/<id>/<name>.jsonl` is the excerpt, and
- * `<name>.txt` beside it is the transcript: every event, what the feature said, and the HUD block and slot marks
- * each time they changed.
+ * `<name>.txt` beside it is the transcript: every event, whether the feature hid it, what the feature said, and
+ * the HUD block and slot marks each time they changed.
  */
 class FeatureReplayTest {
     private val root = Path.of("src/test/resources/features")
@@ -74,9 +74,10 @@ class FeatureReplayTest {
                 val infoRows = HashSet<String>()
                 val transcript = buildString {
                     for ((time, event) in events) {
-                        game.post(time, event)
+                        val kept = game.post(time, event)
                         game.tick(time)
                         appendLine("+%6.1fs > %s".format((time - start) / 1000.0, describe(event, infoRows)))
+                        if (!kept) appendLine("             (hidden from chat)")
                         for (message in game.messages) {
                             when (message) {
                                 is Notice -> appendLine("             (chat) ${message.feature} | ${message.detail.plain}")

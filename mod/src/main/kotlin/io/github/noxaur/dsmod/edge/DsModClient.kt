@@ -66,9 +66,9 @@ object DsModClient : ClientModInitializer {
             snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }
         }
 
-        ClientReceiveMessageEvents.GAME.register { message, overlay ->
+        ClientReceiveMessageEvents.ALLOW_GAME.register { message, overlay ->
             // The action bar is not chat, so features do not see it.
-            if (!overlay && game.wants(SystemMessage::class.java)) game.post(System.currentTimeMillis(), SystemMessage(message.toText()))
+            overlay || !game.wants(SystemMessage::class.java) || game.post(System.currentTimeMillis(), SystemMessage(message.toText()))
         }
         ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ -> game.post(System.currentTimeMillis(), WorldChanged) }
         ClientTickEvents.END_CLIENT_TICK.register {

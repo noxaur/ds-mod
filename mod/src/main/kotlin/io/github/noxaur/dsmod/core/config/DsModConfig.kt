@@ -17,6 +17,11 @@ class DsModConfig : Config() {
     override fun getTitle(): StructuredText = StructuredText.of("ds-mod")
 
     @Expose
+    @Category(name = "Chat", desc = "What reaches your chat.")
+    @JvmField
+    val chat = Chat()
+
+    @Expose
     @Category(name = "The End", desc = "Dragons, eyes, the egg and the Protector.")
     @JvmField
     val end = End()
@@ -40,6 +45,14 @@ class DsModConfig : Config() {
     @Category(name = "HUD", desc = "Where each block sits on the screen.")
     @JvmField
     val hud = Hud()
+
+    class Chat {
+        @Expose
+        @ConfigOption(name = "Ability Spam", desc = "Hide the message the server sends each time you use an ability that is on cooldown.")
+        @ConfigEditorBoolean
+        @JvmField
+        var abilitySpam = true
+    }
 
     class End {
         @Expose
