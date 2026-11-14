@@ -17,8 +17,11 @@ enum class Area(val key: String?, val value: String?, val place: String?, val fo
     /** Its tab list has no info row, so only the sidebar tells it. */
     DUNGEON_HUB(null, null, "Dungeon Hub", "dungeonhub"),
 
-    /** A dungeon run. Its tab list has no `Area` row, and its sidebar adds the floor, as in `The Catacombs (F1)`. */
-    CATACOMBS("Dungeon", "Catacombs", null, "dungeon"),
+    /**
+     * A dungeon run. The sidebar adds the floor, as in `The Catacombs (F1)`, and says so with the new world. The
+     * tab list's `Dungeon: Catacombs` row came 1.5 s later in a capture, after the run's first lines.
+     */
+    CATACOMBS(null, null, "The Catacombs", "dungeon"),
     ;
 
     /** The tab list row that puts the player here, for a test to send, or null when the tab list does not tell. */

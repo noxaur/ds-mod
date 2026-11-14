@@ -23,6 +23,11 @@ class AreaTest {
     }
 
     @Test
+    fun `a dungeon is told by the sidebar before its tab list arrives`() {
+        assertEquals(listOf(Area.CATACOMBS), areas(listOf("         Dungeons (7)         "), listOf(" ⏣ The Catacombs (F1)")))
+    }
+
+    @Test
     fun `the Void Sepulture is a part of The End`() {
         assertEquals(listOf(Area.END, Area.VOID_SEPULTURE), areas(listOf("Area: The End"), listOf("⏣ Void Sepulture")))
     }
