@@ -31,6 +31,12 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var dragonTimer = true
+
+        @Expose
+        @ConfigOption(name = "Golem Status", desc = "Show the Endstone Protector's stage and the kills left before it emerges.")
+        @ConfigEditorBoolean
+        @JvmField
+        var golemStatus = true
     }
 
     /** Where a feature's HUD block has its top-left corner, as fractions of the scaled screen, and how big it is. */
