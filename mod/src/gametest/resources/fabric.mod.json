@@ -22,6 +22,10 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.KitTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.CaptureTest"
       },
       {
