@@ -58,6 +58,7 @@ object DsModClient : ClientModInitializer {
         Tooltips.register()
         World.register()
         ArmorSwapGuards.register(config.instance.inventory)
+        EyeGuards.register(config.instance.end)
         readouts = Readouts(game, config.instance.hud).also { it.register() }
         tabs = TabListPoller(game)
         containers = ContainerPoller(game)
@@ -68,7 +69,8 @@ object DsModClient : ClientModInitializer {
         }
 
         ClientReceiveMessageEvents.ALLOW_GAME.register { message, overlay ->
-            // The action bar is not chat, so features do not see it.
+            // A server may send the action bar as a chat line marked as an overlay, or as its own packet, which `Packets` sees.
+            if (overlay) Packets.actionBar(message)
             overlay || !game.wants(SystemMessage::class.java) || game.post(System.currentTimeMillis(), SystemMessage(message.toText()))
         }
         ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ -> game.post(System.currentTimeMillis(), WorldChanged) }

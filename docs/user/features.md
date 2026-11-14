@@ -62,6 +62,12 @@ A fight counts only when the server's summary has your own `Your Damage` line, s
 
 The all-time numbers are saved about once a minute and when you close the game, in `config/dsmod/data/boss-drops.json` in your game folder. Delete the file to start again.
 
+### Protect Placed Eyes
+
+Ignores a second click on the altar frame you just clicked with a Summoning Eye or a Golden Eye. On the server that second click takes your eye back out, without a word in chat.
+
+The frame stays protected for as long as you keep clicking it or hold the button, and for a little under a second after. Wait a second and click again to take the eye back on purpose. Clicks on any other block are never held back. Turn off Protect Placed Eyes in the settings to click freely.
+
 ### Zealot Tracker
 
 Counts your Summoning Eyes and your other rare drops while you grind in The End:
@@ -69,9 +75,10 @@ Counts your Summoning Eyes and your other rare drops while you grind in The End:
 - `Eyes: 11` is the eyes you have had since you started the game.
 - `Eyes per Hour: 66.0` is those eyes divided by the time you have spent in The End, so standing in the hub does not pull it down. It shows `-` for the first minute in The End.
 - `All-Time Eyes: 54` is every eye the tracker has seen, across sessions.
+- `Kills: 164 (2,310 all-time)` estimates the zealots you have killed, and `Kills per Eye: 14.9` divides them by your eyes. Both appear after your first kill.
 - A row such as `[Lvl 1] Enderman: 1 (1 all-time)` appears once you get another rare drop.
 
-It counts only your own drop messages, such as `RARE DROP!`, `EPIC DROP!` and `RNGESUS DROP!`, and only in The End, never what another player types in chat. It does not count kills or show profit. It shows nothing outside The End.
+It counts only your own drop messages, such as `RARE DROP!`, `EPIC DROP!` and `RNGESUS DROP!`, and only in The End, never what another player types in chat. The server never says who killed a zealot, so a kill is one that died at the same moment you gained Combat XP. In a crowd it can be a few kills off. Zealot Bruisers are not counted, and it does not show profit. It shows nothing outside The End.
 
 The all-time numbers are saved about once a minute and when you close the game, in `config/dsmod/data/zealot-tracker.json` in your game folder. Delete the file to start again.
 
