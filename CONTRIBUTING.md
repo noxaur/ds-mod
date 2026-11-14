@@ -67,7 +67,4 @@ cd mod && ./gradlew runClient
 
 `mise install` gives you the pinned JDK, Go, Node and pnpm. `runClient` starts the game with the debug build and signs in with your Microsoft account. Run `mise run check` before you push. Each failure names its fix.
 
-- [Development docs](docs/operations/development.md)
-- [AGENTS.md](AGENTS.md)
-- [Architecture](docs/internals/architecture.md)
-- [api/openapi.yaml](api/openapi.yaml)
+See the [development docs](docs/operations/development.md).
