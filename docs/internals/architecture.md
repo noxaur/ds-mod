@@ -24,6 +24,8 @@ A feature handles events, and `Game` rebuilds its HUD block and slot marks after
 
 A feature returns what it shows instead of calling a UI layer. The replay test can then read it without Minecraft, and a feature that is switched off shows nothing without having to remember to hide. `Game` compares each rebuilt readout with the last one, and `Readouts` in the edge hands only a changed one to the layers.
 
+A chat line or an alert is collected the same way and delivered at the end of the tick. Printed from inside the handler, it would land above the server line that caused it, because the handler runs before that line reaches the chat.
+
 Placement belongs to `Readouts`, which keeps one position per feature id. A feature returns a block and knows nothing about the screen.
 
 `Slots` drops its marks when a container screen closes, and marks handed over earlier may be for the container that was open before. So `Readouts` clears the marks when a container screen opens and hands them over again on the next tick, after the poll has seen the new container.

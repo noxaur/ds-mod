@@ -43,6 +43,16 @@ It counts only your own drop messages, such as `RARE DROP!`, `EPIC DROP!` and `R
 
 The all-time numbers are saved about once a minute and when you close the game, in `config/dsmod/data/zealot-tracker.json` in your game folder. Delete the file to start again.
 
+## Loot
+
+### Loot Alerts
+
+Shows a drop's name in the middle of the screen and plays a sound when you get a drop of the tier you chose or better. A line in chat says the alert came from Loot Alerts.
+
+Pick the tier with Alert Tier in the settings: Rare, Epic or RNGesus. It starts at Epic, so a Summoning Eye, which is a Rare drop, does not alert you.
+
+It alerts only for your own drop messages, such as `EPIC DROP!`, never for what another player types in chat.
+
 ## Slayers
 
 ### Slayer Tracker

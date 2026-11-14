@@ -38,6 +38,9 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
 
     private val tab = TabState()
 
+    /** What the features said since the edge last delivered and cleared it. */
+    val messages = ArrayList<Message>()
+
     /** The open container, as of the last event the edge posted. */
     val container = ContainerState()
 
@@ -46,6 +49,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             it.metrics = metrics
             it.tab = tab
             it.container = container
+            it.messages = messages
         }
     }
 
