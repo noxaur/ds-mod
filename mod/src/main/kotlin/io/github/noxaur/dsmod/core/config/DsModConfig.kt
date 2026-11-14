@@ -85,6 +85,12 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var bossDrops = true
+
+        @Expose
+        @ConfigOption(name = "Protect Placed Eyes", desc = "Ignore a second click on the altar frame you just clicked with an eye, so you do not take the eye back out.")
+        @ConfigEditorBoolean
+        @JvmField
+        var protectPlacedEyes = true
     }
 
     class General {

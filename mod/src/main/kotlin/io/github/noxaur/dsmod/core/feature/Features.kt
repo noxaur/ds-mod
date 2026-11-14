@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.feature.chat.AbilitySpam
 import io.github.noxaur.dsmod.core.feature.end.BossDrops
 import io.github.noxaur.dsmod.core.feature.end.DragonTimer
 import io.github.noxaur.dsmod.core.feature.end.GolemStatus
+import io.github.noxaur.dsmod.core.feature.end.ProtectPlacedEyes
 import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
 import io.github.noxaur.dsmod.core.feature.general.Alerts
 import io.github.noxaur.dsmod.core.feature.general.ExplosionParticleHider
@@ -20,6 +21,7 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     BossDrops(config.end::bossDrops),
     DragonTimer(config.end::dragonTimer),
     GolemStatus(config.end::golemStatus),
+    ProtectPlacedEyes(config.end::protectPlacedEyes),
     ZealotTracker(config.end::zealotTracker),
     Alerts(config.general::alerts, config.general::fireballAlert, config.general::slayerBossAlert),
     ExplosionParticleHider(config.general::explosionParticleHider),
