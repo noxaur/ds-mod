@@ -62,6 +62,12 @@ A fight counts only when the server's summary has your own `Your Damage` line, s
 
 The all-time numbers are saved about once a minute and when you close the game, in `config/dsmod/data/boss-drops.json` in your game folder. Delete the file to start again.
 
+### Protect Placed Eyes
+
+Ignores a second click on the altar frame you just clicked with a Summoning Eye or a Golden Eye. On the server that second click takes your eye back out, without a word in chat.
+
+The frame is protected for a little under a second, so a click after that still takes the eye back when you mean to. Clicks on any other block are never held back. Turn off Protect Placed Eyes in the settings to click freely.
+
 ### Zealot Tracker
 
 Counts your Summoning Eyes and your other rare drops while you grind in The End:
