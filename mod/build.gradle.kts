@@ -1,3 +1,5 @@
+import java.time.Duration
+
 plugins {
     id("net.fabricmc.fabric-loom")
     kotlin("jvm")
@@ -169,6 +171,23 @@ dependencies {
     productionRuntimeMods("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
     productionRuntimeMods("net.fabricmc:fabric-language-kotlin:${property("fabric_kotlin_version")}")
 }
+// `-Pgametests=PerfTest,ChatTest` keeps only those tests, which is how CI stays inside its time limit.
+tasks.named<ProcessResources>("processGametestResources") {
+    val only = providers.gradleProperty("gametests").map { it.split(",") }.orNull
+    inputs.property("gametests", only ?: emptyList<String>())
+    if (only != null) {
+        val manifest = destinationDir.resolve("fabric.mod.json")
+        doLast {
+            @Suppress("UNCHECKED_CAST")
+            val json = groovy.json.JsonSlurper().parse(manifest) as MutableMap<String, Any>
+            val entrypoints = json["entrypoints"] as MutableMap<String, List<Map<String, String>>>
+            val kept = entrypoints.getValue("fabric-client-gametest").filter { it.getValue("value").substringAfterLast('.') in only }
+            check(kept.size == only.size) { "-Pgametests=$only names a test that fabric.mod.json does not list" }
+            entrypoints["fabric-client-gametest"] = kept
+            manifest.writeText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json)))
+        }
+    }
+}
 val gametestJar = tasks.register<Jar>("gametestJar") {
     archiveClassifier = "gametest"
     destinationDirectory = layout.buildDirectory.dir("devlibs")
@@ -185,8 +204,11 @@ tasks.register<net.fabricmc.loom.task.prod.ClientProductionRunTask>("runProdClie
     // Loom would add the unshaded jar by default, so list the mods explicitly.
     mods.setFrom(debugJar, gametestJar, configurations.productionRuntimeMods)
     jvmArgs.add("-Dfabric.client.gametest")
+    // PerfTest weighs the jar a player installs.
+    jvmArgs.add(tasks.shadowJar.flatMap { it.archiveFile }.map { "-Ddsmod.jar=${it.asFile.path}" })
     runDir = layout.buildDirectory.dir("run/prodClientGameTest")
-    useXVFB = false
+    // A CI runner has no display.
+    useXVFB = providers.environmentVariable("CI").isPresent
 }
 
 // `./gradlew cutFixture --args="<capture> <feature id> <name> <from>-<to> [--types a,b] [--info Key,Key] [--system regex]"`
@@ -199,6 +221,8 @@ tasks.register<JavaExec>("cutFixture") {
 
 tasks.test {
     useJUnitPlatform()
+    // The unit tests are the fast loop. One that needs longer belongs in a game test.
+    timeout = Duration.ofSeconds(30)
     // RulesTest reads the sources, so a source change must rerun it.
     inputs.dir("src")
     // Print the whole failure, so a broken rule shows its fix in the terminal.

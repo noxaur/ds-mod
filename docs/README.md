@@ -15,4 +15,4 @@ Internal docs record the decisions, the constraints and the traps that the code 
 
 ### Runbooks
 
-- [Development](operations/development.md): set up a checkout, run each part, record a capture and run the checks.
+- [Development](operations/development.md): set up a checkout, run each part, record a capture, run the checks, and how CI and the beta releases work.
