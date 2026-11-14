@@ -66,7 +66,7 @@ The all-time numbers are saved about once a minute and when you close the game, 
 
 Ignores a second click on the altar frame you just clicked with a Summoning Eye or a Golden Eye. On the server that second click takes your eye back out, without a word in chat.
 
-The frame is protected for a little under a second, so a click after that still takes the eye back when you mean to. Clicks on any other block are never held back. Turn off Protect Placed Eyes in the settings to click freely.
+The frame stays protected for as long as you keep clicking it or hold the button, and for a little under a second after. Wait a second and click again to take the eye back on purpose. Clicks on any other block are never held back. Turn off Protect Placed Eyes in the settings to click freely.
 
 ### Zealot Tracker
 

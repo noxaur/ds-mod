@@ -9,7 +9,8 @@ import net.minecraft.world.level.block.LeverBlock
 /**
  * A lever stands in for the altar frame, because it shows every click that reaches the server. The player holds
  * an item named as the server names an eye and clicks twice. Without the feature the lever ends where it began,
- * and with it the second click is dropped. A click after the guard has run out gets through again.
+ * and with it the second click is dropped, as is every click while the button stays down. A click after the
+ * guard has run out gets through again.
  */
 class ProtectPlacedEyesTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
@@ -37,6 +38,11 @@ class ProtectPlacedEyesTest : FabricClientGameTest {
                 click()
                 check(on()) { "The second click got through" }
                 context.takeScreenshot("protect-placed-eyes")
+
+                // Held for two seconds, the button clicks about ten times, and none may get through.
+                context.input.holdMouseFor(1, 40)
+                context.waitTicks(3)
+                check(on()) { "A click got through while the button was held" }
 
                 context.waitTicks(25)
                 click()
