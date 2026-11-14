@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.notenoughupdates.moulconfig.common.IMinecraft
 import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.Game
@@ -16,6 +17,7 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
 import org.slf4j.LoggerFactory
+import java.lang.reflect.Field
 
 object DsModClient : ClientModInitializer {
     private const val FLUSH_TICKS = 20 * 60
@@ -34,7 +36,13 @@ object DsModClient : ClientModInitializer {
     private lateinit var containers: ContainerPoller
     private var ticks = 0
 
-    fun openSettings() = config.openConfigGui()
+    /** Opens the settings, scrolled to [setting] of `DsModConfig` when it is given. */
+    fun openSettings(setting: Field? = null) {
+        // Each call builds a new editor, so the one that is told where to go must be the one that opens.
+        val editor = config.getEditor()
+        if (setting != null) editor.goToOption(editor.getOptionFromField(setting)!!)
+        IMinecraft.INSTANCE.openWrappedScreen(editor)
+    }
 
     fun openHudEditor() = Minecraft.getInstance().setScreenAndShow(HudEditorScreen(readouts, config.instance.hud, config::saveToFile))
 
@@ -58,9 +66,9 @@ object DsModClient : ClientModInitializer {
             snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }
         }
 
-        ClientReceiveMessageEvents.GAME.register { message, overlay ->
+        ClientReceiveMessageEvents.ALLOW_GAME.register { message, overlay ->
             // The action bar is not chat, so features do not see it.
-            if (!overlay && game.wants(SystemMessage::class.java)) game.post(System.currentTimeMillis(), SystemMessage(message.toText()))
+            overlay || !game.wants(SystemMessage::class.java) || game.post(System.currentTimeMillis(), SystemMessage(message.toText()))
         }
         ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ -> game.post(System.currentTimeMillis(), WorldChanged) }
         ClientTickEvents.END_CLIENT_TICK.register {

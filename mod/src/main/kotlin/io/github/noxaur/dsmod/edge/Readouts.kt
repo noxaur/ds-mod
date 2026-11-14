@@ -2,7 +2,9 @@ package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.DsModConfig.Position
+import io.github.noxaur.dsmod.core.feature.Alert
 import io.github.noxaur.dsmod.core.feature.Game
+import io.github.noxaur.dsmod.core.feature.Notice
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.HudScale
 import io.github.noxaur.dsmod.core.hud.hud
@@ -18,7 +20,8 @@ private const val MIN_HUD_SCALE = 0.5f
 private const val MAX_HUD_SCALE = 3f
 
 /**
- * Hands each feature's readout to [Hud] and [Slots] when it changes. Placement lives here: a block the
+ * Hands each feature's readout to [Hud] and [Slots] when it changes, and what the features said to [Chat]
+ * and [Alerts]. A message waits for the end of the tick, so it lands under the server line it answers. Placement lives here: a block the
  * player has moved has its own place, and the rest stack down from the top-left. A block's drawn scale is
  * its own times the HUD's, snapped to whole screen pixels.
  */
@@ -49,6 +52,13 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
 
     /** Call once a tick, after [Game.tick]. */
     fun push() {
+        for (message in game.messages) {
+            when (message) {
+                is Notice -> Chat.notice(message.feature, message.detail)
+                is Alert -> Alerts.title(message.title, Chat.noticeText(message.feature, message.detail))
+            }
+        }
+        game.messages.clear()
         val window = Minecraft.getInstance().window
         if (window.guiScaledWidth != width || window.guiScaledHeight != height || window.guiScale != guiScale ||
             settings.scale != hudScale || settings.background != background
@@ -65,7 +75,7 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
             if (handed[i] == readout.version) continue
             handed[i] = readout.version
             val id = readout.feature.id
-            val block = readout.hud ?: if (editing) hud(readout.feature.title) {} else null
+            val block = readout.hud ?: if (editing && readout.feature.hasHud) hud(readout.feature.title) {} else null
             if (block == null) Hud.hide(id) else Hud.show(id, group(id), block)
             if (readout.slots.isEmpty()) Slots.clear(id) else Slots.mark(id, readout.slots)
         }

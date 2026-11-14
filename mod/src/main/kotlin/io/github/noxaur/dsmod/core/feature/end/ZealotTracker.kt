@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.end
 
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.game.Drop
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.hud.HudBlock
@@ -23,9 +24,6 @@ class ZealotTracker(toggle: KMutableProperty0<Boolean>) : Feature("zealot-tracke
     private var endMillis = 0L
     private var endSince: Long? = null
 
-    // A player's chat line has their name first, so only the server's own lines start with the drop.
-    private val drop = Regex("""^[A-Z]+ DROP! (?:\((.+?)\)(?: \(.*\))?|(.+))$""")
-
     init {
         on<TabList> { _, now ->
             val since = endSince
@@ -36,10 +34,7 @@ class ZealotTracker(toggle: KMutableProperty0<Boolean>) : Feature("zealot-tracke
             }
         }
         on<SystemMessage> { message, _ ->
-            val line = message.text.plain
-            if (" DROP! " !in line) return@on
-            val (parenthesised, bare) = drop.find(line)?.destructured ?: return@on
-            val name = parenthesised.ifEmpty { bare }
+            val name = Drop.parse(message.text.plain)?.item ?: return@on
             session += name to (session[name] ?: 0) + 1
             allTime.value = ZealotDrops(allTime.value.drops.let { it + (name to (it[name] ?: 0) + 1) })
         }
