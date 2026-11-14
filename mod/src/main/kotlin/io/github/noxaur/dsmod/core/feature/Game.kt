@@ -8,6 +8,7 @@ import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.TabState
+import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 
 /**
@@ -28,6 +29,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         var version = 0
             internal set
         internal var stale = true
+        internal var on = feature.enabled
         internal var refreshedAt = 0L
     }
 
@@ -78,6 +80,11 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     fun tick(time: Long) {
         for (readout in readouts) {
             val feature = readout.feature
+            if (readout.on != feature.enabled) {
+                readout.on = feature.enabled
+                // A feature that is off sees no events, so what it knows of this world would be stale when it comes back.
+                if (!readout.on) feature.handlers[WorldChanged::class.java]?.let { metrics.time(feature.id) { it(WorldChanged, time) } }
+            }
             if (!readout.stale && feature.enabled && time - readout.refreshedAt in 0 until REFRESH_MILLIS) continue
             readout.stale = !feature.enabled
             readout.refreshedAt = time
