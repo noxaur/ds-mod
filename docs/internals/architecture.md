@@ -46,6 +46,8 @@ Reading an item out of Minecraft is the costly part of a menu: a chest of 54 ite
 
 The tab list and the open container are client state, so the edge polls them. An action bar or an entity's death leaves nothing to poll, and their order against each other carries meaning: the server sends the Combat XP in the action bar right after the death of the mob the player killed, and that pairing is the only sign of whose kill it was. So `ServerPacketsMixin` posts both from the packet handler, with the time each was handled. Polled once a tick, the two would arrive in the poll's order and not the server's.
 
+A block the server placed before its chunk reached the client comes with no update at all, so a marker head that already stands is found by reading each chunk as it loads. Only a head with a skin is posted from there. The End is decorated with plain heads, and one of those posted as a marker would send the Protector's beam to a wall.
+
 ## Saved state belongs to the feature, and the disk to the edge
 
 A feature declares one immutable state object and replaces it to change it. The edge loads it at start and writes the changed ones about once a minute, on its own thread, through a temporary file and a rename. A file that fails to parse is moved aside, because a tracker's history is worth more than a clean start.

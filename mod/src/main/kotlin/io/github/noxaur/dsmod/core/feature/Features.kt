@@ -19,7 +19,7 @@ import io.github.noxaur.dsmod.core.feature.slayer.SlayerTracker
 /** Every feature the mod has. A feature missing here never runs, and `FeatureReplayTest` replays each one. */
 fun features(config: DsModConfig): List<Feature> = listOf(
     AbilitySpam(config.chat::abilitySpam),
-    BossBeacon(config.end::bossBeacon),
+    BossBeacon(config.end::bossBeacon, config.end::beamSections, config.end::beamInFight),
     BossDrops(config.end::bossDrops),
     DragonTimer(config.end::dragonTimer),
     GolemStatus(config.end::golemStatus),

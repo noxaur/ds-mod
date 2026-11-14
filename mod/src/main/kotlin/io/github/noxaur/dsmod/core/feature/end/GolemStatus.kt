@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.end
 
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.game.ProtectorRow
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.WorldChanged
@@ -21,8 +22,6 @@ class GolemStatus(toggle: KMutableProperty0<Boolean>) : Feature("golem-status", 
     private var spawnedAt = 0L
     private var defeatedAt = 0L
 
-    private val protector = Regex("""^(Resting|Rising|Spawned)(?: \((?:Tier (\d+/\d+), )?(\d+)\))?$""")
-
     init {
         on<WorldChanged> { _, _ ->
             row = null
@@ -37,7 +36,7 @@ class GolemStatus(toggle: KMutableProperty0<Boolean>) : Feature("golem-status", 
             val previous = stage
             stage = null
             if (value == null) return@on
-            val (name, tiers, left) = protector.find(value)?.destructured ?: return@on count("unparsed")
+            val (name, tiers, left) = ProtectorRow.parse(value) ?: return@on count("unparsed")
             // The tab list moving on from the fight ends it, whether or not the defeat reached chat.
             if (name == "Resting" || previous == "Spawned" && name != "Spawned") {
                 spawnedAt = 0
@@ -45,7 +44,7 @@ class GolemStatus(toggle: KMutableProperty0<Boolean>) : Feature("golem-status", 
             }
             stage = name
             tier = tiers
-            toGo = left
+            toGo = left?.toString().orEmpty()
         }
         on<SystemMessage> { message, now ->
             val line = message.text.plain

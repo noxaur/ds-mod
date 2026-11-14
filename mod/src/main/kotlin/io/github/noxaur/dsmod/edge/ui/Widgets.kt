@@ -1,6 +1,8 @@
 package io.github.noxaur.dsmod.edge.ui
 
 import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.core.ui.Section
+import io.github.noxaur.dsmod.core.ui.Sections
 import io.github.noxaur.dsmod.edge.toComponent
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.AbstractButton
@@ -11,6 +13,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.input.InputWithModifiers
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.input.MouseButtonInfo
 import net.minecraft.network.chat.CommonComponents
 import net.minecraft.network.chat.MutableComponent
 
@@ -128,5 +131,136 @@ class KitStepper(x: Int, y: Int, private val name: String, valueWidth: Int, priv
     private companion object {
         val MINUS_WIDTH = Kit.font.width("-")
         val PLUS_WIDTH = Kit.font.width("+")
+    }
+}
+
+/**
+ * A track from 0 to [max] with any number of switched-on [sections], and a tick at each of [ticks]. A click on
+ * the empty track adds a section, a drag on a section's end resizes it, a drag on its middle slides it, and a
+ * right click removes it. With focus, the arrow keys slide the section last touched and Delete removes it.
+ * The screen reads [sections] and [selected] after [onChange].
+ */
+class KitRangeSlider(
+    x: Int,
+    y: Int,
+    width: Int,
+    private val name: String,
+    private val max: Int,
+    private val ticks: List<Int>,
+    sections: List<Section>,
+    private val onChange: () -> Unit,
+) : AbstractWidget(x, y, width, Kit.BUTTON_HEIGHT, plain(name)) {
+    private enum class Grab { START, END, MIDDLE }
+
+    var sections = sections
+        set(value) {
+            field = value
+            selected = selected.coerceAtMost(value.size - 1)
+        }
+
+    /** The index of the section last touched, or -1. */
+    var selected = -1
+        private set
+
+    private var grab: Grab? = null
+    private var grabOffset = 0
+
+    private fun pixel(value: Int) = x + 1 + value * (width - 2) / max
+
+    private fun value(mouseX: Double) = (((mouseX - x - 1) * max / (width - 2)) + 0.5).toInt().coerceIn(0, max)
+
+    /** The section under the mouse and the part of it, where the last [EDGE_GRIP] pixels of each end resize. */
+    private fun hit(mouseX: Double): Pair<Int, Grab>? {
+        for (i in sections.indices) {
+            val from = pixel(sections[i].from)
+            val to = pixel(sections[i].to)
+            if (mouseX < from || mouseX >= to) continue
+            return i to when {
+                mouseX < from + EDGE_GRIP -> Grab.START
+                mouseX >= to - EDGE_GRIP -> Grab.END
+                else -> Grab.MIDDLE
+            }
+        }
+        return null
+    }
+
+    private fun change(next: List<Section>) {
+        if (next == sections) return
+        sections = next
+        onChange()
+    }
+
+    override fun isValidClickButton(button: MouseButtonInfo) = button.button() == 0 || button.button() == 1
+
+    override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
+        val hit = hit(event.x)
+        if (event.button() == 1) {
+            if (hit != null) {
+                selected = -1
+                change(Sections.remove(sections, hit.first))
+            }
+            return
+        }
+        if (hit == null) {
+            val at = value(event.x)
+            sections = Sections.add(sections, at, max / 8, max)
+            selected = Sections.at(sections, at)
+            onChange()
+            return
+        }
+        selected = hit.first
+        grab = hit.second
+        grabOffset = value(event.x) - sections[selected].from
+        onChange()
+    }
+
+    override fun onDrag(event: MouseButtonEvent, dx: Double, dy: Double) {
+        val at = value(event.x)
+        when (grab ?: return) {
+            Grab.START -> change(Sections.resize(sections, selected, Sections.Edge.START, at, max))
+            Grab.END -> change(Sections.resize(sections, selected, Sections.Edge.END, at, max))
+            Grab.MIDDLE -> change(Sections.move(sections, selected, at - grabOffset, max))
+        }
+    }
+
+    override fun onRelease(event: MouseButtonEvent) {
+        grab = null
+    }
+
+    override fun keyPressed(event: KeyEvent): Boolean {
+        if (selected < 0) return false
+        val by = if (event.hasShiftDown()) 10 else 1
+        when {
+            event.isLeft -> change(Sections.move(sections, selected, sections[selected].from - by, max))
+            event.isRight -> change(Sections.move(sections, selected, sections[selected].from + by, max))
+            event.key() == KEY_DELETE || event.key() == KEY_BACKSPACE -> {
+                val removed = selected
+                selected = -1
+                change(Sections.remove(sections, removed))
+            }
+            else -> return false
+        }
+        return true
+    }
+
+    override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+        Kit.well(graphics, x, y, width, height)
+        for (i in ticks.indices) Kit.tick(graphics, pixel(ticks[i]), y + 1, height - 2)
+        val over = if (isHovered) hit(mouseX.toDouble())?.first ?: -1 else -1
+        for (i in sections.indices) {
+            val from = pixel(sections[i].from)
+            val state = Kit.state(active, i == over || isFocused && i == selected, grab != null && i == selected)
+            Kit.span(graphics, from, y + 1, pixel(sections[i].to) - from, height - 2, state)
+        }
+    }
+
+    override fun updateWidgetNarration(output: NarrationElementOutput) {
+        output.add(NarratedElementType.TITLE, createNarrationMessage())
+    }
+
+    private companion object {
+        const val EDGE_GRIP = 3
+        const val KEY_DELETE = 261
+        const val KEY_BACKSPACE = 259
     }
 }

@@ -1,7 +1,6 @@
 +   0.0s > (tab list) Area: The End; Lobby: #9; Dragon: Spawned; Protector: Spawned; Purse: 527,612,439
 +   8.4s > The Endstone Protector has been defeated!
 +   9.0s > (head placed) at -679, 5, -318
-             (in the world) VALUE beam "Protector" at -678.5, 5.0, -317.5
 +  10.0s > (tab list) Protector: Rising (Tier 1/5, 185); Purse: 527,621,184
 +  12.0s > (tab list) Protector: Rising (Tier 1/5, 182); Purse: 527,629,929
 +  14.0s > (tab list) Protector: Rising (Tier 1/5, 178); Purse: 527,641,094
@@ -51,6 +50,7 @@
 + 108.0s > (tab list) Protector: Rising (Tier 4/5, 31); Purse: 527,990,839
 + 110.0s > (tab list) Protector: Rising (Tier 4/5, 28); Purse: 527,998,099
 + 112.0s > (tab list) Protector: Rising (Tier 4/5, 25); Purse: 528,002,939
+             (in the world) VALUE beam "Protector" at -678.5, 5.0, -317.5
 + 114.0s > (tab list) Protector: Rising (Tier 4/5, 18); Purse: 528,007,779
 + 116.0s > (tab list) Protector: Rising (Tier 4/5, 16); Purse: 528,012,619
 + 118.0s > (tab list) Protector: Rising (Tier 4/5, 14); Purse: 528,018,944
@@ -61,9 +61,9 @@
 + 128.1s > ☠ The Endstone Protector has emerged from the ground! (Tier 5/5)
 + 128.1s > Endstone Protector has spawned.
 + 130.0s > (tab list) Protector: Spawned; Purse: 528,050,404
+             (no marks in the world)
 + 146.6s > The Endstone Protector has been defeated!
 + 147.6s > (head placed) at -715, 5, -290
-             (in the world) VALUE beam "Protector" at -714.5, 5.0, -289.5
 + 148.0s > (tab list) Protector: Rising (Tier 1/5, 182); Purse: 528,082,909
 + 150.0s > (tab list) Protector: Rising (Tier 1/5, 180); Purse: 528,087,749
 + 152.0s > (tab list) Protector: Rising (Tier 1/5, 172); Purse: 528,098,859

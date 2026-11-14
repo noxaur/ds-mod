@@ -10,6 +10,7 @@ import io.github.noxaur.dsmod.core.game.WorldChanged
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLevelEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -44,6 +45,8 @@ object DsModClient : ClientModInitializer {
         IMinecraft.INSTANCE.openWrappedScreen(editor)
     }
 
+    fun openBeaconEditor() = Minecraft.getInstance().setScreenAndShow(BeaconScreen(config.instance.end, config::saveToFile))
+
     fun openHudEditor() = Minecraft.getInstance().setScreenAndShow(HudEditorScreen(readouts, config.instance.hud, config::saveToFile))
 
     override fun onInitializeClient() {
@@ -63,6 +66,7 @@ object DsModClient : ClientModInitializer {
         tabs = TabListPoller(game)
         containers = ContainerPoller(game)
         config.instance.hud.edit = Runnable { openHudEditor() }
+        config.instance.end.editBeam = Runnable { openBeaconEditor() }
         val log = LoggerFactory.getLogger("dsmod")
         game.metrics.sinks += { snapshot ->
             snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }
@@ -73,7 +77,11 @@ object DsModClient : ClientModInitializer {
             if (overlay) Packets.actionBar(message)
             overlay || !game.wants(SystemMessage::class.java) || game.post(System.currentTimeMillis(), SystemMessage(message.toText()))
         }
-        ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ -> game.post(System.currentTimeMillis(), WorldChanged) }
+        ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ ->
+            Packets.worldChanged()
+            game.post(System.currentTimeMillis(), WorldChanged)
+        }
+        ClientChunkEvents.CHUNK_LOAD.register { _, chunk -> Packets.chunk(chunk) }
         ClientTickEvents.END_CLIENT_TICK.register {
             if (ticks % TAB_POLL_TICKS == 0) game.metrics.time("tab-poll") { tabs.poll(it) }
             game.metrics.time("container-poll") { containers.poll(it) }
