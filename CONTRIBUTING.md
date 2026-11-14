@@ -57,14 +57,4 @@ That's fine, but end the pull request body with the model and what it did, such 
 
 ## Development
 
-Install [mise](https://mise.jdx.dev), then run this from the repository root:
-
-```sh
-mise trust
-mise install
-cd mod && ./gradlew runClient
-```
-
-`mise install` gives you the pinned JDK, Go, Node and pnpm. `runClient` starts the game with the debug build and signs in with your Microsoft account. Run `mise run check` before you push. Each failure names its fix.
-
 See the [development docs](docs/operations/development.md).

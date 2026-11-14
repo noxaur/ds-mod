@@ -53,7 +53,7 @@ Most code changes need no doc change. Before you change an area, read its page i
 - `docs/user/` helps players do a task, in the mod's voice, with no implementation details or contributor tooling. Update the section when how to use a feature changes.
 - `docs/operations/` holds setup, run and release procedures for contributors.
 - State each fact once, in the page that owns it, and link to the source instead of copying it. When a decision changes, rewrite or delete the text in the same change.
-- `CONTRIBUTING.md` is the policy for pull requests. `docs/README.md` links every page with one line on what it covers.
+- `CONTRIBUTING.md` holds only the policy for outside contributors and links `docs/operations/development.md` for setup, running and checks. `docs/README.md` links every page with one line on what it covers.
 
 ## Rules
 
