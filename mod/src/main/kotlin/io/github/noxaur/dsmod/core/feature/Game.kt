@@ -77,6 +77,11 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             }
             is ContainerOpened -> true.also { metrics.time("container") { container.opened(event) } }
             is SlotChanged -> true.also { metrics.time("container") { container.changed(event) } }
+            // The new world's tab list has not arrived, so the old one's area must not outlive the hop.
+            WorldChanged -> true.also {
+                lastTab = null
+                tab.update(emptyList())
+            }
             else -> false
         }
         for (i in features.indices) {

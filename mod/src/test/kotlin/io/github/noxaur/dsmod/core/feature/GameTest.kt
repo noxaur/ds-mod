@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
+import io.github.noxaur.dsmod.core.game.WorldChanged
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -55,6 +56,15 @@ class GameTest {
     fun `a feature locked to an area hears nothing before the server names one`() {
         say(0, "☠ The Young Dragon has spawned!")
         game.tick(0)
+        assertNull(hud("dragon-timer"))
+    }
+
+    @Test
+    fun `the area of the world the player left does not outlive the hop`() {
+        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+        game.post(1, WorldChanged)
+        say(2, "☠ The Young Dragon has spawned!")
+        game.tick(2)
         assertNull(hud("dragon-timer"))
     }
 }

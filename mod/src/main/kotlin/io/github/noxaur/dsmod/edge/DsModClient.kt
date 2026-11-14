@@ -73,7 +73,10 @@ object DsModClient : ClientModInitializer {
             if (overlay) Packets.actionBar(message)
             overlay || !game.wants(SystemMessage::class.java) || game.post(System.currentTimeMillis(), SystemMessage(message.toText()))
         }
-        ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ -> game.post(System.currentTimeMillis(), WorldChanged) }
+        ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ ->
+            game.post(System.currentTimeMillis(), WorldChanged)
+            tabs.forget()
+        }
         ClientTickEvents.END_CLIENT_TICK.register {
             if (ticks % TAB_POLL_TICKS == 0) game.metrics.time("tab-poll") { tabs.poll(it) }
             game.metrics.time("container-poll") { containers.poll(it) }
