@@ -1,16 +1,21 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.CopyChats
+import io.github.noxaur.dsmod.edge.CopyChats.Format
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.minecraft.ChatFormatting
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
+import org.lwjgl.glfw.GLFW
 
 /**
- * Right-clicks lines of the open chat with the real mouse. Either row of a message that wraps gives the whole
- * message, a click beside the chat or with the setting off gives nothing, and the scrolled chat gives the line
- * under the mouse. Read the screenshot for the flash and its label.
+ * Works Copy Chat in the open chat with the real mouse. A right click selects a message and opens the menu
+ * with Text under the mouse, a right press dragged over other messages selects all between, each button copies
+ * its form, and a click elsewhere or Escape puts the menu away with the chat still open. Read the screenshots
+ * for the selection, the menu in both themes and the flash.
  */
 class CopyChatTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
@@ -24,7 +29,10 @@ class CopyChatTest : FabricClientGameTest {
                     val chat = client.gui.hud.chat
                     chat.clearMessages(false)
                     for (i in 1..30) chat.addClientSystemMessage(Component.literal("Filler $i"))
-                    chat.addClientSystemMessage(Component.literal("The first message."))
+                    chat.addClientSystemMessage(
+                        Component.literal("RARE DROP! ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
+                            .append(Component.literal("Summoning Eye").withStyle { it.withBold(false).withColor(0x12AB34) }),
+                    )
                     chat.addClientSystemMessage(Component.literal(long))
                     chat.addClientSystemMessage(Component.literal("The last message."))
                     client.gui.setScreen(ChatScreen("", false))
@@ -32,45 +40,118 @@ class CopyChatTest : FabricClientGameTest {
                 context.waitForScreen(ChatScreen::class.java)
                 context.waitTicks(2)
 
-                // The chat's rows are 9 tall and end 40 above the screen's bottom. Row 0 is the newest line.
-                fun click(row: Int, x: Int = 60) {
-                    val (px, py) = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
-                        val scale = client.window.guiScale
-                        x * scale.toDouble() to (client.window.guiScaledHeight - 40 - row * 9 - 4) * scale.toDouble()
-                    }
-                    context.input.setCursorPos(px, py)
-                    context.waitTick()
-                    context.input.pressMouse(1)
+                fun move(x: Int, y: Int) {
+                    val scale = context.computeOnClient<Int, Nothing> { it.window.guiScale }
+                    context.input.setCursorPos(x * scale.toDouble(), y * scale.toDouble())
                     context.waitTick()
                 }
-                fun copied(expected: List<String>, step: String) = check(copies == expected) { "$step copied $copies, not $expected" }
+                // The chat's rows are 9 tall and end 40 above the screen's bottom. Row 0 is the newest line.
+                fun row(row: Int, x: Int = 60) = move(x, context.computeOnClient<Int, Nothing> { it.window.guiScaledHeight } - 40 - row * 9 - 4)
+                fun press(format: Format) {
+                    val menu = checkNotNull(CopyChats.menu) { "No menu is open to press $format in" }
+                    move(menu.buttonX(format) + menu.buttonWidth(format) / 2, menu.buttonY + 8)
+                    context.input.pressMouse(0)
+                    context.waitTick()
+                }
+                fun copied(expected: String, step: String) {
+                    check(copies == listOf(expected)) { "$step copied $copies, not [$expected]" }
+                    check(CopyChats.menu == null) { "$step left the menu open" }
+                    copies.clear()
+                }
 
-                click(0)
-                copied(listOf("The last message."), "A click on the newest line")
-                click(2)
-                copied(listOf("The last message.", long), "A click on the message's first row")
-                context.takeScreenshot("copy-chat")
-                click(1)
-                copied(listOf("The last message.", long, long), "A click on the message's second row")
-                click(3)
-                copied(listOf("The last message.", long, long, "The first message."), "A click on the line above it")
+                // A right click, then a left click without moving: Text is under the mouse.
+                row(2)
+                context.input.pressMouse(1)
+                context.waitTick()
+                check(CopyChats.menu?.header == "Copy Message") { "A right click opened ${CopyChats.menu?.header}" }
+                check(copies.isEmpty()) { "A right click alone copied $copies" }
+                context.input.pressMouse(0)
+                context.waitTick()
+                copied(long, "A right click on the message's first row and a left click in place")
+                context.takeScreenshot("copy-chat-copied")
 
+                // Dragged from the newest line up to the drop, over the wrapped message.
+                row(0)
+                context.input.holdMouse(1)
+                row(3)
+                context.waitTick()
+                context.takeScreenshot("copy-chat-selecting")
+                context.input.releaseMouse(1)
+                context.waitTick()
+                check(CopyChats.menu?.header == "Copy 3 Messages") { "The drag opened ${CopyChats.menu?.header}" }
+                context.takeScreenshot("copy-chat-menu")
+                DsModClient.settings.hud.theme = Theme.VANILLA
+                context.waitTick()
+                context.takeScreenshot("copy-chat-menu-vanilla")
+                DsModClient.settings.hud.theme = Theme.CHARCOAL
+                press(Format.FORMATTED)
+                copied("&6&lRARE DROP! &#12ab34Summoning Eye\n$long\nThe last message.", "Formatted, for three messages")
+
+                // Dragged downward gives the same order, oldest first.
+                row(3)
+                context.input.holdMouse(1)
+                row(1)
+                context.input.releaseMouse(1)
+                context.waitTick()
+                press(Format.TEXT)
+                copied("RARE DROP! Summoning Eye\n$long", "Text, dragged downward over two messages")
+
+                row(3)
+                context.input.pressMouse(1)
+                context.waitTick()
+                press(Format.JSON)
+                val json = copies.single()
+                check(json.startsWith("{") && "\"RARE DROP! \"" in json && "\"gold\"" in json && "Summoning Eye" in json) { "JSON for one message was $json" }
                 copies.clear()
-                click(1, x = 400)
-                copied(emptyList(), "A click beside the chat")
+
+                row(1)
+                context.input.holdMouse(1)
+                row(0)
+                context.input.releaseMouse(1)
+                context.waitTick()
+                press(Format.JSON)
+                check(copies.single().startsWith("[") && copies.single().endsWith("]")) { "JSON for two messages was ${copies.single()}" }
+                copies.clear()
+
+                // Escape and a click elsewhere put the menu away, copy nothing and leave the chat open.
+                row(0)
+                context.input.pressMouse(1)
+                context.waitTick()
+                context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
+                context.waitTick()
+                check(CopyChats.menu == null) { "Escape left the menu open" }
+                check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() is ChatScreen }) { "Escape closed the chat with the menu" }
+                row(0)
+                context.input.pressMouse(1)
+                context.waitTick()
+                move(400, 20)
+                context.input.pressMouse(0)
+                context.waitTick()
+                check(CopyChats.menu == null && copies.isEmpty()) { "A click beside the menu left it open or copied $copies" }
+
+                row(1, x = 400)
+                context.input.pressMouse(1)
+                context.waitTick()
+                check(CopyChats.menu == null) { "A right click beside the chat opened the menu" }
 
                 context.runOnClient<Nothing> { it.gui.hud.chat.scrollChat(4) }
                 context.waitTick()
-                click(0)
-                copied(listOf("Filler 30"), "A click on the bottom row of the chat scrolled up by four")
+                row(0)
+                context.input.pressMouse(1)
+                context.waitTick()
+                context.input.pressMouse(0)
+                context.waitTick()
+                copied("Filler 30", "The bottom row of the chat scrolled up by four")
 
-                copies.clear()
                 DsModClient.settings.chat.copyChat = false
-                click(0)
-                copied(emptyList(), "A click with Copy Chat off")
+                row(0)
+                context.input.pressMouse(1)
+                context.waitTick()
+                check(CopyChats.menu == null) { "A right click with Copy Chat off opened the menu" }
             }
         } finally {
             DsModClient.settings.chat.copyChat = true
+            DsModClient.settings.hud.theme = Theme.CHARCOAL
             CopyChats.clipboard = clipboard
         }
     }

@@ -30,7 +30,13 @@ The first time it hides one, a line in chat says so. Turn off Ability Spam in th
 
 ### Copy Chat
 
-Right-click a message in the open chat to copy it. The whole message is copied as plain text, also when it runs over several lines, and it flashes with `Copied` beside your mouse.
+Right-click a message in the open chat to select it. To select several, hold the right button and drag up or down over them. When you let go, a small menu opens under your mouse:
+
+- **Text** copies the messages as plain text, one per line. It sits under your mouse, so a right click and then a left click copies a message without moving.
+- **Formatted** keeps the colors and styles as `&` codes, such as `&6&lRARE DROP!`. A color with no code of its own is written as `&#12ab34`.
+- **JSON** copies each message as Minecraft's own text component, for tools and bug reports. Several messages come as a list.
+
+A message is always copied whole, also when it runs over several lines. What you copied flashes with `Copied` beside your mouse. Click anywhere else or press Escape to put the menu away. You can scroll the chat while you drag to reach further.
 
 It is on from the start. Turn off Copy Chat under Chat in the settings to stop it.
 
