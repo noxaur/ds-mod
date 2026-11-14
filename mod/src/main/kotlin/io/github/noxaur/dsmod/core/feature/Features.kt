@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.feature.chat.AbilitySpam
 import io.github.noxaur.dsmod.core.feature.end.DragonTimer
 import io.github.noxaur.dsmod.core.feature.end.GolemStatus
 import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
+import io.github.noxaur.dsmod.core.feature.general.Fullbright
 import io.github.noxaur.dsmod.core.feature.inventory.RarityOutlines
 import io.github.noxaur.dsmod.core.feature.loot.LootAlerts
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerTracker
@@ -15,6 +16,7 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     DragonTimer(config.end::dragonTimer),
     GolemStatus(config.end::golemStatus),
     ZealotTracker(config.end::zealotTracker),
+    Fullbright(config.general::fullbright),
     RarityOutlines(config.inventory::rarityOutlines),
     LootAlerts(config.loot::lootAlerts, config.loot::lootAlertTier),
     SlayerTracker(config.slayer::slayerTracker),
