@@ -45,9 +45,11 @@ object DsModClient : ClientModInitializer {
         IMinecraft.INSTANCE.openWrappedScreen(editor)
     }
 
-    fun openBeaconEditor() = Minecraft.getInstance().setScreenAndShow(BeaconScreen(config.instance.end, config::saveToFile))
+    /** Each of the mod's own screens goes back to the screen it was opened over, so a button in the settings returns there. */
+    fun openBeaconEditor() = Minecraft.getInstance().let { it.setScreenAndShow(BeaconScreen(config.instance.end, it.gui.screen(), config::saveToFile)) }
 
-    fun openHudEditor() = Minecraft.getInstance().setScreenAndShow(HudEditorScreen(readouts, config.instance.hud, config::saveToFile))
+    fun openHudEditor() =
+        Minecraft.getInstance().let { it.setScreenAndShow(HudEditorScreen(readouts, config.instance.hud, it.gui.screen(), config::saveToFile)) }
 
     override fun onInitializeClient() {
         config = ManagedConfig.create(

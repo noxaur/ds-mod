@@ -95,7 +95,7 @@ class DsModConfig : Config() {
         var beamInFight = false
 
         /** The edge sets this to open the editor, so the config itself needs no Minecraft. */
-        @ConfigOption(name = "Beam Timing", desc = "Pick the parts of the Protector's cycle that show the beam. It starts with the last 25 kills before the Protector emerges.")
+        @ConfigOption(name = "Beam Timing", desc = "Pick when in the Protector's cycle the beam shows.")
         @ConfigEditorButton(buttonText = "Edit")
         @JvmField
         var editBeam: Runnable = Runnable {}

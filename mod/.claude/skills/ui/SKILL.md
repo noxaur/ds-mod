@@ -54,7 +54,7 @@ Chrome is everything that is not text: panels, buttons, slots, bars, marks. It i
 - **State:** a control shows idle, hover, pressed and off with its face and edges. Pressed also moves the label down 1px. Focus looks like hover, so the keyboard works without another style.
 - **Icons:** white sprites of at most 7x7 in `textures/gui/sprites/`, which `Kit.icon` tints with ink or a role.
 
-A screen is a vanilla `Screen` holding the kit's widgets. They are vanilla widgets with a kit face, so focus, narration and the keyboard work as they do in Minecraft. The settings screen is MoulConfig's and keeps its own look.
+A screen is a vanilla `Screen` holding the kit's widgets. It takes the screen it was opened over and goes back to it on close, so a button in the settings returns to the settings. A screen says little: a title, its controls and one line that reads back what the player did. They are vanilla widgets with a kit face, so focus, narration and the keyboard work as they do in Minecraft. The settings screen is MoulConfig's and keeps its own look.
 
 [`kit.md`](kit.md) lists every token, component and size. Read it before you build a screen, or when you need a component it may not have.
 

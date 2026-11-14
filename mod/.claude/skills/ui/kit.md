@@ -58,7 +58,7 @@ A widget is a vanilla widget with a kit face. It takes its label as a string and
 | `KitButton` | A button with a label or an icon. An icon button is 16x16 |
 | `KitCheckbox` | A checkbox with its label 4px to the right |
 | `KitStepper` | A minus button, a value and a plus button, for a number with few useful steps |
-| `KitRangeSlider` | A 16 tall track with any number of spans, for picking stretches of a scale. Click the track to add one, drag an end or the middle, right-click to remove. `Sections` in `core/ui` holds its rules: spans stay 5 long and 5 apart |
+| `KitRangeSlider` | A 16 tall track with any number of spans, for picking stretches of a scale. Press and drag on the track to draw one or click to add one, drag an end or the middle, right-click to remove. The cursor shows what a press will do. `Sections` in `core/ui` holds its rules: a span is at least 5 long, and two within 3 of each other become one |
 
 Controls in a row are 4 apart, and rows are 4 apart. A label beside a control sits on the control's text baseline.
 

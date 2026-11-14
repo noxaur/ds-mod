@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge.ui
 
+import com.mojang.blaze3d.platform.cursor.CursorTypes
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.Sections
@@ -135,22 +136,25 @@ class KitStepper(x: Int, y: Int, private val name: String, valueWidth: Int, priv
 }
 
 /**
- * A track from 0 to [max] with any number of switched-on [sections], and a tick at each of [ticks]. A click on
- * the empty track adds a section, a drag on a section's end resizes it, a drag on its middle slides it, and a
- * right click removes it. With focus, the arrow keys slide the section last touched and Delete removes it.
- * The screen reads [sections] and [selected] after [onChange].
+ * A track from 0 to [max] with any number of switched-on [sections], and a tick at each of [ticks].
+ *
+ * On the empty track, a click adds a section around itself, and a press and drag draws one from where the button
+ * went down to where it comes up. A drag on a section's end resizes it, a drag on its middle slides it, and a
+ * right click removes it. Sections that meet become one, and come apart again if the drag backs off before the
+ * button is released. The cursor shows which of these a press would do. With focus, the arrow keys slide the
+ * section last touched and Delete removes it. The screen reads [sections] and [selected] after [onChange].
  */
 class KitRangeSlider(
     x: Int,
     y: Int,
     width: Int,
-    private val name: String,
+    name: String,
     private val max: Int,
     private val ticks: List<Int>,
     sections: List<Section>,
     private val onChange: () -> Unit,
 ) : AbstractWidget(x, y, width, Kit.BUTTON_HEIGHT, plain(name)) {
-    private enum class Grab { START, END, MIDDLE }
+    private enum class Grab { START, END, MIDDLE, NEW }
 
     var sections = sections
         set(value) {
@@ -162,8 +166,13 @@ class KitRangeSlider(
     var selected = -1
         private set
 
+    // A drag is worked out from the sections as the press found them, so a merge on the way can come undone.
     private var grab: Grab? = null
-    private var grabOffset = 0
+    private var base = sections
+    private var grabbed = -1
+    private var pressedAt = 0
+    private var pressedX = 0.0
+    private var drew = false
 
     private fun pixel(value: Int) = x + 1 + value * (width - 2) / max
 
@@ -184,9 +193,13 @@ class KitRangeSlider(
         return null
     }
 
-    private fun change(next: List<Section>) {
-        if (next == sections) return
+    /** Shows [next] with the section that holds [anchor] selected. */
+    private fun show(next: List<Section>, anchor: Int) {
+        val changed = next != sections
         sections = next
+        val now = Sections.at(next, anchor)
+        if (!changed && now == selected) return
+        selected = now
         onChange()
     }
 
@@ -197,46 +210,56 @@ class KitRangeSlider(
         if (event.button() == 1) {
             if (hit != null) {
                 selected = -1
-                change(Sections.remove(sections, hit.first))
+                sections = Sections.remove(sections, hit.first)
+                onChange()
             }
             return
         }
-        if (hit == null) {
-            val at = value(event.x)
-            sections = Sections.add(sections, at, max / 8, max)
-            selected = Sections.at(sections, at)
-            onChange()
-            return
-        }
-        selected = hit.first
-        grab = hit.second
-        grabOffset = value(event.x) - sections[selected].from
-        onChange()
+        base = sections
+        pressedAt = value(event.x)
+        pressedX = event.x
+        drew = false
+        grab = hit?.second ?: Grab.NEW
+        grabbed = hit?.first ?: -1
+        if (hit != null) show(sections, sections[hit.first].from)
     }
 
     override fun onDrag(event: MouseButtonEvent, dx: Double, dy: Double) {
         val at = value(event.x)
         when (grab ?: return) {
-            Grab.START -> change(Sections.resize(sections, selected, Sections.Edge.START, at, max))
-            Grab.END -> change(Sections.resize(sections, selected, Sections.Edge.END, at, max))
-            Grab.MIDDLE -> change(Sections.move(sections, selected, at - grabOffset, max))
+            Grab.START -> show(Sections.resize(base, grabbed, Sections.Edge.START, at, max), base[grabbed].to)
+            Grab.END -> show(Sections.resize(base, grabbed, Sections.Edge.END, at, max), base[grabbed].from)
+            Grab.MIDDLE -> {
+                val size = base[grabbed].to - base[grabbed].from
+                val from = (base[grabbed].from + at - pressedAt).coerceIn(0, max - size)
+                show(Sections.move(base, grabbed, from, max), from)
+            }
+            Grab.NEW -> {
+                // A press that has not moved yet is still a click.
+                if (!drew && Math.abs(event.x - pressedX) < DRAG_START) return
+                drew = true
+                show(Sections.draw(base, pressedAt, at, max), pressedAt)
+            }
         }
     }
 
     override fun onRelease(event: MouseButtonEvent) {
+        if (grab == Grab.NEW && !drew) show(Sections.add(base, pressedAt, max / 8, max), pressedAt)
         grab = null
     }
 
     override fun keyPressed(event: KeyEvent): Boolean {
         if (selected < 0) return false
+        val section = sections[selected]
         val by = if (event.hasShiftDown()) 10 else 1
         when {
-            event.isLeft -> change(Sections.move(sections, selected, sections[selected].from - by, max))
-            event.isRight -> change(Sections.move(sections, selected, sections[selected].from + by, max))
+            event.isLeft -> (section.from - by).coerceAtLeast(0).let { show(Sections.move(sections, selected, it, max), it) }
+            event.isRight -> (section.from + by).coerceAtMost(max - (section.to - section.from)).let { show(Sections.move(sections, selected, it, max), it) }
             event.key() == KEY_DELETE || event.key() == KEY_BACKSPACE -> {
                 val removed = selected
                 selected = -1
-                change(Sections.remove(sections, removed))
+                sections = Sections.remove(sections, removed)
+                onChange()
             }
             else -> return false
         }
@@ -246,12 +269,20 @@ class KitRangeSlider(
     override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         Kit.well(graphics, x, y, width, height)
         for (i in ticks.indices) Kit.tick(graphics, pixel(ticks[i]), y + 1, height - 2)
-        val over = if (isHovered) hit(mouseX.toDouble())?.first ?: -1 else -1
+        val over = if (isHovered) hit(mouseX.toDouble()) else null
         for (i in sections.indices) {
             val from = pixel(sections[i].from)
-            val state = Kit.state(active, i == over || isFocused && i == selected, grab != null && i == selected)
+            val state = Kit.state(active, i == over?.first || isFocused && i == selected, grab != null && i == selected)
             Kit.span(graphics, from, y + 1, pixel(sections[i].to) - from, height - 2, state)
         }
+        if (!active || !isHovered && grab == null) return
+        graphics.requestCursor(
+            when (grab ?: over?.second ?: Grab.NEW) {
+                Grab.START, Grab.END -> CursorTypes.RESIZE_EW
+                Grab.MIDDLE -> CursorTypes.RESIZE_ALL
+                Grab.NEW -> CursorTypes.CROSSHAIR
+            },
+        )
     }
 
     override fun updateWidgetNarration(output: NarrationElementOutput) {
@@ -260,6 +291,7 @@ class KitRangeSlider(
 
     private companion object {
         const val EDGE_GRIP = 3
+        const val DRAG_START = 2.0
         const val KEY_DELETE = 261
         const val KEY_BACKSPACE = 259
     }
