@@ -1,8 +1,10 @@
 package io.github.noxaur.dsmod.core.feature
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
+import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.WorldChanged
@@ -57,6 +59,23 @@ class GameTest {
         say(0, "☠ The Young Dragon has spawned!")
         game.tick(0)
         assertNull(hud("dragon-timer"))
+    }
+
+    @Test
+    fun `a feature that is switched back on hears the sidebar again`() {
+        var heard = 0
+        val listener = object : Feature("listener", config.end::dragonTimer, Area.ANYWHERE) {
+            init {
+                on<Sidebar> { _, _ -> heard++ }
+            }
+        }
+        val game = Game(listOf(listener))
+        game.post(0, Sidebar(lines = listOf(ServerText(ServerSpan("⏣ Village")))))
+        config.end.dragonTimer = false
+        game.tick(1_000)
+        config.end.dragonTimer = true
+        game.tick(2_000)
+        assertEquals(2, heard)
     }
 
     @Test

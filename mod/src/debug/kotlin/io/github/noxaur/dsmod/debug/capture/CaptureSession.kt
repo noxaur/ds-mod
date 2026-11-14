@@ -16,7 +16,6 @@ import net.minecraft.commands.arguments.blocks.BlockStateParser
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.component.DataComponents
-import net.minecraft.network.chat.numbers.StyledFormat
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
@@ -36,9 +35,6 @@ import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
 import net.minecraft.world.level.block.state.BlockState
-import net.minecraft.world.scores.DisplaySlot
-import net.minecraft.world.scores.PlayerScoreEntry
-import net.minecraft.world.scores.PlayerTeam
 import java.nio.file.Path
 
 /** The item components that the `slot` event already carries. */
@@ -101,35 +97,6 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
 
         // The rest is compared four times a second, which is enough to catch every visible change.
         if (ticks++ % 5 != 0) return
-
-        val scoreboard = level.scoreboard
-        val objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR)
-        changes.offer(
-            "sidebar",
-            buildJsonObject {
-                if (objective == null) return@buildJsonObject
-                put("title", objective.displayName.toCaptureJson())
-                put(
-                    "lines",
-                    buildJsonArray {
-                        // The client draws each line as the team's prefix, the name and the team's suffix, then the formatted score.
-                        val format = objective.numberFormatOrDefault(StyledFormat.SIDEBAR_DEFAULT)
-                        scoreboard.listPlayerScores(objective)
-                            .filter { !it.isHidden }
-                            .sortedWith(compareByDescending<PlayerScoreEntry> { it.value }.thenBy(String.CASE_INSENSITIVE_ORDER) { it.owner })
-                            .take(15)
-                            .forEach { score ->
-                                val name = PlayerTeam.formatNameForTeam(scoreboard.getPlayersTeam(score.owner), score.ownerName())
-                                add(buildJsonObject {
-                                    put("score", score.value)
-                                    name.toCaptureJson().forEach { (key, value) -> put(key, value) }
-                                    put("number", score.formatValue(format).toCaptureJson())
-                                })
-                            }
-                    },
-                )
-            },
-        )
 
         changes.offer(
             "bossbars",

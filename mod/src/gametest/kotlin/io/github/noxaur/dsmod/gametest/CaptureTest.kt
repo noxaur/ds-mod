@@ -79,8 +79,7 @@ class CaptureTest : FabricClientGameTest {
                 "title" to "Fight",
                 "sidebar" to "Coins",
                 // The server blanks the line's name and puts its text in the team, as dragsim.co does.
-                "sidebar" to "\"text\":\"Purse: 531\"",
-                "sidebar" to "\"number\":{\"text\":\"4\"",
+                "sidebar" to "\"plain\":\"Purse: 531\"",
                 "bossbars" to "Young Dragon",
                 "container" to "\"size\":46",
                 "slot" to "Aspect of the Test",

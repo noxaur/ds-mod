@@ -33,6 +33,7 @@ object DsModClient : ClientModInitializer {
     lateinit var saved: SavedFiles
         private set
     private lateinit var tabs: TabListPoller
+    private lateinit var sidebars: SidebarPoller
     private lateinit var containers: ContainerPoller
     private var ticks = 0
 
@@ -61,6 +62,7 @@ object DsModClient : ClientModInitializer {
         EyeGuards.register(config.instance.end)
         readouts = Readouts(game, config.instance.hud).also { it.register() }
         tabs = TabListPoller(game)
+        sidebars = SidebarPoller(game)
         containers = ContainerPoller(game)
         config.instance.hud.edit = Runnable { openHudEditor() }
         val log = LoggerFactory.getLogger("dsmod")
@@ -76,9 +78,13 @@ object DsModClient : ClientModInitializer {
         ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ ->
             game.post(System.currentTimeMillis(), WorldChanged)
             tabs.forget()
+            sidebars.forget()
         }
         ClientTickEvents.END_CLIENT_TICK.register {
-            if (ticks % TAB_POLL_TICKS == 0) game.metrics.time("tab-poll") { tabs.poll(it) }
+            if (ticks % TAB_POLL_TICKS == 0) {
+                game.metrics.time("tab-poll") { tabs.poll(it) }
+                game.metrics.time("sidebar-poll") { sidebars.poll(it) }
+            }
             game.metrics.time("container-poll") { containers.poll(it) }
             game.tick(System.currentTimeMillis())
             readouts.push()

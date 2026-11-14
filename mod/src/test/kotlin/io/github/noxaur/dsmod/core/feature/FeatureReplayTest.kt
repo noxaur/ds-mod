@@ -10,6 +10,7 @@ import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
+import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
@@ -59,15 +60,18 @@ class FeatureReplayTest {
 
     private fun tabList(vararg rows: String) = TabList(rows.map { ServerText(ServerSpan(it)) })
 
+    private fun sidebar(vararg lines: String) = Sidebar(lines = lines.map { ServerText(ServerSpan(it)) })
+
     /**
-     * A fixture's events. One cut without the tab list says nothing of where the player was, so it replays
-     * inside the feature's own area.
+     * A fixture's events. One cut without the tab list or the sidebar says nothing of where the player was, so it
+     * replays inside the feature's own area.
      */
     private fun events(feature: Feature, fixture: Path): List<Pair<Long, GameEvent>> {
         val events = readCapture(fixture)
-        val row = feature.area.row
-        if (row == null || events.any { it.second is TabList }) return events
-        return listOf(events.first().first to tabList(row)) + events
+        val start = events.first().first
+        val row = feature.area.row?.takeIf { events.none { (_, event) -> event is TabList } }
+        val line = feature.area.line?.takeIf { events.none { (_, event) -> event is Sidebar } }
+        return listOfNotNull(row?.let { start to tabList(it) }, line?.let { start to sidebar(it) }) + events
     }
 
     private fun name(item: Item) = item.name?.plain?.ifBlank { null } ?: item.id
@@ -83,6 +87,7 @@ class FeatureReplayTest {
             previous += info
             "(tab list) " + changed.joinToString("; ")
         }
+        is Sidebar -> "(sidebar) " + event.lines.map { it.plain.trim() }.filter { it.isNotEmpty() }.joinToString("; ")
         is ContainerOpened -> "(opened ${event.title?.let { "\"${it.plain}\"" } ?: "your inventory"}, ${event.size} slots)"
         is ActionBar -> "(action bar) ${event.text.plain}"
         is EntityDied -> "(died) ${event.name.plain}"
@@ -154,7 +159,7 @@ class FeatureReplayTest {
         }
     }
 
-    /** The tab list names another place, and then the feature's own fixtures play: every line that would fire it at home. */
+    /** The tab list and the sidebar name another place, and then the feature's own fixtures play: every line that would fire it at home. */
     @TestFactory
     fun `a feature locked to an area does nothing outside it`(): List<DynamicTest> =
         features(DsModConfig()).filter { it.area != Area.ANYWHERE }.map { feature ->
@@ -164,8 +169,9 @@ class FeatureReplayTest {
                     val game = fresh(feature.id)
                     val state = game.readouts.single().feature.state
                     game.post(0, tabList("Area: Somewhere Else"))
+                    game.post(0, sidebar("⏣ Somewhere Else"))
                     for ((time, event) in readCapture(fixture)) {
-                        if (event is TabList) continue
+                        if (event is TabList || event is Sidebar) continue
                         assertTrue(game.post(time, event), "${feature.id} hid a line outside ${feature.area}: $event")
                         game.tick(time)
                         val where = "outside ${feature.area}, replaying $fixture, after $event"

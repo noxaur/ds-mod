@@ -29,6 +29,15 @@ data object WorldChanged : GameEvent
 data class TabList(val rows: List<ServerText>) : GameEvent
 
 /**
+ * The sidebar as the client draws it: its [title], then its [lines] from the top. dragsim.co blanks the number
+ * beside each line, so there is none here. With no sidebar shown, the title and the lines are empty. Posted only
+ * when a line changes, and only while a feature is on.
+ */
+@Serializable
+@SerialName("sidebar")
+data class Sidebar(val title: ServerText = ServerText(), val lines: List<ServerText> = emptyList()) : GameEvent
+
+/**
  * The player opened a menu, or is back in their own inventory. Every slot is empty until a [SlotChanged]
  * says otherwise. [size] counts the player's own slots that the menu shows, and [title] is null for the
  * player's own inventory. Posted only while a feature reads it.
