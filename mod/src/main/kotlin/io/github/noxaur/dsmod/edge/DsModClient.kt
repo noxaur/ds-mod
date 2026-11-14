@@ -10,6 +10,7 @@ import io.github.noxaur.dsmod.core.game.WorldChanged
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLevelEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -45,7 +46,11 @@ object DsModClient : ClientModInitializer {
         IMinecraft.INSTANCE.openWrappedScreen(editor)
     }
 
-    fun openHudEditor() = Minecraft.getInstance().setScreenAndShow(HudEditorScreen(readouts, config.instance.hud, config::saveToFile))
+    /** Each of the mod's own screens goes back to the screen it was opened over, so a button in the settings returns there. */
+    fun openBeaconEditor() = Minecraft.getInstance().let { it.setScreenAndShow(BeaconScreen(config.instance.end, it.gui.screen(), config::saveToFile)) }
+
+    fun openHudEditor() =
+        Minecraft.getInstance().let { it.setScreenAndShow(HudEditorScreen(readouts, config.instance.hud, it.gui.screen(), config::saveToFile)) }
 
     override fun onInitializeClient() {
         config = ManagedConfig.create(
@@ -65,6 +70,7 @@ object DsModClient : ClientModInitializer {
         sidebars = SidebarPoller(game)
         containers = ContainerPoller(game)
         config.instance.hud.edit = Runnable { openHudEditor() }
+        config.instance.end.editBeam = Runnable { openBeaconEditor() }
         val log = LoggerFactory.getLogger("dsmod")
         game.metrics.sinks += { snapshot ->
             snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }
@@ -76,16 +82,19 @@ object DsModClient : ClientModInitializer {
             overlay || !game.wants(SystemMessage::class.java) || game.post(System.currentTimeMillis(), SystemMessage(message.toText()))
         }
         ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ ->
+            Packets.worldChanged()
             game.post(System.currentTimeMillis(), WorldChanged)
             tabs.forget()
             sidebars.forget()
         }
+        ClientChunkEvents.CHUNK_LOAD.register { _, chunk -> Packets.chunk(chunk) }
         ClientTickEvents.END_CLIENT_TICK.register {
             if (ticks % TAB_POLL_TICKS == 0) {
                 game.metrics.time("tab-poll") { tabs.poll(it) }
                 game.metrics.time("sidebar-poll") { sidebars.poll(it) }
             }
             game.metrics.time("container-poll") { containers.poll(it) }
+            Packets.tick(it)
             game.tick(System.currentTimeMillis())
             readouts.push()
             if (++ticks % FLUSH_TICKS == 0) {

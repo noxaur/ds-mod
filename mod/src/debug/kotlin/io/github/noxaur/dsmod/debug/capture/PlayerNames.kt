@@ -59,11 +59,12 @@ object PlayerNames {
                         Regex("""^Name: (\w+)""").find(plain(sidebarLine))?.let { add(it.groupValues[1]) }
                     }
                     // The players are the first column under its title, 19 rows. A dungeon puts `Class: Mage` rows there
-                    // too, and the Dungeon Hub has no `Info` title after it. An older capture keys the rows `!ab` to `!at`.
+                    // too, and the Dungeon Hub has no `Info` title after it. A tab list of one column has the `Info` title inside the
+                    // first 19 rows, and the players end there. An older capture keys the rows `!ab` to `!at`.
                     // An info row can name a player too, as in ` Admin Booster 6m 47s by [ADMIN] name`.
                     "tablist" -> data["rows"]?.jsonArray?.map(::plain)?.also { rows ->
                         rows.forEach { text -> nameInside.findAll(text).forEach { match -> addAll(match.groupValues.drop(1).filter(String::isNotEmpty)) } }
-                    }?.drop(1)?.take(TAB_COLUMN - 1)?.filter { ':' !in it }?.forEach(::row)
+                    }?.drop(1)?.take(TAB_COLUMN - 1)?.takeWhile { it.trim() != "Info" }?.filter { ':' !in it }?.forEach(::row)
                         ?: data["entries"]?.jsonObject?.values?.filterIsInstance<JsonObject>()
                             ?.filter { plain(it["name"]).matches(Regex("![a][b-z]")) }?.forEach { row(plain(it["text"])) }
                 }

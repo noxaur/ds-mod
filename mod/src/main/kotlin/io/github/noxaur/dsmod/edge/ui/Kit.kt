@@ -139,6 +139,27 @@ object Kit {
         if (checked) icon(g, Icon.CHECK, x + 2, y + 2, if (state == State.OFF) t.inkOff else GOOD, state != State.OFF)
     }
 
+    /**
+     * A switched-on stretch of a range slider's track: a raised face in the accent color, which lifts under the
+     * mouse and sinks while it is dragged.
+     */
+    fun span(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
+        val t = theme
+        val face = when (state) {
+            State.HOVER -> mix(t.accent, ARGB.white(1f), 0.2f)
+            State.DOWN -> mix(t.accent, ARGB.black(1f), 0.25f)
+            State.OFF -> t.raised
+            State.IDLE -> t.accent
+        }
+        val light = mix(face, ARGB.white(1f), 0.45f)
+        val shade = mix(face, ARGB.black(1f), 0.4f)
+        val outline = if (state == State.HOVER) t.hoverOutline else t.outline
+        if (state == State.DOWN) frame(g, x, y, width, height, outline, face, shade, face) else frame(g, x, y, width, height, outline, face, light, shade)
+    }
+
+    /** A 1px mark across a track, where a scale changes. */
+    fun tick(g: GuiGraphicsExtractor, x: Int, y: Int, height: Int) = rect(g, x, y, 1, height, theme.wellLight)
+
     fun divider(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int) {
         val t = theme
         rect(g, x, y, width, 1, t.panelShade)

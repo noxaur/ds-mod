@@ -3,11 +3,13 @@ package io.github.noxaur.dsmod.debug
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.TextBuilder
 import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.edge.toComponent
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitButton
 import io.github.noxaur.dsmod.edge.ui.KitCheckbox
+import io.github.noxaur.dsmod.edge.ui.KitRangeSlider
 import io.github.noxaur.dsmod.edge.ui.KitStepper
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
@@ -67,6 +69,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         val icon = addRenderableWidget(KitButton(stepper.right + Kit.GAP, y, Icon.SEARCH, "Search") {})
         val rate = addRenderableWidget(KitCheckbox(icon.right + Kit.GAP, y + 3, "Rate", true) {})
         addRenderableWidget(KitCheckbox(rate.right + Kit.GAP * 2, y + 3, "Bar", false) {})
+        addRenderableWidget(KitRangeSlider(ox + Kit.INSET, oy + 192, 252, "Range", 200, listOf(50, 100, 150), listOf(Section(20, 70), Section(175, 200))) {})
     }
 
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
@@ -109,6 +112,9 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         Kit.ring(g, x + 128, oy + 162, 40, 10, t.accent)
         Kit.ring(g, x + 172, oy + 162, 40, 10, Role.GOOD.argb())
         Kit.ring(g, x + 216, oy + 162, 36, 10, Role.BAD.argb())
+
+        caption(g, "Range slider, and spans: idle, hover, down, off", x, oy + 180)
+        for (i in states.indices) Kit.span(g, ox + MIDDLE + i * 30, oy + 193, 26, 14, states[i])
 
         window(g, ox + MIDDLE, oy + 40)
         list(g, ox + RIGHT, oy + 7)

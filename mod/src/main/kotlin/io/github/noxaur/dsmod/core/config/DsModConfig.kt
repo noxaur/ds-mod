@@ -9,6 +9,7 @@ import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDropdown
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorSlider
 import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText
+import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.Theme
 
 /**
@@ -79,6 +80,25 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var zealotTracker = true
+
+        @Expose
+        @ConfigOption(name = "Boss Beacon", desc = "Show a beam where the Endstone Protector will emerge.")
+        @ConfigEditorBoolean
+        @JvmField
+        var bossBeacon = true
+
+        /** The parts of the Protector's cycle that show the beam, in zealots killed since the last defeat, out of 200. */
+        @Expose
+        var beamSections: List<Section> = listOf(Section(175, 200))
+
+        @Expose
+        var beamInFight = false
+
+        /** The edge sets this to open the editor, so the config itself needs no Minecraft. */
+        @ConfigOption(name = "Beam Timing", desc = "Pick when in the Protector's cycle the beam shows.")
+        @ConfigEditorButton(buttonText = "Edit")
+        @JvmField
+        var editBeam: Runnable = Runnable {}
 
         @Expose
         @ConfigOption(name = "Boss Drops", desc = "Show your damage rank and loot from the last dragon or Protector, and keep a count of your fights.")

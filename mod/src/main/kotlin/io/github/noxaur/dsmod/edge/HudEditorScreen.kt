@@ -25,11 +25,12 @@ private const val LABEL_HEIGHT = 8
 /**
  * Drag a block to move it and scroll over it to resize it. A dragged block lines up with the screen's edges and
  * center and with the other blocks when it comes near one, unless Shift is held. The panel at the bottom works on the last block
- * clicked or scrolled, and on the whole HUD. Closing saves through [onSave].
+ * clicked or scrolled, and on the whole HUD. Closing saves through [onSave] and goes back to [parent].
  */
 class HudEditorScreen(
     private val readouts: Readouts,
     private val settings: DsModConfig.Hud,
+    private val parent: Screen?,
     private val onSave: () -> Unit,
 ) : Screen(text { body(TITLE) }.toComponent()) {
     private var grabbed: String? = null
@@ -79,6 +80,8 @@ class HudEditorScreen(
         )
         refresh()
     }
+
+    override fun onClose() = minecraft.gui.setScreen(parent)
 
     override fun removed() {
         readouts.editing = false

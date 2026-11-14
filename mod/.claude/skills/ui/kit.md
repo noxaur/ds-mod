@@ -41,6 +41,8 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `scrollbar` | 6 wide | A well with a raised thumb |
 | `tab` | 22x21 | Sits on a panel's top edge. The selected one joins the panel, and the rest sit 2px lower in `tabOff`. Draw the rest before the panel and the selected one after it |
 | `checkbox` | 10x10 | A well that holds the check icon when on. Hover and focus ring it in `hoverOutline` |
+| `span` | Any, 14 tall in a slider | A switched-on stretch of a range slider: a raised face in `accent`, lighter under the mouse and sunk while dragged |
+| `tick` | 1 wide | A mark across a track where its scale changes |
 | `divider` | 2 tall | A shade line over a light line, cut into the panel |
 | `ring` | Any | A notched 1px line in `accent` or a role, around the selected thing |
 | `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, search |
@@ -56,6 +58,7 @@ A widget is a vanilla widget with a kit face. It takes its label as a string and
 | `KitButton` | A button with a label or an icon. An icon button is 16x16 |
 | `KitCheckbox` | A checkbox with its label 4px to the right |
 | `KitStepper` | A minus button, a value and a plus button, for a number with few useful steps |
+| `KitRangeSlider` | A 16 tall track with any number of spans, for picking stretches of a scale. Press and drag on the track to draw one or click to add one, drag an end or the middle, right-click to remove. The cursor shows what a press will do. `Sections` in `core/ui` holds its rules: a span is at least 5 long, and two within 3 of each other become one |
 
 Controls in a row are 4 apart, and rows are 4 apart. A label beside a control sits on the control's text baseline.
 

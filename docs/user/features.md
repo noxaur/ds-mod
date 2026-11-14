@@ -50,6 +50,25 @@ Shows where the Endstone Protector stands:
 
 It shows nothing outside The End.
 
+### Boss Beacon
+
+Shows a beam where the Endstone Protector will emerge, labeled `Protector` with the distance to it. The spot is known from the moment the last Protector falls, so you can stand there before the next one is up.
+
+The beam starts out showing for the last 25 zealot kills before the Protector emerges, and goes away when it does. To change that, press Edit beside Beam Timing under The End in the settings.
+
+The bar is one Protector cycle: the 200 zealots your lobby kills between two Protectors, split into the four tiers it rises through. The beam shows while the cycle is inside a blue section.
+
+- Press on an empty part of the bar and drag to draw a section. A click without dragging adds a short one.
+- Drag a section's end to make it longer or shorter, or drag its middle to slide it.
+- Sections that meet become one. Drag back before you let go and they come apart again.
+- Right-click a section to remove it.
+- The line under the bar reads the section you last touched, in zealots killed and as a share of the cycle, such as `100 to 130 of 200 kills (50% to 65%)`.
+- During the Fight keeps the beam on the spot after the Protector has emerged, and Reset goes back to the last 25 kills.
+
+With the keyboard, the arrow keys slide the section you last touched, by ten with Shift, and Delete removes it. Done takes you back to the settings.
+
+The beam also shows when you arrive in The End partway through a cycle. It shows nothing outside The End.
+
 ### Boss Drops
 
 Shows how your last fight against a dragon or the Endstone Protector went:

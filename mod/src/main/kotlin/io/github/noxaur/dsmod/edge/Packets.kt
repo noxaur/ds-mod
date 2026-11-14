@@ -2,12 +2,18 @@ package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.EntityDied
+import io.github.noxaur.dsmod.core.game.HeadPlaced
 import net.minecraft.client.Minecraft
+import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket
 import net.minecraft.world.entity.EntityEvent
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.entity.SkullBlockEntity
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.chunk.LevelChunk
 
 /**
  * What the server sends that leaves nothing behind to poll: `ServerPacketsMixin` calls these on the client thread
@@ -17,6 +23,46 @@ object Packets {
     fun actionBar(text: Component) {
         val game = DsModClient.game
         if (game.wants(ActionBar::class.java)) game.post(System.currentTimeMillis(), ActionBar(text.toText()))
+    }
+
+    // Heads seen before any feature could be handed them. A head arrives with its chunk or as a block update in the
+    // first moments of a world, when the tab list has not yet said which area this is.
+    private val waiting = LinkedHashSet<BlockPos>()
+
+    fun worldChanged() = waiting.clear()
+
+    fun block(pos: BlockPos, state: BlockState) {
+        if (state.block === Blocks.PLAYER_HEAD) head(pos.immutable())
+    }
+
+    /**
+     * A head that was placed before its chunk reached the client came with no block update, so a loaded chunk is
+     * read for the heads it holds. Only a head with a skin counts: a server builds its markers from those, and the
+     * plain heads that decorate a map would be posted as markers otherwise.
+     */
+    fun chunk(chunk: LevelChunk) {
+        if (chunk.blockEntities.isEmpty()) return
+        for ((pos, entity) in chunk.blockEntities) {
+            if (entity is SkullBlockEntity && entity.ownerProfile != null && entity.blockState.block === Blocks.PLAYER_HEAD) head(pos.immutable())
+        }
+    }
+
+    private fun head(pos: BlockPos) {
+        val game = DsModClient.game
+        val reaches = game.reaches(HeadPlaced::class.java)
+        // A capture records the head when it is seen, whether or not a feature is there to take it.
+        if (reaches || game.tap != null) game.post(System.currentTimeMillis(), HeadPlaced(pos.x, pos.y, pos.z))
+        if (!reaches && game.wants(HeadPlaced::class.java)) waiting += pos
+    }
+
+    /** Posts the heads that were held back, once a feature can be handed them and if they still stand. */
+    fun tick(client: Minecraft) {
+        if (waiting.isEmpty() || !DsModClient.game.reaches(HeadPlaced::class.java)) return
+        val level = client.level
+        for (pos in waiting) {
+            if (level?.getBlockState(pos)?.block === Blocks.PLAYER_HEAD) DsModClient.game.post(System.currentTimeMillis(), HeadPlaced(pos.x, pos.y, pos.z))
+        }
+        waiting.clear()
     }
 
     fun entityEvent(packet: ClientboundEntityEventPacket) {

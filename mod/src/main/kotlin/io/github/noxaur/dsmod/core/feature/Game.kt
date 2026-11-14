@@ -12,6 +12,7 @@ import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.TabState
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
+import io.github.noxaur.dsmod.core.world.Mark
 
 /**
  * Runs the features. The edge calls [post] for each event and [tick] once a tick, then hands each
@@ -23,12 +24,15 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     class Readout(val feature: Feature) {
         internal val metric = "${feature.id}.hud"
         internal val slotsMetric = "${feature.id}.slots"
+        internal val marksMetric = "${feature.id}.marks"
         var hud: HudBlock? = null
             internal set
         var slots: Map<Int, SlotMark> = emptyMap()
             internal set
+        var marks: List<Mark> = emptyList()
+            internal set
 
-        /** Goes up each time [hud] or [slots] changes, so the edge hands them over only then. */
+        /** Goes up each time [hud], [slots] or [marks] changes, so the edge hands them over only then. */
         var version = 0
             internal set
         internal var stale = true
@@ -71,6 +75,13 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
      */
     fun wants(type: Class<out GameEvent>) =
         tap != null || features.any { it.enabled && (type == TabList::class.java || type == Sidebar::class.java || type in it.handlers) }
+
+    /**
+     * Whether a feature would be handed an event of [type] right now, which also takes the player being in the
+     * feature's area. A source whose event comes once, such as a block that is already standing, holds it
+     * back until this is true, because [post] gives a feature outside its area nothing.
+     */
+    fun reaches(type: Class<out GameEvent>) = features.any { it.enabled && type in it.handlers && it.area.holds(tab, sidebar) }
 
     /** Returns false when a feature hid [event], which the edge honors for a chat line. */
     fun post(time: Long, event: GameEvent): Boolean {
@@ -129,13 +140,16 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             readout.refreshedAt = time
             var hud: HudBlock? = null
             var slots = emptyMap<Int, SlotMark>()
+            var marks = emptyList<Mark>()
             if (feature.enabled && feature.area.holds(tab, sidebar)) {
                 metrics.time(readout.metric) { hud = feature.hud(time) }
                 metrics.time(readout.slotsMetric) { slots = feature.slots(time) }
+                metrics.time(readout.marksMetric) { marks = feature.marks(time) }
             }
-            if (hud == readout.hud && slots == readout.slots) continue
+            if (hud == readout.hud && slots == readout.slots && marks == readout.marks) continue
             readout.hud = hud
             readout.slots = slots
+            readout.marks = marks
             readout.version++
         }
     }
