@@ -1,10 +1,13 @@
 package io.github.noxaur.dsmod.core.feature
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
+import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
+import io.github.noxaur.dsmod.core.game.WorldChanged
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -20,6 +23,7 @@ class GameTest {
 
     @Test
     fun `a feature that was switched off comes back knowing nothing of the world it left`() {
+        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
         say(0, "☠ The Young Dragon has spawned!")
         game.tick(0)
         assertNotNull(hud("dragon-timer"))
@@ -51,9 +55,35 @@ class GameTest {
     }
 
     @Test
-    fun `a drop outside The End is not a zealot drop`() {
-        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: Crypts")))))
-        say(0, "RARE DROP! Zombie Talisman")
-        assertEquals("""{"drops":{},"kills":0}""", game.readouts.single { it.feature.id == "zealot-tracker" }.feature.state!!.encode())
+    fun `a feature locked to an area hears nothing before the server names one`() {
+        say(0, "☠ The Young Dragon has spawned!")
+        game.tick(0)
+        assertNull(hud("dragon-timer"))
+    }
+
+    @Test
+    fun `a feature that is switched back on hears the sidebar again`() {
+        var heard = 0
+        val listener = object : Feature("listener", config.end::dragonTimer, Area.ANYWHERE) {
+            init {
+                on<Sidebar> { _, _ -> heard++ }
+            }
+        }
+        val game = Game(listOf(listener))
+        game.post(0, Sidebar(lines = listOf(ServerText(ServerSpan("⏣ Village")))))
+        config.end.dragonTimer = false
+        game.tick(1_000)
+        config.end.dragonTimer = true
+        game.tick(2_000)
+        assertEquals(2, heard)
+    }
+
+    @Test
+    fun `the area of the world the player left does not outlive the hop`() {
+        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+        game.post(1, WorldChanged)
+        say(2, "☠ The Young Dragon has spawned!")
+        game.tick(2)
+        assertNull(hud("dragon-timer"))
     }
 }

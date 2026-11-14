@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.end
 
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.ProtectorRow
 import io.github.noxaur.dsmod.core.game.WorldChanged
@@ -26,7 +27,7 @@ class BossBeacon(
     toggle: KMutableProperty0<Boolean>,
     private val sections: KProperty0<List<Section>>,
     private val inFight: KProperty0<Boolean>,
-) : Feature("boss-beacon", toggle) {
+) : Feature("boss-beacon", toggle, Area.END) {
     private var beam = emptyList<Mark>()
     private var x = 0
     private var y = 0
@@ -34,7 +35,6 @@ class BossBeacon(
 
     init {
         on<WorldChanged> { _, _ -> beam = emptyList() }
-        // The area is asked when the beam is drawn and not here, because a head can arrive with the world, ahead of the tab list.
         on<HeadPlaced> { head, _ ->
             val sameColumn = beam.isNotEmpty() && head.x == x && head.z == z
             y = if (sameColumn) minOf(y, head.y) else head.y
@@ -45,7 +45,6 @@ class BossBeacon(
     }
 
     override fun marks(now: Long): List<Mark> {
-        if (tab.area != "The End") return emptyList()
         val row = tab.info("Protector")?.let(ProtectorRow::parse) ?: return beam
         val shows = when {
             row.stage == "Spawned" -> inFight.get()

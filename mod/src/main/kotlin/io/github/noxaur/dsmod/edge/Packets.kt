@@ -25,16 +25,14 @@ object Packets {
         if (game.wants(ActionBar::class.java)) game.post(System.currentTimeMillis(), ActionBar(text.toText()))
     }
 
-    // The heads already posted from a chunk, so a chunk that loads again posts nothing twice.
-    private val headsSeen = HashSet<Long>()
+    // Heads seen before any feature could be handed them. A head arrives with its chunk or as a block update in the
+    // first moments of a world, when the tab list has not yet said which area this is.
+    private val waiting = LinkedHashSet<BlockPos>()
 
-    fun worldChanged() = headsSeen.clear()
+    fun worldChanged() = waiting.clear()
 
     fun block(pos: BlockPos, state: BlockState) {
-        val game = DsModClient.game
-        if (state.block !== Blocks.PLAYER_HEAD || !game.wants(HeadPlaced::class.java)) return
-        headsSeen += pos.asLong()
-        game.post(System.currentTimeMillis(), HeadPlaced(pos.x, pos.y, pos.z))
+        if (state.block === Blocks.PLAYER_HEAD) head(pos.immutable())
     }
 
     /**
@@ -43,12 +41,28 @@ object Packets {
      * plain heads that decorate a map would be posted as markers otherwise.
      */
     fun chunk(chunk: LevelChunk) {
-        val game = DsModClient.game
-        if (chunk.blockEntities.isEmpty() || !game.wants(HeadPlaced::class.java)) return
+        if (chunk.blockEntities.isEmpty()) return
         for ((pos, entity) in chunk.blockEntities) {
-            if (entity !is SkullBlockEntity || entity.ownerProfile == null || entity.blockState.block !== Blocks.PLAYER_HEAD) continue
-            if (headsSeen.add(pos.asLong())) game.post(System.currentTimeMillis(), HeadPlaced(pos.x, pos.y, pos.z))
+            if (entity is SkullBlockEntity && entity.ownerProfile != null && entity.blockState.block === Blocks.PLAYER_HEAD) head(pos.immutable())
         }
+    }
+
+    private fun head(pos: BlockPos) {
+        val game = DsModClient.game
+        val reaches = game.reaches(HeadPlaced::class.java)
+        // A capture records the head when it is seen, whether or not a feature is there to take it.
+        if (reaches || game.tap != null) game.post(System.currentTimeMillis(), HeadPlaced(pos.x, pos.y, pos.z))
+        if (!reaches && game.wants(HeadPlaced::class.java)) waiting += pos
+    }
+
+    /** Posts the heads that were held back, once a feature can be handed them and if they still stand. */
+    fun tick(client: Minecraft) {
+        if (waiting.isEmpty() || !DsModClient.game.reaches(HeadPlaced::class.java)) return
+        val level = client.level
+        for (pos in waiting) {
+            if (level?.getBlockState(pos)?.block === Blocks.PLAYER_HEAD) DsModClient.game.post(System.currentTimeMillis(), HeadPlaced(pos.x, pos.y, pos.z))
+        }
+        waiting.clear()
     }
 
     fun entityEvent(packet: ClientboundEntityEventPacket) {

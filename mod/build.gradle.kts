@@ -106,15 +106,17 @@ kotlin {
     jvmToolchain(25)
 }
 
+// `./gradlew runClient -Pbrief=<file>` names the window after the brief and shows its steps. See Brief.kt.
 tasks.named<JavaExec>("runClient") {
     val mods = devMods.elements
+    val brief = providers.gradleProperty("brief").map { file(it).absolutePath }
     jvmArgumentProviders.add(
         CommandLineArgumentProvider {
             listOf(
                 "-Dfabric.addMods=" + mods.get().joinToString(File.pathSeparator) { it.asFile.path },
                 "-Ddevauth.enabled=true",
                 "-Ddevauth.account=main",
-            )
+            ) + listOfNotNull(brief.orNull?.let { "-Ddsmod.brief=$it" })
         },
     )
 }

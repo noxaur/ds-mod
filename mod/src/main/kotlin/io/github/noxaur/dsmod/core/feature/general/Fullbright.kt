@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.general
 
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.game.Area
 import kotlin.reflect.KMutableProperty0
 
 /**
@@ -8,4 +9,4 @@ import kotlin.reflect.KMutableProperty0
  * which asks the setting each frame. This class puts it in the list that the settings, the docs check and the
  * tests go through.
  */
-class Fullbright(toggle: KMutableProperty0<Boolean>) : Feature("fullbright", toggle)
+class Fullbright(toggle: KMutableProperty0<Boolean>) : Feature("fullbright", toggle, Area.ANYWHERE)

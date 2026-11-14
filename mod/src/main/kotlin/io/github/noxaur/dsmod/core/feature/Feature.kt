@@ -1,9 +1,11 @@
 package io.github.noxaur.dsmod.core.feature
 
 import io.github.noxaur.dsmod.core.container.SlotMark
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Metrics
+import io.github.noxaur.dsmod.core.game.SidebarState
 import io.github.noxaur.dsmod.core.game.TabState
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudBuilder
@@ -18,8 +20,9 @@ import kotlin.reflect.KMutableProperty0
  * One thing the mod does for the player. A feature turns events into its own state in [on], and
  * turns that state into what the player sees in [hud], [slots] and [marks], says something once with [notice] and
  * [alert], or keeps a server line out of chat with [hide]. The shared layers draw and print all of it, so a feature touches no screen itself. [toggle] is its switch in the settings, and while that is off, none of these run.
+ * Outside [area] the feature shows nothing and sees only the tab list, the sidebar and a change of world.
  */
-abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boolean>) {
+abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boolean>, val area: Area) {
     /** The name the player knows the feature by: [id] in Title Case. */
     val title = id.split('-').joinToString(" ") { it.replaceFirstChar(Char::uppercase) }
     private val header = text { brand(title) }
@@ -31,9 +34,13 @@ abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boo
     internal val handlers = HashMap<Class<out GameEvent>, (GameEvent, Long) -> Unit>()
     internal lateinit var metrics: Metrics
     internal lateinit var tab: TabState
+    internal lateinit var sidebar: SidebarState
     internal lateinit var container: ContainerState
     internal lateinit var messages: MutableList<Message>
     internal var hides = false
+
+    /** Whether the player is in [area], for a tab-list or sidebar handler that follows them arriving and leaving. */
+    protected val here: Boolean get() = area.holds(tab, sidebar)
 
     /** What this feature keeps between sessions, or null when it keeps nothing. The edge loads and writes it. */
     var state: Saved<*>? = null

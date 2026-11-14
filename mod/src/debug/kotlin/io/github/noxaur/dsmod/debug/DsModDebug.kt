@@ -1,8 +1,12 @@
 package io.github.noxaur.dsmod.debug
 
+import io.github.noxaur.dsmod.core.hud.HudGroup
+import io.github.noxaur.dsmod.debug.brief.Brief
+import io.github.noxaur.dsmod.debug.brief.BriefRun
 import io.github.noxaur.dsmod.debug.capture.CaptureSession
 import io.github.noxaur.dsmod.debug.capture.toCaptureJson
 import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.Hud
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import net.fabricmc.api.ClientModInitializer
@@ -11,15 +15,55 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommands
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
+import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.Packet
+import org.lwjgl.glfw.GLFW
 import java.nio.file.Path
 
 object DsModDebug : ClientModInitializer {
     @Volatile
     private var capture: CaptureSession? = null
+
+    private var brief: BriefRun? = null
+    private var briefShown: Any? = null
+    private var briefSaved: Path? = null
+
+    /** Read by BriefTitleMixin for the window title. */
+    fun briefName(): String? = brief?.brief?.name
+
+    /** Shows [brief] on the HUD and in the window title, or takes it away for null. The developer's key starts it, and with it a capture. */
+    fun showBrief(client: Minecraft, brief: Brief?) {
+        this.brief = brief?.let(::BriefRun)
+        briefShown = null
+        briefSaved = null
+        if (brief == null) Hud.hide("brief")
+        client.updateTitle()
+    }
+
+    /** Moves the brief on for the key and for a timer that ran out, marks each step in the capture, and saves the capture after the last. */
+    private fun tickBrief(client: Minecraft, nextStep: KeyMapping) {
+        val run = brief ?: return
+        val now = System.currentTimeMillis()
+        var moved = run.tick(now)
+        while (nextStep.consumeClick()) moved = run.advance(now) || moved
+        if (moved) {
+            if (capture == null) toggleCapture(client)
+            capture?.record("step") { run.record() }
+            if (run.done) briefSaved = toggleCapture(client)
+        }
+        val width = client.window.guiScaledWidth
+        val shown = Triple(run.current, run.remaining(now), width)
+        if (shown == briefShown) return
+        briefShown = shown
+        val block = run.hud(now, nextStep.translatedKeyMessage.string, briefSaved?.fileName?.toString())
+        val widest = (block.rows.map { it.text } + block.header).maxOf { client.font.width(it.plain) }
+        // Under the status effects in the top right corner, and above the server's sidebar. The plate adds 7 pixels around the text.
+        Hud.show("brief", HudGroup("brief", width - widest - 9, 54, background = true), block, placeable = false)
+    }
 
     /** Starts a capture, or saves the running one. Returns the capture file either way. */
     fun toggleCapture(client: Minecraft): Path {
@@ -43,6 +87,9 @@ object DsModDebug : ClientModInitializer {
     }
 
     override fun onInitializeClient() {
+        // `./gradlew runClient -Pbrief=<file>` sets this. The window does not exist yet, and takes its title when it opens.
+        System.getProperty("dsmod.brief")?.let { brief = BriefRun(Brief.read(Path.of(it))) }
+        val nextStep = KeyMappingHelper.registerKeyMapping(KeyMapping("key.dsmod_debug.next_step", GLFW.GLFW_KEY_RIGHT_BRACKET, KeyMapping.Category.MISC))
         ClientEntityEvents.ENTITY_UNLOAD.register { entity, _ -> capture?.unload(entity) }
         ClientReceiveMessageEvents.CHAT.register { message, _, sender, _, _ ->
             capture?.record("chat") {
@@ -52,7 +99,10 @@ object DsModDebug : ClientModInitializer {
                 }
             }
         }
-        ClientTickEvents.END_CLIENT_TICK.register { client -> capture?.tick(client) }
+        ClientTickEvents.END_CLIENT_TICK.register { client ->
+            capture?.tick(client)
+            tickBrief(client, nextStep)
+        }
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
             dispatcher.register(
                 ClientCommands.literal("dscapture").executes { context ->

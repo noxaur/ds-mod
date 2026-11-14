@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.chat
 
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.text.text
 import kotlinx.serialization.Serializable
@@ -15,7 +16,7 @@ data class AbilitySpamTold(val told: Boolean = false)
  * while the player holds the button. The first hidden line ever is answered with where to turn this off,
  * because the player did not ask for a server line to go missing.
  */
-class AbilitySpam(toggle: KMutableProperty0<Boolean>) : Feature("ability-spam", toggle) {
+class AbilitySpam(toggle: KMutableProperty0<Boolean>) : Feature("ability-spam", toggle, Area.ANYWHERE) {
     private val told = saved(AbilitySpamTold())
 
     init {

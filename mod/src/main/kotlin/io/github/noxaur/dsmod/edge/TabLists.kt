@@ -25,6 +25,11 @@ class TabListPoller(private val game: Game) {
     private var last = emptyList<Component>()
     private var tapped = game.tap
 
+    /** Posts the tab list at the next poll even when no row changed, after [Game] forgot it with the old world. */
+    fun forget() {
+        last = emptyList()
+    }
+
     fun poll(client: Minecraft) {
         if (!game.wants(TabList::class.java)) return
         val overlay = client.gui.hud.tabList

@@ -19,7 +19,7 @@ This gives you the pinned JDK, Go, Node and pnpm. Gradle comes from `mod/gradlew
 | Backend | `cd backend && go run ./cmd/backend` | Listens on `:8080`. Set `ADDR` to change it. |
 | Website | `cd web && pnpm install && pnpm dev` | Reads the backend at `BACKEND_URL`, `http://localhost:8080` by default. |
 
-`runClient` signs in with your Microsoft account through DevAuth. It also loads Sodium, Mod Menu and the other mods in the `devMods` configuration. They don't ship in any jar.
+`runClient` signs in with the user's Microsoft account through DevAuth. It also loads Sodium, Mod Menu and the other mods in the `devMods` configuration. They don't ship in any jar.
 
 In T3 Code, `t3.json` has an action for each command.
 
@@ -34,7 +34,32 @@ In T3 Code, `t3.json` has an action for each command.
 
 With the debug build, type `/dscapture` in game to start a capture, and type it again to save it. The file lands in `dsmod/captures/` in the game folder, which is `mod/run/` for `runClient`. `mod/run/` is ignored by git.
 
-The live server has real players on it, so a person records there. Agents never connect to it.
+The live server has real players on it, so the user does all the playing there.
+
+### Record from a brief
+
+A brief tells the user what to play, in order, and names the window, so that the user can tell one agent's client from another's. Write it as JSON outside the worktree:
+
+```json
+{
+  "name": "Golem tiers",
+  "steps": [
+    { "do": "Warp to the End" },
+    { "do": "Stand still next to the Protector until it spawns", "note": "Do not hit it.", "seconds": 90 },
+    { "do": "Kill it" }
+  ]
+}
+```
+
+`note` is shown under the step while it is the current one. A step with `seconds` counts down and moves on by itself, and any other step waits for the user. A key the brief does not know fails the launch.
+
+Once the user has agreed, start the client with the absolute path of the brief:
+
+```sh
+cd mod && ./gradlew runClient -Pbrief=/tmp/golem-tiers.json
+```
+
+The window's title starts with the brief's name, and the steps sit in the top right corner of the screen. The user presses the key the HUD names to start, which starts the capture, and again after each step. It is `]` on a US layout, and Next Recording Step in the game's controls. After the last step the capture is saved and the HUD names its file, so the user closes the game and the command returns. The capture is the newest file in `mod/run/dsmod/captures/`, and a `step` line marks where each step began.
 
 ## Add a feature
 
@@ -58,7 +83,7 @@ cd mod
 ./gradlew runClientGameTest runProdClientGameTest
 ```
 
-Each opens a game window for a few seconds. The second one loads the built jars the way a player does.
+The second one loads the built jars the way a player does. Both run behind the user, taking no keyboard focus and writing the game's sound to `audio.wav` in the run folder instead of the speakers. [Issue 19](https://github.com/noxaur/ds-mod/issues/19) lists the platforms where that is incomplete.
 
 To run one game test, name it: `./gradlew runProdClientGameTest -Pgametests=PerfTest`. `PerfTest` writes its table to `build/run/prodClientGameTest/perf.md`.
 

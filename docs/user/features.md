@@ -129,14 +129,13 @@ The all-time number is saved about once a minute and when you close the game, in
 
 ## General
 
-### Alerts
+### Fireball Alert
 
-Shows a title in the middle of the screen and plays a sound for a moment that needs you right away. A line in chat says the alert came from Alerts.
+Shows `Fireball` in the middle of the screen and plays a sound when a dragon says it is about to throw fireballs. It works only in The End, and its switch is under The End in the settings.
 
-- Fireball Alert fires when a dragon says it is about to throw fireballs.
-- Slayer Boss Alert fires when your own slayer boss spawns.
+### Slayer Boss Alert
 
-Each has its own switch under General in the settings, and Alerts turns all of them off at once.
+Shows `Boss Spawned` in the middle of the screen and plays a sound when your own slayer boss spawns. Its switch is under Slayers in the settings.
 
 ### Explosion Particle Hider
 
