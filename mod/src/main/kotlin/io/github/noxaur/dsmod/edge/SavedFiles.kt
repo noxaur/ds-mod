@@ -38,9 +38,12 @@ class SavedFiles(private val dir: Path, private val game: Game) {
         }
     }
 
-    /** Writes every state that changed since the last call. Failures of earlier writes reach `Metrics` here. */
+    /** Writes every state that changed since the last call. A write that failed earlier reaches `Metrics` here and is tried again. */
     fun flush() {
-        generateSequence(failures::poll).forEach { (name, error) -> game.metrics.fail(name, error) }
+        generateSequence(failures::poll).forEach { (id, error) ->
+            game.metrics.fail("$id.save", error)
+            states.first { it.first == id }.second.unwritten()
+        }
         for ((id, state) in states) {
             val json = state.takeChanges() ?: continue
             writer.value.execute {
@@ -50,7 +53,7 @@ class SavedFiles(private val dir: Path, private val game: Game) {
                     temporary.writeText(json)
                     temporary.moveTo(dir.resolve("$id.json"), ATOMIC_MOVE)
                 } catch (e: Exception) {
-                    failures += "$id.save" to e
+                    failures += id to e
                 }
             }
         }

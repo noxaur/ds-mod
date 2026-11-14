@@ -30,6 +30,11 @@ class Saved<S : Any>(private val serializer: KSerializer<S>, default: S) {
         changed = false
     }
 
+    /** Marks [value] unwritten again, after writing it failed. */
+    fun unwritten() {
+        changed = true
+    }
+
     /** The JSON to write when [value] was set since the last call, or null when there is nothing to write. */
     fun takeChanges(): String? = if (changed) encode().also { changed = false } else null
 }
