@@ -1,7 +1,9 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.DsModConfig.Position
+import io.github.noxaur.dsmod.core.feature.Alert
 import io.github.noxaur.dsmod.core.feature.Game
+import io.github.noxaur.dsmod.core.feature.Notice
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.hud
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
@@ -12,7 +14,8 @@ import kotlin.math.roundToInt
 private const val MARGIN = 4
 
 /**
- * Hands each feature's readout to [Hud] and [Slots] when it changes. Placement lives here: a block the
+ * Hands each feature's readout to [Hud] and [Slots] when it changes, and what the features said to [Chat]
+ * and [Alerts]. A message waits for the end of the tick, so it lands under the server line it answers. Placement lives here: a block the
  * player has moved has its own place, and the rest stack down from the top-left.
  */
 class Readouts(private val game: Game, private val positions: MutableMap<String, Position>) {
@@ -39,6 +42,13 @@ class Readouts(private val game: Game, private val positions: MutableMap<String,
 
     /** Call once a tick, after [Game.tick]. */
     fun push() {
+        for (message in game.messages) {
+            when (message) {
+                is Notice -> Chat.notice(message.feature, message.detail)
+                is Alert -> Alerts.title(message.title, Chat.noticeText(message.feature, message.detail))
+            }
+        }
+        game.messages.clear()
         val window = Minecraft.getInstance().window
         if (window.guiScaledWidth != width || window.guiScaledHeight != height) {
             width = window.guiScaledWidth

@@ -23,9 +23,10 @@ object Chat {
     }
 
     /** A low-urgency notice from one feature: its name, a separator, then [detail]. */
-    fun notice(feature: String, detail: Text) {
-        send(Text(text { body(feature); muted(" | ") }.spans + detail.spans))
-    }
+    fun notice(feature: String, detail: Text) = send(noticeText(feature, detail))
+
+    /** The line [notice] prints, for an alert to print with its title. */
+    fun noticeText(feature: String, detail: Text) = Text(text { body(feature); muted(" | ") }.spans + detail.spans)
 }
 
 fun Text.toComponent(): MutableComponent =
