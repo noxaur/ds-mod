@@ -60,18 +60,20 @@ Events are the `GameEvent`s that features see, recorded as they were posted, and
 - `system` for a line in chat. Player chat arrives this way too.
 - `world` for entering a world.
 - `tablist` for the rows of the tab list in the order the client draws them, when one changes.
+- `actionbar` for the line above the hotbar, each time the server sends it.
+- `death` for the server's death event on an entity that is not a player, with its type, name and position.
 - `container` for a menu the player opened, or their own inventory again, and `slot` for each slot that changed. A slot carries the item's id, count, name, lore and `custom_data`. A big menu's slots arrive over a few ticks.
 
 Raw records are for you to read. No feature sees one until it is promoted:
 
-- `chat`, `actionbar` and `title`.
+- `chat` and `title`.
 - `sidebar`, `bossbars` and `tabheader`, the tab list's header and footer.
 - `itemcomponents` for the components a `slot` leaves out, such as `tooltip_style`, `profile` and `item_model`, in Minecraft's own codec JSON.
 - `entities` for players, named entities and anything wearing or holding an item, each with the block it stands in. Glowing entities, silverfish and creepers, displays (`text`, `item`), item frames (`item`, `rotation`, `facing`) and dropped named items come too.
 - `status` for the player's block, health and XP.
 - `sound`, `particles` and `block` for what the server played, spawned or changed.
 - `swing` and `use` for the player's attack and use buttons, before the game acts: position, yaw, pitch, the held item's `item`, `name` and `custom_data` `itemId`, and the `target` entity or `block` under the crosshair.
-- `death` for the server's death event on an entity, and `unload` for a living entity the client dropped, with its `reason`. A mob that only left has `unload` and no `death`.
+- `unload` for a living entity the client dropped, with its `reason`. A mob that only left has `unload` and no `death` event.
 - `skulls` for skull blocks within four chunks, with `state` (rotation) and `profile`, and `blockstates` for the blocks in `BlockScan.kt`'s watch-list there. Both are entries like `entities`, keyed `x,y,z`, and include what stood there before the capture began.
 - `map` for a map the player carries or an item frame holds, when it changes: `colors` is base64 of the zlib-deflated 128x128 color bytes, present only when the pixels changed, and `decorations` are the markers.
 - `hud` for the rows of each HUD block ds-mod showed, and `metrics` for how long each feature took and what it counted.
@@ -81,6 +83,7 @@ An event's text is `plain` plus `spans`, with `§` codes already resolved into t
 - Work from captures. When none covers the case, name the screen or action you need and ask the user to record it.
 - The live server has real players on it, so only the user connects there.
 - Captures hold player names and private chat, so only a fixture goes in git.
+- `actionbar` and `death` were raw records until 2026-11-14, with another shape, so an older capture cannot be cut for them.
 - To promote a raw type, design the `GameEvent` from a capture that shows the data, post it from `edge`, and delete its recorder in `CaptureSession`. A type has one producer, and `CaptureWriter` rejects a raw record that uses an event's type.
 - When you add a capture type, add it to `CaptureTest`, which makes a real server send each type and checks the file.
 - To see a screen, write a client game test in `src/gametest` that opens it and calls `takeScreenshot`. The image lands in `build/run/clientGameTest/screenshots/`.

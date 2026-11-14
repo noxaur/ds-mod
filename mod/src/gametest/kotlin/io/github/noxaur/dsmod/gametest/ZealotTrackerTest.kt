@@ -12,13 +12,13 @@ import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-/** The real edge loads the saved file in a running game, counts a drop the server sends, and writes it back. */
+/** The real edge loads the saved file in a running game, counts a drop and a kill the server sends, and writes them back. */
 class ZealotTrackerTest : FabricClientGameTest {
     private val file = FabricLoader.getInstance().configDir.resolve("dsmod/data/zealot-tracker.json")
 
     override fun runTest(context: ClientGameTestContext) {
         file.parent.createDirectories()
-        file.writeText("""{"drops":{"Summoning Eye":7}}""")
+        file.writeText("""{"drops":{"Summoning Eye":7},"kills":0}""")
         context.runOnClient<Nothing> { DsModClient.saved.load() }
 
         context.worldBuilder().create().use { world ->
@@ -27,11 +27,19 @@ class ZealotTrackerTest : FabricClientGameTest {
                 DsModClient.game.post(System.currentTimeMillis(), TabList(listOf(ServerText(ServerSpan("Area: The End")))))
             }
             world.server.runCommand("""tellraw @a "§6§lRARE DROP! §7(§5Summoning Eye§7) (§b✯ 90%§7)"""")
-            context.waitTicks(5)
+            // A zealot dies and the Combat XP reaches the action bar with it, which is the player's own kill. The second
+            // zealot dies with no XP, as another player's kill does.
+            listOf("Mine", "Theirs").forEach { world.server.runCommand("""execute at @a run summon pig ~ ~ ~3 {CustomName:"[Lv55] Zealot $it",NoAI:1b,Silent:1b}""") }
+            context.waitTicks(20)
+            world.server.runCommand("""kill @e[name="[Lv55] Zealot Mine"]""")
+            world.server.runCommand("""title @a actionbar "+375.84 Combat (18.3%)"""")
+            context.waitTicks(10)
+            world.server.runCommand("""kill @e[name="[Lv55] Zealot Theirs"]""")
+            context.waitTicks(10)
             context.runOnClient<Nothing> { DsModClient.saved.flush() }
-            repeat(100) { if (file.readText() != """{"drops":{"Summoning Eye":7}}""") return@repeat else context.waitTicks(1) }
+            repeat(100) { if (file.readText() != """{"drops":{"Summoning Eye":7},"kills":0}""") return@repeat else context.waitTicks(1) }
             val written = file.readText()
-            check(written == """{"drops":{"Summoning Eye":8}}""") { "Expected 7 loaded and 1 counted, the file says $written" }
+            check(written == """{"drops":{"Summoning Eye":8},"kills":1}""") { "Expected 7 loaded, 1 drop and 1 kill counted, the file says $written" }
             check(!file.resolveSibling("zealot-tracker.json.tmp").exists()) { "The temporary file was left behind" }
         }
     }

@@ -5,7 +5,8 @@
   "client": [
     "ContainerScreenAccessor",
     "ExplosionParticleMixin",
-    "FullbrightMixin"
+    "FullbrightMixin",
+    "ServerPacketsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

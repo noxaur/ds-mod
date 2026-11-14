@@ -37,7 +37,7 @@ class SavedFilesTest {
         first.drop("RARE DROP! (Summoning Eye) (✯ 90%)")
         first.drop("RNGESUS DROP! [Lvl 1] Enderman")
         files.close()
-        assertEquals("""{"drops":{"Summoning Eye":1,"[Lvl 1] Enderman":1}}""", file.readText())
+        assertEquals("""{"drops":{"Summoning Eye":1,"[Lvl 1] Enderman":1},"kills":0}""", file.readText())
         assertEquals(emptyList(), dir.listDirectoryEntries().filter { it.fileName.toString().endsWith(".tmp") })
 
         val second = game()
@@ -53,14 +53,14 @@ class SavedFilesTest {
         val files = SavedFiles(dir, game)
         files.load()
 
-        assertEquals("""{"drops":{}}""", game.saved())
+        assertEquals("""{"drops":{},"kills":0}""", game.saved())
         assertTrue("zealot-tracker.load" in game.metrics.snapshot().failures)
         assertFalse(file.exists())
         assertEquals("{not json", dir.listDirectoryEntries("zealot-tracker.json.corrupt-*").single().readText())
 
         game.drop("RARE DROP! (Summoning Eye) (✯ 90%)")
         files.close()
-        assertEquals("""{"drops":{"Summoning Eye":1}}""", file.readText())
+        assertEquals("""{"drops":{"Summoning Eye":1},"kills":0}""", file.readText())
     }
 
     @Test
@@ -80,7 +80,7 @@ class SavedFilesTest {
 
         Files.delete(blocked)
         files.close()
-        assertEquals("""{"drops":{"Summoning Eye":1}}""", blocked.resolve("zealot-tracker.json").readText())
+        assertEquals("""{"drops":{"Summoning Eye":1},"kills":0}""", blocked.resolve("zealot-tracker.json").readText())
     }
 
     @Test
@@ -106,6 +106,6 @@ class SavedFilesTest {
         file.writeText("changed by someone else")
         files.flush()
         assertEquals("changed by someone else", file.readText())
-        assertEquals("""{"drops":{"Summoning Eye":1}}""", saved)
+        assertEquals("""{"drops":{"Summoning Eye":1},"kills":0}""", saved)
     }
 }
