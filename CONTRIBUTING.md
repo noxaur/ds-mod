@@ -12,9 +12,9 @@ Open an issue. Tell us what you did, what you expected and what happened instead
 
 ## What we won't take
 
-- Anything that plays for you. The server bans macros and scripts. Auto-clicking is fine under 10 CPS, only while you're moving.
-- A new dependency we didn't agree on first.
-- A Minecraft version bump. The server decides the version.
+- Features that act for the player, because the server bans macros and scripts. The one exception is auto-clicking under 10 CPS while you move.
+- New dependencies, unless we agreed on them first.
+- Minecraft version bumps, because the server picks the version.
 
 ## Rules for a pull request
 
