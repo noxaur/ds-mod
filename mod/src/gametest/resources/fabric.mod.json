@@ -18,6 +18,10 @@
     "fabric-client-gametest": [
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.PerfTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.SettingsScreenTest"
       },
       {

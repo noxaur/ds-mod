@@ -57,7 +57,7 @@ Most code changes need no doc change. Before you change an area, read its page i
 
 ## Rules
 
-Each rule is paired with what enforces it. All of them run in `mise run check`, except the game tests.
+Each rule is paired with what enforces it. All of them run in `mise run check`, except the game tests and the CI rules.
 
 | Rule | Enforced by |
 | --- | --- |
@@ -74,6 +74,10 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | A feature's handler and readout average under 20µs | `FeatureReplayTest` |
 | A capture type has one producer | `CaptureWriter` rejects a raw record with an event's type |
 | The jars a player installs boot and open settings | `runProdClientGameTest` |
+| A unit test run takes at most 30 seconds | `timeout` on `tasks.test` in `mod/build.gradle.kts`, and `go test -timeout 30s` in `check:backend` |
+| A CI job takes at most 3 minutes | `.github/actions/time-limit`, the last step of every job in `ci.yml` |
+| The mod stays inside its frame, tick and size caps | `PerfTest` against `mod/src/gametest/resources/perf-budgets.json`, in CI's `perf` job |
+| A beta ships only when every check and game test passes | `.github/workflows/beta.yml` |
 | Every capture type reaches the file | `CaptureTest` |
 | Specs hold their invariants | TLC on `specs/` |
 | Go code is formatted and vetted | `gofmt -l` and `go vet` in `check:backend` |
@@ -102,6 +106,7 @@ A rule failure prints the file, the line and the fix. For an exception the user 
 - `mise install` gives you the pinned JDK, Go, Node and pnpm.
 - `mise run check` must pass. It runs `check:mod`, `check:backend`, `check:web` and `check:docs`, and each one runs alone too.
 - Test the real implementation instead of copying its logic into the test.
+- CI runs the same checks, and `PerfTest` in a real game. When a job nears its 3 minutes, make it faster or move the slow part to the beta pipeline. Raise a limit or a perf cap only when the user agrees.
 
 ## Branches and pull requests
 

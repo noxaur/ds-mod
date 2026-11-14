@@ -59,3 +59,21 @@ cd mod
 ```
 
 Each opens a game window for a few seconds. The second one loads the built jars the way a player does.
+
+To run one game test, name it: `./gradlew runProdClientGameTest -Pgametests=PerfTest`. `PerfTest` writes its table to `build/run/prodClientGameTest/perf.md`.
+
+## CI
+
+`.github/workflows/ci.yml` runs on every pull request and on `main`. It runs each `check:` task in its own job, and a `perf` job that boots the built jars and runs `PerfTest`. That job posts the table as a comment on the pull request, and fails when a row is over its cap in `mod/src/gametest/resources/perf-budgets.json`.
+
+Each job fails when it takes over 3 minutes. A run that had to download its dependencies, after a version bump, is let through and says so.
+
+## Beta releases
+
+`.github/workflows/beta.yml` runs every second day at 03:00 UTC. When `main` has a commit since the last release, it runs every check and every game test, and then publishes the release jar as the prerelease `v<version>-beta.<run number>`. When anything fails, nothing is published, and the run's summary shows the perf table.
+
+To release a beta now, run it by hand:
+
+```sh
+gh workflow run beta
+```
