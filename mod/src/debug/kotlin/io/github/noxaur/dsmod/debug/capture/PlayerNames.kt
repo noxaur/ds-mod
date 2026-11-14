@@ -15,6 +15,7 @@ import kotlin.io.path.useLines
  * `FixtureLeakTest` checks against, so they cannot disagree.
  */
 object PlayerNames {
+    private const val TAB_COLUMN = 20
     private val rank = """(?:\[[^\]]+\] )?"""
 
     /** The start of a line a player typed. Group 1 is the name, and what follows the match is the message. */
@@ -57,8 +58,9 @@ object PlayerNames {
                     "sidebar" -> data["lines"]?.jsonArray?.forEach { sidebarLine ->
                         Regex("""^Name: (\w+)""").find(plain(sidebarLine))?.let { add(it.groupValues[1]) }
                     }
-                    // The players are the rows above the info panel. An older capture keys them `!ab` to `!at`.
-                    "tablist" -> data["rows"]?.jsonArray?.map(::plain)?.drop(1)?.takeWhile { it.trim() != "Info" }?.forEach(::row)
+                    // The players are the first column under its title, 19 rows. A dungeon puts `Class: Mage` rows there
+                    // too, and the Dungeon Hub has no `Info` title after it. An older capture keys the rows `!ab` to `!at`.
+                    "tablist" -> data["rows"]?.jsonArray?.map(::plain)?.drop(1)?.take(TAB_COLUMN - 1)?.filter { ':' !in it }?.forEach(::row)
                         ?: data["entries"]?.jsonObject?.values?.filterIsInstance<JsonObject>()
                             ?.filter { plain(it["name"]).matches(Regex("![a][b-z]")) }?.forEach { row(plain(it["text"])) }
                 }
