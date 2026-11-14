@@ -53,7 +53,7 @@ Events are the `GameEvent`s that features see, recorded as they were posted, and
 - `system` for a line in chat. Player chat arrives this way too.
 - `world` for entering a world.
 - `tablist` for the rows of the tab list in the order the client draws them, when one changes.
-- `container` for a menu the player opened, or their own inventory again, and `slot` for each slot that changed. A slot carries the item's id, count, name, lore and `custom_data`.
+- `container` for a menu the player opened, or their own inventory again, and `slot` for each slot that changed. A slot carries the item's id, count, name, lore and `custom_data`. A big menu's slots arrive over a few ticks.
 
 Raw records are for you to read. No feature sees one until it is promoted:
 
