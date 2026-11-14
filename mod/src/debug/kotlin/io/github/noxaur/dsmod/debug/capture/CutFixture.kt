@@ -1,6 +1,8 @@
 package io.github.noxaur.dsmod.debug.capture
 
+import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.ContainerOpened
+import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.SlotChanged
@@ -68,6 +70,8 @@ private class Redactor(names: Set<String>) {
         is ContainerOpened -> event.copy(title = event.title?.let(::names))
         is SlotChanged -> event.copy(item = event.item?.let(::item))
         WorldChanged -> event
+        is ActionBar -> ActionBar(names(event.text))
+        is EntityDied -> event.copy(name = names(event.name))
     }
 
     private fun item(item: Item) = item.copy(

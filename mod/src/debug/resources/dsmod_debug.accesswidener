@@ -1,7 +1,5 @@
 accessWidener v2 official
 
-accessible field net/minecraft/client/gui/Hud overlayMessageString Lnet/minecraft/network/chat/Component;
-accessible field net/minecraft/client/gui/Hud overlayMessageTime I
 accessible field net/minecraft/client/gui/Hud title Lnet/minecraft/network/chat/Component;
 accessible field net/minecraft/client/gui/Hud subtitle Lnet/minecraft/network/chat/Component;
 accessible field net/minecraft/client/gui/Hud titleTime I

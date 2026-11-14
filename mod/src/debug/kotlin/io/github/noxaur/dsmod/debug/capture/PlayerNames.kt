@@ -64,5 +64,6 @@ object PlayerNames {
                 }
             }
         }
-    }.filterTo(HashSet()) { it.length >= 3 && !it.matches(Regex("""Player\d+""")) }
+    // The server writes `You` where the line is about the player themselves, as in `» You placed a Summoning Eye!`.
+    }.filterTo(HashSet()) { it.length >= 3 && it != "You" && !it.matches(Regex("""Player\d+""")) }
 }

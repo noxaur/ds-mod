@@ -43,4 +43,4 @@
                All-Time Eyes: 2
                Golden Eye: 1 (1 all-time)
 +  33.3s > [-] [VIP+] Player20
-saved zealot-tracker.json = {"drops":{"Summoning Eye":2,"Golden Eye":1}}
+saved zealot-tracker.json = {"drops":{"Summoning Eye":2,"Golden Eye":1},"kills":0}

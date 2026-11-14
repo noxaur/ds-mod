@@ -54,6 +54,6 @@ class GameTest {
     fun `a drop outside The End is not a zealot drop`() {
         game.post(0, TabList(listOf(ServerText(ServerSpan("Area: Crypts")))))
         say(0, "RARE DROP! Zombie Talisman")
-        assertEquals("""{"drops":{}}""", game.readouts.single { it.feature.id == "zealot-tracker" }.feature.state!!.encode())
+        assertEquals("""{"drops":{},"kills":0}""", game.readouts.single { it.feature.id == "zealot-tracker" }.feature.state!!.encode())
     }
 }

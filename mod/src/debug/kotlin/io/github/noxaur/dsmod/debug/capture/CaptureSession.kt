@@ -19,13 +19,11 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.numbers.StyledFormat
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket
-import net.minecraft.network.protocol.game.ClientboundEntityEventPacket
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket
 import net.minecraft.network.protocol.game.ClientboundSoundPacket
 import net.minecraft.world.entity.Display
 import net.minecraft.world.entity.Entity
-import net.minecraft.world.entity.EntityEvent
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.decoration.ItemFrame
@@ -73,7 +71,6 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
     private val blockScan = BlockScan(changes)
     private val maps = MapRecorder(writer)
     private var ticks = 0
-    private var actionBarTime = 0
     private var titleTime = 0
 
     init {
@@ -91,10 +88,6 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
         val hud = client.gui.hud
 
         // A timer that jumped up means the server sent the text again, even if it is the same text.
-        hud.overlayMessageString?.takeIf { hud.overlayMessageTime > 0 }?.let {
-            changes.offer("actionbar", it.toCaptureJson(), force = hud.overlayMessageTime > actionBarTime)
-        }
-        actionBarTime = hud.overlayMessageTime
         if (hud.titleTime > 0) {
             val title = buildJsonObject {
                 hud.title?.let { put("title", it.toCaptureJson()) }
@@ -284,16 +277,6 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
                     put("speed", packet.maxSpeed)
                 }
                 writer.record("particles") { data }
-            }
-            is ClientboundEntityEventPacket -> if (packet.eventId == EntityEvent.DEATH) {
-                Minecraft.getInstance().level?.let(packet::getEntity)?.let { entity ->
-                    val data = buildJsonObject {
-                        entityFields(entity)
-                        (entity as? LivingEntity)?.let { put("health", it.health) }
-                        if (entity.isCurrentlyGlowing) put("glowing", true)
-                    }
-                    writer.record("death") { data }
-                }
             }
             is ClientboundBlockUpdatePacket -> block(packet.pos, packet.blockState)
             is ClientboundSectionBlocksUpdatePacket -> packet.runUpdates(::block)
