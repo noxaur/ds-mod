@@ -5,6 +5,12 @@
   "name": "ds-mod game tests",
   "environment": "client",
   "entrypoints": {
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.NoVsync"
+      }
+    ],
     "fabric-client-gametest": [
       {
         "adapter": "kotlin",
@@ -13,6 +19,14 @@
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.CaptureTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.DragonTimerTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.HudEditorTest"
       },
       {
         "adapter": "kotlin",

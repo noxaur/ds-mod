@@ -36,6 +36,17 @@ With the debug build, type `/dscapture` in game to start a capture, and type it 
 
 The live server has real players on it, so a person records there. Agents never connect to it.
 
+## Add a feature
+
+Follow [mod/AGENTS.md](../../mod/AGENTS.md#features). A feature needs a fixture cut from a capture, so record the capture first. Then cut it, with the window in seconds from the capture's start:
+
+```sh
+cd mod
+./gradlew cutFixture --args="run/dsmod/captures/<capture>.jsonl golem-status live-cycle 140-200 --info Area,Protector"
+```
+
+`--types` picks the events to keep (`system,tablist` by default, and `container` brings its slots), `--info` names the tab list's info rows the feature reads so that only a change to one keeps a tab list, and `--system` keeps only the system lines that match a regex. The command redacts player names, typed chat and skins.
+
 ## Checks
 
 `mise run check` must pass. It runs `check:mod`, `check:backend`, `check:web` and `check:docs`, and you can run each one alone.

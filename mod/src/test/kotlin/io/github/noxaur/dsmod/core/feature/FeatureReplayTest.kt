@@ -1,0 +1,143 @@
+package io.github.noxaur.dsmod.core.feature
+
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.container.SlotMark
+import io.github.noxaur.dsmod.core.game.ContainerOpened
+import io.github.noxaur.dsmod.core.game.GameEvent
+import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.SlotChanged
+import io.github.noxaur.dsmod.core.game.SystemMessage
+import io.github.noxaur.dsmod.core.game.TabList
+import io.github.noxaur.dsmod.core.game.WorldChanged
+import io.github.noxaur.dsmod.debug.capture.readCapture
+import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.DynamicTest.dynamicTest
+import org.junit.jupiter.api.TestFactory
+import java.nio.file.Path
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.readText
+import kotlin.io.path.writeText
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import kotlin.test.fail
+
+/**
+ * Replays capture excerpts through each feature. `features/<id>/<name>.jsonl` is the excerpt, and
+ * `<name>.txt` beside it is the transcript: every event, and the HUD block and slot marks each time they changed.
+ */
+class FeatureReplayTest {
+    private val root = Path.of("src/test/resources/features")
+
+    /** A handler or a readout that averages more than this is too slow for the client thread. */
+    private val budgetNanos = 20_000L
+
+    private fun fresh(id: String) = Game(listOf(features(DsModConfig()).single { it.id == id }.also { it.enabled = true }))
+
+    private fun fixtures(id: String): List<Path> {
+        val dir = root.resolve(id)
+        val fixtures = if (dir.isDirectory()) dir.listDirectoryEntries("*.jsonl").sorted() else emptyList()
+        assertTrue(fixtures.isNotEmpty(), "$id has no fixture. Put an excerpt of a capture at $dir/<name>.jsonl.")
+        return fixtures
+    }
+
+    private fun name(item: Item) = item.name?.plain?.ifBlank { null } ?: item.id
+
+    /** A tab list is 40 rows, so it shows only the `Key: value` rows that differ from [previous], which it then replaces. */
+    private fun describe(event: GameEvent, previous: MutableSet<String>) = when (event) {
+        is SystemMessage -> event.text.plain
+        WorldChanged -> "(the world changed)"
+        is TabList -> {
+            val info = event.rows.map { it.plain.trim() }.filter { ": " in it }.toSet()
+            val changed = (info - previous).ifEmpty { setOf("no info row changed") }
+            previous.clear()
+            previous += info
+            "(tab list) " + changed.joinToString("; ")
+        }
+        is ContainerOpened -> "(opened ${event.title?.let { "\"${it.plain}\"" } ?: "your inventory"}, ${event.size} slots)"
+        is SlotChanged -> "(slot ${event.slot}) " + (event.item?.let { "${it.count} x ${name(it)}" } ?: "emptied")
+    }
+
+    @TestFactory
+    fun `every feature shows what its transcript says`(): List<DynamicTest> = features(DsModConfig()).map { feature ->
+        dynamicTest(feature.id) {
+            val written = ArrayList<Path>()
+            for (fixture in fixtures(feature.id)) {
+                val game = fresh(feature.id)
+                val events = readCapture(fixture)
+                val start = events.first().first
+                var shown = emptyList<String>()
+                var marked = emptyMap<Int, SlotMark>()
+                val infoRows = HashSet<String>()
+                val transcript = buildString {
+                    for ((time, event) in events) {
+                        game.post(time, event)
+                        game.tick(time)
+                        appendLine("+%6.1fs > %s".format((time - start) / 1000.0, describe(event, infoRows)))
+                        val lines = game.readouts.single().hud?.let { block -> listOf(block.header.plain) + block.rows.map { "  " + it.text.plain } }
+                            ?: emptyList()
+                        if (lines != shown) {
+                            shown = lines
+                            lines.ifEmpty { listOf("(nothing)") }.forEach { appendLine("             $it") }
+                        }
+                        val marks = game.readouts.single().slots
+                        if (marks != marked) {
+                            for (slot in marked.keys.sorted()) if (marks[slot] != marked[slot]) appendLine("             - slot $slot")
+                            for (slot in marks.keys.sorted()) {
+                                val mark = marks.getValue(slot)
+                                if (mark == marked[slot]) continue
+                                val shape = if (mark.border) "frame" else "fill"
+                                val label = mark.label?.let { " \"${it.plain}\"" } ?: ""
+                                appendLine("             + slot $slot: ${mark.role} $shape$label on ${name(game.container.slots[slot]!!)}")
+                            }
+                            marked = marks
+                        }
+                    }
+                    val metrics = game.metrics.snapshot()
+                    assertEquals(emptyMap(), metrics.failures, "${feature.id} threw while replaying $fixture")
+                    metrics.counters.toSortedMap().forEach { (name, count) -> appendLine("$name = $count") }
+                    game.readouts.single().feature.state?.let { appendLine("saved ${feature.id}.json = ${it.encode()}") }
+                }
+
+                val expected = fixture.resolveSibling(fixture.nameWithoutExtension + ".txt")
+                if (!expected.exists()) {
+                    expected.writeText(transcript)
+                    written.add(expected)
+                    continue
+                }
+                assertEquals(
+                    expected.readText(),
+                    transcript,
+                    "${feature.id} no longer matches $expected. If the new readout is right, delete that file and run again.",
+                )
+            }
+            if (written.isNotEmpty()) fail("Wrote $written. Read each one, and keep it only if it shows what the player should see.")
+        }
+    }
+
+    @TestFactory
+    fun `every feature stays inside the time budget`(): List<DynamicTest> = features(DsModConfig()).map { feature ->
+        dynamicTest(feature.id) {
+            for (fixture in fixtures(feature.id)) {
+                val game = fresh(feature.id)
+                val events = readCapture(fixture)
+                fun replay(times: Int) = repeat(times) {
+                    for ((time, event) in events) {
+                        game.post(time, event)
+                        game.tick(time)
+                    }
+                }
+                // The first runs are interpreted, so they are not what a player gets.
+                replay(2_000)
+                game.metrics.flush()
+                replay(2_000)
+                game.metrics.snapshot().timers.forEach { (name, timer) ->
+                    val mean = timer.totalNanos / timer.count
+                    assertTrue(mean < budgetNanos, "$name takes ${mean}ns on average replaying $fixture. The budget is ${budgetNanos}ns.")
+                }
+            }
+        }
+    }
+}

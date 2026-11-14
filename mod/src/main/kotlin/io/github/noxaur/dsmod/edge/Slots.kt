@@ -10,16 +10,19 @@ import net.minecraft.network.chat.Component
 import net.minecraft.world.inventory.Slot
 
 private const val SLOT_SIZE = 16
+private const val BORDER_SIZE = SLOT_SIZE + 2
 
 /** Marks on the slots of the open container. They go away when the container closes. */
 object Slots {
-    private class Shown(val fill: Int, val label: Component?)
+    private class Shown(val color: Int, val border: Boolean, val label: Component?)
 
     private val marks = HashMap<String, Map<Int, Shown>>()
 
     /** Marks slots by their index in the open container's menu, replacing what [id] marked before. */
     fun mark(id: String, slots: Map<Int, SlotMark>) {
-        marks[id] = slots.mapValues { Shown(it.value.role.argb(110), it.value.label?.toComponent()) }
+        marks[id] = slots.mapValues { (_, mark) ->
+            Shown(mark.role.argb(if (mark.border) 255 else 110), mark.border, mark.label?.toComponent())
+        }
     }
 
     fun clear(id: String) {
@@ -32,7 +35,13 @@ object Slots {
             if (screen !is AbstractContainerScreen<*>) return@register
             val font = Minecraft.getInstance().font
             ScreenEvents.afterBackground(screen).register { _, graphics, _, _, _ ->
-                each(screen, graphics) { slot, shown -> graphics.fill(slot.x, slot.y, slot.x + SLOT_SIZE, slot.y + SLOT_SIZE, shown.fill) }
+                each(screen, graphics) { slot, shown ->
+                    if (shown.border) {
+                        graphics.outline(slot.x - 1, slot.y - 1, BORDER_SIZE, BORDER_SIZE, shown.color)
+                    } else {
+                        graphics.fill(slot.x, slot.y, slot.x + SLOT_SIZE, slot.y + SLOT_SIZE, shown.color)
+                    }
+                }
             }
             ScreenEvents.afterForeground(screen).register { _, graphics, _, _, _ ->
                 each(screen, graphics) { slot, shown -> shown.label?.let { graphics.text(font, it, slot.x, slot.y, -1, true) } }
@@ -44,13 +53,16 @@ object Slots {
     private inline fun each(screen: AbstractContainerScreen<*>, graphics: GuiGraphicsExtractor, draw: (Slot, Shown) -> Unit) {
         if (marks.isEmpty()) return
         screen as ContainerScreenAccessor
-        graphics.pose().pushMatrix()
-        graphics.pose().translate(screen.leftPos.toFloat(), screen.topPos.toFloat())
-        for (slots in marks.values) {
-            for ((index, shown) in slots) {
-                draw(screen.menu.slots.getOrNull(index) ?: continue, shown)
+        DsModClient.game.metrics.time("slots.draw") {
+            graphics.pose().pushMatrix()
+            graphics.pose().translate(screen.leftPos.toFloat(), screen.topPos.toFloat())
+            for (slots in marks.values) {
+                for ((index, shown) in slots) {
+                    val slot = screen.menu.slots.getOrNull(index)
+                    if (slot != null) draw(slot, shown)
+                }
             }
+            graphics.pose().popMatrix()
         }
-        graphics.pose().popMatrix()
     }
 }

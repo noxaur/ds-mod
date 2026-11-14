@@ -18,7 +18,7 @@ We can't compromise on these.
 - Before adding complexity for a speculative or vanishingly unlikely race or edge case, explain the concrete failure mode, likelihood and complexity cost to the user and get their buy-in.
 - If a short request has two possible meanings, ask one question before you start.
 - Call a bug fixed only when a test, log or capture shows it.
-- Follow the server's rules: no macros, scripts or other automated actions. Auto-clicking is allowed under 10 CPS, and only while the player is actively moving.
+- Follow the server's rules: no macros, scripts or other automated actions. Auto-clicking is allowed under 10 CPS, and only while the player is actively moving. The server's owner supports DragSim Utils, so a feature that mod has may send or block input for the player, and no other feature may.
 - A rule in prose gets skipped, so turn a repeated mistake into a check. See Rules.
 
 
@@ -61,11 +61,16 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 
 | Rule | Enforced by |
 | --- | --- |
-| `core` imports nothing from Minecraft or Fabric | `core-is-pure` in `mod/…/Rules.kt` |
-| The release build sends nothing for the player | `no-automation` in `mod/…/Rules.kt` |
+| `core` imports nothing from Minecraft, Fabric or `edge` | `core-is-pure` in `mod/…/Rules.kt` |
+| The release build sends for the player only in a feature DragSim Utils has | `no-automation` in `mod/…/Rules.kt` |
 | The mod's text and colors come from its text layer | `text-by-role` in `mod/…/Rules.kt` |
 | Release code cannot use debug tools | The `main` and `debug` source sets |
-| Captures stay out of git | They are written to `mod/run/`, which is git-ignored |
+| Raw captures stay out of git | They are written to `mod/run/`, which is git-ignored |
+| A fixture holds no player name from a capture on this machine | `FixtureLeakTest` |
+| Every feature shows what its transcript says | `FeatureReplayTest` replays each feature's fixtures |
+| Every feature has a section in the player docs | `RulesTest` |
+| A feature's handler and readout average under 20µs | `FeatureReplayTest` |
+| A capture type has one producer | `CaptureWriter` rejects a raw record with an event's type |
 | The jars a player installs boot and open settings | `runProdClientGameTest` |
 | Every capture type reaches the file | `CaptureTest` |
 | Specs hold their invariants | TLC on `specs/` |

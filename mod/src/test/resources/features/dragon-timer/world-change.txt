@@ -1,0 +1,9 @@
++   0.0s > ✦ The Egg has Spawned!
+             Dragon Timer
+               Eyes: 0/8
++   3.8s > » [VIP] Player11 placed a Summoning Eye! (1/8)
+             Dragon Timer
+               Eyes: 1/8
++   6.1s > (the world changed)
+             (nothing)
++   7.1s > [BOSS] Young Dragon: You are weak young padowan, you will never kill me. FIREBALL!!

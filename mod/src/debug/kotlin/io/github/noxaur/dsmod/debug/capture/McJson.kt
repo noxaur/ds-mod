@@ -17,6 +17,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.ComponentSerialization
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.component.ResolvableProfile
 
 /** The plain text, plus the full component so colours and hover text survive. */
 fun Component.toCaptureJson(): JsonObject = buildJsonObject {
@@ -43,3 +44,6 @@ private fun GsonElement.toKotlinx(): JsonElement = when (this) {
     }
     else -> JsonNull
 }
+
+/** The profile as Minecraft stores it, with the name, id and skin textures. */
+fun ResolvableProfile.toCaptureJson(): JsonElement = encode(ResolvableProfile.CODEC, this)

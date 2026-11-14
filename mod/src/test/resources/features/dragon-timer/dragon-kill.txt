@@ -1,0 +1,117 @@
++   0.0s > (tab list) Area: The End; Lobby: #1; Eyes Placed: 7/8; Protector: Rising (Tier 1/5, 169); Purse: 531,774,054
++   2.1s > [-] Player21
++   3.1s > [+] [DRAGON] Player22
++   3.3s > [DRAGON] Player23: hello
++   5.1s > Player8: hello
++   5.2s > [-] Player14
++   8.3s > ☠ The Wise Dragon has spawned!
+             Dragon Timer
+               Wise Dragon: 0:00
++   9.2s > [MVP+] Player24: hello
++  10.9s > [VIP+] Player25: hello
+             Dragon Timer
+               Wise Dragon: 0:02
++  16.6s > [DRAGON] Player26: hello
+             Dragon Timer
+               Wise Dragon: 0:08
++  17.0s > [DRAGON] Player23: hello
++  17.4s > [DRAGON] Player26: hello
+             Dragon Timer
+               Wise Dragon: 0:09
++  18.2s > [VIP+] Player25: hello
++  18.3s > [BOSS] Wise Dragon: You will never catch me!
+             Dragon Timer
+               Wise Dragon: 0:10
++  27.8s > Player27: hello
+             Dragon Timer
+               Wise Dragon: 0:19
++  35.8s > [+] Player28
+             Dragon Timer
+               Wise Dragon: 0:27
++  36.8s > [DRAGON] Player23: hello
+             Dragon Timer
+               Wise Dragon: 0:28
++  37.8s > [VIP] Player29: hello
+             Dragon Timer
+               Wise Dragon: 0:29
++  39.2s > [VIP] Player29: hello
+             Dragon Timer
+               Wise Dragon: 0:30
++  44.1s > [BOSS] Wise Dragon: You will never catch me!
+             Dragon Timer
+               Wise Dragon: 0:35
++  45.0s > Player10: hello
+             Dragon Timer
+               Wise Dragon: 0:36
++  48.0s > ☠ The Endstone Protector is rising from the ground! (Tier 2/5)
+             Dragon Timer
+               Wise Dragon: 0:39
++  48.5s > [VIP+] Player30: hello
+             Dragon Timer
+               Wise Dragon: 0:40
++  49.1s > [MVP+] Player24: hello
++  50.0s > [-] [DRAGON] Player22
+             Dragon Timer
+               Wise Dragon: 0:41
++  52.3s > [+] [DRAGON] Player31
+             Dragon Timer
+               Wise Dragon: 0:44
++  53.2s > [DRAGON] Player23: hello
++  57.1s > [DRAGON] Player23: hello
+             Dragon Timer
+               Wise Dragon: 0:48
++  62.9s > [VIP+] Player32: hello
+             Dragon Timer
+               Wise Dragon: 0:54
++  65.3s > [VIP+] Player32: hello
+             Dragon Timer
+               Wise Dragon: 0:57
++  66.7s > [-] Player33
+             Dragon Timer
+               Wise Dragon: 0:58
++  72.5s > [BOSS] Wise Dragon: I call upon the god of thunder.. Kill them all!
+             Dragon Timer
+               Wise Dragon: 1:04
++  86.6s > Player7: hello
+             Dragon Timer
+               Wise Dragon: 1:18
++  90.5s > [BOSS] Wise Dragon: I call upon the god of thunder.. Kill them all!
+             Dragon Timer
+               Wise Dragon: 1:22
++  92.1s > ☠ The Wise Dragon has de-spawned.
+             (nothing)
++  92.1s > ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+                            WISE DRAGON DOWN!
+
+                [VIP] Player2 dealt the final blow.
+
+             1st Damager [VIP] Player2 - 57,504,434
+              2nd Damager [MVP+] Player34 - 38,457,798
+             3rd Damager [MVP+] Player35 - 2,376,120
+
+                 Your Damage: 2,376,120 (Position #3)
+
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
++  92.3s > The Dragon Egg is respawning in 10 seconds.
+             Dragon Timer
+               Egg: 10s
++  97.7s > [VIP] Player2 has obtained Wise Dragon Leggings!
+             Dragon Timer
+               Egg: 5s
++ 102.1s > ✦ The Egg has Spawned!
+             Dragon Timer
+               Eyes: 0/8
++ 102.1s > Here is your loot from the last dragon:
++ 102.1s >  - 13x Wise Dragon Fragment
++ 102.5s > » [MVP+] Player34 placed a Summoning Eye! (1/8)
+             Dragon Timer
+               Eyes: 1/8
++ 102.6s > » [MVP+] Player34 placed a Summoning Eye! (2/8)
+             Dragon Timer
+               Eyes: 2/8
++ 104.6s > » [MVP+] Player34 placed a Summoning Eye! (3/8)
+             Dragon Timer
+               Eyes: 3/8
++ 104.8s > » [MVP+] Player34 placed a Summoning Eye! (4/8)
+             Dragon Timer
+               Eyes: 4/8

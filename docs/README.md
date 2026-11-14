@@ -3,6 +3,7 @@
 ## Using ds-mod
 
 - [Install ds-mod](user/install.md): what the mod needs, where the jar goes, and how to open settings.
+- [Features](user/features.md): what each feature shows, and how to move a readout.
 
 ## Working on ds-mod
 

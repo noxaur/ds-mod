@@ -64,7 +64,14 @@ class SurfacesTest : FabricClientGameTest {
             val cursor = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
                 val screen = client.gui.screen() as InventoryScreen
                 val diamond = screen.menu.slots.first { it.item.item == Items.DIAMOND }
-                Slots.mark("test", mapOf(diamond.index to SlotMark(Role.GOOD, text { good("1") }), diamond.index - 18 to SlotMark(Role.BAD)))
+                Slots.mark(
+                    "test",
+                    mapOf(
+                        diamond.index to SlotMark(Role.GOOD, text { good("1") }),
+                        diamond.index - 18 to SlotMark(Role.BAD),
+                        diamond.index - 9 to SlotMark(Role.LEGENDARY, border = true),
+                    ),
+                )
                 val scale = client.window.guiScale
                 val accessor = screen as io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
                 (accessor.leftPos + diamond.x + 8) * scale.toDouble() to (accessor.topPos + diamond.y + 8) * scale.toDouble()
