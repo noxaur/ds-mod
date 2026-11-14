@@ -30,13 +30,30 @@ The first time it hides one, a line in chat says so. Turn off Ability Spam in th
 
 ### Copy Chat
 
-Right-click a message in the open chat to select it. To select several, hold the right button and drag up or down over them. When you let go, a small menu opens under your mouse:
+Select messages in the open chat with the right mouse button, then pick how to copy them.
 
-- **Text** copies the messages as plain text, one per line. It sits under your mouse, so a right click and then a left click copies a message without moving.
+Selecting works as it does for files:
+
+| Do this | To |
+| --- | --- |
+| Right-click a message | Select it |
+| Hold the right button and drag | Select every message you pass. Hold it past the top or bottom of the chat to scroll |
+| Shift and right-click | Select from the message you clicked last to this one |
+| Ctrl and right-click | Add a message, or take a selected one out. With a drag, a whole range |
+| Ctrl+A, with the menu open | Select the whole chat |
+| Shift and Up or Down, with the menu open | Grow or shrink the selection by one |
+
+On macOS, Cmd takes the place of Ctrl.
+
+When you let go, a small menu opens under your mouse:
+
+- **Text** copies the messages as plain text, one per line. It sits under your mouse, so a right click and then a left click copies a message without moving. Ctrl+C does the same.
 - **Formatted** keeps the colors and styles as `&` codes, such as `&6&lRARE DROP!`. A color with no code of its own is written as `&#12ab34`.
 - **JSON** copies each message as Minecraft's own text component, for tools and bug reports. Several messages come as a list.
 
-A message is copied whole, also when it wraps over several rows. A block the server sends as one message, such as the list of active boosters, is selected a line at a time instead, so drag over the lines you want. The spaces that center such a line are left out. What you copied flashes with `Copied` beside your mouse. Click anywhere else or press Escape to put the menu away. You can scroll the chat while you drag to reach further.
+Left and Right move between the three and Enter takes one. Escape or a click anywhere else puts the menu and the selection away.
+
+A message is copied whole, also when it wraps over several rows. A block the server sends, such as the list of active boosters, is selected a line at a time, so drag over the lines you want. The spaces that center such a line are left out, and so is an empty line at the start or end of what you selected. What you copied flashes with `Copied` beside your mouse.
 
 It is on from the start. Turn off Copy Chat under Chat in the settings to stop it.
 

@@ -4,6 +4,7 @@ import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.CopyChats
 import io.github.noxaur.dsmod.edge.CopyChats.Format
 import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.mixin.ChatComponentAccessor
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.ChatFormatting
@@ -12,10 +13,10 @@ import net.minecraft.network.chat.Component
 import org.lwjgl.glfw.GLFW
 
 /**
- * Works Copy Chat in the open chat with the real mouse. A right click selects a message and opens the menu
- * with Text under the mouse, a right press dragged over other messages selects all between, each button copies
- * its form, and a click elsewhere or Escape puts the menu away with the chat still open. Read the screenshots
- * for the selection, the menu in both themes and the flash.
+ * Works Copy Chat in the open chat with the real mouse and keyboard. A right click selects a message and opens
+ * the menu with Text under the mouse, a right drag selects all between, Shift extends, Ctrl adds and removes,
+ * the keys a menu and a selection take work, and a drag held past the chat's edge scrolls it. Each button copies
+ * its form. Read the screenshots for the selection, the menu in both themes and the flash.
  */
 class CopyChatTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
@@ -184,6 +185,93 @@ class CopyChatTest : FabricClientGameTest {
                 check(CopyChats.menu?.header == "Copy 2 Messages") { "A drag that ended on an empty message opened ${CopyChats.menu?.header}" }
                 press(Format.TEXT)
                 copied("Top\n\nMiddle", "A drag that ended on an empty message")
+
+                fun click(row: Int) {
+                    row(row)
+                    context.input.pressMouse(1)
+                    context.waitTick()
+                }
+                fun key(key: Int) {
+                    context.input.pressKey(key)
+                    context.waitTick()
+                }
+                fun header(expected: String, step: String) = check(CopyChats.menu?.header == expected) { "$step opened ${CopyChats.menu?.header}, not $expected" }
+                val drop = "RARE DROP! Summoning Eye"
+
+                // Shift extends from the first press, and the anchor outlives the copy.
+                click(0)
+                context.input.holdShift()
+                click(3)
+                header("Copy 3 Messages", "A Shift press three messages up")
+                context.input.releaseShift()
+                // Ctrl+C is Text.
+                context.input.holdControl()
+                key(GLFW.GLFW_KEY_C)
+                context.input.releaseControl()
+                copied("$drop\n$long\nThe last message.", "Shift and Ctrl+C")
+                context.input.holdShift()
+                click(2)
+                context.input.releaseShift()
+                header("Copy 2 Messages", "A Shift press after a copy")
+                key(GLFW.GLFW_KEY_ESCAPE)
+
+                // Ctrl adds a message that is not next to the first, and takes one out again.
+                click(0)
+                context.input.holdControl()
+                click(3)
+                header("Copy 2 Messages", "A Ctrl press")
+                context.takeScreenshot("copy-chat-ctrl")
+                context.input.releaseControl()
+                key(GLFW.GLFW_KEY_RIGHT)
+                key(GLFW.GLFW_KEY_ENTER)
+                copied("&6&lRARE DROP! &#12ab34Summoning Eye\nThe last message.", "Ctrl on two messages apart, then Right and Enter")
+                click(0)
+                context.input.holdControl()
+                click(3)
+                click(0)
+                context.input.releaseControl()
+                header("Copy Message", "A Ctrl press on a selected message")
+                key(GLFW.GLFW_KEY_ENTER)
+                copied(drop, "Enter with the menu just opened")
+
+                // A press inside a selection of several keeps it.
+                row(0)
+                context.input.holdMouse(1)
+                row(3)
+                context.input.releaseMouse(1)
+                context.waitTick()
+                click(1)
+                header("Copy 3 Messages", "A press inside a selection of three")
+                key(GLFW.GLFW_KEY_ESCAPE)
+
+                // Shift with an arrow moves the end, and Ctrl+A takes everything.
+                click(0)
+                context.input.holdShift()
+                key(GLFW.GLFW_KEY_UP)
+                key(GLFW.GLFW_KEY_UP)
+                header("Copy 3 Messages", "Shift and Up twice")
+                key(GLFW.GLFW_KEY_DOWN)
+                header("Copy 2 Messages", "Shift and Down")
+                context.input.releaseShift()
+                context.input.holdControl()
+                key(GLFW.GLFW_KEY_A)
+                context.input.releaseControl()
+                header("Copy 39 Lines", "Ctrl+A")
+                key(GLFW.GLFW_KEY_ESCAPE)
+
+                // Held above the chat, the drag scrolls it and keeps selecting.
+                row(0)
+                context.input.holdMouse(1)
+                move(60, 5)
+                context.waitTicks(20)
+                context.input.releaseMouse(1)
+                context.waitTick()
+                val scrolled = context.computeOnClient<Int, Nothing> { (it.gui.hud.chat as ChatComponentAccessor).chatScrollbarPos }
+                check(scrolled > 5) { "A drag held above the chat scrolled it by $scrolled" }
+                check(CopyChats.menu!!.header.removePrefix("Copy ").substringBefore(' ').toInt() > 20) { "A drag held above the chat opened ${CopyChats.menu?.header}" }
+                key(GLFW.GLFW_KEY_ESCAPE)
+                context.runOnClient<Nothing> { it.gui.hud.chat.resetChatScroll() }
+                context.waitTick()
 
                 // Escape and a click elsewhere put the menu away, copy nothing and leave the chat open.
                 row(0)
