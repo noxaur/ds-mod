@@ -1,5 +1,8 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.game.ServerSpan
+import io.github.noxaur.dsmod.core.game.ServerText
+import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -19,6 +22,10 @@ class ZealotTrackerTest : FabricClientGameTest {
         context.runOnClient<Nothing> { DsModClient.saved.load() }
 
         context.worldBuilder().create().use { world ->
+            // The tracker counts only in The End, and a local world's tab list names no area.
+            context.runOnClient<Nothing> {
+                DsModClient.game.post(System.currentTimeMillis(), TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+            }
             world.server.runCommand("""tellraw @a "§6§lRARE DROP! §7(§5Summoning Eye§7) (§b✯ 90%§7)"""")
             context.waitTicks(5)
             context.runOnClient<Nothing> { DsModClient.saved.flush() }

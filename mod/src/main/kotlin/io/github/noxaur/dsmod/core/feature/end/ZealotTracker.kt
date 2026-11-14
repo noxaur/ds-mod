@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.core.feature.end
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
+import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import kotlinx.serialization.Serializable
 import java.util.Locale
@@ -35,7 +36,13 @@ class ZealotTracker(toggle: KMutableProperty0<Boolean>) : Feature("zealot-tracke
                 endSince = null
             }
         }
+        on<WorldChanged> { _, now ->
+            endSince?.let { endMillis += now - it }
+            endSince = null
+        }
         on<SystemMessage> { message, _ ->
+            // A drop in another area is another tracker's, such as a slayer's Zombie Talisman.
+            if (tab.area != END) return@on
             val line = message.text.plain
             if (" DROP! " !in line) return@on
             val (parenthesised, bare) = drop.find(line)?.destructured ?: return@on
