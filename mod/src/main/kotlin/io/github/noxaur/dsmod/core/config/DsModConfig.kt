@@ -30,7 +30,7 @@ class DsModConfig : Config() {
     val end = End()
 
     @Expose
-    @Category(name = "General", desc = "Where ds-mod runs, how the game looks, and what it warns you about.")
+    @Category(name = "General", desc = "How the game looks, and what it warns you about.")
     @JvmField
     val general = General()
 
@@ -121,7 +121,7 @@ class DsModConfig : Config() {
 
     class General {
         @Expose
-        @ConfigOption(name = "Only on DragSim", desc = "Run ds-mod only while you play on dragsim.co. Turn it off to use the mod on any server.")
+        @ConfigOption(name = "DragSim Only", desc = "Run ds-mod only while you play on dragsim.co. Turn it off to use the mod on any server.")
         @ConfigEditorBoolean
         @JvmField
         var onlyOnDragSim = true

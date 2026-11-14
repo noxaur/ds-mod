@@ -20,4 +20,4 @@ Use the jar without `-debug` in its name. The debug jar is for developers, and y
 
 Type `/dsmod` in chat to open the settings. ds-mod saves them in `config/dsmod/config.json` in your game folder.
 
-ds-mod runs only while you play on dragsim.co, and stays out of the way in singleplayer and on other servers. To use it anywhere, turn off **Only on DragSim** under General.
+ds-mod runs only while you play on dragsim.co, and stays out of the way in singleplayer and on other servers. To use it anywhere, turn off **DragSim Only** under General.

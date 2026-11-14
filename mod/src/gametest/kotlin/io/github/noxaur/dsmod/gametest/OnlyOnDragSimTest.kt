@@ -8,7 +8,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * The release build stays out of a world that is not dragsim.co, here singleplayer, until the player turns
- * Only on DragSim off. The debug build lifts the gate for the other tests, so this one puts it back.
+ * DragSim Only off. The debug build lifts the gate for the other tests, so this one puts it back.
  */
 class OnlyOnDragSimTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
@@ -18,7 +18,7 @@ class OnlyOnDragSimTest : FabricClientGameTest {
         context.worldBuilder().create().use { world ->
             try {
                 DsModClient.anyServer = false
-                check(!DsModClient.active) { "The mod runs in singleplayer with Only on DragSim on" }
+                check(!DsModClient.active) { "The mod runs in singleplayer with DragSim Only on" }
                 world.server.runCommand("""tellraw @a "$refusal"""")
                 context.waitTicks(10)
                 check(hidden.isEmpty()) { "Ability Spam hid $hidden off dragsim.co" }
@@ -26,7 +26,7 @@ class OnlyOnDragSimTest : FabricClientGameTest {
                 DsModClient.settings.general.onlyOnDragSim = false
                 world.server.runCommand("""tellraw @a "$refusal"""")
                 context.waitTicks(10)
-                check(hidden == listOf(refusal)) { "With Only on DragSim off, Ability Spam hid $hidden" }
+                check(hidden == listOf(refusal)) { "With DragSim Only off, Ability Spam hid $hidden" }
             } finally {
                 DsModClient.settings.general.onlyOnDragSim = true
                 DsModClient.anyServer = true
