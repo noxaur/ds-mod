@@ -102,9 +102,9 @@ A block's saved place is the corner of its plate, so a block stays where the pla
 
 `World` draws through Minecraft's gizmos, the shapes its own debug views use. It submits them at the end of each client tick, and Minecraft replays the tick's gizmos on every frame until the next one. Submitting from Fabric's per-frame gizmo event drew nothing in the game tests, and would do the work every frame instead of twenty times a second.
 
-## Slot marks need one accessor mixin
+## Private fields are read through accessor mixins
 
-Minecraft keeps an open container's position on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the two fields. The release jar declares no access widener of its own, so this mixin is the one place release code reaches into Minecraft's internals.
+Minecraft keeps an open container's position on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the two fields. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on. The release jar declares no access widener of its own, so an accessor mixin is the only way release code reaches into Minecraft's internals.
 
 ## CI measures the mod in a real game
 

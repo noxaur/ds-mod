@@ -11,6 +11,7 @@ Every type of interface ds-mod can show, grouped by surface. A feature uses the 
 - Updating message: one line edited in place, such as a progress count.
 - Filter: hiding a server line.
 - Rewrite: recoloring, shortening or stacking repeated server lines.
+- Selection: picking lines of the open chat to copy or act on, with a menu for the choice.
 
 **HUD**
 - Text line: one value, such as a timer or a stat.
@@ -94,4 +95,5 @@ Every type of interface ds-mod can show, grouped by surface. A feature uses the 
 - Sound: a sound the mod plays, or a server sound it mutes or replaces.
 - Command: a `/ds…` command the player types.
 - Keybind: a key the player presses.
+- Screen input: a press, drag or key the mod handles on a vanilla screen. Its conventions are in [`controls.md`](controls.md).
 - Tab completion: suggestions while the player types.

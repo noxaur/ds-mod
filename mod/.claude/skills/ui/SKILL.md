@@ -1,6 +1,6 @@
 ---
 name: ui
-description: Use when adding or changing anything the player sees or hears from ds-mod - chat lines, HUD, alerts, container overlays, tooltips, world rendering, edits to the server's HUD, settings text, the mod's own screens and their controls.
+description: Use when adding or changing anything the player sees or hears from ds-mod - chat lines, HUD, alerts, container overlays, tooltips, world rendering, edits to the server's HUD, settings text, the mod's own screens and their controls, and any click, drag or key the player operates.
 ---
 
 ds-mod looks and reads like SkyHanni and SkyOcean, the mods its players already know. Minecraft mods have their own conventions, so follow those two over web or app design habits. Their wording is the model for ours, and SkyOcean's named colors are the model for the text layer.
@@ -22,6 +22,7 @@ A surface is a place the mod can put information. Choose it by how long the info
 | Already shown by the server, but badly | Edit the server's HUD, so the player sees it once |
 | A choice the player makes | Settings |
 | A task with several controls, such as placing the HUD | Own screen |
+| Something the player does to what is already on screen, such as copying chat | Input on that screen |
 
 [`surfaces.md`](surfaces.md) lists every type within each surface. Read it when the table leaves you between two, or when you build a surface for the first time.
 
@@ -58,6 +59,17 @@ A screen is a vanilla `Screen` holding the kit's widgets. It takes the screen it
 
 [`kit.md`](kit.md) lists every token, component and size. Read it before you build a screen, or when you need a component it may not have.
 
+## Design the control whole
+
+Anything the player operates, on the mod's own screen or on a vanilla one, ships finished. The first cut is the finished feature, so a convention the player has to ask for later is a missing part of it.
+
+1. Name the kind of control: list selection, context menu, range slider, text field, draggable thing, scrolling list.
+2. Read its section in [`controls.md`](controls.md). Survey the peer mods listed there for what players of that kind already know.
+3. Build every convention that applies, with the keyboard and the mouse, before the first commit.
+4. Say in the PR which conventions you left out, and why.
+
+A kind that `controls.md` lacks gets its section there once the survey is done. A kit widget holds its kind's conventions, so a second control of that kind reuses the widget. Put the rules of a control in `core`, as `Sections` does for the slider, so a unit test can drive each one.
+
 ## Color by role
 
 Text is built with `text { }` from `core.text`, where each piece states what it means and the role owns the color. The `text-by-role` rule fails the build on a raw color or a `§` code.
@@ -91,4 +103,4 @@ One line has one `value`. A line where everything is highlighted has no highligh
 
 ## Done when
 
-A client game test shows the surface in a screenshot, as `SurfacesTest` does, and you have looked at the image. A screen or a kit component is shown in both themes. A feature that only fills a layer `SurfacesTest` already shows is done when its replay transcript reads right.
+A client game test shows the surface in a screenshot, as `SurfacesTest` does, and you have looked at the image. A screen or a kit component is shown in both themes. A feature that only fills a layer `SurfacesTest` already shows is done when its replay transcript reads right. A control is done when each convention of its kind is built or named in the PR as left out, and a test drives each press, drag and key.
