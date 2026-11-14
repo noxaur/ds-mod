@@ -8,6 +8,14 @@ A feature shows a block on the HUD: its name, then rows such as `Eyes: 5/8`. Blo
 
 To move them, type `/dsmod hud`, or press Edit under HUD in the settings. Drag a block to move it, and scroll over it to resize it. Press Esc to save.
 
+## Chat
+
+### Ability Spam
+
+Hides the message the server sends each time you use an ability that is still on cooldown, such as `This ability is on cooldown for 4.35s`. Holding the button no longer floods your chat.
+
+The first time it hides one, a line in chat says so. Turn off Ability Spam in the settings to see the messages again.
+
 ## The End
 
 ### Dragon Timer
@@ -43,6 +51,16 @@ It counts only your own drop messages, such as `RARE DROP!`, `EPIC DROP!` and `R
 
 The all-time numbers are saved about once a minute and when you close the game, in `config/dsmod/data/zealot-tracker.json` in your game folder. Delete the file to start again.
 
+## Loot
+
+### Loot Alerts
+
+Shows a drop's name in the middle of the screen and plays a sound when you get a drop of the tier you chose or better. A line in chat says the alert came from Loot Alerts.
+
+Pick the tier with Alert Tier in the settings: Rare, Epic or RNGesus. It starts at Epic, so a Summoning Eye, which is a Rare drop, does not alert you.
+
+It alerts only for your own drop messages, such as `EPIC DROP!`, never for what another player types in chat.
+
 ## Slayers
 
 ### Slayer Tracker
@@ -56,6 +74,12 @@ Counts the slayer bosses you slay:
 A quest you fail counts for nothing. It shows nothing until the first boss spawns, and it counts only the server's own messages, never what another player types in chat.
 
 The all-time number is saved about once a minute and when you close the game, in `config/dsmod/data/slayer-tracker.json` in your game folder. Delete the file to start again.
+
+## General
+
+### Fullbright
+
+Lights the whole world, so a cave or the night is as bright as day. It is off until you turn it on.
 
 ## Inventory
 

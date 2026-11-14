@@ -3,7 +3,8 @@
   "package": "io.github.noxaur.dsmod.edge.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
-    "ContainerScreenAccessor"
+    "ContainerScreenAccessor",
+    "FullbrightMixin"
   ],
   "injectors": {
     "defaultRequire": 1

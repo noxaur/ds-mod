@@ -26,7 +26,8 @@ import kotlin.test.fail
 
 /**
  * Replays capture excerpts through each feature. `features/<id>/<name>.jsonl` is the excerpt, and
- * `<name>.txt` beside it is the transcript: every event, and the HUD block and slot marks each time they changed.
+ * `<name>.txt` beside it is the transcript: every event, whether the feature hid it, what the feature said, and
+ * the HUD block and slot marks each time they changed.
  */
 class FeatureReplayTest {
     private val root = Path.of("src/test/resources/features")
@@ -36,10 +37,17 @@ class FeatureReplayTest {
 
     private fun fresh(id: String) = Game(listOf(features(DsModConfig()).single { it.id == id }.also { it.enabled = true }))
 
-    private fun fixtures(id: String): List<Path> {
-        val dir = root.resolve(id)
+    /** A feature that reads nothing from the server has nothing to replay, so a game test must show it instead. */
+    private fun fixtures(feature: Feature): List<Path> {
+        val dir = root.resolve(feature.id)
         val fixtures = if (dir.isDirectory()) dir.listDirectoryEntries("*.jsonl").sorted() else emptyList()
-        assertTrue(fixtures.isNotEmpty(), "$id has no fixture. Put an excerpt of a capture at $dir/<name>.jsonl.")
+        if (fixtures.isNotEmpty()) return fixtures
+        assertTrue(
+            feature.handlers.isEmpty() && !feature.hasHud,
+            "${feature.id} has no fixture. Put an excerpt of a capture at $dir/<name>.jsonl.",
+        )
+        val gameTest = Path.of("src/gametest/kotlin/io/github/noxaur/dsmod/gametest/${feature.javaClass.simpleName}Test.kt")
+        assertTrue(gameTest.exists(), "${feature.id} reads nothing from the server, so it needs a game test at $gameTest.")
         return fixtures
     }
 
@@ -64,7 +72,7 @@ class FeatureReplayTest {
     fun `every feature shows what its transcript says`(): List<DynamicTest> = features(DsModConfig()).map { feature ->
         dynamicTest(feature.id) {
             val written = ArrayList<Path>()
-            for (fixture in fixtures(feature.id)) {
+            for (fixture in fixtures(feature)) {
                 val game = fresh(feature.id)
                 val events = readCapture(fixture)
                 val start = events.first().first
@@ -73,9 +81,17 @@ class FeatureReplayTest {
                 val infoRows = HashSet<String>()
                 val transcript = buildString {
                     for ((time, event) in events) {
-                        game.post(time, event)
+                        val kept = game.post(time, event)
                         game.tick(time)
                         appendLine("+%6.1fs > %s".format((time - start) / 1000.0, describe(event, infoRows)))
+                        if (!kept) appendLine("             (hidden from chat)")
+                        for (message in game.messages) {
+                            when (message) {
+                                is Notice -> appendLine("             (chat) ${message.feature} | ${message.detail.plain}")
+                                is Alert -> appendLine("             (title) ${message.title.plain}, (chat) ${message.feature} | ${message.detail.plain}")
+                            }
+                        }
+                        game.messages.clear()
                         val lines = game.readouts.single().hud?.let { block -> listOf(block.header.plain) + block.rows.map { "  " + it.text.plain } }
                             ?: emptyList()
                         if (lines != shown) {
@@ -120,7 +136,7 @@ class FeatureReplayTest {
     @TestFactory
     fun `every feature stays inside the time budget`(): List<DynamicTest> = features(DsModConfig()).map { feature ->
         dynamicTest(feature.id) {
-            for (fixture in fixtures(feature.id)) {
+            for (fixture in fixtures(feature)) {
                 val game = fresh(feature.id)
                 val events = readCapture(fixture)
                 fun replay(times: Int) = repeat(times) {
@@ -128,6 +144,7 @@ class FeatureReplayTest {
                         game.post(time, event)
                         game.tick(time)
                     }
+                    game.messages.clear()
                 }
                 // The first runs are interpreted, so they are not what a player gets.
                 replay(2_000)

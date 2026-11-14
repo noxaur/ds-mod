@@ -5,6 +5,7 @@ import io.github.notenoughupdates.moulconfig.Config
 import io.github.notenoughupdates.moulconfig.annotations.Category
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorButton
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDropdown
 import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText
 
@@ -16,14 +17,29 @@ class DsModConfig : Config() {
     override fun getTitle(): StructuredText = StructuredText.of("ds-mod")
 
     @Expose
+    @Category(name = "Chat", desc = "What reaches your chat.")
+    @JvmField
+    val chat = Chat()
+
+    @Expose
     @Category(name = "The End", desc = "Dragons, eyes, the egg and the Protector.")
     @JvmField
     val end = End()
 
     @Expose
+    @Category(name = "General", desc = "How the game looks.")
+    @JvmField
+    val general = General()
+
+    @Expose
     @Category(name = "Inventory", desc = "What the slots of a menu show.")
     @JvmField
     val inventory = Inventory()
+
+    @Expose
+    @Category(name = "Loot", desc = "Your drops.")
+    @JvmField
+    val loot = Loot()
 
     @Expose
     @Category(name = "Slayers", desc = "Your slayer quests and bosses.")
@@ -34,6 +50,14 @@ class DsModConfig : Config() {
     @Category(name = "HUD", desc = "Where each block sits on the screen.")
     @JvmField
     val hud = Hud()
+
+    class Chat {
+        @Expose
+        @ConfigOption(name = "Ability Spam", desc = "Hide the message the server sends each time you use an ability that is on cooldown.")
+        @ConfigEditorBoolean
+        @JvmField
+        var abilitySpam = true
+    }
 
     class End {
         @Expose
@@ -55,12 +79,44 @@ class DsModConfig : Config() {
         var zealotTracker = true
     }
 
+    class General {
+        @Expose
+        @ConfigOption(name = "Fullbright", desc = "Light the whole world, so caves and nights are as bright as day.")
+        @ConfigEditorBoolean
+        @JvmField
+        var fullbright = false
+    }
+
     class Inventory {
         @Expose
         @ConfigOption(name = "Rarity Outlines", desc = "Frame each item's slot in the color of its rarity.")
         @ConfigEditorBoolean
         @JvmField
         var rarityOutlines = true
+    }
+
+    /** A drop's tier, lowest first. [word] is what the server writes before `DROP!`. */
+    enum class LootTier(private val label: String, val word: String) {
+        RARE("Rare", "RARE"),
+        EPIC("Epic", "EPIC"),
+        RNGESUS("RNGesus", "RNGESUS"),
+        ;
+
+        override fun toString() = label
+    }
+
+    class Loot {
+        @Expose
+        @ConfigOption(name = "Loot Alerts", desc = "Show a title and play a sound when you get a drop of the chosen tier or better.")
+        @ConfigEditorBoolean
+        @JvmField
+        var lootAlerts = true
+
+        @Expose
+        @ConfigOption(name = "Alert Tier", desc = "Pick the lowest drop tier that alerts you.")
+        @ConfigEditorDropdown
+        @JvmField
+        var lootAlertTier = LootTier.EPIC
     }
 
     class Slayer {

@@ -28,7 +28,7 @@ A surface is a place the mod can put information. Choose it by how long the info
 
 Each surface has one shared layer: a plain model in `core` and one object in `edge` that draws it. The layers keep what they are given and redraw it themselves, so they are called when something changes, never every frame.
 
-A feature lives in `core` and cannot call a layer. It returns its HUD block from `hud(now)` and its slot marks from `slots(now)`, and `Readouts` hands them over when they change. `mod/AGENTS.md` says how the other surfaces get a route.
+A feature lives in `core` and cannot call a layer. It returns its HUD block from `hud(now)` and its slot marks from `slots(now)`, and says something once with `notice(detail)` or `alert(title, detail)`. `Readouts` hands all of it to the layers. A handler keeps a server line out of chat with `hide()`. `mod/AGENTS.md` says how the other surfaces get a route.
 
 | Surface | Model in `core` | Hand it to |
 | --- | --- | --- |
