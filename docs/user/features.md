@@ -36,7 +36,7 @@ Right-click a message in the open chat to select it. To select several, hold the
 - **Formatted** keeps the colors and styles as `&` codes, such as `&6&lRARE DROP!`. A color with no code of its own is written as `&#12ab34`.
 - **JSON** copies each message as Minecraft's own text component, for tools and bug reports. Several messages come as a list.
 
-A message is always copied whole, also when it runs over several lines. What you copied flashes with `Copied` beside your mouse. Click anywhere else or press Escape to put the menu away. You can scroll the chat while you drag to reach further.
+A message is copied whole, also when it wraps over several rows. A block the server sends as one message, such as the list of active boosters, is selected a line at a time instead, so drag over the lines you want. The spaces that center such a line are left out. What you copied flashes with `Copied` beside your mouse. Click anywhere else or press Escape to put the menu away. You can scroll the chat while you drag to reach further.
 
 It is on from the start. Turn off Copy Chat under Chat in the settings to stop it.
 

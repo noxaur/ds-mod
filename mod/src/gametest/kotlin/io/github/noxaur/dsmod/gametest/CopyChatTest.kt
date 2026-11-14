@@ -29,6 +29,11 @@ class CopyChatTest : FabricClientGameTest {
                     val chat = client.gui.hud.chat
                     chat.clearMessages(false)
                     for (i in 1..30) chat.addClientSystemMessage(Component.literal("Filler $i"))
+                    // A block as the server sends one: several lines in one message, one empty and one centered with spaces.
+                    chat.addClientSystemMessage(
+                        Component.literal("ACTIVE BOOSTERS\n\n      Everyone: +50% drops.\n").withStyle(ChatFormatting.GOLD)
+                            .append(Component.literal("Expires in 1h").withStyle(ChatFormatting.GRAY)),
+                    )
                     chat.addClientSystemMessage(
                         Component.literal("RARE DROP! ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
                             .append(Component.literal("Summoning Eye").withStyle { it.withBold(false).withColor(0x12AB34) }),
@@ -113,6 +118,43 @@ class CopyChatTest : FabricClientGameTest {
                 check(copies.single().startsWith("[") && copies.single().endsWith("]")) { "JSON for two messages was ${copies.single()}" }
                 copies.clear()
 
+                // One line of a block is one press, without the spaces that centered it.
+                row(5)
+                context.input.pressMouse(1)
+                context.waitTick()
+                check(CopyChats.menu?.header == "Copy Line") { "A right click in a block opened ${CopyChats.menu?.header}" }
+                context.takeScreenshot("copy-chat-block-line")
+                context.input.pressMouse(0)
+                context.waitTick()
+                copied("Everyone: +50% drops.", "A line of a block")
+                row(6)
+                context.input.pressMouse(1)
+                context.waitTick()
+                check(CopyChats.menu == null) { "A right click on a block's empty line opened the menu" }
+                // Dragged over the whole block and the message under it.
+                row(7)
+                context.input.holdMouse(1)
+                row(3)
+                context.input.releaseMouse(1)
+                context.waitTick()
+                check(CopyChats.menu?.header == "Copy 4 Lines") { "A drag over a block opened ${CopyChats.menu?.header}" }
+                press(Format.FORMATTED)
+                copied("&6ACTIVE BOOSTERS\n\n&6Everyone: +50% drops.\n&7Expires in 1h\n&6&lRARE DROP! &#12ab34Summoning Eye", "Formatted, for a block and a message")
+                row(7)
+                context.input.holdMouse(1)
+                row(4)
+                context.input.releaseMouse(1)
+                context.waitTick()
+                press(Format.JSON)
+                check(copies.single().startsWith("{") && "\\n" in copies.single()) { "JSON for a whole block was ${copies.single()}" }
+                copies.clear()
+                row(7)
+                context.input.pressMouse(1)
+                context.waitTick()
+                press(Format.JSON)
+                check("ACTIVE BOOSTERS" in copies.single() && "Everyone" !in copies.single()) { "JSON for a block's first line was ${copies.single()}" }
+                copies.clear()
+
                 // Escape and a click elsewhere put the menu away, copy nothing and leave the chat open.
                 row(0)
                 context.input.pressMouse(1)
@@ -141,7 +183,7 @@ class CopyChatTest : FabricClientGameTest {
                 context.waitTick()
                 context.input.pressMouse(0)
                 context.waitTick()
-                copied("Filler 30", "The bottom row of the chat scrolled up by four")
+                copied("Expires in 1h", "The bottom row of the chat scrolled up by four")
 
                 DsModClient.settings.chat.copyChat = false
                 row(0)
