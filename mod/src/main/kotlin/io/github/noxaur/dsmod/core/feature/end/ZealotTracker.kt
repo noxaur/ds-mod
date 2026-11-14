@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.end
 
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.Drop
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
@@ -19,7 +20,7 @@ data class ZealotDrops(val drops: Map<String, Int> = emptyMap())
  * kills are not counted. Eyes per hour divide by the time the player has spent in The End, which a stretch
  * in the hub does not dilute, and show only after a minute there, when one eye would give an absurd rate.
  */
-class ZealotTracker(toggle: KMutableProperty0<Boolean>) : Feature("zealot-tracker", toggle) {
+class ZealotTracker(toggle: KMutableProperty0<Boolean>) : Feature("zealot-tracker", toggle, Area.END) {
     private val allTime = saved(ZealotDrops())
     private var session = emptyMap<String, Int>()
     private var endMillis = 0L
@@ -28,8 +29,8 @@ class ZealotTracker(toggle: KMutableProperty0<Boolean>) : Feature("zealot-tracke
     init {
         on<TabList> { _, now ->
             val since = endSince
-            if (tab.area == END && since == null) endSince = now
-            if (tab.area != END && since != null) {
+            if (here && since == null) endSince = now
+            if (!here && since != null) {
                 endMillis += now - since
                 endSince = null
             }
@@ -39,8 +40,6 @@ class ZealotTracker(toggle: KMutableProperty0<Boolean>) : Feature("zealot-tracke
             endSince = null
         }
         on<SystemMessage> { message, _ ->
-            // A drop in another area is another tracker's, such as a slayer's Zombie Talisman.
-            if (tab.area != END) return@on
             val name = Drop.parse(message.text.plain)?.item ?: return@on
             session += name to (session[name] ?: 0) + 1
             allTime.value = ZealotDrops(allTime.value.drops.let { it + (name to (it[name] ?: 0) + 1) })
@@ -48,7 +47,6 @@ class ZealotTracker(toggle: KMutableProperty0<Boolean>) : Feature("zealot-tracke
     }
 
     override fun hud(now: Long): HudBlock? {
-        if (tab.area != END) return null
         val eyes = session[EYE] ?: 0
         val inEnd = endMillis + (endSince?.let { now - it } ?: 0)
         return block {
@@ -66,7 +64,6 @@ class ZealotTracker(toggle: KMutableProperty0<Boolean>) : Feature("zealot-tracke
     }
 
     private companion object {
-        const val END = "The End"
         const val EYE = "Summoning Eye"
         const val MIN_RATE_MILLIS = 60_000L
         const val MILLIS_PER_HOUR = 3_600_000.0

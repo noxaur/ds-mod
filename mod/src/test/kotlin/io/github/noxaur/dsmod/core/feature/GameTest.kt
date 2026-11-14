@@ -20,6 +20,7 @@ class GameTest {
 
     @Test
     fun `a feature that was switched off comes back knowing nothing of the world it left`() {
+        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
         say(0, "☠ The Young Dragon has spawned!")
         game.tick(0)
         assertNotNull(hud("dragon-timer"))
@@ -51,9 +52,9 @@ class GameTest {
     }
 
     @Test
-    fun `a drop outside The End is not a zealot drop`() {
-        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: Crypts")))))
-        say(0, "RARE DROP! Zombie Talisman")
-        assertEquals("""{"drops":{}}""", game.readouts.single { it.feature.id == "zealot-tracker" }.feature.state!!.encode())
+    fun `a feature locked to an area hears nothing before the server names one`() {
+        say(0, "☠ The Young Dragon has spawned!")
+        game.tick(0)
+        assertNull(hud("dragon-timer"))
     }
 }

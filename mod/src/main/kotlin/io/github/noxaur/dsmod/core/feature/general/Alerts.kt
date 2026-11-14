@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.general
 
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.text.text
 import kotlin.reflect.KMutableProperty0
@@ -14,7 +15,7 @@ class Alerts(
     toggle: KMutableProperty0<Boolean>,
     private val fireball: KProperty0<Boolean>,
     private val slayerBoss: KProperty0<Boolean>,
-) : Feature("alerts", toggle) {
+) : Feature("alerts", toggle, Area.ANYWHERE) {
     // A player's chat line has one word before the colon, and a dragon's has its rank and two.
     private val fireballs = Regex("""^\[BOSS] (\w+ Dragon): .*FIREBALL!!$""")
 

@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.end
 
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.WorldChanged
@@ -13,7 +14,7 @@ import kotlin.reflect.KMutableProperty0
  * lobby still needs before it emerges. The tab list never says the golem was defeated, and lags the chat by a
  * second or two, so the messages add when it emerged and when it fell.
  */
-class GolemStatus(toggle: KMutableProperty0<Boolean>) : Feature("golem-status", toggle) {
+class GolemStatus(toggle: KMutableProperty0<Boolean>) : Feature("golem-status", toggle, Area.END) {
     private var row: String? = null
     private var stage: String? = null
     private var tier = ""
@@ -60,7 +61,6 @@ class GolemStatus(toggle: KMutableProperty0<Boolean>) : Feature("golem-status", 
     }
 
     override fun hud(now: Long): HudBlock? {
-        if (tab.area != "The End") return null
         // Chat is a second or two ahead of the tab list, so a fight that chat reported wins over the tab's stage.
         return when {
             defeatedAt > 0 -> block {

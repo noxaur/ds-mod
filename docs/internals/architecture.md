@@ -38,6 +38,8 @@ Placement belongs to `Readouts`, which keeps one position per feature id. A feat
 
 `Game` folds the tab list and the open container into `TabState` and `ContainerState` before any feature sees the event. Twenty features that each parsed the tab list for the area would pay twenty times and drift apart.
 
+The area lock lives in `Game`, not in the features. Each feature used to compare the `Area` row itself, and four features had three different checks: one hid its HUD but kept saving loot from other areas, and one ran wherever the area was unknown. A feature now names an `Area`, and outside it gets only the tab list and a change of world. Before the server names an area the player is in none, because a wrong count is saved for good and a late readout costs a quarter of a second. The tab list is not cleared when the world changes, so a locked feature can still see the old area for up to one poll after a hop.
+
 A tab list is one event with every row, because it is small and features read it as a whole. A container is an open event followed by one event per changed slot, the way the server sends it. A whole inventory per change would make a capture of an hour's grinding too large to keep.
 
 Reading an item out of Minecraft is the costly part of a menu: a chest of 54 items with long lore took 5.5 ms in one tick. So the poll reads for at most a millisecond a tick, and a big menu arrives over a few ticks. A slot that is still null just after the menu opened may only be unread.

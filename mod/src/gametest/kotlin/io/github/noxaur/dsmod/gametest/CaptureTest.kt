@@ -29,6 +29,7 @@ class CaptureTest : FabricClientGameTest {
             ).forEach(world.server::runCommand)
             context.waitTicks(40)
             val file = context.computeOnClient<Path, Nothing> { DsModDebug.toggleCapture(it) }
+            context.enterTheEnd()
             listOf(
                 """scoreboard objectives add ds dummy "Dragon Sim"""",
                 "scoreboard objectives setdisplay sidebar ds",

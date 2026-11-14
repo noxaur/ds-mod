@@ -24,6 +24,14 @@ val rules = listOf(
         example = "import net.minecraft.client.Minecraft",
     ),
     Rule(
+        id = "area-by-declaration",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        forbid = Regex("""\binfo\("Area"\)|\.row\b|"(The End|Village|Hub|Crypts|Void Sepulture|The Catacombs)""""),
+        fix = "A feature never asks where the player is. Pass its `Area` to `Feature(..)` and `Game` gives it events and a " +
+            "readout only there. For a place `Area` lacks, add an entry with the `Area` row a capture shows.",
+        example = """if (tab.info("Area") != "The End") return null""",
+    ),
+    Rule(
         id = "no-automation",
         files = "src/main/**.{kt,java}",
         forbid = Regex(

@@ -1,3 +1,4 @@
++   0.0s > (tab list) Area: The End
 +   0.0s > [VIP+] Player1: ☠ The Young Dragon has spawned!
 +   4.2s > [BOSS] Young Dragon: You are weak young padowan, you will never kill me. FIREBALL!!
 +   5.4s > [VIP+] Player2: hello

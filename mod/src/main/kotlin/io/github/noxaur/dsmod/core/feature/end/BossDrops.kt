@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.end
 
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import kotlinx.serialization.Serializable
@@ -20,7 +21,7 @@ data class BossLog(val bosses: Map<String, BossRecord> = emptyMap())
  * only for a player who is in it. A dragon's loot follows about ten seconds later as its own lines, by which
  * time the Protector may have fallen too, so the loot goes to the last dragon and not to the last boss.
  */
-class BossDrops(toggle: KMutableProperty0<Boolean>) : Feature("boss-drops", toggle) {
+class BossDrops(toggle: KMutableProperty0<Boolean>) : Feature("boss-drops", toggle, Area.END) {
     private val log = saved(BossLog())
     private var last: String? = null
     private var lastDragon: String? = null
@@ -74,7 +75,6 @@ class BossDrops(toggle: KMutableProperty0<Boolean>) : Feature("boss-drops", togg
 
     override fun hud(now: Long): HudBlock? {
         val boss = last ?: return null
-        if (tab.area != "The End") return null
         val record = log.value.bosses[boss] ?: return null
         return block {
             row(boss) { value("#$position"); muted(" with $damage") }

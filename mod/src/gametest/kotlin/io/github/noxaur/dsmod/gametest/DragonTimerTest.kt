@@ -17,6 +17,7 @@ class DragonTimerTest : FabricClientGameTest {
         context.worldBuilder().create().use { world ->
             val seen = ArrayList<GameEvent>()
             context.runOnClient<Nothing> { DsModClient.game.tap = { _, event -> seen += event } }
+            context.enterTheEnd()
 
             world.server.runCommand("""tellraw @a "§5✦ §dThe Egg has Spawned!"""")
             context.waitTicks(5)

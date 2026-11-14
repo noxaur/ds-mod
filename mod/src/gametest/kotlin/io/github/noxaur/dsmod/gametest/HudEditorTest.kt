@@ -30,6 +30,7 @@ class HudEditorTest : FabricClientGameTest {
             context.takeScreenshot("hud-editor-empty")
             context.setScreen { null }
 
+            context.enterTheEnd()
             world.server.runCommand("""tellraw @a "§5✦ §dThe Egg has Spawned!"""")
             context.waitTicks(5)
             context.runOnClient<Nothing> { DsModClient.openHudEditor() }

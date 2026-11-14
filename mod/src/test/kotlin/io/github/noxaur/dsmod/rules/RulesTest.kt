@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.rules
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.features
+import io.github.noxaur.dsmod.core.game.Area
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
@@ -58,6 +59,20 @@ class RulesTest {
         val docs = Path.of("../docs/user/features.md").readText()
         val missing = features(DsModConfig()).map { it.title }.filter { "### $it\n" !in docs }
         assertEquals(emptyList(), missing, "docs/user/features.md needs a `### <Name>` section that tells the player what each of these shows: $missing\n")
+    }
+
+    @Test
+    fun `a feature in an area's folder is locked to that area`() {
+        val wrong = features(DsModConfig()).filter { feature ->
+            val folder = feature.javaClass.packageName.substringAfterLast('.')
+            feature.area != (Area.entries.firstOrNull { it.folder == folder } ?: Area.ANYWHERE)
+        }.map { "${it.javaClass.simpleName} is ${it.area}" }
+        assertEquals(
+            emptyList(),
+            wrong,
+            "A feature in core/feature/<folder>/ passes the `Area` with that folder to `Feature(..)`, and a feature locked to an " +
+                "area lives in its folder. One that runs everywhere lives in another folder and passes `Area.ANYWHERE`: $wrong\n",
+        )
     }
 
     @Test

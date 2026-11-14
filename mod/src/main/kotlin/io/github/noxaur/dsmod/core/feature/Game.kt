@@ -15,6 +15,7 @@ import io.github.noxaur.dsmod.core.hud.HudBlock
  * Runs the features. The edge calls [post] for each event and [tick] once a tick, then hands each
  * changed [Readout] to the shared layers, so a feature's own code never runs inside the render loop. A
  * readout is rebuilt after an event its feature could see, and otherwise a few times a second for its clocks.
+ * A feature locked to an [io.github.noxaur.dsmod.core.game.Area] gets its events and shows its readout only there.
  */
 class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()) {
     class Readout(val feature: Feature) {
@@ -81,7 +82,9 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         for (i in features.indices) {
             val feature = features[i]
             if (!feature.enabled) continue
-            val handler = feature.handlers[event.javaClass]
+            // Outside its area a feature still follows the tab list and the world, which is how it knows it left.
+            val reaches = shared && event is TabList || event is WorldChanged || tab.isIn(feature.area)
+            val handler = if (reaches) feature.handlers[event.javaClass] else null
             if (handler != null) metrics.time(feature.id) { handler(event, time) }
             if (handler != null || shared) readouts[i].stale = true
             if (feature.hides) {
@@ -107,7 +110,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             readout.refreshedAt = time
             var hud: HudBlock? = null
             var slots = emptyMap<Int, SlotMark>()
-            if (feature.enabled) {
+            if (feature.enabled && tab.isIn(feature.area)) {
                 metrics.time(readout.metric) { hud = feature.hud(time) }
                 metrics.time(readout.slotsMetric) { slots = feature.slots(time) }
             }
