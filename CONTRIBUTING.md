@@ -2,8 +2,6 @@
 
 Thank you for being interested in developing ds-mod. If you want to contribute in other ways than GitHub, check out the [Discord](https://discord.gg/YUZCYAnr7F).
 
-This page tells you how to help, what a pull request needs, and how to set up the mod.
-
 ## Send us data
 
 I'm just a normal player, and I haven't reached every phase of the game. A great way to help is to send us data from the parts I haven't seen yet. See the Discord for how.
@@ -14,7 +12,7 @@ Open an issue. Tell us what you did, what you expected and what happened instead
 
 ## What we won't take
 
-- Anything that plays for you. The server bans macros and scripts. Auto-clicking is fine under 10 CPS, only while the player is moving.
+- Anything that plays for you. The server bans macros and scripts. Auto-clicking is fine under 10 CPS, only while you're moving.
 - A new dependency we didn't agree on first.
 - A Minecraft version bump. The server decides the version.
 
@@ -36,14 +34,6 @@ For a UI change, attach before and after screenshots. Add a short video when the
 
 ds-mod runs inside the render and tick loops, so a dropped frame is a bug. If your change touches a hot path, measure it, and put the numbers in the pull request.
 
-### Keep your pull request mergeable
-
-Merge `main` into your branch and fix the conflicts yourself.
-
-### Say if an AI wrote it
-
-That's fine, but end the pull request body with the model and what it did, such as `Claude Opus 5.5 for implementation.`
-
 ## Submit a change
 
 - Name the branch with at most three hyphenated words, such as `fix-tab-parser`.
@@ -53,6 +43,8 @@ That's fine, but end the pull request body with the model and what it did, such 
   2. A summary of the change. Use the smallest view that keeps it clear, such as a file tree, pseudocode or a diff.
   3. The evidence.
   4. The merge danger: whether the change is easy to undo, and what else it can break.
+  5. If an AI wrote any of it, the model and what it did, such as `Claude Opus 5.5 for implementation.`
+- Merge `main` into your branch and fix the conflicts yourself.
 - Keep plans and notes out of the change.
 
 ## Development
