@@ -42,3 +42,17 @@ Counts your Summoning Eyes and your other rare drops while you grind in The End:
 It counts only your own drop messages, such as `RARE DROP!`, `EPIC DROP!` and `RNGESUS DROP!`, never what another player types in chat. It does not count kills or show profit. It shows nothing outside The End.
 
 The all-time numbers are saved about once a minute and when you close the game, in `config/dsmod/data/zealot-tracker.json` in your game folder. Delete the file to start again.
+
+## Slayers
+
+### Slayer Tracker
+
+Counts the slayer bosses you slay:
+
+- `Slain: 3` is the bosses you have slain since you started the game.
+- `Spawn to Slain: 0:04` is the average time from a boss spawning to its death. It shows `-` until you slay one that spawned while you were watching.
+- `All-Time: 12` is every boss you have slain, across sessions.
+
+A quest you fail counts for nothing. It shows nothing until the first boss spawns, and it counts only the server's own messages, never what another player types in chat.
+
+The all-time number is saved about once a minute and when you close the game, in `config/dsmod/data/slayer-tracker.json` in your game folder. Delete the file to start again.

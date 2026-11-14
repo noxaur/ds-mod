@@ -18,6 +18,7 @@ A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with 
 | --- | --- |
 | Follow lines in chat | `DragonTimer` |
 | Read the tab list's info rows | `GolemStatus` |
+| Count something and keep the total | `SlayerTracker` |
 | Track a rate, in one area only | `ZealotTracker` |
 
 - A feature reads `GameEvent`s and the shared state, `tab` and `container`. It returns its HUD block from `hud(now)`, built with `block { row("Label") { value(..) } }`, and its slot marks from `slots(now)`. `Readouts` in `edge` hands both to the UI layers when they change. Minecraft, the clock, the disk, placement and drawing belong to the shared layers, so extend the layer when a feature needs more from it.

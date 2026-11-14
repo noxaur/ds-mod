@@ -21,6 +21,11 @@ class DsModConfig : Config() {
     val end = End()
 
     @Expose
+    @Category(name = "Slayers", desc = "Your slayer quests and bosses.")
+    @JvmField
+    val slayer = Slayer()
+
+    @Expose
     @Category(name = "HUD", desc = "Where each block sits on the screen.")
     @JvmField
     val hud = Hud()
@@ -43,6 +48,14 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var zealotTracker = true
+    }
+
+    class Slayer {
+        @Expose
+        @ConfigOption(name = "Slayer Tracker", desc = "Count the slayer bosses you slay and time each from spawn to slain.")
+        @ConfigEditorBoolean
+        @JvmField
+        var slayerTracker = true
     }
 
     /** Where a feature's HUD block has its top-left corner, as fractions of the scaled screen, and how big it is. */

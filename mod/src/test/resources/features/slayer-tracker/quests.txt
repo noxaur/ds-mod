@@ -1,0 +1,81 @@
++   0.0s > Auto-Slayer disabled.
++   1.0s >   SLAYER QUEST STARTED!
++   1.0s >    » Slay 250 Combat XP worth of Zombies.
++   3.0s > ☠ SLAYER BOSS SPAWNING!
+             Slayer Tracker
+               Slain: 0
+               Spawn to Slain: -
+               All-Time: 0
++   6.0s > ☠ NICE! SLAYER BOSS SLAIN!
+             Slayer Tracker
+               Slain: 1
+               Spawn to Slain: 0:03
+               All-Time: 1
++   6.0s >   » Collecting reward...
++   6.0s >   SLAYER QUEST COMPLETE!
++   6.0s >    Zombie Slayer LVL 5 - Next LVL in 13935 XP!
++   9.6s >   SLAYER QUEST STARTED!
++   9.6s >    » Slay 1,300 Combat XP worth of Zombies.
++  10.8s > [DRAGON] Player1: hello
++  13.2s > [MVP+] Player2: hello
++  17.6s > ☠ SLAYER BOSS SPAWNING!
++  17.6s > EPIC DROP! Golden Ghoul Talisman
++  20.3s > ☠ NICE! SLAYER BOSS SLAIN!
+             Slayer Tracker
+               Slain: 2
+               Spawn to Slain: 0:03
+               All-Time: 2
++  20.3s >   » Collecting reward...
++  20.3s >   SLAYER QUEST COMPLETE!
++  20.3s >    Zombie Slayer LVL 5 - Next LVL in 13910 XP!
++  24.5s >   SLAYER QUEST STARTED!
++  24.5s >    » Slay 4,000 Combat XP worth of Zombies.
++  25.7s > [DRAGON] Player3: hello
++  27.0s > [VIP+] Player4: hello
++  31.3s > [MVP+] Player5: hello
++  38.9s > [MVP+] Player6: hello
++  42.3s > [MVP+] Player5: hello
++  43.2s > [DRAGON] Player7: hello
++  44.4s > ⚠ Revenant Sycophant has appeared!
++  44.4s > ☠ SLAYER BOSS SPAWNING!
++  48.7s > [DRAGON] Player7: hello
++  50.4s > You hear something falling from the sky.
++  51.0s > ☠ NICE! SLAYER BOSS SLAIN!
+             Slayer Tracker
+               Slain: 3
+               Spawn to Slain: 0:04
+               All-Time: 3
++  51.0s >   » Collecting reward...
++  51.0s >   SLAYER QUEST COMPLETE!
++  51.0s >    Zombie Slayer LVL 5 - Next LVL in 13810 XP!
++  55.3s >   SLAYER QUEST STARTED!
++  55.3s >    » Slay 11,000 Combat XP worth of Zombies.
++  57.8s > ⚠ Revenant Sycophant has appeared!
++  57.9s > ⚠ Deformed Revenant has appeared!
++  59.3s > ⚠ Revenant Champion has appeared!
++  59.3s > ☠ SLAYER BOSS SPAWNING!
++  59.6s > [DRAGON] Player8: hello
++  60.3s > RARE DROP! Zombie Talisman
++  60.3s > You have 1 item stashed away!!
++  60.3s > CLICK HERE to pick it up!
++  60.3s > or /viewstash to see what's in it.
++  63.2s > Player9: hello
++  68.1s > Player10: hello
++  75.9s > Player9: hello
++  76.4s > Player10: hello
++  84.3s > [DRAGON] Player11: hello
++  91.2s > [DRAGON] Player11: hello
++  94.4s > [VIP+] Player4: hello
++ 100.2s > [MVP+] Player6: hello
++ 100.2s > [-] [MVP+] Player12
++ 104.0s > [MOD] Player13: hello
++ 106.6s > Player10: hello
++ 107.2s > [MVP+] Player6: hello
++ 111.1s > [MVP+] Player14: hello
++ 111.5s > [DRAGON] Player15: hello
++ 113.5s > You hear something falling from the sky.
++ 116.5s >  ☠ [MVP+] Player16 was killed by Revenant Horror IV.
++ 116.5s >   SLAYER QUEST FAILED
++ 116.5s >   » You died! Wait... if you are dead, how are you reading this?
++ 121.7s > [DRAGON] Player8: hello
+saved slayer-tracker.json = {"slain":3}
