@@ -35,6 +35,22 @@ class GameTest {
     }
 
     @Test
+    fun `a feature that is switched back on hears the tab list again`() {
+        game.post(0, TabList(listOf("Area: The End", "Protector: Rising (Tier 4/5, 20)").map { ServerText(ServerSpan(it)) }))
+        game.tick(0)
+        val before = assertNotNull(hud("golem-status"))
+
+        config.end.golemStatus = false
+        game.tick(1_000)
+        assertNull(hud("golem-status"))
+
+        // No row changed meanwhile, so no new tab list is coming.
+        config.end.golemStatus = true
+        game.tick(2_000)
+        assertEquals(before, hud("golem-status"))
+    }
+
+    @Test
     fun `a drop outside The End is not a zealot drop`() {
         game.post(0, TabList(listOf(ServerText(ServerSpan("Area: Crypts")))))
         say(0, "RARE DROP! Zombie Talisman")

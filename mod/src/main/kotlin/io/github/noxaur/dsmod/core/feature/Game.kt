@@ -39,6 +39,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     var tap: ((time: Long, event: GameEvent) -> Unit)? = null
 
     private val tab = TabState()
+    private var lastTab: TabList? = null
 
     /** What the features said since the edge last delivered and cleared it. */
     val messages = ArrayList<Message>()
@@ -69,7 +70,10 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         var shown = true
         // Any feature may read the shared state, so a change to it makes every readout stale.
         val shared = when (event) {
-            is TabList -> true.also { metrics.time("tab-list") { tab.update(event.rows) } }
+            is TabList -> true.also {
+                lastTab = event
+                metrics.time("tab-list") { tab.update(event.rows) }
+            }
             is ContainerOpened -> true.also { metrics.time("container") { container.opened(event) } }
             is SlotChanged -> true.also { metrics.time("container") { container.changed(event) } }
             else -> false
@@ -93,8 +97,10 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             val feature = readout.feature
             if (readout.on != feature.enabled) {
                 readout.on = feature.enabled
-                // A feature that is off sees no events, so what it knows of this world would be stale when it comes back.
-                if (!readout.on) feature.handlers[WorldChanged::class.java]?.let { metrics.time(feature.id) { it(WorldChanged, time) } }
+                // A feature that is off sees no events. It forgets its world when it goes off, and hears the tab
+                // list again when it comes back, because the next one arrives only when a row changes.
+                val missed: GameEvent? = if (readout.on) lastTab else WorldChanged
+                if (missed != null) feature.handlers[missed.javaClass]?.let { metrics.time(feature.id) { it(missed, time) } }
             }
             if (!readout.stale && feature.enabled && time - readout.refreshedAt in 0 until REFRESH_MILLIS) continue
             readout.stale = !feature.enabled
