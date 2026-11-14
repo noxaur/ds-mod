@@ -1,0 +1,26 @@
++   0.0s > RARE DROP! (Summoning Eye) (✯ 90%)
++   0.7s > ☠ The Endstone Protector has emerged from the ground! (Tier 5/5)
++   0.7s > Endstone Protector has spawned.
++   0.8s > EPIC DROP! Golden Eye
++   4.2s > [BOSS] Young Dragon: You are weak young padowan, you will never kill me. FIREBALL!!
+             (title) Fireball, (chat) Alerts | Young Dragon is throwing fireballs.
++   4.3s > Player1: hello
++  10.3s > Player2: hello
++  11.5s > [DRAGON] Player3: hello
++  12.1s > [+] Player4
++  12.6s > [MVP+] Player5: hello
++  17.9s > The Endstone Protector has been defeated!
++  17.9s >                                                                                 
+                       ENDSTONE PROTECTOR DOWN!
+
+                [VIP] Player6 dealt the final blow.
+
+               1st Damager [MVP+] Player7 - 113.5M
+                2nd Damager [VIP] Player6 - 81.0M
+               3rd Damager Player8 - 29.7M
+
+                  Your Damage: 113.5M (Position #1)
+                                                                                
++  25.6s > RARE DROP! (Summoning Eye) (✯ 90%)
++  26.2s > [-] [VIP+] Player9
++  28.2s > [DRAGON] Player10: hello

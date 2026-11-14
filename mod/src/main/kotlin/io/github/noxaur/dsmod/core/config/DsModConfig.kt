@@ -29,12 +29,12 @@ class DsModConfig : Config() {
     val end = End()
 
     @Expose
-    @Category(name = "General", desc = "How the game looks.")
+    @Category(name = "General", desc = "How the game looks, and what it warns you about.")
     @JvmField
     val general = General()
 
     @Expose
-    @Category(name = "Inventory", desc = "What the slots of a menu show.")
+    @Category(name = "Inventory", desc = "What the slots of a menu show, and what protects your items.")
     @JvmField
     val inventory = Inventory()
 
@@ -79,6 +79,12 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var zealotTracker = true
+
+        @Expose
+        @ConfigOption(name = "Boss Drops", desc = "Show your damage rank and loot from the last dragon or Protector, and keep a count of your fights.")
+        @ConfigEditorBoolean
+        @JvmField
+        var bossDrops = true
     }
 
     class General {
@@ -87,6 +93,30 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var fullbright = false
+
+        @Expose
+        @ConfigOption(name = "Alerts", desc = "Show a title and play a sound for the moments chosen below.")
+        @ConfigEditorBoolean
+        @JvmField
+        var alerts = true
+
+        @Expose
+        @ConfigOption(name = "Fireball Alert", desc = "Alert you when a dragon is about to throw fireballs.")
+        @ConfigEditorBoolean
+        @JvmField
+        var fireballAlert = true
+
+        @Expose
+        @ConfigOption(name = "Slayer Boss Alert", desc = "Alert you when your slayer boss spawns.")
+        @ConfigEditorBoolean
+        @JvmField
+        var slayerBossAlert = true
+
+        @Expose
+        @ConfigOption(name = "Explosion Particle Hider", desc = "Hide the clouds that explosions throw up.")
+        @ConfigEditorBoolean
+        @JvmField
+        var explosionParticleHider = false
     }
 
     class Inventory {
@@ -95,6 +125,18 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var rarityOutlines = true
+
+        @Expose
+        @ConfigOption(name = "Hotbar Outlines", desc = "Show the rarity frames on your hotbar too.")
+        @ConfigEditorBoolean
+        @JvmField
+        var hotbarOutlines = true
+
+        @Expose
+        @ConfigOption(name = "Armor Swap Guard", desc = "Stop a right click from swapping the armor in your hand onto you. Sneak to swap.")
+        @ConfigEditorBoolean
+        @JvmField
+        var armorSwapGuard = false
     }
 
     /** A drop's tier, lowest first. [word] is what the server writes before `DROP!`. */

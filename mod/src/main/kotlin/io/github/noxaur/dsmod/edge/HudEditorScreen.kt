@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.hud.HudSnap
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitButton
@@ -14,13 +15,16 @@ import kotlin.math.sign
 
 private const val TITLE = "HUD Editor"
 private const val HINT = "Drag to move, scroll to resize."
+private const val SNAP_REACH = 5f
+private const val SNAP_MARGIN = 2f
 private const val SCALE = "Scale"
 private const val HUD_SCALE = "HUD Scale"
 private const val VALUE_WIDTH = 30
 private const val LABEL_HEIGHT = 8
 
 /**
- * Drag a block to move it and scroll over it to resize it. The panel at the bottom works on the last block
+ * Drag a block to move it and scroll over it to resize it. A dragged block lines up with the screen's edges and
+ * center and with the other blocks when it comes near one, unless Shift is held. The panel at the bottom works on the last block
  * clicked or scrolled, and on the whole HUD. Closing saves through [onSave].
  */
 class HudEditorScreen(
@@ -112,7 +116,27 @@ class HudEditorScreen(
 
     override fun mouseDragged(event: MouseButtonEvent, dx: Double, dy: Double): Boolean {
         val id = grabbed ?: return super.mouseDragged(event, dx, dy)
-        readouts.place(id, (event.x - grabX).toFloat(), (event.y - grabY).toFloat())
+        var x = (event.x - grabX).toFloat()
+        var y = (event.y - grabY).toFloat()
+        val block = Hud.find(id)
+        if (block != null && !event.hasShiftDown()) {
+            val others = Hud.placed().filter { it.id != id }
+            val blockWidth = block.width * block.scale
+            val blockHeight = block.height * block.scale
+            x = HudSnap.snap(
+                x, blockWidth,
+                others.flatMap { listOf(it.x, it.x + it.width * it.scale) } + SNAP_MARGIN + (width - SNAP_MARGIN),
+                others.map { it.x + it.width * it.scale / 2 } + width / 2f,
+                SNAP_REACH,
+            )
+            y = HudSnap.snap(
+                y, blockHeight,
+                others.flatMap { listOf(it.y, it.y + it.height * it.scale) } + SNAP_MARGIN + (height - SNAP_MARGIN),
+                others.map { it.y + it.height * it.scale / 2 } + height / 2f,
+                SNAP_REACH,
+            )
+        }
+        readouts.place(id, x, y)
         refresh()
         return true
     }

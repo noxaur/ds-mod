@@ -3,6 +3,7 @@
 +   1.4s > ⚠ Revenant Champion has appeared!
 +   1.4s > ☠ SLAYER BOSS SPAWNING!
              Slayer Tracker
+               Quest: Boss
                Slain: 0
                Spawn to Slain: -
                All-Time: 0
@@ -28,6 +29,10 @@
 +  55.7s > You hear something falling from the sky.
 +  58.7s >  ☠ [MVP+] Player11 was killed by Revenant Horror IV.
 +  58.7s >   SLAYER QUEST FAILED
+             Slayer Tracker
+               Slain: 0
+               Spawn to Slain: -
+               All-Time: 0
 +  58.7s >   » You died! Wait... if you are dead, how are you reading this?
 +  63.9s > [DRAGON] Player1: hello
 saved slayer-tracker.json = {"slain":0}

@@ -71,6 +71,9 @@ object Hud {
         return null
     }
 
+    /** Every block on the screen, in the order they are drawn. */
+    fun placed(): List<Placed> = placed
+
     fun find(id: String): Placed? {
         for (i in placed.indices) if (placed[i].id == id) return placed[i]
         return null

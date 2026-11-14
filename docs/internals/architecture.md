@@ -32,7 +32,7 @@ A chat line or an alert is collected the same way and delivered at the end of th
 
 Placement belongs to `Readouts`, which keeps one position per feature id. A feature returns a block and knows nothing about the screen.
 
-`Slots` drops its marks when a container screen closes, and marks handed over earlier may be for the container that was open before. So `Readouts` clears the marks when a container screen opens and hands them over again on the next tick, after the poll has seen the new container.
+`Slots` drops its marks when a container screen closes, and marks handed over earlier may be for the container that was open before. So `Readouts` clears the marks when a container screen opens and hands them over again on the next tick, after the poll has seen the new container. It hands them over again when the screen closes too: closing the player's own inventory changes no container, so no event would bring the hotbar's marks back.
 
 ## Shared state is folded once
 
