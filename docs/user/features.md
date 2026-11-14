@@ -8,6 +8,14 @@ A feature shows a block on the HUD: its name, then rows such as `Eyes: 5/8`. Blo
 
 To move them, type `/dsmod hud`, or press Edit under HUD in the settings. Drag a block to move it, and scroll over it to resize it. Press Esc to save.
 
+## Chat
+
+### Ability Spam
+
+Hides the message the server sends each time you use an ability that is still on cooldown, such as `This ability is on cooldown for 4.35s`. Holding the button no longer floods your chat.
+
+The first time it hides one, a line in chat says so. Turn off Ability Spam in the settings to see the messages again.
+
 ## The End
 
 ### Dragon Timer
