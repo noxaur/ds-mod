@@ -67,8 +67,6 @@ cd mod && ./gradlew runClient
 
 `mise install` gives you the pinned JDK, Go, Node and pnpm. `runClient` starts the game with the debug build and signs in with your Microsoft account. Run `mise run check` before you push. Each failure names its fix.
 
-Before you change code, read these:
-
 - The [development docs](docs/operations/development.md) explain how to run the backend and the website, build the jars, record a capture and run the checks.
 - [AGENTS.md](AGENTS.md) has the principles, the layout and the rules, with the check that enforces each one. Each directory has its own: [mod](mod/AGENTS.md), [backend](backend/AGENTS.md) and [web](web/AGENTS.md).
 - [docs/internals/](docs/internals/) records why the code has its shape. Start with the [architecture](docs/internals/architecture.md).
