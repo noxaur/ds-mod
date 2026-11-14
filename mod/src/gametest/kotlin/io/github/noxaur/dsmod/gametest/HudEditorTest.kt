@@ -110,6 +110,27 @@ class HudEditorTest : FabricClientGameTest {
             context.clickScreenButton("Reset")
             check(ID !in DsModClient.settings.hud.positions) { "Reset kept the position" }
 
+
+            // Let go three pixels off the middle of the screen, the block centers itself. With Shift it stays where it was dropped.
+            context.runOnClient<Nothing> { client ->
+                val screen = client.gui.screen()!!
+                fun dragTo(x: Double, y: Double, modifiers: Int): Hud.Placed {
+                    val block = Hud.find(ID)!!
+                    fun at(px: Double, py: Double) = MouseButtonEvent(px, py, MouseButtonInfo(0, modifiers))
+                    check(screen.mouseClicked(at(block.x + 5.0, block.y + 5.0), false)) { "The block was not under the mouse" }
+                    screen.mouseDragged(at(x + 5.0, y + 5.0), 0.0, 0.0)
+                    screen.mouseReleased(at(x + 5.0, y + 5.0))
+                    return Hud.find(ID)!!
+                }
+                val size = Hud.find(ID)!!.let { it.width * it.scale to it.height * it.scale }
+                val centered = (screen.width - size.first) / 2.0
+                val middle = (screen.height - size.second) / 2.0
+                val snapped = dragTo(centered + 3, middle - 3, 0)
+                check(Math.abs(snapped.x - centered) < 0.6 && Math.abs(snapped.y - middle) < 0.6) { "The block did not center: ${snapped.x}, ${snapped.y}, wanted $centered, $middle on ${screen.width}x${screen.height} with $size" }
+                val free = dragTo(centered + 3, middle - 3, org.lwjgl.glfw.GLFW.GLFW_MOD_SHIFT)
+                check(Math.abs(free.x - (centered + 3)) < 0.6 && Math.abs(free.y - (middle - 3)) < 0.6) { "Shift did not skip the snap: ${free.x}, ${free.y}" }
+            }
+
             context.runOnClient<Nothing> { client ->
                 val screen = client.gui.screen()!!
                 val block = Hud.find(ID)!!

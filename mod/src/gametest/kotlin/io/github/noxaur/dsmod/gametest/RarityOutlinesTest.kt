@@ -28,7 +28,7 @@ import net.minecraft.world.item.component.CustomData
 /**
  * Gives the player items the way dragsim.co builds them, checks the `Item` the edge reads from them, then opens
  * the inventory and a chest and checks the marks. Read the screenshots: a frame must sit around the
- * slot of each item, and the tooltip must sit over a frame.
+ * slot of each item, and the tooltip must sit over a frame. The last one shows the frames on the hotbar.
  */
 class RarityOutlinesTest : FabricClientGameTest {
     private fun marks(context: ClientGameTestContext) = context.computeOnClient<Map<Int, SlotMark>, Nothing> {
@@ -127,6 +127,13 @@ class RarityOutlinesTest : FabricClientGameTest {
             context.waitTicks(5)
             val back = context.computeOnClient<Int, Nothing> { DsModClient.game.container.id }
             check(back == 0 && marks(context) == expected) { "Back in the inventory, container $back is marked ${marks(context)}" }
+
+            // With no menu open the hotbar carries the frames. Read the screenshot: gold, blue and white around the first three items.
+            world.server.runCommand("""item replace entity @a container.1 with bow[custom_data={item_data:{rarity:"RARE"}}]""")
+            world.server.runCommand("""item replace entity @a container.2 with diamond_sword[custom_data={item_data:{rarity:"LEGENDARY"}}]""")
+            context.waitTicks(10)
+            check(marks(context)[38] == SlotMark(Role.LEGENDARY, border = true)) { "The hotbar is marked ${marks(context)}" }
+            context.takeScreenshot("rarity-hotbar")
         }
     }
 }

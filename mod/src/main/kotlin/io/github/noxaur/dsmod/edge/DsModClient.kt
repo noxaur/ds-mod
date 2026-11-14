@@ -54,9 +54,10 @@ object DsModClient : ClientModInitializer {
         game = Game(features(config.instance))
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
         Hud.register()
-        Slots.register()
+        Slots.register(config.instance.inventory)
         Tooltips.register()
         World.register()
+        ArmorSwapGuards.register(config.instance.inventory)
         readouts = Readouts(game, config.instance.hud).also { it.register() }
         tabs = TabListPoller(game)
         containers = ContainerPoller(game)

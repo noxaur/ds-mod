@@ -47,6 +47,8 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
             // The marks are for the container the last poll saw, and this screen may show another. The next tick hands them over again.
             game.readouts.forEach { Slots.clear(it.feature.id) }
             handed.fill(-1)
+            // Slots drops every mark when the screen closes, and the hotbar still wants the inventory's.
+            ScreenEvents.remove(screen).register { handed.fill(-1) }
         }
     }
 
