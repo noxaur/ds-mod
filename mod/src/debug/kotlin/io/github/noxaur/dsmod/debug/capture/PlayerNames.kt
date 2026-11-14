@@ -58,7 +58,10 @@ object PlayerNames {
                         Regex("""^Name: (\w+)""").find(plain(sidebarLine))?.let { add(it.groupValues[1]) }
                     }
                     // The players are the rows above the info panel. An older capture keys them `!ab` to `!at`.
-                    "tablist" -> data["rows"]?.jsonArray?.map(::plain)?.drop(1)?.takeWhile { it.trim() != "Info" }?.forEach(::row)
+                    // An info row can name a player too, as in ` Admin Booster 6m 47s by [ADMIN] name`.
+                    "tablist" -> data["rows"]?.jsonArray?.map(::plain)?.also { rows ->
+                        rows.forEach { text -> nameInside.findAll(text).forEach { match -> addAll(match.groupValues.drop(1).filter(String::isNotEmpty)) } }
+                    }?.drop(1)?.takeWhile { it.trim() != "Info" }?.forEach(::row)
                         ?: data["entries"]?.jsonObject?.values?.filterIsInstance<JsonObject>()
                             ?.filter { plain(it["name"]).matches(Regex("![a][b-z]")) }?.forEach { row(plain(it["text"])) }
                 }
