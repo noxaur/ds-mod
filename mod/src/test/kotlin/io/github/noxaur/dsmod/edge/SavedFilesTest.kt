@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.SystemMessage
+import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.ServerText
 import java.nio.file.Files
 import kotlin.io.path.exists
@@ -20,7 +21,10 @@ class SavedFilesTest {
     private val dir = Files.createTempDirectory("dsmod-saved")
     private val file = dir.resolve("zealot-tracker.json")
 
-    private fun game() = Game(features(DsModConfig())).also { game -> game.readouts.forEach { it.feature.enabled = true } }
+    private fun game() = Game(features(DsModConfig())).also { game ->
+        game.readouts.forEach { it.feature.enabled = true }
+        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+    }
 
     private fun Game.drop(line: String) = post(0, SystemMessage(ServerText(ServerSpan(line))))
 
@@ -57,6 +61,24 @@ class SavedFilesTest {
         game.drop("RARE DROP! (Summoning Eye) (✯ 90%)")
         files.close()
         assertEquals("""{"drops":{"Summoning Eye":1}}""", file.readText())
+    }
+
+    @Test
+    fun `a write that failed is tried again`() {
+        val blocked = dir.resolve("blocked")
+        blocked.writeText("a file where the folder should be")
+        val game = game()
+        val files = SavedFiles(blocked, game)
+        game.drop("RARE DROP! (Summoning Eye) (✯ 90%)")
+        repeat(200) {
+            files.flush()
+            if ("zealot-tracker.save" !in game.metrics.snapshot().failures) Thread.sleep(10)
+        }
+        assertTrue("zealot-tracker.save" in game.metrics.snapshot().failures)
+
+        Files.delete(blocked)
+        files.close()
+        assertEquals("""{"drops":{"Summoning Eye":1}}""", blocked.resolve("zealot-tracker.json").readText())
     }
 
     @Test

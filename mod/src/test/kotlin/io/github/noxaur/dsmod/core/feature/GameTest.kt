@@ -1,0 +1,43 @@
+package io.github.noxaur.dsmod.core.feature
+
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.game.ServerSpan
+import io.github.noxaur.dsmod.core.game.ServerText
+import io.github.noxaur.dsmod.core.game.SystemMessage
+import io.github.noxaur.dsmod.core.game.TabList
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+
+class GameTest {
+    private val config = DsModConfig()
+    private val game = Game(features(config))
+
+    private fun say(time: Long, line: String) = game.post(time, SystemMessage(ServerText(ServerSpan(line))))
+
+    private fun hud(id: String) = game.readouts.single { it.feature.id == id }.hud
+
+    @Test
+    fun `a feature that was switched off comes back knowing nothing of the world it left`() {
+        say(0, "☠ The Young Dragon has spawned!")
+        game.tick(0)
+        assertNotNull(hud("dragon-timer"))
+
+        config.end.dragonTimer = false
+        game.tick(1_000)
+        assertNull(hud("dragon-timer"))
+
+        // The dragon died while the feature saw nothing, so the timer must not pick it up again.
+        config.end.dragonTimer = true
+        game.tick(2_000)
+        assertNull(hud("dragon-timer"))
+    }
+
+    @Test
+    fun `a drop outside The End is not a zealot drop`() {
+        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: Crypts")))))
+        say(0, "RARE DROP! Zombie Talisman")
+        assertEquals("""{"drops":{}}""", game.readouts.single { it.feature.id == "zealot-tracker" }.feature.state!!.encode())
+    }
+}
