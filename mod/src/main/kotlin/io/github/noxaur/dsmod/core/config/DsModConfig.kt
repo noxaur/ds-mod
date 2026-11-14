@@ -60,6 +60,12 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var abilitySpam = true
+
+        @Expose
+        @ConfigOption(name = "Copy Chat", desc = "Select chat messages with the right mouse button and copy them as text, format codes or JSON.")
+        @ConfigEditorBoolean
+        @JvmField
+        var copyChat = true
     }
 
     class End {

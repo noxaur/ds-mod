@@ -85,6 +85,7 @@ object DsModClient : ClientModInitializer {
         World.register()
         ArmorSwapGuards.register(config.instance.inventory)
         EyeGuards.register(config.instance.end)
+        CopyChats.register(config.instance.chat)
         readouts = Readouts(game, config.instance.hud).also { it.register() }
         tabs = TabListPoller(game)
         sidebars = SidebarPoller(game)
