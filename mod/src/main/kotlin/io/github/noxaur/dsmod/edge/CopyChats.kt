@@ -178,7 +178,8 @@ object CopyChats {
 
     private fun copy(client: Minecraft, format: Format, x: Int, y: Int) {
         val shown = (client.gui.hud.chat as ChatComponentAccessor).allMessages
-        val parts = selection.filter { part -> shown.any { it === part.message } }
+        // A drag that starts or ends on an empty line takes it along, and it means nothing at the edge of a copy.
+        val parts = selection.filter { part -> shown.any { it === part.message } }.dropWhile { it.blank }.dropLastWhile { it.blank }
         menu = null
         if (parts.isEmpty()) return clear()
         clipboard(
@@ -306,13 +307,16 @@ object CopyChats {
         val rowsOf = IdentityHashMap<GuiMessage, Int>()
         for (line in lines) rowsOf.merge(line.parent(), 1, Int::plus)
         val seen = IdentityHashMap<GuiMessage, Int>()
-        val partOf = IdentityHashMap<FormattedCharSequence, Part>()
-        for (line in lines) {
+        val partOf = lines.map { line ->
             val message = line.parent()
             val row = rowsOf.getValue(message) - 1 - (seen.merge(message, 1, Int::plus)!! - 1)
             val layout = layout(client, message)
-            partOf[line.content()] = if (layout.partOfRow.size == rowsOf[message]) layout.parts[layout.partOfRow[row]] else Part(message, 0, layout.parts.flatMap { it.pieces }, true)
+            if (layout.partOfRow.size == rowsOf[message]) layout.parts[layout.partOfRow[row]] else Part(message, 0, layout.parts.flatMap { it.pieces }, true)
         }
+        // Minecraft draws the rows on screen from the top one down to the newest, and then lines that belong to no
+        // message. A row is told by that order and not by its text, because every empty line is the same object.
+        val scrolled = chat.chatScrollbarPos
+        var next = minOf(lines.size - scrolled, chat.linesPerPage) - 1
         val spacing = client.options.chatLineSpacing().get()
         val height = (9 * (spacing + 1)).toInt()
         val textToBottom = (8 * (spacing + 1) - 4 * spacing).roundToInt()
@@ -327,8 +331,8 @@ object CopyChats {
             }
 
             override fun accept(alignment: TextAlignment, x: Int, y: Int, parameters: ActiveTextCollector.Parameters, text: FormattedCharSequence) {
-                // The queue's and the restriction's lines come through here too, and belong to no message.
-                val part = partOf[text] ?: return
+                if (next < 0) return
+                val part = partOf[scrolled + next--]
                 rows += Row(part, Matrix3x2f(parameters.pose()), y + textToBottom - height, y + textToBottom)
             }
 

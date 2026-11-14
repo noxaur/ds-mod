@@ -14,4 +14,8 @@ public interface ChatComponentAccessor {
 
     @Accessor
     List<GuiMessage.Line> getTrimmedMessages();
+
+    /** How many rows the chat is scrolled up by. */
+    @Accessor
+    int getChatScrollbarPos();
 }

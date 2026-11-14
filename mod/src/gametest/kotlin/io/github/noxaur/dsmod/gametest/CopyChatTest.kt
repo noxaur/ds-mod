@@ -29,7 +29,9 @@ class CopyChatTest : FabricClientGameTest {
                     val chat = client.gui.hud.chat
                     chat.clearMessages(false)
                     for (i in 1..30) chat.addClientSystemMessage(Component.literal("Filler $i"))
-                    // A block as the server sends one: several lines in one message, one empty and one centered with spaces.
+                    // A block as dragsim.co sends one: a message per line, with empty messages between.
+                    for (line in listOf("Top", "", "Middle", "", "Bottom")) chat.addClientSystemMessage(Component.literal(line))
+                    // A block sent the other way: several lines in one message, one empty and one centered with spaces.
                     chat.addClientSystemMessage(
                         Component.literal("ACTIVE BOOSTERS\n\n      Everyone: +50% drops.\n").withStyle(ChatFormatting.GOLD)
                             .append(Component.literal("Expires in 1h").withStyle(ChatFormatting.GRAY)),
@@ -154,6 +156,34 @@ class CopyChatTest : FabricClientGameTest {
                 press(Format.JSON)
                 check("ACTIVE BOOSTERS" in copies.single() && "Everyone" !in copies.single()) { "JSON for a block's first line was ${copies.single()}" }
                 copies.clear()
+
+                // Empty messages are all the same to look at, and each still belongs to its own place in the drag.
+                row(10)
+                context.input.pressMouse(1)
+                context.waitTick()
+                context.input.pressMouse(0)
+                context.waitTick()
+                copied("Middle", "A message between two empty ones")
+                row(12)
+                context.input.holdMouse(1)
+                row(8)
+                context.waitTick()
+                context.takeScreenshot("copy-chat-block")
+                context.input.releaseMouse(1)
+                context.waitTick()
+                check(CopyChats.menu?.header == "Copy 3 Messages") { "A drag over a block of messages opened ${CopyChats.menu?.header}" }
+                press(Format.TEXT)
+                copied("Top\n\nMiddle\n\nBottom", "A block of five messages, two of them empty")
+
+                // Let go on the empty message under Middle: the drag ends there, and the copy leaves the empty edge out.
+                row(12)
+                context.input.holdMouse(1)
+                row(9)
+                context.input.releaseMouse(1)
+                context.waitTick()
+                check(CopyChats.menu?.header == "Copy 2 Messages") { "A drag that ended on an empty message opened ${CopyChats.menu?.header}" }
+                press(Format.TEXT)
+                copied("Top\n\nMiddle", "A drag that ended on an empty message")
 
                 // Escape and a click elsewhere put the menu away, copy nothing and leave the chat open.
                 row(0)
