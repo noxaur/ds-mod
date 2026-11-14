@@ -81,6 +81,12 @@ class DsModConfig : Config() {
         var zealotTracker = true
 
         @Expose
+        @ConfigOption(name = "Boss Beacon", desc = "Show a beam where the Endstone Protector will emerge.")
+        @ConfigEditorBoolean
+        @JvmField
+        var bossBeacon = true
+
+        @Expose
         @ConfigOption(name = "Boss Drops", desc = "Show your damage rank and loot from the last dragon or Protector, and keep a count of your fights.")
         @ConfigEditorBoolean
         @JvmField

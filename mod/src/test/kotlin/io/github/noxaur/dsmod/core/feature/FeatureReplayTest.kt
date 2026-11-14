@@ -6,11 +6,14 @@ import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.GameEvent
+import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.WorldChanged
+import io.github.noxaur.dsmod.core.world.Mark
+import io.github.noxaur.dsmod.core.world.Waypoint
 import io.github.noxaur.dsmod.debug.capture.readCapture
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
@@ -30,7 +33,7 @@ import kotlin.test.fail
 /**
  * Replays capture excerpts through each feature. `features/<id>/<name>.jsonl` is the excerpt, and
  * `<name>.txt` beside it is the transcript: every event, whether the feature hid it, what the feature said, and
- * the HUD block and slot marks each time they changed.
+ * the HUD block, the slot marks and the marks in the world each time they changed.
  */
 class FeatureReplayTest {
     private val root = Path.of("src/test/resources/features")
@@ -68,6 +71,7 @@ class FeatureReplayTest {
             "(tab list) " + changed.joinToString("; ")
         }
         is ContainerOpened -> "(opened ${event.title?.let { "\"${it.plain}\"" } ?: "your inventory"}, ${event.size} slots)"
+        is HeadPlaced -> "(head placed) at ${event.x}, ${event.y}, ${event.z}"
         is ActionBar -> "(action bar) ${event.text.plain}"
         is EntityDied -> "(died) ${event.name.plain}"
         is SlotChanged -> "(slot ${event.slot}) " + (event.item?.let { "${it.count} x ${name(it)}" } ?: "emptied")
@@ -83,6 +87,7 @@ class FeatureReplayTest {
                 val start = events.first().first
                 var shown = emptyList<String>()
                 var marked = emptyMap<Int, SlotMark>()
+                var drawn = emptyList<Mark>()
                 val infoRows = HashSet<String>()
                 val transcript = buildString {
                     for ((time, event) in events) {
@@ -114,6 +119,19 @@ class FeatureReplayTest {
                                 appendLine("             + slot $slot: ${mark.role} $shape$label on ${name(game.container.slots[slot]!!)}")
                             }
                             marked = marks
+                        }
+                        val inWorld = game.readouts.single().marks
+                        if (inWorld != drawn) {
+                            drawn = inWorld
+                            if (inWorld.isEmpty()) appendLine("             (no marks in the world)")
+                            for (mark in inWorld) {
+                                appendLine(
+                                    "             (in the world) " + when (mark) {
+                                        is Waypoint -> "${mark.role} beam \"${mark.label}\" at ${mark.at.x}, ${mark.at.y}, ${mark.at.z}"
+                                        else -> mark.toString()
+                                    },
+                                )
+                            }
                         }
                     }
                     val metrics = game.metrics.snapshot()

@@ -50,6 +50,12 @@ Shows where the Endstone Protector stands:
 
 It shows nothing outside The End.
 
+### Boss Beacon
+
+Shows a beam where the Endstone Protector will emerge, labeled `Protector` with the distance to it. The spot is known from the moment the last Protector falls, so you can stand there before the next one is up.
+
+If you arrive in The End while a Protector is already rising, the beam appears when it reaches its next tier. It shows nothing outside The End.
+
 ### Boss Drops
 
 Shows how your last fight against a dragon or the Endstone Protector went:

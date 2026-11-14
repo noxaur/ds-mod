@@ -54,6 +54,15 @@ data class ActionBar(val text: ServerText) : GameEvent
 @SerialName("death")
 data class EntityDied(val entity: String, val name: ServerText, val x: Double, val y: Double, val z: Double) : GameEvent
 
+/**
+ * The server put a player head block at this place. A server builds markers from these, such as the head that
+ * stands where the Endstone Protector will emerge. A head that came with its chunk has none. Posted only while a
+ * feature reads it.
+ */
+@Serializable
+@SerialName("head")
+data class HeadPlaced(val x: Int, val y: Int, val z: Int) : GameEvent
+
 /** A slot of the open container now holds [item], or is empty when it is null. Posted only for a slot that changed. */
 @Serializable
 @SerialName("slot")

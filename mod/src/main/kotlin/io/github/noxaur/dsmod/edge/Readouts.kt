@@ -20,7 +20,7 @@ private const val MIN_HUD_SCALE = 0.5f
 private const val MAX_HUD_SCALE = 3f
 
 /**
- * Hands each feature's readout to [Hud] and [Slots] when it changes, and what the features said to [Chat]
+ * Hands each feature's readout to [Hud], [Slots] and [World] when it changes, and what the features said to [Chat]
  * and [Alerts]. A message waits for the end of the tick, so it lands under the server line it answers. Placement lives here: a block the
  * player has moved has its own place, and the rest stack down from the top-left. A block's drawn scale is
  * its own times the HUD's, snapped to whole screen pixels.
@@ -80,6 +80,7 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
             val block = readout.hud ?: if (editing && readout.feature.hasHud) hud(readout.feature.title) {} else null
             if (block == null) Hud.hide(id) else Hud.show(id, group(id), block)
             if (readout.slots.isEmpty()) Slots.clear(id) else Slots.mark(id, readout.slots)
+            if (readout.marks.isEmpty()) World.hide(id) else World.show(id, readout.marks)
         }
     }
 

@@ -9,13 +9,14 @@ import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudBuilder
 import io.github.noxaur.dsmod.core.text.Text
 import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.core.world.Mark
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
 import kotlin.reflect.KMutableProperty0
 
 /**
  * One thing the mod does for the player. A feature turns events into its own state in [on], and
- * turns that state into what the player sees in [hud] and [slots], says something once with [notice] and
+ * turns that state into what the player sees in [hud], [slots] and [marks], says something once with [notice] and
  * [alert], or keeps a server line out of chat with [hide]. The shared layers draw and print all of it, so a feature touches no screen itself. [toggle] is its switch in the settings, and while that is off, none of these run.
  */
 abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boolean>) {
@@ -94,4 +95,7 @@ abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boo
      * map until the marks change. A mark on a slot the open container lacks is not drawn.
      */
     open fun slots(now: Long): Map<Int, SlotMark> = emptyMap()
+
+    /** The marks this feature draws in the world, or none. Called when [hud] is, so return equal marks until they change. */
+    open fun marks(now: Long): List<Mark> = emptyList()
 }

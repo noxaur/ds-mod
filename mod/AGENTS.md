@@ -24,12 +24,13 @@ A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with 
 | Hide a line the server sends, and tell the player once that you did | `AbilitySpam` |
 | Tell the player something once, and read a setting besides the switch | `LootAlerts` |
 | Track a rate, in one area only | `ZealotTracker` |
+| Mark a place in the world | `BossBeacon` |
 
 - A feature reads `GameEvent`s and the shared state, `tab` and `container`. It returns its HUD block from `hud(now)`, built with `block { row("Label") { value(..) } }`, and its slot marks from `slots(now)`. `Readouts` in `edge` hands both to the UI layers when they change. Minecraft, the clock, the disk, placement and drawing belong to the shared layers, so extend the layer when a feature needs more from it.
 - To say something once, a handler calls `notice(detail)` for a chat line or `alert(title, detail)` for a title with a sound. `Readouts` delivers both at the end of the tick.
 - To keep a server line out of chat, its handler calls `hide()`. Every feature still sees the line. A feature that hides by default tells the player once and names its setting, as `AbilitySpam` does.
 - A feature that reads nothing from the server, such as a camera or lighting change, is a mixin in `edge/mixin` that asks its setting, and an empty class in `core` that lists it. It has no fixture, so its game test `<Class>Test` proves the change with a check and a screenshot, as `FullbrightTest` does.
-- Tooltips and world marks have layers, and no route from a feature yet. The first feature that needs one adds it to `Feature`, `Game` and `Readouts`, and to the transcript in `FeatureReplayTest`.
+- A feature draws in the world by returning marks from `marks(now)`, as `BossBeacon` does. Tooltips have a layer and no route from a feature yet. The first feature that needs one adds it to `Feature`, `Game` and `Readouts`, and to the transcript in `FeatureReplayTest`.
 - A drop line such as `RARE DROP! (Summoning Eye)` is parsed by `Drop.parse`. When two features read the same server line, they share its parser in `core/game`.
 - State that outlives the session is one immutable `@Serializable` class given to `saved()`, with a default for every field. Replace its `value` to change it, because a change made in place is never written.
 - Text the server sent is a `ServerText`, and text the mod shows is a `Text` from `core.text`. Match the server's text on `ServerText.plain`, anchored at the start of the line, because a player can type anything after their name.
@@ -62,6 +63,7 @@ Events are the `GameEvent`s that features see, recorded as they were posted, and
 - `tablist` for the rows of the tab list in the order the client draws them, when one changes.
 - `actionbar` for the line above the hotbar, each time the server sends it.
 - `death` for the server's death event on an entity that is not a player, with its type, name and position.
+- `head` for a player head block the server placed, with its position.
 - `container` for a menu the player opened, or their own inventory again, and `slot` for each slot that changed. A slot carries the item's id, count, name, lore and `custom_data`. A big menu's slots arrive over a few ticks.
 
 Raw records are for you to read. No feature sees one until it is promoted:
