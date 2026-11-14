@@ -10,23 +10,33 @@
     },
     {
       "name": "Run Client",
-      "command": "mise exec -- ./gradlew runClient",
+      "command": "cd mod && mise exec -- ./gradlew runClient",
       "icon": "play",
       "stopOnSettle": true
     },
     {
-      "name": "Check",
-      "command": "mise exec -- ./gradlew check",
+      "name": "Run Backend",
+      "command": "cd backend && mise exec -- go run ./cmd/backend",
+      "icon": "play"
+    },
+    {
+      "name": "Run Web",
+      "command": "cd web && mise exec -- pnpm install && mise exec -- pnpm dev",
+      "icon": "play"
+    },
+    {
+      "name": "Check All",
+      "command": "mise run check",
       "icon": "test"
     },
     {
       "name": "Game Tests",
-      "command": "mise exec -- ./gradlew runClientGameTest runProdClientGameTest",
+      "command": "cd mod && mise exec -- ./gradlew runClientGameTest runProdClientGameTest",
       "icon": "debug"
     },
     {
-      "name": "Build",
-      "command": "mise exec -- ./gradlew build",
+      "name": "Build Mod",
+      "command": "cd mod && mise exec -- ./gradlew build",
       "icon": "build"
     }
   ]
