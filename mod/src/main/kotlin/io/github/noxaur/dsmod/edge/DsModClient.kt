@@ -44,7 +44,7 @@ object DsModClient : ClientModInitializer {
         IMinecraft.INSTANCE.openWrappedScreen(editor)
     }
 
-    fun openHudEditor() = Minecraft.getInstance().setScreenAndShow(HudEditorScreen(readouts, config::saveToFile))
+    fun openHudEditor() = Minecraft.getInstance().setScreenAndShow(HudEditorScreen(readouts, config.instance.hud, config::saveToFile))
 
     override fun onInitializeClient() {
         config = ManagedConfig.create(
@@ -57,7 +57,7 @@ object DsModClient : ClientModInitializer {
         Slots.register()
         Tooltips.register()
         World.register()
-        readouts = Readouts(game, config.instance.hud.positions).also { it.register() }
+        readouts = Readouts(game, config.instance.hud).also { it.register() }
         tabs = TabListPoller(game)
         containers = ContainerPoller(game)
         config.instance.hud.edit = Runnable { openHudEditor() }

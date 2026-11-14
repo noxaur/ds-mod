@@ -3,7 +3,7 @@ package io.github.noxaur.dsmod.edge
 import io.github.noxaur.dsmod.core.hud.BarRow
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudGroup
-import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.edge.ui.Kit
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements
 import net.minecraft.client.Minecraft
@@ -11,16 +11,14 @@ import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 
 private const val BAR_WIDTH = 80
-private const val BAR_HEIGHT = 2
-private const val BAR_GAP = 2
+private const val BAR_GAP = 1
 private const val BLOCK_GAP = 4
-private const val PADDING = 3
 
-// Black at the strength of Minecraft's own chat background.
-private const val PANEL = 128 shl 24
+// The plate's ring, then 3px of air before the text.
+private const val PADDING = 4
 
 object Hud {
-    private class Row(val text: Component, val bar: BarRow?)
+    private class Row(val text: Component, val bar: BarRow?, val barColor: Int)
     private class Block(val header: Component, val rows: List<Row>, val width: Int, val height: Int)
     private class Group(var place: HudGroup) {
         val blocks = LinkedHashMap<String, Block>()
@@ -31,20 +29,29 @@ object Hud {
         var height = 0
     }
 
-    /** A block as it sits on the screen, in GUI pixels. */
-    class Placed(val id: String, val x: Float, val y: Float, val width: Float, val height: Float, val scale: Float)
+    /**
+     * A block as it sits on the screen. [x] and [y], in GUI pixels, are where its plate's corner would be if it
+     * stood alone, and [width] and [height] are that plate's size in HUD pixels, before [scale].
+     */
+    class Placed(val id: String, val x: Float, val y: Float, val width: Int, val height: Int, val scale: Float) {
+        fun contains(px: Double, py: Double) = px >= x && px < x + width * scale && py >= y && py < y + height * scale
+    }
 
     private val groups = LinkedHashMap<String, Group>()
     private var shown = emptyList<Group>()
+    private var placed = emptyList<Placed>()
 
-    /** Puts [block] in [group], replacing what [id] showed before. */
+    /** Puts [block] in [group], replacing what [id] showed before. The group's corner is its plate's corner. */
     fun show(id: String, group: HudGroup, block: HudBlock) {
         val font = Minecraft.getInstance().font
         val line = font.lineHeight + 1
         val header = block.header.toComponent()
-        val rows = block.rows.map { Row(it.text.toComponent(), it as? BarRow) }
+        val rows = block.rows.map { row ->
+            val bar = row as? BarRow
+            Row(row.text.toComponent(), bar, bar?.role?.argb() ?: 0)
+        }
         val width = rows.maxOfOrNull { maxOf(font.width(it.text), if (it.bar != null) BAR_WIDTH else 0) } ?: 0
-        val height = line + rows.sumOf { line + if (it.bar != null) BAR_HEIGHT + BAR_GAP else 0 }
+        val height = line + rows.sumOf { line + if (it.bar != null) Kit.BAR_HEIGHT + BAR_GAP else 0 }
 
         groups.values.forEach { if (it.place.id != group.id) it.blocks.remove(id) }
         val target = groups.getOrPut(group.id) { Group(group) }
@@ -58,29 +65,37 @@ object Hud {
         layout()
     }
 
-    /** The block under a point, topmost first. The HUD editor asks, so it may allocate. */
+    /** The block under a point in GUI pixels, topmost first. */
     fun at(px: Double, py: Double): Placed? {
-        for (group in groups.values.reversed()) {
-            val scale = group.place.scale
-            var y = group.place.y.toFloat()
-            for ((id, block) in group.blocks) {
-                val placed = Placed(id, group.place.x.toFloat(), y, block.width * scale, block.height * scale, scale)
-                if (px >= placed.x && px <= placed.x + placed.width && py >= y && py <= y + placed.height) return placed
-                y += (block.height + BLOCK_GAP) * scale
-            }
-        }
+        for (i in placed.size - 1 downTo 0) if (placed[i].contains(px, py)) return placed[i]
+        return null
+    }
+
+    fun find(id: String): Placed? {
+        for (i in placed.indices) if (placed[i].id == id) return placed[i]
         return null
     }
 
     private fun layout() {
         groups.values.removeIf { it.blocks.isEmpty() }
+        val all = ArrayList<Placed>()
         groups.values.forEach { group ->
             group.shown = group.blocks.values.toList()
             group.width = group.shown.maxOf { it.width }
             group.height = group.shown.sumOf { it.height } + BLOCK_GAP * (group.shown.size - 1)
+            val scale = group.place.scale
+            var y = 0
+            for ((id, block) in group.blocks) {
+                all += Placed(id, group.place.x.toFloat(), group.place.y + y * scale, plate(block.width), plate(block.height), scale)
+                y += block.height + BLOCK_GAP
+            }
         }
         shown = groups.values.toList()
+        placed = all
     }
+
+    // Each line ends in a pixel of spacing, which the plate's air already gives.
+    private fun plate(size: Int) = size + PADDING * 2 - 1
 
     fun register() {
         HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, Identifier.fromNamespaceAndPath("dsmod", "hud")) { graphics, _ ->
@@ -94,21 +109,20 @@ object Hud {
                     pose.pushMatrix()
                     pose.translate(group.place.x.toFloat(), group.place.y.toFloat())
                     pose.scale(group.place.scale, group.place.scale)
-                    if (group.place.background) graphics.fill(-PADDING, -PADDING, group.width + PADDING, group.height + PADDING - 1, PANEL)
-                    var y = 0
+                    if (group.place.background) Kit.plate(graphics, 0, 0, plate(group.width), plate(group.height))
+                    var y = PADDING
                     for (b in group.shown.indices) {
                         val block = group.shown[b]
-                        graphics.text(font, block.header, 0, y, -1, true)
+                        graphics.text(font, block.header, PADDING, y, -1, true)
                         y += line
                         for (r in block.rows.indices) {
                             val row = block.rows[r]
-                            graphics.text(font, row.text, 0, y, -1, true)
+                            graphics.text(font, row.text, PADDING, y, -1, true)
                             y += line
                             val bar = row.bar
                             if (bar != null) {
-                                graphics.fill(0, y, BAR_WIDTH, y + BAR_HEIGHT, Role.MUTED.argb(120))
-                                graphics.fill(0, y, (BAR_WIDTH * bar.fraction).toInt(), y + BAR_HEIGHT, bar.role.argb())
-                                y += BAR_HEIGHT + BAR_GAP
+                                Kit.bar(graphics, PADDING, y, BAR_WIDTH, bar.fraction, row.barColor)
+                                y += Kit.BAR_HEIGHT + BAR_GAP
                             }
                         }
                         y += BLOCK_GAP

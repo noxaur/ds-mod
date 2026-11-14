@@ -2,15 +2,13 @@ package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
+import io.github.noxaur.dsmod.edge.ui.Kit
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.network.chat.Component
 import net.minecraft.world.inventory.Slot
-
-private const val SLOT_SIZE = 16
-private const val BORDER_SIZE = SLOT_SIZE + 2
 
 /** Marks on the slots of the open container. They go away when the container closes. */
 object Slots {
@@ -36,11 +34,7 @@ object Slots {
             val font = Minecraft.getInstance().font
             ScreenEvents.afterBackground(screen).register { _, graphics, _, _, _ ->
                 each(screen, graphics) { slot, shown ->
-                    if (shown.border) {
-                        graphics.outline(slot.x - 1, slot.y - 1, BORDER_SIZE, BORDER_SIZE, shown.color)
-                    } else {
-                        graphics.fill(slot.x, slot.y, slot.x + SLOT_SIZE, slot.y + SLOT_SIZE, shown.color)
-                    }
+                    if (shown.border) Kit.slotBorder(graphics, slot.x, slot.y, shown.color) else Kit.slotFill(graphics, slot.x, slot.y, shown.color)
                 }
             }
             ScreenEvents.afterForeground(screen).register { _, graphics, _, _, _ ->

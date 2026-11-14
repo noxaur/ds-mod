@@ -19,6 +19,10 @@ class SettingsScreenTest : FabricClientGameTest {
         context.runOnClient<Nothing> { DsModClient.openSettings(DsModConfig.Loot::class.java.getField("lootAlertTier")) }
         context.waitTicks(20)
         context.takeScreenshot("settings-dropdown")
+
+        context.runOnClient<Nothing> { DsModClient.openSettings(DsModConfig.Hud::class.java.getField("theme")) }
+        context.waitTicks(20)
+        context.takeScreenshot("settings-interface")
         context.setScreen { TitleScreen() }
     }
 }

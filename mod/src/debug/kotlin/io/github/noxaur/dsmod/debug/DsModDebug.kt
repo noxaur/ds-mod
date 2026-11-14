@@ -62,6 +62,13 @@ object DsModDebug : ClientModInitializer {
                     1
                 },
             )
+            dispatcher.register(
+                ClientCommands.literal("dskit").executes { context ->
+                    // The chat screen closes after the command returns, so open on the next tick.
+                    context.source.client.schedule { context.source.client.setScreenAndShow(KitGalleryScreen()) }
+                    1
+                },
+            )
         }
         ClientLifecycleEvents.CLIENT_STOPPING.register { capture?.close() }
     }

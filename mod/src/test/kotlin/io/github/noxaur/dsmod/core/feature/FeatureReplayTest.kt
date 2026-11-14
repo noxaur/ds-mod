@@ -14,6 +14,7 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.TestFactory
 import java.nio.file.Path
+import java.util.Locale
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
@@ -83,7 +84,7 @@ class FeatureReplayTest {
                     for ((time, event) in events) {
                         val kept = game.post(time, event)
                         game.tick(time)
-                        appendLine("+%6.1fs > %s".format((time - start) / 1000.0, describe(event, infoRows)))
+                        appendLine("+%6.1fs > %s".format(Locale.ROOT, (time - start) / 1000.0, describe(event, infoRows)))
                         if (!kept) appendLine("             (hidden from chat)")
                         for (message in game.messages) {
                             when (message) {
