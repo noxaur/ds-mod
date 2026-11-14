@@ -34,6 +34,10 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.RarityOutlinesTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.ZealotTrackerTest"
       },
       {

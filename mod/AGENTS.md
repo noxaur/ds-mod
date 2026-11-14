@@ -18,6 +18,7 @@ A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with 
 | --- | --- |
 | Follow lines in chat | `DragonTimer` |
 | Read the tab list's info rows | `GolemStatus` |
+| Read items and mark slots | `RarityOutlines` |
 | Count something and keep the total | `SlayerTracker` |
 | Track a rate, in one area only | `ZealotTracker` |
 

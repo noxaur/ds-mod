@@ -56,3 +56,15 @@ Counts the slayer bosses you slay:
 A quest you fail counts for nothing. It shows nothing until the first boss spawns, and it counts only the server's own messages, never what another player types in chat.
 
 The all-time number is saved about once a minute and when you close the game, in `config/dsmod/data/slayer-tracker.json` in your game folder. Delete the file to start again.
+
+## Inventory
+
+### Rarity Outlines
+
+Frames an item's slot in the color of its rarity, in your inventory and in every menu:
+
+- White is Common, green Uncommon, blue Rare, dark purple Epic, gold Legendary, light purple Mythic and aqua Divine.
+- Red is Special.
+- An item with no rarity gets no frame.
+
+The frame sits under the item's tooltip, so it never hides what you are reading.

@@ -21,6 +21,11 @@ class DsModConfig : Config() {
     val end = End()
 
     @Expose
+    @Category(name = "Inventory", desc = "What the slots of a menu show.")
+    @JvmField
+    val inventory = Inventory()
+
+    @Expose
     @Category(name = "Slayers", desc = "Your slayer quests and bosses.")
     @JvmField
     val slayer = Slayer()
@@ -48,6 +53,14 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var zealotTracker = true
+    }
+
+    class Inventory {
+        @Expose
+        @ConfigOption(name = "Rarity Outlines", desc = "Frame each item's slot in the color of its rarity.")
+        @ConfigEditorBoolean
+        @JvmField
+        var rarityOutlines = true
     }
 
     class Slayer {
