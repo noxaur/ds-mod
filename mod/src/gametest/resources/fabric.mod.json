@@ -4,6 +4,7 @@
   "version": "${version}",
   "name": "ds-mod game tests",
   "environment": "client",
+  "mixins": ["dsmod_gametest.mixins.json"],
   "entrypoints": {
     "client": [
       {

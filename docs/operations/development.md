@@ -58,7 +58,17 @@ cd mod
 ./gradlew runClientGameTest runProdClientGameTest
 ```
 
-Each opens a game window for a few seconds. The second one loads the built jars the way a player does.
+Each boots the game. The second one loads the built jars the way a player does.
+
+A game test stays out of your way while you work:
+
+| | Omarchy (Hyprland) | macOS | Elsewhere |
+| --- | --- | --- | --- |
+| Window | Opens on an empty workspace | Opens on the current desktop | Opens on the current desktop |
+| Keyboard focus | Stays where it was | Stays where it was | Stays where it was, if the window manager honors the hint |
+| Sound | Written to a file | Written to a file | Written to a file on Linux, played on Windows |
+
+The sound of a run is `audio.wav` in its run folder, `build/run/clientGameTest/` or `build/run/prodClientGameTest/`, so a test's sound can be checked without anyone hearing it. [Issue 19](https://github.com/noxaur/ds-mod/issues/19) tracks Windows, the other desktops, and moving the window off the current desktop on macOS.
 
 To run one game test, name it: `./gradlew runProdClientGameTest -Pgametests=PerfTest`. `PerfTest` writes its table to `build/run/prodClientGameTest/perf.md`.
 
