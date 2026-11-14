@@ -31,6 +31,7 @@ We can't compromise on these.
 | `web/` | The website, in Next.js with Effect | `web/AGENTS.md` |
 | `api/` | `openapi.yaml`, the REST contract between the mod, the backend and the website | Below |
 | `specs/` | TLA+ specs for any project | Formal specs |
+| `docs/` | Guides for players and contributors, and the reasons behind the code | Docs |
 
 "Server" means dragsim.co. Our own service is the backend.
 
@@ -43,6 +44,16 @@ We can't compromise on these.
 - TLA+ specs live in `specs/`. A spec is `Name.tla` with `Name.cfg` beside it. `mod/`'s Gradle build runs TLC on all of them.
 - When you change a state machine that has a spec, change the spec first and run TLC on it, then change the code.
 - Write a spec for a new feature only when it has interleaving states that a unit test can't enumerate. A parser or an overlay needs a test.
+
+## Docs
+
+Most code changes need no doc change. Before you change an area, read its page in `docs/internals/`.
+
+- `docs/internals/` records why: each architectural decision, the constraint that decided it, and traps the source can't show. Before you add a paragraph, ask what a maintainer would get wrong without it. Leave out how-to steps, code tours, file lists and test results.
+- `docs/user/` helps players do a task, in the mod's voice, with no implementation details or contributor tooling. Update the section when how to use a feature changes.
+- `docs/operations/` holds setup, run and release procedures for contributors.
+- State each fact once, in the page that owns it, and link to the source instead of copying it. When a decision changes, rewrite or delete the text in the same change.
+- `CONTRIBUTING.md` holds only the policy for outside contributors and links `docs/operations/development.md` for setup, running and checks. `docs/README.md` links every page with one line on what it covers.
 
 ## Rules
 
@@ -63,6 +74,8 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | Website failures are modeled with Effect, not `try` | `no-restricted-syntax` in `web/eslint.config.mjs` |
 | Every interactive control comes from ui-sdk | `react/forbid-elements` and `no-restricted-imports` in `web/eslint.config.mjs` |
 | Web dependencies are at least 14 days old | `minimumReleaseAge` in `web/pnpm-workspace.yaml` |
+| `docs/README.md` links every page in `docs/` | `check:docs` |
+| `docs/internals/` records why, not steps | `check:docs` rejects a recipe heading |
 
 When a mistake happens a second time, stop it at the highest level that works:
 
@@ -79,8 +92,9 @@ A rule failure prints the file, the line and the fix. For an exception the user 
 ## Checks
 
 - `mise install` gives you the pinned JDK, Go, Node and pnpm.
-- `mise run check` must pass. It runs `check:mod`, `check:backend` and `check:web`, and each one runs alone too.
+- `mise run check` must pass. It runs `check:mod`, `check:backend`, `check:web` and `check:docs`, and each one runs alone too.
 - Test the real implementation instead of copying its logic into the test.
+
 ## Branches and pull requests
 
 - Use a short branch name of at most three hyphenated words, such as `capture-writer` or `fix-tab-parser`.

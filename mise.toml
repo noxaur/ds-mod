@@ -16,6 +16,20 @@ run = ["test -z \"$(gofmt -l .)\" || { gofmt -l .; echo 'run gofmt -w .'; exit 1
 dir = "web"
 run = ["pnpm install --frozen-lockfile", "pnpm check"]
 
+[tasks."check:docs"]
+dir = "docs"
+run = '''
+fail=0
+for page in $(find user internals operations -name '*.md' | sort); do
+  grep -qF "($page)" README.md || { echo "docs/README.md:1: link $page here with one line on what it covers"; fail=1; }
+done
+if grep -nHEi '^#+ +(add|how to|write|run|check|verify|test)s?( |$)' internals/*.md; then
+  echo "docs/internals records why, not steps. Move the recipe to docs/operations/."
+  fail=1
+fi
+exit $fail
+'''
+
 [tasks.check]
 description = "Runs every project's checks"
-depends = ["check:mod", "check:backend", "check:web"]
+depends = ["check:mod", "check:backend", "check:web", "check:docs"]
