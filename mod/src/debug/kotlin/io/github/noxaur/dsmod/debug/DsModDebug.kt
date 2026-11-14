@@ -87,6 +87,8 @@ object DsModDebug : ClientModInitializer {
     }
 
     override fun onInitializeClient() {
+        // A developer tests in singleplayer and on servers of their own, so the debug build runs everywhere.
+        DsModClient.anyServer = true
         // `./gradlew runClient -Pbrief=<file>` sets this. The window does not exist yet, and takes its title when it opens.
         System.getProperty("dsmod.brief")?.let { brief = BriefRun(Brief.read(Path.of(it))) }
         val nextStep = KeyMappingHelper.registerKeyMapping(KeyMapping("key.dsmod_debug.next_step", GLFW.GLFW_KEY_RIGHT_BRACKET, KeyMapping.Category.MISC))

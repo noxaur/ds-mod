@@ -86,4 +86,23 @@ class GameTest {
         game.tick(2)
         assertNull(hud("dragon-timer"))
     }
+
+    @Test
+    fun `off dragsim co no feature hears a line, hides it or shows a readout`() {
+        var active = false
+        val game = Game(features(config)) { active }
+        val tab = TabList(listOf("Area: The End", "Protector: Rising (Tier 4/5, 20)").map { ServerText(ServerSpan(it)) })
+        val refusal = SystemMessage(ServerText(ServerSpan("This ability is on cooldown for 4.35s")))
+        game.post(0, tab)
+        game.tick(0)
+        assertEquals(false, game.wants(SystemMessage::class.java))
+        assertEquals(true, game.post(0, refusal))
+        assertEquals(emptyList(), game.readouts.mapNotNull { it.hud })
+
+        // Turning the setting off mid-session brings the features back with the tab list they missed.
+        active = true
+        game.tick(1_000)
+        assertNotNull(game.readouts.single { it.feature.id == "golem-status" }.hud)
+        assertEquals(false, game.post(1_000, refusal))
+    }
 }

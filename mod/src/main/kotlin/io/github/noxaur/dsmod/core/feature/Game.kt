@@ -19,8 +19,9 @@ import io.github.noxaur.dsmod.core.world.Mark
  * changed [Readout] to the shared layers, so a feature's own code never runs inside the render loop. A
  * readout is rebuilt after an event its feature could see, and otherwise a few times a second for its clocks.
  * A feature locked to an [io.github.noxaur.dsmod.core.game.Area] gets its events and shows its readout only there.
+ * While [active] is false every feature is treated as switched off, which is how the edge keeps the mod to dragsim.co.
  */
-class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()) {
+class Game(private val features: List<Feature>, val metrics: Metrics = Metrics(), private val active: () -> Boolean = { true }) {
     class Readout(val feature: Feature) {
         internal val metric = "${feature.id}.hud"
         internal val slotsMetric = "${feature.id}.slots"
@@ -74,14 +75,14 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
      * feature is on. A container is wanted only while a feature that handles one is on.
      */
     fun wants(type: Class<out GameEvent>) =
-        tap != null || features.any { it.enabled && (type == TabList::class.java || type == Sidebar::class.java || type in it.handlers) }
+        tap != null || active() && features.any { it.enabled && (type == TabList::class.java || type == Sidebar::class.java || type in it.handlers) }
 
     /**
      * Whether a feature would be handed an event of [type] right now, which also takes the player being in the
      * feature's area. A source whose event comes once, such as a block that is already standing, holds it
      * back until this is true, because [post] gives a feature outside its area nothing.
      */
-    fun reaches(type: Class<out GameEvent>) = features.any { it.enabled && type in it.handlers && it.area.holds(tab, sidebar) }
+    fun reaches(type: Class<out GameEvent>) = active() && features.any { it.enabled && type in it.handlers && it.area.holds(tab, sidebar) }
 
     /** Returns false when a feature hid [event], which the edge honors for a chat line. */
     fun post(time: Long, event: GameEvent): Boolean {
@@ -108,9 +109,10 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             }
             else -> false
         }
+        val active = active()
         for (i in features.indices) {
             val feature = features[i]
-            if (!feature.enabled) continue
+            if (!active || !feature.enabled) continue
             // Outside its area a feature still follows the tab list, the sidebar and the world, which is how it knows it left.
             val reaches = event is TabList || event is Sidebar || event is WorldChanged || feature.area.holds(tab, sidebar)
             val handler = if (reaches) feature.handlers[event.javaClass] else null
@@ -125,23 +127,25 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     }
 
     fun tick(time: Long) {
+        val active = active()
         for (readout in readouts) {
             val feature = readout.feature
-            if (readout.on != feature.enabled) {
-                readout.on = feature.enabled
+            val enabled = active && feature.enabled
+            if (readout.on != enabled) {
+                readout.on = enabled
                 // A feature that is off sees no events. It forgets its world when it goes off, and hears the tab
                 // list and the sidebar again when it comes back, because the next ones arrive only when a row changes.
                 for (missed in if (readout.on) listOfNotNull(lastTab, lastSidebar) else listOf(WorldChanged)) {
                     feature.handlers[missed.javaClass]?.let { metrics.time(feature.id) { it(missed, time) } }
                 }
             }
-            if (!readout.stale && feature.enabled && time - readout.refreshedAt in 0 until REFRESH_MILLIS) continue
-            readout.stale = !feature.enabled
+            if (!readout.stale && enabled && time - readout.refreshedAt in 0 until REFRESH_MILLIS) continue
+            readout.stale = !enabled
             readout.refreshedAt = time
             var hud: HudBlock? = null
             var slots = emptyMap<Int, SlotMark>()
             var marks = emptyList<Mark>()
-            if (feature.enabled && feature.area.holds(tab, sidebar)) {
+            if (enabled && feature.area.holds(tab, sidebar)) {
                 metrics.time(readout.metric) { hud = feature.hud(time) }
                 metrics.time(readout.slotsMetric) { slots = feature.slots(time) }
                 metrics.time(readout.marksMetric) { marks = feature.marks(time) }

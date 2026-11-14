@@ -63,6 +63,7 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | --- | --- |
 | `core` imports nothing from Minecraft, Fabric or `edge` | `core-is-pure` in `mod/…/Rules.kt` |
 | The release build sends for the player only in a feature DragSim Utils has | `no-automation` in `mod/…/Rules.kt` |
+| The release build runs only on dragsim.co, unless the player turns DragSim Only off | `Game` gates every feature, `GameTest`, `DragSimTest` and the game test `OnlyOnDragSimTest` |
 | A feature fires only in the area it names | `Feature` takes an `Area` and `Game` gates on it. `FeatureReplayTest` replays each fixture outside the area |
 | A feature reads no area for itself, from the tab list or the sidebar, and sits in its area's folder | `area-by-declaration` in `mod/…/Rules.kt`, and `RulesTest` |
 | The mod's text and colors come from its text layer | `text-by-role` in `mod/…/Rules.kt` |

@@ -16,7 +16,7 @@ abstract class ExplosionParticleMixin {
     @Inject(method = "createParticle", at = @At("HEAD"), cancellable = true)
     private void dsmod$hideExplosion(ParticleOptions options, double x, double y, double z, double xd, double yd, double zd, CallbackInfoReturnable<Particle> cir) {
         if ((options.getType() == ParticleTypes.EXPLOSION || options.getType() == ParticleTypes.EXPLOSION_EMITTER)
-            && DsModClient.INSTANCE.getSettings().general.explosionParticleHider) {
+            && DsModClient.INSTANCE.getActive() && DsModClient.INSTANCE.getSettings().general.explosionParticleHider) {
             cir.setReturnValue(null);
         }
     }

@@ -121,6 +121,12 @@ class DsModConfig : Config() {
 
     class General {
         @Expose
+        @ConfigOption(name = "DragSim Only", desc = "Run ds-mod only while you play on dragsim.co. Turn it off to use the mod on any server.")
+        @ConfigEditorBoolean
+        @JvmField
+        var onlyOnDragSim = true
+
+        @Expose
         @ConfigOption(name = "Fullbright", desc = "Light the whole world, so caves and nights are as bright as day.")
         @ConfigEditorBoolean
         @JvmField

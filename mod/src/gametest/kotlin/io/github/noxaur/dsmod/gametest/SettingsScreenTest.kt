@@ -20,6 +20,10 @@ class SettingsScreenTest : FabricClientGameTest {
         context.waitTicks(20)
         context.takeScreenshot("settings-dropdown")
 
+        context.runOnClient<Nothing> { DsModClient.openSettings(DsModConfig.General::class.java.getField("onlyOnDragSim")) }
+        context.waitTicks(20)
+        context.takeScreenshot("settings-general")
+
         context.runOnClient<Nothing> { DsModClient.openSettings(DsModConfig.Hud::class.java.getField("theme")) }
         context.waitTicks(20)
         context.takeScreenshot("settings-interface")
