@@ -14,8 +14,8 @@ import net.minecraft.world.item.ItemStack
  * Reads the client's open menu once a tick and posts what changed to [game]. A slot is looked at again only
  * when its stack is a different object or has a different count, so a quiet tick compares references.
  * A stack that the client edits in place and leaves at the same count goes unnoticed.
- * Reading an item is the costly part, so one poll reads for at most [BUDGET_NANOS] and the rest of a big menu
- * follows on the next ticks, top slot first.
+ * Comparing and reading items is the costly part, so one poll does that for at most [BUDGET_NANOS] and the rest of
+ * a big menu follows on the next ticks, top slot first.
  * The poller starts over when [Game.tap] changes, so a capture that starts later still begins with every slot.
  */
 class ContainerPoller(private val game: Game) {
@@ -47,9 +47,9 @@ class ContainerPoller(private val game: Game) {
             val stack = slots[i].item
             val previous = stacks[i]
             if (stack === previous && stack.count == counts[i]) continue
+            if (System.nanoTime() > deadline) break
             // The server often resends the whole inventory, which swaps every stack for an equal one.
             val equal = previous != null && stack.count == counts[i] && ItemStack.isSameItemSameComponents(previous, stack)
-            if (!equal && System.nanoTime() > deadline) break
             stacks[i] = stack
             counts[i] = stack.count
             if (equal) continue
