@@ -9,6 +9,10 @@
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.NoVsync"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.HardExit"
       }
     ],
     "fabric-client-gametest": [
