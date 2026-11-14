@@ -45,9 +45,9 @@ Selecting works as it does for files:
 
 On macOS, Cmd takes the place of Ctrl.
 
-When you let go, a small menu opens under your mouse:
+When you let go, a small menu opens just right of your mouse. It leaves the messages above and below your mouse free, so if you missed, right-click the one you meant.
 
-- **Text** copies the messages as plain text, one per line. It sits under your mouse, so a right click and then a left click copies a message without moving. Ctrl+C does the same.
+- **Text** copies the messages as plain text, one per line. Ctrl+C does the same without the mouse.
 - **Formatted** keeps the colors and styles as `&` codes, such as `&6&lRARE DROP!`. A color with no code of its own is written as `&#12ab34`.
 - **JSON** copies each message as Minecraft's own text component, for tools and bug reports. Several messages come as a list.
 

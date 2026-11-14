@@ -14,7 +14,7 @@ import org.lwjgl.glfw.GLFW
 
 /**
  * Works Copy Chat in the open chat with the real mouse and keyboard. A right click selects a message and opens
- * the menu with Text under the mouse, a right drag selects all between, Shift extends, Ctrl adds and removes,
+ * the menu beside the mouse, a right drag selects all between, Shift extends, Ctrl adds and removes,
  * the keys a menu and a selection take work, and a drag held past the chat's edge scrolls it. Each button copies
  * its form. Read the screenshots for the selection, the menu in both themes and the flash.
  */
@@ -67,15 +67,23 @@ class CopyChatTest : FabricClientGameTest {
                     copies.clear()
                 }
 
-                // A right click, then a left click without moving: Text is under the mouse.
                 row(2)
                 context.input.pressMouse(1)
                 context.waitTick()
                 check(CopyChats.menu?.header == "Copy Message") { "A right click opened ${CopyChats.menu?.header}" }
                 check(copies.isEmpty()) { "A right click alone copied $copies" }
-                context.input.pressMouse(0)
+                context.takeScreenshot("copy-chat-beside")
+                // The menu is beside the mouse, so the row under it is still there to press: one down is the next message.
+                row(0)
+                context.input.pressMouse(1)
                 context.waitTick()
-                copied(long, "A right click on the message's first row and a left click in place")
+                press(Format.TEXT)
+                copied("The last message.", "A right click one row under the first, with the menu open")
+                row(2)
+                context.input.pressMouse(1)
+                context.waitTick()
+                press(Format.TEXT)
+                copied(long, "A right click on the message's first row")
                 context.takeScreenshot("copy-chat-copied")
 
                 // Dragged from the newest line up to the drop, over the wrapped message.
@@ -127,8 +135,7 @@ class CopyChatTest : FabricClientGameTest {
                 context.waitTick()
                 check(CopyChats.menu?.header == "Copy Line") { "A right click in a block opened ${CopyChats.menu?.header}" }
                 context.takeScreenshot("copy-chat-block-line")
-                context.input.pressMouse(0)
-                context.waitTick()
+                press(Format.TEXT)
                 copied("Everyone: +50% drops.", "A line of a block")
                 row(6)
                 context.input.pressMouse(1)
@@ -162,8 +169,7 @@ class CopyChatTest : FabricClientGameTest {
                 row(10)
                 context.input.pressMouse(1)
                 context.waitTick()
-                context.input.pressMouse(0)
-                context.waitTick()
+                press(Format.TEXT)
                 copied("Middle", "A message between two empty ones")
                 row(12)
                 context.input.holdMouse(1)
@@ -299,8 +305,7 @@ class CopyChatTest : FabricClientGameTest {
                 row(0)
                 context.input.pressMouse(1)
                 context.waitTick()
-                context.input.pressMouse(0)
-                context.waitTick()
+                press(Format.TEXT)
                 copied("Expires in 1h", "The bottom row of the chat scrolled up by four")
 
                 DsModClient.settings.chat.copyChat = false

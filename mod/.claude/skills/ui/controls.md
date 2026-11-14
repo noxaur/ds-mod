@@ -18,7 +18,7 @@ Items a player picks from, such as chat messages or slots.
 
 ## Context menu
 
-- It opens under the mouse, kept inside the screen, and the action the player most often wants lies under the mouse.
+- It opens beside the mouse, kept inside the screen, with the action the player most often wants nearest. It covers neither the thing that was pressed nor its neighbors, so the next press can correct a miss.
 - Escape or a press outside closes it, and the press outside still does its own job. One menu is open at a time.
 - Hover marks the entry the next press takes, and the arrow keys and Enter work.
 - A choice closes the menu and shows what it did.

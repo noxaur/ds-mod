@@ -45,8 +45,8 @@ import kotlin.math.roundToInt
 /**
  * Copy Chat. The right button selects messages of the open chat the way a file manager selects files: a press
  * takes one, a drag takes the range, Shift extends from the anchor, Ctrl adds or removes, and `Selection` in
- * `core` holds those rules. On release a small menu under the mouse asks how to copy them: as text, with format
- * codes, or as JSON. The first choice lies under the mouse, so a right click and a left click copy plain text.
+ * `core` holds those rules. On release a small menu beside the mouse asks how to copy them: as text, with format
+ * codes, or as JSON. It leaves the column under the mouse free, so the next press can fix a selection that missed.
  *
  * A message the server wrote with line breaks in it is selected a line at a time, so one press never takes a
  * whole block. Minecraft is asked where it draws each row, through the pass it uses to find a clicked link, so
@@ -73,6 +73,9 @@ object CopyChats {
     }
 
     private const val HEADER_HEIGHT = 18
+
+    /** How far from the mouse the menu opens, so the rows above and below the press stay in reach. */
+    private const val BESIDE = 8
     private const val FLASH_MS = 700L
     private const val SCROLL_MS = 50L
     private const val SELECTED = 0.28f
@@ -226,7 +229,7 @@ object CopyChats {
         }
     }
 
-    /** Opens the menu for the selection with its first button under [x], [y], unless the screen's edge is in the way. */
+    /** Opens the menu for the selection just right of [x], [y], level with it, or left of it when the screen's edge is in the way. */
     private fun open(client: Minecraft, x: Int, y: Int) {
         val parts = selection.ordered(all(client)).filter { !it.blank }
         if (parts.isEmpty()) return dismiss()
@@ -237,7 +240,7 @@ object CopyChats {
         menuX = x
         menuY = y
         menu = Menu(
-            (x - Kit.INSET - widths[0] / 2).coerceIn(0, maxOf(0, client.window.guiScaledWidth - size.width)),
+            if (x + BESIDE + size.width <= client.window.guiScaledWidth) x + BESIDE else maxOf(0, x - BESIDE - size.width),
             (y - HEADER_HEIGHT - Kit.BUTTON_HEIGHT / 2).coerceIn(0, maxOf(0, client.window.guiScaledHeight - size.height)),
             header,
             widths,
