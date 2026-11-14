@@ -70,9 +70,11 @@ class SavedFilesTest {
         val game = game()
         val files = SavedFiles(blocked, game)
         game.drop("RARE DROP! (Summoning Eye) (✯ 90%)")
-        repeat(200) {
+        // Each flush reports the write that failed before it and starts the next, which the pause lets fail too.
+        var flushes = 0
+        while ("zealot-tracker.save" !in game.metrics.snapshot().failures && flushes++ < 200) {
             files.flush()
-            if ("zealot-tracker.save" !in game.metrics.snapshot().failures) Thread.sleep(10)
+            Thread.sleep(25)
         }
         assertTrue("zealot-tracker.save" in game.metrics.snapshot().failures)
 
