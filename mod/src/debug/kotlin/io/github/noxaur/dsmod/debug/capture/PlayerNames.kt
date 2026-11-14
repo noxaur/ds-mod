@@ -60,7 +60,10 @@ object PlayerNames {
                     }
                     // The players are the first column under its title, 19 rows. A dungeon puts `Class: Mage` rows there
                     // too, and the Dungeon Hub has no `Info` title after it. An older capture keys the rows `!ab` to `!at`.
-                    "tablist" -> data["rows"]?.jsonArray?.map(::plain)?.drop(1)?.take(TAB_COLUMN - 1)?.filter { ':' !in it }?.forEach(::row)
+                    // An info row can name a player too, as in ` Admin Booster 6m 47s by [ADMIN] name`.
+                    "tablist" -> data["rows"]?.jsonArray?.map(::plain)?.also { rows ->
+                        rows.forEach { text -> nameInside.findAll(text).forEach { match -> addAll(match.groupValues.drop(1).filter(String::isNotEmpty)) } }
+                    }?.drop(1)?.take(TAB_COLUMN - 1)?.filter { ':' !in it }?.forEach(::row)
                         ?: data["entries"]?.jsonObject?.values?.filterIsInstance<JsonObject>()
                             ?.filter { plain(it["name"]).matches(Regex("![a][b-z]")) }?.forEach { row(plain(it["text"])) }
                 }

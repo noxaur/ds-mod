@@ -19,7 +19,7 @@ This gives you the pinned JDK, Go, Node and pnpm. Gradle comes from `mod/gradlew
 | Backend | `cd backend && go run ./cmd/backend` | Listens on `:8080`. Set `ADDR` to change it. |
 | Website | `cd web && pnpm install && pnpm dev` | Reads the backend at `BACKEND_URL`, `http://localhost:8080` by default. |
 
-`runClient` signs in with your Microsoft account through DevAuth. It also loads Sodium, Mod Menu and the other mods in the `devMods` configuration. They don't ship in any jar.
+`runClient` signs in with the user's Microsoft account through DevAuth. It also loads Sodium, Mod Menu and the other mods in the `devMods` configuration. They don't ship in any jar.
 
 In T3 Code, `t3.json` has an action for each command.
 
@@ -58,7 +58,7 @@ cd mod
 ./gradlew runClientGameTest runProdClientGameTest
 ```
 
-Each opens a game window for a few seconds. The second one loads the built jars the way a player does.
+The second one loads the built jars the way a player does. Both run behind the user, taking no keyboard focus and writing the game's sound to `audio.wav` in the run folder instead of the speakers. [Issue 19](https://github.com/noxaur/ds-mod/issues/19) lists the platforms where that is incomplete.
 
 To run one game test, name it: `./gradlew runProdClientGameTest -Pgametests=PerfTest`. `PerfTest` writes its table to `build/run/prodClientGameTest/perf.md`.
 

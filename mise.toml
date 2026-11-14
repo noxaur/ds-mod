@@ -27,6 +27,10 @@ if grep -nHEi '^#+ +(add|how to|write|run|check|verify|test)s?( |$)' internals/*
   echo "docs/internals records why, not steps. Move the recipe to docs/operations/."
   fail=1
 fi
+if grep -nHwi 'your' operations/*.md; then
+  echo "docs/operations is read by an agent. The machine, desktop and accounts are the user's, so write \"the user's\"."
+  fail=1
+fi
 exit $fail
 '''
 
