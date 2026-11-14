@@ -91,6 +91,12 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var protectPlacedEyes = true
+
+        @Expose
+        @ConfigOption(name = "Fireball Alert", desc = "Show a title and play a sound when a dragon is about to throw fireballs.")
+        @ConfigEditorBoolean
+        @JvmField
+        var fireballAlert = true
     }
 
     class General {
@@ -99,24 +105,6 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var fullbright = false
-
-        @Expose
-        @ConfigOption(name = "Alerts", desc = "Show a title and play a sound for the moments chosen below.")
-        @ConfigEditorBoolean
-        @JvmField
-        var alerts = true
-
-        @Expose
-        @ConfigOption(name = "Fireball Alert", desc = "Alert you when a dragon is about to throw fireballs.")
-        @ConfigEditorBoolean
-        @JvmField
-        var fireballAlert = true
-
-        @Expose
-        @ConfigOption(name = "Slayer Boss Alert", desc = "Alert you when your slayer boss spawns.")
-        @ConfigEditorBoolean
-        @JvmField
-        var slayerBossAlert = true
 
         @Expose
         @ConfigOption(name = "Explosion Particle Hider", desc = "Hide the clouds that explosions throw up.")
@@ -175,6 +163,12 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var slayerTracker = true
+
+        @Expose
+        @ConfigOption(name = "Slayer Boss Alert", desc = "Show a title and play a sound when your slayer boss spawns.")
+        @ConfigEditorBoolean
+        @JvmField
+        var slayerBossAlert = true
     }
 
     /** Where a feature's HUD block has its plate's top-left corner, as fractions of the scaled screen, and how big it is. */
