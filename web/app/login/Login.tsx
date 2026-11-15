@@ -3,10 +3,12 @@
 import { Button } from "@ui-sdk/react/button";
 import { useEffect, useRef, useState } from "react";
 import { begin, finish } from "./actions";
+import type { Asked } from "./signIn";
 
 type Step =
   | { readonly at: "loading" | "expired" | "cancelled" }
-  | { readonly at: "confirm" | "done"; readonly name: string };
+  | { readonly at: "confirm"; readonly asked: Asked; readonly unanswered: boolean }
+  | { readonly at: "done"; readonly name: string };
 
 const expired: Step = { at: "expired" };
 
@@ -24,7 +26,7 @@ export function Login() {
     // answer is in, because Next's router puts back an address that changes while the page is still starting.
     void begin(window.location.hash.slice(1))
       .then(
-        (name): Step => (name === null ? expired : { at: "confirm", name }),
+        (asked): Step => (asked === null ? expired : { at: "confirm", asked, unanswered: false }),
         () => expired,
       )
       .then((next) => {
@@ -33,14 +35,15 @@ export function Login() {
       });
   }, []);
 
-  const answer = (choice: "continue" | "cancel") => {
+  const answer = (choice: "continue" | "cancel", asked: Asked) => {
     setStep({ at: "loading" });
-    void finish(choice).then(
+    void finish(choice, asked.user).then(
       (name) => {
         setStep(choice === "cancel" ? { at: "cancelled" } : name === null ? expired : { at: "done", name });
       },
+      // The backend did not answer, and the session is still pending, so the player can try again.
       () => {
-        setStep(expired);
+        setStep({ at: "confirm", asked, unanswered: true });
       },
     );
   };
@@ -62,18 +65,19 @@ export function Login() {
     case "confirm":
       return (
         <>
-          <h1>Sign in as {step.name}?</h1>
+          <h1>Sign in as {step.asked.name}?</h1>
           <p>Continue only if you just typed /dsmod login in game.</p>
+          {step.unanswered && <p>The ds-mod backend did not answer. Try again in a moment.</p>}
           <Button
             onClick={() => {
-              answer("continue");
+              answer("continue", step.asked);
             }}
           >
             Continue
           </Button>
           <Button
             onClick={() => {
-              answer("cancel");
+              answer("cancel", step.asked);
             }}
           >
             Cancel

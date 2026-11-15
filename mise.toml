@@ -9,7 +9,7 @@ run = "./gradlew check"
 
 [tasks."check:backend"]
 dir = "backend"
-run = ["pnpm install --frozen-lockfile", "pnpm exec void prepare", "pnpm exec vp check", "timeout 30 pnpm exec vp test run"]
+run = ["pnpm install --frozen-lockfile", "pnpm check"]
 
 [tasks."check:web"]
 dir = "web"

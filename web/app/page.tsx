@@ -5,7 +5,12 @@ import { backendIsUp, sessionOf, sessionCookie } from "./backend";
 export default async function Home() {
   const sessionToken = (await cookies()).get(sessionCookie)?.value;
   const [up, session] = await Effect.runPromise(
-    Effect.all([backendIsUp, sessionToken === undefined ? Effect.succeed(null) : sessionOf(sessionToken)]),
+    Effect.all([
+      backendIsUp,
+      sessionToken === undefined
+        ? Effect.succeed(null)
+        : sessionOf(sessionToken).pipe(Effect.orElseSucceed(() => null)),
+    ]),
   );
   return (
     <main>

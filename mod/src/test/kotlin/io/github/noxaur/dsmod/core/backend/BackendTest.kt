@@ -74,6 +74,7 @@ class BackendTest {
         val verify = seen.single { it.path == "/api/auth/minecraft/verify" }
         assertEquals("""{"name":"Steve","serverId":"${"%040x".format(1)}"}""", String(verify.body))
         val call = seen.last()
+        assertEquals("GET $generate", "${call.method} ${call.path}")
         assertEquals("Bearer session-1", call.headers["authorization"])
         assertEquals(url, call.headers["origin"])
         assertTrue(seen.all { it.headers["origin"] == url }, "sign-in sends the origin too")
@@ -103,23 +104,23 @@ class BackendTest {
     }
 
     @Test
-    fun `gives the one-time token`() {
-        answers[generate] = { 200 to """{"token":"once"}""" }
-
-        assertEquals("once", backend.oneTimeToken())
-        assertEquals("GET", seen.last().method)
+    fun `an unreachable backend is an error with no status to blame on the player`() {
+        server.stop(0)
+        assertEquals(null, assertFailsWith<BackendException> { backend.oneTimeToken() }.status)
     }
 
     @Test
-    fun `an unreachable backend and a refused proof are errors with no status to blame on the player`() {
-        server.stop(0)
-        assertEquals(null, assertFailsWith<BackendException> { backend.oneTimeToken() }.status)
-
+    fun `a proof Mojang refuses stops the sign-in before the backend is asked to verify it`() {
         val refusing = Backend(url, object : Identity {
             override val name = "Steve"
-            override fun join(serverId: String) = error("Mojang said no")
+            override fun join(serverId: String) = error("Mojang said no to $serverId")
         })
-        assertEquals(null, assertFailsWith<BackendException> { refusing.oneTimeToken() }.status)
+
+        val failure = assertFailsWith<BackendException> { refusing.oneTimeToken() }
+
+        assertEquals(null, failure.status)
+        assertEquals("Mojang would not confirm this account.", failure.message)
+        assertEquals(listOf("/api/auth/minecraft/challenge"), seen.map { it.path })
     }
 
     @Test

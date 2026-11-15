@@ -1,5 +1,5 @@
 import { Schema } from "effect";
-import { HttpApi, HttpApiEndpoint, HttpApiError, HttpApiGroup, HttpApiSchema } from "effect/http-api";
+import { HttpApi, HttpApiEndpoint, HttpApiError, HttpApiGroup, HttpApiSchema, OpenApi } from "effect/http-api";
 
 import { Offer, Request, RequestReport, RequestSpec, Sighting, Unknown } from "./contrib/model.ts";
 
@@ -11,7 +11,11 @@ const denied = [HttpApiError.Unauthorized, HttpApiError.NotFound, HttpApiError.C
 
 /** Every REST endpoint. `api/openapi.json` is generated from this, so the mod and the website read the same contract. */
 export const Api = HttpApi.make("dsmod")
-  .add(HttpApiGroup.make("health").add(HttpApiEndpoint.get("healthz", "/healthz")))
+  .add(
+    HttpApiGroup.make("health").add(
+      HttpApiEndpoint.get("healthz", "/healthz").annotate(OpenApi.Summary, "Reports that the backend is up."),
+    ),
+  )
   .add(
     // What the mod calls, as the signed-in player.
     HttpApiGroup.make("contrib")
@@ -52,4 +56,5 @@ export const Api = HttpApi.make("dsmod")
         }),
       )
       .add(HttpApiEndpoint.get("unknowns", "/v1/admin/unknowns", { success: Schema.Array(Unknown), error: denied })),
-  );
+  )
+  .annotateMerge(OpenApi.annotations({ title: "ds-mod backend", version: "0.1.0" }));

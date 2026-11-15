@@ -145,7 +145,7 @@ All-Time: 12
 
 <sub>Off by default.</sub>
 
-## Contribute
+## Account
 
 ### Sign in to the website
 

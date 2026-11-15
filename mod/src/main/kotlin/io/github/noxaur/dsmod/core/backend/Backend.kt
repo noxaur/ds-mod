@@ -35,15 +35,14 @@ private val json = Json { ignoreUnknownKeys = true }
  * mod is open source and the backend believes nothing the mod says, so the token is never written, logged or shown.
  * A session ends after 24 hours, so a 401 signs in again once and repeats the call.
  */
-class Backend(
-    private val url: String,
-    private val identity: Identity,
-    // HTTP/1.1, because over plain http Java asks to upgrade to HTTP/2 in a header, and a server that does not know
-    // the upgrade (Vite's, in development) drops the connection, which reads as an unreachable backend.
-    private val http: HttpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).connectTimeout(Duration.ofSeconds(10)).build(),
-) {
+class Backend(private val url: String, private val identity: Identity) {
     @Volatile
     private var token: String? = null
+
+    // Built on the first call, on the worker, because building one may read the trust store from disk.
+    // HTTP/1.1, because over plain http Java asks to upgrade to HTTP/2 in a header, and a server that does not know
+    // the upgrade (Vite's, in development) drops the connection, which reads as an unreachable backend.
+    private val http by lazy { HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).connectTimeout(Duration.ofSeconds(10)).build() }
 
     private val worker = Executors.newSingleThreadExecutor { Thread(it, "dsmod-backend").apply { isDaemon = true } }
     private val origin = URI.create(url).let { "${it.scheme}://${it.authority}" }
