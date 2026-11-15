@@ -4,9 +4,12 @@ import com.mojang.blaze3d.platform.cursor.CursorTypes
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.Sections
+import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.edge.Keys
 import io.github.noxaur.dsmod.edge.toComponent
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.AbstractButton
+import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.narration.NarratedElementType
@@ -57,8 +60,18 @@ class KitButton private constructor(
     }
 }
 
-/** A checkbox with its [label] 4px to the right. [onChange] gets the new value. */
-class KitCheckbox(x: Int, y: Int, private val label: String, checked: Boolean, private val onChange: (Boolean) -> Unit) :
+/**
+ * A checkbox with its [label] 4px to the right. [onChange] gets the new value. [onWell] draws the label as body
+ * text, which reads on a well in both themes, where ink would not.
+ */
+class KitCheckbox(
+    x: Int,
+    y: Int,
+    private val label: String,
+    checked: Boolean,
+    private val onWell: Boolean = false,
+    private val onChange: (Boolean) -> Unit,
+) :
     AbstractButton(x, y, Kit.CHECKBOX_SIZE + Kit.GAP + Kit.font.width(label), Kit.CHECKBOX_SIZE, plain(label)) {
     var checked = checked
 
@@ -70,8 +83,14 @@ class KitCheckbox(x: Int, y: Int, private val label: String, checked: Boolean, p
     override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         val state = Kit.state(active, isHoveredOrFocused, false)
         Kit.checkbox(graphics, x, y, checked, state)
-        Kit.label(graphics, label, x + Kit.CHECKBOX_SIZE + Kit.GAP, y + 1, if (active) Kit.Ink.NORMAL else Kit.Ink.OFF)
+        if (onWell) {
+            graphics.text(Kit.font, wellLabel, x + Kit.CHECKBOX_SIZE + Kit.GAP, y + 1, -1, true)
+        } else {
+            Kit.label(graphics, label, x + Kit.CHECKBOX_SIZE + Kit.GAP, y + 1, if (active) Kit.Ink.NORMAL else Kit.Ink.OFF)
+        }
     }
+
+    private val wellLabel = text { body(label) }.toComponent()
 
     override fun createNarrationMessage(): MutableComponent = CommonComponents.optionStatus(message, checked)
 
@@ -294,5 +313,295 @@ class KitRangeSlider(
         const val DRAG_START = 2.0
         const val KEY_DELETE = 261
         const val KEY_BACKSPACE = 259
+    }
+}
+
+/**
+ * A text field on a well, 16 tall. It is vanilla's `EditBox`, so every key a text field has works, with its text
+ * 4 in from the well's left edge. [place] moves it by the well's corner, and a press anywhere on the well lands.
+ */
+class KitTextField(x: Int, y: Int, width: Int, label: String, value: String, maxLength: Int, onChange: (String) -> Unit) :
+    EditBox(Kit.font, x + PAD, y + TOP, width - PAD * 2, Kit.font.lineHeight, plain(label)) {
+    init {
+        isBordered = false
+        setMaxLength(maxLength)
+        this.value = value
+        setResponder(onChange)
+    }
+
+    fun place(x: Int, y: Int) {
+        this.x = x + PAD
+        this.y = y + TOP
+    }
+
+    override fun isMouseOver(mouseX: Double, mouseY: Double) =
+        isActive && mouseX >= x - PAD && mouseX < x + width + PAD && mouseY >= y - TOP && mouseY < y - TOP + Kit.BUTTON_HEIGHT
+
+    override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+        if (!isVisible) return
+        val over = isMouseOver(mouseX.toDouble(), mouseY.toDouble())
+        Kit.field(graphics, x - PAD, y - TOP, width + PAD * 2, Kit.BUTTON_HEIGHT, Kit.state(active, over || isFocused, false))
+        super.extractWidgetRenderState(graphics, mouseX, mouseY, partialTick)
+    }
+
+    private companion object {
+        const val PAD = 4
+        const val TOP = (Kit.BUTTON_HEIGHT - 8) / 2
+    }
+}
+
+/**
+ * A button that shows keys and records new ones, for keys held together or, with [inOrder], pressed in turn. A
+ * press, or Enter or Space with focus, starts recording. Each key and each middle or side mouse button adds
+ * itself, up to [max]. Keys held together are done once all are let go. Escape, a left or right press elsewhere,
+ * or focus leaving ends recording, and with nothing recorded the keys stay as they were. The screen hands it keys,
+ * releases and presses with [capture] and [release] while it is [recording], because a screen takes Escape first.
+ * A key it shares is ringed in the role in [clash].
+ */
+class KitKeysButton(
+    x: Int,
+    y: Int,
+    width: Int,
+    private val name: String,
+    keys: List<Int>,
+    private val max: Int,
+    private val onChange: (List<Int>) -> Unit,
+) : AbstractButton(x, y, width, Kit.BUTTON_HEIGHT, plain(name)) {
+    var keys = keys
+        private set(value) {
+            field = value
+            label = names(value)
+            message = plain("$name: $label")
+        }
+    private var label = ""
+    private val recorded = ArrayList<Int>()
+    private val down = HashSet<Int>()
+
+    var inOrder = false
+        set(value) {
+            field = value
+            label = names(keys)
+        }
+
+    var recording = false
+        private set
+
+    var clash: Role? = null
+
+    init {
+        this.keys = keys
+    }
+
+    override fun onPress(input: InputWithModifiers) {
+        if (recording) finish() else start()
+    }
+
+    private fun start() {
+        recording = true
+        recorded.clear()
+        down.clear()
+    }
+
+    /** Takes a key, or a mouse button when [mouse], while recording. Returns whether it took it. */
+    fun capture(bound: Int, mouse: Boolean = false): Boolean {
+        if (!recording) return false
+        if (mouse && (bound == 0 || bound == 1) || !mouse && bound == ESCAPE) {
+            finish()
+            return false
+        }
+        down += bound
+        if (inOrder || bound !in recorded) recorded += bound
+        if (recorded.size >= max) finish()
+        return true
+    }
+
+    /** A key or button was let go. Keys held together are done once every one is up. */
+    fun release(bound: Int) {
+        if (!recording || !down.remove(bound)) return
+        if (!inOrder && down.isEmpty() && recorded.isNotEmpty()) finish()
+    }
+
+    fun clear() {
+        recording = false
+        keys = emptyList()
+        onChange(keys)
+    }
+
+    private fun finish() {
+        recording = false
+        if (recorded.isEmpty()) return
+        keys = recorded.toList()
+        onChange(keys)
+    }
+
+    override fun setFocused(focused: Boolean) {
+        super.setFocused(focused)
+        if (!focused && recording) finish()
+    }
+
+    override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+        val text = fit(if (recording) "> ${if (recorded.isEmpty()) "Press keys" else names(recorded)} <" else label, width - 6)
+        val state = if (recording) Kit.State.DOWN else Kit.state(active, isHoveredOrFocused, false)
+        Kit.button(graphics, x, y, width, height, state, text, Kit.font.width(text))
+        clash?.let { Kit.ring(graphics, x - 1, y - 1, width + 2, height + 2, it.argb()) }
+    }
+
+    override fun updateWidgetNarration(output: NarrationElementOutput) = defaultButtonNarrationText(output)
+
+    private fun names(keys: List<Int>) = Keys.names(keys, inOrder)
+
+    private companion object {
+        /** GLFW's code for Escape. */
+        const val ESCAPE = 256
+    }
+}
+
+/**
+ * A button that steps through [values], showing the current one. A press or Enter goes to the next, and a right
+ * press, Shift with either, or the wheel goes back. [onChange] gets the new value.
+ */
+class KitCycleButton<T>(
+    x: Int,
+    y: Int,
+    width: Int,
+    private val name: String,
+    private val values: List<T>,
+    value: T,
+    private val title: (T) -> String,
+    private val onChange: (T) -> Unit,
+) : AbstractButton(x, y, width, Kit.BUTTON_HEIGHT, plain(name)) {
+    var value = value
+        set(next) {
+            field = next
+            label = fit(title(next), width - 6)
+            message = plain("$name: ${title(next)}")
+        }
+    private var label = ""
+    private var pressed = false
+
+    init {
+        this.value = value
+    }
+
+    override fun isValidClickButton(button: MouseButtonInfo) = button.button() == 0 || button.button() == 1
+
+    override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
+        pressed = true
+        step(if (event.button() == 1 || event.hasShiftDown()) -1 else 1)
+    }
+
+    override fun onRelease(event: MouseButtonEvent) {
+        pressed = false
+    }
+
+    override fun onPress(input: InputWithModifiers) = step(if (input.hasShiftDown()) -1 else 1)
+
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, scrollX: Double, scrollY: Double): Boolean {
+        if (scrollY == 0.0) return false
+        step(if (scrollY > 0) -1 else 1)
+        return true
+    }
+
+    private fun step(by: Int) {
+        value = values[(values.indexOf(value) + by).mod(values.size)]
+        onChange(value)
+    }
+
+    override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+        val state = Kit.state(active, isHoveredOrFocused, pressed && isHovered)
+        Kit.button(graphics, x, y, width, height, state, label, Kit.font.width(label))
+    }
+
+    override fun updateWidgetNarration(output: NarrationElementOutput) = defaultButtonNarrationText(output)
+}
+
+/** [text] cut to [width] pixels, ending in an ellipsis when it was longer. */
+fun fit(text: String, width: Int): String {
+    val font = Kit.font
+    if (font.width(text) <= width) return text
+    return font.plainSubstrByWidth(text, width - font.width("...")) + "..."
+}
+
+/** [text] broken at spaces into lines of at most [width] pixels, the last of [max] ending in an ellipsis when cut. */
+fun wrap(text: String, width: Int, max: Int): List<String> {
+    val lines = ArrayList<String>()
+    var line = ""
+    for (word in text.split(' ')) {
+        val next = if (line.isEmpty()) word else "$line $word"
+        if (line.isNotEmpty() && Kit.font.width(next) > width) {
+            lines += line
+            line = word
+        } else {
+            line = next
+        }
+    }
+    lines += line
+    return if (lines.size <= max) lines else lines.take(max - 1) + fit(lines.drop(max - 1).joinToString(" "), width)
+}
+
+/**
+ * A context menu: a small panel of [items] that opens beside the mouse at [mouseX], [mouseY] and stays inside the
+ * screen of [screenWidth] by [screenHeight]. The item under the mouse, or the one the arrow keys are on, is lit,
+ * and a press or Enter does it and closes the menu through [onClose]. Escape closes it too. The screen closes it
+ * on a press outside and lets that press do its own job, as `controls.md` says.
+ */
+class KitMenu(
+    mouseX: Int,
+    mouseY: Int,
+    screenWidth: Int,
+    screenHeight: Int,
+    private val items: List<Pair<String, () -> Unit>>,
+    private val onClose: () -> Unit,
+) : AbstractWidget(0, 0, items.maxOf { Kit.font.width(it.first) } + PAD * 4, items.size * ITEM + PAD * 2, plain("Menu")) {
+    private var lit = 0
+
+    init {
+        // Beside the mouse, so the press that opened it lands on nothing in it.
+        x = (mouseX + 2).let { if (it + width > screenWidth) mouseX - 2 - width else it }.coerceAtLeast(0)
+        y = mouseY.coerceAtMost(screenHeight - height).coerceAtLeast(0)
+    }
+
+    private fun at(mouseY: Double) = ((mouseY - y - PAD) / ITEM).toInt().takeIf { it in items.indices } ?: -1
+
+    override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
+        val item = at(event.y)
+        if (item >= 0) run(item)
+    }
+
+    override fun isValidClickButton(button: MouseButtonInfo) = button.button() == 0 || button.button() == 1
+
+    override fun keyPressed(event: KeyEvent): Boolean {
+        when {
+            event.isEscape -> onClose()
+            event.isUp -> lit = (lit - 1).mod(items.size)
+            event.isDown -> lit = (lit + 1).mod(items.size)
+            event.isSelection || event.isConfirmation -> run(lit)
+            else -> return false
+        }
+        return true
+    }
+
+    private fun run(item: Int) {
+        onClose()
+        items[item].second()
+    }
+
+    override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+        if (isHovered) at(mouseY.toDouble()).takeIf { it >= 0 }?.let { lit = it }
+        Kit.panel(graphics, x, y, width, height)
+        for ((i, item) in items.withIndex()) {
+            val itemY = y + PAD + i * ITEM
+            if (i == lit) Kit.button(graphics, x + PAD, itemY, width - PAD * 2, ITEM, Kit.State.HOVER, "", 0)
+            Kit.label(graphics, item.first, x + PAD * 2, itemY + (ITEM - 8) / 2)
+        }
+    }
+
+    override fun updateWidgetNarration(output: NarrationElementOutput) {
+        output.add(NarratedElementType.TITLE, plain(items[lit].first))
+    }
+
+    private companion object {
+        const val PAD = 3
+        const val ITEM = 14
     }
 }

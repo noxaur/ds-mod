@@ -121,9 +121,22 @@ All-Time: 12
 
 ## Inventory
 
-### Rarity Outlines
+### Rarity Marks
 
-<sub>Hotbar Outlines turns the hotbar frames off.</sub>
+Each item's slot is marked in the color of its rarity, in every menu and on your hotbar.
+
+Rarity Style picks the look: Showcase, Gilded or Minimal, from loudest to quietest, or Custom for your own. Edit beside Edit Style opens your inventory with your hotbar under it, so you see each change on your own items. A change there starts from the look you had and switches Rarity Style to Custom.
+
+| Part | Choices |
+| --- | --- |
+| Border | None, Flat, Square, Rounded, Gilded |
+| Fill | None, Glow, Wash, Halo |
+| Floor | None, Pedestal, Sparks, Rise |
+| Gem | A small gem over the item's top-left corner |
+
+The hotbar uses your inventory's look until you untick Match Inventory, and then it has its own.
+
+<sub>Common items are not marked unless you tick Mark Common. With a resource pack that makes menus dark, the colors change to read well on it.</sub>
 
 ### Armor Swap Guard
 
@@ -191,6 +204,37 @@ Shapes the third-person view you get with F5. Each setting starts at the game's 
 | Camera Smoothing | Slides the camera out when you leave first person |
 
 A wall behind you still pulls the camera in, as it does in the game.
+
+### Command Binds
+
+Sends a command with a key, with keys held together such as Shift + F6, or with keys pressed in turn such as F7 then F8. Open it with **Edit** beside Edit Command Binds in the settings.
+
+Your binds are listed on the left under their groups, each with its command, its keys and where it works. Everything about the one you pick is on the right, and a change takes effect as you make it.
+
+| Do this | To |
+| --- | --- |
+| Press **New Bind**, type the command, then press **Keys** and hold the keys | Add a bind. Let go of the keys to finish. Without a slash, the bind says its text in chat |
+| Tick the box on a row | Turn the bind on or off |
+| Tick the box on a group's heading | Turn the whole group on or off |
+| Press the arrow on a heading, or double-click it | Fold the group away, or open it again |
+| Drag a row or a heading, or press ▲ or ▼ beside Duplicate, or Alt and Up or Down | Move it. A bind moved past a group's heading joins that group |
+| Right-click a row or a heading | See what you can do to it, such as Move Up or Turn Off |
+| Press **Duplicate** or **Delete** | Copy the bind, which starts off, or delete it with a second press |
+
+With nothing on the right typed in, Up and Down pick the next row, Left and Right fold and open a group, and Delete deletes.
+
+On the right:
+
+- **Name:** optional. The list shows the command without one.
+- **Where:** in the world, in menus such as chests and your inventory, or in both. A bind never fires while you type in chat or a text field.
+- **Priority:** when two binds share keys, the higher one sends, and between equals the one listed first.
+- **Other Keys Held Too:** on by default, so a key you walk with does not stop the bind.
+- **Keys in Order:** the keys become a sequence, finished with Escape when you record them. Key Sequence Gap in the settings sets how long a sequence waits for its next key.
+- **Area:** Anywhere, or the one area the bind works in, such as The End.
+
+**New Group** adds a group. Pick its heading to rename it, or to delete it with its binds. **Export** copies the group of whatever you picked to your clipboard to share, and **Import** adds a group someone shared. Imported binds start off, so read each command before you turn it on.
+
+Keys shown in red fire another bind too, and keys in yellow also do something in the game. The line under the details says which.
 
 ### Explosion Particle Hider
 

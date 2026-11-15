@@ -33,8 +33,43 @@ A key that works in the world, such as Free Look's.
 - A key that works on a screen comes from that screen's key and mouse events, as `SlotGuards` takes it. It is left alone while a text field has focus, and it acts on the thing under the mouse.
 - A press and release in one place is the plain action, and a press held to another place joins the two. A line follows the mouse while it is held. Afterwards the join shows only under the mouse, over what it crosses, so it clutters nothing at rest.
 - A key that marks one thing and joins nothing marks each thing the mouse sweeps over while it is held, the way the first one went, as a paint stroke does. Things it cannot mark are passed over, and only the first one says why.
+- A key button on a screen records after a press, or Enter or Space, as SkyOcean's does: each key and each middle or side mouse button adds itself. Keys held together are done once all are let go, and keys in order once Escape is pressed. Escape, a left or right press elsewhere, or focus leaving ends it, and with nothing recorded the keys stay as they were. A cross beside it clears them. It shows `> keys <` while it records, as vanilla's controls do. `KitKeysButton` has all of this.
+- Keys held together are named with ` + `, and keys in order with ` » `, as SkyOcean names them.
+- A key that also does something else is ringed, as vanilla reddens a clash: `bad` when it does another of the mod's actions, `warning` when the game uses it. A line on the screen names the other use.
 - Hold ends at the release, also when a screen has opened since. A new world or the feature's switch ends it too.
 - Releasing puts back what the press changed.
+
+## Cycle button
+
+A button that steps through a few values, such as where a bind works.
+
+- A press or Enter goes to the next value, and a right press, Shift with either, or the wheel goes back.
+- It shows the value, and a caption above it names the setting.
+
+## Delete
+
+- A delete that cannot be undone asks for a second press on the same button, as SkyOcean's does. The first rings the button in `bad` and the screen's line says what the second will delete. A press anywhere else calls it off.
+
+## List of things to edit
+
+A list of things the player made, such as command binds.
+
+- The list sits in a sunk container on the left, with its scrollbar inside, and everything about the picked thing is on the right, always shown, so nothing hides behind a More button or a second window. A change takes effect at once, as in the settings.
+- A choice of one from a few, such as an area, is a cycle button, not a grid of checkboxes.
+- Actions on the whole list, such as Import and Export, sit in the screen's top bar.
+- Opening the screen picks the first thing, so its details are there without a click.
+- A row shows what tells the things apart, such as a switch, a name and keys. Fields a player always fills come first, and optional ones say so.
+- A row shows what tells the things apart and what each does, such as a switch, a name, the command, keys and where they work, so the player reads the list without picking each row. The row under the mouse is ringed in `hoverOutline`.
+- Groups are headings in the list, with an arrow that folds the group away, a switch for the whole group and a count. The folds are kept. Picking a heading shows the group. A row or heading is dragged to move it, and a row under another heading joins that group. A group with nothing in it shows a line that says what to drag there.
+- Up and down buttons beside the picked thing's other actions move it a line, and are off where they would move nothing. A bind moved past a heading joins that group, and unfolds it.
+- With nothing on the right focused, the keyboard works the list: Up and Down pick, Left and Right fold and unfold, Alt with Up or Down moves the picked row or group, and Delete deletes.
+- A right press on a row opens its context menu.
+
+## Context menu
+
+- A right press opens it beside the mouse, kept on the screen, with what can be done to the thing under the mouse, which it picks.
+- Items are verbs, such as Duplicate, Turn Off or Move Up, and the menu keeps the same length however many things there are, so no item per group. An item that would do nothing is left out. A delete in it asks for its second press as the Delete button does.
+- Up and Down light an item and Enter runs it. Escape or a press outside closes it, and that press still does its own job.
 
 ## Range slider
 

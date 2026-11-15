@@ -89,7 +89,7 @@ class PerfTest : FabricClientGameTest {
             context.setScreen { InventoryScreen(context.computeOnClient<net.minecraft.world.entity.player.Player, Nothing> { it.player!! }) }
             context.runOnClient<Nothing> {
                 Slots.mark("perf", (0 until MARKED_SLOTS).associate { slot ->
-                    FIRST_MARKED_SLOT + slot to SlotMark(Role.GOOD, text { good("$slot") }, border = slot % 2 == 0)
+                    FIRST_MARKED_SLOT + slot to SlotMark(Role.GOOD, text { good("$slot") }, rarity = slot % 2 == 0)
                 })
             }
             context.waitTicks(WARM_UP_TICKS)
