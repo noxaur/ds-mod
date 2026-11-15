@@ -51,6 +51,22 @@ class HudDockTest : FabricClientGameTest {
                 chat.drag(ID, right.first - 80, right.second - 80) { context.input.pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitTick() }
                 check(general.equipmentPlacement == HudDock.RIGHT_OF_HOTBAR) { "Escape left the placement at ${general.equipmentPlacement}" }
 
+                // Under a HUD scale of 3 the dock draws below the smallest size, so a notch down leaves it docked as it was.
+                val hudScale = DsModClient.settings.hud.scale
+                DsModClient.settings.hud.scale = 3f
+                try {
+                    context.waitTick()
+                    val big = chat.block(ID)
+                    chat.move(big.x + 5.0, big.y + 5.0)
+                    context.input.scroll(-1.0)
+                    context.waitTick()
+                    val after = chat.block(ID)
+                    check(general.equipmentPlacement == HudDock.RIGHT_OF_HOTBAR && after.scale == big.scale) { "A notch down at HUD scale 3 left ${general.equipmentPlacement} at ${after.scale}, from ${big.scale}" }
+                } finally {
+                    DsModClient.settings.hud.scale = hudScale
+                }
+                context.waitTick()
+
                 // The wheel resizes it out of the dock, where it can take another size.
                 val before = chat.block(ID)
                 chat.move(before.x + 5.0, before.y + 5.0)

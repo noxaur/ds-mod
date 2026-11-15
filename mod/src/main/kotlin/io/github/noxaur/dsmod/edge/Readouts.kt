@@ -131,7 +131,10 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
      * block is drawn at the hotbar's size, so it leaves the dock to take another.
      */
     fun resize(block: Hud.Placed, by: Int) {
-        save(block.id, block.x, block.y, HudScale.step(scale(block.id), by, settings.scale, guiScale, MIN_SCALE, MAX_SCALE))
+        val scale = scale(block.id)
+        val next = HudScale.step(scale, by, settings.scale, guiScale, MIN_SCALE, MAX_SCALE)
+        // A step that changes nothing, at a bound, leaves a docked block in its dock.
+        if (next != scale) save(block.id, block.x, block.y, next)
     }
 
     /** Docks the block of feature [id] at [dock] beside the hotbar, as its placement setting does. */

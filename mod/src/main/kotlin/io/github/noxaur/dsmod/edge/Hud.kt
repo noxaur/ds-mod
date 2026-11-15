@@ -134,9 +134,10 @@ object Hud {
         groups.values.forEach { if (it.place.id != group.id) it.blocks.remove(id) }
         val target = groups.getOrPut(group.id) { Group(group) }
         target.place = group
-        val joined = id !in target.blocks
+        // A block that joins, or whose place in the order changed, as when a live block turns into a stand-in, is sorted in.
+        val moved = target.blocks[id]?.order != order
         target.blocks[id] = Block(header, rows, block.look, width, height, placeable, order)
-        if (joined && target.blocks.values.any { it.order > order }) {
+        if (moved) {
             val sorted = target.blocks.entries.sortedBy { it.value.order }
             target.blocks.clear()
             for ((key, value) in sorted) target.blocks[key] = value
