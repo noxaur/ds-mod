@@ -143,6 +143,17 @@ class RedactCaptureTest {
     }
 
     @Test
+    fun `a word one capture shows as the server's own is no sure name across captures`() {
+        val withTitle = dir.resolve("title.jsonl").also { it.writeLines(listOf(captureLine(1, Sidebar(text("DragSim"), emptyList())))) }
+        val withSeller = dir.resolve("seller.jsonl").also {
+            it.writeLines(listOf(captureLine(1, SlotChanged(3, Item("minecraft:stick", 1, lore = listOf(text("Seller: [MOD] DragSim"), text("Seller: Frank")))))))
+        }
+
+        assertEquals(setOf("DragSim", "Frank"), PlayerNames.of(withSeller))
+        assertEquals(setOf("Frank"), PlayerNames.of(withTitle, withSeller))
+    }
+
+    @Test
     fun `the server's own head textures keep their names`() {
         val out = redact("""{"t":1,"type":"skulls","data":{"entries":{"1,2,3":{"profile":{"name":"h1dc2c096de8131d","id":[1,2]}}}}}""")
 

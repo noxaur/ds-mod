@@ -146,16 +146,16 @@ object PlayerNames {
     private val learnedFrom = setOf("system", "chat", "tablist", "sidebar", "tabheader", "entities", "skulls", "itemcomponents", "slot", "container")
 
     /**
-     * Every name in [capture] that may be replaced wherever it stands, read one line at a time so a long capture never
-     * sits in memory. Two kinds are left out, and [Redactor] replaces them only in a text where a rule finds them. A
+     * Every name in [captures] that may be replaced wherever it stands, read one line at a time so a long capture never
+     * sits in memory. A word the server writes as its own in any of them counts as its own in all. Two kinds are left out, and [Redactor] replaces them only in a text where a rule finds them. A
      * plain name on a player entity may be an NPC's. And a player may be called what the server calls itself or a
      * place, as a staff account is named after the server: a name the sidebar's title, its `⏣` place, the tab list's
      * area or its header also shows would otherwise turn hundreds of the server's lines into `PlayerN`.
      */
-    fun of(capture: Path): Set<String> {
+    fun of(vararg captures: Path): Set<String> {
         val names = HashSet<String>()
         val server = HashSet<String>()
-        capture.useLines { lines ->
+        for (capture in captures) capture.useLines { lines ->
             for (line in lines) {
                 val type = line.substringAfter("\"type\":\"", "").substringBefore('"')
                 if (type !in learnedFrom) continue
