@@ -142,6 +142,26 @@ The hotbar uses your inventory's look until you untick Match Inventory, and then
 
 <sub>Off by default. Sneak and right click to swap on purpose.</sub>
 
+### Themed Menus
+
+Menus, your inventory and plain tooltips take the colors of the Theme under Interface, so Charcoal makes them dark.
+
+<sub>Chests, crafting tables, hoppers, dispensers and shulker boxes follow it. A furnace or an anvil keeps its own look, and item tooltips keep the server's rarity frames.</sub>
+
+### Stable Menus
+
+Go Back and Close sit in the same place in every menu, and so does your inventory. A shorter menu starts lower instead of moving its bottom row.
+
+### Hide Filler
+
+Hides the blank glass panes that pad out a menu, along with their tooltip and hover.
+
+<sub>Colored panes, such as a terminal's, stay.</sub>
+
+### Keep Cursor
+
+When one menu opens another, the cursor stays where it was instead of jumping to the middle.
+
 ### Slot Lock
 
 Locks slots and items of your inventory, so a misclick cannot move or drop them.
@@ -162,6 +182,35 @@ A padlock marks each one: yellow for a slot, blue for a linked slot and green fo
 - **Armor and the off hand** can be locked too.
 
 Slot Lock Key and Item Lock Key under Inventory in the settings take any key or mouse button. The server can still move a locked item itself, as when you sell it.
+
+## Better UI
+
+Tabs, a search and buttons that ds-mod adds to the game's menus. The Better UI switch turns them all off at once, and each has its own switch too.
+
+### Back Buttons
+
+A menu with no Go Back gets one in Go Back's usual place, if you reached it from a menu you opened with a command, such as `/storage`. Clicking it sends that command again. Hover it to see which command it sends.
+
+<sub>A menu you opened from an NPC or an item gets none, because no command reopens it.</sub>
+
+### Menu Tabs
+
+Tabs along the top and bottom of every menu and your inventory. A tab sends its command when you click it, and the tab whose command opened the menu you're in joins the menu. It starts with Storage, Ender Chest, Crafting Table and Forge along the bottom, and Search at the top right.
+
+Click Search, or press Ctrl+F, and a search bar opens along that edge toward the middle of the menu, over the tabs beside it. Every item whose name and lore don't hold all your words is dimmed, and your search stays as you move from menu to menu. While you type, E and Q type letters instead of closing the menu or dropping an item. Escape leaves the bar, a right click clears it, and its × closes it. The text turns red when nothing in the menu matches.
+
+Set your tabs up with Edit Tabs, under Better UI:
+
+| Do this | To |
+| --- | --- |
+| Drag a tab to another place | Move it. A tab already there takes its old place. Escape during the drag puts it back |
+| Click an empty place | Add a tab there, then type its command |
+| Click a tab | Change its command, its item, such as `chest` or `player_head`, and the name shown when you point at it |
+| Arrow keys or Delete, with a tab chosen | Move it a place, or remove it |
+| Add Search | Put the search tab back after you deleted it |
+| Reset | Go back to the starting tabs |
+
+<sub>Each edge has seven places. On a short screen at a large GUI scale, the tabs can run off the top or bottom of the screen.</sub>
 
 ## Chat
 

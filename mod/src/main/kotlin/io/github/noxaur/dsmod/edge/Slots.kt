@@ -14,6 +14,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.world.inventory.Slot
+import java.util.BitSet
 
 private const val HOTBAR_FIRST = 36
 private const val HOTBAR_SLOTS = 9
@@ -23,25 +24,45 @@ private const val FILL_ALPHA = 110
 /**
  * Marks on the slots of the open container. They go away when the container closes. With no menu open the
  * container is the player's own inventory, and the marks on its last nine slots are drawn on the hotbar.
+ * A hidden or covered slot draws nothing here: `ContainerScreenMixin` asks [hides] and skips its item, highlight and
+ * tooltip.
  *
  * A mark is drawn in two parts: its back behind the item, and for a rarity mark with a gem, the gem over it.
+ * A hidden slot draws nothing here: `ContainerScreenMixin` asks [hides] and skips its item, highlight and tooltip.
  */
 object Slots {
     /** [rarity] is the mark's role when the player's rarity style draws it, or null for a plain fill in [color]. */
-    private class Shown(val color: Int, val rarity: Role?, val label: Component?)
+    private class Shown(val color: Int, val rarity: Role?, val hide: Boolean, val label: Component?)
 
     private val marks = HashMap<String, Map<Int, Shown>>()
+    private val hidden = BitSet()
+    private var covered = -1
     private lateinit var settings: DsModConfig.Inventory
 
     /** Marks slots by their index in the open container's menu, replacing what [id] marked before. */
     fun mark(id: String, slots: Map<Int, SlotMark>) {
         marks[id] = slots.mapValues { (_, mark) ->
-            Shown(mark.role.argb(FILL_ALPHA), mark.role.takeIf { mark.rarity }, mark.label?.toComponent())
+            Shown(mark.role.argb(FILL_ALPHA), mark.role.takeIf { mark.rarity }, mark.hide, mark.label?.toComponent())
         }
+        rehide()
     }
 
     fun clear(id: String) {
         marks.remove(id)
+        rehide()
+    }
+
+    /** Whether the slot at [index] in the open menu is hidden, asked for each slot each frame. */
+    fun hides(index: Int) = hidden[index] || index == covered
+
+    /** Hides the slot at [index] under a control the mod draws over it, or none at -1, until the menu closes. */
+    fun cover(index: Int) {
+        covered = index
+    }
+
+    private fun rehide() {
+        hidden.clear()
+        for (slots in marks.values) for ((index, shown) in slots) if (shown.hide) hidden.set(index)
     }
 
     /** The rarity that marks slot [index] of the open menu, if one does. */
@@ -72,7 +93,11 @@ object Slots {
                     shown.label?.let { graphics.text(font, it, slot.x, slot.y, -1, true) }
                 }
             }
-            ScreenEvents.remove(screen).register { marks.clear() }
+            ScreenEvents.remove(screen).register {
+                marks.clear()
+                hidden.clear()
+                covered = -1
+            }
         }
     }
 
@@ -89,12 +114,12 @@ object Slots {
 
     /** Draws what goes behind the item in slot [index] of the open menu, whose 16x16 starts at [x], [y]. */
     fun drawBack(graphics: GuiGraphicsExtractor, surface: Surface, index: Int, x: Int, y: Int) {
-        for (slots in marks.values) slots[index]?.let { back(graphics, surface, it, x, y) }
+        for (slots in marks.values) slots[index]?.takeUnless { it.hide }?.let { back(graphics, surface, it, x, y) }
     }
 
     /** Draws what goes over the item in slot [index]: the gem of a rarity mark, when the style has one. */
     fun drawFront(graphics: GuiGraphicsExtractor, surface: Surface, index: Int, x: Int, y: Int) {
-        for (slots in marks.values) slots[index]?.let { front(graphics, surface, it, x, y) }
+        for (slots in marks.values) slots[index]?.takeUnless { it.hide }?.let { front(graphics, surface, it, x, y) }
     }
 
     private fun back(graphics: GuiGraphicsExtractor, surface: Surface, shown: Shown, x: Int, y: Int) {
@@ -123,7 +148,7 @@ object Slots {
             for (slots in marks.values) {
                 for ((index, shown) in slots) {
                     val slot = screen.menu.slots.getOrNull(index)
-                    if (slot != null) draw(slot, shown)
+                    if (slot != null && !shown.hide) draw(slot, shown)
                 }
             }
             graphics.pose().popMatrix()

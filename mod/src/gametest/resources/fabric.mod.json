@@ -4,7 +4,9 @@
   "version": "${version}",
   "name": "ds-mod game tests",
   "environment": "client",
-  "mixins": ["dsmod_gametest.mixins.json"],
+  "mixins": [
+    "dsmod_gametest.mixins.json"
+  ],
   "entrypoints": {
     "client": [
       {
@@ -132,6 +134,30 @@
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.SurfacesTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.StableMenusTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.ThemedMenusTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.KeepCursorTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.BackButtonsTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.MenuTabsTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.TabEditorTest"
       }
     ]
   }

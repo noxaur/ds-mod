@@ -1,17 +1,18 @@
 package io.github.noxaur.dsmod.edge.ui
 
 import com.mojang.blaze3d.platform.cursor.CursorTypes
+import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.Sections
-import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.edge.Keys
 import io.github.noxaur.dsmod.edge.toComponent
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.AbstractButton
-import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.narration.NarratedElementType
 import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.input.InputWithModifiers
@@ -20,6 +21,7 @@ import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.input.MouseButtonInfo
 import net.minecraft.network.chat.CommonComponents
 import net.minecraft.network.chat.MutableComponent
+import net.minecraft.world.item.ItemStack
 
 private fun plain(label: String) = text { body(label) }.toComponent()
 
@@ -56,6 +58,39 @@ class KitButton private constructor(
             Kit.button(graphics, x, y, width, height, state, icon)
         } else {
             Kit.button(graphics, x, y, width, height, state, label, labelWidth)
+        }
+    }
+}
+
+/**
+ * A tab on the [edge] of a menu whose edge is at [panelY], showing [item] or else [icon], which runs [action] when
+ * pressed. [name] is what narration reads. The [selected] one joins the menu's panel.
+ */
+class KitTab(
+    x: Int,
+    private val panelY: Int,
+    private val edge: TabEdge,
+    name: String,
+    private val item: ItemStack?,
+    private val icon: Icon?,
+    action: () -> Unit,
+) : Button(
+    x,
+    if (edge == TabEdge.TOP) panelY - Kit.TAB_HEIGHT + 2 else panelY - 2,
+    Kit.TAB_WIDTH,
+    Kit.TAB_HEIGHT,
+    plain(name),
+    { action() },
+    { it.get() },
+) {
+    var selected = false
+
+    override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+        val top = Kit.tab(graphics, x, panelY, selected, edge, isHoveredOrFocused)
+        if (item != null) {
+            graphics.item(item, x + (width - 16) / 2, top)
+        } else if (icon != null) {
+            Kit.icon(graphics, icon, x + (width - icon.width) / 2, top + (16 - icon.height) / 2, Kit.theme.ink, Kit.theme.inkShadow)
         }
     }
 }
@@ -328,6 +363,9 @@ class KitTextField(x: Int, y: Int, width: Int, label: String, value: String, max
         this.value = value
         setResponder(onChange)
     }
+
+    /** Shows [text] in muted text while the field is empty. */
+    fun hint(text: String) = apply { setHint(text { muted(text) }.toComponent()) }
 
     fun place(x: Int, y: Int) {
         this.x = x + PAD

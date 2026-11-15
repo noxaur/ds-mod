@@ -154,9 +154,25 @@ An `Item` keeps what features read: the id, the name, the lore and `custom_data`
 
 ## Chrome is drawn in code, from a theme
 
-Panels, buttons, slots and bars are a few filled rectangles each, drawn by `Kit` in the colors of a `Theme`. Minecraft's own screens stretch nine-slice textures instead, and ds-mod does not: a second look would need a second set of textures drawn by hand, and a new shape would need an image editor. In code a theme is one list of colors and a shape is a function, and `draw-with-kit` in `Rules.kt` keeps every other file from drawing its own. Only the icons are textures, white so that one sprite takes any color.
+Panels, buttons, slots and bars are a few filled rectangles each, drawn by `Kit` in the colors of a `Theme`. Minecraft's own screens stretch nine-slice textures instead, and ds-mod does not: a second look would need a second set of textures drawn by hand, and a new shape would need an image editor. In code a theme is one list of colors and a shape is a function, and `draw-with-kit` in `Rules.kt` keeps every other file from drawing its own. Only the icons are textures, white so that one sprite takes any color. The slot is the one shape drawn dozens of times a frame, so `Kit` paints it into a texture from the theme's colors once per theme and blits it. Five fills per slot made a themed inventory cost 0.2 ms a frame. The paint runs at the end of a client tick: made while a frame was being built, the texture broke the drawing of every frame after it.
 
 Two themes ship, because the references players know disagree: resource-pack screens are dark, and Minecraft's own are light gray. A light panel can't carry the text layer's colors, which were picked for chat and the HUD and wash out on gray. So a label on a panel is not role text. It is a plain string in the theme's ink, and role text sits only on a well or the HUD's plate, which stay dark in every theme. A theme that made those light would break every colored row.
+
+## The game's menus are redrawn, not retextured
+
+Themed Menus draws a menu with the kit instead of recoloring its texture, for the reason the kit exists: one theme is a list of colors, and a texture per theme would be art to keep by hand. The mixins wrap only the call that blits the menu's texture. The rest of the screen still runs, so the inventory still draws the player, and Fabric's background event still fires for the slot marks. A screen whose texture holds more than a panel and slots, such as a furnace's flame or an anvil's field, is left alone. Drawing those in the kit is work for a screen the server does not open.
+
+A tooltip with its own `tooltip_style` keeps it. dragsim.co gives every item a style per rarity from its resource pack, so the kit's backing reaches only plain tooltips. Replacing all of them would erase the rarity frames the server draws.
+
+Stable Menus keeps a menu's bottom edge where a six-row menu's sits, not its top, because the server puts Go Back and Close in the bottom row of every menu and the player's inventory sits under it. A chest menu's texture recenters itself on the screen and ignores the menu's top, so `ChestScreenMixin` moves the texture by the same amount. Without that the slots would move and the art would not.
+
+Hide Filler only skips drawing. A click on a hidden pane still goes to the server, as the `no-automation` rule asks of any feature DragSim Utils lacks.
+
+The server closes a menu and opens the next in the same tick. Between the two the game has no screen, so it takes the mouse and then lets it go at the middle of the window. Keep Cursor puts the cursor back when a screen opens within half a second of the last one closing. It cannot tell a server's close from the player's, and does not need to: a player who reopens a menu that fast wants the cursor where it was too.
+
+Back Buttons can only send a command. Reopening a menu by replaying the clicks that reached it would be a macro, and a menu from an NPC needs a click on the NPC, so a menu with no command earlier in its run gets no button. It resends the player's own command, unchanged, on the player's click. That makes it DragSim Utils' Menu Button with the command filled in, which is the exception it takes to `no-automation`. The button covers Go Back's slot only while that slot is empty or filler, so it never hides an item that does something. A command sent from inside a menu, as Menu Button sends one, starts the run again, so Back leads to the newest command's menu.
+
+Better UI's switch covers only the controls the mod adds to menus, not how the menus look, because a player who wants the vanilla controls back may still want dark, steady menus. Menu Tabs are places along a menu's top and bottom edges, as creative tabs and the Skyblocker and SkyOcean tabs players know, so a tab dropped on another trades places with it instead of pushing a row along. The bottom edge stays put under Stable Menus and the top follows the menu's height. Both run off a short screen at a large GUI scale. The search bar opens along its tab's edge toward the menu's middle and hides the tabs it covers, so a click never lands on a tab under it. While the bar has focus it takes every key, because the menu's own keys would act on a typed letter: E closes it, Q drops an item and a digit swaps one. Command tabs send commands the player set up, on a click, which is DragSim Utils' Command Binds on a button and the exception they take to `no-automation`. The tab whose command opened the menu shown now is the selected one, which `MenuTrail` knows without matching the menu's title.
 
 ## Rarity marks are baked from one color
 
@@ -208,7 +224,7 @@ The swap-hands key is not guarded. On dragsim.co it opens the server's menu and 
 
 ## Private fields are read through accessor mixins
 
-Minecraft keeps an open container's position on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the two fields. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on.
+Minecraft keeps an open container's position and size on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the four fields, and the slot under the mouse. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on.
 
 ## CI measures the mod in a real game
 

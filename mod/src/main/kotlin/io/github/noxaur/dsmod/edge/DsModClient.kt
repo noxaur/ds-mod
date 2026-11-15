@@ -12,6 +12,7 @@ import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
 import io.github.noxaur.dsmod.edge.contribute.Contribute
+import io.github.noxaur.dsmod.edge.ui.Kit
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
@@ -73,6 +74,9 @@ object DsModClient : ClientModInitializer {
     /** Each of the mod's own screens goes back to the screen it was opened over, so a button in the settings returns there. */
     fun openBeaconEditor() = Minecraft.getInstance().let { it.setScreenAndShow(BeaconScreen(config.instance.end, it.gui.screen(), config::saveToFile)) }
 
+    fun openTabEditor() =
+        Minecraft.getInstance().let { it.setScreenAndShow(TabEditorScreen(config.instance.betterUi, it.gui.screen(), config::saveToFile)) }
+
     fun openBindsEditor() =
         Minecraft.getInstance().let { it.setScreenAndShow(CommandBindsScreen(config.instance.general, it.gui.screen(), config::saveToFile)) }
 
@@ -90,8 +94,11 @@ object DsModClient : ClientModInitializer {
         val all = features(config.instance)
         game = Game(all) { active }
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
+        Kit.register()
         Hud.register { containers.stack(it) }
         Slots.register(config.instance.inventory)
+        MenuBack.register()
+        TabBar.register()
         Tooltips.register()
         World.register()
         ArmorSwapGuards.register(config.instance.inventory)
@@ -105,6 +112,7 @@ object DsModClient : ClientModInitializer {
         containers = ContainerPoller(game)
         config.instance.hud.edit = Runnable { openHudEditor() }
         config.instance.end.editBeam = Runnable { openBeaconEditor() }
+        config.instance.betterUi.editTabs = Runnable { openTabEditor() }
         config.instance.general.editBinds = Runnable { openBindsEditor() }
         config.instance.inventory.editRarityStyle = Runnable { openRarityStyle() }
         config.instance.contribute.open = Runnable { Contribute.open() }

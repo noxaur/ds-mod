@@ -9,6 +9,7 @@ import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDraggableLi
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDropdown
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorKeybind
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorSlider
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorText
 import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText
 import io.github.noxaur.dsmod.core.camera.KeyMode
@@ -19,7 +20,9 @@ import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.general.ArmorLayout
 import io.github.noxaur.dsmod.core.feature.general.ArmorPiece
 import io.github.noxaur.dsmod.core.input.CommandBind
+import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.Section
+import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.core.ui.Theme
 
 /**
@@ -45,9 +48,14 @@ class DsModConfig : Config() {
     val general = General()
 
     @Expose
-    @Category(name = "Inventory", desc = "What the slots of a menu show, and what protects your items.")
+    @Category(name = "Inventory", desc = "How menus look and sit, what their slots show, and what protects your items.")
     @JvmField
     val inventory = Inventory()
+
+    @Expose
+    @Category(name = "Better UI", desc = "Tabs, a search and buttons that ds-mod adds to the game's menus.")
+    @JvmField
+    val betterUi = BetterUi()
 
     @Expose
     @Category(name = "Loot", desc = "Your drops.")
@@ -329,6 +337,30 @@ class DsModConfig : Config() {
         var armorSwapGuard = false
 
         @Expose
+        @ConfigOption(name = "Themed Menus", desc = "Draw menus, your inventory and plain tooltips in the Theme under Interface, which is dark in Charcoal.")
+        @ConfigEditorBoolean
+        @JvmField
+        var themedMenus = true
+
+        @Expose
+        @ConfigOption(name = "Stable Menus", desc = "Keep the bottom row of every menu and your inventory in one place, so Go Back and Close stay put as you move between menus.")
+        @ConfigEditorBoolean
+        @JvmField
+        var stableMenus = true
+
+        @Expose
+        @ConfigOption(name = "Hide Filler", desc = "Hide the blank glass panes that fill out a menu, so its items stand out.")
+        @ConfigEditorBoolean
+        @JvmField
+        var hideFiller = true
+
+        @Expose
+        @ConfigOption(name = "Keep Cursor", desc = "Leave the cursor where it was when one menu opens another, instead of moving it to the middle.")
+        @ConfigEditorBoolean
+        @JvmField
+        var keepCursor = true
+
+        @Expose
         @ConfigOption(name = "Slot Lock", desc = "Lock slots and items of your inventory with the keys below, so no click or drop key moves them. Hold the slot key and move to another slot to link the two.")
         @ConfigEditorBoolean
         @JvmField
@@ -352,6 +384,37 @@ class DsModConfig : Config() {
             const val KEY_K = 75
             const val KEY_L = 76
         }
+    }
+
+    class BetterUi {
+        @Expose
+        @ConfigOption(name = "Better UI", desc = "Add ds-mod's tabs and buttons to the game's menus. Each also has its own switch below.")
+        @ConfigEditorBoolean
+        @JvmField
+        var enabled = true
+
+        @Expose
+        @ConfigOption(name = "Back Buttons", desc = "Add Go Back to a menu that has none, which sends again the command that opened the menu you came from.")
+        @ConfigEditorBoolean
+        @JvmField
+        var backButtons = true
+
+        @Expose
+        @ConfigOption(name = "Menu Tabs", desc = "Add tabs along the top and bottom of menus that send your commands, and a tab that searches the menu's items.")
+        @ConfigEditorBoolean
+        @JvmField
+        var menuTabs = true
+
+        /** The edge sets this to open the editor, so the config itself needs no Minecraft. */
+        @ConfigOption(name = "Edit Tabs", desc = "Place, add and change the tabs: what each sends, its item and its name.")
+        @ConfigEditorButton(buttonText = "Edit")
+        @JvmField
+        var editTabs: Runnable = Runnable {}
+
+        /** The tabs the player set up, in the editor. */
+        @Expose
+        @JvmField
+        var tabs: List<MenuTab> = TabLayout.DEFAULT
     }
 
     /** A drop's tier, lowest first. [word] is what the server writes before `DROP!`. */
