@@ -30,8 +30,8 @@ function backend() {
     userId: request.headers.get("cookie"),
     adminToken: "secret",
   }));
-  const call = async (who: string | null, method: string, path: string, body?: unknown, forged: HeadersInit = {}) => {
-    const headers = new Headers(forged);
+  const call = async (who: string | null, method: string, path: string, body?: unknown, extra: HeadersInit = {}) => {
+    const headers = new Headers(extra);
     if (who === "agent") {
       headers.set("authorization", "Bearer secret");
     } else if (who !== null) {
@@ -160,13 +160,8 @@ test("a player cannot call the agent's routes, and nobody gets in without signin
   expect((await call(null, "POST", `/v1/contrib/requests/${id}/skip`)).status).toBe(401);
 });
 
-test("a client cannot name itself in the headers the API believes", async () => {
-  const { call, create } = backend();
-  await create();
-  const forged = { "x-dsmod-admin": "1", "x-dsmod-user": "ann" };
-  expect((await call(null, "GET", "/v1/admin/requests", undefined, forged)).status).toBe(401);
-  expect((await call(null, "GET", "/v1/contrib/requests", undefined, forged)).status).toBe(401);
-  expect((await call("bob", "GET", "/v1/admin/requests", undefined, forged)).status).toBe(401);
+test("only the exact admin token makes a caller an agent", async () => {
+  const { call } = backend();
   for (const token of ["Bearer ", "Bearer secre", "Bearer secretx", "secret"]) {
     expect((await call(null, "GET", "/v1/admin/requests", undefined, { authorization: token })).status).toBe(401);
   }

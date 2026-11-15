@@ -6,7 +6,6 @@ import { Store } from "./store.ts";
 
 /** A capture of a few minutes is well under this once gzipped, and a Worker would accept far more. */
 export const MAX_CAPTURE_BYTES = 10 * 1024 * 1024;
-const MAX_SIGHTINGS = 100;
 /**
  * Any signed-in client can invent sightings, so the table stops taking new ones here and only counts the ones it
  * has. An agent reads them long before a real game has this many unknown things.
@@ -122,9 +121,6 @@ export const report = Effect.fn(function* (
   sightings: readonly { readonly kind: string; readonly signature: string; readonly sample: string }[],
 ) {
   const store = yield* Store;
-  if (sightings.length > MAX_SIGHTINGS) {
-    return yield* new HttpApiError.BadRequest();
-  }
   const firstSeen = yield* now;
   return yield* Effect.forEach(
     sightings,
