@@ -229,7 +229,7 @@ class DsModConfig : Config() {
         var armorSwapGuard = false
 
         @Expose
-        @ConfigOption(name = "Slot Lock", desc = "Lock slots of your inventory with the key below, so no click or drop key moves what is in them. Hold the key and move to another slot to link the two.")
+        @ConfigOption(name = "Slot Lock", desc = "Lock slots and items of your inventory with the keys below, so no click or drop key moves them. Hold the slot key and move to another slot to link the two.")
         @ConfigEditorBoolean
         @JvmField
         var slotLock = true
@@ -241,8 +241,15 @@ class DsModConfig : Config() {
         @JvmField
         var slotLockKey = KEY_L
 
+        @Expose
+        @ConfigOption(name = "Item Lock Key", desc = "Pick the key or mouse button that locks the item under the mouse, wherever you move it. It works on an item that does not stack.")
+        @ConfigEditorKeybind(defaultKey = KEY_K)
+        @JvmField
+        var itemLockKey = KEY_K
+
         private companion object {
-            /** GLFW's code for the L key. */
+            /** GLFW's codes for the K and L keys. */
+            const val KEY_K = 75
             const val KEY_L = 76
         }
     }

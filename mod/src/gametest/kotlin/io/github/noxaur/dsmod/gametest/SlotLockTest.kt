@@ -26,6 +26,7 @@ class SlotLockTest : FabricClientGameTest {
         val settings = DsModClient.settings.inventory
         val feature = DsModClient.game.readouts.single { it.feature.id == "slot-lock" }.feature as SlotLock
         val key = GLFW.GLFW_KEY_L
+        val itemKey = GLFW.GLFW_KEY_K
 
         fun item(slot: Int) = context.computeOnClient<Pair<Any, Int>, Nothing> { it.player!!.inventory.getItem(slot).let { stack -> stack.item to stack.count } }
         fun carried() = context.computeOnClient<Int, Nothing> { it.player!!.containerMenu.carried.count }
@@ -63,9 +64,25 @@ class SlotLockTest : FabricClientGameTest {
             context.waitTicks(5)
         }
 
+        /** The test's mouse carries no Shift, so the click goes the way the screen sends one: to the guard, then to the game. */
+        fun shiftClick(slot: Int) {
+            context.runOnClient<Nothing> { client ->
+                val screen = client.gui.screen() as AbstractContainerScreen<*>
+                val at = screen.menu.slots.first { it.container is Inventory && it.containerSlot == slot }
+                if (!SlotGuards.refuses(screen, at, 0, ContainerInput.QUICK_MOVE)) {
+                    client.gameMode!!.handleContainerInput(screen.menu.containerId, at.index, 0, ContainerInput.QUICK_MOVE, client.player!!)
+                }
+            }
+            context.waitTicks(5)
+        }
+
         context.worldBuilder().create().use { world ->
             try {
-                for ((slot, give) in listOf("hotbar.0" to "diamond_sword", "hotbar.1" to "stone 5", "inventory.0" to "diamond_pickaxe", "inventory.1" to "stone 5")) {
+                for ((slot, give) in listOf(
+                    "hotbar.0" to "diamond_sword", "hotbar.1" to "stone 5", "inventory.0" to "diamond_pickaxe", "inventory.1" to "stone 5",
+                    // An item as dragsim.co marks one that does not stack.
+                    "inventory.2" to "diamond_axe[custom_data={item_data:{uuid:\"an-axe\"}}]",
+                )) {
                     world.server.runCommand("item replace entity @a $slot with $give")
                 }
                 context.waitTicks(20)
@@ -119,13 +136,7 @@ class SlotLockTest : FabricClientGameTest {
                 check(carried() == 0) { "A click took the linked pickaxe" }
                 context.takeScreenshot("slot-lock")
 
-                // The test's mouse carries no Shift, so the Shift click is given to the guard as the screen would give it.
-                context.runOnClient<Nothing> { client ->
-                    val screen = client.gui.screen() as AbstractContainerScreen<*>
-                    val slot = screen.menu.slots.first { it.container is Inventory && it.containerSlot == 9 }
-                    check(SlotGuards.refuses(screen, slot, 0, ContainerInput.QUICK_MOVE)) { "The guard let a Shift click on a linked slot through" }
-                }
-                context.waitTicks(5)
+                shiftClick(9)
                 check(item(0).first == Items.DIAMOND_PICKAXE && item(9).first == Items.DIAMOND_SWORD) { "A Shift click did not trade the pair: ${item(0)} and ${item(9)}" }
 
                 tap(9)
@@ -133,6 +144,43 @@ class SlotLockTest : FabricClientGameTest {
                 tap(0)
                 tap(10)
                 check(feature.locks == SlotLocks()) { "Unlocking every slot left ${feature.locks}" }
+
+                // An item lock follows the item. Slot 11 holds the axe with an ID, and stone has none.
+                hover(11)
+                context.input.pressKey(itemKey)
+                context.waitTicks(3)
+                check(feature.locks == SlotLocks(items = setOf("an-axe"))) { "The item key over the axe left ${feature.locks}" }
+                click(11)
+                check(carried() == 0) { "A click took the locked axe" }
+                context.takeScreenshot("slot-lock-item")
+                hover(11)
+                context.input.pressKey(itemKey)
+                context.waitTicks(3)
+                click(11)
+                check(carried() == 1) { "The unlocked axe did not come up" }
+                click(13)
+                hover(13)
+                context.input.pressKey(itemKey)
+                context.waitTicks(3)
+                click(13)
+                check(carried() == 0 && item(13).first == Items.DIAMOND_AXE) { "The lock did not follow the axe to its new slot" }
+                hover(13)
+                context.input.pressKey(itemKey)
+                hover(1)
+                context.input.pressKey(itemKey)
+                context.waitTicks(3)
+                check(feature.locks == SlotLocks()) { "The item key over stone, which stacks, left ${feature.locks}" }
+
+                // A Shift click on the axe would land in the first empty hotbar slot, which is locked, so it goes to the next.
+                tap(2)
+                shiftClick(13)
+                check(item(2).second == 0 && item(3).first == Items.DIAMOND_AXE && item(13).second == 0) {
+                    "The Shift click left ${item(2)} in the locked slot, ${item(3)} beside it and ${item(13)} behind"
+                }
+                tap(2)
+                shiftClick(3)
+                check(item(3).second == 0 && item(11).first == Items.DIAMOND_AXE) { "With nothing locked a Shift click is the game's own, and left ${item(11)}" }
+
                 click(1)
                 doubleClick(12)
                 check(carried() == 10) { "With nothing locked a double click gathered ${carried()}, so the check above proves nothing" }
