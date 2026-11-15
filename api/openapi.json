@@ -2203,6 +2203,16 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "dragsim.co did not answer, and the backend has no copy to fall back on.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpstreamUnavailableEncoded"
+                }
+              }
+            }
           }
         },
         "summary": "One container of a profile, as it was when the snapshot was taken."
@@ -3271,6 +3281,21 @@
         ],
         "additionalProperties": false
       },
+      "UpstreamUnavailableEncoded": {
+        "type": "object",
+        "properties": {
+          "_tag": {
+            "type": "string",
+            "enum": [
+              "UpstreamUnavailable"
+            ]
+          }
+        },
+        "required": [
+          "_tag"
+        ],
+        "additionalProperties": false
+      },
       "SnapshotExpiredEncoded": {
         "type": "object",
         "properties": {
@@ -3293,21 +3318,6 @@
             "type": "string",
             "enum": [
               "ContainerNotFound"
-            ]
-          }
-        },
-        "required": [
-          "_tag"
-        ],
-        "additionalProperties": false
-      },
-      "UpstreamUnavailableEncoded": {
-        "type": "object",
-        "properties": {
-          "_tag": {
-            "type": "string",
-            "enum": [
-              "UpstreamUnavailable"
             ]
           }
         },

@@ -12,6 +12,16 @@ The contract is generated from the backend's API definition, because a hand-writ
 
 Void deploys no Next.js app, so the website runs on Vercel and calls the backend from its own servers. Nothing in a browser talks to the backend, which keeps the session cookie on the website's domain and leaves the backend no other origin to trust. The cost is that the backend sees the website's few server addresses, not each player's, so Better Auth's per-address rate limit counts every player who logs in on the website together. When website logins fail with 429 under load, give the website a trusted key, as Void's auth guide describes, rather than reading the player's address from a header any client can send.
 
+## The backend looks players up, so dragsim.co is asked once for many clients
+
+The mod and the website both show other players' profiles, and dragsim.co has no key and no stated limit, only an owner's goodwill. So only the backend talks to it, through one `Upstream` service, and it keeps copies in KV: a player's answer is served for two minutes, and kept for a day to answer as `stale` when dragsim.co is down. A lookup by name goes through a lowercase name to UUID entry, so `Name` and `name` share a copy, and a name dragsim.co does not know is remembered for a minute so a typo asked in a loop costs it nothing. The catalog is 2.3 MB, so each isolate also keeps its parse for an hour, and a warm Worker does not parse it again.
+
+A body that no longer decodes is dragsim.co's change and not the client's mistake, so it is logged and treated as unavailable, which a stale copy then covers. Treating it as a defect would answer an empty 500 and hide the stale copy a player could have had. A 404 with a `profile` asked for is told from a missing player by the server's own words, because dragsim.co sends the same status for both.
+
+A profile is answered without its containers, and each answer makes a snapshot of them in KV for ten minutes. Rebuilding every tooltip of thirty storage pages is wasted when a player opens one tab, and fetching a container from a fresh lookup would show a tab from a later moment than the overview beside it. The snapshot id is the only client input that reaches a KV key, so it must have the shape the backend makes. When the player hid their inventory, the items are dropped before anything is written, so neither a snapshot nor the cached copy ever holds them.
+
+The data does not say which hotbar slot is held, so equipment's `held` is the first one, which is a guess. Slayers show the server's level and no progress to the next, because no table of slayer XP is in the catalog.
+
 ## A player is their Minecraft account, and the client is never believed
 
 The mod is open source, so anyone can build a client that sends whatever it likes. Sign-in therefore rests on something a client cannot fake. The backend issues a random server id, the client tells Mojang it is joining that server, and the backend asks Mojang who joined. Only the holder of an account's Minecraft session can make that call, so a modified client can sign in as its own account and as no other. No secret ships in the mod, because a secret in an open jar is public.

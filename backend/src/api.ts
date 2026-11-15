@@ -126,7 +126,7 @@ export const Api = HttpApi.make("dsmod")
         HttpApiEndpoint.get("container", "/v1/snapshots/:snapshot/containers/:container", {
           params: { snapshot: Schema.String, container: Schema.String },
           success: Container,
-          error: [ContainerNotFound, SnapshotExpired],
+          error: [ContainerNotFound, SnapshotExpired, UpstreamUnavailable],
         }).annotate(OpenApi.Summary, "One container of a profile, as it was when the snapshot was taken."),
       )
       .middleware(SignedIn)
