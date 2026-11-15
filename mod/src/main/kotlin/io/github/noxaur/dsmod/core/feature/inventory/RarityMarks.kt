@@ -35,7 +35,7 @@ class RarityMarks(toggle: KMutableProperty0<Boolean>, private val markCommon: KM
             val rarity = item?.rarity ?: return@forEachIndexed
             val mark = byRarity[rarity]
             when {
-                mark == null -> count("unparsed")
+                mark == null -> unparsed(rarity)
                 mark.role != Role.COMMON || common -> next[slot] = mark
             }
         }

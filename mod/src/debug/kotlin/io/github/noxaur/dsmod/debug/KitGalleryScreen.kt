@@ -105,16 +105,17 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         val icons = Icon.entries
         Kit.well(g, x + 140, oy + 132, 112, 14)
         for (i in icons.indices) {
-            Kit.icon(g, icons[i], x + i * 11, oy + 136, t.ink, t.inkShadow)
-            Kit.icon(g, icons[i], x + 70 + i * 11, oy + 136, t.inkMuted, t.inkShadow)
-            Kit.icon(g, icons[i], x + 144 + i * 18, oy + 136, ROLES[i].argb())
+            Kit.icon(g, icons[i], x + i * 9, oy + 136, t.ink, t.inkShadow)
+            Kit.icon(g, icons[i], x + 70 + i * 9, oy + 136, t.inkMuted, t.inkShadow)
+            Kit.icon(g, icons[i], x + 144 + i * 15, oy + 136, ROLES[i % ROLES.size].argb())
         }
 
-        caption(g, "Divider and rings", x, oy + 150)
+        caption(g, "Divider, rings and a line", x, oy + 150)
         Kit.divider(g, x, oy + 166, 120)
         Kit.ring(g, x + 128, oy + 162, 40, 10, t.accent)
         Kit.ring(g, x + 172, oy + 162, 40, 10, Role.GOOD.argb())
-        Kit.ring(g, x + 216, oy + 162, 36, 10, Role.BAD.argb())
+        Kit.ring(g, x + 216, oy + 162, 14, 10, Role.BAD.argb())
+        Kit.line(g, x + 234, oy + 171, x + 251, oy + 162, Role.ACTION.argb())
 
         caption(g, "Range slider, and spans: idle, hover, down, off", x, oy + 180)
         for (i in states.indices) Kit.span(g, ox + MIDDLE + i * 30, oy + 193, 26, 14, states[i])

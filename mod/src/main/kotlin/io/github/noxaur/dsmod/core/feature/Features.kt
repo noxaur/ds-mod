@@ -16,6 +16,7 @@ import io.github.noxaur.dsmod.core.feature.general.FreeLook
 import io.github.noxaur.dsmod.core.feature.general.Fullbright
 import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
 import io.github.noxaur.dsmod.core.feature.inventory.RarityMarks
+import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.feature.loot.LootAlerts
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerBossAlert
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerTracker
@@ -37,6 +38,7 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     Fullbright(config.general::fullbright),
     ArmorSwapGuard(config.inventory::armorSwapGuard),
     RarityMarks(config.inventory::rarityMarks, config.inventory::markCommon),
+    SlotLock(config.inventory::slotLock),
     LootAlerts(config.loot::lootAlerts, config.loot::lootAlertTier),
     SlayerBossAlert(config.slayer::slayerBossAlert),
     SlayerTracker(config.slayer::slayerTracker),

@@ -39,6 +39,10 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.ContributeTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.DragonTimerTest"
       },
       {
@@ -112,6 +116,10 @@
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.FreeLookTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.SlotLockTest"
       },
       {
         "adapter": "kotlin",

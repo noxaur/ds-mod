@@ -46,9 +46,10 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `flash` | Any | A white wash over something the player just acted on, which fades out. The same in both themes, because it lies on the game and not on a panel |
 | `divider` | 2 tall | A shade line over a light line, cut into the panel |
 | `ring` | Any | A notched 1px line in `accent` or a role, around the selected thing |
-| `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, search |
+| `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, search, lock |
+| `line` | Any | A 1px stepped line between two points, with a dark line beside it, for joining two things that belong together |
 | `label` | One line | A string in ink |
-| `slotFill`, `slotDim` | 16x16 | The plain marks `Slots` puts on a container's slots: a fill by role behind the item, a dimming over it |
+| `slotFill`, `slotBorder`, `slotDim` | 16x16 inside, 18x18 border | Plain marks on a container's slots, colored by role: a fill behind the item, a frame around the slot, a dimming over the item |
 | `slotArt`, `slotGem` | 18x18, 7x7 | A rarity mark's back behind the item and its gem over it, cut from an `Atlas` that `SlotArts` bakes from the player's style |
 | `inventory`, `slotAt` | 176x166, 18x18 | The player's inventory, and one empty slot of it, from the resource pack's own texture, for a preview that must match the real screen |
 

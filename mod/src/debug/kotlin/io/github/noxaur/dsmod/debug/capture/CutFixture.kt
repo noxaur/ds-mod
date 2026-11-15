@@ -1,8 +1,10 @@
 package io.github.noxaur.dsmod.debug.capture
 
-import io.github.noxaur.dsmod.core.game.ActionBar
+import io.github.noxaur.dsmod.core.capture.PlayerNames
+import io.github.noxaur.dsmod.core.capture.Redactor
+import io.github.noxaur.dsmod.core.capture.captureLine
+import io.github.noxaur.dsmod.core.capture.readCaptureLine
 import io.github.noxaur.dsmod.core.game.ContainerOpened
-import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.Item
@@ -11,79 +13,10 @@ import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.TabState
-import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.WorldChanged
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.useLines
-
-/** Rewrites an event so it holds no player name, no typed message and no skin, which a public fixture must not. */
-private class Redactor(names: Set<String>) {
-    private val real = Regex("""(?<!\w)(?:${names.sortedByDescending { it.length }.joinToString("|") { Regex.escape(it) }.ifEmpty { "(?!)" }})(?!\w)""")
-    private val aliases = HashMap<String, String>()
-
-    val count get() = aliases.size
-
-    private fun alias(name: String) = aliases.getOrPut(name) { "Player${aliases.size + 1}" }
-
-    /** Replaces each range of the plain text, and drops what the range covered in the other spans. */
-    private fun ServerText.replacing(hits: List<Pair<IntRange, String>>): ServerText {
-        if (hits.isEmpty()) return this
-        var at = 0
-        return ServerText(
-            spans.mapNotNull { span ->
-                val start = at
-                at += span.text.length
-                val text = buildString {
-                    for (i in span.text.indices) {
-                        val hit = hits.firstOrNull { start + i in it.first }
-                        if (hit == null) append(span.text[i]) else if (start + i == hit.first.first) append(hit.second)
-                    }
-                }
-                if (text.isEmpty() && span.text.isNotEmpty()) null else span.copy(text = text)
-            },
-        )
-    }
-
-    private fun names(text: ServerText) = text.replacing(real.findAll(text.plain).map { it.range to alias(it.value) }.toList())
-
-    private fun typed(text: ServerText): ServerText {
-        val message = PlayerNames.chat.find(text.plain)?.let { (it.range.last + 1) until text.plain.length }?.takeUnless { it.isEmpty() }
-        return names(if (message == null) text else text.replacing(listOf(message to "hello")))
-    }
-
-    private fun scrub(json: JsonElement, key: String): JsonElement = when (json) {
-        is JsonObject -> JsonObject(json.mapValues { (k, v) -> scrub(v, k) })
-        is JsonArray -> JsonArray(json.map { scrub(it, key) })
-        is JsonPrimitive -> when {
-            !json.isString -> json
-            key.lowercase() in setOf("uuid", "signature", "value") -> JsonPrimitive("")
-            else -> JsonPrimitive(real.replace(json.content) { alias(it.value) })
-        }
-    }
-
-    fun redact(event: GameEvent): GameEvent = when (event) {
-        is SystemMessage -> SystemMessage(typed(event.text))
-        is TabList -> TabList(event.rows.map(::names))
-        is Sidebar -> Sidebar(names(event.title), event.lines.map(::names))
-        is ContainerOpened -> event.copy(title = event.title?.let(::names))
-        is SlotChanged -> event.copy(item = event.item?.let(::item))
-        WorldChanged -> event
-        is HeadPlaced -> event
-        is ActionBar -> ActionBar(names(event.text))
-        is EntityDied -> event.copy(name = names(event.name))
-    }
-
-    private fun item(item: Item) = item.copy(
-        name = item.name?.let(::names),
-        lore = item.lore.map(::names),
-        data = scrub(item.data, "") as JsonObject,
-    )
-}
 
 /**
  * Cuts the events of one window out of [capture] into [fixture], redacted. [types] are the event types to keep,

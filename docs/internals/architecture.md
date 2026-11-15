@@ -1,6 +1,22 @@
 # Architecture
 
-ds-mod has three parts. The mod runs in the player's game. The backend is our own REST service, and the website reads from it too. `api/openapi.yaml` is the contract between them, so a change to an endpoint starts there and reaches the backend before any caller.
+ds-mod has three parts. The mod runs in the player's game. The backend is our own REST service, and the website reads from it too. `api/openapi.json` is the contract between them.
+
+## The backend is an Effect API inside a Void app
+
+Void deploys the backend to Cloudflare Workers and owns the database, the file store and the sign-in tables. The API itself is defined and handled with Effect, and one catch-all route hands each request to it. Sign-in is the exception: Void serves `/api/auth/*` with Better Auth before any route of ours, because Better Auth keeps the sessions every other route checks. A route that is not about a session belongs in the Effect API and its contract. The split keeps the way out open. The API takes its store and its caller as arguments, so a move to a single machine needs a new entry point, a new store and a sign-in, and no change to a rule.
+
+The contract is generated from the backend's API definition, because a hand-written one drifts. The mod is Kotlin and can share no types with the backend, so a file in a neutral format is the one thing both sides can hold to.
+
+## A player is their Minecraft account, and the client is never believed
+
+The mod is open source, so anyone can build a client that sends whatever it likes. Sign-in therefore rests on something a client cannot fake. The backend issues a random server id, the client tells Mojang it is joining that server, and the backend asks Mojang who joined. Only the holder of an account's Minecraft session can make that call, so a modified client can sign in as its own account and as no other. No secret ships in the mod, because a secret in an open jar is public.
+
+This proves who is asking and nothing about what they send. A signed-in client can still upload a capture it invented, which is why one request is recorded by several players and an agent compares them. No encryption can close that gap, since the player controls the machine that would hold the key.
+
+Email and password sign-in is switched off, so no account exists that Mojang did not vouch for. A session ends 24 hours after it began and is never extended, so a stolen token dies by itself. The mod pays nothing for that, because it repeats the proof without the player noticing.
+
+The website has no Microsoft login. A site that asked for it would need an Azure app that Mojang approves. Instead the mod, which is already signed in, trades its session for a link that works once within a minute. The token sits in the link's fragment, which a browser sends to no server and leaves out of the Referer, so the website takes it from the page's own script. The page then asks the player to confirm the account before it keeps the session, because anyone can send a player a link to their own account, and a browser signed in to it unnoticed would hand that person whatever the player does next.
 
 ## The mod knows the game only from packets
 
@@ -16,7 +32,7 @@ A feature that only changes how the game draws, such as Fullbright, handles no e
 
 The edge turns what the server sends into a `GameEvent`, and the capture records the events as they were posted. A test replays the recording through the same `Game` the player runs, so nothing stands between a capture and a test that could drift from the real input.
 
-A type of data is either an event or a raw record, and never both. Raw records exist because nobody can design an event for data they have not seen: the debug build writes everything else the server sent, with full fidelity, so the first capture of a screen shows what its event must carry. A feature that needs that data promotes it to an event. Two producers for one type would let a test pass on data the player's game never builds.
+A type of data is either an event or a raw record, and never both. Raw records exist because nobody can design an event for data they have not seen: the recorder writes everything else the server sent, with full fidelity, so the first capture of a screen shows what its event must carry. A feature that needs that data promotes it to an event. Two producers for one type would let a test pass on data the player's game never builds.
 
 Only an excerpt of a capture goes in git, as a feature's fixture, with the player names and their chat replaced. The transcript beside it is the expected result, written as a player would describe it, so a reviewer who knows the game can judge it without reading the code.
 
@@ -66,13 +82,53 @@ MoulConfig has a data file class, and ds-mod does not use it: it writes on the c
 
 ## Metrics are pulled
 
-`Metrics` adds up timings, counts and failures in memory, and a flush hands one snapshot to each sink. Recording costs the client thread no I/O, and a new receiver, such as the backend, is one more sink. Today the release build logs failures, and the debug build writes each snapshot into the capture.
+`Metrics` adds up timings, counts and failures in memory, and a flush hands one snapshot to each sink. Recording costs the client thread no I/O, and a new receiver is one more sink. Today the release build logs failures, and a running capture writes each snapshot into the file.
 
-The `unparsed` counter matters most. The server is closed and changes without notice, so a feature that stops matching looks the same as a quiet game. A line that reached a feature and failed to parse is the only signal.
+The `unparsed` counter matters most. The server is closed and changes without notice, so a feature that stops matching looks the same as a quiet game. A line that reached a feature and failed to parse is the only signal. A feature reports it with `unparsed(text)`, which counts it and, while the player has opted in, hands the text on to the report of unread lines. One call is the only route, so a feature cannot count a failure the report never sees.
 
-## Debug tools are a separate source set
+## The recorder is in the release jar, and runs only for a contribution
 
-The release build must send nothing for the player, because the server bans automated actions. Developer tools such as capture read private fields and record everything, so they must never reach a player. `src/debug` is a separate source set that `src/main` can't see, so the compiler keeps the tools out of the release jar. The debug jar holds the release jar inside it, so the release code runs the same in both.
+Developers' accounts cannot reach all of the server's content, so players record it for them. That needs the recorder in the jar a player installs, though it reads private client fields and records everything, chat included. Three things make that safe. It starts only from a contribution the player accepted, or from the debug build's `/dscapture` and `-Pbrief`, so while none runs every hook is one null check and the recorder costs a frame nothing. The file never leaves the machine as recorded: the mod redacts it first (below). And the recorder only ever reads what the server already sent the client, so it cannot send for the player.
+
+The rest of the developer tools stay in `src/debug`, a separate source set that `src/main` can't see, so the compiler keeps them out of the release jar. They are `/dscapture`, `/dskit`, `cutFixture` and the window title that names a `-Pbrief`. The debug jar holds the release jar inside it, so the release code runs the same in both.
+
+The recorder reads private fields, which needs an access widener, and a mod declares only one. So the jar's file is ours followed by MoulConfig's lines, merged by the build.
+
+Recording is client-thread work that no thread can do for it, because it reads game state. Writing, redacting, compressing and uploading happen on other threads, and the writer opens the file on its own thread, so starting a recording touches no disk on the client thread.
+
+A recording reads every item and name in view four times a second, and Minecraft's codec was most of what that cost: over a millisecond a pass with a full inventory and a crowd of armored mobs. Almost none of them change between passes, so the session encodes a value only when it differs from the copy it kept, and `PerfTest` caps both passes.
+
+## A contribution is a brief run that ends in an upload
+
+A request is a brief plus requirements, which an agent publishes to the backend. The mod offers it to a player who qualifies, and the same `BriefRun` that `-Pbrief` uses walks them through it. A request has a time limit measured from the moment the player accepts, not from their first keypress: a run that waits for a key would otherwise sit on the screen forever once the player walked away. A run that outlasts it, is cancelled, or loses its connection is discarded and not uploaded, because a recording the player abandoned halfway is the likeliest to be wrong. A capture whose writer lost a record or did not finish is discarded the same way, since an agent would read the part as the whole. A change of world is not a disconnect, because a brief's warps change the world on one connection.
+
+The run's life crosses the client thread, the io thread, the backend's thread and the disk, which outlives a quit or a crash, so `specs/Contribute.tla` models it. Three decisions come from it. An upload claims its file, and a resend skips claimed files, because a resend that listed a file an upload was still sending would send it twice and fail on the deleted file. The redactor writes a `.part` and renames it, so only a whole, redacted `.gz` is ever kept or sent, and the next start deletes anything else in `dsmod/contributions/`, which is a raw capture or a half redaction. And the offers are fetched only after that sweep, so the sweep can never delete a capture a run has started.
+
+A recording that fails to upload is kept as a redacted `.gz` named for its request, and `/dsmod submit` sends what is there. One the submissions route refuses for good (404, 409 or 413) is deleted, since sending it again would fail again. Any other failure, an empty 400 or a failed sign-in included, keeps it. Quitting waits a few seconds for an upload in progress, and one that does not finish stays for the next `/dsmod submit`.
+
+The mod checks a request's requirements itself, because the backend cannot know what a player has seen. Today the only kind is an area, met when the tab list's `Area` row or the sidebar's `⏣` place has ever named it, so the places seen are saved. These are the server's names and not an `Area`, because a request is most often for a place the mod has no feature in yet. A kind the mod does not know is never offered, so an older mod cannot offer what it cannot judge.
+
+Skipping tells the backend, which hides the request from that player and nobody else.
+
+## A capture is redacted by rules that say where a name sits
+
+A capture holds player names and private chat, and a fixture cut from it goes into a public repository. `Redactor` rewrites a capture so it holds neither. `PlayerNames` is the one place that knows where the server puts a name, so the names `cutFixture` replaces everywhere are the names `FixtureLeakTest` looks for. The test cannot see typed text or a name kept to where a rule found it, which is why a fixture is still read before it is kept. Both live in `core` rather than the debug build, so that a release build can redact a capture as well.
+
+A redactor fails in two directions. A name it misses leaves the machine, and a word it takes for a name changes what the server sent, so a fixture replays a line the server never wrote. Each rule therefore says where in a text a name sits, and a name is always replaced there. A name a rule found is also replaced wherever else it stands, because names turn up where no rule looks, such as a head's item name, unless that would rewrite the server's own words. Two kinds are kept to the places a rule found them. A plain name on a player entity may be an NPC's, since the server's NPCs are player entities, some with plain names such as `Dungeons`. And a player can be named what the server calls itself or a place, as a staff account is named after the server, so a name that the sidebar's title, its `⏣` place, the tab list's area row or its header also shows is not replaced across the capture. A player named after a game word the server writes only in other places, such as `Eye`, still has it replaced everywhere.
+
+What a player typed is found by shape, not by a list of formats. The server's whisper, party and guild lines are in no capture, so a list would be a guess that passes its own tests. The shape is a known name followed by a `: ` on the same line, which the server never writes in its own lines; across every capture so far, no server line lost text to it. It costs the text of a server line that names a player and then has a `: `, and of a message that starts like a speaker's, `Word: `, without a tag such as `[NPC]`. And a message from a player no line of the capture names keeps both the name and the text.
+
+Typed text is found only in a `system` event, so a raw `chat` record, whose event carries the same line, is dropped, and so is an older capture's `system` line that does not read as today's event. A component that spells a name across several pieces, one per color, is replaced by its redacted plain text, because no single string holds the name to replace, and an older raw text that names someone loses its `§` codes for the same reason.
+
+The same holds for the lines the mod reports when a feature could not read them: the player opts in, names are replaced, and the backend keeps only one row per kind of line.
+
+## The mod signs in when it first needs to, and keeps the session in memory
+
+Nothing contacts the backend until the player opens Contribute, uses `/dsmod login`, or has turned on the report of unread lines. The session token is held in memory and never written, logged, shown or recorded: the jar is public, and a token on disk or in a stream is a stolen account for the day it lives. For the same reason `/dsmod login` opens the browser directly, and the login token never appears in chat, where a viewer could use it first. Minecraft's own opener logs the address when it fails, so the mod uses the system's opener and reports a failure without the address.
+
+A session ends after 24 hours, so a 401 signs in again and repeats the call once. A second 401 is an error, not a loop.
+
+The backend's address and the website's are set when the jar is built, in `gradle.properties`, and written into the jar's metadata. They are not a player's setting, because a player who pointed the mod somewhere else would be sending their captures there.
 
 ## The release jar carries its own MoulConfig
 
@@ -124,9 +180,21 @@ Camera's height and tilt are applied after the game has put the camera at the ey
 
 The key's press comes from `KeyMapping.click`, the place the game counts presses for its own key binds, and its release is read from the key's state each frame. A press read from the state would miss a tap that starts and ends inside one frame, and Toggle mode is nothing but taps.
 
+## A locked slot refuses the click before the game predicts it
+
+The client moves the item in its own inventory as it sends a click, so a click dropped at the packet would leave the player looking at a move the server never made. Every pick up, Shift click, number key, throw and double click in a menu passes through `AbstractContainerScreen.slotClicked` first, so `SlotClickMixin` refuses there and nothing is predicted or sent. The drop key outside a menu never reaches a screen, which is why `DropKeyMixin` exists beside it.
+
+A lock is an index in the player's own inventory. A menu numbers its slots its own way, and the same inventory slot has another number in a chest than in the inventory screen, so a lock kept by menu index would move to another slot with each menu.
+
+An item lock is the ID the server writes in `item_data.uuid`. In the captures every item that does not stack has one and no stackable item does, so two swords of one kind are told apart and a stack cannot be locked this way. Reading it copies the item's whole data tag, so `SlotGuards` keeps each ID by the data component, which stacks share.
+
+A Shift click lands wherever the menu's own code finds room, and each menu orders that its own way. `SlotGuards` only asks whether a locked slot could take the item, and when one could, it carries the item to a slot that is not locked with the two clicks a player would make. That needs the menu's rough order and never its exact one.
+
+The swap-hands key is not guarded. On dragsim.co it opens the server's menu and swaps nothing.
+
 ## Private fields are read through accessor mixins
 
-Minecraft keeps an open container's position on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the two fields. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on. The release jar declares no access widener of its own, so an accessor mixin is the only way release code reaches into Minecraft's internals.
+Minecraft keeps an open container's position on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the two fields. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on.
 
 ## CI measures the mod in a real game
 

@@ -37,7 +37,7 @@ class GolemStatus(toggle: KMutableProperty0<Boolean>) : Feature("golem-status", 
             val previous = stage
             stage = null
             if (value == null) return@on
-            val (name, tiers, left) = ProtectorRow.parse(value) ?: return@on count("unparsed")
+            val (name, tiers, left) = ProtectorRow.parse(value) ?: return@on unparsed(value)
             // The tab list moving on from the fight ends it, whether or not the defeat reached chat.
             if (name == "Resting" || previous == "Spawned" && name != "Spawned") {
                 spawnedAt = 0

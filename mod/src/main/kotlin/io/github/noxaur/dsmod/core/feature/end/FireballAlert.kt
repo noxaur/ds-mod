@@ -15,7 +15,7 @@ class FireballAlert(toggle: KMutableProperty0<Boolean>) : Feature("fireball-aler
         on<SystemMessage> { message, _ ->
             val line = message.text.plain
             if (!line.startsWith("[BOSS] ") || !line.endsWith("FIREBALL!!")) return@on
-            val (dragon) = fireballs.find(line)?.destructured ?: return@on count("unparsed")
+            val (dragon) = fireballs.find(line)?.destructured ?: return@on unparsed(line)
             alert(text { warning("Fireball") }, text { value(dragon); body(" is throwing fireballs.") })
         }
     }

@@ -60,6 +60,11 @@ class DsModConfig : Config() {
     @JvmField
     val hud = Hud()
 
+    @Expose
+    @Category(name = "Contribute", desc = "Help ds-mod's developers see parts of the game they cannot reach.")
+    @JvmField
+    val contribute = Contribute()
+
     class Chat {
         @Expose
         @ConfigOption(name = "Ability Spam", desc = "Hide the message the server sends each time you use an ability that is on cooldown.")
@@ -260,6 +265,31 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var armorSwapGuard = false
+
+        @Expose
+        @ConfigOption(name = "Slot Lock", desc = "Lock slots and items of your inventory with the keys below, so no click or drop key moves them. Hold the slot key and move to another slot to link the two.")
+        @ConfigEditorBoolean
+        @JvmField
+        var slotLock = true
+
+        /** A key's GLFW code, a mouse button from 0 to 9, or -1 for none, as MoulConfig's editor writes it. */
+        @Expose
+        @ConfigOption(name = "Slot Lock Key", desc = "Pick the key or mouse button that locks the slot under the mouse.")
+        @ConfigEditorKeybind(defaultKey = KEY_L)
+        @JvmField
+        var slotLockKey = KEY_L
+
+        @Expose
+        @ConfigOption(name = "Item Lock Key", desc = "Pick the key or mouse button that locks the item under the mouse, wherever you move it. It works on an item that does not stack.")
+        @ConfigEditorKeybind(defaultKey = KEY_K)
+        @JvmField
+        var itemLockKey = KEY_K
+
+        private companion object {
+            /** GLFW's codes for the K and L keys. */
+            const val KEY_K = 75
+            const val KEY_L = 76
+        }
     }
 
     /** A drop's tier, lowest first. [word] is what the server writes before `DROP!`. */
@@ -331,5 +361,19 @@ class DsModConfig : Config() {
         @ConfigEditorButton(buttonText = "Edit")
         @JvmField
         var edit: Runnable = Runnable {}
+    }
+
+    class Contribute {
+        /** The edge sets this to open the requests, so the config itself needs no Minecraft. */
+        @ConfigOption(name = "Contribute", desc = "See what ds-mod's developers ask players to record, and record it.")
+        @ConfigEditorButton(buttonText = "Open")
+        @JvmField
+        var open: Runnable = Runnable {}
+
+        @Expose
+        @ConfigOption(name = "Report Unread Lines", desc = "Send lines the mod could not read to ds-mod's developers, with player names removed. Off until you turn it on.")
+        @ConfigEditorBoolean
+        @JvmField
+        var reportUnknowns = false
     }
 }

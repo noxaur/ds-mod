@@ -10,6 +10,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.resources.Identifier
 import net.minecraft.util.ARGB
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /** A white sprite in `textures/gui/sprites/`, which [Kit.icon] tints. */
@@ -20,6 +21,7 @@ enum class Icon(val width: Int, val height: Int) {
     UP(5, 3),
     DOWN(5, 3),
     SEARCH(6, 7),
+    LOCK(5, 7),
     ;
 
     val sprite: Identifier = Identifier.fromNamespaceAndPath("dsmod", name.lowercase())
@@ -189,6 +191,32 @@ object Kit {
         g.blitSprite(RenderPipelines.GUI_TEXTURED, icon.sprite, x, y, icon.width, icon.height, color)
     }
 
+    /** A 1px line of whole pixels from one point to another, with a dark line beside it so it reads over anything. */
+    fun line(g: GuiGraphicsExtractor, fromX: Int, fromY: Int, toX: Int, toY: Int, color: Int) {
+        val shadow = ARGB.scaleRGB(color, 0.25f)
+        val dx = abs(toX - fromX)
+        val dy = -abs(toY - fromY)
+        val sx = if (fromX < toX) 1 else -1
+        val sy = if (fromY < toY) 1 else -1
+        var error = dx + dy
+        var x = fromX
+        var y = fromY
+        while (true) {
+            rect(g, x + 1, y, 1, 1, shadow)
+            rect(g, x, y, 1, 1, color)
+            if (x == toX && y == toY) return
+            val twice = error * 2
+            if (twice >= dy) {
+                error += dy
+                x += sx
+            }
+            if (twice <= dx) {
+                error += dx
+                y += sy
+            }
+        }
+    }
+
     /** A plain string in the theme's ink, which is chrome. Text that means something is built with `text { }`. */
     fun label(g: GuiGraphicsExtractor, text: String, x: Int, y: Int, ink: Ink = Ink.NORMAL) {
         val t = theme
@@ -202,6 +230,14 @@ object Kit {
 
     /** Fills the 16x16 item area at [x], [y] behind the item. */
     fun slotFill(g: GuiGraphicsExtractor, x: Int, y: Int, color: Int) = rect(g, x, y, 16, 16, color)
+
+    /** Frames the 16x16 item area at [x], [y] with a full 18x18 square, such as the two slots of a link. */
+    fun slotBorder(g: GuiGraphicsExtractor, x: Int, y: Int, color: Int) {
+        rect(g, x - 1, y - 1, 18, 1, color)
+        rect(g, x - 1, y + 16, 18, 1, color)
+        rect(g, x - 1, y, 1, 16, color)
+        rect(g, x + 16, y, 1, 16, color)
+    }
 
     /** Draws cell [cell] of a rarity atlas behind the 16x16 item area at [x], [y], covering the slot's whole 18x18. */
     fun slotArt(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int) =

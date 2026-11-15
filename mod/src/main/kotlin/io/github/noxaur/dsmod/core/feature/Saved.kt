@@ -16,6 +16,8 @@ private val json = Json {
 class Saved<S : Any>(private val serializer: KSerializer<S>, default: S) {
     var value: S = default
         set(new) {
+            // A caller that hands back the same value changed nothing, so nothing is written.
+            if (new === field) return
             field = new
             changed = true
         }
