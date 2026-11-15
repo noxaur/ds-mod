@@ -13,6 +13,7 @@ import io.github.notenoughupdates.moulconfig.gui.MouseEvent
 import io.github.notenoughupdates.moulconfig.gui.MoulConfigEditor
 import io.github.notenoughupdates.moulconfig.gui.editors.GuiOptionEditorAccordion
 import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
+import io.github.notenoughupdates.moulconfig.platform.MoulConfigRenderContext
 import io.github.notenoughupdates.moulconfig.processor.ProcessedCategory
 import io.github.notenoughupdates.moulconfig.processor.ProcessedOption
 import io.github.noxaur.dsmod.core.config.DsModConfig
@@ -57,7 +58,10 @@ object Settings {
     /** Built on the first open, because MoulConfig's editors need the game's fonts. */
     private val editor: Editor by lazy(::build)
 
-    /** The setting under the mouse this frame, which the Favorite Key stars. */
+    /**
+     * The setting under the mouse this frame, which the Favorite Key and a press on the star act on. MoulConfig hands
+     * mouse events to every setting, also one scrolled under the header, so only the part inside the pane counts.
+     */
     private var hovered: Star? = null
 
     /** A press of the Favorite Key is followed by its character, which would land in the search. */
@@ -234,8 +238,12 @@ object Settings {
             this.x = starX(x, width)
             this.y = y + STAR_TOP
             val mc = IMinecraft.INSTANCE
-            if (mc.mouseX - x in 0 until width && mc.mouseY - y in 0 until height) hovered = this
-            val onIt = onStar(x, y, width, mc.mouseX, mc.mouseY)
+            // MoulConfig draws the settings inside the pane's scissor, so the scissor is the pane. The rectangle is asked
+            // itself, because the game's own containsPointInScissor answers true outside it while the settings draw.
+            val pane = (context as MoulConfigRenderContext).drawContext.scissorStack.peek()
+            val inPane = pane != null && pane.containsPoint(mc.mouseX, mc.mouseY)
+            if (inPane && mc.mouseX - x in 0 until width && mc.mouseY - y in 0 until height) hovered = this
+            val onIt = hovered === this && onStar(x, y, width, mc.mouseX, mc.mouseY)
             // An unstarred star is faint, so a row of them does not crowd the names, and lights up under the mouse.
             val color = when {
                 on -> Role.ACTION.argb()
@@ -254,7 +262,7 @@ object Settings {
             val key = config.instance.general.favoriteKey
             val press = event is MouseEvent.Click && event.mouseState
             if (event is MouseEvent.Click &&
-                (event.mouseButton == 0 && onStar(x, y, width, mouseX, mouseY) || Keys.isMouse(key) && event.mouseButton == key && hovered === this)
+                hovered === this && (event.mouseButton == 0 && onStar(x, y, width, mouseX, mouseY) || Keys.isMouse(key) && event.mouseButton == key)
             ) {
                 if (press) toggle(option.path)
                 return true

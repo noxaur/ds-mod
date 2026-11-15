@@ -100,6 +100,26 @@ class FavoritesTest : FabricClientGameTest {
             context.runOnClient<Nothing> { Settings.search("") }
             context.waitTicks(2)
 
+            // A setting scrolled partly under the header takes neither the key nor a press there, only inside the pane.
+            context.runOnClient<Nothing> { DsModClient.openSettings(fullbright) }
+            // MoulConfig slides its scroll over 150 ms, so the stars are read once it has stopped.
+            context.waitTicks(10)
+            val top = context.computeOnClient<Pair<Int, Int>, Nothing> { Settings.star(fullbright) }.second
+            point(particles, dx = 30, dy = 12)
+            context.input.scroll(-1.0)
+            context.waitTicks(10)
+            val scrolled = context.computeOnClient<Pair<Int, Int>, Nothing> { Settings.star(fullbright) }.second
+            // The first box starts 6 above its star and the pane a little above that, so 16 above the star is the header.
+            // That point must fall on Fullbright's box, which now starts 6 above its star and runs over 30 below it.
+            check(top - 16 in scrolled - 6..scrolled + 30) { "One notch moved Fullbright's star from $top to $scrolled, which leaves the header off its box" }
+            point(fullbright, dx = 30, dy = top - 16 - scrolled)
+            context.input.pressKey(GLFW.GLFW_KEY_F)
+            context.waitTicks(2)
+            point(fullbright, dx = 3, dy = top - 16 - scrolled)
+            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
+            context.waitTicks(2)
+            check(settings.favorites == listOf("general.fullbright", "general.explosionParticleHider")) { "F or a press over the header left ${settings.favorites}" }
+
             // A mouse button bound as the Favorite Key works the same way.
             settings.general.favoriteKey = GLFW.GLFW_MOUSE_BUTTON_MIDDLE
             context.runOnClient<Nothing> { DsModClient.openSettings(loot) }
