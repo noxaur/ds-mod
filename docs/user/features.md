@@ -142,6 +142,26 @@ The hotbar uses your inventory's look until you untick Match Inventory, and then
 
 <sub>Off by default. Sneak and right click to swap on purpose.</sub>
 
+### Themed Menus
+
+Menus, your inventory and plain tooltips take the colors of the Theme under Interface, so Charcoal makes them dark.
+
+<sub>Chests, crafting tables, hoppers, dispensers and shulker boxes follow it. A furnace or an anvil keeps its own look, and item tooltips keep the server's rarity frames.</sub>
+
+### Stable Menus
+
+Go Back and Close sit in the same place in every menu, and so does your inventory. A shorter menu starts lower instead of moving its bottom row.
+
+### Hide Filler
+
+Hides the blank glass panes that pad out a menu, along with their tooltip and hover.
+
+<sub>Colored panes, such as a terminal's, stay.</sub>
+
+### Keep Cursor
+
+When one menu opens another, the cursor stays where it was instead of jumping to the middle.
+
 ### Slot Lock
 
 Locks slots and items of your inventory, so a misclick cannot move or drop them.

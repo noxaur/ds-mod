@@ -4,10 +4,12 @@ import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.RenderPipelines
+import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.resources.Identifier
 import net.minecraft.util.ARGB
 import kotlin.math.abs
@@ -21,6 +23,7 @@ enum class Icon(val width: Int, val height: Int) {
     UP(5, 3),
     DOWN(5, 3),
     SEARCH(6, 7),
+    ARROW(7, 7),
     LOCK(5, 7),
     RIGHT(3, 5),
     ;
@@ -43,6 +46,7 @@ object Kit {
 
     const val BUTTON_HEIGHT = 16
     const val SLOT_SIZE = 18
+    const val RESULT_SLOT_SIZE = 26
     const val BAR_HEIGHT = 6
     const val SCROLLBAR_WIDTH = 6
     const val TAB_WIDTH = 22
@@ -95,10 +99,42 @@ object Kit {
         if (state == State.HOVER || state == State.DOWN) ring(g, x - 1, y - 1, width + 2, height + 2, theme.hoverOutline)
     }
 
-    /** An 18x18 slot, with the item's 16x16 at one pixel in. */
-    fun slot(g: GuiGraphicsExtractor, x: Int, y: Int) {
+    /**
+     * An 18x18 slot, with the item's 16x16 at one pixel in, or a crafting result's 26x26 with it at five in. A menu draws
+     * dozens of the small one each frame, so [register] paints it once per theme into [SLOT_TEXTURE] and it is drawn as
+     * one blit instead of five fills. Until the paint is done it is drawn with the fills.
+     */
+    fun slot(g: GuiGraphicsExtractor, x: Int, y: Int, size: Int = SLOT_SIZE) {
         val t = theme
-        bevel(g, x, y, SLOT_SIZE, SLOT_SIZE, t.slot, t.slotShade, t.slotLight)
+        if (size != SLOT_SIZE || t !== slotTheme) return bevel(g, x, y, size, size, t.slot, t.slotShade, t.slotLight)
+        g.blit(RenderPipelines.GUI_TEXTURED, SLOT_TEXTURE, x, y, 0f, 0f, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE)
+    }
+
+    // A texture made or uploaded while a frame is being built broke every frame after it in the game tests, so the
+    // paint happens at the end of a tick, between frames.
+    fun register() {
+        ClientTickEvents.END_CLIENT_TICK.register { if (theme !== slotTheme) paintSlot(theme) }
+    }
+
+    private fun paintSlot(t: Theme) {
+        val texture = slotTexture ?: DynamicTexture({ "dsmod kit slot" }, SLOT_SIZE, SLOT_SIZE, false).also {
+            Minecraft.getInstance().textureManager.register(SLOT_TEXTURE, it)
+            slotTexture = it
+        }
+        val image = checkNotNull(texture.pixels)
+        bevelRects(0, 0, SLOT_SIZE, SLOT_SIZE, t.slot, t.slotShade, t.slotLight, image::fillRect)
+        texture.upload()
+        slotTheme = t
+    }
+
+    /**
+     * The backing of a tooltip whose text fills [width] by [height] at [x], [y]: the HUD's plate, nearly opaque so
+     * the slots behind it do not show through, reaching four pixels past the text as vanilla's does.
+     */
+    fun tooltip(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
+        val t = theme
+        rect(g, x - 3, y - 3, width + 6, height + 6, ARGB.color(TOOLTIP_ALPHA, t.plate))
+        ring(g, x - 4, y - 4, width + 8, height + 8, t.plateEdge)
     }
 
     fun plate(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
@@ -286,12 +322,18 @@ object Kit {
     }
 
     /** A face with [topLeft] along its top and left and [bottomRight] along the rest. Its two odd corners keep the face. */
-    private fun bevel(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, face: Int, topLeft: Int, bottomRight: Int) {
-        rect(g, x, y, width, height, face)
-        rect(g, x, y, width - 1, 1, topLeft)
-        rect(g, x, y, 1, height - 1, topLeft)
-        rect(g, x + 1, y + height - 1, width - 1, 1, bottomRight)
-        rect(g, x + width - 1, y + 1, 1, height - 1, bottomRight)
+    private fun bevel(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, face: Int, topLeft: Int, bottomRight: Int) =
+        bevelRects(x, y, width, height, face, topLeft, bottomRight) { rx, ry, rw, rh, color -> rect(g, rx, ry, rw, rh, color) }
+
+    /** The rectangles of [bevel], in drawing order, handed to [fill] as x, y, width, height and color. */
+    private inline fun bevelRects(
+        x: Int, y: Int, width: Int, height: Int, face: Int, topLeft: Int, bottomRight: Int, fill: (Int, Int, Int, Int, Int) -> Unit,
+    ) {
+        fill(x, y, width, height, face)
+        fill(x, y, width - 1, 1, topLeft)
+        fill(x, y, 1, height - 1, topLeft)
+        fill(x + 1, y + height - 1, width - 1, 1, bottomRight)
+        fill(x + width - 1, y + 1, 1, height - 1, bottomRight)
     }
 
     private fun rect(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, color: Int) {
@@ -308,6 +350,11 @@ object Kit {
     private fun channel(from: Int, to: Int, amount: Float) = (from + (to - from) * amount).roundToInt()
 
     private const val DIM_ALPHA = 184
+    private val SLOT_TEXTURE: Identifier = Identifier.fromNamespaceAndPath("dsmod", "kit/slot")
+    private var slotTexture: DynamicTexture? = null
+    private var slotTheme: Theme? = null
+    private const val TOOLTIP_ALPHA = 240
+
     private val INVENTORY = Identifier.withDefaultNamespace("textures/gui/container/inventory.png")
 
     // The last slot of the inventory's main grid, which holds nothing but its frame.

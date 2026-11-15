@@ -42,7 +42,7 @@ class DsModConfig : Config() {
     val general = General()
 
     @Expose
-    @Category(name = "Inventory", desc = "What the slots of a menu show, and what protects your items.")
+    @Category(name = "Inventory", desc = "How menus look and sit, what their slots show, and what protects your items.")
     @JvmField
     val inventory = Inventory()
 
@@ -300,6 +300,30 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var armorSwapGuard = false
+
+        @Expose
+        @ConfigOption(name = "Themed Menus", desc = "Draw menus, your inventory and plain tooltips in the Theme under Interface, which is dark in Charcoal.")
+        @ConfigEditorBoolean
+        @JvmField
+        var themedMenus = true
+
+        @Expose
+        @ConfigOption(name = "Stable Menus", desc = "Keep the bottom row of every menu and your inventory in one place, so Go Back and Close stay put as you move between menus.")
+        @ConfigEditorBoolean
+        @JvmField
+        var stableMenus = true
+
+        @Expose
+        @ConfigOption(name = "Hide Filler", desc = "Hide the blank glass panes that fill out a menu, so its items stand out.")
+        @ConfigEditorBoolean
+        @JvmField
+        var hideFiller = true
+
+        @Expose
+        @ConfigOption(name = "Keep Cursor", desc = "Leave the cursor where it was when one menu opens another, instead of moving it to the middle.")
+        @ConfigEditorBoolean
+        @JvmField
+        var keepCursor = true
 
         @Expose
         @ConfigOption(name = "Slot Lock", desc = "Lock slots and items of your inventory with the keys below, so no click or drop key moves them. Hold the slot key and move to another slot to link the two.")

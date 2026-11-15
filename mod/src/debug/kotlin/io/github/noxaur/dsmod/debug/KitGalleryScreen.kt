@@ -67,6 +67,10 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         text { muted("Eyes: "); value(3); muted(" (1 in 310)") },
         text { muted("Storage: "); warning("80%") },
     ).map { it.toComponent() }
+    private val tooltip = listOf(
+        text { body("Ender Pearl") },
+        text { muted("Stack: "); value(12) },
+    ).map { it.toComponent() }
 
     override fun init() {
         ox = (width - WIDTH) / 2
@@ -114,6 +118,9 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
             Kit.checkbox(g, x + 1 + i * 32, oy + 84, true, states[i])
             Kit.checkbox(g, x + 15 + i * 32, oy + 84, false, states[i])
         }
+        Kit.icon(g, Icon.ARROW, x + 214, oy + 81, t.ink, t.inkShadow)
+        Kit.slot(g, x + 226, oy + 72, Kit.RESULT_SLOT_SIZE)
+        g.item(RESULT, x + 231, oy + 77)
 
         caption(g, "Bars", x, oy + 99)
         Kit.bar(g, x, oy + 111, 60, 0f, Role.GOOD.argb())
@@ -144,6 +151,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         window(g, ox + MIDDLE, oy + 40)
         list(g, ox + RIGHT, oy + 7)
         plate(g, ox + RIGHT, oy + 159)
+        tooltip(g, ox + MIDDLE + 30, oy + 84)
 
         super.extractRenderState(graphics, mouseX, mouseY, partialTick)
     }
@@ -178,6 +186,12 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         Kit.icon(g, Icon.SEARCH, gx + 88, gy + 79, Role.MUTED.argb(), false)
     }
 
+    /** A plain tooltip over the slot grid, drawn last as the game draws one. */
+    private fun tooltip(g: GuiGraphicsExtractor, x: Int, y: Int) {
+        Kit.tooltip(g, x, y, tooltip.maxOf(font::width), tooltip.size * 10 - 2)
+        for (i in tooltip.indices) g.text(font, tooltip[i], x, y + i * 10, -1, true)
+    }
+
     /** Role text belongs on a dark well, as in a crafting tree. */
     private fun list(g: GuiGraphicsExtractor, x: Int, y: Int) {
         caption(g, "Well with role text, one line flashed", x, y)
@@ -203,7 +217,8 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
     private fun caption(g: GuiGraphicsExtractor, text: String, x: Int, y: Int) = Kit.label(g, text, x, y, Kit.Ink.MUTED)
 
     private companion object {
-        val ROLES = listOf(Role.GOOD, Role.BAD, Role.WARNING, Role.VALUE, Role.ACTION, Role.MUTED)
+        val ROLES = listOf(Role.GOOD, Role.BAD, Role.WARNING, Role.VALUE, Role.ACTION, Role.MUTED, Role.LEGENDARY)
+        val RESULT = ItemStack(Items.CRAFTING_TABLE)
         val SEARCH = text { muted("Search...") }.toComponent()
 
         fun name(state: Kit.State) = state.name.lowercase().replaceFirstChar(Char::uppercase)
