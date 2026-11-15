@@ -64,9 +64,14 @@ object Recording {
             steps.forEach { step -> Recorder.record("step") { step } }
             if (run.done) capture?.let { own ->
                 capture = null
-                saved = own.file.fileName.toString()
                 Recorder.stop(own) { whole ->
-                    if (!whole) client.execute { Chat.send(text { bad("The capture was not fully written. Record it again.") }) }
+                    client.execute {
+                        if (!whole) Chat.send(text { bad("The capture was not fully written. Record it again.") })
+                        else if (this.run === run) {
+                            saved = own.file.fileName.toString()
+                            shown = null
+                        }
+                    }
                 }
             }
         }
