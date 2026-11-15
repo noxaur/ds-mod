@@ -25,5 +25,24 @@ export default defineConfig({
       // TypeScript's noImplicitReturns still catches a function that forgets to return.
       "typescript/consistent-return": "off",
     },
+    overrides: [
+      {
+        files: ["src/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: [
+                {
+                  group: ["void", "void/*"],
+                  message:
+                    "src/ is the Effect API and runs without Void. Reach a Cloudflare resource through a service the route file provides.",
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ],
   },
 });

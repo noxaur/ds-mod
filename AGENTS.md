@@ -87,6 +87,7 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | `api/openapi.json` matches the backend's API definition | `app.test.ts` in `backend/src/` |
 | Backend code is formatted, type-safe and passes lint with no warnings | `vp check` in `check:backend` |
 | Backend failures are modeled with Effect, not `try` | `dsmod/no-try` in `backend/lint/dsmod.js` |
+| `backend/src/` imports nothing from Void | `no-restricted-imports` in `backend/vite.config.ts` |
 | Backend dependencies are at least 14 days old | `minimumReleaseAge` in `backend/pnpm-workspace.yaml` |
 | The website is type-safe | `tsc` with `strict` and the extra flags in `web/tsconfig.json` |
 | Website code is formatted | `vp fmt --check` in `web/package.json` |
