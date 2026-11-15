@@ -65,17 +65,17 @@ The window's title starts with the brief's name, and the steps sit in the top ri
 
 When the user's account cannot reach what a brief needs, publish the brief as a request for players who can reach it to record. One player's run proves little, so a request collects runs from several players.
 
+`dsctl` is how an agent does it. Locally its admin token is `ADMIN_TOKEN` in `backend/.env`, which git ignores, and `dsctl` reads it from `DSMOD_ADMIN_TOKEN`. Ask the user for the deployed one and the deployed address, which goes in `DSMOD_BACKEND`.
+
 ```sh
 cd backend
-pnpm dsctl create /tmp/golem-tiers.json --area "The End" --wanted 3 --timeout 600
-pnpm dsctl list
-pnpm dsctl pull <request id> ../mod/run/dsmod/captures
-pnpm dsctl unknowns
+export DSMOD_ADMIN_TOKEN=$(sed -n 's/^ADMIN_TOKEN=//p' .env)
+pnpm -s dsctl create /tmp/golem-tiers.json --area "The End" --wanted 3 --timeout 600
+pnpm -s dsctl list
+pnpm -s dsctl pull <request id> ../mod/run/dsmod/captures
 ```
 
-`create` prints the request's id. `--area` names an area the player must be in reach of, and can be given more than once. `pull` writes one `.jsonl` per run, named by the brief and a letter per player, and `cutFixture` takes them like any capture. `unknowns` lists what the mod saw and had no handling for, most seen first. `list --json` and `unknowns --json` print the backend's answer as JSON instead.
-
-`dsctl` reads the backend's address from `DSMOD_BACKEND`, `http://127.0.0.1:8787` by default, and the admin token from `DSMOD_ADMIN_TOKEN`. Locally the token is `ADMIN_TOKEN` in `backend/.env`, which git ignores. Ask the user for the deployed one.
+`pull` writes one `.jsonl` per run, and `cutFixture` takes them like any capture. `pnpm -s dsctl` with no command lists every command and option.
 
 ### Change the backend's tables
 
