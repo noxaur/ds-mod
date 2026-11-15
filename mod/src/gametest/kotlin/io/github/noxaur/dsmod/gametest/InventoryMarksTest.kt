@@ -1,0 +1,121 @@
+package io.github.noxaur.dsmod.gametest
+
+import io.github.noxaur.dsmod.core.feature.general.InventoryLook
+import io.github.noxaur.dsmod.core.feature.general.InventoryRow
+import io.github.noxaur.dsmod.core.hud.HudDock
+import io.github.noxaur.dsmod.core.ui.MenuLook
+import io.github.noxaur.dsmod.core.ui.Theme
+import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.Hud
+import io.github.noxaur.dsmod.gametest.InventoryGrid.ID
+import io.github.noxaur.dsmod.gametest.InventoryGrid.cell
+import io.github.noxaur.dsmod.gametest.InventoryGrid.pixel
+import io.github.noxaur.dsmod.gametest.InventoryGrid.waitForItem
+import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
+import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+
+/**
+ * What the grid marks and where it goes: the held slot ringed, a Legendary item's slot painted by Rarity Marks, a
+ * stack that lands bobbing as on the hotbar, the grid and its plate stepping aside for a menu, and the grid docked
+ * right of the hotbar. Read the screenshots: the ring, the bob, a menu open, and the docked grid.
+ */
+class InventoryMarksTest : FabricClientGameTest {
+    override fun runTest(context: ClientGameTestContext) = InventoryGrid.with(context) { world ->
+        val general = DsModClient.settings.general
+        general.inventoryRows = mutableListOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM, InventoryRow.HOTBAR)
+        waitForItem(context, "Item 0") { cell(context, 3, 0, gaps = 1) }
+
+        // The hotbar row marks the slot the player holds, as the hotbar does, and moves with it.
+        context.runOnClient<Nothing> { it.player!!.inventory.selectedSlot = 2 }
+        context.waitTick()
+        val heldShot = context.takeScreenshot("inventory-preview-held")
+        val ring = Theme.CHARCOAL.accent and 0xFFFFFF
+        check(pixel(context, heldShot, cell(context, 3, 2, gaps = 1), 0, -9) == ring) { "The held slot has no ring" }
+        check(pixel(context, heldShot, cell(context, 3, 3, gaps = 1), 0, -9) != ring) { "A slot the player does not hold has a ring" }
+
+        // Rarity Marks paints a Legendary item's slot as it does in the inventory, and leaves a plain one alone.
+        check(pixel(context, heldShot, cell(context, 0, 6), -7, -7) != pixel(context, heldShot, cell(context, 1, 2), -7, -7)) {
+            "The Legendary sword's slot looks like the plain sword's"
+        }
+
+        // A stack that lands bobs as the hotbar's does, narrower and taller, only with Pickup Animation on. The
+        // obsidian in the hotbar's second slot fills its cell, so its left edge is slot behind it while it bobs.
+        val obsidian = cell(context, 3, 1, gaps = 1)
+        fun land() = context.runOnClient<Nothing> { it.player!!.inventory.getItem(1).popTime = POP }
+        val still = pixel(context, heldShot, obsidian, -6, 0)
+        land()
+        val unpopped = pixel(context, context.takeScreenshot("inventory-preview-pickup-off"), obsidian, -6, 0)
+        check(unpopped == still) { "The grid bobbed a stack with Pickup Animation off" }
+        general.inventoryPickup = true
+        context.waitFor { DsModClient.game.readouts.first { it.feature.id == ID }.hud?.pops == true }
+        land()
+        val popped = pixel(context, context.takeScreenshot("inventory-preview-pickup"), obsidian, -6, 0)
+        check(popped != still) { "A stack that landed did not bob: %06X".format(popped) }
+        general.inventoryPickup = false
+
+        // A menu shows the inventory itself, so the grid steps aside, under glass where the HUD would show through too.
+        val inventorySettings = DsModClient.settings.inventory
+        val menuLookBefore = inventorySettings.menuLook
+        val glassBefore = inventorySettings.glassOpacity
+        inventorySettings.menuLook = MenuLook.GLASS
+        inventorySettings.glassOpacity = 0f
+        try {
+            // Glass menus neither dim nor blur, so the head in the grid's first slot shows plainly until the grid steps aside.
+            val head = cell(context, 0, 0)
+            val open = context.takeScreenshot("inventory-preview-before-menu")
+            ServerMenus.open(context, world, 1, "Small Chest")
+            val behind = context.takeScreenshot("inventory-preview-menu-open")
+            check(pixel(context, behind, head, 0, 0) != pixel(context, open, head, 0, 0)) { "The grid still shows under an open menu" }
+            context.runOnClient<Nothing> { it.player!!.closeContainer() }
+            context.waitFor { it.gui.screen() == null }
+
+            // On the HUD's plate, the plate steps aside with the icons.
+            general.inventoryLook = InventoryLook.PLATE
+            waitForItem(context, "Item 0") { cell(context, 3, 0, inventory = false, gaps = 1) }
+            val margin = context.computeOnClient<Pair<Double, Double>, Nothing> {
+                val block = checkNotNull(Hud.find(ID))
+                block.x + 2.0 * block.scale to block.y + block.height / 2.0 * block.scale
+            }
+            val plated = context.takeScreenshot("inventory-preview-plate-before-menu")
+            ServerMenus.open(context, world, 1, "Small Chest")
+            val unplated = context.takeScreenshot("inventory-preview-plate-menu-open")
+            // The plate darkens the world behind it, so the same pixel without it is lighter.
+            check(pixel(context, unplated, margin, 0, 0) != pixel(context, plated, margin, 0, 0)) { "The grid's plate stays under an open menu" }
+            context.runOnClient<Nothing> { it.player!!.closeContainer() }
+            context.waitFor { it.gui.screen() == null }
+            general.inventoryLook = InventoryLook.INVENTORY
+        } finally {
+            inventorySettings.menuLook = menuLookBefore
+            inventorySettings.glassOpacity = glassBefore
+        }
+
+        // Docked, the grid sits right of the hotbar past the hotbar's own gap, scaled down to the room there.
+        general.inventoryPlacement = HudDock.RIGHT_OF_HOTBAR
+        context.waitFor { Hud.find(ID) == null }
+        val (width, height) = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.guiScaledWidth to it.window.guiScaledHeight }
+        context.waitFor { dockedRow(width, height) != null }
+        val (first, last) = checkNotNull(context.computeOnClient<Pair<Pair<Int, Int>, Pair<Int, Int>>?, Nothing> { dockedRow(width, height) }) {
+            "The docked grid's hotbar row is not on the screen"
+        }
+        check(first.first >= width / 2 + 91 + 7 && last.first < width) { "The docked grid is not right of the hotbar: $first to $last" }
+        check(last.second >= height - 22) { "The docked grid's hotbar row is not level with the hotbar: $last" }
+        context.takeScreenshot("inventory-preview-docked-right")
+    }
+
+    /** Where the docked grid draws the hotbar row's first item and its last, scanning the screen in GUI pixels. */
+    private fun dockedRow(width: Int, height: Int): Pair<Pair<Int, Int>, Pair<Int, Int>>? {
+        var first: Pair<Int, Int>? = null
+        var last: Pair<Int, Int>? = null
+        for (y in 0 until height) for (x in 0 until width) {
+            val name = Hud.itemAt(x + 0.5, y + 0.5)?.hoverName?.string
+            if (name == "Item 0" && first == null) first = x to y
+            if (name == "Item 8") last = x to y
+        }
+        return if (first != null && last != null) first to last else null
+    }
+
+    private companion object {
+        /** Ticks a landed stack bobs for, long enough to outlast a screenshot. Vanilla sets 5. */
+        const val POP = 40
+    }
+}

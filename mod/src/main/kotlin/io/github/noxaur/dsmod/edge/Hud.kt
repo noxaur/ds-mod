@@ -20,6 +20,7 @@ import net.minecraft.resources.Identifier
 import net.minecraft.world.entity.HumanoidArm
 import net.minecraft.world.item.ItemStack
 import java.util.IdentityHashMap
+import kotlin.math.roundToInt
 
 private const val BAR_WIDTH = 80
 private const val BAR_GAP = 1
@@ -34,6 +35,14 @@ private const val ROWS_GAP = 4
 
 // The inventory menu's number for the hotbar's first slot.
 private const val HOTBAR_FIRST = 36
+
+// The inventory menu's first main slot, and its offhand slot, which ends the slots that hold a picked-up stack.
+private const val MAIN_FIRST = 9
+private const val OFFHAND_SLOT = 45
+
+// Vanilla's hotbar squashes a stack that lands about a point 12px down it, over a span of 5 ticks per unit of growth.
+private const val POP_FOOT = 12f
+private const val POP_SPAN = 5f
 
 // An item sits this far into a hotbar cell.
 private const val HOTBAR_INSET = 3
@@ -53,9 +62,11 @@ private const val DOCK_GAP = 7
 object Hud {
     /**
      * A line of text, with a bar under it when [bar] is set, or a row of item icons when [stacks] is, the player's
-     * inventory from its [slot] on when that is not -1. [y] is from the block's top.
+     * inventory from its [slot] on when that is not -1. [y] is from the block's top, and [x] from its first column.
      */
-    private class Row(val text: Component, val bar: BarRow?, val barColor: Int, val stacks: List<ItemStack?>?, val y: Int, val slot: Int)
+    private class Row(val text: Component, val bar: BarRow?, val barColor: Int, val stacks: List<ItemStack?>?, val y: Int, val slot: Int, val x: Int = 0)
+
+    /** [alpha] is how solid the Inventory look's panel and slots are, and [pops] bobs an item as it lands, as the hotbar does. */
     private class Block(
         val header: Component?,
         val rows: List<Row>,
@@ -64,7 +75,19 @@ object Hud {
         val height: Int,
         val placeable: Boolean,
         val overMenus: Boolean,
-    )
+        val columns: Boolean,
+        val alpha: Int,
+        val pops: Boolean,
+    ) {
+        val across = across(look)
+        val down = down(look)
+        val pitch = pitch(look)
+
+        /** Where icon [i] of [row] sits, from the block's plate corner and its top. A row of a block in [columns] runs down. */
+        fun iconX(row: Row, i: Int) = PADDING + across + row.x + if (columns) 0 else i * pitch
+
+        fun iconY(row: Row, i: Int) = row.y + down + if (columns) i * pitch else 0
+    }
 
     /** An item icon as it sits on the screen, in GUI pixels. */
     private class Cell(val x: Float, val y: Float, val size: Float, val stack: ItemStack)
@@ -123,11 +146,27 @@ object Hud {
         var width = header?.let(font::width) ?: 0
         val built = stacksByItem[id].orEmpty()
         val kept = IdentityHashMap<Item, ItemStack>()
+        // In columns the rows of icons stand side by side from where the first one starts. The hotbar's sprite only lies across.
+        val columns = block.columns && !hotbar
+        val pitch = pitch(block.look)
+        var columnX = 0
+        var columnsTop = -1
+        var columnsHeight = 0
         val rows = block.rows.map { row ->
             val bar = row as? BarRow
-            if ((row as? ItemsRow)?.apart == true) height += ROWS_GAP
-            val items = (row as? ItemsRow)?.items?.map { item -> item?.let { kept.getOrPut(it) { built[it] ?: it.toStack() } } }
-            val drawn = Row(row.text.toComponent(), bar, bar?.role?.argb() ?: 0, items, height, (row as? ItemsRow)?.slot ?: -1)
+            val itemsRow = row as? ItemsRow
+            val items = itemsRow?.items?.map { item -> item?.let { kept.getOrPut(it) { built[it] ?: it.toStack() } } }
+            if (columns && items != null) {
+                if (columnsTop < 0) columnsTop = height
+                if (itemsRow.apart) columnX += ROWS_GAP
+                val drawn = Row(row.text.toComponent(), null, 0, items, columnsTop, itemsRow.slot, columnX)
+                columnX += pitch
+                columnsHeight = maxOf(columnsHeight, items.size * pitch)
+                width = maxOf(width, columnX + if (inventory) 2 * Kit.INSET else -1)
+                return@map drawn
+            }
+            if (itemsRow?.apart == true) height += ROWS_GAP
+            val drawn = Row(row.text.toComponent(), bar, bar?.role?.argb() ?: 0, items, height, itemsRow?.slot ?: -1)
             width = maxOf(
                 width,
                 when {
@@ -145,13 +184,17 @@ object Hud {
             }
             drawn
         }
+        if (columnsTop >= 0) height = maxOf(height, columnsTop + columnsHeight)
         if (inventory) height += Kit.INSET
 
         stacksByItem[id] = kept
         groups.values.forEach { if (it.place.id != group.id) it.blocks.remove(id) }
         val target = groups.getOrPut(group.id) { Group(group) }
         target.place = group
-        target.blocks[id] = Block(header, rows, block.look, width, height, placeable && group.dock == HudDock.FREE, block.overMenus)
+        target.blocks[id] = Block(
+            header, rows, block.look, width, height, placeable && group.dock == HudDock.FREE, block.overMenus, columns,
+            (block.opacity.coerceIn(0f, 1f) * Kit.OPAQUE).roundToInt(), block.pops,
+        )
         layout()
     }
 
@@ -206,13 +249,10 @@ object Hud {
             var y = 0
             for ((id, block) in visible) {
                 if (block.placeable) all += Placed(id, group.x.toFloat(), group.y + y * scale, plate(block.width), plate(block.height), scale)
-                val across = across(block.look)
-                val down = down(block.look)
-                val pitch = pitch(block.look)
                 for (row in block.rows) {
                     row.stacks?.forEachIndexed { i, stack ->
                         if (stack != null) {
-                            items += Cell(group.x + (PADDING + across + i * pitch) * scale, group.y + (y + PADDING + down + row.y) * scale, ITEM * scale, stack)
+                            items += Cell(group.x + block.iconX(row, i) * scale, group.y + (y + PADDING + block.iconY(row, i)) * scale, ITEM * scale, stack)
                         }
                     }
                 }
@@ -327,18 +367,21 @@ object Hud {
                 itemAt(x.toDouble(), y.toDouble())?.let { graphics.setTooltipForNextFrame(client.font, it, x, y) }
             }
         }
-        HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, Identifier.fromNamespaceAndPath("dsmod", "hud")) { graphics, _ ->
+        HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, Identifier.fromNamespaceAndPath("dsmod", "hud")) { graphics, delta ->
             if (shown.isEmpty()) return@attachElementBefore
+            val client = Minecraft.getInstance()
+            if (DsModClient.settings.hud.hideInF3 && client.debugOverlay.showDebugScreen()) return@attachElementBefore
             DsModClient.game.metrics.time("hud.draw") {
-                val font = Minecraft.getInstance().font
+                val font = client.font
                 val line = font.lineHeight + 1
-                val client = Minecraft.getInstance()
                 // The Inventory look matches the inventory screen, which Themed Menus draws with the kit, solid or as glass.
                 val themed = MenuSkin.themed
                 val glass = MenuSkin.glassAlpha
                 val menu = client.gui.screen() is AbstractContainerScreen<*>
                 // The hotbar slot the player holds, numbered as the inventory menu numbers it.
-                val held = client.player?.let { HOTBAR_FIRST + it.inventory.selectedSlot } ?: -1
+                val player = client.player
+                val held = player?.let { HOTBAR_FIRST + it.inventory.selectedSlot } ?: -1
+                val partial = delta.getGameTimeDeltaPartialTick(false)
                 val pose = graphics.pose()
                 for (g in shown.indices) {
                     val group = shown[g]
@@ -356,11 +399,12 @@ object Hud {
                         }
                         val hotbar = block.look == HudLook.HOTBAR
                         val inventory = block.look == HudLook.INVENTORY
+                        val alpha = block.alpha
                         if (inventory) {
                             when {
-                                glass >= 0 -> Kit.glass(graphics, PADDING, top, block.width, block.height, glass)
-                                themed -> Kit.panel(graphics, PADDING, top, block.width, block.height)
-                                else -> Kit.inventoryPanel(graphics, PADDING, top, block.width, block.height)
+                                glass >= 0 -> Kit.glass(graphics, PADDING, top, block.width, block.height, glass * alpha / Kit.OPAQUE)
+                                themed -> Kit.panel(graphics, PADDING, top, block.width, block.height, alpha)
+                                else -> Kit.inventoryPanel(graphics, PADDING, top, block.width, block.height, alpha)
                             }
                         }
                         if (block.header != null) graphics.text(font, block.header, PADDING, top, -1, true)
@@ -370,26 +414,39 @@ object Hud {
                             val stacks = row.stacks
                             if (stacks != null) {
                                 if (hotbar) Kit.hotbar(graphics, PADDING, y, stacks.size)
-                                val across = across(block.look)
-                                val down = down(block.look)
-                                val pitch = pitch(block.look)
                                 // The inventory's look takes the inventory screen's rarity art, and the others the hotbar's.
                                 val surface = if (inventory) Surface.CONTAINER else Surface.HOTBAR
                                 for (i in stacks.indices) {
-                                    val x = PADDING + across + i * pitch
-                                    val itemY = y + down
+                                    val x = block.iconX(row, i)
+                                    val itemY = top + block.iconY(row, i)
                                     if (inventory) {
                                         when {
-                                            glass >= 0 -> Kit.glassSlot(graphics, x - 1, itemY - 1)
-                                            themed -> Kit.slot(graphics, x - 1, itemY - 1)
-                                            else -> Kit.slotAt(graphics, x - 1, itemY - 1)
+                                            glass >= 0 -> Kit.glassSlot(graphics, x - 1, itemY - 1, alpha = alpha)
+                                            themed -> Kit.slot(graphics, x - 1, itemY - 1, alpha = alpha)
+                                            else -> Kit.slotAt(graphics, x - 1, itemY - 1, alpha)
                                         }
                                     }
                                     val slot = if (row.slot < 0) -1 else row.slot + i
                                     val stack = stacks[i]
                                     if (stack != null) {
                                         if (slot >= 0) Slots.drawBack(graphics, surface, slot, x, itemY)
-                                        graphics.item(stack, x, itemY)
+                                        // The hotbar bobs a stack as it lands, from the inventory's own stack, which counts the bob down.
+                                        val pop = if (block.pops && player != null && slot in MAIN_FIRST until OFFHAND_SLOT) {
+                                            player.inventory.getItem(if (slot >= HOTBAR_FIRST) slot - HOTBAR_FIRST else slot).popTime - partial
+                                        } else {
+                                            0f
+                                        }
+                                        if (pop > 0f) {
+                                            val grow = 1f + pop / POP_SPAN
+                                            pose.pushMatrix()
+                                            pose.translate(x + ITEM / 2f, itemY + POP_FOOT)
+                                            pose.scale(1f / grow, (grow + 1f) / 2f)
+                                            pose.translate(-(x + ITEM / 2f), -(itemY + POP_FOOT))
+                                            graphics.item(stack, x, itemY)
+                                            pose.popMatrix()
+                                        } else {
+                                            graphics.item(stack, x, itemY)
+                                        }
                                         graphics.itemDecorations(font, stack, x, itemY)
                                         if (slot >= 0) Slots.drawFront(graphics, surface, slot, x, itemY)
                                     }

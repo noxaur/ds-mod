@@ -109,8 +109,11 @@ abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boo
         look: HudLook = HudLook.PLATE,
         dock: HudDock = HudDock.FREE,
         overMenus: Boolean = true,
+        columns: Boolean = false,
+        opacity: Float = 1f,
+        pops: Boolean = false,
         rows: HudBuilder.() -> Unit,
-    ) = HudBlock(if (headed) header else text {}, HudBuilder().apply(rows).rows, look, dock, overMenus)
+    ) = HudBlock(if (headed) header else text {}, HudBuilder().apply(rows).rows, look, dock, overMenus, columns, opacity, pops)
 
     /**
      * The marks on the open container, by slot index, or none. Called when [hud] is, so return the same

@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import com.mojang.blaze3d.platform.InputConstants
 import io.github.notenoughupdates.moulconfig.common.IMinecraft
 import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
 import io.github.noxaur.dsmod.core.config.DsModConfig
@@ -85,6 +86,11 @@ object DsModClient : ClientModInitializer {
     fun openHudEditor() =
         Minecraft.getInstance().let { it.setScreenAndShow(HudEditorScreen(readouts, config.instance.hud, it.gui.screen(), config::saveToFile)) }
 
+    /** The game's own key event, which it sends only with no screen open, so the editor key does nothing over a screen. */
+    fun pressed(key: InputConstants.Key) {
+        if (active && Keys.matches(key, settings.hud.editKey)) openHudEditor()
+    }
+
     fun openRarityStyle() =
         Minecraft.getInstance().let { it.setScreenAndShow(RarityStyleScreen(config.instance.inventory, it.gui.screen(), config::saveToFile)) }
 
@@ -110,6 +116,7 @@ object DsModClient : ClientModInitializer {
         SlotGuards.register(all.filterIsInstance<SlotLock>().single(), config.instance.inventory)
         CommandKeys.register(config.instance.general)
         readouts = Readouts(game, config.instance.hud).also { it.register() }
+        HudDrag.register(readouts, config::saveToFile)
         tabs = TabListPoller(game)
         sidebars = SidebarPoller(game)
         containers = ContainerPoller(game)

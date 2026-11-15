@@ -70,6 +70,32 @@ class InventoryPreviewTest {
     }
 
     @Test
+    fun `the armor and the offhand show their own slots, each apart from the rows beside it`() {
+        val helmet = Item("minecraft:leather_helmet", 1)
+        val shield = Item("minecraft:shield", 1)
+        config.general.inventoryRows = mutableListOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.ARMOR, InventoryRow.OFFHAND)
+        post(*inventory(5 to helmet, 9 to eyes, 45 to shield))
+        assertEquals(listOf(row(0 to eyes), row(), listOf(helmet, null, null, null), listOf(shield)), rows()?.map { it.items })
+        assertEquals(listOf(false, false, true, true), rows()?.map { it.apart })
+        assertEquals(listOf(9, 18, 5, 45), rows()?.map { it.slot })
+    }
+
+    @Test
+    fun `the layout, the panel's opacity and the pickup animation reach the block`() {
+        post(*inventory(9 to eyes))
+        assertEquals(false, hud()?.columns)
+        assertEquals(1f, hud()?.opacity)
+        assertEquals(false, hud()?.pops)
+        config.general.inventoryLayout = InventoryLayout.COLUMNS
+        config.general.inventoryOpacity = 40f
+        config.general.inventoryPickup = true
+        post()
+        assertEquals(true, hud()?.columns)
+        assertEquals(0.4f, hud()?.opacity)
+        assertEquals(true, hud()?.pops)
+    }
+
+    @Test
     fun `nothing shows while every slot picked is empty`() {
         post(*inventory(36 to sword))
         assertNull(hud())

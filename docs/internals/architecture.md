@@ -224,6 +224,10 @@ A block's saved place is the corner of its plate, so a block stays where the pla
 
 A block docked beside the hotbar shrinks to the room there instead of keeping the GUI's scale, by the same whole screen pixels. Minecraft's Auto GUI scale on a 1080p screen leaves about 140px beside the hotbar, and the inventory's grid is 176px wide, so at full size the clamp to the screen's edge put it over the hotbar itself.
 
+The HUD draws stacks it rebuilt from `Item` records, which never carry the count-down vanilla bobs a landed stack by. So Pickup Animation reads that count from the player's live inventory, by the slot each icon stands for, and a row with no slot cannot bob.
+
+With the chat open, a press on a block still reaches the chat, so a click on a line under the block works. Only a press that moves 3px picks the block up, and from then on the drag is the HUD editor's own `HudDrag`.
+
 
 ## World marks reach Minecraft once per tick
 

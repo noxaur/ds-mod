@@ -23,7 +23,9 @@ class HudGroup(
 /**
  * One block on the HUD: a header and the rows under it. A block whose header is empty shows only its rows. [look]
  * and [dock] are the player's, for a feature that lets them choose. A block not [overMenus] hides while a menu is open,
- * for one that would repeat what the menu shows.
+ * for one that would repeat what the menu shows. With [columns] each row of icons stands as a column, left to right.
+ * [opacity], from 0 to 1, is how solid the Inventory look's panel and slots are. A block that [pops] bobs an icon of
+ * the player's inventory as an item lands in its slot, as the hotbar does.
  */
 data class HudBlock(
     val header: Text,
@@ -31,6 +33,9 @@ data class HudBlock(
     val look: HudLook = HudLook.PLATE,
     val dock: HudDock = HudDock.FREE,
     val overMenus: Boolean = true,
+    val columns: Boolean = false,
+    val opacity: Float = 1f,
+    val pops: Boolean = false,
 )
 
 /** What a block sits on. */

@@ -52,11 +52,14 @@ Shows the items in your inventory as a grid on the HUD, nine to a row as your in
 
 | Setting | Does |
 | --- | --- |
-| Inventory Rows | Picks which rows show, and their order. The three rows of your inventory show by default, and your hotbar can join them, set a little apart as it is in your inventory |
+| Inventory Rows | Picks which rows show, and their order. The three rows of your inventory show by default, and your hotbar, your armor and your offhand can join them, each set a little apart as your hotbar is in your inventory |
 | Inventory Look | Draws the grid in a panel of slots like your inventory's: in your theme, solid or as glass as Menu Look says, while Themed Menus is on, and as your resource pack draws the inventory while it is off. Plate and Clear show the items alone, on the HUD's plate or on nothing |
 | Inventory Placement | Keeps the grid where you put it in the HUD editor, or puts it beside your hotbar, past your offhand slot, at your GUI's size or smaller where the room there is narrower |
 | Inventory Key | Binds a key that shows and hides the grid. With none, the grid always shows |
 | Inventory Key Mode | Shows the grid only while you hold the key, or switches it with each press |
+| Inventory Layout | Lays each row out across, as your inventory does, or down, so the grid stands tall beside the edge of your screen |
+| Inventory Opacity | Sets how solid the Inventory look's panel and slots are, so the world shows through as much as you like |
+| Pickup Animation | Bobs an item in the grid as it lands in your inventory, as your hotbar does |
 
 ### Camera
 
@@ -114,9 +117,9 @@ Keys shown in red fire another bind too, and keys in yellow also do something in
 
 ## Interface
 
-Theme picks the colors of ds-mod's screens: Charcoal is dark, and Vanilla matches the game's own menus. Move HUD, or `/dsmod hud`, opens the HUD editor.
+Theme picks the colors of ds-mod's screens: Charcoal is dark, and Vanilla matches the game's own menus. Move HUD, `/dsmod hud` or the HUD Editor Key opens the HUD editor. You can also drag a block with the chat open. Hide In F3 takes the HUD off while the F3 debug screen is open.
 
-<sub>Scroll over a block to resize it. Hold Shift to place it without snapping.</sub>
+<sub>Scroll over a block or press + and − to resize it. The arrow keys move the block you clicked last a pixel, or ten with Shift. Hold Shift while you drag to place it without snapping, and press Escape during a drag to put it back.</sub>
 
 ## Chat
 
