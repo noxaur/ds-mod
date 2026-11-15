@@ -1,0 +1,310 @@
+{
+ "id": "inventory",
+ "title": [
+  {
+   "text": "Inventory"
+  }
+ ],
+ "columns": 9,
+ "slots": 36,
+ "hidden": false,
+ "items": [
+  {
+   "entry": "reinforced_plating",
+   "material": "minecraft:player_head",
+   "count": 4,
+   "name": [
+    {
+     "text": "Reinforced Plating",
+     "color": "#5555FF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "Right-click to view recipes!",
+      "color": "#FFFF55"
+     }
+    ],
+    [],
+    [
+     {
+      "text": "",
+      "color": "#5555FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "RARE",
+      "color": "#5555FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "RARE",
+   "glint": false
+  },
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  {
+   "entry": "pure_seeds",
+   "material": "minecraft:wheat_seeds",
+   "count": 2,
+   "name": [
+    {
+     "text": "Pure Seeds",
+     "color": "#5555FF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#5555FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "RARE",
+      "color": "#5555FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "REFORGE STONE",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "RARE",
+   "glint": false
+  },
+  {
+   "entry": "endstone_rose_bush",
+   "material": "minecraft:rose_bush",
+   "count": 12,
+   "name": [
+    {
+     "text": "Endstone Rose Bush",
+     "color": "#AA00AA"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "Right-click to view recipes!",
+      "color": "#FFFF55"
+     }
+    ],
+    [],
+    [
+     {
+      "text": "",
+      "color": "#AA00AA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "EPIC",
+      "color": "#AA00AA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "EPIC",
+   "glint": false
+  },
+  {
+   "entry": "scylla",
+   "material": "minecraft:iron_sword",
+   "count": 1,
+   "name": [
+    {
+     "text": "Scylla",
+     "color": "#FF55FF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "MYTHIC",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "SWORD",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "MYTHIC",
+   "glint": false
+  },
+  {
+   "entry": "crypt_cache_item",
+   "material": "minecraft:vault",
+   "count": 45,
+   "name": [
+    {
+     "text": "Crypt Cache",
+     "color": "#AA00AA"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "Right-click to view recipes!",
+      "color": "#FFFF55"
+     }
+    ],
+    [],
+    [
+     {
+      "text": "",
+      "color": "#AA00AA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "EPIC",
+      "color": "#AA00AA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "EPIC",
+   "glint": false
+  },
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  {
+   "entry": "glacial_scythe",
+   "material": "minecraft:diamond_hoe",
+   "count": 1,
+   "name": [
+    {
+     "text": "Glacial Scythe",
+     "color": "#FFAA00"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#FFAA00"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "LEGENDARY",
+      "color": "#FFAA00"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "SWORD",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "LEGENDARY",
+   "glint": false
+  }
+ ]
+}

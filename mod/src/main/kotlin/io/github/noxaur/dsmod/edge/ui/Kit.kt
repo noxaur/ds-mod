@@ -325,6 +325,15 @@ object Kit {
     /** Darkens the item at [x], [y], drawn over it. */
     fun slotDim(g: GuiGraphicsExtractor, x: Int, y: Int) = rect(g, x, y, 16, 16, ARGB.color(DIM_ALPHA, theme.well))
 
+    /** A wash in the panel's color over a part of a screen that is waiting or has nothing to show, so a notice reads over it. */
+    fun veil(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) = rect(g, x, y, width, height, ARGB.color(VEIL_ALPHA, theme.panel))
+
+    /** A block that stands in for text or an icon in a layout still loading, so the screen keeps its shape. */
+    fun bone(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) = rect(g, x, y, width, height, ARGB.color(BONE_ALPHA, theme.inkMuted))
+
+    /** The wash over the slot under the mouse in a grid the mod draws, as a menu lights its own: white, half through. */
+    fun slotHover(g: GuiGraphicsExtractor, x: Int, y: Int) = rect(g, x, y, 16, 16, ARGB.white(HOVER_STRENGTH))
+
     private fun face(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
         val t = theme
         when (state) {
@@ -370,6 +379,9 @@ object Kit {
     private fun channel(from: Int, to: Int, amount: Float) = (from + (to - from) * amount).roundToInt()
 
     private const val DIM_ALPHA = 184
+    private const val HOVER_STRENGTH = 0.5f
+    private const val VEIL_ALPHA = 190
+    private const val BONE_ALPHA = 90
     private val SLOT_TEXTURE: Identifier = Identifier.fromNamespaceAndPath("dsmod", "kit/slot")
     private var slotTexture: DynamicTexture? = null
     private var slotTheme: Theme? = null

@@ -12,6 +12,20 @@ import java.util.Base64
 /** A player head's `textures` property is base64 of a JSON that names the player beside the skin. */
 object Skulls {
     /**
+     * Whether every skin [property] names is on Mojang's texture host, so drawing it fetches nothing from anywhere
+     * else. A property from another client, such as the backend's, is checked before the game is given it.
+     */
+    fun onMojang(property: String): Boolean {
+        val textures = runCatching {
+            Json.parseToJsonElement(String(Base64.getDecoder().decode(property))).jsonObject["textures"]?.jsonObject
+        }.getOrNull() ?: return false
+        val urls = textures.values.map { ((it as? JsonObject)?.get("url") as? JsonPrimitive)?.takeIf { url -> url.isString }?.content }
+        return urls.isNotEmpty() && urls.all { url ->
+            url != null && runCatching { java.net.URI(url) }.getOrNull()?.let { it.scheme in setOf("http", "https") && it.host == "textures.minecraft.net" } == true
+        }
+    }
+
+    /**
      * [property] with only the skins' urls kept, so it no longer holds the player's name, id or the time it was made.
      * Null for a value that is not a texture property.
      */

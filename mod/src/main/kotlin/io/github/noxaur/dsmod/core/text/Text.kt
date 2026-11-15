@@ -50,6 +50,12 @@ class TextBuilder {
     fun bad(text: String) = add(text, Role.BAD)
     fun warning(text: String) = add(text, Role.WARNING)
 
+    /** An item's rarity by name, such as Legendary, in [rarity]'s color. Only the rarity roles belong here. */
+    fun rarity(text: String, rarity: Role) {
+        require(rarity >= Role.COMMON) { "$rarity is not a rarity" }
+        add(text, rarity)
+    }
+
     /** The mod's own name and feature headers, in the logo gradient. */
     fun brand(text: String) {
         val last = (text.length - 1).coerceAtLeast(1)

@@ -1,0 +1,175 @@
+{
+ "id": "accessories",
+ "title": [
+  {
+   "text": "Accessory Bag"
+  }
+ ],
+ "columns": 9,
+ "slots": 18,
+ "hidden": false,
+ "items": [
+  {
+   "entry": "void_relic",
+   "material": "minecraft:player_head",
+   "count": 1,
+   "name": [
+    {
+     "text": "Void Relic",
+     "color": "#55FFFF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#55FFFF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "DIVINE",
+      "color": "#55FFFF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "ACCESSORY",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "DIVINE",
+   "glint": false
+  },
+  {
+   "entry": "high_greed",
+   "material": "minecraft:player_head",
+   "count": 1,
+   "name": [
+    {
+     "text": "High Greed",
+     "color": "#FF55FF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "MYTHIC",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "ACCESSORY",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "MYTHIC",
+   "glint": false
+  },
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  {
+   "entry": "zombie_relic",
+   "material": "minecraft:player_head",
+   "count": 1,
+   "name": [
+    {
+     "text": "Zombie Relic",
+     "color": "#FF55FF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "MYTHIC",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "ACCESSORY",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "MYTHIC",
+   "glint": false
+  },
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ]
+}

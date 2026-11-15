@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.text.Text
 import io.github.noxaur.dsmod.core.text.text
 import net.minecraft.client.Minecraft
@@ -7,6 +8,7 @@ import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.TextColor
 
 object Chat {
     private val prefix: Component by lazy {
@@ -31,3 +33,16 @@ object Chat {
 
 fun Text.toComponent(): MutableComponent =
     spans.fold(Component.empty()) { line, span -> line.append(Component.literal(span.text).withColor(span.rgb)) }
+
+/**
+ * The server's own text, in the styles it came with. An item's name and lore are drawn italic by vanilla unless a
+ * span says otherwise, so every span states its italic, and the game's text matches the server's.
+ */
+fun ServerText.toComponent(): MutableComponent = spans.fold(Component.empty()) { line, span ->
+    line.append(
+        Component.literal(span.text).withStyle {
+            it.withColor(span.color?.let(TextColor::fromRgb)).withBold(span.bold).withItalic(span.italic)
+                .withUnderlined(span.underlined).withStrikethrough(span.strikethrough).withObfuscated(span.obfuscated)
+        },
+    )
+}

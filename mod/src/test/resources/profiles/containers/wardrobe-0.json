@@ -1,0 +1,289 @@
+{
+ "id": "wardrobe:0",
+ "title": [
+  {
+   "text": "Wardrobe 1"
+  }
+ ],
+ "columns": 9,
+ "slots": 36,
+ "hidden": false,
+ "items": [
+  {
+   "entry": "sorrow_helmet",
+   "material": "minecraft:player_head",
+   "count": 1,
+   "name": [
+    {
+     "text": "Sorrow Helmet",
+     "color": "#FF55FF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "MYTHIC",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "HELMET",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "MYTHIC",
+   "glint": false
+  },
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  {
+   "entry": "sorrow_chestplate",
+   "material": "minecraft:leather_chestplate",
+   "count": 1,
+   "name": [
+    {
+     "text": "Sorrow Chestplate",
+     "color": "#FF55FF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "MYTHIC",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "CHESTPLATE",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "MYTHIC",
+   "glint": false
+  },
+  null,
+  null,
+  {
+   "entry": "void_chestplate",
+   "material": "minecraft:leather_chestplate",
+   "count": 1,
+   "name": [
+    {
+     "text": "Chestplate of the Void",
+     "color": "#55FFFF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#55FFFF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "DIVINE",
+      "color": "#55FFFF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "CHESTPLATE",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "DIVINE",
+   "glint": false
+  },
+  null,
+  null,
+  null,
+  null,
+  null,
+  {
+   "entry": "sorrow_leggings",
+   "material": "minecraft:leather_leggings",
+   "count": 1,
+   "name": [
+    {
+     "text": "Sorrow Leggings",
+     "color": "#FF55FF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "MYTHIC",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "LEGGINGS",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "MYTHIC",
+   "glint": false
+  },
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  {
+   "entry": "sorrow_boots",
+   "material": "minecraft:leather_boots",
+   "count": 1,
+   "name": [
+    {
+     "text": "Sorrow Boots",
+     "color": "#FF55FF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "MYTHIC",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "BOOTS",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "MYTHIC",
+   "glint": false
+  },
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ]
+}

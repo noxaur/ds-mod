@@ -91,6 +91,16 @@ A list of things the player made, such as command binds.
 - Arrow keys nudge it one pixel. Escape during a drag puts it back.
 - The cursor shows that it can be grabbed.
 
+## Turntable
+
+A model the player turns to look at, such as the player in the profile viewer. NEU's and Skyblocker's viewers only follow the mouse, so this is the mod's own; `Turntable` in `core/ui` holds its rules.
+
+- It turns slowly on its own, so the viewer sees all of it without a press.
+- A drag turns it: sideways around, and up and down within a limit, so it never turns over. On release it turns on from where it was let go.
+- Escape during a drag puts it back where the drag began, and does not close the screen.
+- With the mouse over it, the arrow keys turn it a step.
+- The cursor shows that it can be grabbed.
+
 ## Scrolling list
 
 - The wheel scrolls, the scrollbar's thumb drags, and Page Up, Page Down, Home and End jump.

@@ -255,6 +255,12 @@ class DsModConfig : Config() {
         @JvmField
         var sequenceGap = 250f
 
+        @Expose
+        @ConfigOption(name = "Profile Viewer", desc = "Look up any player's profile with /pv and their name.")
+        @ConfigEditorBoolean
+        @JvmField
+        var profileViewer = true
+
         private companion object {
             /** GLFW's code for the left Alt key. */
             const val LEFT_ALT = 342

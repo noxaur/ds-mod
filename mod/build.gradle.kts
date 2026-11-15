@@ -80,6 +80,10 @@ sourceSets.named("gametest") {
     compileClasspath += debug.output
     runtimeClasspath += debug.output
 }
+// The backend's answers that the unit tests read, so the game test draws the same profile.
+tasks.named<ProcessResources>("processGametestResources") {
+    from("src/test/resources") { include("profiles/**") }
+}
 
 dependencies {
     minecraft("com.mojang:minecraft:${property("minecraft_version")}")

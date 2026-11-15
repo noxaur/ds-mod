@@ -20,7 +20,7 @@ A body that no longer decodes is dragsim.co's change and not the client's mistak
 
 A profile is answered without its containers, and each answer makes a snapshot of them in KV for ten minutes. Rebuilding every tooltip of thirty storage pages is wasted when a player opens one tab, and fetching a container from a fresh lookup would show a tab from a later moment than the overview beside it. The snapshot id is the only client input that reaches a KV key, so it must have the shape the backend makes. When the player hid their inventory, the items are dropped before anything is written, so neither a snapshot nor the cached copy ever holds them.
 
-The data does not say which hotbar slot is held, so equipment's `held` is the first one, which is a guess. Slayers show the server's level and no progress to the next, because no table of slayer XP is in the catalog.
+Dungeon classes level on the Catacombs table, because dragsim.co's own stats page levels them that way and the data has no table of its own for them. The data does not say which hotbar slot is held, so equipment's `held` is the first one, which is a guess. Slayers show the server's level and no progress to the next, because no table of slayer XP is in the catalog.
 
 ## A player is their Minecraft account, and the client is never believed
 
@@ -154,11 +154,17 @@ The same holds for the lines the mod reports when a feature could not read them:
 
 ## The mod signs in when it first needs to, and keeps the session in memory
 
-Nothing contacts the backend until the player opens Contribute, uses `/dsmod login`, or has turned on the report of unread lines. The session token is held in memory and never written, logged, shown or recorded: the jar is public, and a token on disk or in a stream is a stolen account for the day it lives. For the same reason `/dsmod login` opens the browser directly, and the login token never appears in chat, where a viewer could use it first. Minecraft's own opener logs the address when it fails, so the mod uses the system's opener and reports a failure without the address.
+Nothing contacts the backend until the player opens Contribute, uses `/dsmod login`, looks a player up with `/pv`, or has turned on the report of unread lines. The session token is held in memory and never written, logged, shown or recorded: the jar is public, and a token on disk or in a stream is a stolen account for the day it lives. For the same reason `/dsmod login` opens the browser directly, and the login token never appears in chat, where a viewer could use it first. Minecraft's own opener logs the address when it fails, so the mod uses the system's opener and reports a failure without the address.
 
 A session ends after 24 hours, so a 401 signs in again and repeats the call once. A second 401 is an error, not a loop.
 
 The backend's address and the website's are set when the jar is built, in `gradle.properties`, and written into the jar's metadata. They are not a player's setting, because a player who pointed the mod somewhere else would be sending their captures there.
+
+## The profile viewer leaves the server its own `/pv`
+
+dragsim.co has `/pv <vault>`, and players type it by habit, so the viewer's `/pv` must never swallow it. Fabric runs a client command only when the line parses, and sends the line to the server as typed when the parse fails with an unknown command. So the name argument refuses a number of one or two digits with that very error, and off dragsim.co, or with the setting off, the `pv` node's requirement hides it. The mod never sends the line itself, so `no-automation` has nothing to allow.
+
+The player on the screen is a `RemotePlayer` that is not in the world. The game finds a player's skin through the tab list, which a player who is not online is missing from, so the model asks the skin cache by UUID as a head does. The renderer reads the entity's id, which the world assigns only to entities it holds, so the model takes a negative id no server entity has.
 
 ## The release jar carries its own MoulConfig
 
