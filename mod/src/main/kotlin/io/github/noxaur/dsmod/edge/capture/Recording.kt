@@ -129,7 +129,7 @@ object Recording {
         val now = System.currentTimeMillis()
         if (run.timedOut(now)) {
             cancel()
-            Chat.send(text { bad("The recording ran out of time, so nothing was sent.") })
+            Chat.send(text { bad("The recording ran out of time, so nothing was sent. Open Contribute in the settings to try again.") })
             return
         }
         var presses = 0

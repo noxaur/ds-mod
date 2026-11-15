@@ -10,7 +10,7 @@ private val FLOOR = Regex(""" \([^)]*\)$""")
 
 /**
  * The places the player has been, kept between sessions so that a request can ask for one they visited earlier. A
- * place is what the tab list's `Area` row or the sidebar's `⏣` line named, without a dungeon's floor. These are the
+ * place is what the tab list's `Area` row or the sidebar's `⏣` line named, the latter without a dungeon's floor. These are the
  * server's own names and not an [io.github.noxaur.dsmod.core.game.Area], because a request is most often for a place
  * the mod has no feature in yet.
  */

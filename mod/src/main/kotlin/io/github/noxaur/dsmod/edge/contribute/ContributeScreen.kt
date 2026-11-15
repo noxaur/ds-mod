@@ -55,7 +55,7 @@ class ContributeScreen(private val parent: Screen?, private val signingIn: Boole
         // The buttons sit under the lines, so the lines get what the window leaves above them.
         val room = ((height - MARGIN * 2 - CHROME) / LINE).coerceAtLeast(0)
         lines = when {
-            failure != null -> wrap("Could not load requests. $failure", inner, Kit.Ink.NORMAL)
+            failure != null -> wrap("Could not load requests. $failure Close and open Contribute to try again.", inner, Kit.Ink.NORMAL)
             // Mojang confirms the account before the first call of a session, which takes a second or two.
             queue == null && signingIn -> wrap("Signing in with your Minecraft account...", inner, Kit.Ink.MUTED)
             queue == null -> listOf(Line("Looking for requests...", Kit.Ink.MUTED))
