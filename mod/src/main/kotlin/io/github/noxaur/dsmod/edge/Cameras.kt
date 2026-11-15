@@ -16,7 +16,6 @@ import net.minecraft.world.level.ClipContext
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec3
-import org.lwjgl.glfw.GLFW
 
 /**
  * Camera and Free Look. The mixins in `edge/mixin` ask this object for each number, and it answers with the
@@ -28,7 +27,6 @@ import org.lwjgl.glfw.GLFW
 object Cameras {
     /** Kept between the lifted camera and a ceiling or floor, so the view never starts inside a block. */
     private const val CLEAR = 0.2
-    private const val MOUSE_BUTTONS = 9
 
     private val settings: DsModConfig.General get() = DsModClient.settings.general
     private val shaping: Boolean get() = DsModClient.active && settings.camera
@@ -54,18 +52,9 @@ object Cameras {
 
     private fun view(type: CameraType) = View.entries[type.ordinal]
 
-    /** Whether [key] is down: a GLFW key, a mouse button from 0 to 9, or -1 for none, as MoulConfig's editor writes it. */
-    private fun held(client: Minecraft, key: Int) = when {
-        key < 0 -> false
-        key <= MOUSE_BUTTONS -> GLFW.glfwGetMouseButton(client.window.handle(), key) == GLFW.GLFW_PRESS
-        else -> InputConstants.isKeyDown(client.window, key)
-    }
-
     /** The game's own key event, which it sends only with no screen open, so a key typed into chat is not a press. */
     fun pressed(key: InputConstants.Key) {
-        val mouse = key.type == InputConstants.Type.MOUSE
-        val bound = settings.freeLookKey
-        if (bound >= 0 && key.value == bound && mouse == (bound <= MOUSE_BUTTONS)) tapped = true
+        if (Keys.matches(key, settings.freeLookKey)) tapped = true
     }
 
     private fun show(client: Minecraft, type: CameraType) {
@@ -79,7 +68,7 @@ object Cameras {
     fun frame(client: Minecraft) {
         val player = client.player
         val allowed = player != null && DsModClient.active && settings.freeLook
-        val down = allowed && held(client, settings.freeLookKey)
+        val down = allowed && Keys.held(client, settings.freeLookKey)
         val pressed = allowed && tapped && !wasDown
         tapped = false
         wasDown = down

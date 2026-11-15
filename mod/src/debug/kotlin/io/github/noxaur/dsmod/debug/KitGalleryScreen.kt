@@ -107,18 +107,19 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
 
         caption(g, "Icons: ink, muted, roles on a well", x, oy + 121)
         val icons = Icon.entries
-        Kit.well(g, x + 134, oy + 132, 118, 14)
+        Kit.well(g, x + 147, oy + 132, 105, 14)
         for (i in icons.indices) {
             Kit.icon(g, icons[i], x + i * 8, oy + 136, t.ink, t.inkShadow)
-            Kit.icon(g, icons[i], x + 66 + i * 8, oy + 136, t.inkMuted, t.inkShadow)
-            Kit.icon(g, icons[i], x + 138 + i * 14, oy + 136, ROLES[i].argb())
+            Kit.icon(g, icons[i], x + 73 + i * 8, oy + 136, t.inkMuted, t.inkShadow)
+            Kit.icon(g, icons[i], x + 150 + i * 11, oy + 136, ROLES[i % ROLES.size].argb())
         }
 
-        caption(g, "Divider and rings", x, oy + 150)
+        caption(g, "Divider, rings and a line", x, oy + 150)
         Kit.divider(g, x, oy + 166, 120)
         Kit.ring(g, x + 128, oy + 162, 40, 10, t.accent)
         Kit.ring(g, x + 172, oy + 162, 40, 10, Role.GOOD.argb())
-        Kit.ring(g, x + 216, oy + 162, 36, 10, Role.BAD.argb())
+        Kit.ring(g, x + 216, oy + 162, 14, 10, Role.BAD.argb())
+        Kit.line(g, x + 234, oy + 171, x + 251, oy + 162, Role.ACTION.argb())
 
         caption(g, "Range slider, and spans: idle, hover, down, off", x, oy + 180)
         for (i in states.indices) Kit.span(g, ox + MIDDLE + i * 30, oy + 193, 26, 14, states[i])
@@ -189,7 +190,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
     private fun caption(g: GuiGraphicsExtractor, text: String, x: Int, y: Int) = Kit.label(g, text, x, y, Kit.Ink.MUTED)
 
     private companion object {
-        val ROLES = listOf(Role.GOOD, Role.BAD, Role.WARNING, Role.VALUE, Role.ACTION, Role.MUTED, Role.LEGENDARY, Role.BODY)
+        val ROLES = listOf(Role.GOOD, Role.BAD, Role.WARNING, Role.VALUE, Role.ACTION, Role.MUTED, Role.LEGENDARY)
         val RESULT = ItemStack(Items.CRAFTING_TABLE)
         val SEARCH = text { muted("Search...") }.toComponent()
 
