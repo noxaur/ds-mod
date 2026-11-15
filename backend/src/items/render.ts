@@ -1,6 +1,7 @@
 import type { DrawnItem } from "./model.ts";
 import { decodeCatalog } from "./render/catalog.ts";
 import { factsOf } from "./render/facts.ts";
+import { gameData } from "./render/gameData.ts";
 import { glints, skullTexture } from "./render/policy.ts";
 import { parseColor, record, text } from "./render/read.ts";
 import { lore, name } from "./render/tooltip.ts";
@@ -54,6 +55,7 @@ export const makeRenderer = (catalogJson: unknown, hints: ReadonlyMap<string, It
         ...(texture === undefined ? {} : { skullTexture: texture }),
         ...(color === undefined ? {} : { color }),
         ...(facts === undefined ? {} : { facts }),
+        customData: gameData(raw),
       };
     },
   };
