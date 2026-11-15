@@ -13,10 +13,15 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - Slayer Tracker shows your quest progress, the XP to your next level and your average kill time.
 - Loot Alerts go off for drops at or above the rarity you set.
 - Rarity Marks color each slot by its item's rarity. Pick Showcase, Gilded or Minimal, or build your own look beside your inventory.
+- Command Binds send a command such as `/warp end` with a key, a few keys held together or keys pressed in turn. Keep them in groups you can fold, switch off and share.
 
 <p>
   <img src="docs/images/rarity-chest.png" width="49%" alt="A chest in the Minimal look: each rare item stands on a shelf in its rarity's color, with a small gem in its corner">
   <img src="docs/images/rarity-editor.png" width="49%" alt="The rarity style editor beside the player's inventory, with a preview of three items">
+</p>
+
+<p>
+  <img src="docs/images/command-binds.png" alt="Command Binds: binds listed in groups on the left, and the picked bind's command, keys and settings on the right">
 </p>
 
 It also has a HUD editor, Fullbright, and guards against two misclicks: taking a placed eye back out of the altar, and swapping armor with a right click.
@@ -31,7 +36,7 @@ Download the jar from [Releases](https://github.com/noxaur/ds-mod/releases) and 
 
 - A beta goes out every second day when there is something new, so a server update or a suggestion from the Discord doesn't wait months.
 - The mod draws its own settings screen and HUD. You can pick a dark theme or one that matches vanilla menus.
-- It only displays information. It has no macros and nothing that plays for you, because the server bans them.
+- It has no macros and nothing that plays for you, because the server bans them. Besides showing information, it only sends a command when you press that command's keys.
 
 ## Contributing
 

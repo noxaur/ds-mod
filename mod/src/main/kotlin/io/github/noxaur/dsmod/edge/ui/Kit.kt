@@ -22,6 +22,7 @@ enum class Icon(val width: Int, val height: Int) {
     DOWN(5, 3),
     SEARCH(6, 7),
     LOCK(5, 7),
+    RIGHT(3, 5),
     ;
 
     val sprite: Identifier = Identifier.fromNamespaceAndPath("dsmod", name.lowercase())
@@ -86,6 +87,12 @@ object Kit {
     fun well(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
         val t = theme
         bevel(g, x, y, width, height, t.well, t.wellShade, t.wellLight)
+    }
+
+    /** A text field's well, ringed in the hover outline under the mouse or with focus, as a checkbox is. */
+    fun field(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
+        well(g, x, y, width, height)
+        if (state == State.HOVER || state == State.DOWN) ring(g, x - 1, y - 1, width + 2, height + 2, theme.hoverOutline)
     }
 
     /** An 18x18 slot, with the item's 16x16 at one pixel in. */

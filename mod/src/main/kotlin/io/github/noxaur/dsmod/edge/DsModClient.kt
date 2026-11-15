@@ -73,6 +73,9 @@ object DsModClient : ClientModInitializer {
     /** Each of the mod's own screens goes back to the screen it was opened over, so a button in the settings returns there. */
     fun openBeaconEditor() = Minecraft.getInstance().let { it.setScreenAndShow(BeaconScreen(config.instance.end, it.gui.screen(), config::saveToFile)) }
 
+    fun openBindsEditor() =
+        Minecraft.getInstance().let { it.setScreenAndShow(CommandBindsScreen(config.instance.general, it.gui.screen(), config::saveToFile)) }
+
     fun openHudEditor() =
         Minecraft.getInstance().let { it.setScreenAndShow(HudEditorScreen(readouts, config.instance.hud, it.gui.screen(), config::saveToFile)) }
 
@@ -95,12 +98,14 @@ object DsModClient : ClientModInitializer {
         EyeGuards.register(config.instance.end)
         CopyChats.register(config.instance.chat)
         SlotGuards.register(all.filterIsInstance<SlotLock>().single(), config.instance.inventory)
+        CommandKeys.register(config.instance.general)
         readouts = Readouts(game, config.instance.hud).also { it.register() }
         tabs = TabListPoller(game)
         sidebars = SidebarPoller(game)
         containers = ContainerPoller(game)
         config.instance.hud.edit = Runnable { openHudEditor() }
         config.instance.end.editBeam = Runnable { openBeaconEditor() }
+        config.instance.general.editBinds = Runnable { openBindsEditor() }
         config.instance.inventory.editRarityStyle = Runnable { openRarityStyle() }
         config.instance.contribute.open = Runnable { Contribute.open() }
         Recorder.register()

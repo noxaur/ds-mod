@@ -15,6 +15,7 @@ import io.github.noxaur.dsmod.core.camera.ThirdPerson
 import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
+import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.Theme
 
@@ -209,6 +210,40 @@ class DsModConfig : Config() {
         @ConfigEditorDropdown
         @JvmField
         var freeLookMode = KeyMode.HOLD
+
+        @Expose
+        @ConfigOption(name = "Command Binds", desc = "Send a command with a key, keys held together or keys in order, such as /warp end on Shift + F6. Set them up with Edit below.")
+        @ConfigEditorBoolean
+        @JvmField
+        var commandBinds = true
+
+        /** Every bind, in the order the player put them, each naming its group. */
+        @Expose
+        var binds: List<CommandBind> = emptyList()
+
+        /** The groups after the first, which is unnamed, in the order the player made them. */
+        @Expose
+        var bindGroups: List<String> = emptyList()
+
+        /** The groups whose binds are folded away in the list. */
+        @Expose
+        var collapsedGroups: List<String> = emptyList()
+
+        /** The groups switched off, whose binds send nothing whatever their own switch says. */
+        @Expose
+        var offGroups: List<String> = emptyList()
+
+        /** The edge sets this to open the editor, so the config itself needs no Minecraft. */
+        @ConfigOption(name = "Edit Command Binds", desc = "Name each bind, pick its keys, and choose where it works.")
+        @ConfigEditorButton(buttonText = "Edit")
+        @JvmField
+        var editBinds: Runnable = Runnable {}
+
+        @Expose
+        @ConfigOption(name = "Key Sequence Gap", desc = "Set how many milliseconds a bind whose keys go in order waits for its next key.")
+        @ConfigEditorSlider(minValue = 50f, maxValue = 1000f, minStep = 50f)
+        @JvmField
+        var sequenceGap = 250f
 
         private companion object {
             /** GLFW's code for the left Alt key. */
