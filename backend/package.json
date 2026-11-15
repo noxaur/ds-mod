@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vp dev --port 8787 --strictPort --host 127.0.0.1",
     "openapi": "node scripts/openapi.ts",
-    "check": "void prepare && vp check && timeout 30 vp test run"
+    "prepare": "node scripts/placeholder-tsconfig.ts && void prepare",
+    "check": "pnpm run prepare && vp check && timeout 30 vp test run"
   },
   "dependencies": {
     "better-auth": "1.7.14",
