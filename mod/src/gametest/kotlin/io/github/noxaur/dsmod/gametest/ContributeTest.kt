@@ -100,6 +100,8 @@ class ContributeTest : FabricClientGameTest {
                 check(lines.count { "\"type\":\"step\"" in it } == 4) { "The upload's steps are ${lines.filter { "\"type\":\"step\"" in it }}" }
                 check(lines.none { "\"type\":\"chat\"" in it }) { "The upload holds chat" }
                 check(lines.none { name in it }) { "The upload names the player $name" }
+                // Kept in the run folder, so the bytes can be sent through the real backend and pulled with dsctl.
+                java.nio.file.Files.write(dir.resolveSibling("contribute-upload.jsonl.gz"), upload.bytes)
 
                 keptAndResent(context, dir)
                 refused(context, dir)
