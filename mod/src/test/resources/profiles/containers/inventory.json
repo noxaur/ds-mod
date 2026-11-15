@@ -47,7 +47,15 @@
     ]
    ],
    "rarity": "RARE",
-   "glint": false
+   "glint": false,
+   "customData": {
+    "item_data": {
+     "item_name": "Reinforced Plating",
+     "item_type": "NONE",
+     "rarity": "RARE",
+     "item_id": "reinforced_plating"
+    }
+   }
   },
   null,
   null,
@@ -120,7 +128,18 @@
     ]
    ],
    "rarity": "RARE",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "REFORGE_STONE"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Pure Seeds",
+     "item_type": "REFORGE_STONE",
+     "rarity": "RARE",
+     "item_id": "pure_seeds"
+    }
+   }
   },
   {
    "entry": "endstone_rose_bush",
@@ -160,7 +179,15 @@
     ]
    ],
    "rarity": "EPIC",
-   "glint": false
+   "glint": false,
+   "customData": {
+    "item_data": {
+     "item_name": "Endstone Rose Bush",
+     "item_type": "NONE",
+     "rarity": "EPIC",
+     "item_id": "endstone_rose_bush"
+    }
+   }
   },
   {
    "entry": "scylla",
@@ -209,7 +236,18 @@
     ]
    ],
    "rarity": "MYTHIC",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "SWORD"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Scylla",
+     "item_type": "SWORD",
+     "rarity": "MYTHIC",
+     "item_id": "scylla"
+    }
+   }
   },
   {
    "entry": "crypt_cache_item",
@@ -249,7 +287,15 @@
     ]
    ],
    "rarity": "EPIC",
-   "glint": false
+   "glint": false,
+   "customData": {
+    "item_data": {
+     "item_name": "Crypt Cache",
+     "item_type": "NONE",
+     "rarity": "EPIC",
+     "item_id": "crypt_cache_item"
+    }
+   }
   },
   null,
   null,
@@ -304,7 +350,18 @@
     ]
    ],
    "rarity": "LEGENDARY",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "SWORD"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Glacial Scythe",
+     "item_type": "SWORD",
+     "rarity": "LEGENDARY",
+     "item_id": "glacial_scythe"
+    }
+   }
   }
  ]
 }

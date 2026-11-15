@@ -8,6 +8,7 @@ import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
+import io.github.noxaur.dsmod.core.capture.PlayerNames
 import io.github.noxaur.dsmod.core.profile.Profile
 import io.github.noxaur.dsmod.core.profile.ProfileLookup
 import io.github.noxaur.dsmod.core.profile.ProfileSource
@@ -15,10 +16,16 @@ import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.Account
 import io.github.noxaur.dsmod.edge.Chat
 import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.restyle
+import io.github.noxaur.dsmod.edge.toComponent
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.commands.SharedSuggestionProvider
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.HoverEvent
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -26,6 +33,7 @@ import java.util.concurrent.CompletableFuture
  * `/dsmod pv`. The server has its own `/pv <vault>`, so `/pv` with a number of one or two digits is not ours: the name
  * refuses it as a command the client does not know, and Fabric then sends the line on to the server as typed. Off
  * dragsim.co, or with the setting off, `/pv` is not registered for the line at all, so it reaches the server whole.
+ * A player's name in chat opens their profile when clicked.
  */
 object Profiles {
     private val on get() = DsModClient.active && DsModClient.settings.general.profileViewer
@@ -47,6 +55,21 @@ object Profiles {
 
     fun register(dispatcher: CommandDispatcher<FabricClientCommandSource>) {
         dispatcher.register(command("pv").requires { on })
+    }
+
+    fun registerNames() {
+        ClientReceiveMessageEvents.MODIFY_GAME.register { message, overlay ->
+            if (overlay || !on || !DsModClient.settings.general.profileNames) message else names(message)
+        }
+    }
+
+    /**
+     * [message] with each player's name in it made a link to their profile, with a hover that says so. The click runs
+     * `/dsmod pv`, which is always the mod's own, so Fabric runs it here and nothing reaches the server.
+     */
+    fun names(message: Component): Component = message.restyle(PlayerNames.inText(message.string)) { name, style ->
+        style.withClickEvent(ClickEvent.RunCommand("/dsmod pv $name"))
+            .withHoverEvent(HoverEvent.ShowText(text { action("Click to view "); body(name); action("'s profile") }.toComponent()))
     }
 
     /** `/dsmod pv`, which says so when the setting is off instead of passing the line to the server. */

@@ -56,7 +56,18 @@
     ]
    ],
    "rarity": "MYTHIC",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "HELMET"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Sorrow Helmet",
+     "item_type": "HELMET",
+     "rarity": "MYTHIC",
+     "item_id": "sorrow_helmet"
+    }
+   }
   },
   null,
   null,
@@ -113,7 +124,18 @@
     ]
    ],
    "rarity": "MYTHIC",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "CHESTPLATE"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Sorrow Chestplate",
+     "item_type": "CHESTPLATE",
+     "rarity": "MYTHIC",
+     "item_id": "sorrow_chestplate"
+    }
+   }
   },
   null,
   null,
@@ -164,7 +186,18 @@
     ]
    ],
    "rarity": "DIVINE",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "CHESTPLATE"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Chestplate of the Void",
+     "item_type": "CHESTPLATE",
+     "rarity": "DIVINE",
+     "item_id": "void_chestplate"
+    }
+   }
   },
   null,
   null,
@@ -218,7 +251,18 @@
     ]
    ],
    "rarity": "MYTHIC",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "LEGGINGS"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Sorrow Leggings",
+     "item_type": "LEGGINGS",
+     "rarity": "MYTHIC",
+     "item_id": "sorrow_leggings"
+    }
+   }
   },
   null,
   null,
@@ -275,7 +319,18 @@
     ]
    ],
    "rarity": "MYTHIC",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "BOOTS"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Sorrow Boots",
+     "item_type": "BOOTS",
+     "rarity": "MYTHIC",
+     "item_id": "sorrow_boots"
+    }
+   }
   },
   null,
   null,

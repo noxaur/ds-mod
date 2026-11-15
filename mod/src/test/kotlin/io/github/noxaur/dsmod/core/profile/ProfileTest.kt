@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.game.ServerText
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -38,26 +39,48 @@ class ProfileTest {
     }
 
     @Test
-    fun `dungeons read with the picked class and the floors in order`() {
-        val dungeons = profile.dungeons
-        assertEquals("Tank", dungeons.selectedClass)
-        assertEquals("tank", dungeons.selected?.id)
-        assertEquals(listOf("Healer", "Mage", "Berserk", "Archer", "Tank"), dungeons.classes.map { it.name })
-        assertEquals(listOf("F1", "F2", "F7", "M1"), dungeons.floors.map { it.id })
-        assertEquals(listOf(false, false, false, true), dungeons.floors.map { it.master })
+    fun `dungeons read with the picked class, and every class listed in the game's order`() {
+        val dungeons = checkNotNull(profile.dungeons)
+        assertEquals(Named("TANK", "Tank"), dungeons.selectedClass)
+        assertEquals(listOf("MAGE", "TANK"), dungeons.classes.map { it.id })
+        // The server sends only the classes with XP, so the rest stand at level 0 in their places.
+        assertEquals(listOf("HEALER", "MAGE", "BERSERK", "ARCHER", "TANK"), dungeons.allClasses.map { it.id })
+        assertEquals(listOf(0, 14, 0, 0, 18), dungeons.allClasses.map { it.level })
+        assertEquals(listOf("TANK"), dungeons.allClasses.filter(dungeons::picked).map { it.id })
+        assertEquals(listOf(false, true), dungeons.floors.map { it.master })
         assertNull(dungeons.floors.last().bestScore)
-        assertEquals(486, dungeons.completions)
+        assertEquals(469, dungeons.completions)
+        assertEquals(listOf("Wither Essence"), dungeons.essence.map { it.name })
     }
 
     @Test
     fun `a backend that sends no dungeons reads as none`() {
         val body = JsonObject(Json.parseToJsonElement(resource("profile.json")).jsonObject - "dungeons")
-        assertEquals(Dungeons(), Profile.parse(body.toString()).dungeons)
+        assertNull(Profile.parse(body.toString()).dungeons)
+    }
+
+    @Test
+    fun `everything else the player has reads too`() {
+        assertEquals(2, profile.equippedWardrobeSlot)
+        assertEquals(0x55FFFF, profile.playerStats.base.first { it.id == "intelligence" }.rgb)
+        assertNull(StatValue("x", "X", "not a color", 1.0).rgb)
+        assertEquals(profile.bestiary.take(10).map { it.id }, profile.topKills.map { it.id })
+        assertEquals("Void Infusion", profile.hotd?.ability?.name)
+        val data = profile.equipment.helmet?.customData?.get("item_data")?.jsonObject
+        assertEquals("maxor_helmet", data?.get("item_id")?.jsonPrimitive?.content)
+        val pet = profile.pets.single { it.active }
+        assertEquals("Lucky Clover", pet.heldItem?.name)
+        assertEquals("Golden Dragon", pet.item.name.plain)
+        val forge = profile.forge.first { it.stage == "RUNNING" }
+        assertEquals(0f, forge.done(forge.startedAt))
+        assertEquals(0.5f, forge.done(forge.startedAt + forge.durationMs / 2))
+        assertEquals(1f, forge.done(forge.finishesAt + 1))
     }
 
     @Test
     fun `one tab holds every page of a kind`() {
-        assertEquals(listOf("inventory", "ender_chest", "storage", "storage", "storage", "wardrobe", "accessories"), profile.containers.map { it.kind })
+        assertEquals(listOf("inventory", "ender_chest", "storage", "storage", "storage", "wardrobe", "accessories", "pets"), profile.containers.map { it.kind })
+        assertEquals("inventory", ContainerSummary("inventory:other", ServerText(emptyList()), 9, 5, false).kind)
     }
 
     @Test

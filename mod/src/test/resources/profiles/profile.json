@@ -1,6 +1,6 @@
 {
- "snapshot": "575b9255-b613-4b4f-87ca-d41efcd5a52c",
- "fetchedAt": "2026-11-15T17:56:42.490Z",
+ "snapshot": "84a1716e-c56a-4165-bb06-383b28529876",
+ "fetchedAt": "2026-11-15T17:15:20.000Z",
  "stale": false,
  "player": {
   "uuid": "11111111-2222-4333-8444-555555555555",
@@ -9,7 +9,16 @@
    "id": "MVP_PLUS",
    "prefix": [
     {
-     "text": "[MVP+]"
+     "text": "[MVP",
+     "color": "#55FFFF"
+    },
+    {
+     "text": "+",
+     "color": "#FF5555"
+    },
+    {
+     "text": "]",
+     "color": "#55FFFF"
     }
    ]
   }
@@ -165,6 +174,26 @@
      "color": "#55FF55"
     }
    ]
+  },
+  {
+   "id": "haunted_candy_earned",
+   "name": "Haunted Candy Earned",
+   "value": [
+    {
+     "text": "8,396",
+     "color": "#FFAA00"
+    }
+   ]
+  },
+  {
+   "id": "draconic_experience",
+   "name": "Draconic Experience",
+   "value": [
+    {
+     "text": "370",
+     "color": "#FF5555"
+    }
+   ]
   }
  ],
  "topKills": [
@@ -219,6 +248,404 @@
    "kills": 1149
   }
  ],
+ "savedAt": "2026-11-15T17:15:18.524Z",
+ "equippedWardrobeSlot": 2,
+ "playerStats": {
+  "base": [
+   {
+    "id": "intelligence",
+    "name": "Intelligence",
+    "color": "#55FFFF",
+    "value": 300
+   },
+   {
+    "id": "health",
+    "name": "Health",
+    "color": "#FF5555",
+    "value": 600
+   },
+   {
+    "id": "mystery",
+    "name": "Mystery",
+    "color": "#AAAAAA",
+    "value": 1
+   }
+  ],
+  "additive": [
+   {
+    "id": "health",
+    "name": "Health",
+    "color": "#FF5555",
+    "value": 15
+   }
+  ],
+  "multiplicative": [],
+  "increaseMax": [
+   {
+    "id": "health",
+    "name": "Health",
+    "color": "#FF5555",
+    "value": 5
+   }
+  ]
+ },
+ "bestiary": [
+  {
+   "id": "NEST_ZEALOT",
+   "name": "Nest Zealot",
+   "kills": 368742
+  },
+  {
+   "id": "NEST_ZEALOT_BRUISER",
+   "name": "Nest Zealot Bruiser",
+   "kills": 210934
+  },
+  {
+   "id": "NEST_WATCHER",
+   "name": "Nest Watcher",
+   "kills": 98554
+  },
+  {
+   "id": "CRYPT_GHOUL",
+   "name": "Crypt Ghoul",
+   "kills": 74385
+  },
+  {
+   "id": "NEST_DEFENDER",
+   "name": "Nest Defender",
+   "kills": 66967
+  },
+  {
+   "id": "VOIDLING_DEVOTEE",
+   "name": "Voidling Devotee",
+   "kills": 4142
+  },
+  {
+   "id": "SPECIAL_ZEALOT",
+   "name": "Special Zealot",
+   "kills": 2226
+  },
+  {
+   "id": "WARDEN",
+   "name": "Warden",
+   "kills": 1962
+  },
+  {
+   "id": "THE_DISTURBED",
+   "name": "The Disturbed",
+   "kills": 1542
+  },
+  {
+   "id": "REVENANT_HORROR_MOB",
+   "name": "Revenant Horror",
+   "kills": 1149
+  },
+  {
+   "id": "GOOP",
+   "name": "Goop",
+   "kills": 370
+  },
+  {
+   "id": "VOIDGLOOM_SERAPH_MOB",
+   "name": "Voidgloom Seraph",
+   "kills": 0
+  },
+  {
+   "id": "NEST_ENDERMITE",
+   "name": "Nest Endermite",
+   "kills": 0
+  }
+ ],
+ "collections": [
+  {
+   "id": "obsidian",
+   "name": "Obsidian",
+   "amount": 2747774
+  },
+  {
+   "id": "mystery_ore",
+   "name": "Mystery Ore",
+   "amount": 3
+  }
+ ],
+ "rngMeters": [
+  {
+   "id": "revenant",
+   "name": "Revenant",
+   "progress": 2495
+  },
+  {
+   "id": "mine_node",
+   "name": "Mine Node",
+   "progress": 962
+  }
+ ],
+ "dungeons": {
+  "selectedClass": {
+   "id": "TANK",
+   "name": "Tank"
+  },
+  "secrets": 12,
+  "zombieKills": 31,
+  "skeletorKills": 15,
+  "classes": [
+   {
+    "id": "MAGE",
+    "name": "Mage",
+    "level": 14,
+    "maxLevel": 50,
+    "totalXp": 18932.5,
+    "xpIntoLevel": 972.5,
+    "xpForNextLevel": 7380
+   },
+   {
+    "id": "TANK",
+    "name": "Tank",
+    "level": 18,
+    "maxLevel": 50,
+    "totalXp": 75730.5,
+    "xpIntoLevel": 5690.5,
+    "xpForNextLevel": 27600
+   }
+  ],
+  "floors": [
+   {
+    "id": "F7",
+    "name": "Floor 7",
+    "completions": 467,
+    "bestScore": 353
+   },
+   {
+    "id": "M1",
+    "name": "Master Mode 1",
+    "completions": 2,
+    "bestScore": null
+   }
+  ],
+  "essence": [
+   {
+    "id": "wither_essence",
+    "name": "Wither Essence",
+    "amount": 8608
+   }
+  ]
+ },
+ "hotd": {
+  "tier": 10,
+  "exp": 85183989,
+  "core": 10,
+  "ender": 11932047,
+  "void": 43761698,
+  "resets": 20,
+  "ability": {
+   "id": "void_infusion",
+   "name": "Void Infusion"
+  },
+  "tokens": 0,
+  "nodes": [
+   {
+    "id": "MINING_FORTUNE",
+    "name": "Mining Fortune",
+    "level": 50
+   },
+   {
+    "id": "DRAGONS_FAVOR",
+    "name": "Dragons Favor",
+    "level": 1
+   }
+  ]
+ },
+ "pets": [
+  {
+   "type": "GOLDEN_DRAGON",
+   "name": "Golden Dragon",
+   "rarity": "LEGENDARY",
+   "totalXp": 1798563928,
+   "xpCurve": 2,
+   "candiesUsed": 3,
+   "active": true,
+   "heldItem": {
+    "id": "pet_item_lucky_clover",
+    "name": "Lucky Clover"
+   },
+   "skinOverride": {
+    "id": "pet_skin_golden_dragon_ancient",
+    "name": "Ancient Golden Dragon Skin"
+   },
+   "level": null,
+   "maxLevel": 200,
+   "category": "Combat",
+   "perks": [
+    {
+     "id": "strength",
+     "name": "Strength",
+     "color": "#FF5555",
+     "value": 0.5
+    }
+   ],
+   "description": [
+    [
+     {
+      "text": "Combat Pet",
+      "color": "#555555"
+     }
+    ],
+    [
+     {
+      "text": "Gold's Power",
+      "color": "#FFAA00"
+     }
+    ]
+   ],
+   "item": {
+    "entry": null,
+    "material": "minecraft:player_head",
+    "count": 1,
+    "name": [
+     {
+      "text": "Golden Dragon",
+      "color": "#FFAA00"
+     }
+    ],
+    "lore": [
+     [
+      {
+       "text": "Combat Pet",
+       "color": "#AAAAAA"
+      }
+     ],
+     [],
+     [
+      {
+       "text": "Total XP: ",
+       "color": "#AAAAAA"
+      },
+      {
+       "text": "1,798,563,928",
+       "color": "#FFFFFF"
+      }
+     ],
+     [
+      {
+       "text": "Held Item: ",
+       "color": "#AAAAAA"
+      },
+      {
+       "text": "Lucky Clover",
+       "color": "#AA00AA"
+      }
+     ],
+     [
+      {
+       "text": "Skin: ",
+       "color": "#AAAAAA"
+      },
+      {
+       "text": "Ancient Golden Dragon Skin",
+       "color": "#FFFFFF"
+      }
+     ],
+     [
+      {
+       "text": "Candies Used: ",
+       "color": "#AAAAAA"
+      },
+      {
+       "text": "3",
+       "color": "#FFFFFF"
+      }
+     ],
+     [
+      {
+       "text": "Active",
+       "color": "#55FF55"
+      }
+     ],
+     [],
+     [
+      {
+       "text": "LEGENDARY",
+       "color": "#FFAA00",
+       "bold": true
+      }
+     ]
+    ],
+    "rarity": "LEGENDARY",
+    "glint": false,
+    "skullTexture": "eyJ0ZXh0dXJlcyI6IHsiU0tJTiI6IHsidXJsIjogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWJjMTIzIn19fQ=="
+   }
+  },
+  {
+   "type": "BLACK_CAT",
+   "name": "Black Cat",
+   "rarity": "EPIC",
+   "totalXp": 0,
+   "xpCurve": 2,
+   "candiesUsed": 0,
+   "active": false,
+   "heldItem": null,
+   "skinOverride": null,
+   "level": null,
+   "maxLevel": null,
+   "category": null,
+   "perks": [],
+   "description": [],
+   "item": {
+    "entry": null,
+    "material": "minecraft:player_head",
+    "count": 1,
+    "name": [
+     {
+      "text": "Black Cat",
+      "color": "#AA00AA"
+     }
+    ],
+    "lore": [
+     [],
+     [
+      {
+       "text": "Total XP: ",
+       "color": "#AAAAAA"
+      },
+      {
+       "text": "0",
+       "color": "#FFFFFF"
+      }
+     ],
+     [],
+     [
+      {
+       "text": "EPIC",
+       "color": "#AA00AA",
+       "bold": true
+      }
+     ]
+    ],
+    "rarity": "EPIC",
+    "glint": false
+   }
+  }
+ ],
+ "forge": [
+  {
+   "slot": 1,
+   "recipe": "obsidian",
+   "name": "Obsidian",
+   "startedAt": 1792679895946,
+   "durationMs": 1800000,
+   "finishesAt": 1792681695946,
+   "stage": "RUNNING"
+  },
+  {
+   "slot": 0,
+   "recipe": "refined_end_stone",
+   "name": "Refined End Stone",
+   "startedAt": 1792679893796,
+   "durationMs": 1800000,
+   "finishesAt": 1792681693796,
+   "stage": "READY"
+  }
+ ],
  "equipment": {
   "helmet": {
    "entry": "maxor_helmet",
@@ -267,7 +694,18 @@
     ]
    ],
    "rarity": "MYTHIC",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "HELMET"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Storm Helmet",
+     "item_type": "HELMET",
+     "rarity": "MYTHIC",
+     "item_id": "maxor_helmet"
+    }
+   }
   },
   "chestplate": {
    "entry": "maxor_chestplate",
@@ -316,7 +754,18 @@
     ]
    ],
    "rarity": "MYTHIC",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "CHESTPLATE"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Storm Chestplate",
+     "item_type": "CHESTPLATE",
+     "rarity": "MYTHIC",
+     "item_id": "maxor_chestplate"
+    }
+   }
   },
   "leggings": {
    "entry": "maxor_leggings",
@@ -365,7 +814,18 @@
     ]
    ],
    "rarity": "MYTHIC",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "LEGGINGS"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Storm Leggings",
+     "item_type": "LEGGINGS",
+     "rarity": "MYTHIC",
+     "item_id": "maxor_leggings"
+    }
+   }
   },
   "boots": {
    "entry": "maxor_boots",
@@ -414,7 +874,18 @@
     ]
    ],
    "rarity": "MYTHIC",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "BOOTS"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Storm Boots",
+     "item_type": "BOOTS",
+     "rarity": "MYTHIC",
+     "item_id": "maxor_boots"
+    }
+   }
   },
   "held": {
    "entry": "scylla",
@@ -463,7 +934,18 @@
     ]
    ],
    "rarity": "MYTHIC",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "SWORD"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Scylla",
+     "item_type": "SWORD",
+     "rarity": "MYTHIC",
+     "item_id": "scylla"
+    }
+   }
   }
  },
  "containers": [
@@ -543,80 +1025,17 @@
    "columns": 9,
    "slots": 18,
    "hidden": false
+  },
+  {
+   "id": "pets",
+   "title": [
+    {
+     "text": "Pets"
+    }
+   ],
+   "columns": 9,
+   "slots": 9,
+   "hidden": false
   }
- ],
- "dungeons": {
-  "selectedClass": "Tank",
-  "secrets": 1204,
-  "completions": 486,
-  "classes": [
-   {
-    "id": "healer",
-    "name": "Healer",
-    "level": 0,
-    "maxLevel": 50,
-    "totalXp": 0,
-    "xpIntoLevel": 0,
-    "xpForNextLevel": 50
-   },
-   {
-    "id": "mage",
-    "name": "Mage",
-    "level": 14,
-    "maxLevel": 50,
-    "totalXp": 18932.5,
-    "xpIntoLevel": 972.5,
-    "xpForNextLevel": 7380
-   },
-   {
-    "id": "berserk",
-    "name": "Berserk",
-    "level": 9,
-    "maxLevel": 50,
-    "totalXp": 3100,
-    "xpIntoLevel": 55,
-    "xpForNextLevel": 1340
-   },
-   {
-    "id": "archer",
-    "name": "Archer",
-    "level": 1,
-    "maxLevel": 50,
-    "totalXp": 120,
-    "xpIntoLevel": 70,
-    "xpForNextLevel": 75
-   },
-   {
-    "id": "tank",
-    "name": "Tank",
-    "level": 18,
-    "maxLevel": 50,
-    "totalXp": 75730.5,
-    "xpIntoLevel": 5690.5,
-    "xpForNextLevel": 27600
-   }
-  ],
-  "floors": [
-   {
-    "id": "F1",
-    "completions": 12,
-    "bestScore": 281
-   },
-   {
-    "id": "F2",
-    "completions": 3,
-    "bestScore": 302
-   },
-   {
-    "id": "F7",
-    "completions": 467,
-    "bestScore": 353
-   },
-   {
-    "id": "M1",
-    "completions": 4,
-    "bestScore": null
-   }
-  ]
- }
+ ]
 }

@@ -121,6 +121,7 @@ object DsModClient : ClientModInitializer {
         Recorder.register()
         Recording.register()
         Contribute.register()
+        Profiles.registerNames()
         val log = LoggerFactory.getLogger("dsmod")
         game.metrics.sinks += { snapshot ->
             snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }

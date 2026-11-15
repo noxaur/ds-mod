@@ -47,7 +47,15 @@
     ]
    ],
    "rarity": "EPIC",
-   "glint": false
+   "glint": false,
+   "customData": {
+    "item_data": {
+     "item_name": "Ritual Residue",
+     "item_type": "NONE",
+     "rarity": "EPIC",
+     "item_id": "ritual_residue"
+    }
+   }
   },
   {
    "entry": "ritual_residue",
@@ -87,7 +95,15 @@
     ]
    ],
    "rarity": "EPIC",
-   "glint": false
+   "glint": false,
+   "customData": {
+    "item_data": {
+     "item_name": "Ritual Residue",
+     "item_type": "NONE",
+     "rarity": "EPIC",
+     "item_id": "ritual_residue"
+    }
+   }
   },
   null,
   null,
@@ -139,7 +155,15 @@
     ]
    ],
    "rarity": "COMMON",
-   "glint": false
+   "glint": false,
+   "customData": {
+    "item_data": {
+     "item_name": "minecraft:player_head",
+     "item_type": "NONE",
+     "rarity": "COMMON",
+     "item_id": "minecraft:player_head"
+    }
+   }
   }
  ]
 }

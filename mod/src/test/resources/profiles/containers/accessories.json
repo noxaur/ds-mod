@@ -56,7 +56,18 @@
     ]
    ],
    "rarity": "DIVINE",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "ACCESSORY"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Void Relic",
+     "item_type": "ACCESSORY",
+     "rarity": "DIVINE",
+     "item_id": "void_relic"
+    }
+   }
   },
   {
    "entry": "high_greed",
@@ -105,7 +116,18 @@
     ]
    ],
    "rarity": "MYTHIC",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "ACCESSORY"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "High Greed",
+     "item_type": "ACCESSORY",
+     "rarity": "MYTHIC",
+     "item_id": "high_greed"
+    }
+   }
   },
   null,
   null,
@@ -162,7 +184,18 @@
     ]
    ],
    "rarity": "MYTHIC",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "ACCESSORY"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Zombie Relic",
+     "item_type": "ACCESSORY",
+     "rarity": "MYTHIC",
+     "item_id": "zombie_relic"
+    }
+   }
   },
   null,
   null,

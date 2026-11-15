@@ -100,7 +100,18 @@
     ]
    ],
    "rarity": "EPIC",
-   "glint": false
+   "glint": false,
+   "facts": {
+    "itemType": "WAND"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Witching Wand",
+     "item_type": "WAND",
+     "rarity": "EPIC",
+     "item_id": "witching_wand"
+    }
+   }
   }
  ]
 }

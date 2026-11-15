@@ -8,12 +8,21 @@ import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.Account
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.profile.ProfileScreen
+import io.github.noxaur.dsmod.edge.profile.Profiles
 import io.github.noxaur.dsmod.edge.ui.KitButton
 import io.github.noxaur.dsmod.edge.ui.KitTab
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
+import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
 import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.screens.ChatScreen
+import net.minecraft.core.component.DataComponents
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.Style
 import java.net.InetSocketAddress
+import java.util.Optional
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
@@ -31,8 +40,12 @@ class ProfileViewerTest : FabricClientGameTest {
     private companion object {
         /** Long enough for the screenshot of the loading line. */
         const val SLOW_MILLIS = 1500L
+        val PETS_HIDDEN = Regex("(?s)(\"id\": \"pets\".*?\"hidden\": )true")
     }
     private val asked = CopyOnWriteArrayList<String>()
+
+    /** The `item_id` of each stack whose tooltip another mod's hook saw, as DragSim Utils' hooks read it. */
+    private val hooked = CopyOnWriteArrayList<String>()
 
     private val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
         createContext("/") { exchange -> respond(exchange) }
@@ -46,7 +59,8 @@ class ProfileViewerTest : FabricClientGameTest {
             path == "/api/auth/minecraft/challenge" -> 200 to """{"serverId":"${"0".repeat(40)}"}"""
             path == "/api/auth/minecraft/verify" -> 200 to """{"token":"s1"}"""
             path == "/v1/players/Testwyrm/profile" -> 200 to profile
-            path == "/v1/players/Hidden/profile" -> 200 to profile.replace("\"hidden\": false", "\"hidden\": true")
+            // A hidden inventory hides every container but the pets, as the backend hides them.
+            path == "/v1/players/Hidden/profile" -> 200 to profile.replace("\"hidden\": false", "\"hidden\": true").replace(PETS_HIDDEN, "$1false")
             path == "/v1/players/Stale/profile" -> 200 to profile.replace("\"stale\": false", "\"stale\": true")
             path == "/v1/players/Down/profile" -> 503 to """{"_tag":"UpstreamUnavailable"}"""
             path == "/v1/players/Slow/profile" -> 200.also { Thread.sleep(SLOW_MILLIS) } to profile
@@ -62,12 +76,20 @@ class ProfileViewerTest : FabricClientGameTest {
     }
 
     override fun runTest(context: ClientGameTestContext) {
+        // Another mod adds to a real item's tooltip through Fabric's hook and reads the server's data from the stack.
+        ItemTooltipCallback.EVENT.register { stack, _, _, lines ->
+            val id = stack.get(DataComponents.CUSTOM_DATA)?.copyTag()?.getCompoundOrEmpty("item_data")?.getStringOr("item_id", "")
+            if (!id.isNullOrEmpty()) {
+                hooked += id
+                lines += Component.literal("Added by another mod")
+            }
+        }
         Account.backend = Backend("http://127.0.0.1:${server.address.port}", object : Identity {
             override val name = "Testwyrm"
             override fun join(serverId: String) {}
         }, "test")
         try {
-            context.worldBuilder().create().use {
+            context.worldBuilder().create().use { world ->
                 context.waitTicks(20)
                 // The server's /pv <vault> is not ours, so nothing opens and the line goes on to the server.
                 command(context, "pv 12")
@@ -103,6 +125,11 @@ class ProfileViewerTest : FabricClientGameTest {
                 context.takeScreenshot("profile-dungeons")
                 check(context.computeOnClient<Boolean, Nothing> { !screen(it).overflows }) { "The dungeons tab needs a scrollbar" }
 
+                // Each stat's hover breaks it down by the server's groups. Health is the second row.
+                tab(context, "Player Stats")
+                move(context, contentX + 20, viewY + 28)
+                context.takeScreenshot("profile-stat-tooltip")
+
                 tab(context, "Inventory")
                 waitUntil(context, "the inventory loaded") { asked.any { "/containers/inventory" in it } }
                 context.waitTicks(5)
@@ -111,6 +138,7 @@ class ProfileViewerTest : FabricClientGameTest {
                 val item = hoverItem(context, contentX, gridY)
                 context.takeScreenshot("profile-inventory-tooltip")
                 check(item == "reinforced_plating") { "The first item hovered is $item" }
+                check("reinforced_plating" in hooked) { "Another mod's tooltip hook saw only $hooked" }
 
                 tab(context, "Storage")
                 context.waitTicks(5)
@@ -138,8 +166,12 @@ class ProfileViewerTest : FabricClientGameTest {
                 context.waitTicks(5)
                 context.takeScreenshot("profile-hidden")
                 check(asked.count { "/containers/" in it } == containers) { "A hidden container was fetched" }
+                check(context.computeOnClient<Boolean, Nothing> { client -> screen(client).children().any { (it as? KitTab)?.message?.string == "Pets" } }) { "A hidden inventory hid the pets" }
 
+                names(context, world)
                 tour(context)
+                // The pets come with the profile, so their tab fetches nothing.
+                check(asked.none { "/containers/pets" in it }) { "The pets were fetched" }
                 states(context)
 
                 context.setScreen { null }
@@ -178,6 +210,33 @@ class ProfileViewerTest : FabricClientGameTest {
             }
         }
         context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
+    }
+
+    /**
+     * A player's name in a chat line from the server links to their profile: its hover says so, and its click runs
+     * the mod's own command, which opens the viewer. The rank and the message around the name keep their styles.
+     */
+    private fun names(context: ClientGameTestContext, world: TestSingleplayerContext) {
+        context.setScreen { null }
+        context.runOnClient<Nothing> { it.gui.hud.chat.clearMessages(false) }
+        world.server.runCommand("""tellraw @a [{"text":"[MVP+] ","color":"aqua"},{"text":"Testwyrm","color":"aqua"},{"text":": anyone for F7?","color":"white"}]""")
+        context.waitTicks(5)
+        val linked = context.computeOnClient<Map<String, String?>, Nothing> {
+            val line = Profiles.names(Component.empty().append("[MVP+] Testwyrm: anyone for F7?"))
+            val pieces = LinkedHashMap<String, String?>()
+            line.visit({ style, piece -> pieces[piece] = (style.clickEvent as? ClickEvent.RunCommand)?.command(); Optional.empty<Unit>() }, Style.EMPTY)
+            pieces
+        }
+        check(linked == mapOf("[MVP+] " to null, "Testwyrm" to "/dsmod pv Testwyrm", ": anyone for F7?" to null)) { "The name linked as $linked" }
+
+        context.setScreen { ChatScreen("", false) }
+        val height = context.computeOnClient<Int, Nothing> { it.window.guiScaledHeight }
+        move(context, 52, height - 45)
+        context.takeScreenshot("profile-chat-name")
+        // A click on the name runs its command as the chat screen runs it, and Fabric keeps it from the server.
+        context.runOnClient<Nothing> { it.connection!!.sendUnattendedCommand("dsmod pv Testwyrm", null) }
+        context.waitForScreen(ProfileScreen::class.java)
+        context.setScreen { null }
     }
 
     /** What the screen says while it loads, when dragsim.co is down, and when the copy is an old one. */
