@@ -49,22 +49,21 @@ object PlayerNames {
      */
     private val textureName = Regex("""h[0-9a-f]{15}""")
 
-    private val alias = Regex("""Player\d+""")
-
     // The server writes `You` where the line is about the player themselves, as in `» You placed a Summoning Eye!`.
-    private fun isName(name: String) = name.length >= 3 && name != "You" && !name.matches(alias) && !name.matches(textureName)
+    private fun isName(name: String) = name.length >= 3 && name != "You" && !name.matches(textureName)
 
     /**
      * Where the words a player typed sit in [message]. On each line, whatever follows the first [known] name and the
      * next `: ` is typed, whatever stands around the name, as in `[MVP+] Alice [IRON]: x`, `Party > Alice: x` and
      * `You whisper to Bob: x`, because the server never puts a `: ` after a player's name in its own lines. The server's
      * whisper, party and guild lines are in no capture yet, and this needs no list of them. A line of a boss's damage
-     * summary names a player and has no `: `, so its figures stay.
+     * summary names a player and has no `: `, so its figures stay, and what the server's characters say, as in
+     * `[NPC] Mort: `, is never typed, even when a player shares the name.
      */
     fun typed(message: String, known: Set<String>): List<IntRange> = buildList {
         var start = 0
         for (line in message.split('\n')) {
-            val name = word.findAll(line).firstOrNull { it.value in known }
+            val name = if (notPlayer.containsMatchIn(line)) null else word.findAll(line).firstOrNull { it.value in known }
             val colon = name?.let { line.indexOf(": ", it.range.last + 1) } ?: -1
             if (colon >= 0 && colon + 2 < line.length) add(start + colon + 2 until start + line.length)
             start += line.length + 1

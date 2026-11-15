@@ -60,18 +60,22 @@ class Redactor(private val names: Set<String>) {
         }
     }
 
-    /** Replaces each range of the plain text, and drops what the range covered in the other spans. */
+    /**
+     * Replaces each range of the plain text, which [hits] hold in order without overlap. The replacement goes in the
+     * span where its range starts, and what the range covered in the other spans is dropped.
+     */
     private fun ServerText.replacing(hits: List<Pair<IntRange, String>>): ServerText {
         if (hits.isEmpty()) return this
         var at = 0
+        var next = 0
         return ServerText(
             spans.mapNotNull { span ->
-                val start = at
-                at += span.text.length
                 val text = buildString {
-                    for (i in span.text.indices) {
-                        val hit = hits.firstOrNull { start + i in it.first }
-                        if (hit == null) append(span.text[i]) else if (start + i == hit.first.first) append(hit.second)
+                    for (char in span.text) {
+                        while (next < hits.size && hits[next].first.last < at) next++
+                        val hit = hits.getOrNull(next)?.takeIf { at in it.first }
+                        if (hit == null) append(char) else if (at == hit.first.first) append(hit.second)
+                        at++
                     }
                 }
                 if (text.isEmpty() && span.text.isNotEmpty()) null else span.copy(text = text)
@@ -107,12 +111,15 @@ class Redactor(private val names: Set<String>) {
             // A name drawn one color per letter is one piece per letter, so no single string holds it. The pieces
             // become one plain piece, which loses the line's colors and keeps the name on the player's machine.
             val whole = if (scrubbed["extra"] is JsonArray) shown(scrubbed) else ""
-            if (hits(whole, inside).isNotEmpty()) JsonPrimitive(names(whole, inside)) else scrubbed
+            val named = names(whole, inside)
+            if (named != whole) JsonPrimitive(named) else scrubbed
         }
-        is JsonArray -> JsonArray(json.map { scrub(it, key, here) })
+        // An entity's `uuid`, as in a hover event, can be a player's, and an item's can be looked up on the server's
+        // public profiles. Both come as a string or as an int array.
+        is JsonArray -> if (key.lowercase() == "uuid") JsonArray(emptyList()) else JsonArray(json.map { scrub(it, key, here) })
         is JsonPrimitive -> when {
             !json.isString -> json
-            // An item's `uuid` can be looked up on the server's public profiles, and `value` and `signature` hold a skin.
+            // `value` and `signature` hold a skin.
             key.lowercase() in setOf("uuid", "signature", "value") -> JsonPrimitive("")
             else -> JsonPrimitive(names(json.content, here))
         }

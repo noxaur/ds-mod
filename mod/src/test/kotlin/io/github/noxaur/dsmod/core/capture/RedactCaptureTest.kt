@@ -154,6 +154,29 @@ class RedactCaptureTest {
     }
 
     @Test
+    fun `an entity's uuid goes in either form, and so does a split name with a color code in front`() {
+        val out = redact(
+            captureLine(1, TabList(listOf(text("The End"), text("Alice"), text("Info")))),
+            """{"t":2,"type":"title","data":{"title":{"text":"x","component":{"text":"§aAli","extra":["ce"],"hover_event":{"id":"minecraft:player","uuid":[5,6,7,8]}}}}}""",
+            """{"t":3,"type":"title","data":{"title":{"text":"x","component":{"text":"","hover_event":{"uuid":"0-1-2"}}}}}""",
+        )
+
+        assertFalse(listOf("Ali", "5,6,7,8", "0-1-2").any { it in out[1] + out[2] }, out.toString())
+        assertTrue(""""component":"Player1"""" in out[1], out[1])
+    }
+
+    @Test
+    fun `an NPC that shares a player's name says what it said, and a player called like an alias is renamed`() {
+        val out = redact(
+            captureLine(1, TabList(listOf(text("The End"), text("Mort"), text("Player1"), text("Info")))),
+            captureLine(2, SystemMessage(text("[NPC] Mort: Good luck."))),
+            captureLine(3, SystemMessage(text("Player1: my secret"))),
+        )
+
+        assertEquals(listOf("[NPC] Player1: Good luck.", "Player2: hello"), plains(out).map { it.plain })
+    }
+
+    @Test
     fun `the server's own head textures keep their names`() {
         val out = redact("""{"t":1,"type":"skulls","data":{"entries":{"1,2,3":{"profile":{"name":"h1dc2c096de8131d","id":[1,2]}}}}}""")
 
