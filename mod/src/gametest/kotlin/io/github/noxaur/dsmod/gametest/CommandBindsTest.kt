@@ -8,9 +8,7 @@ import io.github.noxaur.dsmod.core.input.CommandBinds.Entry
 import io.github.noxaur.dsmod.core.input.Where
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.CommandBindsScreen
-import io.github.noxaur.dsmod.edge.CommandKeys
 import io.github.noxaur.dsmod.edge.DsModClient
-import io.github.noxaur.dsmod.edge.mixin.ChatComponentAccessor
 import io.github.noxaur.dsmod.edge.ui.KitCheckbox
 import io.github.noxaur.dsmod.edge.ui.KitCycleButton
 import io.github.noxaur.dsmod.edge.ui.KitKeysButton
@@ -20,10 +18,8 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.AbstractWidget
-import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.TitleScreen
-import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.client.input.KeyEvent
 import org.lwjgl.glfw.GLFW
 import kotlin.io.path.readText
@@ -33,14 +29,14 @@ import kotlin.io.path.readText
  * keys, one on the middle button that works in menus too, a sequence, one limited to The End, a duplicate that
  * clashes, a delete that asks twice, rows dragged and moved with Alt, the list scrolling, and a group named by
  * typing, filled by dragging under its heading and from a row's right-press menu, folded, turned off, exported,
- * imported, moved and deleted. Then in a world each bind sends where it should and nowhere else. Read the screenshots.
+ * imported, moved and deleted. [CommandKeysTest] sends the binds in a world. Read the screenshots.
  */
 class CommandBindsTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.waitForScreen(TitleScreen::class.java)
         val general = DsModClient.settings.general
         context.runOnClient<Nothing> { DsModClient.openSettings(DsModConfig.General::class.java.getField("editBinds")) }
-        context.waitTicks(20)
+        context.waitFor { it.gui.screen() !is TitleScreen }
         val settings = context.computeOnClient<Screen?, Nothing> { it.gui.screen() }
         context.takeScreenshot("command-binds-settings")
         context.runOnClient<Nothing> { general.editBinds.run() }
@@ -95,7 +91,7 @@ class CommandBindsTest : FabricClientGameTest {
         /** Presses at [point], far enough from the last press that it is not a double click. */
         fun press(point: Pair<Double, Double>, button: Int = 0) {
             context.input.setCursorPos(point.first, point.second)
-            context.waitTicks(10)
+            context.waitTicks(PAST_DOUBLE_CLICK)
             context.input.pressMouse(button)
             context.waitTicks(2)
         }
@@ -106,8 +102,7 @@ class CommandBindsTest : FabricClientGameTest {
         fun pickRow(row: Int) = press(nameOf(boxes()[row]))
         fun drag(from: Pair<Double, Double>, to: Pair<Double, Double>, escape: Boolean = false) {
             context.input.setCursorPos(from.first, from.second)
-            // Far enough from the last press that this one is not a double click.
-            context.waitTicks(10)
+            context.waitTicks(PAST_DOUBLE_CLICK)
             context.input.holdMouse(0)
             context.input.setCursorPos(to.first, to.second)
             context.waitTicks(2)
@@ -305,86 +300,21 @@ class CommandBindsTest : FabricClientGameTest {
         check(general.bindGroups == listOf("Dungeons") && general.binds.size == 4) { "Deleting Imported left ${general.bindGroups}, ${general.binds.size} binds" }
 
         context.clickScreenButton("Done")
-        context.waitTicks(20)
+        context.waitFor { it.gui.screen() !is CommandBindsScreen }
         val after = context.computeOnClient<Screen?, Nothing> { it.gui.screen() }
         check(after === settings && after != null) { "Done went to $after, not back to the settings $settings" }
         val saved = FabricLoader.getInstance().configDir.resolve("dsmod/config.json").readText()
         check(""""name":"Warp End","command":"/me bound","keys":[340,295]""" in saved && """"bindGroups":["Dungeons"]""" in saved) { "The binds were not saved: $saved" }
         context.setScreen { null }
+        general.binds = emptyList()
+        general.bindGroups = emptyList()
+        general.collapsedGroups = emptyList()
+    }
 
-        context.worldBuilder().create().use { _ ->
-            fun said(word: String) = context.computeOnClient<Int, Nothing> { client ->
-                (client.gui.hud.chat as ChatComponentAccessor).allMessages.count { it.content().string.endsWith(word) }
-            }
-            fun shiftF6() {
-                context.input.holdKey(GLFW.GLFW_KEY_LEFT_SHIFT)
-                context.input.pressKey(GLFW.GLFW_KEY_F6)
-                context.input.releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT)
-                context.waitTicks(10)
-            }
-            context.waitTicks(20)
-            try {
-                shiftF6()
-                check(said("bound") == 1) { "Shift + F6 sent /me bound ${said("bound")} times" }
-                context.input.pressKey(GLFW.GLFW_KEY_F6)
-                context.waitTicks(10)
-                check(said("bound") == 1) { "F6 without Shift sent /me bound" }
-                // A held key's repeat is not a press.
-                context.input.holdKey(GLFW.GLFW_KEY_LEFT_SHIFT)
-                context.input.holdKey(GLFW.GLFW_KEY_F6)
-                context.runOnClient<Nothing> { CommandKeys.input(GLFW.GLFW_KEY_F6, GLFW.GLFW_REPEAT) }
-                context.input.releaseKey(GLFW.GLFW_KEY_F6)
-                context.input.releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT)
-                context.waitTicks(10)
-                check(said("bound") == 2) { "Holding Shift + F6 through a repeat sent /me bound ${said("bound") - 1} times" }
+    private companion object {
+        /** Minecraft takes two presses within 250 ms for a double click, so six ticks apart are two clicks. */
+        const val PAST_DOUBLE_CLICK = 6
 
-                context.input.pressKey(GLFW.GLFW_KEY_F8)
-                context.input.pressKey(GLFW.GLFW_KEY_F7)
-                context.waitTicks(10)
-                check(said("seq") == 0) { "F8 then F7 sent the sequence F7, F8" }
-                context.input.pressKey(GLFW.GLFW_KEY_F7)
-                context.input.pressKey(GLFW.GLFW_KEY_F8)
-                context.waitTicks(10)
-                check(said("seq") == 1) { "F7 then F8 sent /me seq ${said("seq")} times" }
-
-                context.input.pressKey(GLFW.GLFW_KEY_F9)
-                context.waitTicks(10)
-                check(said("end") == 0) { "F9, limited to The End, sent outside it" }
-
-                context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
-                context.waitTicks(10)
-                check(said("other") == 1) { "The middle button said other ${said("other")} times in the world" }
-                context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }
-                context.waitTicks(2)
-                context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
-                context.waitTicks(2)
-                shiftF6()
-                check(said("other") == 2 && said("bound") == 2) { "In the inventory the menu bind said other ${said("other") - 1} times and the world bind sent ${said("bound") - 2}" }
-
-                context.setScreen { ChatScreen("", false) }
-                shiftF6()
-                context.setScreen { null }
-                context.waitTicks(10)
-                check(said("bound") == 2) { "Shift + F6 in the chat box sent /me bound" }
-
-                // Shift + F6 is in Dungeons now, so turning the group off quiets it.
-                general.offGroups = listOf("Dungeons")
-                shiftF6()
-                check(said("bound") == 2) { "With Dungeons off Shift + F6 sent /me bound" }
-                general.offGroups = emptyList()
-
-                general.commandBinds = false
-                shiftF6()
-                check(said("bound") == 2) { "With Command Binds off Shift + F6 sent /me bound" }
-            } finally {
-                general.commandBinds = true
-                general.binds = emptyList()
-                general.bindGroups = emptyList()
-                general.offGroups = emptyList()
-                general.collapsedGroups = emptyList()
-                context.setScreen { null }
-            }
-        }
     }
 
     /** The README's picture: a few binds with the server's own commands, one group folded, the mouse away. */

@@ -79,6 +79,8 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | A capture type has one producer | `CaptureWriter` rejects a raw record with an event's type |
 | The jars a player installs boot and open settings | `runProdClientGameTest` |
 | A unit test run takes at most 30 seconds | `timeout` on `tasks.test` in `mod/build.gradle.kts`, and `scripts/test-time-limit.ts` in `backend/` and in `web/`, the global setup of the tests in each `vite.config.ts` |
+| A game test takes at most 20 seconds, its world included | `TestClock` in `mod/src/gametest/` |
+| A game test run names the tests it runs | The `gametests` check in `mod/build.gradle.kts` |
 | A CI job takes at most 3 minutes | `.github/actions/time-limit`, the last step of every job in `ci.yml` |
 | The mod stays inside its frame, tick and size caps | `PerfTest` against `mod/src/gametest/resources/perf-budgets.json`, in CI's `perf` job |
 | A beta ships only when every check and game test passes | `.github/workflows/beta.yml` |
