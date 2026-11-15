@@ -2833,6 +2833,9 @@
                                   }
                                 },
                                 "additionalProperties": false
+                              },
+                              "customData": {
+                                "type": "object"
                               }
                             },
                             "required": [
@@ -3719,6 +3722,9 @@
                                     }
                                   },
                                   "additionalProperties": false
+                                },
+                                "customData": {
+                                  "type": "object"
                                 }
                               },
                               "required": [
@@ -4509,6 +4515,9 @@
                                     }
                                   },
                                   "additionalProperties": false
+                                },
+                                "customData": {
+                                  "type": "object"
                                 }
                               },
                               "required": [
@@ -5299,6 +5308,9 @@
                                     }
                                   },
                                   "additionalProperties": false
+                                },
+                                "customData": {
+                                  "type": "object"
                                 }
                               },
                               "required": [
@@ -6089,6 +6101,9 @@
                                     }
                                   },
                                   "additionalProperties": false
+                                },
+                                "customData": {
+                                  "type": "object"
                                 }
                               },
                               "required": [
@@ -6879,6 +6894,9 @@
                                     }
                                   },
                                   "additionalProperties": false
+                                },
+                                "customData": {
+                                  "type": "object"
                                 }
                               },
                               "required": [
@@ -7927,6 +7945,9 @@
                                   }
                                 },
                                 "additionalProperties": false
+                              },
+                              "customData": {
+                                "type": "object"
                               }
                             },
                             "required": [

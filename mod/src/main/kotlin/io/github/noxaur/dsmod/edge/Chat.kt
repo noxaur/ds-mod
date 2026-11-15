@@ -8,7 +8,9 @@ import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Style
 import net.minecraft.network.chat.TextColor
+import java.util.Optional
 
 object Chat {
     private val prefix: Component by lazy {
@@ -42,4 +44,28 @@ fun ServerText.toComponent(): MutableComponent = spans.fold(Component.empty()) {
                 .withStrikethrough(span.strikethrough).withObfuscated(span.obfuscated)
         },
     )
+}
+
+/**
+ * This line with each of [ranges] of its plain text restyled by [restyle], which gets the text in the range. The rest
+ * keeps its styles, and a piece the server made clickable keeps its own click.
+ */
+fun Component.restyle(ranges: List<IntRange>, restyle: (String, Style) -> Style): Component {
+    if (ranges.isEmpty()) return this
+    val plain = string
+    val line = Component.empty()
+    var at = 0
+    visit({ style, piece ->
+        var i = 0
+        while (i < piece.length) {
+            val range = ranges.firstOrNull { at + i in it }
+            val end = range?.let { it.last + 1 - at } ?: (ranges.filter { it.first > at + i }.minOfOrNull { it.first - at } ?: piece.length)
+            val text = piece.substring(i, end.coerceAtMost(piece.length))
+            line.append(Component.literal(text).setStyle(if (range != null && style.clickEvent == null) restyle(plain.substring(range), style) else style))
+            i += text.length
+        }
+        at += piece.length
+        Optional.empty<Unit>()
+    }, Style.EMPTY)
+    return line
 }

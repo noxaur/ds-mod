@@ -1,0 +1,169 @@
+{
+ "id": "ender_chest",
+ "title": [
+  {
+   "text": "Ender Chest"
+  }
+ ],
+ "columns": 9,
+ "slots": 27,
+ "hidden": false,
+ "items": [
+  {
+   "entry": "ritual_residue",
+   "material": "minecraft:player_head",
+   "count": 64,
+   "name": [
+    {
+     "text": "Ritual Residue",
+     "color": "#AA00AA"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "Right-click to view recipes!",
+      "color": "#FFFF55"
+     }
+    ],
+    [],
+    [
+     {
+      "text": "",
+      "color": "#AA00AA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "EPIC",
+      "color": "#AA00AA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "EPIC",
+   "glint": false,
+   "customData": {
+    "item_data": {
+     "item_name": "Ritual Residue",
+     "item_type": "NONE",
+     "rarity": "EPIC",
+     "item_id": "ritual_residue"
+    }
+   }
+  },
+  {
+   "entry": "ritual_residue",
+   "material": "minecraft:player_head",
+   "count": 64,
+   "name": [
+    {
+     "text": "Ritual Residue",
+     "color": "#AA00AA"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "Right-click to view recipes!",
+      "color": "#FFFF55"
+     }
+    ],
+    [],
+    [
+     {
+      "text": "",
+      "color": "#AA00AA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "EPIC",
+      "color": "#AA00AA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "EPIC",
+   "glint": false,
+   "customData": {
+    "item_data": {
+     "item_name": "Ritual Residue",
+     "item_type": "NONE",
+     "rarity": "EPIC",
+     "item_id": "ritual_residue"
+    }
+   }
+  },
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  {
+   "entry": "minecraft:player_head",
+   "material": "minecraft:player_head",
+   "count": 5,
+   "name": [
+    {
+     "text": "minecraft:player_head",
+     "color": "#FFFFFF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "Right-click to view recipes!",
+      "color": "#FFFF55"
+     }
+    ],
+    [],
+    [
+     {
+      "text": "COMMON",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "COMMON",
+   "glint": false,
+   "customData": {
+    "item_data": {
+     "item_name": "minecraft:player_head",
+     "item_type": "NONE",
+     "rarity": "COMMON",
+     "item_id": "minecraft:player_head"
+    }
+   }
+  }
+ ]
+}
