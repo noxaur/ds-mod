@@ -28,7 +28,7 @@ class ProfileTest {
         assertEquals("[MVP+]", profile.player.rank.prefix.plain)
         assertEquals(listOf("Arcane", "Superior"), profile.profiles.map { it.name.plain })
         assertEquals(0xAA00AA, profile.profiles[0].name.spans.single().color)
-        assertEquals("Superior", profile.choice?.name?.plain)
+        assertEquals("Superior", profile.choice.name.plain)
         assertEquals(listOf("combat", "mining", "taming", "catacombs", "dragon_slaying"), profile.skills.map { it.id })
         assertEquals("Revenant Horror", profile.slayers[0].name)
         assertEquals(ServerText(ServerSpan("35,124,030,742", 0xFFAA00)), profile.stats.first { it.id == "coins" }.value)
@@ -75,6 +75,15 @@ class ProfileTest {
         assertEquals(0f, forge.done(forge.startedAt))
         assertEquals(0.5f, forge.done(forge.startedAt + forge.durationMs / 2))
         assertEquals(1f, forge.done(forge.finishesAt + 1))
+    }
+
+    @Test
+    fun `a profile the list leaves out is still picked, by its own name and mode`() {
+        assertEquals(profile.profiles, profile.choices)
+        val unlisted = profile.copy(profileId = "bbbbbbbb-0000-4000-8000-000000000009")
+        assertEquals("Superior", unlisted.choice.name.plain)
+        assertEquals("IRONMAN", unlisted.choice.mode)
+        assertEquals(profile.profiles + unlisted.choice, unlisted.choices)
     }
 
     @Test
