@@ -74,6 +74,7 @@ class BackendTest {
         val verify = seen.single { it.path == "/api/auth/minecraft/verify" }
         assertEquals("""{"name":"Steve","serverId":"${"%040x".format(1)}"}""", String(verify.body))
         val call = seen.last()
+        assertEquals("GET $generate", "${call.method} ${call.path}")
         assertEquals("Bearer session-1", call.headers["authorization"])
         assertEquals(url, call.headers["origin"])
         assertTrue(seen.all { it.headers["origin"] == url }, "sign-in sends the origin too")
@@ -100,14 +101,6 @@ class BackendTest {
         assertEquals(401, failure.status)
         assertEquals(2, challenges)
         assertEquals(2, seen.count { it.path == generate })
-    }
-
-    @Test
-    fun `gives the one-time token`() {
-        answers[generate] = { 200 to """{"token":"once"}""" }
-
-        assertEquals("once", backend.oneTimeToken())
-        assertEquals("GET", seen.last().method)
     }
 
     @Test
