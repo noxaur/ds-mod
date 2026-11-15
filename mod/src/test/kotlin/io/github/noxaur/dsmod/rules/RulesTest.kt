@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.rules
 
+import io.github.notenoughupdates.moulconfig.annotations.Category
+import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.Area
@@ -59,6 +61,22 @@ class RulesTest {
         val docs = Path.of("../docs/user/features.md").readText()
         val missing = features(DsModConfig()).map { it.title }.filter { "### $it\n" !in docs }
         assertEquals(emptyList(), missing, "docs/user/features.md needs a `### <Name>` section that tells the player what each of these shows: $missing\n")
+    }
+
+    @Test
+    fun `every setting's description fits the settings screen at full size`() {
+        // MoulConfig shrinks the font of a description that runs past its box: 67 characters fit, 72 did not.
+        val categories = DsModConfig::class.java.declaredFields.mapNotNull { it.getAnnotation(Category::class.java) }
+        val options = DsModConfig::class.java.declaredClasses.flatMap { it.declaredFields.toList() }
+            .mapNotNull { it.getAnnotation(ConfigOption::class.java) }
+        val long = categories.filter { it.desc.length > 45 }.map { "${it.name}: ${it.desc}" } +
+            options.filter { it.desc.length > 67 }.map { "${it.name}: ${it.desc}" }
+        assertEquals(
+            emptyList(),
+            long,
+            "Cut each description to one short sentence, at most 45 characters for a category and 67 for a setting. " +
+                "The player docs hold the rest: $long\n",
+        )
     }
 
     @Test
