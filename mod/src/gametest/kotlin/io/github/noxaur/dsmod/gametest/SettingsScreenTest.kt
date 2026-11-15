@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.Settings
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.TitleScreen
@@ -13,6 +14,10 @@ class SettingsScreenTest : FabricClientGameTest {
         context.waitTicks(20)
         val screen = context.computeOnClient<Any?, Nothing> { it.gui.screen() }
         check(screen != null && screen !is TitleScreen) { "Settings screen did not open, got $screen" }
+        // With nothing starred, the first open shows the first of the player's categories and not an empty Favorites.
+        check(DsModClient.settings.favorites.isEmpty() && context.computeOnClient<String, Nothing> { Settings.selected } != Settings.FAVORITES) {
+            "The first open showed an empty Favorites"
+        }
         context.takeScreenshot("settings")
 
         // A dropdown is the one editor besides the switch and the button, so look at it once too.
