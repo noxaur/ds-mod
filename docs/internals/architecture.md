@@ -22,6 +22,14 @@ Email and password sign-in is switched off, so no account exists that Mojang did
 
 The website has no Microsoft login. A site that asked for it would need an Azure app that Mojang approves. Instead the mod, which is already signed in, trades its session for a link that works once within a minute. The token sits in the link's fragment, which a browser sends to no server and leaves out of the Referer, so the website takes it from the page's own script. The page then asks the player to confirm the account before it keeps the session, because anyone can send a player a link to their own account, and a browser signed in to it unnoticed would hand that person whatever the player does next.
 
+## The backend rebuilds item tooltips, because the server's API sends none
+
+dragsim.co's player API sends an item's data and no lore, enchantments or glint. The backend rebuilds the tooltip from the item and the server's `catalog.json`, so the mod draws an item as the game does. The rebuild is a best effort: the catalog lags the live game, it holds no viewer-scaled numbers, and the layout glyphs that right-align a badge or a bar depend on font widths fitted from real tooltips. Tests compare it with tooltips recorded in the game, and a mismatch means the catalog moved, not that the item is wrong. A catalog or an item with odd data draws what it can and never throws.
+
+A glint is not in the data. The catalog's `glowing` wins. Otherwise what players saw decides: an item they always saw glint glints, and one they saw plain, or both ways, does not. Without enough sightings the catalog decides. A few materials glint in the game by themselves, so they glint unless players saw them without.
+
+A skull's texture is a URL the mod fetches, so a texture is used only when its base64 JSON decodes and every URL in it is on `textures.minecraft.net/texture/` with a hex name. Hints come from players, and a texture the check rejects falls through to the next source: the item's own, then the hint for its skin id, then the hint for the item, then the catalog's. Material `player_head` decides a skull, not `skull`, which is false for items such as the Sorrow Helmet that still carry a skin id.
+
 ## The mod knows the game only from packets
 
 dragsim.co is someone else's server, closed and custom, so it has no API for ds-mod. Everything the mod knows arrives in the packets that the server sends the client. That is why agents work from captures, which record what the server showed, instead of from a description of the game. The capture format is in [mod/AGENTS.md](../../mod/AGENTS.md#seeing-the-game).
