@@ -82,7 +82,7 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | The mod stays inside its frame, tick and size caps | `PerfTest` against `mod/src/gametest/resources/perf-budgets.json`, in CI's `perf` job |
 | A beta ships only when every check and game test passes | `.github/workflows/beta.yml` |
 | Every capture type reaches the file | `CaptureTest`, and `BriefTest` for `step` |
-| A capture a player uploads holds no player name the mod knows, and no chat | `RedactCaptureTest` |
+| A redacted capture holds no player name the mod knows, and no typed chat | `RedactCaptureTest` |
 | Specs hold their invariants | TLC on `specs/` |
 | Go code is formatted and vetted | `gofmt -l` and `go vet` in `check:backend` |
 | The website is type-safe | `tsc` with `strict` and the extra flags in `web/tsconfig.json` |

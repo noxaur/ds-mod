@@ -72,21 +72,25 @@ The `unparsed` counter matters most. The server is closed and changes without no
 
 ## The recorder is in the release jar, and runs only when started
 
-Developers' accounts cannot reach all of the server's content, so players will record it for them. That needs the recorder in the jar a player installs, though it reads private client fields and records everything, chat included. Three things make that safe. It starts only from the debug build's `/dscapture` and `-Pbrief`, so while none runs every hook is one null check and the recorder costs a frame nothing. The file never leaves the machine as recorded: the mod redacts it first (below). And the recorder only ever reads what the server already sent the client, so it cannot send for the player.
+Developers' accounts cannot reach all of the server's content, so players will record it for them. That needs the recorder in the jar a player installs, though it reads private client fields and records everything, chat included. Two things make that safe. It starts only from the debug build's `/dscapture` and `-Pbrief`, so while none runs every hook is one null check and the recorder costs a frame nothing. And the recorder only ever reads what the server already sent the client, so it cannot send for the player.
 
 The rest of the developer tools stay in `src/debug`, a separate source set that `src/main` can't see, so the compiler keeps them out of the release jar. They are `/dscapture`, `/dskit`, `cutFixture` and the window title that names a `-Pbrief`. The debug jar holds the release jar inside it, so the release code runs the same in both.
 
 The recorder reads private fields, which needs an access widener, and a mod declares only one. So the jar's file is ours followed by MoulConfig's lines, merged by the build.
 
-Recording is client-thread work that no thread can do for it, because it reads game state. Writing, redacting and compressing happen on other threads, and the writer opens the file on its own thread, so starting a recording touches no disk on the client thread.
-
-## Redaction happens in the mod, and the backend still distrusts the upload
-
-A capture holds player names and private chat, and `PlayerNames` finds them by rules that a line nobody has seen can slip past. The mod redacts before it uploads, so a name never leaves the machine, using the same `PlayerNames` and the same redactor that cuts fixtures. The backend still treats every upload as sensitive, because the mod is open source and a modified one skips the redaction. The raw `chat` records are dropped instead of redacted, since `system` carries the same lines as events and a typed message sits in nested components there.
-
-What a player typed is found by shape, not by a list of formats. The server's whisper, party and message lines are in no capture, so a list would be a guess that passes its own tests. In a `system` line, whatever follows a known name and a `: ` is replaced. That costs the text of a server line that happens to have the same shape, and a line from a player the capture never names elsewhere still gets through. A component that spells a name across several pieces, one per color, is replaced by its redacted plain text, because no single string holds the name to replace.
+Recording is client-thread work that no thread can do for it, because it reads game state. Writing happens on another thread, and the writer opens the file on its own thread, so starting a recording touches no disk on the client thread.
 
 A recording reads every item and name in view four times a second, and Minecraft's codec was most of what that cost: over a millisecond a pass with a full inventory and a crowd of armored mobs. Almost none of them change between passes, so the session encodes a value only when it differs from the copy it kept, and `PerfTest` caps both passes.
+
+## A capture is redacted by rules that say where a name sits
+
+A capture holds player names and private chat, and a fixture cut from it goes into a public repository. `Redactor` rewrites a capture so it holds neither, and `PlayerNames` is the one place that knows where the server puts a name, so `cutFixture` and `FixtureLeakTest` cannot disagree. Both live in the release jar's `core`, because a capture that leaves a player's machine has to be redacted by the jar that player runs.
+
+A redactor fails in two directions. A name it misses leaves the machine, and a word it takes for a name changes what the server sent, so a fixture replays a line the server never wrote. Each rule therefore says where in a text a name sits, and a name is always replaced there. A name a rule found is also replaced wherever else it stands, because names turn up where no rule looks, such as a head's item name, unless that would rewrite the server's own words. Two kinds are kept to the places a rule found them. A plain name on a player entity may be an NPC's, since the server's NPCs are player entities, some with plain names such as `Dungeons`. And a player can be named what the server calls itself or a place, as a staff account is named after the server, so a name that the sidebar's title, its `⏣` place, the tab list's area row or its header also shows is not replaced across the capture. A player named after a game word the server writes only in other places, such as `Eye`, still has it replaced everywhere.
+
+What a player typed is found by shape, not by a list of formats. The server's whisper, party and guild lines are in no capture, so a list would be a guess that passes its own tests. On each line of a `system` message, whatever follows the first known name and the next `: ` is replaced, because the server never writes a `: ` after a player's name in its own lines; across every capture so far, no server line lost text to this rule. The cost is a server line that names a player and then has a `: `, and a message from a player no line of the capture names, which keeps both the name and the text. A message that starts `Word: ` names its speaker `Word`, which over-redacts a server message that starts that way; none does in any capture so far, and the server's own speakers carry a tag, as in `[NPC] Mort: `, which the rules skip.
+
+Typed text is found only in a `system` event, so a raw `chat` record, whose event carries the same line, is dropped, and so is an older capture's `system` line that does not read as today's event. A component that spells a name across several pieces, one per color, is replaced by its redacted plain text, because no single string holds the name to replace, and an older raw text that names someone loses its `§` codes for the same reason.
 
 ## The release jar carries its own MoulConfig
 
