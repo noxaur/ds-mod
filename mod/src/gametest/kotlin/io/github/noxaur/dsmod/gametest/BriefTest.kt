@@ -42,7 +42,10 @@ class BriefTest : FabricClientGameTest {
             context.takeScreenshot("brief-saved")
 
             val captures = context.computeOnClient<java.nio.file.Path, Nothing> { it.gameDirectory.toPath().resolve("dsmod/captures") }
-            val steps = captures.listDirectoryEntries("*.jsonl").maxBy { it.fileName.toString() }.readLines().filter { "\"type\":\"step\"" in it }
+            fun newestSteps() = captures.listDirectoryEntries("*.jsonl").maxBy { it.fileName.toString() }.readLines().filter { "\"type\":\"step\"" in it }
+            // The file is finished on another thread, so wait for its last step instead of a number of ticks.
+            context.waitFor { newestSteps().size == 4 }
+            val steps = newestSteps()
             check(steps.map { it.substringAfter("\"data\":") } == listOf(
                 """{"index":1,"do":"Warp to the End"}}""",
                 """{"index":2,"do":"Stand still next to the Protector until it spawns"}}""",
@@ -68,9 +71,8 @@ class BriefTest : FabricClientGameTest {
             context.runOnClient<Nothing> {
                 repeat(2) { KeyMapping.click(InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_RIGHT_BRACKET)) }
             }
-            context.waitFor { !Recorder.running }
-            context.waitTicks(10)
-            val both = captures.listDirectoryEntries("*.jsonl").maxBy { it.fileName.toString() }.readLines().filter { "\"type\":\"step\"" in it }
+            context.waitFor { newestSteps().size == 4 }
+            val both = newestSteps()
             check(both.map { it.substringAfter("\"data\":") } == listOf(
                 """{"index":1,"do":"Warp to the End"}}""",
                 """{"index":2,"do":"Stand still next to the Protector until it spawns"}}""",
