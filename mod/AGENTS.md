@@ -18,7 +18,7 @@ A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with 
 | --- | --- |
 | Follow lines in chat | `DragonTimer` |
 | Read the tab list's info rows, or the sidebar's the same way | `GolemStatus` |
-| Read items and mark slots | `RarityOutlines` |
+| Read items and mark slots | `RarityMarks` |
 | Change how the game draws, reading nothing from the server | `Fullbright` |
 | Count something and keep the total | `SlayerTracker` |
 | Hide a line the server sends, and tell the player once that you did | `AbilitySpam` |
@@ -39,11 +39,11 @@ A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with 
 - A drop line such as `RARE DROP! (Summoning Eye)` is parsed by `Drop.parse`. When two features read the same server line, they share its parser in `core/game`.
 - State that outlives the session is one immutable `@Serializable` class given to `saved()`, with a default for every field. Replace its `value` to change it, because a change made in place is never written.
 - Text the server sent is a `ServerText`, and text the mod shows is a `Text` from `core.text`. Match the server's text on `ServerText.plain`, anchored at the start of the line, because a player can type anything after their name.
-- When a line reaches a feature's branch and then fails to parse, call `count("unparsed")`. That counter is how a format change on the server shows up.
+- When a line reaches a feature's branch and then fails to parse, call `unparsed(text)` with the server's text as it is. It counts the failure, which is how a format change on the server shows up, and it is the only route to the report of unread lines that players can switch on. The report redacts what it sends.
 - Clear the state that belongs to one world on `WorldChanged`. `Game` runs that handler too when the player switches the feature off, because a feature that is off sees no events, and runs its `TabList` and `Sidebar` handlers with the current ones when it is switched back on.
 - Every feature has a fixture, `src/test/resources/features/<id>/<name>.jsonl`, cut from a real capture. `FeatureReplayTest` replays it and writes the transcript `<name>.txt`: each event, whether the feature hid it, what the feature said, and the HUD block and slot marks each time they changed. The run that writes a transcript fails once, so that you read it before you keep it. To accept a changed readout, delete the transcript and run the test again.
 - A feature that only reads events and returns a HUD block or slot marks needs no game test, because the replay covers it and `SurfacesTest` covers the layers. Write a game test when you add to `edge`.
-- Cut a fixture with `./gradlew cutFixture`, never by hand. The window is in seconds from the capture's first line, and `--types system` keeps only the chat lines. Keep the lines your feature must ignore, since they prove it ignores them. Keep the tab list for a feature locked to an area, and the sidebar with `--types ..,sidebar` when the sidebar tells its area, because a fixture without them replays as if the player never left it. It redacts every player name from the whole capture, each typed chat message and each skin, and `FixtureLeakTest` compares every fixture with the captures in `run/`, so run the check before you delete the capture. Read the fixture before you keep it, because a name the server writes in a line no rule knows is not redacted. `PlayerNames` is the one place that knows where names sit, so teach it there.
+- Cut a fixture with `./gradlew cutFixture`, never by hand. The window is in seconds from the capture's first line, and `--types system` keeps only the chat lines. Keep the lines your feature must ignore, since they prove it ignores them. Keep the tab list for a feature locked to an area, and the sidebar with `--types ..,sidebar` when the sidebar tells its area, because a fixture without them replays as if the player never left it. It replaces each name `PlayerNames` learns from the capture, each typed chat message and each skin, and `FixtureLeakTest` looks for those names in every fixture, so run the check before you delete the capture. Read the fixture before you keep it, because a name the server writes in a line no rule knows is not redacted, a word a rule takes for a name is, and the test sees neither. `PlayerNames` is the one place that knows where names sit, so teach it there, from a capture that shows the line.
 - DragSim Utils is all rights reserved, and its source is published to be read. Read it to learn what the server sends and how a feature should behave, then write ds-mod's own code and prove it with a capture. Copy no code and no data file from it. When a feature needs a table the game can't show, tell the user.
 
 ## Release and debug
@@ -51,13 +51,14 @@ A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with 
 The code is split into two source sets, and each becomes its own mod.
 
 - `src/main` is the release build, the jar players install. It cannot see debug code, so the compiler keeps developer tools out of it.
-- `src/debug` holds developer tools such as capture. The debug jar contains the release jar plus these tools, and `runClient` loads both.
-- Put a tool in `src/debug` when only a developer or an agent needs it.
+- `src/debug` holds developer tools such as `/dscapture`, `/dskit` and `cutFixture`. The debug jar contains the release jar plus these tools, and `runClient` loads both.
+- Put a tool in `src/debug` when only a developer or an agent needs it. The recorder is not one: it is in the release jar, and only a contribution the player accepted starts it. `Recorder` in `edge/capture` is its one switch, and while it is off each hook is a null check. Keep it that way: nothing the recorder does may run before `Recorder.start`.
+- The backend's address and the website's are `backend_url` and `website_url` in `gradle.properties`, written into the jar by the build. A player has no setting for them.
 - `runClient` also loads the third-party mods in the `devMods` configuration, such as Sodium and Mod Menu, and logs in with the user's Microsoft account through DevAuth. These mods never ship in a jar, and the game tests run without them.
 
 ## Seeing the game
 
-Agents see the game through captures. A capture is a JSONL file of what the server showed the client, one event per line. With the debug build, the user types `/dscapture` in game to start one and again to save it, and it lands in `dsmod/captures/` inside the game folder.
+Agents see the game through captures. A capture is a JSONL file of what the server showed the client, one event per line. With the debug build, the user types `/dscapture` in game to start one and again to save it, and it lands in `dsmod/captures/` inside the game folder. It refuses while a brief is on. Players record captures too, for a request an agent published, and the mod redacts and uploads those: [architecture](../docs/internals/architecture.md#a-contribution-is-a-brief-run-that-ends-in-an-upload).
 
 Each line has a time `t`, a `type` and `data`. A type is either an event or a raw record.
 
@@ -84,7 +85,7 @@ Raw records are for you to read. No feature sees one until it is promoted:
 - `unload` for a living entity the client dropped, with its `reason`. A mob that only left has `unload` and no `death` event.
 - `skulls` for skull blocks within four chunks, with `state` (rotation) and `profile`, and `blockstates` for the blocks in `BlockScan.kt`'s watch-list there. Both are entries like `entities`, keyed `x,y,z`, and include what stood there before the capture began.
 - `map` for a map the player carries or an item frame holds, when it changes: `colors` is base64 of the zlib-deflated 128x128 color bytes, present only when the pixels changed, and `decorations` are the markers.
-- `hud` for the rows of each HUD block ds-mod showed, and `metrics` for how long each feature took and what it counted.
+- `hud` for the rows of each HUD block ds-mod showed, and `metrics` for how long each feature took and what it counted. Its `capture-items` and `capture-entities` timers are what the recorder's own passes over items and entities cost the client thread, and `PerfTest` caps them.
 - `step` for the brief's step that starts on that line, with its `index` and `do`, and `done` after the last one. Cut a fixture's window from these.
 
 An event's text is `plain` plus `spans`, with `§` codes already resolved into the spans. A raw record's text is plain `text` plus the full `component`. `itemcomponents` and `entities` record all entries once with `"full": true`, then only the entries that changed, with null for a removed one.

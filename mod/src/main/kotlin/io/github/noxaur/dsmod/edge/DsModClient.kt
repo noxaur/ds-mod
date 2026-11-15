@@ -9,6 +9,9 @@ import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.WorldChanged
+import io.github.noxaur.dsmod.edge.capture.Recorder
+import io.github.noxaur.dsmod.edge.capture.Recording
+import io.github.noxaur.dsmod.edge.contribute.Contribute
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
@@ -76,6 +79,9 @@ object DsModClient : ClientModInitializer {
     fun openHudEditor() =
         Minecraft.getInstance().let { it.setScreenAndShow(HudEditorScreen(readouts, config.instance.hud, it.gui.screen(), config::saveToFile)) }
 
+    fun openRarityStyle() =
+        Minecraft.getInstance().let { it.setScreenAndShow(RarityStyleScreen(config.instance.inventory, it.gui.screen(), config::saveToFile)) }
+
     override fun onInitializeClient() {
         config = ManagedConfig.create(
             FabricLoader.getInstance().configDir.resolve("dsmod/config.json").toFile(),
@@ -100,6 +106,11 @@ object DsModClient : ClientModInitializer {
         config.instance.hud.edit = Runnable { openHudEditor() }
         config.instance.end.editBeam = Runnable { openBeaconEditor() }
         config.instance.general.editBinds = Runnable { openBindsEditor() }
+        config.instance.inventory.editRarityStyle = Runnable { openRarityStyle() }
+        config.instance.contribute.open = Runnable { Contribute.open() }
+        Recorder.register()
+        Recording.register()
+        Contribute.register()
         val log = LoggerFactory.getLogger("dsmod")
         game.metrics.sinks += { snapshot ->
             snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }
@@ -135,12 +146,19 @@ object DsModClient : ClientModInitializer {
             Packets.tick(it)
             game.tick(System.currentTimeMillis())
             readouts.push()
+            Contribute.tick(game, config.instance.contribute.reportUnknowns, System.currentTimeMillis())
             if (++ticks % FLUSH_TICKS == 0) {
                 saved.flush()
                 game.metrics.flush()
             }
         }
-        ClientLifecycleEvents.CLIENT_STOPPING.register { saved.close() }
+        // In this order: a request's run cut short is deleted, the recorder finishes what it holds, then an upload gets its moment.
+        ClientLifecycleEvents.CLIENT_STOPPING.register {
+            Recording.quit()
+            Recorder.quit()
+            Contribute.quit()
+            saved.close()
+        }
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
             dispatcher.register(
                 ClientCommands.literal("dsmod")
@@ -154,7 +172,10 @@ object DsModClient : ClientModInitializer {
                             context.source.client.schedule { openHudEditor() }
                             1
                         },
-                    ),
+                    )
+                    .then(ClientCommands.literal("login").executes { Account.login(); 1 })
+                    .then(ClientCommands.literal("submit").executes { Contribute.submit(); 1 })
+                    .then(ClientCommands.literal("cancel").executes { Contribute.cancel(); 1 }),
             )
         }
     }

@@ -70,7 +70,7 @@ class SurfacesTest : FabricClientGameTest {
                     mapOf(
                         diamond.index to SlotMark(Role.GOOD, text { good("1") }),
                         diamond.index - 18 to SlotMark(Role.BAD),
-                        diamond.index - 9 to SlotMark(Role.LEGENDARY, border = true),
+                        diamond.index - 9 to SlotMark(Role.LEGENDARY, rarity = true),
                     ),
                 )
                 val scale = client.window.guiScale

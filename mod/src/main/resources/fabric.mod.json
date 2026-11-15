@@ -5,6 +5,10 @@
   "name": "ds-mod",
   "description": "Quality-of-life features for Dragon Simulator.",
   "license": "Apache-2.0",
+  "custom": {
+    "dsmod:backend": "${backend_url}",
+    "dsmod:website": "${website_url}"
+  },
   "environment": "client",
   "entrypoints": {
     "client": [
@@ -14,7 +18,7 @@
       }
     ]
   },
-  "accessWidener": "moulconfig.accesswidener",
+  "accessWidener": "dsmod.accesswidener",
   "mixins": [
     "dsmod.mixins.json"
   ],

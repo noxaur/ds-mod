@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.feature
 
+import io.github.noxaur.dsmod.core.capture.readCapture
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.game.ActionBar
@@ -18,7 +19,6 @@ import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.world.Mark
 import io.github.noxaur.dsmod.core.world.Waypoint
-import io.github.noxaur.dsmod.debug.capture.readCapture
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.TestFactory
@@ -135,7 +135,7 @@ class FeatureReplayTest {
                             for (slot in marks.keys.sorted()) {
                                 val mark = marks.getValue(slot)
                                 if (mark == marked[slot]) continue
-                                val shape = if (mark.border) "frame" else "fill"
+                                val shape = if (mark.rarity) "rarity" else "fill"
                                 val label = mark.label?.let { " \"${it.plain}\"" } ?: ""
                                 appendLine("             + slot $slot: ${mark.role} $shape$label on ${name(game.container.slots[slot]!!)}")
                             }

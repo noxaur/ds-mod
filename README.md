@@ -12,11 +12,19 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - Boss Drops keeps your placement, damage and loot from every dragon and Protector fight.
 - Slayer Tracker shows your quest progress, the XP to your next level and your average kill time.
 - Loot Alerts go off for drops at or above the rarity you set.
+- Rarity Marks color each slot by its item's rarity. Pick Showcase, Gilded or Minimal, or build your own look beside your inventory.
 - Command Binds send a command such as `/warp end` with a key, a few keys held together or keys pressed in turn. Keep them in groups you can fold, switch off and share.
 
-  ![Command Binds: binds listed in groups on the left, the picked bind's command, keys and settings on the right](docs/images/command-binds.png)
+<p>
+  <img src="docs/images/rarity-chest.png" width="49%" alt="A chest in the Minimal look: each rare item stands on a shelf in its rarity's color, with a small gem in its corner">
+  <img src="docs/images/rarity-editor.png" width="49%" alt="The rarity style editor beside the player's inventory, with a preview of three items">
+</p>
 
-It also has a HUD editor, rarity outlines, Fullbright, and guards against two misclicks: taking a placed eye back out of the altar, and swapping armor with a right click.
+<p>
+  <img src="docs/images/command-binds.png" alt="Command Binds: binds listed in groups on the left, and the picked bind's command, keys and settings on the right">
+</p>
+
+It also has a HUD editor, Fullbright, and guards against two misclicks: taking a placed eye back out of the altar, and swapping armor with a right click.
 
 Toggle any feature in `/dsmod`. The [feature guide](docs/user/features.md) has the full list.
 
