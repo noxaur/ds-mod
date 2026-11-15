@@ -73,9 +73,9 @@ pnpm dsctl pull <request id> ../mod/run/dsmod/captures
 pnpm dsctl unknowns
 ```
 
-`create` prints the request's id. `--area` names an area the player must be in reach of, and can be given more than once. `pull` writes one `.jsonl` per run, named by the brief and a letter per player, and `cutFixture` takes them like any capture. `unknowns` lists what the mod saw and had no handling for, most seen first.
+`create` prints the request's id. `--area` names an area the player must be in reach of, and can be given more than once. `pull` writes one `.jsonl` per run, named by the brief and a letter per player, and `cutFixture` takes them like any capture. `unknowns` lists what the mod saw and had no handling for, most seen first. `list --json` and `unknowns --json` print the backend's answer as JSON instead.
 
-`dsctl` reads the backend's address from `DSMOD_BACKEND`, `http://localhost:8787` by default, and the admin token from `DSMOD_ADMIN_TOKEN`. Locally the token is `ADMIN_TOKEN` in `backend/.env`, which git ignores. Ask the user for the deployed one.
+`dsctl` reads the backend's address from `DSMOD_BACKEND`, `http://127.0.0.1:8787` by default, and the admin token from `DSMOD_ADMIN_TOKEN`. Locally the token is `ADMIN_TOKEN` in `backend/.env`, which git ignores. Ask the user for the deployed one.
 
 ### Change the backend's tables
 
