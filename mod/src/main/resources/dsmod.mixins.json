@@ -6,9 +6,13 @@
     "CaptureInputMixin",
     "CapturePacketsMixin",
     "ChatComponentAccessor",
+    "CameraMixin",
     "ContainerScreenAccessor",
     "ExplosionParticleMixin",
     "FullbrightMixin",
+    "KeyPressMixin",
+    "MouseTurnMixin",
+    "PerspectiveKeyMixin",
     "ServerPacketsMixin"
   ],
   "injectors": {
