@@ -40,7 +40,7 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `tooltip` | Text plus 4 on each side | A plain tooltip's backing: the plate's colors, nearly opaque. A tooltip with a style of its own keeps it |
 | `bar` | 6 tall | A well with a 4px fill that has a lit top row and a shaded bottom row |
 | `scrollbar` | 6 wide | A well with a raised thumb |
-| `tab` | 22x21 | Sits on a panel's top edge. The selected one joins the panel, and the rest sit 2px lower in `tabOff`. Draw the rest before the panel and the selected one after it |
+| `tab` | 22x21, or wider to hold a field | Sits on a panel's top or bottom edge. The selected one joins the panel, and the rest sit 2px further out in `tabOff`, or in `hover` under the mouse. Draw the rest before the panel and the selected one after it |
 | `field` | Any, 16 tall in a widget | A text field's frame: a well, ringed in `hoverOutline` under the mouse or with focus. The text sits 4 in |
 | `checkbox` | 10x10 | A well that holds the check icon when on. Hover and focus ring it in `hoverOutline` |
 | `span` | Any, 14 tall in a slider | A switched-on stretch of a range slider: a raised face in `accent`, lighter under the mouse and sunk while dragged |
@@ -62,6 +62,7 @@ A widget is a vanilla widget with a kit face. It takes its label as a string and
 | `KitButton` | A button with a label or an icon. An icon button is 16x16 |
 | `KitCheckbox` | A checkbox with its label 4px to the right |
 | `KitTextField` | A one-line field with a muted hint while empty. It is vanilla's `EditBox` with the kit's frame, so selection and the clipboard keys work |
+| `KitTab` | A tab on a menu's top or bottom edge, with an item or an icon, that runs an action. Its `selected` state joins the panel |
 | `KitStepper` | A minus button, a value and a plus button, for a number with few useful steps |
 | `KitRangeSlider` | A 16 tall track with any number of spans, for picking stretches of a scale. Press and drag on the track to draw one or click to add one, drag an end or the middle, right-click to remove. The cursor shows what a press will do. `Sections` in `core/ui` holds its rules: a span is at least 5 long, and two within 3 of each other become one |
 

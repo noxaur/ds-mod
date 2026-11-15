@@ -1,0 +1,217 @@
+package io.github.noxaur.dsmod.edge
+
+import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.core.ui.ItemSearch
+import io.github.noxaur.dsmod.core.ui.MenuTab
+import io.github.noxaur.dsmod.core.ui.TabEdge
+import io.github.noxaur.dsmod.core.ui.TabLayout
+import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
+import io.github.noxaur.dsmod.edge.ui.Icon
+import io.github.noxaur.dsmod.edge.ui.Kit
+import io.github.noxaur.dsmod.edge.ui.KitButton
+import io.github.noxaur.dsmod.edge.ui.KitTab
+import io.github.noxaur.dsmod.edge.ui.KitTextField
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
+import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
+import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
+import net.fabricmc.fabric.api.client.screen.v1.Screens
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen
+import net.minecraft.core.component.DataComponents
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.Identifier
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import org.lwjgl.glfw.GLFW
+import java.util.BitSet
+
+/**
+ * Menu Tabs, under Better UI: the player's tabs along the top and bottom of every menu and of the inventory, as
+ * `TabEditorScreen` sets them up. A command tab sends its command, and the one whose command opened the menu shown
+ * now joins the panel. The search tab opens a bar along its edge toward the middle of the menu, drawn over the tabs
+ * it covers, which dims every item whose name and lore lack a word of the query.
+ */
+object TabBar {
+    private val settings get() = DsModClient.settings.betterUi
+
+    /** Whether Better UI is on, which every control it holds asks first. */
+    val on: Boolean get() = DsModClient.active && settings.enabled
+
+    private val shown get() = on && settings.menuTabs
+
+    // The query stays from menu to menu until the player closes the bar, so it can follow them through storage pages.
+    private var query = ""
+    private var words = emptyList<String>()
+    private var searched: String? = null
+    private var stacks = arrayOfNulls<ItemStack>(0)
+    private val dimmed = BitSet()
+
+    /** The item a tab shows: [id] from the game's items, or a barrier when there is no such item. */
+    fun icon(id: String): ItemStack =
+        Identifier.tryParse(id)?.let { BuiltInRegistries.ITEM.getOptional(it).orElse(null) }?.let(::ItemStack) ?: ItemStack(Items.BARRIER)
+
+    /** What a tab's tooltip says: its name, the command it sends and the click hint. */
+    fun tooltip(tab: MenuTab) = text {
+        if (tab.search) {
+            body("Search")
+            muted("\nDims the items that do not match.")
+            action("\nClick to search.")
+        } else {
+            body(tab.tooltip.ifBlank { "/${tab.command}" })
+            muted("\nSends /${tab.command}.")
+            action("\nClick to send.")
+        }
+    }.toComponent()
+
+    fun register() {
+        // Fabric drops a screen's listeners on every init, so they are added again here.
+        ScreenEvents.AFTER_INIT.register { _, screen, _, height ->
+            if (screen !is AbstractContainerScreen<*> || screen is CreativeModeInventoryScreen) return@register
+            screen as ContainerScreenAccessor
+            stacks = arrayOfNulls(0)
+            searched = null
+            val left = screen.leftPos
+            val menuWidth = screen.imageWidth
+            fun edgeY(edge: TabEdge) = if (edge == TabEdge.TOP) screen.topPos else screen.topPos + screen.imageHeight
+
+            val widgets = Screens.getWidgets(screen)
+            val tabs = settings.tabs.filter { it.slot in 0 until TabLayout.PER_EDGE }
+            val selected = TabLayout.selected(tabs, MenuBack.opener(screen))
+            val made = ArrayList<Pair<MenuTab, KitTab>>()
+            var search: MenuTab? = null
+            var openSearch: () -> Unit = {}
+            for ((i, tab) in tabs.withIndex()) {
+                val x = left + TabLayout.x(tab.slot)
+                val widget = if (tab.search) {
+                    search = tab
+                    KitTab(x, edgeY(tab.edge), tab.edge, "Search", null, Icon.SEARCH) { openSearch() }
+                } else {
+                    KitTab(x, edgeY(tab.edge), tab.edge, tab.tooltip.ifBlank { "/${tab.command}" }, icon(tab.item), null) { MenuBack.send(tab.command) }
+                }
+                widget.selected = i == selected
+                widget.setTooltip(Tooltip.create(tooltip(tab)))
+                made += tab to widget
+                widgets.add(widget)
+            }
+            val bar = search ?: return@register
+
+            // The bar is a wide joined tab holding the field and a close button, laid over the tabs it covers.
+            val (barLeft, barWidth) = TabLayout.searchBar(bar.slot, menuWidth)
+            val barX = left + barLeft
+            // On a short screen an edge's tabs run off it. The bar stays on it, over the menu's edge, so its text shows.
+            val barY = if (bar.edge == TabEdge.TOP) maxOf(edgeY(bar.edge), Kit.TAB_HEIGHT - 2) else minOf(edgeY(bar.edge), height - Kit.TAB_HEIGHT + 2)
+            val covered = made.filter { (tab, _) -> tab.edge == bar.edge && TabLayout.x(tab.slot) < barLeft + barWidth && TabLayout.x(tab.slot) + Kit.TAB_WIDTH > barLeft }
+            val contentY = if (bar.edge == TabEdge.TOP) barY - Kit.TAB_HEIGHT + 3 else barY
+            val field = KitTextField(barX + 3, contentY, barWidth - 6 - Kit.BUTTON_HEIGHT - 2, "Search", "Search...")
+            field.value = query
+            field.setResponder {
+                query = it
+                words = ItemSearch.words(it)
+            }
+            var open = query.isNotEmpty()
+            lateinit var close: KitButton
+
+            fun show() {
+                for ((_, widget) in made) widget.visible = shown && !(open && covered.any { it.second === widget })
+                field.visible = shown && open
+                close.visible = field.visible
+            }
+
+            fun shut() {
+                field.value = ""
+                open = false
+                if (screen.focused === field) screen.focused = null
+                show()
+            }
+            close = KitButton(barX + barWidth - 3 - Kit.BUTTON_HEIGHT, contentY, Icon.CROSS, "Close Search", ::shut)
+            close.setTooltip(Tooltip.create(text { action("Click to stop searching.") }.toComponent()))
+            openSearch = {
+                open = true
+                show()
+                screen.focused = field
+            }
+            widgets.add(field)
+            widgets.add(close)
+            show()
+
+            ScreenEvents.afterBackground(screen).register { _, graphics, _, _, _ ->
+                if (field.visible) Kit.tab(graphics, barX, barY, true, bar.edge, width = barWidth)
+            }
+            ScreenEvents.afterTick(screen).register {
+                show()
+                search(screen, field)
+            }
+            ScreenEvents.afterForeground(screen).register { _, graphics, _, _, _ ->
+                if (!field.visible) return@register
+                for (slot in screen.menu.slots) {
+                    if (dims(slot.index) && slot.isActive) Kit.slotDim(graphics, screen.leftPos + slot.x, screen.topPos + slot.y)
+                }
+            }
+            ScreenKeyboardEvents.allowKeyPress(screen).register { _, event ->
+                when {
+                    !shown -> true
+                    // A focused field takes every key, so E, Q and the number keys type instead of closing or moving items.
+                    field.isFocused -> {
+                        if (event.isEscape || event.isConfirmation) {
+                            if (query.isEmpty()) shut() else screen.focused = null
+                        } else {
+                            field.keyPressed(event)
+                        }
+                        false
+                    }
+                    event.hasControlDownWithQuirk() && event.key() == GLFW.GLFW_KEY_F -> {
+                        openSearch()
+                        false
+                    }
+                    else -> true
+                }
+            }
+            // The screen focuses a clicked tab after its press, so the field takes focus back once the click is done.
+            ScreenMouseEvents.afterMouseClick(screen).register { _, _, _ ->
+                if (field.visible && screen.focused is KitTab) screen.focused = field
+                true
+            }
+            ScreenMouseEvents.allowMouseClick(screen).register { _, event ->
+                if (!field.visible) return@register true
+                val over = field.isMouseOver(event.x(), event.y())
+                if (over && event.button() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+                    field.value = ""
+                    screen.focused = field
+                    return@register false
+                }
+                if (!over && !close.isMouseOver(event.x(), event.y())) {
+                    if (query.isEmpty()) shut() else if (field.isFocused) screen.focused = null
+                }
+                true
+            }
+        }
+    }
+
+    /** Whether the search dims the open menu's slot at [index], because its item does not match. */
+    fun dims(index: Int) = words.isNotEmpty() && dimmed[index]
+
+    /** Works out which slots to dim, looking again only at a slot whose stack changed since the last tick. */
+    private fun search(screen: AbstractContainerScreen<*>, field: KitTextField) {
+        if (!field.visible || words.isEmpty()) {
+            field.setTextColor(Role.BODY.argb())
+            return
+        }
+        val slots = screen.menu.slots
+        val again = searched != query || stacks.size != slots.size
+        if (stacks.size != slots.size) stacks = arrayOfNulls(slots.size)
+        for (i in slots.indices) {
+            val stack = slots[i].item
+            if (!again && stack === stacks[i]) continue
+            stacks[i] = stack
+            dimmed[i] = !stack.isEmpty && !Slots.hides(i) && !matches(stack)
+        }
+        searched = query
+        val any = slots.indices.any { !stacks[it]!!.isEmpty && !dimmed[it] && !Slots.hides(it) }
+        field.setTextColor(if (any) Role.BODY.argb() else Role.BAD.argb())
+    }
+
+    private fun matches(stack: ItemStack) =
+        ItemSearch.matches(words, stack.hoverName.string, stack.get(DataComponents.LORE)?.lines()?.map { it.string }.orEmpty())
+}

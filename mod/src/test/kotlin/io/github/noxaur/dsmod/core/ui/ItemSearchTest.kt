@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class MenuToolsTest {
+class ItemSearchTest {
     private val lore = listOf("Damage: +250", "LEGENDARY SWORD")
 
     @Test
@@ -25,11 +25,5 @@ class MenuToolsTest {
     fun `a blank query has no words and matches everything`() {
         assertEquals(emptyList(), ItemSearch.words("   "))
         assertTrue(ItemSearch.matches(ItemSearch.words(""), "Dirt", emptyList()))
-    }
-
-    @Test
-    fun `commands drop their slash, blanks and repeats`() {
-        assertEquals(listOf("storage", "warp end", "ec"), CommandList.parse(" /storage, warp end,, ec , storage,"))
-        assertEquals(emptyList(), CommandList.parse(""))
     }
 }

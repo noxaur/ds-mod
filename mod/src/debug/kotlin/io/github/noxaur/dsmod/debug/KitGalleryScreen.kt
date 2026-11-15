@@ -4,6 +4,7 @@ import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.TextBuilder
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Section
+import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.edge.toComponent
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
@@ -137,10 +138,13 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
 
     /** Tabs, a slot grid with every mark and a scrollbar, as a storage screen would have them. Its search field is a widget. */
     private fun window(g: GuiGraphicsExtractor, x: Int, y: Int) {
-        caption(g, "Tabs, slots, marks", x, y - 33)
+        caption(g, "Tabs on both edges, slots, marks", x, y - 33)
         for (i in 1 until tabs.size) g.item(tabs[i], x + 4 + i * 23 + 3, Kit.tab(g, x + 4 + i * 23, y, false))
+        // Tabs on the bottom edge too: one under the mouse, then the selected one after the panel.
+        g.item(tabs[2], x + 31, Kit.tab(g, x + 28, y + 118, false, TabEdge.BOTTOM, hovered = true))
         Kit.panel(g, x, y, 113, 118)
         g.item(tabs[0], x + 7, Kit.tab(g, x + 4, y, true))
+        g.item(tabs[1], x + 7, Kit.tab(g, x + 4, y + 118, true, TabEdge.BOTTOM))
         Kit.label(g, "Storage", x + 7, y + 6, Kit.Ink.MUTED)
         Kit.icon(g, Icon.CROSS, x + 99, y + 7, Kit.theme.ink, Kit.theme.inkShadow)
         val gx = x + 7

@@ -11,9 +11,3 @@ object ItemSearch {
         return words.all { word -> word in lowerName || lore.any { it.lowercase().contains(word) } }
     }
 }
-
-/** The rule for Command Buttons: the commands the player listed, one button each. */
-object CommandList {
-    /** The commands in [setting], a list separated by commas, without a leading slash, blanks and repeats dropped. */
-    fun parse(setting: String) = setting.split(',').map { it.trim().removePrefix("/").trim() }.filter { it.isNotEmpty() }.distinct()
-}

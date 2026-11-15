@@ -36,6 +36,10 @@ class MenuTrail {
     private var command: String? = null
     private var title: String? = null
 
+    /** The command that opened the menu open now, or null when none did. A menu tab for it shows as selected. */
+    var opener: String? = null
+        private set
+
     fun sent(now: Long, command: String) {
         sent = command
         sentAt = now
@@ -61,6 +65,7 @@ class MenuTrail {
             command = null
             this.title = null
         }
+        opener = command?.takeIf { title == this.title }
         return command?.takeIf { title != this.title }
     }
 }

@@ -32,7 +32,7 @@ object MenuBack {
     private var menu: AbstractContainerMenu? = null
     private var back: String? = null
 
-    private val enabled get() = MenuTools.on && DsModClient.settings.betterUi.backButtons
+    private val enabled get() = TabBar.on && DsModClient.settings.betterUi.backButtons
 
     fun register() {
         ClientSendMessageEvents.COMMAND.register { trail.sent(System.currentTimeMillis(), it) }
@@ -64,6 +64,9 @@ object MenuBack {
     private fun fits(stack: ItemStack) = stack.isEmpty || Filler.of(BuiltInRegistries.ITEM.getKey(stack.item).toString(), stack.get(DataComponents.CUSTOM_NAME)?.string)
 
     private fun named(stack: ItemStack) = stack.get(DataComponents.CUSTOM_NAME)?.string == GO_BACK
+
+    /** The command that opened the menu of [screen], or null when none did or it is not the menu open now. */
+    fun opener(screen: AbstractContainerScreen<*>) = if (screen.menu === menu) trail.opener else null
 
     /**
      * Sends [command] for the player, on their click on a Back or Command button, and lets the trail know, so the menu

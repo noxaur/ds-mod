@@ -145,11 +145,11 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.MenuSearchTest"
+        "value": "io.github.noxaur.dsmod.gametest.MenuTabsTest"
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.CommandButtonsTest"
+        "value": "io.github.noxaur.dsmod.gametest.TabEditorTest"
       }
     ]
   }

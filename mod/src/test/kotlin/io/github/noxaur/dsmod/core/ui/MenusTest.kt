@@ -45,6 +45,10 @@ class MenusTest {
         assertEquals("storage", trail.opened(3_000, "Backpack Slot 1"), "two menus deep")
         trail.closed(4_000)
         assertNull(trail.opened(4_000, "Storage"), "back at the command's menu")
+        assertEquals("storage", trail.opener, "the command's own menu knows its command")
+        trail.closed(5_000)
+        trail.opened(5_000, "Backpack")
+        assertNull(trail.opener, "a menu deeper in the run was opened by a click")
     }
 
     @Test
