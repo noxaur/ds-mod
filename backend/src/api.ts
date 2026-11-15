@@ -11,6 +11,18 @@ import {
 } from "effect/http-api";
 
 import { Offer, RecordingRequest, RequestReport, RequestSpec, Sighting, Unknown } from "./contrib/model.ts";
+import { ItemAppearance, ItemSighting } from "./items/model.ts";
+import {
+  Container,
+  ContainerNotFound,
+  PlayerName,
+  PlayerNotFound,
+  Profile,
+  ProfileId,
+  ProfileNotFound,
+  SnapshotExpired,
+  UpstreamUnavailable,
+} from "./profiles/model.ts";
 
 /**
  * Who a request is from, as the entry point that verified it says: the player whose session Void found, and the
@@ -79,6 +91,14 @@ export const Api = HttpApi.make("dsmod")
         ),
       )
       .add(
+        HttpApiEndpoint.post("items", "/v1/contrib/items", {
+          payload: Schema.Struct({
+            modVersion: ModVersion,
+            items: Schema.Array(ItemSighting).check(Schema.isMaxLength(50)),
+          }),
+        }).annotate(OpenApi.Summary, "Keeps what the player saw of items, to draw them as the game does."),
+      )
+      .add(
         HttpApiEndpoint.post("report", "/v1/contrib/unknowns", {
           payload: Schema.Struct({
             modVersion: ModVersion,
@@ -88,6 +108,32 @@ export const Api = HttpApi.make("dsmod")
       )
       .middleware(SignedIn)
       .annotate(OpenApi.Description, "What the mod calls, as the player its session names."),
+  )
+  .add(
+    HttpApiGroup.make("profiles")
+      .add(
+        HttpApiEndpoint.get("profile", "/v1/players/:name/profile", {
+          params: { name: PlayerName },
+          query: { profile: Schema.optionalKey(ProfileId) },
+          success: Profile,
+          error: [PlayerNotFound, ProfileNotFound, UpstreamUnavailable],
+        }).annotate(
+          OpenApi.Description,
+          "A player's profile as the overview draws it: the one they play now, or the one `profile` names. The backend keeps a copy for a short while, so asking again soon does not reach dragsim.co.",
+        ),
+      )
+      .add(
+        HttpApiEndpoint.get("container", "/v1/snapshots/:snapshot/containers/:container", {
+          params: { snapshot: Schema.String, container: Schema.String },
+          success: Container,
+          error: [ContainerNotFound, SnapshotExpired],
+        }).annotate(OpenApi.Summary, "One container of a profile, as it was when the snapshot was taken."),
+      )
+      .middleware(SignedIn)
+      .annotate(
+        OpenApi.Description,
+        "What the mod and the website show of a player, as the player their session names.",
+      ),
   )
   .add(
     HttpApiGroup.make("admin")
@@ -115,6 +161,12 @@ export const Api = HttpApi.make("dsmod")
           success: Capture,
           error: HttpApiError.NotFound,
         }).annotate(OpenApi.Summary, "A run's capture file, gzipped."),
+      )
+      .add(
+        HttpApiEndpoint.get("items", "/v1/admin/items", { success: Schema.Array(ItemAppearance) }).annotate(
+          OpenApi.Summary,
+          "What players saw of each item, with samples to test the rebuilt tooltips against.",
+        ),
       )
       .add(
         HttpApiEndpoint.get("unknowns", "/v1/admin/unknowns", { success: Schema.Array(Unknown) }).annotate(

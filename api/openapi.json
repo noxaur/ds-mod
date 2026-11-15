@@ -373,6 +373,199 @@
         }
       }
     },
+    "/v1/contrib/items": {
+      "post": {
+        "tags": [
+          "contrib"
+        ],
+        "operationId": "contrib.items",
+        "parameters": [],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "<No Content>"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestProblemEncoded"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/effect_HttpApiError_UnauthorizedEncoded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorProblemEncoded"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Keeps what the player saw of items, to draw them as the game does.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "modVersion": {
+                    "type": "string",
+                    "maxLength": 64
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "entry": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "material": {
+                          "type": "string",
+                          "maxLength": 128
+                        },
+                        "itemModel": {
+                          "type": "string",
+                          "maxLength": 128
+                        },
+                        "skinId": {
+                          "type": "string",
+                          "maxLength": 128
+                        },
+                        "name": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "type": "string"
+                              },
+                              "color": {
+                                "type": "string",
+                                "pattern": "^#[0-9A-F]{6}$"
+                              },
+                              "bold": {
+                                "type": "boolean"
+                              },
+                              "italic": {
+                                "type": "boolean"
+                              },
+                              "underlined": {
+                                "type": "boolean"
+                              },
+                              "strikethrough": {
+                                "type": "boolean"
+                              },
+                              "obfuscated": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "text"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "lore": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "text": {
+                                  "type": "string"
+                                },
+                                "color": {
+                                  "type": "string",
+                                  "pattern": "^#[0-9A-F]{6}$"
+                                },
+                                "bold": {
+                                  "type": "boolean"
+                                },
+                                "italic": {
+                                  "type": "boolean"
+                                },
+                                "underlined": {
+                                  "type": "boolean"
+                                },
+                                "strikethrough": {
+                                  "type": "boolean"
+                                },
+                                "obfuscated": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "text"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "maxItems": 80
+                        },
+                        "glint": {
+                          "type": "boolean"
+                        },
+                        "skullTexture": {
+                          "type": "string",
+                          "maxLength": 4096
+                        },
+                        "color": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 16777215
+                        },
+                        "data": {
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "entry",
+                        "material",
+                        "name",
+                        "lore",
+                        "glint",
+                        "data"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 50
+                  }
+                },
+                "required": [
+                  "modVersion",
+                  "items"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
     "/v1/contrib/unknowns": {
       "post": {
         "tags": [
@@ -469,6 +662,1550 @@
           },
           "required": true
         }
+      }
+    },
+    "/v1/players/{name}/profile": {
+      "get": {
+        "tags": [
+          "profiles"
+        ],
+        "operationId": "profiles.profile",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_]{1,16}$"
+            },
+            "required": true
+          },
+          {
+            "name": "profile",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f-]{36}$"
+            },
+            "required": false
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "snapshot": {
+                      "type": "string"
+                    },
+                    "fetchedAt": {
+                      "type": "string"
+                    },
+                    "stale": {
+                      "type": "boolean"
+                    },
+                    "player": {
+                      "type": "object",
+                      "properties": {
+                        "uuid": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "rank": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "prefix": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "text": {
+                                    "type": "string"
+                                  },
+                                  "color": {
+                                    "type": "string",
+                                    "pattern": "^#[0-9A-F]{6}$"
+                                  },
+                                  "bold": {
+                                    "type": "boolean"
+                                  },
+                                  "italic": {
+                                    "type": "boolean"
+                                  },
+                                  "underlined": {
+                                    "type": "boolean"
+                                  },
+                                  "strikethrough": {
+                                    "type": "boolean"
+                                  },
+                                  "obfuscated": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "text"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "prefix"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "uuid",
+                        "name",
+                        "rank"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "profiles": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "text": {
+                                  "type": "string"
+                                },
+                                "color": {
+                                  "type": "string",
+                                  "pattern": "^#[0-9A-F]{6}$"
+                                },
+                                "bold": {
+                                  "type": "boolean"
+                                },
+                                "italic": {
+                                  "type": "boolean"
+                                },
+                                "underlined": {
+                                  "type": "boolean"
+                                },
+                                "strikethrough": {
+                                  "type": "boolean"
+                                },
+                                "obfuscated": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "text"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "mode": {
+                            "type": "string"
+                          },
+                          "selected": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "mode",
+                          "selected"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "profileId": {
+                      "type": "string"
+                    },
+                    "skills": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "level": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "maxLevel": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "totalXp": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "Infinity",
+                                  "-Infinity",
+                                  "NaN"
+                                ]
+                              }
+                            ]
+                          },
+                          "xpIntoLevel": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "Infinity",
+                                  "-Infinity",
+                                  "NaN"
+                                ]
+                              }
+                            ]
+                          },
+                          "xpForNextLevel": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "Infinity",
+                                  "-Infinity",
+                                  "NaN"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "level",
+                          "maxLevel",
+                          "totalXp",
+                          "xpIntoLevel",
+                          "xpForNextLevel"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "slayers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "level": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "maxLevel": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "totalXp": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "Infinity",
+                                  "-Infinity",
+                                  "NaN"
+                                ]
+                              }
+                            ]
+                          },
+                          "xpIntoLevel": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "Infinity",
+                                  "-Infinity",
+                                  "NaN"
+                                ]
+                              }
+                            ]
+                          },
+                          "xpForNextLevel": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "Infinity",
+                                  "-Infinity",
+                                  "NaN"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "level",
+                          "maxLevel",
+                          "totalXp",
+                          "xpIntoLevel",
+                          "xpForNextLevel"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "stats": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "value": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "text": {
+                                  "type": "string"
+                                },
+                                "color": {
+                                  "type": "string",
+                                  "pattern": "^#[0-9A-F]{6}$"
+                                },
+                                "bold": {
+                                  "type": "boolean"
+                                },
+                                "italic": {
+                                  "type": "boolean"
+                                },
+                                "underlined": {
+                                  "type": "boolean"
+                                },
+                                "strikethrough": {
+                                  "type": "boolean"
+                                },
+                                "obfuscated": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "text"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "value"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "topKills": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "kills": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "kills"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "equipment": {
+                      "type": "object",
+                      "properties": {
+                        "helmet": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "entry": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "material": {
+                                  "type": "string"
+                                },
+                                "itemModel": {
+                                  "type": "string"
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 99
+                                },
+                                "name": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "text": {
+                                        "type": "string"
+                                      },
+                                      "color": {
+                                        "type": "string",
+                                        "pattern": "^#[0-9A-F]{6}$"
+                                      },
+                                      "bold": {
+                                        "type": "boolean"
+                                      },
+                                      "italic": {
+                                        "type": "boolean"
+                                      },
+                                      "underlined": {
+                                        "type": "boolean"
+                                      },
+                                      "strikethrough": {
+                                        "type": "boolean"
+                                      },
+                                      "obfuscated": {
+                                        "type": "boolean"
+                                      }
+                                    },
+                                    "required": [
+                                      "text"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "lore": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "text": {
+                                          "type": "string"
+                                        },
+                                        "color": {
+                                          "type": "string",
+                                          "pattern": "^#[0-9A-F]{6}$"
+                                        },
+                                        "bold": {
+                                          "type": "boolean"
+                                        },
+                                        "italic": {
+                                          "type": "boolean"
+                                        },
+                                        "underlined": {
+                                          "type": "boolean"
+                                        },
+                                        "strikethrough": {
+                                          "type": "boolean"
+                                        },
+                                        "obfuscated": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": [
+                                        "text"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  }
+                                },
+                                "rarity": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "glint": {
+                                  "type": "boolean"
+                                },
+                                "skullTexture": {
+                                  "type": "string"
+                                },
+                                "color": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 16777215
+                                }
+                              },
+                              "required": [
+                                "entry",
+                                "material",
+                                "count",
+                                "name",
+                                "lore",
+                                "rarity",
+                                "glint"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "chestplate": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "entry": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "material": {
+                                  "type": "string"
+                                },
+                                "itemModel": {
+                                  "type": "string"
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 99
+                                },
+                                "name": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "text": {
+                                        "type": "string"
+                                      },
+                                      "color": {
+                                        "type": "string",
+                                        "pattern": "^#[0-9A-F]{6}$"
+                                      },
+                                      "bold": {
+                                        "type": "boolean"
+                                      },
+                                      "italic": {
+                                        "type": "boolean"
+                                      },
+                                      "underlined": {
+                                        "type": "boolean"
+                                      },
+                                      "strikethrough": {
+                                        "type": "boolean"
+                                      },
+                                      "obfuscated": {
+                                        "type": "boolean"
+                                      }
+                                    },
+                                    "required": [
+                                      "text"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "lore": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "text": {
+                                          "type": "string"
+                                        },
+                                        "color": {
+                                          "type": "string",
+                                          "pattern": "^#[0-9A-F]{6}$"
+                                        },
+                                        "bold": {
+                                          "type": "boolean"
+                                        },
+                                        "italic": {
+                                          "type": "boolean"
+                                        },
+                                        "underlined": {
+                                          "type": "boolean"
+                                        },
+                                        "strikethrough": {
+                                          "type": "boolean"
+                                        },
+                                        "obfuscated": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": [
+                                        "text"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  }
+                                },
+                                "rarity": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "glint": {
+                                  "type": "boolean"
+                                },
+                                "skullTexture": {
+                                  "type": "string"
+                                },
+                                "color": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 16777215
+                                }
+                              },
+                              "required": [
+                                "entry",
+                                "material",
+                                "count",
+                                "name",
+                                "lore",
+                                "rarity",
+                                "glint"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "leggings": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "entry": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "material": {
+                                  "type": "string"
+                                },
+                                "itemModel": {
+                                  "type": "string"
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 99
+                                },
+                                "name": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "text": {
+                                        "type": "string"
+                                      },
+                                      "color": {
+                                        "type": "string",
+                                        "pattern": "^#[0-9A-F]{6}$"
+                                      },
+                                      "bold": {
+                                        "type": "boolean"
+                                      },
+                                      "italic": {
+                                        "type": "boolean"
+                                      },
+                                      "underlined": {
+                                        "type": "boolean"
+                                      },
+                                      "strikethrough": {
+                                        "type": "boolean"
+                                      },
+                                      "obfuscated": {
+                                        "type": "boolean"
+                                      }
+                                    },
+                                    "required": [
+                                      "text"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "lore": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "text": {
+                                          "type": "string"
+                                        },
+                                        "color": {
+                                          "type": "string",
+                                          "pattern": "^#[0-9A-F]{6}$"
+                                        },
+                                        "bold": {
+                                          "type": "boolean"
+                                        },
+                                        "italic": {
+                                          "type": "boolean"
+                                        },
+                                        "underlined": {
+                                          "type": "boolean"
+                                        },
+                                        "strikethrough": {
+                                          "type": "boolean"
+                                        },
+                                        "obfuscated": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": [
+                                        "text"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  }
+                                },
+                                "rarity": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "glint": {
+                                  "type": "boolean"
+                                },
+                                "skullTexture": {
+                                  "type": "string"
+                                },
+                                "color": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 16777215
+                                }
+                              },
+                              "required": [
+                                "entry",
+                                "material",
+                                "count",
+                                "name",
+                                "lore",
+                                "rarity",
+                                "glint"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "boots": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "entry": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "material": {
+                                  "type": "string"
+                                },
+                                "itemModel": {
+                                  "type": "string"
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 99
+                                },
+                                "name": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "text": {
+                                        "type": "string"
+                                      },
+                                      "color": {
+                                        "type": "string",
+                                        "pattern": "^#[0-9A-F]{6}$"
+                                      },
+                                      "bold": {
+                                        "type": "boolean"
+                                      },
+                                      "italic": {
+                                        "type": "boolean"
+                                      },
+                                      "underlined": {
+                                        "type": "boolean"
+                                      },
+                                      "strikethrough": {
+                                        "type": "boolean"
+                                      },
+                                      "obfuscated": {
+                                        "type": "boolean"
+                                      }
+                                    },
+                                    "required": [
+                                      "text"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "lore": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "text": {
+                                          "type": "string"
+                                        },
+                                        "color": {
+                                          "type": "string",
+                                          "pattern": "^#[0-9A-F]{6}$"
+                                        },
+                                        "bold": {
+                                          "type": "boolean"
+                                        },
+                                        "italic": {
+                                          "type": "boolean"
+                                        },
+                                        "underlined": {
+                                          "type": "boolean"
+                                        },
+                                        "strikethrough": {
+                                          "type": "boolean"
+                                        },
+                                        "obfuscated": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": [
+                                        "text"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  }
+                                },
+                                "rarity": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "glint": {
+                                  "type": "boolean"
+                                },
+                                "skullTexture": {
+                                  "type": "string"
+                                },
+                                "color": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 16777215
+                                }
+                              },
+                              "required": [
+                                "entry",
+                                "material",
+                                "count",
+                                "name",
+                                "lore",
+                                "rarity",
+                                "glint"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "held": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "entry": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "material": {
+                                  "type": "string"
+                                },
+                                "itemModel": {
+                                  "type": "string"
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 99
+                                },
+                                "name": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "text": {
+                                        "type": "string"
+                                      },
+                                      "color": {
+                                        "type": "string",
+                                        "pattern": "^#[0-9A-F]{6}$"
+                                      },
+                                      "bold": {
+                                        "type": "boolean"
+                                      },
+                                      "italic": {
+                                        "type": "boolean"
+                                      },
+                                      "underlined": {
+                                        "type": "boolean"
+                                      },
+                                      "strikethrough": {
+                                        "type": "boolean"
+                                      },
+                                      "obfuscated": {
+                                        "type": "boolean"
+                                      }
+                                    },
+                                    "required": [
+                                      "text"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "lore": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "text": {
+                                          "type": "string"
+                                        },
+                                        "color": {
+                                          "type": "string",
+                                          "pattern": "^#[0-9A-F]{6}$"
+                                        },
+                                        "bold": {
+                                          "type": "boolean"
+                                        },
+                                        "italic": {
+                                          "type": "boolean"
+                                        },
+                                        "underlined": {
+                                          "type": "boolean"
+                                        },
+                                        "strikethrough": {
+                                          "type": "boolean"
+                                        },
+                                        "obfuscated": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": [
+                                        "text"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  }
+                                },
+                                "rarity": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "glint": {
+                                  "type": "boolean"
+                                },
+                                "skullTexture": {
+                                  "type": "string"
+                                },
+                                "color": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 16777215
+                                }
+                              },
+                              "required": [
+                                "entry",
+                                "material",
+                                "count",
+                                "name",
+                                "lore",
+                                "rarity",
+                                "glint"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "helmet",
+                        "chestplate",
+                        "leggings",
+                        "boots",
+                        "held"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "containers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "text": {
+                                  "type": "string"
+                                },
+                                "color": {
+                                  "type": "string",
+                                  "pattern": "^#[0-9A-F]{6}$"
+                                },
+                                "bold": {
+                                  "type": "boolean"
+                                },
+                                "italic": {
+                                  "type": "boolean"
+                                },
+                                "underlined": {
+                                  "type": "boolean"
+                                },
+                                "strikethrough": {
+                                  "type": "boolean"
+                                },
+                                "obfuscated": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "text"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "columns": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9
+                          },
+                          "slots": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "hidden": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "title",
+                          "columns",
+                          "slots",
+                          "hidden"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "snapshot",
+                    "fetchedAt",
+                    "stale",
+                    "player",
+                    "profiles",
+                    "profileId",
+                    "skills",
+                    "slayers",
+                    "stats",
+                    "topKills",
+                    "equipment",
+                    "containers"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestProblemEncoded"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/effect_HttpApiError_UnauthorizedEncoded"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "dragsim.co knows no player by that name. | The player has no profile, or none with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/PlayerNotFoundEncoded"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ProfileNotFoundEncoded"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorProblemEncoded"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "dragsim.co did not answer, and the backend has no copy to fall back on.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpstreamUnavailableEncoded"
+                }
+              }
+            }
+          }
+        },
+        "description": "A player's profile as the overview draws it: the one they play now, or the one `profile` names. The backend keeps a copy for a short while, so asking again soon does not reach dragsim.co."
+      }
+    },
+    "/v1/snapshots/{snapshot}/containers/{container}": {
+      "get": {
+        "tags": [
+          "profiles"
+        ],
+        "operationId": "profiles.container",
+        "parameters": [
+          {
+            "name": "snapshot",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "name": "container",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "text": {
+                            "type": "string"
+                          },
+                          "color": {
+                            "type": "string",
+                            "pattern": "^#[0-9A-F]{6}$"
+                          },
+                          "bold": {
+                            "type": "boolean"
+                          },
+                          "italic": {
+                            "type": "boolean"
+                          },
+                          "underlined": {
+                            "type": "boolean"
+                          },
+                          "strikethrough": {
+                            "type": "boolean"
+                          },
+                          "obfuscated": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "text"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "columns": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9
+                    },
+                    "slots": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "hidden": {
+                      "type": "boolean"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "entry": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "material": {
+                                "type": "string"
+                              },
+                              "itemModel": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 99
+                              },
+                              "name": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "text": {
+                                      "type": "string"
+                                    },
+                                    "color": {
+                                      "type": "string",
+                                      "pattern": "^#[0-9A-F]{6}$"
+                                    },
+                                    "bold": {
+                                      "type": "boolean"
+                                    },
+                                    "italic": {
+                                      "type": "boolean"
+                                    },
+                                    "underlined": {
+                                      "type": "boolean"
+                                    },
+                                    "strikethrough": {
+                                      "type": "boolean"
+                                    },
+                                    "obfuscated": {
+                                      "type": "boolean"
+                                    }
+                                  },
+                                  "required": [
+                                    "text"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "lore": {
+                                "type": "array",
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "text": {
+                                        "type": "string"
+                                      },
+                                      "color": {
+                                        "type": "string",
+                                        "pattern": "^#[0-9A-F]{6}$"
+                                      },
+                                      "bold": {
+                                        "type": "boolean"
+                                      },
+                                      "italic": {
+                                        "type": "boolean"
+                                      },
+                                      "underlined": {
+                                        "type": "boolean"
+                                      },
+                                      "strikethrough": {
+                                        "type": "boolean"
+                                      },
+                                      "obfuscated": {
+                                        "type": "boolean"
+                                      }
+                                    },
+                                    "required": [
+                                      "text"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                }
+                              },
+                              "rarity": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "glint": {
+                                "type": "boolean"
+                              },
+                              "skullTexture": {
+                                "type": "string"
+                              },
+                              "color": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 16777215
+                              }
+                            },
+                            "required": [
+                              "entry",
+                              "material",
+                              "count",
+                              "name",
+                              "lore",
+                              "rarity",
+                              "glint"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "columns",
+                    "slots",
+                    "hidden",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestProblemEncoded"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/effect_HttpApiError_UnauthorizedEncoded"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The snapshot has no container with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContainerNotFoundEncoded"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "The snapshot is gone. Fetch the profile again for a new one.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotExpiredEncoded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorProblemEncoded"
+                }
+              }
+            }
+          }
+        },
+        "summary": "One container of a profile, as it was when the snapshot was taken."
       }
     },
     "/v1/admin/requests": {
@@ -1075,6 +2812,235 @@
         "summary": "A run's capture file, gzipped."
       }
     },
+    "/v1/admin/items": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "operationId": "admin.items",
+        "parameters": [],
+        "security": [
+          {
+            "adminToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "entry": {
+                        "type": "string"
+                      },
+                      "players": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "glintPlayers": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "textures": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "skinId": {
+                              "type": "string"
+                            },
+                            "texture": {
+                              "type": "string"
+                            },
+                            "players": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "skinId",
+                            "texture",
+                            "players"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "samples": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "entry": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "material": {
+                              "type": "string",
+                              "maxLength": 128
+                            },
+                            "itemModel": {
+                              "type": "string",
+                              "maxLength": 128
+                            },
+                            "skinId": {
+                              "type": "string",
+                              "maxLength": 128
+                            },
+                            "name": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "text": {
+                                    "type": "string"
+                                  },
+                                  "color": {
+                                    "type": "string",
+                                    "pattern": "^#[0-9A-F]{6}$"
+                                  },
+                                  "bold": {
+                                    "type": "boolean"
+                                  },
+                                  "italic": {
+                                    "type": "boolean"
+                                  },
+                                  "underlined": {
+                                    "type": "boolean"
+                                  },
+                                  "strikethrough": {
+                                    "type": "boolean"
+                                  },
+                                  "obfuscated": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "text"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "lore": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "text": {
+                                      "type": "string"
+                                    },
+                                    "color": {
+                                      "type": "string",
+                                      "pattern": "^#[0-9A-F]{6}$"
+                                    },
+                                    "bold": {
+                                      "type": "boolean"
+                                    },
+                                    "italic": {
+                                      "type": "boolean"
+                                    },
+                                    "underlined": {
+                                      "type": "boolean"
+                                    },
+                                    "strikethrough": {
+                                      "type": "boolean"
+                                    },
+                                    "obfuscated": {
+                                      "type": "boolean"
+                                    }
+                                  },
+                                  "required": [
+                                    "text"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "maxItems": 80
+                            },
+                            "glint": {
+                              "type": "boolean"
+                            },
+                            "skullTexture": {
+                              "type": "string",
+                              "maxLength": 4096
+                            },
+                            "color": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 16777215
+                            },
+                            "data": {
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "entry",
+                            "material",
+                            "name",
+                            "lore",
+                            "glint",
+                            "data"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "entry",
+                      "players",
+                      "glintPlayers",
+                      "textures",
+                      "samples"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestProblemEncoded"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/effect_HttpApiError_UnauthorizedEncoded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorProblemEncoded"
+                }
+              }
+            }
+          }
+        },
+        "summary": "What players saw of each item, with samples to test the rebuilt tooltips against."
+      }
+    },
     "/v1/admin/unknowns": {
       "get": {
         "tags": [
@@ -1305,6 +3271,81 @@
         ],
         "additionalProperties": false
       },
+      "SnapshotExpiredEncoded": {
+        "type": "object",
+        "properties": {
+          "_tag": {
+            "type": "string",
+            "enum": [
+              "SnapshotExpired"
+            ]
+          }
+        },
+        "required": [
+          "_tag"
+        ],
+        "additionalProperties": false
+      },
+      "ContainerNotFoundEncoded": {
+        "type": "object",
+        "properties": {
+          "_tag": {
+            "type": "string",
+            "enum": [
+              "ContainerNotFound"
+            ]
+          }
+        },
+        "required": [
+          "_tag"
+        ],
+        "additionalProperties": false
+      },
+      "UpstreamUnavailableEncoded": {
+        "type": "object",
+        "properties": {
+          "_tag": {
+            "type": "string",
+            "enum": [
+              "UpstreamUnavailable"
+            ]
+          }
+        },
+        "required": [
+          "_tag"
+        ],
+        "additionalProperties": false
+      },
+      "ProfileNotFoundEncoded": {
+        "type": "object",
+        "properties": {
+          "_tag": {
+            "type": "string",
+            "enum": [
+              "ProfileNotFound"
+            ]
+          }
+        },
+        "required": [
+          "_tag"
+        ],
+        "additionalProperties": false
+      },
+      "PlayerNotFoundEncoded": {
+        "type": "object",
+        "properties": {
+          "_tag": {
+            "type": "string",
+            "enum": [
+              "PlayerNotFound"
+            ]
+          }
+        },
+        "required": [
+          "_tag"
+        ],
+        "additionalProperties": false
+      },
       "effect_HttpApiError_BadRequestEncoded": {
         "type": "object",
         "properties": {
@@ -1355,6 +3396,10 @@
     {
       "name": "contrib",
       "description": "What the mod calls, as the player its session names."
+    },
+    {
+      "name": "profiles",
+      "description": "What the mod and the website show of a player, as the player their session names."
     },
     {
       "name": "admin",

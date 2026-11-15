@@ -1,10 +1,14 @@
 import { Effect, Schema } from "effect";
 import { and, asc, db, eq, sql } from "void/db";
+import { kv } from "void/kv";
 import { storage } from "void/storage";
 
 import { requests, skips, submissions, unknowns } from "../db/schema.ts";
 import { RecordingRequest, RequestSpec } from "../src/contrib/model.ts";
 import type { Store } from "../src/contrib/store.ts";
+import { memoryItemStore } from "../src/items/store.ts";
+import type { ProfileStore } from "../src/profiles/store.ts";
+import { type Upstream, UpstreamDown } from "../src/profiles/upstream.ts";
 
 const decodeSpec = Schema.decodeUnknownSync(RequestSpec);
 const decodeStatus = Schema.decodeUnknownSync(RecordingRequest.fields.status);
@@ -95,3 +99,24 @@ export const contribStore: Store["Service"] = {
     }),
   unknowns: run(() => db.select().from(unknowns)),
 };
+
+/** Copies of dragsim.co's answers in KV, which drops each when its time is up. */
+export const profileStore: ProfileStore["Service"] = {
+  get: (key) => run(() => kv.get(key)),
+  put: (key, value, ttlSeconds) => run(() => kv.put(key, value, { ttl: ttlSeconds })),
+};
+
+/** dragsim.co itself. A network failure, or an answer that is not JSON, is dragsim.co being down. */
+export const upstream: Upstream["Service"] = {
+  get: (path) =>
+    Effect.tryPromise({
+      try: async () => {
+        const response = await fetch(`https://dragsim.co${path}`, { signal: AbortSignal.timeout(10_000) });
+        return { status: response.status, body: await response.json() };
+      },
+      catch: () => new UpstreamDown(),
+    }),
+};
+
+// Not built yet: the sightings go to D1.
+export const itemStore = memoryItemStore();
