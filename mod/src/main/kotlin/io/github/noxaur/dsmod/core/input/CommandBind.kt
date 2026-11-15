@@ -72,29 +72,56 @@ data class CommandBind(
 
 /** The rules over a list of binds. */
 object CommandBinds {
-    /** One line of the list as the player sees it: a group's heading, or a bind under it. */
+    /** One line of the list as the player sees it: a group's heading, a bind under it, or the line of a group with none. */
     sealed interface Entry {
         data class Heading(val group: String) : Entry
 
         class Bind(val bind: CommandBind) : Entry
-    }
 
-    /** Each of [groups] as a heading followed by its binds in order. A bind of a group that is gone sits in the first. */
-    fun entries(binds: List<CommandBind>, groups: List<String>): List<Entry> = groups.flatMap { group ->
-        listOf(Entry.Heading(group)) + binds.filter { (if (it.group in groups) it.group else groups.first()) == group }.map(Entry::Bind)
+        data class Empty(val group: String) : Entry
     }
 
     /**
-     * Moves [bind] to line [to] of the list, where it joins the group whose heading is above it. Returns the binds
+     * Each of [groups] as a heading followed by its binds in order, or by an empty line when it has none. The binds
+     * of a group in [collapsed] are left out. A bind of a group that is gone sits in the first.
+     */
+    fun entries(binds: List<CommandBind>, groups: List<String>, collapsed: Collection<String> = emptyList()): List<Entry> = groups.flatMap { group ->
+        val mine = binds.filter { home(it, groups) == group }
+        listOf(Entry.Heading(group)) + when {
+            group in collapsed -> emptyList()
+            mine.isEmpty() -> listOf(Entry.Empty(group))
+            else -> mine.map(Entry::Bind)
+        }
+    }
+
+    private fun home(bind: CommandBind, groups: List<String>) = if (bind.group in groups) bind.group else groups.first()
+
+    /**
+     * Moves [bind] to line [to] of the list as shown, where it joins the group whose heading is above it. A
+     * collapsed group's binds keep their order, and one moved onto its heading goes last in it. Returns the binds
      * in the list's order, and the moved bind, which is a new one when its group changed.
      */
-    fun move(binds: List<CommandBind>, groups: List<String>, bind: CommandBind, to: Int): Pair<List<CommandBind>, CommandBind> {
-        val rest = entries(binds, groups).filterNot { it is Entry.Bind && it.bind === bind }.toMutableList()
-        val at = to.coerceIn(1, rest.size)
-        val group = (rest.subList(0, at).last { it is Entry.Heading } as Entry.Heading).group
-        val moved = if (bind.group == group) bind else bind.copy(group = group)
-        rest.add(at, Entry.Bind(moved))
-        return rest.filterIsInstance<Entry.Bind>().map { it.bind } to moved
+    fun move(binds: List<CommandBind>, groups: List<String>, collapsed: Collection<String>, bind: CommandBind, to: Int): Pair<List<CommandBind>, CommandBind> {
+        val shown = entries(binds, groups, collapsed).filterNot { it is Entry.Bind && it.bind === bind }.toMutableList()
+        val at = to.coerceIn(1, shown.size)
+        val heading = shown.subList(0, at).last { it is Entry.Heading } as Entry.Heading
+        val moved = if (bind.group == heading.group) bind else bind.copy(group = heading.group)
+        shown.add(at, Entry.Bind(moved))
+        val order = groups.flatMap { group ->
+            if (group in collapsed) {
+                binds.filter { it !== bind && home(it, groups) == group } + listOfNotNull(moved.takeIf { it.group == group })
+            } else {
+                val start = shown.indexOf(Entry.Heading(group))
+                shown.drop(start + 1).takeWhile { it !is Entry.Heading }.filterIsInstance<Entry.Bind>().map { it.bind }
+            }
+        }
+        return order to moved
+    }
+
+    /** [order] with [group] moved to place [to], counted among the groups after the first, which stays first. */
+    fun moveGroup(order: List<String>, group: String, to: Int): List<String> {
+        val rest = order - group
+        return rest.toMutableList().apply { add(to.coerceIn(0, rest.size), group) }
     }
 
     /** The bind that sends when several could: the highest [CommandBind.priority], then the first listed. */

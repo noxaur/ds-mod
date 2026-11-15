@@ -218,6 +218,14 @@ class DsModConfig : Config() {
         @Expose
         var bindGroups: List<String> = emptyList()
 
+        /** The groups whose binds are folded away in the list. */
+        @Expose
+        var collapsedGroups: List<String> = emptyList()
+
+        /** The groups switched off, whose binds send nothing whatever their own switch says. */
+        @Expose
+        var offGroups: List<String> = emptyList()
+
         /** The edge sets this to open the editor, so the config itself needs no Minecraft. */
         @ConfigOption(name = "Edit Command Binds", desc = "Name each bind, pick its keys, and choose where it works.")
         @ConfigEditorButton(buttonText = "Edit")

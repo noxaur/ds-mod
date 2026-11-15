@@ -176,14 +176,19 @@ A wall behind you still pulls the camera in, as it does in the game.
 
 Sends a command with a key, with keys held together such as Shift + F6, or with keys pressed in turn such as F7 then F8. Open it with **Edit** beside Edit Command Binds in the settings.
 
-Your binds are listed on the left under their groups, and everything about the one you pick is on the right. A change takes effect as you make it.
+Your binds are listed on the left under their groups, each with its command, its keys and where it works. Everything about the one you pick is on the right, and a change takes effect as you make it.
 
 | Do this | To |
 | --- | --- |
 | Press **New Bind**, type the command, then press **Keys** and hold the keys | Add a bind. Let go of the keys to finish. Without a slash, the bind says its text in chat |
 | Tick the box on a row | Turn the bind on or off |
-| Drag a row, or press Alt and an arrow key | Move it. Under another group's heading, it joins that group |
+| Tick the box on a group's heading | Turn the whole group on or off |
+| Press the arrow on a heading, or double-click it | Fold the group away, or open it again |
+| Drag a row or a heading, or press Alt and Up or Down | Move it. A bind under another group's heading joins that group |
+| Right-click a row or a heading | See what you can do to it, such as Move to another group |
 | Press **Duplicate** or **Delete** | Copy the bind, which starts off, or delete it with a second press |
+
+With nothing on the right typed in, Up and Down pick the next row, Left and Right fold and open a group, and Delete deletes.
 
 On the right:
 

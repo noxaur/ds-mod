@@ -11,6 +11,7 @@ import io.github.noxaur.dsmod.edge.ui.KitButton
 import io.github.noxaur.dsmod.edge.ui.KitCheckbox
 import io.github.noxaur.dsmod.edge.ui.KitCycleButton
 import io.github.noxaur.dsmod.edge.ui.KitKeysButton
+import io.github.noxaur.dsmod.edge.ui.KitMenu
 import io.github.noxaur.dsmod.edge.ui.KitRangeSlider
 import io.github.noxaur.dsmod.edge.ui.KitStepper
 import io.github.noxaur.dsmod.edge.ui.KitTextField
@@ -24,7 +25,7 @@ import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 
 private const val WIDTH = 575
-private const val HEIGHT = 249
+private const val HEIGHT = 255
 private const val MIDDLE = 271
 private const val RIGHT = 396
 
@@ -87,6 +88,8 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         // The last one records, as after a press.
         children().filterIsInstance<KitKeysButton>().last().onPress(KeyEvent(GLFW.GLFW_KEY_ENTER, 0, 0))
         addRenderableWidget(KitCycleButton(keyX, oy + 226, 70, "Where", listOf("In the World", "In Menus"), "In the World", { it }) {})
+        // A context menu, as a right press beside the cycle button would open it.
+        addRenderableWidget(KitMenu(keyX + 70 + Kit.GAP - 2, oy + 214, width, height, listOf("Duplicate" to {}, "Delete" to {}), {}))
     }
 
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
@@ -132,7 +135,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         Kit.line(g, x + 234, oy + 171, x + 251, oy + 162, Role.ACTION.argb())
 
         caption(g, "Range slider, and spans: idle, hover, down, off", x, oy + 180)
-        caption(g, "Text field, keys: held together, clashing, game's key, recording, and a cycle button", x, oy + 214)
+        caption(g, "Text field, keys: held together, clashing, game's key, recording, a cycle button and a menu", x, oy + 214)
         for (i in states.indices) Kit.span(g, ox + MIDDLE + i * 30, oy + 193, 26, 14, states[i])
 
         window(g, ox + MIDDLE, oy + 40)

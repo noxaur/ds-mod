@@ -144,20 +144,45 @@ class CommandBindsListTest {
     private val a = CommandBind(command = "/a")
     private val b = CommandBind(command = "/b")
     private val c = CommandBind(command = "/c", group = "Dungeons")
-    private val groups = listOf("", "Dungeons")
+    private val groups = listOf("", "Dungeons", "Mining")
+
+    private fun names(entries: List<CommandBinds.Entry>) = entries.map {
+        when (it) {
+            is CommandBinds.Entry.Bind -> it.bind.command
+            is CommandBinds.Entry.Heading -> "# ${it.group}"
+            is CommandBinds.Entry.Empty -> "(none)"
+        }
+    }
 
     @Test
-    fun `the list is each heading, then its binds`() {
-        val entries = CommandBinds.entries(listOf(c, a, b), groups)
-        assertEquals(listOf(CommandBinds.Entry.Heading(""), "/a", "/b", CommandBinds.Entry.Heading("Dungeons"), "/c"), entries.map { if (it is CommandBinds.Entry.Bind) it.bind.command else it })
+    fun `the list is each heading, then its binds or an empty line`() {
+        assertEquals(listOf("# ", "/a", "/b", "# Dungeons", "/c", "# Mining", "(none)"), names(CommandBinds.entries(listOf(c, a, b), groups)))
+        assertEquals(listOf("# ", "/a", "/b", "# Dungeons", "# Mining", "(none)"), names(CommandBinds.entries(listOf(c, a, b), groups, listOf("Dungeons"))))
     }
 
     @Test
     fun `a bind moved under another heading joins that group`() {
-        val (binds, moved) = CommandBinds.move(listOf(a, b, c), groups, a, 4)
+        val (binds, moved) = CommandBinds.move(listOf(a, b, c), groups, emptyList(), a, 4)
         assertEquals("Dungeons", moved.group)
         assertEquals(listOf("/b", "/c", "/a"), binds.map { it.command })
-        val (up, _) = CommandBinds.move(listOf(a, b, c), groups, b, 0)
+        val (up, _) = CommandBinds.move(listOf(a, b, c), groups, emptyList(), b, 0)
         assertEquals(listOf("/b", "/a", "/c"), up.map { it.command }, "nothing goes above the first heading")
+        val (empty, intoEmpty) = CommandBinds.move(listOf(a, b, c), groups, emptyList(), a, 6)
+        assertEquals("Mining", intoEmpty.group, "a bind dropped on an empty group's line joins it")
+        assertEquals(listOf("/b", "/c", "/a"), empty.map { it.command })
+    }
+
+    @Test
+    fun `a bind dropped on a collapsed heading goes last in it, and the hidden binds keep their place`() {
+        val d = CommandBind(command = "/d", group = "Dungeons")
+        val (binds, moved) = CommandBinds.move(listOf(a, b, c, d), groups, listOf("Dungeons"), a, 3)
+        assertEquals("Dungeons", moved.group)
+        assertEquals(listOf("/b", "/c", "/d", "/a"), binds.map { it.command })
+    }
+
+    @Test
+    fun `groups move among themselves`() {
+        assertEquals(listOf("Mining", "Dungeons"), CommandBinds.moveGroup(listOf("Dungeons", "Mining"), "Dungeons", 1))
+        assertEquals(listOf("Mining", "Dungeons"), CommandBinds.moveGroup(listOf("Dungeons", "Mining"), "Mining", -3))
     }
 }

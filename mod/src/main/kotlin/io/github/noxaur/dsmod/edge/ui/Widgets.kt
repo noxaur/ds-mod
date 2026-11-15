@@ -538,3 +538,70 @@ fun wrap(text: String, width: Int, max: Int): List<String> {
     lines += line
     return if (lines.size <= max) lines else lines.take(max - 1) + fit(lines.drop(max - 1).joinToString(" "), width)
 }
+
+/**
+ * A context menu: a small panel of [items] that opens beside the mouse at [mouseX], [mouseY] and stays inside the
+ * screen of [screenWidth] by [screenHeight]. The item under the mouse, or the one the arrow keys are on, is lit,
+ * and a press or Enter does it and closes the menu through [onClose]. Escape closes it too. The screen closes it
+ * on a press outside and lets that press do its own job, as `controls.md` says.
+ */
+class KitMenu(
+    mouseX: Int,
+    mouseY: Int,
+    screenWidth: Int,
+    screenHeight: Int,
+    private val items: List<Pair<String, () -> Unit>>,
+    private val onClose: () -> Unit,
+) : AbstractWidget(0, 0, items.maxOf { Kit.font.width(it.first) } + PAD * 4, items.size * ITEM + PAD * 2, plain("Menu")) {
+    private var lit = 0
+
+    init {
+        // Beside the mouse, so the press that opened it lands on nothing in it.
+        x = (mouseX + 2).let { if (it + width > screenWidth) mouseX - 2 - width else it }.coerceAtLeast(0)
+        y = mouseY.coerceAtMost(screenHeight - height).coerceAtLeast(0)
+    }
+
+    private fun at(mouseY: Double) = ((mouseY - y - PAD) / ITEM).toInt().takeIf { it in items.indices } ?: -1
+
+    override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
+        val item = at(event.y)
+        if (item >= 0) run(item)
+    }
+
+    override fun isValidClickButton(button: MouseButtonInfo) = button.button() == 0 || button.button() == 1
+
+    override fun keyPressed(event: KeyEvent): Boolean {
+        when {
+            event.isEscape -> onClose()
+            event.isUp -> lit = (lit - 1).mod(items.size)
+            event.isDown -> lit = (lit + 1).mod(items.size)
+            event.isSelection || event.isConfirmation -> run(lit)
+            else -> return false
+        }
+        return true
+    }
+
+    private fun run(item: Int) {
+        onClose()
+        items[item].second()
+    }
+
+    override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+        if (isHovered) at(mouseY.toDouble()).takeIf { it >= 0 }?.let { lit = it }
+        Kit.panel(graphics, x, y, width, height)
+        for ((i, item) in items.withIndex()) {
+            val itemY = y + PAD + i * ITEM
+            if (i == lit) Kit.button(graphics, x + PAD, itemY, width - PAD * 2, ITEM, Kit.State.HOVER, "", 0)
+            Kit.label(graphics, item.first, x + PAD * 2, itemY + (ITEM - 8) / 2)
+        }
+    }
+
+    override fun updateWidgetNarration(output: NarrationElementOutput) {
+        output.add(NarratedElementType.TITLE, plain(items[lit].first))
+    }
+
+    private companion object {
+        const val PAD = 3
+        const val ITEM = 14
+    }
+}

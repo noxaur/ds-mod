@@ -28,7 +28,7 @@ object CommandKeys {
         this.settings = settings
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             matcher.forget { Keys.held(client, it) }
-            if (on) matcher.idle(System.currentTimeMillis(), settings.sequenceGap.toLong(), settings.binds, DsModClient.game::isIn)?.let(::send)
+            if (on) matcher.idle(System.currentTimeMillis(), settings.sequenceGap.toLong(), live(), DsModClient.game::isIn)?.let(::send)
         }
     }
 
@@ -39,10 +39,13 @@ object CommandKeys {
             RELEASE -> matcher.release(key)
             PRESS -> {
                 val at = if (on) where(Minecraft.getInstance()) else null
-                matcher.press(key, System.currentTimeMillis(), settings.binds, at, DsModClient.game::isIn)?.let(::send)
+                matcher.press(key, System.currentTimeMillis(), live(), at, DsModClient.game::isIn)?.let(::send)
             }
         }
     }
+
+    /** The binds whose group is on. */
+    private fun live() = if (settings.offGroups.isEmpty()) settings.binds else settings.binds.filter { it.group !in settings.offGroups }
 
     private fun where(client: Minecraft): Where? {
         if (client.player == null || client.options.keyDebugModifier.isDown) return null
