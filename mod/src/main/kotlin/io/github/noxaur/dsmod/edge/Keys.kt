@@ -16,6 +16,13 @@ object Keys {
         else -> InputConstants.isKeyDown(client.window, bound)
     }
 
+    /** What the game calls the [bound] key, such as "F6" or "Mouse Button 4", or "None". */
+    fun name(bound: Int): String = when {
+        bound < 0 -> "None"
+        isMouse(bound) -> InputConstants.Type.MOUSE.getOrCreate(bound).displayName.string
+        else -> InputConstants.Type.KEYSYM.getOrCreate(bound).displayName.string
+    }
+
     /** Whether the game's [key] is the [bound] one. */
     fun matches(key: InputConstants.Key, bound: Int) = bound >= 0 && key.value == bound && (key.type == InputConstants.Type.MOUSE) == isMouse(bound)
 }

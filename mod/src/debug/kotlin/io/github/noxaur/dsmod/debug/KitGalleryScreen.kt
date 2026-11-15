@@ -9,17 +9,21 @@ import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitButton
 import io.github.noxaur.dsmod.edge.ui.KitCheckbox
+import io.github.noxaur.dsmod.edge.ui.KitKeyButton
 import io.github.noxaur.dsmod.edge.ui.KitRangeSlider
 import io.github.noxaur.dsmod.edge.ui.KitStepper
+import io.github.noxaur.dsmod.edge.ui.KitTextField
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.input.KeyEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import org.lwjgl.glfw.GLFW
 
 private const val WIDTH = 575
-private const val HEIGHT = 220
+private const val HEIGHT = 249
 private const val MIDDLE = 271
 private const val RIGHT = 396
 
@@ -70,6 +74,15 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         val rate = addRenderableWidget(KitCheckbox(icon.right + Kit.GAP, y + 3, "Rate", true) {})
         addRenderableWidget(KitCheckbox(rate.right + Kit.GAP * 2, y + 3, "Bar", false) {})
         addRenderableWidget(KitRangeSlider(ox + Kit.INSET, oy + 192, 252, "Range", 200, listOf(50, 100, 150), listOf(Section(20, 70), Section(175, 200))) {})
+        val field = addRenderableWidget(KitTextField(ox + Kit.INSET, oy + 226, 112, "Command", "/warp end", 256) {})
+        var keyX = field.x + field.width + 4 + Kit.GAP
+        for (clash in listOf(null, Role.BAD, Role.WARNING, null)) {
+            val key = addRenderableWidget(KitKeyButton(keyX, oy + 226, 64, "Key", if (clash == null) GLFW.GLFW_KEY_F6 else GLFW.GLFW_KEY_Q) {})
+            key.clash = clash
+            keyX += 64 + Kit.GAP
+        }
+        // The last one listens, as after a press.
+        children().filterIsInstance<KitKeyButton>().last().onPress(KeyEvent(GLFW.GLFW_KEY_ENTER, 0, 0))
     }
 
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
@@ -115,6 +128,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         Kit.line(g, x + 234, oy + 171, x + 251, oy + 162, Role.ACTION.argb())
 
         caption(g, "Range slider, and spans: idle, hover, down, off", x, oy + 180)
+        caption(g, "Text field, and key buttons: idle, clashing, game's key, listening", x, oy + 214)
         for (i in states.indices) Kit.span(g, ox + MIDDLE + i * 30, oy + 193, 26, 14, states[i])
 
         window(g, ox + MIDDLE, oy + 40)

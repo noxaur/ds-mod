@@ -4,9 +4,12 @@ import com.mojang.blaze3d.platform.cursor.CursorTypes
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.Sections
+import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.edge.Keys
 import io.github.noxaur.dsmod.edge.toComponent
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.AbstractButton
+import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.narration.NarratedElementType
@@ -294,5 +297,100 @@ class KitRangeSlider(
         const val DRAG_START = 2.0
         const val KEY_DELETE = 261
         const val KEY_BACKSPACE = 259
+    }
+}
+
+/**
+ * A text field on a well, 16 tall. It is vanilla's `EditBox`, so every key a text field has works, with its text
+ * 4 in from the well's left edge. [place] moves it by the well's corner, and a press anywhere on the well lands.
+ */
+class KitTextField(x: Int, y: Int, width: Int, label: String, value: String, maxLength: Int, onChange: (String) -> Unit) :
+    EditBox(Kit.font, x + PAD, y + TOP, width - PAD * 2, Kit.font.lineHeight, plain(label)) {
+    init {
+        isBordered = false
+        setMaxLength(maxLength)
+        this.value = value
+        setResponder(onChange)
+    }
+
+    fun place(x: Int, y: Int) {
+        this.x = x + PAD
+        this.y = y + TOP
+    }
+
+    override fun isMouseOver(mouseX: Double, mouseY: Double) =
+        isActive && mouseX >= x - PAD && mouseX < x + width + PAD && mouseY >= y - TOP && mouseY < y - TOP + Kit.BUTTON_HEIGHT
+
+    override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+        if (!isVisible) return
+        val over = isMouseOver(mouseX.toDouble(), mouseY.toDouble())
+        Kit.field(graphics, x - PAD, y - TOP, width + PAD * 2, Kit.BUTTON_HEIGHT, Kit.state(active, over || isFocused, false))
+        super.extractWidgetRenderState(graphics, mouseX, mouseY, partialTick)
+    }
+
+    private companion object {
+        const val PAD = 4
+        const val TOP = (Kit.BUTTON_HEIGHT - 8) / 2
+    }
+}
+
+/**
+ * A button that shows a key and takes a new one. A press, or Enter or Space with focus, makes it listen: the
+ * next key binds, Escape clears it to none, and a mouse button other than the left and right binds that button.
+ * A left or right press elsewhere, or focus leaving, stops it listening and keeps the key. The screen hands it
+ * keys and presses with [capture] while it is [listening], because a screen takes Escape before its widgets do.
+ * A key that also does something else is ringed in the role in [clash].
+ */
+class KitKeyButton(x: Int, y: Int, width: Int, private val name: String, key: Int, private val onChange: (Int) -> Unit) :
+    AbstractButton(x, y, width, Kit.BUTTON_HEIGHT, plain(name)) {
+    private var label = ""
+
+    var key = key
+        private set(bound) {
+            field = bound
+            label = Keys.name(bound)
+            message = plain("$name: $label")
+        }
+
+    var listening = false
+        private set
+
+    var clash: Role? = null
+
+    init {
+        this.key = key
+    }
+
+    override fun onPress(input: InputWithModifiers) {
+        listening = !listening
+    }
+
+    /** Takes a key, or a mouse button when [mouse], while listening. Returns whether it bound one. */
+    fun capture(bound: Int, mouse: Boolean = false): Boolean {
+        if (!listening) return false
+        listening = false
+        if (mouse && (bound == 0 || bound == 1)) return false
+        key = if (!mouse && bound == ESCAPE) -1 else bound
+        onChange(key)
+        return true
+    }
+
+    override fun setFocused(focused: Boolean) {
+        super.setFocused(focused)
+        if (!focused) listening = false
+    }
+
+    override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+        val text = if (listening) "> $label <" else label
+        val state = if (listening) Kit.State.DOWN else Kit.state(active, isHoveredOrFocused, false)
+        Kit.button(graphics, x, y, width, height, state, text, Kit.font.width(text))
+        clash?.let { Kit.ring(graphics, x - 1, y - 1, width + 2, height + 2, it.argb()) }
+    }
+
+    override fun updateWidgetNarration(output: NarrationElementOutput) = defaultButtonNarrationText(output)
+
+    private companion object {
+        /** GLFW's code for Escape. */
+        const val ESCAPE = 256
     }
 }

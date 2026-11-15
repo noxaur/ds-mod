@@ -13,6 +13,7 @@ import io.github.notenoughupdates.moulconfig.common.text.StructuredText
 import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.camera.ThirdPerson
 import io.github.noxaur.dsmod.core.camera.Views
+import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.Theme
 
@@ -202,6 +203,21 @@ class DsModConfig : Config() {
         @ConfigEditorDropdown
         @JvmField
         var freeLookMode = KeyMode.HOLD
+
+        @Expose
+        @ConfigOption(name = "Command Binds", desc = "Send a command with one key, such as /warp end on F6. Pick them with Edit below.")
+        @ConfigEditorBoolean
+        @JvmField
+        var commandBinds = true
+
+        @Expose
+        var binds: List<CommandBind> = emptyList()
+
+        /** The edge sets this to open the editor, so the config itself needs no Minecraft. */
+        @ConfigOption(name = "Edit Command Binds", desc = "Type each command and pick its key.")
+        @ConfigEditorButton(buttonText = "Edit")
+        @JvmField
+        var editBinds: Runnable = Runnable {}
 
         private companion object {
             /** GLFW's code for the left Alt key. */

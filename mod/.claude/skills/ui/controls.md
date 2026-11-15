@@ -33,6 +33,8 @@ A key that works in the world, such as Free Look's.
 - A key that works on a screen comes from that screen's key and mouse events, as `SlotGuards` takes it. It is left alone while a text field has focus, and it acts on the thing under the mouse.
 - A press and release in one place is the plain action, and a press held to another place joins the two. A line follows the mouse while it is held. Afterwards the join shows only under the mouse, over what it crosses, so it clutters nothing at rest.
 - A key that marks one thing and joins nothing marks each thing the mouse sweeps over while it is held, the way the first one went, as a paint stroke does. Things it cannot mark are passed over, and only the first one says why.
+- A key button on a screen listens after a press, or Enter or Space: the next key binds, Escape clears it to none, and a mouse button other than the left and right binds that button. A left or right press elsewhere, or focus leaving, stops it and keeps the key. It shows `> key <` while it listens, as vanilla's controls do. `KitKeyButton` has all of this.
+- A key that also does something else is ringed, as vanilla reddens a clash: `bad` when it does another of the mod's actions, `warning` when the game uses it. A line on the screen names the other use.
 - Hold ends at the release, also when a screen has opened since. A new world or the feature's switch ends it too.
 - Releasing puts back what the press changed.
 

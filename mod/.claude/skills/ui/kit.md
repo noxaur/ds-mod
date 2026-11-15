@@ -48,6 +48,7 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `ring` | Any | A notched 1px line in `accent` or a role, around the selected thing |
 | `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, search, lock |
 | `line` | Any | A 1px stepped line between two points, with a dark line beside it, for joining two things that belong together |
+| `field` | Any, 16 tall in a text field | A well that a text field holds, ringed in `hoverOutline` under the mouse or with focus |
 | `label` | One line | A string in ink |
 | `slotFill`, `slotBorder`, `slotDim` | 16x16 inside, 18x18 border | The marks `Slots` puts on a container's slots, colored by role |
 
@@ -60,6 +61,8 @@ A widget is a vanilla widget with a kit face. It takes its label as a string and
 | `KitButton` | A button with a label or an icon. An icon button is 16x16 |
 | `KitCheckbox` | A checkbox with its label 4px to the right |
 | `KitStepper` | A minus button, a value and a plus button, for a number with few useful steps |
+| `KitTextField` | Vanilla's `EditBox` on a 16 tall `field`, with its text 4 in. A press anywhere on the well lands |
+| `KitKeyButton` | A button that shows a key and takes a new one, as the key bind section of `controls.md` says. A key it shares is ringed in a role |
 | `KitRangeSlider` | A 16 tall track with any number of spans, for picking stretches of a scale. Press and drag on the track to draw one or click to add one, drag an end or the middle, right-click to remove. The cursor shows what a press will do. `Sections` in `core/ui` holds its rules: a span is at least 5 long, and two within 3 of each other become one |
 
 Controls in a row are 4 apart, and rows are 4 apart. A label beside a control sits on the control's text baseline.

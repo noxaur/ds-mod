@@ -172,6 +172,18 @@ Shapes the third-person view you get with F5. Each setting starts at the game's 
 
 A wall behind you still pulls the camera in, as it does in the game.
 
+### Command Binds
+
+Sends a command with one key, such as `/warp end` on F6. Open the list with **Edit** beside Edit Command Binds in the settings.
+
+| Do this | To |
+| --- | --- |
+| Press **New Bind** and type the command | Add a row. Without a slash, the row says its text in chat |
+| Press the key button, then a key or mouse button | Give the row its key. Escape clears it, and a left click elsewhere keeps the key it had |
+| Press **x** | Remove the row |
+
+The key works in the world, once per press, and not while chat or a menu is open. A key ringed red sends another row's command too, and one ringed yellow also does something in the game. The line under the list says which.
+
 ### Explosion Particle Hider
 
 <sub>Off by default.</sub>

@@ -116,6 +116,12 @@ Camera's height and tilt are applied after the game has put the camera at the ey
 
 The key's press comes from `KeyMapping.click`, the place the game counts presses for its own key binds, and its release is read from the key's state each frame. A press read from the state would miss a tap that starts and ends inside one frame, and Toggle mode is nothing but taps.
 
+## A command bind sends from the game's own press
+
+Command Binds takes its press from `KeyMapping.click` too, rather than from a key event of its own. The game calls it only with no screen open and not for an F3 combination, so a key typed into chat or pressed to bind it on a screen never sends. The game also calls it for each repeat of a held key, so `CommandKeys` keeps the keys that have sent and forgets each one once it is up.
+
+The settings ring a key that the game uses too. The game's debug keys work only with F3 held, so F3 is the only one of them that counts, and F6, which the game binds to F3+F6, is free.
+
 ## A locked slot refuses the click before the game predicts it
 
 The client moves the item in its own inventory as it sends a click, so a click dropped at the packet would leave the player looking at a move the server never made. Every pick up, Shift click, number key, throw and double click in a menu passes through `AbstractContainerScreen.slotClicked` first, so `SlotClickMixin` refuses there and nothing is predicted or sent. The drop key outside a menu never reaches a screen, which is why `DropKeyMixin` exists beside it.
