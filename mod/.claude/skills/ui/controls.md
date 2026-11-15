@@ -39,6 +39,17 @@ A key that works in the world, such as Free Look's.
 - Hold ends at the release, also when a screen has opened since. A new world or the feature's switch ends it too.
 - Releasing puts back what the press changed.
 
+## Favorite
+
+A star that keeps a thing in a list of favorites, such as a setting in the settings' Favorites.
+
+- A star sits on every thing that can be starred, beside its name, where it covers nothing at any length. A left press stars or unstars it, and the press does nothing else to the thing.
+- An unstarred star is faint and lights up under the mouse, and a starred one is in `action`. A tooltip says "Click to star." or "Click to unstar.".
+- Favorites is the first entry of the list it belongs to, and holds the starred things in the order the full list has them, not the order they were starred. A short line at its top says how to add to it.
+- A search looks through everything, so Favorites hides while it runs and each match shows once.
+- A few things a new player wants most start starred, as DragSim Utils does. A player who unstars them all keeps an empty Favorites.
+- The stars are saved with the settings.
+
 ## Cycle button
 
 A button that steps through a few values, such as where a bind works.
