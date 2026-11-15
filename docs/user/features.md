@@ -31,6 +31,15 @@ Shows the armor you wear and your pet as a row of icons on the HUD, with each he
 | Equipment Look | Shows the pieces on the HUD's plate, on nothing, or in slots like your hotbar's, which follow your resource pack |
 | Equipment Placement | Keeps the pieces where you put them in the HUD editor, or puts them beside your hotbar, at its size and past your offhand slot |
 
+### Inventory Preview
+
+Shows the items in your inventory as a grid on the HUD, nine to a row as your inventory holds them, with each stack's count. While another menu is open, the grid keeps your inventory as you last saw it. Open the chat and point at an item to read its tooltip, and move the grid in the HUD editor. Turn it on in General.
+
+| Setting | Does |
+| --- | --- |
+| Inventory Rows | Picks which rows show, and their order. The three rows of your inventory show by default, and your hotbar can join them, set a little apart as it is in your inventory |
+| Inventory Look | Shows the items on the HUD's plate, on nothing, or in a panel of slots like your inventory's: in your theme, solid or as glass as Menu Look says, while Themed Menus is on, and as your resource pack draws the inventory while it is off |
+
 ### Camera
 
 Shapes the third-person view you get with F5. Each setting starts at the game's own, so nothing changes until you move one.

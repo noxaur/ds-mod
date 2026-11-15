@@ -18,11 +18,13 @@ import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
+import io.github.noxaur.dsmod.core.feature.general.EquipmentLook
 import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
+import io.github.noxaur.dsmod.core.feature.general.InventoryLook
+import io.github.noxaur.dsmod.core.feature.general.InventoryRow
 import io.github.noxaur.dsmod.core.feature.general.PetLook
 import io.github.noxaur.dsmod.core.feature.general.PetPosition
 import io.github.noxaur.dsmod.core.hud.HudDock
-import io.github.noxaur.dsmod.core.hud.HudLook
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.MenuTab
@@ -208,13 +210,31 @@ class DsModConfig : Config() {
         @ConfigOption(name = "Equipment Look", desc = "Show the pieces on the plate, on nothing, or in hotbar slots.")
         @ConfigEditorDropdown
         @JvmField
-        var equipmentLook = HudLook.PLATE
+        var equipmentLook = EquipmentLook.PLATE
 
         @Expose
         @ConfigOption(name = "Equipment Placement", desc = "Keep the pieces where you put them, or beside your hotbar.")
         @ConfigEditorDropdown
         @JvmField
         var equipmentPlacement = HudDock.FREE
+
+        @Expose
+        @ConfigOption(name = "Inventory Preview", desc = "Show a grid of the items in your inventory on the HUD.")
+        @ConfigEditorBoolean
+        @JvmField
+        var inventoryPreview = false
+
+        @Expose
+        @ConfigOption(name = "Inventory Rows", desc = "Pick the rows to show, and drag them into order.")
+        @ConfigEditorDraggableList(requireNonEmpty = true)
+        @JvmField
+        var inventoryRows: MutableList<InventoryRow> = mutableListOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM)
+
+        @Expose
+        @ConfigOption(name = "Inventory Look", desc = "Show the items on the plate, on nothing, or as your inventory.")
+        @ConfigEditorDropdown
+        @JvmField
+        var inventoryLook = InventoryLook.PLATE
 
         @Expose
         @ConfigOption(name = "Camera", desc = "Shape the third-person view with the settings below.")

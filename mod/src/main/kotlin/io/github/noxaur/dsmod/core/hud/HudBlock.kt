@@ -36,6 +36,12 @@ enum class HudLook(private val label: String) {
 
     /** No plate, and its icons in slots drawn from the hotbar's own texture, so a resource pack restyles both. */
     HOTBAR("Hotbar"),
+
+    /**
+     * A panel with its icons in 18px slots, as the player's inventory screen draws them: by the kit in the player's theme,
+     * solid or as glass as their Menu Look says, while Themed Menus is on, and from the inventory's own texture while it is off.
+     */
+    INVENTORY("Inventory"),
     ;
 
     override fun toString() = label
@@ -60,8 +66,11 @@ data class TextRow(override val text: Text) : HudRow
 /** A row with a bar under it, filled from 0 to 1. */
 data class BarRow(override val text: Text, val fraction: Float, val role: Role) : HudRow
 
-/** A row of item icons, left to right, with an empty cell for each null. [text] names them, for the replay's transcript. */
-data class ItemsRow(val items: List<Item?>) : HudRow {
+/**
+ * A row of item icons, left to right, with an empty cell for each null. A row [apart] from the one above it leaves the
+ * gap the inventory leaves above the hotbar. [text] names them, for the replay's transcript.
+ */
+data class ItemsRow(val items: List<Item?>, val apart: Boolean = false) : HudRow {
     override val text: Text get() = text { muted(items.joinToString(", ") { it?.name?.plain ?: it?.id ?: "-" }) }
 }
 
@@ -81,8 +90,8 @@ class HudBuilder {
         rows += TextRow(text(content))
     }
 
-    fun items(items: List<Item?>) {
-        rows += ItemsRow(items)
+    fun items(items: List<Item?>, apart: Boolean = false) {
+        rows += ItemsRow(items, apart)
     }
 }
 

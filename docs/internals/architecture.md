@@ -84,7 +84,7 @@ The sidebar is an event with every line and its styles, not a parsed summary, so
 
 A tab list is one event with every row, because it is small and features read it as a whole. A container is an open event followed by one event per changed slot, the way the server sends it. A whole inventory per change would make a capture of an hour's grinding too large to keep.
 
-Reading an item out of Minecraft is the costly part of a menu: a chest of 54 items with long lore took 5.5 ms in one tick. So the poll reads for at most a millisecond a tick, and a big menu arrives over a few ticks. A slot that is still null just after the menu opened may only be unread.
+Reading an item out of Minecraft is the costly part of a menu: a chest of 54 items with long lore took 5.5 ms in one tick. So the poll reads for at most a millisecond a tick, and a big menu arrives over a few ticks. A slot that is still null just after the menu opened may only be unread. The player's own inventory is the exception, because the HUD shows it after every menu the player closes: read again from nothing, an inventory of long-lored items took three ticks, and the Inventory Preview emptied and refilled for them. So the poller and `ContainerState` both keep the inventory while another menu is open, and its `ContainerOpened` says `kept`, followed by only the slots whose stack changed. A new world brings a new inventory menu, which is read from nothing.
 
 ## The mod runs only on dragsim.co
 

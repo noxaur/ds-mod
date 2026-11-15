@@ -1,9 +1,9 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
+import io.github.noxaur.dsmod.core.feature.general.EquipmentLook
 import io.github.noxaur.dsmod.core.feature.general.PetPosition
 import io.github.noxaur.dsmod.core.hud.HudDock
-import io.github.noxaur.dsmod.core.hud.HudLook
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
@@ -88,11 +88,11 @@ class EquipmentDisplayTest : FabricClientGameTest {
 
             val general = DsModClient.settings.general
             try {
-                general.equipmentLook = HudLook.CLEAR
+                general.equipmentLook = EquipmentLook.CLEAR
                 context.waitTicks(10)
                 context.takeScreenshot("equipment-display-clear")
 
-                general.equipmentLook = HudLook.HOTBAR
+                general.equipmentLook = EquipmentLook.HOTBAR
                 context.waitTicks(10)
                 check(skin(stackAt(piece(0, hotbar = true)))) { "The hotbar look moved the helmet off its slot" }
                 context.takeScreenshot("equipment-display-hotbar")
@@ -115,7 +115,7 @@ class EquipmentDisplayTest : FabricClientGameTest {
                 check(skin(stackAt(boots.first - 3 * 20 to boots.second - 22))) { "The pet is not above the helmet" }
                 context.takeScreenshot("equipment-display-docked-left")
             } finally {
-                general.equipmentLook = HudLook.PLATE
+                general.equipmentLook = EquipmentLook.PLATE
                 general.equipmentPlacement = HudDock.FREE
                 general.petPosition = PetPosition.WITH_ARMOR
             }
