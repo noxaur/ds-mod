@@ -51,7 +51,7 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.RarityOutlinesTest"
+        "value": "io.github.noxaur.dsmod.gametest.RarityMarksTest"
       },
       {
         "adapter": "kotlin",

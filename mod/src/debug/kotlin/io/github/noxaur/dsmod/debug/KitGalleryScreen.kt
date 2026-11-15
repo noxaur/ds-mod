@@ -4,6 +4,9 @@ import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.TextBuilder
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Section
+import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.SlotArts
+import io.github.noxaur.dsmod.edge.Surface
 import io.github.noxaur.dsmod.edge.toComponent
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
@@ -26,7 +29,7 @@ private const val RIGHT = 396
 /** Every shape, state, widget and icon of the kit on one screen, in the player's theme. `/dskit` opens it. */
 class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
     private class Line(val icon: Icon, val color: Int, val depth: Int, val text: Component)
-    private class Mark(val item: ItemStack, val color: Int, val style: Char)
+    private class Mark(val item: ItemStack, val role: Role, val color: Int, val style: Char)
 
     private var ox = 0
     private var oy = 0
@@ -139,10 +142,13 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
             Kit.slot(g, sx, sy)
             val mark = marks.getOrNull(i) ?: continue
             if (mark.style == 'f') Kit.slotFill(g, sx + 1, sy + 1, mark.color)
+            if (mark.style == 'b') Kit.slotArt(g, sx + 1, sy + 1, SlotArts.atlas(DsModClient.settings.inventory, Surface.CONTAINER), mark.role.ordinal)
             g.item(mark.item, sx + 1, sy + 1)
             g.itemDecorations(font, mark.item, sx + 1, sy + 1)
             if (mark.style == 'd') Kit.slotDim(g, sx + 1, sy + 1)
-            if (mark.style == 'b') Kit.slotBorder(g, sx + 1, sy + 1, mark.color)
+            if (mark.style == 'b' && DsModClient.settings.inventory.inventoryStyle.gem) {
+                Kit.slotGem(g, sx + 1, sy + 1, SlotArts.atlas(DsModClient.settings.inventory, Surface.CONTAINER), mark.role.ordinal)
+            }
         }
         Kit.scrollbar(g, gx + 93, gy, 72, 6, 30)
         Kit.well(g, gx, gy + 76, 99, 14)
@@ -182,6 +188,6 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
 
         fun line(icon: Icon, role: Role, depth: Int, build: TextBuilder.() -> Unit) = Line(icon, role.argb(), depth, text(build).toComponent())
 
-        fun mark(item: Item, count: Int, role: Role, style: Char) = Mark(ItemStack(item, count), role.argb(if (style == 'b') 255 else 110), style)
+        fun mark(item: Item, count: Int, role: Role, style: Char) = Mark(ItemStack(item, count), role, role.argb(110), style)
     }
 }

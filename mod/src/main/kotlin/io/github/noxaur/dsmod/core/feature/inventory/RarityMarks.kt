@@ -8,13 +8,15 @@ import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.text.Role
 import kotlin.reflect.KMutableProperty0
 
-/** Frames each item's slot in the color the server gives that rarity's item names. */
-class RarityOutlines(toggle: KMutableProperty0<Boolean>) : Feature("rarity-outlines", toggle, Area.ANYWHERE) {
+/** Marks each item's slot in the color the server gives that rarity's item names, unless [markCommon] is off for Common. */
+class RarityMarks(toggle: KMutableProperty0<Boolean>, private val markCommon: KMutableProperty0<Boolean>) :
+    Feature("rarity-marks", toggle, Area.ANYWHERE) {
     private var marks = emptyMap<Int, SlotMark>()
     private var changed = false
+    private var common = markCommon.get()
 
     private val byRarity = listOf(Role.COMMON, Role.UNCOMMON, Role.RARE, Role.EPIC, Role.LEGENDARY, Role.MYTHIC, Role.DIVINE, Role.SPECIAL)
-        .associate { it.name to SlotMark(it, border = true) }
+        .associate { it.name to SlotMark(it, rarity = true) }
 
     init {
         on<ContainerOpened> { _, _ -> changed = true }
@@ -22,13 +24,20 @@ class RarityOutlines(toggle: KMutableProperty0<Boolean>) : Feature("rarity-outli
     }
 
     override fun slots(now: Long): Map<Int, SlotMark> {
+        if (common != markCommon.get()) {
+            common = !common
+            changed = true
+        }
         if (!changed) return marks
         changed = false
         val next = HashMap<Int, SlotMark>()
         container.slots.forEachIndexed { slot, item ->
             val rarity = item?.rarity ?: return@forEachIndexed
             val mark = byRarity[rarity]
-            if (mark == null) count("unparsed") else next[slot] = mark
+            when {
+                mark == null -> count("unparsed")
+                mark.role != Role.COMMON || common -> next[slot] = mark
+            }
         }
         marks = next
         return marks
