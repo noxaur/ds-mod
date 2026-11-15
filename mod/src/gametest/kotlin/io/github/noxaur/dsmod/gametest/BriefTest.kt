@@ -96,10 +96,12 @@ class BriefTest : FabricClientGameTest {
             check(own.readLines().count { "\"type\":\"step\"" in it } == 4) { "/dscapture's capture holds ${own.readLines().filter { "step" in it }}" }
 
             // Cancelling a brief deletes the capture it started.
+            val before = captures.listDirectoryEntries("*.jsonl").toSet()
             context.runOnClient<Nothing> { Recording.start(brief) }
             context.runOnClient<Nothing> { KeyMapping.click(InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_RIGHT_BRACKET)) }
-            context.waitFor { Recorder.running }
-            val started = captures.listDirectoryEntries("*.jsonl").maxBy { it.fileName.toString() }
+            // The writer creates the file on its own thread.
+            context.waitFor { (captures.listDirectoryEntries("*.jsonl") - before).isNotEmpty() }
+            val started = (captures.listDirectoryEntries("*.jsonl") - before).single()
             context.runOnClient<Nothing> { Recording.cancel() }
             context.waitFor { !started.exists() }
         }
