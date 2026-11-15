@@ -44,6 +44,8 @@ object SlotGuards {
     private var from: Int? = null
     private var pressing = false
     private var itemKeyDown = false
+    /** While the item key is held, whether the items it passes over lock or unlock, as the first one with an ID did. */
+    private var lockingItems: Boolean? = null
 
     /** Each item's ID by its data component, which stacks share and never change. Reading one copies the whole tag. */
     private val ids: MutableMap<CustomData, String> = MapMaker().weakKeys().makeMap()
@@ -81,7 +83,7 @@ object SlotGuards {
                 // A held key repeats, and a repeat is not a press.
                 when (event.key()) {
                     settings.slotLockKey.takeUnless(Keys::isMouse) -> if (!pressing) press(screen)
-                    settings.itemLockKey.takeUnless(Keys::isMouse) -> if (!itemKeyDown) lockItem(screen).also { itemKeyDown = true }
+                    settings.itemLockKey.takeUnless(Keys::isMouse) -> if (!itemKeyDown) pressItem(screen)
                     else -> return@register true
                 }
                 false
@@ -94,17 +96,22 @@ object SlotGuards {
                 if (!on) return@register true
                 when (event.button()) {
                     settings.slotLockKey.takeIf(Keys::isMouse) -> press(screen)
-                    settings.itemLockKey.takeIf(Keys::isMouse) -> lockItem(screen)
+                    settings.itemLockKey.takeIf(Keys::isMouse) -> pressItem(screen)
                     else -> return@register true
                 }
                 false
             }
             ScreenMouseEvents.allowMouseRelease(screen).register { _, event ->
-                if (!pressing || !Keys.isMouse(settings.slotLockKey) || event.button() != settings.slotLockKey) return@register true
-                release(client, screen)
+                when {
+                    pressing && Keys.isMouse(settings.slotLockKey) && event.button() == settings.slotLockKey -> release(client, screen)
+                    itemKeyDown && Keys.isMouse(settings.itemLockKey) && event.button() == settings.itemLockKey -> itemKeyDown = false
+                    else -> return@register true
+                }
                 false
             }
             ScreenEvents.afterForeground(screen).register { _, graphics, _, _, _ -> if (on) {
+                    // Each frame, so a quick sweep along a row misses no item.
+                    if (itemKeyDown) lockItem(screen, first = false)
                     placed(screen, graphics) {
                         padlocks(screen, graphics)
                         link(screen, graphics)
@@ -112,6 +119,7 @@ object SlotGuards {
                 } }
             ScreenEvents.remove(screen).register {
                 pressing = false
+                itemKeyDown = false
                 refused = null
             }
         }
@@ -122,16 +130,27 @@ object SlotGuards {
         from = own((screen as ContainerScreenAccessor).hoveredSlot)
     }
 
-    /** Locks the item under the mouse wherever it goes, or unlocks it. An item that stacks has no ID of its own to lock. */
-    private fun lockItem(screen: AbstractContainerScreen<*>) {
+    private fun pressItem(screen: AbstractContainerScreen<*>) {
+        itemKeyDown = true
+        lockingItems = null
+        lockItem(screen, first = true)
+    }
+
+    /**
+     * Locks the item under the mouse wherever it goes, or unlocks it. The first item the held key meets decides
+     * which, and every item after it gets the same. An item that stacks has no ID of its own to lock.
+     */
+    private fun lockItem(screen: AbstractContainerScreen<*>, first: Boolean) {
         val slot = (screen as ContainerScreenAccessor).hoveredSlot ?: return
         if (own(slot) == null || !slot.hasItem()) return
         val id = id(slot.item)
         if (id == null) {
-            Chat.notice(feature.title, text { bad("An item that stacks cannot be locked. Lock its slot instead.") })
-        } else {
-            feature.locks = locks.toggleItem(id)
+            // Only where the key went down, since a sweep crosses stacks on its way.
+            if (first) Chat.notice(feature.title, text { bad("An item that stacks cannot be locked. Lock its slot instead.") })
+            return
         }
+        val lock = lockingItems ?: (id !in locks.items).also { lockingItems = it }
+        if ((id in locks.items) != lock) feature.locks = locks.item(id, lock)
     }
 
     /** A press and release over one slot locks or unlocks it, and a release over another slot links the two. */

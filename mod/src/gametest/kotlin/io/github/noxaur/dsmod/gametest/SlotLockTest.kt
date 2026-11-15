@@ -82,6 +82,7 @@ class SlotLockTest : FabricClientGameTest {
                     "hotbar.0" to "diamond_sword", "hotbar.1" to "stone 5", "inventory.0" to "diamond_pickaxe", "inventory.1" to "stone 5",
                     // An item as dragsim.co marks one that does not stack.
                     "inventory.2" to "diamond_axe[custom_data={item_data:{uuid:\"an-axe\"}}]",
+                    "inventory.14" to "diamond_hoe[custom_data={item_data:{uuid:\"a-hoe\"}}]",
                 )) {
                     world.server.runCommand("item replace entity @a $slot with $give")
                 }
@@ -172,6 +173,19 @@ class SlotLockTest : FabricClientGameTest {
                 context.input.pressKey(itemKey)
                 context.waitTicks(3)
                 check(feature.locks == SlotLocks()) { "The item key over stone, which stacks, left ${feature.locks}" }
+
+                // A held item key locks every item it sweeps over, past the stone, and unlocks them as the first was locked.
+                fun sweep(vararg slots: Int) {
+                    hover(slots.first())
+                    context.input.holdKey(itemKey)
+                    for (slot in slots.drop(1)) hover(slot)
+                    context.input.releaseKey(itemKey)
+                    context.waitTicks(3)
+                }
+                sweep(13, 1, 23)
+                check(feature.locks == SlotLocks(items = setOf("an-axe", "a-hoe"))) { "Sweeping the item key over the axe and the hoe left ${feature.locks}" }
+                sweep(23, 13)
+                check(feature.locks == SlotLocks()) { "Sweeping the item key back from a locked item left ${feature.locks}" }
 
                 // A Shift click on the axe would land in the first empty hotbar slot, which is locked, so it goes to the next.
                 tap(2)

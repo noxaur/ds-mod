@@ -12,7 +12,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SlotLocks(val locked: Set<Int> = emptySet(), val links: Map<Int, Int> = emptyMap(), val items: Set<String> = emptySet()) {
     /** Locks the item with this ID wherever it lies in the inventory, or unlocks it. */
-    fun toggleItem(id: String): SlotLocks = copy(items = if (id in items) items - id else items + id)
+    fun item(id: String, locked: Boolean): SlotLocks = copy(items = if (locked) items + id else items - id)
 
     /** The slot [slot] trades places with, or null. */
     fun partner(slot: Int): Int? = links[slot] ?: links.entries.firstOrNull { it.value == slot }?.key

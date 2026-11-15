@@ -48,8 +48,9 @@ class SlotLocksTest {
 
     @Test
     fun `an item locks and unlocks by its ID, apart from the slots`() {
-        val locked = SlotLocks(setOf(4)).toggleItem("a")
+        val locked = SlotLocks(setOf(4)).item("a", true)
         assertEquals(SlotLocks(setOf(4), items = setOf("a")), locked)
-        assertEquals(SlotLocks(setOf(4)), locked.toggleItem("a"))
+        assertEquals(locked, locked.item("a", true))
+        assertEquals(SlotLocks(setOf(4)), locked.item("a", false))
     }
 }

@@ -137,6 +137,7 @@ Locks slots and items of your inventory, so a misclick cannot move or drop them.
 | --- | --- |
 | Press L over a slot of your inventory | Lock the slot, or unlock it. Whatever you put there is kept |
 | Press K over an item in your inventory | Lock the item, or unlock it. The lock follows the item from slot to slot |
+| Hold K and sweep the mouse over several items | Lock them all, or unlock them all when the first was locked |
 | Hold L over a hotbar slot, move to a slot in the rows above, and let go | Link the two, which also locks both. Point at either to see its partner framed and joined by a line. The same again ends the link |
 | Shift-click either slot of a link | Trade the two items' places |
 
