@@ -94,7 +94,7 @@ The `unparsed` counter matters most. The server is closed and changes without no
 
 Developers' accounts cannot reach all of the server's content, so players record it for them. That needs the recorder in the jar a player installs, though it reads private client fields and records everything, chat included. Three things make that safe. It starts only from a contribution the player accepted, or from the debug build's `/dscapture` and `-Pbrief`, so while none runs every hook is one null check and the recorder costs a frame nothing. The file never leaves the machine as recorded: the mod redacts it first (below). And the recorder only ever reads what the server already sent the client, so it cannot send for the player.
 
-The rest of the developer tools stay in `src/debug`, a separate source set that `src/main` can't see, so the compiler keeps them out of the release jar. They are `/dscapture`, `/dskit`, `cutFixture` and the window title that names a `-Pbrief`. The debug jar holds the release jar inside it, so the release code runs the same in both.
+The rest of the developer tools stay in `src/debug`, a separate source set that `src/main` can't see, so the compiler keeps them out of the release jar. They are `/dscapture`, `/dskit`, `cutFixture`, the window title that names a `-Pbrief` and the title screen's Join DragSim button. The debug jar holds the release jar inside it, so the release code runs the same in both.
 
 The recorder reads private fields, which needs an access widener, and a mod declares only one. So the jar's file is ours followed by MoulConfig's lines, merged by the build.
 
