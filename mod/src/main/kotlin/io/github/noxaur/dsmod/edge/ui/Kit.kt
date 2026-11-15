@@ -387,6 +387,13 @@ object Kit {
         rect(g, x + 16, y, 1, 16, color)
     }
 
+    /**
+     * Rings the 16x16 item area at [x], [y] as the slot the player holds, in the theme's accent, which reads on a light
+     * panel and a dark one where white is lost on light gray, or over the inventory's own texture in the Vanilla theme's.
+     */
+    fun held(g: GuiGraphicsExtractor, x: Int, y: Int, vanilla: Boolean) =
+        slotBorder(g, x, y, if (vanilla) Theme.VANILLA.accent else theme.accent)
+
     /** Draws cell [cell] of a rarity atlas behind the 16x16 item area at [x], [y], covering the slot's whole 18x18. */
     fun slotArt(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int) =
         g.blit(RenderPipelines.GUI_TEXTURED, atlas.id, x - 1, y - 1, (cell * SlotArt.SIZE).toFloat(), 0f, SlotArt.SIZE, SlotArt.SIZE, atlas.width, atlas.height)

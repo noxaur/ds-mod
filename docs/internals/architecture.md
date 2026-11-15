@@ -222,6 +222,9 @@ The kit's edges are one pixel wide, and the HUD is the one place a player scales
 
 A block's saved place is the corner of its plate, so a block stays where the player dropped it whether the plate is shown or not.
 
+A block docked beside the hotbar shrinks to the room there instead of keeping the GUI's scale, by the same whole screen pixels. Minecraft's Auto GUI scale on a 1080p screen leaves about 140px beside the hotbar, and the inventory's grid is 176px wide, so at full size the clamp to the screen's edge put it over the hotbar itself.
+
+
 ## World marks reach Minecraft once per tick
 
 `World` draws through Minecraft's gizmos, the shapes its own debug views use. It submits them at the end of each client tick, and Minecraft replays the tick's gizmos on every frame until the next one. Submitting from Fabric's per-frame gizmo event drew nothing in the game tests, and would do the work every frame instead of twenty times a second.

@@ -9,6 +9,7 @@ import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.SlotChanged
+import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudLook
 import io.github.noxaur.dsmod.core.hud.ItemsRow
 import kotlin.test.Test
@@ -86,10 +87,22 @@ class InventoryPreviewTest {
     }
 
     @Test
-    fun `the look is the player's`() {
+    fun `the grid looks like the inventory unless the player picks another look or a place by the hotbar`() {
         post(*inventory(9 to eyes))
-        config.general.inventoryLook = InventoryLook.INVENTORY
-        post()
         assertEquals(HudLook.INVENTORY, hud()?.look)
+        assertEquals(HudDock.FREE, hud()?.dock)
+        config.general.inventoryLook = InventoryLook.PLATE
+        config.general.inventoryPlacement = HudDock.RIGHT_OF_HOTBAR
+        post()
+        assertEquals(HudLook.PLATE, hud()?.look)
+        assertEquals(HudDock.RIGHT_OF_HOTBAR, hud()?.dock)
+    }
+
+    @Test
+    fun `each row names its first inventory slot, so the HUD can mark it, and the grid steps aside for menus`() {
+        config.general.inventoryRows = mutableListOf(InventoryRow.BOTTOM, InventoryRow.HOTBAR)
+        post(*inventory(27 to arrow, 36 to sword))
+        assertEquals(listOf(27, 36), rows()?.map { it.slot })
+        assertEquals(false, hud()?.overMenus)
     }
 }

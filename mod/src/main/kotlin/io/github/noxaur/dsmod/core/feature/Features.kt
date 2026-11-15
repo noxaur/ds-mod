@@ -55,7 +55,7 @@ fun features(config: DsModConfig): List<Feature> = listOf(
         config.general::equipmentPlacement,
     ),
     ExplosionParticleHider(config.general::explosionParticleHider),
-    InventoryPreview(config.general::inventoryPreview, config.general::inventoryRows, config.general::inventoryLook),
+    InventoryPreview(config.general::inventoryPreview, config.general::inventoryRows, config.general::inventoryLook, config.general::inventoryPlacement),
     FreeLook(config.general::freeLook),
     Fullbright(config.general::fullbright),
     ArmorSwapGuard(config.inventory::armorSwapGuard),

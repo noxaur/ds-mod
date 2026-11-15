@@ -48,12 +48,15 @@ Shows the armor you wear and your pet as a row of icons on the HUD, with each he
 
 ### Inventory Preview
 
-Shows the items in your inventory as a grid on the HUD, nine to a row as your inventory holds them, with each stack's count. While another menu is open, the grid keeps your inventory as you last saw it. Open the chat and point at an item to read its tooltip, and move the grid in the HUD editor. Turn it on in General.
+Shows the items in your inventory as a grid on the HUD, nine to a row as your inventory holds them, with each stack's count, durability bar and cooldown. Rarity Marks colors each slot as it does in your inventory, and with your hotbar in the grid the slot you hold is ringed. The grid steps aside while a menu or your inventory is open, since they show your items already. Open the chat and point at an item to read its tooltip, and move or resize the grid in the HUD editor. Turn it on in General.
 
 | Setting | Does |
 | --- | --- |
 | Inventory Rows | Picks which rows show, and their order. The three rows of your inventory show by default, and your hotbar can join them, set a little apart as it is in your inventory |
-| Inventory Look | Shows the items on the HUD's plate, on nothing, or in a panel of slots like your inventory's: in your theme, solid or as glass as Menu Look says, while Themed Menus is on, and as your resource pack draws the inventory while it is off |
+| Inventory Look | Draws the grid in a panel of slots like your inventory's: in your theme, solid or as glass as Menu Look says, while Themed Menus is on, and as your resource pack draws the inventory while it is off. Plate and Clear show the items alone, on the HUD's plate or on nothing |
+| Inventory Placement | Keeps the grid where you put it in the HUD editor, or puts it beside your hotbar, past your offhand slot, at your GUI's size or smaller where the room there is narrower |
+| Inventory Key | Binds a key that shows and hides the grid. With none, the grid always shows |
+| Inventory Key Mode | Shows the grid only while you hold the key, or switches it with each press |
 
 ### Camera
 

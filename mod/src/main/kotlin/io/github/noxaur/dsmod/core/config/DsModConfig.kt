@@ -289,7 +289,25 @@ class DsModConfig : Config() {
         @ConfigOption(name = "Inventory Look", desc = "Show the items on the plate, on nothing, or as your inventory.")
         @ConfigEditorDropdown
         @JvmField
-        var inventoryLook = InventoryLook.PLATE
+        var inventoryLook = InventoryLook.INVENTORY
+
+        @Expose
+        @ConfigOption(name = "Inventory Placement", desc = "Keep the grid where you put it, or beside your hotbar.")
+        @ConfigEditorDropdown
+        @JvmField
+        var inventoryPlacement = HudDock.FREE
+
+        @Expose
+        @ConfigOption(name = "Inventory Key", desc = "Pick a key that shows or hides the grid, or none to always show it.")
+        @ConfigEditorKeybind(defaultKey = NO_KEY)
+        @JvmField
+        var inventoryKey = NO_KEY
+
+        @Expose
+        @ConfigOption(name = "Inventory Key Mode", desc = "Pick Hold to show the grid while the key is down, or Toggle.")
+        @ConfigEditorDropdown
+        @JvmField
+        var inventoryKeyMode = KeyMode.TOGGLE
 
         @Expose
         @ConfigOption(name = "Camera", desc = "Shape the third-person view with the settings below.")
@@ -383,6 +401,9 @@ class DsModConfig : Config() {
         private companion object {
             /** GLFW's code for the left Alt key. */
             const val LEFT_ALT = 342
+
+            /** No key, which the settings screen shows as None. */
+            const val NO_KEY = -1
         }
     }
 

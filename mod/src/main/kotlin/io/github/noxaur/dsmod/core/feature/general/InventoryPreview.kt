@@ -7,6 +7,7 @@ import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
+import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudLook
 import kotlin.reflect.KMutableProperty0
 
@@ -34,16 +35,17 @@ enum class InventoryLook(private val label: String, val hud: HudLook) {
 /**
  * Shows the [rows] of the player's inventory they picked, in their order, as a grid of icons with no header, nine to a
  * row as the inventory holds them. An empty cell stands for an empty slot, and the hotbar sits apart from the rows
- * beside it, as it does in the inventory. The last inventory seen is kept while another menu is open, and nothing
- * shows while every slot picked is empty.
+ * beside it, as it does in the inventory. Each row carries its slots' rarity marks, and the hotbar the slot the player
+ * holds. The grid hides while a menu is open, which shows the inventory itself, and while every slot picked is empty.
  */
 class InventoryPreview(
     toggle: KMutableProperty0<Boolean>,
     private val rows: KMutableProperty0<MutableList<InventoryRow>>,
     private val look: KMutableProperty0<InventoryLook>,
+    private val placement: KMutableProperty0<HudDock>,
 ) : Feature("inventory-preview", toggle, Area.ANYWHERE) {
     /** The settings the block was built with, so a refresh rebuilds it only when one changed. */
-    private data class Shown(val rows: List<InventoryRow>, val look: InventoryLook)
+    private data class Shown(val rows: List<InventoryRow>, val look: InventoryLook, val placement: HudDock)
 
     // The inventory's slots from the top row's first to the hotbar's last.
     private var items = emptyList<Item?>()
@@ -69,23 +71,23 @@ class InventoryPreview(
                 block = build()
             }
         }
-        if (shown.rows != rows.get() || shown.look != look.get()) {
+        if (shown.rows != rows.get() || shown.look != look.get() || shown.placement != placement.get()) {
             shown = settings()
             block = build()
         }
         return block
     }
 
-    private fun settings() = Shown(rows.get().toList(), look.get())
+    private fun settings() = Shown(rows.get().toList(), look.get(), placement.get())
 
     private fun build(): HudBlock? {
         if (items.isEmpty()) return null
         val picked = shown.rows.distinct()
         val slots = picked.map { row -> items.subList(row.first - FIRST, row.first - FIRST + WIDTH) }
         if (slots.all { row -> row.all { it == null } }) return null
-        return block(headed = false, look = shown.look.hud) {
+        return block(headed = false, look = shown.look.hud, dock = shown.placement, overMenus = false) {
             slots.forEachIndexed { i, row ->
-                items(row, apart = i > 0 && (picked[i] == InventoryRow.HOTBAR) != (picked[i - 1] == InventoryRow.HOTBAR))
+                items(row, apart = i > 0 && (picked[i] == InventoryRow.HOTBAR) != (picked[i - 1] == InventoryRow.HOTBAR), slot = picked[i].first)
             }
         }
     }

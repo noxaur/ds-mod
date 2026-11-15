@@ -4,11 +4,13 @@ import com.google.common.collect.ImmutableMultimap
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
 import com.mojang.authlib.properties.PropertyMap
+import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.feature.general.InventoryLook
 import io.github.noxaur.dsmod.core.feature.general.InventoryRow
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.SlotChanged
+import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.ItemsRow
 import io.github.noxaur.dsmod.core.ui.MenuLook
@@ -20,12 +22,15 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.core.component.DataComponents
+import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import net.minecraft.world.item.component.CustomData
 import net.minecraft.world.item.component.DyedItemColor
 import net.minecraft.world.item.component.ItemLore
 import net.minecraft.world.item.component.ResolvableProfile
+import org.lwjgl.glfw.GLFW
 import java.nio.file.Path
 import java.util.Base64
 import java.util.UUID
@@ -56,7 +61,7 @@ class InventoryPreviewTest : FabricClientGameTest {
                  * The middle of the cell in [row] and [column], in GUI pixels, on the plate or in the inventory's 18px slots
                  * 7px into its panel, with the hotbar row [apart].
                  */
-                fun cell(row: Int, column: Int, inventory: Boolean = false, apart: Boolean = false): Pair<Double, Double> =
+                fun cell(row: Int, column: Int, inventory: Boolean = true, apart: Boolean = false): Pair<Double, Double> =
                     context.computeOnClient<Pair<Double, Double>, Nothing> {
                         val block = checkNotNull(Hud.find(ID)) { "The inventory is not on the HUD" }
                         val inset = if (inventory) 7 + 1 else 0
@@ -181,10 +186,100 @@ class InventoryPreviewTest : FabricClientGameTest {
                     inventorySettings.menuLook = menuLookBefore
                     DsModClient.settings.hud.theme = themeBefore
                 }
+                general.inventoryLook = InventoryLook.INVENTORY
+                context.waitTicks(10)
+
+                // The hotbar row marks the slot the player holds, as the hotbar does, and moves with it.
+                context.runOnClient<Nothing> { it.player!!.inventory.selectedSlot = 2 }
+                context.waitTicks(5)
+                val heldShot = context.takeScreenshot("inventory-preview-held")
+                val ring = Theme.CHARCOAL.accent and 0xFFFFFF
+                check(pixel(context, heldShot, cell(3, 2, apart = true), 0, -9) == ring) { "The held slot has no ring" }
+                check(pixel(context, heldShot, cell(3, 3, apart = true), 0, -9) != ring) { "A slot the player does not hold has a ring" }
+
+                // Rarity Marks paints a Legendary item's slot as it does in the inventory, and leaves a plain one alone.
+                check(pixel(context, heldShot, cell(0, 6), -7, -7) != pixel(context, heldShot, cell(1, 2), -7, -7)) {
+                    "The Legendary sword's slot looks like the plain sword's"
+                }
+
+                // A menu shows the inventory itself, so the grid steps aside, under glass where the HUD would show through too.
+                inventorySettings.menuLook = MenuLook.GLASS
+                inventorySettings.glassOpacity = 0f
+                try {
+                    // Glass menus neither dim nor blur, so the head in the grid's first slot shows plainly until the grid steps aside.
+                    val head = cell(0, 0)
+                    val open = context.takeScreenshot("inventory-preview-before-menu")
+                    ServerMenus.open(context, world, 1, "Small Chest")
+                    val behind = context.takeScreenshot("inventory-preview-menu-open")
+                    check(pixel(context, behind, head, 0, 0) != pixel(context, open, head, 0, 0)) { "The grid still shows under an open menu" }
+                    context.runOnClient<Nothing> { it.player!!.closeContainer() }
+                    context.waitTicks(5)
+                } finally {
+                    inventorySettings.menuLook = menuLookBefore
+                    inventorySettings.glassOpacity = 60f
+                }
+
+                // Docked, the grid sits right of the hotbar past the hotbar's own gap, scaled down to the room there.
+                general.inventoryPlacement = HudDock.RIGHT_OF_HOTBAR
+                context.waitTicks(10)
+                val (width, height) = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.guiScaledWidth to it.window.guiScaledHeight }
+                val (first, last) = context.computeOnClient<Pair<Pair<Int, Int>?, Pair<Int, Int>?>, Nothing> {
+                    var first: Pair<Int, Int>? = null
+                    var last: Pair<Int, Int>? = null
+                    for (y in 0 until height) for (x in 0 until width) {
+                        val name = Hud.itemAt(x + 0.5, y + 0.5)?.hoverName?.string
+                        if (name == "Item 0" && first == null) first = x to y
+                        if (name == "Item 8") last = x to y
+                    }
+                    first to last
+                }
+                check(first != null && last != null) { "The docked grid's hotbar row is not on the screen" }
+                check(first!!.first >= width / 2 + 91 + 7 && last!!.first < width) { "The docked grid is not right of the hotbar: $first to $last" }
+                check(last.second >= height - 22) { "The docked grid's hotbar row is not level with the hotbar: $last" }
+                context.takeScreenshot("inventory-preview-docked-right")
+                general.inventoryPlacement = HudDock.FREE
+                context.waitTicks(10)
+
+                // A key the player binds shows and hides the grid, by a press under Toggle and while it is held under Hold.
+                val key = GLFW.GLFW_KEY_K
+                general.inventoryKey = key
+                fun shown() = context.computeOnClient<Boolean, Nothing> { Hud.find(ID) != null }
+                context.waitTicks(2)
+                check(shown()) { "Binding a key hid the grid before its first press" }
+                context.input.pressKey(key)
+                context.waitTicks(2)
+                check(!shown()) { "Toggle's press did not hide the grid" }
+                context.input.pressKey(key)
+                context.waitTicks(2)
+                check(shown()) { "Toggle's second press did not show the grid" }
+                general.inventoryKeyMode = KeyMode.HOLD
+                context.waitTicks(2)
+                check(!shown()) { "Under Hold the grid shows with the key up" }
+                context.input.holdKey(key)
+                context.waitTicks(2)
+                check(shown()) { "Under Hold the grid does not show while the key is down" }
+                context.input.releaseKey(key)
+                context.waitTicks(2)
+                check(!shown()) { "Under Hold the grid stays after the release" }
+                general.inventoryKey = -1
+                context.waitTicks(2)
+                check(shown()) { "With no key the grid does not always show" }
+
+                // The icon looks, for a player who wants the grid lighter than the inventory.
+                for (look in listOf(InventoryLook.PLATE, InventoryLook.CLEAR)) {
+                    general.inventoryLook = look
+                    context.waitTicks(10)
+                    check(skin(stackAt(cell(0, 0, inventory = false)))) { "The ${look.name} look moved the first item off its cell" }
+                    context.takeScreenshot("inventory-preview-${look.name.lowercase()}")
+                }
             } finally {
                 general.inventoryPreview = false
                 general.inventoryRows = mutableListOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM)
-                general.inventoryLook = InventoryLook.PLATE
+                general.inventoryLook = InventoryLook.INVENTORY
+                general.inventoryPlacement = HudDock.FREE
+                general.inventoryKey = -1
+                general.inventoryKeyMode = KeyMode.TOGGLE
+                context.runOnClient<Nothing> { it.player?.inventory?.selectedSlot = 0 }
             }
         }
     }
@@ -196,6 +291,12 @@ class InventoryPreviewTest : FabricClientGameTest {
         return context.computeOnClient<Long, Nothing> {
             DsModClient.game.metrics.snapshot().timers.getValue("hud.draw").let { timer -> timer.totalNanos / timer.count / 1000 }
         }
+    }
+
+    /** The color in [shot] at [dx], [dy] GUI pixels from [point], without its alpha. */
+    private fun pixel(context: ClientGameTestContext, shot: Path, point: Pair<Double, Double>, dx: Int, dy: Int): Int {
+        val scale = context.computeOnClient<Int, Nothing> { it.window.guiScale }
+        return ImageIO.read(shot.toFile()).getRGB(((point.first + dx) * scale).toInt(), ((point.second + dy) * scale).toInt()) and 0xFFFFFF
     }
 
     /** The color of the grid's panel in [shot], a few pixels in from its corner, between the edge and the first slot. */
@@ -214,6 +315,10 @@ class InventoryPreviewTest : FabricClientGameTest {
         val stack = when (index) {
             9 -> ItemStack(Items.PLAYER_HEAD).also { it.set(DataComponents.PROFILE, profile()) }
             10 -> ItemStack(Items.LEATHER_CHESTPLATE).also { it.set(DataComponents.DYED_COLOR, DyedItemColor(DYE)) }
+            // A diamond sword as dragsim.co marks a Legendary one, beside the plain ones at 20 and 25.
+            15 -> ItemStack(Items.DIAMOND_SWORD).also {
+                it.set(DataComponents.CUSTOM_DATA, CustomData.of(CompoundTag().apply { put("item_data", CompoundTag().apply { putString("rarity", "LEGENDARY") }) }))
+            }
             22 -> ItemStack(Items.ENDER_EYE, 13)
             else -> ItemStack(ITEMS[index % ITEMS.size])
         }

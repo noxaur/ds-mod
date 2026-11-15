@@ -14,6 +14,7 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.minecraft.client.AttackIndicatorStatus
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ChatScreen
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.world.entity.HumanoidArm
@@ -31,6 +32,9 @@ private const val ITEM_PITCH = ITEM + 1
 // The inventory leaves this much between its rows and the hotbar.
 private const val ROWS_GAP = 4
 
+// The inventory menu's number for the hotbar's first slot.
+private const val HOTBAR_FIRST = 36
+
 // An item sits this far into a hotbar cell.
 private const val HOTBAR_INSET = 3
 
@@ -47,9 +51,20 @@ private const val INDICATOR_LEFT = 22
 private const val DOCK_GAP = 7
 
 object Hud {
-    /** A line of text, with a bar under it when [bar] is set, or a row of item icons when [stacks] is. [y] is from the block's top. */
-    private class Row(val text: Component, val bar: BarRow?, val barColor: Int, val stacks: List<ItemStack?>?, val y: Int)
-    private class Block(val header: Component?, val rows: List<Row>, val look: HudLook, val width: Int, val height: Int, val placeable: Boolean)
+    /**
+     * A line of text, with a bar under it when [bar] is set, or a row of item icons when [stacks] is, the player's
+     * inventory from its [slot] on when that is not -1. [y] is from the block's top.
+     */
+    private class Row(val text: Component, val bar: BarRow?, val barColor: Int, val stacks: List<ItemStack?>?, val y: Int, val slot: Int)
+    private class Block(
+        val header: Component?,
+        val rows: List<Row>,
+        val look: HudLook,
+        val width: Int,
+        val height: Int,
+        val placeable: Boolean,
+        val overMenus: Boolean,
+    )
 
     /** An item icon as it sits on the screen, in GUI pixels. */
     private class Cell(val x: Float, val y: Float, val size: Float, val stack: ItemStack)
@@ -62,6 +77,9 @@ object Hud {
         var height = 0
         var x = 0
         var y = 0
+
+        // The scale it is drawn at: the player's, or for a group docked beside the hotbar, as much of it as fits there.
+        var scale = 1f
 
         // The top and height of each run of blocks that sit on the plate, from the group's corner.
         var plates = IntArray(0)
@@ -85,6 +103,9 @@ object Hud {
     private var placed = emptyList<Placed>()
     private var cells = emptyList<Cell>()
 
+    // Blocks the player hid with a key. They keep their place in their group and come back as they were.
+    private val concealed = HashSet<String>()
+
     /**
      * Puts [block] in [group], replacing what [id] showed before. The group's corner is its plate's corner.
      * A block that is not [placeable] is one no feature owns, so the HUD editor cannot grab it.
@@ -104,7 +125,7 @@ object Hud {
             val bar = row as? BarRow
             if ((row as? ItemsRow)?.apart == true) height += ROWS_GAP
             val items = (row as? ItemsRow)?.items?.map { item -> item?.let { kept.getOrPut(it) { built[it] ?: it.toStack() } } }
-            val drawn = Row(row.text.toComponent(), bar, bar?.role?.argb() ?: 0, items, height)
+            val drawn = Row(row.text.toComponent(), bar, bar?.role?.argb() ?: 0, items, height, (row as? ItemsRow)?.slot ?: -1)
             width = maxOf(
                 width,
                 when {
@@ -128,8 +149,13 @@ object Hud {
         groups.values.forEach { if (it.place.id != group.id) it.blocks.remove(id) }
         val target = groups.getOrPut(group.id) { Group(group) }
         target.place = group
-        target.blocks[id] = Block(header, rows, block.look, width, height, placeable && group.dock == HudDock.FREE)
+        target.blocks[id] = Block(header, rows, block.look, width, height, placeable && group.dock == HudDock.FREE, block.overMenus)
         layout()
+    }
+
+    /** Takes [id]'s block off the screen while [hidden], keeping it to show again, as a key the player bound does. */
+    fun conceal(id: String, hidden: Boolean) {
+        if (if (hidden) concealed.add(id) else concealed.remove(id)) layout()
     }
 
     fun hide(id: String) {
@@ -166,14 +192,16 @@ object Hud {
         val all = ArrayList<Placed>()
         val items = ArrayList<Cell>()
         groups.values.forEach { group ->
-            group.shown = group.blocks.values.toList()
+            val visible = group.blocks.filterKeys { it !in concealed }
+            group.shown = visible.values.toList()
+            if (group.shown.isEmpty()) return@forEach
             group.width = group.shown.maxOf { it.width }
             group.height = group.shown.sumOf { it.height } + BLOCK_GAP * (group.shown.size - 1)
             group.plates = plates(group)
             place(group)
-            val scale = group.place.scale
+            val scale = group.scale
             var y = 0
-            for ((id, block) in group.blocks) {
+            for ((id, block) in visible) {
                 if (block.placeable) all += Placed(id, group.x.toFloat(), group.y + y * scale, plate(block.width), plate(block.height), scale)
                 val across = across(block.look)
                 val down = down(block.look)
@@ -188,7 +216,7 @@ object Hud {
                 y += block.height + BLOCK_GAP
             }
         }
-        shown = groups.values.toList()
+        shown = groups.values.filter { it.shown.isNotEmpty() }
         placed = all
         cells = items
     }
@@ -218,30 +246,41 @@ object Hud {
     /**
      * Sets the group's corner: where the player put it, or flush beside the hotbar with its bottom on the screen's,
      * past whatever vanilla draws on that side. A group with a plate puts the plate's edge there, and one without its
-     * contents'.
+     * contents'. A docked group too wide for the room beside the hotbar is drawn smaller, by whole screen pixels per
+     * HUD pixel as the rest of the HUD is, so a big one such as the inventory still fits on a narrow screen.
      */
     private fun place(group: Group) {
         val dock = group.place.dock
+        group.scale = group.place.scale
         if (dock == HudDock.FREE) {
             group.x = group.place.x
             group.y = group.place.y
             return
         }
         val client = Minecraft.getInstance()
-        val middle = client.window.guiScaledWidth / 2
+        val screenWidth = client.window.guiScaledWidth
+        val middle = screenWidth / 2
         val offhandLeft = client.options.mainHand().get() == HumanoidArm.RIGHT
         val indicator = client.options.attackIndicator().get() == AttackIndicatorStatus.HOTBAR
+        val left = dock == HudDock.LEFT_OF_HOTBAR
+        val beside = when {
+            left == offhandLeft -> OFFHAND
+            indicator -> if (left) INDICATOR_LEFT else INDICATOR_RIGHT
+            else -> 0
+        }
+        val room = middle - HOTBAR_HALF - beside - DOCK_GAP + if (left) 0 else screenWidth % 2
         // The box that lines up with the hotbar: the plate, or with none the contents, which start PADDING in.
-        val scale = group.place.scale
         val plated = group.plates.isNotEmpty()
+        val box = if (plated) plate(group.width) else group.width
+        val guiScale = client.window.guiScale
+        if (box * group.scale > room) group.scale = maxOf(1, room * guiScale / box) / guiScale.toFloat()
+        val scale = group.scale
         val inset = if (plated) 0f else PADDING * scale
-        val width = (if (plated) plate(group.width) else group.width) * scale
+        val width = box * scale
         val height = (if (plated) plate(group.height) else group.height) * scale
-        group.x = if (dock == HudDock.LEFT_OF_HOTBAR) {
-            val beside = if (offhandLeft) OFFHAND else if (indicator) INDICATOR_LEFT else 0
+        group.x = if (left) {
             (middle - HOTBAR_HALF - beside - DOCK_GAP - width - inset).toInt()
         } else {
-            val beside = if (!offhandLeft) OFFHAND else if (indicator) INDICATOR_RIGHT else 0
             (middle + HOTBAR_HALF + beside + DOCK_GAP - inset).toInt()
         }
         // On a narrow screen there may be no room beside the hotbar, and a block cut off by the edge reads worse than one over the offhand slot.
@@ -286,20 +325,28 @@ object Hud {
             DsModClient.game.metrics.time("hud.draw") {
                 val font = Minecraft.getInstance().font
                 val line = font.lineHeight + 1
+                val client = Minecraft.getInstance()
                 // The Inventory look matches the inventory screen, which Themed Menus draws with the kit, solid or as glass.
                 val themed = MenuSkin.themed
                 val glass = MenuSkin.glassAlpha
+                val menu = client.gui.screen() is AbstractContainerScreen<*>
+                // The hotbar slot the player holds, numbered as the inventory menu numbers it.
+                val held = client.player?.let { HOTBAR_FIRST + it.inventory.selectedSlot } ?: -1
                 val pose = graphics.pose()
                 for (g in shown.indices) {
                     val group = shown[g]
                     pose.pushMatrix()
                     pose.translate(group.x.toFloat(), group.y.toFloat())
-                    pose.scale(group.place.scale, group.place.scale)
+                    pose.scale(group.scale, group.scale)
                     val plates = group.plates
                     for (p in 0 until plates.size / 2) Kit.plate(graphics, 0, plates[p * 2], plate(group.width), plate(plates[p * 2 + 1]))
                     var top = PADDING
                     for (b in group.shown.indices) {
                         val block = group.shown[b]
+                        if (menu && !block.overMenus) {
+                            top += block.height + BLOCK_GAP
+                            continue
+                        }
                         val hotbar = block.look == HudLook.HOTBAR
                         val inventory = block.look == HudLook.INVENTORY
                         if (inventory) {
@@ -319,18 +366,27 @@ object Hud {
                                 val across = across(block.look)
                                 val down = down(block.look)
                                 val pitch = pitch(block.look)
+                                // The inventory's look takes the inventory screen's rarity art, and the others the hotbar's.
+                                val surface = if (inventory) Surface.CONTAINER else Surface.HOTBAR
                                 for (i in stacks.indices) {
                                     val x = PADDING + across + i * pitch
+                                    val itemY = y + down
                                     if (inventory) {
                                         when {
-                                            glass >= 0 -> Kit.glassSlot(graphics, x - 1, y + down - 1)
-                                            themed -> Kit.slot(graphics, x - 1, y + down - 1)
-                                            else -> Kit.slotAt(graphics, x - 1, y + down - 1)
+                                            glass >= 0 -> Kit.glassSlot(graphics, x - 1, itemY - 1)
+                                            themed -> Kit.slot(graphics, x - 1, itemY - 1)
+                                            else -> Kit.slotAt(graphics, x - 1, itemY - 1)
                                         }
                                     }
-                                    val stack = stacks[i] ?: continue
-                                    graphics.item(stack, x, y + down)
-                                    graphics.itemDecorations(font, stack, x, y + down)
+                                    val slot = if (row.slot < 0) -1 else row.slot + i
+                                    val stack = stacks[i]
+                                    if (stack != null) {
+                                        if (slot >= 0) Slots.drawBack(graphics, surface, slot, x, itemY)
+                                        graphics.item(stack, x, itemY)
+                                        graphics.itemDecorations(font, stack, x, itemY)
+                                        if (slot >= 0) Slots.drawFront(graphics, surface, slot, x, itemY)
+                                    }
+                                    if (slot == held) Kit.held(graphics, x, itemY, inventory && glass < 0 && !themed)
                                 }
                                 continue
                             }
