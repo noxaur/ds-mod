@@ -4,9 +4,13 @@
   "compatibilityLevel": "JAVA_25",
   "client": [
     "ChatComponentAccessor",
+    "CameraMixin",
     "ContainerScreenAccessor",
     "ExplosionParticleMixin",
     "FullbrightMixin",
+    "KeyPressMixin",
+    "MouseTurnMixin",
+    "PerspectiveKeyMixin",
     "ServerPacketsMixin"
   ],
   "injectors": {

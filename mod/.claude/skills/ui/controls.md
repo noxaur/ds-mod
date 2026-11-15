@@ -23,6 +23,16 @@ Items a player picks from, such as chat messages or slots.
 - Hover marks the entry the next press takes, and the arrow keys and Enter work.
 - A choice closes the menu and shows what it did.
 
+## Key bind
+
+A key that works in the world, such as Free Look's.
+
+- Its setting sits beside the feature's switch, takes a key or a mouse button, and can be cleared to none.
+- A feature the player holds a key for offers Hold and Toggle.
+- A press comes from the game's key event, as `Cameras.pressed` takes it, so a tap shorter than a frame counts and a key typed into a screen does not. A held key repeats its event, and a repeat is not a press.
+- Hold ends at the release, also when a screen has opened since. A new world or the feature's switch ends it too.
+- Releasing puts back what the press changed.
+
 ## Range slider
 
 - A click on an empty stretch adds a section, and a press and drag draws one.
