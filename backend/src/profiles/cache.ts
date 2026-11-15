@@ -16,6 +16,8 @@ export const KEEP_SECONDS = 24 * 60 * 60;
  * lookup instead would write one key twice in a second whenever two players look at the same player.
  */
 export const NAME_RENEW_MS = 60 * 60 * 1000;
+/** A name is kept one renewal longer than a copy, so it outlives every copy written before it is renewed. */
+const NAME_KEEP_SECONDS = KEEP_SECONDS + NAME_RENEW_MS / 1000;
 /** How long a name dragsim.co does not know is remembered, so a mistyped name asked again does not reach it. */
 export const MISSING_SECONDS = 60;
 /** How long the catalog is used before it is fetched again. It changes with the server's releases, not by the minute. */
@@ -139,7 +141,7 @@ export const lookup = Effect.fn(function* (name: string, profileId: string | und
       Effect.all([
         Option.isSome(named) && named.value.uuid === found.player.uuid && now - named.value.writtenAt < NAME_RENEW_MS
           ? Effect.void
-          : keep(store.put(nameKey(lower), { uuid: found.player.uuid, writtenAt: now }, KEEP_SECONDS)),
+          : keep(store.put(nameKey(lower), { uuid: found.player.uuid, writtenAt: now }, NAME_KEEP_SECONDS)),
         keep(store.put(profileKey(found.player.uuid, profileId), { fetchedAt: now, body: found }, KEEP_SECONDS)),
       ]),
     ),

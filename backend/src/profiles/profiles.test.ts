@@ -314,17 +314,27 @@ test("a name outlives the first day, so a later copy still answers when dragsim.
   const app = makeApp(services, () => ({ userId: "ann", adminToken: undefined }));
   const lookUp = () => app(new Request("http://backend/v1/players/Testwyrm/profile"));
   const hour = 60 * 60 * 1000;
+  const stale = async (fetchedAt: string) => {
+    const response = await lookUp();
+    expect(response.status).toBe(200);
+    expect(Schema.decodeUnknownSync(Profile)(await response.json())).toMatchObject({ stale: true, fetchedAt });
+  };
+  // A refresh late in the day renews the name.
   expect((await lookUp()).status).toBe(200);
   vi.setSystemTime(Date.now() + 23 * hour);
   expect((await lookUp()).status).toBe(200);
   state.player = "down";
   vi.setSystemTime(Date.now() + 2 * hour);
-  const response = await lookUp();
-  expect(response.status).toBe(200);
-  expect(Schema.decodeUnknownSync(Profile)(await response.json())).toMatchObject({
-    stale: true,
-    fetchedAt: "2026-11-16T11:00:00.000Z",
-  });
+  await stale("2026-11-16T11:00:00.000Z");
+  // A refresh too soon after the name was written does not renew it, and the name still outlives that copy.
+  state.player = { status: 200, body: player };
+  vi.setSystemTime(Date.now() + 2 * hour);
+  expect((await lookUp()).status).toBe(200);
+  vi.setSystemTime(Date.now() + 30 * 60 * 1000);
+  expect((await lookUp()).status).toBe(200);
+  state.player = "down";
+  vi.setSystemTime(Date.now() + 24 * hour - 15 * 60 * 1000);
+  await stale("2026-11-16T15:30:00.000Z");
 });
 
 test("a 5xx, a failure and an answer that does not decode are all unavailable without a copy", async () => {
