@@ -129,6 +129,20 @@ All-Time: 12
 
 <sub>Off by default. Sneak and right click to swap on purpose.</sub>
 
+### Slot Lock
+
+Locks slots of your inventory, so a misclick cannot move or drop what is in them. A lock belongs to the slot, and whatever you put there is kept.
+
+| Do this, in any menu | To |
+| --- | --- |
+| Press L over a slot of your inventory | Lock it, or unlock it. A padlock marks a locked slot |
+| Hold L over a hotbar slot, move to a slot in the rows above, and let go | Link the two, which also locks both. A line joins them. The same again ends the link |
+| Shift-click either slot of a link | Trade the two items' places |
+
+A locked slot ignores clicks, number keys, the drop key and a double click that would gather from it. The drop key also keeps a locked hotbar slot's item when no menu is open. Armor and the off hand can be locked too.
+
+Slot Lock Key under Inventory in the settings takes any key or mouse button. The server can still move an item out of a locked slot itself, as when you sell it.
+
 ## Chat
 
 ### Ability Spam

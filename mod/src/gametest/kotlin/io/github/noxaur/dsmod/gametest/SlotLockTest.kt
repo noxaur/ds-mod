@@ -1,0 +1,161 @@
+package io.github.noxaur.dsmod.gametest
+
+import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
+import io.github.noxaur.dsmod.core.inventory.SlotLocks
+import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.SlotGuards
+import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
+import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
+import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
+import net.minecraft.client.gui.screens.inventory.InventoryScreen
+import net.minecraft.world.entity.player.Inventory
+import net.minecraft.world.inventory.ContainerInput
+import net.minecraft.world.item.Items
+import org.lwjgl.glfw.GLFW
+
+/**
+ * Works Slot Lock in the player's inventory with the real key and mouse. The key locks the slot under the mouse,
+ * and then a click, a number key, the drop key and a double click each leave the slot as it was. Holding the key
+ * from a hotbar slot to a slot above links the two, and a Shift click trades their places. Outside the menu the
+ * drop key keeps a locked slot's item. Slots are the inventory's own: 0 to 8 is the hotbar and 9 the first above.
+ * Read the screenshot for the padlocks and the link's line.
+ */
+class SlotLockTest : FabricClientGameTest {
+    override fun runTest(context: ClientGameTestContext) {
+        val settings = DsModClient.settings.inventory
+        val feature = DsModClient.game.readouts.single { it.feature.id == "slot-lock" }.feature as SlotLock
+        val key = GLFW.GLFW_KEY_L
+
+        fun item(slot: Int) = context.computeOnClient<Pair<Any, Int>, Nothing> { it.player!!.inventory.getItem(slot).let { stack -> stack.item to stack.count } }
+        fun carried() = context.computeOnClient<Int, Nothing> { it.player!!.containerMenu.carried.count }
+        fun hover(slot: Int) {
+            val (x, y) = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
+                val screen = client.gui.screen() as AbstractContainerScreen<*>
+                val at = screen.menu.slots.first { it.container is Inventory && it.containerSlot == slot }
+                val scale = client.window.guiScale.toDouble()
+                screen as ContainerScreenAccessor
+                (screen.leftPos + at.x + 8) * scale to (screen.topPos + at.y + 8) * scale
+            }
+            context.input.setCursorPos(x, y)
+            context.waitTicks(3)
+        }
+        fun click(slot: Int, button: Int = 0) {
+            hover(slot)
+            context.input.pressMouse(button)
+            context.waitTicks(3)
+        }
+        fun tap(slot: Int) {
+            hover(slot)
+            context.input.pressKey(key)
+            context.waitTicks(3)
+        }
+        fun open() {
+            context.runOnClient<Nothing> { it.gui.setScreen(InventoryScreen(it.player!!)) }
+            context.waitForScreen(InventoryScreen::class.java)
+            context.waitTicks(3)
+        }
+        /** A click on an empty slot puts the carried stack down, and the second picks it up and gathers the rest like it. */
+        fun doubleClick(slot: Int) {
+            hover(slot)
+            context.input.pressMouse(0)
+            context.input.pressMouse(0)
+            context.waitTicks(5)
+        }
+
+        context.worldBuilder().create().use { world ->
+            try {
+                for ((slot, give) in listOf("hotbar.0" to "diamond_sword", "hotbar.1" to "stone 5", "inventory.0" to "diamond_pickaxe", "inventory.1" to "stone 5")) {
+                    world.server.runCommand("item replace entity @a $slot with $give")
+                }
+                context.waitTicks(20)
+                open()
+
+                click(0)
+                check(carried() == 1) { "A click on an unlocked slot picked nothing up, so this test proves nothing" }
+                click(0)
+
+                tap(0)
+                check(feature.locks == SlotLocks(setOf(0))) { "The key over the first hotbar slot left ${feature.locks}" }
+                click(0)
+                check(carried() == 0 && item(0).first == Items.DIAMOND_SWORD) { "A click took the locked sword" }
+                click(0, 1)
+                check(carried() == 0) { "A right click took the locked sword" }
+                hover(10)
+                context.input.pressKey(GLFW.GLFW_KEY_1)
+                context.waitTicks(3)
+                check(item(0).first == Items.DIAMOND_SWORD && item(10).first == Items.STONE) { "The 1 key over another slot traded with the locked slot" }
+                hover(0)
+                context.input.pressKey { it.keyDrop }
+                context.waitTicks(3)
+                check(item(0).first == Items.DIAMOND_SWORD) { "The drop key over the locked slot dropped the sword" }
+
+                // The key is a mouse button too.
+                settings.slotLockKey = 2
+                click(10, 2)
+                check(10 in feature.locks.locked) { "The middle button did not lock the slot, and left ${feature.locks}" }
+                settings.slotLockKey = key
+                click(1)
+                doubleClick(12)
+                check(carried() == 5 && item(10).second == 5) { "A double click gathered from the locked stack: carrying ${carried()}, and ${item(10)} is left" }
+                click(1)
+
+                // Two hotbar slots cannot be linked.
+                hover(0)
+                context.input.holdKey(key)
+                hover(1)
+                context.input.releaseKey(key)
+                context.waitTicks(3)
+                check(feature.locks.links.isEmpty() && feature.locks.locked == setOf(0, 10)) { "A drag between two hotbar slots left ${feature.locks}" }
+
+                hover(0)
+                context.input.holdKey(key)
+                hover(9)
+                context.takeScreenshot("slot-lock-linking")
+                context.input.releaseKey(key)
+                context.waitTicks(3)
+                check(feature.locks == SlotLocks(setOf(0, 10, 9), mapOf(0 to 9))) { "Holding the key from the hotbar to the slot above left ${feature.locks}" }
+                click(9)
+                check(carried() == 0) { "A click took the linked pickaxe" }
+                context.takeScreenshot("slot-lock")
+
+                // The test's mouse carries no Shift, so the Shift click is given to the guard as the screen would give it.
+                context.runOnClient<Nothing> { client ->
+                    val screen = client.gui.screen() as AbstractContainerScreen<*>
+                    val slot = screen.menu.slots.first { it.container is Inventory && it.containerSlot == 9 }
+                    check(SlotGuards.refuses(screen, slot, 0, ContainerInput.QUICK_MOVE)) { "The guard let a Shift click on a linked slot through" }
+                }
+                context.waitTicks(5)
+                check(item(0).first == Items.DIAMOND_PICKAXE && item(9).first == Items.DIAMOND_SWORD) { "A Shift click did not trade the pair: ${item(0)} and ${item(9)}" }
+
+                tap(9)
+                check(feature.locks == SlotLocks(setOf(0, 10))) { "Unlocking one end of the link left ${feature.locks}" }
+                tap(0)
+                tap(10)
+                check(feature.locks == SlotLocks()) { "Unlocking every slot left ${feature.locks}" }
+                click(1)
+                doubleClick(12)
+                check(carried() == 10) { "With nothing locked a double click gathered ${carried()}, so the check above proves nothing" }
+                click(1)
+                tap(1)
+                context.runOnClient<Nothing> { it.gui.setScreen(null) }
+                context.waitTicks(5)
+
+                context.input.pressKey(GLFW.GLFW_KEY_2)
+                context.waitTicks(3)
+                context.input.pressKey { it.keyDrop }
+                context.waitTicks(5)
+                check(item(1).second == 10) { "The drop key dropped from the locked slot in hand, leaving ${item(1)}" }
+                settings.slotLock = false
+                context.input.pressKey { it.keyDrop }
+                context.waitTicks(5)
+                check(item(1).second == 9) { "With Slot Lock off the drop key left ${item(1)}" }
+            } finally {
+                settings.slotLock = true
+                settings.slotLockKey = key
+                feature.locks = SlotLocks()
+                context.runOnClient<Nothing> { it.gui.setScreen(null) }
+            }
+        }
+    }
+}
