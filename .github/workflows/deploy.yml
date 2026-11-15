@@ -12,10 +12,12 @@ permissions:
   contents: read
   actions: read
 
-# One deploy at a time, and never one cut off by the next.
+# One deploy at a time, never one cut off by the next, and none dropped from the queue. By default a newly
+# queued run cancels the one already waiting, so a stale rerun could push out the deploy of main's tip.
 concurrency:
   group: deploy-backend
   cancel-in-progress: false
+  queue: max
 
 jobs:
   backend:
