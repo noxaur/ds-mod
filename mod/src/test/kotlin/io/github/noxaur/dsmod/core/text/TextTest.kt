@@ -29,17 +29,17 @@ class TextTest {
 
         assertEquals("[ds-mod]", brand.plain)
         assertEquals(8, brand.spans.size)
-        assertEquals(0x6064F9, brand.spans.first().rgb)
-        assertEquals(0xAADCF8, brand.spans.last().rgb)
+        assertEquals(0xFFBB00, brand.spans.first().rgb)
+        assertEquals(0x6C68FF, brand.spans.last().rgb)
     }
 
     @Test
     fun `brand passes through the middle stop`() {
-        assertEquals(listOf(0x6064F9, 0x63A0F5, 0xAADCF8), text { brand("abc") }.spans.map { it.rgb })
+        assertEquals(listOf(0xFFBB00, 0xFFFFFF, 0x6C68FF), text { brand("abc") }.spans.map { it.rgb })
     }
 
     @Test
     fun `brand of one character is the first stop`() {
-        assertEquals(listOf(0x6064F9), text { brand("x") }.spans.map { it.rgb })
+        assertEquals(listOf(0xFFBB00), text { brand("x") }.spans.map { it.rgb })
     }
 }

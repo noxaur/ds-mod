@@ -1,3 +1,5 @@
+<img src="assets/icon.svg" width="96" alt="The ds-mod logo: a raised dragon's head in gold, white and blue">
+
 # ds-mod (beta)
 
 A client-side mod for [Dragon Simulator](https://dragsim.co). Open source, built on Fabric.
