@@ -6,6 +6,7 @@ import java.nio.file.StandardOpenOption.CREATE
 import java.nio.file.StandardOpenOption.TRUNCATE_EXISTING
 import java.nio.file.StandardOpenOption.WRITE
 import java.security.MessageDigest
+import java.util.concurrent.TimeUnit
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneOffset
@@ -135,14 +136,15 @@ val seedRun = tasks.register("seedRun") {
         }
         if (pack.exists()) return@doLast
         val fetched = runCatching {
-            // A stalled server must not hold the game back, so a slow answer falls back to the cache or to the game.
-            val request = HttpRequest.newBuilder(URI("https://dragsim.co/textures/dragsim.zip")).timeout(Duration.ofSeconds(30))
+            val request = HttpRequest.newBuilder(URI("https://dragsim.co/textures/dragsim.zip"))
             if (cache.exists()) {
                 request.header("If-Modified-Since", RFC_1123_DATE_TIME.format(Instant.ofEpochMilli(cache.lastModified()).atZone(ZoneOffset.UTC)))
             }
             val partial = cache.resolveSibling("dragsim.zip.part").apply { parentFile.mkdirs() }
-            val response = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).followRedirects(HttpClient.Redirect.NORMAL).build()
-                .send(request.build(), HttpResponse.BodyHandlers.ofFile(partial.toPath(), CREATE, WRITE, TRUNCATE_EXISTING))
+            val transfer = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).followRedirects(HttpClient.Redirect.NORMAL).build()
+                .sendAsync(request.build(), HttpResponse.BodyHandlers.ofFile(partial.toPath(), CREATE, WRITE, TRUNCATE_EXISTING))
+            // A request's own timeout ends at the headers, so a server that stalls in the body would hold the game back.
+            val response = runCatching { transfer.get(2, TimeUnit.MINUTES) }.onFailure { transfer.cancel(true) }.getOrThrow()
             if (response.statusCode() == 200) {
                 partial.renameTo(cache.apply { delete() })
                 response.headers().firstValue("Last-Modified").ifPresent {
