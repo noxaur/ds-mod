@@ -13,6 +13,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.world.inventory.Slot
+import java.util.BitSet
 
 private const val HOTBAR_FIRST = 36
 private const val HOTBAR_SLOTS = 9
@@ -20,21 +21,33 @@ private const val HOTBAR_SLOTS = 9
 /**
  * Marks on the slots of the open container. They go away when the container closes. With no menu open the
  * container is the player's own inventory, and the marks on its last nine slots are drawn on the hotbar.
+ * A hidden slot draws nothing here: `ContainerScreenMixin` asks [hides] and skips its item, highlight and tooltip.
  */
 object Slots {
-    private class Shown(val color: Int, val border: Boolean, val label: Component?)
+    private class Shown(val color: Int, val border: Boolean, val hide: Boolean, val label: Component?)
 
     private val marks = HashMap<String, Map<Int, Shown>>()
+    private val hidden = BitSet()
 
     /** Marks slots by their index in the open container's menu, replacing what [id] marked before. */
     fun mark(id: String, slots: Map<Int, SlotMark>) {
         marks[id] = slots.mapValues { (_, mark) ->
-            Shown(mark.role.argb(if (mark.border) 255 else 110), mark.border, mark.label?.toComponent())
+            Shown(mark.role.argb(if (mark.border) 255 else 110), mark.border, mark.hide, mark.label?.toComponent())
         }
+        rehide()
     }
 
     fun clear(id: String) {
         marks.remove(id)
+        rehide()
+    }
+
+    /** Whether the slot at [index] in the open menu is hidden, asked for each slot each frame. */
+    fun hides(index: Int) = hidden[index]
+
+    private fun rehide() {
+        hidden.clear()
+        for (slots in marks.values) for ((index, shown) in slots) if (shown.hide) hidden.set(index)
     }
 
     fun register(settings: DsModConfig.Inventory) {
@@ -49,7 +62,7 @@ object Slots {
                 val top = graphics.guiHeight() - 19
                 for (slots in marks.values) {
                     for (i in 0 until HOTBAR_SLOTS) {
-                        val shown = slots[HOTBAR_FIRST + i] ?: continue
+                        val shown = slots[HOTBAR_FIRST + i]?.takeUnless { it.hide } ?: continue
                         if (shown.border) Kit.slotBorder(graphics, left + i * 20, top, shown.color) else Kit.slotFill(graphics, left + i * 20, top, shown.color)
                     }
                 }
@@ -67,7 +80,10 @@ object Slots {
             ScreenEvents.afterForeground(screen).register { _, graphics, _, _, _ ->
                 each(screen, graphics) { slot, shown -> shown.label?.let { graphics.text(font, it, slot.x, slot.y, -1, true) } }
             }
-            ScreenEvents.remove(screen).register { marks.clear() }
+            ScreenEvents.remove(screen).register {
+                marks.clear()
+                hidden.clear()
+            }
         }
     }
 
@@ -80,7 +96,7 @@ object Slots {
             for (slots in marks.values) {
                 for ((index, shown) in slots) {
                     val slot = screen.menu.slots.getOrNull(index)
-                    if (slot != null) draw(slot, shown)
+                    if (slot != null && !shown.hide) draw(slot, shown)
                 }
             }
             graphics.pose().popMatrix()

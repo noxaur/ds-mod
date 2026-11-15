@@ -135,9 +135,14 @@ class FeatureReplayTest {
                             for (slot in marks.keys.sorted()) {
                                 val mark = marks.getValue(slot)
                                 if (mark == marked[slot]) continue
+                                val item = name(game.container.slots[slot]!!)
+                                if (mark.hide) {
+                                    appendLine("             + slot $slot: hidden, on $item")
+                                    continue
+                                }
                                 val shape = if (mark.border) "frame" else "fill"
                                 val label = mark.label?.let { " \"${it.plain}\"" } ?: ""
-                                appendLine("             + slot $slot: ${mark.role} $shape$label on ${name(game.container.slots[slot]!!)}")
+                                appendLine("             + slot $slot: ${mark.role} $shape$label on $item")
                             }
                             marked = marks
                         }

@@ -35,8 +35,9 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `panel` | Any | The frame of a screen. Content starts 7 in from its edge, as in vanilla |
 | `button` | 16 tall | The raised face of a control in one of four states: idle, hover, pressed, off |
 | `well` | Any | A dark sunk area |
-| `slot` | 18x18 | A sunk square with a 16x16 inside for an item |
+| `slot` | 18x18, or 26x26 | A sunk square with a 16x16 inside for an item. The big one is a crafting result's |
 | `plate` | Any | The HUD's backing: a translucent fill inside a notched ring |
+| `tooltip` | Text plus 4 on each side | A plain tooltip's backing: the plate's colors, nearly opaque. A tooltip with a style of its own keeps it |
 | `bar` | 6 tall | A well with a 4px fill that has a lit top row and a shaded bottom row |
 | `scrollbar` | 6 wide | A well with a raised thumb |
 | `tab` | 22x21 | Sits on a panel's top edge. The selected one joins the panel, and the rest sit 2px lower in `tabOff`. Draw the rest before the panel and the selected one after it |
@@ -46,7 +47,7 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `flash` | Any | A white wash over something the player just acted on, which fades out. The same in both themes, because it lies on the game and not on a panel |
 | `divider` | 2 tall | A shade line over a light line, cut into the panel |
 | `ring` | Any | A notched 1px line in `accent` or a role, around the selected thing |
-| `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, search |
+| `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, search, arrow |
 | `label` | One line | A string in ink |
 | `slotFill`, `slotBorder`, `slotDim` | 16x16 inside, 18x18 border | The marks `Slots` puts on a container's slots, colored by role |
 
@@ -62,6 +63,10 @@ A widget is a vanilla widget with a kit face. It takes its label as a string and
 | `KitRangeSlider` | A 16 tall track with any number of spans, for picking stretches of a scale. Press and drag on the track to draw one or click to add one, drag an end or the middle, right-click to remove. The cursor shows what a press will do. `Sections` in `core/ui` holds its rules: a span is at least 5 long, and two within 3 of each other become one |
 
 Controls in a row are 4 apart, and rows are 4 apart. A label beside a control sits on the control's text baseline.
+
+## The game's menus
+
+`MenuSkin` in `edge` draws the game's own menus with these shapes when Themed Menus is on: a `panel` over the menu, a `slot` under each slot, a `well` behind the player in the inventory, and an arrow from crafting slots to the result. Their labels take the theme's ink. Only menus whose texture is just those parts are drawn, so a new kind of menu is added to `MenuSkin.skins` and to `MenuBackgroundMixin` together.
 
 ## Adding to the kit
 

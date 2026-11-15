@@ -8,6 +8,7 @@ import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.WorldChanged
+import io.github.noxaur.dsmod.edge.ui.Kit
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
@@ -79,6 +80,7 @@ object DsModClient : ClientModInitializer {
         )
         game = Game(features(config.instance)) { active }
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
+        Kit.register()
         Hud.register()
         Slots.register(config.instance.inventory)
         Tooltips.register()

@@ -94,9 +94,22 @@ Each surface (chat, HUD, alerts, container slots, tooltips, world marks) has one
 
 ## Chrome is drawn in code, from a theme
 
-Panels, buttons, slots and bars are a few filled rectangles each, drawn by `Kit` in the colors of a `Theme`. Minecraft's own screens stretch nine-slice textures instead, and ds-mod does not: a second look would need a second set of textures drawn by hand, and a new shape would need an image editor. In code a theme is one list of colors and a shape is a function, and `draw-with-kit` in `Rules.kt` keeps every other file from drawing its own. Only the icons are textures, white so that one sprite takes any color.
+Panels, buttons, slots and bars are a few filled rectangles each, drawn by `Kit` in the colors of a `Theme`. Minecraft's own screens stretch nine-slice textures instead, and ds-mod does not: a second look would need a second set of textures drawn by hand, and a new shape would need an image editor. In code a theme is one list of colors and a shape is a function, and `draw-with-kit` in `Rules.kt` keeps every other file from drawing its own. Only the icons are textures, white so that one sprite takes any color. The slot is the one shape drawn dozens of times a frame, so `Kit` paints it into a texture from the theme's colors once per theme and blits it. Five fills per slot made a themed inventory cost 0.2 ms a frame. The paint runs at the end of a client tick: made while a frame was being built, the texture broke the drawing of every frame after it.
 
 Two themes ship, because the references players know disagree: resource-pack screens are dark, and Minecraft's own are light gray. A light panel can't carry the text layer's colors, which were picked for chat and the HUD and wash out on gray. So a label on a panel is not role text. It is a plain string in the theme's ink, and role text sits only on a well or the HUD's plate, which stay dark in every theme. A theme that made those light would break every colored row.
+
+## The game's menus are redrawn, not retextured
+
+Themed Menus draws a menu with the kit instead of recoloring its texture, for the reason the kit exists: one theme is a list of colors, and a texture per theme would be art to keep by hand. The mixins wrap only the call that blits the menu's texture. The rest of the screen still runs, so the inventory still draws the player, and Fabric's background event still fires for the slot marks. A screen whose texture holds more than a panel and slots, such as a furnace's flame or an anvil's field, is left alone. Drawing those in the kit is work for a screen the server does not open.
+
+A tooltip with its own `tooltip_style` keeps it. dragsim.co gives every item a style per rarity from its resource pack, so the kit's backing reaches only plain tooltips. Replacing all of them would erase the rarity frames the server draws.
+
+Stable Menus keeps a menu's bottom edge where a six-row menu's sits, not its top, because the server puts Go Back and Close in the bottom row of every menu and the player's inventory sits under it. A chest menu's texture recenters itself on the screen and ignores the menu's top, so `ChestScreenMixin` moves the texture by the same amount. Without that the slots would move and the art would not.
+
+Hide Filler only skips drawing. A click on a hidden pane still goes to the server, as the `no-automation` rule asks of any feature DragSim Utils lacks.
+
+The server closes a menu and opens the next in the same tick. Between the two the game has no screen, so it takes the mouse and then lets it go at the middle of the window. Keep Cursor puts the cursor back when a screen opens within half a second of the last one closing. It cannot tell a server's close from the player's, and does not need to: a player who reopens a menu that fast wants the cursor where it was too.
+
 
 ## The HUD's scale snaps to screen pixels
 
@@ -118,7 +131,7 @@ The key's press comes from `KeyMapping.click`, the place the game counts presses
 
 ## Private fields are read through accessor mixins
 
-Minecraft keeps an open container's position on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the two fields. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on. The release jar declares no access widener of its own, so an accessor mixin is the only way release code reaches into Minecraft's internals.
+Minecraft keeps an open container's position and size on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the four fields. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on. The release jar declares no access widener of its own, so an accessor mixin is the only way release code reaches into Minecraft's internals.
 
 ## CI measures the mod in a real game
 

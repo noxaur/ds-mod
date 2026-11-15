@@ -16,6 +16,12 @@
       "unit": "µs",
       "cap": 120
     },
+    "menus.draw": {
+      "group": "Frame",
+      "label": "Themed inventory background, 46 slots",
+      "unit": "µs",
+      "cap": 60
+    },
     "tab-poll": {
       "group": "Tick",
       "label": "Tab list poll",

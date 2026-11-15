@@ -3,15 +3,21 @@
   "package": "io.github.noxaur.dsmod.edge.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
-    "ChatComponentAccessor",
     "CameraMixin",
+    "ChatComponentAccessor",
+    "ChestScreenMixin",
     "ContainerScreenAccessor",
+    "ContainerScreenMixin",
+    "CursorMixin",
     "ExplosionParticleMixin",
     "FullbrightMixin",
     "KeyPressMixin",
+    "MenuBackgroundMixin",
+    "MenuLabelMixin",
     "MouseTurnMixin",
     "PerspectiveKeyMixin",
-    "ServerPacketsMixin"
+    "ServerPacketsMixin",
+    "TooltipMixin"
   ],
   "injectors": {
     "defaultRequire": 1

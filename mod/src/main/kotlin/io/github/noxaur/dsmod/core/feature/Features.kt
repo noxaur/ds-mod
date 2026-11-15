@@ -15,7 +15,11 @@ import io.github.noxaur.dsmod.core.feature.general.ExplosionParticleHider
 import io.github.noxaur.dsmod.core.feature.general.FreeLook
 import io.github.noxaur.dsmod.core.feature.general.Fullbright
 import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
+import io.github.noxaur.dsmod.core.feature.inventory.HideFiller
+import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
 import io.github.noxaur.dsmod.core.feature.inventory.RarityOutlines
+import io.github.noxaur.dsmod.core.feature.inventory.StableMenus
+import io.github.noxaur.dsmod.core.feature.inventory.ThemedMenus
 import io.github.noxaur.dsmod.core.feature.loot.LootAlerts
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerBossAlert
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerTracker
@@ -37,6 +41,10 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     Fullbright(config.general::fullbright),
     ArmorSwapGuard(config.inventory::armorSwapGuard),
     RarityOutlines(config.inventory::rarityOutlines),
+    ThemedMenus(config.inventory::themedMenus),
+    StableMenus(config.inventory::stableMenus),
+    HideFiller(config.inventory::hideFiller),
+    KeepCursor(config.inventory::keepCursor),
     LootAlerts(config.loot::lootAlerts, config.loot::lootAlertTier),
     SlayerBossAlert(config.slayer::slayerBossAlert),
     SlayerTracker(config.slayer::slayerTracker),
