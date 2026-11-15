@@ -89,10 +89,11 @@ class EquipmentDisplay(
     private var pet: Pet? = null
 
     // Each by the pet's name without its level, which goes up in play: the active pet's item in the Pets menu, the
-    // item it holds, and the head of the last pet seen near the player.
+    // item it holds, and the head of each pet seen near the player. A pet's head is the same whoever owns it, and
+    // another player's pet can float nearer than the player's own, so the sidebar's pet picks its head from all of them.
     private var menuPet: Pair<String, Item>? = null
     private var held: String? = null
-    private var head: Pair<String, Item>? = null
+    private val heads = HashMap<String, Item>()
 
     private var shown = settings()
     private var block: HudBlock? = null
@@ -129,9 +130,7 @@ class EquipmentDisplay(
         }
         on<PetNear> { event, _ ->
             val name = PET_LINE.matchEntire(event.name.plain.trim())?.groupValues?.get(2) ?: return@on
-            // Another player's pet can float nearer than the player's own, and must not take its head.
-            if (pet.let { it != null && it.name != name }) return@on
-            head = name to event.head
+            heads[name] = event.head
             block = build()
         }
     }
@@ -159,7 +158,7 @@ class EquipmentDisplay(
 
     private fun build(): HudBlock? {
         val pet = pet.takeIf { EquipmentPiece.PET in shown.pieces }
-        val icon = listOfNotNull(menuPet, head).firstOrNull { pet != null && shown.petLook == PetLook.ICON && it.first == pet.name }?.second
+        val icon = pet?.takeIf { shown.petLook == PetLook.ICON }?.let { menuPet?.takeIf { (name) -> name == it.name }?.second ?: heads[it.name] }
         val inline = shown.petPosition == PetPosition.WITH_ARMOR
         val armor = shown.pieces.distinct()
             .filter { if (it == EquipmentPiece.PET) inline && icon != null else true }

@@ -141,6 +141,14 @@ class EquipmentDisplayTest {
     }
 
     @Test
+    fun `a new pet's head seen before the sidebar names it still joins the row`() {
+        val tiger = Item("minecraft:player_head", 1, skin = "tiger")
+        post(pet(), near("[Lvl 100] Ender Dragon"), PetNear(ServerText(ServerSpan("[Lvl 100] Tiger")), tiger))
+        post(pet(name = "Tiger"))
+        assertEquals(listOf(listOf(tiger)), rows().orEmpty().map { (it as List<*>).filterNotNull() })
+    }
+
+    @Test
     fun `another pet nearby lends no head`() {
         post(pet(), near("[Lvl 100] Tiger"))
         assertEquals(listOf("[Lvl 100] Ender Dragon"), rows())
