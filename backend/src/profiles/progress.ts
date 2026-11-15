@@ -16,7 +16,13 @@ const tableOf = (progression: Progression, skill: string): readonly number[] =>
   skill === "combat" ? progression.combat : skill === "catacombs" ? progression.catacombs : progression.default;
 
 /** The level `totalXp` reaches in a table of cumulative XP, and the XP into it and to the next. */
-export const skillProgress = (progression: Progression, id: string, totalXp: number): Progress => {
+export const skillProgress = (
+  progression: Progression,
+  id: string,
+  totalXp: number,
+  /** The id the progress is shown under, when it is not the skill whose table is used. */
+  as: string = id,
+): Progress => {
   const table = tableOf(progression, id);
   let level = 0;
   while (level < table.length && totalXp >= (table[level] ?? Infinity)) {
@@ -25,8 +31,8 @@ export const skillProgress = (progression: Progression, id: string, totalXp: num
   const start = level === 0 ? 0 : (table[level - 1] ?? 0);
   const next = table[level];
   return {
-    id,
-    name: titleCase(id),
+    id: as,
+    name: titleCase(as),
     level,
     maxLevel: table.length,
     totalXp,

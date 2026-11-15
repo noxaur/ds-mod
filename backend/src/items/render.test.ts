@@ -143,3 +143,73 @@ test("a whole inventory draws fast once warm", () => {
   run();
   expect(run() / (100 * all.length)).toBeLessThan(1);
 });
+
+test("facts hold the data behind the tooltip, named from the catalog", () => {
+  const facts = draw("scylla").facts;
+  expect(facts).toMatchObject({
+    itemType: "SWORD",
+    npcSellPrice: 100000000,
+    reforge: "Arcane",
+    stars: 6,
+    hotPotatoBooks: 10,
+    fumingBooks: 5,
+    recombobulated: true,
+    artOfWar: true,
+    rune: { id: "meow_music_rune", name: "Meow Music Rune" },
+    witherScrolls: [{ id: "mask", name: "Mask", value: 7 }],
+    dungeonUpgrade: { stars: 6 },
+  });
+  expect(facts?.finalSynchronizers).toBeUndefined();
+  expect(facts?.stats?.base.map((stat) => stat.id)).toContain("strength");
+  expect(facts?.stats?.base.find((stat) => stat.id === "strength")).toMatchObject({
+    name: "Strength",
+    color: "#FF5555",
+    value: 100,
+  });
+  expect(facts?.reforgeStats?.base.map((stat) => stat.value)).toContain(300);
+  expect(facts?.abilities?.map((ability) => ability.id)).toEqual(["wither_impact", "six_heads", "whirlpool"]);
+  expect(facts?.abilities?.[0]?.name).toBe("Wither Impact");
+});
+
+test("facts name the skin, the dye, the enrichment and the kills, and leave out what an item lacks", () => {
+  expect(draw("riftwalker_chestplate").facts).toMatchObject({ kills: 127244, dye: { id: expect.any(String) } });
+  expect(draw("sorrow_helmet").facts?.skin?.id).toBe("superior_baby");
+  expect(draw("void_relic").facts?.enrichment).toEqual({
+    id: "magic_find_enrichment",
+    name: "Magic Find Enrichment",
+  });
+  expect(draw("void_relic").facts).not.toHaveProperty("stars");
+  expect(draw("voidfang_dagger").facts).not.toHaveProperty("attunement");
+});
+
+test("a drill's parts, a coating and an attunement with something in it are passed on", () => {
+  const drill = {
+    ...item("scylla"),
+    extra: {
+      drill: {
+        fuel: 48453,
+        engine: "void_polished_engine",
+        tank: "perfectly_cut_fuel_tank",
+        module: "m",
+        coated: true,
+      },
+      coating: { coated: true },
+      attunement: { kind: "x" },
+    },
+  };
+  expect(renderer.render(drill)?.facts).toMatchObject({
+    drill: {
+      fuel: 48453,
+      engine: { id: "void_polished_engine", name: "Void Polished Engine" },
+      tank: { id: "perfectly_cut_fuel_tank", name: "Perfectly Cut Fuel Tank" },
+      module: { id: "m", name: "M" },
+      coated: true,
+    },
+    coating: { coated: true },
+    attunement: { kind: "x" },
+  });
+});
+
+test("an item with no data has no facts", () => {
+  expect(renderer.render({ material: "minecraft:stick" })?.facts).toBeUndefined();
+});

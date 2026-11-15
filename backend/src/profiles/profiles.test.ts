@@ -8,6 +8,7 @@ import { makeApp } from "../app.ts";
 import { memoryServices } from "../memory.ts";
 import { CATALOG_FRESH_MS, CATALOG_RETRY_MS, FRESH_MS } from "./cache.ts";
 import { Container, Profile } from "./model.ts";
+import { MAPPED_KEYS } from "./wire.ts";
 import { memoryProfileStore, WriteRefused } from "./store.ts";
 import { UpstreamDown } from "./upstream.ts";
 
@@ -139,6 +140,8 @@ test("stats are formatted as the game shows them, and the top kills are the ten 
     ["motes", "0"],
     ["dragon_essence", "831,916"],
     ["accessory_power", "Sighted"],
+    ["haunted_candy_earned", "8,396"],
+    ["draconic_experience", "370"],
   ]);
   const kills = value.topKills.map((kill) => kill.kills);
   expect(value.topKills).toHaveLength(10);
@@ -160,6 +163,7 @@ test("the containers are listed as the game lays them out", async () => {
     ["storage:2", 45, 9],
     ["wardrobe:0", 36, 9],
     ["accessories", 18, 9],
+    ["pets", 9, 9],
   ]);
   expect(value.containers.every((box) => !box.hidden)).toBe(true);
   // Armor is inventory keys 41 to 44, and the held item is the first hotbar slot. How each is drawn is the renderer's test.
@@ -188,7 +192,7 @@ test("a hidden profile lists its containers with no items, and no equipment", as
   const value = await profile();
   expect(value.equipment).toEqual({ helmet: null, chestplate: null, leggings: null, boots: null, held: null });
   expect(value.containers.length).toBeGreaterThan(5);
-  expect(value.containers.every((box) => box.hidden && box.slots === 0)).toBe(true);
+  expect(value.containers.filter((box) => box.id !== "pets").every((box) => box.hidden && box.slots === 0)).toBe(true);
   expect(await container(`/v1/snapshots/${value.snapshot}/containers/ender_chest`)).toMatchObject({
     hidden: true,
     items: [],
@@ -439,7 +443,282 @@ test("a profile answer is quick once cached", async () => {
   for (let call = 0; call < calls; call++) {
     await get("/v1/players/Testwyrm/profile");
   }
-  // About 1.5 ms with a real player's profile. The bound only catches a cache that stopped working, such as a 2 MB
+  // About 5 ms with a real player's profile, 18 pets included. The bound only catches a cache that stopped working, such as a 2 MB
   // catalog parse per call.
   expect((performance.now() - start) / calls).toBeLessThan(25);
+});
+
+/** The keys of the real player the first agent sampled, with no values. A key added upstream must be mapped. */
+const REAL_TOP_KEYS = ["mode", "fetched_at", "player", "profiles", "profile"];
+const REAL_PROFILE_KEYS = [
+  "id",
+  "profile_name",
+  "profile_mode",
+  "coins",
+  "motes",
+  "bits",
+  "haunted_candy_earned",
+  "dragon_essence",
+  "draconic_experience",
+  "accessory_power",
+  "updated_at",
+  "inventory_hidden",
+  "stats",
+  "skills",
+  "bestiary",
+  "collections",
+  "rng_meters",
+  "slayer",
+  "dungeons",
+  "hotd",
+  "inventory",
+  "storage",
+  "ender_chest",
+  "wardrobe",
+  "accessory_bag",
+  "pets",
+  "forge",
+];
+
+test("every key of a real player's answer is mapped", () => {
+  expect(REAL_TOP_KEYS.filter((key) => !MAPPED_KEYS.answer.includes(key))).toEqual([]);
+  expect(REAL_PROFILE_KEYS.filter((key) => !MAPPED_KEYS.profile.includes(key))).toEqual([]);
+});
+
+test("a key the backend does not map is logged once per lookup, naming it", async () => {
+  const { get, state } = backend();
+  state.player = {
+    status: 200,
+    body: { ...player, brand_new: 1, profile: { ...player.profile, new_section: {} } },
+  };
+  const logged = [vi.spyOn(console, "warn"), vi.spyOn(console, "log"), vi.spyOn(console, "info")].map((spy) =>
+    spy.mockImplementation(() => undefined),
+  );
+  await get("/v1/players/Testwyrm/profile");
+  await get("/v1/players/Testwyrm/profile");
+  const lines = logged
+    .flatMap((spy) => spy.mock.calls.map((call) => call.join(" ")))
+    .filter((line) => line.includes("map"));
+  vi.restoreAllMocks();
+  expect(lines).toHaveLength(1);
+  expect(lines[0]).toContain("brand_new");
+  expect(lines[0]).toContain("profile.new_section");
+});
+
+test("the profile's own numbers, save time and worn wardrobe slot come through", async () => {
+  const { profile } = backend();
+  const value = await profile();
+  expect(value.savedAt).toBe("2026-11-15T17:15:18.524Z");
+  expect(value.equippedWardrobeSlot).toBe(2);
+  expect(value.stats.find((stat) => stat.id === "draconic_experience")?.name).toBe("Draconic Experience");
+  expect(value.playerStats.base).toEqual([
+    { id: "intelligence", name: "Intelligence", color: "#55FFFF", value: 300 },
+    { id: "health", name: "Health", color: "#FF5555", value: 600 },
+    // A stat the catalog does not know is named from its id, in gray, and sorts last.
+    { id: "mystery", name: "Mystery", color: "#AAAAAA", value: 1 },
+  ]);
+  expect(value.playerStats.additive.map((stat) => stat.value)).toEqual([15]);
+  expect(value.playerStats.multiplicative).toEqual([]);
+  expect(value.playerStats.increaseMax.map((stat) => stat.id)).toEqual(["health"]);
+});
+
+test("the bestiary has every mob, most kills first, and topKills stays", async () => {
+  const { profile } = backend();
+  const value = await profile();
+  expect(value.bestiary).toHaveLength(Object.keys(player.profile.bestiary).length);
+  expect(value.bestiary[0]).toEqual({ id: "NEST_ZEALOT", name: "Nest Zealot", kills: 368742 });
+  expect(value.bestiary.at(-1)?.kills).toBe(0);
+  expect(value.bestiary.map((mob) => mob.id)).toContain("NEST_ENDERMITE");
+  expect(value.topKills).toHaveLength(10);
+});
+
+test("collections, rng meters, dungeons, the heart of the dragon and the forge are passed on, named", async () => {
+  const { profile } = backend();
+  const value = await profile();
+  expect(value.collections).toEqual([
+    { id: "obsidian", name: "Obsidian", amount: 2747774 },
+    { id: "mystery_ore", name: "Mystery Ore", amount: 3 },
+  ]);
+  expect(value.rngMeters).toEqual([
+    { id: "revenant", name: "Revenant", progress: 2495 },
+    { id: "mine_node", name: "Mine Node", progress: 962 },
+  ]);
+  expect(value.dungeons).toMatchObject({
+    selectedClass: { id: "TANK", name: "Tank" },
+    secrets: 12,
+    zombieKills: 31,
+    skeletorKills: 15,
+    essence: [{ id: "wither_essence", name: "Wither Essence", amount: 8608 }],
+    floors: [
+      { id: "F7", name: "Floor 7", completions: 467, bestScore: 353 },
+      { id: "M1", name: "Master Mode 1", completions: 2, bestScore: null },
+    ],
+  });
+  expect(value.dungeons?.classes.find((one) => one.id === "TANK")).toMatchObject({
+    name: "Tank",
+    totalXp: 75730.5,
+    maxLevel: 50,
+    level: 18,
+  });
+  expect(value.hotd).toMatchObject({
+    tier: 10,
+    core: 10,
+    ender: 11932047,
+    void: 43761698,
+    resets: 20,
+    ability: { id: "void_infusion", name: "Void Infusion" },
+    nodes: [
+      { id: "MINING_FORTUNE", name: "Mining Fortune", level: 50 },
+      { id: "DRAGONS_FAVOR", name: "Dragons Favor", level: 1 },
+    ],
+  });
+  expect(value.forge).toEqual([
+    {
+      slot: 1,
+      recipe: "obsidian",
+      name: "Obsidian",
+      startedAt: 1792679895946,
+      durationMs: 1800000,
+      finishesAt: 1792679895946 + 1800000,
+      stage: "RUNNING",
+    },
+    {
+      slot: 0,
+      recipe: "refined_end_stone",
+      name: "Refined End Stone",
+      startedAt: 1792679893796,
+      durationMs: 1800000,
+      finishesAt: 1792679893796 + 1800000,
+      stage: "READY",
+    },
+  ]);
+});
+
+test("a profile with none of the new sections still answers", async () => {
+  const { profile, state } = backend();
+  const bare = Object.fromEntries(
+    Object.entries(player.profile).filter(
+      ([key]) =>
+        !["stats", "collections", "rng_meters", "dungeons", "hotd", "pets", "forge", "updated_at"].includes(key),
+    ),
+  );
+  state.player = { status: 200, body: { ...player, profile: { ...bare, wardrobe: undefined } } };
+  const value = await profile();
+  expect(value).toMatchObject({
+    savedAt: null,
+    equippedWardrobeSlot: null,
+    dungeons: null,
+    hotd: null,
+    pets: [],
+    forge: [],
+  });
+  expect(value.containers.map((box) => box.id)).not.toContain("pets");
+});
+
+test("a pet is named from the catalog, with its held item, skin and a grid drawing of it", async () => {
+  const { profile, container } = backend();
+  const value = await profile();
+  const [golden, cat] = value.pets;
+  expect(golden).toMatchObject({
+    type: "GOLDEN_DRAGON",
+    name: "Golden Dragon",
+    rarity: "LEGENDARY",
+    totalXp: 1798563928,
+    xpCurve: 2,
+    candiesUsed: 3,
+    active: true,
+    heldItem: { id: "pet_item_lucky_clover", name: "Lucky Clover" },
+    skinOverride: { id: "pet_skin_golden_dragon_ancient", name: "Ancient Golden Dragon Skin" },
+    level: null,
+    maxLevel: 200,
+    category: "Combat",
+    perks: [{ id: "strength", name: "Strength", color: "#FF5555", value: 0.5 }],
+  });
+  expect(golden?.item).toMatchObject({
+    material: "minecraft:player_head",
+    rarity: "LEGENDARY",
+    name: [{ text: "Golden Dragon", color: "#FFAA00" }],
+    skullTexture: catalog.pets.golden_dragon.skin.value,
+  });
+  expect(golden?.item.lore.map((line) => line.map((span) => span.text).join(""))).toContain("Held Item: Lucky Clover");
+  // A species the catalog lacks is named from its id, and has no texture or maximum.
+  expect(cat).toMatchObject({ name: "Black Cat", heldItem: null, skinOverride: null, maxLevel: null });
+  const { snapshot } = value;
+  const pets = await container(`/v1/snapshots/${snapshot}/containers/pets`);
+  expect(pets).toMatchObject({ id: "pets", slots: 9, hidden: false });
+  expect(pets.items.slice(0, 2)).toEqual([golden?.item, cat?.item]);
+  expect(pets.items.slice(2).every((slot) => slot === null)).toBe(true);
+});
+
+test("a hidden profile still shows its pets, and no item", async () => {
+  const { profile, container, state } = backend();
+  state.player = { status: 200, body: { ...player, profile: { ...player.profile, inventory_hidden: true } } };
+  const value = await profile();
+  expect(value.pets).toHaveLength(2);
+  expect(value.containers.find((box) => box.id === "pets")).toMatchObject({ hidden: false, slots: 9 });
+  expect((await container(`/v1/snapshots/${value.snapshot}/containers/pets`)).items[0]?.name[0]?.text).toBe(
+    "Golden Dragon",
+  );
+});
+
+test("an item with no place is never dropped, and its container is listed only then", async () => {
+  const { profile, container, state } = backend();
+  expect((await profile()).containers.map((box) => box.id).filter((id) => id.endsWith(":other"))).toEqual([]);
+  const sword = player.profile.inventory["0"];
+  const stray = (name: string) => ({ ...sword, entry: name });
+  state.player = {
+    status: 200,
+    body: {
+      ...player,
+      profile: {
+        ...player.profile,
+        inventory: {
+          ...player.profile.inventory,
+          "40": stray("a40"),
+          "36": stray("a36"),
+          "45": stray("a45"),
+          cursor: stray("cursor"),
+        },
+        ender_chest: { ...player.profile.ender_chest, "-1": stray("ender"), odd: stray("ender2") },
+        storage: {
+          ...player.profile.storage,
+          extra: { "0": stray("page") },
+          "0": { ...player.profile.storage["0"], x: stray("pagex") },
+        },
+        accessory_bag: { ...player.profile.accessory_bag, "01": stray("bag") },
+        wardrobe: {
+          ...player.profile.wardrobe,
+          slots: {
+            ...player.profile.wardrobe.slots,
+            "0": { ...player.profile.wardrobe.slots["0"], offhand: stray("off") },
+          },
+        },
+      },
+    },
+  };
+  vi.setSystemTime(Date.now() + FRESH_MS + 1);
+  const value = await profile();
+  const others = value.containers.filter((box) => box.id.endsWith(":other"));
+  expect(others.map((box) => [box.id, box.slots])).toEqual([
+    ["inventory:other", 9],
+    ["ender_chest:other", 9],
+    ["storage:other", 9],
+    ["wardrobe:other", 9],
+    ["accessories:other", 9],
+  ]);
+  const entries = async (id: string) =>
+    (await container(`/v1/snapshots/${value.snapshot}/containers/${id}`)).items.flatMap((item) =>
+      item === null ? [] : [item.entry],
+    );
+  expect(await entries("inventory:other")).toEqual(["a36", "a40", "a45", "cursor"]);
+  expect(await entries("ender_chest:other")).toEqual(["ender", "ender2"]);
+  expect((await entries("storage:other")).toSorted((a, b) => String(a).localeCompare(String(b)))).toEqual([
+    "page",
+    "pagex",
+  ]);
+  expect(await entries("wardrobe:other")).toEqual(["off"]);
+  expect(await entries("accessories:other")).toEqual(["bag"]);
+  // The hotbar keeps its order, and armor still dresses the model.
+  expect((await entries("inventory")).slice(-3)).toEqual(["scylla", "crypt_cache_item", "glacial_scythe"]);
+  expect(value.equipment.helmet?.entry).toBe("maxor_helmet");
 });

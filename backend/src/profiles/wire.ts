@@ -24,6 +24,8 @@ export const Sections = Schema.Struct({
     }),
   ),
   accessory_bag: optional(Slots),
+  /** Each pet as the server sends it. They are read leniently by `pets.ts`. */
+  pets: optional(Schema.Array(Schema.Unknown)),
 });
 export type Sections = typeof Sections.Type;
 
@@ -37,7 +39,22 @@ export const WireProfile = Schema.Struct({
   bits: optional(Schema.Number),
   dragon_essence: optional(Schema.Number),
   accessory_power: optional(Schema.String),
+  haunted_candy_earned: optional(Schema.Number),
+  draconic_experience: optional(Schema.Number),
+  /** When the server saved the profile, in epoch milliseconds. */
+  updated_at: optional(Schema.Number),
   inventory_hidden: optional(Schema.Boolean),
+  /*
+   * The sections below are kept as the server sends them and read leniently by `sections.ts`, so a change to one of
+   * them costs that section and never the whole profile.
+   */
+  /** `{ base, additive, multiplicative, increase_max }`, each a record of stat to number. */
+  stats: optional(Schema.Unknown),
+  collections: optional(Schema.Unknown),
+  rng_meters: optional(Schema.Unknown),
+  dungeons: optional(Schema.Unknown),
+  hotd: optional(Schema.Unknown),
+  forge: optional(Schema.Unknown),
   /** Total XP by skill. */
   skills: optional(Schema.Record(Schema.String, Schema.Number)),
   /** `zombie_xp` and `zombie_level` for each slayer. */
@@ -47,6 +64,10 @@ export const WireProfile = Schema.Struct({
 export type WireProfile = typeof WireProfile.Type;
 
 const Answer = Schema.Struct({
+  /** The `mode` the backend asked for, which is always `main`, so it says nothing the request did not. Not passed on. */
+  mode: optional(Schema.String),
+  /** When the server built this answer, in epoch milliseconds. `fetchedAt` is when the backend read it, so this is not passed on. */
+  fetched_at: optional(Schema.Number),
   player: Schema.Struct({
     uuid: Schema.String,
     player: Schema.String,
@@ -65,6 +86,26 @@ const Answer = Schema.Struct({
   /** Missing when the player has no profile. */
   profile: optional(WireProfile),
 });
+
+/** The keys of the answer and of its profile that the backend maps, so a key the server adds shows in the log. */
+export const MAPPED_KEYS = {
+  answer: Object.keys(Answer.fields),
+  profile: Object.keys(WireProfile.fields),
+};
+
+const keysOf = (value: unknown): readonly string[] =>
+  typeof value === "object" && value !== null && !Array.isArray(value) ? Object.keys(value) : [];
+
+/** The keys of an answer, as `profile.<key>` inside the profile, that `MAPPED_KEYS` does not have. */
+export const unmappedKeys = (body: unknown): readonly string[] => {
+  const profile: unknown = typeof body === "object" && body !== null ? Reflect.get(body, "profile") : undefined;
+  return [
+    ...keysOf(body).filter((key) => !MAPPED_KEYS.answer.includes(key)),
+    ...keysOf(profile)
+      .filter((key) => !MAPPED_KEYS.profile.includes(key))
+      .map((key) => `profile.${key}`),
+  ];
+};
 
 /** An answer that has a profile, which is the only kind the backend keeps. */
 export const Found = Schema.Struct({ ...Answer.fields, profile: WireProfile });

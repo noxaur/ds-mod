@@ -30,9 +30,72 @@
       139559640, 177559640, 225559640, 285559640, 360559640, 453559640, 569809640
     ]
   },
-  "items": {},
+  "items": {
+    "refined_end_stone": {
+      "id": "REFINED_END_STONE",
+      "name": "Refined End Stone",
+      "tier": "RARE",
+      "material": "end_stone_bricks"
+    },
+    "obsidian": {
+      "id": "OBSIDIAN",
+      "name": "Obsidian",
+      "tier": "COMMON",
+      "material": "obsidian"
+    },
+    "pet_item_lucky_clover": {
+      "id": "PET_ITEM_LUCKY_CLOVER",
+      "name": "Lucky Clover",
+      "tier": "EPIC",
+      "category": "PET_ITEM"
+    },
+    "pet_skin_golden_dragon_ancient": {
+      "id": "PET_SKIN_GOLDEN_DRAGON_ANCIENT",
+      "name": "Ancient Golden Dragon Skin",
+      "tier": "SPECIAL",
+      "skin": {
+        "value": "eyJ0ZXh0dXJlcyI6IHsiU0tJTiI6IHsidXJsIjogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWJjMTIzIn19fQ=="
+      }
+    }
+  },
   "stats": [
-    { "id": "damage", "color": "6", "name": "Damage" },
-    { "id": "strength", "color": "c", "name": "Strength" }
-  ]
+    {
+      "id": "damage",
+      "color": "6",
+      "name": "Damage"
+    },
+    {
+      "id": "strength",
+      "color": "c",
+      "name": "Strength"
+    },
+    {
+      "id": "health",
+      "color": "c",
+      "name": "Health"
+    },
+    {
+      "id": "intelligence",
+      "color": "b",
+      "name": "Intelligence"
+    }
+  ],
+  "pets": {
+    "golden_dragon": {
+      "id": "GOLDEN_DRAGON",
+      "display": "Golden Dragon",
+      "max_level": 200,
+      "skin": {
+        "value": "eyJ0ZXh0dXJlcyI6IHsiU0tJTiI6IHsidXJsIjogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWJjMTIzIn19fQ=="
+      },
+      "category": "combat",
+      "perks": [
+        {
+          "stat": "strength",
+          "per_level": 0.5
+        }
+      ],
+      "description": ["\u00a78Combat Pet", "\u00a76Gold's Power"]
+    }
+  }
 }

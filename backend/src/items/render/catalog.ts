@@ -29,6 +29,18 @@ export interface Ability {
   readonly cooldown: number;
 }
 
+/** A pet species, from the catalog's `pets`. */
+export interface CatalogPet {
+  readonly display: string;
+  readonly maxLevel: number | undefined;
+  readonly category: string | undefined;
+  /** The base64 skull texture. */
+  readonly skin: string | undefined;
+  /** What each level adds, as stat id and amount. */
+  readonly perks: Readonly<Record<string, number>>;
+  readonly description: readonly Line[];
+}
+
 export interface Rules {
   readonly weaponBook: Readonly<Record<string, number>>;
   readonly armorBook: Readonly<Record<string, number>>;
@@ -56,6 +68,8 @@ export interface Catalog {
   readonly abilities: ReadonlyMap<string, Ability>;
   readonly reforges: ReadonlyMap<string, readonly Line[]>;
   readonly stats: ReadonlyMap<string, Stat>;
+  /** Pet species by lowercase id, such as `golden_dragon`. */
+  readonly pets: ReadonlyMap<string, CatalogPet>;
   readonly rules: Rules;
 }
 
@@ -68,6 +82,29 @@ const readItem = (raw: unknown): CatalogItem => {
     skin: skin(item["skin"])?.value,
     color: parseColor(item["color"]),
     description: (strings(item["description"]) ?? []).map((line) => parseLegacy(line)),
+  };
+};
+
+const readPet = (raw: unknown): CatalogPet | undefined => {
+  const pet = record(raw);
+  const display = text(pet["display"]);
+  if (display === undefined) {
+    return undefined;
+  }
+  const perks: Record<string, number> = {};
+  for (const perk of lists(pet["perks"]) ?? []) {
+    const { stat, per_level } = record(perk);
+    if (typeof stat === "string" && typeof per_level === "number") {
+      perks[stat] = per_level;
+    }
+  }
+  return {
+    display,
+    maxLevel: count(pet["max_level"]),
+    category: text(pet["category"]),
+    skin: skin(pet["skin"])?.value,
+    perks,
+    description: (strings(pet["description"]) ?? []).map((line) => parseLegacy(line)),
   };
 };
 
@@ -146,7 +183,14 @@ const decode = (source: unknown): Catalog => {
       stats.set(id, { color: text(stat["color"]) ?? "7", name: text(stat["name"]) ?? id });
     }
   }
-  return { items, dungeon, itemAbilities, abilities, reforges, stats, rules: readRules(catalog["itemRules"]) };
+  const pets = new Map<string, CatalogPet>();
+  for (const [id, raw] of Object.entries(record(catalog["pets"]))) {
+    const pet = readPet(raw);
+    if (pet !== undefined) {
+      pets.set(id, pet);
+    }
+  }
+  return { items, dungeon, itemAbilities, abilities, reforges, stats, pets, rules: readRules(catalog["itemRules"]) };
 };
 
 const decoded = new WeakMap<object, Catalog>();

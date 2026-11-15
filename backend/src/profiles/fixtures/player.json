@@ -9,20 +9,20 @@
   "profiles": [
     {
       "id": "aaaaaaaa-0000-4000-8000-000000000001",
-      "name": "§5Arcane",
+      "name": "\u00a75Arcane",
       "mode": "NORMAL",
       "selected": false
     },
     {
       "id": "bbbbbbbb-0000-4000-8000-000000000002",
-      "name": "§5Superior",
+      "name": "\u00a75Superior",
       "mode": "IRONMAN",
       "selected": true
     }
   ],
   "profile": {
     "id": "bbbbbbbb-0000-4000-8000-000000000002",
-    "profile_name": "§5Superior",
+    "profile_name": "\u00a75Superior",
     "profile_mode": "IRONMAN",
     "coins": 35124030742.193535,
     "motes": 0,
@@ -73,6 +73,9 @@
       },
       "VOIDLING_DEVOTEE": {
         "kills": 4142
+      },
+      "NEST_ENDERMITE": {
+        "kills": 0
       }
     },
     "slayer": {
@@ -345,6 +348,104 @@
         }
       }
     },
-    "pets": []
+    "pets": [
+      {
+        "type": "GOLDEN_DRAGON",
+        "rarity": "LEGENDARY",
+        "totalXp": 1798563928,
+        "xpCurve": 2,
+        "candiesUsed": 3,
+        "active": true,
+        "equippedItem": "pet_item_lucky_clover",
+        "skinOverride": "pet_skin_golden_dragon_ancient"
+      },
+      {
+        "type": "BLACK_CAT",
+        "rarity": "EPIC",
+        "totalXp": 0,
+        "xpCurve": 2,
+        "candiesUsed": 0,
+        "active": false
+      }
+    ],
+    "haunted_candy_earned": 8396,
+    "draconic_experience": 370,
+    "updated_at": 1794762918524,
+    "stats": {
+      "base": {
+        "intelligence": 300,
+        "health": 600,
+        "mystery": 1
+      },
+      "additive": {
+        "health": 15
+      },
+      "multiplicative": {},
+      "increase_max": {
+        "health": 5
+      }
+    },
+    "collections": {
+      "obsidian": 2747774,
+      "mystery_ore": 3
+    },
+    "rng_meters": {
+      "revenant": {
+        "kills": 2495
+      },
+      "mine_node": {
+        "kills": 962
+      }
+    },
+    "dungeons": {
+      "class": "TANK",
+      "secrets": 12,
+      "zombie_kills": 31,
+      "skeletor_kills": 15,
+      "class_xp": {
+        "MAGE": 18932.5,
+        "TANK": 75730.5
+      },
+      "completions": {
+        "M1": 2,
+        "F7": 467
+      },
+      "best_score": {
+        "F7": 353
+      },
+      "essence": {
+        "wither_essence": 8608
+      }
+    },
+    "hotd": {
+      "tier": 10,
+      "exp": 85183989,
+      "core": 10,
+      "ender": 11932047,
+      "void": 43761698,
+      "resets": 20,
+      "ability": "void_infusion",
+      "tokens": 0,
+      "nodes": {
+        "MINING_FORTUNE": 50,
+        "DRAGONS_FAVOR": 1
+      }
+    },
+    "forge": [
+      {
+        "slot": 1,
+        "recipe": "obsidian",
+        "started": 1792679895946,
+        "duration": 1800000,
+        "stage": "RUNNING"
+      },
+      {
+        "slot": 0,
+        "recipe": "refined_end_stone",
+        "started": 1792679893796,
+        "duration": 1800000,
+        "stage": "READY"
+      }
+    ]
   }
 }

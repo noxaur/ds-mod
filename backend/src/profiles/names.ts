@@ -1,12 +1,7 @@
 import type { Line } from "../items/model.ts";
+import { titleCase } from "../items/title.ts";
 
-/** `NEST_ZEALOT` and `nest zealot` are both `Nest Zealot`. */
-export const titleCase = (id: string): string =>
-  id
-    .split(/[_\s]+/u)
-    .filter((word) => word !== "")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
+export { titleCase };
 
 /** The bosses the server's slayers are named for, by the mob's id. A slayer not here shows its id in title case. */
 const SLAYERS: Readonly<Record<string, string>> = {

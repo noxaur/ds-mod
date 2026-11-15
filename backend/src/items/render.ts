@@ -1,5 +1,6 @@
 import type { DrawnItem } from "./model.ts";
 import { decodeCatalog } from "./render/catalog.ts";
+import { factsOf } from "./render/facts.ts";
 import { glints, skullTexture } from "./render/policy.ts";
 import { parseColor, record, text } from "./render/read.ts";
 import { lore, name } from "./render/tooltip.ts";
@@ -41,6 +42,7 @@ export const makeRenderer = (catalogJson: unknown, hints: ReadonlyMap<string, It
         item.material === "minecraft:player_head" ? skullTexture(item.skin, item.skinId, hint, entry?.skin) : undefined;
       const color = parseColor(item.color) ?? parseColor(record(item.dye)["color"] ?? item.dye) ?? entry?.color;
       const { lines } = lore(catalog, item, entry);
+      const facts = factsOf(catalog, item);
       return {
         entry: item.entry ?? null,
         material: item.material,
@@ -51,7 +53,10 @@ export const makeRenderer = (catalogJson: unknown, hints: ReadonlyMap<string, It
         glint: glints(item.material, entry?.glowing ?? false, hint?.glint),
         ...(texture === undefined ? {} : { skullTexture: texture }),
         ...(color === undefined ? {} : { color }),
+        ...(facts === undefined ? {} : { facts }),
       };
     },
   };
 };
+
+export { decodeCatalog };
