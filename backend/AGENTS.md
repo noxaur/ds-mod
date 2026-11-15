@@ -8,6 +8,7 @@ The REST service, in TypeScript with Effect. Void builds it and deploys it to Cl
 - A domain keeps its rules in `src/<domain>/` behind a `Store` it is handed, and `store.ts` is the one file that touches D1 and R2. Rules are tested with the in-memory store, so keep `store.ts` to plain reads and writes.
 - `routes/[...].ts` says who is calling, and `makeApp` puts it in the request's context as `Caller`, where no client can write. A group that needs a caller takes `SignedIn` or `Agent` as middleware in `src/api.ts`, so the contract shows it and no handler can forget the check.
 - Model work that can fail as an `Effect`. `dsmod/no-try` rejects `try`.
+- Fail with an `HttpApiError` the endpoint declares only for what the client got wrong. A failure no client can fix, such as a database that is down, is a defect (`Effect.orDie`): `makeApp` writes its cause to the Worker's log and answers an empty 500.
 - Void's docs for the installed version are in `node_modules/void/docs/`, and Vite+'s in `node_modules/vite-plus/docs/`. Read them before guessing an API, because both are newer than what you remember.
 - Use pnpm, and ask the user before adding a dependency. `vite` is an alias of the Vite+ core, in `package.json` and in the overrides of `pnpm-workspace.yaml`, so that Void and Vite+ share one Vite. Keep both equal to `vite-plus`. When they differ, `vp check` fails with "Excessive stack depth" in `vite.config.ts`.
 - `mise run check:backend` runs `vp check` (format, lint and types) and `vp test`.

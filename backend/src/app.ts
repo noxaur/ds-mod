@@ -1,4 +1,4 @@
-import { Context, Effect, Layer, Option, Redacted } from "effect";
+import { Context, Effect, ErrorReporter, Layer, Option, Redacted } from "effect";
 import { HttpRouter, HttpServer } from "effect/http";
 import { HttpApiBuilder, HttpApiError } from "effect/http-api";
 
@@ -73,11 +73,20 @@ const web = HttpRouter.toWebHandler(
   { disableLogger: true },
 );
 
+// A failure no handler expected, such as a database that is down, answers an empty 500 so nothing internal leaks.
+// The cause goes to the Worker's log instead: the dev server's terminal, or the Worker's logs in Cloudflare.
+const logFailures = ErrorReporter.make(({ error }) => {
+  // eslint-disable-next-line no-console -- the Worker's log is console.error, and this is the one place that writes it.
+  console.error(error);
+});
+
 /**
  * The API as a function from request to response, keeping its rows and files in [store]. [callerOf] says who a request
  * is from, and is the only thing that can.
  */
 export const makeApp = (store: Store["Service"], callerOf: (request: Request) => Caller["Service"]) => {
-  const context = Context.make(Store, store);
+  const context = Context.make(Store, store).pipe(
+    Context.add(ErrorReporter.CurrentErrorReporters, new Set([logFailures])),
+  );
   return (request: Request) => web.handler(request, Context.add(context, Caller, callerOf(request)));
 };

@@ -8,7 +8,7 @@ import type { Store } from "./src/contrib/store.ts";
 
 const decodeSpec = Schema.decodeUnknownSync(RequestSpec);
 const decodeStatus = Schema.decodeUnknownSync(Schema.Literals(["open", "filled", "closed"]));
-// A database or storage failure is a defect: no caller can do anything about it, and the Worker answers 500.
+// A database or storage failure is a defect: no client can do anything about it. makeApp logs it and answers 500.
 const run = <A>(query: () => PromiseLike<A>) => Effect.orDie(Effect.tryPromise(query));
 
 const toRequest = (row: typeof requests.$inferSelect) => ({

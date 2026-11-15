@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 
-import { expect, test } from "vite-plus/test";
+import { expect, test, vi } from "vite-plus/test";
 import * as z from "zod";
 
 import { openapi, openapiFile } from "../scripts/openapi.ts";
@@ -245,4 +245,20 @@ test("runs past the 26th are lettered AA, AB, so no two players share a letter",
     .parse(value)[0]
     ?.submissions.map((submission) => submission.contributor);
   expect(letters?.slice(24)).toEqual(["Y", "Z", "AA", "AB"]);
+});
+
+test("a store that fails answers 500 with nothing in it, and only that reaches the log", async () => {
+  const logged = vi.spyOn(console, "error").mockImplementation(() => undefined);
+  const { call } = backend();
+  expect((await call("ann", "POST", "/v1/contrib/requests/nothing/skip")).status).toBe(404);
+  expect((await call("agent", "POST", "/v1/admin/requests", { wanted: 0 })).status).toBe(400);
+  expect((await call(null, "GET", "/v1/contrib/requests")).status).toBe(401);
+  expect(logged, "a refusal is the client's mistake, not the backend's").not.toHaveBeenCalled();
+  const broken = { ...memoryStore(), requests: Effect.die(new Error("D1 is down")) };
+  const app = makeApp(broken, () => ({ userId: "ann", adminToken: undefined }));
+  const response = await app(new Request("http://backend/v1/contrib/requests"));
+  expect(response.status).toBe(500);
+  expect(await response.text()).not.toContain("D1");
+  expect(String(logged.mock.calls[0]?.[0])).toContain("D1 is down");
+  logged.mockRestore();
 });
