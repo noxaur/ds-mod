@@ -82,7 +82,7 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | The mod stays inside its frame, tick and size caps | `PerfTest` against `mod/src/gametest/resources/perf-budgets.json`, in CI's `perf` job |
 | A beta ships only when every check and game test passes | `.github/workflows/beta.yml` |
 | Every capture type reaches the file | `CaptureTest`, and `BriefTest` for `step` |
-| A capture a player uploads holds no player name the mod knows, and no chat | `RedactCaptureTest` |
+| A redacted capture holds no player name the mod knows, and no typed chat | `RedactCaptureTest` |
 | The backend believes a sign-in only when Mojang confirms it | `minecraft.test.ts` in `backend/src/identity/` |
 | A player cannot reach an agent's routes, and an agent never sees who recorded a run | `app.test.ts` in `backend/src/` |
 | The website signs a browser in only after the player confirms whose account it is | `signIn.test.ts` in `web/app/login/` |

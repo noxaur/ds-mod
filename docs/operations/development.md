@@ -59,7 +59,7 @@ Once the user has agreed, start the client with the absolute path of the brief:
 cd mod && ./gradlew runClient -Pbrief=/tmp/golem-tiers.json
 ```
 
-The window's title starts with the brief's name, and the steps sit in the top right corner of the screen. The user presses the key the HUD names to start, which starts the capture, and again after each step. It is `]` on a US layout, and Next Recording Step in the game's controls. After the last step the capture is saved and the HUD names its file, so the user closes the game and the command returns. The capture is the newest file in `mod/run/dsmod/captures/`, and a `step` line marks where each step began.
+The window's title starts with the brief's name, and the steps sit in the top right corner of the screen. The user presses the key the HUD names to start, which starts the capture, and again after each step. It is `]` on a US layout, and Next Recording Step in the game's controls. After the last step the capture is saved and the HUD names its file, so the user closes the game and the command returns. The capture is the newest file in `mod/run/dsmod/captures/`, and a `step` line marks where each step began. To abandon a run, the user types `/dscapture cancel`, which deletes the capture the brief started.
 
 ### Ask players for a capture
 
