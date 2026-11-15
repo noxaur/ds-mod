@@ -41,7 +41,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           pnpm install --frozen-lockfile
-          pnpm exec void deploy
+          # The saved target lives in the git-ignored .void/, so a fresh checkout must name it.
+          pnpm exec void deploy --platform cloudflare
       - run: test "$(curl -sS -o /dev/null -w '%{http_code}' https://api.ds-mod.perwko.com/healthz)" = 204
       - uses: ./.github/actions/time-limit
         with:

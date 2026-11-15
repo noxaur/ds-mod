@@ -14,18 +14,18 @@ The addresses are fixed: a jar keeps the ones it was built with, so moving eithe
 
 ## Deploy the backend
 
-The `deploy` workflow runs `void deploy` after each green `ci` run on `main`, with the repository secret `CLOUDFLARE_API_TOKEN`. That token is scoped to the user's account and to `perwko.com`, with Workers Scripts, D1 and R2 edit, Workers Routes edit, and account settings and zone read. A failed deploy changes nothing live, so the fix is a new commit or a rerun of the workflow.
+The `deploy` workflow runs `void deploy --platform cloudflare` after each green `ci` run on `main`, with the repository secret `CLOUDFLARE_API_TOKEN`. That token is scoped to the user's account and to `perwko.com`, with Workers Scripts, D1 and R2 edit, Workers Routes edit, and account settings and zone read. The flag is needed because the saved target lives in the git-ignored `backend/.void/`, so a fresh checkout has none.
 
-To deploy by hand, for example to test a migration before merging:
+To deploy by hand from a checkout that the user has signed in to Cloudflare:
 
 ```sh
 cd backend
 pnpm exec void deploy
 ```
 
-Deploy applies pending migrations from `db/migrations/`, after it saves a D1 restore point and prints the `void db restore` command for it. Commit `void.lock.json` whenever it changes. It holds the account and the resource IDs. `workers_dev` and `preview_urls` in `void.config.ts` must match the live Worker, or a deploy stops before it uploads.
+Deploy applies pending migrations from `db/migrations/` before it uploads the Worker, after it saves a D1 restore point and prints the `void db restore` command for it. A deploy that fails after migrating leaves the new schema under the old Worker. Usually the fix is a new commit or a rerun of the workflow. Restore only when the old Worker cannot run against the new schema, because a restore discards every write since the restore point. Commit `void.lock.json` whenever it changes. It holds the account and the resource IDs. `workers_dev` and `preview_urls` in `void.config.ts` must match the live Worker, or a deploy stops before it uploads.
 
-Void's Cloudflare commands refuse to run without a terminal. In an agent's shell, run them under `script -qfec "<command>" /dev/null`. `void cloudflare login` prints a code that the user confirms in the browser. Its session sits in the system keychain and can deploy, set secrets and manage the Worker's domain, but not edit DNS records.
+Without `CLOUDFLARE_API_TOKEN`, Void's Cloudflare commands use the browser sign-in and refuse to run without a terminal. In an agent's shell, run them under `script -qfec "<command>" /dev/null`. `void cloudflare login` prints a code that the user confirms in the browser. Its session sits in the system keychain and can deploy, set secrets and manage the Worker's domain, but not edit DNS records.
 
 After a deploy, `https://api.ds-mod.perwko.com/healthz` answers 204, and a `POST` to `/api/auth/minecraft/challenge` answers 200 with a `serverId`, which proves the database is reachable.
 
