@@ -7,12 +7,12 @@ import { Effect } from "effect";
 import { expect, test } from "vite-plus/test";
 
 import { makeApp } from "../src/app.ts";
-import { memoryStore } from "../src/contrib/store.ts";
+import { memoryServices } from "../src/memory.ts";
 import { dsctl } from "./dsctl.ts";
 
 /** A backend with nothing in it, dsctl pointed at it with [token], and a way to call it as a player. */
 function backend(token = "secret") {
-  const app = makeApp(memoryStore(), (request) => ({ userId: request.headers.get("cookie"), adminToken: "secret" }));
+  const app = makeApp(memoryServices(), (request) => ({ userId: request.headers.get("cookie"), adminToken: "secret" }));
   const fetch = (input: RequestInfo | URL, init?: RequestInit) => app(new Request(input, init));
   /** What dsctl prints, or the message it fails with, which the real command prints on stderr. */
   const run = (...args: string[]) =>
@@ -146,7 +146,7 @@ test("a wrong token, an unknown id and a bad command each say what went wrong", 
 });
 
 test("a body the backend refuses is named by where and what it expected", async () => {
-  const app = makeApp(memoryStore(), () => ({ userId: null, adminToken: "secret" }));
+  const app = makeApp(memoryServices(), () => ({ userId: null, adminToken: "secret" }));
   // A dsctl from another version than the backend's: its brief carries a key the backend does not know.
   const fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const body: unknown = await new Request(input, init).json();
