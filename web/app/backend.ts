@@ -10,16 +10,15 @@ export const backendIsUp = Effect.tryPromise(() => fetch(`${backendUrl}/healthz`
   Effect.orElseSucceed(() => false),
 );
 
+const User = Schema.Struct({ id: Schema.String, name: Schema.String });
+
 const Verified = Schema.Struct({
   session: Schema.Struct({ token: Schema.String, expiresAt: Schema.DateFromString }),
-  user: Schema.Struct({ name: Schema.String }),
+  user: User,
 });
 
 const Current = Schema.NullOr(
-  Schema.Struct({
-    session: Schema.Struct({ expiresAt: Schema.DateFromString }),
-    user: Schema.Struct({ name: Schema.String }),
-  }),
+  Schema.Struct({ session: Schema.Struct({ expiresAt: Schema.DateFromString }), user: User }),
 );
 
 const call = (path: string, init: RequestInit) =>
@@ -38,10 +37,9 @@ export const verifyOneTimeToken = (token: string) =>
     body: JSON.stringify({ token }),
   }).pipe(Effect.flatMap(Schema.decodeUnknownEffect(Verified)));
 
-/** Whose session a token is and when it ends, or null when the backend does not know it. */
+/** Whose session a token is and when it ends, or null when the backend does not know it. Fails when it cannot say. */
 export const sessionOf = (sessionToken: string) =>
   call("get-session", { headers: { authorization: `Bearer ${sessionToken}` } }).pipe(
     Effect.flatMap(Schema.decodeUnknownEffect(Current)),
-    Effect.map((current) => current && { name: current.user.name, expiresAt: current.session.expiresAt }),
-    Effect.orElseSucceed(() => null),
+    Effect.map((current) => current && { ...current.user, expiresAt: current.session.expiresAt }),
   );
