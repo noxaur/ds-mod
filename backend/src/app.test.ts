@@ -262,6 +262,9 @@ test("a store that fails answers 500 with nothing in it, and only that reaches t
   expect((await call("ann", "POST", "/v1/contrib/requests/nothing/skip")).status).toBe(404);
   expect((await call("agent", "POST", "/v1/admin/requests", { wanted: 0 })).status).toBe(400);
   expect((await call(null, "GET", "/v1/contrib/requests")).status).toBe(401);
+  expect((await call("ann", "POST", "/v1/contrib/unknowns", "{")).status).toBe(400);
+  const huge = new Uint8Array(Number(MAX_BODY) + 1);
+  expect((await call("ann", "POST", "/v1/contrib/requests/nothing/submissions?modVersion=1", huge)).status).toBe(413);
   expect(logged, "a refusal is the client's mistake, not the backend's").not.toHaveBeenCalled();
   const broken = { ...memoryStore(), requests: Effect.die(new Error("D1 is down")) };
   const app = makeApp(broken, () => ({ userId: "ann", adminToken: undefined }));

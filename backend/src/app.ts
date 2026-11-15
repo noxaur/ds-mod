@@ -1,5 +1,5 @@
-import { ByteSize, Context, Effect, ErrorReporter, Layer, Option, Redacted } from "effect";
-import { HttpIncomingMessage, HttpRouter, HttpServer } from "effect/http";
+import { ByteSize, Cause, Context, Effect, ErrorReporter, Layer, Option, Redacted } from "effect";
+import { HttpIncomingMessage, HttpRouter, HttpServer, HttpServerError } from "effect/http";
 import { HttpApiBuilder, HttpApiError } from "effect/http-api";
 
 import { Agent, Api, Caller, Player, SignedIn } from "./api.ts";
@@ -75,10 +75,19 @@ const web = HttpRouter.toWebHandler(
 );
 
 // A failure no handler expected, such as a database that is down, answers an empty 500 so nothing internal leaks.
-// The cause goes to the Worker's log instead: the dev server's terminal, or the Worker's logs in Cloudflare.
-const logFailures = ErrorReporter.make(({ error }) => {
-  // eslint-disable-next-line no-console -- the Worker's log is console.error, and this is the one place that writes it.
-  console.error(error);
+// The cause goes to the Worker's log instead: the dev server's terminal, or the Worker's logs in Cloudflare. Effect
+// reports a body it could not read too, but that is the client's mistake, answered 400 or 413, like the refusals
+// a handler declares.
+const logFailures = ErrorReporter.make(({ cause, error }) => {
+  // Effect lets the request's parse error die, so it is a defect here and not a failure.
+  const unreadable = cause.reasons.every((reason) => {
+    const original = Cause.isDieReason(reason) ? reason.defect : Cause.isFailReason(reason) ? reason.error : undefined;
+    return HttpServerError.isHttpServerError(original) && original.reason instanceof HttpServerError.RequestParseError;
+  });
+  if (!unreadable) {
+    // eslint-disable-next-line no-console -- the Worker's log is console.error, and this is the one place that writes it.
+    console.error(error);
+  }
 });
 
 /**
