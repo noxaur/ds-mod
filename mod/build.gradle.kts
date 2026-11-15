@@ -249,9 +249,11 @@ dependencies {
     productionRuntimeMods("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
     productionRuntimeMods("net.fabricmc:fabric-language-kotlin:${property("fabric_kotlin_version")}")
 }
-// `-Pgametests=PerfTest,ChatTest` keeps only those tests, which is how CI stays inside its time limit.
+// A run names its tests, `-Pgametests=PerfTest,ChatTest`, or asks for every one with `-Pgametests=all`. The whole
+// suite takes minutes and an agent waits on each run, so it is for the beta pipeline, and a run that names none fails.
+val gametests = providers.gradleProperty("gametests")
 tasks.named<ProcessResources>("processGametestResources") {
-    val only = providers.gradleProperty("gametests").map { it.split(",") }.orNull
+    val only = gametests.map { it.split(",") }.filter { it != listOf("all") }.orNull
     inputs.property("gametests", only ?: emptyList<String>())
     if (only != null) {
         val manifest = destinationDir.resolve("fabric.mod.json")
@@ -287,6 +289,10 @@ tasks.register<net.fabricmc.loom.task.prod.ClientProductionRunTask>("runProdClie
     runDir = layout.buildDirectory.dir("run/prodClientGameTest")
     // A CI runner has no display.
     useXVFB = providers.environmentVariable("CI").isPresent
+}
+// Checked before anything compiles, so a run that names no tests fails at once.
+if (!gametests.isPresent && gradle.startParameter.taskNames.any { it.substringAfterLast(':') in setOf("runClientGameTest", "runProdClientGameTest") }) {
+    throw GradleException("Name the game tests that cover the change, as in -Pgametests=ChatTest,KitTest. Every test runs in the beta pipeline, and -Pgametests=all runs them here.")
 }
 
 // `./gradlew cutFixture --args="<capture> <feature id> <name> <from>-<to> [--types a,b] [--info Key,Key] [--system regex]"`
