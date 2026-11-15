@@ -6,9 +6,13 @@ import io.github.notenoughupdates.moulconfig.annotations.Category
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorButton
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDropdown
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorKeybind
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorSlider
 import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText
+import io.github.noxaur.dsmod.core.camera.KeyMode
+import io.github.noxaur.dsmod.core.camera.ThirdPerson
+import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.Theme
 
@@ -148,6 +152,66 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var explosionParticleHider = false
+
+        @Expose
+        @ConfigOption(name = "Camera", desc = "Shape the third-person view with the settings below. At their defaults it is the game's own.")
+        @ConfigEditorBoolean
+        @JvmField
+        var camera = true
+
+        @Expose
+        @ConfigOption(name = "Camera Distance", desc = "Set how many blocks the third-person camera sits from you.")
+        @ConfigEditorSlider(minValue = 1f, maxValue = 50f, minStep = 0.5f)
+        @JvmField
+        var cameraDistance = ThirdPerson.DISTANCE
+
+        @Expose
+        @ConfigOption(name = "Camera Height", desc = "Raise the third-person camera by this many blocks, or lower it below zero.")
+        @ConfigEditorSlider(minValue = -2f, maxValue = 3f, minStep = 0.1f)
+        @JvmField
+        var cameraHeight = 0f
+
+        @Expose
+        @ConfigOption(name = "Camera Tilt", desc = "Angle the third-person camera down by this many degrees, or up below zero. Your aim stays where it is.")
+        @ConfigEditorSlider(minValue = -45f, maxValue = 45f, minStep = 1f)
+        @JvmField
+        var cameraTilt = 0f
+
+        @Expose
+        @ConfigOption(name = "F5 Views", desc = "Pick which views F5 goes through.")
+        @ConfigEditorDropdown
+        @JvmField
+        var cameraViews = Views.ALL
+
+        @Expose
+        @ConfigOption(name = "Camera Smoothing", desc = "Slide the camera out when you leave first person. Zero jumps there at once.")
+        @ConfigEditorSlider(minValue = 0f, maxValue = 100f, minStep = 5f)
+        @JvmField
+        var cameraSmoothing = 0f
+
+        @Expose
+        @ConfigOption(name = "Free Look", desc = "Look around in third person with the key below. You keep facing where you were, and other players see no turn.")
+        @ConfigEditorBoolean
+        @JvmField
+        var freeLook = true
+
+        /** A key's GLFW code, a mouse button from 0 to 9, or -1 for none, as MoulConfig's editor writes it. */
+        @Expose
+        @ConfigOption(name = "Free Look Key", desc = "Pick the key or mouse button for Free Look.")
+        @ConfigEditorKeybind(defaultKey = LEFT_ALT)
+        @JvmField
+        var freeLookKey = LEFT_ALT
+
+        @Expose
+        @ConfigOption(name = "Free Look Mode", desc = "Pick whether you hold the key to look around, or press it once to start and again to stop.")
+        @ConfigEditorDropdown
+        @JvmField
+        var freeLookMode = KeyMode.HOLD
+
+        private companion object {
+            /** GLFW's code for the left Alt key. */
+            const val LEFT_ALT = 342
+        }
     }
 
     class Inventory {

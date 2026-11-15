@@ -137,9 +137,32 @@ All-Time: 12
 
 ## General
 
+### Camera
+
+Shapes the third-person view you get with F5. Each setting starts at the game's own, so nothing changes until you move one.
+
+| Setting | Does |
+| --- | --- |
+| Camera Distance | Puts the camera 1 to 50 blocks from you. The game's own is 4 |
+| Camera Height | Raises the camera up to 3 blocks, or lowers it up to 2. It stops under a ceiling |
+| Camera Tilt | Angles the camera down up to 45 degrees, or up. Your aim stays where it is |
+| F5 Views | Makes F5 skip the front view or the back view |
+| Camera Smoothing | Slides the camera out when you leave first person |
+
+A wall behind you still pulls the camera in, as it does in the game.
+
 ### Explosion Particle Hider
 
 <sub>Off by default.</sub>
+
+### Free Look
+
+Hold Left Alt to look around in third person. Your character keeps facing where it was, so you keep walking and aiming the same way, and other players see no turn. Let go to return to the view you had.
+
+- **Free Look Key:** any key or mouse button.
+- **Free Look Mode:** Hold, or Toggle to press once to start and again to stop.
+
+F5 back to first person also ends it. The Camera settings shape this view too.
 
 ### Fullbright
 
