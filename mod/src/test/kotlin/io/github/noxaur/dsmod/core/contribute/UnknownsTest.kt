@@ -120,4 +120,13 @@ class UnknownsTest {
         unknowns.see("boss-drops", "Zed got a thing")
         assertEquals("Player1 got a thing", unknowns.take().single().sample)
     }
+
+    @Test
+    fun `what a player typed is removed with their name, though nothing else names them`() {
+        unknowns.see("chat", "Party > Zed: meet me at the portal")
+        unknowns.see("chat", "[MVP+] Ann: my secret")
+
+        val samples = unknowns.take().map { it.sample }
+        assertTrue(samples.none { "Zed" in it || "Ann" in it || "portal" in it || "secret" in it }, samples.toString())
+    }
 }

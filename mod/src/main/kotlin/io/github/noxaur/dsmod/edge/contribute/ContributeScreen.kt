@@ -111,9 +111,14 @@ class ContributeScreen(private val parent: Screen?, private val signingIn: Boole
         for (word in string.split(' ')) {
             if (line.isNotEmpty() && font.width("$line $word") > maxWidth) {
                 out += Line(line, ink)
-                line = word
-            } else {
-                line = if (line.isEmpty()) word else "$line $word"
+                line = ""
+            }
+            line = if (line.isEmpty()) word else "$line $word"
+            // A word wider than the panel, such as a long command, is cut where the panel ends.
+            while (font.width(line) > maxWidth) {
+                val fits = font.plainSubstrByWidth(line, maxWidth)
+                out += Line(fits, ink)
+                line = line.substring(fits.length)
             }
         }
         return out + Line(line, ink)

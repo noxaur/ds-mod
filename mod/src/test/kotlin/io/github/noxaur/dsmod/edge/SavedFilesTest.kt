@@ -96,6 +96,18 @@ class SavedFilesTest {
     }
 
     @Test
+    fun `a tab list or sidebar that names no new place writes nothing`() {
+        val game = game()
+        SavedFiles(dir, game).close()
+        Files.delete(dir.resolve("places.json"))
+
+        val files = SavedFiles(dir, game)
+        repeat(3) { game.post(2, TabList(listOf(ServerText(ServerSpan("Area: The End"))))) }
+        files.close()
+        assertFalse(dir.resolve("places.json").exists())
+    }
+
+    @Test
     fun `the places the player has been come back in the next session`() {
         val first = game()
         first.post(1, TabList(listOf(ServerText(ServerSpan("Area: Hub")))))
