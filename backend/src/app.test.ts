@@ -6,6 +6,7 @@ import * as z from "zod";
 import { openapi, openapiFile } from "../scripts/openapi.ts";
 import { Effect } from "effect";
 
+import { Api } from "./api.ts";
 import { MAX_BODY, makeApp } from "./app.ts";
 import { MAX_UNKNOWNS } from "./contrib/contrib.ts";
 import { memoryStore } from "./contrib/store.ts";
@@ -151,13 +152,22 @@ test("the same unknown thing from many players is one row with a count", async (
   expect((await call("agent", "GET", "/v1/admin/unknowns")).value).toMatchObject([{ ...sighting, count: 3 }]);
 });
 
-test("a player cannot call the agent's routes, and nobody gets in without signing in", async () => {
+test("a player cannot call any agent route, and nobody calls a player route without signing in", async () => {
   const { call, create } = backend();
   const id = await create();
-  expect((await call("ann", "GET", "/v1/admin/requests")).status).toBe(401);
-  expect((await call("ann", "POST", "/v1/admin/requests", spec)).status).toBe(401);
-  expect((await call(null, "GET", "/v1/contrib/requests")).status).toBe(401);
-  expect((await call(null, "POST", `/v1/contrib/requests/${id}/skip`)).status).toBe(401);
+  // Every endpoint of each group, from the API itself, so a new one is checked without being listed here.
+  const routes = (group: "admin" | "contrib") =>
+    Object.values(Api.groups[group].endpoints).map((endpoint) => ({
+      method: endpoint.method,
+      path: endpoint.path.replace(":id", id),
+      body: endpoint.method === "GET" ? undefined : group === "admin" ? spec : gz(1),
+    }));
+  for (const { method, path, body } of routes("admin")) {
+    expect((await call("ann", method, path, body)).status, `${method} ${path}`).toBe(401);
+  }
+  for (const { method, path, body } of routes("contrib")) {
+    expect((await call(null, method, path, body)).status, `${method} ${path}`).toBe(401);
+  }
 });
 
 test("only the exact admin token makes a caller an agent", async () => {
