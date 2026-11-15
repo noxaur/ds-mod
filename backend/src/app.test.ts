@@ -232,3 +232,18 @@ test("invented sightings stop being kept at the cap, and known ones still count"
   expect(kept).toHaveLength(MAX_UNKNOWNS);
   expect(kept.find((unknown) => unknown.signature === "s0")?.count).toBe(2);
 });
+
+test("runs past the 26th are lettered AA, AB, so no two players share a letter", async () => {
+  const { call, submit } = backend();
+  const created = await call("agent", "POST", "/v1/admin/requests", { ...spec, wanted: 20 });
+  const id = z.object({ id: z.string() }).parse(created.value).id;
+  for (let player = 0; player < 28; player++) {
+    expect((await submit(`player${String(player)}`, id)).status).toBe(200);
+  }
+  const { value } = await call("agent", "GET", "/v1/admin/requests");
+  const letters = z
+    .array(z.object({ submissions: z.array(z.object({ contributor: z.string() })) }))
+    .parse(value)[0]
+    ?.submissions.map((submission) => submission.contributor);
+  expect(letters?.slice(24)).toEqual(["Y", "Z", "AA", "AB"]);
+});

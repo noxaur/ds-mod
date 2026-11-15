@@ -84,6 +84,10 @@ export const close = Effect.fn(function* (requestId: string) {
   yield* (yield* Store).close(requestId);
 });
 
+/** A, B, ... Z, then AA, AB, as spreadsheet columns go, so the 27th player is not mistaken for the first. */
+const letter = (index: number): string =>
+  (index >= 26 ? letter(Math.floor(index / 26) - 1) : "") + String.fromCharCode(65 + (index % 26));
+
 /** Every request with its runs. A player is a letter here, in the order they submitted, and never an id. */
 export const reports = Effect.gen(function* () {
   const store = yield* Store;
@@ -100,7 +104,7 @@ export const reports = Effect.gen(function* () {
         modVersion: row.modVersion,
         bytes: row.bytes,
         createdAt: row.createdAt,
-        contributor: String.fromCharCode(65 + (index % 26)),
+        contributor: letter(index),
       })),
   }));
 });
