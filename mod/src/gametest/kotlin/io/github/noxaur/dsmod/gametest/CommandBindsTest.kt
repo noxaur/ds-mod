@@ -6,7 +6,6 @@ import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.CommandBinds
 import io.github.noxaur.dsmod.core.input.Where
 import io.github.noxaur.dsmod.core.ui.Theme
-import io.github.noxaur.dsmod.edge.BindEditScreen
 import io.github.noxaur.dsmod.edge.CommandBindsScreen
 import io.github.noxaur.dsmod.edge.CommandKeys
 import io.github.noxaur.dsmod.edge.DsModClient
@@ -29,10 +28,10 @@ import org.lwjgl.glfw.GLFW
 import kotlin.io.path.readText
 
 /**
- * Works Command Binds' two screens with the real keyboard and mouse: a bind on Shift + F6 recorded by holding
- * the keys, one on the middle button that works in menus too under More, a sequence, one limited to The End, a
- * copy that clashes, a delete that asks twice, rows dragged and moved with Alt, the rows scrolling, and groups
- * that appear with the second one, renamed, exported, imported and deleted. Then in a world each bind sends where it should and nowhere else. Read the screenshots.
+ * Works Command Binds' screen with the real keyboard and mouse: a bind on Shift + F6 recorded by holding the
+ * keys, one on the middle button that works in menus too, a sequence, one limited to The End, a duplicate that
+ * clashes, a delete that asks twice, rows dragged and moved with Alt, the list scrolling, and a group named by
+ * typing, filled by dragging under its heading, exported, imported and deleted. Then in a world each bind sends where it should and nowhere else. Read the screenshots.
  */
 class CommandBindsTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
@@ -62,11 +61,6 @@ class CommandBindsTest : FabricClientGameTest {
             context.input.pressMouse(button)
             context.waitTicks(2)
         }
-        fun field(index: Int, typed: String) {
-            click(widgets(KitTextField::class.java)[index])
-            context.input.typeChars(typed)
-            context.waitTicks(2)
-        }
         fun vanilla(name: String) {
             context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
             context.waitTicks(2)
@@ -74,19 +68,45 @@ class CommandBindsTest : FabricClientGameTest {
             context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
         }
         fun keys() = widgets(KitKeysButton::class.java).single()
+        fun field(label: String) = widgets(KitTextField::class.java).single { it.message.string == label }
+        fun type(label: String, typed: String) {
+            click(field(label))
+            context.input.typeChars(typed)
+            context.waitTicks(2)
+        }
+        /** The on-off boxes of the rows, in list order. */
+        fun boxes() = context.computeOnClient<List<KitCheckbox>, Nothing> { client ->
+            client.gui.screen()!!.children().filterIsInstance<KitCheckbox>().filter { it.message.string.isEmpty() }
+        }
+        /** A point on a row's name, given the row's box. */
+        fun nameOf(box: KitCheckbox) = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
+            (box.x + 40.0) * client.window.guiScale to (box.y + 5.0) * client.window.guiScale
+        }
+        fun pickRow(row: Int) {
+            nameOf(boxes()[row]).let { context.input.setCursorPos(it.first, it.second) }
+            context.waitTicks(10)
+            context.input.pressMouse(0)
+            context.waitTicks(2)
+        }
+        fun drag(from: Pair<Double, Double>, to: Pair<Double, Double>, escape: Boolean = false) {
+            context.input.setCursorPos(from.first, from.second)
+            // Far enough from the last press that this one is not a double click.
+            context.waitTicks(10)
+            context.input.holdMouse(0)
+            context.input.setCursorPos(to.first, to.second)
+            context.waitTicks(2)
+            if (escape) context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
+            context.input.releaseMouse(0)
+            context.waitTicks(2)
+        }
         fun newBind() {
             context.clickScreenButton("New Bind")
-            context.waitForScreen(BindEditScreen::class.java)
-        }
-        fun saveBind() {
-            context.clickScreenButton("Save")
-            context.waitForScreen(CommandBindsScreen::class.java)
+            context.waitTicks(2)
         }
 
-        // Shift + F6, recorded by holding Shift and pressing F6.
+        // Shift + F6, recorded by holding Shift and pressing F6. The command field has focus after New Bind.
         newBind()
-        context.input.typeChars("Warp End")
-        field(1, "/me bound")
+        context.input.typeChars("/me bound")
         click(keys())
         check(keys().recording) { "A click on Keys did not start recording" }
         context.input.holdKey(GLFW.GLFW_KEY_LEFT_SHIFT)
@@ -95,36 +115,24 @@ class CommandBindsTest : FabricClientGameTest {
         check(keys().recording) { "Recording ended while Shift was still held" }
         context.input.releaseKey(GLFW.GLFW_KEY_LEFT_SHIFT)
         context.waitTicks(2)
-        check(!keys().recording && keys().keys == listOf(GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_F6)) { "Holding Shift and F6 recorded ${keys().keys}" }
-        context.takeScreenshot("command-binds-edit")
-        vanilla("command-binds-edit-vanilla")
-        saveBind()
-        check(general.binds == listOf(CommandBind("Warp End", "/me bound", listOf(GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_F6)))) { "Saving left ${general.binds}" }
+        type("Name", "Warp End")
+        check(general.binds == listOf(CommandBind("Warp End", "/me bound", listOf(GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_F6)))) { "The first bind is ${general.binds}" }
+        context.takeScreenshot("command-binds-new")
 
-        // Cancel keeps nothing. Then the middle button, in the world and in menus, under More.
+        // The middle button, in the world and in menus.
         newBind()
-        context.clickScreenButton("Cancel")
-        context.waitForScreen(CommandBindsScreen::class.java)
-        check(general.binds.size == 1) { "Cancel kept a bind: ${general.binds}" }
-        newBind()
-        check(named("Where").isEmpty() && widgets(KitCycleButton::class.java).isEmpty()) { "Where showed before More was pressed" }
-        field(1, "other")
+        context.input.typeChars("other")
         click(keys())
         context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
         context.waitTicks(2)
-        context.clickScreenButton("More")
-        context.waitTicks(2)
-        val where = widgets(KitCycleButton::class.java).first { it.message.string.startsWith("Where") }
+        val where = widgets(KitCycleButton::class.java).single()
         click(where)
         click(where)
-        context.takeScreenshot("command-binds-more")
-        saveBind()
         check(general.binds[1].keys == listOf(GLFW.GLFW_MOUSE_BUTTON_MIDDLE) && general.binds[1].where == Where.BOTH) { "The second bind is ${general.binds[1]}" }
 
-        // F7 then F8, in order, ended with Escape. More stays open from the last bind.
+        // F7 then F8, in order, ended with Escape, which leaves the screen open.
         newBind()
-        context.input.typeChars("Sequence")
-        field(1, "/me seq")
+        context.input.typeChars("/me seq")
         click(named("Keys in Order").single())
         click(keys())
         context.input.pressKey(GLFW.GLFW_KEY_F7)
@@ -133,119 +141,103 @@ class CommandBindsTest : FabricClientGameTest {
         check(keys().recording) { "Keys in order stopped recording when the keys were let go" }
         context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
         context.waitTicks(2)
-        check(screen() is BindEditScreen && keys().keys == listOf(GLFW.GLFW_KEY_F7, GLFW.GLFW_KEY_F8)) { "Escape left ${keys().keys} on ${screen()}" }
-        saveBind()
+        check(screen() is CommandBindsScreen && general.binds[2].keys == listOf(GLFW.GLFW_KEY_F7, GLFW.GLFW_KEY_F8)) { "Escape left ${general.binds[2]} on ${screen()}" }
 
-        // F9, only in The End, where the test world is not. Less folds the rest away again.
+        // F9, only in The End, where the test world is not.
         newBind()
-        field(1, "/me end")
+        context.input.typeChars("/me end")
         click(keys())
         context.input.pressKey(GLFW.GLFW_KEY_F9)
         context.waitTicks(2)
         click(named(Area.END.title).single())
-        context.clickScreenButton("Less")
-        context.waitTicks(2)
-        saveBind()
         check(general.binds.map { it.inOrder } == listOf(false, false, true, false) && general.binds[3].areas == listOf(Area.END)) { "The binds are ${general.binds}" }
 
-        // Save as Copy adds a copy that starts off. Once on, it clashes.
-        fun edit(row: Int) {
-            click(named("Edit")[row])
-            context.waitForScreen(BindEditScreen::class.java)
-        }
-        edit(0)
-        context.clickScreenButton("Save as Copy")
-        context.waitForScreen(CommandBindsScreen::class.java)
+        // Duplicate adds a copy that starts off. Once ticked on, it clashes.
+        pickRow(0)
+        context.clickScreenButton("Duplicate")
         check(general.binds.size == 5 && general.binds[1].name == "Warp End" && !general.binds[1].enabled) { "The copy is ${general.binds[1]}" }
-        click(widgets(KitCheckbox::class.java)[1])
+        click(boxes()[1])
         check(CommandBinds.clashes(general.binds[0], general.binds).single() === general.binds[1]) { "Two binds on Shift + F6 did not clash" }
         context.takeScreenshot("command-binds")
         vanilla("command-binds-vanilla")
 
         // Delete asks twice.
-        edit(1)
         context.clickScreenButton("Delete")
-        check(general.binds.size == 5 && screen() is BindEditScreen) { "One press on Delete deleted the bind" }
+        check(general.binds.size == 5) { "One press on Delete deleted the bind" }
         context.takeScreenshot("command-binds-delete")
         context.clickScreenButton("Delete")
-        context.waitForScreen(CommandBindsScreen::class.java)
         check(general.binds.size == 4) { "Two presses on Delete left ${general.binds}" }
 
-        // A row is dragged by its name to move it, and Escape during a drag puts it back.
-        fun rowAt(row: Int) = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
-            val box = client.gui.screen()!!.children().filterIsInstance<KitCheckbox>()[row]
-            (box.x + 40.0) * client.window.guiScale to (box.y + 5.0) * client.window.guiScale
-        }
-        fun drag(from: Int, to: Int, escape: Boolean = false) {
-            rowAt(from).let { context.input.setCursorPos(it.first, it.second) }
-            // Far enough from the last press that this one is not a double click, which edits the row.
-            context.waitTicks(10)
-            context.input.holdMouse(0)
-            val target = rowAt(to)
-            context.input.setCursorPos(target.first, target.second)
-            context.waitTicks(2)
-            if (escape) context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
-            context.input.releaseMouse(0)
-            context.waitTicks(2)
-        }
-        drag(1, 0)
+        // A row is dragged to move it, and Escape during a drag puts it back.
+        drag(nameOf(boxes()[1]), nameOf(boxes()[0]))
         check(general.binds.map { it.command } == listOf("other", "/me bound", "/me seq", "/me end")) { "Dragging the second row up left ${general.binds.map { it.command }}" }
-        drag(0, 3, escape = true)
+        drag(nameOf(boxes()[0]), nameOf(boxes()[3]), escape = true)
         check(general.binds[0].command == "other") { "Escape during a drag left ${general.binds.map { it.command }}" }
-        context.runOnClient<Nothing> { it.gui.screen()!!.setFocused(it.gui.screen()!!.children().filterIsInstance<KitCheckbox>()[0]) }
+        pickRow(0)
         // The test's keyboard carries no modifiers, so Alt + Down goes to the screen the way GLFW sends it.
         context.runOnClient<Nothing> { it.gui.screen()!!.keyPressed(KeyEvent(GLFW.GLFW_KEY_DOWN, 0, GLFW.GLFW_MOD_ALT)) }
         context.waitTicks(2)
         check(general.binds[0].command == "/me bound") { "Alt + Down left ${general.binds.map { it.command }}" }
 
-        // Past eight rows the list scrolls.
+        // Past seven lines the list scrolls.
         val four = general.binds
         context.runOnClient<Nothing> { client ->
             general.binds = four + List(6) { CommandBind("Spare $it", "/me spare", listOf(GLFW.GLFW_KEY_KP_0 + it)) }
             client.gui.screen()!!.resize(client.window.guiScaledWidth, client.window.guiScaledHeight)
         }
         context.waitTicks(2)
+        fun shown(row: Int) = context.computeOnClient<Boolean, Nothing> { client ->
+            client.gui.screen()!!.children().filterIsInstance<KitCheckbox>().filter { it.message.string.isEmpty() }[row].visible
+        }
         context.runOnClient<Nothing> { it.gui.screen()!!.setFocused(null) }
         context.input.pressKey(GLFW.GLFW_KEY_END)
         context.waitTicks(2)
-        check(!widgets(KitCheckbox::class.java).any { it.y < 0 } && widgets(KitCheckbox::class.java).size == 8 && named("Edit").size == 8) { "The list shows more than eight rows" }
-        val lastShown = { context.computeOnClient<Boolean, Nothing> { client -> client.gui.screen()!!.children().filterIsInstance<KitCheckbox>().last().visible } }
-        check(lastShown()) { "End did not show the last row" }
+        check(shown(9) && !shown(0)) { "End did not show the last row" }
         context.takeScreenshot("command-binds-scrolled")
         context.input.pressKey(GLFW.GLFW_KEY_HOME)
         context.waitTicks(2)
-        check(!lastShown()) { "Home did not go back to the top" }
-        val (x, y) = context.computeOnClient<Pair<Double, Double>, Nothing> { it.window.width * 0.5 to it.window.height * 0.5 }
-        context.input.setCursorPos(x, y)
+        check(shown(0) && !shown(9)) { "Home did not go back to the top" }
+        nameOf(boxes()[2]).let { context.input.setCursorPos(it.first, it.second) }
+        // The first notch scrolls the General heading away, and the second the first row.
+        context.input.scroll(-1.0)
         context.input.scroll(-1.0)
         context.waitTicks(2)
-        check(context.computeOnClient<Boolean, Nothing> { client -> !client.gui.screen()!!.children().filterIsInstance<KitCheckbox>().first().visible }) { "The wheel did not scroll" }
+        check(context.computeOnClient<Boolean, Nothing> { client -> !client.gui.screen()!!.children().filterIsInstance<KitCheckbox>().first { it.message.string.isEmpty() }.visible }) { "The wheel did not scroll" }
         context.runOnClient<Nothing> { client ->
             general.binds = four
             client.gui.screen()!!.resize(client.window.guiScaledWidth, client.window.guiScaledHeight)
         }
+        context.waitTicks(2)
 
-        // The groups column appears with a second group, which is named by typing over its name. General is
-        // exported and taken back in, then the import is deleted with a second press on its cross.
-        check(named("General").isEmpty()) { "The groups column showed with one group" }
+        // A new group is named by typing over its name, and a bind dragged under its heading joins it. General is
+        // exported and taken back in, then the import is deleted with a second press.
         context.clickScreenButton("New Group")
         context.input.typeChars("Dungeons")
         context.waitTicks(2)
         check(general.bindGroups == listOf("Dungeons")) { "Typing a group's name left ${general.bindGroups}" }
         context.input.pressKey(GLFW.GLFW_KEY_ENTER)
-        context.clickScreenButton("General")
+        val last = nameOf(boxes()[3])
+        drag(last, last.first to last.second + 24 * context.computeOnClient<Double, Nothing> { it.window.guiScale.toDouble() })
+        check(general.binds.single { it.command == "/me end" }.group == "Dungeons") { "Dragging under Dungeons left ${general.binds}" }
+        context.takeScreenshot("command-binds-groups")
+        // The General heading is the line above the first row.
+        val general0 = nameOf(boxes()[0])
+        context.input.setCursorPos(general0.first, general0.second - 24 * context.computeOnClient<Double, Nothing> { it.window.guiScale.toDouble() })
+        context.waitTicks(10)
+        context.input.pressMouse(0)
+        context.waitTicks(2)
+        check(field("Group Name").value == "General") { "The General heading did not show its group" }
         context.clickScreenButton("Export")
         val shared = context.computeOnClient<String, Nothing> { it.keyboardHandler.clipboard }
         check(shared.startsWith("dsmod-binds:")) { "Export put $shared on the clipboard" }
         context.clickScreenButton("Import")
-        check(general.bindGroups == listOf("Dungeons", "Imported") && general.binds.count { it.group == "Imported" && !it.enabled } == 4) {
+        check(general.bindGroups == listOf("Dungeons", "Imported") && general.binds.count { it.group == "Imported" && !it.enabled } == 3) {
             "Import left ${general.bindGroups} and ${general.binds.filter { it.group == "Imported" }}"
         }
         context.takeScreenshot("command-binds-imported")
-        val cross = named("Delete Group").single()
-        click(cross)
-        check(general.bindGroups.size == 2) { "One press on the group's cross deleted it" }
-        click(cross)
+        context.clickScreenButton("Delete")
+        check(general.bindGroups.size == 2) { "One press on Delete deleted the group" }
+        context.clickScreenButton("Delete")
         check(general.bindGroups == listOf("Dungeons") && general.binds.size == 4) { "Deleting Imported left ${general.bindGroups}, ${general.binds.size} binds" }
 
         context.clickScreenButton("Done")

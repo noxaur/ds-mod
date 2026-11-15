@@ -72,6 +72,31 @@ data class CommandBind(
 
 /** The rules over a list of binds. */
 object CommandBinds {
+    /** One line of the list as the player sees it: a group's heading, or a bind under it. */
+    sealed interface Entry {
+        data class Heading(val group: String) : Entry
+
+        class Bind(val bind: CommandBind) : Entry
+    }
+
+    /** Each of [groups] as a heading followed by its binds in order. A bind of a group that is gone sits in the first. */
+    fun entries(binds: List<CommandBind>, groups: List<String>): List<Entry> = groups.flatMap { group ->
+        listOf(Entry.Heading(group)) + binds.filter { (if (it.group in groups) it.group else groups.first()) == group }.map(Entry::Bind)
+    }
+
+    /**
+     * Moves [bind] to line [to] of the list, where it joins the group whose heading is above it. Returns the binds
+     * in the list's order, and the moved bind, which is a new one when its group changed.
+     */
+    fun move(binds: List<CommandBind>, groups: List<String>, bind: CommandBind, to: Int): Pair<List<CommandBind>, CommandBind> {
+        val rest = entries(binds, groups).filterNot { it is Entry.Bind && it.bind === bind }.toMutableList()
+        val at = to.coerceIn(1, rest.size)
+        val group = (rest.subList(0, at).last { it is Entry.Heading } as Entry.Heading).group
+        val moved = if (bind.group == group) bind else bind.copy(group = group)
+        rest.add(at, Entry.Bind(moved))
+        return rest.filterIsInstance<Entry.Bind>().map { it.bind } to moved
+    }
+
     /** The bind that sends when several could: the highest [CommandBind.priority], then the first listed. */
     fun first(binds: Iterable<CommandBind>): CommandBind? = binds.maxByOrNull { it.priority }
 

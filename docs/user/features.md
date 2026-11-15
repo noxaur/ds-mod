@@ -174,27 +174,29 @@ A wall behind you still pulls the camera in, as it does in the game.
 
 ### Command Binds
 
-Sends a command with a key, with keys held together such as Shift + F6, or with keys pressed in turn such as F7 then F8. Open the list with **Edit** beside Edit Command Binds in the settings.
+Sends a command with a key, with keys held together such as Shift + F6, or with keys pressed in turn such as F7 then F8. Open it with **Edit** beside Edit Command Binds in the settings.
+
+Your binds are listed on the left under their groups, and everything about the one you pick is on the right. A change takes effect as you make it.
 
 | Do this | To |
 | --- | --- |
-| Press **New Bind**, type a name and a command, then press **Keys** and hold the keys | Add a bind. Let go of the keys to finish. Without a slash, the bind says its text in chat |
+| Press **New Bind**, type the command, then press **Keys** and hold the keys | Add a bind. Let go of the keys to finish. Without a slash, the bind says its text in chat |
 | Tick the box on a row | Turn the bind on or off |
-| Drag a row by its name, or press Alt and an arrow key | Move it |
-| Press **Edit**, or double-click a row | Change the bind, **Save as Copy**, or **Delete** it with a second press |
+| Drag a row, or press Alt and an arrow key | Move it. Under another group's heading, it joins that group |
+| Press **Duplicate** or **Delete** | Copy the bind, which starts off, or delete it with a second press |
 
-**More** in the edit window holds the rest:
+On the right:
 
+- **Name:** optional. The list shows the command without one.
 - **Where:** in the world, in menus such as chests and your inventory, or in both. A bind never fires while you type in chat or a text field.
-- **Group:** the group the bind is listed in.
 - **Priority:** when two binds share keys, the higher one sends, and between equals the one listed first.
 - **Other Keys Held Too:** on by default, so a key you walk with does not stop the bind.
 - **Keys in Order:** the keys become a sequence, finished with Escape when you record them. Key Sequence Gap in the settings sets how long a sequence waits for its next key.
 - **Only In:** limit the bind to some areas. With none ticked it works anywhere.
 
-**New Group** adds a group, and the groups then appear down the left. Rename one in the field above its binds, and delete it with a second press on its cross. **Export** copies the group to your clipboard to share, and **Import** adds a group someone shared. Imported binds start off, so read each command before you turn it on.
+**New Group** adds a group. Pick its heading to rename it, **Export** it to your clipboard to share, or delete it with its binds. **Import** adds a group someone shared. Imported binds start off, so read each command before you turn it on.
 
-Keys shown in red fire another bind too, and keys in yellow also do something in the game. The line at the bottom says which.
+Keys shown in red fire another bind too, and keys in yellow also do something in the game. The line under the details says which.
 
 ### Explosion Particle Hider
 

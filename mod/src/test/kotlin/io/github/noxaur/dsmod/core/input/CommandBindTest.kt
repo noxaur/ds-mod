@@ -139,3 +139,25 @@ class BindShareTest {
         assertNull(BindShare.decode("dsmod-binds:" + java.util.Base64.getEncoder().encodeToString("plain".toByteArray())))
     }
 }
+
+class CommandBindsListTest {
+    private val a = CommandBind(command = "/a")
+    private val b = CommandBind(command = "/b")
+    private val c = CommandBind(command = "/c", group = "Dungeons")
+    private val groups = listOf("", "Dungeons")
+
+    @Test
+    fun `the list is each heading, then its binds`() {
+        val entries = CommandBinds.entries(listOf(c, a, b), groups)
+        assertEquals(listOf(CommandBinds.Entry.Heading(""), "/a", "/b", CommandBinds.Entry.Heading("Dungeons"), "/c"), entries.map { if (it is CommandBinds.Entry.Bind) it.bind.command else it })
+    }
+
+    @Test
+    fun `a bind moved under another heading joins that group`() {
+        val (binds, moved) = CommandBinds.move(listOf(a, b, c), groups, a, 4)
+        assertEquals("Dungeons", moved.group)
+        assertEquals(listOf("/b", "/c", "/a"), binds.map { it.command })
+        val (up, _) = CommandBinds.move(listOf(a, b, c), groups, b, 0)
+        assertEquals(listOf("/b", "/a", "/c"), up.map { it.command }, "nothing goes above the first heading")
+    }
+}

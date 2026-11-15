@@ -54,10 +54,10 @@ A button that steps through a few values, such as where a bind works.
 
 A list of things the player made, such as command binds.
 
-- A row shows only what tells the things apart, such as a switch, a name and keys, and Edit. Everything else, delete and copy included, lives in the edit window, so the list stays calm.
-- A row is dragged by its body to move it, and Alt with an arrow key moves the focused one. A double click edits it.
-- The edit window shows what most things need, and keeps the rest under More. More starts open when the thing already uses any of it.
-- A part that matters only once there are several, such as a column of groups, appears when the second one does.
+- The list sits on the left and everything about the picked thing on the right, always shown, so nothing hides behind a More button or a second window. A change takes effect at once, as in the settings.
+- Opening the screen picks the first thing, so its details are there without a click.
+- A row shows what tells the things apart, such as a switch, a name and keys. Fields a player always fills come first, and optional ones say so.
+- Groups are headings in the list, and picking one shows the group. A row is dragged to move it, and under another heading it joins that group. Alt with an arrow key moves the picked row.
 
 ## Range slider
 

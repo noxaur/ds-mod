@@ -2,258 +2,294 @@ package io.github.noxaur.dsmod.edge
 
 import com.mojang.blaze3d.platform.cursor.CursorTypes
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.input.BindShare
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.CommandBinds
+import io.github.noxaur.dsmod.core.input.CommandBinds.Entry
+import io.github.noxaur.dsmod.core.input.Where
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
-import io.github.noxaur.dsmod.edge.BindEditScreen.Companion.describe
-import io.github.noxaur.dsmod.edge.BindEditScreen.Companion.groupName
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitButton
 import io.github.noxaur.dsmod.edge.ui.KitCheckbox
+import io.github.noxaur.dsmod.edge.ui.KitCycleButton
+import io.github.noxaur.dsmod.edge.ui.KitKeysButton
+import io.github.noxaur.dsmod.edge.ui.KitStepper
 import io.github.noxaur.dsmod.edge.ui.KitTextField
 import io.github.noxaur.dsmod.edge.ui.fit
 import net.minecraft.client.gui.GuiGraphicsExtractor
-import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
 import org.lwjgl.glfw.GLFW
+import java.util.IdentityHashMap
 import kotlin.math.roundToInt
 
 private const val TITLE = "Command Binds"
-private const val WIDTH = 300
-private const val GROUPS_WIDTH = 88
-private const val ROW = 18
-private const val ROW_STEP = ROW + 2
-private const val GROUP_STEP = Kit.BUTTON_HEIGHT + 2
+private const val LIST_WIDTH = 160
+private const val DETAIL_WIDTH = 232
+private const val SPLIT = 7
+private const val WIDTH = LIST_WIDTH + SPLIT + DETAIL_WIDTH
+private const val LABEL_WIDTH = 48
 private const val LABEL_HEIGHT = 8
-private const val MIN_ROWS = 4
-private const val MAX_ROWS = 10
+private const val ROW = 22
+private const val ROW_STEP = ROW + 2
+private const val FIELD_STEP = Kit.BUTTON_HEIGHT + Kit.GAP
+private const val CHECK_STEP = Kit.CHECKBOX_SIZE + Kit.GAP
+private const val MAX_PRIORITY = 9
+private val AREAS = Area.entries - Area.ANYWHERE
 
 /**
- * Lists Command Binds, one row each: whether it is on, its name and its keys, and Edit, which opens everything
- * else. A row is dragged by its name to move it, or moved with Alt and the arrow keys, and Escape during a drag
- * puts it back. A double click edits it. Groups appear down the left once there is more than one, and the
- * chosen group is renamed in its field above the rows and deleted with a second press on its cross. Export
- * copies the group to the clipboard, and Import adds one from it. The rows scroll by whole rows: the wheel, the
- * scrollbar's thumb, Page Up and Page Down, and Home and End outside a field. The line at the bottom reads back
- * the row last touched, or what the last action did. Every change is in the settings at once, and closing saves.
+ * Command Binds on one screen: the binds down the left under their groups' headings, and everything about the
+ * one picked on the right, where each change takes effect at once. A bind's row shows whether it is on, its name
+ * and its keys. A row is dragged to move it, under another heading to put it in that group, or moved with Alt and
+ * the arrow keys, and Escape during a drag puts it back. A heading picked on the left shows its group: its name,
+ * Export and Delete. Deletes ask for a second press. The list scrolls by whole rows: the wheel, the scrollbar's
+ * thumb, Page Up and Page Down, and Home and End outside a field. The line under the details reads back what
+ * the bind does, what stops it, or what the last action did. Closing saves.
  */
 class CommandBindsScreen(private val settings: DsModConfig.General, private val parent: Screen?, private val onSave: () -> Unit) :
     Screen(text { body(TITLE) }.toComponent()) {
-    private class Row(val bind: CommandBind, val on: KitCheckbox, val edit: KitButton) {
-        val widgets: List<AbstractWidget> get() = listOf(on, edit)
-    }
-
-    private var group = ""
+    /** The bind or the group picked on the left, by its place in the binds or its name. */
+    private var picked: Any? = null
     private var first = 0
-    private var firstGroup = 0
-    private var current: CommandBind? = null
-    private var groupArmed = false
+    private var armed = false
     private var said: String? = null
     private var saidBad = false
     private var scrolling = false
-
-    /** The row being dragged and the binds as they were when the drag began, for Escape to put back. */
     private var dragged: CommandBind? = null
+    private var bindBeforeDrag: CommandBind? = null
     private var beforeDrag: List<CommandBind> = emptyList()
 
-    private val rows = ArrayList<Row>()
-    private val groupButtons = ArrayList<Pair<String, KitButton>>()
-    private var groupField: KitTextField? = null
-    private var deleteGroup: KitButton? = null
+    private var entries: List<Entry> = emptyList()
+    private val boxes = IdentityHashMap<CommandBind, KitCheckbox>()
+    private var keys: KitKeysButton? = null
+    private var delete: KitButton? = null
 
     private var panelX = 0
     private var panelY = 0
     private var panelHeight = 0
     private var left = 0
     private var top = 0
-    private var contentY = 0
-    private var listX = 0
     private var listY = 0
-    private var listWidth = 0
-    private var shown = MIN_ROWS
-    private var groupRows = 0
+    private var shown = 0
+    private var detailX = 0
     private var readoutY = 0
     private var readout = ""
+    private var labels = emptyList<Triple<String, Int, Int>>()
 
     private val groups: List<String> get() = listOf("") + settings.bindGroups
-    private val grouped get() = settings.bindGroups.isNotEmpty()
-    private val inGroup: List<CommandBind> get() = settings.binds.filter { it.group == group }
+    private val bind: CommandBind? get() = (picked as? Int)?.let(settings.binds::getOrNull)
+    private val group: String? get() = picked as? String
     private val listHeight get() = shown * ROW_STEP - 2
-    private val rowWidth get() = listWidth - Kit.SCROLLBAR_WIDTH - 2
-    private val scrollX get() = listX + listWidth - Kit.SCROLLBAR_WIDTH
+    private val rowWidth get() = LIST_WIDTH - Kit.SCROLLBAR_WIDTH - 2
+    private val scrollX get() = left + LIST_WIDTH - Kit.SCROLLBAR_WIDTH
+
+    init {
+        // Opening shows the first bind, so its details are there without a click.
+        picked = CommandBinds.entries(settings.binds, groups).firstNotNullOfOrNull { entry ->
+            (entry as? Entry.Bind)?.let { settings.binds.indexOfFirst { it === entry.bind } }
+        }
+    }
 
     override fun init() {
-        val width = WIDTH + if (grouped) GROUPS_WIDTH + Kit.GAP else 0
-        val header = if (grouped) Kit.BUTTON_HEIGHT + Kit.GAP else 0
-        val fixed = Kit.INSET * 2 + Kit.BUTTON_HEIGHT * 2 + LABEL_HEIGHT + Kit.GAP * 3 + header
-        shown = ((height - Kit.INSET * 2 - fixed + 2) / ROW_STEP).coerceIn(MIN_ROWS, MAX_ROWS)
-        panelHeight = fixed + listHeight
-        panelX = (this.width - width - Kit.INSET * 2) / 2
+        val detailHeight = FIELD_STEP * 5 + CHECK_STEP * 5 + LABEL_HEIGHT + Kit.GAP * 2 + Kit.BUTTON_HEIGHT
+        panelHeight = Kit.INSET * 2 + Kit.BUTTON_HEIGHT + Kit.GAP + detailHeight
+        panelX = (width - WIDTH - Kit.INSET * 2) / 2
         panelY = (height - panelHeight) / 2
         left = panelX + Kit.INSET
         top = panelY + Kit.INSET
-        val right = left + width
-        contentY = top + Kit.BUTTON_HEIGHT + Kit.GAP
-        listX = if (grouped) left + GROUPS_WIDTH + Kit.GAP else left
-        listWidth = right - listX
-        listY = contentY + header
-        readoutY = listY + listHeight + Kit.GAP
-        val bottom = readoutY + LABEL_HEIGHT + Kit.GAP
-        groupRows = (listY + listHeight - contentY + 2) / GROUP_STEP
+        listY = top + Kit.BUTTON_HEIGHT + Kit.GAP
+        val bottom = panelY + panelHeight - Kit.INSET - Kit.BUTTON_HEIGHT
+        shown = (bottom - Kit.GAP - listY + 2) / ROW_STEP
+        detailX = left + LIST_WIDTH + SPLIT
+        readoutY = listY
 
-        var x = right
-        for ((label, action) in listOf("Done" to ::onClose, "Export" to ::export, "Import" to ::import)) {
+        var x = left + WIDTH
+        for ((label, action) in listOf("Done" to ::onClose, "Import" to ::import)) {
             val buttonWidth = font.width(label) + 16
             x -= buttonWidth
             addRenderableWidget(KitButton(x, top, label, action, buttonWidth))
             x -= Kit.GAP
         }
-        x = right
-        for ((label, action) in listOf("New Bind" to ::newBind, "New Group" to ::newGroup)) {
-            val buttonWidth = font.width(label) + 16
-            x -= buttonWidth
-            addRenderableWidget(KitButton(x, bottom, label, action, buttonWidth))
-            x -= Kit.GAP
-        }
-        groupField = null
-        deleteGroup = null
-        if (grouped) {
-            val crossX = right - Kit.BUTTON_HEIGHT
-            groupField = addRenderableWidget(KitTextField(listX, contentY, crossX - Kit.GAP - listX, "Group Name", groupName(group), BindShare.GROUP_LENGTH, ::rename)).also {
-                it.setEditable(group.isNotEmpty())
-            }
-            deleteGroup = addRenderableWidget(KitButton(crossX, contentY, Icon.CROSS, "Delete Group", ::armGroup)).also { it.active = group.isNotEmpty() }
-        }
-        build()
-    }
+        val half = (LIST_WIDTH - Kit.GAP) / 2
+        addRenderableWidget(KitButton(left, bottom, "New Bind", ::newBind, half))
+        addRenderableWidget(KitButton(left + half + Kit.GAP, bottom, "New Group", ::newGroup, half))
 
-    /** Puts the group buttons and the rows back after the binds or the groups changed. */
-    private fun build() {
-        if (grouped != (groupField != null)) {
-            rebuildWidgets()
-            return
+        entries = CommandBinds.entries(settings.binds, groups)
+        boxes.clear()
+        for (entry in entries) {
+            if (entry !is Entry.Bind) continue
+            val bind = entry.bind
+            boxes[bind] = addRenderableWidget(KitCheckbox(left + 4, 0, "", bind.enabled, onWell = true) { on -> change(bind, bind.copy(enabled = on)) })
         }
-        groupButtons.forEach { removeWidget(it.second) }
-        groupButtons.clear()
-        if (grouped) {
-            for (name in groups) groupButtons += name to addRenderableWidget(KitButton(left, 0, fit(groupName(name), GROUPS_WIDTH - 8), { select(name) }, GROUPS_WIDTH))
+        keys = null
+        delete = null
+        val labels = ArrayList<Triple<String, Int, Int>>()
+        when {
+            bind != null -> details(bind!!, labels, bottom)
+            group != null -> groupDetails(group!!, labels, bottom)
         }
-        rows.forEach { row -> row.widgets.forEach(::removeWidget) }
-        rows.clear()
-        val editWidth = font.width("Edit") + 12
-        for (bind in inGroup) {
-            rows += Row(
-                bind,
-                addRenderableWidget(KitCheckbox(listX + 4, 0, "", bind.enabled) { replace(bind, bind.copy(enabled = it)) }),
-                addRenderableWidget(KitButton(listX + rowWidth - editWidth - 1, 0, "Edit", { edit(bind) }, editWidth)),
-            )
-        }
-        scroll(0)
+        this.labels = labels
+        layout()
         refresh()
     }
 
-    private fun layout() {
-        firstGroup = firstGroup.coerceIn(0, (groupButtons.size - groupRows).coerceAtLeast(0))
-        for ((i, pair) in groupButtons.withIndex()) {
-            pair.second.y = contentY + (i - firstGroup) * GROUP_STEP
-            pair.second.visible = i - firstGroup in 0 until groupRows
+    /** Everything about [bind], each change saved at once. */
+    private fun details(bind: CommandBind, labels: MutableList<Triple<String, Int, Int>>, bottom: Int) {
+        val index = picked as Int
+        fun set(change: (CommandBind) -> CommandBind) {
+            val now = settings.binds[index]
+            change(now).let { next -> change(now, next) }
         }
-        for ((i, row) in rows.withIndex()) {
-            val y = listY + (i - first) * ROW_STEP
-            row.on.y = y + (ROW - Kit.CHECKBOX_SIZE) / 2
-            row.edit.y = y + 1
-            row.widgets.forEach { it.visible = i - first in 0 until shown }
+        val controlX = detailX + LABEL_WIDTH
+        val controlWidth = DETAIL_WIDTH - LABEL_WIDTH
+        val half = (controlWidth - Kit.GAP) / 2
+        fun label(text: String, y: Int) {
+            labels += Triple(text, detailX, y + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
+        }
+
+        var y = listY
+        label("Command", y)
+        addRenderableWidget(KitTextField(controlX, y, controlWidth, "Command", bind.command, CommandBind.MAX_LENGTH) { typed -> set { it.copy(command = typed) } })
+            .setHint(text { muted("/warp end") }.toComponent())
+        y += FIELD_STEP
+        label("Keys", y)
+        keys = addRenderableWidget(KitKeysButton(controlX, y, controlWidth - Kit.BUTTON_HEIGHT - Kit.GAP, "Keys", bind.keys, CommandBind.MAX_KEYS) { recorded -> set { it.copy(keys = recorded) } })
+            .also { it.inOrder = bind.inOrder }
+        addRenderableWidget(KitButton(detailX + DETAIL_WIDTH - Kit.BUTTON_HEIGHT, y, Icon.CROSS, "Clear Keys") { keys?.clear() })
+        y += FIELD_STEP
+        label("Name", y)
+        addRenderableWidget(KitTextField(controlX, y, controlWidth, "Name", bind.name, CommandBind.MAX_LENGTH) { typed -> set { it.copy(name = typed) } })
+            .setHint(text { muted("Optional") }.toComponent())
+        y += FIELD_STEP
+        label("Where", y)
+        addRenderableWidget(KitCycleButton(controlX, y, controlWidth, "Where", Where.entries, bind.where, Where::title) { where -> set { it.copy(where = where) } })
+        y += FIELD_STEP
+        label("Priority", y)
+        val stepper = addRenderableWidget(KitStepper(controlX, y, "Priority", 20) { step ->
+            set { it.copy(priority = (it.priority + step).coerceIn(-MAX_PRIORITY, MAX_PRIORITY)) }
+            children().filterIsInstance<KitStepper>().forEach { s -> s.value = settings.binds[index].priority.toString() }
+        })
+        stepper.value = bind.priority.toString()
+        y += FIELD_STEP
+        addRenderableWidget(KitCheckbox(controlX, y, "Other Keys Held Too", bind.extraKeys) { on -> set { it.copy(extraKeys = on) } })
+        y += CHECK_STEP
+        addRenderableWidget(KitCheckbox(controlX, y, "Keys in Order", bind.inOrder) { on ->
+            set { it.copy(inOrder = on) }
+            keys?.inOrder = on
+        })
+        y += CHECK_STEP
+        labels += Triple("Only In", detailX, y + 1)
+        for ((i, area) in AREAS.withIndex()) {
+            addRenderableWidget(
+                KitCheckbox(controlX + i % 2 * (half + Kit.GAP), y + i / 2 * CHECK_STEP, area.title, area in bind.areas) { on ->
+                    set { now -> now.copy(areas = AREAS.filter { if (it == area) on else it in now.areas }) }
+                },
+            )
+        }
+        readoutY = y + CHECK_STEP * 3
+
+        val deleteWidth = font.width("Delete") + 16
+        delete = addRenderableWidget(KitButton(detailX + DETAIL_WIDTH - deleteWidth, bottom, "Delete", ::deleteBind, deleteWidth))
+        val copyWidth = font.width("Duplicate") + 16
+        addRenderableWidget(KitButton(detailX + DETAIL_WIDTH - deleteWidth - Kit.GAP - copyWidth, bottom, "Duplicate", ::duplicate, copyWidth))
+    }
+
+    /** The picked group: its name, which General keeps, and Export and Delete. */
+    private fun groupDetails(group: String, labels: MutableList<Triple<String, Int, Int>>, bottom: Int) {
+        val controlX = detailX + LABEL_WIDTH
+        labels += Triple("Group", detailX, listY + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
+        addRenderableWidget(KitTextField(controlX, listY, DETAIL_WIDTH - LABEL_WIDTH, "Group Name", groupName(group), BindShare.GROUP_LENGTH, ::rename))
+            .setEditable(group.isNotEmpty())
+        readoutY = listY + FIELD_STEP + Kit.GAP
+        val exportWidth = font.width("Export") + 16
+        if (group.isNotEmpty()) {
+            val deleteWidth = font.width("Delete") + 16
+            delete = addRenderableWidget(KitButton(detailX + DETAIL_WIDTH - deleteWidth, bottom, "Delete", ::deleteGroup, deleteWidth))
+            addRenderableWidget(KitButton(detailX + DETAIL_WIDTH - deleteWidth - Kit.GAP - exportWidth, bottom, "Export", ::export, exportWidth))
+        } else {
+            addRenderableWidget(KitButton(detailX + DETAIL_WIDTH - exportWidth, bottom, "Export", ::export, exportWidth))
         }
     }
 
-    private fun select(name: String) {
-        group = name
-        first = 0
-        current = null
-        groupArmed = false
+    private fun layout() {
+        first = first.coerceIn(0, (entries.size - shown).coerceAtLeast(0))
+        for ((i, entry) in entries.withIndex()) {
+            if (entry !is Entry.Bind) continue
+            val box = boxes[entry.bind] ?: continue
+            box.y = listY + (i - first) * ROW_STEP + (ROW - Kit.CHECKBOX_SIZE) / 2
+            box.visible = i - first in 0 until shown
+        }
+    }
+
+    /** Picks a bind by its place in the binds, or a group by its name, and shows it on the right. */
+    private fun pick(what: Any?) {
+        picked = what
+        armed = false
         said = null
         rebuildWidgets()
+        entries.indexOfFirst { it.matches(what) }.takeIf { it >= 0 }?.let(::scrollTo)
     }
 
-    private fun replace(old: CommandBind, new: CommandBind) {
-        current = new
+    private fun Entry.matches(what: Any?) = when (this) {
+        is Entry.Bind -> what is Int && settings.binds.getOrNull(what) === bind
+        is Entry.Heading -> what == group
+    }
+
+    /** Puts [next] in place of [old] without rebuilding, so a field being typed in keeps its focus. */
+    private fun change(old: CommandBind, next: CommandBind) {
+        val index = settings.binds.indexOfFirst { it === old }.takeIf { it >= 0 } ?: return
+        settings.binds = settings.binds.toMutableList().also { it[index] = next }
+        entries = CommandBinds.entries(settings.binds, groups)
+        boxes.remove(old)?.let { boxes[next] = it }
+        armed = false
         said = null
-        settings.binds = settings.binds.map { if (it === old) new else it }
-        build()
+        refresh()
     }
 
-    private fun newBind() = edit(CommandBind(group = group), isNew = true)
-
-    private fun edit(bind: CommandBind, isNew: Boolean = false) {
-        said = null
-        groupArmed = false
-        minecraft.gui.setScreen(
-            BindEditScreen(
-                this, bind, isNew, groups, settings.binds.filter { it !== bind },
-                onSave = { saved ->
-                    settings.binds = if (isNew) settings.binds + saved else settings.binds.map { if (it === bind) saved else it }
-                    land(saved)
-                },
-                onCopy = { copy ->
-                    val off = copy.copy(enabled = false)
-                    settings.binds = settings.binds.toMutableList().apply { add(indexOf(bind) + 1, off) }
-                    land(off)
-                    said = "Saved a copy. It starts off."
-                },
-                onDelete = {
-                    settings.binds = settings.binds.filter { it !== bind }
-                    current = null
-                    said = "Deleted ${bind.title}."
-                },
-            ),
-        )
+    private fun newBind() {
+        val fresh = CommandBind(group = group ?: bind?.group ?: "")
+        // A new bind goes last in its group.
+        settings.binds = CommandBinds.entries(settings.binds + fresh, groups).filterIsInstance<Entry.Bind>().map { it.bind }
+        pick(settings.binds.indexOfFirst { it === fresh })
+        children().filterIsInstance<KitTextField>().firstOrNull()?.let(::setFocused)
     }
 
-    /** Shows [bind] after the edit window saved it, in its own group. */
-    private fun land(bind: CommandBind) {
-        current = bind
-        group = bind.group
-        val at = inGroup.indexOf(bind)
-        if (at < first || at >= first + shown) first = (at - shown + 1).coerceAtLeast(0)
+    private fun duplicate() {
+        val bind = bind ?: return
+        val copy = bind.copy(enabled = false)
+        settings.binds = settings.binds.toMutableList().apply { add(indexOf(bind) + 1, copy) }
+        pick(settings.binds.indexOfFirst { it === copy })
+        say("Duplicated. The copy starts off.")
     }
 
-    /** Moves [bind] to [index] among the rows of its group. */
-    private fun move(bind: CommandBind, index: Int) {
-        val list = inGroup.toMutableList()
-        val from = list.indexOf(bind)
-        val to = index.coerceIn(0, list.lastIndex)
-        if (from < 0 || from == to) return
-        list.removeAt(from)
-        list.add(to, bind)
-        // The group's binds take the places its binds had in the whole list, in their new order.
-        val order = list.iterator()
-        settings.binds = settings.binds.map { if (it.group == group) order.next() else it }
-        current = bind
-        build()
-        scrollTo(to)
+    private fun deleteBind() {
+        val bind = bind ?: return
+        if (!armed) return arm()
+        settings.binds = settings.binds.filter { it !== bind }
+        pick(bind.group)
+        say("Deleted ${bind.title}.")
     }
 
     private fun newGroup() {
         var n = groups.size
         while ("Group $n" in groups) n++
         settings.bindGroups += "Group $n"
-        select("Group $n")
-        groupField?.let {
+        pick("Group $n")
+        children().filterIsInstance<KitTextField>().firstOrNull()?.let {
             setFocused(it)
             it.moveCursorToEnd(false)
             it.setHighlightPos(0)
         }
     }
 
-    /** Renames the chosen group as its field is typed in, once the name is one no other group has. */
+    /** Renames the picked group as its field is typed in, once the name is one no other group has. */
     private fun rename(typed: String) {
-        if (group.isEmpty() || deleteGroup == null) return
+        val group = group?.takeIf { it.isNotEmpty() } ?: return
         val name = typed.trim()
         when {
             name == group -> said = null
@@ -262,31 +298,33 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
             else -> {
                 settings.bindGroups = settings.bindGroups.map { if (it == group) name else it }
                 settings.binds = settings.binds.map { if (it.group == group) it.copy(group = name) else it }
-                group = name
+                picked = name
                 said = null
-                build()
+                entries = CommandBinds.entries(settings.binds, groups)
             }
         }
         refresh()
     }
 
-    private fun armGroup() {
-        if (!groupArmed) {
-            groupArmed = true
-            said = null
-            refresh()
-            return
-        }
-        val count = inGroup.size
-        val name = group
-        settings.binds = settings.binds.filter { it.group != name }
-        settings.bindGroups = settings.bindGroups - name
-        select("")
-        say("Deleted $name${if (count > 0) " and its ${plural(count)}" else ""}.")
+    private fun deleteGroup() {
+        val group = group?.takeIf { it.isNotEmpty() } ?: return
+        if (!armed) return arm()
+        val count = settings.binds.count { it.group == group }
+        settings.binds = settings.binds.filter { it.group != group }
+        settings.bindGroups = settings.bindGroups - group
+        pick("")
+        say("Deleted $group${if (count > 0) " and its ${plural(count)}" else ""}.")
+    }
+
+    private fun arm() {
+        armed = true
+        said = null
+        refresh()
     }
 
     private fun export() {
-        val binds = inGroup
+        val group = group ?: return
+        val binds = settings.binds.filter { it.group == group }
         if (binds.isEmpty()) return say("${groupName(group)} has no binds to export.", bad = true)
         minecraft.keyboardHandler.clipboard = BindShare.encode(groupName(group), binds)
         say("Copied ${plural(binds.size)}. Paste them with Import.")
@@ -301,115 +339,153 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
         while (name in groups) name = "$base ${n++}"
         settings.bindGroups += name
         settings.binds += shared.binds.map { it.copy(group = name) }
-        select(name)
+        pick(name)
         say("Imported ${plural(shared.binds.size)}. Each starts off.")
     }
 
     private fun say(text: String, bad: Boolean = false) {
         said = text
         saidBad = bad
-        groupArmed = false
+        armed = false
         refresh()
     }
 
     private fun plural(count: Int) = if (count == 1) "1 bind" else "$count binds"
 
     private fun refresh() {
-        val bind = current?.takeIf { it in settings.binds }
+        val bind = bind
+        val group = group
         val said = said
+        val keys = keys
+        val clash = bind?.let { CommandBinds.clashes(it, settings.binds).firstOrNull() }
+        val game = bind?.keys?.singleOrNull()?.let(Keys::gameKey)
+        keys?.clash = if (clash != null) Role.BAD else if (game != null) Role.WARNING else null
+        val names = bind?.let { Keys.names(it.keys, it.inOrder) }
         readout = fit(
             when {
-                groupArmed -> "Press the cross again to delete ${groupName(group)}" + (inGroup.size.takeIf { it > 0 }?.let { " and its ${plural(it)}" } ?: "") + "."
+                armed && bind != null -> "Press Delete again to delete this bind."
+                armed && group != null -> "Press Delete again to delete it" + (settings.binds.count { it.group == group }.takeIf { it > 0 }?.let { " and its ${plural(it)}" } ?: "") + "."
                 said != null -> said
-                rows.isEmpty() -> "Add a bind with New Bind."
-                bind == null -> "Drag a row to move it. Edit changes the rest."
-                !bind.enabled -> "${bind.title} is off."
-                bind.keys.isEmpty() -> "${bind.title} has no keys yet."
-                else -> CommandBinds.clashes(bind, settings.binds).firstOrNull()?.let { "${Keys.names(bind.keys, bind.inOrder)} also fires ${it.title}." }
-                    ?: "${Keys.names(bind.keys, bind.inOrder)} ${describe(bind)}."
+                keys?.recording == true -> if (bind?.inOrder == true) "Press the keys in turn, then Escape." else "Hold the keys together, then let go."
+                group != null -> "${plural(settings.binds.count { it.group == group })} in ${groupName(group)}. Drag binds under its heading."
+                bind == null -> if (settings.binds.isEmpty()) "Add a bind with New Bind." else "Pick a bind to see it here."
+                bind.message == null -> "Type a command, such as /warp end."
+                bind.keys.isEmpty() -> "Press Keys, then the keys to use."
+                clash != null -> "$names also fires ${clash.title}."
+                game != null -> "$names is also the game's $game key."
+                !bind.enabled -> "Off. Tick its box on the left to use it."
+                else -> "$names ${describe(bind)}."
             },
-            panelWidth() - Kit.INSET * 2,
+            DETAIL_WIDTH,
         )
     }
 
     private fun scroll(by: Int) {
-        first = (first + by).coerceIn(0, (rows.size - shown).coerceAtLeast(0))
+        first += by
         layout()
     }
 
-    private fun scrollTo(index: Int) {
-        if (index < 0) return
-        scroll(if (index < first) index - first else if (index >= first + shown) index - first - shown + 1 else 0)
+    private fun scrollTo(index: Int) = scroll(if (index < first) index - first else if (index >= first + shown) index - first - shown + 1 else 0)
+
+    /** The line of the list under the mouse, or -1. */
+    private fun entryAt(x: Double, y: Double): Int {
+        if (x < left || x >= left + rowWidth || y < listY || y >= listY + listHeight) return -1
+        val i = first + ((y - listY) / ROW_STEP).toInt()
+        return i.takeIf { (y - listY) % ROW_STEP < ROW && it < entries.size } ?: -1
     }
 
-    /** The row under the mouse, where a press would drag or select it, or -1. */
-    private fun rowAt(x: Double, y: Double): Int {
-        if (x < listX || x >= listX + rowWidth || y < listY || y >= listY + listHeight) return -1
-        val i = ((y - listY) / ROW_STEP).toInt()
-        return (first + i).takeIf { (y - listY) % ROW_STEP < ROW && it < rows.size } ?: -1
+    /** Moves the dragged or picked bind to line [to] of the list. */
+    private fun moveTo(bind: CommandBind, to: Int) {
+        val (binds, moved) = CommandBinds.move(settings.binds, groups, bind, to)
+        if (binds == settings.binds && moved === bind) return
+        settings.binds = binds
+        if (dragged === bind) dragged = moved
+        picked = binds.indexOfFirst { it === moved }
+        rebuildWidgets()
+        scrollTo(entries.indexOfFirst { it is Entry.Bind && it.bind === moved })
     }
 
     override fun keyPressed(event: KeyEvent): Boolean {
-        val focused = focused
-        dragged?.let {
+        val keys = keys
+        if (keys != null && keys.recording) {
+            keys.capture(event.key())
+            refresh()
+            return true
+        }
+        if (dragged != null) {
             if (event.isEscape) {
                 settings.binds = beforeDrag
+                picked = beforeDrag.indexOfFirst { it === bindBeforeDrag }
                 dragged = null
-                build()
+                rebuildWidgets()
             }
             return true
         }
+        val focused = focused
         if (focused is KitTextField && (event.isEscape || event.key() == GLFW.GLFW_KEY_ENTER || event.key() == GLFW.GLFW_KEY_KP_ENTER)) {
             setFocused(null)
-            if (group.isNotEmpty() && focused.value.trim() != group) focused.value = group
+            group?.let { focused.value = groupName(it) }
             said = null
             refresh()
             return true
         }
-        val row = rows.firstOrNull { row -> row.widgets.any { it === focused } }
-        if (row != null && event.hasAltDown() && (event.isUp || event.isDown)) {
-            move(row.bind, rows.indexOf(row) + if (event.isUp) -1 else 1)
-            rows.firstOrNull { it.bind === row.bind }?.let { setFocused(if (focused === row.on) it.on else it.edit) }
+        val bind = bind
+        if (bind != null && event.hasAltDown() && (event.isUp || event.isDown)) {
+            val at = entries.indexOfFirst { it is Entry.Bind && it.bind === bind }
+            // Down past the next line, because the bind leaves its own line first.
+            moveTo(bind, if (event.isUp) at - 1 else at + 1)
             return true
         }
         when (event.key()) {
             GLFW.GLFW_KEY_PAGE_UP -> scroll(-shown)
             GLFW.GLFW_KEY_PAGE_DOWN -> scroll(shown)
-            GLFW.GLFW_KEY_HOME -> if (focused !is KitTextField) scroll(-rows.size) else return super.keyPressed(event)
-            GLFW.GLFW_KEY_END -> if (focused !is KitTextField) scroll(rows.size) else return super.keyPressed(event)
-            else -> return super.keyPressed(event)
+            GLFW.GLFW_KEY_HOME -> if (focused !is KitTextField) scroll(-entries.size) else return super.keyPressed(event)
+            GLFW.GLFW_KEY_END -> if (focused !is KitTextField) scroll(entries.size) else return super.keyPressed(event)
+            else -> return super.keyPressed(event).also { refresh() }
         }
         return true
     }
 
+    override fun keyReleased(event: KeyEvent): Boolean {
+        val keys = keys
+        if (keys != null && keys.recording) {
+            keys.release(event.key())
+            refresh()
+            return true
+        }
+        return super.keyReleased(event)
+    }
+
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
-        if (rows.size > shown && event.button() == 0 && event.x >= scrollX && event.x < scrollX + Kit.SCROLLBAR_WIDTH &&
+        val keys = keys
+        if (keys != null && keys.recording) {
+            val took = keys.capture(event.button(), mouse = true)
+            refresh()
+            if (took || keys.isMouseOver(event.x, event.y)) return true
+        }
+        if (entries.size > shown && event.button() == 0 && event.x >= scrollX && event.x < scrollX + Kit.SCROLLBAR_WIDTH &&
             event.y >= listY && event.y < listY + listHeight
         ) {
             scrolling = true
             drag(event.y)
             return true
         }
-        val wasArmed = groupArmed
-        val handled = super.mouseClicked(event, doubleClick)
-        if (wasArmed && groupArmed && deleteGroup?.isMouseOver(event.x, event.y) != true) {
-            groupArmed = false
+        if (armed && delete?.isMouseOver(event.x, event.y) != true) {
+            armed = false
             refresh()
         }
-        if (handled) return true
-        val at = rowAt(event.x, event.y)
+        if (super.mouseClicked(event, doubleClick)) return true
+        val at = entryAt(event.x, event.y)
         if (at < 0 || event.button() != 0) return false
-        val bind = rows[at].bind
-        if (doubleClick) {
-            edit(bind)
-            return true
+        when (val entry = entries[at]) {
+            is Entry.Heading -> pick(entry.group)
+            is Entry.Bind -> {
+                if (bind !== entry.bind) pick(settings.binds.indexOfFirst { it === entry.bind })
+                dragged = entry.bind
+                bindBeforeDrag = entry.bind
+                beforeDrag = settings.binds
+            }
         }
-        current = bind
-        said = null
-        dragged = bind
-        beforeDrag = settings.binds
-        setFocused(null)
-        refresh()
         return true
     }
 
@@ -421,12 +497,18 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
         val bind = dragged ?: return super.mouseDragged(event, dx, dy)
         // Past the top or bottom row the list scrolls under the row, so it can go anywhere.
         if (event.y < listY) scroll(-1) else if (event.y >= listY + listHeight) scroll(1)
-        val to = first + ((event.y.coerceIn(listY.toDouble(), listY + listHeight - 1.0) - listY) / ROW_STEP).toInt()
-        move(bind, to)
+        val line = first + ((event.y.coerceIn(listY.toDouble(), listY + listHeight - 1.0) - listY) / ROW_STEP).toInt()
+        val at = entries.indexOfFirst { it is Entry.Bind && it.bind === bind }
+        if (line != at) moveTo(bind, line)
         return true
     }
 
     override fun mouseReleased(event: MouseButtonEvent): Boolean {
+        val keys = keys
+        if (keys != null && keys.recording) {
+            keys.release(event.button())
+            refresh()
+        }
         scrolling = false
         dragged = null
         return super.mouseReleased(event)
@@ -436,32 +518,21 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
     private fun drag(mouseY: Double) {
         val thumb = thumbHeight()
         val at = ((mouseY - listY - 1 - thumb / 2.0) / (listHeight - 2 - thumb)).coerceIn(0.0, 1.0)
-        first = (at * (rows.size - shown)).roundToInt()
+        first = (at * (entries.size - shown)).roundToInt()
         layout()
     }
 
-    private fun thumbHeight() = ((listHeight - 2) * shown / rows.size.coerceAtLeast(shown)).coerceAtLeast(8)
+    private fun thumbHeight() = ((listHeight - 2) * shown / entries.size.coerceAtLeast(shown)).coerceAtLeast(8)
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, scrollX: Double, scrollY: Double): Boolean {
         if (scrollY == 0.0) return false
-        val by = if (scrollY > 0) -1 else 1
-        if (grouped && mouseX < listX) {
-            firstGroup += by
-            layout()
-        } else {
-            scroll(by)
-        }
+        if (mouseX < detailX) scroll(if (scrollY > 0) -1 else 1) else return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY)
         return true
     }
 
     override fun setFocused(focused: GuiEventListener?) {
         super.setFocused(focused)
-        val at = rows.indexOfFirst { row -> row.widgets.any { it === focused } }
-        if (at >= 0) {
-            current = rows[at].bind
-            scrollTo(at)
-            refresh()
-        }
+        if (keys != null) refresh()
     }
 
     override fun onClose() = minecraft.gui.setScreen(parent)
@@ -469,47 +540,72 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
     override fun removed() = onSave()
 
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
-        Kit.panel(graphics, panelX, panelY, panelWidth(), panelHeight)
+        Kit.panel(graphics, panelX, panelY, WIDTH + Kit.INSET * 2, panelHeight)
         Kit.label(graphics, TITLE, left, top + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
-        val nameX = listX + 4 + Kit.CHECKBOX_SIZE + Kit.GAP
-        val clashing = settings.binds.filter { bind -> CommandBinds.clashes(bind, settings.binds).isNotEmpty() }
-        for ((i, row) in rows.withIndex()) {
+        val clashing = settings.binds.filter { CommandBinds.clashes(it, settings.binds).isNotEmpty() }
+        val textX = left + 4 + Kit.CHECKBOX_SIZE + Kit.GAP
+        for ((i, entry) in entries.withIndex()) {
             if (i - first !in 0 until shown) continue
             val y = listY + (i - first) * ROW_STEP
-            val bind = row.bind
-            Kit.well(graphics, listX, y, rowWidth, ROW)
-            if (bind === current) Kit.ring(graphics, listX - 1, y - 1, rowWidth + 2, ROW + 2, Kit.theme.accent)
-            val keysRoom = (row.edit.x - Kit.GAP * 2 - nameX) / 2
-            val keys = fit(Keys.names(bind.keys, bind.inOrder), keysRoom)
-            val keysX = row.edit.x - Kit.GAP * 2 - font.width(keys)
-            val name = fit(bind.title, keysX - Kit.GAP * 2 - nameX)
-            graphics.text(font, text { if (bind.enabled) body(name) else muted(name) }.toComponent(), nameX, y + 5, -1, true)
-            val game = bind.keys.size == 1 && Keys.gameKey(bind.keys[0]) != null
-            val keysText = text {
-                when {
-                    bind.keys.isEmpty() || bind in clashing -> bad(keys)
-                    game -> warning(keys)
-                    !bind.enabled -> muted(keys)
-                    else -> value(keys)
+            val chosen = entry.matches(picked)
+            when (entry) {
+                is Entry.Heading -> {
+                    val count = settings.binds.count { it.group == entry.group || entry.group.isEmpty() && it.group !in groups }
+                    Kit.label(graphics, fit(groupName(entry.group), rowWidth - 24), left + 2, y + ROW - LABEL_HEIGHT - 2)
+                    val counted = count.toString()
+                    Kit.label(graphics, counted, left + rowWidth - 2 - font.width(counted), y + ROW - LABEL_HEIGHT - 2, Kit.Ink.MUTED)
+                    if (chosen) Kit.ring(graphics, left - 1, y - 1, rowWidth + 2, ROW + 2, Kit.theme.accent)
+                }
+                is Entry.Bind -> {
+                    val bind = entry.bind
+                    Kit.well(graphics, left, y, rowWidth, ROW)
+                    if (chosen) Kit.ring(graphics, left - 1, y - 1, rowWidth + 2, ROW + 2, Kit.theme.accent)
+                    val room = rowWidth - (textX - left) - 3
+                    val name = fit(bind.title, room)
+                    graphics.text(font, text { if (bind.enabled) body(name) else muted(name) }.toComponent(), textX, y + 3, -1, true)
+                    val keys = fit(Keys.names(bind.keys, bind.inOrder), room)
+                    val line = text {
+                        when {
+                            bind.keys.isEmpty() || bind in clashing -> bad(if (bind.keys.isEmpty()) "No keys" else keys)
+                            bind.keys.size == 1 && Keys.gameKey(bind.keys[0]) != null -> warning(keys)
+                            !bind.enabled -> muted(keys)
+                            else -> value(keys)
+                        }
+                    }
+                    graphics.text(font, line.toComponent(), textX, y + 12, -1, true)
                 }
             }
-            graphics.text(font, keysText.toComponent(), keysX, y + 5, -1, true)
         }
-        val over = rowAt(mouseX.toDouble(), mouseY.toDouble())
-        if (dragged != null || over >= 0 && children().none { it.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) }) {
+        val over = entryAt(mouseX.toDouble(), mouseY.toDouble())
+        if (dragged != null || over >= 0 && entries[over] is Entry.Bind && children().none { it.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) }) {
             graphics.requestCursor(CursorTypes.RESIZE_NS)
         }
-        if (rows.size > shown) {
+        if (entries.size > shown) {
             val thumb = thumbHeight()
-            Kit.scrollbar(graphics, scrollX, listY, listHeight, (listHeight - 2 - thumb) * first / (rows.size - shown), thumb)
+            Kit.scrollbar(graphics, scrollX, listY, listHeight, (listHeight - 2 - thumb) * first / (entries.size - shown), thumb)
         }
-        for ((name, button) in groupButtons) {
-            if (name == group && button.visible) Kit.ring(graphics, button.x - 1, button.y - 1, button.width + 2, button.height + 2, Kit.theme.accent)
-        }
-        deleteGroup?.takeIf { groupArmed }?.let { Kit.ring(graphics, it.x - 1, it.y - 1, it.width + 2, it.height + 2, Role.BAD.argb()) }
-        Kit.label(graphics, readout, left, readoutY, if (said != null && saidBad) Kit.Ink.MUTED else Kit.Ink.NORMAL)
+        for ((label, x, y) in labels) Kit.label(graphics, label, x, y, Kit.Ink.MUTED)
+        Kit.label(graphics, readout, detailX, readoutY, if (picked == null || said != null && saidBad) Kit.Ink.MUTED else Kit.Ink.NORMAL)
+        delete?.takeIf { armed }?.let { Kit.ring(graphics, it.x - 1, it.y - 1, it.width + 2, it.height + 2, Role.BAD.argb()) }
         super.extractRenderState(graphics, mouseX, mouseY, partialTick)
     }
 
-    private fun panelWidth() = WIDTH + Kit.INSET * 2 + if (grouped) GROUPS_WIDTH + Kit.GAP else 0
+    companion object {
+        fun groupName(group: String) = group.ifEmpty { "General" }
+
+        /** What a bind does, after its keys: "sends /warp end in the world, in The End". */
+        fun describe(bind: CommandBind): String {
+            val what = when (val message = bind.message) {
+                is CommandBind.Message.Chat -> "says ${message.text}"
+                else -> "sends ${bind.command.trim()}"
+            }
+            val where = when (bind.where) {
+                Where.WORLD -> "in the world"
+                Where.MENUS -> "in menus"
+                Where.BOTH -> "in the world and menus"
+            }
+            val areas = if (bind.areas.isEmpty()) "" else ", in " + bind.areas.joinToString(" or ") { it.title }
+            return "$what $where$areas"
+        }
+    }
 }
