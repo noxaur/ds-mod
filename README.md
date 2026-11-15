@@ -4,7 +4,7 @@
 
 A client-side mod for [Dragon Simulator](https://dragsim.co). Open source, built on Fabric.
 
-I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simulator. Suggestions and contributions are welcome in the [Discord](https://discord.gg/YUZCYAnr7F) or as a [GitHub issue](https://github.com/noxaur/ds-mod/issues). If you can't contribute code, you can support the mod on [Ko-fi](https://ko-fi.com/noxaur) or by using and the word.
+I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simulator. Suggestions and contributions are welcome in the [Discord](https://discord.gg/YUZCYAnr7F) or as a [GitHub issue](https://github.com/noxaur/ds-mod/issues). If you can't contribute code, you can support the mod on [Ko-fi](https://ko-fi.com/noxaur) or by using and spreading the mod.
 
 ## Features
 
