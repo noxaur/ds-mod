@@ -49,6 +49,10 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.ProfileViewerTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.DragonTimerTest"
       },
       {

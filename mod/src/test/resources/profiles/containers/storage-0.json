@@ -1,0 +1,176 @@
+{
+ "id": "storage:0",
+ "title": [
+  {
+   "text": "Storage 1"
+  }
+ ],
+ "columns": 9,
+ "slots": 45,
+ "hidden": false,
+ "items": [
+  {
+   "entry": "voidfang_dagger",
+   "material": "minecraft:netherite_sword",
+   "count": 1,
+   "name": [
+    {
+     "text": "Voidfang Dagger",
+     "color": "#FF55FF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "MYTHIC",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "SWORD",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "MYTHIC",
+   "glint": false,
+   "facts": {
+    "itemType": "SWORD"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Voidfang Dagger",
+     "item_type": "SWORD",
+     "rarity": "MYTHIC",
+     "item_id": "voidfang_dagger"
+    }
+   }
+  },
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  {
+   "entry": "aspect_of_the_end",
+   "material": "minecraft:diamond_sword",
+   "count": 1,
+   "name": [
+    {
+     "text": "Aspect of the End",
+     "color": "#5555FF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#5555FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "RARE",
+      "color": "#5555FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "SWORD",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "RARE",
+   "glint": false,
+   "facts": {
+    "itemType": "SWORD"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Aspect of the End",
+     "item_type": "SWORD",
+     "rarity": "RARE",
+     "item_id": "aspect_of_the_end"
+    }
+   }
+  },
+  null
+ ]
+}
