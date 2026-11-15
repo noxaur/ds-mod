@@ -1,12 +1,12 @@
 # Architecture
 
-ds-mod has three parts. The mod runs in the player's game. The backend is our own REST service, and the website reads from it too. `api/openapi.json` is the contract between them. It is generated from the backend's API definition, so a change to an endpoint starts there and reaches every caller through the file.
+ds-mod has three parts. The mod runs in the player's game. The backend is our own REST service, and the website reads from it too. `api/openapi.json` is the contract between them.
 
 ## The backend is an Effect API inside a Void app
 
 Void deploys the backend to Cloudflare Workers and owns the database and the sign-in tables. The API itself is defined and handled with Effect, and one catch-all route hands each request to it. The split keeps the way out open. A move to a single machine needs a new entry point, and no change to a rule.
 
-The contract is generated because a hand-written one drifts. The mod is Kotlin and can share no types with the backend, so the file is what it reads, and a test fails when the file is stale.
+The contract is generated from the backend's API definition, because a hand-written one drifts. The mod is Kotlin and can share no types with the backend, so a file in a neutral format is the one thing both sides can hold to.
 
 ## A player is their Minecraft account, and the client is never believed
 
