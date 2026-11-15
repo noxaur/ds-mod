@@ -43,6 +43,11 @@ import io.github.noxaur.dsmod.core.ui.Theme
 class DsModConfig : Config() {
     override fun getTitle(): StructuredText = StructuredText.of("ds-mod")
 
+    /** The paths of the settings the player starred, which the Favorites category lists. */
+    @Expose
+    @JvmField
+    var favorites: List<String> = emptyList()
+
     @Expose
     @Category(name = "General", desc = "The camera, your binds and the world.")
     @JvmField
@@ -166,6 +171,20 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var onlyOnDragSim = true
+
+        /** A key's GLFW code, a mouse button from 0 to 9, or -1 for none, as MoulConfig's editor writes it. */
+        @Expose
+        @ConfigOption(name = "Settings Key", desc = "Pick a key that opens these settings, as /dsmod does.")
+        @ConfigEditorKeybind(defaultKey = NO_KEY)
+        @JvmField
+        var settingsKey = NO_KEY
+
+        /** A key's GLFW code or a mouse button, as for [settingsKey]. */
+        @Expose
+        @ConfigOption(name = "Favorite Key", desc = "Pick a key that stars the setting under your mouse.")
+        @ConfigEditorKeybind(defaultKey = KEY_F)
+        @JvmField
+        var favoriteKey = KEY_F
 
         @Expose
         @ConfigOption(name = "Fullbright", desc = "Light caves and nights as brightly as day.")
@@ -479,6 +498,15 @@ class DsModConfig : Config() {
             /** GLFW's code for the left Alt key. */
             const val LEFT_ALT = 342
 
+            /**
+             * No key. DragSim Utils and Odin open on Right Shift, and a player who runs either would open two
+             * screens with one press, so the player picks a key of their own.
+             */
+            const val NO_KEY = -1
+
+            /** GLFW's code for F, NotEnoughUpdates' key for a favorite. */
+            const val KEY_F = 70
+
             /** The folds in General that hold Animations' finer settings. */
             const val ITEM_POSITION = 0
             const val SWING_OPTIONS = 1
@@ -685,7 +713,12 @@ class DsModConfig : Config() {
         @ConfigEditorButton(buttonText = "Edit")
         @JvmField
         var edit: Runnable = Runnable {}
-    
+
+        @Expose
+        @ConfigOption(name = "Drag In Chat", desc = "Drag HUD blocks with chat open, and scroll over one to resize it.")
+        @ConfigEditorBoolean
+        @JvmField
+        var dragInChat = true
 
         @Expose
         @ConfigOption(name = "HUD Scale", desc = "Make every HUD block bigger or smaller.")

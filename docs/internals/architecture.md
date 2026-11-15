@@ -174,6 +174,22 @@ The player on the screen is a `RemotePlayer` that is not in the world. The game 
 
 Settings use MoulConfig, the settings screen SkyHanni uses. MoulConfig ships inside the release jar, relocated under `io.github.noxaur.dsmod.deps`, so ds-mod can't clash with another mod that carries a different MoulConfig. A MoulConfig type in a public signature therefore breaks any code compiled outside the jar, such as the game tests, which is why `DsModClient` exposes `DsModConfig` and not the `ManagedConfig` that holds it. `runProdClientGameTest` loads the built jars the way a player does, because a packaging mistake such as a missing access widener passes every unit test.
 
+## Favorites wrap MoulConfig's categories and options
+
+What a favorite is lives in `Favorites` and `FavoritesView` in `core`: which settings are starred, kept with the config by path, their order, that a search hides them, and that a row unstarred inside Favorites stays until the player leaves it. The settings screen only shows it, because ds-mod's own screen is to replace MoulConfig's, and `Settings.open` is the one way into whichever is the release screen. The star and the wrapping below are MoulConfig's half, which goes with it.
+
+MoulConfig has no favorites, and its editor takes any categories and options it is handed. So `Settings` hands it the player's categories with each option wrapped, the wrapper's editor drawing a star over the real one, and a Favorites category in front whose options are the same wrapped ones. A wrapped option names its own category as its home, not Favorites, which is how a search shows each setting once: MoulConfig lists during a search only the categories its matches name. An option's category must be the wrapped one, because MoulConfig compares categories by identity. An accordion keeps its own editor, since MoulConfig finds one by its class.
+
+MoulConfig shows only the options it was handed when the editor was built, so the row an empty Favorites shows is handed over then too, even when the player has stars, or unstarring the last one later would bring back MoulConfig's own empty text, which blames a search.
+
+The star sits in the gap between the name and the description. MoulConfig fits a name within 5 of the left third's edges and starts the description 5 past it, so the star covers neither however long either runs. A press is hit-tested against the position MoulConfig passes with it, because an option scrolled out of view keeps the place it was last drawn.
+
+MoulConfig gives a setting no focus, so the Favorite Key acts on the setting under the mouse. MoulConfig hands a key to every setting before its search field, and a typed character moves focus to the search, so the key is left alone while the shared `GuiContext` has a focused element, and the character that follows a press is swallowed. The setting under the mouse is the one drawn there this frame with the mouse inside the scissor MoulConfig draws the settings in, because MoulConfig hands mouse events to every setting, and one scrolled partly under the header would otherwise take the key and a press on its hidden star.
+
+One editor lasts the session, as SkyHanni keeps one, so the settings open on the category, search and scroll the player left. MoulConfig 4.8 tells only a component that the screen closed, and the editor sits inside one that does not pass it on, so `Settings.open` opens it in a context that does. Without it, a change made in the settings is written only when another screen saves.
+
+The Settings Key has no default. DragSim Utils and Odin open on Right Shift, and a player who runs either would open two screens with one press. `/dsm` is the short name and `/du` is left alone for the same reason.
+
 ## Specs for interleavings
 
 A state machine whose states interleave in ways a unit test can't enumerate gets a TLA+ spec in `specs/`. The mod's Gradle build runs TLC on every spec, so the spec and the code are checked in the same run. A parser or an overlay gets a test instead.
@@ -224,6 +240,12 @@ The art depends on the slot under it: a faint tint vanishes on Minecraft's gray 
 
 Fabric attaches HUD elements before or after the whole hotbar, so the art behind the hotbar's items comes from `HudHotbarMixin`, which runs as vanilla is about to draw each item, and the gems come after it as a HUD element.
 
+## The chat keeps what it draws over the HUD
+
+Drag In Chat moves the live HUD on the chat screen, where Minecraft draws the chat's rows, its input, the list of command suggestions and a command's usage over the HUD. So a press or a turn of the wheel there is the chat's, even over a block, and a block is the mouse's only where the player sees it. The suggestions' bounds are private, so accessors read them. A press the chat would leave unused is not enough: a plain line takes no left press but scrolls with the wheel, and a block that took one and not the other would show a hint the wheel then breaks. Copy Chat's rows tell where the chat is drawn, so both read the same rows. Escape puts a block back where it was, and one that came from the stack takes its old place there, because a group stacks its blocks in the features' order. The input has focus the whole time the chat is open, and its arrow keys move the cursor and recall sent lines, so the arrows nudge a block only while the mouse holds one: a player pressing a button on the HUD is not editing text. A feature with nothing to show stands in while the chat is open, after the blocks with something to show, so opening the chat moves no live block. A drag event carries the keys held at its press, so Shift is asked of the keyboard, and pressing it mid-drag frees the block, in the editor too.
+
+A docked block is dragged like any other, and the drag writes the feature's own Placement setting, so the setting stays the one place the dock is kept and the settings screen never disagrees with the HUD. Leaving the dock saves a scale that draws the block at the size the dock gave it, since a block that jumped in size under the mouse would land somewhere the player did not aim. The wheel takes a docked block out of the dock, because the dock draws at the hotbar's size and has no other.
+
 ## The HUD's scale snaps to screen pixels
 
 The kit's edges are one pixel wide, and the HUD is the one place a player scales freely. At a scale of 1.3 a one-pixel edge covers 2.6 screen pixels at GUI scale 2, so some edges come out two pixels wide and others three, and the frame looks broken. `Readouts` therefore rounds a block's scale, times the HUD's, to a whole number of screen pixels per HUD pixel. The editor steps by one screen pixel for the same reason: a smaller step would change the saved number and draw nothing new.
@@ -272,7 +294,7 @@ The swap-hands key is not guarded. On dragsim.co it opens the server's menu and 
 
 ## Private fields are read through accessor mixins
 
-Minecraft keeps an open container's position and size on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the four fields, and the slot under the mouse. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on.
+Minecraft keeps an open container's position and size on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the four fields, and the slot under the mouse. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on. `ChatScreenAccessor`, `CommandSuggestionsAccessor` and `SuggestionsListAccessor` read where the command suggestions and a command's usage are drawn, which Drag In Chat leaves the mouse to.
 
 ## CI measures the mod in a real game
 
