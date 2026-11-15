@@ -26,7 +26,7 @@
     },
     {
       "name": "List Contribution Requests",
-      "command": "cd backend && DSMOD_ADMIN_TOKEN=local-admin mise exec -- pnpm -s dsctl list",
+      "command": "cd backend && DSMOD_ADMIN_TOKEN=$(sed -n 's/^ADMIN_TOKEN=//p' .env) mise exec -- pnpm -s dsctl list",
       "icon": "debug"
     },
     {

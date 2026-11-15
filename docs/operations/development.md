@@ -16,8 +16,8 @@ This gives you the pinned JDK, Node and pnpm. Gradle comes from `mod/gradlew`, w
 | Part | Command | Notes |
 | --- | --- | --- |
 | Mod | `cd mod && ./gradlew runClient` | Starts the game with the debug build. |
-| Backend | `cd backend && pnpm install && pnpm dev` | Listens on `:8787`, with a local database and file store that Void creates. |
-| Website | `cd web && pnpm install && pnpm dev` | Reads the backend at `BACKEND_URL`, `http://localhost:8787` by default. |
+| Backend | `cd backend && pnpm install && pnpm dev` | Listens on `127.0.0.1:8787` only. |
+| Website | `cd web && pnpm install && pnpm dev` | Reads the backend at `BACKEND_URL`, `http://127.0.0.1:8787` by default. |
 
 `runClient` signs in with the user's Microsoft account through DevAuth. It also loads Sodium, Mod Menu and the other mods in the `devMods` configuration. They don't ship in any jar.
 
@@ -59,25 +59,25 @@ Once the user has agreed, start the client with the absolute path of the brief:
 cd mod && ./gradlew runClient -Pbrief=/tmp/golem-tiers.json
 ```
 
-The window's title starts with the brief's name, and the steps sit in the top right corner of the screen. The user presses the key the HUD names to start, which starts the capture, and again after each step. A brief launched this way has no time limit, and its capture stays in the game folder. It is `]` on a US layout, and Next Recording Step in the game's controls. After the last step the capture is saved and the HUD names its file, so the user closes the game and the command returns. The capture is the newest file in `mod/run/dsmod/captures/`, and a `step` line marks where each step began.
+The window's title starts with the brief's name, and the steps sit in the top right corner of the screen. The user presses the key the HUD names to start, which starts the capture, and again after each step. A brief launched this way has no time limit, and its capture stays in the game folder. It is `]` on a US layout, and Next Recording Step in the game's controls. After the last step the capture is saved and the HUD names its file, so the user closes the game and the command returns. The capture is the newest file in `mod/run/dsmod/captures/`, and a `step` line marks where each step began. To abandon a run, the user types `/dsmod cancel`, which deletes the capture the brief started.
 
 ### Ask players for a capture
 
 When the user's account cannot reach what a brief needs, publish the brief and players who can reach it record it from the mod's Contribute button. One player's run proves little, so a request collects runs from several players.
 
+`dsctl` is how an agent does it. Locally its admin token is `ADMIN_TOKEN` in `backend/.env`, which git ignores, and `dsctl` reads it from `DSMOD_ADMIN_TOKEN`. Ask the user for the deployed one and the deployed address, which goes in `DSMOD_BACKEND`.
+
 ```sh
 cd backend
-pnpm dsctl create /tmp/golem-tiers.json --area "The End" --wanted 3 --timeout 600
-pnpm dsctl list
-pnpm dsctl pull <request id> ../mod/run/dsmod/captures
-pnpm dsctl unknowns
+export DSMOD_ADMIN_TOKEN=$(sed -n 's/^ADMIN_TOKEN=//p' .env)
+pnpm -s dsctl create /tmp/golem-tiers.json --area "The End" --wanted 3 --timeout 600
+pnpm -s dsctl list
+pnpm -s dsctl pull <request id> ../mod/run/dsmod/captures
 ```
 
-`create` prints the request's id. `--area` names an area the player must be in reach of, and can be given more than once. `pull` writes one `.jsonl` per run, named by the brief and a letter per player, and `cutFixture` takes them like any capture. `unknowns` lists what the mod saw and had no handling for, most seen first.
+`pull` writes one `.jsonl` per run, and `cutFixture` takes them like any capture. `pnpm -s dsctl` with no command lists every command and option.
 
-A player's recording is redacted, gzipped and uploaded by the mod, and a run that outlasts the request's `--timeout` is discarded. The mod's own backend and website addresses are `backend_url` and `website_url` in `mod/gradle.properties`, `http://localhost:8787` and `http://localhost:3000` until the user deploys. Build a jar for a deployment with `./gradlew build -Pbackend_url=<url> -Pwebsite_url=<url>`. To try the flow against a local backend, run `pnpm dev` and `dsctl create`, then `runClient`: signing in needs the user's own Minecraft account.
-
-`dsctl` reads the backend's address from `DSMOD_BACKEND`, `http://localhost:8787` by default, and the admin token from `DSMOD_ADMIN_TOKEN`. Locally the token is `ADMIN_TOKEN` in `backend/.env`, which git ignores. Ask the user for the deployed one.
+The mod offers a request in its Contribute screen, and redacts, gzips and uploads the player's run. A run that outlasts the request's `--timeout` is discarded. To try the flow against a local backend, run `pnpm dev` and `dsctl create`, then `runClient`: signing in needs the user's own Minecraft account.
 
 ### Change the backend's tables
 

@@ -20,6 +20,7 @@ CREATE TABLE `contrib_submissions` (
 	`created_at` text NOT NULL
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `contrib_submissions_one_per_player` ON `contrib_submissions` (`request_id`,`user_id`);--> statement-breakpoint
 CREATE TABLE `contrib_unknowns` (
 	`kind` text NOT NULL,
 	`signature` text NOT NULL,

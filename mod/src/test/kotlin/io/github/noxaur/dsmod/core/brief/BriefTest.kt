@@ -98,12 +98,6 @@ class BriefTest {
     }
 
     @Test
-    fun `parses the brief the way the backend sends it`() {
-        val parsed = Brief.parse("""{"name":"A","steps":[{"do":"B","note":null,"seconds":null},{"do":"C","note":"n","seconds":5}]}""")
-        assertEquals(listOf(Brief.Step("B"), Brief.Step("C", "n", 5)), parsed.steps)
-    }
-
-    @Test
     fun `two presses in one tick record both steps, each as it started`() {
         val run = BriefRun(brief)
 

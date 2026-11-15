@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.core.feature
 
 import io.github.noxaur.dsmod.core.container.SlotMark
-import io.github.noxaur.dsmod.core.contribute.AreasSeen
+import io.github.noxaur.dsmod.core.contribute.Places
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.game.GameEvent
@@ -52,8 +52,8 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     /** The players the tab list shows now. */
     val tabPlayers get() = tab.players
 
-    /** The areas the tab list has shown this player, which decide the contributions they are offered. The edge saves it. */
-    val areas = Saved(AreasSeen.serializer(), AreasSeen())
+    /** The places the player has been, which decide the contributions they are offered. The edge saves it. */
+    val places = Saved(Places.serializer(), Places())
     private var lastTab: TabList? = null
 
     /** The sidebar, as of the last event the edge posted. */
@@ -101,13 +101,15 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
                 lastTab = event
                 metrics.time("tab-list") {
                     tab.update(event.rows)
-                    val area = tab.info("Area") // rule:area-by-declaration Game keeps the areas seen for contribution requests, and no feature reads them
-                    if (area != null && area !in areas.value.names) areas.value = AreasSeen(areas.value.names + area)
+                    places.value = places.value.with(tab, sidebar)
                 }
             }
             is Sidebar -> true.also {
                 lastSidebar = event
-                metrics.time("sidebar") { sidebar.update(event) }
+                metrics.time("sidebar") {
+                    sidebar.update(event)
+                    places.value = places.value.with(tab, sidebar)
+                }
             }
             is ContainerOpened -> true.also { metrics.time("container") { container.opened(event) } }
             is SlotChanged -> true.also { metrics.time("container") { container.changed(event) } }

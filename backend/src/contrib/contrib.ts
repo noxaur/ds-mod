@@ -4,9 +4,6 @@ import { HttpApiError } from "effect/http-api";
 import type { RequestSpec } from "./model.ts";
 import { Store } from "./store.ts";
 
-/** A capture of a few minutes is well under this once gzipped, and a Worker would accept far more. */
-export const MAX_CAPTURE_BYTES = 10 * 1024 * 1024;
-const MAX_SIGHTINGS = 100;
 /**
  * Any signed-in client can invent sightings, so the table stops taking new ones here and only counts the ones it
  * has. An agent reads them long before a real game has this many unknown things.
@@ -55,15 +52,18 @@ export const skip = Effect.fn(function* (requestId: string, userId: string) {
  * single client cannot fill a request alone.
  */
 export const submit = Effect.fn(function* (requestId: string, userId: string, modVersion: string, capture: Uint8Array) {
-  const store = yield* Store;
-  const request = yield* requestOf(requestId);
-  if (request.status === "closed" || (yield* store.submissionsOf(requestId)).length >= request.wanted * 2) {
-    return yield* new HttpApiError.Conflict();
-  }
   // The mod sends gzip, and an agent's tools read nothing else.
   const gzipped = capture[0] === 0x1f && capture[1] === 0x8b;
-  if (!gzipped || capture.byteLength > MAX_CAPTURE_BYTES) {
+  if (!gzipped) {
     return yield* new HttpApiError.BadRequest();
+  }
+  const store = yield* Store;
+  const request = yield* requestOf(requestId);
+  const runs = yield* store.submissionsOf(requestId);
+  // A player who already has a run is refused before their file is stored. Two uploads at once both get past this,
+  // and the store keeps one.
+  if (request.status === "closed" || runs.length >= request.wanted * 2 || runs.some((run) => run.userId === userId)) {
+    return yield* new HttpApiError.Conflict();
   }
   const id = yield* newId;
   const kept = yield* store.insertSubmission(
@@ -84,6 +84,10 @@ export const close = Effect.fn(function* (requestId: string) {
   yield* (yield* Store).close(requestId);
 });
 
+/** A, B, ... Z, then AA, AB, as spreadsheet columns go, so the 27th player is not mistaken for the first. */
+const letter = (index: number): string =>
+  (index >= 26 ? letter(Math.floor(index / 26) - 1) : "") + String.fromCharCode(65 + (index % 26));
+
 /** Every request with its runs. A player is a letter here, in the order they submitted, and never an id. */
 export const reports = Effect.gen(function* () {
   const store = yield* Store;
@@ -100,7 +104,7 @@ export const reports = Effect.gen(function* () {
         modVersion: row.modVersion,
         bytes: row.bytes,
         createdAt: row.createdAt,
-        contributor: String.fromCharCode(65 + (index % 26)),
+        contributor: letter(index),
       })),
   }));
 });
@@ -118,9 +122,6 @@ export const report = Effect.fn(function* (
   sightings: readonly { readonly kind: string; readonly signature: string; readonly sample: string }[],
 ) {
   const store = yield* Store;
-  if (sightings.length > MAX_SIGHTINGS) {
-    return yield* new HttpApiError.BadRequest();
-  }
   const firstSeen = yield* now;
   return yield* Effect.forEach(
     sightings,

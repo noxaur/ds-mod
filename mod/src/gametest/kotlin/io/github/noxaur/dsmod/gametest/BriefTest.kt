@@ -1,14 +1,15 @@
 package io.github.noxaur.dsmod.gametest
 
 import com.mojang.blaze3d.platform.InputConstants
+import io.github.noxaur.dsmod.core.brief.Brief
 import io.github.noxaur.dsmod.debug.DsModDebug
 import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
-import net.minecraft.client.KeyMapping
-import io.github.noxaur.dsmod.core.brief.Brief
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.minecraft.client.KeyMapping
 import org.lwjgl.glfw.GLFW
+import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.readLines
 
@@ -41,7 +42,10 @@ class BriefTest : FabricClientGameTest {
             context.takeScreenshot("brief-saved")
 
             val captures = context.computeOnClient<java.nio.file.Path, Nothing> { it.gameDirectory.toPath().resolve("dsmod/captures") }
-            val steps = captures.listDirectoryEntries("*.jsonl").maxBy { it.fileName.toString() }.readLines().filter { "\"type\":\"step\"" in it }
+            fun newestSteps() = captures.listDirectoryEntries("*.jsonl").maxBy { it.fileName.toString() }.readLines().filter { "\"type\":\"step\"" in it }
+            // The file is finished on another thread, so wait for its last step instead of a number of ticks.
+            context.waitFor { newestSteps().size == 4 }
+            val steps = newestSteps()
             check(steps.map { it.substringAfter("\"data\":") } == listOf(
                 """{"index":1,"do":"Warp to the End"}}""",
                 """{"index":2,"do":"Stand still next to the Protector until it spawns"}}""",
@@ -62,14 +66,13 @@ class BriefTest : FabricClientGameTest {
             // `/dscapture` must leave a brief's recording alone.
             var refused: String? = null
             val stolen = context.computeOnClient<java.nio.file.Path?, Nothing> { client -> DsModDebug.toggleCapture(client) { refused = it } }
-            check(stolen == null && refused.orEmpty().startsWith("A brief is recording")) { "/dscapture answered '$refused' with $stolen during a brief" }
+            check(stolen == null && refused.orEmpty().startsWith("A brief is on")) { "/dscapture answered '$refused' with $stolen during a brief" }
             check(context.computeOnClient<Boolean, Nothing> { Recorder.running }) { "/dscapture stopped the brief's recording" }
             context.runOnClient<Nothing> {
                 repeat(2) { KeyMapping.click(InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_RIGHT_BRACKET)) }
             }
-            context.waitFor { !Recorder.running }
-            context.waitTicks(10)
-            val both = captures.listDirectoryEntries("*.jsonl").maxBy { it.fileName.toString() }.readLines().filter { "\"type\":\"step\"" in it }
+            context.waitFor { newestSteps().size == 4 }
+            val both = newestSteps()
             check(both.map { it.substringAfter("\"data\":") } == listOf(
                 """{"index":1,"do":"Warp to the End"}}""",
                 """{"index":2,"do":"Stand still next to the Protector until it spawns"}}""",
@@ -77,6 +80,30 @@ class BriefTest : FabricClientGameTest {
                 """{"done":true}}""",
             )) { "Two presses in one tick recorded $both" }
             context.runOnClient<Nothing> { Recording.cancel() }
+
+            // A brief run inside `/dscapture`'s capture records its steps there, and leaves it running after the last.
+            val own = context.computeOnClient<java.nio.file.Path, Nothing> { DsModDebug.toggleCapture(it)!! }
+            context.runOnClient<Nothing> { Recording.start(brief) }
+            context.waitTicks(2)
+            context.runOnClient<Nothing> { repeat(4) { KeyMapping.click(InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_RIGHT_BRACKET)) } }
+            context.waitTicks(2)
+            check(context.computeOnClient<Boolean, Nothing> { Recorder.running }) { "The brief ended /dscapture's capture" }
+            context.runOnClient<Nothing> { Recording.cancel() }
+            check(context.computeOnClient<Boolean, Nothing> { Recorder.running }) { "Cancelling the brief ended /dscapture's capture" }
+            var saved: String? = null
+            context.runOnClient<Nothing> { client -> DsModDebug.toggleCapture(client) { saved = it } }
+            context.waitFor { saved != null }
+            check(own.readLines().count { "\"type\":\"step\"" in it } == 4) { "/dscapture's capture holds ${own.readLines().filter { "step" in it }}" }
+
+            // Cancelling a brief deletes the capture it started.
+            val before = captures.listDirectoryEntries("*.jsonl").toSet()
+            context.runOnClient<Nothing> { Recording.start(brief) }
+            context.runOnClient<Nothing> { KeyMapping.click(InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_RIGHT_BRACKET)) }
+            // The writer creates the file on its own thread.
+            context.waitFor { (captures.listDirectoryEntries("*.jsonl") - before).isNotEmpty() }
+            val started = (captures.listDirectoryEntries("*.jsonl") - before).single()
+            context.runOnClient<Nothing> { Recording.cancel() }
+            context.waitFor { !started.exists() }
         }
     }
 }

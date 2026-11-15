@@ -21,7 +21,8 @@ class FixtureLeakTest {
     @Test
     fun `no fixture holds a player name from a capture on this machine`() {
         val captures = Path.of("run/dsmod/captures").takeIf { it.exists() }?.listDirectoryEntries("*.jsonl").orEmpty()
-        val names = captures.flatMapTo(HashSet(), PlayerNames::of)
+        // A fixture holds aliases, so a player who is called one cannot be told from it here.
+        val names = PlayerNames.of(*captures.toTypedArray()).filterNot { it.matches(Regex("""Player\d+""")) }
         val leaks = Files.walk(Path.of("src/test/resources/features")).asSequence().filter { it.isRegularFile() }.flatMap { file ->
             val text = file.readText()
             names.filter { Regex("""(?<!\w)${Regex.escape(it)}(?!\w)""").containsMatchIn(text) }

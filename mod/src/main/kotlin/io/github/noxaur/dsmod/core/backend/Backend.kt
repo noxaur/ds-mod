@@ -42,7 +42,7 @@ data class Requirement(val kind: String, val value: String)
 
 /**
  * Something an agent asked players to record. The backend may add a field here and an older mod ignores it, but the
- * [brief] is read as strictly as [Brief.parse] reads one, so a step can't silently lose its timer to a key the mod
+ * [brief] is read as strictly as [Brief.read] reads one, so a step can't silently lose its timer to a key the mod
  * does not know.
  */
 @Serializable
@@ -51,7 +51,12 @@ data class Request(
     @Serializable(with = StrictBrief::class) val brief: Brief,
     val requirements: List<Requirement>,
     val timeoutSeconds: Int,
-)
+) {
+    // The id names a file on the player's disk and a path on the backend, so it may hold nothing that leaves either.
+    init {
+        require(id.matches(Regex("[A-Za-z0-9-]+"))) { "A request's id is letters, digits and dashes: $id" }
+    }
+}
 
 private object StrictBrief : KSerializer<Brief> by Brief.serializer() {
     override fun deserialize(decoder: Decoder): Brief =
@@ -68,18 +73,20 @@ private val json = Json { ignoreUnknownKeys = true }
  * Talks to the backend as the signed-in player. Every call blocks, so a caller runs it with [async], which has one
  * thread of its own. Nothing connects until the first call. The session token lives in [token] and nowhere else: the
  * mod is open source and the backend believes nothing the mod says, so the token is never written, logged or shown.
- * A session ends after 24 hours, so a 401 signs in again once and repeats the call.
+ * A session ends after 24 hours, so a 401 signs in again once and repeats the call. [modVersion] goes with every
+ * upload and report, so an agent can tell which mod recorded what.
  */
-class Backend(
-    private val url: String,
-    private val identity: Identity,
-    private val modVersion: String,
-    // HTTP/1.1, because over plain http Java asks to upgrade to HTTP/2 in a header, and a server that does not know
-    // the upgrade (Vite's, in development) drops the connection, which reads as an unreachable backend.
-    private val http: HttpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).connectTimeout(Duration.ofSeconds(10)).build(),
-) {
+class Backend(private val url: String, private val identity: Identity, private val modVersion: String) {
     @Volatile
     private var token: String? = null
+
+    /** Whether the next call can skip signing in, which is the slow part: Mojang must confirm the account first. */
+    val signedIn get() = token != null
+
+    // Built on the first call, on the worker, because building one may read the trust store from disk.
+    // HTTP/1.1, because over plain http Java asks to upgrade to HTTP/2 in a header, and a server that does not know
+    // the upgrade (Vite's, in development) drops the connection, which reads as an unreachable backend.
+    private val http by lazy { HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).connectTimeout(Duration.ofSeconds(10)).build() }
 
     private val worker = Executors.newSingleThreadExecutor { Thread(it, "dsmod-backend").apply { isDaemon = true } }
     private val origin = URI.create(url).let { "${it.scheme}://${it.authority}" }
@@ -99,7 +106,7 @@ class Backend(
         send { post("/v1/contrib/requests/$id/skip", BodyPublishers.noBody(), null, it) }
     }
 
-    /** Uploads the gzipped capture at [file] for request [id]. */
+    /** Uploads the gzipped capture at [file] for request [id]. The backend takes at most [MAX_UPLOAD] bytes. */
     fun submit(id: String, file: Path) {
         val query = "?modVersion=" + URLEncoder.encode(modVersion, Charsets.UTF_8)
         send { post("/v1/contrib/requests/$id/submissions$query", BodyPublishers.ofFile(file), "application/octet-stream", it, UPLOAD_TIMEOUT) }
@@ -174,8 +181,10 @@ class Backend(
         throw BackendException(null, "The backend could not be reached.", e)
     }
 
-    private companion object {
-        val TIMEOUT: Duration = Duration.ofSeconds(20)
-        val UPLOAD_TIMEOUT: Duration = Duration.ofSeconds(120)
+    companion object {
+        /** The largest capture the backend keeps, which answers 413 above it. */
+        const val MAX_UPLOAD = 10_000_000L
+        private val TIMEOUT: Duration = Duration.ofSeconds(20)
+        private val UPLOAD_TIMEOUT: Duration = Duration.ofSeconds(120)
     }
 }

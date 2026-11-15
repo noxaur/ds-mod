@@ -37,7 +37,7 @@ We can't compromise on these.
 
 ## API
 
-- `backend/src/api.ts` defines every REST endpoint, and `api/openapi.json` is generated from it with `pnpm openapi` in `backend/`. Change the definition first, regenerate, then change the callers.
+- `backend/src/api.ts` defines every REST endpoint except sign-in, which Better Auth serves at `/api/auth/*`, and `api/openapi.json` is generated from it with `pnpm openapi` in `backend/`. Change the definition first, regenerate, then change the callers.
 
 ## Formal specs
 
@@ -77,12 +77,12 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | A feature's handler and readout average under 20µs | `FeatureReplayTest` |
 | A capture type has one producer | `CaptureWriter` rejects a raw record with an event's type |
 | The jars a player installs boot and open settings | `runProdClientGameTest` |
-| A unit test run takes at most 30 seconds | `timeout` on `tasks.test` in `mod/build.gradle.kts`, and `timeout 30` on the tests in `check:backend` and in `web/package.json` |
+| A unit test run takes at most 30 seconds | `timeout` on `tasks.test` in `mod/build.gradle.kts`, and `timeout 30` on the tests in `backend/package.json` and `web/package.json` |
 | A CI job takes at most 3 minutes | `.github/actions/time-limit`, the last step of every job in `ci.yml` |
 | The mod stays inside its frame, tick and size caps | `PerfTest` against `mod/src/gametest/resources/perf-budgets.json`, in CI's `perf` job |
 | A beta ships only when every check and game test passes | `.github/workflows/beta.yml` |
 | Every capture type reaches the file | `CaptureTest`, and `BriefTest` for `step` |
-| A capture a player uploads holds no player name the mod knows, and no chat | `RedactCaptureTest` |
+| A redacted capture holds no player name the mod knows, and no typed chat | `RedactCaptureTest` |
 | The backend believes a sign-in only when Mojang confirms it | `minecraft.test.ts` in `backend/src/identity/` |
 | A player cannot reach an agent's routes, and an agent never sees who recorded a run | `app.test.ts` in `backend/src/` |
 | The website signs a browser in only after the player confirms whose account it is | `signIn.test.ts` in `web/app/login/` |
@@ -90,6 +90,7 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | `api/openapi.json` matches the backend's API definition | `app.test.ts` in `backend/src/` |
 | Backend code is formatted, type-safe and passes lint with no warnings | `vp check` in `check:backend` |
 | Backend failures are modeled with Effect, not `try` | `dsmod/no-try` in `backend/lint/dsmod.js` |
+| `backend/src/` imports nothing from Void | `no-restricted-imports` in `backend/vite.config.ts` |
 | Backend dependencies are at least 14 days old | `minimumReleaseAge` in `backend/pnpm-workspace.yaml` |
 | The website is type-safe | `tsc` with `strict` and the extra flags in `web/tsconfig.json` |
 | Website code is formatted | `vp fmt --check` in `web/package.json` |

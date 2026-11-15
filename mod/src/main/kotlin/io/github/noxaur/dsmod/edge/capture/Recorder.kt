@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.edge.capture
 
+import io.github.noxaur.dsmod.core.capture.CaptureIncompleteException
+import io.github.noxaur.dsmod.edge.Background
 import io.github.noxaur.dsmod.edge.DsModClient
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -9,12 +11,13 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.network.protocol.Packet
+import org.slf4j.LoggerFactory
 import java.nio.file.Path
+import java.util.concurrent.TimeUnit
 
 /**
- * Holds the one capture that may be running. Nothing records until [start], which the player's accepted
- * contribution calls, or `/dscapture` and `-Pbrief` in the debug build. While none runs, every hook here is one
- * null check on the client thread.
+ * Holds the one capture that may be running. Nothing records until [start], and while none runs every hook here is
+ * one null check on the client thread. Whoever starts a capture keeps the session and is the only one to [stop] it.
  */
 object Recorder {
     @Volatile
@@ -22,19 +25,26 @@ object Recorder {
 
     val running get() = session != null
 
-    /** Starts recording into a new file in [dir], and returns the file. */
-    fun start(dir: Path): Path {
+    /** Starts recording into a new file in [dir]. */
+    fun start(dir: Path): CaptureSession {
         check(session == null) { "A capture is already running." }
-        return CaptureSession(dir, DsModClient.game).also { session = it }.file
+        return CaptureSession(dir, DsModClient.game).also { session = it }
     }
 
-    /**
-     * Stops recording. The caller closes the returned session, which waits for the file, on a thread that may
-     * wait. Null when nothing was recording.
-     */
-    fun stop(): CaptureSession? = session?.also {
+    /** Stops [own], then finishes its file off the client thread and tells [done] there whether the file is whole. */
+    fun stop(own: CaptureSession, done: (whole: Boolean) -> Unit = {}) {
+        check(session === own) { "That capture is not the running one." }
         session = null
-        it.detach()
+        own.detach()
+        Background.io.execute { done(finish(own)) }
+    }
+
+    private fun finish(session: CaptureSession) = try {
+        session.close()
+        true
+    } catch (e: CaptureIncompleteException) {
+        LoggerFactory.getLogger("dsmod").error("The capture {} was not fully written", session.file, e)
+        false
     }
 
     /** Adds a raw record to the running capture. */
@@ -63,5 +73,15 @@ object Recorder {
             }
         }
         ClientTickEvents.END_CLIENT_TICK.register { client -> session?.tick(client) }
+    }
+
+    /**
+     * Quitting: stops what still runs, which keeps its file, and waits for every capture still being finished,
+     * because the background thread dies with the game. Whoever wants their capture gone stops it first.
+     */
+    fun quit() {
+        session?.let(::stop)
+        Background.io.shutdown()
+        Background.io.awaitTermination(1, TimeUnit.MINUTES)
     }
 }

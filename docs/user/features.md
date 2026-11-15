@@ -145,7 +145,7 @@ All-Time: 12
 
 <sub>Off by default.</sub>
 
-## Contribute
+## Account
 
 ds-mod's developers cannot reach all of the server, so they ask players to record the parts they can't. Contribute is the last entry in the settings. It does nothing until you open it.
 

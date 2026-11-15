@@ -3,11 +3,15 @@ package io.github.noxaur.dsmod.core.contribute
 import io.github.noxaur.dsmod.core.backend.Sighting
 import io.github.noxaur.dsmod.core.capture.PlayerNames
 import io.github.noxaur.dsmod.core.capture.Redactor
+import io.github.noxaur.dsmod.core.game.ServerSpan
+import io.github.noxaur.dsmod.core.game.ServerText
+import io.github.noxaur.dsmod.core.game.SystemMessage
 
 /**
  * Collects what reached a feature and failed to parse, for the player who agreed to send it. A sighting is one
  * [Sighting.kind] and one [Sighting.signature], which is the line with its digits and names replaced, so two lines
- * of the same shape are one sighting with one redacted example. [own] is the player's own name.
+ * of the same shape are one sighting with one redacted example. [own] gives the names the player surely sees, their
+ * own and the tab list's.
  * Call it on the client thread.
  */
 class Unknowns(private val own: () -> Set<String>) {
@@ -17,21 +21,15 @@ class Unknowns(private val own: () -> Set<String>) {
 
     /** The lines already read, as they came. A menu resends the same line for every slot, so most calls end here. */
     private val seen = HashSet<Pair<String, String>>()
-    private var names = emptySet<String>()
-    private var redactor = Redactor(names)
 
     /** Records [line] as something [kind] could not read, unless this shape is already waiting or went out. */
     fun see(kind: String, line: String) {
         if (pending.size >= MAX_BATCH) return
         if (seen.size >= MAX_SEEN) seen.clear()
         if (!seen.add(kind to line)) return
-        // A redactor compiles its names into a pattern, and most lines name nobody but the player.
-        val named = PlayerNames.inText(line) + own()
-        if (named != names) {
-            names = named
-            redactor = Redactor(named)
-        }
-        val redacted = redactor.names(line)
+        // Redacted as a chat line, so that what a player typed is replaced as well as their name.
+        val names = PlayerNames.inText(line).mapTo(HashSet(own()), line::substring)
+        val redacted = (Redactor(names).redact(SystemMessage(ServerText(listOf(ServerSpan(line))))) as SystemMessage).text.plain
         val sample = redacted.take(MAX_SAMPLE)
         val signature = SPACES.replace(SIGNATURE_DIGITS.replace(NAME_ALIAS.replace(redacted, "<player>"), "#"), " ")
             .trim().take(MAX_SIGNATURE)

@@ -10,7 +10,9 @@ class TabState {
 
     /** The players the tab list shows, read when asked and not per [TabList], since few callers want them. */
     val players: Set<String>
-        get() = names ?: PlayerNames.inTabList(rows.map { it.plain }).also { names = it }
+        get() = names ?: rows.map { it.plain }.let { plain ->
+            PlayerNames.inTabList(plain).flatMapIndexedTo(HashSet()) { i, ranges -> ranges.map(plain[i]::substring) }
+        }.also { names = it }
 
     /** The value of the info row `key: value`, or null when the tab list has no such row. */
     fun info(key: String): String? = info[key]

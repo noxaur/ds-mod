@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Api",
-    "version": "0.0.1"
+    "title": "ds-mod backend",
+    "version": "0.1.0"
   },
   "paths": {
     "/healthz": {
@@ -17,7 +17,8 @@
           "204": {
             "description": "<No Content>"
           }
-        }
+        },
+        "summary": "Reports that the backend is up."
       }
     },
     "/v1/contrib/requests": {
@@ -27,7 +28,11 @@
         ],
         "operationId": "contrib.offers",
         "parameters": [],
-        "security": [],
+        "security": [
+          {
+            "session": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -38,88 +43,37 @@
                   "items": {
                     "type": "object",
                     "properties": {
-                      "id": {
-                        "type": "string"
-                      },
                       "brief": {
                         "type": "object",
                         "properties": {
                           "name": {
-                            "type": "string"
+                            "type": "string",
+                            "pattern": "\\S"
                           },
                           "steps": {
                             "type": "array",
-                            "prefixItems": [
-                              {
-                                "type": "object",
-                                "properties": {
-                                  "do": {
-                                    "type": "string"
-                                  },
-                                  "note": {
-                                    "anyOf": [
-                                      {
-                                        "type": "string"
-                                      },
-                                      {
-                                        "type": "null"
-                                      }
-                                    ]
-                                  },
-                                  "seconds": {
-                                    "anyOf": [
-                                      {
-                                        "type": "integer",
-                                        "maximum": 9007199254740991,
-                                        "exclusiveMinimum": 0
-                                      },
-                                      {
-                                        "type": "null"
-                                      }
-                                    ]
-                                  }
-                                },
-                                "required": [
-                                  "do"
-                                ],
-                                "additionalProperties": false
-                              }
-                            ],
-                            "minItems": 1,
                             "items": {
                               "type": "object",
                               "properties": {
                                 "do": {
-                                  "type": "string"
+                                  "type": "string",
+                                  "pattern": "\\S"
                                 },
                                 "note": {
-                                  "anyOf": [
-                                    {
-                                      "type": "string"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
+                                  "type": "string"
                                 },
                                 "seconds": {
-                                  "anyOf": [
-                                    {
-                                      "type": "integer",
-                                      "maximum": 9007199254740991,
-                                      "exclusiveMinimum": 0
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
+                                  "type": "integer",
+                                  "maximum": 9007199254740991,
+                                  "exclusiveMinimum": 0
                                 }
                               },
                               "required": [
                                 "do"
                               ],
                               "additionalProperties": false
-                            }
+                            },
+                            "minItems": 1
                           }
                         },
                         "required": [
@@ -157,28 +111,21 @@
                       },
                       "timeoutSeconds": {
                         "type": "integer",
-                        "minimum": -9007199254740991,
-                        "maximum": 9007199254740991
+                        "minimum": 10,
+                        "maximum": 3600
+                      },
+                      "id": {
+                        "type": "string"
                       }
                     },
                     "required": [
-                      "id",
                       "brief",
                       "requirements",
-                      "timeoutSeconds"
+                      "timeoutSeconds",
+                      "id"
                     ],
                     "additionalProperties": false
                   }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "BadRequest",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_BadRequestEncoded"
                 }
               }
             }
@@ -192,28 +139,9 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "NotFound",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_NotFoundEncoded"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_ConflictEncoded"
-                }
-              }
-            }
           }
-        }
+        },
+        "summary": "The open requests the player has neither recorded nor skipped."
       }
     },
     "/v1/contrib/requests/{id}/skip": {
@@ -232,20 +160,14 @@
             "required": true
           }
         ],
-        "security": [],
+        "security": [
+          {
+            "session": []
+          }
+        ],
         "responses": {
           "204": {
             "description": "<No Content>"
-          },
-          "400": {
-            "description": "BadRequest",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_BadRequestEncoded"
-                }
-              }
-            }
           },
           "401": {
             "description": "Unauthorized",
@@ -266,18 +188,9 @@
                 }
               }
             }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_ConflictEncoded"
-                }
-              }
-            }
           }
-        }
+        },
+        "summary": "Stops offering a request to the player."
       }
     },
     "/v1/contrib/requests/{id}/submissions": {
@@ -305,7 +218,11 @@
             "required": true
           }
         ],
-        "security": [],
+        "security": [
+          {
+            "session": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -367,6 +284,7 @@
             }
           }
         },
+        "description": "Keeps the player's run of a request: the capture file, gzipped, at most 10 MB (413 above it, as for any body). A player has one run per request. A filled request still takes a run from a player who was recording when it filled, and a closed one, or one with twice the wanted number of runs, takes none (409).",
         "requestBody": {
           "content": {
             "application/octet-stream": {
@@ -387,7 +305,11 @@
         ],
         "operationId": "contrib.report",
         "parameters": [],
-        "security": [],
+        "security": [
+          {
+            "session": []
+          }
+        ],
         "responses": {
           "204": {
             "description": "<No Content>"
@@ -411,28 +333,9 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "NotFound",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_NotFoundEncoded"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_ConflictEncoded"
-                }
-              }
-            }
           }
         },
+        "summary": "Counts what the mod saw and had no handling for.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -467,7 +370,8 @@
                         "sample"
                       ],
                       "additionalProperties": false
-                    }
+                    },
+                    "maxItems": 100
                   }
                 },
                 "required": [
@@ -489,7 +393,11 @@
         ],
         "operationId": "admin.create",
         "parameters": [],
-        "security": [],
+        "security": [
+          {
+            "adminToken": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -502,81 +410,33 @@
                       "type": "object",
                       "properties": {
                         "name": {
-                          "type": "string"
+                          "type": "string",
+                          "pattern": "\\S"
                         },
                         "steps": {
                           "type": "array",
-                          "prefixItems": [
-                            {
-                              "type": "object",
-                              "properties": {
-                                "do": {
-                                  "type": "string"
-                                },
-                                "note": {
-                                  "anyOf": [
-                                    {
-                                      "type": "string"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
-                                },
-                                "seconds": {
-                                  "anyOf": [
-                                    {
-                                      "type": "integer",
-                                      "maximum": 9007199254740991,
-                                      "exclusiveMinimum": 0
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
-                                }
-                              },
-                              "required": [
-                                "do"
-                              ],
-                              "additionalProperties": false
-                            }
-                          ],
-                          "minItems": 1,
                           "items": {
                             "type": "object",
                             "properties": {
                               "do": {
-                                "type": "string"
+                                "type": "string",
+                                "pattern": "\\S"
                               },
                               "note": {
-                                "anyOf": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
+                                "type": "string"
                               },
                               "seconds": {
-                                "anyOf": [
-                                  {
-                                    "type": "integer",
-                                    "maximum": 9007199254740991,
-                                    "exclusiveMinimum": 0
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
+                                "type": "integer",
+                                "maximum": 9007199254740991,
+                                "exclusiveMinimum": 0
                               }
                             },
                             "required": [
                               "do"
                             ],
                             "additionalProperties": false
-                          }
+                          },
+                          "minItems": 1
                         }
                       },
                       "required": [
@@ -670,28 +530,9 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "NotFound",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_NotFoundEncoded"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_ConflictEncoded"
-                }
-              }
-            }
           }
         },
+        "summary": "Publishes a recording request.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -702,81 +543,33 @@
                     "type": "object",
                     "properties": {
                       "name": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern": "\\S"
                       },
                       "steps": {
                         "type": "array",
-                        "prefixItems": [
-                          {
-                            "type": "object",
-                            "properties": {
-                              "do": {
-                                "type": "string"
-                              },
-                              "note": {
-                                "anyOf": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              },
-                              "seconds": {
-                                "anyOf": [
-                                  {
-                                    "type": "integer",
-                                    "maximum": 9007199254740991,
-                                    "exclusiveMinimum": 0
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            },
-                            "required": [
-                              "do"
-                            ],
-                            "additionalProperties": false
-                          }
-                        ],
-                        "minItems": 1,
                         "items": {
                           "type": "object",
                           "properties": {
                             "do": {
-                              "type": "string"
+                              "type": "string",
+                              "pattern": "\\S"
                             },
                             "note": {
-                              "anyOf": [
-                                {
-                                  "type": "string"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
+                              "type": "string"
                             },
                             "seconds": {
-                              "anyOf": [
-                                {
-                                  "type": "integer",
-                                  "maximum": 9007199254740991,
-                                  "exclusiveMinimum": 0
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
+                              "type": "integer",
+                              "maximum": 9007199254740991,
+                              "exclusiveMinimum": 0
                             }
                           },
                           "required": [
                             "do"
                           ],
                           "additionalProperties": false
-                        }
+                        },
+                        "minItems": 1
                       }
                     },
                     "required": [
@@ -842,7 +635,11 @@
         ],
         "operationId": "admin.requests",
         "parameters": [],
-        "security": [],
+        "security": [
+          {
+            "adminToken": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -857,81 +654,33 @@
                         "type": "object",
                         "properties": {
                           "name": {
-                            "type": "string"
+                            "type": "string",
+                            "pattern": "\\S"
                           },
                           "steps": {
                             "type": "array",
-                            "prefixItems": [
-                              {
-                                "type": "object",
-                                "properties": {
-                                  "do": {
-                                    "type": "string"
-                                  },
-                                  "note": {
-                                    "anyOf": [
-                                      {
-                                        "type": "string"
-                                      },
-                                      {
-                                        "type": "null"
-                                      }
-                                    ]
-                                  },
-                                  "seconds": {
-                                    "anyOf": [
-                                      {
-                                        "type": "integer",
-                                        "maximum": 9007199254740991,
-                                        "exclusiveMinimum": 0
-                                      },
-                                      {
-                                        "type": "null"
-                                      }
-                                    ]
-                                  }
-                                },
-                                "required": [
-                                  "do"
-                                ],
-                                "additionalProperties": false
-                              }
-                            ],
-                            "minItems": 1,
                             "items": {
                               "type": "object",
                               "properties": {
                                 "do": {
-                                  "type": "string"
+                                  "type": "string",
+                                  "pattern": "\\S"
                                 },
                                 "note": {
-                                  "anyOf": [
-                                    {
-                                      "type": "string"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
+                                  "type": "string"
                                 },
                                 "seconds": {
-                                  "anyOf": [
-                                    {
-                                      "type": "integer",
-                                      "maximum": 9007199254740991,
-                                      "exclusiveMinimum": 0
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
+                                  "type": "integer",
+                                  "maximum": 9007199254740991,
+                                  "exclusiveMinimum": 0
                                 }
                               },
                               "required": [
                                 "do"
                               ],
                               "additionalProperties": false
-                            }
+                            },
+                            "minItems": 1
                           }
                         },
                         "required": [
@@ -1051,16 +800,6 @@
               }
             }
           },
-          "400": {
-            "description": "BadRequest",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_BadRequestEncoded"
-                }
-              }
-            }
-          },
           "401": {
             "description": "Unauthorized",
             "content": {
@@ -1070,28 +809,9 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "NotFound",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_NotFoundEncoded"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_ConflictEncoded"
-                }
-              }
-            }
           }
-        }
+        },
+        "summary": "Every request with its runs, a letter in place of each player."
       }
     },
     "/v1/admin/requests/{id}/close": {
@@ -1110,20 +830,14 @@
             "required": true
           }
         ],
-        "security": [],
+        "security": [
+          {
+            "adminToken": []
+          }
+        ],
         "responses": {
           "204": {
             "description": "<No Content>"
-          },
-          "400": {
-            "description": "BadRequest",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_BadRequestEncoded"
-                }
-              }
-            }
           },
           "401": {
             "description": "Unauthorized",
@@ -1144,18 +858,9 @@
                 }
               }
             }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_ConflictEncoded"
-                }
-              }
-            }
           }
-        }
+        },
+        "summary": "Stops offering a request to anyone."
       }
     },
     "/v1/admin/submissions/{id}/capture": {
@@ -1174,7 +879,11 @@
             "required": true
           }
         ],
-        "security": [],
+        "security": [
+          {
+            "adminToken": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -1183,16 +892,6 @@
                 "schema": {
                   "type": "string",
                   "format": "binary"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "BadRequest",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_BadRequestEncoded"
                 }
               }
             }
@@ -1216,18 +915,9 @@
                 }
               }
             }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_ConflictEncoded"
-                }
-              }
-            }
           }
-        }
+        },
+        "summary": "A run's capture file, gzipped."
       }
     },
     "/v1/admin/unknowns": {
@@ -1237,7 +927,11 @@
         ],
         "operationId": "admin.unknowns",
         "parameters": [],
-        "security": [],
+        "security": [
+          {
+            "adminToken": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -1286,16 +980,6 @@
               }
             }
           },
-          "400": {
-            "description": "BadRequest",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_BadRequestEncoded"
-                }
-              }
-            }
-          },
           "401": {
             "description": "Unauthorized",
             "content": {
@@ -1305,33 +989,44 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "NotFound",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_NotFoundEncoded"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_ConflictEncoded"
-                }
-              }
-            }
           }
-        }
+        },
+        "summary": "What the mod saw and had no handling for, with how often."
       }
     }
   },
   "components": {
     "schemas": {
+      "effect_HttpApiError_UnauthorizedEncoded": {
+        "type": "object",
+        "properties": {
+          "_tag": {
+            "type": "string",
+            "enum": [
+              "Unauthorized"
+            ]
+          }
+        },
+        "required": [
+          "_tag"
+        ],
+        "additionalProperties": false
+      },
+      "effect_HttpApiError_NotFoundEncoded": {
+        "type": "object",
+        "properties": {
+          "_tag": {
+            "type": "string",
+            "enum": [
+              "NotFound"
+            ]
+          }
+        },
+        "required": [
+          "_tag"
+        ],
+        "additionalProperties": false
+      },
       "effect_HttpApiError_BadRequestEncoded": {
         "type": "object",
         "properties": {
@@ -1361,39 +1056,18 @@
           "_tag"
         ],
         "additionalProperties": false
-      },
-      "effect_HttpApiError_NotFoundEncoded": {
-        "type": "object",
-        "properties": {
-          "_tag": {
-            "type": "string",
-            "enum": [
-              "NotFound"
-            ]
-          }
-        },
-        "required": [
-          "_tag"
-        ],
-        "additionalProperties": false
-      },
-      "effect_HttpApiError_UnauthorizedEncoded": {
-        "type": "object",
-        "properties": {
-          "_tag": {
-            "type": "string",
-            "enum": [
-              "Unauthorized"
-            ]
-          }
-        },
-        "required": [
-          "_tag"
-        ],
-        "additionalProperties": false
       }
     },
-    "securitySchemes": {}
+    "securitySchemes": {
+      "session": {
+        "type": "http",
+        "scheme": "Bearer"
+      },
+      "adminToken": {
+        "type": "http",
+        "scheme": "Bearer"
+      }
+    }
   },
   "security": [],
   "tags": [
@@ -1401,10 +1075,12 @@
       "name": "health"
     },
     {
-      "name": "contrib"
+      "name": "contrib",
+      "description": "What the mod calls, as the player its session names."
     },
     {
-      "name": "admin"
+      "name": "admin",
+      "description": "What an agent calls through dsctl, with the admin token."
     }
   ]
 }

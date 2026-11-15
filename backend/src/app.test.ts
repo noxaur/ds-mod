@@ -1,12 +1,13 @@
 import { readFileSync } from "node:fs";
 
-import { expect, test } from "vite-plus/test";
+import { expect, test, vi } from "vite-plus/test";
 import * as z from "zod";
 
 import { openapi, openapiFile } from "../scripts/openapi.ts";
 import { Effect } from "effect";
 
-import { makeApp } from "./app.ts";
+import { Api } from "./api.ts";
+import { MAX_BODY, makeApp } from "./app.ts";
 import { MAX_UNKNOWNS } from "./contrib/contrib.ts";
 import { memoryStore } from "./contrib/store.ts";
 
@@ -30,8 +31,8 @@ function backend() {
     userId: request.headers.get("cookie"),
     adminToken: "secret",
   }));
-  const call = async (who: string | null, method: string, path: string, body?: unknown, forged: HeadersInit = {}) => {
-    const headers = new Headers(forged);
+  const call = async (who: string | null, method: string, path: string, body?: unknown, extra: HeadersInit = {}) => {
+    const headers = new Headers(extra);
     if (who === "agent") {
       headers.set("authorization", "Bearer secret");
     } else if (who !== null) {
@@ -103,6 +104,10 @@ test("a brief the mod would refuse is refused", async () => {
   const create = (brief: unknown) => call("agent", "POST", "/v1/admin/requests", { ...spec, brief });
   expect((await create({ name: "Golem", steps: [{ do: " " }] })).status, "a blank step").toBe(400);
   expect((await create({ name: "  ", steps: [{ do: "Wait" }] })).status, "a blank name").toBe(400);
+  expect(
+    (await create({ name: "Golem", steps: [{ do: "Wait", secs: 5 }] })).status,
+    "a key the mod does not know",
+  ).toBe(400);
   expect((await create({ name: "Golem", steps: [{ do: "Wait", seconds: 5 }] })).status).toBe(200);
 });
 
@@ -147,22 +152,26 @@ test("the same unknown thing from many players is one row with a count", async (
   expect((await call("agent", "GET", "/v1/admin/unknowns")).value).toMatchObject([{ ...sighting, count: 3 }]);
 });
 
-test("a player cannot call the agent's routes, and nobody gets in without signing in", async () => {
+test("a player cannot call any agent route, and nobody calls a player route without signing in", async () => {
   const { call, create } = backend();
   const id = await create();
-  expect((await call("ann", "GET", "/v1/admin/requests")).status).toBe(401);
-  expect((await call("ann", "POST", "/v1/admin/requests", spec)).status).toBe(401);
-  expect((await call(null, "GET", "/v1/contrib/requests")).status).toBe(401);
-  expect((await call(null, "POST", `/v1/contrib/requests/${id}/skip`)).status).toBe(401);
+  // Every endpoint of each group, from the API itself, so a new one is checked without being listed here.
+  const routes = (group: "admin" | "contrib") =>
+    Object.values(Api.groups[group].endpoints).map((endpoint) => ({
+      method: endpoint.method,
+      path: endpoint.path.replace(":id", id),
+      body: endpoint.method === "GET" ? undefined : group === "admin" ? spec : gz(1),
+    }));
+  for (const { method, path, body } of routes("admin")) {
+    expect((await call("ann", method, path, body)).status, `${method} ${path}`).toBe(401);
+  }
+  for (const { method, path, body } of routes("contrib")) {
+    expect((await call(null, method, path, body)).status, `${method} ${path}`).toBe(401);
+  }
 });
 
-test("a client cannot name itself in the headers the API believes", async () => {
-  const { call, create } = backend();
-  await create();
-  const forged = { "x-dsmod-admin": "1", "x-dsmod-user": "ann" };
-  expect((await call(null, "GET", "/v1/admin/requests", undefined, forged)).status).toBe(401);
-  expect((await call(null, "GET", "/v1/contrib/requests", undefined, forged)).status).toBe(401);
-  expect((await call("bob", "GET", "/v1/admin/requests", undefined, forged)).status).toBe(401);
+test("only the exact admin token makes a caller an agent", async () => {
+  const { call } = backend();
   for (const token of ["Bearer ", "Bearer secre", "Bearer secretx", "secret"]) {
     expect((await call(null, "GET", "/v1/admin/requests", undefined, { authorization: token })).status).toBe(401);
   }
@@ -184,7 +193,7 @@ test("one player sending the same run twice at once still counts once", async ()
   expect((await call("bob", "GET", "/v1/contrib/requests")).value, "one player cannot fill it alone").toHaveLength(1);
 });
 
-test("a run that lands after the agent closed the request does not reopen it as filled", async () => {
+test("a closed request refuses a run and stays closed", async () => {
   const { call, create, submit } = backend();
   const id = await create();
   await submit("ann", id);
@@ -202,6 +211,15 @@ test("a closed request takes no skips, and a version is a short string", async (
   const long = "9".repeat(65);
   const report = { modVersion: long, sightings: [] };
   expect((await call("ann", "POST", "/v1/contrib/unknowns", report)).status).toBe(400);
+});
+
+test("a body over the limit is refused, and keeps nothing", async () => {
+  const { call, create, submit } = backend();
+  const id = await create();
+  const huge = new Uint8Array(Number(MAX_BODY) + 1);
+  huge.set([0x1f, 0x8b]);
+  expect((await submit("ann", id, huge)).status).toBe(413);
+  expect((await call("agent", "GET", "/v1/admin/requests")).value).toMatchObject([{ submissions: [] }]);
 });
 
 test("a request with no steps or a zero timer is refused", async () => {
@@ -231,4 +249,66 @@ test("invented sightings stop being kept at the cap, and known ones still count"
   const kept = await Effect.runPromise(store.unknowns);
   expect(kept).toHaveLength(MAX_UNKNOWNS);
   expect(kept.find((unknown) => unknown.signature === "s0")?.count).toBe(2);
+});
+
+test("runs past the 26th are lettered AA, AB, so no two players share a letter", async () => {
+  const { call, submit } = backend();
+  const created = await call("agent", "POST", "/v1/admin/requests", { ...spec, wanted: 20 });
+  const id = z.object({ id: z.string() }).parse(created.value).id;
+  for (let player = 0; player < 28; player++) {
+    expect((await submit(`player${String(player)}`, id)).status).toBe(200);
+  }
+  const { value } = await call("agent", "GET", "/v1/admin/requests");
+  const letters = z
+    .array(z.object({ submissions: z.array(z.object({ contributor: z.string() })) }))
+    .parse(value)[0]
+    ?.submissions.map((submission) => submission.contributor);
+  expect(letters?.slice(24)).toEqual(["Y", "Z", "AA", "AB"]);
+});
+
+test("a store that fails answers 500 with nothing in it, and only that reaches the log", async () => {
+  const logged = vi.spyOn(console, "error").mockImplementation(() => undefined);
+  const { call } = backend();
+  expect((await call("ann", "POST", "/v1/contrib/requests/nothing/skip")).status).toBe(404);
+  expect((await call("agent", "POST", "/v1/admin/requests", { wanted: 0 })).status).toBe(400);
+  expect((await call(null, "GET", "/v1/contrib/requests")).status).toBe(401);
+  expect((await call("ann", "POST", "/v1/contrib/unknowns", "{")).status).toBe(400);
+  const huge = new Uint8Array(Number(MAX_BODY) + 1);
+  expect((await call("ann", "POST", "/v1/contrib/requests/nothing/submissions?modVersion=1", huge)).status).toBe(413);
+  expect(logged, "a refusal is the client's mistake, not the backend's").not.toHaveBeenCalled();
+  const broken = { ...memoryStore(), requests: Effect.die(new Error("D1 is down")) };
+  const app = makeApp(broken, () => ({ userId: "ann", adminToken: undefined }));
+  const response = await app(new Request("http://backend/v1/contrib/requests"));
+  expect(response.status).toBe(500);
+  expect(await response.text()).not.toContain("D1");
+  expect(String(logged.mock.calls[0]?.[0])).toContain("D1 is down");
+  logged.mockRestore();
+});
+
+test("a player who already has a run is refused before their file reaches the store", async () => {
+  const store = memoryStore();
+  let stored = 0;
+  const counting = {
+    ...store,
+    insertSubmission: (...args: Parameters<typeof store.insertSubmission>) => {
+      stored++;
+      return store.insertSubmission(...args);
+    },
+  };
+  const app = makeApp(counting, () => ({ userId: "ann", adminToken: "secret" }));
+  const post = (path: string, body: BodyInit, type: string) =>
+    app(
+      new Request(`http://backend${path}`, {
+        method: "POST",
+        headers: { authorization: "Bearer secret", "content-type": type },
+        body,
+      }),
+    );
+  const created = await post("/v1/admin/requests", JSON.stringify(spec), "application/json");
+  const { id } = z.object({ id: z.string() }).parse(await created.json());
+  const upload = () =>
+    post(`/v1/contrib/requests/${id}/submissions?modVersion=1.0.0`, gz(1), "application/octet-stream");
+  expect((await upload()).status).toBe(200);
+  expect((await upload()).status).toBe(409);
+  expect(stored).toBe(1);
 });

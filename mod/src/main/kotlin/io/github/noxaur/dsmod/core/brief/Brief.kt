@@ -34,10 +34,7 @@ data class Brief(val name: String, val steps: List<Step>) {
 
     companion object {
         /** Reads a brief, and fails on a key it does not know, so a typo is not a step that silently lost its timer. */
-        fun read(file: Path): Brief = parse(file.readText())
-
-        /** Reads a brief the same way from [json], which is how the backend sends one. */
-        fun parse(json: String): Brief = Json.decodeFromString(serializer(), json)
+        fun read(file: Path): Brief = Json.decodeFromString(serializer(), file.readText())
     }
 }
 

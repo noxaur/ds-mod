@@ -1,12 +1,12 @@
 # Architecture
 
-ds-mod has three parts. The mod runs in the player's game. The backend is our own REST service, and the website reads from it too. `api/openapi.json` is the contract between them. It is generated from the backend's API definition, so a change to an endpoint starts there and reaches every caller through the file.
+ds-mod has three parts. The mod runs in the player's game. The backend is our own REST service, and the website reads from it too. `api/openapi.json` is the contract between them.
 
 ## The backend is an Effect API inside a Void app
 
-Void deploys the backend to Cloudflare Workers and owns the database, the file store and the sign-in tables. The API itself is defined and handled with Effect, and one catch-all route hands each request to it. The split keeps the way out open. The API takes its store and its caller as arguments, so a move to a single machine needs a new entry point, a new store and a sign-in, and no change to a rule.
+Void deploys the backend to Cloudflare Workers and owns the database, the file store and the sign-in tables. The API itself is defined and handled with Effect, and one catch-all route hands each request to it. Sign-in is the exception: Void serves `/api/auth/*` with Better Auth before any route of ours, because Better Auth keeps the sessions every other route checks. A route that is not about a session belongs in the Effect API and its contract. The split keeps the way out open. The API takes its store and its caller as arguments, so a move to a single machine needs a new entry point, a new store and a sign-in, and no change to a rule.
 
-The contract is generated because a hand-written one drifts. The mod is Kotlin and can share no types with the backend, so the file is what it reads, and a test fails when the file is stale.
+The contract is generated from the backend's API definition, because a hand-written one drifts. The mod is Kotlin and can share no types with the backend, so a file in a neutral format is the one thing both sides can hold to.
 
 ## A player is their Minecraft account, and the client is never believed
 
@@ -16,7 +16,7 @@ This proves who is asking and nothing about what they send. A signed-in client c
 
 Email and password sign-in is switched off, so no account exists that Mojang did not vouch for. A session ends 24 hours after it began and is never extended, so a stolen token dies by itself. The mod pays nothing for that, because it repeats the proof without the player noticing.
 
-The website has no sign-in page. A site that asked for the Microsoft login would need an Azure app that Mojang approves. Instead the mod, which is already signed in, trades its session for a link that works once within a minute. The token sits in the link's fragment, which a browser sends to no server and leaves out of the Referer, so the website takes it from the page's own script. The page then asks the player to confirm the account before it keeps the session, because anyone can send a player a link to their own account, and a browser signed in to it unnoticed would hand that person whatever the player does next.
+The website has no Microsoft login. A site that asked for it would need an Azure app that Mojang approves. Instead the mod, which is already signed in, trades its session for a link that works once within a minute. The token sits in the link's fragment, which a browser sends to no server and leaves out of the Referer, so the website takes it from the page's own script. The page then asks the player to confirm the account before it keeps the session, because anyone can send a player a link to their own account, and a browser signed in to it unnoticed would hand that person whatever the player does next.
 
 ## The mod knows the game only from packets
 
@@ -82,7 +82,7 @@ MoulConfig has a data file class, and ds-mod does not use it: it writes on the c
 
 ## Metrics are pulled
 
-`Metrics` adds up timings, counts and failures in memory, and a flush hands one snapshot to each sink. Recording costs the client thread no I/O, and a new receiver, such as the backend, is one more sink. Today the release build logs failures, and a running capture writes each snapshot into the file.
+`Metrics` adds up timings, counts and failures in memory, and a flush hands one snapshot to each sink. Recording costs the client thread no I/O, and a new receiver is one more sink. Today the release build logs failures, and a running capture writes each snapshot into the file.
 
 The `unparsed` counter matters most. The server is closed and changes without notice, so a feature that stops matching looks the same as a quiet game. A line that reached a feature and failed to parse is the only signal. A feature reports it with `unparsed(text)`, which counts it and, while the player has opted in, hands the text on to the report of unread lines. One call is the only route, so a feature cannot count a failure the report never sees.
 
@@ -108,11 +108,17 @@ A recording that fails to upload stays in `dsmod/contributions/` as a redacted `
 
 Skipping tells the backend, which hides the request from that player and nobody else.
 
-## Redaction happens in the mod, and the backend still distrusts the upload
+A recording reads every item and name in view four times a second, and Minecraft's codec was most of what that cost: over a millisecond a pass with a full inventory and a crowd of armored mobs. Almost none of them change between passes, so the session encodes a value only when it differs from the copy it kept, and `PerfTest` caps both passes.
 
-A capture holds player names and private chat, and `PlayerNames` finds them by rules that a line nobody has seen can slip past. The mod redacts before it uploads, so a name never leaves the machine, using the same `PlayerNames` and the same redactor that cuts fixtures. The backend still treats every upload as sensitive, because the mod is open source and a modified one skips the redaction. The raw `chat` records are dropped instead of redacted, since `system` carries the same lines as events and a typed message sits in nested components there.
+## A capture is redacted by rules that say where a name sits
 
-What a player typed is found by shape, not by a list of formats. The server's whisper, party and message lines are in no capture, so a list would be a guess that passes its own tests. In a `system` line, whatever follows a known name and a `: ` is replaced. That costs the text of a server line that happens to have the same shape, and a line from a player the capture never names elsewhere still gets through. A component that spells a name across several pieces, one per color, is replaced by its redacted plain text, because no single string holds the name to replace.
+A capture holds player names and private chat, and a fixture cut from it goes into a public repository. `Redactor` rewrites a capture so it holds neither. `PlayerNames` is the one place that knows where the server puts a name, so the names `cutFixture` replaces everywhere are the names `FixtureLeakTest` looks for. The test cannot see typed text or a name kept to where a rule found it, which is why a fixture is still read before it is kept. Both live in `core` rather than the debug build, so that a release build can redact a capture as well.
+
+A redactor fails in two directions. A name it misses leaves the machine, and a word it takes for a name changes what the server sent, so a fixture replays a line the server never wrote. Each rule therefore says where in a text a name sits, and a name is always replaced there. A name a rule found is also replaced wherever else it stands, because names turn up where no rule looks, such as a head's item name, unless that would rewrite the server's own words. Two kinds are kept to the places a rule found them. A plain name on a player entity may be an NPC's, since the server's NPCs are player entities, some with plain names such as `Dungeons`. And a player can be named what the server calls itself or a place, as a staff account is named after the server, so a name that the sidebar's title, its `⏣` place, the tab list's area row or its header also shows is not replaced across the capture. A player named after a game word the server writes only in other places, such as `Eye`, still has it replaced everywhere.
+
+What a player typed is found by shape, not by a list of formats. The server's whisper, party and guild lines are in no capture, so a list would be a guess that passes its own tests. The shape is a known name followed by a `: ` on the same line, which the server never writes in its own lines; across every capture so far, no server line lost text to it. It costs the text of a server line that names a player and then has a `: `, and of a message that starts like a speaker's, `Word: `, without a tag such as `[NPC]`. And a message from a player no line of the capture names keeps both the name and the text.
+
+Typed text is found only in a `system` event, so a raw `chat` record, whose event carries the same line, is dropped, and so is an older capture's `system` line that does not read as today's event. A component that spells a name across several pieces, one per color, is replaced by its redacted plain text, because no single string holds the name to replace, and an older raw text that names someone loses its `§` codes for the same reason.
 
 The same holds for the lines the mod reports when a feature could not read them: the player opts in, names are replaced, and the backend keeps only one row per kind of line.
 

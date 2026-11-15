@@ -12,16 +12,24 @@ export interface Joined {
   readonly name: string;
 }
 
-/** Asks Mojang whether [name] joined with [serverId]. Null when it did not. */
+/** Asks Mojang whether [name] joined with [serverId]. Null when it did not, and an error when Mojang cannot say. */
 export type HasJoined = (name: string, serverId: string) => Promise<Joined | null>;
+
+const unavailable = () => new APIError("SERVICE_UNAVAILABLE", { message: "Mojang did not answer." });
 
 export const mojangHasJoined: HasJoined = async (name, serverId) => {
   const url = new URL("https://sessionserver.mojang.com/session/minecraft/hasJoined");
   url.searchParams.set("username", name);
   url.searchParams.set("serverId", serverId);
-  const response = await fetch(url);
-  if (response.status !== 200) {
+  // Only a 204 means nobody joined. Anything else is Mojang failing, which the player can retry, not a refusal.
+  const response = await fetch(url).catch(() => {
+    throw unavailable();
+  });
+  if (response.status === 204) {
     return null;
+  }
+  if (response.status !== 200) {
+    throw unavailable();
   }
   const profile = z.object({ id: z.string().regex(/^[0-9a-f]{32}$/), name: z.string() }).parse(await response.json());
   return { uuid: profile.id.replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, "$1-$2-$3-$4-$5"), name: profile.name };
@@ -42,13 +50,10 @@ export const minecraft = (hasJoined: HasJoined = mojangHasJoined) =>
         const serverId = Array.from(crypto.getRandomValues(new Uint8Array(20)), (byte) =>
           byte.toString(16).padStart(2, "0"),
         ).join("");
-        // Nothing else removes a challenge nobody answered, so each new one clears the expired ones.
+        // Nothing else removes a challenge or a login link nobody used, so each new challenge clears the expired ones.
         await ctx.context.adapter.deleteMany({
           model: "verification",
-          where: [
-            { field: "identifier", operator: "starts_with", value: `${PROVIDER}:` },
-            { field: "expiresAt", operator: "lt", value: new Date() },
-          ],
+          where: [{ field: "expiresAt", operator: "lt", value: new Date() }],
         });
         await ctx.context.internalAdapter.createVerificationValue({
           identifier: `${PROVIDER}:${serverId}`,

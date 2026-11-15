@@ -2,193 +2,182 @@ package io.github.noxaur.dsmod.edge.contribute
 
 import io.github.noxaur.dsmod.core.backend.Backend
 import io.github.noxaur.dsmod.core.backend.BackendException
-import io.github.noxaur.dsmod.core.backend.Identity
 import io.github.noxaur.dsmod.core.backend.Request
-import io.github.noxaur.dsmod.core.capture.CaptureIncompleteException
-import io.github.noxaur.dsmod.core.capture.sealCapture
+import io.github.noxaur.dsmod.core.capture.redactCapture
 import io.github.noxaur.dsmod.core.contribute.Kept
 import io.github.noxaur.dsmod.core.contribute.Requirements
 import io.github.noxaur.dsmod.core.contribute.Unknowns
 import io.github.noxaur.dsmod.core.feature.Game
+import io.github.noxaur.dsmod.core.text.TextBuilder
 import io.github.noxaur.dsmod.core.text.clock
 import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.edge.Account
 import io.github.noxaur.dsmod.edge.Background
-import io.github.noxaur.dsmod.edge.Browser
-import io.github.noxaur.dsmod.edge.Build
 import io.github.noxaur.dsmod.edge.Chat
 import io.github.noxaur.dsmod.edge.DsModClient
-import io.github.noxaur.dsmod.edge.capture.CaptureSession
 import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
-import java.net.URLEncoder
+import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.fileSize
+import kotlin.io.path.name
 
 /**
- * Everything a player does with ds-mod's backend: offers to record, `/dsmod login`, and the lines the mod could not read.
- * Nothing here contacts the backend until the player uses one of them or has switched the report on, and every call
- * runs on [Backend]'s own thread and answers on the client thread.
+ * What a player does for ds-mod's developers: record the requests they qualify for, and, when they switch it on,
+ * report the lines the mod could not read. Nothing here contacts the backend until the player does one of these.
+ * Network calls run on [Account.backend]'s thread, disk work on [Background.io], and what the player is told is
+ * sent from the client thread. `specs/Contribute.tla` is the life of a run, and the code follows its names.
  */
 object Contribute {
-    private const val SETTLE_SECONDS = 4L
+    private const val QUIT_SECONDS = 4L
+    private val log = LoggerFactory.getLogger("dsmod")
 
-    private val identity = object : Identity {
-        override val name: String get() = Minecraft.getInstance().user.name
+    /** Statuses that say the backend will never take this recording, so keeping it would only fail again. */
+    private val refused = setOf(400, 404, 409, 413)
 
-        override fun join(serverId: String) {
-            val client = Minecraft.getInstance()
-            val user = client.user
-            // The same call the game makes when it joins an online server. The access token goes to Mojang and nowhere else.
-            client.services().sessionService().joinServer(user.profileId, user.accessToken, serverId)
-        }
-    }
-    private val backend by lazy { Backend(Build.backend, identity, Build.version) }
-    private val unknowns = Unknowns { DsModClient.game.tabPlayers + identity.name }
+    /** Kept files an upload holds, so a resend leaves them alone. */
+    private val claimed = ConcurrentHashMap.newKeySet<Path>()
+    private val uploads = ConcurrentHashMap.newKeySet<CompletableFuture<*>>()
+
+    /** The startup sweep. Offers are fetched only after it, so it never deletes a capture a run is writing. */
+    private lateinit var swept: CompletableFuture<Unit>
+
+    private val unknowns = Unknowns { DsModClient.game.tabPlayers + Account.name }
     private val hear = { feature: String, sample: String -> unknowns.see(feature, sample) }
-    private val inFlight = ConcurrentHashMap.newKeySet<CompletableFuture<*>>()
 
-    private val rejected = setOf(404, 409)
+    private fun tell(build: TextBuilder.() -> Unit) = text(build).let { line -> Minecraft.getInstance().execute { Chat.send(line) } }
 
-    private fun tell(build: io.github.noxaur.dsmod.core.text.TextBuilder.() -> Unit) = Minecraft.getInstance().execute { Chat.send(text(build)) }
-
-    private fun why(error: Throwable): String {
-        val e = (error as? CompletionException)?.cause ?: error
-        if (e is CaptureIncompleteException) return "The recording was not fully written, so it was thrown away. Accept the request again to record it."
-        if (e !is BackendException) return "Something went wrong, and nothing was sent."
-        return when (e.status) {
-            null -> e.message.orEmpty()
-            400 -> "The backend refused it as empty or too big."
-            401 -> "The backend would not sign you in."
-            404 -> "The backend does not know that request."
-            409 -> "You have already sent this one, or it is no longer open."
-            else -> "The backend answered ${e.status}."
-        }
-    }
-
-    /** Opens the offers, and fills them in when the backend answers. */
-    fun open() {
-        val client = Minecraft.getInstance()
-        val screen = ContributeScreen()
-        client.setScreenAndShow(screen)
-        val areas = DsModClient.game.areas.value.names
-        backend.async { requests() }.whenComplete { requests, error ->
-            client.execute {
-                if (error != null) screen.fail(why(error)) else screen.offer(requests.filter { Requirements.qualifies(it, areas) })
-            }
-        }
-    }
-
-    /** Tells the backend this player does not want [request], so that it is not offered again. */
-    fun skip(request: Request) {
-        backend.async { skip(request.id) }.whenComplete { _, error -> if (error != null) tell { bad("The backend could not hide it: " + why(error)) } }
-    }
-
-    /** Starts the brief of [request], which the player works through with the HUD. */
-    fun accept(request: Request) {
-        if (Recording.busy || Recorder.running) {
-            tell { bad("Finish or cancel the recording you have first.") }
-            return
-        }
-        Recording.start(request.brief, request.id, request.timeoutSeconds)
-        tell {
-            body("Press "); value(Recording.key()); body(" to start recording \"${request.brief.name}\", and again after each step. ")
-            body("You have "); value(clock(request.timeoutSeconds * 1000L)); body(". "); action("/dsmod cancel"); body(" stops without sending.")
-        }
-    }
-
-    /** The folder of redacted recordings that are waiting to be sent, and the one a run records into. */
+    /** The folder a request's run records into, and where a redacted recording waits to be sent. */
     fun dir(): Path = FabricLoader.getInstance().gameDir.resolve("dsmod/contributions")
 
-    private fun track(work: CompletableFuture<*>) {
-        inFlight += work
-        work.whenComplete { _, _ -> inFlight -= work }
+    fun register() {
+        // What a run left when the game stopped holds names and chat, and is never sent.
+        swept = CompletableFuture.supplyAsync({ Kept.sweep(dir()) }, Background.io)
+            .exceptionally { log.error("Could not clear what an earlier recording left in {}", dir(), it) }
     }
 
-    /**
-     * Says how an upload of [gz] went. A recording the backend no longer wants is deleted, and any other failure
-     * keeps it for `/dsmod submit`. Runs off the client thread.
-     */
-    private fun uploaded(gz: Path, error: Throwable?) {
-        val failure = (error as? CompletionException)?.cause ?: error
-        when {
-            error == null -> tell { good("Sent. Thank you!") }
-            failure is BackendException && failure.status in rejected -> {
-                Files.deleteIfExists(gz)
-                tell { bad("Not sent. That request is no longer open, so the recording was deleted.") }
-            }
-            else -> {
-                val kept = Files.exists(gz)
-                tell {
-                    bad("Not sent. " + why(error))
-                    if (kept) { body(" Your recording is kept. "); action("/dsmod submit"); body(" tries again.") }
-                }
-            }
+    /** Opens the screen of offers, and fills it in when the backend answers. */
+    fun open() {
+        val client = Minecraft.getInstance()
+        val screen = ContributeScreen(client.gui.screen(), signingIn = !Account.backend.signedIn)
+        client.setScreenAndShow(screen)
+        val places = DsModClient.game.places.value
+        swept.thenCompose { Account.backend.async { requests() } }.whenComplete { requests, error ->
+            client.execute { if (error != null) screen.fail(Account.why(error)) else screen.offer(requests.filter { Requirements.qualifies(it, places) }) }
         }
     }
 
-    private fun upload(requestId: String, gz: Path): CompletableFuture<Boolean> =
-        backend.async { submit(requestId, gz); Files.deleteIfExists(gz) }.whenComplete { _, error -> uploaded(gz, error) }
-
-    /**
-     * Redacts the finished capture into [Kept]'s folder, uploads it, and says how it went. [session] is closed first,
-     * off the client thread, and a capture its writer did not finish is not sent.
-     */
-    fun send(requestId: String, session: CaptureSession, raw: Path) {
-        val gz = raw.resolveSibling(Kept.name(requestId, raw.fileName.toString()))
-        val own = DsModClient.game.tabPlayers + identity.name
-        tell { body("Sending your recording.") }
-        val sealed = CompletableFuture.supplyAsync({ sealCapture(session, raw, gz, own) }, Background.io)
-        sealed.whenComplete { _, error -> if (error != null) tell { bad("Not sent. " + why(error)) } }
-        track(sealed.thenCompose { upload(requestId, gz) })
+    /** Tells the backend this player does not want [request], so that it is not offered to them again. */
+    fun skip(request: Request) {
+        Account.backend.async { skip(request.id) }.whenComplete { _, error -> if (error != null) tell { bad("Could not hide that request. " + Account.why(error)) } }
     }
 
-    /** Sends the recordings a failed upload kept, for `/dsmod submit` when no run is on. */
-    fun resend() {
-        track(
-            CompletableFuture.supplyAsync({ Kept.waiting(dir()) }, Background.io).thenAccept { files ->
-                if (files.isEmpty()) {
-                    tell { body("Nothing is waiting to be sent. Accept a request in Contribute to record one.") }
-                    return@thenAccept
-                }
-                tell { body("Sending ${files.size} kept recording" + if (files.size == 1) "." else "s.") }
-                files.forEach { file -> Kept.requestId(file)?.let { track(upload(it, file)) } }
+    /** Starts the brief of [request], which the player works through with the HUD. False when a run is already on. */
+    fun accept(request: Request): Boolean {
+        if (Recording.busy || Recorder.running) {
+            Chat.send(text { bad("Finish the recording you have first, or type "); action("/dsmod cancel"); bad(".") })
+            return false
+        }
+        Recording.contribute(request)
+        Chat.send(
+            text {
+                body("Press "); value(Recording.key()); body(" to start recording, and again after each step. You have ")
+                value(clock(request.timeoutSeconds * 1000L)); body(". "); action("/dsmod cancel"); body(" stops without sending.")
             },
         )
+        return true
     }
 
-    /** Deletes what a run that was cut short left, which holds names and chat. Call it off the client thread, at start. */
-    fun sweep() = Kept.sweep(dir())
-
-    /** Gives a redaction or an upload that is already going a few seconds to finish, as the game closes. */
-    fun settle() {
-        val end = System.nanoTime() + TimeUnit.SECONDS.toNanos(SETTLE_SECONDS)
-        try {
-            // The io thread is one queue, so a task behind the redactions and closes in it is done when they are.
-            CompletableFuture.supplyAsync({}, Background.io).get(SETTLE_SECONDS, TimeUnit.SECONDS)
-            CompletableFuture.allOf(*inFlight.toTypedArray()).get(maxOf(end - System.nanoTime(), 0), TimeUnit.NANOSECONDS)
-        } catch (_: Exception) {
-            // Out of time or failed. A recording that did not go stays for `/dsmod submit`, and a raw one is swept at the next start.
+    /** `/dsmod submit`: ends the run and sends it, or sends what earlier uploads kept. */
+    fun submit() {
+        when {
+            Recording.submit() -> {}
+            Recording.busy -> Chat.send(text { bad("Nothing is recorded yet. Press "); value(Recording.key()); bad(" to start recording.") })
+            else -> resend()
         }
     }
 
-    /** Trades the session for a link that signs the website in once, and opens it. The token never reaches chat or a log. */
-    fun login() {
-        tell { body("Signing in to the website.") }
-        backend.async { oneTimeToken() }.thenApplyAsync({ token ->
-            Browser.open(Build.website + "/login#" + URLEncoder.encode(token, Charsets.UTF_8))
-        }, Background.io).whenComplete { opened, error ->
-            when {
-                error != null -> tell { bad("Could not sign in. " + why(error)) }
-                opened == false -> tell { bad("Could not open your browser. Open ${Build.website} yourself.") }
-                else -> tell { good("Your browser is open on your ds-mod account.") }
+    /** `/dsmod cancel`. */
+    fun cancel() {
+        Chat.send(if (Recording.cancel()) text { body("Recording cancelled. Nothing was sent.") } else text { bad("No recording to cancel.") })
+    }
+
+    /**
+     * What to do with [raw] once the recorder has finished it, for a run of [request]. Call it on the client thread
+     * and hand the result to `Recorder.stop`, which calls it on the io thread: a whole capture is redacted into a
+     * `.part`, claimed, renamed into place and uploaded, and the raw file is deleted either way.
+     */
+    fun seal(request: Request, raw: Path): (whole: Boolean) -> Unit {
+        val own = setOf(Account.name)
+        val gz = raw.resolveSibling(Kept.name(request.id, raw.name))
+        val part = raw.resolveSibling(gz.name + ".part")
+        return seal@{ whole ->
+            try {
+                if (!whole) return@seal tell { bad("The recording was not fully written, so it was thrown away. Accept the request again to record it.") }
+                redactCapture(raw, part, own)
+                if (part.fileSize() > Backend.MAX_UPLOAD) {
+                    Files.delete(part)
+                    return@seal tell { bad("The recording is too long to send, so it was thrown away. Finish sooner next time.") }
+                }
+                claimed.add(gz)
+                Files.move(part, gz, StandardCopyOption.ATOMIC_MOVE)
+                tell { body("Sending your recording.") }
+                upload(request.id, gz)
+            } catch (e: Exception) {
+                log.error("Could not redact the recording {}", raw, e)
+                claimed.remove(gz)
+                Files.deleteIfExists(part)
+                tell { bad("The recording could not be prepared, so nothing was sent.") }
+            } finally {
+                Files.deleteIfExists(raw)
             }
         }
+    }
+
+    /** Sends a claimed [gz] and says how it went. A recording the backend refuses for good is deleted, and any other failure keeps it. */
+    private fun upload(requestId: String, gz: Path) {
+        val upload = Account.backend.async { submit(requestId, gz) }.whenComplete { _, error ->
+            val failure = (error as? CompletionException)?.cause ?: error
+            try {
+                when {
+                    error == null -> Files.deleteIfExists(gz).also { tell { good("Sent. Thank you!") } }
+                    failure is BackendException && failure.status in refused ->
+                        Files.deleteIfExists(gz).also { tell { bad("Not sent, and deleted. " + Account.why(failure)) } }
+                    else -> tell { bad("Not sent. " + Account.why(failure!!) + " Your recording is kept. "); action("/dsmod submit"); bad(" tries again.") }
+                }
+            } finally {
+                claimed.remove(gz)
+            }
+        }
+        uploads.add(upload)
+        upload.whenComplete { _, _ -> uploads.remove(upload) }
+    }
+
+    /** Sends the recordings earlier uploads kept, except one an upload already holds. */
+    private fun resend() {
+        Account.backend.async { Kept.waiting(dir()).filter { claimed.add(it) } }.whenComplete { files, error ->
+            when {
+                error != null -> tell { bad("Could not read the kept recordings.") }
+                files.isEmpty() -> tell { body("Nothing is waiting to be sent. Open Contribute in the settings to record a request.") }
+                else -> {
+                    tell { body("Sending ${files.size} kept recording" + if (files.size == 1) "." else "s.") }
+                    files.forEach { upload(Kept.requestId(it)!!, it) }
+                }
+            }
+        }
+    }
+
+    /** Quitting, once the io thread is done: gives an upload in progress a few seconds. One that does not finish is kept for a resend. */
+    fun quit() {
+        runCatching { CompletableFuture.allOf(*uploads.toTypedArray()).get(QUIT_SECONDS, TimeUnit.SECONDS) }
     }
 
     /** Called every tick. Listens for lines the mod could not read while the player allows it, and sends them rarely. */
@@ -201,10 +190,10 @@ object Contribute {
         }
         if (!unknowns.due(now)) return
         val sightings = unknowns.take()
-        backend.async { unknowns(sightings) }.whenComplete { _, error ->
+        Account.backend.async { unknowns(sightings) }.whenComplete { _, error ->
             Minecraft.getInstance().execute {
                 unknowns.finished(sightings, delivered = error == null)
-                if (error != null) game.metrics.fail("contribute.unknowns", RuntimeException(why(error)))
+                if (error != null) game.metrics.fail("contribute.unknowns", RuntimeException(Account.why(error)))
             }
         }
     }

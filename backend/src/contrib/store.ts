@@ -1,6 +1,6 @@
 import { Context, Effect } from "effect";
 
-import type { Request, Unknown } from "./model.ts";
+import type { RecordingRequest, Unknown } from "./model.ts";
 
 export interface SubmissionRow {
   readonly id: string;
@@ -18,9 +18,9 @@ export interface SubmissionRow {
 export class Store extends Context.Service<
   Store,
   {
-    readonly insertRequest: (request: Request) => Effect.Effect<void>;
-    readonly requests: Effect.Effect<readonly Request[]>;
-    readonly request: (id: string) => Effect.Effect<Request | null>;
+    readonly insertRequest: (request: RecordingRequest) => Effect.Effect<void>;
+    readonly requests: Effect.Effect<readonly RecordingRequest[]>;
+    readonly request: (id: string) => Effect.Effect<RecordingRequest | null>;
     /** Marks an open request filled. A closed one stays closed. */
     readonly fill: (id: string) => Effect.Effect<void>;
     readonly close: (id: string) => Effect.Effect<void>;
@@ -31,7 +31,7 @@ export class Store extends Context.Service<
     readonly doneBy: (userId: string) => Effect.Effect<readonly string[]>;
     /** False, and nothing is kept, when this player already has a run for the request. */
     readonly insertSubmission: (row: SubmissionRow, capture: Uint8Array) => Effect.Effect<boolean>;
-    /** Oldest first. */
+    /** Oldest first, in the same order every time, because a run's letter is its place in this list. */
     readonly submissions: Effect.Effect<readonly SubmissionRow[]>;
     readonly submissionsOf: (requestId: string) => Effect.Effect<readonly SubmissionRow[]>;
     readonly capture: (submissionId: string) => Effect.Effect<Uint8Array | null>;
@@ -46,12 +46,12 @@ export class Store extends Context.Service<
 
 /** A store that forgets everything when the process ends, for the tests. */
 export const memoryStore = (): Store["Service"] => {
-  const requests: Request[] = [];
+  const requests: RecordingRequest[] = [];
   const skips: { requestId: string; userId: string }[] = [];
   const submissions: SubmissionRow[] = [];
   const captures = new Map<string, Uint8Array>();
   const unknowns = new Map<string, Unknown>();
-  const setStatus = (id: string, status: Request["status"], from?: Request["status"]) =>
+  const setStatus = (id: string, status: RecordingRequest["status"], from?: RecordingRequest["status"]) =>
     Effect.sync(() => {
       const index = requests.findIndex((request) => request.id === id);
       const found = requests[index];
