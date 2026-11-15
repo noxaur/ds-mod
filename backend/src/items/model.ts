@@ -57,6 +57,11 @@ const Scalar = Schema.Union([Schema.String, Schema.Finite, Schema.Boolean]);
 export const ItemFacts = Schema.Struct({
   /** `item_data.item_type`, such as `SWORD`. Left out for the server's `NONE`. */
   itemType: Schema.optionalKey(Schema.String),
+  /**
+   * `item_data.skull`, the server's word on whether the item is a head. It can disagree with the material: a helmet
+   * drawn as a `player_head` from a skin says false.
+   */
+  skull: Schema.optionalKey(Schema.Boolean),
   /** What an NPC pays for one, in coins. */
   npcSellPrice: Schema.optionalKey(Schema.Number),
   /** The reforge's name as the server sends it, such as `Arcane`. */

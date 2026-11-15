@@ -5,6 +5,7 @@ import io.github.notenoughupdates.moulconfig.Config
 import io.github.notenoughupdates.moulconfig.annotations.Category
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorButton
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDraggableList
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDropdown
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorKeybind
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorSlider
@@ -16,7 +17,17 @@ import io.github.noxaur.dsmod.core.camera.ThirdPerson
 import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
+import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
+import io.github.noxaur.dsmod.core.feature.general.EquipmentLook
+import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
+import io.github.noxaur.dsmod.core.feature.general.InventoryLook
+import io.github.noxaur.dsmod.core.feature.general.InventoryRow
+import io.github.noxaur.dsmod.core.feature.general.PetLook
+import io.github.noxaur.dsmod.core.feature.general.PetPosition
+import io.github.noxaur.dsmod.core.hand.SwingStyle
+import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.input.CommandBind
+import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.TabLayout
@@ -165,6 +176,120 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var explosionParticleHider = false
+
+        @Expose
+        @ConfigOption(name = "Animations", desc = "Shape how your held item swings and sits with the settings below.")
+        @ConfigEditorBoolean
+        @JvmField
+        var animations = true
+
+        @Expose
+        @ConfigOption(name = "Swing Style", desc = "Pick how your held item moves when you swing.")
+        @ConfigEditorDropdown
+        @JvmField
+        var swingStyle = SwingStyle.VANILLA
+
+        @Expose
+        @ConfigOption(name = "Swing Speed", desc = "Speed your swing up, or slow it down below 1.")
+        @ConfigEditorSlider(minValue = 0.1f, maxValue = 3f, minStep = 0.1f)
+        @JvmField
+        var swingSpeed = 1f
+
+        @Expose
+        @ConfigOption(name = "Ignore Haste", desc = "Swing at the same pace under Haste or Mining Fatigue.")
+        @ConfigEditorBoolean
+        @JvmField
+        var ignoreHaste = false
+
+        @Expose
+        @ConfigOption(name = "No Equip Reset", desc = "Keep your held item up instead of dipping after a swing or use.")
+        @ConfigEditorBoolean
+        @JvmField
+        var noEquipReset = false
+
+        @Expose
+        @ConfigOption(name = "Item Size", desc = "Grow or shrink your held item.")
+        @ConfigEditorSlider(minValue = 0.1f, maxValue = 2f, minStep = 0.05f)
+        @JvmField
+        var itemSize = 1f
+
+        @Expose
+        @ConfigOption(name = "Item Side", desc = "Move your held item out to the side, or in below zero.")
+        @ConfigEditorSlider(minValue = -1f, maxValue = 1f, minStep = 0.05f)
+        @JvmField
+        var itemSide = 0f
+
+        @Expose
+        @ConfigOption(name = "Item Height", desc = "Raise your held item, or lower it below zero.")
+        @ConfigEditorSlider(minValue = -1f, maxValue = 1f, minStep = 0.05f)
+        @JvmField
+        var itemHeight = 0f
+
+        @Expose
+        @ConfigOption(name = "Item Depth", desc = "Push your held item away, or bring it nearer below zero.")
+        @ConfigEditorSlider(minValue = -1f, maxValue = 1f, minStep = 0.05f)
+        @JvmField
+        var itemDepth = 0f
+
+        @Expose
+        @ConfigOption(name = "Equipment Display", desc = "Show your armor and pet on the HUD.")
+        @ConfigEditorBoolean
+        @JvmField
+        var equipmentDisplay = true
+
+        @Expose
+        @ConfigOption(name = "Equipment Pieces", desc = "Pick the pieces to show, and drag them into order.")
+        @ConfigEditorDraggableList(requireNonEmpty = true)
+        @JvmField
+        var equipmentPieces: MutableList<EquipmentPiece> = EquipmentPiece.entries.toMutableList()
+
+        @Expose
+        @ConfigOption(name = "Equipment Layout", desc = "Line the pieces up in a row or a column.")
+        @ConfigEditorDropdown
+        @JvmField
+        var equipmentLayout = EquipmentLayout.ROW
+
+        @Expose
+        @ConfigOption(name = "Pet Look", desc = "Show your pet as its head, or as its name and level.")
+        @ConfigEditorDropdown
+        @JvmField
+        var petLook = PetLook.ICON
+
+        @Expose
+        @ConfigOption(name = "Pet Position", desc = "Put your pet among the armor, or on a row above or below it.")
+        @ConfigEditorDropdown
+        @JvmField
+        var petPosition = PetPosition.WITH_ARMOR
+
+        @Expose
+        @ConfigOption(name = "Equipment Look", desc = "Show the pieces on the plate, on nothing, or in hotbar slots.")
+        @ConfigEditorDropdown
+        @JvmField
+        var equipmentLook = EquipmentLook.PLATE
+
+        @Expose
+        @ConfigOption(name = "Equipment Placement", desc = "Keep the pieces where you put them, or beside your hotbar.")
+        @ConfigEditorDropdown
+        @JvmField
+        var equipmentPlacement = HudDock.FREE
+
+        @Expose
+        @ConfigOption(name = "Inventory Preview", desc = "Show a grid of the items in your inventory on the HUD.")
+        @ConfigEditorBoolean
+        @JvmField
+        var inventoryPreview = false
+
+        @Expose
+        @ConfigOption(name = "Inventory Rows", desc = "Pick the rows to show, and drag them into order.")
+        @ConfigEditorDraggableList(requireNonEmpty = true)
+        @JvmField
+        var inventoryRows: MutableList<InventoryRow> = mutableListOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM)
+
+        @Expose
+        @ConfigOption(name = "Inventory Look", desc = "Show the items on the plate, on nothing, or as your inventory.")
+        @ConfigEditorDropdown
+        @JvmField
+        var inventoryLook = InventoryLook.PLATE
 
         @Expose
         @ConfigOption(name = "Camera", desc = "Shape the third-person view with the settings below.")
@@ -322,6 +447,18 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var themedMenus = true
+
+        @Expose
+        @ConfigOption(name = "Menu Look", desc = "Draw themed menus solid, or as glass that shows the world.")
+        @ConfigEditorDropdown
+        @JvmField
+        var menuLook = MenuLook.SOLID
+
+        @Expose
+        @ConfigOption(name = "Glass Opacity", desc = "Set how dark the glass is, from clear at 0 to solid at 100.")
+        @ConfigEditorSlider(minValue = 0f, maxValue = 100f, minStep = 5f)
+        @JvmField
+        var glassOpacity = 60f
 
         @Expose
         @ConfigOption(name = "Stable Menus", desc = "Keep Go Back, Close and your inventory in place in every menu.")

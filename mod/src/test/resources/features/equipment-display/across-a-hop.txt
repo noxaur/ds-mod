@@ -1,0 +1,7 @@
++   0.0s > (sidebar) Name: Player1; Purse: 528,407,299; Pet: [Lvl 100] Ender Dragon; Booster: Whale Booster; ⏣ Dragon's Den; Quest: Market Trader; Use the Auction House 0/1; Dragon HP: 644,000❤; Your Damage: 0; dragsim.co
+               [Lvl 100] Ender Dragon
++   1.5s > (sidebar) Name: Player1; Purse: 528,407,299; Pet: [Lvl 100] Ender Dragon; Booster: Whale Booster; ⏣ Dragon's Den; Quest: Market Trader; Use the Auction House 0/1; Dragon HP: 574,000❤; Your Damage: 0; dragsim.co
++   2.0s > (sidebar) 
++   2.4s > (the world changed)
++   2.5s > (sidebar) 
++   3.0s > (sidebar) Name: Player1; Booster: Whale Booster; ⏣ Village; Pet: [Lvl 100] Ender Dragon; Purse: 528,407,299; Quest: Market Trader; Use the Auction House 0/1; dragsim.co

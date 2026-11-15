@@ -1,6 +1,6 @@
 import type { Catalog } from "../items/render/catalog.ts";
 import { named, statSheet } from "../items/render/facts.ts";
-import { count, lists, numbers, record, text } from "../items/render/read.ts";
+import { count, lists, numberEntries, record, text } from "../items/render/read.ts";
 import { statSet } from "../items/render/upstream.ts";
 import { titleCase } from "../items/title.ts";
 import type { Profile } from "./model.ts";
@@ -22,7 +22,7 @@ export const bestiary = (raw: WireProfile["bestiary"]): Profile["bestiary"] =>
     .toSorted((a, b) => b.kills - a.kills);
 
 export const collections = (catalog: Catalog, raw: unknown): Profile["collections"] =>
-  Object.entries(numbers(raw) ?? {}).map(([id, amount]) => ({ ...named(catalog, id), amount }));
+  Object.entries(numberEntries(raw)).map(([id, amount]) => ({ ...named(catalog, id), amount }));
 
 export const rngMeters = (raw: unknown): Profile["rngMeters"] =>
   Object.entries(record(raw)).map(([id, meter]) => ({
@@ -47,15 +47,15 @@ export const dungeons = (progression: Progression, raw: unknown): Profile["dunge
   if (Object.keys(source).length === 0) {
     return null;
   }
-  const completions = numbers(source["completions"]) ?? {};
-  const scores = numbers(source["best_score"]) ?? {};
+  const completions = numberEntries(source["completions"]);
+  const scores = numberEntries(source["best_score"]);
   const selected = text(source["class"]);
   return {
     selectedClass: selected === undefined || selected === "" ? null : { id: selected, name: titleCase(selected) },
     secrets: count(source["secrets"]) ?? 0,
     zombieKills: count(source["zombie_kills"]) ?? 0,
     skeletorKills: count(source["skeletor_kills"]) ?? 0,
-    classes: Object.entries(numbers(source["class_xp"]) ?? {}).map(([id, xp]) =>
+    classes: Object.entries(numberEntries(source["class_xp"])).map(([id, xp]) =>
       skillProgress(progression, "catacombs", xp, id),
     ),
     floors: [...new Set([...Object.keys(completions), ...Object.keys(scores)])]
@@ -66,7 +66,7 @@ export const dungeons = (progression: Progression, raw: unknown): Profile["dunge
         completions: completions[id] ?? 0,
         bestScore: scores[id] ?? null,
       })),
-    essence: Object.entries(numbers(source["essence"]) ?? {}).map(([id, amount]) => ({
+    essence: Object.entries(numberEntries(source["essence"])).map(([id, amount]) => ({
       id,
       name: titleCase(id),
       amount,
@@ -89,7 +89,7 @@ export const hotd = (raw: unknown): Profile["hotd"] => {
     resets: count(source["resets"]) ?? 0,
     ability: ability === undefined || ability === "" ? null : { id: ability, name: titleCase(ability) },
     tokens: count(source["tokens"]) ?? 0,
-    nodes: Object.entries(numbers(source["nodes"]) ?? {}).map(([id, level]) => ({
+    nodes: Object.entries(numberEntries(source["nodes"])).map(([id, level]) => ({
       id,
       name: titleCase(id),
       level,

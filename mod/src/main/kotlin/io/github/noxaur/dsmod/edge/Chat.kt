@@ -36,15 +36,12 @@ object Chat {
 fun Text.toComponent(): MutableComponent =
     spans.fold(Component.empty()) { line, span -> line.append(Component.literal(span.text).withColor(span.rgb)) }
 
-/**
- * The server's own text, in the styles it came with. An item's name and lore are drawn italic by vanilla unless a
- * span says otherwise, so every span states its italic, and the game's text matches the server's.
- */
+/** The component [ServerText] was read from, styled span by span, so a lore line keeps the server's colors and no italics. */
 fun ServerText.toComponent(): MutableComponent = spans.fold(Component.empty()) { line, span ->
     line.append(
         Component.literal(span.text).withStyle {
-            it.withColor(span.color?.let(TextColor::fromRgb)).withBold(span.bold).withItalic(span.italic)
-                .withUnderlined(span.underlined).withStrikethrough(span.strikethrough).withObfuscated(span.obfuscated)
+            it.withColor(span.color?.let(TextColor::fromRgb)).withBold(span.bold).withItalic(span.italic).withUnderlined(span.underlined)
+                .withStrikethrough(span.strikethrough).withObfuscated(span.obfuscated)
         },
     )
 }

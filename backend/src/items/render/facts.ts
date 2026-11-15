@@ -4,7 +4,7 @@ import { colorOf } from "../legacy.ts";
 import type { ItemFacts, Named, StatSheet, StatValue } from "../model.ts";
 import { titleCase } from "../title.ts";
 import type { Catalog } from "./catalog.ts";
-import { count, flag, lenient, numbers, record, text } from "./read.ts";
+import { count, flag, lenient, numberEntries, record, scalarEntries, text } from "./read.ts";
 import type { StatSet, UpstreamItem } from "./upstream.ts";
 
 const GRAY = "#AAAAAA";
@@ -45,7 +45,6 @@ export const statSheet = (catalog: Catalog, set: StatSet): StatSheet => ({
 const empty = (set: StatSet): boolean =>
   [set.base, set.additive, set.multiplicative, set.increaseMax].every((group) => Object.keys(group).length === 0);
 
-const Scalars = lenient(Schema.Record(Schema.String, Schema.Union([Schema.String, Schema.Finite, Schema.Boolean])));
 const Part = lenient(Schema.String);
 
 /** A part's id, such as the drill's engine, with its name. */
@@ -86,15 +85,16 @@ export const factsOf = (catalog: Catalog, item: UpstreamItem): ItemFacts | undef
   });
   const dye = text(record(item.dye)["dyeId"]);
   const drill = readDrill(catalog, item.extra["drill"]);
-  const coating = Scalars(item.extra["coating"]) ?? {};
-  const attunement = Scalars(item.extra["attunement"]) ?? {};
-  const scrolls = Object.entries(numbers(item.extra["wither_scrolls"]) ?? {}).map(([id, value]) => ({
+  const coating = scalarEntries(item.extra["coating"]);
+  const attunement = scalarEntries(item.extra["attunement"]);
+  const scrolls = Object.entries(numberEntries(item.extra["wither_scrolls"])).map(([id, value]) => ({
     ...named(catalog, id),
     value,
   }));
-  const upgrade = numbers(item.extra["dungeon_upgrade"]) ?? {};
+  const upgrade = numberEntries(item.extra["dungeon_upgrade"]);
   const facts: ItemFacts = {
     ...(item.type === "NONE" || item.type === "" ? {} : { itemType: item.type }),
+    ...(item.skull === undefined ? {} : { skull: item.skull }),
     ...(item.npcSellPrice === undefined ? {} : { npcSellPrice: item.npcSellPrice }),
     ...(item.reforge === "" ? {} : { reforge: item.reforge }),
     ...(item.stars > 0 ? { stars: Math.trunc(item.stars) } : {}),

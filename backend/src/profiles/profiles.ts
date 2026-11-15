@@ -125,6 +125,8 @@ export const profile = Effect.fn(function* (name: string, profileId: string | un
       selected: other.selected === true,
     })),
     profileId: current.id,
+    profileName: parseLegacy(current.profile_name),
+    profileMode: current.profile_mode,
     skills: Object.entries(current.skills ?? {}).map(([skill, xp]) => skillProgress(progression, skill, xp)),
     slayers: slayerProgress(current.slayer ?? {}),
     stats: statsOf(current),

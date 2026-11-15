@@ -26,7 +26,7 @@ class ItemSightingsTest {
         data: String = """{"item_data":{"item_id":"scylla","uuid":"$uuid","rarity":"LEGENDARY"}}""",
         lore: List<ServerText> = listOf(text("Damage: +300")),
         glint: Boolean = true,
-    ) = Item("minecraft:iron_sword", 1, text("Scylla"), lore, json(data), glint)
+    ) = Item("minecraft:iron_sword", 1, text("Scylla"), lore, json(data), foil = glint)
 
     @Test
     fun `an item of the server's is a sighting, and one without an id is not`() {
@@ -81,16 +81,12 @@ class ItemSightingsTest {
     }
 
     @Test
-    fun `a head keeps its skin url and loses the player it names`() {
-        val property = Base64.getEncoder().encodeToString(
-            """{"timestamp":1,"profileId":"$uuid","profileName":"Zed","textures":{"SKIN":{"url":"http://textures.minecraft.net/texture/abc","metadata":{"model":"slim"}}}}""".toByteArray(),
-        )
-        val cut = assertNotNull(Skulls.withoutPlayer(property))
-        val decoded = String(Base64.getDecoder().decode(cut))
+    fun `a head goes as its skin url alone, with no player beside it`() {
+        sightings.see(item().copy(id = "minecraft:player_head", skin = "abc"))
+        val texture = assertNotNull(sightings.take().single().skullTexture)
 
-        assertEquals("""{"textures":{"SKIN":{"url":"http://textures.minecraft.net/texture/abc"}}}""", decoded)
-        assertNull(Skulls.withoutPlayer("not base64!"))
-        assertNull(Skulls.withoutPlayer(Base64.getEncoder().encodeToString("""{"textures":{}}""".toByteArray())))
+        assertEquals("""{"textures":{"SKIN":{"url":"http://textures.minecraft.net/texture/abc"}}}""", String(Base64.getDecoder().decode(texture)))
+        assertEquals(texture, Skulls.property("abc"))
     }
 
     @Test
@@ -113,7 +109,7 @@ class ItemSightingsTest {
 
         val long = ItemSightings { emptySet() }
         long.see(item(data = """{"item_data":{"item_id":"${"x".repeat(129)}"}}"""))
-        long.see(item().copy(skull = "x".repeat(4097)))
+        long.see(item().copy(skin = "x".repeat(4097)))
         long.see(item(lore = List(120) { text("line $it") }))
         assertEquals(80, long.take().single().lore.size)
     }

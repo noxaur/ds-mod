@@ -14,9 +14,11 @@
     "DropKeyMixin",
     "ExplosionParticleMixin",
     "FullbrightMixin",
+    "HeldItemMixin",
     "HudHotbarMixin",
     "KeyInputMixin",
     "KeyPressMixin",
+    "MenuBackdropMixin",
     "MenuBackgroundMixin",
     "MenuLabelMixin",
     "RecipeButtonMixin",
@@ -25,6 +27,7 @@
     "PerspectiveKeyMixin",
     "ServerPacketsMixin",
     "SlotClickMixin",
+    "SwingSpeedMixin",
     "TooltipMixin"
   ],
   "injectors": {

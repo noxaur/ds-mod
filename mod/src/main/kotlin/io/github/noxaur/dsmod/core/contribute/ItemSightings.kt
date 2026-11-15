@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.SlotChanged
+import io.github.noxaur.dsmod.core.game.Skulls
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -24,7 +25,9 @@ class ItemSightings(private val own: () -> Set<String>) :
     fun see(item: Item) {
         if (full) return
         val redacted = (Redactor(own()).redact(SlotChanged(0, item)) as SlotChanged).item ?: return
-        add(sighting(redacted) ?: return)
+        // The redactor drops a skin, as a capture must, but a head's texture is what a sighting is for. The skin is only
+        // its address, with no name or id beside it, and the backend draws it only once a second player saw it.
+        add(sighting(redacted.copy(skin = item.skin)) ?: return)
     }
 
     private fun sighting(item: Item): ItemSighting? {
@@ -37,9 +40,9 @@ class ItemSightings(private val own: () -> Set<String>) :
             skinId,
             item.name?.let(::withoutUuids) ?: ServerText(emptyList()),
             item.lore.take(MAX_LORE).map(::withoutUuids),
-            item.glint,
-            item.skull,
-            item.color,
+            item.foil,
+            item.skin?.let(Skulls::property),
+            item.dye?.and(RGB),
             allowed(item.data),
         )
         val fits = listOfNotNull(sighting.entry, sighting.material, sighting.itemModel, sighting.skinId).all { it.length <= MAX_ID } &&
@@ -85,6 +88,8 @@ class ItemSightings(private val own: () -> Set<String>) :
         const val MAX_LORE = 80
         const val MAX_ID = 128
         const val MAX_TEXTURE = 4096
+        /** A dyed color without the alpha the game may keep above it. */
+        const val RGB = (1 shl 24) - 1
         val ITEM_DATA = setOf("npc_sell_price", "reforge_stats", "color", "item_id", "reforge", "item_type", "item_name", "skull", "rarity")
         val EXTRA = setOf("item_dye", "item_skin", "dungeon_upgrade", "wither_scrolls", "coating", "attunement", "drill", "enrichment")
         val ALLOWED = listOf("item_stats", "item_modifiers", "abilities")

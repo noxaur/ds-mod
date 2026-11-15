@@ -15,6 +15,21 @@ export const count = lenient(Schema.Finite);
 export const strings = lenient(Schema.Array(Schema.String));
 export const lists = lenient(Schema.Array(Schema.Unknown));
 export const numbers = lenient(Schema.Record(Schema.String, Schema.Finite));
+
+/** The object's entries that are finite numbers, each read alone, so one odd entry does not lose the rest. */
+export const numberEntries = (value: unknown): Readonly<Record<string, number>> =>
+  Object.fromEntries(
+    Object.entries(record(value)).filter((entry): entry is [string, number] => Number.isFinite(entry[1])),
+  );
+
+/** The object's entries that are strings, finite numbers or booleans, each read alone. */
+export const scalarEntries = (value: unknown): Readonly<Record<string, string | number | boolean>> =>
+  Object.fromEntries(
+    Object.entries(record(value)).filter(
+      (entry): entry is [string, string | number | boolean] =>
+        typeof entry[1] === "string" || typeof entry[1] === "boolean" || Number.isFinite(entry[1]),
+    ),
+  );
 const records = lenient(Schema.Record(Schema.String, Schema.Unknown));
 
 /** The object's fields, or none for a value that is not an object. */

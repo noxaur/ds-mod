@@ -89,11 +89,23 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.AnimationsTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.ExplosionParticleHiderTest"
       },
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.ArmorSwapGuardTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.EquipmentDisplayTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.InventoryPreviewTest"
       },
       {
         "adapter": "kotlin",
@@ -158,6 +170,10 @@
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.TabEditorTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.JoinDragSimTest"
       }
     ]
   }

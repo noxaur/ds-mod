@@ -113,9 +113,6 @@ private val SKILL_ITEMS = mapOf(
     "blaze" to Items.BLAZE_ROD,
 )
 
-/** The rarities a mark can show, in order, so a container's count of them reads from common up. */
-private val RARITIES = listOf(Role.COMMON, Role.UNCOMMON, Role.RARE, Role.EPIC, Role.LEGENDARY, Role.MYTHIC, Role.DIVINE, Role.SPECIAL)
-
 /**
  * The shape of a profile with nothing in it: as many skills, slayers, stats, classes and kills as most have. While a
  * profile loads or fails, the overview draws this with bones for its words and a veil over it, so the screen keeps
@@ -235,9 +232,9 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
                     setTooltip(Tooltip.create(text { body(t.name) }.toComponent()))
                 })
             }
-            if (profile.profiles.size > 1) {
+            if (profile.choices.size > 1) {
                 addRenderableWidget(
-                    KitCycleButton(left, top + INNER_HEIGHT - Kit.BUTTON_HEIGHT, LEFT_WIDTH, "Profile", profile.profiles, picked(profile), ::choiceName) {
+                    KitCycleButton(left, top + INNER_HEIGHT - Kit.BUTTON_HEIGHT, LEFT_WIDTH, "Profile", profile.choices, picked(profile), ::choiceName) {
                         lookup.switch(it.id)
                     },
                 )
@@ -270,8 +267,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
     }
 
     /** The profile the picker shows: the one asked for while it loads, so the picker does not step back meanwhile. */
-    private fun picked(profile: Profile) = profile.profiles.firstOrNull { it.id == lookup.asked && lookup.state is Load.Loading }
-        ?: profile.choice ?: profile.profiles[0]
+    private fun picked(profile: Profile) = profile.choices.firstOrNull { it.id == lookup.asked && lookup.state is Load.Loading } ?: profile.choice
 
     /** The overview, then the sheets of numbers, the containers, and the long lists last. A tab with nothing in it is left out. */
     private fun tabs(profile: Profile): List<Tab> {
@@ -315,7 +311,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
     private val ghost by lazy { minecraft.level?.let { ProfileModel(it, UUID(0, 0), "Steve") } }
 
     private fun shown(item: DrawnItem): Shown {
-        val rarity = item.rarity?.let { name -> RARITIES.firstOrNull { it.name == name } }
+        val rarity = item.rarity?.let { name -> Role.RARITIES.firstOrNull { it.name == name } }
         return Shown(item, item.toStack(), rarity)
     }
 
@@ -413,7 +409,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         val mx = if (notice == null) mouseX else -1
         val my = if (notice == null) mouseY else -1
 
-        val wellHeight = INNER_HEIGHT - if (profile != null && profile.profiles.size > 1) Kit.BUTTON_HEIGHT + Kit.GAP else 0
+        val wellHeight = INNER_HEIGHT - if (profile != null && profile.choices.size > 1) Kit.BUTTON_HEIGHT + Kit.GAP else 0
         Kit.well(graphics, left, top, LEFT_WIDTH, wellHeight)
         val nameBottom = drawName(graphics, profile)
         (if (profile != null) model else ghost)?.let { m ->
@@ -502,7 +498,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         val names: List<Component> = run {
             val name = text { body(profile?.player?.name ?: lookup.name) }.toComponent()
             val prefix = profile?.player?.rank?.prefix?.takeIf { it.plain.isNotBlank() }?.toComponent()
-            val mode = profile?.choice?.mode?.takeIf { it != "NORMAL" }?.let { text { muted(title(it)) }.toComponent() }
+            val mode = profile?.profileMode?.takeIf { it != "NORMAL" }?.let { text { muted(title(it)) }.toComponent() }
             val joined = prefix?.let { Component.empty().append(it).append(" ").append(name) }
             when {
                 joined == null -> listOf(name)
@@ -639,7 +635,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
     }
 
     private fun petRows(pet: Pet): List<Row> {
-        val rarity = RARITIES.firstOrNull { it.name == pet.rarity }
+        val rarity = Role.RARITIES.firstOrNull { it.name == pet.rarity }
         fun fact(name: String, value: String) = Row(muted(name), listOf(text { body(fit(value, SIDE_WIDTH - 8 - font.width(name) - COLUMN_GAP)) }.toComponent()))
         return listOfNotNull(
             Row({ w -> (if (rarity != null) text { rarity(fit(pet.name, w), rarity) } else text { body(fit(pet.name, w)) }).toComponent() }, emptyList()),
@@ -947,7 +943,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         val used = items.count { it != null }
         val rows = listOf(Row(muted("Slots used"), listOf(text { value("$used / ${summary.slots}") }.toComponent()))) +
             listOfNotNull(worn?.let { Row(muted("Worn"), listOf(text { good("Slot ${it + 1}") }.toComponent())) }) +
-            RARITIES.mapNotNull { rarity ->
+            Role.RARITIES.mapNotNull { rarity ->
                 val n = items.count { it?.mark == rarity }
                 if (n == 0) null else Row({ w -> text { rarity(fit(title(rarity.name), w), rarity) }.toComponent() }, listOf(text { value(n.toLong()) }.toComponent()))
             }

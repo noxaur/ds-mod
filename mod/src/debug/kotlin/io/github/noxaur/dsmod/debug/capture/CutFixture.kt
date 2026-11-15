@@ -21,7 +21,8 @@ import kotlin.io.path.useLines
 /**
  * Cuts the events of one window out of [capture] into [fixture], redacted. [types] are the event types to keep,
  * and `container` keeps `slot` too. The fixture begins with the state at the window's start: the last tab list
- * and sidebar before it and the open container. A tab list inside the window is kept only when one of the [info] rows
+ * and sidebar before it and the open container. A return to the player's inventory that keeps its slots is written
+ * with every slot it kept, so a fixture never needs what came before it. A tab list inside the window is kept only when one of the [info] rows
  * changed, and every one is kept when there are none. A system line is kept when it matches [system], or always without one.
  * Returns the number of lines written and of players renamed.
  */
@@ -39,8 +40,13 @@ fun cutFixture(
     var tab: TabList? = null
     var sidebar: Sidebar? = null
     var shown: List<String?>? = null
-    var container: ContainerOpened? = null
+    // The open container and its slots, the player's own inventory as it was when another menu opened, and the
+    // container and slots as the window starts.
+    var open: ContainerOpened? = null
     val slots = sortedMapOf<Int, Item>()
+    var inventory = emptyMap<Int, Item>()
+    var container: ContainerOpened? = null
+    var start: Map<Int, Item>? = null
     val events = ArrayList<Pair<Long, GameEvent>>()
     capture.useLines { lines ->
         for (line in lines.filter(String::isNotBlank)) {
@@ -51,6 +57,17 @@ fun cutFixture(
             val second = (time - origin) / 1000.0
             if (second > seconds.endInclusive) break
             val before = second < seconds.start
+            if (!before && start == null) {
+                container = open?.copy(kept = false)
+                start = slots.toMap()
+            }
+            if (event is ContainerOpened) {
+                if (open?.id == INVENTORY) inventory = slots.toMap()
+                open = event
+                slots.clear()
+                if (event.kept) slots.putAll(inventory)
+            }
+            if (event is SlotChanged) if (event.item == null) slots.remove(event.slot) else slots[event.slot] = event.item!!
             when {
                 event is TabList -> {
                     val state = TabState().apply { update(event.rows) }
@@ -59,19 +76,21 @@ fun cutFixture(
                     shown = values
                 }
                 event is Sidebar && before -> sidebar = event
-                event is ContainerOpened && before -> {
-                    container = event
-                    slots.clear()
+                event is ContainerOpened && !before -> {
+                    events += time to event.copy(kept = false)
+                    if (event.kept) slots.forEach { (slot, item) -> events += time to SlotChanged(slot, item) }
                 }
-                event is SlotChanged && before -> if (event.item == null) slots.remove(event.slot) else slots[event.slot] = event.item!!
                 before -> Unit
                 event !is SystemMessage || system == null || system.containsMatchIn(event.text.plain) -> events += time to event
             }
         }
     }
-    val start = origin + (seconds.start * 1000).toLong()
-    val state = listOfNotNull(tab, sidebar, container) + slots.map { (slot, item) -> SlotChanged(slot, item) }
-    val lines = (state.map { start to it } + events).map { (time, event) -> captureLine(time, redactor.redact(event)) }
+    if (start == null) {
+        container = open?.copy(kept = false)
+        start = slots.toMap()
+    }
+    val state = listOfNotNull(tab, sidebar, container) + start!!.map { (slot, item) -> SlotChanged(slot, item) }
+    val lines = (state.map { origin + (seconds.start * 1000).toLong() to it } + events).map { (time, event) -> captureLine(time, redactor.redact(event)) }
     Files.createDirectories(fixture.parent)
     Files.write(fixture, lines)
     return lines.size to redactor.count
@@ -96,3 +115,6 @@ fun main(args: Array<String>) {
     )
     println("Wrote $written lines for $feature/$name, with $players players renamed.")
 }
+
+/** The player's own inventory, which the client always numbers 0. */
+private const val INVENTORY = 0

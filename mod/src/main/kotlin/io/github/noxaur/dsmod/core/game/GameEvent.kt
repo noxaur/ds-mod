@@ -39,12 +39,13 @@ data class Sidebar(val title: ServerText = ServerText(), val lines: List<ServerT
 
 /**
  * The player opened a menu, or is back in their own inventory. Every slot is empty until a [SlotChanged]
- * says otherwise. [size] counts the player's own slots that the menu shows, and [title] is null for the
- * player's own inventory. Posted only while a feature reads it.
+ * says otherwise, unless the slots are [kept]: back in their own inventory, it holds what it held when the last menu
+ * opened, and only the slots that changed since follow. [size] counts the player's own slots that the menu shows, and
+ * [title] is null for the player's own inventory. Posted only while a feature reads it.
  */
 @Serializable
 @SerialName("container")
-data class ContainerOpened(val id: Int, val title: ServerText? = null, val size: Int) : GameEvent
+data class ContainerOpened(val id: Int, val title: ServerText? = null, val size: Int, val kept: Boolean = false) : GameEvent
 
 /**
  * The line above the hotbar, each time the server sends it, even with the text it sent before. The server sends
@@ -76,3 +77,12 @@ data class HeadPlaced(val x: Int, val y: Int, val z: Int) : GameEvent
 @Serializable
 @SerialName("slot")
 data class SlotChanged(val slot: Int, val item: Item? = null) : GameEvent
+
+/**
+ * The pet nearest the player: an armor stand within a few blocks, named like `[Lvl 100] Ender Dragon`, wearing the
+ * pet's [head]. dragsim.co floats each player's pet beside them, so a pet of a player standing close may be the
+ * nearer one. Posted when the nearest pet changes, and only while a feature reads it.
+ */
+@Serializable
+@SerialName("pet")
+data class PetNear(val name: ServerText, val head: Item) : GameEvent

@@ -171,6 +171,24 @@ test("facts hold the data behind the tooltip, named from the catalog", () => {
   expect(facts?.abilities?.[0]?.name).toBe("Wither Impact");
 });
 
+test("one odd entry in a scroll or upgrade map loses only itself, and the skull flag is passed on", () => {
+  const scylla = item("scylla");
+  const fields = Schema.decodeUnknownSync(Schema.Record(Schema.String, Schema.Unknown));
+  const odd = {
+    ...scylla,
+    item_data: { ...fields(scylla["item_data"]), skull: false },
+    extra: {
+      ...fields(scylla["extra"]),
+      wither_scrolls: { mask: 7, new_scroll: { charges: 2 } },
+      dungeon_upgrade: { stars: 6, x: [] },
+    },
+  };
+  const facts = renderer.render(odd)?.facts;
+  expect(facts?.witherScrolls).toEqual([{ id: "mask", name: "Mask", value: 7 }]);
+  expect(facts?.dungeonUpgrade).toEqual({ stars: 6 });
+  expect(facts?.skull).toBe(false);
+});
+
 test("facts name the skin, the dye, the enrichment and the kills, and leave out what an item lacks", () => {
   expect(draw("riftwalker_chestplate").facts).toMatchObject({ kills: 127244, dye: { id: expect.any(String) } });
   expect(draw("sorrow_helmet").facts?.skin?.id).toBe("superior_baby");

@@ -27,6 +27,14 @@ enum class Role(val rgb: Int) {
 
     /** The color with an alpha from 0 to 255, for shapes that sit over the game. */
     fun argb(alpha: Int = 255) = alpha shl 24 or rgb
+
+    companion object {
+        /** The rarities, lowest first. */
+        val RARITIES = listOf(COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC, DIVINE, SPECIAL)
+
+        /** The rarity whose color the server gave a name, or null for a color no rarity has. */
+        fun rarity(rgb: Int?): Role? = RARITIES.firstOrNull { it.rgb == rgb }
+    }
 }
 
 /** The logo's gold, white and blue, left to right. The blue is lighter than the logo's, to read on dark chat. */
@@ -50,9 +58,9 @@ class TextBuilder {
     fun bad(text: String) = add(text, Role.BAD)
     fun warning(text: String) = add(text, Role.WARNING)
 
-    /** An item's rarity by name, such as Legendary, in [rarity]'s color. Only the rarity roles belong here. */
+    /** An item's or a pet's name, in the color of its [rarity]. */
     fun rarity(text: String, rarity: Role) {
-        require(rarity >= Role.COMMON) { "$rarity is not a rarity" }
+        require(rarity in Role.RARITIES) { "$rarity is not a rarity" }
         add(text, rarity)
     }
 

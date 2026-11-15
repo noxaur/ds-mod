@@ -247,6 +247,9 @@ data class Profile(
     val player: Player,
     val profiles: List<ProfileChoice> = emptyList(),
     val profileId: String,
+    /** This profile's name and mode from the profile itself, which `profiles` may not list. */
+    val profileName: Line = ServerText(emptyList()),
+    val profileMode: String = "NORMAL",
     val skills: List<Progress> = emptyList(),
     val slayers: List<Progress> = emptyList(),
     val stats: List<Stat> = emptyList(),
@@ -265,7 +268,10 @@ data class Profile(
     val containers: List<ContainerSummary> = emptyList(),
 ) {
     /** The profile this answer is, as the picker lists it. */
-    val choice get() = profiles.firstOrNull { it.id == profileId }
+    val choice get() = profiles.firstOrNull { it.id == profileId } ?: ProfileChoice(profileId, profileName, profileMode, true)
+
+    /** The profiles to pick from, with this one among them even when `profiles` leaves it out. */
+    val choices get() = if (profiles.any { it.id == profileId }) profiles else profiles + choice
 
     /** Whether the player hid their inventory, which hides its containers and what they wear. Pets still show. */
     val hidden get() = containers.any { it.hidden }

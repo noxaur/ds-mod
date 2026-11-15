@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { count, flag, lenient, numbers, record, strings, text } from "./read.ts";
+import { count, flag, lenient, numberEntries, record, strings, text } from "./read.ts";
 
 type Stats = Readonly<Record<string, number>>;
 
@@ -21,6 +21,8 @@ export interface UpstreamItem {
   readonly rarity: string | undefined;
   readonly reforge: string;
   readonly color: unknown;
+  /** `item_data.skull`, when the server says. */
+  readonly skull: boolean | undefined;
   readonly reforgeStats: StatSet;
   readonly stats: StatSet;
   readonly books: number;
@@ -47,10 +49,10 @@ export interface UpstreamItem {
 export const statSet = (raw: unknown): StatSet => {
   const set = record(raw);
   return {
-    base: numbers(set["base"]) ?? {},
-    additive: numbers(set["additive"]) ?? {},
-    multiplicative: numbers(set["multiplicative"]) ?? {},
-    increaseMax: numbers(set["increase_max"]) ?? {},
+    base: numberEntries(set["base"]),
+    additive: numberEntries(set["additive"]),
+    multiplicative: numberEntries(set["multiplicative"]),
+    increaseMax: numberEntries(set["increase_max"]),
   };
 };
 
@@ -76,6 +78,7 @@ export const readItem = (raw: unknown): UpstreamItem | undefined => {
     rarity: text(data["rarity"]),
     reforge: text(data["reforge"]) ?? "",
     color: data["color"],
+    skull: flag(data["skull"]),
     reforgeStats: statSet(data["reforge_stats"]),
     stats: statSet(item["item_stats"]),
     books: (count(modifiers["hot_potato_books"]) ?? 0) + (count(modifiers["golden_hot_potato_books"]) ?? 0),

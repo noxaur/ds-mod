@@ -18,6 +18,43 @@ Hides the clouds that explosions throw up.
 
 <sub>Off by default.</sub>
 
+### Animations
+
+Changes how your held item swings and where it sits in first person. Each setting starts at the game's own, so nothing changes until you move one. Only you see it: your clicks and the swing other players see stay the same.
+
+| Setting | Does |
+| --- | --- |
+| Swing Style | Vanilla, 1.7 to hold the sword across the screen while you swing, Spin for a full turn, Stab to thrust it at the crosshair like a spear, or Still for no swing at all |
+| Swing Speed | Speeds your swing up to 3 times, or slows it down to a tenth |
+| Ignore Haste | Keeps the swing at the same pace under Haste or Mining Fatigue |
+| No Equip Reset | Keeps the item up after a hit or a use, and when the server updates it, instead of lowering and raising it |
+| Item Size | Grows the item to twice its size, or shrinks it to a tenth |
+| Item Side, Item Height, Item Depth | Moves the item out or in, up or down, and away or nearer |
+
+The 1.7 style follows your swing and not right click, because right click casts the ability on many swords here. Your empty hand and maps keep the game's own pose.
+
+### Equipment Display
+
+Shows the armor you wear and your pet as a row of icons on the HUD, with each head's skin and each leather piece's dye. Your pet's head joins the row once you open the Pets menu or it floats near you, and until then the pet shows as its name under the row. Open the chat and point at a piece to read its tooltip. The pet's tooltip from the Pets menu names its held item.
+
+| Setting | Does |
+| --- | --- |
+| Equipment Pieces | Picks which pieces show, and their order. Drag a piece to move it, take it out with − or the bin, and bring it back with + |
+| Equipment Layout | Lines the pieces up in a row or a column |
+| Pet Look | Shows your pet as its head among the armor, or as its name and level in the color of its rarity, with its held item once you opened the Pets menu |
+| Pet Position | Puts your pet among the armor, in the order of Equipment Pieces, or on a row of its own above or below it |
+| Equipment Look | Shows the pieces on the HUD's plate, on nothing, or in slots like your hotbar's, which follow your resource pack |
+| Equipment Placement | Keeps the pieces where you put them in the HUD editor, or puts them beside your hotbar, at its size and past your offhand slot |
+
+### Inventory Preview
+
+Shows the items in your inventory as a grid on the HUD, nine to a row as your inventory holds them, with each stack's count. While another menu is open, the grid keeps your inventory as you last saw it. Open the chat and point at an item to read its tooltip, and move the grid in the HUD editor. Turn it on in General.
+
+| Setting | Does |
+| --- | --- |
+| Inventory Rows | Picks which rows show, and their order. The three rows of your inventory show by default, and your hotbar can join them, set a little apart as it is in your inventory |
+| Inventory Look | Shows the items on the HUD's plate, on nothing, or in a panel of slots like your inventory's: in your theme, solid or as glass as Menu Look says, while Themed Menus is on, and as your resource pack draws the inventory while it is off |
+
 ### Camera
 
 Shapes the third-person view you get with F5. Each setting starts at the game's own, so nothing changes until you move one.
@@ -159,6 +196,8 @@ The hotbar uses your inventory's look until you untick Match Inventory, and then
 Menus, your inventory and plain tooltips take the colors of the Theme under Interface, so Charcoal makes them dark.
 
 The server's Go Back, Close and page arrows become buttons in the same colors.
+
+Set Menu Look to Glass to see the world and your HUD through them instead, and Glass Opacity to choose how dark the glass is. The buttons turn to glass too.
 
 <sub>Chests, crafting tables, hoppers, dispensers and shulker boxes follow it, and so does the recipe book's button. A furnace or an anvil keeps its own look, and item tooltips keep the server's rarity frames.</sub>
 

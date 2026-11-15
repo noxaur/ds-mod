@@ -53,6 +53,7 @@ object MenuBack {
             val button = KitButton(screen.leftPos + slot.x, screen.topPos + slot.y, Icon.BACK, GO_BACK) { send(command) }
             button.setTooltip(Tooltip.create(text { body(GO_BACK); muted("\nSends /$command."); action("\nClick to go back.") }.toComponent()))
             button.visible = false
+            button.glass = { MenuSkin.glass(screen) >= 0 }
             Screens.getWidgets(screen).add(button)
             ScreenEvents.afterTick(screen).register {
                 // The server fills a menu's slots over a few ticks, and can put its own Go Back in later.

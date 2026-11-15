@@ -1,5 +1,5 @@
 {
- "snapshot": "84a1716e-c56a-4165-bb06-383b28529876",
+ "snapshot": "dd35e75e-460c-46b3-a217-72f9f17dabc4",
  "fetchedAt": "2026-11-15T17:15:20.000Z",
  "stale": false,
  "player": {
@@ -48,6 +48,13 @@
   }
  ],
  "profileId": "bbbbbbbb-0000-4000-8000-000000000002",
+ "profileName": [
+  {
+   "text": "Superior",
+   "color": "#AA00AA"
+  }
+ ],
+ "profileMode": "IRONMAN",
  "skills": [
   {
    "id": "combat",

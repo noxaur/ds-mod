@@ -8,7 +8,11 @@ import kotlinx.serialization.json.contentOrNull
 /**
  * An item stack as the server sent it. [name] and [lore] are the custom name and lore, which the server uses
  * for everything the player reads, and [data] is the whole `custom_data`, where the server keeps what it knows.
- * How the game draws it is [glint], [model], [skull] and [color], which a capture keeps only when they are set.
+ * The rest is how the item looks, so the mod can draw it as the server does: [skin] is a head's texture, the last
+ * part of its `textures.minecraft.net` address, [dye] is dyed leather's color, [glint] overrides the enchantment
+ * shine, and [style] is the tooltip's frame, such as `dragsim:legendary`. [foil] is whether the game draws the shine
+ * at all, from enchantments or the override, and [model] is an `item_model` other than [id]'s own. A capture keeps
+ * each only when it is set.
  */
 @Serializable
 data class Item(
@@ -17,14 +21,12 @@ data class Item(
     val name: ServerText? = null,
     val lore: List<ServerText> = emptyList(),
     val data: JsonObject = JsonObject(emptyMap()),
-    /** Whether the game draws the item with the enchantment glint. */
-    val glint: Boolean = false,
-    /** The `item_model` component, when it names a model other than [id]'s own. */
+    val skin: String? = null,
+    @Serializable(with = HexColor::class) val dye: Int? = null,
+    val glint: Boolean? = null,
+    val style: String? = null,
+    val foil: Boolean = false,
     val model: String? = null,
-    /** A player head's `textures` property cut to `{"textures":{...}}`, because the profile also names its player. */
-    val skull: String? = null,
-    /** A dyed item's color, as `0xRRGGBB`. */
-    val color: Int? = null,
 ) {
     /** The rarity in `item_data`, such as `LEGENDARY`, or null for an item with none. */
     val rarity: String? get() = ((data["item_data"] as? JsonObject)?.get("rarity") as? JsonPrimitive)?.contentOrNull

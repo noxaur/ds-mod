@@ -8,7 +8,7 @@ import { makeApp } from "../app.ts";
 import { memoryServices } from "../memory.ts";
 import { CATALOG_FRESH_MS, CATALOG_RETRY_MS, FRESH_MS } from "./cache.ts";
 import { Container, Profile } from "./model.ts";
-import { MAPPED_KEYS } from "./wire.ts";
+import { unmappedPaths } from "./wire.ts";
 import { memoryProfileStore, WriteRefused } from "./store.ts";
 import { UpstreamDown } from "./upstream.ts";
 
@@ -191,6 +191,8 @@ test("a hidden profile lists its containers with no items, and no equipment", as
   state.player = { status: 200, body: { ...player, profile: { ...player.profile, inventory_hidden: true } } };
   const value = await profile();
   expect(value.equipment).toEqual({ helmet: null, chestplate: null, leggings: null, boots: null, held: null });
+  // Which wardrobe slot is worn is not an item, so hiding the items keeps it.
+  expect(value.equippedWardrobeSlot).toBe(2);
   expect(value.containers.length).toBeGreaterThan(5);
   expect(value.containers.filter((box) => box.id !== "pets").every((box) => box.hidden && box.slots === 0)).toBe(true);
   expect(await container(`/v1/snapshots/${value.snapshot}/containers/ender_chest`)).toMatchObject({
@@ -449,40 +451,96 @@ test("a profile answer is quick once cached", async () => {
 });
 
 /** The keys of the real player the first agent sampled, with no values. A key added upstream must be mapped. */
-const REAL_TOP_KEYS = ["mode", "fetched_at", "player", "profiles", "profile"];
-const REAL_PROFILE_KEYS = [
-  "id",
-  "profile_name",
-  "profile_mode",
-  "coins",
-  "motes",
-  "bits",
-  "haunted_candy_earned",
-  "dragon_essence",
-  "draconic_experience",
-  "accessory_power",
-  "updated_at",
-  "inventory_hidden",
-  "stats",
-  "skills",
-  "bestiary",
-  "collections",
-  "rng_meters",
-  "slayer",
-  "dungeons",
-  "hotd",
-  "inventory",
-  "storage",
-  "ender_chest",
-  "wardrobe",
-  "accessory_bag",
-  "pets",
-  "forge",
-];
+/**
+ * Every field path of a real player's answer, with no values: `*` stands for any key of an open map, and `[]` for a
+ * list's element. A skeleton is built from them, so a field the real data has and the shape misses fails here.
+ */
+const REAL_PATHS: readonly string[] = fixture("real-paths.json");
 
-test("every key of a real player's answer is mapped", () => {
-  expect(REAL_TOP_KEYS.filter((key) => !MAPPED_KEYS.answer.includes(key))).toEqual([]);
-  expect(REAL_PROFILE_KEYS.filter((key) => !MAPPED_KEYS.profile.includes(key))).toEqual([]);
+/** A value with every path, `1` at each leaf. An empty map in one item is a leaf here and fuller elsewhere, and the fuller wins. */
+const build = (paths: readonly (readonly string[])[]): unknown => {
+  const deeper = paths.filter((parts) => parts.length > 0);
+  if (deeper.length === 0) {
+    return 1;
+  }
+  if (deeper.every((parts) => parts[0] === "[]")) {
+    return [build(deeper.map((parts) => parts.slice(1)))];
+  }
+  const keys = [...new Set(deeper.map((parts) => parts[0] ?? ""))];
+  return Object.fromEntries(
+    keys.map((key) => [
+      key === "*" ? "0" : key,
+      build(deeper.filter((parts) => parts[0] === key).map((parts) => parts.slice(1))),
+    ]),
+  );
+};
+const skeleton = (paths: readonly string[]): unknown => build(paths.map((path) => path.split(".")));
+
+test("every field of a real player's answer is mapped, at every depth", () => {
+  expect(REAL_PATHS.length).toBeGreaterThan(300);
+  expect(unmappedPaths(skeleton(REAL_PATHS))).toEqual([]);
+});
+
+test("a profile names itself, with or without the list of profiles", async () => {
+  const { profile, state } = backend();
+  expect(await profile()).toMatchObject({
+    profileName: [{ text: "Superior", color: "#AA00AA" }],
+    profileMode: "IRONMAN",
+  });
+  state.player = { status: 200, body: { ...player, profiles: undefined } };
+  const alone = await profile("/v1/players/Testwyrm/profile?profile=" + String(player.profile.id));
+  expect(alone).toMatchObject({ profileName: [{ text: "Superior", color: "#AA00AA" }], profileMode: "IRONMAN" });
+});
+
+test("a map or a list where a value was expected is named, since it would be dropped", () => {
+  const scylla = player.profile.inventory["0"];
+  const odd = {
+    profile: {
+      coins: { nested: 1 },
+      inventory: { 0: { ...scylla, extra: { wither_scrolls: { mask: 7, new_scroll: { charges: 2 } } } } },
+    },
+  };
+  expect(unmappedPaths(odd).toSorted()).toEqual(["profile.coins", "profile.inventory.*.extra.wither_scrolls.*"]);
+});
+
+test("one odd entry in a number map loses only itself, and a map where a list belongs is named", async () => {
+  const { profile, state } = backend();
+  const odd = {
+    ...player.profile,
+    collections: { ...player.profile.collections, new_collection: {} },
+    dungeons: { ...player.profile.dungeons, essence: { ...player.profile.dungeons.essence, odd: { amount: 1 } } },
+    forge: { jobs: [] },
+  };
+  state.player = { status: 200, body: { ...player, profile: odd } };
+  const value = await profile();
+  expect(value.collections.length).toBe(Object.keys(player.profile.collections).length);
+  expect(value.dungeons?.essence.length).toBe(Object.keys(player.profile.dungeons.essence).length);
+  expect(unmappedPaths({ profile: odd }).toSorted()).toEqual([
+    "profile.collections.*",
+    "profile.dungeons.essence.*",
+    "profile.forge",
+  ]);
+});
+
+test("a field added deep inside a section or an item is named by its path", () => {
+  const added = {
+    ...player,
+    brand_new: 1,
+    profile: {
+      ...player.profile,
+      dungeons: { ...player.profile.dungeons, new_section: 42 },
+      pets: [{ ...player.profile.pets[0], new_field: 42 }],
+      inventory: { 0: { ...player.profile.inventory["0"], extra: { new_upgrade: {} } } },
+      storage: { 0: { 3: { entry: "x", item_modifiers: { new_book: 1 } } } },
+    },
+  };
+  expect(unmappedPaths(added).toSorted()).toEqual([
+    "brand_new",
+    "profile.dungeons.new_section",
+    "profile.inventory.*.extra.new_upgrade",
+    "profile.pets[].new_field",
+    "profile.storage.*.*.item_modifiers.new_book",
+  ]);
 });
 
 test("a key the backend does not map is logged once per lookup, naming it", async () => {
