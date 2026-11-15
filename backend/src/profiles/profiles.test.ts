@@ -72,7 +72,14 @@ test("a profile is the player's, with levels worked out from the catalog", async
   expect(value.player).toEqual({
     uuid: player.player.uuid,
     name: "Testwyrm",
-    rank: { id: "MVP_PLUS", prefix: [{ text: "[MVP+]" }] },
+    rank: {
+      id: "MVP_PLUS",
+      prefix: [
+        { text: "[MVP", color: "#55FFFF" },
+        { text: "+", color: "#FF5555" },
+        { text: "]", color: "#55FFFF" },
+      ],
+    },
   });
   expect(value.stale).toBe(false);
   expect(value.fetchedAt).toBe("2026-11-15T12:00:00.000Z");
