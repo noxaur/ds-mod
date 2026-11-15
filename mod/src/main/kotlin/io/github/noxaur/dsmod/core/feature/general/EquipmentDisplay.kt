@@ -129,6 +129,8 @@ class EquipmentDisplay(
         }
         on<PetNear> { event, _ ->
             val name = PET_LINE.matchEntire(event.name.plain.trim())?.groupValues?.get(2) ?: return@on
+            // Another player's pet can float nearer than the player's own, and must not take its head.
+            if (pet.let { it != null && it.name != name }) return@on
             head = name to event.head
             block = build()
         }

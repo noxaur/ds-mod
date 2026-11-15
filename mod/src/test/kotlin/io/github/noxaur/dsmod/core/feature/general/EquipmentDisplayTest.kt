@@ -135,6 +135,12 @@ class EquipmentDisplayTest {
     }
 
     @Test
+    fun `another player's pet coming nearer keeps the head already seen`() {
+        post(pet(), near("[Lvl 100] Ender Dragon"), near("[Lvl 100] Tiger"))
+        assertEquals(listOf(listOf(head)), rows().orEmpty().map { (it as List<*>).filterNotNull() })
+    }
+
+    @Test
     fun `another pet nearby lends no head`() {
         post(pet(), near("[Lvl 100] Tiger"))
         assertEquals(listOf("[Lvl 100] Ender Dragon"), rows())
