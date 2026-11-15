@@ -3,9 +3,7 @@
   "package": "io.github.noxaur.dsmod.debug.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
-    "BriefTitleMixin",
-    "CaptureInputMixin",
-    "CapturePacketsMixin"
+    "BriefTitleMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,4 +1,4 @@
-package io.github.noxaur.dsmod.debug.capture
+package io.github.noxaur.dsmod.core.capture
 
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.SystemMessage
@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.game.ServerText
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.nio.file.Files
+import java.util.concurrent.CountDownLatch
 import kotlin.io.path.readLines
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -44,6 +45,46 @@ class CaptureWriterTest {
         writer.close()
 
         assertEquals(listOf(1_500L to drop), readCapture(writer.file))
+    }
+
+    @Test
+    fun `close waits for every record, however long the writer takes`() {
+        val writer = CaptureWriter(dir)
+        writer.record("bossbars") {
+            Thread.sleep(300)
+            buildJsonObject { put("title", "slow") }
+        }
+        repeat(100) { writer.record(it.toLong(), drop) }
+
+        writer.close()
+
+        assertEquals(101, writer.file.readLines().size)
+    }
+
+    @Test
+    fun `close says when the writer did not finish in time`() {
+        val release = CountDownLatch(1)
+        val writer = CaptureWriter(dir, closeMillis = 50)
+        writer.record("bossbars") {
+            release.await()
+            buildJsonObject { }
+        }
+
+        try {
+            assertFailsWith<CaptureIncompleteException> { writer.close() }
+        } finally {
+            release.countDown()
+        }
+    }
+
+    @Test
+    fun `close says when a record was lost`() {
+        val writer = CaptureWriter(dir)
+        writer.record("bossbars") { error("this record cannot be built") }
+        writer.record(1_500L, drop)
+
+        assertFailsWith<CaptureIncompleteException> { writer.close() }
+        assertEquals(1, writer.file.readLines().size, "the records after it are still written")
     }
 
     @Test

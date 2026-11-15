@@ -1,6 +1,8 @@
-package io.github.noxaur.dsmod.debug.capture
+package io.github.noxaur.dsmod.edge.capture
 
 import io.github.noxaur.dsmod.core.feature.Game
+import io.github.noxaur.dsmod.core.capture.CaptureWriter
+import io.github.noxaur.dsmod.core.capture.ChangeLog
 import io.github.noxaur.dsmod.core.game.Metrics
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -21,15 +23,10 @@ import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket
 import net.minecraft.network.protocol.game.ClientboundSoundPacket
-import net.minecraft.world.entity.Display
 import net.minecraft.world.entity.Entity
-import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.entity.decoration.ItemFrame
-import net.minecraft.world.entity.item.ItemEntity
-import net.minecraft.world.entity.monster.Creeper
-import net.minecraft.world.entity.monster.Silverfish
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.saveddata.maps.MapId
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
@@ -40,10 +37,29 @@ import java.nio.file.Path
 /** The item components that the `slot` event already carries. */
 private val eventComponents = setOf("minecraft:custom_name", "minecraft:lore", "minecraft:custom_data")
 
-/** Unnamed, unequipped mobs that a puzzle still reads. */
-private fun watched(entity: Entity) = entity is Silverfish || entity is Creeper
-
 private fun Double.round2() = Math.round(this * 100) / 100.0
+
+/**
+ * Encodes a menu's items with Minecraft's codec only when they changed since the last pass. Encoding every item on
+ * every pass cost a recording over a millisecond a pass, and almost none of them change. The stacks are copies,
+ * because a stack can change in place.
+ */
+private class ItemCache {
+    private var last = HashMap<Int, Pair<ItemStack, JsonElement>>()
+    private var seen = HashMap<Int, Pair<ItemStack, JsonElement>>()
+
+    fun encode(slot: Int, stack: ItemStack): JsonElement {
+        val entry = last[slot]?.takeIf { ItemStack.matches(it.first, stack) } ?: (stack.copy() to stack.toCaptureJson())
+        seen[slot] = entry
+        return entry.second
+    }
+
+    /** Ends a pass, and forgets every slot it did not see. */
+    fun pass() {
+        last = seen.also { seen = last }
+        seen.clear()
+    }
+}
 
 private fun JsonObjectBuilder.entityFields(entity: Entity) {
     put("id", entity.id)
@@ -55,8 +71,9 @@ private fun JsonObjectBuilder.entityFields(entity: Entity) {
 }
 
 /**
- * One running capture: the events [game] posts go straight to [writer], and [tick] adds what only exists
- * as client state, plus what the mod showed (`hud`) and how long it took (`metrics`).
+ * One running capture: the events [game] posts go straight to [writer], and [tick] adds what only exists as client
+ * state, plus what the mod showed (`hud`) and how long it took (`metrics`). It ends with [detach] on the client
+ * thread, then [close] on a thread that may wait.
  */
 class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
     private val writer = CaptureWriter(dir)
@@ -66,6 +83,8 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
     private val changes = ChangeLog { type, data -> writer.record(type) { data } }
     private val blockScan = BlockScan(changes)
     private val maps = MapRecorder(writer)
+    private val items = ItemCache()
+    private val entities = EntityRecorder()
     private var ticks = 0
     private var titleTime = 0
 
@@ -127,70 +146,32 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
 
         // The `container` and `slot` events carry the id, count, name, lore and custom data. This is the rest.
         val menu = player.containerMenu
-        changes.offerEntries(
-            "itemcomponents",
-            buildJsonObject {
-                put("id", menu.containerId)
-                // The player's own inventory has no menu type.
-                put("menu", runCatching { BuiltInRegistries.MENU.getKey(menu.type).toString() }.getOrDefault("inventory"))
-            },
-            buildMap<String, JsonElement> {
-                menu.slots.forEachIndexed { index, slot ->
-                    if (slot.item.isEmpty) return@forEachIndexed
-                    val components = (slot.item.toCaptureJson() as? JsonObject)?.get("components") as? JsonObject ?: return@forEachIndexed
-                    val rest = components.filterKeys { it !in eventComponents }
-                    if (rest.isNotEmpty()) put(index.toString(), JsonObject(rest))
-                }
-            },
-        )
-
-        // Players, named entities and anything holding or wearing an item. Servers build mobs and holograms from these.
-        // Glowing entities, displays, item frames and the puzzle mobs come too, with what each one shows.
-        val mapIds = LinkedHashSet<MapId>()
-        player.inventory.nonEquipmentItems.plus(player.offhandItem).forEach { stack -> stack.get(DataComponents.MAP_ID)?.let(mapIds::add) }
-        changes.offerEntries(
-            "entities",
-            JsonObject(emptyMap()),
-            buildMap {
-                for (entity in level.entitiesForRendering()) {
-                    if (entity === player) continue
-                    val equipment = (entity as? LivingEntity)?.let { living ->
-                        EquipmentSlot.VALUES.filter { !living.getItemBySlot(it).isEmpty }
-                            .associate { it.getName() to living.getItemBySlot(it).toCaptureJson() }
-                    }.orEmpty()
-                    val item = when (entity) {
-                        is ItemFrame -> entity.item
-                        is ItemEntity -> entity.item.takeIf { it.has(DataComponents.CUSTOM_NAME) }
-                        is Display.ItemDisplay -> entity.itemStack
-                        else -> null
+        // Both passes below run Minecraft's item codec on this thread, so a capture's `metrics` say what they cost.
+        game.metrics.time("capture-items") {
+            changes.offerEntries(
+                "itemcomponents",
+                buildJsonObject {
+                    put("id", menu.containerId)
+                    // The player's own inventory has no menu type.
+                    put("menu", runCatching { BuiltInRegistries.MENU.getKey(menu.type).toString() }.getOrDefault("inventory"))
+                },
+                buildMap<String, JsonElement> {
+                    menu.slots.forEachIndexed { index, slot ->
+                        if (slot.item.isEmpty) return@forEachIndexed
+                        val components = (items.encode(index, slot.item) as? JsonObject)?.get("components") as? JsonObject ?: return@forEachIndexed
+                        val rest = components.filterKeys { it !in eventComponents }
+                        if (rest.isNotEmpty()) put(index.toString(), JsonObject(rest))
                     }
-                    item?.get(DataComponents.MAP_ID)?.let(mapIds::add)
-                    val named = entity.hasCustomName() || entity is Player || equipment.isNotEmpty()
-                    if (!named && !entity.isCurrentlyGlowing && item == null && entity !is Display && !watched(entity)) continue
-                    put(
-                        entity.id.toString(),
-                        buildJsonObject {
-                            put("entity", BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString())
-                            // Whole blocks, so an entity that stands still records nothing new.
-                            put("x", entity.blockX)
-                            put("y", entity.blockY)
-                            put("z", entity.blockZ)
-                            put("nameVisible", entity.isCustomNameVisible)
-                            // The type already says what an entity recorded only for its glow, item or text is.
-                            if (named) put("name", entity.displayName.toCaptureJson())
-                            if (entity.isCurrentlyGlowing) put("glowing", true)
-                            if (equipment.isNotEmpty()) put("equipment", JsonObject(equipment))
-                            if (item != null) put("item", item.toCaptureJson())
-                            if (entity is ItemFrame) {
-                                put("rotation", entity.rotation)
-                                put("facing", entity.direction.getName())
-                            }
-                            if (entity is Display.TextDisplay) put("text", entity.text.toCaptureJson())
-                        },
-                    )
-                }
-            },
-        )
+                },
+            )
+        }
+
+        val mapIds = LinkedHashSet<MapId>()
+        game.metrics.time("capture-entities") {
+            player.inventory.nonEquipmentItems.plus(player.offhandItem).forEach { stack -> stack.get(DataComponents.MAP_ID)?.let(mapIds::add) }
+            changes.offerChanges("entities", entities.pass(level, player, mapIds))
+        }
+        items.pass()
         maps.offer(level, mapIds)
 
         changes.offer(
@@ -299,10 +280,13 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
         writer.record("block") { data }
     }
 
-    override fun close() {
+    /** Stops recording what the game posts and measures. Call it on the client thread, where [Game] runs. */
+    fun detach() {
         game.tap = null
         game.metrics.flush()
         game.metrics.sinks -= metricsSink
-        writer.close()
     }
+
+    /** Finishes the file, waiting for the writer thread. Throws when the file is not whole, as [CaptureWriter.close] does. */
+    override fun close() = writer.close()
 }

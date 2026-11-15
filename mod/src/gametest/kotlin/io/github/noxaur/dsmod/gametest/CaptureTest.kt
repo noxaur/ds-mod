@@ -28,7 +28,7 @@ class CaptureTest : FabricClientGameTest {
                 "execute at @a run setblock ~3 ~ ~3 minecraft:stone_button[face=floor]",
             ).forEach(world.server::runCommand)
             context.waitTicks(40)
-            val file = context.computeOnClient<Path, Nothing> { DsModDebug.toggleCapture(it) }
+            val file = context.computeOnClient<Path, Nothing> { DsModDebug.toggleCapture(it)!! }
             context.enterTheEnd()
             listOf(
                 """scoreboard objectives add ds dummy "Dragon Sim"""",
@@ -68,7 +68,11 @@ class CaptureTest : FabricClientGameTest {
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT)
             world.server.runOnServer<Nothing> { it.playerList.broadcastAll(ClientboundTabListPacket(Component.literal("Dragon Sim"), Component.literal("dragsim.co"))) }
             context.waitTicks(40)
-            context.runOnClient<Nothing> { DsModDebug.toggleCapture(it) }
+            // The file is finished off the client thread, and the toggle says so when it is whole.
+            var said: String? = null
+            context.runOnClient<Nothing> { client -> DsModDebug.toggleCapture(client) { said = it } }
+            context.waitFor { said != null }
+            check(said == "Capture saved: $file") { "The capture ended with '$said'" }
 
             val events = file.readLines().map { Json.parseToJsonElement(it).jsonObject }
             val byType = events.groupBy({ it.getValue("type").jsonPrimitive.content }, { it.getValue("data").toString() })

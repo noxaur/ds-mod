@@ -1,7 +1,7 @@
-package io.github.noxaur.dsmod.debug
+package io.github.noxaur.dsmod.core.brief
 
-import io.github.noxaur.dsmod.debug.brief.Brief
-import io.github.noxaur.dsmod.debug.brief.BriefRun
+import io.github.noxaur.dsmod.core.brief.Brief
+import io.github.noxaur.dsmod.core.brief.BriefRun
 import java.nio.file.Files
 import kotlin.io.path.writeText
 import kotlin.test.Test
@@ -75,5 +75,19 @@ class BriefTest {
         assertEquals("""{"done":true}""", run.record().toString())
         assertFalse(run.advance(100_000))
         assertEquals("Saved a.jsonl", run.hud(100_000, "]", "a.jsonl").rows.last().text.plain)
+    }
+
+    @Test
+    fun `two presses in one tick record both steps, each as it started`() {
+        val run = BriefRun(brief)
+
+        assertEquals(
+            listOf("""{"index":1,"do":"Warp to the End"}""", """{"index":2,"do":"Stand still next to the Protector until it spawns"}"""),
+            run.step(1_000, presses = 2).map { it.toString() },
+        )
+        assertEquals(emptyList(), run.step(2_000, presses = 0))
+        // The timer runs out in the tick the player also presses, which ends the run.
+        assertEquals(listOf("""{"index":3,"do":"Kill it"}""", """{"done":true}"""), run.step(91_000, presses = 1).map { it.toString() })
+        assertEquals(emptyList(), run.step(92_000, presses = 3))
     }
 }

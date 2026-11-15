@@ -14,7 +14,7 @@
       }
     ]
   },
-  "accessWidener": "moulconfig.accesswidener",
+  "accessWidener": "dsmod.accesswidener",
   "mixins": [
     "dsmod.mixins.json"
   ],

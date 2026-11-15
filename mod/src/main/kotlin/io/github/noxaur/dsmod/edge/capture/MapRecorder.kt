@@ -1,5 +1,6 @@
-package io.github.noxaur.dsmod.debug.capture
+package io.github.noxaur.dsmod.edge.capture
 
+import io.github.noxaur.dsmod.core.capture.CaptureWriter
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
