@@ -18,20 +18,13 @@ import net.minecraft.commands.arguments.blocks.BlockStateParser
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.component.DataComponents
-import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket
 import net.minecraft.network.protocol.game.ClientboundSoundPacket
-import net.minecraft.world.entity.Display
 import net.minecraft.world.entity.Entity
-import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.entity.decoration.ItemFrame
-import net.minecraft.world.entity.item.ItemEntity
-import net.minecraft.world.entity.monster.Creeper
-import net.minecraft.world.entity.monster.Silverfish
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.saveddata.maps.MapId
@@ -44,31 +37,24 @@ import java.nio.file.Path
 /** The item components that the `slot` event already carries. */
 private val eventComponents = setOf("minecraft:custom_name", "minecraft:lore", "minecraft:custom_data")
 
-/** Unnamed, unequipped mobs that a puzzle still reads. */
-private fun watched(entity: Entity) = entity is Silverfish || entity is Creeper
-
 private fun Double.round2() = Math.round(this * 100) / 100.0
 
 /**
- * Encodes a value with Minecraft's codec only when it changed since the last pass. Encoding every item and name in
- * view on every pass cost a recording over a millisecond a pass, and almost none of them change. A key is one place
- * a value is seen, [same] tells whether it changed, and [keep] copies a mutable value so the next pass can compare.
+ * Encodes a menu's items with Minecraft's codec only when they changed since the last pass. Encoding every item on
+ * every pass cost a recording over a millisecond a pass, and almost none of them change. The stacks are copies,
+ * because a stack can change in place.
  */
-private class EncodeCache<T : Any>(
-    private val same: (T, T) -> Boolean,
-    private val keep: (T) -> T,
-    private val encode: (T) -> JsonElement,
-) {
-    private var last = HashMap<Any, Pair<T, JsonElement>>()
-    private var seen = HashMap<Any, Pair<T, JsonElement>>()
+private class ItemCache {
+    private var last = HashMap<Int, Pair<ItemStack, JsonElement>>()
+    private var seen = HashMap<Int, Pair<ItemStack, JsonElement>>()
 
-    fun encode(key: Any, value: T): JsonElement {
-        val entry = last[key]?.takeIf { same(it.first, value) } ?: (keep(value) to encode(value))
-        seen[key] = entry
+    fun encode(slot: Int, stack: ItemStack): JsonElement {
+        val entry = last[slot]?.takeIf { ItemStack.matches(it.first, stack) } ?: (stack.copy() to stack.toCaptureJson())
+        seen[slot] = entry
         return entry.second
     }
 
-    /** Ends a pass, and forgets every place it did not see. */
+    /** Ends a pass, and forgets every slot it did not see. */
     fun pass() {
         last = seen.also { seen = last }
         seen.clear()
@@ -97,8 +83,8 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
     private val changes = ChangeLog { type, data -> writer.record(type) { data } }
     private val blockScan = BlockScan(changes)
     private val maps = MapRecorder(writer)
-    private val items = EncodeCache(ItemStack::matches, ItemStack::copy, ItemStack::toCaptureJson)
-    private val texts = EncodeCache<Component>({ a, b -> a == b }, { it }, Component::toCaptureJson)
+    private val items = ItemCache()
+    private val entities = EntityRecorder()
     private var ticks = 0
     private var titleTime = 0
 
@@ -180,57 +166,12 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
             )
         }
 
-        // Players, named entities and anything holding or wearing an item. Servers build mobs and holograms from these.
-        // Glowing entities, displays, item frames and the puzzle mobs come too, with what each one shows.
         val mapIds = LinkedHashSet<MapId>()
         game.metrics.time("capture-entities") {
             player.inventory.nonEquipmentItems.plus(player.offhandItem).forEach { stack -> stack.get(DataComponents.MAP_ID)?.let(mapIds::add) }
-            changes.offerEntries(
-                "entities",
-                JsonObject(emptyMap()),
-                buildMap {
-                    for (entity in level.entitiesForRendering()) {
-                        if (entity === player) continue
-                        val equipment = (entity as? LivingEntity)?.let { living ->
-                            EquipmentSlot.VALUES.filter { !living.getItemBySlot(it).isEmpty }
-                                .associate { it.getName() to items.encode(entity.id to it, living.getItemBySlot(it)) }
-                        }.orEmpty()
-                        val item = when (entity) {
-                            is ItemFrame -> entity.item
-                            is ItemEntity -> entity.item.takeIf { it.has(DataComponents.CUSTOM_NAME) }
-                            is Display.ItemDisplay -> entity.itemStack
-                            else -> null
-                        }
-                        item?.get(DataComponents.MAP_ID)?.let(mapIds::add)
-                        val named = entity.hasCustomName() || entity is Player || equipment.isNotEmpty()
-                        if (!named && !entity.isCurrentlyGlowing && item == null && entity !is Display && !watched(entity)) continue
-                        put(
-                            entity.id.toString(),
-                            buildJsonObject {
-                                put("entity", BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString())
-                                // Whole blocks, so an entity that stands still records nothing new.
-                                put("x", entity.blockX)
-                                put("y", entity.blockY)
-                                put("z", entity.blockZ)
-                                put("nameVisible", entity.isCustomNameVisible)
-                                // The type already says what an entity recorded only for its glow, item or text is.
-                                if (named) put("name", texts.encode(entity.id to "name", entity.displayName))
-                                if (entity.isCurrentlyGlowing) put("glowing", true)
-                                if (equipment.isNotEmpty()) put("equipment", JsonObject(equipment))
-                                if (item != null) put("item", items.encode(entity.id to "item", item))
-                                if (entity is ItemFrame) {
-                                    put("rotation", entity.rotation)
-                                    put("facing", entity.direction.getName())
-                                }
-                                if (entity is Display.TextDisplay) put("text", texts.encode(entity.id to "text", entity.text))
-                            },
-                        )
-                    }
-                },
-            )
+            changes.offerChanges("entities", entities.pass(level, player, mapIds))
         }
         items.pass()
-        texts.pass()
         maps.offer(level, mapIds)
 
         changes.offer(
