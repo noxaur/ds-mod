@@ -63,7 +63,7 @@ private val AREAS: List<Area?> = listOf(null) + (Area.entries - Area.ANYWHERE)
  * of what can be done to the row. The keyboard works the list too: Up and Down pick, Left and Right fold and
  * unfold, Alt with Up or Down moves, and Delete deletes. Deletes ask for a second press. The list scrolls by whole
  * rows: the wheel, the scrollbar's thumb, Page Up and Page Down, and Home and End. The line under the details
- * reads back what the pick does, what stops it, or what the last action did. Closing saves.
+ * says what stops the pick, or what the last action did, and is empty when all is well. Closing saves.
  */
 class CommandBindsScreen(private val settings: DsModConfig.General, private val parent: Screen?, private val onSave: () -> Unit) :
     Screen(text { body(TITLE) }.toComponent()) {
@@ -446,8 +446,7 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
                 armed && group != null -> "Press Delete again to delete it" + (settings.binds.count { it.group == group }.takeIf { it > 0 }?.let { " and its ${plural(it)}" } ?: "") + "."
                 said != null -> said
                 keys?.recording == true -> if (bind?.inOrder == true) "Press the keys in turn, then Escape." else "Hold the keys together, then let go."
-                group != null -> "${plural(settings.binds.count { it.group == group })} in ${groupName(group)}." +
-                    if (group in settings.offGroups) " The group is off, so none of them send." else " Drag binds under its heading to add them."
+                group != null -> if (group in settings.offGroups) "The group is off, so none of its binds send." else ""
                 bind == null -> if (settings.binds.isEmpty()) "Add a bind with New Bind." else "Pick a bind to see it here."
                 bind.message == null -> "Type a command, such as /warp end."
                 bind.keys.isEmpty() -> "Press Keys, then the keys to use."
@@ -455,7 +454,8 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
                 !bind.enabled -> "Off. Tick its box on the left to use it."
                 clash != null -> "$names also fires ${clash.title}."
                 game != null -> "$names is also the game's $game key."
-                else -> "$names ${describe(bind)}."
+                // A bind that works needs no words: its row and fields already say what it does.
+                else -> ""
             },
             DETAIL_WIDTH,
             READOUT_LINES,
@@ -828,19 +828,5 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
 
     companion object {
         fun groupName(group: String) = group.ifEmpty { "General" }
-
-        /** What a bind does, after its keys: "sends /warp end in the world, in The End". */
-        fun describe(bind: CommandBind): String {
-            val what = when (val message = bind.message) {
-                is CommandBind.Message.Chat -> "says ${message.text}"
-                else -> "sends ${bind.command.trim()}"
-            }
-            val where = when (bind.where) {
-                Where.WORLD -> "in the world"
-                Where.MENUS -> "in menus"
-                Where.BOTH -> "in the world and menus"
-            }
-            return "$what $where" + (bind.area?.let { ", in ${it.title}" } ?: "")
-        }
     }
 }
