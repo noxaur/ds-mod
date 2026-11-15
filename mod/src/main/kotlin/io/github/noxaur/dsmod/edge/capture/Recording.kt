@@ -86,10 +86,12 @@ object Recording {
         Minecraft.getInstance().updateTitle()
     }
 
-    /** Ends a request's run before its last step and sends what it recorded. False when no request's run has started. */
+    /** Ends a request's run before its last step and sends what it recorded, unless it just ended. False when no request's run has started. */
     fun submit(): Boolean {
         val run = run ?: return false
         if (request == null || run.current < 0 || run.done) return false
+        // A run that ended a moment ago is not sent, and the player has been told why.
+        if (ended(run, System.currentTimeMillis())) return true
         run.finish(System.currentTimeMillis())
         Recorder.record("step") { run.record() }
         finish(Minecraft.getInstance(), run)
@@ -116,22 +118,32 @@ object Recording {
         }
     }
 
-    private fun tick(client: Minecraft) {
+    /**
+     * Discards a request's run that lost its connection or ran out of time, and says whether it did. The tick asks
+     * first, and so does [submit], which may come between a disconnect or the time limit and the next tick.
+     */
+    private fun ended(run: BriefRun?, now: Long): Boolean {
         if (disconnected) {
             disconnected = false
-            if (request != null && cancel()) leftServer = true
+            if (request != null && cancel()) {
+                leftServer = true
+                return true
+            }
         }
+        if (run == null || !run.timedOut(now)) return false
+        cancel()
+        Chat.send(text { bad("The recording ran out of time, so nothing was sent. Open Contribute in the settings to try again.") })
+        return true
+    }
+
+    private fun tick(client: Minecraft) {
+        val now = System.currentTimeMillis()
+        if (ended(run, now)) return
         if (leftServer && client.player != null) {
             leftServer = false
             Chat.send(text { bad("Your recording was cancelled because you left the server. Nothing was sent.") })
         }
         val run = run ?: return
-        val now = System.currentTimeMillis()
-        if (run.timedOut(now)) {
-            cancel()
-            Chat.send(text { bad("The recording ran out of time, so nothing was sent. Open Contribute in the settings to try again.") })
-            return
-        }
         var presses = 0
         while (nextStep.consumeClick()) presses++
         val steps = run.step(now, presses)

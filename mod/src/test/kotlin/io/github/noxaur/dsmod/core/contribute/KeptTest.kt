@@ -33,4 +33,13 @@ class KeptTest {
         assertEquals(listOf(kept), Kept.waiting(dir))
         assertEquals(emptyList(), Kept.waiting(dir.resolve("missing")))
     }
+
+    @Test
+    fun `a file that will not go does not keep the others`() {
+        dir.resolve("a-stuck").also { Files.createDirectory(it) }.resolve("inside").writeText("x")
+        val raw = dir.resolve("b.jsonl").also { it.writeText("Alice: hi") }
+
+        kotlin.test.assertFailsWith<java.io.IOException> { Kept.sweep(dir) }
+        assertFalse(Files.exists(raw))
+    }
 }

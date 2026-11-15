@@ -24,9 +24,13 @@ object Kept {
     fun waiting(dir: Path): List<Path> =
         if (Files.isDirectory(dir)) Files.list(dir).use { it.toList() }.filter { requestId(it) != null }.sorted() else emptyList()
 
-    /** Deletes everything in [dir] that is not a kept recording, which only a start of the game may do: a run may be writing one. */
+    /**
+     * Deletes everything in [dir] that is not a kept recording, which only a start of the game may do: a run may be
+     * writing one. It tries every file, then throws when one would not go.
+     */
     fun sweep(dir: Path) {
         if (!Files.isDirectory(dir)) return
-        Files.list(dir).use { it.toList() }.filter { requestId(it) == null }.forEach(Files::deleteIfExists)
+        val failed = Files.list(dir).use { it.toList() }.filter { requestId(it) == null }.filter { runCatching { Files.deleteIfExists(it) }.isFailure }
+        if (failed.isNotEmpty()) throw java.io.IOException("Could not delete $failed")
     }
 }

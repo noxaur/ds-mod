@@ -138,18 +138,28 @@ object Contribute {
         }
     }
 
-    /** Sends a claimed [gz] and says how it went. A recording the backend refuses for good is deleted, and any other failure keeps it. */
+    /**
+     * Sends a claimed [gz] and says how it went. A recording the backend refuses for good is deleted, and any other
+     * failure keeps it. The answer is handled on the backend's thread, as the upload is, so a resend queued behind it
+     * sees the file and its claim as this upload left them.
+     */
     private fun upload(requestId: String, gz: Path) {
-        val upload = Account.backend.async { submit(requestId, gz) }.whenComplete { answer, error ->
+        val upload = Account.backend.async {
             try {
-                if (answer != null) Files.deleteIfExists(gz)
+                val answer = try {
+                    submit(requestId, gz)
+                } catch (e: Exception) {
+                    return@async tell { bad("Not sent. " + Account.why(e) + " Your recording is kept. "); action("/dsmod submit"); bad(" tries again.") }
+                }
+                Files.deleteIfExists(gz)
                 when (answer) {
                     Upload.SENT -> tell { good("Sent. Thank you!") }
                     Upload.UNKNOWN -> tell { bad("Not sent, and deleted. The backend no longer has that request.") }
                     Upload.CLOSED -> tell { bad("Not sent, and deleted. That request is closed, has enough recordings, or already has yours.") }
                     Upload.TOO_BIG -> tell { bad("Not sent, and deleted. The recording is too big for the backend.") }
-                    null -> tell { bad("Not sent. " + Account.why(error!!) + " Your recording is kept. "); action("/dsmod submit"); bad(" tries again.") }
                 }
+            } catch (e: Exception) {
+                log.error("Could not delete the recording {} after its upload", gz, e)
             } finally {
                 claimed.remove(gz)
             }
