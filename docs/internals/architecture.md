@@ -72,13 +72,19 @@ The `unparsed` counter matters most. The server is closed and changes without no
 
 ## The recorder is in the release jar, and runs only when started
 
-Developers' accounts cannot reach all of the server's content, so players will record it for them. That needs the recorder in the jar a player installs, though it reads private client fields and records everything, chat included. Two things make that safe. It starts only from the debug build's `/dscapture` and `-Pbrief`, so while none runs every hook is one null check and the recorder costs a frame nothing. And the recorder only ever reads what the server already sent the client, so it cannot send for the player.
+Developers' accounts cannot reach all of the server's content, so players will record it for them. That needs the recorder in the jar a player installs, though it reads private client fields and records everything, chat included. Three things make that safe. It starts only from the debug build's `/dscapture` and `-Pbrief`, so while none runs every hook is one null check and the recorder costs a frame nothing. The file never leaves the machine as recorded: the mod redacts it first (below). And the recorder only ever reads what the server already sent the client, so it cannot send for the player.
 
 The rest of the developer tools stay in `src/debug`, a separate source set that `src/main` can't see, so the compiler keeps them out of the release jar. They are `/dscapture`, `/dskit`, `cutFixture` and the window title that names a `-Pbrief`. The debug jar holds the release jar inside it, so the release code runs the same in both.
 
 The recorder reads private fields, which needs an access widener, and a mod declares only one. So the jar's file is ours followed by MoulConfig's lines, merged by the build.
 
-Recording is client-thread work that no thread can do for it, because it reads game state. Writing happens on another thread, and the writer opens the file on its own thread, so starting a recording touches no disk on the client thread.
+Recording is client-thread work that no thread can do for it, because it reads game state. Writing, redacting and compressing happen on other threads, and the writer opens the file on its own thread, so starting a recording touches no disk on the client thread.
+
+## Redaction happens in the mod, and the backend still distrusts the upload
+
+A capture holds player names and private chat, and `PlayerNames` finds them by rules that a line nobody has seen can slip past. The mod redacts before it uploads, so a name never leaves the machine, using the same `PlayerNames` and the same redactor that cuts fixtures. The backend still treats every upload as sensitive, because the mod is open source and a modified one skips the redaction. The raw `chat` records are dropped instead of redacted, since `system` carries the same lines as events and a typed message sits in nested components there.
+
+What a player typed is found by shape, not by a list of formats. The server's whisper, party and message lines are in no capture, so a list would be a guess that passes its own tests. In a `system` line, whatever follows a known name and a `: ` is replaced. That costs the text of a server line that happens to have the same shape, and a line from a player the capture never names elsewhere still gets through. A component that spells a name across several pieces, one per color, is replaced by its redacted plain text, because no single string holds the name to replace.
 
 ## The release jar carries its own MoulConfig
 

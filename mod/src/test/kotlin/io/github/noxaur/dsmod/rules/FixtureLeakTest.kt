@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.rules
 
-import io.github.noxaur.dsmod.debug.capture.PlayerNames
+import io.github.noxaur.dsmod.core.capture.PlayerNames
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
