@@ -9,17 +9,18 @@ import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import java.util.Base64
 
 /**
- * The worn armor shows on the HUD as the very stacks the player wears, so dyed leather keeps its color, and the chat's
- * free mouse reads a piece's tooltip. The pet shows by name until its head floats beside the player, and then as that
+ * The worn armor shows on the HUD as the player wears it, so a head keeps its skin and dyed leather its color, and the
+ * chat's free mouse reads a piece's tooltip. The pet shows by name until its head floats beside the player, and then as that
  * head at the end of the row. Read the screenshots: the row with a gap for the missing leggings, the tooltip over the
  * chestplate, the column, the pet's name under the row, and the pet's head in it.
  */
 class EquipmentDisplayTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
-            world.server.runCommand("item replace entity @a armor.head with minecraft:diamond_helmet")
+            world.server.runCommand("item replace entity @a armor.head with minecraft:player_head[profile={properties:[{name:\"textures\",value:\"$TEXTURES\"}]}]")
             world.server.runCommand("item replace entity @a armor.chest with minecraft:leather_chestplate[dyed_color=$DYE]")
             world.server.runCommand("item replace entity @a armor.feet with minecraft:leather_boots[dyed_color=$DYE]")
             context.waitTicks(20)
@@ -33,8 +34,8 @@ class EquipmentDisplayTest : FabricClientGameTest {
             }
             fun stackAt(point: Pair<Double, Double>) = context.computeOnClient<ItemStack?, Nothing> { Hud.itemAt(point.first, point.second) }
 
-            check(stackAt(piece(0))?.item == Items.DIAMOND_HELMET) { "The first icon is not the helmet" }
-            check(stackAt(piece(1))?.get(DataComponents.DYED_COLOR)?.rgb() == DYE) { "The chestplate lost its dye, so it is not the stack the player wears" }
+            check(skin(stackAt(piece(0)))) { "The helmet's icon lost its skin" }
+            check(stackAt(piece(1))?.get(DataComponents.DYED_COLOR)?.rgb() == DYE) { "The chestplate lost its dye" }
             check(stackAt(piece(2)) == null) { "The leggings, which the player does not wear, have an icon" }
             check(stackAt(piece(3))?.item == Items.LEATHER_BOOTS) { "The fourth icon is not the boots" }
             context.takeScreenshot("equipment-display")
@@ -74,21 +75,31 @@ class EquipmentDisplayTest : FabricClientGameTest {
 
             // dragsim.co floats the pet beside the player as an armor stand wearing its head, named as the sidebar names it.
             world.server.runCommand(
-                """execute at @a run summon armor_stand ~1 ~1 ~1 {CustomName:"[Lvl 100] Ender Dragon",Invisible:1b,NoGravity:1b,equipment:{head:{id:"minecraft:player_head",components:{"minecraft:profile":{name:"DsPet"},"minecraft:custom_name":"Pet Head"}}}}""",
+                """execute at @a run summon armor_stand ~1 ~1 ~1 {CustomName:"[Lvl 100] Ender Dragon",Invisible:1b,NoGravity:1b,equipment:{head:{id:"minecraft:player_head",components:{"minecraft:profile":{properties:[{name:"textures",value:"$TEXTURES"}]},"minecraft:custom_name":"Pet Head"}}}}""",
             )
             context.waitTicks(30)
             val icon = stackAt(piece(4))
-            check(icon?.get(DataComponents.PROFILE) != null) { "The pet's icon is not the head it wears: $icon" }
+            check(skin(icon)) { "The pet's icon lost the skin of the head it wears: $icon" }
             context.takeScreenshot("equipment-display-pet")
 
             for (slot in listOf("head", "chest", "feet")) world.server.runCommand("item replace entity @a armor.$slot with minecraft:air")
             context.waitTicks(20)
-            check(stackAt(piece(0)) == null && stackAt(piece(4))?.get(DataComponents.PROFILE) != null) { "With the armor off, the pet's head should be all that shows" }
+            check(stackAt(piece(0)) == null && skin(stackAt(piece(4)))) { "With the armor off, the pet's head should be all that shows" }
         }
+    }
+
+    /** Whether [stack] wears [SKIN], which the HUD rebuilt from the mod's own record of the item. */
+    private fun skin(stack: ItemStack?): Boolean {
+        val value = stack?.get(DataComponents.PROFILE)?.partialProfile()?.properties()?.get("textures")?.firstOrNull()?.value() ?: return false
+        return SKIN in String(Base64.getDecoder().decode(value))
     }
 
     private companion object {
         const val ID = "equipment-display"
         const val DYE = 0x3366CC
+
+        /** A head's skin as dragsim.co's armor and pets wear one: a texture on Mojang's server, named in base64 JSON. */
+        const val SKIN = "f83159c5bb7d80454d2d646b15774b7116aabcb3af5b6777a27573fc45f7854f"
+        val TEXTURES: String = Base64.getEncoder().encodeToString("{\"textures\":{\"SKIN\":{\"url\":\"http://textures.minecraft.net/texture/$SKIN\"}}}".toByteArray())
     }
 }

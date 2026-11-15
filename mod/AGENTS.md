@@ -73,13 +73,13 @@ Events are the `GameEvent`s that features see, recorded as they were posted, and
 - `death` for the server's death event on an entity that is not a player, with its type, name and position.
 - `head` for a player head block the server placed, with its position.
 - `pet` for the pet nearest the player, an armor stand within 6 blocks named like `[Lvl 100] Ender Dragon`, with its name and the head it wears, when the nearest one changes.
-- `container` for a menu the player opened, or their own inventory again, and `slot` for each slot that changed. A slot carries the item's id, count, name, lore and `custom_data`. A big menu's slots arrive over a few ticks.
+- `container` for a menu the player opened, or their own inventory again, and `slot` for each slot that changed. A slot carries the item's id, count, name, lore and `custom_data`, and how it looks: a head's `skin`, leather's `dye`, `glint` and the tooltip `style`. A big menu's slots arrive over a few ticks.
 
 Raw records are for you to read. No feature sees one until it is promoted:
 
 - `chat` and `title`.
 - `bossbars` and `tabheader`, the tab list's header and footer.
-- `itemcomponents` for the components a `slot` leaves out, such as `tooltip_style`, `profile` and `item_model`, in Minecraft's own codec JSON.
+- `itemcomponents` for the components a `slot` leaves out, such as `item_model`, and the full `profile`, in Minecraft's own codec JSON.
 - `entities` for players, named entities and anything wearing or holding an item, each with the block it stands in. Glowing entities, silverfish and creepers, displays (`text`, `item`), item frames (`item`, `rotation`, `facing`) and dropped named items come too.
 - `status` for the player's block, health and XP.
 - `sound`, `particles` and `block` for what the server played, spawned or changed.

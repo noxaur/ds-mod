@@ -162,6 +162,7 @@ class Redactor(private val names: Set<String>) {
         name = item.name?.named(),
         lore = item.lore.map { it.named(listOfNotNull(PlayerNames.inLore(it.plain))) },
         data = scrub(item.data, "", emptySet()) as JsonObject,
+        skin = null,
     )
 }
 

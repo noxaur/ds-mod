@@ -97,7 +97,7 @@ object DsModClient : ClientModInitializer {
         game = Game(all) { active }
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
         Kit.register()
-        Hud.register { containers.stack(it) ?: pets.stack(it) }
+        Hud.register()
         Slots.register(config.instance.inventory)
         MenuBack.register()
         TabBar.register()

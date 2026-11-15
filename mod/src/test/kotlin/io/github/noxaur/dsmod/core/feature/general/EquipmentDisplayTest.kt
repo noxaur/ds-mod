@@ -45,6 +45,22 @@ class EquipmentDisplayTest {
 
     private fun near(name: String) = PetNear(ServerText(ServerSpan(name)), head)
 
+    /** The Pets menu with [active] marked as dragsim.co marks the pet that is out, holding [held]. */
+    private fun petsMenu(active: String, held: String) = arrayOf<GameEvent>(
+        ContainerOpened(25, ServerText(ServerSpan("Pets")), 90),
+        SlotChanged(12, menuItem("Tiger", held, active = false)),
+        SlotChanged(13, menuItem(active, held, active = true)),
+    )
+
+    private fun menuItem(name: String, held: String, active: Boolean) = Item(
+        "minecraft:player_head",
+        1,
+        ServerText(ServerSpan("[Lvl 100] ", 0xAAAAAA), ServerSpan(name, Role.EPIC.rgb)),
+        listOf("Held Item", held, "", "LEVEL 100").map { ServerText(ServerSpan(it)) } +
+            (if (active) listOf("ACTIVE", "Click to deactivate!") else listOf("Click to summon!")).map { ServerText(ServerSpan(it)) },
+        skin = name.lowercase().replace(" ", ""),
+    )
+
     private fun hud() = game.readouts.single { it.feature.id == "equipment-display" }.hud
 
     /** Each row as its icons, or as its text. */
@@ -71,6 +87,24 @@ class EquipmentDisplayTest {
         post(*inventory(helmet, null), pet(), near("[Lvl 100] Ender Dragon"))
         assertEquals(listOf(listOf(helmet, null, null, null), "[Lvl 100] Ender Dragon"), rows())
         assertEquals(Role.EPIC.rgb, hud()!!.rows.last().text.spans.last().rgb)
+    }
+
+    @Test
+    fun `the Pets menu gives the active pet's item as its icon, before any head is seen`() {
+        post(pet(), *petsMenu("Ender Dragon", "Iron Claws"), ContainerOpened(0, null, 46))
+        val icon = (hud()!!.rows.single() as ItemsRow).items.last()
+        assertEquals("enderdragon", icon?.skin)
+        assertEquals("Iron Claws", icon?.lore?.get(1)?.plain, "The tooltip names the held item")
+    }
+
+    @Test
+    fun `the Name look shows the held item the Pets menu named`() {
+        config.general.petLook = PetLook.NAME
+        post(pet(), *petsMenu("Ender Dragon", "Iron Claws"))
+        assertEquals(listOf("[Lvl 100] Ender Dragon · Iron Claws"), rows())
+
+        post(pet(name = "Tiger"))
+        assertEquals(listOf("[Lvl 100] Tiger"), rows(), "The held item was another pet's")
     }
 
     @Test

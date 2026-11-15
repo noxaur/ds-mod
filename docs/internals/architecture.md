@@ -148,9 +148,9 @@ Text the server sent is a separate type, `ServerText`, which carries whatever co
 
 Each surface (chat, HUD, alerts, container slots, tooltips, world marks) has one object in `edge` that draws a plain model from `core`. A model is handed over when something changes, and the layer converts it to Minecraft's types once and redraws it from then on. A feature that built its text every frame would allocate in the render loop, where a dropped frame is a bug, so the layers offer no per-frame hook.
 
-## An item on the HUD is drawn from the stack it was read from
+## An item on the HUD is drawn from the mod's own record of it
 
-An `Item` keeps what features read: the id, the name, the lore and `custom_data`. dragsim.co's armor is a player head with a skin and leather with a dye, and neither is in an `Item`, so an icon rebuilt from the id is a Steve head and brown leather. `Hud` therefore asks the poller that read each item, `ContainerPoller` or `PetPoller`, for the very stack it was read from, matched by identity, which costs the poll nothing. `ContainerPoller` keeps the player's own inventory while another menu is open, because that menu does not hold the armor. An item no stack was read for, such as one from a fixture, falls back to a plain stack of its id.
+dragsim.co's armor is a player head with a skin and leather with a dye, and its items have their own tooltip frames, so an `Item` keeps how the item looks as well as what features read: the skin, the dye, the glint override and the tooltip style. `Hud` rebuilds a stack from the `Item` alone. An earlier version asked the poller for the very stack an item was read from, but the poller lets go of a stack once its menu closes or another pet comes nearer, and the icon then fell back to a Steve head and brown leather. The Pets menu, which closes before its pet is drawn, could not have been drawn that way at all. The skin is kept as the last part of its `textures.minecraft.net` address, without the server's signature or the uploader's name the property holds. The game draws an unsigned skin on a head, as it does for a head a command gives, and the redactor drops the skin as it drops every other.
 
 ## Chrome is drawn in code, from a theme
 

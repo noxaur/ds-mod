@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.hud.BarRow
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudGroup
@@ -54,7 +53,6 @@ object Hud {
     private var shown = emptyList<Group>()
     private var placed = emptyList<Placed>()
     private var cells = emptyList<Cell>()
-    private var stacks: (Item) -> ItemStack? = { null }
 
     /**
      * Puts [block] in [group], replacing what [id] showed before. The group's corner is its plate's corner.
@@ -68,7 +66,7 @@ object Hud {
         var width = header?.let(font::width) ?: 0
         val rows = block.rows.map { row ->
             val bar = row as? BarRow
-            val items = (row as? ItemsRow)?.items?.map { item -> item?.let { stacks(it) ?: it.plainStack() } }
+            val items = (row as? ItemsRow)?.items?.map { it?.toStack() }
             val drawn = Row(row.text.toComponent(), bar, bar?.role?.argb() ?: 0, items, height)
             width = maxOf(width, if (items != null) items.size * ITEM_PITCH - 1 else maxOf(font.width(drawn.text), if (bar != null) BAR_WIDTH else 0))
             height += if (items != null) ITEM_PITCH else line + if (bar != null) Kit.BAR_HEIGHT + BAR_GAP else 0
@@ -138,9 +136,7 @@ object Hud {
     // Each line ends in a pixel of spacing, which the plate's air already gives.
     private fun plate(size: Int) = size + PADDING * 2 - 1
 
-    /** [stacks] finds the stack an item was read from, so its icon shows what the item leaves out, such as a head's skin. */
-    fun register(stacks: (Item) -> ItemStack?) {
-        this.stacks = stacks
+    fun register() {
         // With the chat open the mouse is free, so pointing at an icon shows the item's tooltip. Minecraft draws the
         // frame's tooltip at the end of the screen's own pass, so it is set before that pass.
         ScreenEvents.AFTER_INIT.register { client, screen, _, _ ->

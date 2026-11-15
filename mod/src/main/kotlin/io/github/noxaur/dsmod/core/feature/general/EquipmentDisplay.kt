@@ -47,9 +47,10 @@ enum class PetLook(private val label: String) {
  * them. An empty cell stands for a piece not worn.
  *
  * The armor comes from the player's own inventory, and the last seen is kept while another menu is open, since that
- * menu does not hold the armor. The pet comes from the sidebar's line `Pet: [Lvl 100] Ender Dragon`, and its icon is
- * the head of the nearest pet whose name is the sidebar's: dragsim.co floats each pet beside its owner. Until that
- * head is seen, or with [petLook] on Name, the pet is a line under the icons, as the sidebar writes it.
+ * menu does not hold the armor. The pet comes from the sidebar's line `Pet: [Lvl 100] Ender Dragon`. Its icon is the
+ * active pet's item in the Pets menu, whose tooltip names its held item, or else the head of the nearest pet whose
+ * name is the sidebar's: dragsim.co floats each pet beside its owner. Until one of those is seen, or with [petLook]
+ * on Name, the pet is a line under the icons, as the sidebar writes it, with its held item once the menu showed it.
  */
 class EquipmentDisplay(
     toggle: KMutableProperty0<Boolean>,
@@ -62,7 +63,10 @@ class EquipmentDisplay(
     private var worn = emptyMap<EquipmentPiece, Item>()
     private var pet: Pet? = null
 
-    // The head of the last pet seen near the player, by the pet's name without its level, which goes up in play.
+    // Each by the pet's name without its level, which goes up in play: the active pet's item in the Pets menu, the
+    // item it holds, and the head of the last pet seen near the player.
+    private var menuPet: Pair<String, Item>? = null
+    private var held: String? = null
     private var head: Pair<String, Item>? = null
 
     private var shownLayout = layout.get()
@@ -75,7 +79,15 @@ class EquipmentDisplay(
 
     init {
         on<ContainerOpened> { event, _ -> if (event.id == INVENTORY) stale = true }
-        on<SlotChanged> { event, _ -> if (container.id == INVENTORY && ARMOR.any { it.slot == event.slot }) stale = true }
+        on<SlotChanged> { event, _ ->
+            if (container.id == INVENTORY && ARMOR.any { it.slot == event.slot }) stale = true
+            val item = event.item ?: return@on
+            if (container.title?.plain != PETS || item.lore.none { it.plain == ACTIVE }) return@on
+            val name = item.name?.plain?.let(PET_LINE::matchEntire)?.groupValues?.get(2) ?: return@on
+            menuPet = name to item
+            held = item.lore.zipWithNext().firstOrNull { (label, _) -> label.plain.startsWith(HELD) }?.second?.plain?.trim()
+            block = build()
+        }
         // Also run when the feature is switched off, so it reads the armor again when it comes back.
         on<WorldChanged> { _, _ -> stale = true }
         on<Sidebar> { event, _ ->
@@ -120,7 +132,7 @@ class EquipmentDisplay(
 
     private fun build(): HudBlock? {
         val pet = pet.takeIf { EquipmentPiece.PET in shownPieces }
-        val icon = head?.takeIf { pet != null && shownLook == PetLook.ICON && it.first == pet.name }?.second
+        val icon = listOfNotNull(menuPet, head).firstOrNull { pet != null && shownLook == PetLook.ICON && it.first == pet.name }?.second
         val shown = shownPieces.distinct().filter { it != EquipmentPiece.PET || icon != null }.map { if (it == EquipmentPiece.PET) icon else worn[it] }
         val named = pet.takeIf { icon == null }
         if (shown.all { it == null } && named == null) return null
@@ -128,7 +140,14 @@ class EquipmentDisplay(
             if (shown.any { it != null }) {
                 if (shownLayout == EquipmentLayout.ROW) items(shown) else shown.forEach { items(listOf(it)) }
             }
-            if (named != null) line { muted("[Lvl ${named.level}] "); rarity(named.name, named.rarity) }
+            if (named != null) {
+                val holds = held?.takeIf { menuPet?.first == named.name }
+                line {
+                    muted("[Lvl ${named.level}] ")
+                    rarity(named.name, named.rarity)
+                    if (holds != null) muted(" · $holds")
+                }
+            }
         }
     }
 
@@ -143,6 +162,13 @@ class EquipmentDisplay(
 
         const val PREFIX = "Pet:"
         const val NONE = "None"
+        const val PETS = "Pets"
+
+        /** The line under the active pet in the Pets menu, which no other pet has. */
+        const val ACTIVE = "Click to deactivate!"
+
+        /** The line over the held item's name in a pet's lore. Icons follow it. */
+        const val HELD = "Held Item"
         val PET_LINE = Regex("""\[Lvl (\d+)] (.+)""")
     }
 }
