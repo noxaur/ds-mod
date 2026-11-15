@@ -103,6 +103,25 @@ test("the same account signs in to the same user twice, under its new name", asy
   expect(users[0]).toBe(users[1]);
 });
 
+test("a player whose first sign-in made their user but not its link signs in to that user", async () => {
+  const joins: string[] = [];
+  const { auth, post, challenge, sessionOf } = backend(joins);
+  const signIn = async () => {
+    const serverId = await challenge();
+    joins.push(`Notch ${serverId}`);
+    const response = await post("/minecraft/verify", { name: "Notch", serverId });
+    expect(response.status).toBe(200);
+    return (await sessionOf(Signed.parse(await response.json()).token))?.user.id;
+  };
+  const first = await signIn();
+  const context = await auth.$context;
+  await context.adapter.deleteMany({ model: "account", where: [] });
+
+  expect(await signIn()).toBe(first);
+  expect(await context.adapter.count({ model: "user" })).toBe(1);
+  expect(await context.adapter.count({ model: "account" })).toBe(1);
+});
+
 test("a signed-in player cannot rename their account or unlink it from Mojang", async () => {
   const joins: string[] = [];
   const { post, challenge, sessionOf } = backend(joins);
