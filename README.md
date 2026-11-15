@@ -10,6 +10,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 
 - Command Binds send a command such as `/warp end` with a key, a few keys held together or keys pressed in turn. Keep them in groups you can fold, switch off and share.
 - Camera and Free Look set the third-person distance, height and tilt, and let you look around without turning.
+- Equipment Display shows your armor and pet as icons, on the HUD or beside your hotbar in slots like its own.
 - Copy Chat copies the messages you select as text, format codes or JSON.
 - Rarity Marks color each slot by its item's rarity. Pick Showcase, Gilded or Minimal, or build your own look beside your inventory.
 - Slot Lock keeps a misclick from moving or dropping the slots and items you lock.

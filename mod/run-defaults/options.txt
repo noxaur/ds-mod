@@ -1,0 +1,11 @@
+version:4903
+fovEffectScale:0.0
+darknessEffectScale:0.0
+screenEffectScale:0.0
+bobView:false
+damageTiltStrength:0.0
+skipMultiplayerWarning:true
+joinedFirstServer:true
+soundCategory_master:0.20033112582781457
+soundCategory_music:0.10915492957746478
+soundCategory_record:0.1056338028169014

@@ -17,6 +17,7 @@
     "HudHotbarMixin",
     "KeyInputMixin",
     "KeyPressMixin",
+    "MenuBackdropMixin",
     "MenuBackgroundMixin",
     "MenuLabelMixin",
     "RecipeButtonMixin",

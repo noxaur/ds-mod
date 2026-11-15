@@ -32,6 +32,7 @@ import java.net.InetSocketAddress
 object DsModClient : ClientModInitializer {
     private const val FLUSH_TICKS = 20 * 60
     private const val TAB_POLL_TICKS = 5
+    private const val PET_POLL_TICKS = 20
 
     private lateinit var config: ManagedConfig<DsModConfig>
 
@@ -45,6 +46,7 @@ object DsModClient : ClientModInitializer {
     private lateinit var tabs: TabListPoller
     private lateinit var sidebars: SidebarPoller
     private lateinit var containers: ContainerPoller
+    private lateinit var pets: PetPoller
     private var ticks = 0
     private var onDragSim = false
 
@@ -111,6 +113,7 @@ object DsModClient : ClientModInitializer {
         tabs = TabListPoller(game)
         sidebars = SidebarPoller(game)
         containers = ContainerPoller(game)
+        pets = PetPoller(game)
         config.instance.hud.edit = Runnable { openHudEditor() }
         config.instance.end.editBeam = Runnable { openBeaconEditor() }
         config.instance.betterUi.editTabs = Runnable { openTabEditor() }
@@ -152,6 +155,8 @@ object DsModClient : ClientModInitializer {
                 game.metrics.time("sidebar-poll") { sidebars.poll(it) }
             }
             game.metrics.time("container-poll") { containers.poll(it) }
+            // A pet changes when the player swaps it, so once a second is soon enough.
+            if (ticks % PET_POLL_TICKS == 0) game.metrics.time("pet-poll") { pets.poll(it) }
             Packets.tick(it)
             game.tick(System.currentTimeMillis())
             readouts.push()

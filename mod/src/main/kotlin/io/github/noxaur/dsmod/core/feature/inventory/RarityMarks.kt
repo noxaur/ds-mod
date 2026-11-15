@@ -15,8 +15,7 @@ class RarityMarks(toggle: KMutableProperty0<Boolean>, private val markCommon: KM
     private var changed = false
     private var common = markCommon.get()
 
-    private val byRarity = listOf(Role.COMMON, Role.UNCOMMON, Role.RARE, Role.EPIC, Role.LEGENDARY, Role.MYTHIC, Role.DIVINE, Role.SPECIAL)
-        .associate { it.name to SlotMark(it, rarity = true) }
+    private val byRarity = Role.RARITIES.associate { it.name to SlotMark(it, rarity = true) }
 
     init {
         on<ContainerOpened> { _, _ -> changed = true }
