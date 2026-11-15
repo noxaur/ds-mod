@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.hand
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -39,5 +40,33 @@ class HeldItemTest {
             ease.at(0f, now)
         }
         assertEquals(0f, ease.shown)
+    }
+
+    @Test
+    fun `Reset puts every Animations setting back to its default and leaves the switch alone`() {
+        val settings = DsModConfig.General()
+        settings.animations = false
+        settings.swingStyle = SwingStyle.EXHIBITION
+        settings.swingSpeed = 2f
+        settings.itemSize = 0.5f
+        settings.itemX = 0.3f
+        settings.itemY = -0.2f
+        settings.itemZ = 0.1f
+        settings.itemYaw = 20f
+        settings.itemPitch = -30f
+        settings.itemRoll = 45f
+        settings.scaleSwing = false
+        settings.noSwing = true
+        settings.ignoreHaste = true
+        settings.noEquipReset = true
+        settings.resetAnimations.run()
+        val fresh = DsModConfig.General()
+        assertEquals(false, settings.animations)
+        assertEquals(
+            listOf(fresh.swingStyle, fresh.swingSpeed, fresh.itemSize, fresh.itemX, fresh.itemY, fresh.itemZ, fresh.itemYaw, fresh.itemPitch,
+                fresh.itemRoll, fresh.scaleSwing, fresh.noSwing, fresh.ignoreHaste, fresh.noEquipReset),
+            listOf(settings.swingStyle, settings.swingSpeed, settings.itemSize, settings.itemX, settings.itemY, settings.itemZ, settings.itemYaw,
+                settings.itemPitch, settings.itemRoll, settings.scaleSwing, settings.noSwing, settings.ignoreHaste, settings.noEquipReset),
+        )
     }
 }

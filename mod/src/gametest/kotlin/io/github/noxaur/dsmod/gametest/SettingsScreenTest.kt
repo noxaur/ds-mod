@@ -29,6 +29,13 @@ class SettingsScreenTest : FabricClientGameTest {
         context.waitTicks(20)
         context.takeScreenshot("settings-general")
 
+        // Animations keeps its finer settings folded under two accordions, and opening one of them unfolds it.
+        for ((field, name) in listOf("animations" to "settings-animations", "itemSize" to "settings-animations-folds", "scaleSwing" to "settings-animations-unfolded")) {
+            context.runOnClient<Nothing> { DsModClient.openSettings(DsModConfig.General::class.java.getField(field)) }
+            context.waitTicks(20)
+            context.takeScreenshot(name)
+        }
+
         context.runOnClient<Nothing> { DsModClient.openSettings(DsModConfig.Hud::class.java.getField("theme")) }
         context.waitTicks(20)
         context.takeScreenshot("settings-interface")

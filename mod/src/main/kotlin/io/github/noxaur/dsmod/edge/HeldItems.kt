@@ -21,6 +21,9 @@ private const val PI = Math.PI.toFloat()
 /** How much of the game's swing arc the 1.7 block-hit keeps. */
 private const val BLOCK_ARC = 0.3f
 
+/** How far the block-hit styles raise the game's blocking pose, which sits behind the hotbar. */
+private const val BLOCK_LIFT = 0.12f
+
 /**
  * Animations: how the player's own held item swings and where it sits in first person. The mixins ask this object,
  * and it leaves the game's own pose whenever the feature is off or a setting is at its default. It changes only what
@@ -37,58 +40,87 @@ object HeldItems {
     private fun side(arm: HumanoidArm) = if (arm == HumanoidArm.RIGHT) 1 else -1
 
     /**
-     * Moves the item before the arm puts it in the hand, so Side moves it across the screen rather than along the
+     * Moves the item before the arm puts it in the hand, so X moves it across the screen rather than along the
      * blade, and outward for either hand. The empty hand and a map are not an item to move.
      */
     fun place(pose: PoseStack, arm: HumanoidArm, stack: ItemStack) {
         if (!on || stack.isEmpty || stack.has(DataComponents.MAP_ID)) return
         val s = settings
-        if (s.itemSide != 0f || s.itemHeight != 0f || s.itemDepth != 0f) pose.translate(side(arm) * s.itemSide, s.itemHeight, -s.itemDepth)
+        if (s.itemX != 0f || s.itemY != 0f || s.itemZ != 0f) pose.translate(side(arm) * s.itemX, s.itemY, -s.itemZ)
     }
 
-    /** Runs just before the item is drawn, so it grows about the grip and stays in the hand. */
-    fun size(pose: PoseStack) {
+    /**
+     * Runs just before the item is drawn, after every swing and use pose, so the item turns and grows about the grip
+     * and stays in the hand. Yaw and roll are mirrored for the left hand, as the hands are.
+     */
+    fun turnAndSize(pose: PoseStack, arm: HumanoidArm) {
         if (!on) return
-        val size = settings.itemSize
-        if (size != 1f) pose.scale(size, size, size)
+        val s = settings
+        val side = side(arm)
+        if (s.itemYaw != 0f) pose.mulPose(Axis.YP.rotationDegrees(side * s.itemYaw))
+        if (s.itemPitch != 0f) pose.mulPose(Axis.XP.rotationDegrees(s.itemPitch))
+        if (s.itemRoll != 0f) pose.mulPose(Axis.ZP.rotationDegrees(side * s.itemRoll))
+        if (s.itemSize != 1f) pose.scale(s.itemSize, s.itemSize, s.itemSize)
     }
 
     /**
      * Draws this frame's swing in place of the game's, and says whether it did. Every style is the resting pose at
-     * [attack] 0, as the game's own swing is.
+     * [attack] 0, as the game's own swing is. A [spear] keeps its own stab under Vanilla.
      */
-    fun swing(pose: PoseStack, arm: HumanoidArm, attack: Float): Boolean {
+    fun swing(pose: PoseStack, arm: HumanoidArm, attack: Float, spear: Boolean): Boolean {
         if (!on) return false
+        val s = settings
+        if (s.noSwing) return true
         val side = side(arm)
-        when (settings.swingStyle) {
-            SwingStyle.VANILLA -> return false
-            SwingStyle.STILL -> {}
+        val reach = if (s.scaleSwing) s.itemSize else 1f
+        when (s.swingStyle) {
+            SwingStyle.VANILLA -> {
+                if (reach == 1f || spear) return false
+                push(pose, side, attack, reach)
+                arc(pose, side, attack, 1f)
+            }
             SwingStyle.SPIN -> pose.mulPose(Axis.YP.rotationDegrees(side * -360f * attack))
             SwingStyle.STAB -> SpearAnimations.firstPersonAttack(attack, pose, side, arm)
-            SwingStyle.BLOCK_HIT -> {
+            SwingStyle.BLOCK_HIT, SwingStyle.EXHIBITION -> {
                 val player = Minecraft.getInstance().player ?: return false
                 if (arm != player.mainArm) return false
                 val k = block.at(if (player.swinging) 1f else 0f, System.nanoTime())
-                if (k == 0f) return false
-                // The game's swing fades into a short punch as the pose comes in. At full strength its arc would
-                // tip the sword below the screen.
-                val push = 1 - k
-                val root = sqrt(attack)
-                pose.translate(push * side * -0.4f * sin(root * PI), push * 0.2f * sin(root * 2 * PI), push * -0.2f * sin(attack * PI))
-                val arc = 1 - k * (1 - BLOCK_ARC)
-                val turn = sin(root * PI) * arc
-                pose.mulPose(Axis.YP.rotationDegrees(side * (45f - 20f * sin(attack * attack * PI) * arc)))
-                pose.mulPose(Axis.ZP.rotationDegrees(side * -20f * turn))
-                pose.mulPose(Axis.XP.rotationDegrees(-80f * turn))
-                pose.mulPose(Axis.YP.rotationDegrees(side * -45f))
-                // The sword held across the screen, as the game holds a blocking one.
-                pose.translate(side * -0.14142136f * k, 0.08f * k, 0.14142136f * k)
+                if (k == 0f && reach == 1f) return false
+                // The game's swing fades out as the pose comes in.
+                push(pose, side, attack, reach * (1 - k))
+                if (s.swingStyle == SwingStyle.BLOCK_HIT) {
+                    // A short punch: at full strength the game's arc would tip the sword below the screen.
+                    arc(pose, side, attack, 1 - k * (1 - BLOCK_ARC))
+                } else {
+                    arc(pose, side, attack, 1 - k)
+                    // The sword slides down and back toward the player at the swing's peak, and its tip dips.
+                    val peak = sin(sqrt(attack) * PI) * k
+                    pose.translate(0f, -0.08f * peak * reach, 0.1f * peak * reach)
+                    pose.mulPose(Axis.XP.rotationDegrees(-25f * peak))
+                }
+                // The sword held across the screen, as the game holds a blocking one, lifted clear of the hotbar.
+                pose.translate(side * -0.14142136f * k, (0.08f + BLOCK_LIFT) * k, 0.14142136f * k)
                 pose.mulPose(Axis.XP.rotationDegrees(-102.25f * k))
                 pose.mulPose(Axis.YP.rotationDegrees(side * 13.365f * k))
                 pose.mulPose(Axis.ZP.rotationDegrees(side * 78.05f * k))
             }
         }
         return true
+    }
+
+    /** The game's own swing moves the hand by this much, times [reach]. */
+    private fun push(pose: PoseStack, side: Int, attack: Float, reach: Float) {
+        val root = sqrt(attack)
+        pose.translate(reach * side * -0.4f * sin(root * PI), reach * 0.2f * sin(root * 2 * PI), reach * -0.2f * sin(attack * PI))
+    }
+
+    /** The game's own swing turns the item by this much, times [amount]. At 1 it is the game's turn exactly. */
+    private fun arc(pose: PoseStack, side: Int, attack: Float, amount: Float) {
+        val turn = sin(sqrt(attack) * PI) * amount
+        pose.mulPose(Axis.YP.rotationDegrees(side * (45f - 20f * sin(attack * attack * PI) * amount)))
+        pose.mulPose(Axis.ZP.rotationDegrees(side * -20f * turn))
+        pose.mulPose(Axis.XP.rotationDegrees(-80f * turn))
+        pose.mulPose(Axis.YP.rotationDegrees(side * -45f))
     }
 
     /** How many ticks the player's own swing lasts, from the game's [ticks]. Everyone else swings at their own pace. */

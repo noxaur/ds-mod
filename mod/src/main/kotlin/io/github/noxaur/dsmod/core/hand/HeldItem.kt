@@ -10,14 +10,14 @@ enum class SwingStyle(private val label: String) {
     /** The old block-hit: the sword held across the screen as it swings. */
     BLOCK_HIT("1.7"),
 
+    /** The block-hit with the sword sliding down and back on each swing instead of arcing. */
+    EXHIBITION("Exhibition"),
+
     /** One full turn per swing. */
     SPIN("Spin"),
 
     /** Straight out at the crosshair and back, as the game swings a spear. */
     STAB("Stab"),
-
-    /** No movement at all. */
-    STILL("Still"),
     ;
 
     override fun toString() = label
