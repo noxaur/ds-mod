@@ -63,7 +63,7 @@ A screen is a vanilla `Screen` holding the kit's widgets. It takes the screen it
 
 Anything the player operates, on the mod's own screen or on a vanilla one, ships finished. The first cut is the finished feature, so a convention the player has to ask for later is a missing part of it.
 
-1. Name the kind of control: list selection, context menu, range slider, text field, draggable thing, scrolling list.
+1. Name the kind of control: list selection, context menu, key bind, range slider, text field, draggable thing, scrolling list.
 2. Read its section in [`controls.md`](controls.md). Survey the peer mods listed there for what players of that kind already know.
 3. Build every convention that applies, with the keyboard and the mouse, before the first commit.
 4. Say in the PR which conventions you left out, and why.
