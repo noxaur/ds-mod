@@ -10,8 +10,6 @@ import java.util.zip.GZIPInputStream
 import kotlin.io.path.writeLines
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
-import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -108,31 +106,6 @@ class RedactCaptureTest {
     }
 
     @Test
-    fun `a capture its writer did not finish is deleted and not redacted`() {
-        val raw = dir.resolve("unfinished.jsonl").also { it.writeLines(listOf(captureLine(1, SystemMessage(text("Alice: hi"))))) }
-        val gz = dir.resolve("unfinished.jsonl.gz")
-
-        assertFailsWith<CaptureIncompleteException> {
-            sealCapture({ throw CaptureIncompleteException("still writing") }, raw, gz, emptySet())
-        }
-
-        assertFalse(Files.exists(raw), "the raw capture is gone")
-        assertFalse(Files.exists(gz), "nothing is left to upload")
-    }
-
-    @Test
-    fun `a finished capture is redacted and its raw file deleted`() {
-        val writer = CaptureWriter(dir)
-        writer.record(1, SystemMessage(text("[MVP+] Alice: hunter2")))
-        val gz = dir.resolve("sealed.jsonl.gz")
-
-        sealCapture(writer, writer.file, gz, emptySet())
-
-        assertFalse(Files.exists(writer.file))
-        assertEquals(listOf("[MVP+] Player1: hello"), plains(GZIPInputStream(Files.newInputStream(gz)).bufferedReader().readLines()).map { it.plain })
-    }
-
-    @Test
     fun `the player's own name goes even when no line shows where it sits`() {
         val out = redact("""{"t":1,"type":"status","data":{"note":"Steve at 1,2,3"}}""", own = setOf("Steve"))
 
@@ -176,18 +149,5 @@ class RedactCaptureTest {
         val out = redact("""{"t":1,"type":"skulls","data":{"entries":{"a":{"profile":{"name":"","id":[1]}},"b":{"profile":{"name":"Al","id":[2]}}}}}""", """{"t":2,"type":"status","data":{"note":"Al is at 1"}}""")
 
         assertTrue("Al is at 1" in out[1], out[1])
-    }
-
-    @Test
-    fun `a sealed recording appears whole, and a failed one leaves no part`() {
-        val raw = dir.resolve("whole.jsonl").also { it.writeLines(listOf(captureLine(1, SystemMessage(text("hi"))))) }
-        val gz = dir.resolve("whole.jsonl.gz")
-        sealCapture({}, raw, gz, emptySet())
-        assertTrue(Files.exists(gz))
-        assertFalse(Files.exists(dir.resolve("whole.jsonl.gz.part")))
-
-        val broken = dir.resolve("broken.jsonl").also { it.writeLines(listOf("not json")) }
-        assertFails { sealCapture({}, broken, dir.resolve("broken.jsonl.gz"), emptySet()) }
-        assertFalse(Files.exists(dir.resolve("broken.jsonl.gz")) || Files.exists(dir.resolve("broken.jsonl.gz.part")))
     }
 }

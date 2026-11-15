@@ -21,7 +21,6 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardCopyOption
 import java.util.zip.GZIPOutputStream
 import kotlin.io.path.useLines
 
@@ -117,24 +116,7 @@ class Redactor(names: Set<String>) {
 }
 
 /**
- * Ends a recording for upload: waits for [recorder] to finish writing [capture], then writes it to [to] with
- * [redactCapture]. The raw file holds every name, so it is deleted whether or not that worked, and a capture whose
- * writer did not finish throws and leaves nothing to send. [to] appears whole or not at all, so a quit in the middle
- * leaves no half-written recording. Call it from a thread that may wait.
- */
-fun sealCapture(recorder: AutoCloseable, capture: Path, to: Path, own: Set<String>): Int {
-    val part = to.resolveSibling(to.fileName.toString() + ".part")
-    try {
-        recorder.close()
-        return redactCapture(capture, part, own).also { Files.move(part, to, StandardCopyOption.ATOMIC_MOVE) }
-    } finally {
-        Files.deleteIfExists(capture)
-        Files.deleteIfExists(part)
-    }
-}
-
-/**
- * Writes [capture] to [to] gzipped, redacted for upload: every player name in it, [own] names that the capture may
+ * Writes [capture] to [to] gzipped and redacted: every player name in it, [own] names that the capture may
  * not show, each typed chat message and each skin. The raw `chat` records are dropped, because the `system` events
  * carry the same lines and a raw record's typed text sits in nested components. Returns the number of players renamed.
  */
