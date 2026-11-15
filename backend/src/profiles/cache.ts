@@ -10,6 +10,12 @@ import type { Found, Progression } from "./wire.ts";
 export const FRESH_MS = 2 * 60 * 1000;
 /** How long a copy is kept as the answer for when dragsim.co is down, and how long a name is remembered. */
 export const KEEP_SECONDS = 24 * 60 * 60;
+/**
+ * How old a name's uuid may be before a lookup writes it again. It must be renewed well inside [KEEP_SECONDS], or it
+ * expires while the copies it leads to are kept, and dragsim.co being down then finds none. Renewing it on every
+ * lookup instead would write one key twice in a second whenever two players look at the same player.
+ */
+export const NAME_RENEW_MS = 60 * 60 * 1000;
 /** How long a name dragsim.co does not know is remembered, so a mistyped name asked again does not reach it. */
 export const MISSING_SECONDS = 60;
 /** How long the catalog is used before it is fetched again. It changes with the server's releases, not by the minute. */
@@ -26,6 +32,10 @@ const CATALOG_KEY = "catalog";
 /** A copy of what dragsim.co answered, and when. The body is read again each time, so a change of ours never trusts it. */
 const Entry = Schema.Struct({ fetchedAt: Schema.Number, body: Schema.Unknown });
 const decodeEntry = Schema.decodeUnknownOption(Entry);
+
+/** Which player a name is, and when that was written. */
+const Name = Schema.Struct({ uuid: Schema.String, writtenAt: Schema.Number });
+const decodeName = Schema.decodeUnknownOption(Name);
 
 export interface Lookup {
   /** When the backend read it from dragsim.co, in epoch milliseconds. */
@@ -113,9 +123,10 @@ export const lookup = Effect.fn(function* (name: string, profileId: string | und
   const store = yield* ProfileStore;
   const lower = name.toLowerCase();
   const now = yield* Clock.currentTimeMillis;
-  const uuid = yield* store.get(nameKey(lower));
-  const known = typeof uuid === "string";
-  const cached = known ? yield* readEntry(store, profileKey(uuid, profileId)) : Option.none();
+  const named = decodeName(yield* store.get(nameKey(lower)));
+  const cached = Option.isSome(named)
+    ? yield* readEntry(store, profileKey(named.value.uuid, profileId))
+    : Option.none();
   if (Option.isSome(cached) && now - cached.value.fetchedAt < FRESH_MS) {
     return { ...cached.value, stale: false };
   }
@@ -126,8 +137,9 @@ export const lookup = Effect.fn(function* (name: string, profileId: string | und
   return yield* fetchPlayer(name, profileId).pipe(
     Effect.tap(({ found }) =>
       Effect.all([
-        // Written only when it changes, since every lookup of the player would otherwise write the same key.
-        uuid === found.player.uuid ? Effect.void : keep(store.put(nameKey(lower), found.player.uuid, KEEP_SECONDS)),
+        Option.isSome(named) && named.value.uuid === found.player.uuid && now - named.value.writtenAt < NAME_RENEW_MS
+          ? Effect.void
+          : keep(store.put(nameKey(lower), { uuid: found.player.uuid, writtenAt: now }, KEEP_SECONDS)),
         keep(store.put(profileKey(found.player.uuid, profileId), { fetchedAt: now, body: found }, KEEP_SECONDS)),
       ]),
     ),

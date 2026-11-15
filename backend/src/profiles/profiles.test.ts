@@ -291,6 +291,42 @@ test("a copy answers as stale when dragsim.co is down, however old", async () =>
   expect(value.fetchedAt).toBe("2026-11-15T12:00:00.000Z");
 });
 
+test("a name outlives the first day, so a later copy still answers when dragsim.co is down", async () => {
+  // A store that forgets each value when its time is up, as KV does.
+  const values = new Map<string, { value: unknown; until: number }>();
+  const state: { player: Answer } = { player: { status: 200, body: player } };
+  const services = memoryServices({
+    profiles: {
+      get: (key) =>
+        Effect.sync(() => {
+          const kept = values.get(key);
+          return kept !== undefined && kept.until > Date.now() ? kept.value : null;
+        }),
+      put: (key, value, ttl) => Effect.sync(() => void values.set(key, { value, until: Date.now() + ttl * 1000 })),
+    },
+    upstream: {
+      get: (path) => {
+        const answer = path.startsWith("/data/catalog") ? { status: 200, body: catalog } : state.player;
+        return answer === "down" ? Effect.fail(new UpstreamDown()) : Effect.succeed(answer);
+      },
+    },
+  });
+  const app = makeApp(services, () => ({ userId: "ann", adminToken: undefined }));
+  const lookUp = () => app(new Request("http://backend/v1/players/Testwyrm/profile"));
+  const hour = 60 * 60 * 1000;
+  expect((await lookUp()).status).toBe(200);
+  vi.setSystemTime(Date.now() + 23 * hour);
+  expect((await lookUp()).status).toBe(200);
+  state.player = "down";
+  vi.setSystemTime(Date.now() + 2 * hour);
+  const response = await lookUp();
+  expect(response.status).toBe(200);
+  expect(Schema.decodeUnknownSync(Profile)(await response.json())).toMatchObject({
+    stale: true,
+    fetchedAt: "2026-11-16T11:00:00.000Z",
+  });
+});
+
 test("a 5xx, a failure and an answer that does not decode are all unavailable without a copy", async () => {
   for (const answer of ["down", { status: 502, body: {} }, { status: 200, body: { profile: 7 } }] as const) {
     const { failure, state } = backend();
