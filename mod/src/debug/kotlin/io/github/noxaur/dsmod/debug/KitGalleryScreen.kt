@@ -4,6 +4,7 @@ import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.TextBuilder
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Section
+import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SlotArts
 import io.github.noxaur.dsmod.edge.Surface
@@ -82,6 +83,8 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         val icon = addRenderableWidget(KitButton(stepper.right + Kit.GAP, y, Icon.SEARCH, "Search") {})
         val rate = addRenderableWidget(KitCheckbox(icon.right + Kit.GAP, y + 3, "Rate", true) {})
         addRenderableWidget(KitCheckbox(rate.right + Kit.GAP * 2, y + 3, "Bar", false) {})
+        // The storage window's search field, below its slot grid.
+        addRenderableWidget(KitTextField(ox + MIDDLE + 7, oy + 133, 99, "Search", "", 64) {}.hint("Search..."))
         addRenderableWidget(KitRangeSlider(ox + Kit.INSET, oy + 192, 252, "Range", 200, listOf(50, 100, 150), listOf(Section(20, 70), Section(175, 200))) {})
         val field = addRenderableWidget(KitTextField(ox + Kit.INSET, oy + 226, 96, "Command", "/warp end", 256) {})
         var keyX = field.x + field.width + 4 + Kit.GAP
@@ -130,11 +133,11 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
 
         caption(g, "Icons: ink, muted, roles on a well", x, oy + 121)
         val icons = Icon.entries
-        Kit.well(g, x + 132, oy + 132, 120, 14)
+        Kit.well(g, x + 164, oy + 132, 88, 14)
         for (i in icons.indices) {
             Kit.icon(g, icons[i], x + i * 8, oy + 136, t.ink, t.inkShadow)
-            Kit.icon(g, icons[i], x + 66 + i * 8, oy + 136, t.inkMuted, t.inkShadow)
-            Kit.icon(g, icons[i], x + 136 + i * 14, oy + 136, ROLES[i % ROLES.size].argb())
+            Kit.icon(g, icons[i], x + 82 + i * 8, oy + 136, t.inkMuted, t.inkShadow)
+            Kit.icon(g, icons[i], x + 167 + i * 8, oy + 136, ROLES[i % ROLES.size].argb())
         }
 
         caption(g, "Divider, rings and a line", x, oy + 150)
@@ -156,12 +159,15 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         super.extractRenderState(graphics, mouseX, mouseY, partialTick)
     }
 
-    /** Tabs, a slot grid with every mark, a scrollbar and a search well, as a storage screen would have them. */
+    /** Tabs, a slot grid with every mark and a scrollbar, as a storage screen would have them. Its search field is a widget. */
     private fun window(g: GuiGraphicsExtractor, x: Int, y: Int) {
-        caption(g, "Tabs, slots, marks", x, y - 33)
+        caption(g, "Tabs on both edges, slots, marks", x, y - 33)
         for (i in 1 until tabs.size) g.item(tabs[i], x + 4 + i * 23 + 3, Kit.tab(g, x + 4 + i * 23, y, false))
+        // Tabs on the bottom edge too: one under the mouse, then the selected one after the panel.
+        g.item(tabs[2], x + 31, Kit.tab(g, x + 28, y + 118, false, TabEdge.BOTTOM, hovered = true))
         Kit.panel(g, x, y, 113, 118)
         g.item(tabs[0], x + 7, Kit.tab(g, x + 4, y, true))
+        g.item(tabs[1], x + 7, Kit.tab(g, x + 4, y + 118, true, TabEdge.BOTTOM))
         Kit.label(g, "Storage", x + 7, y + 6, Kit.Ink.MUTED)
         Kit.icon(g, Icon.CROSS, x + 99, y + 7, Kit.theme.ink, Kit.theme.inkShadow)
         val gx = x + 7
@@ -181,9 +187,6 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
             }
         }
         Kit.scrollbar(g, gx + 93, gy, 72, 6, 30)
-        Kit.well(g, gx, gy + 76, 99, 14)
-        g.text(font, SEARCH, gx + 4, gy + 79, -1, false)
-        Kit.icon(g, Icon.SEARCH, gx + 88, gy + 79, Role.MUTED.argb(), false)
     }
 
     /** A plain tooltip over the slot grid, drawn last as the game draws one. */
@@ -219,7 +222,6 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
     private companion object {
         val ROLES = listOf(Role.GOOD, Role.BAD, Role.WARNING, Role.VALUE, Role.ACTION, Role.MUTED, Role.LEGENDARY)
         val RESULT = ItemStack(Items.CRAFTING_TABLE)
-        val SEARCH = text { muted("Search...") }.toComponent()
 
         fun name(state: Kit.State) = state.name.lowercase().replaceFirstChar(Char::uppercase)
 

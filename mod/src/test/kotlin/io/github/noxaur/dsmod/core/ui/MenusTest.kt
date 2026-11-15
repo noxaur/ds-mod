@@ -33,4 +33,55 @@ class MenusTest {
         memory.left(5_000, 1.0, 2.0)
         assertNull(memory.reopened(5_001 + Menus.SWAP_MILLIS), "opened too late")
     }
+
+    @Test
+    fun `a menu opened from a command's menu goes back to it`() {
+        val trail = MenuTrail()
+        trail.sent(1_000, "storage")
+        assertNull(trail.opened(1_100, "Storage"), "the command's own menu")
+        trail.closed(2_000)
+        assertEquals("storage", trail.opened(2_000, "Backpack"))
+        trail.closed(3_000)
+        assertEquals("storage", trail.opened(3_000, "Backpack Slot 1"), "two menus deep")
+        trail.closed(4_000)
+        assertNull(trail.opened(4_000, "Storage"), "back at the command's menu")
+        assertEquals("storage", trail.opener, "the command's own menu knows its command")
+        trail.closed(5_000)
+        trail.opened(5_000, "Backpack")
+        assertNull(trail.opener, "a menu deeper in the run was opened by a click")
+    }
+
+    @Test
+    fun `a run ends when the player leaves the menus`() {
+        val trail = MenuTrail()
+        trail.sent(1_000, "storage")
+        trail.opened(1_100, "Storage")
+        trail.closed(2_000)
+        assertNull(trail.opened(2_001 + Menus.SWAP_MILLIS, "Maddox the Slayer"), "opened from an NPC after a pause")
+        trail.closed(3_000)
+        assertNull(trail.opened(3_000, "Choose a Slayer"), "a run from an NPC has no command")
+    }
+
+    @Test
+    fun `only a menu soon after a command is the command's`() {
+        val trail = MenuTrail()
+        assertNull(trail.opened(1_000, "Maddox the Slayer"), "no command sent")
+        trail.closed(1_500)
+        trail.sent(2_000, "warp end")
+        assertNull(trail.opened(2_001 + Menus.COMMAND_MILLIS, "Spirit Leap"), "opened long after the command")
+        trail.closed(10_000)
+        assertNull(trail.opened(10_000, "Leaped"), "the late menu did not take the command")
+    }
+
+    @Test
+    fun `a command sent from a menu starts the run again`() {
+        val trail = MenuTrail()
+        trail.sent(1_000, "storage")
+        trail.opened(1_100, "Storage")
+        trail.closed(2_000)
+        trail.sent(2_000, "pets")
+        assertNull(trail.opened(2_050, "Pets"))
+        trail.closed(3_000)
+        assertEquals("pets", trail.opened(3_000, "Pet Upgrades"))
+    }
 }

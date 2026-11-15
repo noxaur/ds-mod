@@ -23,18 +23,27 @@ object ServerMenus {
 
     fun named(item: Item, name: String): ItemStack = ItemStack(item).also { it.set(DataComponents.CUSTOM_NAME, Component.literal(name)) }
 
-    /** Opens a menu [rows] tall titled [title], and waits until the client shows it. */
-    fun open(context: ClientGameTestContext, world: TestSingleplayerContext, rows: Int, title: String, fill: (SimpleContainer) -> Unit = {}) {
-        world.server.runOnServer<Nothing> { server ->
-            val chest = SimpleContainer(rows * 9)
-            for (i in 0 until rows * 9) chest.setItem(i, named(Items.STAINED_GLASS_PANE.black(), ""))
-            chest.setItem(rows * 9 - 6, named(Items.ARROW, "Go Back"))
-            chest.setItem(rows * 9 - 5, named(Items.BARRIER, "Close"))
-            fill(chest)
-            server.playerList.players.first().openMenu(
-                SimpleMenuProvider({ id, inventory, _ -> ChestMenu(TYPES[rows - 1], id, inventory, chest, rows) }, Component.literal(title)),
-            )
-        }
+    /**
+     * A menu [rows] tall titled [title], filled with blank panes, with Go Back unless [goBack] is false and Close beside
+     * it. [fill] puts the items in. Build it on the server thread.
+     */
+    fun menu(rows: Int, title: String, goBack: Boolean = true, fill: (SimpleContainer) -> Unit = {}): SimpleMenuProvider {
+        val chest = SimpleContainer(rows * 9)
+        for (i in 0 until rows * 9) chest.setItem(i, named(Items.STAINED_GLASS_PANE.black(), ""))
+        if (goBack) chest.setItem(rows * 9 - 6, named(Items.ARROW, "Go Back"))
+        chest.setItem(rows * 9 - 5, named(Items.BARRIER, "Close"))
+        fill(chest)
+        return SimpleMenuProvider({ id, inventory, _ -> ChestMenu(TYPES[rows - 1], id, inventory, chest, rows) }, Component.literal(title))
+    }
+
+    /** Opens a menu [rows] tall titled [title], as [menu] builds it, and waits until the client shows it. */
+    fun open(context: ClientGameTestContext, world: TestSingleplayerContext, rows: Int, title: String, goBack: Boolean = true, fill: (SimpleContainer) -> Unit = {}) {
+        world.server.runOnServer<Nothing> { server -> server.playerList.players.first().openMenu(menu(rows, title, goBack, fill)) }
+        shows(context, title)
+    }
+
+    /** Waits until the client shows the menu titled [title], and its slots have arrived. */
+    fun shows(context: ClientGameTestContext, title: String) {
         context.waitFor { (it.gui.screen() as? ContainerScreen)?.title?.string == title }
         context.waitTicks(5)
     }

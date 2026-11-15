@@ -24,6 +24,8 @@ private const val FILL_ALPHA = 110
 /**
  * Marks on the slots of the open container. They go away when the container closes. With no menu open the
  * container is the player's own inventory, and the marks on its last nine slots are drawn on the hotbar.
+ * A hidden or covered slot draws nothing here: `ContainerScreenMixin` asks [hides] and skips its item, highlight and
+ * tooltip.
  *
  * A mark is drawn in two parts: its back behind the item, and for a rarity mark with a gem, the gem over it.
  * A hidden slot draws nothing here: `ContainerScreenMixin` asks [hides] and skips its item, highlight and tooltip.
@@ -34,6 +36,7 @@ object Slots {
 
     private val marks = HashMap<String, Map<Int, Shown>>()
     private val hidden = BitSet()
+    private var covered = -1
     private lateinit var settings: DsModConfig.Inventory
 
     /** Marks slots by their index in the open container's menu, replacing what [id] marked before. */
@@ -50,7 +53,12 @@ object Slots {
     }
 
     /** Whether the slot at [index] in the open menu is hidden, asked for each slot each frame. */
-    fun hides(index: Int) = hidden[index]
+    fun hides(index: Int) = hidden[index] || index == covered
+
+    /** Hides the slot at [index] under a control the mod draws over it, or none at -1, until the menu closes. */
+    fun cover(index: Int) {
+        covered = index
+    }
 
     private fun rehide() {
         hidden.clear()
@@ -88,6 +96,7 @@ object Slots {
             ScreenEvents.remove(screen).register {
                 marks.clear()
                 hidden.clear()
+                covered = -1
             }
         }
     }

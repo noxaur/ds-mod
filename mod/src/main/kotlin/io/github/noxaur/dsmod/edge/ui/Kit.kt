@@ -2,6 +2,8 @@ package io.github.noxaur.dsmod.edge.ui
 
 import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.core.ui.TabEdge
+import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -26,6 +28,7 @@ enum class Icon(val width: Int, val height: Int) {
     ARROW(7, 7),
     LOCK(5, 7),
     RIGHT(3, 5),
+    BACK(7, 7),
     ;
 
     val sprite: Identifier = Identifier.fromNamespaceAndPath("dsmod", name.lowercase())
@@ -49,7 +52,7 @@ object Kit {
     const val RESULT_SLOT_SIZE = 26
     const val BAR_HEIGHT = 6
     const val SCROLLBAR_WIDTH = 6
-    const val TAB_WIDTH = 22
+    const val TAB_WIDTH = TabLayout.TAB_WIDTH
     const val TAB_HEIGHT = 21
     const val CHECKBOX_SIZE = 10
     const val DIVIDER_HEIGHT = 2
@@ -160,16 +163,33 @@ object Kit {
     }
 
     /**
-     * A tab on the top edge of the panel whose top is [panelY]. Draw the tabs that are not [selected] before the
-     * panel, and the selected one after it, so it joins the panel. Its content starts at the returned y.
+     * A tab on the [edge] of a panel, where [panelY] is that edge: the panel's top, or its bottom for a tab under it.
+     * The [selected] one joins the panel, so draw it after the panel. The rest sit 2px further out in `tabOff`, or in
+     * `hover` while [hovered]. A tab is [width] wide, and a wider one holds a field. Its 16px content starts at the
+     * returned y.
      */
-    fun tab(g: GuiGraphicsExtractor, x: Int, panelY: Int, selected: Boolean): Int {
+    fun tab(g: GuiGraphicsExtractor, x: Int, panelY: Int, selected: Boolean, edge: TabEdge = TabEdge.TOP, hovered: Boolean = false, width: Int = TAB_WIDTH): Int {
         val t = theme
-        val w = TAB_WIDTH
+        val w = width
         val h = TAB_HEIGHT
+        val face = if (hovered) t.hover else t.tabOff
+        if (edge == TabEdge.BOTTOM) {
+            if (!selected) {
+                frame(g, x, panelY - 1, w, h - 3, t.outline, face, t.panelShade, t.wellShade)
+                return panelY
+            }
+            rect(g, x, panelY, 1, h - 3, t.outline)
+            rect(g, x + w - 1, panelY, 1, h - 3, t.outline)
+            rect(g, x + 1, panelY + h - 3, w - 2, 1, t.outline)
+            rect(g, x + 1, panelY - 2, w - 2, h - 1, t.panel)
+            rect(g, x + 1, panelY - 2, 1, h - 2, t.panelLight)
+            rect(g, x + w - 2, panelY - 2, 1, h - 1, t.panelShade)
+            rect(g, x + 2, panelY + h - 4, w - 3, 1, t.panelShade)
+            return panelY + 1
+        }
         val y = panelY - h + 2
         if (!selected) {
-            frame(g, x, y + 2, w, h - 3, t.outline, t.tabOff, t.panelShade, t.wellShade)
+            frame(g, x, y + 2, w, h - 3, t.outline, face, t.panelShade, t.wellShade)
             return y + 3
         }
         rect(g, x + 1, y, w - 2, 1, t.outline)

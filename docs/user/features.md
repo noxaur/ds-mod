@@ -183,6 +183,35 @@ A padlock marks each one: yellow for a slot, blue for a linked slot and green fo
 
 Slot Lock Key and Item Lock Key under Inventory in the settings take any key or mouse button. The server can still move a locked item itself, as when you sell it.
 
+## Better UI
+
+Tabs, a search and buttons that ds-mod adds to the game's menus. The Better UI switch turns them all off at once, and each has its own switch too.
+
+### Back Buttons
+
+A menu with no Go Back gets one in Go Back's usual place, if you reached it from a menu you opened with a command, such as `/storage`. Clicking it sends that command again. Hover it to see which command it sends.
+
+<sub>A menu you opened from an NPC or an item gets none, because no command reopens it.</sub>
+
+### Menu Tabs
+
+Tabs along the top and bottom of every menu and your inventory. A tab sends its command when you click it, and the tab whose command opened the menu you're in joins the menu. It starts with Storage, Ender Chest, Crafting Table and Forge along the bottom, and Search at the top right.
+
+Click Search, or press Ctrl+F, and a search bar opens along that edge toward the middle of the menu, over the tabs beside it. Every item whose name and lore don't hold all your words is dimmed, and your search stays as you move from menu to menu. While you type, E and Q type letters instead of closing the menu or dropping an item. Escape leaves the bar, a right click clears it, and its × closes it. The text turns red when nothing in the menu matches.
+
+Set your tabs up with Edit Tabs, under Better UI:
+
+| Do this | To |
+| --- | --- |
+| Drag a tab to another place | Move it. A tab already there takes its old place. Escape during the drag puts it back |
+| Click an empty place | Add a tab there, then type its command |
+| Click a tab | Change its command, its item, such as `chest` or `player_head`, and the name shown when you point at it |
+| Arrow keys or Delete, with a tab chosen | Move it a place, or remove it |
+| Add Search | Put the search tab back after you deleted it |
+| Reset | Go back to the starting tabs |
+
+<sub>Each edge has seven places. On a short screen at a large GUI scale, the tabs can run off the top or bottom of the screen.</sub>
+
 ## Chat
 
 ### Ability Spam

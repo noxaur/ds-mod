@@ -8,6 +8,7 @@ import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorButton
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDropdown
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorKeybind
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorSlider
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorText
 import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText
 import io.github.noxaur.dsmod.core.camera.KeyMode
@@ -16,7 +17,9 @@ import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.input.CommandBind
+import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.Section
+import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.core.ui.Theme
 
 /**
@@ -45,6 +48,11 @@ class DsModConfig : Config() {
     @Category(name = "Inventory", desc = "How menus look and sit, what their slots show, and what protects your items.")
     @JvmField
     val inventory = Inventory()
+
+    @Expose
+    @Category(name = "Better UI", desc = "Tabs, a search and buttons that ds-mod adds to the game's menus.")
+    @JvmField
+    val betterUi = BetterUi()
 
     @Expose
     @Category(name = "Loot", desc = "Your drops.")
@@ -349,6 +357,37 @@ class DsModConfig : Config() {
             const val KEY_K = 75
             const val KEY_L = 76
         }
+    }
+
+    class BetterUi {
+        @Expose
+        @ConfigOption(name = "Better UI", desc = "Add ds-mod's tabs and buttons to the game's menus. Each also has its own switch below.")
+        @ConfigEditorBoolean
+        @JvmField
+        var enabled = true
+
+        @Expose
+        @ConfigOption(name = "Back Buttons", desc = "Add Go Back to a menu that has none, which sends again the command that opened the menu you came from.")
+        @ConfigEditorBoolean
+        @JvmField
+        var backButtons = true
+
+        @Expose
+        @ConfigOption(name = "Menu Tabs", desc = "Add tabs along the top and bottom of menus that send your commands, and a tab that searches the menu's items.")
+        @ConfigEditorBoolean
+        @JvmField
+        var menuTabs = true
+
+        /** The edge sets this to open the editor, so the config itself needs no Minecraft. */
+        @ConfigOption(name = "Edit Tabs", desc = "Place, add and change the tabs: what each sends, its item and its name.")
+        @ConfigEditorButton(buttonText = "Edit")
+        @JvmField
+        var editTabs: Runnable = Runnable {}
+
+        /** The tabs the player set up, in the editor. */
+        @Expose
+        @JvmField
+        var tabs: List<MenuTab> = TabLayout.DEFAULT
     }
 
     /** A drop's tier, lowest first. [word] is what the server writes before `DROP!`. */

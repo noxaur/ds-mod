@@ -40,14 +40,14 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `tooltip` | Text plus 4 on each side | A plain tooltip's backing: the plate's colors, nearly opaque. A tooltip with a style of its own keeps it |
 | `bar` | 6 tall | A well with a 4px fill that has a lit top row and a shaded bottom row |
 | `scrollbar` | 6 wide | A well with a raised thumb |
-| `tab` | 22x21 | Sits on a panel's top edge. The selected one joins the panel, and the rest sit 2px lower in `tabOff`. Draw the rest before the panel and the selected one after it |
+| `tab` | 22x21, or wider to hold a field | Sits on a panel's top or bottom edge. The selected one joins the panel, and the rest sit 2px further out in `tabOff`, or in `hover` under the mouse. Draw the rest before the panel and the selected one after it |
 | `checkbox` | 10x10 | A well that holds the check icon when on. Hover and focus ring it in `hoverOutline` |
 | `span` | Any, 14 tall in a slider | A switched-on stretch of a range slider: a raised face in `accent`, lighter under the mouse and sunk while dragged |
 | `tick` | 1 wide | A mark across a track where its scale changes |
 | `flash` | Any | A white wash over something the player just acted on, which fades out. The same in both themes, because it lies on the game and not on a panel |
 | `divider` | 2 tall | A shade line over a light line, cut into the panel |
 | `ring` | Any | A notched 1px line in `accent` or a role, around the selected thing |
-| `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, right, search, arrow, lock |
+| `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, right, search, arrow, lock, back |
 | `line` | Any | A 1px stepped line between two points, with a dark line beside it, for joining two things that belong together |
 | `field` | Any, 16 tall in a text field | A well that a text field holds, ringed in `hoverOutline` under the mouse or with focus |
 | `label` | One line | A string in ink |
@@ -63,6 +63,7 @@ A widget is a vanilla widget with a kit face. It takes its label as a string and
 | --- | --- |
 | `KitButton` | A button with a label or an icon. An icon button is 16x16 |
 | `KitCheckbox` | A checkbox with its label 4px to the right. On a well its label is body text, since ink would not read there |
+| `KitTab` | A tab on a menu's top or bottom edge, with an item or an icon, that runs an action. Its `selected` state joins the panel |
 | `KitStepper` | A minus button, a value and a plus button, for a number with few useful steps |
 | `KitTextField` | Vanilla's `EditBox` on a 16 tall `field`, with its text 4 in. A press anywhere on the well lands |
 | `KitKeysButton` | A button that shows keys and records new ones, held together or in order, as the key bind section of `controls.md` says. Keys it shares are ringed in a role |

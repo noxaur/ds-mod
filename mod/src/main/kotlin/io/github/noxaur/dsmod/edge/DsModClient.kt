@@ -74,6 +74,9 @@ object DsModClient : ClientModInitializer {
     /** Each of the mod's own screens goes back to the screen it was opened over, so a button in the settings returns there. */
     fun openBeaconEditor() = Minecraft.getInstance().let { it.setScreenAndShow(BeaconScreen(config.instance.end, it.gui.screen(), config::saveToFile)) }
 
+    fun openTabEditor() =
+        Minecraft.getInstance().let { it.setScreenAndShow(TabEditorScreen(config.instance.betterUi, it.gui.screen(), config::saveToFile)) }
+
     fun openBindsEditor() =
         Minecraft.getInstance().let { it.setScreenAndShow(CommandBindsScreen(config.instance.general, it.gui.screen(), config::saveToFile)) }
 
@@ -94,6 +97,8 @@ object DsModClient : ClientModInitializer {
         Kit.register()
         Hud.register()
         Slots.register(config.instance.inventory)
+        MenuBack.register()
+        TabBar.register()
         Tooltips.register()
         World.register()
         ArmorSwapGuards.register(config.instance.inventory)
@@ -107,6 +112,7 @@ object DsModClient : ClientModInitializer {
         containers = ContainerPoller(game)
         config.instance.hud.edit = Runnable { openHudEditor() }
         config.instance.end.editBeam = Runnable { openBeaconEditor() }
+        config.instance.betterUi.editTabs = Runnable { openTabEditor() }
         config.instance.general.editBinds = Runnable { openBindsEditor() }
         config.instance.inventory.editRarityStyle = Runnable { openRarityStyle() }
         config.instance.contribute.open = Runnable { Contribute.open() }
