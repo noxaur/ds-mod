@@ -18,6 +18,7 @@ import net.minecraft.commands.arguments.blocks.BlockStateParser
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.component.DataComponents
+import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
@@ -32,6 +33,7 @@ import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.monster.Creeper
 import net.minecraft.world.entity.monster.Silverfish
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.saveddata.maps.MapId
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
@@ -47,6 +49,32 @@ private fun watched(entity: Entity) = entity is Silverfish || entity is Creeper
 
 private fun Double.round2() = Math.round(this * 100) / 100.0
 
+/**
+ * Encodes a value with Minecraft's codec only when it changed since the last pass. Encoding every item and name in
+ * view on every pass cost a recording over a millisecond a pass, and almost none of them change. A key is one place
+ * a value is seen, [same] tells whether it changed, and [keep] copies a mutable value so the next pass can compare.
+ */
+private class EncodeCache<T : Any>(
+    private val same: (T, T) -> Boolean,
+    private val keep: (T) -> T,
+    private val encode: (T) -> JsonElement,
+) {
+    private var last = HashMap<Any, Pair<T, JsonElement>>()
+    private var seen = HashMap<Any, Pair<T, JsonElement>>()
+
+    fun encode(key: Any, value: T): JsonElement {
+        val entry = last[key]?.takeIf { same(it.first, value) } ?: (keep(value) to encode(value))
+        seen[key] = entry
+        return entry.second
+    }
+
+    /** Ends a pass, and forgets every place it did not see. */
+    fun pass() {
+        last = seen.also { seen = last }
+        seen.clear()
+    }
+}
+
 private fun JsonObjectBuilder.entityFields(entity: Entity) {
     put("id", entity.id)
     put("entity", BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString())
@@ -57,8 +85,9 @@ private fun JsonObjectBuilder.entityFields(entity: Entity) {
 }
 
 /**
- * One running capture, ended by [detach] on the client thread and then [close] on any thread: the events [game] posts go straight to [writer], and [tick] adds what only exists
- * as client state, plus what the mod showed (`hud`) and how long it took (`metrics`).
+ * One running capture: the events [game] posts go straight to [writer], and [tick] adds what only exists as client
+ * state, plus what the mod showed (`hud`) and how long it took (`metrics`). It ends with [detach] on the client
+ * thread, then [close] on a thread that may wait.
  */
 class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
     private val writer = CaptureWriter(dir)
@@ -68,6 +97,8 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
     private val changes = ChangeLog { type, data -> writer.record(type) { data } }
     private val blockScan = BlockScan(changes)
     private val maps = MapRecorder(writer)
+    private val items = EncodeCache(ItemStack::matches, ItemStack::copy, ItemStack::toCaptureJson)
+    private val texts = EncodeCache<Component>({ a, b -> a == b }, { it }, Component::toCaptureJson)
     private var ticks = 0
     private var titleTime = 0
 
@@ -141,7 +172,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
                 buildMap<String, JsonElement> {
                     menu.slots.forEachIndexed { index, slot ->
                         if (slot.item.isEmpty) return@forEachIndexed
-                        val components = (slot.item.toCaptureJson() as? JsonObject)?.get("components") as? JsonObject ?: return@forEachIndexed
+                        val components = (items.encode(index, slot.item) as? JsonObject)?.get("components") as? JsonObject ?: return@forEachIndexed
                         val rest = components.filterKeys { it !in eventComponents }
                         if (rest.isNotEmpty()) put(index.toString(), JsonObject(rest))
                     }
@@ -162,7 +193,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
                         if (entity === player) continue
                         val equipment = (entity as? LivingEntity)?.let { living ->
                             EquipmentSlot.VALUES.filter { !living.getItemBySlot(it).isEmpty }
-                                .associate { it.getName() to living.getItemBySlot(it).toCaptureJson() }
+                                .associate { it.getName() to items.encode(entity.id to it, living.getItemBySlot(it)) }
                         }.orEmpty()
                         val item = when (entity) {
                             is ItemFrame -> entity.item
@@ -183,21 +214,23 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
                                 put("z", entity.blockZ)
                                 put("nameVisible", entity.isCustomNameVisible)
                                 // The type already says what an entity recorded only for its glow, item or text is.
-                                if (named) put("name", entity.displayName.toCaptureJson())
+                                if (named) put("name", texts.encode(entity.id to "name", entity.displayName))
                                 if (entity.isCurrentlyGlowing) put("glowing", true)
                                 if (equipment.isNotEmpty()) put("equipment", JsonObject(equipment))
-                                if (item != null) put("item", item.toCaptureJson())
+                                if (item != null) put("item", items.encode(entity.id to "item", item))
                                 if (entity is ItemFrame) {
                                     put("rotation", entity.rotation)
                                     put("facing", entity.direction.getName())
                                 }
-                                if (entity is Display.TextDisplay) put("text", entity.text.toCaptureJson())
+                                if (entity is Display.TextDisplay) put("text", texts.encode(entity.id to "text", entity.text))
                             },
                         )
                     }
                 },
             )
         }
+        items.pass()
+        texts.pass()
         maps.offer(level, mapIds)
 
         changes.offer(

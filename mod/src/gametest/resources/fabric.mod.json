@@ -39,10 +39,6 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.RecorderCostTest"
-      },
-      {
-        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.DragonTimerTest"
       },
       {

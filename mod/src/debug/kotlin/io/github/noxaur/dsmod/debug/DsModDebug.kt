@@ -1,69 +1,71 @@
 package io.github.noxaur.dsmod.debug
 
 import io.github.noxaur.dsmod.core.brief.Brief
-import io.github.noxaur.dsmod.core.capture.CaptureIncompleteException
-import io.github.noxaur.dsmod.edge.Background
 import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.capture.CaptureSession
 import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
+import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
+import org.lwjgl.glfw.GLFW
 import java.nio.file.Path
 
 /** The developer's tools: `/dscapture` records without a brief, `/dskit` shows the kit, and `-Pbrief` starts a brief at launch. */
 object DsModDebug : ClientModInitializer {
     /** The capture `/dscapture` started, while it runs. */
-    private var file: Path? = null
+    private var capture: CaptureSession? = null
 
     /** Read by BriefTitleMixin for the window title. */
     fun briefName(): String? = Recording.name()
 
     /**
      * Starts a capture, or ends the one it started, and returns the file. The file is finished off the client
-     * thread, and [say] hears on the client thread how each went. A recording that a brief started is its own
+     * thread, and [say] hears on the client thread how each went. A capture that a brief started is the brief's
      * to end, so this refuses and returns null.
      */
     fun toggleCapture(client: Minecraft, say: (String) -> Unit = {}): Path? {
-        val own = file
-        if (own == null) {
-            if (Recorder.running) {
-                say("A brief is recording. Finish it or type /dsmod cancel, then start a capture.")
-                return null
-            }
-            return Recorder.start(client.gameDirectory.toPath().resolve("dsmod/captures")).also {
-                file = it
-                say("Capture started: $it")
-            }
+        capture?.let { own ->
+            capture = null
+            Recorder.stop(own) { whole -> client.execute { say(if (whole) "Capture saved: ${own.file}" else "Capture not fully written: ${own.file}") } }
+            return own.file
         }
-        file = null
-        // A brief that started during this capture recorded into it, and ended it with its last step.
-        val session = Recorder.stop() ?: return own.also { say("Capture saved: $own") }
-        Background.io.execute {
-            val said = try {
-                session.close()
-                "Capture saved: $own"
-            } catch (_: CaptureIncompleteException) {
-                "Capture not fully written: $own"
-            }
-            client.execute { say(said) }
+        if (Recorder.running) {
+            say("A brief is recording. Finish it or type /dscapture cancel, then start a capture.")
+            return null
         }
-        return own
+        return Recorder.start(client.gameDirectory.toPath().resolve("dsmod/captures")).also { capture = it }.file.also { say("Capture started: $it") }
     }
 
     override fun onInitializeClient() {
         // A developer tests in singleplayer and on servers of their own, so the debug build runs everywhere.
         DsModClient.anyServer = true
         // `./gradlew runClient -Pbrief=<file>` sets this. The window does not exist yet, and takes its title when it opens.
+        // Only the debug build starts a brief, so a player's controls show no key for one.
+        Recording.register(KeyMappingHelper.registerKeyMapping(KeyMapping("key.dsmod_debug.next_step", GLFW.GLFW_KEY_RIGHT_BRACKET, KeyMapping.Category.MISC)))
         System.getProperty("dsmod.brief")?.let { Recording.startAtLaunch(Brief.read(Path.of(it))) }
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
             dispatcher.register(
-                ClientCommands.literal("dscapture").executes { context ->
-                    toggleCapture(context.source.client) { context.source.sendFeedback(Component.literal(it)) }
-                    1
-                },
+                ClientCommands.literal("dscapture")
+                    .executes { context ->
+                        toggleCapture(context.source.client) { context.source.sendFeedback(Component.literal(it)) }
+                        1
+                    }
+                    .then(
+                        ClientCommands.literal("cancel").executes { context ->
+                            val said = when {
+                                !Recording.cancel() -> "No brief to cancel."
+                                capture != null -> "Brief cancelled. Your capture keeps recording."
+                                else -> "Brief cancelled, and its capture deleted."
+                            }
+                            context.source.sendFeedback(Component.literal(said))
+                            1
+                        },
+                    ),
             )
             dispatcher.register(
                 ClientCommands.literal("dskit").executes { context ->
