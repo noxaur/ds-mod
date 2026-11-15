@@ -55,9 +55,11 @@ Chrome is everything that is not text: panels, buttons, slots, bars, marks. It i
 - **State:** a control shows idle, hover, pressed and off with its face and edges. Pressed also moves the label down 1px. Focus looks like hover, so the keyboard works without another style.
 - **Icons:** white sprites of at most 7x7 in `textures/gui/sprites/`, which `Kit.icon` tints with ink or a role.
 
-A screen is a vanilla `Screen` holding the kit's widgets. It takes the screen it was opened over and goes back to it on close, so a button in the settings returns to the settings. A screen says little: a title, its controls and one line that reads back what the player did. They are vanilla widgets with a kit face, so focus, narration and the keyboard work as they do in Minecraft. The settings screen is MoulConfig's and keeps its own look.
+A screen is a vanilla `Screen` holding the kit's widgets. It takes the screen it was opened over and goes back to it on close, so a button in the settings returns to the settings. A screen says little: a title, its controls and one line that reads back what the player did. They are vanilla widgets with a kit face, so focus, narration and the keyboard work as they do in Minecraft. The release settings screen is MoulConfig's until ds-mod's own replaces it.
 
 [`kit.md`](kit.md) lists every token, component and size. Read it before you build a screen, or when you need a component it may not have.
+
+A setting is one line in `SettingsTree` with a kind of row, which brings its control, reset, search and keyboard. [`settings.md`](settings.md) says how to add a setting, a look, or a kind of row.
 
 ## Design the control whole
 
@@ -82,6 +84,7 @@ Text is built with `text { }` from `core.text`, where each piece states what it 
 | `action` | What a click will do |
 | `good`, `bad`, `warning` | State only: done, failed, about to fail |
 | `brand` | The mod's name and a feature's header |
+| `match` | The words a search matched, painted over the text they sit in |
 
 One line has one `value`. A line where everything is highlighted has no highlight.
 

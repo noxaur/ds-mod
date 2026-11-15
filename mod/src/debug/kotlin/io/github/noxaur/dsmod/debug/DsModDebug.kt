@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.debug
 
 import io.github.noxaur.dsmod.core.brief.Brief
 import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.edge.capture.CaptureSession
 import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
@@ -12,7 +13,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
 import java.nio.file.Path
 
-/** The developer's tools: `/dscapture` records without a brief, `/dskit` shows the kit, and `-Pbrief` starts a brief at launch. */
+/** The developer's tools: `/dscapture` records without a brief, `/dskit` shows the kit and `/dskit rows` its settings rows, `/dssettings` opens the settings screen being built, and `-Pbrief` starts a brief at launch. */
 object DsModDebug : ClientModInitializer {
     /** The capture `/dscapture` started, while it runs. */
     private var capture: CaptureSession? = null
@@ -52,9 +53,23 @@ object DsModDebug : ClientModInitializer {
                     },
             )
             dispatcher.register(
-                ClientCommands.literal("dskit").executes { context ->
-                    // The chat screen closes after the command returns, so open on the next tick.
-                    context.source.client.schedule { context.source.client.setScreenAndShow(KitGalleryScreen()) }
+                ClientCommands.literal("dskit")
+                    .executes { context ->
+                        // The chat screen closes after the command returns, so open on the next tick.
+                        context.source.client.schedule { context.source.client.setScreenAndShow(KitGalleryScreen()) }
+                        1
+                    }
+                    .then(
+                        ClientCommands.literal("rows").executes { context ->
+                            context.source.client.schedule { context.source.client.setScreenAndShow(SettingsGalleryScreen()) }
+                            1
+                        },
+                    ),
+            )
+            dispatcher.register(
+                ClientCommands.literal("dssettings").executes { context ->
+                    // ds-mod's own settings screen, which replaces MoulConfig's once its rows have controls.
+                    context.source.client.schedule { context.source.client.setScreenAndShow(SettingsScreen(null)) }
                     1
                 },
             )

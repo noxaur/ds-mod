@@ -94,7 +94,7 @@ The `unparsed` counter matters most. The server is closed and changes without no
 
 Developers' accounts cannot reach all of the server's content, so players record it for them. That needs the recorder in the jar a player installs, though it reads private client fields and records everything, chat included. Three things make that safe. It starts only from a contribution the player accepted, or from the debug build's `/dscapture` and `-Pbrief`, so while none runs every hook is one null check and the recorder costs a frame nothing. The file never leaves the machine as recorded: the mod redacts it first (below). And the recorder only ever reads what the server already sent the client, so it cannot send for the player.
 
-The rest of the developer tools stay in `src/debug`, a separate source set that `src/main` can't see, so the compiler keeps them out of the release jar. They are `/dscapture`, `/dskit`, `cutFixture` and the window title that names a `-Pbrief`. The debug jar holds the release jar inside it, so the release code runs the same in both.
+The rest of the developer tools stay in `src/debug`, a separate source set that `src/main` can't see, so the compiler keeps them out of the release jar. They are `/dscapture`, `/dskit`, `/dssettings`, `cutFixture` and the window title that names a `-Pbrief`. `/dssettings` opens ds-mod's own settings screen, which is release code: it replaces MoulConfig's once it is complete, and only the command that opens it before then is a tool. The debug jar holds the release jar inside it, so the release code runs the same in both.
 
 The recorder reads private fields, which needs an access widener, and a mod declares only one. So the jar's file is ours followed by MoulConfig's lines, merged by the build.
 
@@ -151,6 +151,16 @@ Text the server sent is a separate type, `ServerText`, which carries whatever co
 ## UI layers keep what they are given
 
 Each surface (chat, HUD, alerts, container slots, tooltips, world marks) has one object in `edge` that draws a plain model from `core`. A model is handed over when something changes, and the layer converts it to Minecraft's types once and redraws it from then on. A feature that built its text every frame would allocate in the render loop, where a dropped frame is a bug, so the layers offer no per-frame hook.
+
+## The settings tree is the schema of the settings
+
+`SettingsTree` binds each saved field of `DsModConfig` to a kind of row, and the screen builds everything a row does from its kind: the control, the changed marker, reset, dimming, search and the keyboard. An agent adds a setting with one line and writes no drawing or input code, so the conventions of each kind are built once and hold for every setting. `SettingsTreeTest` checks that each saved field has exactly one row, because a field that two rows write disagrees with itself, and a field with none is a setting the player can't reach.
+
+A row's default is its value in a fresh `DsModConfig`, read by building the tree a second time on one. A default written beside the row would drift from the field's own initializer, and the marker would then call an untouched setting changed.
+
+The rows are drawn by one painter, `SettingRows`, not a vanilla widget each. A widget can't be clipped to a scrolling pane or culled when it is out of view, and a few hundred of them would each be asked every frame. The painter lays the rows out when what is shown changes, keeps each row's words and widths from then, and draws only the rows in view. The few controls that need a widget's own input, a number's field and a key being recorded, are made when the player opens one and dropped when it closes.
+
+A pick of a rarity style shows previews of styles the player has not chosen, and a texture per style can't be made while a frame is drawn. `Looks` paints one atlas at the end of a tick, with each border, fill and floor alone, and draws a style as three blits. `SlotArt` paints a style back to front with straight alpha, so the layers blitted in that order give the pixels of the style painted whole.
 
 ## Chrome is drawn in code, from a theme
 

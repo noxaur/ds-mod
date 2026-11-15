@@ -74,6 +74,8 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | Every feature shows what its transcript says | `FeatureReplayTest` replays each feature's fixtures |
 | A feature that reads nothing from the server has a game test | `FeatureReplayTest` |
 | Every feature has a section in the player docs | `RulesTest` |
+| Every saved setting has exactly one row in `SettingsTree`, or is listed as stored only with a reason, and every row has its own id, a Title Case name of three words or fewer and a one-sentence description | `SettingsTreeTest` |
+| The kit gallery shows every kind of settings row and every look a pick draws | `KitTest` |
 | A feature's handler and readout average under 20µs | `FeatureReplayTest` |
 | A capture type has one producer | `CaptureWriter` rejects a raw record with an event's type |
 | The jars a player installs boot and open settings | `runProdClientGameTest` |

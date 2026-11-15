@@ -6,13 +6,13 @@ The Fabric mod, written in Kotlin. Read the root `AGENTS.md` first.
 
 The server is someone else's, closed and custom, so everything ds-mod knows about the game arrives in packets. The `edge` package holds the Fabric callbacks and is the only release code that touches Minecraft. It turns what the server sends into a `GameEvent` and posts it to `Game`. The `core` package holds the features and imports nothing from Minecraft or Fabric, so it runs in plain JVM tests.
 
-Settings use MoulConfig, the settings screen SkyHanni uses. A setting is an annotated field in `DsModConfig`, and `/dsmod` opens the screen.
+A setting is a field in `DsModConfig` and one line in `SettingsTree`, as the ui skill's `settings.md` says. `/dsmod` opens MoulConfig's settings screen, the one SkyHanni uses, which reads the field's annotations. ds-mod's own `SettingsScreen` draws the tree and replaces MoulConfig's once it is complete, and `/dssettings` opens it in the debug build.
 
 Load the `ui` skill before you add or change anything the player sees, hears or operates. It is at `mod/.claude/skills/ui/SKILL.md`.
 
 ## Features
 
-A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with its switch in `DsModConfig` and a `### <Name>` section in `docs/user/features.md`. Copy the feature closest to yours:
+A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with its switch in `DsModConfig` and `SettingsTree` and a `### <Name>` section in `docs/user/features.md`. Copy the feature closest to yours:
 
 | To | Copy |
 | --- | --- |

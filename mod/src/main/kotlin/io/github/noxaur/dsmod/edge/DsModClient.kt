@@ -13,6 +13,7 @@ import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
 import io.github.noxaur.dsmod.edge.contribute.Contribute
 import io.github.noxaur.dsmod.edge.ui.Kit
+import io.github.noxaur.dsmod.edge.ui.Looks
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
@@ -71,6 +72,9 @@ object DsModClient : ClientModInitializer {
         IMinecraft.INSTANCE.openWrappedScreen(editor)
     }
 
+    /** Writes the settings to disk, as MoulConfig's screen does when it closes. */
+    fun saveSettings() = config.saveToFile()
+
     /** Each of the mod's own screens goes back to the screen it was opened over, so a button in the settings returns there. */
     fun openBeaconEditor() = Minecraft.getInstance().let { it.setScreenAndShow(BeaconScreen(config.instance.end, it.gui.screen(), config::saveToFile)) }
 
@@ -95,6 +99,7 @@ object DsModClient : ClientModInitializer {
         game = Game(all) { active }
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
         Kit.register()
+        Looks.register()
         Hud.register()
         Slots.register(config.instance.inventory)
         MenuBack.register()
