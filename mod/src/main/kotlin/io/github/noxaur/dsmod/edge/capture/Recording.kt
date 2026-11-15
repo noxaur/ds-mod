@@ -7,10 +7,8 @@ import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.Chat
 import io.github.noxaur.dsmod.edge.Hud
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
-import org.lwjgl.glfw.GLFW
 import java.nio.file.Files
 
 /**
@@ -82,8 +80,9 @@ object Recording {
         Hud.show("brief", HudGroup("brief", width - widest - 9, 54, background = true), block, placeable = false)
     }
 
-    fun register() {
-        nextStep = KeyMappingHelper.registerKeyMapping(KeyMapping("key.dsmod.next_step", GLFW.GLFW_KEY_RIGHT_BRACKET, KeyMapping.Category.MISC))
+    /** Called by whatever can start a brief, which brings the key that moves it on. */
+    fun register(nextStep: KeyMapping) {
+        this.nextStep = nextStep
         ClientTickEvents.END_CLIENT_TICK.register(::tick)
     }
 }

@@ -8,8 +8,11 @@ import io.github.noxaur.dsmod.edge.capture.Recording
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
+import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
+import org.lwjgl.glfw.GLFW
 import java.nio.file.Path
 
 /** The developer's tools: `/dscapture` records without a brief, `/dskit` shows the kit, and `-Pbrief` starts a brief at launch. */
@@ -42,6 +45,8 @@ object DsModDebug : ClientModInitializer {
         // A developer tests in singleplayer and on servers of their own, so the debug build runs everywhere.
         DsModClient.anyServer = true
         // `./gradlew runClient -Pbrief=<file>` sets this. The window does not exist yet, and takes its title when it opens.
+        // Only the debug build starts a brief, so a player's controls show no key for one.
+        Recording.register(KeyMappingHelper.registerKeyMapping(KeyMapping("key.dsmod_debug.next_step", GLFW.GLFW_KEY_RIGHT_BRACKET, KeyMapping.Category.MISC)))
         System.getProperty("dsmod.brief")?.let { Recording.startAtLaunch(Brief.read(Path.of(it))) }
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
             dispatcher.register(
