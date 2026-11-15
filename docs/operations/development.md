@@ -65,7 +65,7 @@ The window's title starts with the brief's name, and the steps sit in the top ri
 
 When the user's account cannot reach what a brief needs, publish the brief and players who can reach it record it from the mod's Contribute button. One player's run proves little, so a request collects runs from several players.
 
-`dsctl` is how an agent does it. Locally its admin token is `ADMIN_TOKEN` in `backend/.env`, which git ignores, and `dsctl` reads it from `DSMOD_ADMIN_TOKEN`. Ask the user for the deployed one and the deployed address, which goes in `DSMOD_BACKEND`.
+`dsctl` is how an agent does it. Locally its admin token is `ADMIN_TOKEN` in `backend/.env`, which git ignores, and `dsctl` reads it from `DSMOD_ADMIN_TOKEN`. For the deployed backend, see [Deployment](deployment.md#secrets).
 
 ```sh
 cd backend

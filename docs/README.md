@@ -16,3 +16,4 @@ Internal docs record the decisions, the constraints and the traps that the code 
 ### Runbooks
 
 - [Development](operations/development.md): set up a checkout, run each part, record a capture, run the checks, and how CI and the beta releases work.
+- [Deployment](operations/deployment.md): where the backend and the website run, how to deploy them, and where their secrets live.

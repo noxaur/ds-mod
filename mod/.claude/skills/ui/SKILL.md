@@ -97,7 +97,7 @@ One line has one `value`. A line where everything is highlighted has no highligh
 - **HUD groups:** blocks that belong to one activity share a `HudGroup`, which stacks them on one plate. The player owns the plate, the scale and the place of every block, so a feature sets none of them. A feature whose block sits beside vanilla's own HUD, as the armor does by the hotbar, may offer the player a `HudLook` and a `HudDock` in its settings and pass them to `block(look = .., dock = ..)`.
 - **Buttons:** one or two words in Title Case that name what the press does. "Reset", "Done".
 - **Setting names:** Title Case, one to three words. "Scale Tracker".
-- **Setting descriptions:** one sentence that starts with a verb and ends with a period. "Show the scales you earn per hour." A requirement or warning follows as its own sentence.
+- **Setting descriptions:** one sentence that starts with a verb and ends with a period. "Show the scales you earn per hour." A requirement or warning follows as its own sentence. MoulConfig shrinks a long one, so `RulesTest` caps its length, and the player docs hold the rest.
 - **Changed defaults:** when a feature changes something the server shows, tell the player once in chat and name the setting.
 - **Spelling:** American English. Write game nouns as the server writes them in a capture, capitals included.
 

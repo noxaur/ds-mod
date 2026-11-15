@@ -4,19 +4,23 @@
 
 A client-side mod for [Dragon Simulator](https://dragsim.co). Open source, built on Fabric.
 
-I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simulator. Suggestions and contributions are welcome in the [Discord](https://discord.gg/YUZCYAnr7F) or as a [GitHub issue](https://github.com/noxaur/ds-mod/issues). If you can't contribute code, you can support the mod on [Ko-fi](https://ko-fi.com/noxaur).
+I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simulator. Suggestions and contributions are welcome in the [Discord](https://discord.gg/YUZCYAnr7F) or as a [GitHub issue](https://github.com/noxaur/ds-mod/issues). If you can't contribute code, you can support the mod on [Ko-fi](https://ko-fi.com/noxaur) or tell others about it.
 
 ## Features
 
+- Command Binds send a command such as `/warp end` with a key, a few keys held together or keys pressed in turn. Keep them in groups you can fold, switch off and share.
+- Camera and Free Look set the third-person distance, height and tilt, and let you look around without turning.
+- Equipment Display shows your armor and pet as icons, on the HUD or beside your hotbar in slots like its own.
+- Copy Chat copies the messages you select as text, format codes or JSON.
+- Rarity Marks color each slot by its item's rarity. Pick Showcase, Gilded or Minimal, or build your own look beside your inventory.
+- Slot Lock keeps a misclick from moving or dropping the slots and items you lock.
+- Menu Tabs add your own command tabs and a search to every menu.
+- Loot Alerts go off for drops at or above the rarity you set.
 - Zealot Tracker counts your eyes, eyes per hour and kills per eye, for the session and all-time.
-- Boss Beacon puts a beam where the next Endstone Protector will emerge, as soon as the last one dies.
 - Dragon Timer and Golem Status show the egg countdown, the eyes placed and the Protector's stage.
+- Boss Beacon puts a beam where the next Endstone Protector will emerge, as soon as the last one dies.
 - Boss Drops keeps your placement, damage and loot from every dragon and Protector fight.
 - Slayer Tracker shows your quest progress, the XP to your next level and your average kill time.
-- Loot Alerts go off for drops at or above the rarity you set.
-- Rarity Marks color each slot by its item's rarity. Pick Showcase, Gilded or Minimal, or build your own look beside your inventory.
-- Equipment Display shows your armor and your pet's head as a row of icons on the HUD, with each piece's tooltip a point away while the chat is open.
-- Command Binds send a command such as `/warp end` with a key, a few keys held together or keys pressed in turn. Keep them in groups you can fold, switch off and share.
 
 <p>
   <img src="docs/images/rarity-chest.png" width="49%" alt="A chest in the Minimal look: each rare item stands on a shelf in its rarity's color, with a small gem in its corner">
@@ -27,7 +31,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
   <img src="docs/images/command-binds.png" alt="Command Binds: binds listed in groups on the left, and the picked bind's command, keys and settings on the right">
 </p>
 
-It also has a HUD editor, Fullbright, and guards against two misclicks: taking a placed eye back out of the altar, and swapping armor with a right click.
+It also has a HUD editor, Fullbright, tidier menus, and guards against taking a placed eye back out of the altar or swapping armor with a right click.
 
 Toggle any feature in `/dsmod`. The [feature guide](docs/user/features.md) has the full list.
 
