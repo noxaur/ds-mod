@@ -1,5 +1,9 @@
 name: Set up the mod build
 description: Installs the pinned JDK and restores everything Gradle and Loom download or remap.
+inputs:
+  cache:
+    description: Names the cache. A job that downloads more than `./gradlew check` does, such as the game's assets, needs its own, or it restores a cache without them and downloads them on every run.
+    default: mod
 outputs:
   warm:
     description: "'true' when the cache held everything, so the job has nothing to download."
@@ -19,4 +23,4 @@ runs:
           ~/.gradle/caches
           ~/.gradle/wrapper
           mod/.gradle/loom-cache
-        key: mod-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('mise.toml', 'mod/gradle.properties', 'mod/gradle/wrapper/gradle-wrapper.properties', 'mod/build.gradle.kts', 'mod/settings.gradle.kts') }}
+        key: ${{ inputs.cache }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('mise.toml', 'mod/gradle.properties', 'mod/gradle/wrapper/gradle-wrapper.properties', 'mod/build.gradle.kts', 'mod/settings.gradle.kts') }}
