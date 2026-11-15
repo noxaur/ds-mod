@@ -2,7 +2,7 @@ import { Effect, Option, Schema } from "effect";
 
 import { entriesOf, makeRenderer } from "../items/render.ts";
 import { ItemStore } from "../items/store.ts";
-import { parseLegacy } from "../items/text.ts";
+import { parseLegacy } from "../items/legacy.ts";
 import { catalog, lookup } from "./cache.ts";
 import { equipmentCells, layoutsOf } from "./layout.ts";
 import type { Layout } from "./layout.ts";

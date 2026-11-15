@@ -5,7 +5,6 @@ import { Effect, Schema } from "effect";
 import { afterEach, beforeEach, expect, test, vi } from "vite-plus/test";
 
 import { makeApp } from "../app.ts";
-import { parseLegacy } from "../items/text.ts";
 import { memoryServices } from "../memory.ts";
 import { CATALOG_FRESH_MS, FRESH_MS } from "./cache.ts";
 import { Container, Profile } from "./model.ts";
@@ -325,19 +324,4 @@ test("a profile answer is quick once cached", async () => {
   // About 1.5 ms with a real player's profile. The bound only catches a cache that stopped working, such as a 2 MB
   // catalog parse per call.
   expect((performance.now() - start) / calls).toBeLessThan(25);
-});
-
-test("`§` codes become spans", () => {
-  expect(parseLegacy("§5Arcane")).toEqual([{ text: "Arcane", color: "#AA00AA" }]);
-  expect(parseLegacy("plain")).toEqual([{ text: "plain" }]);
-  expect(parseLegacy("")).toEqual([]);
-  expect(parseLegacy("§6§lGold §rnone§cRed")).toEqual([
-    { text: "Gold ", color: "#FFAA00", bold: true },
-    { text: "none" },
-    { text: "Red", color: "#FF5555" },
-  ]);
-  expect(parseLegacy("§x§1§2§a§B§c§dHex§zodd§")).toEqual([
-    { text: "Hex", color: "#12ABCD" },
-    { text: "odd", color: "#12ABCD" },
-  ]);
 });
