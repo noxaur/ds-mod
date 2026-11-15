@@ -171,6 +171,10 @@ Slot Lock Key and Item Lock Key under Inventory in the settings take any key or 
 
 ## General
 
+### Active Pet
+
+Shows the pet you have out on the HUD, with its level and its name in the color of its rarity. It reads the pet from the sidebar, so it shows nothing where the sidebar has no pet line.
+
 ### Armor Display
 
 Shows the armor you wear on the HUD, helmet first. Open the chat and point at a piece to read its tooltip.
@@ -178,6 +182,7 @@ Shows the armor you wear on the HUD, helmet first. Open the chat and point at a 
 | Setting | Does |
 | --- | --- |
 | Armor Layout | Lines the pieces up in a row or a column |
+| Armor Pieces | Picks which pieces show, and their order. Drag a piece to move it, take it out with − or the bin, and bring it back with + |
 
 ### Camera
 

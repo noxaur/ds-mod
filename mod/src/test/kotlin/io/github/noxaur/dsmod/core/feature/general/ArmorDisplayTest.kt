@@ -22,6 +22,8 @@ class ArmorDisplayTest {
 
     private fun post(vararg events: GameEvent) {
         for (event in events) game.post(++time, event)
+        // A readout refreshes at least every 250 ms, which is how a changed setting shows with no event.
+        time += 250
         game.tick(time)
     }
 
@@ -41,6 +43,17 @@ class ArmorDisplayTest {
         config.general.armorLayout = ArmorLayout.COLUMN
         post(*inventory(helmet, boots))
         assertEquals(listOf(listOf(helmet), listOf(null), listOf(null), listOf(boots)), rows())
+    }
+
+    @Test
+    fun `only the picked pieces show, in the order picked`() {
+        config.general.armorPieces = mutableListOf(ArmorPiece.BOOTS, ArmorPiece.HELMET)
+        post(*inventory(helmet, boots))
+        assertEquals(listOf(listOf(boots, helmet)), rows())
+
+        config.general.armorPieces = mutableListOf(ArmorPiece.CHESTPLATE)
+        post()
+        assertNull(rows(), "A chestplate not worn is all there is to show")
     }
 
     @Test

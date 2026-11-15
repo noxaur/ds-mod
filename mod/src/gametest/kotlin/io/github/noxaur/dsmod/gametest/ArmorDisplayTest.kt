@@ -12,7 +12,7 @@ import net.minecraft.world.item.Items
 /**
  * The worn armor shows on the HUD as the very stacks the player wears, so dyed leather keeps its color, and the chat's
  * free mouse reads a piece's tooltip. Read the screenshots: the row with a gap for the missing leggings, the tooltip
- * over the chestplate, and the column.
+ * over the chestplate, the column, and Active Pet under the armor.
  */
 class ArmorDisplayTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
@@ -54,6 +54,21 @@ class ArmorDisplayTest : FabricClientGameTest {
             } finally {
                 DsModClient.settings.general.armorLayout = ArmorLayout.ROW
             }
+
+            // Active Pet reads the sidebar's pet line, here an Epic pet as dragsim.co writes it, and stacks under the armor.
+            listOf(
+                """scoreboard objectives add ds dummy "Dragon Sim"""",
+                "scoreboard objectives setdisplay sidebar ds",
+                "team add ds_pet",
+                """team modify ds_pet prefix {"text":"Pet: "}""",
+                """team modify ds_pet suffix [{"text":"[Lvl 100] ","color":"gray"},{"text":"Ender Dragon","color":"dark_purple"}]""",
+                "team join ds_pet Pet",
+                "scoreboard players set Pet ds 1",
+                "scoreboard players display name Pet ds \"\"",
+            ).forEach(world.server::runCommand)
+            context.waitTicks(20)
+            check(context.computeOnClient<Boolean, Nothing> { Hud.find("active-pet") != null }) { "The pet is not on the HUD" }
+            context.takeScreenshot("active-pet")
 
             for (slot in listOf("head", "chest", "feet")) world.server.runCommand("item replace entity @a armor.$slot with minecraft:air")
             context.waitTicks(20)

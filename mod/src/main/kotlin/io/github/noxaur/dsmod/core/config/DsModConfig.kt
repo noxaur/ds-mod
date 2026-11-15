@@ -5,6 +5,7 @@ import io.github.notenoughupdates.moulconfig.Config
 import io.github.notenoughupdates.moulconfig.annotations.Category
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorButton
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDraggableList
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDropdown
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorKeybind
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorSlider
@@ -16,6 +17,7 @@ import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.general.ArmorLayout
+import io.github.noxaur.dsmod.core.feature.general.ArmorPiece
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.Theme
@@ -168,6 +170,18 @@ class DsModConfig : Config() {
         @ConfigEditorDropdown
         @JvmField
         var armorLayout = ArmorLayout.ROW
+
+        @Expose
+        @ConfigOption(name = "Armor Pieces", desc = "Pick the pieces to show, and drag them into the order you want.")
+        @ConfigEditorDraggableList(requireNonEmpty = true)
+        @JvmField
+        var armorPieces: MutableList<ArmorPiece> = ArmorPiece.entries.toMutableList()
+
+        @Expose
+        @ConfigOption(name = "Active Pet", desc = "Show the pet you have out on the HUD, with its level.")
+        @ConfigEditorBoolean
+        @JvmField
+        var activePet = true
 
         @Expose
         @ConfigOption(name = "Camera", desc = "Shape the third-person view with the settings below. At their defaults it is the game's own.")

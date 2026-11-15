@@ -27,6 +27,14 @@ enum class Role(val rgb: Int) {
 
     /** The color with an alpha from 0 to 255, for shapes that sit over the game. */
     fun argb(alpha: Int = 255) = alpha shl 24 or rgb
+
+    companion object {
+        /** The rarities, lowest first. */
+        val RARITIES = listOf(COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC, DIVINE, SPECIAL)
+
+        /** The rarity whose color the server gave a name, or null for a color no rarity has. */
+        fun rarity(rgb: Int?): Role? = RARITIES.firstOrNull { it.rgb == rgb }
+    }
 }
 
 /** The blue of the logo, left to right. */
@@ -49,6 +57,12 @@ class TextBuilder {
     fun good(text: String) = add(text, Role.GOOD)
     fun bad(text: String) = add(text, Role.BAD)
     fun warning(text: String) = add(text, Role.WARNING)
+
+    /** An item's or a pet's name, in the color of its [rarity]. */
+    fun rarity(text: String, rarity: Role) {
+        require(rarity in Role.RARITIES) { "$rarity is not a rarity" }
+        add(text, rarity)
+    }
 
     /** The mod's own name and feature headers, in the logo gradient. */
     fun brand(text: String) {
