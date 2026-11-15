@@ -33,7 +33,8 @@ object Account {
             .whenComplete { opened, error ->
                 val answer = when {
                     error != null -> text { bad("Could not sign in. " + why(error)) }
-                    !opened -> text { bad("Could not open your browser. Open ${Build.website} yourself.") }
+                    // The link is only in the address that did not open, and it must not reach chat, so the player asks again.
+                    !opened -> text { bad("Could not open your browser. Type /dsmod login to try again.") }
                     else -> text { good("Your browser is open on your ds-mod account.") }
                 }
                 Minecraft.getInstance().execute { Chat.send(answer) }
@@ -46,6 +47,7 @@ object Account {
         return when (e.status) {
             null -> e.message.orEmpty()
             401 -> "The backend would not sign you in."
+            503 -> "Mojang did not answer. Try again in a moment."
             else -> "The backend answered ${e.status}."
         }
     }
