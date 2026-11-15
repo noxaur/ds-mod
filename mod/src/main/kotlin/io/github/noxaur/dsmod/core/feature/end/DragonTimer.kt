@@ -31,13 +31,13 @@ class DragonTimer(toggle: KMutableProperty0<Boolean>) : Feature("dragon-timer", 
             val line = message.text.plain
             when {
                 line.startsWith("☠ The ") && " Dragon has " in line -> {
-                    val (name, news) = dragonNews.find(line)?.destructured ?: return@on count("unparsed")
+                    val (name, news) = dragonNews.find(line)?.destructured ?: return@on unparsed(line)
                     dragon = name.takeIf { news == "spawned!" }
                     spawnedAt = now
                     eyes = null
                 }
                 line.startsWith("The Dragon Egg is respawning") -> {
-                    val (seconds) = eggRespawning.find(line)?.destructured ?: return@on count("unparsed")
+                    val (seconds) = eggRespawning.find(line)?.destructured ?: return@on unparsed(line)
                     eggAt = now + seconds.toLong() * 1000
                     dragon = null
                 }
@@ -46,7 +46,7 @@ class DragonTimer(toggle: KMutableProperty0<Boolean>) : Feature("dragon-timer", 
                     eyes = 0
                 }
                 line.startsWith("» ") && "Summoning Eye" in line -> {
-                    val (placed, needed) = eyePlaced.find(line)?.destructured ?: return@on count("unparsed")
+                    val (placed, needed) = eyePlaced.find(line)?.destructured ?: return@on unparsed(line)
                     eggAt = null
                     eyes = placed.toInt()
                     eyesNeeded = needed.toInt()

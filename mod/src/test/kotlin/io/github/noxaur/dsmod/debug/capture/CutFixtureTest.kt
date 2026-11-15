@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.debug.capture
 
+import io.github.noxaur.dsmod.core.capture.captureLine
+import io.github.noxaur.dsmod.core.capture.readCapture
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Item

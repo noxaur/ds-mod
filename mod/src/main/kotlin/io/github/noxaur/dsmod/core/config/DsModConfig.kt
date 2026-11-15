@@ -58,6 +58,11 @@ class DsModConfig : Config() {
     @JvmField
     val hud = Hud()
 
+    @Expose
+    @Category(name = "Contribute", desc = "Help ds-mod's developers see parts of the game they cannot reach.")
+    @JvmField
+    val contribute = Contribute()
+
     class Chat {
         @Expose
         @ConfigOption(name = "Ability Spam", desc = "Hide the message the server sends each time you use an ability that is on cooldown.")
@@ -353,5 +358,19 @@ class DsModConfig : Config() {
         @ConfigEditorButton(buttonText = "Edit")
         @JvmField
         var edit: Runnable = Runnable {}
+    }
+
+    class Contribute {
+        /** The edge sets this to open the requests, so the config itself needs no Minecraft. */
+        @ConfigOption(name = "Contribute", desc = "See what ds-mod's developers ask players to record, and record it.")
+        @ConfigEditorButton(buttonText = "Open")
+        @JvmField
+        var open: Runnable = Runnable {}
+
+        @Expose
+        @ConfigOption(name = "Report Unread Lines", desc = "Send lines the mod could not read to ds-mod's developers, with player names removed. Off until you turn it on.")
+        @ConfigEditorBoolean
+        @JvmField
+        var reportUnknowns = false
     }
 }

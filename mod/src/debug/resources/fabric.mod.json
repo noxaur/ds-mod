@@ -14,7 +14,6 @@
       }
     ]
   },
-  "accessWidener": "dsmod_debug.accesswidener",
   "mixins": [
     "dsmod_debug.mixins.json"
   ],

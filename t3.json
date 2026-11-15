@@ -4,7 +4,7 @@
   "scripts": [
     {
       "name": "Setup Worktree",
-      "command": "mise trust && mise install",
+      "command": "mise trust && mise install && (cd backend && mise exec -- pnpm install) && (cd web && mise exec -- pnpm install)",
       "icon": "configure",
       "runOnWorktreeCreate": true
     },
@@ -16,13 +16,23 @@
     },
     {
       "name": "Run Backend",
-      "command": "cd backend && mise exec -- go run ./cmd/backend",
+      "command": "cd backend && mise exec -- pnpm install && (test -f .env || echo 'ADMIN_TOKEN=local-admin' > .env) && mise exec -- pnpm exec void db migrate && mise exec -- pnpm dev",
       "icon": "play"
     },
     {
       "name": "Run Web",
       "command": "cd web && mise exec -- pnpm install && mise exec -- pnpm dev",
       "icon": "play"
+    },
+    {
+      "name": "List Contribution Requests",
+      "command": "cd backend && DSMOD_ADMIN_TOKEN=$(sed -n 's/^ADMIN_TOKEN=//p' .env) mise exec -- pnpm -s dsctl list",
+      "icon": "debug"
+    },
+    {
+      "name": "Reset Backend Database",
+      "command": "cd backend && mise exec -- pnpm exec void db reset",
+      "icon": "configure"
     },
     {
       "name": "Check All",

@@ -41,7 +41,7 @@ class SlayerTracker(toggle: KMutableProperty0<Boolean>) : Feature("slayer-tracke
             val line = message.text.plain
             when {
                 line.startsWith("   » Slay ") -> {
-                    val (xp, mobs) = goal.find(line)?.destructured ?: return@on count("unparsed")
+                    val (xp, mobs) = goal.find(line)?.destructured ?: return@on unparsed(line)
                     seen = true
                     quest = "$xp XP of $mobs"
                     return@on
@@ -52,14 +52,14 @@ class SlayerTracker(toggle: KMutableProperty0<Boolean>) : Feature("slayer-tracke
                     return@on
                 }
                 line.startsWith("   ") && " Slayer LVL " in line -> {
-                    val (slayer, at, left) = nextLevel.find(line)?.destructured ?: return@on count("unparsed")
+                    val (slayer, at, left) = nextLevel.find(line)?.destructured ?: return@on unparsed(line)
                     level = "$slayer $at"
                     toNext = left.replace(",", "").toLong()
                     return@on
                 }
             }
             if (!line.startsWith("☠ ") || "SLAYER BOSS" !in line) return@on
-            val (event) = boss.find(line)?.destructured ?: return@on count("unparsed")
+            val (event) = boss.find(line)?.destructured ?: return@on unparsed(line)
             seen = true
             if (event == "SPAWNING") {
                 spawnedAt = now

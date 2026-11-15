@@ -3,7 +3,8 @@ import nextVitals from "eslint-config-next/core-web-vitals";
 import { defineConfig, globalIgnores } from "eslint/config";
 import tseslint from "typescript-eslint";
 
-const uiSdk = "ds-mod builds every interactive control from ui-sdk, so focus, keyboard and ARIA behave the same everywhere.";
+const uiSdk =
+  "ds-mod builds every interactive control from ui-sdk, so focus, keyboard and ARIA behave the same everywhere.";
 
 // Each element ui-sdk has a component for, mapped to its entry.
 const uiSdkElements = {
@@ -43,7 +44,10 @@ export default defineConfig(
       "@typescript-eslint/explicit-module-boundary-types": "off",
       "no-restricted-syntax": [
         "error",
-        { selector: "TryStatement", message: "Model failure with Effect (Effect.try, Effect.tryPromise) instead of try/catch." },
+        {
+          selector: "TryStatement",
+          message: "Model failure with Effect (Effect.try, Effect.tryPromise) instead of try/catch.",
+        },
         { selector: "JSXAttribute[name.name='popover']", message: `Use @ui-sdk/react/popover. ${uiSdk}` },
       ],
       "no-restricted-imports": [
@@ -52,10 +56,29 @@ export default defineConfig(
           patterns: [
             {
               group: [
-                "@radix-ui/*", "radix-ui", "@headlessui/*", "react-aria", "react-aria-components", "@react-aria/*",
-                "@react-stately/*", "@base-ui-components/*", "@base-ui/*", "@ariakit/*", "ariakit", "downshift",
-                "@floating-ui/*", "cmdk", "vaul", "sonner", "react-select", "@mui/*", "@chakra-ui/*", "@mantine/*",
-                "antd", "@ark-ui/*", "@zag-js/*",
+                "@radix-ui/*",
+                "radix-ui",
+                "@headlessui/*",
+                "react-aria",
+                "react-aria-components",
+                "@react-aria/*",
+                "@react-stately/*",
+                "@base-ui-components/*",
+                "@base-ui/*",
+                "@ariakit/*",
+                "ariakit",
+                "downshift",
+                "@floating-ui/*",
+                "cmdk",
+                "vaul",
+                "sonner",
+                "react-select",
+                "@mui/*",
+                "@chakra-ui/*",
+                "@mantine/*",
+                "antd",
+                "@ark-ui/*",
+                "@zag-js/*",
               ],
               message: `Use the matching @ui-sdk/react component. ${uiSdk}`,
             },
@@ -64,7 +87,9 @@ export default defineConfig(
       ],
       "react/forbid-elements": [
         "error",
-        { forbid: Object.entries(uiSdkElements).map(([element, use]) => ({ element, message: `Use ${use}. ${uiSdk}` })) },
+        {
+          forbid: Object.entries(uiSdkElements).map(([element, use]) => ({ element, message: `Use ${use}. ${uiSdk}` })),
+        },
       ],
     },
   },
