@@ -4,6 +4,11 @@ import { defineConfig } from "vite-plus";
 export default defineConfig({
   // The tests call the Effect API directly, and Void's plugin would start a second server inside the test runner.
   plugins: process.env["VITEST"] === undefined ? [voidPlugin()] : [],
+  test: {
+    globalSetup: ["./scripts/test-time-limit.ts"],
+    // Threads end with the process, so a test stuck in a loop dies with the run that the time limit ends.
+    pool: "threads",
+  },
   // Void writes the migrations, so formatting them would only make its next one differ.
   fmt: { ignorePatterns: [".void/**", "db/migrations/**"], printWidth: 120 },
   lint: {

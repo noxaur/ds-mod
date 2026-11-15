@@ -231,6 +231,30 @@ test("a request with no steps or a zero timer is refused", async () => {
   );
 });
 
+/** The 400 a request that does not decode gets: the one problem at [path], and what was expected there. */
+const refused = (path: unknown[], message: string) => ({
+  status: 400,
+  value: expect.objectContaining({ status: 400, errors: [{ path, message }] }),
+});
+
+test("a request that does not decode says where and what was expected, and only to the client", async () => {
+  const logged = vi.spyOn(console, "error").mockImplementation(() => undefined);
+  const { call, create, submit } = backend();
+  expect(await call("agent", "POST", "/v1/admin/requests", { ...spec, secs: "Notch" })).toEqual(
+    refused(["payload", "secs"], "Expected no excess property"),
+  );
+  expect(await call("ann", "POST", "/v1/contrib/requests/x/submissions", gz())).toEqual(
+    refused(["query", "modVersion"], "Missing key"),
+  );
+  expect(logged).not.toHaveBeenCalled();
+  logged.mockRestore();
+  // A refusal the endpoint declares is answered as before.
+  expect(await submit("ann", await create(), new Uint8Array([1]))).toEqual({
+    status: 400,
+    value: { _tag: "BadRequest" },
+  });
+});
+
 test("invented sightings stop being kept at the cap, and known ones still count", async () => {
   const store = memoryStore();
   const app = makeApp(store, () => ({ userId: "ann", adminToken: undefined }));

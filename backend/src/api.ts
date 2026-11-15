@@ -84,7 +84,6 @@ export const Api = HttpApi.make("dsmod")
             modVersion: ModVersion,
             sightings: Schema.Array(Sighting).check(Schema.isMaxLength(100)),
           }),
-          error: HttpApiError.BadRequest,
         }).annotate(OpenApi.Summary, "Counts what the mod saw and had no handling for."),
       )
       .middleware(SignedIn)
@@ -96,7 +95,6 @@ export const Api = HttpApi.make("dsmod")
         HttpApiEndpoint.post("create", "/v1/admin/requests", {
           payload: RequestSpec,
           success: RecordingRequest,
-          error: HttpApiError.BadRequest,
         }).annotate(OpenApi.Summary, "Publishes a recording request."),
       )
       .add(
@@ -127,8 +125,9 @@ export const Api = HttpApi.make("dsmod")
       .middleware(Agent)
       .annotate(OpenApi.Description, "What an agent calls through dsctl, with the admin token."),
   )
-  // A body that does not decode is a 400, so each endpoint with a body lists HttpApiError.BadRequest. The mod parses
-  // a brief strictly, so a key it does not know, such as `secs` for `seconds`, is refused here instead of being
-  // dropped and costing a step its timer.
+  // A body, path or query that does not decode is a 400 whose `errors` say where and what was expected, so an agent
+  // can fix its request. The mod parses a brief strictly, so a key it does not know, such as `secs` for `seconds`, is
+  // refused here instead of being dropped and costing a step its timer.
+  .middleware(HttpApiMiddleware.ProblemDetails)
   .annotate(HttpApi.PayloadParseOptions, { onExcessProperty: "error" })
   .annotateMerge(OpenApi.annotations({ title: "ds-mod backend", version: "0.1.0" }));

@@ -6,7 +6,7 @@
     "dev": "vp dev --port 8787 --strictPort --host 127.0.0.1",
     "openapi": "node scripts/openapi.ts",
     "prepare": "node scripts/placeholder-tsconfig.ts && void prepare",
-    "check": "pnpm run prepare && vp check && timeout 30 vp test run",
+    "check": "pnpm run prepare && vp check && vp test run",
     "dsctl": "node scripts/dsctl.ts"
   },
   "dependencies": {

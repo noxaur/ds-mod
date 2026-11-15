@@ -16,6 +16,26 @@
         "responses": {
           "204": {
             "description": "<No Content>"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestProblemEncoded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorProblemEncoded"
+                }
+              }
+            }
           }
         },
         "summary": "Reports that the backend is up."
@@ -130,12 +150,32 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestProblemEncoded"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/effect_HttpApiError_UnauthorizedEncoded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorProblemEncoded"
                 }
               }
             }
@@ -169,6 +209,16 @@
           "204": {
             "description": "<No Content>"
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestProblemEncoded"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
@@ -185,6 +235,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/effect_HttpApiError_NotFoundEncoded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorProblemEncoded"
                 }
               }
             }
@@ -244,11 +304,16 @@
             }
           },
           "400": {
-            "description": "BadRequest",
+            "description": "BadRequest | Bad Request",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/effect_HttpApiError_BadRequestEncoded"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestProblemEncoded"
                 }
               }
             }
@@ -279,6 +344,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/effect_HttpApiError_ConflictEncoded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorProblemEncoded"
                 }
               }
             }
@@ -315,11 +390,11 @@
             "description": "<No Content>"
           },
           "400": {
-            "description": "BadRequest",
+            "description": "Bad Request",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_BadRequestEncoded"
+                  "$ref": "#/components/schemas/BadRequestProblemEncoded"
                 }
               }
             }
@@ -330,6 +405,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/effect_HttpApiError_UnauthorizedEncoded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorProblemEncoded"
                 }
               }
             }
@@ -512,11 +597,11 @@
             }
           },
           "400": {
-            "description": "BadRequest",
+            "description": "Bad Request",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/effect_HttpApiError_BadRequestEncoded"
+                  "$ref": "#/components/schemas/BadRequestProblemEncoded"
                 }
               }
             }
@@ -527,6 +612,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/effect_HttpApiError_UnauthorizedEncoded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorProblemEncoded"
                 }
               }
             }
@@ -800,12 +895,32 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestProblemEncoded"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/effect_HttpApiError_UnauthorizedEncoded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorProblemEncoded"
                 }
               }
             }
@@ -839,6 +954,16 @@
           "204": {
             "description": "<No Content>"
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestProblemEncoded"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
@@ -855,6 +980,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/effect_HttpApiError_NotFoundEncoded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorProblemEncoded"
                 }
               }
             }
@@ -896,6 +1031,16 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestProblemEncoded"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
@@ -912,6 +1057,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/effect_HttpApiError_NotFoundEncoded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorProblemEncoded"
                 }
               }
             }
@@ -980,12 +1135,32 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestProblemEncoded"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/effect_HttpApiError_UnauthorizedEncoded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorProblemEncoded"
                 }
               }
             }
@@ -997,6 +1172,109 @@
   },
   "components": {
     "schemas": {
+      "InternalServerErrorProblemEncoded": {
+        "type": "object",
+        "properties": {
+          "detail": {
+            "type": "string"
+          },
+          "instance": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "about:blank"
+            ]
+          },
+          "status": {
+            "type": "number",
+            "enum": [
+              500
+            ]
+          },
+          "title": {
+            "type": "string",
+            "enum": [
+              "Internal Server Error"
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "additionalProperties": false
+      },
+      "BadRequestProblemEncoded": {
+        "type": "object",
+        "properties": {
+          "detail": {
+            "type": "string"
+          },
+          "instance": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Infinity",
+                          "-Infinity",
+                          "NaN"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "about:blank"
+            ]
+          },
+          "status": {
+            "type": "number",
+            "enum": [
+              400
+            ]
+          },
+          "title": {
+            "type": "string",
+            "enum": [
+              "Bad Request"
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "additionalProperties": false
+      },
       "effect_HttpApiError_UnauthorizedEncoded": {
         "type": "object",
         "properties": {

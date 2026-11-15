@@ -144,3 +144,18 @@ test("a wrong token, an unknown id and a bad command each say what went wrong", 
   expect(await backend().failure("pull", "nothing", directory())).toBe("No request has the id nothing.");
   expect(await backend().failure("frobnicate")).toMatch(/^dsctl asks players/);
 });
+
+test("a body the backend refuses is named by where and what it expected", async () => {
+  const app = makeApp(memoryStore(), () => ({ userId: null, adminToken: "secret" }));
+  // A dsctl from another version than the backend's: its brief carries a key the backend does not know.
+  const fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+    const body: unknown = await new Request(input, init).json();
+    return app(new Request(input, { ...init, body: JSON.stringify({ ...Object(body), retries: 2 }) }));
+  };
+  const failed = await Effect.runPromise(
+    dsctl(["create", briefFile(golem)], { backend: "http://backend", token: "secret", fetch }).pipe(
+      Effect.match({ onFailure: (failure) => failure.message, onSuccess: () => "succeeded" }),
+    ),
+  );
+  expect(failed).toBe("The backend refused what dsctl sent:\n  payload.retries: Expected no excess property");
+});
