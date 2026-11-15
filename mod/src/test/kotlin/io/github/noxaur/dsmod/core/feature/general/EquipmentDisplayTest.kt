@@ -127,7 +127,7 @@ class EquipmentDisplayTest {
 
     @Test
     fun `the block carries the look and the place the player picked`() {
-        config.general.equipmentLook = HudLook.HOTBAR
+        config.general.equipmentLook = EquipmentLook.HOTBAR
         config.general.equipmentPlacement = HudDock.RIGHT_OF_HOTBAR
         post(*inventory(helmet, boots))
         assertEquals(HudLook.HOTBAR, hud()?.look)

@@ -35,6 +35,16 @@ enum class EquipmentLayout(private val label: String) {
     override fun toString() = label
 }
 
+/** What the pieces sit on: the HUD's plate, nothing, or slots like the hotbar's. */
+enum class EquipmentLook(private val label: String, val hud: HudLook) {
+    PLATE("Plate", HudLook.PLATE),
+    CLEAR("Clear", HudLook.CLEAR),
+    HOTBAR("Hotbar", HudLook.HOTBAR),
+    ;
+
+    override fun toString() = label
+}
+
 /** Where the pet sits: among the armor in the order of the pieces, or on a row of its own above or below them. */
 enum class PetPosition(private val label: String) {
     WITH_ARMOR("With Armor"),
@@ -70,7 +80,7 @@ class EquipmentDisplay(
     private val pieces: KMutableProperty0<MutableList<EquipmentPiece>>,
     private val petLook: KMutableProperty0<PetLook>,
     private val petPosition: KMutableProperty0<PetPosition>,
-    private val look: KMutableProperty0<HudLook>,
+    private val look: KMutableProperty0<EquipmentLook>,
     private val placement: KMutableProperty0<HudDock>,
 ) : Feature("equipment-display", toggle, Area.ANYWHERE) {
     private class Pet(val name: String, val level: Long, val rarity: Role)
@@ -81,7 +91,7 @@ class EquipmentDisplay(
         val pieces: List<EquipmentPiece>,
         val petLook: PetLook,
         val petPosition: PetPosition,
-        val look: HudLook,
+        val look: EquipmentLook,
         val placement: HudDock,
     )
 
@@ -166,7 +176,7 @@ class EquipmentDisplay(
         val apart = icon.takeIf { !inline }
         val named = pet.takeIf { icon == null }
         if (armor.all { it == null } && apart == null && named == null) return null
-        return block(headed = false, look = shown.look, dock = shown.placement) {
+        return block(headed = false, look = shown.look.hud, dock = shown.placement) {
             val armorRows = {
                 if (armor.any { it != null }) {
                     if (shown.layout == EquipmentLayout.ROW) items(armor) else armor.forEach { items(listOf(it)) }

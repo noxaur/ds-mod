@@ -21,6 +21,16 @@ enum class InventoryRow(private val label: String, val first: Int) {
     override fun toString() = label
 }
 
+/** How the grid shows: on the HUD's plate, on nothing, or as the player's inventory screen draws it. */
+enum class InventoryLook(private val label: String, val hud: HudLook) {
+    PLATE("Plate", HudLook.PLATE),
+    CLEAR("Clear", HudLook.CLEAR),
+    INVENTORY("Inventory", HudLook.INVENTORY),
+    ;
+
+    override fun toString() = label
+}
+
 /**
  * Shows the [rows] of the player's inventory they picked, in their order, as a grid of icons with no header, nine to a
  * row as the inventory holds them. An empty cell stands for an empty slot, and the hotbar sits apart from the rows
@@ -30,10 +40,10 @@ enum class InventoryRow(private val label: String, val first: Int) {
 class InventoryPreview(
     toggle: KMutableProperty0<Boolean>,
     private val rows: KMutableProperty0<MutableList<InventoryRow>>,
-    private val look: KMutableProperty0<HudLook>,
+    private val look: KMutableProperty0<InventoryLook>,
 ) : Feature("inventory-preview", toggle, Area.ANYWHERE) {
     /** The settings the block was built with, so a refresh rebuilds it only when one changed. */
-    private data class Shown(val rows: List<InventoryRow>, val look: HudLook)
+    private data class Shown(val rows: List<InventoryRow>, val look: InventoryLook)
 
     // The inventory's slots from the top row's first to the hotbar's last.
     private var items = emptyList<Item?>()
@@ -73,7 +83,7 @@ class InventoryPreview(
         val picked = shown.rows.distinct()
         val slots = picked.map { row -> items.subList(row.first - FIRST, row.first - FIRST + WIDTH) }
         if (slots.all { row -> row.all { it == null } }) return null
-        return block(headed = false, look = shown.look) {
+        return block(headed = false, look = shown.look.hud) {
             slots.forEachIndexed { i, row ->
                 items(row, apart = i > 0 && (picked[i] == InventoryRow.HOTBAR) != (picked[i - 1] == InventoryRow.HOTBAR))
             }

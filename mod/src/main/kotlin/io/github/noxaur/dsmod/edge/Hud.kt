@@ -93,8 +93,10 @@ object Hud {
         val font = Minecraft.getInstance().font
         val line = font.lineHeight + 1
         val hotbar = block.look == HudLook.HOTBAR
+        val inventory = block.look == HudLook.INVENTORY
         val header = block.header.takeIf { it.spans.isNotEmpty() }?.toComponent()
-        var height = if (header != null) line else 0
+        // The inventory's panel leaves its inset around the slots.
+        var height = (if (header != null) line else 0) + if (inventory) Kit.INSET else 0
         var width = header?.let(font::width) ?: 0
         val built = stacksByItem[id].orEmpty()
         val kept = IdentityHashMap<Item, ItemStack>()
@@ -108,16 +110,19 @@ object Hud {
                 when {
                     items == null -> maxOf(font.width(drawn.text), if (bar != null) BAR_WIDTH else 0)
                     hotbar -> Kit.hotbarWidth(items.size)
+                    inventory -> items.size * Kit.SLOT_SIZE + 2 * Kit.INSET
                     else -> items.size * ITEM_PITCH - 1
                 },
             )
             height += when {
                 items == null -> line + if (bar != null) Kit.BAR_HEIGHT + BAR_GAP else 0
                 hotbar -> Kit.HOTBAR_HEIGHT
+                inventory -> Kit.SLOT_SIZE
                 else -> ITEM_PITCH
             }
             drawn
         }
+        if (inventory) height += Kit.INSET
 
         stacksByItem[id] = kept
         groups.values.forEach { if (it.place.id != group.id) it.blocks.remove(id) }
@@ -170,12 +175,13 @@ object Hud {
             var y = 0
             for ((id, block) in group.blocks) {
                 if (block.placeable) all += Placed(id, group.x.toFloat(), group.y + y * scale, plate(block.width), plate(block.height), scale)
-                val inset = if (block.look == HudLook.HOTBAR) HOTBAR_INSET else 0
-                val pitch = if (block.look == HudLook.HOTBAR) Kit.HOTBAR_CELL else ITEM_PITCH
+                val across = across(block.look)
+                val down = down(block.look)
+                val pitch = pitch(block.look)
                 for (row in block.rows) {
                     row.stacks?.forEachIndexed { i, stack ->
                         if (stack != null) {
-                            items += Cell(group.x + (PADDING + inset + i * pitch) * scale, group.y + (y + PADDING + inset + row.y) * scale, ITEM * scale, stack)
+                            items += Cell(group.x + (PADDING + across + i * pitch) * scale, group.y + (y + PADDING + down + row.y) * scale, ITEM * scale, stack)
                         }
                     }
                 }
@@ -243,6 +249,25 @@ object Hud {
         group.y = (client.window.guiScaledHeight - height - inset).toInt()
     }
 
+    /** How far into a row of [look] its first item sits, across and down, and how far apart its items are. */
+    private fun across(look: HudLook) = when (look) {
+        HudLook.HOTBAR -> HOTBAR_INSET
+        HudLook.INVENTORY -> Kit.INSET + 1
+        else -> 0
+    }
+
+    private fun down(look: HudLook) = when (look) {
+        HudLook.HOTBAR -> HOTBAR_INSET
+        HudLook.INVENTORY -> 1
+        else -> 0
+    }
+
+    private fun pitch(look: HudLook) = when (look) {
+        HudLook.HOTBAR -> Kit.HOTBAR_CELL
+        HudLook.INVENTORY -> Kit.SLOT_SIZE
+        else -> ITEM_PITCH
+    }
+
     // Each line ends in a pixel of spacing, which the plate's air already gives.
     private fun plate(size: Int) = size + PADDING * 2 - 1
 
@@ -261,6 +286,8 @@ object Hud {
             DsModClient.game.metrics.time("hud.draw") {
                 val font = Minecraft.getInstance().font
                 val line = font.lineHeight + 1
+                // The Inventory look matches the inventory screen, which Themed Menus draws with the kit.
+                val themed = MenuSkin.themed
                 val pose = graphics.pose()
                 for (g in shown.indices) {
                     val group = shown[g]
@@ -273,6 +300,10 @@ object Hud {
                     for (b in group.shown.indices) {
                         val block = group.shown[b]
                         val hotbar = block.look == HudLook.HOTBAR
+                        val inventory = block.look == HudLook.INVENTORY
+                        if (inventory) {
+                            if (themed) Kit.panel(graphics, PADDING, top, block.width, block.height) else Kit.inventoryPanel(graphics, PADDING, top, block.width, block.height)
+                        }
                         if (block.header != null) graphics.text(font, block.header, PADDING, top, -1, true)
                         for (r in block.rows.indices) {
                             val row = block.rows[r]
@@ -280,12 +311,15 @@ object Hud {
                             val stacks = row.stacks
                             if (stacks != null) {
                                 if (hotbar) Kit.hotbar(graphics, PADDING, y, stacks.size)
-                                val inset = if (hotbar) HOTBAR_INSET else 0
-                                val pitch = if (hotbar) Kit.HOTBAR_CELL else ITEM_PITCH
+                                val across = across(block.look)
+                                val down = down(block.look)
+                                val pitch = pitch(block.look)
                                 for (i in stacks.indices) {
+                                    val x = PADDING + across + i * pitch
+                                    if (inventory) if (themed) Kit.slot(graphics, x - 1, y + down - 1) else Kit.slotAt(graphics, x - 1, y + down - 1)
                                     val stack = stacks[i] ?: continue
-                                    graphics.item(stack, PADDING + inset + i * pitch, y + inset)
-                                    graphics.itemDecorations(font, stack, PADDING + inset + i * pitch, y + inset)
+                                    graphics.item(stack, x, y + down)
+                                    graphics.itemDecorations(font, stack, x, y + down)
                                 }
                                 continue
                             }

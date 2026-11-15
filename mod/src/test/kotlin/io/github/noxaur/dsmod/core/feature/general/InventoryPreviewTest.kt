@@ -88,8 +88,8 @@ class InventoryPreviewTest {
     @Test
     fun `the look is the player's`() {
         post(*inventory(9 to eyes))
-        config.general.inventoryLook = HudLook.HOTBAR
+        config.general.inventoryLook = InventoryLook.INVENTORY
         post()
-        assertEquals(HudLook.HOTBAR, hud()?.look)
+        assertEquals(HudLook.INVENTORY, hud()?.look)
     }
 }

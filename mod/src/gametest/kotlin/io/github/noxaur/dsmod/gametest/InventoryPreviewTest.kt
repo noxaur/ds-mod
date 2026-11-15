@@ -4,13 +4,14 @@ import com.google.common.collect.ImmutableMultimap
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
 import com.mojang.authlib.properties.PropertyMap
+import io.github.noxaur.dsmod.core.feature.general.InventoryLook
 import io.github.noxaur.dsmod.core.feature.general.InventoryRow
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.hud.HudGroup
-import io.github.noxaur.dsmod.core.hud.HudLook
 import io.github.noxaur.dsmod.core.hud.ItemsRow
+import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -24,14 +25,17 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.DyedItemColor
 import net.minecraft.world.item.component.ItemLore
 import net.minecraft.world.item.component.ResolvableProfile
+import java.nio.file.Path
 import java.util.Base64
 import java.util.UUID
+import javax.imageio.ImageIO
 
 /**
  * The inventory shows on the HUD as a grid, nine to a row, so a head keeps its skin, dyed leather its color and a stack
  * its count, and the chat's free mouse reads an item's tooltip. The hotbar joins it a little apart, and the grid never
  * empties while the inventory is read again after a menu, which takes a few ticks for items with long lore as
- * dragsim.co's have. Read the screenshots: the grid, the tooltip, the hotbar under a gap, and the hotbar look.
+ * dragsim.co's have. Read the screenshots: the grid, the tooltip, the hotbar under a gap, and the Inventory look
+ * with Themed Menus on in Charcoal and in Vanilla, and off.
  */
 class InventoryPreviewTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
@@ -47,13 +51,17 @@ class InventoryPreviewTest : FabricClientGameTest {
             try {
                 context.waitTicks(10)
 
-                /** The middle of the cell in [row] and [column], in GUI pixels, in plate or hotbar slots, with the hotbar row [apart]. */
-                fun cell(row: Int, column: Int, hotbar: Boolean = false, apart: Boolean = false): Pair<Double, Double> =
+                /**
+                 * The middle of the cell in [row] and [column], in GUI pixels, on the plate or in the inventory's 18px slots
+                 * 7px into its panel, with the hotbar row [apart].
+                 */
+                fun cell(row: Int, column: Int, inventory: Boolean = false, apart: Boolean = false): Pair<Double, Double> =
                     context.computeOnClient<Pair<Double, Double>, Nothing> {
                         val block = checkNotNull(Hud.find(ID)) { "The inventory is not on the HUD" }
-                        val inset = if (hotbar) 3 else 0
-                        val x = (4 + inset + column * (if (hotbar) 20 else 17) + 8) * block.scale
-                        val y = (4 + inset + row * (if (hotbar) 22 else 17) + (if (apart) 4 else 0) + 8) * block.scale
+                        val inset = if (inventory) 7 + 1 else 0
+                        val pitch = if (inventory) 18 else 17
+                        val x = (4 + inset + column * pitch + 8) * block.scale
+                        val y = (4 + inset + row * pitch + (if (apart) 4 else 0) + 8) * block.scale
                         block.x + x.toDouble() to block.y + y.toDouble()
                     }
                 fun stackAt(point: Pair<Double, Double>) = context.computeOnClient<ItemStack?, Nothing> { Hud.itemAt(point.first, point.second) }
@@ -130,17 +138,56 @@ class InventoryPreviewTest : FabricClientGameTest {
                 val slots = tapped.drop(tapped.lastIndexOf(back)).count { it is SlotChanged && it.item != null }
                 check(back.id == 0 && !back.kept && slots == FILLED) { "A capture started in a menu got the inventory as $back with $slots items" }
 
-                general.inventoryLook = HudLook.HOTBAR
-                context.waitTicks(10)
-                check(skin(stackAt(cell(0, 0, hotbar = true)))) { "The hotbar look moved the first item off its slot" }
-                check(stackAt(cell(3, 0, hotbar = true, apart = true))?.hoverName?.string == "Item 0") { "The hotbar look moved the hotbar row" }
-                context.takeScreenshot("inventory-preview-hotbar-look")
+                println("InventoryPreviewTest: the HUD drew the plate look in ${drawMicros(context)}µs a frame")
+
+                // The Inventory look is the inventory screen as the player sees it: the theme's panel while Themed Menus
+                // is on, and the inventory texture's gray while it is off.
+                general.inventoryLook = InventoryLook.INVENTORY
+                val inventorySettings = DsModClient.settings.inventory
+                val themedBefore = inventorySettings.themedMenus
+                val themeBefore = DsModClient.settings.hud.theme
+                try {
+                    for ((themed, theme) in listOf(true to Theme.CHARCOAL, true to Theme.VANILLA, false to Theme.CHARCOAL)) {
+                        inventorySettings.themedMenus = themed
+                        DsModClient.settings.hud.theme = theme
+                        context.waitTicks(10)
+                        check(skin(stackAt(cell(0, 0, inventory = true)))) { "The Inventory look moved the first item off its slot" }
+                        check(stackAt(cell(3, 0, inventory = true, apart = true))?.hoverName?.string == "Item 0") { "The Inventory look moved the hotbar row" }
+                        val shot = context.takeScreenshot("inventory-preview-inventory-look-${if (themed) theme.name.lowercase() else "vanilla-texture"}")
+                        val panel = panelColor(context, shot)
+                        val expected = if (themed) theme.panel and 0xFFFFFF else VANILLA_PANEL
+                        check(panel == expected) { "The panel is %06X with Themed Menus %s in %s, not %06X".format(panel, themed, theme, expected) }
+                        println("InventoryPreviewTest: the HUD drew the Inventory look in ${drawMicros(context)}µs a frame, Themed Menus $themed, $theme")
+                    }
+                } finally {
+                    inventorySettings.themedMenus = themedBefore
+                    DsModClient.settings.hud.theme = themeBefore
+                }
             } finally {
                 general.inventoryPreview = false
                 general.inventoryRows = mutableListOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM)
-                general.inventoryLook = HudLook.PLATE
+                general.inventoryLook = InventoryLook.PLATE
             }
         }
+    }
+
+    /** The HUD's average draw over a second, in µs a frame. */
+    private fun drawMicros(context: ClientGameTestContext): Long {
+        context.runOnClient<Nothing> { DsModClient.game.metrics.flush() }
+        context.waitTicks(20)
+        return context.computeOnClient<Long, Nothing> {
+            DsModClient.game.metrics.snapshot().timers.getValue("hud.draw").let { timer -> timer.totalNanos / timer.count / 1000 }
+        }
+    }
+
+    /** The color of the grid's panel in [shot], a few pixels in from its corner, between the edge and the first slot. */
+    private fun panelColor(context: ClientGameTestContext, shot: Path): Int {
+        val (x, y) = context.computeOnClient<Pair<Int, Int>, Nothing> { client ->
+            val block = checkNotNull(Hud.find(ID))
+            val scale = client.window.guiScale
+            ((block.x + (4 + 5) * block.scale) * scale).toInt() to ((block.y + (4 + 5) * block.scale) * scale).toInt()
+        }
+        return ImageIO.read(shot.toFile()).getRGB(x, y) and 0xFFFFFF
     }
 
     /** The item for inventory [index], named after it and with lore as long as dragsim.co's, or none in a few slots. */
@@ -170,6 +217,9 @@ class InventoryPreviewTest : FabricClientGameTest {
     private companion object {
         const val ID = "inventory-preview"
         const val DYE = 0x3366CC
+
+        /** The face of the inventory texture's panel. */
+        const val VANILLA_PANEL = 0xC6C6C6
         val ITEMS = listOf(Items.DIAMOND_SWORD, Items.OBSIDIAN, Items.BOW, Items.GOLDEN_HOE, Items.NETHER_STAR)
 
         /** Slots left empty: one in the top row, and one in the hotbar. */

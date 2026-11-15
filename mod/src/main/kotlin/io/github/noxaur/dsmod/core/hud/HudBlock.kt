@@ -36,6 +36,12 @@ enum class HudLook(private val label: String) {
 
     /** No plate, and its icons in slots drawn from the hotbar's own texture, so a resource pack restyles both. */
     HOTBAR("Hotbar"),
+
+    /**
+     * A panel with its icons in 18px slots, as the player's inventory screen draws them: by the kit in the player's theme
+     * while Themed Menus is on, and from the inventory's own texture while it is off.
+     */
+    INVENTORY("Inventory"),
     ;
 
     override fun toString() = label

@@ -336,6 +336,31 @@ object Kit {
     fun slotAt(g: GuiGraphicsExtractor, x: Int, y: Int) =
         g.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, x, y, EMPTY_SLOT_U, EMPTY_SLOT_V, SLOT_SIZE, SLOT_SIZE, 256, 256)
 
+    /**
+     * A panel of any size cut from the player's inventory as the resource pack draws it, the vanilla counterpart of
+     * [panel]: its corners as they are, and its edges and face stretched from one pixel's width of them.
+     */
+    fun inventoryPanel(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
+        val c = PANEL_CORNER
+        val w = width - 2 * c
+        val h = height - 2 * c
+        val right = INVENTORY_WIDTH - c
+        val bottom = INVENTORY_HEIGHT - c
+        // Each part: where it goes, from the panel's corner, and the region of the texture stretched over it.
+        fun part(dx: Int, dy: Int, u: Int, v: Int, width: Int, height: Int, regionWidth: Int, regionHeight: Int) = g.blit(
+            RenderPipelines.GUI_TEXTURED, INVENTORY, x + dx, y + dy, u.toFloat(), v.toFloat(), width, height, regionWidth, regionHeight, 256, 256,
+        )
+        part(0, 0, 0, 0, c, c, c, c)
+        part(c, 0, c, 0, w, c, 1, c)
+        part(c + w, 0, right, 0, c, c, c, c)
+        part(0, c, 0, c, c, h, c, 1)
+        part(c, c, c, c, w, h, 1, 1)
+        part(c + w, c, right, c, c, h, c, 1)
+        part(0, c + h, 0, bottom, c, c, c, c)
+        part(c, c + h, c, bottom, w, c, 1, c)
+        part(c + w, c + h, right, bottom, c, c, c, c)
+    }
+
     /** Darkens the item at [x], [y], drawn over it. */
     fun slotDim(g: GuiGraphicsExtractor, x: Int, y: Int) = rect(g, x, y, 16, 16, ARGB.color(DIM_ALPHA, theme.well))
 
@@ -396,6 +421,9 @@ object Kit {
     private const val TOOLTIP_ALPHA = 240
 
     private val INVENTORY = Identifier.withDefaultNamespace("textures/gui/container/inventory.png")
+
+    // The inventory's rounded corner, outline and bevel, past which its edges and face are the same all along.
+    private const val PANEL_CORNER = 4
 
     // The last slot of the inventory's main grid, which holds nothing but its frame.
     private const val EMPTY_SLOT_U = 151f
