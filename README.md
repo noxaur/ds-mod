@@ -15,7 +15,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - Slayer Tracker shows your quest progress, the XP to your next level and your average kill time.
 - Loot Alerts go off for drops at or above the rarity you set.
 - Rarity Marks color each slot by its item's rarity. Pick Showcase, Gilded or Minimal, or build your own look beside your inventory.
-- Armor Display shows the armor pieces you pick on the HUD, with each piece's tooltip a point away while the chat is open. Active Pet shows the pet you have out.
+- Equipment Display shows your armor and your pet's head as a row of icons on the HUD, with each piece's tooltip a point away while the chat is open.
 - Command Binds send a command such as `/warp end` with a key, a few keys held together or keys pressed in turn. Keep them in groups you can fold, switch off and share.
 
 <p>

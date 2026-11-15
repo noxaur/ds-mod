@@ -17,8 +17,8 @@ import io.github.noxaur.dsmod.core.camera.ThirdPerson
 import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
-import io.github.noxaur.dsmod.core.feature.general.ArmorLayout
-import io.github.noxaur.dsmod.core.feature.general.ArmorPiece
+import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
+import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
 import io.github.noxaur.dsmod.core.feature.general.PetLook
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.ui.MenuTab
@@ -169,34 +169,28 @@ class DsModConfig : Config() {
         var explosionParticleHider = false
 
         @Expose
-        @ConfigOption(name = "Armor Display", desc = "Show the armor you wear on the HUD. Open the chat and point at a piece to read it.")
+        @ConfigOption(name = "Equipment Display", desc = "Show the armor you wear and your pet on the HUD. Open the chat and point at a piece to read it.")
         @ConfigEditorBoolean
         @JvmField
-        var armorDisplay = true
+        var equipmentDisplay = true
 
         @Expose
-        @ConfigOption(name = "Armor Layout", desc = "Line the armor up in a row or a column.")
-        @ConfigEditorDropdown
-        @JvmField
-        var armorLayout = ArmorLayout.ROW
-
-        @Expose
-        @ConfigOption(name = "Armor Pieces", desc = "Pick the pieces to show, and drag them into the order you want.")
+        @ConfigOption(name = "Equipment Pieces", desc = "Pick the pieces to show, and drag them into the order you want.")
         @ConfigEditorDraggableList(requireNonEmpty = true)
         @JvmField
-        var armorPieces: MutableList<ArmorPiece> = ArmorPiece.entries.toMutableList()
+        var equipmentPieces: MutableList<EquipmentPiece> = EquipmentPiece.entries.toMutableList()
 
         @Expose
-        @ConfigOption(name = "Active Pet", desc = "Show the pet you have out on the HUD, with its level.")
-        @ConfigEditorBoolean
-        @JvmField
-        var activePet = true
-
-        @Expose
-        @ConfigOption(name = "Active Pet Look", desc = "Show the pet as its head, as it floats beside you, or by its name. Until its head is seen nearby, the name shows.")
+        @ConfigOption(name = "Equipment Layout", desc = "Line the pieces up in a row or a column.")
         @ConfigEditorDropdown
         @JvmField
-        var activePetLook = PetLook.ICON
+        var equipmentLayout = EquipmentLayout.ROW
+
+        @Expose
+        @ConfigOption(name = "Pet Look", desc = "Show your pet as its head beside the armor, or as its name and level under it. Until its head has been near you, the name shows.")
+        @ConfigEditorDropdown
+        @JvmField
+        var petLook = PetLook.ICON
 
         @Expose
         @ConfigOption(name = "Camera", desc = "Shape the third-person view with the settings below. At their defaults it is the game's own.")

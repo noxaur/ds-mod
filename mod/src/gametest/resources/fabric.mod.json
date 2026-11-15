@@ -93,7 +93,7 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.ArmorDisplayTest"
+        "value": "io.github.noxaur.dsmod.gametest.EquipmentDisplayTest"
       },
       {
         "adapter": "kotlin",

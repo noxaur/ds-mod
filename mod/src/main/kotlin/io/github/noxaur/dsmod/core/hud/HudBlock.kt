@@ -40,6 +40,11 @@ class HudBuilder {
         rows += BarRow(text { muted("$label: "); content() }, fraction.coerceIn(0f, 1f), role)
     }
 
+    /** A row with no label, for a line that names itself, such as a pet as the server writes it. */
+    fun line(content: TextBuilder.() -> Unit) {
+        rows += TextRow(text(content))
+    }
+
     fun items(items: List<Item?>) {
         rows += ItemsRow(items)
     }

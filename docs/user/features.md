@@ -220,23 +220,6 @@ Set your tabs up with Edit Tabs, under Better UI:
 
 ## General
 
-### Active Pet
-
-Shows the pet you have out on the HUD with its level. It reads the pet from the sidebar, so it shows nothing where the sidebar has no pet line.
-
-| Setting | Does |
-| --- | --- |
-| Active Pet Look | Shows the pet as its head, as it floats beside you, or by its name in the color of its rarity. Until the head has been near you, the name shows |
-
-### Armor Display
-
-Shows the armor you wear on the HUD, helmet first. Open the chat and point at a piece to read its tooltip.
-
-| Setting | Does |
-| --- | --- |
-| Armor Layout | Lines the pieces up in a row or a column |
-| Armor Pieces | Picks which pieces show, and their order. Drag a piece to move it, take it out with − or the bin, and bring it back with + |
-
 ### Camera
 
 Shapes the third-person view you get with F5. Each setting starts at the game's own, so nothing changes until you move one.
@@ -281,6 +264,16 @@ On the right:
 **New Group** adds a group. Pick its heading to rename it, or to delete it with its binds. **Export** copies the group of whatever you picked to your clipboard to share, and **Import** adds a group someone shared. Imported binds start off, so read each command before you turn it on.
 
 Keys shown in red fire another bind too, and keys in yellow also do something in the game. The line under the details says which.
+
+### Equipment Display
+
+Shows the armor you wear and your pet as a row of icons on the HUD. Your pet's head joins the row once it has floated near you, and until then the pet shows as its name under the row. Open the chat and point at a piece to read its tooltip.
+
+| Setting | Does |
+| --- | --- |
+| Equipment Pieces | Picks which pieces show, and their order. Drag a piece to move it, take it out with − or the bin, and bring it back with + |
+| Equipment Layout | Lines the pieces up in a row or a column |
+| Pet Look | Shows your pet as its head among the armor, or as its name and level in the color of its rarity |
 
 ### Explosion Particle Hider
 
