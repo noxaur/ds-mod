@@ -149,7 +149,7 @@ Menus, your inventory and plain tooltips take the colors of the Theme under Inte
 
 The server's Go Back, Close and page arrows become buttons in the same colors.
 
-Set Menu Look to Glass to see the world through them instead, and Glass Opacity to choose how dark the glass is. Your hotbar and the crosshair are hidden under it, and chat stops at the menu's edge.
+Set Menu Look to Glass to see the world and your HUD through them instead, and Glass Opacity to choose how dark the glass is. The buttons turn to glass too.
 
 <sub>Chests, crafting tables, hoppers, dispensers and shulker boxes follow it, and so does the recipe book's button. A furnace or an anvil keeps its own look, and item tooltips keep the server's rarity frames.</sub>
 

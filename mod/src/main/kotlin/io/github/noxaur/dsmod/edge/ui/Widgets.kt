@@ -43,6 +43,9 @@ class KitButton private constructor(
     private val labelWidth = Kit.font.width(label)
     private var pressed = false
 
+    /** Whether the button sits on a glass menu, asked each frame, which gives it a [Kit.button] of glass. */
+    var glass: () -> Boolean = { false }
+
     override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
         pressed = true
         super.onClick(event, doubleClick)
@@ -55,9 +58,9 @@ class KitButton private constructor(
     override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         val state = Kit.state(active, isHoveredOrFocused, pressed && isHovered)
         if (icon != null) {
-            Kit.button(graphics, x, y, width, height, state, icon)
+            Kit.button(graphics, x, y, width, height, state, icon, glass())
         } else {
-            Kit.button(graphics, x, y, width, height, state, label, labelWidth)
+            Kit.button(graphics, x, y, width, height, state, label, labelWidth, glass())
         }
     }
 }

@@ -190,14 +190,15 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         Kit.scrollbar(g, gx + 93, gy, 72, 6, 30)
     }
 
-    /** A strip of glass below the gallery, over the world as a glass menu is: slots, a well and its tabs in each state. */
+    /** A strip of glass below the gallery, over the world as a glass menu is: slots, a well, buttons and tabs in each state. */
     private fun glass(g: GuiGraphicsExtractor, x: Int, y: Int) {
         val alpha = 153
-        Kit.glass(g, x, y, 160, 26, alpha)
+        Kit.glass(g, x, y, 240, 26, alpha)
         g.text(font, "Glass", x + 7, y + 9, Kit.GLASS_INK, true)
         for (i in 0 until 3) Kit.glassSlot(g, x + 40 + i * 18, y + 4)
         g.item(tabs[3], x + 41, y + 5)
         Kit.glassWell(g, x + 98, y + 4, 54, 18)
+        for (i in states.indices) Kit.button(g, x + 156 + i * 20, y + 5, Kit.BUTTON_HEIGHT, Kit.BUTTON_HEIGHT, states[i], Icon.BACK, glass = true)
         g.item(tabs[0], x + 4, Kit.glassTab(g, x + 1, y + 26, true, alpha, TabEdge.BOTTOM))
         g.item(tabs[1], x + 27, Kit.glassTab(g, x + 24, y + 26, false, alpha, TabEdge.BOTTOM))
         g.item(tabs[2], x + 50, Kit.glassTab(g, x + 47, y + 26, false, alpha, TabEdge.BOTTOM, hovered = true))

@@ -26,7 +26,7 @@ import javax.imageio.ImageIO
  * drew: the panel in the theme's color, and a filler pane's slot left as bare panel. Read the screenshots in both
  * themes: a light title on the dark panel, a dark tooltip over the hovered item, no tooltip over filler, the server's
  * Go Back and Close and the recipe book's button drawn by the kit, and Close's own tooltip over it. Under the Glass look
- * the chest and the inventory show the world undimmed through a dark sheet, with light labels and glass tabs.
+ * the chest and the inventory show the world undimmed through a dark sheet, with light labels, glass tabs and glass buttons.
  */
 class ThemedMenusTest : FabricClientGameTest {
     /** The color of the GUI pixel at [x], [y] in [shot], without its alpha. */
@@ -123,6 +123,11 @@ class ThemedMenusTest : FabricClientGameTest {
                 theme(context, Theme.CHARCOAL)
                 val glass = context.takeScreenshot("glass-chest-charcoal")
                 checkUndimmed(context, glass, charcoal)
+                val (bx, by) = ServerMenus.corner(context, 6 * 9 - 6)
+                val face = pixel(context, glass, bx + 3, by + 3)
+                check(face != Theme.CHARCOAL.raised and 0xFFFFFF) { "The server's Go Back on glass is the solid button's %06X".format(face) }
+                ServerMenus.hover(context, 6 * 9 - 5)
+                context.takeScreenshot("glass-chest-button-hovered")
                 checkFullGlass(context, "glass-chest-full-charcoal", Theme.CHARCOAL)
                 look(context, MenuLook.GLASS, 0f)
                 context.takeScreenshot("glass-chest-clear")

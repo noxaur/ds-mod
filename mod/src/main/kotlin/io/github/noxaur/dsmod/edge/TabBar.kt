@@ -138,6 +138,7 @@ object TabBar {
                 show()
             }
             close = KitButton(barX() + barWidth - 3 - Kit.BUTTON_HEIGHT, contentY, Icon.CROSS, "Close Search", ::shut)
+            close.glass = { glass() >= 0 }
             close.setTooltip(Tooltip.create(text { action("Click to stop searching.") }.toComponent()))
             openSearch = {
                 open = true

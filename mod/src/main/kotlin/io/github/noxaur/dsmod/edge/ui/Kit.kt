@@ -78,19 +78,29 @@ object Kit {
         frame(g, x, y, width, height, t.outline, t.panel, t.panelLight, t.panelShade)
     }
 
-    /** A button with [label] centered, where [labelWidth] is the label's width, measured once. */
-    fun button(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, label: String, labelWidth: Int) {
-        face(g, x, y, width, height, state)
+    /**
+     * A button with [label] centered, where [labelWidth] is the label's width, measured once. On a [glass] menu it is a
+     * pane of glass raised off it instead, with its label in [GLASS_INK].
+     */
+    fun button(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, label: String, labelWidth: Int, glass: Boolean = false) {
+        if (glass) glassFace(g, x, y, width, height, state) else face(g, x, y, width, height, state)
         val dy = if (state == State.DOWN) 1 else 0
-        label(g, label, x + (width - labelWidth) / 2, y + (height - 8) / 2 + dy, if (state == State.OFF) Ink.OFF else Ink.NORMAL)
+        val lx = x + (width - labelWidth) / 2
+        val ly = y + (height - 8) / 2 + dy
+        if (!glass) return label(g, label, lx, ly, if (state == State.OFF) Ink.OFF else Ink.NORMAL)
+        g.text(font, label, lx, ly, if (state == State.OFF) GLASS_INK_OFF else GLASS_INK, state != State.OFF)
     }
 
-    fun button(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, icon: Icon) {
-        face(g, x, y, width, height, state)
+    fun button(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, icon: Icon, glass: Boolean = false) {
+        if (glass) glassFace(g, x, y, width, height, state) else face(g, x, y, width, height, state)
         val t = theme
         val off = state == State.OFF
         val dy = if (state == State.DOWN) 1 else 0
-        icon(g, icon, x + (width - icon.width) / 2, y + (height - icon.height) / 2 + dy, if (off) t.inkOff else t.ink, !off && t.inkShadow)
+        val ink = when {
+            glass -> if (off) GLASS_INK_OFF else GLASS_INK
+            else -> if (off) t.inkOff else t.ink
+        }
+        icon(g, icon, x + (width - icon.width) / 2, y + (height - icon.height) / 2 + dy, ink, !off && (glass || t.inkShadow))
     }
 
     fun well(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
@@ -410,6 +420,24 @@ object Kit {
         }
     }
 
+    /**
+     * A button's face on glass: a lighter pane in the plate's ring with a lit top and left, which the mouse lightens and
+     * rings in `hoverOutline`, and which sinks into a [glassWell] while pressed. Its alpha is its own, so it reads on
+     * clear glass too.
+     */
+    private fun glassFace(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
+        val t = theme
+        when (state) {
+            State.IDLE -> frame(g, x, y, width, height, t.plateEdge, ARGB.white(GLASS_BUTTON), glassLight(t), glassShade(t))
+            State.HOVER -> frame(g, x, y, width, height, t.hoverOutline, ARGB.white(GLASS_BUTTON_HOVER), glassLight(t), glassShade(t))
+            State.DOWN -> {
+                ring(g, x, y, width, height, t.plateEdge)
+                glassWell(g, x + 1, y + 1, width - 2, height - 2)
+            }
+            State.OFF -> ring(g, x, y, width, height, t.plateEdge)
+        }
+    }
+
     /** A raised thing: a notched outline with a bevel inside, light on the top and left. */
     private fun frame(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, outline: Int, face: Int, light: Int, shade: Int) {
         ring(g, x, y, width, height, outline)
@@ -453,6 +481,9 @@ object Kit {
 
     /** Ink on glass, which is dark in both themes, so it is the light ink of the HUD, with its shadow. */
     val GLASS_INK = Role.BODY.argb()
+    private val GLASS_INK_OFF = Role.MUTED.argb()
+    private const val GLASS_BUTTON = 0.16f
+    private const val GLASS_BUTTON_HOVER = 0.3f
 
     /** The game's hotbar: a 1px rim around 9 cells. */
     private val HOTBAR: Identifier = Identifier.withDefaultNamespace("hud/hotbar")
