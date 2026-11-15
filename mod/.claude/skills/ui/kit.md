@@ -47,7 +47,7 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `flash` | Any | A white wash over something the player just acted on, which fades out. The same in both themes, because it lies on the game and not on a panel |
 | `divider` | 2 tall | A shade line over a light line, cut into the panel |
 | `ring` | Any | A notched 1px line in `accent` or a role, around the selected thing |
-| `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, search, arrow |
+| `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, search, arrow, back |
 | `label` | One line | A string in ink |
 | `slotFill`, `slotBorder`, `slotDim` | 16x16 inside, 18x18 border | The marks `Slots` puts on a container's slots, colored by role |
 

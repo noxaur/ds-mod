@@ -107,11 +107,11 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
 
         caption(g, "Icons: ink, muted, roles on a well", x, oy + 121)
         val icons = Icon.entries
-        Kit.well(g, x + 140, oy + 132, 112, 14)
+        Kit.well(g, x + 134, oy + 132, 118, 14)
         for (i in icons.indices) {
-            Kit.icon(g, icons[i], x + i * 10, oy + 136, t.ink, t.inkShadow)
-            Kit.icon(g, icons[i], x + 70 + i * 10, oy + 136, t.inkMuted, t.inkShadow)
-            Kit.icon(g, icons[i], x + 144 + i * 15, oy + 136, ROLES[i].argb())
+            Kit.icon(g, icons[i], x + i * 8, oy + 136, t.ink, t.inkShadow)
+            Kit.icon(g, icons[i], x + 66 + i * 8, oy + 136, t.inkMuted, t.inkShadow)
+            Kit.icon(g, icons[i], x + 138 + i * 14, oy + 136, ROLES[i].argb())
         }
 
         caption(g, "Divider and rings", x, oy + 150)
@@ -189,7 +189,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
     private fun caption(g: GuiGraphicsExtractor, text: String, x: Int, y: Int) = Kit.label(g, text, x, y, Kit.Ink.MUTED)
 
     private companion object {
-        val ROLES = listOf(Role.GOOD, Role.BAD, Role.WARNING, Role.VALUE, Role.ACTION, Role.MUTED, Role.LEGENDARY)
+        val ROLES = listOf(Role.GOOD, Role.BAD, Role.WARNING, Role.VALUE, Role.ACTION, Role.MUTED, Role.LEGENDARY, Role.BODY)
         val RESULT = ItemStack(Items.CRAFTING_TABLE)
         val SEARCH = text { muted("Search...") }.toComponent()
 

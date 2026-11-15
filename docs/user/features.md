@@ -149,6 +149,12 @@ Hides the blank glass panes that pad out a menu, along with their tooltip and ho
 
 When one menu opens another, the cursor stays where it was instead of jumping to the middle.
 
+### Back Buttons
+
+A menu with no Go Back gets one in Go Back's usual place, if you reached it from a menu you opened with a command, such as `/storage`. Clicking it sends that command again. Hover it to see which command it sends.
+
+<sub>A menu you opened from an NPC or an item gets none, because no command reopens it.</sub>
+
 ## Chat
 
 ### Ability Spam

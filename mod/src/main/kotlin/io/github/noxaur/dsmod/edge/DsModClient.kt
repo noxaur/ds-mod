@@ -83,6 +83,7 @@ object DsModClient : ClientModInitializer {
         Kit.register()
         Hud.register()
         Slots.register(config.instance.inventory)
+        MenuBack.register()
         Tooltips.register()
         World.register()
         ArmorSwapGuards.register(config.instance.inventory)

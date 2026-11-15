@@ -251,6 +251,12 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var keepCursor = true
+
+        @Expose
+        @ConfigOption(name = "Back Buttons", desc = "Add Go Back to a menu that has none, which sends again the command that opened the menu you came from.")
+        @ConfigEditorBoolean
+        @JvmField
+        var backButtons = true
     }
 
     /** A drop's tier, lowest first. [word] is what the server writes before `DROP!`. */

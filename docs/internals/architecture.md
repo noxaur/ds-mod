@@ -110,6 +110,7 @@ Hide Filler only skips drawing. A click on a hidden pane still goes to the serve
 
 The server closes a menu and opens the next in the same tick. Between the two the game has no screen, so it takes the mouse and then lets it go at the middle of the window. Keep Cursor puts the cursor back when a screen opens within half a second of the last one closing. It cannot tell a server's close from the player's, and does not need to: a player who reopens a menu that fast wants the cursor where it was too.
 
+Back Buttons can only send a command. Reopening a menu by replaying the clicks that reached it would be a macro, and a menu from an NPC needs a click on the NPC, so a menu with no command earlier in its run gets no button. It resends the player's own command, unchanged, on the player's click. That makes it DragSim Utils' Menu Button with the command filled in, which is the exception it takes to `no-automation`. The button covers Go Back's slot only while that slot is empty or filler, so it never hides an item that does something. A command sent from inside a menu, as Menu Button sends one, starts the run again, so Back leads to the newest command's menu.
 
 ## The HUD's scale snaps to screen pixels
 
