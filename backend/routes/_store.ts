@@ -3,11 +3,11 @@ import { and, asc, db, eq, sql } from "void/db";
 import { storage } from "void/storage";
 
 import { requests, skips, submissions, unknowns } from "../db/schema.ts";
-import { Request, RequestSpec } from "../src/contrib/model.ts";
+import { RecordingRequest, RequestSpec } from "../src/contrib/model.ts";
 import type { Store } from "../src/contrib/store.ts";
 
 const decodeSpec = Schema.decodeUnknownSync(RequestSpec);
-const decodeStatus = Schema.decodeUnknownSync(Request.fields.status);
+const decodeStatus = Schema.decodeUnknownSync(RecordingRequest.fields.status);
 // A database or storage failure is a defect: no client can do anything about it. makeApp logs it and answers 500.
 const run = <A>(query: () => PromiseLike<A>) => Effect.orDie(Effect.tryPromise(query));
 

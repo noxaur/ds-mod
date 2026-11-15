@@ -10,7 +10,7 @@ import {
   OpenApi,
 } from "effect/http-api";
 
-import { Offer, Request, RequestReport, RequestSpec, Sighting, Unknown } from "./contrib/model.ts";
+import { Offer, RecordingRequest, RequestReport, RequestSpec, Sighting, Unknown } from "./contrib/model.ts";
 
 /**
  * Who a request is from, as the entry point that verified it says: the player whose session Void found, and the
@@ -24,9 +24,14 @@ export class Caller extends Context.Service<
 /** The signed-in player a contrib handler acts for. */
 export class Player extends Context.Service<Player, { readonly userId: string }>()("dsmod/Player") {}
 
-/** Lets a request through only when Void's session names a player, and gives the handler that player. */
+/**
+ * Lets a request through only when Void's session names a player, and gives the handler that player. The mod sends
+ * the session token sign-in gave it as a bearer token. Void checks it before the API runs, so the scheme is here for
+ * the contract and the middleware reads the player Void found.
+ */
 export class SignedIn extends HttpApiMiddleware.Service<SignedIn, { provides: Player }>()("dsmod/SignedIn", {
   error: HttpApiError.Unauthorized,
+  security: { session: HttpApiSecurity.bearer },
 }) {}
 
 /** Lets a request through only when it carries the admin token, which only an agent's `dsctl` has. */
@@ -70,7 +75,7 @@ export const Api = HttpApi.make("dsmod")
           error: [HttpApiError.NotFound, HttpApiError.Conflict, HttpApiError.BadRequest],
         }).annotate(
           OpenApi.Description,
-          "Keeps the player's run of a request: the capture file, gzipped, at most 10 MB (413 above it, as for any body). A player has one run per request, and a closed or full request takes none (409).",
+          "Keeps the player's run of a request: the capture file, gzipped, at most 10 MB (413 above it, as for any body). A player has one run per request. A filled request still takes a run from a player who was recording when it filled, and a closed one, or one with twice the wanted number of runs, takes none (409).",
         ),
       )
       .add(
@@ -79,6 +84,7 @@ export const Api = HttpApi.make("dsmod")
             modVersion: ModVersion,
             sightings: Schema.Array(Sighting).check(Schema.isMaxLength(100)),
           }),
+          error: HttpApiError.BadRequest,
         }).annotate(OpenApi.Summary, "Counts what the mod saw and had no handling for."),
       )
       .middleware(SignedIn)
@@ -87,10 +93,11 @@ export const Api = HttpApi.make("dsmod")
   .add(
     HttpApiGroup.make("admin")
       .add(
-        HttpApiEndpoint.post("create", "/v1/admin/requests", { payload: RequestSpec, success: Request }).annotate(
-          OpenApi.Summary,
-          "Publishes a recording request.",
-        ),
+        HttpApiEndpoint.post("create", "/v1/admin/requests", {
+          payload: RequestSpec,
+          success: RecordingRequest,
+          error: HttpApiError.BadRequest,
+        }).annotate(OpenApi.Summary, "Publishes a recording request."),
       )
       .add(
         HttpApiEndpoint.get("requests", "/v1/admin/requests", { success: Schema.Array(RequestReport) }).annotate(
@@ -120,7 +127,8 @@ export const Api = HttpApi.make("dsmod")
       .middleware(Agent)
       .annotate(OpenApi.Description, "What an agent calls through dsctl, with the admin token."),
   )
-  // The mod parses a brief strictly, so a key it does not know, such as `secs` for `seconds`, is refused here
-  // instead of being dropped and costing a step its timer.
+  // A body that does not decode is a 400, so each endpoint with a body lists HttpApiError.BadRequest. The mod parses
+  // a brief strictly, so a key it does not know, such as `secs` for `seconds`, is refused here instead of being
+  // dropped and costing a step its timer.
   .annotate(HttpApi.PayloadParseOptions, { onExcessProperty: "error" })
   .annotateMerge(OpenApi.annotations({ title: "ds-mod backend", version: "0.1.0" }));

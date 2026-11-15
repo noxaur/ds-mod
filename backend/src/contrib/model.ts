@@ -1,16 +1,20 @@
-import { Schema } from "effect";
+import { Schema, Struct } from "effect";
 
-/** The mod refuses a blank line, so the backend must too, or it stores a request no player is offered. */
-const Shown = Schema.String.check(Schema.isPattern(/\S/));
+/**
+ * The mod refuses a blank line, so the backend must too, or it stores a request no player is offered. The `u` flag is
+ * what lets the pattern into the contract.
+ */
+const Shown = Schema.String.check(Schema.isPattern(/\S/u));
 
 /** One thing to play. With `seconds` the step is timed and moves on by itself. The mod reads the same shape from `-Pbrief`. */
 export const Step = Schema.Struct({
   do: Shown,
-  note: Schema.optional(Schema.String),
-  seconds: Schema.optional(Schema.Int.check(Schema.isGreaterThan(0))),
+  note: Schema.optionalKey(Schema.String),
+  seconds: Schema.optionalKey(Schema.Int.check(Schema.isGreaterThan(0))),
 });
 
-export const Brief = Schema.Struct({ name: Shown, steps: Schema.NonEmptyArray(Step) });
+// A plain list with a minimum, which a generated client reads as a list and not as a tuple.
+export const Brief = Schema.Struct({ name: Shown, steps: Schema.Array(Step).check(Schema.isMinLength(1)) });
 
 /**
  * What a player must have before the mod offers them a request. The mod checks it, because only the mod sees the
@@ -28,21 +32,16 @@ export const RequestSpec = Schema.Struct({
 });
 export type RequestSpec = typeof RequestSpec.Type;
 
-export const Request = Schema.Struct({
+export const RecordingRequest = Schema.Struct({
   ...RequestSpec.fields,
   id: Schema.String,
   status: Schema.Literals(["open", "filled", "closed"]),
   createdAt: Schema.String,
 });
-export type Request = typeof Request.Type;
+export type RecordingRequest = typeof RecordingRequest.Type;
 
 /** What the mod is offered: enough to check the requirements, show the brief and time the run. */
-export const Offer = Schema.Struct({
-  id: Schema.String,
-  brief: Brief,
-  requirements: Schema.Array(Requirement),
-  timeoutSeconds: Schema.Int,
-});
+export const Offer = RecordingRequest.mapFields(Struct.pick(["id", "brief", "requirements", "timeoutSeconds"]));
 
 export const Submission = Schema.Struct({
   id: Schema.String,
@@ -55,7 +54,7 @@ export const Submission = Schema.Struct({
 });
 
 export const RequestReport = Schema.Struct({
-  ...Request.fields,
+  ...RecordingRequest.fields,
   skips: Schema.Int,
   submissions: Schema.Array(Submission),
 });
@@ -70,6 +69,7 @@ export const Sighting = Schema.Struct({
 export const Unknown = Schema.Struct({
   ...Sighting.fields,
   count: Schema.Int,
+  /** The version of the mod that reported it first. */
   modVersion: Schema.String,
   firstSeen: Schema.String,
 });

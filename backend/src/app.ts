@@ -22,15 +22,16 @@ const caller = Effect.map(
   Option.getOrElse(() => ({ userId: null, adminToken: undefined })),
 );
 
-const SignedInLive = Layer.succeed(SignedIn)((handler) =>
-  Effect.gen(function* () {
-    const { userId } = yield* caller;
-    if (userId === null || userId === "") {
-      return yield* new HttpApiError.Unauthorized();
-    }
-    return yield* Effect.provideService(handler, Player, { userId });
-  }),
-);
+const SignedInLive = Layer.succeed(SignedIn)({
+  session: (handler) =>
+    Effect.gen(function* () {
+      const { userId } = yield* caller;
+      if (userId === null || userId === "") {
+        return yield* new HttpApiError.Unauthorized();
+      }
+      return yield* Effect.provideService(handler, Player, { userId });
+    }),
+});
 
 // With no admin token configured, nobody is an agent.
 const AgentLive = Layer.succeed(Agent)({
