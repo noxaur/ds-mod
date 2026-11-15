@@ -8,12 +8,48 @@ import io.github.noxaur.dsmod.core.text.text
 
 /**
  * A place on the HUD, in GUI pixels. Blocks shown in the same group stack under each other in the
- * order they were first shown, and share the group's background and [scale].
+ * order they were first shown, and share the group's background and [scale]. A group with a [dock] other than
+ * [HudDock.FREE] ignores [x] and [y] and sits beside the hotbar.
  */
-class HudGroup(val id: String, val x: Int, val y: Int, val background: Boolean = false, val scale: Float = 1f)
+class HudGroup(
+    val id: String,
+    val x: Int,
+    val y: Int,
+    val background: Boolean = false,
+    val scale: Float = 1f,
+    val dock: HudDock = HudDock.FREE,
+)
 
-/** One block on the HUD: a header and the rows under it. A block whose header is empty shows only its rows. */
-data class HudBlock(val header: Text, val rows: List<HudRow>)
+/**
+ * One block on the HUD: a header and the rows under it. A block whose header is empty shows only its rows. [look]
+ * and [dock] are the player's, for a feature that lets them choose.
+ */
+data class HudBlock(val header: Text, val rows: List<HudRow>, val look: HudLook = HudLook.PLATE, val dock: HudDock = HudDock.FREE)
+
+/** What a block sits on. */
+enum class HudLook(private val label: String) {
+    /** The HUD's plate, when the player has the HUD Background on. */
+    PLATE("Plate"),
+
+    /** Nothing, so the block floats over the world. */
+    CLEAR("Clear"),
+
+    /** No plate, and its icons in slots drawn from the hotbar's own texture, so a resource pack restyles both. */
+    HOTBAR("Hotbar"),
+    ;
+
+    override fun toString() = label
+}
+
+/** Where a block sits: where the player put it, or flush beside the hotbar, past the offhand slot and the attack indicator. */
+enum class HudDock(private val label: String) {
+    FREE("Free"),
+    LEFT_OF_HOTBAR("Left of Hotbar"),
+    RIGHT_OF_HOTBAR("Right of Hotbar"),
+    ;
+
+    override fun toString() = label
+}
 
 sealed interface HudRow {
     val text: Text

@@ -11,6 +11,8 @@ import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SlotChanged
+import io.github.noxaur.dsmod.core.hud.HudDock
+import io.github.noxaur.dsmod.core.hud.HudLook
 import io.github.noxaur.dsmod.core.hud.ItemsRow
 import io.github.noxaur.dsmod.core.text.Role
 import kotlinx.serialization.json.JsonObject
@@ -105,6 +107,31 @@ class EquipmentDisplayTest {
 
         post(pet(name = "Tiger"))
         assertEquals(listOf("[Lvl 100] Tiger"), rows(), "The held item was another pet's")
+    }
+
+    @Test
+    fun `the pet can sit on a row of its own above or below the armor`() {
+        config.general.petPosition = PetPosition.ABOVE
+        post(*inventory(helmet, boots), pet(), near("[Lvl 100] Ender Dragon"))
+        assertEquals(listOf(listOf(head), listOf(helmet, null, null, boots)), rows())
+
+        config.general.petPosition = PetPosition.BELOW
+        post()
+        assertEquals(listOf(listOf(helmet, null, null, boots), listOf(head)), rows())
+
+        config.general.petLook = PetLook.NAME
+        config.general.petPosition = PetPosition.ABOVE
+        post()
+        assertEquals(listOf("[Lvl 100] Ender Dragon", listOf(helmet, null, null, boots)), rows(), "The name goes above too")
+    }
+
+    @Test
+    fun `the block carries the look and the place the player picked`() {
+        config.general.equipmentLook = HudLook.HOTBAR
+        config.general.equipmentPlacement = HudDock.RIGHT_OF_HOTBAR
+        post(*inventory(helmet, boots))
+        assertEquals(HudLook.HOTBAR, hud()?.look)
+        assertEquals(HudDock.RIGHT_OF_HOTBAR, hud()?.dock)
     }
 
     @Test

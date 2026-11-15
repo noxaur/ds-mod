@@ -20,6 +20,9 @@ import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
 import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
 import io.github.noxaur.dsmod.core.feature.general.PetLook
+import io.github.noxaur.dsmod.core.feature.general.PetPosition
+import io.github.noxaur.dsmod.core.hud.HudDock
+import io.github.noxaur.dsmod.core.hud.HudLook
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.Section
@@ -191,6 +194,30 @@ class DsModConfig : Config() {
         @ConfigEditorDropdown
         @JvmField
         var petLook = PetLook.ICON
+
+        @Expose
+        @ConfigOption(name = "Pet Position", desc = "Put your pet among the armor, in the order of Equipment Pieces, or on a row of its own above or below it.")
+        @ConfigEditorDropdown
+        @JvmField
+        var petPosition = PetPosition.WITH_ARMOR
+
+        @Expose
+        @ConfigOption(
+            name = "Equipment Look",
+            desc = "Show the pieces on the HUD's plate, on nothing, or in slots like your hotbar's. The hotbar look follows your resource pack.",
+        )
+        @ConfigEditorDropdown
+        @JvmField
+        var equipmentLook = HudLook.PLATE
+
+        @Expose
+        @ConfigOption(
+            name = "Equipment Placement",
+            desc = "Keep the pieces where you put them in the HUD editor, or beside your hotbar. Beside the hotbar they are the hotbar's size and leave room for the offhand slot.",
+        )
+        @ConfigEditorDropdown
+        @JvmField
+        var equipmentPlacement = HudDock.FREE
 
         @Expose
         @ConfigOption(name = "Camera", desc = "Shape the third-person view with the settings below. At their defaults it is the game's own.")

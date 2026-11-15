@@ -1,6 +1,9 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
+import io.github.noxaur.dsmod.core.feature.general.PetPosition
+import io.github.noxaur.dsmod.core.hud.HudDock
+import io.github.noxaur.dsmod.core.hud.HudLook
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
@@ -25,11 +28,12 @@ class EquipmentDisplayTest : FabricClientGameTest {
             world.server.runCommand("item replace entity @a armor.feet with minecraft:leather_boots[dyed_color=$DYE]")
             context.waitTicks(20)
 
-            /** The middle of piece [index] in GUI pixels, counted along the row or down the column. */
-            fun piece(index: Int, column: Boolean = false): Pair<Double, Double> = context.computeOnClient<Pair<Double, Double>, Nothing> {
+            /** The middle of piece [index] in GUI pixels, counted along the row or down the column, in plate or hotbar slots. */
+            fun piece(index: Int, column: Boolean = false, hotbar: Boolean = false): Pair<Double, Double> = context.computeOnClient<Pair<Double, Double>, Nothing> {
                 val block = checkNotNull(Hud.find(ID)) { "The equipment is not on the HUD" }
-                val along = (4 + index * 17 + 8) * block.scale
-                val across = (4 + 8) * block.scale
+                val inset = if (hotbar) 3 else 0
+                val along = (4 + inset + index * (if (hotbar) 20 else 17) + 8) * block.scale
+                val across = (4 + inset + 8) * block.scale
                 if (column) block.x + across.toDouble() to block.y + along.toDouble() else block.x + along.toDouble() to block.y + across.toDouble()
             }
             fun stackAt(point: Pair<Double, Double>) = context.computeOnClient<ItemStack?, Nothing> { Hud.itemAt(point.first, point.second) }
@@ -81,6 +85,41 @@ class EquipmentDisplayTest : FabricClientGameTest {
             val icon = stackAt(piece(4))
             check(skin(icon)) { "The pet's icon lost the skin of the head it wears: $icon" }
             context.takeScreenshot("equipment-display-pet")
+
+            val general = DsModClient.settings.general
+            try {
+                general.equipmentLook = HudLook.CLEAR
+                context.waitTicks(10)
+                context.takeScreenshot("equipment-display-clear")
+
+                general.equipmentLook = HudLook.HOTBAR
+                context.waitTicks(10)
+                check(skin(stackAt(piece(0, hotbar = true)))) { "The hotbar look moved the helmet off its slot" }
+                context.takeScreenshot("equipment-display-hotbar")
+
+                // Docked, a slot lines up with the hotbar's: its item 3px into a strip 7px past the hotbar's right end.
+                general.equipmentPlacement = HudDock.RIGHT_OF_HOTBAR
+                context.waitTicks(10)
+                val (width, height) = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.guiScaledWidth to it.window.guiScaledHeight }
+                val first = width / 2 + 91 + 7 + 3 + 8.0 to height - 22 + 3 + 8.0
+                check(skin(stackAt(first))) { "The helmet is not in the first slot right of the hotbar" }
+                check(skin(stackAt(first.first + 4 * 20 to first.second))) { "The pet is not in the fifth slot right of the hotbar" }
+                context.takeScreenshot("equipment-display-docked-right")
+
+                // Left of the hotbar it leaves the offhand slot's 29px, and the pet sits on a row of its own above the armor.
+                general.equipmentPlacement = HudDock.LEFT_OF_HOTBAR
+                general.petPosition = PetPosition.ABOVE
+                context.waitTicks(10)
+                val boots = width / 2 - 91 - 29 - 7 - 1 - 20 + 3 + 8.0 to height - 22 + 3 + 8.0
+                check(stackAt(boots)?.item == Items.LEATHER_BOOTS) { "The boots are not in the last slot left of the offhand slot" }
+                check(skin(stackAt(boots.first - 3 * 20 to boots.second - 22))) { "The pet is not above the helmet" }
+                context.takeScreenshot("equipment-display-docked-left")
+            } finally {
+                general.equipmentLook = HudLook.PLATE
+                general.equipmentPlacement = HudDock.FREE
+                general.petPosition = PetPosition.WITH_ARMOR
+            }
+            context.waitTicks(10)
 
             for (slot in listOf("head", "chest", "feet")) world.server.runCommand("item replace entity @a armor.$slot with minecraft:air")
             context.waitTicks(20)

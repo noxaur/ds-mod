@@ -140,6 +140,18 @@ object Kit {
         ring(g, x - 4, y - 4, width + 8, height + 8, t.plateEdge)
     }
 
+    /**
+     * A strip of [cells] slots cut from the game's own hotbar sprite, so it looks as the player's hotbar does under any
+     * resource pack. A cell is [HOTBAR_CELL] wide, and the strip [hotbarWidth] by [HOTBAR_HEIGHT]. Its item goes 3px in.
+     */
+    fun hotbar(g: GuiGraphicsExtractor, x: Int, y: Int, cells: Int) {
+        val body = 1 + cells * HOTBAR_CELL
+        g.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR, HOTBAR_WIDTH, HOTBAR_HEIGHT, 0, 0, x, y, body, HOTBAR_HEIGHT)
+        g.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR, HOTBAR_WIDTH, HOTBAR_HEIGHT, HOTBAR_WIDTH - 1, 0, x + body, y, 1, HOTBAR_HEIGHT)
+    }
+
+    fun hotbarWidth(cells: Int) = cells * HOTBAR_CELL + 2
+
     fun plate(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
         val t = theme
         rect(g, x + 1, y + 1, width - 2, height - 2, t.plate)
@@ -371,6 +383,12 @@ object Kit {
 
     private const val DIM_ALPHA = 184
     private val SLOT_TEXTURE: Identifier = Identifier.fromNamespaceAndPath("dsmod", "kit/slot")
+
+    /** The game's hotbar: a 1px rim around 9 cells. */
+    private val HOTBAR: Identifier = Identifier.withDefaultNamespace("hud/hotbar")
+    private const val HOTBAR_WIDTH = 182
+    const val HOTBAR_HEIGHT = 22
+    const val HOTBAR_CELL = 20
     private var slotTexture: DynamicTexture? = null
     private var slotTheme: Theme? = null
     private const val TOOLTIP_ALPHA = 240

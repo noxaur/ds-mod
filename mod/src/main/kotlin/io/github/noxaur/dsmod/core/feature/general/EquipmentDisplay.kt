@@ -9,6 +9,8 @@ import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
+import io.github.noxaur.dsmod.core.hud.HudDock
+import io.github.noxaur.dsmod.core.hud.HudLook
 import io.github.noxaur.dsmod.core.text.Role
 import kotlin.reflect.KMutableProperty0
 
@@ -28,6 +30,16 @@ enum class EquipmentPiece(private val label: String, val slot: Int) {
 enum class EquipmentLayout(private val label: String) {
     ROW("Row"),
     COLUMN("Column"),
+    ;
+
+    override fun toString() = label
+}
+
+/** Where the pet sits: among the armor in the order of the pieces, or on a row of its own above or below them. */
+enum class PetPosition(private val label: String) {
+    WITH_ARMOR("With Armor"),
+    ABOVE("Above"),
+    BELOW("Below"),
     ;
 
     override fun toString() = label
@@ -57,8 +69,21 @@ class EquipmentDisplay(
     private val layout: KMutableProperty0<EquipmentLayout>,
     private val pieces: KMutableProperty0<MutableList<EquipmentPiece>>,
     private val petLook: KMutableProperty0<PetLook>,
+    private val petPosition: KMutableProperty0<PetPosition>,
+    private val look: KMutableProperty0<HudLook>,
+    private val placement: KMutableProperty0<HudDock>,
 ) : Feature("equipment-display", toggle, Area.ANYWHERE) {
     private class Pet(val name: String, val level: Long, val rarity: Role)
+
+    /** The settings the block was built with, so a refresh rebuilds it only when one changed. */
+    private data class Shown(
+        val layout: EquipmentLayout,
+        val pieces: List<EquipmentPiece>,
+        val petLook: PetLook,
+        val petPosition: PetPosition,
+        val look: HudLook,
+        val placement: HudDock,
+    )
 
     private var worn = emptyMap<EquipmentPiece, Item>()
     private var pet: Pet? = null
@@ -69,9 +94,7 @@ class EquipmentDisplay(
     private var held: String? = null
     private var head: Pair<String, Item>? = null
 
-    private var shownLayout = layout.get()
-    private var shownPieces = pieces.get().toList()
-    private var shownLook = petLook.get()
+    private var shown = settings()
     private var block: HudBlock? = null
 
     // Whether the armor may have changed since it was last read. A refresh with nothing new then costs a few compares.
@@ -121,32 +144,50 @@ class EquipmentDisplay(
                 block = build()
             }
         }
-        if (shownLayout != layout.get() || shownPieces != pieces.get() || shownLook != petLook.get()) {
-            shownLayout = layout.get()
-            shownPieces = pieces.get().toList()
-            shownLook = petLook.get()
+        if (shown.layout != layout.get() || shown.pieces != pieces.get() || shown.petLook != petLook.get() ||
+            shown.petPosition != petPosition.get() || shown.look != look.get() || shown.placement != placement.get()
+        ) {
+            shown = settings()
             block = build()
         }
         return block
     }
 
+    private fun settings() = Shown(layout.get(), pieces.get().toList(), petLook.get(), petPosition.get(), look.get(), placement.get())
+
     private fun build(): HudBlock? {
-        val pet = pet.takeIf { EquipmentPiece.PET in shownPieces }
-        val icon = listOfNotNull(menuPet, head).firstOrNull { pet != null && shownLook == PetLook.ICON && it.first == pet.name }?.second
-        val shown = shownPieces.distinct().filter { it != EquipmentPiece.PET || icon != null }.map { if (it == EquipmentPiece.PET) icon else worn[it] }
+        val pet = pet.takeIf { EquipmentPiece.PET in shown.pieces }
+        val icon = listOfNotNull(menuPet, head).firstOrNull { pet != null && shown.petLook == PetLook.ICON && it.first == pet.name }?.second
+        val inline = shown.petPosition == PetPosition.WITH_ARMOR
+        val armor = shown.pieces.distinct()
+            .filter { if (it == EquipmentPiece.PET) inline && icon != null else true }
+            .map { if (it == EquipmentPiece.PET) icon else worn[it] }
+        val apart = icon.takeIf { !inline }
         val named = pet.takeIf { icon == null }
-        if (shown.all { it == null } && named == null) return null
-        return block(headed = false) {
-            if (shown.any { it != null }) {
-                if (shownLayout == EquipmentLayout.ROW) items(shown) else shown.forEach { items(listOf(it)) }
-            }
-            if (named != null) {
-                val holds = held?.takeIf { menuPet?.first == named.name }
-                line {
-                    muted("[Lvl ${named.level}] ")
-                    rarity(named.name, named.rarity)
-                    if (holds != null) muted(" · $holds")
+        if (armor.all { it == null } && apart == null && named == null) return null
+        return block(headed = false, look = shown.look, dock = shown.placement) {
+            val armorRows = {
+                if (armor.any { it != null }) {
+                    if (shown.layout == EquipmentLayout.ROW) items(armor) else armor.forEach { items(listOf(it)) }
                 }
+            }
+            val petRows = {
+                if (apart != null) items(listOf(apart))
+                if (named != null) {
+                    val holds = held?.takeIf { menuPet?.first == named.name }
+                    line {
+                        muted("[Lvl ${named.level}] ")
+                        rarity(named.name, named.rarity)
+                        if (holds != null) muted(" · $holds")
+                    }
+                }
+            }
+            if (shown.petPosition == PetPosition.ABOVE) {
+                petRows()
+                armorRows()
+            } else {
+                armorRows()
+                petRows()
             }
         }
     }
