@@ -14,6 +14,7 @@ class ChangeLog(private val record: (type: String, data: JsonObject) -> Unit) {
     private val values = HashMap<String, JsonObject>()
     private val headers = HashMap<String, JsonObject>()
     private val entries = HashMap<String, Map<String, JsonElement>>()
+    private val offered = HashSet<String>()
 
     fun offer(type: String, value: JsonObject, force: Boolean = false) {
         if (values.put(type, value) != value || force) record(type, value)
@@ -35,13 +36,26 @@ class ChangeLog(private val record: (type: String, data: JsonObject) -> Unit) {
                 (previous.keys - current.keys).associateWith { JsonNull }
         }
         if (!full && changed.isEmpty()) return
-        record(
-            type,
-            buildJsonObject {
-                header.forEach { (key, value) -> put(key, value) }
-                put("full", full)
-                put("entries", JsonObject(changed))
-            },
-        )
+        recordEntries(type, header, full, changed)
     }
+
+    /**
+     * Like [offerEntries] with no header, for a caller that keeps its own entries and knows which changed, so the
+     * log neither copies nor compares them. [changed] holds each entry that is new or changed since the last offer,
+     * and [JsonNull] for a removed one. The first offer of a type is every entry, and records `"full": true`.
+     */
+    fun offerChanges(type: String, changed: Map<String, JsonElement>) {
+        val full = offered.add(type)
+        if (!full && changed.isEmpty()) return
+        recordEntries(type, JsonObject(emptyMap()), full, changed)
+    }
+
+    private fun recordEntries(type: String, header: JsonObject, full: Boolean, entries: Map<String, JsonElement>) = record(
+        type,
+        buildJsonObject {
+            header.forEach { (key, value) -> put(key, value) }
+            put("full", full)
+            put("entries", JsonObject(entries))
+        },
+    )
 }
