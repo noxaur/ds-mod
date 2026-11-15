@@ -66,7 +66,7 @@ MoulConfig has a data file class, and ds-mod does not use it: it writes on the c
 
 ## Metrics are pulled
 
-`Metrics` adds up timings, counts and failures in memory, and a flush hands one snapshot to each sink. Recording costs the client thread no I/O, and a new receiver, such as the backend, is one more sink. Today the release build logs failures, and a running capture writes each snapshot into the file.
+`Metrics` adds up timings, counts and failures in memory, and a flush hands one snapshot to each sink. Recording costs the client thread no I/O, and a new receiver is one more sink. Today the release build logs failures, and a running capture writes each snapshot into the file.
 
 The `unparsed` counter matters most. The server is closed and changes without notice, so a feature that stops matching looks the same as a quiet game. A line that reached a feature and failed to parse is the only signal.
 
@@ -85,6 +85,8 @@ Recording is client-thread work that no thread can do for it, because it reads g
 A capture holds player names and private chat, and `PlayerNames` finds them by rules that a line nobody has seen can slip past. The mod redacts before it uploads, so a name never leaves the machine, using the same `PlayerNames` and the same redactor that cuts fixtures. The backend still treats every upload as sensitive, because the mod is open source and a modified one skips the redaction. The raw `chat` records are dropped instead of redacted, since `system` carries the same lines as events and a typed message sits in nested components there.
 
 What a player typed is found by shape, not by a list of formats. The server's whisper, party and message lines are in no capture, so a list would be a guess that passes its own tests. In a `system` line, whatever follows a known name and a `: ` is replaced. That costs the text of a server line that happens to have the same shape, and a line from a player the capture never names elsewhere still gets through. A component that spells a name across several pieces, one per color, is replaced by its redacted plain text, because no single string holds the name to replace.
+
+A recording reads every item and name in view four times a second, and Minecraft's codec was most of what that cost: over a millisecond a pass with a full inventory and a crowd of armored mobs. Almost none of them change between passes, so the session encodes a value only when it differs from the copy it kept, and `PerfTest` caps both passes.
 
 ## The release jar carries its own MoulConfig
 
