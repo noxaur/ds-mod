@@ -8,7 +8,7 @@ import { makeApp } from "../app.ts";
 import { memoryServices } from "../memory.ts";
 import { CATALOG_FRESH_MS, CATALOG_RETRY_MS, FRESH_MS } from "./cache.ts";
 import { Container, Profile } from "./model.ts";
-import { MAPPED_KEYS } from "./wire.ts";
+import { unmappedPaths } from "./wire.ts";
 import { memoryProfileStore, WriteRefused } from "./store.ts";
 import { UpstreamDown } from "./upstream.ts";
 
@@ -449,40 +449,57 @@ test("a profile answer is quick once cached", async () => {
 });
 
 /** The keys of the real player the first agent sampled, with no values. A key added upstream must be mapped. */
-const REAL_TOP_KEYS = ["mode", "fetched_at", "player", "profiles", "profile"];
-const REAL_PROFILE_KEYS = [
-  "id",
-  "profile_name",
-  "profile_mode",
-  "coins",
-  "motes",
-  "bits",
-  "haunted_candy_earned",
-  "dragon_essence",
-  "draconic_experience",
-  "accessory_power",
-  "updated_at",
-  "inventory_hidden",
-  "stats",
-  "skills",
-  "bestiary",
-  "collections",
-  "rng_meters",
-  "slayer",
-  "dungeons",
-  "hotd",
-  "inventory",
-  "storage",
-  "ender_chest",
-  "wardrobe",
-  "accessory_bag",
-  "pets",
-  "forge",
-];
+/**
+ * Every field path of a real player's answer, with no values: `*` stands for any key of an open map, and `[]` for a
+ * list's element. A skeleton is built from them, so a field the real data has and the shape misses fails here.
+ */
+const REAL_PATHS: readonly string[] = fixture("real-paths.json");
 
-test("every key of a real player's answer is mapped", () => {
-  expect(REAL_TOP_KEYS.filter((key) => !MAPPED_KEYS.answer.includes(key))).toEqual([]);
-  expect(REAL_PROFILE_KEYS.filter((key) => !MAPPED_KEYS.profile.includes(key))).toEqual([]);
+const skeleton = (paths: readonly string[]): unknown => {
+  const root: Record<string, unknown> = {};
+  for (const path of paths) {
+    let at: Record<string, unknown> | unknown[] = root;
+    const parts = path.split(".");
+    parts.forEach((part, index) => {
+      const last = index === parts.length - 1;
+      const key = part === "*" ? "0" : part === "[]" ? 0 : part;
+      const next = parts[index + 1];
+      const holder = at as Record<string | number, unknown>;
+      // An empty map or list in one item is a leaf here, and a fuller one elsewhere has children, which win.
+      if (!last && (holder[key] === undefined || typeof holder[key] !== "object")) {
+        holder[key] = next === "[]" ? [] : {};
+      }
+      holder[key] ??= 1;
+      at = holder[key] as Record<string, unknown> | unknown[];
+    });
+  }
+  return root;
+};
+
+test("every field of a real player's answer is mapped, at every depth", () => {
+  expect(REAL_PATHS.length).toBeGreaterThan(300);
+  expect(unmappedPaths(skeleton(REAL_PATHS))).toEqual([]);
+});
+
+test("a field added deep inside a section or an item is named by its path", () => {
+  const added = {
+    ...player,
+    brand_new: 1,
+    profile: {
+      ...player.profile,
+      dungeons: { ...player.profile.dungeons, new_section: 42 },
+      pets: [{ ...player.profile.pets[0], new_field: 42 }],
+      inventory: { 0: { ...player.profile.inventory["0"], extra: { new_upgrade: {} } } },
+      storage: { 0: { 3: { entry: "x", item_modifiers: { new_book: 1 } } } },
+    },
+  };
+  expect(unmappedPaths(added).toSorted()).toEqual([
+    "brand_new",
+    "profile.dungeons.new_section",
+    "profile.inventory.*.extra.new_upgrade",
+    "profile.pets[].new_field",
+    "profile.storage.*.*.item_modifiers.new_book",
+  ]);
 });
 
 test("a key the backend does not map is logged once per lookup, naming it", async () => {

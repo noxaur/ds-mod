@@ -3,7 +3,7 @@ import { Clock, Effect, Option, Schema } from "effect";
 import { PlayerNotFound, ProfileNotFound, UpstreamUnavailable } from "./model.ts";
 import { ProfileStore, type WriteRefused } from "./store.ts";
 import { Upstream, UpstreamDown } from "./upstream.ts";
-import { decodeAnswer, decodeCatalog, decodeFound, NotFoundBody, unmappedKeys } from "./wire.ts";
+import { decodeAnswer, decodeCatalog, decodeFound, NotFoundBody, unmappedPaths } from "./wire.ts";
 import type { Found, Progression } from "./wire.ts";
 
 /** How long a copy of a player's answer is served without asking dragsim.co again. A player's profile changes slowly. */
@@ -104,9 +104,9 @@ const fetchPlayer = Effect.fn(function* (name: string, profileId: string | undef
     Effect.tapError((error) => Effect.logError(`dragsim.co's player answer did not decode: ${error.message}`)),
     Effect.mapError(() => new UpstreamDown()),
   );
-  const unmapped = unmappedKeys(body);
+  const unmapped = unmappedPaths(body);
   if (unmapped.length > 0) {
-    yield* Effect.logWarning(`dragsim.co's player answer has keys the backend does not map: ${unmapped.join(", ")}`);
+    yield* Effect.logWarning(`dragsim.co's player answer has fields the backend does not map: ${unmapped.join(", ")}`);
   }
   if (answer.profile === undefined || answer.profile === null) {
     return yield* new ProfileNotFound();
