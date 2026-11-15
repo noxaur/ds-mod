@@ -48,20 +48,15 @@ export const contribStore: Store["Service"] = {
     ]).pipe(Effect.map((rows) => rows.map((row) => row.id))),
   insertSubmission: (row, capture) =>
     run(async () => {
-      // The row first: its unique index is what stops one player's two requests from both being kept.
+      // The file first, so a row always has one: a run that counts towards filling a request is a run an agent can
+      // read. When the row is refused or never written, the file is left with no row, which nothing reads.
+      await storage.put(`captures/${row.id}`, capture);
+      // The row's unique index is what stops one player's two uploads at once from both being kept.
       const kept = await db.insert(submissions).values(row).onConflictDoNothing().returning({ id: submissions.id });
       if (kept.length === 0) {
-        return false;
+        await storage.delete(`captures/${row.id}`);
       }
-      // A row with no file would be a run an agent cannot read, so a failed upload takes its row back.
-      // Reaching a missing bucket throws before there is a promise, so the call starts inside one.
-      await Promise.resolve()
-        .then(() => storage.put(`captures/${row.id}`, capture))
-        .catch(async (cause: unknown) => {
-          await db.delete(submissions).where(eq(submissions.id, row.id));
-          throw cause;
-        });
-      return true;
+      return kept.length > 0;
     }),
   submissions: run(() => db.select().from(submissions).orderBy(asc(submissions.createdAt), asc(submissions.id))),
   submissionsOf: (requestId) =>

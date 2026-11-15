@@ -183,7 +183,7 @@ test("one player sending the same run twice at once still counts once", async ()
   expect((await call("bob", "GET", "/v1/contrib/requests")).value, "one player cannot fill it alone").toHaveLength(1);
 });
 
-test("a run that lands after the agent closed the request does not reopen it as filled", async () => {
+test("a closed request refuses a run and stays closed", async () => {
   const { call, create, submit } = backend();
   const id = await create();
   await submit("ann", id);

@@ -59,7 +59,10 @@ export const submit = Effect.fn(function* (requestId: string, userId: string, mo
   }
   const store = yield* Store;
   const request = yield* requestOf(requestId);
-  if (request.status === "closed" || (yield* store.submissionsOf(requestId)).length >= request.wanted * 2) {
+  const runs = yield* store.submissionsOf(requestId);
+  // A player who already has a run is refused before their file is stored. Two uploads at once both get past this,
+  // and the store keeps one.
+  if (request.status === "closed" || runs.length >= request.wanted * 2 || runs.some((run) => run.userId === userId)) {
     return yield* new HttpApiError.Conflict();
   }
   const id = yield* newId;
