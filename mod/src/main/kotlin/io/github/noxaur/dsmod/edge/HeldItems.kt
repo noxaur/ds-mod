@@ -94,8 +94,8 @@ object HeldItems {
             SwingStyle.STAB -> stab(pose, side, arm, attack, reach)
             SwingStyle.BLOCK_HIT, SwingStyle.EXHIBITION -> {
                 val player = Minecraft.getInstance().player ?: return false
-                if (arm != player.mainArm) return false
-                val k = block.at(if (player.swinging) 1f else 0f, System.nanoTime())
+                // Only the main hand blocks. The off hand swings the game's way, scaled like any other swing.
+                val k = if (arm == player.mainArm) block.at(if (player.swinging) 1f else 0f, System.nanoTime()) else 0f
                 if (k == 0f && reach == 1f) return false
                 // The game's swing fades out as the pose comes in.
                 push(pose, side, attack, reach * (1 - k))

@@ -6,7 +6,6 @@ import io.github.noxaur.dsmod.gametest.HeldItemScene.Companion.changed
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.world.effect.MobEffects
-import net.minecraft.world.item.Items
 
 /**
  * With every setting at its default, the held sword is the game's own to the pixel, at rest, mid-swing and in the dip
@@ -34,12 +33,12 @@ class AnimationsTest : FabricClientGameTest {
         }
         settings.noEquipReset = false
 
-        // Slowed to a fifth, so the swing lasts 30 ticks and the frame 10 ticks in is a third of the way.
-        settings.swingSpeed = 0.2f
+        // Slowed to half, so the swing lasts 12 ticks and the frame 4 ticks in is a third of the way.
+        settings.swingSpeed = 0.5f
         val poses = SwingStyle.entries.map { style ->
             settings.swingStyle = style
             swing()
-            context.waitTicks(10)
+            context.waitTicks(4)
             val pose = shot("animations-${style.name.lowercase()}")
             endSwing()
             check(changed(vanilla, pose) > 1000) { "$style did not move the sword" }
@@ -70,9 +69,5 @@ class AnimationsTest : FabricClientGameTest {
         check(!lasts(4)) { "Haste III did not shorten the swing" }
         settings.ignoreHaste = true
         check(lasts(4)) { "Ignore Haste still let Haste shorten the swing" }
-
-        // A spear swings by a stab of its own, which the game still draws under Vanilla.
-        hold(Items.DIAMOND_SPEAR)
-        check(changed(shot("animations-spear"), midSwing("animations-spear-vanilla")) > 1000) { "The spear did not stab" }
     }
 }

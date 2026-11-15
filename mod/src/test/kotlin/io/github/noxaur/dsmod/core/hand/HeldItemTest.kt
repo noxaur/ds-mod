@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.hand
 
+import com.google.gson.Gson
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -69,5 +70,11 @@ class HeldItemTest {
             listOf(settings.swingStyle, settings.swingSpeed, settings.itemSize, settings.itemX, settings.itemY, settings.itemZ, settings.itemYaw,
                 settings.itemPitch, settings.itemRoll, settings.scaleSwing, settings.noSwing, settings.noBowSwing, settings.ignoreHaste, settings.noEquipReset),
         )
+    }
+
+    @Test
+    fun `a saved Still style loads as Vanilla rather than nothing`() {
+        assertEquals(SwingStyle.VANILLA, Gson().fromJson("\"STILL\"", SwingStyle::class.java))
+        assertEquals("\"VANILLA\"", Gson().toJson(SwingStyle.VANILLA))
     }
 }

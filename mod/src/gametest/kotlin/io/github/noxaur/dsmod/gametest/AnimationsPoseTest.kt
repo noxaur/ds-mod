@@ -57,8 +57,10 @@ class AnimationsPoseTest : FabricClientGameTest {
 
         // A spear swings by a stab of its own, which the settings reach too.
         hold(Items.DIAMOND_SPEAR)
-        check(changed(shot("animations-spear"), midSwing("animations-spear-no-swing")) == 0) { "No Swing let the spear stab" }
+        val spear = shot("animations-spear")
+        check(changed(spear, midSwing("animations-spear-no-swing")) == 0) { "No Swing let the spear stab" }
         settings.noSwing = false
+        check(changed(spear, midSwing("animations-spear-vanilla")) > 1000) { "The spear did not stab" }
         settings.itemSize = 0.5f
         val smallSpear = shot("animations-spear-small")
         val scaledSpear = midSwing("animations-spear-stab")
