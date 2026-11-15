@@ -174,15 +174,27 @@ A wall behind you still pulls the camera in, as it does in the game.
 
 ### Command Binds
 
-Sends a command with one key, such as `/warp end` on F6. Open the list with **Edit** beside Edit Command Binds in the settings.
+Sends a command with a key, with keys held together such as Shift + F6, or with keys pressed in turn such as F7 then F8. Open the list with **Edit** beside Edit Command Binds in the settings.
 
 | Do this | To |
 | --- | --- |
-| Press **New Bind** and type the command | Add a row. Without a slash, the row says its text in chat |
-| Press the key button, then a key or mouse button | Give the row its key. Escape clears it, and a left click elsewhere keeps the key it had |
-| Press **x** | Remove the row |
+| Press **New Bind** | Name the bind, type its command and press **Keys**. Without a slash, the bind says its text in chat |
+| Press **Keys**, then hold the keys | Record them. Let go to finish, or press Escape when the keys go in order |
+| Press **Edit**, the copy button or the cross on a card | Change the bind, duplicate it, or delete it. The cross asks for a second press |
+| Press the arrows on a card | Move it up or down |
+| Tick **On** | Turn the bind on or off |
 
-The key works in the world, once per press, and not while chat or a menu is open. A key ringed red sends another row's command too, and one ringed yellow also does something in the game. The line under the list says which.
+In the edit window:
+
+- **Where:** in the world, in menus such as chests and your inventory, or in both. A bind never fires while you type in chat or a text field.
+- **Priority:** when two binds share keys, the higher one sends, and between equals the one listed first.
+- **Other Keys Held Too:** on by default, so a key you walk with does not stop the bind.
+- **Keys in Order:** the keys become a sequence. Key Sequence Gap in the settings sets how long it waits for the next key.
+- **Only In:** limit the bind to some areas. With none ticked it works anywhere.
+
+**Groups** sit down the left. **New Group** adds one, and you rename it in the field above its cards. **Export** copies a group to your clipboard to share, and **Import** adds a group someone shared. Imported binds start off, so read each command before you turn it on.
+
+Keys shown in red fire another bind too, and keys in yellow also do something in the game. The line at the bottom says which.
 
 ### Explosion Particle Hider
 

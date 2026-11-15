@@ -9,7 +9,8 @@ import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitButton
 import io.github.noxaur.dsmod.edge.ui.KitCheckbox
-import io.github.noxaur.dsmod.edge.ui.KitKeyButton
+import io.github.noxaur.dsmod.edge.ui.KitCycleButton
+import io.github.noxaur.dsmod.edge.ui.KitKeysButton
 import io.github.noxaur.dsmod.edge.ui.KitRangeSlider
 import io.github.noxaur.dsmod.edge.ui.KitStepper
 import io.github.noxaur.dsmod.edge.ui.KitTextField
@@ -74,15 +75,18 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         val rate = addRenderableWidget(KitCheckbox(icon.right + Kit.GAP, y + 3, "Rate", true) {})
         addRenderableWidget(KitCheckbox(rate.right + Kit.GAP * 2, y + 3, "Bar", false) {})
         addRenderableWidget(KitRangeSlider(ox + Kit.INSET, oy + 192, 252, "Range", 200, listOf(50, 100, 150), listOf(Section(20, 70), Section(175, 200))) {})
-        val field = addRenderableWidget(KitTextField(ox + Kit.INSET, oy + 226, 112, "Command", "/warp end", 256) {})
+        val field = addRenderableWidget(KitTextField(ox + Kit.INSET, oy + 226, 96, "Command", "/warp end", 256) {})
         var keyX = field.x + field.width + 4 + Kit.GAP
-        for (clash in listOf(null, Role.BAD, Role.WARNING, null)) {
-            val key = addRenderableWidget(KitKeyButton(keyX, oy + 226, 64, "Key", if (clash == null) GLFW.GLFW_KEY_F6 else GLFW.GLFW_KEY_Q) {})
-            key.clash = clash
-            keyX += 64 + Kit.GAP
+        val sets = listOf(listOf(GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_F6), listOf(GLFW.GLFW_KEY_F6), listOf(GLFW.GLFW_KEY_Q), listOf(GLFW.GLFW_KEY_F6, GLFW.GLFW_KEY_F7))
+        for ((i, clash) in listOf(null, Role.BAD, Role.WARNING, null).withIndex()) {
+            val keys = addRenderableWidget(KitKeysButton(keyX, oy + 226, 70, "Keys", sets[i], 4) {})
+            keys.clash = clash
+            keys.inOrder = i == 3
+            keyX += 70 + Kit.GAP
         }
-        // The last one listens, as after a press.
-        children().filterIsInstance<KitKeyButton>().last().onPress(KeyEvent(GLFW.GLFW_KEY_ENTER, 0, 0))
+        // The last one records, as after a press.
+        children().filterIsInstance<KitKeysButton>().last().onPress(KeyEvent(GLFW.GLFW_KEY_ENTER, 0, 0))
+        addRenderableWidget(KitCycleButton(keyX, oy + 226, 70, "Where", listOf("In the World", "In Menus"), "In the World", { it }) {})
     }
 
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
@@ -113,11 +117,11 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
 
         caption(g, "Icons: ink, muted, roles on a well", x, oy + 121)
         val icons = Icon.entries
-        Kit.well(g, x + 140, oy + 132, 112, 14)
+        Kit.well(g, x + 132, oy + 132, 120, 14)
         for (i in icons.indices) {
-            Kit.icon(g, icons[i], x + i * 9, oy + 136, t.ink, t.inkShadow)
-            Kit.icon(g, icons[i], x + 70 + i * 9, oy + 136, t.inkMuted, t.inkShadow)
-            Kit.icon(g, icons[i], x + 144 + i * 15, oy + 136, ROLES[i % ROLES.size].argb())
+            Kit.icon(g, icons[i], x + i * 8, oy + 136, t.ink, t.inkShadow)
+            Kit.icon(g, icons[i], x + 66 + i * 8, oy + 136, t.inkMuted, t.inkShadow)
+            Kit.icon(g, icons[i], x + 136 + i * 14, oy + 136, ROLES[i % ROLES.size].argb())
         }
 
         caption(g, "Divider, rings and a line", x, oy + 150)
@@ -128,7 +132,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         Kit.line(g, x + 234, oy + 171, x + 251, oy + 162, Role.ACTION.argb())
 
         caption(g, "Range slider, and spans: idle, hover, down, off", x, oy + 180)
-        caption(g, "Text field, and key buttons: idle, clashing, game's key, listening", x, oy + 214)
+        caption(g, "Text field, keys: held together, clashing, game's key, recording, and a cycle button", x, oy + 214)
         for (i in states.indices) Kit.span(g, ox + MIDDLE + i * 30, oy + 193, 26, 14, states[i])
 
         window(g, ox + MIDDLE, oy + 40)

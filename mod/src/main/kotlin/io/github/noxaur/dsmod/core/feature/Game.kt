@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature
 
 import io.github.noxaur.dsmod.core.container.SlotMark
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.game.GameEvent
@@ -52,6 +53,9 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     /** The sidebar, as of the last event the edge posted. */
     val sidebar = SidebarState()
     private var lastSidebar: Sidebar? = null
+
+    /** Whether the tab list and the sidebar put the player in [area], for the edge to ask on the player's behalf. */
+    fun isIn(area: Area) = area.holds(tab, sidebar)
 
     /** What the features said since the edge last delivered and cleared it. */
     val messages = ArrayList<Message>()

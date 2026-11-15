@@ -116,9 +116,13 @@ Camera's height and tilt are applied after the game has put the camera at the ey
 
 The key's press comes from `KeyMapping.click`, the place the game counts presses for its own key binds, and its release is read from the key's state each frame. A press read from the state would miss a tap that starts and ends inside one frame, and Toggle mode is nothing but taps.
 
-## A command bind sends from the game's own press
+## A command bind sees every key, and fires only in the world or a menu
 
-Command Binds takes its press from `KeyMapping.click` too, rather than from a key event of its own. The game calls it only with no screen open and not for an F3 combination, so a key typed into chat or pressed to bind it on a screen never sends. The game also calls it for each repeat of a held key, so `CommandKeys` keeps the keys that have sent and forgets each one once it is up.
+A bind of keys held together needs every press and release, wherever they happen, or a Shift held before a menu opened would be missed. So `KeyInputMixin` and `MouseInputMixin` hand each one to `CommandKeys` before the game acts, and `BindMatcher` in `core` holds the keys that are down. Whether a press may fire is a separate question, asked at the press: in the world, or in a container menu with no text field focused, and never with F3 held. `KeyMapping.click` would not do, because the game calls it only with no screen open.
+
+GLFW repeats a held key as its own action, and a repeat is not a press. A release can go unseen, as when the window loses focus, so each tick forgets keys that are no longer down.
+
+A sequence fires as soon as no longer sequence could still follow, so a bind of F7 then F8 needs no wait unless another bind starts with F7, F8. Otherwise it waits for the gap from the settings, as SkyOcean does.
 
 The settings ring a key that the game uses too. The game's debug keys work only with F3 held, so F3 is the only one of them that counts, and F6, which the game binds to F3+F6, is free.
 

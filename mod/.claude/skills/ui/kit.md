@@ -46,7 +46,7 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `flash` | Any | A white wash over something the player just acted on, which fades out. The same in both themes, because it lies on the game and not on a panel |
 | `divider` | 2 tall | A shade line over a light line, cut into the panel |
 | `ring` | Any | A notched 1px line in `accent` or a role, around the selected thing |
-| `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, search, lock |
+| `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, search, lock, copy |
 | `line` | Any | A 1px stepped line between two points, with a dark line beside it, for joining two things that belong together |
 | `field` | Any, 16 tall in a text field | A well that a text field holds, ringed in `hoverOutline` under the mouse or with focus |
 | `label` | One line | A string in ink |
@@ -59,10 +59,11 @@ A widget is a vanilla widget with a kit face. It takes its label as a string and
 | Widget | What it is |
 | --- | --- |
 | `KitButton` | A button with a label or an icon. An icon button is 16x16 |
-| `KitCheckbox` | A checkbox with its label 4px to the right |
+| `KitCheckbox` | A checkbox with its label 4px to the right. On a well its label is body text, since ink would not read there |
 | `KitStepper` | A minus button, a value and a plus button, for a number with few useful steps |
 | `KitTextField` | Vanilla's `EditBox` on a 16 tall `field`, with its text 4 in. A press anywhere on the well lands |
-| `KitKeyButton` | A button that shows a key and takes a new one, as the key bind section of `controls.md` says. A key it shares is ringed in a role |
+| `KitKeysButton` | A button that shows keys and records new ones, held together or in order, as the key bind section of `controls.md` says. Keys it shares are ringed in a role |
+| `KitCycleButton` | A button that steps through a few values, as the cycle button section of `controls.md` says |
 | `KitRangeSlider` | A 16 tall track with any number of spans, for picking stretches of a scale. Press and drag on the track to draw one or click to add one, drag an end or the middle, right-click to remove. The cursor shows what a press will do. `Sections` in `core/ui` holds its rules: a span is at least 5 long, and two within 3 of each other become one |
 
 Controls in a row are 4 apart, and rows are 4 apart. A label beside a control sits on the control's text baseline.

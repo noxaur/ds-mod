@@ -24,6 +24,9 @@ enum class Area(val key: String?, val value: String?, val place: String?, val fo
     CATACOMBS(null, null, "The Catacombs", "dungeon"),
     ;
 
+    /** What the server calls the place, for the player to pick it by. */
+    val title: String get() = place ?: value ?: "Anywhere"
+
     /** The tab list row that puts the player here, for a test to send, or null when the tab list does not tell. */
     val row: String? get() = key?.let { "$it: $value" }
 

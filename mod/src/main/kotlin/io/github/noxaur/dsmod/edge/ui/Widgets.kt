@@ -60,8 +60,18 @@ class KitButton private constructor(
     }
 }
 
-/** A checkbox with its [label] 4px to the right. [onChange] gets the new value. */
-class KitCheckbox(x: Int, y: Int, private val label: String, checked: Boolean, private val onChange: (Boolean) -> Unit) :
+/**
+ * A checkbox with its [label] 4px to the right. [onChange] gets the new value. [onWell] draws the label as body
+ * text, which reads on a well in both themes, where ink would not.
+ */
+class KitCheckbox(
+    x: Int,
+    y: Int,
+    private val label: String,
+    checked: Boolean,
+    private val onWell: Boolean = false,
+    private val onChange: (Boolean) -> Unit,
+) :
     AbstractButton(x, y, Kit.CHECKBOX_SIZE + Kit.GAP + Kit.font.width(label), Kit.CHECKBOX_SIZE, plain(label)) {
     var checked = checked
 
@@ -73,8 +83,14 @@ class KitCheckbox(x: Int, y: Int, private val label: String, checked: Boolean, p
     override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         val state = Kit.state(active, isHoveredOrFocused, false)
         Kit.checkbox(graphics, x, y, checked, state)
-        Kit.label(graphics, label, x + Kit.CHECKBOX_SIZE + Kit.GAP, y + 1, if (active) Kit.Ink.NORMAL else Kit.Ink.OFF)
+        if (onWell) {
+            graphics.text(Kit.font, wellLabel, x + Kit.CHECKBOX_SIZE + Kit.GAP, y + 1, -1, true)
+        } else {
+            Kit.label(graphics, label, x + Kit.CHECKBOX_SIZE + Kit.GAP, y + 1, if (active) Kit.Ink.NORMAL else Kit.Ink.OFF)
+        }
     }
+
+    private val wellLabel = text { body(label) }.toComponent()
 
     override fun createNarrationMessage(): MutableComponent = CommonComponents.optionStatus(message, checked)
 
@@ -335,62 +351,173 @@ class KitTextField(x: Int, y: Int, width: Int, label: String, value: String, max
 }
 
 /**
- * A button that shows a key and takes a new one. A press, or Enter or Space with focus, makes it listen: the
- * next key binds, Escape clears it to none, and a mouse button other than the left and right binds that button.
- * A left or right press elsewhere, or focus leaving, stops it listening and keeps the key. The screen hands it
- * keys and presses with [capture] while it is [listening], because a screen takes Escape before its widgets do.
- * A key that also does something else is ringed in the role in [clash].
+ * A button that shows keys and records new ones, for keys held together or, with [inOrder], pressed in turn. A
+ * press, or Enter or Space with focus, starts recording. Each key and each middle or side mouse button adds
+ * itself, up to [max]. Keys held together are done once all are let go. Escape, a left or right press elsewhere,
+ * or focus leaving ends recording, and with nothing recorded the keys stay as they were. The screen hands it keys,
+ * releases and presses with [capture] and [release] while it is [recording], because a screen takes Escape first.
+ * A key it shares is ringed in the role in [clash].
  */
-class KitKeyButton(x: Int, y: Int, width: Int, private val name: String, key: Int, private val onChange: (Int) -> Unit) :
-    AbstractButton(x, y, width, Kit.BUTTON_HEIGHT, plain(name)) {
-    private var label = ""
-
-    var key = key
-        private set(bound) {
-            field = bound
-            label = Keys.name(bound)
+class KitKeysButton(
+    x: Int,
+    y: Int,
+    width: Int,
+    private val name: String,
+    keys: List<Int>,
+    private val max: Int,
+    private val onChange: (List<Int>) -> Unit,
+) : AbstractButton(x, y, width, Kit.BUTTON_HEIGHT, plain(name)) {
+    var keys = keys
+        private set(value) {
+            field = value
+            label = names(value)
             message = plain("$name: $label")
         }
+    private var label = ""
+    private val recorded = ArrayList<Int>()
+    private val down = HashSet<Int>()
 
-    var listening = false
+    var inOrder = false
+        set(value) {
+            field = value
+            label = names(keys)
+        }
+
+    var recording = false
         private set
 
     var clash: Role? = null
 
     init {
-        this.key = key
+        this.keys = keys
     }
 
     override fun onPress(input: InputWithModifiers) {
-        listening = !listening
+        if (recording) finish() else start()
     }
 
-    /** Takes a key, or a mouse button when [mouse], while listening. Returns whether it bound one. */
+    private fun start() {
+        recording = true
+        recorded.clear()
+        down.clear()
+    }
+
+    /** Takes a key, or a mouse button when [mouse], while recording. Returns whether it took it. */
     fun capture(bound: Int, mouse: Boolean = false): Boolean {
-        if (!listening) return false
-        listening = false
-        if (mouse && (bound == 0 || bound == 1)) return false
-        key = if (!mouse && bound == ESCAPE) -1 else bound
-        onChange(key)
+        if (!recording) return false
+        if (mouse && (bound == 0 || bound == 1) || !mouse && bound == ESCAPE) {
+            finish()
+            return false
+        }
+        down += bound
+        if (inOrder || bound !in recorded) recorded += bound
+        if (recorded.size >= max) finish()
         return true
+    }
+
+    /** A key or button was let go. Keys held together are done once every one is up. */
+    fun release(bound: Int) {
+        if (!recording || !down.remove(bound)) return
+        if (!inOrder && down.isEmpty() && recorded.isNotEmpty()) finish()
+    }
+
+    fun clear() {
+        recording = false
+        keys = emptyList()
+        onChange(keys)
+    }
+
+    private fun finish() {
+        recording = false
+        if (recorded.isEmpty()) return
+        keys = recorded.toList()
+        onChange(keys)
     }
 
     override fun setFocused(focused: Boolean) {
         super.setFocused(focused)
-        if (!focused) listening = false
+        if (!focused && recording) finish()
     }
 
     override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
-        val text = if (listening) "> $label <" else label
-        val state = if (listening) Kit.State.DOWN else Kit.state(active, isHoveredOrFocused, false)
+        val text = fit(if (recording) "> ${if (recorded.isEmpty()) "Press keys" else names(recorded)} <" else label, width - 6)
+        val state = if (recording) Kit.State.DOWN else Kit.state(active, isHoveredOrFocused, false)
         Kit.button(graphics, x, y, width, height, state, text, Kit.font.width(text))
         clash?.let { Kit.ring(graphics, x - 1, y - 1, width + 2, height + 2, it.argb()) }
     }
 
     override fun updateWidgetNarration(output: NarrationElementOutput) = defaultButtonNarrationText(output)
 
+    private fun names(keys: List<Int>) = Keys.names(keys, inOrder)
+
     private companion object {
         /** GLFW's code for Escape. */
         const val ESCAPE = 256
     }
+}
+
+/**
+ * A button that steps through [values], showing the current one. A press or Enter goes to the next, and a right
+ * press, Shift with either, or the wheel goes back. [onChange] gets the new value.
+ */
+class KitCycleButton<T>(
+    x: Int,
+    y: Int,
+    width: Int,
+    private val name: String,
+    private val values: List<T>,
+    value: T,
+    private val title: (T) -> String,
+    private val onChange: (T) -> Unit,
+) : AbstractButton(x, y, width, Kit.BUTTON_HEIGHT, plain(name)) {
+    var value = value
+        set(next) {
+            field = next
+            label = fit(title(next), width - 6)
+            message = plain("$name: ${title(next)}")
+        }
+    private var label = ""
+    private var pressed = false
+
+    init {
+        this.value = value
+    }
+
+    override fun isValidClickButton(button: MouseButtonInfo) = button.button() == 0 || button.button() == 1
+
+    override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
+        pressed = true
+        step(if (event.button() == 1 || event.hasShiftDown()) -1 else 1)
+    }
+
+    override fun onRelease(event: MouseButtonEvent) {
+        pressed = false
+    }
+
+    override fun onPress(input: InputWithModifiers) = step(if (input.hasShiftDown()) -1 else 1)
+
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, scrollX: Double, scrollY: Double): Boolean {
+        if (scrollY == 0.0) return false
+        step(if (scrollY > 0) -1 else 1)
+        return true
+    }
+
+    private fun step(by: Int) {
+        value = values[(values.indexOf(value) + by).mod(values.size)]
+        onChange(value)
+    }
+
+    override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+        val state = Kit.state(active, isHoveredOrFocused, pressed && isHovered)
+        Kit.button(graphics, x, y, width, height, state, label, Kit.font.width(label))
+    }
+
+    override fun updateWidgetNarration(output: NarrationElementOutput) = defaultButtonNarrationText(output)
+}
+
+/** [text] cut to [width] pixels, ending in an ellipsis when it was longer. */
+fun fit(text: String, width: Int): String {
+    val font = Kit.font
+    if (font.width(text) <= width) return text
+    return font.plainSubstrByWidth(text, width - font.width("...")) + "..."
 }

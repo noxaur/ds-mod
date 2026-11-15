@@ -1,38 +1,64 @@
 package io.github.noxaur.dsmod.edge
 
-import com.mojang.blaze3d.platform.InputConstants
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.input.BindMatcher
+import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.CommandBind.Message
+import io.github.noxaur.dsmod.core.input.Where
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.components.EditBox
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 
 /**
- * Command Binds. A press comes from `KeyPressMixin`, where the game counts its own key binds' presses, so it
- * fires only in the world: a key typed into chat or bound on a screen sends nothing.
+ * Command Binds. `KeyInputMixin` and `MouseInputMixin` hand over every press and release, and [BindMatcher] decides
+ * what fires. A press counts in the world, or in a menu such as a chest, and nowhere else: not in chat, on the
+ * mod's own screens, with a text field focused, or with F3 held for one of the game's debug keys.
  */
 object CommandKeys {
-    private lateinit var settings: DsModConfig.General
+    private const val PRESS = 1
+    private const val RELEASE = 0
 
-    /** Keys that sent and are still down. The game reports a held key's repeats as presses, and those send nothing. */
-    private val down = HashSet<Int>()
+    private lateinit var settings: DsModConfig.General
+    private val matcher = BindMatcher()
+
+    private val on: Boolean get() = DsModClient.active && settings.commandBinds
 
     fun register(settings: DsModConfig.General) {
         this.settings = settings
-        ClientTickEvents.END_CLIENT_TICK.register { client -> if (down.isNotEmpty()) down.removeIf { !Keys.held(client, it) } }
+        ClientTickEvents.END_CLIENT_TICK.register { client ->
+            matcher.forget { Keys.held(client, it) }
+            if (on) matcher.idle(System.currentTimeMillis(), settings.sequenceGap.toLong(), settings.binds, DsModClient.game::isIn)?.let(::send)
+        }
     }
 
-    fun pressed(key: InputConstants.Key) {
-        if (!DsModClient.active || !settings.commandBinds) return
-        val binds = settings.binds.filter { Keys.matches(key, it.key) }
-        if (binds.isEmpty() || !down.add(binds.first().key)) return
-        val connection = Minecraft.getInstance().connection ?: return
-        // Every row on the key sends, in order, as the settings warn when two share one.
-        for (bind in binds) {
-            when (val message = bind.message) {
-                is Message.Command -> connection.sendCommand(message.text) // rule:no-automation Command Binds
-                is Message.Chat -> connection.sendChat(message.text) // rule:no-automation Command Binds
-                null -> {}
+    /** A key's GLFW code or a mouse button, and GLFW's action: press, release or repeat. A repeat is not a press. */
+    fun input(key: Int, action: Int) {
+        if (!::settings.isInitialized) return
+        when (action) {
+            RELEASE -> matcher.release(key)
+            PRESS -> {
+                val at = if (on) where(Minecraft.getInstance()) else null
+                matcher.press(key, System.currentTimeMillis(), settings.binds, at, DsModClient.game::isIn)?.let(::send)
             }
+        }
+    }
+
+    private fun where(client: Minecraft): Where? {
+        if (client.player == null || client.options.keyDebugModifier.isDown) return null
+        return when (val screen = client.gui.screen()) {
+            null -> Where.WORLD
+            is AbstractContainerScreen<*> -> Where.MENUS.takeUnless { screen.focused is EditBox }
+            else -> null
+        }
+    }
+
+    private fun send(bind: CommandBind) {
+        val connection = Minecraft.getInstance().connection ?: return
+        when (val message = bind.message) {
+            is Message.Command -> connection.sendCommand(message.text) // rule:no-automation Command Binds
+            is Message.Chat -> connection.sendChat(message.text) // rule:no-automation Command Binds
+            null -> {}
         }
     }
 }
