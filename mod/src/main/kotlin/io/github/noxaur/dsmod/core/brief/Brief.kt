@@ -1,4 +1,4 @@
-package io.github.noxaur.dsmod.debug.brief
+package io.github.noxaur.dsmod.core.brief
 
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudRow
@@ -38,7 +38,7 @@ data class Brief(val name: String, val steps: List<Step>) {
     }
 }
 
-/** One pass through a [brief]. It waits before the first step until the developer starts it. */
+/** One pass through a [brief]. It waits before the first step until the player starts it. */
 class BriefRun(val brief: Brief) {
     /** The index of the step being done: -1 before the first, and the number of steps after the last. */
     var current = -1
@@ -62,6 +62,15 @@ class BriefRun(val brief: Brief) {
     fun remaining(now: Long): Int? {
         val seconds = brief.steps.getOrNull(current)?.seconds ?: return null
         return ((seconds * 1000L - (now - since) + 999) / 1000).toInt().coerceAtLeast(0)
+    }
+
+    /**
+     * Moves on when a timed step has run out, and once more for each of the player's [presses]. Returns the `step`
+     * record of each move, built as it happens: a record built later would name whatever step the run is on by then.
+     */
+    fun step(now: Long, presses: Int): List<JsonObject> = buildList {
+        if (tick(now)) add(record())
+        repeat(presses) { if (advance(now)) add(record()) }
     }
 
     /** The `step` record for the capture: the step that starts now, or that the last one is done. */

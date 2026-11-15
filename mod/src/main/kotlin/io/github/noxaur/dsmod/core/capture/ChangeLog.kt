@@ -1,4 +1,4 @@
-package io.github.noxaur.dsmod.debug.capture
+package io.github.noxaur.dsmod.core.capture
 
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -25,6 +25,8 @@ class ChangeLog(private val record: (type: String, data: JsonObject) -> Unit) {
      */
     fun offerEntries(type: String, header: JsonObject, current: Map<String, JsonElement>) {
         val full = headers.put(type, header) != header
+        // A caller may refill one map for every offer, and the record is written later on another thread.
+        val current = current.toMap()
         val previous = entries.put(type, current).orEmpty()
         val changed = if (full) {
             current

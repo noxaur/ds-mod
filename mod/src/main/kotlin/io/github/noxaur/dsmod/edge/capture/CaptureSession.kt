@@ -1,6 +1,8 @@
-package io.github.noxaur.dsmod.debug.capture
+package io.github.noxaur.dsmod.edge.capture
 
 import io.github.noxaur.dsmod.core.feature.Game
+import io.github.noxaur.dsmod.core.capture.CaptureWriter
+import io.github.noxaur.dsmod.core.capture.ChangeLog
 import io.github.noxaur.dsmod.core.game.Metrics
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -55,7 +57,7 @@ private fun JsonObjectBuilder.entityFields(entity: Entity) {
 }
 
 /**
- * One running capture: the events [game] posts go straight to [writer], and [tick] adds what only exists
+ * One running capture, ended by [detach] on the client thread and then [close] on any thread: the events [game] posts go straight to [writer], and [tick] adds what only exists
  * as client state, plus what the mod showed (`hud`) and how long it took (`metrics`).
  */
 class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
@@ -127,70 +129,75 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
 
         // The `container` and `slot` events carry the id, count, name, lore and custom data. This is the rest.
         val menu = player.containerMenu
-        changes.offerEntries(
-            "itemcomponents",
-            buildJsonObject {
-                put("id", menu.containerId)
-                // The player's own inventory has no menu type.
-                put("menu", runCatching { BuiltInRegistries.MENU.getKey(menu.type).toString() }.getOrDefault("inventory"))
-            },
-            buildMap<String, JsonElement> {
-                menu.slots.forEachIndexed { index, slot ->
-                    if (slot.item.isEmpty) return@forEachIndexed
-                    val components = (slot.item.toCaptureJson() as? JsonObject)?.get("components") as? JsonObject ?: return@forEachIndexed
-                    val rest = components.filterKeys { it !in eventComponents }
-                    if (rest.isNotEmpty()) put(index.toString(), JsonObject(rest))
-                }
-            },
-        )
+        // Both passes below run Minecraft's item codec on this thread, so a capture's `metrics` say what they cost.
+        game.metrics.time("capture-items") {
+            changes.offerEntries(
+                "itemcomponents",
+                buildJsonObject {
+                    put("id", menu.containerId)
+                    // The player's own inventory has no menu type.
+                    put("menu", runCatching { BuiltInRegistries.MENU.getKey(menu.type).toString() }.getOrDefault("inventory"))
+                },
+                buildMap<String, JsonElement> {
+                    menu.slots.forEachIndexed { index, slot ->
+                        if (slot.item.isEmpty) return@forEachIndexed
+                        val components = (slot.item.toCaptureJson() as? JsonObject)?.get("components") as? JsonObject ?: return@forEachIndexed
+                        val rest = components.filterKeys { it !in eventComponents }
+                        if (rest.isNotEmpty()) put(index.toString(), JsonObject(rest))
+                    }
+                },
+            )
+        }
 
         // Players, named entities and anything holding or wearing an item. Servers build mobs and holograms from these.
         // Glowing entities, displays, item frames and the puzzle mobs come too, with what each one shows.
         val mapIds = LinkedHashSet<MapId>()
-        player.inventory.nonEquipmentItems.plus(player.offhandItem).forEach { stack -> stack.get(DataComponents.MAP_ID)?.let(mapIds::add) }
-        changes.offerEntries(
-            "entities",
-            JsonObject(emptyMap()),
-            buildMap {
-                for (entity in level.entitiesForRendering()) {
-                    if (entity === player) continue
-                    val equipment = (entity as? LivingEntity)?.let { living ->
-                        EquipmentSlot.VALUES.filter { !living.getItemBySlot(it).isEmpty }
-                            .associate { it.getName() to living.getItemBySlot(it).toCaptureJson() }
-                    }.orEmpty()
-                    val item = when (entity) {
-                        is ItemFrame -> entity.item
-                        is ItemEntity -> entity.item.takeIf { it.has(DataComponents.CUSTOM_NAME) }
-                        is Display.ItemDisplay -> entity.itemStack
-                        else -> null
+        game.metrics.time("capture-entities") {
+            player.inventory.nonEquipmentItems.plus(player.offhandItem).forEach { stack -> stack.get(DataComponents.MAP_ID)?.let(mapIds::add) }
+            changes.offerEntries(
+                "entities",
+                JsonObject(emptyMap()),
+                buildMap {
+                    for (entity in level.entitiesForRendering()) {
+                        if (entity === player) continue
+                        val equipment = (entity as? LivingEntity)?.let { living ->
+                            EquipmentSlot.VALUES.filter { !living.getItemBySlot(it).isEmpty }
+                                .associate { it.getName() to living.getItemBySlot(it).toCaptureJson() }
+                        }.orEmpty()
+                        val item = when (entity) {
+                            is ItemFrame -> entity.item
+                            is ItemEntity -> entity.item.takeIf { it.has(DataComponents.CUSTOM_NAME) }
+                            is Display.ItemDisplay -> entity.itemStack
+                            else -> null
+                        }
+                        item?.get(DataComponents.MAP_ID)?.let(mapIds::add)
+                        val named = entity.hasCustomName() || entity is Player || equipment.isNotEmpty()
+                        if (!named && !entity.isCurrentlyGlowing && item == null && entity !is Display && !watched(entity)) continue
+                        put(
+                            entity.id.toString(),
+                            buildJsonObject {
+                                put("entity", BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString())
+                                // Whole blocks, so an entity that stands still records nothing new.
+                                put("x", entity.blockX)
+                                put("y", entity.blockY)
+                                put("z", entity.blockZ)
+                                put("nameVisible", entity.isCustomNameVisible)
+                                // The type already says what an entity recorded only for its glow, item or text is.
+                                if (named) put("name", entity.displayName.toCaptureJson())
+                                if (entity.isCurrentlyGlowing) put("glowing", true)
+                                if (equipment.isNotEmpty()) put("equipment", JsonObject(equipment))
+                                if (item != null) put("item", item.toCaptureJson())
+                                if (entity is ItemFrame) {
+                                    put("rotation", entity.rotation)
+                                    put("facing", entity.direction.getName())
+                                }
+                                if (entity is Display.TextDisplay) put("text", entity.text.toCaptureJson())
+                            },
+                        )
                     }
-                    item?.get(DataComponents.MAP_ID)?.let(mapIds::add)
-                    val named = entity.hasCustomName() || entity is Player || equipment.isNotEmpty()
-                    if (!named && !entity.isCurrentlyGlowing && item == null && entity !is Display && !watched(entity)) continue
-                    put(
-                        entity.id.toString(),
-                        buildJsonObject {
-                            put("entity", BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString())
-                            // Whole blocks, so an entity that stands still records nothing new.
-                            put("x", entity.blockX)
-                            put("y", entity.blockY)
-                            put("z", entity.blockZ)
-                            put("nameVisible", entity.isCustomNameVisible)
-                            // The type already says what an entity recorded only for its glow, item or text is.
-                            if (named) put("name", entity.displayName.toCaptureJson())
-                            if (entity.isCurrentlyGlowing) put("glowing", true)
-                            if (equipment.isNotEmpty()) put("equipment", JsonObject(equipment))
-                            if (item != null) put("item", item.toCaptureJson())
-                            if (entity is ItemFrame) {
-                                put("rotation", entity.rotation)
-                                put("facing", entity.direction.getName())
-                            }
-                            if (entity is Display.TextDisplay) put("text", entity.text.toCaptureJson())
-                        },
-                    )
-                }
-            },
-        )
+                },
+            )
+        }
         maps.offer(level, mapIds)
 
         changes.offer(
@@ -299,10 +306,13 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
         writer.record("block") { data }
     }
 
-    override fun close() {
+    /** Stops recording what the game posts and measures. Call it on the client thread, where [Game] runs. */
+    fun detach() {
         game.tap = null
         game.metrics.flush()
         game.metrics.sinks -= metricsSink
-        writer.close()
     }
+
+    /** Finishes the file, waiting for the writer thread. Throws when the file is not whole, as [CaptureWriter.close] does. */
+    override fun close() = writer.close()
 }

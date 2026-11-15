@@ -48,13 +48,13 @@ A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with 
 The code is split into two source sets, and each becomes its own mod.
 
 - `src/main` is the release build, the jar players install. It cannot see debug code, so the compiler keeps developer tools out of it.
-- `src/debug` holds developer tools such as capture. The debug jar contains the release jar plus these tools, and `runClient` loads both.
-- Put a tool in `src/debug` when only a developer or an agent needs it.
+- `src/debug` holds developer tools such as `/dscapture`, `/dskit` and `cutFixture`. The debug jar contains the release jar plus these tools, and `runClient` loads both.
+- Put a tool in `src/debug` when only a developer or an agent needs it. The recorder is not one: it is in the release jar. `Recorder` in `edge/capture` is its one switch, and while it is off each hook is a null check. Keep it that way: nothing the recorder does may run before `Recorder.start`.
 - `runClient` also loads the third-party mods in the `devMods` configuration, such as Sodium and Mod Menu, and logs in with the user's Microsoft account through DevAuth. These mods never ship in a jar, and the game tests run without them.
 
 ## Seeing the game
 
-Agents see the game through captures. A capture is a JSONL file of what the server showed the client, one event per line. With the debug build, the user types `/dscapture` in game to start one and again to save it, and it lands in `dsmod/captures/` inside the game folder.
+Agents see the game through captures. A capture is a JSONL file of what the server showed the client, one event per line. With the debug build, the user types `/dscapture` in game to start one and again to save it, and it lands in `dsmod/captures/` inside the game folder. It refuses while a brief is recording.
 
 Each line has a time `t`, a `type` and `data`. A type is either an event or a raw record.
 
@@ -81,7 +81,7 @@ Raw records are for you to read. No feature sees one until it is promoted:
 - `unload` for a living entity the client dropped, with its `reason`. A mob that only left has `unload` and no `death` event.
 - `skulls` for skull blocks within four chunks, with `state` (rotation) and `profile`, and `blockstates` for the blocks in `BlockScan.kt`'s watch-list there. Both are entries like `entities`, keyed `x,y,z`, and include what stood there before the capture began.
 - `map` for a map the player carries or an item frame holds, when it changes: `colors` is base64 of the zlib-deflated 128x128 color bytes, present only when the pixels changed, and `decorations` are the markers.
-- `hud` for the rows of each HUD block ds-mod showed, and `metrics` for how long each feature took and what it counted.
+- `hud` for the rows of each HUD block ds-mod showed, and `metrics` for how long each feature took and what it counted. Its `capture-items` and `capture-entities` timers are what the recorder's own item reading cost the client thread.
 - `step` for the brief's step that starts on that line, with its `index` and `do`, and `done` after the last one. Cut a fixture's window from these.
 
 An event's text is `plain` plus `spans`, with `§` codes already resolved into the spans. A raw record's text is plain `text` plus the full `component`. `itemcomponents` and `entities` record all entries once with `"full": true`, then only the entries that changed, with null for a removed one.

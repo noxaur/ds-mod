@@ -28,7 +28,7 @@ In T3 Code, `t3.json` has an action for each command.
 `cd mod && ./gradlew build` writes two jars to `mod/build/libs/`:
 
 - `dsmod-<version>.jar` is the release jar that players install.
-- `dsmod-<version>-debug.jar` is the release jar plus the developer tools, such as capture.
+- `dsmod-<version>-debug.jar` is the release jar plus the developer tools, such as `/dscapture` and `/dskit`.
 
 ## Record a capture
 

@@ -1,4 +1,4 @@
-package io.github.noxaur.dsmod.debug.capture
+package io.github.noxaur.dsmod.edge.capture
 
 import com.google.gson.JsonArray as GsonArray
 import com.google.gson.JsonElement as GsonElement

@@ -57,8 +57,8 @@ sourceSets.test {
 }
 
 loom {
-    // Only debug code reads private Minecraft fields. The release build gets by without.
-    accessWidenerPath = file("src/debug/resources/dsmod_debug.accesswidener")
+    // The recorder reads private Minecraft fields. The jar ships this file merged with MoulConfig's, see `accessWidener` below.
+    accessWidenerPath = file("src/main/aw/dsmod.accesswidener")
     mods {
         register("dsmod") { sourceSet(sourceSets.main.get()) }
         register("dsmod_debug") { sourceSet(debug) }
@@ -121,13 +121,28 @@ tasks.named<JavaExec>("runClient") {
     )
 }
 
-// MoulConfig needs its access widener declared by the mod that carries it, so take the file from its jar.
+// A mod declares one access widener, and MoulConfig needs its own declared by the mod that carries it. So the jar's
+// file is ours followed by the lines of the one in MoulConfig's jar.
 val moulconfigAccessWidener = tasks.register<Sync>("moulconfigAccessWidener") {
     val archives = archives
     from(shade.elements.map { jars -> jars.map { archives.zipTree(it) } }) { include("moulconfig.accesswidener") }
     into(layout.buildDirectory.dir("generated/moulconfig"))
 }
-sourceSets.main { resources.srcDir(moulconfigAccessWidener) }
+val accessWidener = tasks.register("accessWidener") {
+    val ours = file("src/main/aw/dsmod.accesswidener")
+    val theirs = moulconfigAccessWidener.map { it.destinationDir.resolve("moulconfig.accesswidener") }
+    val merged = layout.buildDirectory.file("generated/accesswidener/dsmod.accesswidener")
+    inputs.file(ours)
+    inputs.file(theirs)
+    outputs.file(merged)
+    doLast {
+        val header = ours.readLines().first()
+        val body = (ours.readLines().drop(1) + theirs.get().readLines().drop(1)).filter { it.isNotBlank() }
+        check(theirs.get().readLines().first() == header) { "MoulConfig's access widener no longer has the header '$header'." }
+        merged.get().asFile.apply { parentFile.mkdirs() }.writeText((listOf(header, "") + body).joinToString("\n", postfix = "\n"))
+    }
+}
+sourceSets.main { resources.srcDir(accessWidener.map { layout.buildDirectory.dir("generated/accesswidener").get() }) }
 
 tasks.withType<ProcessResources>().configureEach {
     val version = project.version

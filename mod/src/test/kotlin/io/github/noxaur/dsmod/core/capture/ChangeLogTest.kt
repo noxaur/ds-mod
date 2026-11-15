@@ -1,5 +1,6 @@
-package io.github.noxaur.dsmod.debug.capture
+package io.github.noxaur.dsmod.core.capture
 
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -59,5 +60,26 @@ class ChangeLogTest {
         log.offerEntries("nametags", JsonObject(emptyMap()), emptyMap())
 
         assertEquals(listOf("""nametags {"full":true,"entries":{}}"""), recorded)
+    }
+
+    @Test
+    fun `offerEntries sees a change in a map its caller refills`() {
+        val header = buildJsonObject { }
+        val blocks = LinkedHashMap<String, JsonElement>()
+        blocks["1,2,3"] = JsonPrimitive("minecraft:end_portal_frame[eye=false]")
+        blocks["4,5,6"] = JsonPrimitive("minecraft:obsidian")
+        log.offerEntries("blockstates", header, blocks)
+        blocks.clear()
+        blocks["1,2,3"] = JsonPrimitive("minecraft:end_portal_frame[eye=true]")
+        log.offerEntries("blockstates", header, blocks)
+        log.offerEntries("blockstates", header, blocks)
+
+        assertEquals(
+            listOf(
+                """blockstates {"full":true,"entries":{"1,2,3":"minecraft:end_portal_frame[eye=false]","4,5,6":"minecraft:obsidian"}}""",
+                """blockstates {"full":false,"entries":{"1,2,3":"minecraft:end_portal_frame[eye=true]","4,5,6":null}}""",
+            ),
+            recorded,
+        )
     }
 }
