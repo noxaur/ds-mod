@@ -83,7 +83,7 @@ class PerfTest : FabricClientGameTest {
                         """custom_name='"Perf Sword $slot"',lore=['"Damage: +$slot"','"LEGENDARY SWORD"']]""",
                 )
             }
-            context.runOnClient<Nothing> { DsModClient.settings.contribute.reportUnknowns = true }
+            context.runOnClient<Nothing> { DsModClient.settings.contribute.reportGameData = true }
             context.waitTicks(20)
             context.runOnClient<Nothing> {
                 val group = HudGroup("perf", 6, 6, background = true)
@@ -123,7 +123,7 @@ class PerfTest : FabricClientGameTest {
             context.runOnClient<Nothing> {
                 it.gui.setScreen(null)
                 repeat(HUD_BLOCKS) { block -> Hud.hide("perf-$block") }
-                DsModClient.settings.contribute.reportUnknowns = false
+                DsModClient.settings.contribute.reportGameData = false
             }
             System.getProperty("dsmod.jar")?.let { samples["jar"] = mutableListOf(File(it).length() / 1024.0) }
 

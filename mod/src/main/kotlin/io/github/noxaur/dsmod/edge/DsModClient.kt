@@ -154,7 +154,7 @@ object DsModClient : ClientModInitializer {
             Packets.tick(it)
             game.tick(System.currentTimeMillis())
             readouts.push()
-            Contribute.tick(game, config.instance.contribute.reportUnknowns, System.currentTimeMillis())
+            Contribute.tick(game, config.instance.contribute.reportGameData, System.currentTimeMillis())
             if (++ticks % FLUSH_TICKS == 0) {
                 saved.flush()
                 game.metrics.flush()

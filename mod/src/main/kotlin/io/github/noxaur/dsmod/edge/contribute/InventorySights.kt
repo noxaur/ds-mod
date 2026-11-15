@@ -31,11 +31,12 @@ class InventorySights(private val sightings: ItemSightings) {
             val stack = inventory.getItem(i)
             val previous = stacks[i]
             if (stack === previous && stack.count == counts[i]) continue
-            if (System.nanoTime() > deadline) break
+            // A slot skipped for want of room is not cached, so it is read again once the batch has some.
+            if (sightings.full || System.nanoTime() > deadline) break
             val equal = previous != null && stack.count == counts[i] && ItemStack.isSameItemSameComponents(previous, stack)
             stacks[i] = stack
             counts[i] = stack.count
-            if (equal || stack.isEmpty || sightings.full) continue
+            if (equal || stack.isEmpty) continue
             look(stack)
         }
     }

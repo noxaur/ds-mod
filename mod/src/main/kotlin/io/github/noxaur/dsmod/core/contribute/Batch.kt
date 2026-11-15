@@ -1,5 +1,8 @@
 package io.github.noxaur.dsmod.core.contribute
 
+import io.github.noxaur.dsmod.core.backend.BackendException
+import java.util.concurrent.CompletionException
+
 /**
  * What a player agreed to send, collected until it is time to send it: a batch of at most [MAX_BATCH] things, each
  * told apart by [key]. A thing is not collected again while it waits, is on its way, or was delivered, and a report
@@ -60,17 +63,20 @@ open class Batch<T : Any>(private val key: (T) -> Any) {
     }
 
     /**
-     * Ends what [take] began for [batch]. When it was [delivered], it is not collected again this session. Otherwise
-     * it waits for the next report, as far as a batch has room, and the rest may be seen again.
+     * Ends what [take] began for [batch], with the [error] that stopped it, or null when it was delivered. A delivered
+     * batch is not collected again this session, and neither is one the backend refused for good, because sending it
+     * again can only fail again. Any other failure, such as a sign-in, a busy backend or no network, leaves it
+     * waiting for the next report, as far as a batch has room, and the rest may be seen again.
      */
-    fun finished(batch: List<T>, delivered: Boolean) {
+    fun finished(batch: List<T>, error: Throwable? = null) {
+        val done = error == null || refusedForGood(error)
         for (thing in batch) {
             val k = key(thing)
             if (!sending.remove(k)) continue
-            if (delivered) sent.add(k) else if (pending.size < MAX_BATCH) pending[k] = thing
+            if (done) sent.add(k) else if (pending.size < MAX_BATCH) pending[k] = thing
         }
         // What found no room must be read again to come back.
-        if (!delivered) seen.clear()
+        if (!done) seen.clear()
     }
 
     /** Forgets what is waiting, for a player who switched the report off. */
@@ -85,5 +91,11 @@ open class Batch<T : Any>(private val key: (T) -> Any) {
         const val SPACING_MILLIS = 20 * 60 * 1000L
         const val MAX_BATCH = 50
         private const val MAX_SEEN = 1024
+
+        /** The statuses that say the backend cannot take this batch as it is: a bad shape, a gone route, a conflict, a size. */
+        private val REFUSED = setOf(400, 404, 409, 413, 422)
+
+        private fun refusedForGood(error: Throwable): Boolean =
+            ((error as? CompletionException)?.cause ?: error).let { it is BackendException && it.status in REFUSED }
     }
 }

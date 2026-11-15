@@ -134,11 +134,11 @@ Skipping tells the backend, which hides the request from that player and nobody 
 
 ## An item sighting is what the player's own inventory shows, agreed on by two players
 
-dragsim.co's API sends an item's data but no lore, enchantments or glint, and only some skull textures, so the backend learns how items really look from players. A sighting rides the consent of the unread-lines report: one switch, one batch and backoff (`Batch`), and nothing is read while it is off.
+dragsim.co's API sends an item's data but no lore, enchantments or glint, and only some skull textures, so the backend learns how items really look from players. A sighting goes out under Report Game Data, the one switch for everything the mod reports for its developers. A switch per kind would ask the player again, and a player who read the first prompt would have agreed to one kind only, so each new kind is a new consent. One general switch is asked once, and the docs say what goes today. It shares one batch and backoff (`Batch`), and nothing is read while it is off. A batch the backend refuses for good (400, 404, 409, 413, 422) is dropped, because sending it again can only fail again, and any other failure is tried at the next report.
 
 - Only the player's own inventory, never a menu's slots. A menu can show another player's items, such as an auction's seller or a trade, and the redactor cannot find a name it was never told. The inventory is read from the tick, and a slot is looked at again only when its stack changes. A look the session has seen costs a few component reads, because the item is built only for a new one.
 - The backend counts distinct players and acts on a look only when at least two agree, because any signed-in client can send anything, and one client sending a thousand times is still one. Textures are refused unless every url is on `textures.minecraft.net`, so a client cannot make the backend or an agent's browser fetch what it chose.
-- `custom_data` goes through an allowlist, not a blocklist: the server keeps copy ids, owners and more there, and a key it adds later would otherwise leave the machine unreviewed. A head's `textures` property is cut to its urls in the mod, because the profile names its player beside the skin.
+- `custom_data` goes through an allowlist, not a blocklist, and inside `item_data` and `extra` too: the server keeps copy ids, owners and more there, and a key it adds later would otherwise leave the machine unreviewed. A head's `textures` property is cut to its urls in the mod, because the profile names its player beside the skin.
 
 ## A capture is redacted by rules that say where a name sits
 

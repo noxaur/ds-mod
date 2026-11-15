@@ -49,9 +49,23 @@ class ItemSightingsTest {
         val sent = sightings.take().single()
         assertEquals("gold", sent.skinId)
         assertEquals(
-            json("""{"item_data":{"item_id":"scylla","rarity":"EPIC"},"item_stats":{"damage":300},"item_modifiers":{"reforge":"fierce"},"extra":{"item_skin":{"skinId":"gold"},"owner":"Player1"},"abilities":["rage"]}"""),
+            json("""{"item_data":{"item_id":"scylla","rarity":"EPIC"},"item_stats":{"damage":300},"item_modifiers":{"reforge":"fierce"},"extra":{"item_skin":{"skinId":"gold"}},"abilities":["rage"]}"""),
             sent.data,
         )
+    }
+
+    @Test
+    fun `an unknown key inside item_data or extra is dropped, even one that holds a name`() {
+        val data = """{"item_data":{"item_id":"scylla","owner":"Alexander","rarity":"EPIC"},
+            "extra":{"item_dye":{"id":"red"},"crafted_by":"Alexander","item_skin":{"skinId":"gold","buyer":"Alexander"}}}"""
+        sightings.see(item(data = data))
+
+        val sent = sightings.take().single()
+        assertEquals(
+            json("""{"item_data":{"item_id":"scylla","rarity":"EPIC"},"extra":{"item_dye":{"id":"red"},"item_skin":{"skinId":"gold"}}}"""),
+            sent.data,
+        )
+        assertFalse("Alexander" in sent.data.toString())
     }
 
     @Test
