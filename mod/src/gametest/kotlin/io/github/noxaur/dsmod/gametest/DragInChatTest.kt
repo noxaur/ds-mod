@@ -69,6 +69,15 @@ class DragInChatTest : FabricClientGameTest {
             context.takeScreenshot("drag-in-chat-hover-vanilla")
             context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
 
+            // Escape during a drag out of the stack puts the block back in its place there, and the stack as it was.
+            val stack = context.computeOnClient<List<Pair<Float, Float>>, Nothing> { Hud.placed().map { it.x to it.y } }
+            check(stack.size > 1) { "The stack holds one block, so its order is not tested" }
+            // The stack follows the features' order, so the Dragon Timer tops it although the Zealot Tracker showed first.
+            context.runOnClient<Nothing> { check(Hud.placed().first().id == ID) { "The stack starts with ${Hud.placed().first().id}" } }
+            drag(start.x + 80, start.y + 60) { context.input.pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitTick() }
+            context.runOnClient<Nothing> { check(Hud.placed().map { it.x to it.y } == stack) { "Escape left the stack at ${Hud.placed().map { it.x to it.y }}, not $stack" } }
+            check(ID !in DsModClient.settings.hud.positions) { "Escape kept a position for a block from the stack" }
+
             // Let go three pixels off the middle of the screen, the block centers itself.
             val (width, height) = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.guiScaledWidth to it.window.guiScaledHeight }
             val centered = (width - start.width * start.scale) / 2.0

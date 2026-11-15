@@ -87,7 +87,7 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
             handed[i] = readout.version
             val id = readout.feature.id
             val block = readout.hud ?: if (editing && readout.feature.hasHud) hud(readout.feature.title) {} else null
-            if (block == null) Hud.hide(id) else Hud.show(id, group(id, block.dock), block)
+            if (block == null) Hud.hide(id) else Hud.show(id, group(id, block.dock), block, order = i)
             if (readout.slots.isEmpty()) Slots.clear(id) else Slots.mark(id, readout.slots)
             if (readout.marks.isEmpty()) World.hide(id) else World.show(id, readout.marks)
         }

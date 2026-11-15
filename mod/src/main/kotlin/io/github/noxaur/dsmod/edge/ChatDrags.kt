@@ -13,8 +13,9 @@ import net.minecraft.network.chat.Component
 
 /**
  * Drag In Chat. With the chat open, a block on the HUD moves, resizes and resets by [HudMover]'s rules, as it does in
- * the HUD editor. Minecraft draws the chat over the HUD, so where a row of chat, the input or the command
- * suggestions lie over a block, the press, the wheel and the hover are the chat's and it works as it always has.
+ * the HUD editor. Minecraft draws the chat over the HUD, so where a row of chat or the input lies over a block, and
+ * anywhere while command suggestions are open, the press, the wheel and the hover are the chat's and it works as it
+ * always has.
  * The keyboard stays the input's, except Escape during a drag, which puts the block back and keeps the chat open.
  */
 object ChatDrags {

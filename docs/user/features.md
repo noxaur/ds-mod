@@ -127,7 +127,7 @@ Open the chat and move the HUD as it is, without the editor. Point at a block to
 | Scroll over a block | Make it bigger or smaller |
 | Right-click a block | Put it back in the stack at its own size |
 
-The chat comes first: where its messages, the input or the command suggestions lie over a block, clicks and the wheel work on the chat as they always have. What you type still goes into the chat. A block docked beside the hotbar stays there, and blocks that only show during a fight are placed in the HUD editor.
+The chat comes first: where its messages or the input lie over a block, and anywhere while command suggestions are open, clicks and the wheel work on the chat as they always have. What you type still goes into the chat. A block docked beside the hotbar stays there, and blocks that only show during a fight are placed in the HUD editor.
 
 ## Chat
 

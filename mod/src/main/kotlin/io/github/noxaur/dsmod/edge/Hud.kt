@@ -50,7 +50,7 @@ private const val DOCK_GAP = 7
 object Hud {
     /** A line of text, with a bar under it when [bar] is set, or a row of item icons when [stacks] is. [y] is from the block's top. */
     private class Row(val text: Component, val bar: BarRow?, val barColor: Int, val stacks: List<ItemStack?>?, val y: Int)
-    private class Block(val header: Component?, val rows: List<Row>, val look: HudLook, val width: Int, val height: Int, val placeable: Boolean)
+    private class Block(val header: Component?, val rows: List<Row>, val look: HudLook, val width: Int, val height: Int, val placeable: Boolean, val order: Int)
 
     /** An item icon as it sits on the screen, in GUI pixels. */
     private class Cell(val x: Float, val y: Float, val size: Float, val stack: ItemStack)
@@ -91,9 +91,10 @@ object Hud {
 
     /**
      * Puts [block] in [group], replacing what [id] showed before. The group's corner is its plate's corner.
-     * A block that is not [placeable] is one no feature owns, so the HUD editor cannot grab it.
+     * A block that is not [placeable] is one no feature owns, so the HUD editor cannot grab it. A group stacks its
+     * blocks by [order], so a block that leaves the stack and comes back takes its old place in it.
      */
-    fun show(id: String, group: HudGroup, block: HudBlock, placeable: Boolean = true) {
+    fun show(id: String, group: HudGroup, block: HudBlock, placeable: Boolean = true, order: Int = 0) {
         val font = Minecraft.getInstance().font
         val line = font.lineHeight + 1
         val hotbar = block.look == HudLook.HOTBAR
@@ -132,7 +133,13 @@ object Hud {
         groups.values.forEach { if (it.place.id != group.id) it.blocks.remove(id) }
         val target = groups.getOrPut(group.id) { Group(group) }
         target.place = group
-        target.blocks[id] = Block(header, rows, block.look, width, height, placeable && group.dock == HudDock.FREE)
+        val joined = id !in target.blocks
+        target.blocks[id] = Block(header, rows, block.look, width, height, placeable && group.dock == HudDock.FREE, order)
+        if (joined && target.blocks.values.any { it.order > order }) {
+            val sorted = target.blocks.entries.sortedBy { it.value.order }
+            target.blocks.clear()
+            for ((key, value) in sorted) target.blocks[key] = value
+        }
         layout()
     }
 
