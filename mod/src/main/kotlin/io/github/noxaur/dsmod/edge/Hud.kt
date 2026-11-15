@@ -286,8 +286,9 @@ object Hud {
             DsModClient.game.metrics.time("hud.draw") {
                 val font = Minecraft.getInstance().font
                 val line = font.lineHeight + 1
-                // The Inventory look matches the inventory screen, which Themed Menus draws with the kit.
+                // The Inventory look matches the inventory screen, which Themed Menus draws with the kit, solid or as glass.
                 val themed = MenuSkin.themed
+                val glass = MenuSkin.glassAlpha
                 val pose = graphics.pose()
                 for (g in shown.indices) {
                     val group = shown[g]
@@ -302,7 +303,11 @@ object Hud {
                         val hotbar = block.look == HudLook.HOTBAR
                         val inventory = block.look == HudLook.INVENTORY
                         if (inventory) {
-                            if (themed) Kit.panel(graphics, PADDING, top, block.width, block.height) else Kit.inventoryPanel(graphics, PADDING, top, block.width, block.height)
+                            when {
+                                glass >= 0 -> Kit.glass(graphics, PADDING, top, block.width, block.height, glass)
+                                themed -> Kit.panel(graphics, PADDING, top, block.width, block.height)
+                                else -> Kit.inventoryPanel(graphics, PADDING, top, block.width, block.height)
+                            }
                         }
                         if (block.header != null) graphics.text(font, block.header, PADDING, top, -1, true)
                         for (r in block.rows.indices) {
@@ -316,7 +321,13 @@ object Hud {
                                 val pitch = pitch(block.look)
                                 for (i in stacks.indices) {
                                     val x = PADDING + across + i * pitch
-                                    if (inventory) if (themed) Kit.slot(graphics, x - 1, y + down - 1) else Kit.slotAt(graphics, x - 1, y + down - 1)
+                                    if (inventory) {
+                                        when {
+                                            glass >= 0 -> Kit.glassSlot(graphics, x - 1, y + down - 1)
+                                            themed -> Kit.slot(graphics, x - 1, y + down - 1)
+                                            else -> Kit.slotAt(graphics, x - 1, y + down - 1)
+                                        }
+                                    }
                                     val stack = stacks[i] ?: continue
                                     graphics.item(stack, x, y + down)
                                     graphics.itemDecorations(font, stack, x, y + down)

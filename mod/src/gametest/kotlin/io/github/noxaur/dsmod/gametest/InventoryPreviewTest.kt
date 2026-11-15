@@ -11,6 +11,7 @@ import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.ItemsRow
+import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
@@ -35,7 +36,7 @@ import javax.imageio.ImageIO
  * its count, and the chat's free mouse reads an item's tooltip. The hotbar joins it a little apart, and the grid never
  * empties while the inventory is read again after a menu, which takes a few ticks for items with long lore as
  * dragsim.co's have. Read the screenshots: the grid, the tooltip, the hotbar under a gap, and the Inventory look
- * with Themed Menus on in Charcoal and in Vanilla, and off.
+ * with Themed Menus on in Charcoal, in Vanilla and as glass, and off.
  */
 class InventoryPreviewTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
@@ -141,26 +142,43 @@ class InventoryPreviewTest : FabricClientGameTest {
                 println("InventoryPreviewTest: the HUD drew the plate look in ${drawMicros(context)}µs a frame")
 
                 // The Inventory look is the inventory screen as the player sees it: the theme's panel while Themed Menus
-                // is on, and the inventory texture's gray while it is off.
+                // is on, its glass under the Glass menu look, and the inventory texture's gray while it is off.
                 general.inventoryLook = InventoryLook.INVENTORY
                 val inventorySettings = DsModClient.settings.inventory
                 val themedBefore = inventorySettings.themedMenus
                 val themeBefore = DsModClient.settings.hud.theme
+                val menuLookBefore = inventorySettings.menuLook
                 try {
-                    for ((themed, theme) in listOf(true to Theme.CHARCOAL, true to Theme.VANILLA, false to Theme.CHARCOAL)) {
+                    val states = listOf(
+                        Triple(true, Theme.CHARCOAL, MenuLook.SOLID),
+                        Triple(true, Theme.VANILLA, MenuLook.SOLID),
+                        Triple(true, Theme.CHARCOAL, MenuLook.GLASS),
+                        Triple(false, Theme.CHARCOAL, MenuLook.SOLID),
+                    )
+                    for ((themed, theme, menuLook) in states) {
                         inventorySettings.themedMenus = themed
+                        inventorySettings.menuLook = menuLook
                         DsModClient.settings.hud.theme = theme
                         context.waitTicks(10)
                         check(skin(stackAt(cell(0, 0, inventory = true)))) { "The Inventory look moved the first item off its slot" }
                         check(stackAt(cell(3, 0, inventory = true, apart = true))?.hoverName?.string == "Item 0") { "The Inventory look moved the hotbar row" }
-                        val shot = context.takeScreenshot("inventory-preview-inventory-look-${if (themed) theme.name.lowercase() else "vanilla-texture"}")
-                        val panel = panelColor(context, shot)
-                        val expected = if (themed) theme.panel and 0xFFFFFF else VANILLA_PANEL
-                        check(panel == expected) { "The panel is %06X with Themed Menus %s in %s, not %06X".format(panel, themed, theme, expected) }
+                        val name = when {
+                            !themed -> "vanilla-texture"
+                            menuLook == MenuLook.GLASS -> "glass"
+                            else -> theme.name.lowercase()
+                        }
+                        val shot = context.takeScreenshot("inventory-preview-inventory-look-$name")
+                        // Glass shows the world through it, so only a solid panel has one color to check.
+                        if (menuLook == MenuLook.SOLID) {
+                            val panel = panelColor(context, shot)
+                            val expected = if (themed) theme.panel and 0xFFFFFF else VANILLA_PANEL
+                            check(panel == expected) { "The panel is %06X with Themed Menus %s in %s, not %06X".format(panel, themed, theme, expected) }
+                        }
                         println("InventoryPreviewTest: the HUD drew the Inventory look in ${drawMicros(context)}µs a frame, Themed Menus $themed, $theme")
                     }
                 } finally {
                     inventorySettings.themedMenus = themedBefore
+                    inventorySettings.menuLook = menuLookBefore
                     DsModClient.settings.hud.theme = themeBefore
                 }
             } finally {

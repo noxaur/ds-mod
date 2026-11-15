@@ -38,7 +38,7 @@ Shows the items in your inventory as a grid on the HUD, nine to a row as your in
 | Setting | Does |
 | --- | --- |
 | Inventory Rows | Picks which rows show, and their order. The three rows of your inventory show by default, and your hotbar can join them, set a little apart as it is in your inventory |
-| Inventory Look | Shows the items on the HUD's plate, on nothing, or in a panel of slots like your inventory's: in your theme while Themed Menus is on, and as your resource pack draws the inventory while it is off |
+| Inventory Look | Shows the items on the HUD's plate, on nothing, or in a panel of slots like your inventory's: in your theme, solid or as glass as Menu Look says, while Themed Menus is on, and as your resource pack draws the inventory while it is off |
 
 ### Camera
 

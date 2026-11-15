@@ -103,9 +103,11 @@ object MenuSkin {
             screen is HopperScreen || screen is DispenserScreen || screen is ShulkerBoxScreen
         )
 
+    /** The alpha of the glass themed menus are drawn as, from 0 for clear to 255, or -1 when they are solid or not themed. */
+    val glassAlpha: Int get() = if (themed && settings.menuLook == MenuLook.GLASS) Menus.glassAlpha(settings.glassOpacity) else -1
+
     /** The alpha of [screen]'s glass, from 0 for clear to 255, or -1 when the kit does not draw it as glass. */
-    fun glass(screen: AbstractContainerScreen<*>): Int =
-        if (settings.menuLook == MenuLook.GLASS && skins(screen)) Menus.glassAlpha(settings.glassOpacity) else -1
+    fun glass(screen: AbstractContainerScreen<*>): Int = if (skins(screen)) glassAlpha else -1
 
     /** Whether the menu open now is drawn as glass. */
     private fun glassOpen(): Boolean {

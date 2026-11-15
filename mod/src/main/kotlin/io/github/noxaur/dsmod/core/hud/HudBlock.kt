@@ -38,8 +38,8 @@ enum class HudLook(private val label: String) {
     HOTBAR("Hotbar"),
 
     /**
-     * A panel with its icons in 18px slots, as the player's inventory screen draws them: by the kit in the player's theme
-     * while Themed Menus is on, and from the inventory's own texture while it is off.
+     * A panel with its icons in 18px slots, as the player's inventory screen draws them: by the kit in the player's theme,
+     * solid or as glass as their Menu Look says, while Themed Menus is on, and from the inventory's own texture while it is off.
      */
     INVENTORY("Inventory"),
     ;
