@@ -24,6 +24,7 @@ import io.github.noxaur.dsmod.core.feature.general.PetPosition
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudLook
 import io.github.noxaur.dsmod.core.input.CommandBind
+import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.TabLayout
@@ -359,6 +360,18 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var themedMenus = true
+
+        @Expose
+        @ConfigOption(name = "Menu Look", desc = "Draw themed menus solid, or as glass that shows the world.")
+        @ConfigEditorDropdown
+        @JvmField
+        var menuLook = MenuLook.SOLID
+
+        @Expose
+        @ConfigOption(name = "Glass Opacity", desc = "Set how dark the glass is, from clear at 0 to solid at 100.")
+        @ConfigEditorSlider(minValue = 0f, maxValue = 100f, minStep = 5f)
+        @JvmField
+        var glassOpacity = 60f
 
         @Expose
         @ConfigOption(name = "Stable Menus", desc = "Keep Go Back, Close and your inventory in place in every menu.")
