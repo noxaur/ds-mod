@@ -25,8 +25,10 @@ export interface Observation {
 }
 
 export interface ItemLimits {
-  /** At most this many (entry, player) rows, and as many (entry, player, skin) rows. */
+  /** At most this many (entry, player) rows in all, and as many (entry, player, skin) rows. */
   readonly maxRows: number;
+  /** At most this many (entry, player) rows for one player, and as many (entry, player, skin) rows. */
+  readonly maxPlayerRows: number;
   /** At most this many samples for one entry, one per player. */
   readonly maxSamples: number;
 }
@@ -51,6 +53,65 @@ export interface TextureTally {
 
 /** Players who must agree before the renderer is told. */
 export const MIN_PLAYERS = 2;
+
+/** What one request says of one entry, every observation of it folded into one. */
+export interface Folded {
+  readonly entry: string;
+  readonly glint: boolean;
+  readonly plain: boolean;
+  /** The first sample that fits, or null. */
+  readonly sample: ItemSighting | null;
+  /** The skull texture by `skinId`, the last one sent for each. */
+  readonly textures: ReadonlyMap<string, string>;
+}
+
+/** One entry's rows from one request, so a store writes each row once however often it was sent. */
+export const fold = (observations: readonly Observation[]): readonly Folded[] => {
+  const byEntry = new Map<
+    string,
+    { glint: boolean; plain: boolean; sample: ItemSighting | null; textures: Map<string, string> }
+  >();
+  for (const { entry, skinId, texture, glint, sample } of observations) {
+    const folded = byEntry.get(entry) ?? {
+      glint: false,
+      plain: false,
+      sample: null,
+      textures: new Map<string, string>(),
+    };
+    folded.glint ||= glint;
+    folded.plain ||= !glint;
+    folded.sample ??= sample;
+    if (texture !== null) {
+      folded.textures.set(skinId, texture);
+    }
+    byEntry.set(entry, folded);
+  }
+  return [...byEntry].map(([entry, folded]) => ({ entry, ...folded }));
+};
+
+/** How many new rows a player may still add, given the rows they and everyone have. */
+export const roomFor = (limits: ItemLimits, playerRows: number, totalRows: number): number =>
+  Math.max(0, Math.min(limits.maxPlayerRows - playerRows, limits.maxRows - totalRows));
+
+/** The items a store keeps: every one it already has a row for, and the first `room` of the others. */
+export const admit = <T>(items: readonly T[], hasRow: (item: T) => boolean, room: number): T[] => {
+  let left = room;
+  return items.filter((item) => hasRow(item) || left-- > 0);
+};
+
+/** One page of entries from a sorted list that holds one more than `limit` when there is a next page. */
+export const pageOf = (entries: readonly string[], limit: number) => ({
+  entries: entries.slice(0, limit),
+  next: entries.length > limit ? (entries[limit - 1] ?? null) : null,
+});
+
+/** Which entries an agent asks about: one with its samples, or a page of all of them without. */
+export interface AppearanceQuery {
+  readonly entry?: string | undefined;
+  /** The `next` of the page before, so a page starts after it. */
+  readonly after?: string | undefined;
+  readonly limit: number;
+}
 
 /** The one place the threshold is applied, so the in-memory store and D1 cannot disagree on it. */
 export const hintsFrom = (
@@ -93,7 +154,8 @@ export class ItemStore extends Context.Service<
   {
     /**
      * Remembers what one player saw, once per player however often they send it. A row for a new entry is kept only
-     * while fewer than `limits.maxRows` are, and an entry whose row was refused keeps no texture and no sample.
+     * while the player has fewer than `limits.maxPlayerRows` and everyone fewer than `limits.maxRows`, and an entry
+     * whose row was refused keeps no texture and no sample.
      */
     readonly record: (
       userId: string,
@@ -101,8 +163,15 @@ export class ItemStore extends Context.Service<
       observations: readonly Observation[],
       limits: ItemLimits,
     ) => Effect.Effect<void>;
-    /** Everything players saw, for an agent. It holds no user id. */
-    readonly appearances: Effect.Effect<readonly ItemAppearance[]>;
+    /**
+     * What players saw, for an agent, with no user id. One entry comes with its samples. Without one, a page of
+     * entries in order comes without, so a reply is never bigger than `limit` entries and the samples of one.
+     */
+    readonly appearances: (query: AppearanceQuery) => Effect.Effect<{
+      readonly items: readonly ItemAppearance[];
+      /** The `after` for the next page, or null at the end. */
+      readonly next: string | null;
+    }>;
     /** What enough players agree on, for the entries asked about. An entry nobody saw is left out. */
     readonly hints: (entries: readonly string[]) => Effect.Effect<ReadonlyMap<string, ItemHints>>;
   }
@@ -124,10 +193,14 @@ export const appearancesFrom = (
     samples: samples.get(entry) ?? [],
   }));
 
+const rowsOf = (rows: ReadonlyMap<string, { readonly userId: string }>, userId: string) =>
+  [...rows.values()].filter((row) => row.userId === userId).length;
+
 /** A store that forgets everything when the process ends, for the tests. */
 export const memoryItemStore = (): ItemStore["Service"] => {
   interface Seen {
     readonly entry: string;
+    readonly userId: string;
     glint: boolean;
     plain: boolean;
   }
@@ -159,36 +232,58 @@ export const memoryItemStore = (): ItemStore["Service"] => {
   return {
     record: (userId, _modVersion, observations, limits) =>
       Effect.sync(() => {
-        for (const { entry, skinId, texture, glint, sample } of observations) {
-          const key = `${entry}\n${userId}`;
-          const known = seen.get(key);
-          if (known === undefined && seen.size >= limits.maxRows) {
-            continue;
-          }
-          const row = known ?? { entry, glint: false, plain: false };
+        const rowKey = (entry: string) => `${entry}\n${userId}`;
+        const kept = admit(
+          fold(observations),
+          ({ entry }) => seen.has(rowKey(entry)),
+          roomFor(limits, rowsOf(seen, userId), seen.size),
+        );
+        for (const { entry, glint, plain } of kept) {
+          const row = seen.get(rowKey(entry)) ?? { entry, userId, glint: false, plain: false };
           row.glint ||= glint;
-          row.plain ||= !glint;
-          seen.set(key, row);
-          if (texture !== null) {
-            const textureKey = `${key}\n${skinId}`;
-            if (textures.has(textureKey) || textures.size < limits.maxRows) {
-              textures.set(textureKey, { entry, skinId, texture, players: 1, userId });
-            }
-          }
-          const kept = samples.get(entry) ?? new Map<string, ItemSighting>();
-          if (sample !== null && !kept.has(userId) && kept.size < limits.maxSamples) {
-            kept.set(userId, sample);
-            samples.set(entry, kept);
+          row.plain ||= plain;
+          seen.set(rowKey(entry), row);
+        }
+        const wanted = kept.flatMap(({ entry, textures: byskin }) =>
+          [...byskin].map(([skinId, texture]) => ({ key: `${rowKey(entry)}\n${skinId}`, entry, skinId, texture })),
+        );
+        for (const { key, entry, skinId, texture } of admit(
+          wanted,
+          (row) => textures.has(row.key),
+          roomFor(limits, rowsOf(textures, userId), textures.size),
+        )) {
+          textures.set(key, { entry, skinId, texture, players: 1, userId });
+        }
+        for (const { entry, sample } of kept) {
+          const byPlayer = samples.get(entry) ?? new Map<string, ItemSighting>();
+          if (sample !== null && !byPlayer.has(userId) && byPlayer.size < limits.maxSamples) {
+            byPlayer.set(userId, sample);
+            samples.set(entry, byPlayer);
           }
         }
       }),
-    appearances: Effect.sync(() =>
-      appearancesFrom(
-        tallies(),
-        textureTallies(),
-        new Map([...samples].map(([entry, byPlayer]) => [entry, [...byPlayer.values()]])),
-      ),
-    ),
+    appearances: ({ entry, after, limit }) =>
+      Effect.sync(() => {
+        const all = tallies().toSorted((a, b) => (a.entry < b.entry ? -1 : 1));
+        if (entry !== undefined) {
+          const only = all.filter((tally) => tally.entry === entry);
+          const kept = new Map([[entry, [...(samples.get(entry)?.values() ?? [])]]]);
+          return { items: appearancesFrom(only, textureTallies(), kept), next: null };
+        }
+        const { entries, next } = pageOf(
+          all.map((tally) => tally.entry).filter((name) => after === undefined || name > after),
+          limit,
+        );
+        const wanted = new Set(entries);
+        return {
+          items: appearancesFrom(
+            all.filter((tally) => wanted.has(tally.entry)),
+            textureTallies(),
+            new Map(),
+          ),
+          next,
+        };
+      }),
     hints: (entries) => Effect.sync(() => hintsFrom(entries, tallies(), textureTallies())),
   };
 };

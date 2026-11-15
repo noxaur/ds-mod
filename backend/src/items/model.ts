@@ -85,3 +85,11 @@ export const ItemAppearance = Schema.Struct({
   samples: Schema.Array(ItemSighting),
 });
 export type ItemAppearance = typeof ItemAppearance.Type;
+
+/** A page of what players saw. With an `entry` asked for it is that one entry, with its samples. */
+export const ItemAppearances = Schema.Struct({
+  items: Schema.Array(ItemAppearance),
+  /** The `after` that asks for the next page, or null when there is none. */
+  next: Schema.NullOr(Schema.String),
+});
+export type ItemAppearances = typeof ItemAppearances.Type;

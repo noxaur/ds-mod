@@ -77,7 +77,7 @@ const AdminLive = HttpApiBuilder.group(Api, "admin", (handlers) =>
     .handle("requests", () => Contrib.reports)
     .handle("close", ({ params }) => Contrib.close(params.id))
     .handle("capture", ({ params }) => Contrib.captureOf(params.id))
-    .handle("items", () => Items.appearances)
+    .handle("items", ({ query }) => Items.appearances({ ...query, limit: query.limit ?? Items.MAX_APPEARANCES_PAGE }))
     .handle("unknowns", () => Contrib.unknowns),
 );
 

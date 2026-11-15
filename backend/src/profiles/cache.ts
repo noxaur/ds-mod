@@ -14,6 +14,8 @@ export const KEEP_SECONDS = 24 * 60 * 60;
 export const MISSING_SECONDS = 60;
 /** How long the catalog is used before it is fetched again. It changes with the server's releases, not by the minute. */
 export const CATALOG_FRESH_MS = 60 * 60 * 1000;
+/** How long a stale catalog is used without asking dragsim.co again after it could not be fetched. */
+export const CATALOG_RETRY_MS = 60 * 1000;
 
 // Each KV key has one purpose, and a client chooses none of its parts but the name, which is lowercase and validated.
 const nameKey = (lower: string) => `name:${lower}`;
@@ -110,7 +112,8 @@ export const lookup = Effect.fn(function* (name: string, profileId: string | und
   if (Option.isSome(cached) && now - cached.value.fetchedAt < FRESH_MS) {
     return { ...cached.value, stale: false };
   }
-  if (!known && (yield* store.get(missingKey(lower))) !== null) {
+  // Checked even for a name once known, which dragsim.co answers 404 for after a rename or a ban.
+  if ((yield* store.get(missingKey(lower))) !== null) {
     return yield* new PlayerNotFound();
   }
   return yield* fetchPlayer(name, profileId).pipe(
@@ -140,6 +143,8 @@ export interface Catalog {
 
 // One parse of 2.3 MB per Worker isolate and hour. The store is the key, so each test's store has a catalog of its own.
 const parsed = new WeakMap<object, Catalog>();
+/** When each store's stale catalog may be fetched again, so dragsim.co being down is not asked about on every request. */
+const retryAt = new WeakMap<object, number>();
 
 const readCatalog = Effect.fn(function* (store: ProfileStore["Service"]) {
   return Option.flatMap(decodeEntry(yield* store.get(CATALOG_KEY)), ({ fetchedAt, body }) =>
@@ -160,13 +165,17 @@ const fetchCatalog = Effect.gen(function* () {
 /**
  * The catalog the renderer and the level tables need. It is used while it is an hour old at most, from this isolate's
  * parse or else the one in the store, and fetched again after that. A catalog that cannot be fetched is replaced by an
- * older copy, because the tables change rarely, and without any copy the lookup is unavailable.
+ * older copy, kept in memory for a minute before the next try, because the tables change rarely, and without any copy
+ * the lookup is unavailable.
  */
 export const catalog = Effect.gen(function* () {
   const store = yield* ProfileStore;
   const now = yield* Clock.currentTimeMillis;
   const own = parsed.get(store);
   if (own !== undefined && now - own.fetchedAt < CATALOG_FRESH_MS) {
+    return own;
+  }
+  if (own !== undefined && now < (retryAt.get(store) ?? 0)) {
     return own;
   }
   const shared = Option.getOrUndefined(yield* readCatalog(store));
@@ -179,8 +188,13 @@ export const catalog = Effect.gen(function* () {
     Effect.map((fetched) => ({ ...fetched, fetchedAt: now })),
     Effect.tap((fetched) => store.put(CATALOG_KEY, { fetchedAt: now, body: fetched.raw }, KEEP_SECONDS)),
     Effect.tap((fetched) => Effect.sync(() => parsed.set(store, fetched))),
-    Effect.catchTag("UpstreamDown", () =>
-      newest === undefined ? Effect.fail(new UpstreamUnavailable()) : Effect.succeed(newest),
-    ),
+    Effect.catchTag("UpstreamDown", () => {
+      if (newest === undefined) {
+        return Effect.fail(new UpstreamUnavailable());
+      }
+      parsed.set(store, newest);
+      retryAt.set(store, now + CATALOG_RETRY_MS);
+      return Effect.succeed(newest);
+    }),
   );
 });

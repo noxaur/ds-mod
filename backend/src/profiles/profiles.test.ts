@@ -6,7 +6,7 @@ import { afterEach, beforeEach, expect, test, vi } from "vite-plus/test";
 
 import { makeApp } from "../app.ts";
 import { memoryServices } from "../memory.ts";
-import { CATALOG_FRESH_MS, FRESH_MS } from "./cache.ts";
+import { CATALOG_FRESH_MS, CATALOG_RETRY_MS, FRESH_MS } from "./cache.ts";
 import { Container, Profile } from "./model.ts";
 import { memoryProfileStore } from "./store.ts";
 import { UpstreamDown } from "./upstream.ts";
@@ -289,6 +289,41 @@ test("a name dragsim.co does not know is remembered for a minute", async () => {
   expect(await failure("/v1/players/Nobody/profile")).toEqual({ status: 404, tag: "PlayerNotFound" });
   expect((await failure("/v1/players/nobody/profile")).status).toBe(404);
   expect(playerCalls()).toBe(1);
+});
+
+test("a name that was known and is now missing stops reaching dragsim.co", async () => {
+  const { get, failure, state, playerCalls } = backend();
+  await get("/v1/players/Testwyrm/profile");
+  expect(playerCalls()).toBe(1);
+  state.player = { status: 404, body: { error: "No DragSim player found by that name.", status: 404 } };
+  vi.setSystemTime(Date.now() + FRESH_MS + 1);
+  expect((await failure("/v1/players/Testwyrm/profile")).status).toBe(404);
+  expect((await failure("/v1/players/Testwyrm/profile")).status).toBe(404);
+  expect((await failure("/v1/players/testwyrm/profile")).status).toBe(404);
+  expect(playerCalls()).toBe(2);
+});
+
+test("a stale catalog is kept for a minute when dragsim.co is down, then tried again", async () => {
+  const { get, asked, state } = backend();
+  const catalogCalls = () => asked.filter((path) => path.startsWith("/data/catalog")).length;
+  await get("/v1/players/Testwyrm/profile");
+  state.catalog = "down";
+  vi.setSystemTime(Date.now() + CATALOG_FRESH_MS + 1);
+  expect((await get("/v1/players/Testwyrm/profile")).status).toBe(200);
+  expect(catalogCalls()).toBe(2);
+  for (let call = 0; call < 5; call++) {
+    expect((await get("/v1/players/Testwyrm/profile")).status).toBe(200);
+  }
+  expect(catalogCalls()).toBe(2);
+  vi.setSystemTime(Date.now() + CATALOG_RETRY_MS + 1);
+  expect((await get("/v1/players/Testwyrm/profile")).status).toBe(200);
+  expect(catalogCalls()).toBe(3);
+  state.catalog = { status: 200, body: catalog };
+  vi.setSystemTime(Date.now() + CATALOG_RETRY_MS + 1);
+  await get("/v1/players/Testwyrm/profile");
+  expect(catalogCalls()).toBe(4);
+  await get("/v1/players/Testwyrm/profile");
+  expect(catalogCalls()).toBe(4);
 });
 
 test("a profile the player does not have is not a missing player", async () => {

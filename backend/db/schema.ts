@@ -1,4 +1,4 @@
-import { integer, primaryKey, sqliteTable, text, uniqueIndex } from "void/schema-d1";
+import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "void/schema-d1";
 
 export const requests = sqliteTable("contrib_requests", {
   id: text("id").primaryKey(),
@@ -52,7 +52,8 @@ export const itemSeen = sqliteTable(
     plain: integer("plain").notNull(),
     modVersion: text("mod_version").notNull(),
   },
-  (table) => [primaryKey({ columns: [table.entry, table.userId] })],
+  // The per-player cap counts a player's rows.
+  (table) => [primaryKey({ columns: [table.entry, table.userId] }), index("item_seen_by_user").on(table.userId)],
 );
 
 // The skull texture a player saw on one skin of an item, "" for the item's own.
@@ -64,7 +65,10 @@ export const itemTextures = sqliteTable(
     skinId: text("skin_id").notNull(),
     texture: text("texture").notNull(),
   },
-  (table) => [primaryKey({ columns: [table.entry, table.userId, table.skinId] })],
+  (table) => [
+    primaryKey({ columns: [table.entry, table.userId, table.skinId] }),
+    index("item_textures_by_user").on(table.userId),
+  ],
 );
 
 // One example per player and item. The agent's view leaves the user out.
