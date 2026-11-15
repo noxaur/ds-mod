@@ -6,6 +6,14 @@ const config: NextConfig = {
   logging: { serverFunctions: false },
   // A page cannot set its own headers, so the login page gets them here.
   headers: () => [
+    // No other site may frame a page, so none can overlay the login's confirm button.
+    {
+      source: "/:path*",
+      headers: [
+        { key: "X-Frame-Options", value: "DENY" },
+        { key: "X-Content-Type-Options", value: "nosniff" },
+      ],
+    },
     {
       source: "/login",
       headers: [
