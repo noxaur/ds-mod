@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.capture
 
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -81,5 +82,27 @@ class ChangeLogTest {
             ),
             recorded,
         )
+    }
+
+    @Test
+    fun `offerChanges records everything first, then only what the caller says changed`() {
+        log.offerChanges("entities", mapOf("1" to JsonPrimitive("zombie"), "2" to JsonPrimitive("pig")))
+        log.offerChanges("entities", emptyMap())
+        log.offerChanges("entities", mapOf("1" to JsonPrimitive("husk"), "2" to JsonNull))
+
+        assertEquals(
+            listOf(
+                """entities {"full":true,"entries":{"1":"zombie","2":"pig"}}""",
+                """entities {"full":false,"entries":{"1":"husk","2":null}}""",
+            ),
+            recorded,
+        )
+    }
+
+    @Test
+    fun `offerChanges records an empty first offer`() {
+        log.offerChanges("entities", emptyMap())
+
+        assertEquals(listOf("""entities {"full":true,"entries":{}}"""), recorded)
     }
 }
