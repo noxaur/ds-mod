@@ -146,8 +146,12 @@ sourceSets.main { resources.srcDir(accessWidener.map { layout.buildDirectory.dir
 
 tasks.withType<ProcessResources>().configureEach {
     val version = project.version
+    val backend = providers.gradleProperty("backend_url").get()
+    val website = providers.gradleProperty("website_url").get()
     inputs.property("version", version)
-    filesMatching("fabric.mod.json") { expand("version" to version) }
+    inputs.property("backend", backend)
+    inputs.property("website", website)
+    filesMatching("fabric.mod.json") { expand("version" to version, "backend_url" to backend, "website_url" to website) }
 }
 
 tasks.jar {

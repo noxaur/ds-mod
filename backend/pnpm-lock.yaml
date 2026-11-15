@@ -13,12 +13,18 @@ importers:
 
   .:
     dependencies:
+      better-auth:
+        specifier: 1.7.14
+        version: 1.7.14(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@cloudflare/workers-types@5.20261031.1)(better-sqlite3@13.0.3)(kysely@0.29.7)(mysql2@3.24.6(@types/node@24.19.2))(pg@8.23.1))(mysql2@3.24.6(@types/node@24.19.2))(pg@8.23.1)(vitest@5.0.5)
       effect:
         specifier: 4.1.1
         version: 4.1.1
       void:
         specifier: 1.4.0
         version: 1.4.0(@types/node@24.19.2)(@voidzero-dev/vite-plus-core@1.4.0(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(arktype@2.2.9)(kysely@0.29.7)(valibot@1.5.0(typescript@6.0.3))(vitest@5.0.5)(workerd@1.20261023.1)(wrangler@4.156.0(@cloudflare/workers-types@5.20261031.1)(@types/node@24.19.2))(zod@4.6.7)
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
     devDependencies:
       '@effect/language-service':
         specifier: 0.87.5

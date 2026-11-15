@@ -8,7 +8,8 @@
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
-    "check": "pnpm fmt && pnpm typecheck && pnpm lint",
+    "check": "pnpm fmt && pnpm typecheck && pnpm lint && timeout 30 pnpm test",
+    "test": "vp test run",
     "fmt": "vp fmt --check"
   },
   "dependencies": {

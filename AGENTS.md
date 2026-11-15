@@ -77,12 +77,14 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | A feature's handler and readout average under 20µs | `FeatureReplayTest` |
 | A capture type has one producer | `CaptureWriter` rejects a raw record with an event's type |
 | The jars a player installs boot and open settings | `runProdClientGameTest` |
-| A unit test run takes at most 30 seconds | `timeout` on `tasks.test` in `mod/build.gradle.kts`, and `timeout 30` on the tests in `check:backend` |
+| A unit test run takes at most 30 seconds | `timeout` on `tasks.test` in `mod/build.gradle.kts`, and `timeout 30` on the tests in `check:backend` and in `web/package.json` |
 | A CI job takes at most 3 minutes | `.github/actions/time-limit`, the last step of every job in `ci.yml` |
 | The mod stays inside its frame, tick and size caps | `PerfTest` against `mod/src/gametest/resources/perf-budgets.json`, in CI's `perf` job |
 | A beta ships only when every check and game test passes | `.github/workflows/beta.yml` |
 | Every capture type reaches the file | `CaptureTest`, and `BriefTest` for `step` |
 | A capture a player uploads holds no player name the mod knows, and no chat | `RedactCaptureTest` |
+| The backend believes a sign-in only when Mojang confirms it | `minecraft.test.ts` in `backend/src/identity/` |
+| The website signs a browser in only after the player confirms whose account it is | `signIn.test.ts` in `web/app/login/` |
 | Specs hold their invariants | TLC on `specs/` |
 | `api/openapi.json` matches the backend's API definition | `app.test.ts` in `backend/src/` |
 | Backend code is formatted, type-safe and passes lint with no warnings | `vp check` in `check:backend` |

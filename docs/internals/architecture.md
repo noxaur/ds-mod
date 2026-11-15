@@ -4,9 +4,19 @@ ds-mod has three parts. The mod runs in the player's game. The backend is our ow
 
 ## The backend is an Effect API inside a Void app
 
-Void deploys the backend to Cloudflare Workers and owns its bindings. The API itself is defined and handled with Effect, and one catch-all route hands each request to it. The split keeps the way out open. A move to a single machine needs a new entry point, and no change to a rule.
+Void deploys the backend to Cloudflare Workers and owns the database and the sign-in tables. The API itself is defined and handled with Effect, and one catch-all route hands each request to it. The split keeps the way out open. A move to a single machine needs a new entry point, and no change to a rule.
 
 The contract is generated because a hand-written one drifts. The mod is Kotlin and can share no types with the backend, so the file is what it reads, and a test fails when the file is stale.
+
+## A player is their Minecraft account, and the client is never believed
+
+The mod is open source, so anyone can build a client that sends whatever it likes. Sign-in therefore rests on something a client cannot fake. The backend issues a random server id, the client tells Mojang it is joining that server, and the backend asks Mojang who joined. Only the holder of an account's Minecraft session can make that call, so a modified client can sign in as its own account and as no other. No secret ships in the mod, because a secret in an open jar is public.
+
+This proves who is asking and nothing about what they send. A signed-in client can still upload a capture it invented, which is why one request is recorded by several players and an agent compares them. No encryption can close that gap, since the player controls the machine that would hold the key.
+
+Email and password sign-in is switched off, so no account exists that Mojang did not vouch for. A session ends 24 hours after it began and is never extended, so a stolen token dies by itself. The mod pays nothing for that, because it repeats the proof without the player noticing.
+
+The website has no sign-in page. A site that asked for the Microsoft login would need an Azure app that Mojang approves. Instead the mod, which is already signed in, trades its session for a link that works once within a minute. The token sits in the link's fragment, which a browser sends to no server and leaves out of the Referer, so the website takes it from the page's own script. The page then asks the player to confirm the account before it keeps the session, because anyone can send a player a link to their own account, and a browser signed in to it unnoticed would hand that person whatever the player does next.
 
 ## The mod knows the game only from packets
 
@@ -91,6 +101,14 @@ Recording is client-thread work that no thread can do for it, because it reads g
 A capture holds player names and private chat, and `PlayerNames` finds them by rules that a line nobody has seen can slip past. The mod redacts before it uploads, so a name never leaves the machine, using the same `PlayerNames` and the same redactor that cuts fixtures. The backend still treats every upload as sensitive, because the mod is open source and a modified one skips the redaction. The raw `chat` records are dropped instead of redacted, since `system` carries the same lines as events and a typed message sits in nested components there.
 
 What a player typed is found by shape, not by a list of formats. The server's whisper, party and message lines are in no capture, so a list would be a guess that passes its own tests. In a `system` line, whatever follows a known name and a `: ` is replaced. That costs the text of a server line that happens to have the same shape, and a line from a player the capture never names elsewhere still gets through. A component that spells a name across several pieces, one per color, is replaced by its redacted plain text, because no single string holds the name to replace.
+
+## The mod signs in when it first needs to, and keeps the session in memory
+
+Nothing contacts the backend until the player uses `/dsmod login`. The session token is held in memory and never written, logged, shown or recorded: the jar is public, and a token on disk or in a stream is a stolen account for the day it lives. For the same reason `/dsmod login` opens the browser directly, and the login token never appears in chat, where a viewer could use it first. Minecraft's own opener logs the address when it fails, so the mod uses the system's opener and reports a failure without the address.
+
+A session ends after 24 hours, so a 401 signs in again and repeats the call once. A second 401 is an error, not a loop.
+
+The backend's address and the website's are set when the jar is built, in `gradle.properties`, and written into the jar's metadata. They are not a player's setting, because a player who pointed the mod somewhere else would be sending their captures there.
 
 ## The release jar carries its own MoulConfig
 

@@ -50,6 +50,7 @@ The code is split into two source sets, and each becomes its own mod.
 - `src/main` is the release build, the jar players install. It cannot see debug code, so the compiler keeps developer tools out of it.
 - `src/debug` holds developer tools such as `/dscapture`, `/dskit` and `cutFixture`. The debug jar contains the release jar plus these tools, and `runClient` loads both.
 - Put a tool in `src/debug` when only a developer or an agent needs it. The recorder is not one: it is in the release jar. `Recorder` in `edge/capture` is its one switch, and while it is off each hook is a null check. Keep it that way: nothing the recorder does may run before `Recorder.start`.
+- The backend's address and the website's are `backend_url` and `website_url` in `gradle.properties`, written into the jar by the build. A player has no setting for them.
 - `runClient` also loads the third-party mods in the `devMods` configuration, such as Sodium and Mod Menu, and logs in with the user's Microsoft account through DevAuth. These mods never ship in a jar, and the game tests run without them.
 
 ## Seeing the game

@@ -10,6 +10,7 @@ import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
+import io.github.noxaur.dsmod.edge.contribute.Contribute
 import io.github.noxaur.dsmod.core.text.text
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
@@ -152,6 +153,7 @@ object DsModClient : ClientModInitializer {
                             1
                         },
                     )
+                    .then(ClientCommands.literal("login").executes { Contribute.login(); 1 })
                     .then(
                         ClientCommands.literal("cancel").executes {
                             if (Recording.cancel()) Chat.send(text { body("Recording cancelled. Nothing was sent.") }) else Chat.send(text { bad("No recording to cancel.") })
