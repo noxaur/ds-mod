@@ -1,10 +1,8 @@
 package io.github.noxaur.dsmod.core.config
 
-import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class FavoritesTest {
@@ -36,16 +34,32 @@ class FavoritesTest {
     }
 
     @Test
-    fun `every default favorite is a setting the screen shows`() {
-        for (path in Favorites.DEFAULT) {
-            val (category, option) = path.split('.')
-            val holder = DsModConfig::class.java.getField(category).type
-            assertNotNull(holder.getField(option).getAnnotation(ConfigOption::class.java), "$path is not a setting")
+    fun `nothing starts starred`() {
+        assertEquals(emptyList(), DsModConfig().favorites)
+    }
+
+    @Test
+    fun `a row unstarred in Favorites stays until the player leaves`() {
+        val view = FavoritesView()
+        val starred = listOf("general.fullbright", "loot.lootAlerts")
+        val after = view.toggle(starred, "general.fullbright", here = true)
+        assertEquals(listOf("loot.lootAlerts"), after)
+        // The row stays in place, so a quick second press lands on it and stars it again.
+        assertEquals(listOf("general.fullbright", "loot.lootAlerts"), view.rows(all, after) { it })
+        val again = view.toggle(after, "general.fullbright", here = true)
+        assertEquals(listOf("loot.lootAlerts", "general.fullbright"), again)
+        assertEquals(listOf("general.fullbright", "loot.lootAlerts"), view.rows(all, again) { it })
+
+        view.toggle(again, "loot.lootAlerts", here = true).let { left ->
+            view.left()
+            assertEquals(listOf("general.fullbright"), view.rows(all, left) { it })
         }
     }
 
     @Test
-    fun `a new player starts with the defaults starred`() {
-        assertEquals(Favorites.DEFAULT, DsModConfig().favorites)
+    fun `a setting unstarred in its own category leaves Favorites at once`() {
+        val view = FavoritesView()
+        val after = view.toggle(listOf("general.fullbright", "loot.lootAlerts"), "general.fullbright", here = false)
+        assertEquals(listOf("loot.lootAlerts"), view.rows(all, after) { it })
     }
 }

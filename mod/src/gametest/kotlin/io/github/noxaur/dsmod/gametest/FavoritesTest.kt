@@ -7,18 +7,22 @@ import io.github.noxaur.dsmod.edge.Settings
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.client.gui.screens.ChatScreen
+import net.minecraft.client.gui.screens.TitleScreen
 import org.lwjgl.glfw.GLFW
 import java.lang.reflect.Field
 import kotlin.io.path.readText
 
 /**
- * Stars a setting with the real mouse and finds it in Favorites, in its own place among the defaults, then unstars it
- * there. A search hides Favorites, the star is saved when the screen closes, and the screen opens again where the
- * player left it. The Settings Key opens it in the world and not from chat, and `/dsm` and `/dsmod <search>` open it too.
+ * Stars settings with the real mouse and keyboard: a press on the star, the Favorite Key over a setting, and a mouse
+ * button bound as that key. The key types into a focused search instead, and Ctrl+F still focuses it. Favorites starts
+ * empty with a line that says how to fill it, lists starred settings in their own order, and keeps a row unstarred there
+ * until the player leaves, so a quick second press stars it again. A search hides Favorites, and the stars are saved
+ * when the screen closes, which opens again where the player left it.
  */
 class FavoritesTest : FabricClientGameTest {
     private val fullbright = DsModConfig.General::class.java.getField("fullbright")
+    private val particles = DsModConfig.General::class.java.getField("explosionParticleHider")
+    private val loot = DsModConfig.Loot::class.java.getField("lootAlerts")
 
     override fun runTest(context: ClientGameTestContext) {
         val settings = DsModClient.settings
@@ -27,12 +31,16 @@ class FavoritesTest : FabricClientGameTest {
         fun shown(): List<String> = context.computeOnClient<List<String>, Nothing> { Settings.favorites }
         fun listed(): Set<String> = context.computeOnClient<Set<String>, Nothing> { Settings.listed }
         fun category(field: Field) = context.computeOnClient<String, Nothing> { Settings.category(field) }
+        fun show(category: String) {
+            context.runOnClient<Nothing> { Settings.show(category) }
+            context.waitTicks(3)
+        }
 
-        /** Moves the mouse onto the star of [field] where it was last drawn. */
-        fun point(field: Field) {
+        /** Moves the mouse to [dx], [dy] from the star of [field], where it was last drawn. */
+        fun point(field: Field, dx: Int = 3, dy: Int = 3) {
             val (x, y) = context.computeOnClient<Pair<Int, Int>, Nothing> { Settings.star(field) }
             val scale = context.computeOnClient<Double, Nothing> { it.window.guiScale.toDouble() }
-            context.input.setCursorPos((x + 3) * scale, (y + 3) * scale)
+            context.input.setCursorPos((x + dx) * scale, (y + dy) * scale)
             context.waitTicks(2)
         }
 
@@ -42,100 +50,105 @@ class FavoritesTest : FabricClientGameTest {
             context.waitTicks(2)
         }
 
-        context.worldBuilder().create().use {
-            try {
-                context.waitTicks(20)
-                settings.favorites = Favorites.DEFAULT
+        fun ctrlF() {
+            context.input.holdKey(GLFW.GLFW_KEY_LEFT_CONTROL)
+            context.input.pressKey(GLFW.GLFW_KEY_F)
+            context.input.releaseKey(GLFW.GLFW_KEY_LEFT_CONTROL)
+            context.waitTicks(2)
+        }
 
-                // Favorites is the first category, and lists the defaults in the order the settings declare them.
-                context.runOnClient<Nothing> {
-                    Settings.open()
-                    Settings.showFavorites()
-                }
-                context.waitTicks(10)
-                check(open()) { "The settings did not open, got ${screen()}" }
-                check(listed().first() == Settings.FAVORITES) { "Favorites is not first in ${listed()}" }
-                check(shown() == Favorites.DEFAULT) { "Favorites shows ${shown()}" }
-                context.takeScreenshot("settings-favorites")
+        context.waitForScreen(TitleScreen::class.java)
+        try {
+            settings.favorites = emptyList()
 
-                // A press on Fullbright's star stars it, and Favorites lists it first, since General comes first.
-                context.runOnClient<Nothing> { DsModClient.openSettings(fullbright) }
-                context.waitTicks(10)
-                check("general.fullbright" !in settings.favorites) { "Fullbright starts starred" }
-                point(fullbright)
-                context.takeScreenshot("settings-star-hover")
-                press(fullbright)
-                check(settings.favorites.last() == "general.fullbright") { "The press left ${settings.favorites}" }
-                check(settings.general.fullbright == false) { "The press on the star also switched Fullbright on" }
-                check(shown() == listOf("general.fullbright") + Favorites.DEFAULT) { "Favorites shows ${shown()}" }
-                context.input.setCursorPos(0.0, 0.0)
-                context.waitTicks(2)
-                context.takeScreenshot("settings-starred")
+            // Favorites is first and starts empty, with a line that says how to fill it.
+            context.runOnClient<Nothing> { Settings.open() }
+            show(Settings.FAVORITES)
+            check(open()) { "The settings did not open, got ${screen()}" }
+            check(listed().first() == Settings.FAVORITES && shown().isEmpty()) { "Favorites is not first and empty: ${listed()}, ${shown()}" }
+            context.takeScreenshot("settings-favorites-empty")
 
-                // A search finds each setting once, in its own category, so Favorites is hidden while it runs.
-                context.runOnClient<Nothing> { Settings.search("fullbright") }
-                context.waitTicks(2)
-                check((Settings.FAVORITES in listed()) == Favorites.listed("fullbright") && category(fullbright) in listed()) { "Searching showed ${listed()}" }
-                context.runOnClient<Nothing> { Settings.search("") }
+            // A press on Fullbright's star stars it and nothing else.
+            context.runOnClient<Nothing> { DsModClient.openSettings(fullbright) }
+            context.waitTicks(5)
+            point(fullbright)
+            context.takeScreenshot("settings-star-hover")
+            press(fullbright)
+            check(settings.favorites == listOf("general.fullbright")) { "The press left ${settings.favorites}" }
+            check(!settings.general.fullbright) { "The press on the star also switched Fullbright on" }
 
-                // The star in Favorites unstars it there.
-                context.runOnClient<Nothing> { Settings.showFavorites() }
-                context.waitTicks(10)
-                press(fullbright)
-                check("general.fullbright" !in settings.favorites && shown() == Favorites.DEFAULT) { "Unstarring in Favorites left ${shown()}" }
+            // F over a setting, away from its star, stars it, and its letter does not land in the search.
+            point(particles, dx = 30, dy = 12)
+            context.input.pressKey(GLFW.GLFW_KEY_F)
+            context.waitTicks(2)
+            check("general.explosionParticleHider" in settings.favorites) { "F over Explosion Particle Hider left ${settings.favorites}" }
+            check(Settings.FAVORITES in listed()) { "F typed into the search, which shows ${listed()}" }
+            context.input.setCursorPos(0.0, 0.0)
+            context.waitTicks(2)
+            context.takeScreenshot("settings-starred")
 
-                // Closing saves the stars, and the screen opens again on Favorites.
-                context.waitTicks(5)
-                val loot = DsModConfig.Loot::class.java.getField("lootAlerts")
-                press(loot)
-                check("loot.lootAlerts" !in settings.favorites) { "Loot Alerts is still starred" }
-                context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
-                context.waitTicks(5)
-                check(!open()) { "Escape left ${screen()}" }
-                val saved = FabricLoader.getInstance().configDir.resolve("dsmod/config.json").readText()
-                check("\"slayer.slayerTracker\"" in saved && "\"loot.lootAlerts\"" !in saved) { "The config file holds $saved" }
-                context.runOnClient<Nothing> { DsModClient.openSettings() }
-                context.waitTicks(5)
-                check(context.computeOnClient<String, Nothing> { Settings.selected } == Settings.FAVORITES) { "The settings did not open on Favorites" }
-                context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
-                context.waitTicks(5)
+            // Ctrl+F is MoulConfig's, and focuses the search. F then types there and stars nothing.
+            point(particles, dx = 30, dy = 12)
+            ctrlF()
+            check("general.explosionParticleHider" in settings.favorites) { "Ctrl+F unstarred the setting" }
+            context.input.typeChars("ful")
+            context.waitTicks(2)
+            check("general.explosionParticleHider" in settings.favorites) { "Typing in the search changed the stars: ${settings.favorites}" }
+            // A search hides Favorites, as the rule in core says, and finds Fullbright in its own category.
+            check((Settings.FAVORITES in listed()) == Favorites.listed("ful") && category(fullbright) in listed()) { "Searching showed ${listed()}" }
+            ctrlF()
+            context.runOnClient<Nothing> { Settings.search("") }
+            context.waitTicks(2)
 
-                // The Settings Key has no key until the player picks one, and then opens the settings from the world.
-                check(settings.general.settingsKey == -1) { "The Settings Key starts on ${settings.general.settingsKey}" }
-                settings.general.settingsKey = GLFW.GLFW_KEY_KP_ADD
-                context.input.pressKey(GLFW.GLFW_KEY_KP_ADD)
-                context.waitTicks(5)
-                check(open()) { "The Settings Key opened ${screen()}" }
-                context.takeScreenshot("settings-key")
-                context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
-                context.waitTicks(5)
+            // A mouse button bound as the Favorite Key works the same way.
+            settings.general.favoriteKey = GLFW.GLFW_MOUSE_BUTTON_MIDDLE
+            context.runOnClient<Nothing> { DsModClient.openSettings(loot) }
+            context.waitTicks(5)
+            point(loot, dx = 30, dy = 12)
+            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
+            context.waitTicks(2)
+            check("loot.lootAlerts" in settings.favorites) { "The middle button left ${settings.favorites}" }
+            settings.general.favoriteKey = GLFW.GLFW_KEY_F
 
-                // A key typed into chat is not a press.
-                context.runOnClient<Nothing> { it.gui.setScreen(ChatScreen("", false)) }
-                context.waitTicks(2)
-                context.input.pressKey(GLFW.GLFW_KEY_KP_ADD)
-                context.waitTicks(5)
-                check(screen() == "ChatScreen") { "The key typed into chat opened ${screen()}" }
-                context.runOnClient<Nothing> { it.gui.setScreen(null) }
-                settings.general.settingsKey = -1
+            // Favorites lists them in the settings' own order.
+            show(Settings.FAVORITES)
+            check(shown() == listOf("general.fullbright", "general.explosionParticleHider", "loot.lootAlerts")) { "Favorites shows ${shown()}" }
+            context.takeScreenshot("settings-favorites")
 
-                // `/dsm` is the short name, and words after it search.
-                context.runOnClient<Nothing> { it.connection!!.sendCommand("dsm") }
-                context.waitTicks(5)
-                check(open()) { "/dsm opened ${screen()}" }
-                context.runOnClient<Nothing> { it.gui.setScreen(null) }
-                context.waitTicks(2)
-                context.runOnClient<Nothing> { it.connection!!.sendCommand("dsmod zealot") }
-                context.waitTicks(5)
-                val found = listed()
-                check(open() && found == setOf(category(DsModConfig.End::class.java.getField("zealotTracker")))) { "/dsmod zealot opened ${screen()} on $found" }
-                context.takeScreenshot("settings-search")
-                context.runOnClient<Nothing> { Settings.search("") }
-            } finally {
-                settings.favorites = Favorites.DEFAULT
-                settings.general.settingsKey = -1
-                context.runOnClient<Nothing> { it.gui.setScreen(null) }
+            // A quick second press on a star unstarred here lands on the same row, which stays, and stars it again.
+            point(fullbright)
+            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
+            context.waitTicks(1)
+            check("general.fullbright" !in settings.favorites && shown().first() == "general.fullbright") { "The unstarred row moved: ${shown()}" }
+            context.input.setCursorPos(0.0, 0.0)
+            context.waitTicks(2)
+            context.takeScreenshot("settings-favorites-kept")
+            point(fullbright)
+            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
+            context.waitTicks(2)
+            check("general.fullbright" in settings.favorites && "general.explosionParticleHider" in settings.favorites) {
+                "The second press left ${settings.favorites}"
             }
+
+            // A row unstarred here goes once the player leaves Favorites.
+            press(fullbright)
+            show(category(fullbright))
+            show(Settings.FAVORITES)
+            check(shown() == listOf("general.explosionParticleHider", "loot.lootAlerts")) { "After leaving, Favorites shows ${shown()}" }
+
+            // Closing saves the stars, and the screen opens again on Favorites.
+            context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
+            context.waitTicks(3)
+            check(!open()) { "Escape left ${screen()}" }
+            val saved = FabricLoader.getInstance().configDir.resolve("dsmod/config.json").readText()
+            check("\"loot.lootAlerts\"" in saved && "\"general.fullbright\"" !in saved) { "The config file holds $saved" }
+            context.runOnClient<Nothing> { DsModClient.openSettings() }
+            context.waitTicks(3)
+            check(context.computeOnClient<String, Nothing> { Settings.selected } == Settings.FAVORITES) { "The settings did not open on Favorites" }
+        } finally {
+            settings.favorites = emptyList()
+            settings.general.favoriteKey = GLFW.GLFW_KEY_F
+            context.setScreen { TitleScreen() }
         }
     }
 }

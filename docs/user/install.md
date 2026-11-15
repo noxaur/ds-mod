@@ -22,6 +22,6 @@ Type `/dsmod` or `/dsm` in chat to open the settings. Add words to search them, 
 
 To open them with a key, pick one in **Settings Key** under General. It has no key at first, because DragSim Utils opens on Right Shift and one press would open both.
 
-Click the star beside a setting's name to keep it in **Favorites**, the first category. Favorites lists your starred settings in the order the categories do, and starts with Loot Alerts, Zealot Tracker, Slayer Tracker and Slayer Boss Alert. Click a star again to take it out. A search looks through every category, so Favorites hides while you search.
+Click the star beside a setting's name, or press F with your mouse over the setting, to keep it in **Favorites**, the first category. Pick another key or a mouse button in **Favorite Key** under General. F types into the search while you are searching, and Ctrl+F still jumps to the search. Favorites starts empty and lists your starred settings in the order the categories do. Click a star again to take it out. A setting you unstar inside Favorites stays there with an empty star until you leave the category, so you can star it again if you slipped. A search looks through every category, so Favorites hides while you search.
 
 ds-mod runs only while you play on dragsim.co, and stays out of the way in singleplayer and on other servers. To use it anywhere, turn off **DragSim Only** under General.

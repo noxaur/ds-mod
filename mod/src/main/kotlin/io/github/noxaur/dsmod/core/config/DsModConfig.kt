@@ -44,7 +44,7 @@ class DsModConfig : Config() {
     /** The paths of the settings the player starred, which the Favorites category lists. */
     @Expose
     @JvmField
-    var favorites: List<String> = Favorites.DEFAULT
+    var favorites: List<String> = emptyList()
 
     @Expose
     @Category(name = "General", desc = "The camera, your binds and the world.")
@@ -176,6 +176,13 @@ class DsModConfig : Config() {
         @ConfigEditorKeybind(defaultKey = NO_KEY)
         @JvmField
         var settingsKey = NO_KEY
+
+        /** A key's GLFW code or a mouse button, as for [settingsKey]. */
+        @Expose
+        @ConfigOption(name = "Favorite Key", desc = "Pick a key that stars the setting under your mouse.")
+        @ConfigEditorKeybind(defaultKey = KEY_F)
+        @JvmField
+        var favoriteKey = KEY_F
 
         @Expose
         @ConfigOption(name = "Fullbright", desc = "Light caves and nights as brightly as day.")
@@ -401,6 +408,9 @@ class DsModConfig : Config() {
              * screens with one press, so the player picks a key of their own.
              */
             const val NO_KEY = -1
+
+            /** GLFW's code for F, NotEnoughUpdates' key for a favorite. */
+            const val KEY_F = 70
         }
     }
 

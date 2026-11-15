@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import com.mojang.blaze3d.platform.InputConstants
+import io.github.notenoughupdates.moulconfig.annotations.SearchTag
 import io.github.notenoughupdates.moulconfig.common.IMinecraft
 import io.github.notenoughupdates.moulconfig.common.RenderContext
 import io.github.notenoughupdates.moulconfig.common.text.StructuredText
@@ -16,11 +17,13 @@ import io.github.notenoughupdates.moulconfig.processor.ProcessedCategory
 import io.github.notenoughupdates.moulconfig.processor.ProcessedOption
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Favorites
+import io.github.noxaur.dsmod.core.config.FavoritesView
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
 import net.minecraft.client.Minecraft
 import java.lang.reflect.Field
+import java.lang.reflect.Type
 
 /**
  * The settings screen. [open] is the one way in, for the Settings Key, `/dsmod`, `/dsm` and every button that
@@ -44,34 +47,21 @@ object Settings {
     /** The star takes a press a pixel around it, as a 7x7 target is easy to miss. */
     private val STAR_TARGET = Icon.STAR.width + 2
 
-    private lateinit var config: ManagedConfig<DsModConfig>
-
-    /** Built on the first open, because MoulConfig's editors need the game's fonts. */
-    private val editor: MoulConfigEditor<DsModConfig> by lazy(::build)
-
     /** The id of the category that lists the starred settings. */
     const val FAVORITES = "favorites"
 
-    // What the screen shows, in plain types for the game tests, because the jar relocates MoulConfig.
+    private lateinit var config: ManagedConfig<DsModConfig>
+    private val starred: List<String> get() = config.instance.favorites
+    private val view = FavoritesView()
 
-    /** The paths of the settings Favorites lists now. */
-    val favorites: List<String> get() = editor.allCategories.getValue(FAVORITES).options.map { it.path }
+    /** Built on the first open, because MoulConfig's editors need the game's fonts. */
+    private val editor: Editor by lazy(::build)
 
-    /** The id of the category shown now. */
-    val selected: String get() = editor.selectedCategory
+    /** The setting under the mouse this frame, which the Favorite Key stars. */
+    private var hovered: Star? = null
 
-    /** The ids of the categories listed now, which a search narrows. */
-    val listed: Set<String> get() = editor.currentlyVisibleCategories.keys
-
-    /** The id of the category that [setting] of `DsModConfig` is in. */
-    fun category(setting: Field): String = editor.getOptionFromField(setting)!!.category.identifier
-
-    /** Where the star of [setting] was last drawn, in GUI pixels. */
-    fun star(setting: Field): Pair<Int, Int> = (editor.getOptionFromField(setting)!!.editor as Star).let { it.x to it.y }
-
-    fun showFavorites() = editor.setSelectedCategory(editor.allCategories.getValue(FAVORITES))
-
-    fun search(words: String) = editor.search(words)
+    /** A press of the Favorite Key is followed by its character, which would land in the search. */
+    private var eatChar = false
 
     fun register(config: ManagedConfig<DsModConfig>) {
         this.config = config
@@ -79,6 +69,7 @@ object Settings {
 
     /** Opens the settings where the player left them, at [setting] of `DsModConfig` when it is given, or searched for [search]. */
     fun open(setting: Field? = null, search: String? = null) {
+        view.left()
         if (setting != null) editor.goToOption(editor.getOptionFromField(setting)!!)
         if (search != null) editor.search(search)
         // MoulConfig tells only a component that it closed, and the editor is wrapped in one that does not pass it on,
@@ -101,10 +92,39 @@ object Settings {
         if (Keys.matches(key, config.instance.general.settingsKey)) Minecraft.getInstance().schedule { open() }
     }
 
-    private fun build(): MoulConfigEditor<DsModConfig> {
+    // What the screen shows, in plain types for the game tests, because the jar relocates MoulConfig.
+
+    /** The paths of the settings Favorites lists now. */
+    val favorites: List<String> get() = editor.allCategories.getValue(FAVORITES).options.filter { it !is Empty }.map { it.path }
+
+    /** The id of the category shown now. */
+    val selected: String get() = editor.selectedCategory
+
+    /** The ids of the categories listed now, which a search narrows. */
+    val listed: Set<String> get() = editor.currentlyVisibleCategories.keys
+
+    /** The id of the category that [setting] of `DsModConfig` is in. */
+    fun category(setting: Field): String = editor.getOptionFromField(setting)!!.category.identifier
+
+    /** Where the star of [setting] was last drawn, in GUI pixels. */
+    fun star(setting: Field): Pair<Int, Int> = (editor.getOptionFromField(setting)!!.editor as Star).let { it.x to it.y }
+
+    fun show(category: String) = editor.setSelectedCategory(editor.allCategories.getValue(category))
+
+    fun search(words: String) = editor.search(words)
+
+    /** The Favorite Key's name in a hint, or null with no key. */
+    private fun keyName(): String? = config.instance.general.favoriteKey.takeIf { it >= 0 }?.let(Keys::name)
+
+    private fun toggle(path: String) {
+        config.instance.favorites = view.toggle(starred, path, here = editor.selectedCategory == FAVORITES)
+    }
+
+    private fun build(): Editor {
         val categories = LinkedHashMap<String, ProcessedCategory>()
         val every = ArrayList<ProcessedOption>()
-        categories[FAVORITES] = FavoritesCategory { Favorites.pick(every, config.instance.favorites) { it.path } }
+        val favorites = FavoritesCategory { view.rows(every, starred) { it.path } }
+        categories[FAVORITES] = favorites
         for ((id, real) in config.processor.allCategories) {
             val options = ArrayList<ProcessedOption>()
             val category = Wrapped(real, options)
@@ -112,7 +132,25 @@ object Settings {
             every += options
             categories[id] = category
         }
-        return MoulConfigEditor(categories, config.instance)
+        return Editor(categories).also {
+            favorites.built = true
+            // An empty Favorites has nothing to open on, so the first open shows the first of the player's categories.
+            if (starred.isEmpty()) it.setSelectedCategory(categories.values.elementAt(1))
+        }
+    }
+
+    private class Editor(categories: LinkedHashMap<String, ProcessedCategory>) : MoulConfigEditor<DsModConfig>(categories, config.instance) {
+        override fun render() {
+            if (selectedCategory != FAVORITES) view.left()
+            hovered = null
+            super.render()
+        }
+
+        override fun keyboardInput(event: KeyboardEvent): Boolean {
+            if (event is KeyboardEvent.CharTyped && eatChar) return true.also { eatChar = false }
+            eatChar = false
+            return super.keyboardInput(event)
+        }
     }
 
     /** One of the player's categories, holding the starred version of each of its settings. */
@@ -122,16 +160,44 @@ object Settings {
 
     /**
      * The Favorites category. Its settings are the ones in the other categories, which say they belong there, so a
-     * search hides Favorites and finds each setting once, in its own category.
+     * search hides Favorites and finds each setting once, in its own category, as [Favorites.listed] says. With
+     * nothing starred it holds one row that says so, because MoulConfig's own words for an empty category blame a search.
      */
-    private class FavoritesCategory(private val pick: () -> List<ProcessedOption>) : ProcessedCategory {
+    private class FavoritesCategory(private val rows: () -> List<ProcessedOption>) : ProcessedCategory {
+        private val empty = listOf<ProcessedOption>(Empty(this))
+
+        /** MoulConfig shows only the options it was handed when the editor was built, so the empty row is handed over then. */
+        var built = false
+
         override fun getDisplayName(): StructuredText = StructuredText.of("Favorites")
-        override fun getDescription(): StructuredText = StructuredText.of("Click a setting's star to pin it here.")
+        override fun getDescription(): StructuredText =
+            StructuredText.of(keyName()?.let { "Click a star, or press $it over a setting." } ?: "Click a setting's star to pin it here.")
         override fun getIdentifier() = FAVORITES
         override fun getParentCategoryId(): String? = null
-        override fun getOptions() = pick()
+        override fun getOptions() = if (built) rows().ifEmpty { empty } else empty + rows()
         override fun getAccordionAnchors() = emptyMap<Int, ProcessedOption>()
         override fun getDebugDeclarationLocation() = "ds-mod's favorites"
+    }
+
+    /** The row an empty Favorites shows: MoulConfig's box with a name and a line, and no control. A search never finds it. */
+    private class Empty(private val category: ProcessedCategory) : ProcessedOption {
+        private val editor = object : GuiOptionEditor(this) {
+            override fun fulfillsSearch(word: String) = false
+        }
+
+        override fun getSearchTags() = emptyArray<SearchTag>()
+        override fun getAccordionId() = -1
+        override fun getEditor() = editor
+        override fun getCategory() = category
+        override fun getName(): StructuredText = StructuredText.of("No Favorites Yet")
+        override fun getDescription(): StructuredText = StructuredText.of("The settings you star show here, in the order of their categories.")
+        override fun getPath() = "$FAVORITES.empty"
+        override fun getConfig(): DsModConfig = Settings.config.instance
+        override fun get(): Any? = null
+        override fun getType(): Type = Unit::class.java
+        override fun set(value: Any?) = false
+        override fun explicitNotifyChange() {}
+        override fun getDebugDeclarationLocation() = "ds-mod's empty favorites"
     }
 
     private class StarredOption(private val real: ProcessedOption, private val category: ProcessedCategory) :
@@ -145,16 +211,21 @@ object Settings {
         override fun getField(): Field = (real as ProcessedOption.HasField).field
     }
 
-    /** A setting's own editor with a star in its top left corner, which a press turns on or off. */
+    /**
+     * A setting's own editor with a star beside its name. A press on the star, or the Favorite Key over the setting,
+     * turns it on or off, and the setting's own editor sees neither.
+     */
     private class Star(private val inner: GuiOptionEditor) : GuiOptionEditor(inner.option) {
         /** Where the star was last drawn, for the game test that presses it. */
         var x = 0
         var y = 0
 
-        private val on: Boolean get() = option.path in config.instance.favorites
+        private var context: GuiContext? = null
+
+        private val on: Boolean get() = option.path in starred
 
         /** Whether the mouse is on the star of the box at [x], [y], [width] wide. */
-        private fun over(x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int) =
+        private fun onStar(x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int) =
             mouseX - (starX(x, width) - 1) in 0 until STAR_TARGET && mouseY - (y + STAR_TOP - 1) in 0 until STAR_TARGET
 
         override fun render(context: RenderContext, x: Int, y: Int, width: Int) {
@@ -163,32 +234,55 @@ object Settings {
             this.x = starX(x, width)
             this.y = y + STAR_TOP
             val mc = IMinecraft.INSTANCE
-            val hover = over(x, y, width, mc.mouseX, mc.mouseY)
+            if (mc.mouseX - x in 0 until width && mc.mouseY - y in 0 until height) hovered = this
+            val onIt = onStar(x, y, width, mc.mouseX, mc.mouseY)
             // An unstarred star is faint, so a row of them does not crowd the names, and lights up under the mouse.
             val color = when {
                 on -> Role.ACTION.argb()
-                hover -> Role.BODY.argb()
+                onIt -> Role.BODY.argb()
                 else -> Role.MUTED.argb(OFF_ALPHA)
             }
             Kit.icon(context, Icon.STAR, this.x, this.y, color)
-            if (hover) context.scheduleDrawTooltip(mc.mouseX, mc.mouseY, listOf(StructuredText.of(if (on) "Click to unstar." else "Click to star.")))
+            if (onIt) {
+                val verb = if (on) "unstar" else "star"
+                val hint = keyName()?.let { "Click or press $it to $verb." } ?: "Click to $verb."
+                context.scheduleDrawTooltip(mc.mouseX, mc.mouseY, listOf(StructuredText.of(hint)))
+            }
         }
 
         override fun mouseInput(x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int, event: MouseEvent): Boolean {
-            if (event is MouseEvent.Click && event.mouseButton == 0 && over(x, y, width, mouseX, mouseY)) {
-                if (event.mouseState) config.instance.favorites = Favorites.toggle(config.instance.favorites, option.path)
+            val key = config.instance.general.favoriteKey
+            val press = event is MouseEvent.Click && event.mouseState
+            if (event is MouseEvent.Click &&
+                (event.mouseButton == 0 && onStar(x, y, width, mouseX, mouseY) || Keys.isMouse(key) && event.mouseButton == key && hovered === this)
+            ) {
+                if (press) toggle(option.path)
                 return true
             }
             return inner.mouseInput(x, y, width, mouseX, mouseY, event)
         }
 
+        override fun keyboardInput(event: KeyboardEvent): Boolean {
+            if (inner.keyboardInput(event)) return true
+            val key = config.instance.general.favoriteKey
+            // Left alone while a text field has focus, and with Ctrl or Alt held, so typing and MoulConfig's Ctrl+F still work.
+            val client = Minecraft.getInstance()
+            if (event !is KeyboardEvent.KeyPressed || !event.pressed || Keys.isMouse(key) || event.keycode != key || hovered !== this) return false
+            if (context?.focusedElement != null || client.hasControlDown() || client.hasAltDown()) return false
+            toggle(option.path)
+            eatChar = true
+            return true
+        }
+
         override fun getHeight() = inner.height
         override fun getDescriptionHeight() = inner.descriptionHeight
-        override fun keyboardInput(event: KeyboardEvent) = inner.keyboardInput(event)
         override fun mouseInputOverlay(x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int, event: MouseEvent) =
             inner.mouseInputOverlay(x, y, width, mouseX, mouseY, event)
         override fun renderOverlay(context: RenderContext, x: Int, y: Int, width: Int) = inner.renderOverlay(context, x, y, width)
         override fun fulfillsSearch(word: String) = inner.fulfillsSearch(word)
-        override fun setGuiContext(context: GuiContext) = inner.setGuiContext(context)
+        override fun setGuiContext(context: GuiContext) {
+            this.context = context
+            inner.setGuiContext(context)
+        }
     }
 }
