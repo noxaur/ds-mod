@@ -81,7 +81,7 @@ Raw records are for you to read. No feature sees one until it is promoted:
 - `unload` for a living entity the client dropped, with its `reason`. A mob that only left has `unload` and no `death` event.
 - `skulls` for skull blocks within four chunks, with `state` (rotation) and `profile`, and `blockstates` for the blocks in `BlockScan.kt`'s watch-list there. Both are entries like `entities`, keyed `x,y,z`, and include what stood there before the capture began.
 - `map` for a map the player carries or an item frame holds, when it changes: `colors` is base64 of the zlib-deflated 128x128 color bytes, present only when the pixels changed, and `decorations` are the markers.
-- `hud` for the rows of each HUD block ds-mod showed, and `metrics` for how long each feature took and what it counted. Its `capture-items` and `capture-entities` timers are what the recorder's own item reading cost the client thread.
+- `hud` for the rows of each HUD block ds-mod showed, and `metrics` for how long each feature took and what it counted. Its `capture-items` and `capture-entities` timers are what the recorder's own passes over items and entities cost the client thread, and `PerfTest` caps them.
 - `step` for the brief's step that starts on that line, with its `index` and `do`, and `done` after the last one. Cut a fixture's window from these.
 
 An event's text is `plain` plus `spans`, with `§` codes already resolved into the spans. A raw record's text is plain `text` plus the full `component`. `itemcomponents` and `entities` record all entries once with `"full": true`, then only the entries that changed, with null for a removed one.
