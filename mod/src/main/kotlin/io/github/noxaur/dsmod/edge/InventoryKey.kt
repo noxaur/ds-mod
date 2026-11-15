@@ -15,6 +15,9 @@ object InventoryKey {
 
     /** A press since the last tick. A tap can start and end inside one tick, so the press comes from the game's key event. */
     private var tapped = false
+
+    /** Whether the key was down a tick ago. A key held down repeats its event, and a repeat is not a new press. */
+    private var wasDown = false
     private var holding = false
     private var toggled = true
 
@@ -27,10 +30,12 @@ object InventoryKey {
     fun tick(client: Minecraft) {
         val on = DsModClient.active && settings.inventoryPreview
         val key = settings.inventoryKey
-        val pressed = tapped
+        val down = Keys.held(client, key)
+        val pressed = tapped && !wasDown
         tapped = false
+        wasDown = down
         // Hold lasts from the press to the release, also when a screen opened between them.
-        holding = on && (pressed || holding && Keys.held(client, key))
+        holding = on && (pressed || holding && down)
         if (!on) toggled = true else if (pressed) toggled = !toggled
         val shown = key < 0 || client.gui.screen() is HudEditorScreen || if (settings.inventoryKeyMode == KeyMode.HOLD) holding else toggled
         Hud.conceal(ID, !shown)

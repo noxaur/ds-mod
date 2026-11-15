@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
 import com.google.common.collect.ImmutableMultimap
+import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
 import com.mojang.authlib.properties.PropertyMap
@@ -17,6 +18,7 @@ import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
+import io.github.noxaur.dsmod.edge.InventoryKey
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -214,6 +216,22 @@ class InventoryPreviewTest : FabricClientGameTest {
                     check(pixel(context, behind, head, 0, 0) != pixel(context, open, head, 0, 0)) { "The grid still shows under an open menu" }
                     context.runOnClient<Nothing> { it.player!!.closeContainer() }
                     context.waitTicks(5)
+
+                    // On the HUD's plate, the plate steps aside with the icons.
+                    general.inventoryLook = InventoryLook.PLATE
+                    context.waitTicks(10)
+                    val margin = context.computeOnClient<Pair<Double, Double>, Nothing> {
+                        val block = checkNotNull(Hud.find(ID))
+                        block.x + 2.0 * block.scale to block.y + block.height / 2.0 * block.scale
+                    }
+                    val plated = context.takeScreenshot("inventory-preview-plate-before-menu")
+                    ServerMenus.open(context, world, 1, "Small Chest")
+                    val unplated = context.takeScreenshot("inventory-preview-plate-menu-open")
+                    // The plate darkens the world behind it, so the same pixel without it is lighter.
+                    check(pixel(context, unplated, margin, 0, 0) != pixel(context, plated, margin, 0, 0)) { "The grid's plate stays under an open menu" }
+                    context.runOnClient<Nothing> { it.player!!.closeContainer() }
+                    general.inventoryLook = InventoryLook.INVENTORY
+                    context.waitTicks(5)
                 } finally {
                     inventorySettings.menuLook = menuLookBefore
                     inventorySettings.glassOpacity = 60f
@@ -246,6 +264,18 @@ class InventoryPreviewTest : FabricClientGameTest {
                 fun shown() = context.computeOnClient<Boolean, Nothing> { Hud.find(ID) != null }
                 context.waitTicks(2)
                 check(shown()) { "Binding a key hid the grid before its first press" }
+                context.input.pressKey(key)
+                context.waitTicks(2)
+                check(!shown()) { "Toggle's press did not hide the grid" }
+                // A key held down repeats its event, as the game sends it, and a repeat is not another press.
+                context.input.holdKey(key)
+                context.waitTicks(2)
+                check(shown()) { "Toggle's press after a release did not show the grid" }
+                context.runOnClient<Nothing> { InventoryKey.pressed(InputConstants.Type.KEYSYM.getOrCreate(key)) }
+                context.waitTicks(2)
+                check(shown()) { "A repeat of the held key toggled the grid again" }
+                context.input.releaseKey(key)
+                context.waitTicks(2)
                 context.input.pressKey(key)
                 context.waitTicks(2)
                 check(!shown()) { "Toggle's press did not hide the grid" }

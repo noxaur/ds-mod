@@ -81,8 +81,10 @@ object Hud {
         // The scale it is drawn at: the player's, or for a group docked beside the hotbar, as much of it as fits there.
         var scale = 1f
 
-        // The top and height of each run of blocks that sit on the plate, from the group's corner.
+        // The top and height of each run of blocks that sit on the plate, from the group's corner, and the runs while a
+        // menu is open, without the blocks that step aside for it.
         var plates = IntArray(0)
+        var menuPlates = IntArray(0)
     }
 
     /**
@@ -197,7 +199,8 @@ object Hud {
             if (group.shown.isEmpty()) return@forEach
             group.width = group.shown.maxOf { it.width }
             group.height = group.shown.sumOf { it.height } + BLOCK_GAP * (group.shown.size - 1)
-            group.plates = plates(group)
+            group.plates = plates(group, false)
+            group.menuPlates = plates(group, true)
             place(group)
             val scale = group.scale
             var y = 0
@@ -221,15 +224,19 @@ object Hud {
         cells = items
     }
 
-    /** Each run of blocks that sit on the plate, as a top and a height, so a block of another look breaks the plate. */
-    private fun plates(group: Group): IntArray {
+    /**
+     * Each run of blocks that sit on the plate, as a top and a height, so a block of another look breaks the plate, as
+     * does one that steps aside for an open [menu].
+     */
+    private fun plates(group: Group, menu: Boolean): IntArray {
         if (!group.place.background) return IntArray(0)
         val runs = ArrayList<Int>()
         var y = 0
         var start = -1
         for (block in group.shown) {
-            if (block.look == HudLook.PLATE && start < 0) start = y
-            if (block.look != HudLook.PLATE && start >= 0) {
+            val plated = block.look == HudLook.PLATE && (block.overMenus || !menu)
+            if (plated && start < 0) start = y
+            if (!plated && start >= 0) {
                 runs += start
                 runs += y - BLOCK_GAP - start
                 start = -1
@@ -338,7 +345,7 @@ object Hud {
                     pose.pushMatrix()
                     pose.translate(group.x.toFloat(), group.y.toFloat())
                     pose.scale(group.scale, group.scale)
-                    val plates = group.plates
+                    val plates = if (menu) group.menuPlates else group.plates
                     for (p in 0 until plates.size / 2) Kit.plate(graphics, 0, plates[p * 2], plate(group.width), plate(plates[p * 2 + 1]))
                     var top = PADDING
                     for (b in group.shown.indices) {
