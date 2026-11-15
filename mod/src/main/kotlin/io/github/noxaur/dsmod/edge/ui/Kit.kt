@@ -21,7 +21,6 @@ enum class Icon(val width: Int, val height: Int) {
     DOWN(5, 3),
     SEARCH(6, 7),
     LOCK(5, 7),
-    COPY(7, 7),
     ;
 
     val sprite: Identifier = Identifier.fromNamespaceAndPath("dsmod", name.lowercase())

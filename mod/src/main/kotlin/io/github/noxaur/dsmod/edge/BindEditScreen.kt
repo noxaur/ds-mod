@@ -22,18 +22,20 @@ import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
 import org.lwjgl.glfw.GLFW
 
-private const val WIDTH = 320
-private const val COLUMN = (WIDTH - Kit.GAP * 2) / 2
+private const val WIDTH = 330
+private const val LABEL_WIDTH = 52
 private const val LABEL_HEIGHT = 8
-private const val FIELD = LABEL_HEIGHT + 2 + Kit.BUTTON_HEIGHT
+private const val ROW = Kit.BUTTON_HEIGHT + Kit.GAP
 private const val MAX_PRIORITY = 9
 private val AREAS = Area.entries - Area.ANYWHERE
 
 /**
- * Edits one bind, as SkyOcean's hotkey editor does: its name, keys, command, group, where it works, its
- * priority, whether it is on, how its keys match, and the areas it is limited to. Nothing changes until Save,
- * which hands the bind to [onSave]. Cancel and Escape go back to [parent] without it. The line above the buttons
- * reads back what the bind will do, or what stops it. [others] are the binds it may clash with.
+ * Edits one bind. It shows what most binds need, a name, a command, keys and whether it is on, and keeps the
+ * rest under More: where it works, its group, its priority, how its keys match and the areas it is limited to.
+ * More starts open when the bind already uses any of those. Nothing changes until Save hands the bind to
+ * [onSave], or Save as Copy hands a copy to [onCopy]. Delete asks for a second press and calls [onDelete].
+ * Cancel and Escape go back to [parent] with nothing changed. The line above the buttons reads back what the
+ * bind will do, or what stops it. [others] are the binds it may clash with.
  */
 class BindEditScreen(
     private val parent: Screen,
@@ -42,89 +44,112 @@ class BindEditScreen(
     private val groups: List<String>,
     private val others: List<CommandBind>,
     private val onSave: (CommandBind) -> Unit,
+    private val onCopy: (CommandBind) -> Unit,
+    private val onDelete: () -> Unit,
 ) : Screen(text { body(if (isNew) "New Bind" else "Edit Bind") }.toComponent()) {
     private var bind = original
+    private var more = moreOpen || original.advanced
+    private var armed = false
     private var panelX = 0
     private var panelY = 0
     private var panelHeight = 0
     private var left = 0
-    private var right = 0
     private var top = 0
-    private var captions = emptyList<Triple<String, Int, Int>>()
+    private var labels = emptyList<Triple<String, Int, Int>>()
     private var readoutY = 0
     private var readout = ""
     private var bad = false
     private lateinit var keys: KitKeysButton
     private lateinit var save: KitButton
+    private var delete: KitButton? = null
 
     override fun init() {
-        panelHeight = Kit.INSET * 2 + Kit.BUTTON_HEIGHT * 2 + FIELD * 3 + Kit.CHECKBOX_SIZE * 3 + LABEL_HEIGHT * 2 + Kit.GAP * 12
+        val moreHeight = if (more) ROW * 2 + Kit.CHECKBOX_SIZE * 3 + Kit.GAP * 5 else 0
+        panelHeight = Kit.INSET * 2 + ROW * 5 + moreHeight + LABEL_HEIGHT + Kit.GAP * 2 + Kit.BUTTON_HEIGHT
         panelX = (width - WIDTH - Kit.INSET * 2) / 2
         panelY = (height - panelHeight) / 2
         left = panelX + Kit.INSET
-        right = left + COLUMN + Kit.GAP * 2
         top = panelY + Kit.INSET
-        val captions = ArrayList<Triple<String, Int, Int>>()
-        fun caption(text: String, x: Int, y: Int): Int {
-            captions += Triple(text, x, y)
-            return y + LABEL_HEIGHT + 2
+        val right = left + WIDTH
+        val controlX = left + LABEL_WIDTH
+        val controlWidth = WIDTH - LABEL_WIDTH
+        val labels = ArrayList<Triple<String, Int, Int>>()
+        fun label(text: String, x: Int, y: Int) {
+            labels += Triple(text, x, y + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
         }
 
-        var y = top + Kit.BUTTON_HEIGHT + Kit.GAP
-        val name = addRenderableWidget(KitTextField(left, caption("Name", left, y), COLUMN, "Name", bind.name, CommandBind.MAX_LENGTH) { change(bind.copy(name = it)) })
+        var y = top + ROW
+        label("Name", left, y)
+        val name = addRenderableWidget(KitTextField(controlX, y, controlWidth, "Name", bind.name, CommandBind.MAX_LENGTH) { change(bind.copy(name = it)) })
         name.setHint(text { muted("Warp to The End") }.toComponent())
-        val clearX = right + COLUMN - Kit.BUTTON_HEIGHT
-        keys = addRenderableWidget(KitKeysButton(right, caption("Keys", right, y), COLUMN - Kit.BUTTON_HEIGHT - Kit.GAP, "Keys", bind.keys, CommandBind.MAX_KEYS) { change(bind.copy(keys = it)) })
-        keys.inOrder = bind.inOrder
-        addRenderableWidget(KitButton(clearX, y + LABEL_HEIGHT + 2, Icon.CROSS, "Clear Keys") { keys.clear() })
-
-        y += FIELD + Kit.GAP
-        val command = addRenderableWidget(KitTextField(left, caption("Command", left, y), COLUMN, "Command", bind.command, CommandBind.MAX_LENGTH) { change(bind.copy(command = it)) })
+        y += ROW
+        label("Command", left, y)
+        val command = addRenderableWidget(KitTextField(controlX, y, controlWidth, "Command", bind.command, CommandBind.MAX_LENGTH) { change(bind.copy(command = it)) })
         command.setHint(text { muted("/warp end") }.toComponent())
-        addRenderableWidget(KitCycleButton(right, caption("Group", right, y), COLUMN, "Group", groups, bind.group, ::groupName) { change(bind.copy(group = it)) })
+        y += ROW
+        label("Keys", left, y)
+        keys = addRenderableWidget(KitKeysButton(controlX, y, controlWidth - Kit.BUTTON_HEIGHT - Kit.GAP, "Keys", bind.keys, CommandBind.MAX_KEYS) { change(bind.copy(keys = it)) })
+        keys.inOrder = bind.inOrder
+        addRenderableWidget(KitButton(right - Kit.BUTTON_HEIGHT, y, Icon.CROSS, "Clear Keys") { keys.clear() })
+        y += ROW
+        addRenderableWidget(KitCheckbox(controlX, y + (Kit.BUTTON_HEIGHT - Kit.CHECKBOX_SIZE) / 2, "On", bind.enabled) { change(bind.copy(enabled = it)) })
+        val moreLabel = if (more) "Less" else "More"
+        val moreWidth = font.width(moreLabel) + 16
+        addRenderableWidget(
+            KitButton(right - moreWidth, y, moreLabel, {
+                more = !more
+                moreOpen = more
+                rebuildWidgets()
+            }, moreWidth),
+        )
 
-        y += FIELD + Kit.GAP
-        addRenderableWidget(KitCycleButton(left, caption("Where", left, y), COLUMN, "Where", Where.entries, bind.where, Where::title) { change(bind.copy(where = it)) })
-        val stepper = addRenderableWidget(KitStepper(right, caption("Priority", right, y), "Priority", 30) { step ->
-            change(bind.copy(priority = (bind.priority + step).coerceIn(-MAX_PRIORITY, MAX_PRIORITY)))
-        })
-        stepper.value = bind.priority.toString()
-
-        y += FIELD + Kit.GAP * 2
-        var x = left
-        for ((label, checked, set) in listOf<Triple<String, Boolean, (Boolean) -> CommandBind>>(
-            Triple("On", bind.enabled) { bind.copy(enabled = it) },
-            Triple("Other Keys Held Too", bind.extraKeys) { bind.copy(extraKeys = it) },
-            Triple("Keys in Order", bind.inOrder) { bind.copy(inOrder = it) },
-        )) {
-            val box = addRenderableWidget(KitCheckbox(x, y, label, checked) { change(set(it)) })
-            x += box.width + Kit.GAP * 3
+        y += ROW
+        if (more) {
+            val half = (controlWidth - Kit.GAP) / 2
+            label("Where", left, y)
+            addRenderableWidget(KitCycleButton(controlX, y, half, "Where", Where.entries, bind.where, Where::title) { change(bind.copy(where = it)) })
+            addRenderableWidget(KitCycleButton(controlX + half + Kit.GAP, y, half, "Group", groups, bind.group, { "Group: " + groupName(it) }) { change(bind.copy(group = it)) })
+            y += ROW
+            label("Priority", left, y)
+            val stepper = addRenderableWidget(KitStepper(controlX, y, "Priority", 20) { step ->
+                change(bind.copy(priority = (bind.priority + step).coerceIn(-MAX_PRIORITY, MAX_PRIORITY)))
+            })
+            stepper.value = bind.priority.toString()
+            y += ROW
+            addRenderableWidget(KitCheckbox(controlX, y, "Other Keys Held Too", bind.extraKeys) { change(bind.copy(extraKeys = it)) })
+            addRenderableWidget(KitCheckbox(controlX + half + Kit.GAP, y, "Keys in Order", bind.inOrder) { change(bind.copy(inOrder = it)) })
+            y += Kit.CHECKBOX_SIZE + Kit.GAP * 2
+            labels += Triple("Only In", left, y + 1)
+            for ((i, area) in AREAS.withIndex()) {
+                addRenderableWidget(
+                    KitCheckbox(controlX + i % 3 * (controlWidth / 3), y + i / 3 * (Kit.CHECKBOX_SIZE + Kit.GAP), area.title, area in bind.areas) {
+                        change(bind.copy(areas = AREAS.filter { a -> if (a == area) it else a in bind.areas }))
+                    },
+                )
+            }
+            y += (Kit.CHECKBOX_SIZE + Kit.GAP) * 2 + Kit.GAP
         }
-
-        y += Kit.CHECKBOX_SIZE + Kit.GAP * 2
-        y = caption("Only In (none means anywhere)", left, y)
-        for ((i, area) in AREAS.withIndex()) {
-            val column = i % 3
-            addRenderableWidget(
-                KitCheckbox(left + column * (WIDTH / 3), y + i / 3 * (Kit.CHECKBOX_SIZE + Kit.GAP), area.title, area in bind.areas) {
-                    change(bind.copy(areas = AREAS.filter { a -> if (a == area) it else a in bind.areas }))
-                },
-            )
-        }
-        this.captions = captions
-        readoutY = y + (Kit.CHECKBOX_SIZE + Kit.GAP) * 2 + Kit.GAP
+        this.labels = labels
+        readoutY = y
 
         val bottom = panelY + panelHeight - Kit.INSET - Kit.BUTTON_HEIGHT
         val saveWidth = font.width("Save") + 16
-        save = addRenderableWidget(KitButton(left + WIDTH - saveWidth, bottom, "Save", ::confirm, saveWidth))
+        save = addRenderableWidget(KitButton(right - saveWidth, bottom, "Save", ::confirm, saveWidth))
         val cancelWidth = font.width("Cancel") + 16
         addRenderableWidget(KitButton(save.x - Kit.GAP - cancelWidth, bottom, "Cancel", ::onClose, cancelWidth))
-        if (isNew) setInitialFocus(name)
+        if (!isNew) {
+            val deleteWidth = font.width("Delete") + 16
+            delete = addRenderableWidget(KitButton(left, bottom, "Delete", ::delete, deleteWidth))
+            val copyWidth = font.width("Save as Copy") + 16
+            addRenderableWidget(KitButton(left + deleteWidth + Kit.GAP, bottom, "Save as Copy", ::copy, copyWidth))
+        }
+        if (isNew && bind.name.isEmpty()) setInitialFocus(name)
         refresh()
     }
 
     private fun change(next: CommandBind) {
         bind = next
+        armed = false
         keys.inOrder = bind.inOrder
         children().filterIsInstance<KitStepper>().forEach { it.value = bind.priority.toString() }
         refresh()
@@ -136,22 +161,41 @@ class BindEditScreen(
         val game = bind.keys.singleOrNull()?.let(Keys::gameKey)
         keys.clash = if (clash != null) Role.BAD else if (game != null) Role.WARNING else null
         bad = bind.keys.isEmpty() || bind.message == null
-        readout = when {
-            keys.recording -> if (bind.inOrder) "Press the keys in turn, then Escape." else "Hold the keys together, then let go."
-            bind.message == null -> "Type a command, such as /warp end, or a chat line."
-            bind.keys.isEmpty() -> "Press Keys, then the keys this bind uses."
-            clash != null -> "$keyNames also fires ${clash.title}. ${if (CommandBinds.first(listOf(bind, clash)) === bind) "This one" else "That one"} goes first."
-            game != null -> "$keyNames is also the game's $game key."
-            !bind.enabled -> "Off. Tick On to use it."
-            else -> "$keyNames ${describe(bind)}."
-        }
-        readout = fit(readout, WIDTH)
+        readout = fit(
+            when {
+                armed -> "Press Delete again to delete this bind."
+                keys.recording -> if (bind.inOrder) "Press the keys in turn, then Escape." else "Hold the keys together, then let go."
+                bind.message == null -> "Type a command, such as /warp end."
+                bind.keys.isEmpty() -> "Press Keys, then the keys to use."
+                clash != null -> "$keyNames also fires ${clash.title}."
+                game != null -> "$keyNames is also the game's $game key."
+                !bind.enabled -> "Off. Tick On to use it."
+                else -> "$keyNames ${describe(bind)}."
+            },
+            WIDTH,
+        )
         save.active = !bad
     }
 
     private fun confirm() {
         if (bad) return
         onSave(bind)
+        onClose()
+    }
+
+    private fun copy() {
+        if (bad) return
+        onCopy(bind)
+        onClose()
+    }
+
+    private fun delete() {
+        if (!armed) {
+            armed = true
+            refresh()
+            return
+        }
+        onDelete()
         onClose()
     }
 
@@ -183,6 +227,8 @@ class BindEditScreen(
             refresh()
             if (took || keys.isMouseOver(event.x, event.y)) return true
         }
+        // A press anywhere but Delete calls a delete off.
+        if (armed && delete?.isMouseOver(event.x, event.y) != true) armed = false
         return super.mouseClicked(event, doubleClick).also { refresh() }
     }
 
@@ -204,12 +250,20 @@ class BindEditScreen(
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         Kit.panel(graphics, panelX, panelY, WIDTH + Kit.INSET * 2, panelHeight)
         Kit.label(graphics, title.string, left, top + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
-        for ((caption, x, y) in captions) Kit.label(graphics, caption, x, y, Kit.Ink.MUTED)
+        for ((label, x, y) in labels) Kit.label(graphics, label, x, y, Kit.Ink.MUTED)
+        if (more) Kit.divider(graphics, left, panelY + Kit.INSET + ROW * 5 - Kit.GAP / 2 - 1, WIDTH)
         Kit.label(graphics, readout, left, readoutY, if (bad) Kit.Ink.MUTED else Kit.Ink.NORMAL)
+        delete?.takeIf { armed }?.let { Kit.ring(graphics, it.x - 1, it.y - 1, it.width + 2, it.height + 2, Role.BAD.argb()) }
         super.extractRenderState(graphics, mouseX, mouseY, partialTick)
     }
 
     companion object {
+        /** Whether More was left open, so the next bind opens the same way. */
+        private var moreOpen = false
+
+        private val CommandBind.advanced: Boolean
+            get() = where != Where.WORLD || priority != 0 || !extraKeys || inOrder || areas.isNotEmpty()
+
         fun groupName(group: String) = group.ifEmpty { "General" }
 
         /** What a bind does, after its keys: "sends /warp end in the world, in The End". */

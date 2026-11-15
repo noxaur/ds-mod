@@ -50,6 +50,15 @@ A button that steps through a few values, such as where a bind works.
 
 - A delete that cannot be undone asks for a second press on the same button, as SkyOcean's does. The first rings the button in `bad` and the screen's line says what the second will delete. A press anywhere else calls it off.
 
+## List of things to edit
+
+A list of things the player made, such as command binds.
+
+- A row shows only what tells the things apart, such as a switch, a name and keys, and Edit. Everything else, delete and copy included, lives in the edit window, so the list stays calm.
+- A row is dragged by its body to move it, and Alt with an arrow key moves the focused one. A double click edits it.
+- The edit window shows what most things need, and keeps the rest under More. More starts open when the thing already uses any of it.
+- A part that matters only once there are several, such as a column of groups, appears when the second one does.
+
 ## Range slider
 
 - A click on an empty stretch adds a section, and a press and drag draws one.
