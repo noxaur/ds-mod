@@ -141,7 +141,7 @@ class ContributeTest : FabricClientGameTest {
         val long = Request("long", Brief("Every tier", (1..30).map { Brief.Step("Do the thing for tier $it and wait for the next one", if (it % 3 == 0) "Do not hit it." else null) }), emptyList(), 600)
         for (theme in listOf(Theme.CHARCOAL, Theme.VANILLA)) {
             context.runOnClient<Nothing> { DsModClient.settings.hud.theme = theme }
-            context.setScreen { ContributeScreen(null, signingIn = false).also { it.offer(listOf(long)) } }
+            context.setScreen { ContributeScreen(signingIn = false).also { it.offer(listOf(long)) } }
             context.waitTicks(2)
             context.takeScreenshot("contribute-long-${theme.name.lowercase()}")
         }
@@ -152,7 +152,8 @@ class ContributeTest : FabricClientGameTest {
             check(buttons().map { it.message.string } == listOf("Accept", "Skip", "Close")) { "The buttons are ${buttons().map { it.message.string }}" }
             buttons().forEach { check(it.y >= 0 && it.y + it.height <= screen.height) { "${it.message.string} is at ${it.y} on a screen ${screen.height} high" } }
         }
-        context.setScreen { null }
+        click(context, "Close")
+        context.runOnClient<Nothing> { client -> check(client.gui.screen() == null) { "Close left ${client.gui.screen()} open instead of the game" } }
     }
 
     /** Plays the accepted run through with the key, shows the HUD, and returns what reached the backend. */

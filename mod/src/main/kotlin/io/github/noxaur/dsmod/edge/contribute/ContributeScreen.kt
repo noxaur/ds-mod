@@ -19,9 +19,9 @@ private const val CHROME = Kit.INSET * 2 + 11 + 4 + 4 + Kit.BUTTON_HEIGHT
 /**
  * A popover over the game with one request the player qualifies for: what they would do, how long it may take, and
  * Accept or Skip. The game keeps running behind it. It starts by asking the backend, which first signs the player
- * in when [signingIn], and [offer] or [fail] fills it in. Close goes back to [parent], and Accept to the game.
+ * in when [signingIn], and [offer] or [fail] fills it in. Close and Accept both go back to the game.
  */
-class ContributeScreen(private val parent: Screen?, private val signingIn: Boolean) : Screen(text { body("Contribute") }.toComponent()) {
+class ContributeScreen(private val signingIn: Boolean) : Screen(text { body("Contribute") }.toComponent()) {
     private class Line(val text: String, val ink: Kit.Ink)
 
     private var queue: List<Request>? = null
@@ -130,6 +130,4 @@ class ContributeScreen(private val parent: Screen?, private val signingIn: Boole
         lines.forEachIndexed { i, line -> Kit.label(graphics, line.text, x + Kit.INSET, y + Kit.INSET + 15 + i * LINE, line.ink) }
         super.extractRenderState(graphics, mouseX, mouseY, partialTick)
     }
-
-    override fun onClose() = minecraft.gui.setScreen(parent)
 }
