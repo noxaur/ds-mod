@@ -156,8 +156,15 @@ test("the containers are listed as the game lays them out", async () => {
     ["accessories", 18, 9],
   ]);
   expect(value.containers.every((box) => !box.hidden)).toBe(true);
-  // The renderer is not built in this change, so what is drawn is not asserted, only where the items are.
-  expect(value.equipment).toEqual({ helmet: null, chestplate: null, leggings: null, boots: null, held: null });
+  // Armor is inventory keys 41 to 44, and the held item is the first hotbar slot. How each is drawn is the renderer's test.
+  const { helmet, chestplate, leggings, boots, held } = value.equipment;
+  expect([helmet, chestplate, leggings, boots, held].map((item) => item?.entry)).toEqual([
+    "maxor_helmet",
+    "maxor_chestplate",
+    "maxor_leggings",
+    "maxor_boots",
+    "scylla",
+  ]);
 });
 
 test("a container has one slot for each place, null where upstream has no item", async () => {
