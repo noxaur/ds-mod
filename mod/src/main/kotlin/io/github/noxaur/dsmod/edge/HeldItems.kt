@@ -75,12 +75,16 @@ object HeldItems {
         val reach = if (s.scaleSwing) s.itemSize else 1f
         when (s.swingStyle) {
             SwingStyle.VANILLA -> {
-                if (reach == 1f || spear) return false
-                push(pose, side, attack, reach)
-                arc(pose, side, attack, 1f)
+                if (reach == 1f) return false
+                if (spear) {
+                    stab(pose, side, arm, attack, reach)
+                } else {
+                    push(pose, side, attack, reach)
+                    arc(pose, side, attack, 1f)
+                }
             }
             SwingStyle.SPIN -> pose.mulPose(Axis.YP.rotationDegrees(side * -360f * attack))
-            SwingStyle.STAB -> SpearAnimations.firstPersonAttack(attack, pose, side, arm)
+            SwingStyle.STAB -> stab(pose, side, arm, attack, reach)
             SwingStyle.BLOCK_HIT, SwingStyle.EXHIBITION -> {
                 val player = Minecraft.getInstance().player ?: return false
                 if (arm != player.mainArm) return false
@@ -106,6 +110,18 @@ object HeldItems {
             }
         }
         return true
+    }
+
+    /** Where the spear's stab is worked out, so its push can be scaled apart from its turn. */
+    private val stabbing = PoseStack()
+
+    /** The game's spear stab, its push times [reach]. */
+    private fun stab(pose: PoseStack, side: Int, arm: HumanoidArm, attack: Float, reach: Float) {
+        if (reach == 1f) return SpearAnimations.firstPersonAttack(attack, pose, side, arm)
+        stabbing.setIdentity()
+        SpearAnimations.firstPersonAttack(attack, stabbing, side, arm)
+        val stab = stabbing.last().pose()
+        pose.mulPose(stab.setTranslation(stab.m30() * reach, stab.m31() * reach, stab.m32() * reach))
     }
 
     /** The game's own swing moves the hand by this much, times [reach]. */
