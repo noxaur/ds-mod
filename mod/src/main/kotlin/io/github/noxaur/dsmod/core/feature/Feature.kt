@@ -101,8 +101,8 @@ abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boo
     /** Whether this feature ever shows a HUD block, which is whether it overrides [hud]. */
     val hasHud = javaClass.getMethod("hud", Long::class.javaPrimitiveType).declaringClass != Feature::class.java
 
-    /** A HUD block headed by [title]. */
-    protected fun block(rows: HudBuilder.() -> Unit) = HudBlock(header, HudBuilder().apply(rows).rows)
+    /** A HUD block headed by [title], or with no header when [headed] is false, for rows that speak for themselves. */
+    protected fun block(headed: Boolean = true, rows: HudBuilder.() -> Unit) = HudBlock(if (headed) header else text {}, HudBuilder().apply(rows).rows)
 
     /**
      * The marks on the open container, by slot index, or none. Called when [hud] is, so return the same

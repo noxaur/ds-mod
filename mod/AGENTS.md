@@ -19,6 +19,7 @@ A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with 
 | Follow lines in chat | `DragonTimer` |
 | Read the tab list's info rows, or the sidebar's the same way | `GolemStatus` |
 | Read items and mark slots | `RarityMarks` |
+| Show items on the HUD, from the player's own inventory | `ArmorDisplay` |
 | Change how the game draws, reading nothing from the server | `Fullbright` |
 | Count something and keep the total | `SlayerTracker` |
 | Hide a line the server sends, and tell the player once that you did | `AbilitySpam` |

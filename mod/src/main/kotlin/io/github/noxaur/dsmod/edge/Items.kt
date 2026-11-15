@@ -14,6 +14,7 @@ import net.minecraft.nbt.FloatTag
 import net.minecraft.nbt.NumericTag
 import net.minecraft.nbt.StringTag
 import net.minecraft.nbt.Tag
+import net.minecraft.resources.Identifier
 import net.minecraft.world.item.ItemStack
 
 /** Walks the components and the NBT directly, because the codecs are slow and this runs on the client thread. */
@@ -24,6 +25,9 @@ fun ItemStack.toItem() = Item(
     get(DataComponents.LORE)?.lines()?.map { it.toText() }.orEmpty(),
     get(DataComponents.CUSTOM_DATA)?.copyTag()?.toJson() ?: JsonObject(emptyMap()),
 )
+
+/** A plain stack of [Item.id], for an item no stack was read for. It lacks what an [Item] leaves out, such as a head's skin. */
+fun Item.plainStack() = ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(id)), count)
 
 private fun CompoundTag.toJson() = JsonObject(entrySet().associate { (key, tag) -> key to tag.toJson() })
 

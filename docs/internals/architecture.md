@@ -148,6 +148,10 @@ Text the server sent is a separate type, `ServerText`, which carries whatever co
 
 Each surface (chat, HUD, alerts, container slots, tooltips, world marks) has one object in `edge` that draws a plain model from `core`. A model is handed over when something changes, and the layer converts it to Minecraft's types once and redraws it from then on. A feature that built its text every frame would allocate in the render loop, where a dropped frame is a bug, so the layers offer no per-frame hook.
 
+## An item on the HUD is drawn from the stack it was read from
+
+An `Item` keeps what features read: the id, the name, the lore and `custom_data`. dragsim.co's armor is a player head with a skin and leather with a dye, and neither is in an `Item`, so an icon rebuilt from the id is a Steve head and brown leather. `Hud` therefore asks `ContainerPoller` for the very stack each item was read from, matched by identity, which costs the poll nothing. The poller keeps the player's own inventory while another menu is open, because that menu does not hold the armor. An item no stack was read for, such as one from a fixture, falls back to a plain stack of its id.
+
 ## Chrome is drawn in code, from a theme
 
 Panels, buttons, slots and bars are a few filled rectangles each, drawn by `Kit` in the colors of a `Theme`. Minecraft's own screens stretch nine-slice textures instead, and ds-mod does not: a second look would need a second set of textures drawn by hand, and a new shape would need an image editor. In code a theme is one list of colors and a shape is a function, and `draw-with-kit` in `Rules.kt` keeps every other file from drawing its own. Only the icons are textures, white so that one sprite takes any color.

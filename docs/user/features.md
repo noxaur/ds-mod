@@ -171,6 +171,14 @@ Slot Lock Key and Item Lock Key under Inventory in the settings take any key or 
 
 ## General
 
+### Armor Display
+
+Shows the armor you wear on the HUD, helmet first. Open the chat and point at a piece to read its tooltip.
+
+| Setting | Does |
+| --- | --- |
+| Armor Layout | Lines the pieces up in a row or a column |
+
 ### Camera
 
 Shapes the third-person view you get with F5. Each setting starts at the game's own, so nothing changes until you move one.

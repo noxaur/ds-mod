@@ -90,7 +90,7 @@ object DsModClient : ClientModInitializer {
         val all = features(config.instance)
         game = Game(all) { active }
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
-        Hud.register()
+        Hud.register { containers.stack(it) }
         Slots.register(config.instance.inventory)
         Tooltips.register()
         World.register()

@@ -26,6 +26,10 @@ class ContainerPoller(private val game: Game) {
     private var items = arrayOfNulls<Item>(0)
     private var tapped = game.tap
 
+    // The player's own inventory as last read, kept while another menu is open, since that menu does not hold the armor.
+    private var ownStacks = arrayOfNulls<ItemStack>(0)
+    private var ownItems = arrayOfNulls<Item>(0)
+
     fun poll(client: Minecraft) {
         if (!game.wants(ContainerOpened::class.java) && !game.wants(SlotChanged::class.java)) return
         val player = client.player ?: return
@@ -34,6 +38,10 @@ class ContainerPoller(private val game: Game) {
         val openTitle = if (open === player.inventoryMenu) null else (client.gui.screen() as? AbstractContainerScreen<*>)?.title
         val slots = open.slots
         if (open !== menu || openTitle != title || game.tap !== tapped) {
+            if (menu === player.inventoryMenu) {
+                ownStacks = stacks
+                ownItems = items
+            }
             menu = open
             title = openTitle
             tapped = game.tap
@@ -58,6 +66,16 @@ class ContainerPoller(private val game: Game) {
             items[i] = item
             game.post(System.currentTimeMillis(), SlotChanged(i, item))
         }
+    }
+
+    /**
+     * The stack [item] was read from, which holds what an [Item] leaves out, such as a head's skin and dyed leather's
+     * color. Null for an item this poller did not post, such as one from a fixture.
+     */
+    fun stack(item: Item): ItemStack? {
+        for (i in items.indices) if (items[i] === item) return stacks[i]
+        for (i in ownItems.indices) if (ownItems[i] === item) return ownStacks[i]
+        return null
     }
 
     private companion object {

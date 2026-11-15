@@ -15,6 +15,7 @@ import io.github.noxaur.dsmod.core.camera.ThirdPerson
 import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
+import io.github.noxaur.dsmod.core.feature.general.ArmorLayout
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.Theme
@@ -155,6 +156,18 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var explosionParticleHider = false
+
+        @Expose
+        @ConfigOption(name = "Armor Display", desc = "Show the armor you wear on the HUD. Open the chat and point at a piece to read it.")
+        @ConfigEditorBoolean
+        @JvmField
+        var armorDisplay = true
+
+        @Expose
+        @ConfigOption(name = "Armor Layout", desc = "Line the armor up in a row or a column.")
+        @ConfigEditorDropdown
+        @JvmField
+        var armorLayout = ArmorLayout.ROW
 
         @Expose
         @ConfigOption(name = "Camera", desc = "Shape the third-person view with the settings below. At their defaults it is the game's own.")

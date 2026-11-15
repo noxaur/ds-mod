@@ -123,7 +123,7 @@ class FeatureReplayTest {
                             }
                         }
                         game.messages.clear()
-                        val lines = game.readouts.single().hud?.let { block -> listOf(block.header.plain) + block.rows.map { "  " + it.text.plain } }
+                        val lines = game.readouts.single().hud?.let { block -> listOfNotNull(block.header.plain.ifEmpty { null }) + block.rows.map { "  " + it.text.plain } }
                             ?: emptyList()
                         if (lines != shown) {
                             shown = lines

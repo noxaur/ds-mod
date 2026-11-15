@@ -126,7 +126,11 @@ class HudEditorTest : FabricClientGameTest {
                 val size = Hud.find(ID)!!.let { it.width * it.scale to it.height * it.scale }
                 val centered = (screen.width - size.first) / 2.0
                 val middle = (screen.height - size.second) / 2.0
-                val snapped = dragTo(centered + 3, middle - 3, 0)
+                // Every feature's placeholder stacks down from the top-left. Dropped 3 below the middle, the block is nearer
+                // the middle than any edge of the stack only while the stack ends above the middle.
+                val stack = Hud.placed().filter { it.id != ID }.maxOf { it.y + it.height * it.scale }
+                check(stack < middle) { "The stack of blocks reaches $stack, past the middle at $middle, so a drop there snaps to it" }
+                val snapped = dragTo(centered + 3, middle + 3, 0)
                 check(Math.abs(snapped.x - centered) < 0.6 && Math.abs(snapped.y - middle) < 0.6) { "The block did not center: ${snapped.x}, ${snapped.y}, wanted $centered, $middle on ${screen.width}x${screen.height} with $size" }
                 val free = dragTo(centered + 3, middle - 3, org.lwjgl.glfw.GLFW.GLFW_MOD_SHIFT)
                 check(Math.abs(free.x - (centered + 3)) < 0.6 && Math.abs(free.y - (middle - 3)) < 0.6) { "Shift did not skip the snap: ${free.x}, ${free.y}" }

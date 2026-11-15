@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.hud
 
+import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.Text
 import io.github.noxaur.dsmod.core.text.TextBuilder
@@ -11,7 +12,7 @@ import io.github.noxaur.dsmod.core.text.text
  */
 class HudGroup(val id: String, val x: Int, val y: Int, val background: Boolean = false, val scale: Float = 1f)
 
-/** One block on the HUD: a header and the rows under it. */
+/** One block on the HUD: a header and the rows under it. A block whose header is empty shows only its rows. */
 data class HudBlock(val header: Text, val rows: List<HudRow>)
 
 sealed interface HudRow {
@@ -23,6 +24,11 @@ data class TextRow(override val text: Text) : HudRow
 /** A row with a bar under it, filled from 0 to 1. */
 data class BarRow(override val text: Text, val fraction: Float, val role: Role) : HudRow
 
+/** A row of item icons, left to right, with an empty cell for each null. [text] names them, for the replay's transcript. */
+data class ItemsRow(val items: List<Item?>) : HudRow {
+    override val text: Text get() = text { muted(items.joinToString(", ") { it?.name?.plain ?: it?.id ?: "-" }) }
+}
+
 class HudBuilder {
     val rows = mutableListOf<HudRow>()
 
@@ -32,6 +38,10 @@ class HudBuilder {
 
     fun bar(label: String, fraction: Float, role: Role = Role.VALUE, content: TextBuilder.() -> Unit = {}) {
         rows += BarRow(text { muted("$label: "); content() }, fraction.coerceIn(0f, 1f), role)
+    }
+
+    fun items(items: List<Item?>) {
+        rows += ItemsRow(items)
     }
 }
 
