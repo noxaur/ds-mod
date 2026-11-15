@@ -9,10 +9,18 @@ import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.edge.Slots
+import io.github.noxaur.dsmod.edge.capture.CaptureSession
+import io.github.noxaur.dsmod.edge.capture.Recorder
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
+import net.minecraft.core.component.DataComponents
+import net.minecraft.network.chat.Component
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.component.ItemLore
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import java.io.File
 import java.lang.management.ManagementFactory
@@ -29,11 +37,15 @@ private const val HUD_BLOCKS = 8
 private const val FIRST_MARKED_SLOT = 9
 private const val MARKED_SLOTS = 36
 private const val SIDEBAR_LINES = 15
+private const val ARMORED_MOBS = 40
+private const val RECORDING_WARM_UP_TICKS = 100
 
 /**
  * Measures the mod in a real game and checks each row against `perf-budgets.json`. The numbers are the mod's
  * own [Metrics] timers, read over [WINDOWS] windows of [WINDOW_TICKS] ticks while the HUD shows [HUD_BLOCKS]
- * blocks, the open inventory has [MARKED_SLOTS] marked slots and the sidebar has [SIDEBAR_LINES] lines.
+ * blocks, the open inventory has [MARKED_SLOTS] marked slots and the sidebar has [SIDEBAR_LINES] lines. Then it
+ * records, with a full inventory of named items with long lore and [ARMORED_MOBS] named, armored mobs in view, and
+ * reads the recorder's own timers for a pass over the items and over the entities.
  *
  * The caps are for the device in the budgets file. A fixed loop measures how fast this machine is next to
  * that device, and each time is scaled to it before the check, so a slower runner needs no caps of its own.
@@ -86,6 +98,7 @@ class PerfTest : FabricClientGameTest {
                 context.runOnClient<Nothing> { DsModClient.game.metrics.flush() }
                 context.waitTicks(WINDOW_TICKS)
                 val timers = context.computeOnClient<Map<String, Metrics.Timer>, Nothing> { DsModClient.game.metrics.snapshot().timers }
+                check(timers.keys.none { it.startsWith("capture-") }) { "The recorder ran before anything started it: ${timers.keys}" }
                 var features = 0L
                 for ((name, timer) in timers) {
                     if (name in budgets.rows) samples.getOrPut(name, ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
@@ -93,6 +106,7 @@ class PerfTest : FabricClientGameTest {
                 }
                 samples.getOrPut("features", ::ArrayList) += features / 1000.0 / WINDOW_TICKS
             }
+            recording(context, world, samples)
             val calibrate = context.computeOnClient<Double, Nothing> {
                 repeat(3) { spin() }
                 List(7) { spin() }.sorted()[3]
@@ -134,6 +148,38 @@ class PerfTest : FabricClientGameTest {
                 "Over the cap: ${failed.joinToString()}. The table is in perf.md. Make the code faster, or raise the cap in perf-budgets.json if the user agrees."
             }
         }
+    }
+
+    /** Adds a sample for each `capture-` timer a pass ran under, per pass. A pass runs on one tick in five. */
+    private fun recording(context: ClientGameTestContext, world: TestSingleplayerContext, samples: HashMap<String, MutableList<Double>>) {
+        world.server.runOnServer<Nothing> { server ->
+            val inventory = server.playerList.players.first().inventory
+            for (slot in 0 until inventory.containerSize) {
+                inventory.setItem(slot, ItemStack(Items.DIAMOND_SWORD).also { stack ->
+                    stack.set(DataComponents.CUSTOM_NAME, Component.literal("Sword $slot"))
+                    stack.set(DataComponents.LORE, ItemLore((1..20).map { Component.literal("Line $it of the lore of sword $slot") }))
+                })
+            }
+        }
+        repeat(ARMORED_MOBS) { i ->
+            world.server.runCommand(
+                "execute at @a run summon zombie ~${i % 8 - 4} ~ ~${3 + i / 8} {NoAI:1b,Silent:1b,PersistenceRequired:1b,CustomName:\"Mob $i\"," +
+                    "equipment:{head:{id:\"minecraft:diamond_helmet\"},chest:{id:\"minecraft:diamond_chestplate\"}," +
+                    "legs:{id:\"minecraft:diamond_leggings\"},feet:{id:\"minecraft:diamond_boots\"},mainhand:{id:\"minecraft:diamond_sword\"}}}",
+            )
+        }
+        context.waitTicks(20)
+        val seen = context.computeOnClient<Int, Nothing> { client -> client.level!!.entitiesForRendering().count { it.hasCustomName() } }
+        check(seen >= ARMORED_MOBS) { "Only $seen of the $ARMORED_MOBS mobs are in view" }
+        val session = context.computeOnClient<CaptureSession, Nothing> { Recorder.start(it.gameDirectory.toPath().resolve("dsmod/captures")) }
+        context.waitTicks(RECORDING_WARM_UP_TICKS)
+        repeat(WINDOWS) {
+            context.runOnClient<Nothing> { DsModClient.game.metrics.flush() }
+            context.waitTicks(WINDOW_TICKS)
+            val timers = context.computeOnClient<Map<String, Metrics.Timer>, Nothing> { DsModClient.game.metrics.snapshot().timers }
+            for ((name, timer) in timers) if (name.startsWith("capture-")) samples.getOrPut(name, ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
+        }
+        context.runOnClient<Nothing> { Recorder.stop(session) }
     }
 
     /** A fixed amount of work for one core, in ms. */
