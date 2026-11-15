@@ -1,6 +1,5 @@
 [tools]
 java = "temurin-25"
-go = "1.27"
 node = "24"
 pnpm = "10.34.9"
 
@@ -10,7 +9,7 @@ run = "./gradlew check"
 
 [tasks."check:backend"]
 dir = "backend"
-run = ["test -z \"$(gofmt -l .)\" || { gofmt -l .; echo 'run gofmt -w .'; exit 1; }", "go vet ./...", "go test -timeout 30s ./..."]
+run = ["pnpm install --frozen-lockfile", "pnpm check"]
 
 [tasks."check:web"]
 dir = "web"

@@ -28,7 +28,7 @@ class RarityOutlines(toggle: KMutableProperty0<Boolean>) : Feature("rarity-outli
         container.slots.forEachIndexed { slot, item ->
             val rarity = item?.rarity ?: return@forEachIndexed
             val mark = byRarity[rarity]
-            if (mark == null) count("unparsed") else next[slot] = mark
+            if (mark == null) unparsed(rarity) else next[slot] = mark
         }
         marks = next
         return marks

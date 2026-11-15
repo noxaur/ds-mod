@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature
 
 import io.github.noxaur.dsmod.core.container.SlotMark
+import io.github.noxaur.dsmod.core.contribute.Places
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.game.GameEvent
@@ -47,6 +48,12 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     var tap: ((time: Long, event: GameEvent) -> Unit)? = null
 
     private val tab = TabState()
+
+    /** The players the tab list shows now. */
+    val tabPlayers get() = tab.players
+
+    /** The places the player has been, which decide the contributions they are offered. The edge saves it. */
+    val places = Saved(Places.serializer(), Places())
     private var lastTab: TabList? = null
 
     /** The sidebar, as of the last event the edge posted. */
@@ -92,11 +99,17 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         val shared = when (event) {
             is TabList -> true.also {
                 lastTab = event
-                metrics.time("tab-list") { tab.update(event.rows) }
+                metrics.time("tab-list") {
+                    tab.update(event.rows)
+                    places.value = places.value.with(tab, sidebar)
+                }
             }
             is Sidebar -> true.also {
                 lastSidebar = event
-                metrics.time("sidebar") { sidebar.update(event) }
+                metrics.time("sidebar") {
+                    sidebar.update(event)
+                    places.value = places.value.with(tab, sidebar)
+                }
             }
             is ContainerOpened -> true.also { metrics.time("container") { container.opened(event) } }
             is SlotChanged -> true.also { metrics.time("container") { container.changed(event) } }

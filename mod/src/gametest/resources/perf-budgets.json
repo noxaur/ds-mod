@@ -46,6 +46,18 @@
       "unit": "µs",
       "cap": 10
     },
+    "capture-items": {
+      "group": "Recording",
+      "label": "Item pass, 46 slots of named items with lore",
+      "unit": "µs",
+      "cap": 300
+    },
+    "capture-entities": {
+      "group": "Recording",
+      "label": "Entity pass, 40 named, armored mobs",
+      "unit": "µs",
+      "cap": 1000
+    },
     "jar": {
       "group": "Size",
       "label": "Release jar",

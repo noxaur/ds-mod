@@ -46,7 +46,8 @@ val rules = listOf(
     Rule(
         id = "text-by-role",
         files = "src/main/**.{kt,java}",
-        except = "src/main/kotlin/**/{core/text/Text,edge/Chat,core/ui/Theme}.kt",
+        // PlayerNames strips the `§` codes of an older capture's raw text and reads them to tell an NPC's label. It colors nothing.
+        except = "src/main/kotlin/**/{core/text/Text,edge/Chat,core/ui/Theme,core/capture/PlayerNames}.kt",
         forbid = Regex(
             """§|\bChatFormatting\.|\bTextColor\.|\.withColor\(|\bComponent\.(literal|translatable)\(|""" +
                 """\b0x[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?\b""",
