@@ -1,16 +1,26 @@
 package io.github.noxaur.dsmod.core.backend
 
+import io.github.noxaur.dsmod.core.brief.Brief
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 import java.net.URI
+import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
+import java.net.http.HttpRequest.BodyPublisher
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse
 import java.net.http.HttpResponse.BodyHandlers
+import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
@@ -27,6 +37,31 @@ interface Identity {
     fun join(serverId: String)
 }
 
+@Serializable
+data class Requirement(val kind: String, val value: String)
+
+/**
+ * Something an agent asked players to record. The backend may add a field here and an older mod ignores it, but the
+ * [brief] is read as strictly as [Brief.parse] reads one, so a step can't silently lose its timer to a key the mod
+ * does not know.
+ */
+@Serializable
+data class Request(
+    val id: String,
+    @Serializable(with = StrictBrief::class) val brief: Brief,
+    val requirements: List<Requirement>,
+    val timeoutSeconds: Int,
+)
+
+private object StrictBrief : KSerializer<Brief> by Brief.serializer() {
+    override fun deserialize(decoder: Decoder): Brief =
+        Json.decodeFromJsonElement(Brief.serializer(), (decoder as JsonDecoder).decodeJsonElement())
+}
+
+/** A line, or an item, that reached a feature and failed to parse. */
+@Serializable
+data class Sighting(val kind: String, val signature: String, val sample: String)
+
 private val json = Json { ignoreUnknownKeys = true }
 
 /**
@@ -38,6 +73,7 @@ private val json = Json { ignoreUnknownKeys = true }
 class Backend(
     private val url: String,
     private val identity: Identity,
+    private val modVersion: String,
     // HTTP/1.1, because over plain http Java asks to upgrade to HTTP/2 in a header, and a server that does not know
     // the upgrade (Vite's, in development) drops the connection, which reads as an unreachable backend.
     private val http: HttpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).connectTimeout(Duration.ofSeconds(10)).build(),
@@ -51,14 +87,50 @@ class Backend(
     /** Runs [call] on the backend's own thread, never the client thread. */
     fun <T> async(call: Backend.() -> T): CompletableFuture<T> = CompletableFuture.supplyAsync({ call() }, worker)
 
+    /** The open requests this player has neither recorded nor skipped. One the mod cannot read is left out. */
+    fun requests(): List<Request> {
+        val body = send { get("/v1/contrib/requests", it) }
+        return json.parseToJsonElement(body.body()).let { it as JsonArray }.mapNotNull { element ->
+            runCatching { json.decodeFromJsonElement(Request.serializer(), element) }.getOrNull()
+        }
+    }
+
+    fun skip(id: String) {
+        send { post("/v1/contrib/requests/$id/skip", BodyPublishers.noBody(), null, it) }
+    }
+
+    /** Uploads the gzipped capture at [file] for request [id]. */
+    fun submit(id: String, file: Path) {
+        val query = "?modVersion=" + URLEncoder.encode(modVersion, Charsets.UTF_8)
+        send { post("/v1/contrib/requests/$id/submissions$query", BodyPublishers.ofFile(file), "application/octet-stream", it, UPLOAD_TIMEOUT) }
+    }
+
+    fun unknowns(sightings: List<Sighting>) {
+        val body = buildJsonObject {
+            put("modVersion", modVersion)
+            putJsonArray("sightings") {
+                sightings.forEach {
+                    add(buildJsonObject { put("kind", it.kind); put("signature", it.signature); put("sample", it.sample) })
+                }
+            }
+        }
+        send { post("/v1/contrib/unknowns", BodyPublishers.ofString(body.toString()), "application/json", it) }
+    }
+
     /** A code that the website trades for a session once, within a minute. */
     fun oneTimeToken(): String =
         json.parseToJsonElement(send { get("/api/auth/one-time-token/generate", it) }.body()).jsonObject.getValue("token").jsonPrimitive.content
 
     private fun get(path: String, token: String) = http.send(builder(path, token).GET().build(), BodyHandlers.ofString())
 
-    private fun builder(path: String, token: String) = HttpRequest.newBuilder(URI.create(url + path))
-        .timeout(TIMEOUT)
+    private fun post(path: String, body: BodyPublisher, type: String?, token: String, timeout: Duration = TIMEOUT) =
+        http.send(
+            builder(path, token, timeout).apply { if (type != null) header("Content-Type", type) }.POST(body).build(),
+            BodyHandlers.ofString(),
+        )
+
+    private fun builder(path: String, token: String, timeout: Duration = TIMEOUT) = HttpRequest.newBuilder(URI.create(url + path))
+        .timeout(timeout)
         .header("Origin", origin)
         .header("Authorization", "Bearer $token")
 
@@ -104,5 +176,6 @@ class Backend(
 
     private companion object {
         val TIMEOUT: Duration = Duration.ofSeconds(20)
+        val UPLOAD_TIMEOUT: Duration = Duration.ofSeconds(120)
     }
 }

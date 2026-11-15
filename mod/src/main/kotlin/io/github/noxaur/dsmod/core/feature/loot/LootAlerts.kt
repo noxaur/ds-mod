@@ -17,7 +17,7 @@ class LootAlerts(toggle: KMutableProperty0<Boolean>, private val least: KPropert
     init {
         on<SystemMessage> { message, _ ->
             val drop = Drop.parse(message.text.plain) ?: return@on
-            val tier = LootTier.entries.firstOrNull { it.word == drop.tier } ?: return@on count("unparsed")
+            val tier = LootTier.entries.firstOrNull { it.word == drop.tier } ?: return@on unparsed(message.text.plain)
             if (tier >= least.get()) alert(text { value(drop.item) }, text { value(drop.item); body(" dropped.") })
         }
     }

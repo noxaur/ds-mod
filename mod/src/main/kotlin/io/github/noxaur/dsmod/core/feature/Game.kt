@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature
 
 import io.github.noxaur.dsmod.core.container.SlotMark
+import io.github.noxaur.dsmod.core.contribute.AreasSeen
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.game.GameEvent
@@ -47,6 +48,12 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     var tap: ((time: Long, event: GameEvent) -> Unit)? = null
 
     private val tab = TabState()
+
+    /** The players the tab list shows now. */
+    val tabPlayers get() = tab.players
+
+    /** The areas the tab list has shown this player, which decide the contributions they are offered. The edge saves it. */
+    val areas = Saved(AreasSeen.serializer(), AreasSeen())
     private var lastTab: TabList? = null
 
     /** The sidebar, as of the last event the edge posted. */
@@ -92,7 +99,11 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         val shared = when (event) {
             is TabList -> true.also {
                 lastTab = event
-                metrics.time("tab-list") { tab.update(event.rows) }
+                metrics.time("tab-list") {
+                    tab.update(event.rows)
+                    val area = tab.info("Area") // rule:area-by-declaration Game keeps the areas seen for contribution requests, and no feature reads them
+                    if (area != null && area !in areas.value.names) areas.value = AreasSeen(areas.value.names + area)
+                }
             }
             is Sidebar -> true.also {
                 lastSidebar = event

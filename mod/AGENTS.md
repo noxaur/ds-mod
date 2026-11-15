@@ -36,7 +36,7 @@ A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with 
 - A drop line such as `RARE DROP! (Summoning Eye)` is parsed by `Drop.parse`. When two features read the same server line, they share its parser in `core/game`.
 - State that outlives the session is one immutable `@Serializable` class given to `saved()`, with a default for every field. Replace its `value` to change it, because a change made in place is never written.
 - Text the server sent is a `ServerText`, and text the mod shows is a `Text` from `core.text`. Match the server's text on `ServerText.plain`, anchored at the start of the line, because a player can type anything after their name.
-- When a line reaches a feature's branch and then fails to parse, call `count("unparsed")`. That counter is how a format change on the server shows up.
+- When a line reaches a feature's branch and then fails to parse, call `unparsed(text)` with the server's text as it is. It counts the failure, which is how a format change on the server shows up, and it is the only route to the report of unread lines that players can switch on. The report redacts what it sends.
 - Clear the state that belongs to one world on `WorldChanged`. `Game` runs that handler too when the player switches the feature off, because a feature that is off sees no events, and runs its `TabList` and `Sidebar` handlers with the current ones when it is switched back on.
 - Every feature has a fixture, `src/test/resources/features/<id>/<name>.jsonl`, cut from a real capture. `FeatureReplayTest` replays it and writes the transcript `<name>.txt`: each event, whether the feature hid it, what the feature said, and the HUD block and slot marks each time they changed. The run that writes a transcript fails once, so that you read it before you keep it. To accept a changed readout, delete the transcript and run the test again.
 - A feature that only reads events and returns a HUD block or slot marks needs no game test, because the replay covers it and `SurfacesTest` covers the layers. Write a game test when you add to `edge`.
@@ -49,13 +49,13 @@ The code is split into two source sets, and each becomes its own mod.
 
 - `src/main` is the release build, the jar players install. It cannot see debug code, so the compiler keeps developer tools out of it.
 - `src/debug` holds developer tools such as `/dscapture`, `/dskit` and `cutFixture`. The debug jar contains the release jar plus these tools, and `runClient` loads both.
-- Put a tool in `src/debug` when only a developer or an agent needs it. The recorder is not one: it is in the release jar. `Recorder` in `edge/capture` is its one switch, and while it is off each hook is a null check. Keep it that way: nothing the recorder does may run before `Recorder.start`.
+- Put a tool in `src/debug` when only a developer or an agent needs it. The recorder is not one: it is in the release jar, and only a contribution the player accepted starts it. `Recorder` in `edge/capture` is its one switch, and while it is off each hook is a null check. Keep it that way: nothing the recorder does may run before `Recorder.start`.
 - The backend's address and the website's are `backend_url` and `website_url` in `gradle.properties`, written into the jar by the build. A player has no setting for them.
 - `runClient` also loads the third-party mods in the `devMods` configuration, such as Sodium and Mod Menu, and logs in with the user's Microsoft account through DevAuth. These mods never ship in a jar, and the game tests run without them.
 
 ## Seeing the game
 
-Agents see the game through captures. A capture is a JSONL file of what the server showed the client, one event per line. With the debug build, the user types `/dscapture` in game to start one and again to save it, and it lands in `dsmod/captures/` inside the game folder. It refuses while a brief is recording.
+Agents see the game through captures. A capture is a JSONL file of what the server showed the client, one event per line. With the debug build, the user types `/dscapture` in game to start one and again to save it, and it lands in `dsmod/captures/` inside the game folder. It refuses while a brief is recording. Players record captures too, for a request an agent published, and the mod redacts and uploads those: [architecture](../docs/internals/architecture.md#a-contribution-is-a-brief-run-that-ends-in-an-upload).
 
 Each line has a time `t`, a `type` and `data`. A type is either an event or a raw record.
 

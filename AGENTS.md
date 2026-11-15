@@ -111,7 +111,7 @@ When a mistake happens a second time, stop it at the highest level that works:
 
 Then add a row to the table. If a row has nothing enforcing it, enforce it in the same change. Delete a rule once the structure makes the mistake impossible.
 
-A rule failure prints the file, the line and the fix. For an exception the user agreed to, end the line with a comment: `rule:<id> <reason>` in `mod/`, or `eslint-disable-next-line <rule> -- <reason>` in `web/`.
+A rule failure prints the file, the line and the fix. When a line has a real reason to break a rule, end it with a comment that gives the reason: `rule:<id> <reason>` in `mod/`, or `eslint-disable-next-line <rule> -- <reason>` in `web/`.
 
 ## Checks
 

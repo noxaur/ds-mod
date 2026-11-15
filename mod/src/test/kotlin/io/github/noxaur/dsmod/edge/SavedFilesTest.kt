@@ -91,7 +91,20 @@ class SavedFilesTest {
         game.drop("hello")
         game.drop("[VIP] Player1: RARE DROP! (Summoning Eye) (✯ 90%)")
         files.close()
-        assertEquals(emptyList(), dir.listDirectoryEntries())
+        // The tab list in `game()` is the one change, and it is the player's, not a feature's.
+        assertEquals(listOf("areas.json"), dir.listDirectoryEntries().map { it.fileName.toString() })
+    }
+
+    @Test
+    fun `the areas the player has seen come back in the next session`() {
+        val first = game()
+        first.post(1, TabList(listOf(ServerText(ServerSpan("Area: Hub")))))
+        SavedFiles(dir, first).close()
+        assertEquals("""{"names":["The End","Hub"]}""", dir.resolve("areas.json").readText())
+
+        val second = Game(features(DsModConfig()))
+        SavedFiles(dir, second).load()
+        assertEquals(setOf("The End", "Hub"), second.areas.value.names)
     }
 
     @Test

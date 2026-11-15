@@ -23,6 +23,9 @@ class Metrics(private val nanoTime: () -> Long = System::nanoTime) {
     private val counters = HashMap<String, Long>()
     private val failures = HashMap<String, Failure>()
 
+    /** Hears each text a feature failed to parse, with the feature's id. Set only while the player sends them on. */
+    var onUnparsed: ((feature: String, sample: String) -> Unit)? = null
+
     /** Receives each [flush]. A sink that does I/O must hand the snapshot to its own thread. */
     val sinks = ArrayList<(Snapshot) -> Unit>()
 

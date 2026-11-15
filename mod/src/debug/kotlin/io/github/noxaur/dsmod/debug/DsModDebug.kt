@@ -23,8 +23,8 @@ object DsModDebug : ClientModInitializer {
 
     /**
      * Starts a capture, or ends the one it started, and returns the file. The file is finished off the client
-     * thread, and [say] hears on the client thread how each went. A recording that a brief started is its own
-     * to end, so this refuses and returns null.
+     * thread, and [say] hears on the client thread how each went. A recording that a brief or a contribution
+     * started is theirs to end, so this refuses and returns null.
      */
     fun toggleCapture(client: Minecraft, say: (String) -> Unit = {}): Path? {
         val own = file

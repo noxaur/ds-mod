@@ -34,12 +34,18 @@ data class Brief(val name: String, val steps: List<Step>) {
 
     companion object {
         /** Reads a brief, and fails on a key it does not know, so a typo is not a step that silently lost its timer. */
-        fun read(file: Path): Brief = Json.decodeFromString(serializer(), file.readText())
+        fun read(file: Path): Brief = parse(file.readText())
+
+        /** Reads a brief the same way from [json], which is how the backend sends one. */
+        fun parse(json: String): Brief = Json.decodeFromString(serializer(), json)
     }
 }
 
-/** One pass through a [brief]. It waits before the first step until the player starts it. */
-class BriefRun(val brief: Brief) {
+/**
+ * One pass through a [brief]. It waits before the first step until the player starts it. With a [timeoutSeconds],
+ * the pass is [timedOut] that long after [openedAt], whether or not it has started.
+ */
+class BriefRun(val brief: Brief, private val openedAt: Long = 0, private val timeoutSeconds: Int? = null) {
     /** The index of the step being done: -1 before the first, and the number of steps after the last. */
     var current = -1
         private set
@@ -53,6 +59,21 @@ class BriefRun(val brief: Brief) {
         current++
         since = now
         return true
+    }
+
+    /** Ends the run before its last step, for a player who has recorded what the request asked for. */
+    fun finish(now: Long) {
+        current = brief.steps.size
+        since = now
+    }
+
+    /** Whether the run has taken longer than it may and is not done. */
+    fun timedOut(now: Long) = timeoutSeconds != null && !done && now - openedAt >= timeoutSeconds * 1000L
+
+    /** The seconds left before the pass times out, or null when it has no limit. */
+    fun timeLeft(now: Long): Int? {
+        val seconds = timeoutSeconds ?: return null
+        return ((seconds * 1000L - (now - openedAt) + 999) / 1000).toInt().coerceAtLeast(0)
     }
 
     /** Moves on when a timed step has run out. True when it did. */
@@ -116,6 +137,8 @@ class BriefRun(val brief: Brief) {
                 }
             },
         )
+        val left = timeLeft(now)
+        if (left != null && !done) rows += TextRow(text { muted("Time left "); value("%d:%02d".format(left / 60, left % 60)) })
         return hud(brief.name) {}.copy(rows = rows)
     }
 }

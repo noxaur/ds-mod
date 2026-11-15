@@ -12,8 +12,8 @@ import net.minecraft.network.protocol.Packet
 import java.nio.file.Path
 
 /**
- * Holds the one capture that may be running. Nothing records until [start], which `/dscapture` and `-Pbrief`
- * in the debug build call. While none runs, every hook here is one
+ * Holds the one capture that may be running. Nothing records until [start], which the player's accepted
+ * contribution calls, or `/dscapture` and `-Pbrief` in the debug build. While none runs, every hook here is one
  * null check on the client thread.
  */
 object Recorder {

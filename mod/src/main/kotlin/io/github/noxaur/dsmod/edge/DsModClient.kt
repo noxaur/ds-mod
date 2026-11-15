@@ -96,7 +96,9 @@ object DsModClient : ClientModInitializer {
         containers = ContainerPoller(game)
         config.instance.hud.edit = Runnable { openHudEditor() }
         config.instance.end.editBeam = Runnable { openBeaconEditor() }
+        config.instance.contribute.open = Runnable { Contribute.open() }
         Recorder.register()
+        Background.io.execute(Contribute::sweep)
         Recording.register()
         val log = LoggerFactory.getLogger("dsmod")
         game.metrics.sinks += { snapshot ->
@@ -133,6 +135,7 @@ object DsModClient : ClientModInitializer {
             Packets.tick(it)
             game.tick(System.currentTimeMillis())
             readouts.push()
+            Contribute.tick(game, config.instance.contribute.reportUnknowns, System.currentTimeMillis())
             if (++ticks % FLUSH_TICKS == 0) {
                 saved.flush()
                 game.metrics.flush()
@@ -154,6 +157,16 @@ object DsModClient : ClientModInitializer {
                         },
                     )
                     .then(ClientCommands.literal("login").executes { Contribute.login(); 1 })
+                    .then(
+                        ClientCommands.literal("submit").executes {
+                            when {
+                                Recording.submit() -> {}
+                                Recording.busy -> Chat.send(text { bad("Nothing is recorded yet. Press "); value(Recording.key()); bad(" to start recording.") })
+                                else -> Contribute.resend()
+                            }
+                            1
+                        },
+                    )
                     .then(
                         ClientCommands.literal("cancel").executes {
                             if (Recording.cancel()) Chat.send(text { body("Recording cancelled. Nothing was sent.") }) else Chat.send(text { bad("No recording to cancel.") })

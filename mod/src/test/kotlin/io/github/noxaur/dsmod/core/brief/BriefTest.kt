@@ -78,6 +78,32 @@ class BriefTest {
     }
 
     @Test
+    fun `a run with a time limit ends that long after it opened, unless it is done`() {
+        val run = BriefRun(brief, 1_000, 600)
+        assertFalse(run.timedOut(600_999))
+        assertTrue(run.timedOut(601_000))
+        // A run that never started still times out, because a player who walked away leaves nothing on screen forever.
+        run.finish(10_000)
+        assertFalse(run.timedOut(900_000))
+        assertFalse(BriefRun(brief, 0, null).timedOut(Long.MAX_VALUE))
+    }
+
+    @Test
+    fun `a run can end before its last step`() {
+        val run = BriefRun(brief)
+        run.advance(0)
+        run.finish(5)
+        assertTrue(run.done)
+        assertEquals("""{"done":true}""", run.record().toString())
+    }
+
+    @Test
+    fun `parses the brief the way the backend sends it`() {
+        val parsed = Brief.parse("""{"name":"A","steps":[{"do":"B","note":null,"seconds":null},{"do":"C","note":"n","seconds":5}]}""")
+        assertEquals(listOf(Brief.Step("B"), Brief.Step("C", "n", 5)), parsed.steps)
+    }
+
+    @Test
     fun `two presses in one tick record both steps, each as it started`() {
         val run = BriefRun(brief)
 
@@ -89,5 +115,18 @@ class BriefTest {
         // The timer runs out in the tick the player also presses, which ends the run.
         assertEquals(listOf("""{"index":3,"do":"Kill it"}""", """{"done":true}"""), run.step(91_000, presses = 1).map { it.toString() })
         assertEquals(emptyList(), run.step(92_000, presses = 3))
+    }
+
+    @Test
+    fun `a run with a time limit shows its time left as the last row, and one without shows none`() {
+        val limited = BriefRun(brief, openedAt = 1_000, timeoutSeconds = 600)
+        assertEquals("Time left 10:00", limited.lines(1_000).last())
+        assertEquals("Time left 5:01", limited.lines(300_000).last())
+        limited.advance(2_000)
+        assertEquals("Time left 9:59", limited.lines(2_000).last())
+        limited.finish(3_000)
+        assertEquals("Done.", limited.lines(3_000).last())
+
+        assertEquals("Press ] to start recording.", BriefRun(brief).lines(0).last())
     }
 }

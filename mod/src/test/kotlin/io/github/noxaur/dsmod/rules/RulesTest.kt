@@ -37,7 +37,7 @@ class RulesTest {
         assertEquals(
             emptyList(),
             violations,
-            "Fix each line, or end it with a comment `rule:<id> <reason>` if the user agreed to an exception.\n" +
+            "Fix each line, or end it with a comment `rule:<id> <reason>` when the line has a real reason to break the rule.\n" +
                 violations.joinToString("\n") + "\n",
         )
     }

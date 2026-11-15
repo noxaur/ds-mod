@@ -84,17 +84,29 @@ MoulConfig has a data file class, and ds-mod does not use it: it writes on the c
 
 `Metrics` adds up timings, counts and failures in memory, and a flush hands one snapshot to each sink. Recording costs the client thread no I/O, and a new receiver, such as the backend, is one more sink. Today the release build logs failures, and a running capture writes each snapshot into the file.
 
-The `unparsed` counter matters most. The server is closed and changes without notice, so a feature that stops matching looks the same as a quiet game. A line that reached a feature and failed to parse is the only signal.
+The `unparsed` counter matters most. The server is closed and changes without notice, so a feature that stops matching looks the same as a quiet game. A line that reached a feature and failed to parse is the only signal. A feature reports it with `unparsed(text)`, which counts it and, while the player has opted in, hands the text on to the report of unread lines. One call is the only route, so a feature cannot count a failure the report never sees.
 
-## The recorder is in the release jar, and runs only when started
+## The recorder is in the release jar, and runs only for a contribution
 
-Developers' accounts cannot reach all of the server's content, so players will record it for them. That needs the recorder in the jar a player installs, though it reads private client fields and records everything, chat included. Three things make that safe. It starts only from the debug build's `/dscapture` and `-Pbrief`, so while none runs every hook is one null check and the recorder costs a frame nothing. The file never leaves the machine as recorded: the mod redacts it first (below). And the recorder only ever reads what the server already sent the client, so it cannot send for the player.
+Developers' accounts cannot reach all of the server's content, so players record it for them. That needs the recorder in the jar a player installs, though it reads private client fields and records everything, chat included. Three things make that safe. It starts only from a contribution the player accepted, or from the debug build's `/dscapture` and `-Pbrief`, so while none runs every hook is one null check and the recorder costs a frame nothing. The file never leaves the machine as recorded: the mod redacts it first (below). And the recorder only ever reads what the server already sent the client, so it cannot send for the player.
 
 The rest of the developer tools stay in `src/debug`, a separate source set that `src/main` can't see, so the compiler keeps them out of the release jar. They are `/dscapture`, `/dskit`, `cutFixture` and the window title that names a `-Pbrief`. The debug jar holds the release jar inside it, so the release code runs the same in both.
 
 The recorder reads private fields, which needs an access widener, and a mod declares only one. So the jar's file is ours followed by MoulConfig's lines, merged by the build.
 
-Recording is client-thread work that no thread can do for it, because it reads game state. Writing, redacting and compressing happen on other threads, and the writer opens the file on its own thread, so starting a recording touches no disk on the client thread.
+Recording is client-thread work that no thread can do for it, because it reads game state. Writing, redacting, compressing and uploading happen on other threads, and the writer opens the file on its own thread, so starting a recording touches no disk on the client thread.
+
+## A contribution is a brief run that ends in an upload
+
+A request is a brief plus requirements, which an agent publishes to the backend. The mod offers it to a player who qualifies, and the same `BriefRun` that `-Pbrief` uses walks them through it. A request has a time limit measured from the moment the player accepts, not from their first keypress: a run that waits for a key would otherwise sit on the screen forever once the player walked away. A run that outlasts it is discarded and not uploaded, because a recording the player abandoned halfway is the likeliest to be wrong. A capture whose writer lost a record or did not finish is discarded the same way, since an agent would read the part as the whole.
+
+`BriefRun` has no TLA+ spec. Its states (waiting, on a step, done, timed out) follow one another on the client thread, and the one asynchronous event, the upload finishing, only tells the player how it went. A unit test lists every transition.
+
+The mod checks a request's requirements itself, because the backend cannot know what a player has seen. Today the only kind is an area, met when the tab list has ever shown the player there, so the set of areas seen is saved. A kind the mod does not know is never offered, so an older mod cannot offer what it cannot judge.
+
+A recording that fails to upload stays in `dsmod/contributions/` as a redacted `.gz` named for its request, and `/dsmod submit` sends what is there. Only a redacted file is ever kept: the redactor writes a `.part` and renames it, so a quit in the middle leaves no half file that would be uploaded as the whole. Anything else in that folder at the next start is a raw capture or a `.part`, and is deleted. A run ends when the player disconnects, but not when the world changes, because a brief's warps change the world on one connection.
+
+Skipping tells the backend, which hides the request from that player and nobody else.
 
 ## Redaction happens in the mod, and the backend still distrusts the upload
 
@@ -102,9 +114,11 @@ A capture holds player names and private chat, and `PlayerNames` finds them by r
 
 What a player typed is found by shape, not by a list of formats. The server's whisper, party and message lines are in no capture, so a list would be a guess that passes its own tests. In a `system` line, whatever follows a known name and a `: ` is replaced. That costs the text of a server line that happens to have the same shape, and a line from a player the capture never names elsewhere still gets through. A component that spells a name across several pieces, one per color, is replaced by its redacted plain text, because no single string holds the name to replace.
 
+The same holds for the lines the mod reports when a feature could not read them: the player opts in, names are replaced, and the backend keeps only one row per kind of line.
+
 ## The mod signs in when it first needs to, and keeps the session in memory
 
-Nothing contacts the backend until the player uses `/dsmod login`. The session token is held in memory and never written, logged, shown or recorded: the jar is public, and a token on disk or in a stream is a stolen account for the day it lives. For the same reason `/dsmod login` opens the browser directly, and the login token never appears in chat, where a viewer could use it first. Minecraft's own opener logs the address when it fails, so the mod uses the system's opener and reports a failure without the address.
+Nothing contacts the backend until the player opens Contribute, uses `/dsmod login`, or has turned on the report of unread lines. The session token is held in memory and never written, logged, shown or recorded: the jar is public, and a token on disk or in a stream is a stolen account for the day it lives. For the same reason `/dsmod login` opens the browser directly, and the login token never appears in chat, where a viewer could use it first. Minecraft's own opener logs the address when it fails, so the mod uses the system's opener and reports a failure without the address.
 
 A session ends after 24 hours, so a 401 signs in again and repeats the call once. A second 401 is an error, not a loop.
 

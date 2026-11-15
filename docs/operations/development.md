@@ -59,11 +59,11 @@ Once the user has agreed, start the client with the absolute path of the brief:
 cd mod && ./gradlew runClient -Pbrief=/tmp/golem-tiers.json
 ```
 
-The window's title starts with the brief's name, and the steps sit in the top right corner of the screen. The user presses the key the HUD names to start, which starts the capture, and again after each step. It is `]` on a US layout, and Next Recording Step in the game's controls. After the last step the capture is saved and the HUD names its file, so the user closes the game and the command returns. The capture is the newest file in `mod/run/dsmod/captures/`, and a `step` line marks where each step began.
+The window's title starts with the brief's name, and the steps sit in the top right corner of the screen. The user presses the key the HUD names to start, which starts the capture, and again after each step. A brief launched this way has no time limit, and its capture stays in the game folder. It is `]` on a US layout, and Next Recording Step in the game's controls. After the last step the capture is saved and the HUD names its file, so the user closes the game and the command returns. The capture is the newest file in `mod/run/dsmod/captures/`, and a `step` line marks where each step began.
 
 ### Ask players for a capture
 
-When the user's account cannot reach what a brief needs, publish the brief as a request for players who can reach it to record. One player's run proves little, so a request collects runs from several players.
+When the user's account cannot reach what a brief needs, publish the brief and players who can reach it record it from the mod's Contribute button. One player's run proves little, so a request collects runs from several players.
 
 ```sh
 cd backend
@@ -74,6 +74,8 @@ pnpm dsctl unknowns
 ```
 
 `create` prints the request's id. `--area` names an area the player must be in reach of, and can be given more than once. `pull` writes one `.jsonl` per run, named by the brief and a letter per player, and `cutFixture` takes them like any capture. `unknowns` lists what the mod saw and had no handling for, most seen first.
+
+A player's recording is redacted, gzipped and uploaded by the mod, and a run that outlasts the request's `--timeout` is discarded. The mod's own backend and website addresses are `backend_url` and `website_url` in `mod/gradle.properties`, `http://localhost:8787` and `http://localhost:3000` until the user deploys. Build a jar for a deployment with `./gradlew build -Pbackend_url=<url> -Pwebsite_url=<url>`. To try the flow against a local backend, run `pnpm dev` and `dsctl create`, then `runClient`: signing in needs the user's own Minecraft account.
 
 `dsctl` reads the backend's address from `DSMOD_BACKEND`, `http://localhost:8787` by default, and the admin token from `DSMOD_ADMIN_TOKEN`. Locally the token is `ADMIN_TOKEN` in `backend/.env`, which git ignores. Ask the user for the deployed one.
 

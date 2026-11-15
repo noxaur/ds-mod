@@ -147,6 +147,23 @@ All-Time: 12
 
 ## Contribute
 
+ds-mod's developers cannot reach all of the server, so they ask players to record the parts they can't. Contribute is the last entry in the settings. It does nothing until you open it.
+
+### Record a request
+
+1. Open Contribute in the settings. A window shows one request you qualify for, with its steps and how long you have. A long request shows the steps that fit and how many more there are. A request that needs an area only shows once you have been there.
+2. Press Accept to take it, or Skip if you don't want it. Skip hides it for you and shows the next one.
+3. Your screen lists the steps and, under them, how much of the request's time is left. Press the key shown (`]` by default, Next Recording Step in the game's controls) to start, and press it again after each step. A step with a timer moves on by itself. ds-mod only tells you what to do. You type every command and make every move yourself.
+4. After the last step, ds-mod sends the recording. Type `/dsmod submit` to send early, or `/dsmod cancel` to stop and send nothing.
+
+If you take longer than the request allows, or you leave the server, the recording is thrown away and nothing is sent. Changing area on the same server is fine. If sending fails, ds-mod keeps the recording and says so. Type `/dsmod submit` when no recording is running to send what it kept. If the request has closed since, ds-mod deletes the recording and tells you. If the recording could not be saved in full, it is thrown away, and you can accept the request again.
+
+Before it leaves your computer, ds-mod removes player names and what players typed, and it does not send your Minecraft login. Several players record each request, so one run does not have to be perfect.
+
 ### Sign in to the website
 
 Type `/dsmod login` to open the ds-mod website in your browser, signed in as your Minecraft account. The link works once, for a minute, and is never shown in chat.
+
+### Report Unread Lines
+
+Off by default. When you turn it on, lines the server sent that a feature could not read are sent to ds-mod's developers, the first about two minutes after one turns up and then at most every twenty minutes, with player names removed, so a change on the server gets fixed sooner. It sends nothing else. Turn it off under Contribute in the settings.
