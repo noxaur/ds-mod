@@ -134,7 +134,9 @@ The hotbar uses your inventory's look until you untick Match Inventory, and then
 
 Menus, your inventory and plain tooltips take the colors of the Theme under Interface, so Charcoal makes them dark.
 
-<sub>Chests, crafting tables, hoppers, dispensers and shulker boxes follow it. A furnace or an anvil keeps its own look, and item tooltips keep the server's rarity frames.</sub>
+The server's Go Back, Close and page arrows become buttons in the same colors.
+
+<sub>Chests, crafting tables, hoppers, dispensers and shulker boxes follow it, and so does the recipe book's button. A furnace or an anvil keeps its own look, and item tooltips keep the server's rarity frames.</sub>
 
 ### Stable Menus
 

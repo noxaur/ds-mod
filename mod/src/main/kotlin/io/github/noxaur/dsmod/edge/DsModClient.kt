@@ -97,6 +97,7 @@ object DsModClient : ClientModInitializer {
         Kit.register()
         Hud.register()
         Slots.register(config.instance.inventory)
+        MenuSkin.register()
         MenuBack.register()
         TabBar.register()
         Tooltips.register()

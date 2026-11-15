@@ -5,7 +5,9 @@ import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.components.ImageButton
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.HopperScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
@@ -14,13 +16,15 @@ import net.minecraft.world.SimpleMenuProvider
 import net.minecraft.world.inventory.HopperMenu
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import org.lwjgl.glfw.GLFW
 import java.nio.file.Path
 import javax.imageio.ImageIO
 
 /**
  * Opens a server menu, the inventory and a hopper with Themed Menus and Hide Filler on, and checks the colors the kit
  * drew: the panel in the theme's color, and a filler pane's slot left as bare panel. Read the screenshots in both
- * themes: a light title on the dark panel, a dark tooltip over the hovered item, and no tooltip over filler.
+ * themes: a light title on the dark panel, a dark tooltip over the hovered item, no tooltip over filler, the server's
+ * Go Back and Close and the recipe book's button drawn by the kit, and Close's own tooltip over it.
  */
 class ThemedMenusTest : FabricClientGameTest {
     /** The color of the GUI pixel at [x], [y] in [shot], without its alpha. */
@@ -58,19 +62,53 @@ class ThemedMenusTest : FabricClientGameTest {
             val (fx, fy) = ServerMenus.corner(context, 0)
             val filler = pixel(context, charcoal, fx + 8, fy + 8)
             check(filler == Theme.CHARCOAL.panel and 0xFFFFFF) { "A filler pane's slot is %06X, not bare panel".format(filler) }
+            for (slot in listOf(6 * 9 - 6, 6 * 9 - 5)) {
+                val (bx, by) = ServerMenus.corner(context, slot)
+                val face = pixel(context, charcoal, bx + 3, by + 3)
+                check(face == Theme.CHARCOAL.raised and 0xFFFFFF) { "The server's button in slot $slot is %06X, not a kit button".format(face) }
+            }
 
             ServerMenus.hover(context, 1)
             context.takeScreenshot("themed-chest-filler-hovered")
+            ServerMenus.hover(context, 6 * 9 - 5)
+            context.takeScreenshot("themed-chest-button-hovered")
+            context.runOnClient<Nothing> { DsModClient.settings.inventory.themedMenus = false }
+            try {
+                context.waitTicks(2)
+                val (bx, by) = ServerMenus.corner(context, 6 * 9 - 6)
+                val face = pixel(context, context.takeScreenshot("themed-chest-off"), bx + 3, by + 3)
+                check(face != Theme.CHARCOAL.raised and 0xFFFFFF) { "The server's Go Back stayed a kit button with Themed Menus off" }
+            } finally {
+                context.runOnClient<Nothing> { DsModClient.settings.inventory.themedMenus = true }
+            }
+            context.waitTicks(2)
 
             theme(context, Theme.VANILLA)
             ServerMenus.hover(context, 13)
             checkPanel(context, context.takeScreenshot("themed-chest-vanilla"), Theme.VANILLA)
             theme(context, Theme.CHARCOAL)
+            ServerMenus.hover(context, 6 * 9 - 5)
+            // Only the drawing changes, so a click on Close still picks up the server's item.
+            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
+            context.waitTicks(3)
+            val carried = context.computeOnClient<String, Nothing> { it.player!!.containerMenu.carried.hoverName.string }
+            check(carried == "Close") { "The click on the server's Close reached no slot, carrying '$carried'" }
+            context.runOnClient<Nothing> { it.player!!.containerMenu.carried = ItemStack.EMPTY }
 
             context.runOnClient<Nothing> { it.player!!.closeContainer() }
             context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }
             context.waitTicks(5)
-            checkPanel(context, context.takeScreenshot("themed-inventory"), Theme.CHARCOAL)
+            for (theme in listOf(Theme.CHARCOAL, Theme.VANILLA)) {
+                theme(context, theme)
+                val shot = context.takeScreenshot("themed-inventory-${theme.name.lowercase()}")
+                checkPanel(context, shot, theme)
+                val (x, y) = context.computeOnClient<Pair<Int, Int>, Nothing> { client ->
+                    Screens.getWidgets(client.gui.screen()!!).filterIsInstance<ImageButton>().single().let { it.x to it.y }
+                }
+                val face = pixel(context, shot, x + 3, y + 3)
+                check(face in listOf(theme.raised, theme.hover).map { it and 0xFFFFFF }) { "The recipe book button is %06X in %s, not a kit button".format(face, shot) }
+            }
+            theme(context, Theme.CHARCOAL)
 
             context.setScreen { null }
             world.server.runOnServer<Nothing> { server ->
