@@ -4,7 +4,7 @@
   "scripts": [
     {
       "name": "Setup Worktree",
-      "command": "mise trust && mise install",
+      "command": "mise trust && mise install && (cd backend && mise exec -- pnpm install) && (cd web && mise exec -- pnpm install)",
       "icon": "configure",
       "runOnWorktreeCreate": true
     },
@@ -16,7 +16,7 @@
     },
     {
       "name": "Run Backend",
-      "command": "cd backend && mise exec -- go run ./cmd/backend",
+      "command": "cd backend && mise exec -- pnpm install && mise exec -- pnpm dev",
       "icon": "play"
     },
     {

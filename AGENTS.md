@@ -27,9 +27,9 @@ We can't compromise on these.
 | Directory | What it is | Its rules |
 | --- | --- | --- |
 | `mod/` | The Fabric mod, in Kotlin, built with Gradle | `mod/AGENTS.md` |
-| `backend/` | The REST service, in Go | `backend/AGENTS.md` |
+| `backend/` | The REST service, in TypeScript with Effect, hosted with Void on Cloudflare | `backend/AGENTS.md` |
 | `web/` | The website, in Next.js with Effect | `web/AGENTS.md` |
-| `api/` | `openapi.yaml`, the REST contract between the mod, the backend and the website | Below |
+| `api/` | `openapi.json`, the REST contract between the mod, the backend and the website | Below |
 | `specs/` | TLA+ specs for any project | Formal specs |
 | `docs/` | Guides for players and contributors, and the reasons behind the code | Docs |
 
@@ -37,7 +37,7 @@ We can't compromise on these.
 
 ## API
 
-- `api/openapi.yaml` is the source of truth for every REST endpoint. Change it first, then the backend, then its callers.
+- `backend/src/api.ts` defines every REST endpoint, and `api/openapi.json` is generated from it with `pnpm openapi` in `backend/`. Change the definition first, regenerate, then change the callers.
 
 ## Formal specs
 
@@ -77,15 +77,20 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | A feature's handler and readout average under 20µs | `FeatureReplayTest` |
 | A capture type has one producer | `CaptureWriter` rejects a raw record with an event's type |
 | The jars a player installs boot and open settings | `runProdClientGameTest` |
-| A unit test run takes at most 30 seconds | `timeout` on `tasks.test` in `mod/build.gradle.kts`, and `go test -timeout 30s` in `check:backend` |
+| A unit test run takes at most 30 seconds | `timeout` on `tasks.test` in `mod/build.gradle.kts`, and `backend/scripts/test-time-limit.ts`, the global setup of the tests in `backend/vite.config.ts` |
 | A CI job takes at most 3 minutes | `.github/actions/time-limit`, the last step of every job in `ci.yml` |
 | The mod stays inside its frame, tick and size caps | `PerfTest` against `mod/src/gametest/resources/perf-budgets.json`, in CI's `perf` job |
 | A beta ships only when every check and game test passes | `.github/workflows/beta.yml` |
 | Every capture type reaches the file | `CaptureTest`, and `BriefTest` for `step` |
 | A redacted capture holds no player name the mod knows, and no typed chat | `RedactCaptureTest` |
 | Specs hold their invariants | TLC on `specs/` |
-| Go code is formatted and vetted | `gofmt -l` and `go vet` in `check:backend` |
+| `api/openapi.json` matches the backend's API definition | `app.test.ts` in `backend/src/` |
+| Backend code is formatted, type-safe and passes lint with no warnings | `vp check` in `check:backend` |
+| Backend failures are modeled with Effect, not `try` | `dsmod/no-try` in `backend/lint/dsmod.js` |
+| `backend/src/` imports nothing from Void | `no-restricted-imports` in `backend/vite.config.ts` |
+| Backend dependencies are at least 14 days old | `minimumReleaseAge` in `backend/pnpm-workspace.yaml` |
 | The website is type-safe | `tsc` with `strict` and the extra flags in `web/tsconfig.json` |
+| Website code is formatted | `vp fmt --check` in `web/package.json` |
 | Website code passes strict lint with no warnings | `typescript-eslint` strict-type-checked in `web/eslint.config.mjs` |
 | Website failures are modeled with Effect, not `try` | `no-restricted-syntax` in `web/eslint.config.mjs` |
 | Every interactive control comes from ui-sdk | `react/forbid-elements` and `no-restricted-imports` in `web/eslint.config.mjs` |
@@ -98,7 +103,7 @@ When a mistake happens a second time, stop it at the highest level that works:
 
 1. Change the structure so the mistake cannot be written, as the source sets do.
 2. Use a type that rejects it.
-3. Add a lint rule. In `mod/` that is `src/test/kotlin/io/github/noxaur/dsmod/rules/Rules.kt`: a pattern that must not appear in some files, a `fix` that says what to write instead, and an `example` line it must catch. In `web/` it is `eslint.config.mjs`, with a message that says what to write instead.
+3. Add a lint rule. In `mod/` that is `src/test/kotlin/io/github/noxaur/dsmod/rules/Rules.kt`: a pattern that must not appear in some files, a `fix` that says what to write instead, and an `example` line it must catch. In `web/` it is `eslint.config.mjs`, and in `backend/` it is `lint/dsmod.js`, each with a message that says what to write instead.
 4. Add a test.
 5. Write it in an `AGENTS.md`, only for a judgment call that no check can make.
 
@@ -108,7 +113,7 @@ A rule failure prints the file, the line and the fix. For an exception the user 
 
 ## Checks
 
-- `mise install` gives you the pinned JDK, Go, Node and pnpm.
+- `mise install` gives you the pinned JDK, Node and pnpm.
 - `mise run check` must pass. It runs `check:mod`, `check:backend`, `check:web` and `check:docs`, and each one runs alone too.
 - Test the real implementation instead of copying its logic into the test.
 - CI runs the same checks, and `PerfTest` in a real game. When a job nears its 3 minutes, make it faster or move the slow part to the beta pipeline. Raise a limit or a perf cap only when the user agrees.
