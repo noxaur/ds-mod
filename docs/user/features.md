@@ -18,6 +18,19 @@ Hides the clouds that explosions throw up.
 
 <sub>Off by default.</sub>
 
+### Equipment Display
+
+Shows the armor you wear and your pet as a row of icons on the HUD, with each head's skin and each leather piece's dye. Your pet's head joins the row once you open the Pets menu or it floats near you, and until then the pet shows as its name under the row. Open the chat and point at a piece to read its tooltip. The pet's tooltip from the Pets menu names its held item.
+
+| Setting | Does |
+| --- | --- |
+| Equipment Pieces | Picks which pieces show, and their order. Drag a piece to move it, take it out with − or the bin, and bring it back with + |
+| Equipment Layout | Lines the pieces up in a row or a column |
+| Pet Look | Shows your pet as its head among the armor, or as its name and level in the color of its rarity, with its held item once you opened the Pets menu |
+| Pet Position | Puts your pet among the armor, in the order of Equipment Pieces, or on a row of its own above or below it |
+| Equipment Look | Shows the pieces on the HUD's plate, on nothing, or in slots like your hotbar's, which follow your resource pack |
+| Equipment Placement | Keeps the pieces where you put them in the HUD editor, or puts them beside your hotbar, at its size and past your offhand slot |
+
 ### Camera
 
 Shapes the third-person view you get with F5. Each setting starts at the game's own, so nothing changes until you move one.

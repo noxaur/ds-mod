@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.config.DsModConfig.Position
 import io.github.noxaur.dsmod.core.feature.Alert
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.Notice
+import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.HudScale
 import io.github.noxaur.dsmod.core.hud.hud
@@ -32,6 +33,10 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
     private var guiScale = 0
     private var hudScale = 0f
     private var background = false
+
+    // Where vanilla puts the offhand slot and the attack indicator, which a block docked beside the hotbar steps past.
+    private var mainHand: Any? = null
+    private var indicator: Any? = null
 
     /** While the HUD editor is open, a feature with nothing to show still shows its header, so it can be placed. */
     var editing = false
@@ -61,10 +66,14 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
             }
         }
         game.messages.clear()
-        val window = Minecraft.getInstance().window
+        val client = Minecraft.getInstance()
+        val window = client.window
         if (window.guiScaledWidth != width || window.guiScaledHeight != height || window.guiScale != guiScale ||
-            settings.scale != hudScale || settings.background != background
+            settings.scale != hudScale || settings.background != background ||
+            client.options.mainHand().get() !== mainHand || client.options.attackIndicator().get() !== indicator
         ) {
+            mainHand = client.options.mainHand().get()
+            indicator = client.options.attackIndicator().get()
             width = window.guiScaledWidth
             height = window.guiScaledHeight
             guiScale = window.guiScale
@@ -78,7 +87,7 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
             handed[i] = readout.version
             val id = readout.feature.id
             val block = readout.hud ?: if (editing && readout.feature.hasHud) hud(readout.feature.title) {} else null
-            if (block == null) Hud.hide(id) else Hud.show(id, group(id), block)
+            if (block == null) Hud.hide(id) else Hud.show(id, group(id, block.dock), block)
             if (readout.slots.isEmpty()) Slots.clear(id) else Slots.mark(id, readout.slots)
             if (readout.marks.isEmpty()) World.hide(id) else World.show(id, readout.marks)
         }
@@ -118,7 +127,9 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
         push()
     }
 
-    private fun group(id: String): HudGroup {
+    /** Where [id] goes. A block docked beside the hotbar is drawn at the GUI's scale, so its slots match the hotbar's. */
+    private fun group(id: String, dock: HudDock): HudGroup {
+        if (dock != HudDock.FREE) return HudGroup(id, 0, 0, settings.background, HudScale.snap(1f, guiScale), dock)
         val saved = settings.positions[id] ?: return HudGroup("stack", MARGIN, MARGIN, settings.background, HudScale.snap(settings.scale, guiScale))
         val scale = HudScale.snap(saved.scale * settings.scale, guiScale)
         return HudGroup(id, (saved.x * width).roundToInt(), (saved.y * height).roundToInt(), settings.background, scale)

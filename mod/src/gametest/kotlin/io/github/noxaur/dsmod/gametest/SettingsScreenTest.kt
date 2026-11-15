@@ -20,6 +20,11 @@ class SettingsScreenTest : FabricClientGameTest {
         context.waitTicks(20)
         context.takeScreenshot("settings-dropdown")
 
+        // The draggable list picks and orders what Equipment Display shows.
+        context.runOnClient<Nothing> { DsModClient.openSettings(DsModConfig.General::class.java.getField("equipmentPieces")) }
+        context.waitTicks(20)
+        context.takeScreenshot("settings-equipment-pieces")
+
         context.runOnClient<Nothing> { DsModClient.openSettings(DsModConfig.General::class.java.getField("onlyOnDragSim")) }
         context.waitTicks(20)
         context.takeScreenshot("settings-general")

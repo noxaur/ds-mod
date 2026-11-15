@@ -35,7 +35,7 @@ A feature lives in `core` and cannot call a layer. It returns its HUD block from
 | Surface | Model in `core` | Hand it to |
 | --- | --- | --- |
 | Chat | `text { }` | `Chat.send`, `Chat.notice` |
-| HUD | `hud("Header") { row(..); bar(..) }` in a `HudGroup` | `Hud.show`, `Hud.hide` |
+| HUD | `hud("Header") { row(..); bar(..); items(..) }` in a `HudGroup` | `Hud.show`, `Hud.hide` |
 | Alert | `text { }` | `Alerts.title`, `Alerts.actionBar`, `Alerts.sound` |
 | Container overlay | `SlotMark` | `Slots.mark`, `Slots.clear` |
 | Tooltip | `text { }` per line | `Tooltips.add` |
@@ -93,8 +93,8 @@ One line has one `value`. A line where everything is highlighted has no highligh
 - **Exclamation marks:** alerts only, so an alert stands out.
 - **Click hints:** "Click to <verb>." in `action`.
 - **Titles:** one to three words in one role, such as "Boss Ready". `Alerts.title` takes the chat line that goes with it, which says which feature fired so the player can turn it off.
-- **HUD:** a Title Case header, then `Label: value` rows. `hud { }` colors the header and the labels.
-- **HUD groups:** blocks that belong to one activity share a `HudGroup`, which stacks them on one plate. The player owns the plate, the scale and the place of every block, so a feature sets none of them.
+- **HUD:** a Title Case header, then `Label: value` rows. `hud { }` colors the header and the labels. A block of icons that name themselves, such as the armor worn, leaves the header out with `block(headed = false)`.
+- **HUD groups:** blocks that belong to one activity share a `HudGroup`, which stacks them on one plate. The player owns the plate, the scale and the place of every block, so a feature sets none of them. A feature whose block sits beside vanilla's own HUD, as the armor does by the hotbar, may offer the player a `HudLook` and a `HudDock` in its settings and pass them to `block(look = .., dock = ..)`.
 - **Buttons:** one or two words in Title Case that name what the press does. "Reset", "Done".
 - **Setting names:** Title Case, one to three words. "Scale Tracker".
 - **Setting descriptions:** one sentence that starts with a verb and ends with a period. "Show the scales you earn per hour." A requirement or warning follows as its own sentence. MoulConfig shrinks a long one, so `RulesTest` caps its length, and the player docs hold the rest.

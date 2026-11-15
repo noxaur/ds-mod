@@ -12,6 +12,7 @@ import io.github.noxaur.dsmod.core.feature.end.ProtectPlacedEyes
 import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
+import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
 import io.github.noxaur.dsmod.core.feature.general.ExplosionParticleHider
 import io.github.noxaur.dsmod.core.feature.general.FreeLook
 import io.github.noxaur.dsmod.core.feature.general.Fullbright
@@ -41,6 +42,15 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     ZealotTracker(config.end::zealotTracker),
     Camera(config.general::camera),
     CommandBinds(config.general::commandBinds),
+    EquipmentDisplay(
+        config.general::equipmentDisplay,
+        config.general::equipmentLayout,
+        config.general::equipmentPieces,
+        config.general::petLook,
+        config.general::petPosition,
+        config.general::equipmentLook,
+        config.general::equipmentPlacement,
+    ),
     ExplosionParticleHider(config.general::explosionParticleHider),
     FreeLook(config.general::freeLook),
     Fullbright(config.general::fullbright),

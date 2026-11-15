@@ -5,6 +5,7 @@ import io.github.notenoughupdates.moulconfig.Config
 import io.github.notenoughupdates.moulconfig.annotations.Category
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorButton
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDraggableList
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDropdown
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorKeybind
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorSlider
@@ -16,6 +17,12 @@ import io.github.noxaur.dsmod.core.camera.ThirdPerson
 import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
+import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
+import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
+import io.github.noxaur.dsmod.core.feature.general.PetLook
+import io.github.noxaur.dsmod.core.feature.general.PetPosition
+import io.github.noxaur.dsmod.core.hud.HudDock
+import io.github.noxaur.dsmod.core.hud.HudLook
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.Section
@@ -165,6 +172,48 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var explosionParticleHider = false
+
+        @Expose
+        @ConfigOption(name = "Equipment Display", desc = "Show your armor and pet on the HUD.")
+        @ConfigEditorBoolean
+        @JvmField
+        var equipmentDisplay = true
+
+        @Expose
+        @ConfigOption(name = "Equipment Pieces", desc = "Pick the pieces to show, and drag them into order.")
+        @ConfigEditorDraggableList(requireNonEmpty = true)
+        @JvmField
+        var equipmentPieces: MutableList<EquipmentPiece> = EquipmentPiece.entries.toMutableList()
+
+        @Expose
+        @ConfigOption(name = "Equipment Layout", desc = "Line the pieces up in a row or a column.")
+        @ConfigEditorDropdown
+        @JvmField
+        var equipmentLayout = EquipmentLayout.ROW
+
+        @Expose
+        @ConfigOption(name = "Pet Look", desc = "Show your pet as its head, or as its name and level.")
+        @ConfigEditorDropdown
+        @JvmField
+        var petLook = PetLook.ICON
+
+        @Expose
+        @ConfigOption(name = "Pet Position", desc = "Put your pet among the armor, or on a row above or below it.")
+        @ConfigEditorDropdown
+        @JvmField
+        var petPosition = PetPosition.WITH_ARMOR
+
+        @Expose
+        @ConfigOption(name = "Equipment Look", desc = "Show the pieces on the plate, on nothing, or in hotbar slots.")
+        @ConfigEditorDropdown
+        @JvmField
+        var equipmentLook = HudLook.PLATE
+
+        @Expose
+        @ConfigOption(name = "Equipment Placement", desc = "Keep the pieces where you put them, or beside your hotbar.")
+        @ConfigEditorDropdown
+        @JvmField
+        var equipmentPlacement = HudDock.FREE
 
         @Expose
         @ConfigOption(name = "Camera", desc = "Shape the third-person view with the settings below.")
