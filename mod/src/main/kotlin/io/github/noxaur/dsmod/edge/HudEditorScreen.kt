@@ -13,15 +13,15 @@ import net.minecraft.client.input.MouseButtonEvent
 import java.util.Locale
 
 private const val TITLE = "HUD Editor"
-private const val HINT = "Drag to move, scroll to resize, right-click to reset."
+private const val HINT = "Drag or nudge with arrows, scroll to resize, right-click to reset."
 private const val SCALE = "Scale"
 private const val HUD_SCALE = "HUD Scale"
 private const val VALUE_WIDTH = 30
 private const val LABEL_HEIGHT = 8
 
 /**
- * Drag a block to move it, scroll over it to resize it and right-click it to reset it, by [HudMover]'s rules, which
- * the chat screen shares. The panel at the bottom works on the last block clicked or scrolled, and on the whole HUD.
+ * Drag a block or nudge it with the arrows to move it, into or out of a dock beside the hotbar, scroll over it to
+ * resize it and right-click it to reset it, by [HudMover]'s rules, which the chat screen shares. The panel at the bottom works on the last block clicked or scrolled, and on the whole HUD.
  * Closing saves through [onSave] and goes back to [parent].
  */
 class HudEditorScreen(
@@ -125,9 +125,15 @@ class HudEditorScreen(
         return super.mouseReleased(event)
     }
 
-    // Escape during a drag puts the block back, and otherwise closes the editor.
+    // Escape during a drag puts the block back, and otherwise closes the editor. The arrows nudge the block held, or
+    // else the one picked last, and move between the panel's controls when there is none.
     override fun keyPressed(event: KeyEvent): Boolean {
         if (event.isEscape && mover.cancel()) {
+            refresh()
+            return true
+        }
+        val block = (mover.held ?: selected)?.let(Hud::find)
+        if (block != null && mover.nudge(block, event)) {
             refresh()
             return true
         }

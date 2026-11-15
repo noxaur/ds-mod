@@ -44,7 +44,7 @@ Shows the armor you wear and your pet as a row of icons on the HUD, with each he
 | Pet Look | Shows your pet as its head among the armor, or as its name and level in the color of its rarity, with its held item once you opened the Pets menu |
 | Pet Position | Puts your pet among the armor, in the order of Equipment Pieces, or on a row of its own above or below it |
 | Equipment Look | Shows the pieces on the HUD's plate, on nothing, or in slots like your hotbar's, which follow your resource pack |
-| Equipment Placement | Keeps the pieces where you put them in the HUD editor, or puts them beside your hotbar, at its size and past your offhand slot |
+| Equipment Placement | Keeps the pieces where you put them in the HUD editor, or puts them beside your hotbar, at its size and past your offhand slot. Dragging the pieces out of that spot or into it sets this for you |
 
 ### Inventory Preview
 
@@ -113,21 +113,23 @@ Keys shown in red fire another bind too, and keys in yellow also do something in
 
 Theme picks the colors of ds-mod's screens: Charcoal is dark, and Vanilla matches the game's own menus. Move HUD, or `/dsmod hud`, opens the HUD editor.
 
-<sub>Scroll over a block to resize it, and right-click it to put it back in the stack. Hold Shift to place it without snapping. Escape during a drag puts the block back where it was.</sub>
+<sub>Scroll over a block to resize it, and right-click it to put it back in the stack. The arrow keys nudge the block you clicked last a pixel, or ten with Shift. Hold Shift to place it without snapping. Escape during a drag puts the block back where it was. A block that can sit beside the hotbar docks there when you drop it near the spot, and leaves it when you drag it away.</sub>
 
 ### Drag In Chat
 
-Open the chat and move the HUD as it is, without the editor. Point at a block to see its name.
+Open the chat and move the HUD as it is, without the editor. Point at a block to see its name. A feature that is on but has nothing to show right now, such as the Dragon Timer away from The End, stands in as its outlined name, so you can place it too.
 
 | Do this | To |
 | --- | --- |
 | Drag a block | Move it. It lines up with the screen's edges and middle and with the other blocks |
 | Hold Shift while you drag | Place it without lining up |
-| Press Escape while you drag | Put it back where it was |
-| Scroll over a block | Make it bigger or smaller |
-| Right-click a block | Put it back in the stack at its own size |
+| Press the arrow keys while you hold a block | Nudge it a pixel, or ten with Shift |
+| Press Escape while you hold a block | Put it back where it was |
+| Drop a block near the spot beside the hotbar | Dock it there, as Equipment Display's Placement does. Drag it away to undock it at the same size |
+| Scroll over a block | Make it bigger or smaller. A docked block leaves the dock to change size |
+| Right-click a block | Put it back in the stack at its own size, undocked |
 
-The chat comes first: where its messages or the input lie over a block, and anywhere while command suggestions are open, clicks and the wheel work on the chat as they always have. What you type still goes into the chat. A block docked beside the hotbar stays there, and blocks that only show during a fight are placed in the HUD editor.
+The chat comes first: where its messages, the input or the list of command suggestions lie over a block, clicks and the wheel work on the chat as they always have. What you type still goes into the chat, and the arrow keys move the cursor and recall what you sent unless you hold a block.
 
 ## Chat
 

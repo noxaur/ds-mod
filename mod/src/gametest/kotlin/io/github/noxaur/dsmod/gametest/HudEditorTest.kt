@@ -12,6 +12,7 @@ import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
 import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.input.MouseButtonInfo
+import org.lwjgl.glfw.GLFW
 import kotlin.io.path.readText
 import kotlin.math.roundToInt
 
@@ -151,6 +152,18 @@ class HudEditorTest : FabricClientGameTest {
                 screen.mouseReleased(press(before.x + 45.0, before.y + 35.0))
                 val after = Hud.find(ID)!!
                 check(after.x == before.x && after.y == before.y && client.gui.screen() === screen) { "Escape left the block at ${after.x}, ${after.y}, not ${before.x}, ${before.y}" }
+            }
+
+            // The arrows nudge the block picked last, a pixel or ten with Shift.
+            val picked = context.computeOnClient<Pair<Float, Float>, Nothing> { Hud.find(ID)!!.let { it.x to it.y } }
+            context.input.pressKey(GLFW.GLFW_KEY_LEFT)
+            context.input.holdShift()
+            context.input.pressKey(GLFW.GLFW_KEY_UP)
+            context.input.releaseShift()
+            context.waitTick()
+            context.runOnClient<Nothing> {
+                val block = Hud.find(ID)!!
+                check(block.x == picked.first - 1 && block.y == picked.second - 10) { "The arrows put the block at ${block.x}, ${block.y}, not ${picked.first - 1}, ${picked.second - 10}" }
             }
 
             // A right press on a block resets it.
