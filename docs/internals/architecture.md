@@ -156,11 +156,19 @@ The same holds for the lines the mod reports when a feature could not read them:
 
 ## The mod signs in when it first needs to, and keeps the session in memory
 
-Nothing contacts the backend until the player opens Contribute, uses `/dsmod login`, or has turned on the report of unread lines. The session token is held in memory and never written, logged, shown or recorded: the jar is public, and a token on disk or in a stream is a stolen account for the day it lives. For the same reason `/dsmod login` opens the browser directly, and the login token never appears in chat, where a viewer could use it first. Minecraft's own opener logs the address when it fails, so the mod uses the system's opener and reports a failure without the address.
+Nothing contacts the backend until the player opens Contribute, uses `/dsmod login`, looks a player up with `/pv`, or has turned on the report of unread lines. The session token is held in memory and never written, logged, shown or recorded: the jar is public, and a token on disk or in a stream is a stolen account for the day it lives. For the same reason `/dsmod login` opens the browser directly, and the login token never appears in chat, where a viewer could use it first. Minecraft's own opener logs the address when it fails, so the mod uses the system's opener and reports a failure without the address.
 
 A session ends after 24 hours, so a 401 signs in again and repeats the call once. A second 401 is an error, not a loop.
 
 The backend's address and the website's are set when the jar is built, in `gradle.properties`, and written into the jar's metadata. They are not a player's setting, because a player who pointed the mod somewhere else would be sending their captures there.
+
+## The profile viewer leaves the server its own `/pv`
+
+dragsim.co has `/pv <vault>`, and players type it by habit, so the viewer's `/pv` must never swallow it. Fabric runs a client command only when the line parses, and sends the line to the server as typed when the parse fails with an unknown command. So the name argument refuses a number of one or two digits with that very error, and off dragsim.co, or with the setting off, the `pv` node's requirement hides it. The mod never sends the line itself, so `no-automation` has nothing to allow. A player's name in chat links to their profile through `/dsmod pv`, not `/pv`: `/dsmod` is always the mod's, so a click with Profile Viewer off says so here instead of reaching the server as its vault command.
+
+The viewer's items carry the server's `custom_data`, rebuilt by the backend in the shape a real item has, and its tooltip frame for their rarity. Other mods, DragSim Utils among them, read a tooltip's item through Fabric's tooltip hook and its `custom_data`, so an item without them would show a bare tooltip where a menu shows theirs.
+
+The player on the screen is a `RemotePlayer` that is not in the world. The game finds a player's skin through the tab list, which a player who is not online is missing from, so the model asks the skin cache by UUID as a head does. The renderer reads the entity's id, which the world assigns only to entities it holds, so the model takes a negative id no server entity has.
 
 ## The release jar carries its own MoulConfig
 

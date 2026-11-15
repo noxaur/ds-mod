@@ -18,6 +18,7 @@ import io.github.noxaur.dsmod.core.feature.general.ExplosionParticleHider
 import io.github.noxaur.dsmod.core.feature.general.FreeLook
 import io.github.noxaur.dsmod.core.feature.general.InventoryPreview
 import io.github.noxaur.dsmod.core.feature.general.Fullbright
+import io.github.noxaur.dsmod.core.feature.general.ProfileViewer
 import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
 import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
 import io.github.noxaur.dsmod.core.feature.inventory.HideFiller
@@ -58,6 +59,7 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     InventoryPreview(config.general::inventoryPreview, config.general::inventoryRows, config.general::inventoryLook),
     FreeLook(config.general::freeLook),
     Fullbright(config.general::fullbright),
+    ProfileViewer(config.general::profileViewer),
     ArmorSwapGuard(config.inventory::armorSwapGuard),
     RarityMarks(config.inventory::rarityMarks, config.inventory::markCommon),
     ThemedMenus(config.inventory::themedMenus),
