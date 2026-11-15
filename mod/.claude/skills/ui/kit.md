@@ -49,7 +49,9 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, search, lock |
 | `line` | Any | A 1px stepped line between two points, with a dark line beside it, for joining two things that belong together |
 | `label` | One line | A string in ink |
-| `slotFill`, `slotBorder`, `slotDim` | 16x16 inside, 18x18 border | The marks `Slots` puts on a container's slots, colored by role |
+| `slotFill`, `slotBorder`, `slotDim` | 16x16 inside, 18x18 border | Plain marks on a container's slots, colored by role: a fill behind the item, a frame around the slot, a dimming over the item |
+| `slotArt`, `slotGem` | 18x18, 7x7 | A rarity mark's back behind the item and its gem over it, cut from an `Atlas` that `SlotArts` bakes from the player's style |
+| `inventory`, `slotAt` | 176x166, 18x18 | The player's inventory, and one empty slot of it, from the resource pack's own texture, for a preview that must match the real screen |
 
 ## Widgets
 

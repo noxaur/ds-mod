@@ -1,17 +1,26 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.container.Border
+import io.github.noxaur.dsmod.core.container.Floor
+import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotMark
+import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.RarityStyleScreen
+import io.github.noxaur.dsmod.edge.ui.KitCheckbox
+import io.github.noxaur.dsmod.edge.ui.KitStepper
 import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.core.component.DataComponents
@@ -24,18 +33,19 @@ import net.minecraft.world.inventory.ChestMenu
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.CustomData
+import org.lwjgl.glfw.GLFW
 
 /**
  * Gives the player items the way dragsim.co builds them, checks the `Item` the edge reads from them, then opens
- * the inventory and a chest and checks the marks. Read the screenshots: a frame must sit around the
- * slot of each item, and the tooltip must sit over a frame. The last one shows the frames on the hotbar.
+ * the inventory and a chest and checks the marks. Read the screenshots: the default gilded frame must sit around
+ * the slot of each item but the Common one, and the tooltip must sit over a frame. Then the hotbar, and the editor.
  */
-class RarityOutlinesTest : FabricClientGameTest {
+class RarityMarksTest : FabricClientGameTest {
     private fun marks(context: ClientGameTestContext) = context.computeOnClient<Map<Int, SlotMark>, Nothing> {
-        DsModClient.game.readouts.single { it.feature.id == "rarity-outlines" }.slots
+        DsModClient.game.readouts.single { it.feature.id == "rarity-marks" }.slots
     }
 
-    private fun framed(vararg slots: Pair<Int, Role>) = slots.associate { (slot, role) -> slot to SlotMark(role, border = true) }
+    private fun marked(vararg slots: Pair<Int, Role>) = slots.associate { (slot, role) -> slot to SlotMark(role, rarity = true) }
 
     private fun chestItem(name: String, rarity: String): ItemStack = ItemStack(Items.DIAMOND_SWORD).also {
         it.set(DataComponents.CUSTOM_NAME, Component.literal(name))
@@ -53,6 +63,94 @@ class RarityOutlinesTest : FabricClientGameTest {
         }
         context.input.setCursorPos(x, y)
         context.waitTicks(5)
+    }
+
+    private fun <T : AbstractWidget> widget(context: ClientGameTestContext, type: Class<T>, name: String) = context.computeOnClient<T, Nothing> { client ->
+        // A stepper names itself with its value, as "Border: Gilded".
+        client.gui.screen()!!.children().filterIsInstance(type).first { it.message.string == name || it.message.string.startsWith("$name: ") }
+    }
+
+    private fun click(context: ClientGameTestContext, widget: AbstractWidget, dx: Int = widget.width / 2) {
+        val scale = context.computeOnClient<Double, Nothing> { it.window.guiScale.toDouble() }
+        context.input.setCursorPos((widget.x + dx) * scale, (widget.y + widget.height / 2) * scale)
+        context.input.pressMouse(0)
+        context.waitTicks(2)
+    }
+
+    /**
+     * Opens the style editor and works each kind of control in it with the mouse and the keyboard. Read the
+     * screenshots: the inventory with its panel on the left, the preview on the right, and the hotbar's panel beside
+     * the real hotbar, in each theme and with the hotbar unlinked.
+     */
+    private fun editor(context: ClientGameTestContext) {
+        val settings = DsModClient.settings.inventory
+        context.setScreen { RarityStyleScreen(settings, null) {} }
+        context.waitTicks(5)
+        context.takeScreenshot("rarity-style")
+        // The test window is 427 GUI pixels wide, too narrow for the preview, so it is shown at 640 too.
+        val window = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.screenWidth to it.window.screenHeight }
+        val scale = context.computeOnClient<Int, Nothing> { it.options.guiScale().get() }
+        context.input.resizeWindow(1280, 720)
+        context.runOnClient<Nothing> { client ->
+            client.options.guiScale().set(2)
+            client.resizeGui()
+        }
+        context.waitTicks(5)
+        context.takeScreenshot("rarity-style-wide")
+        for (preset in RarityPreset.entries - RarityPreset.CUSTOM) {
+            context.runOnClient<Nothing> { settings.rarityPreset = preset }
+            context.waitTicks(2)
+            context.takeScreenshot("rarity-preset-${preset.name.lowercase()}")
+        }
+        context.runOnClient<Nothing> { settings.rarityPreset = RarityPreset.GILDED }
+        context.input.resizeWindow(window.first, window.second)
+        context.runOnClient<Nothing> { client ->
+            client.options.guiScale().set(scale)
+            client.resizeGui()
+        }
+        context.waitTicks(5)
+
+        // A change in the editor starts from the preset and makes it Custom.
+        val border = widget(context, KitStepper::class.java, "Border")
+        click(context, border, border.width - 4)
+        check(settings.rarityPreset == RarityPreset.CUSTOM && settings.inventoryStyle == SlotStyle(border = Border.NONE)) {
+            "The Border stepper's plus left ${settings.rarityPreset} with ${settings.inventoryStyle}"
+        }
+        context.runOnClient<Nothing> { it.gui.screen()!!.setFocused(border) }
+        context.input.pressKey(GLFW.GLFW_KEY_LEFT)
+        context.waitTicks(2)
+        check(settings.inventoryStyle == SlotStyle()) { "Left on the Border stepper left ${settings.inventoryStyle}" }
+
+        click(context, widget(context, KitCheckbox::class.java, "Gem"), 5)
+        check(settings.inventoryStyle.gem) { "The Gem checkbox did not turn the gem on" }
+
+        click(context, widget(context, KitCheckbox::class.java, "Match Inventory"), 5)
+        check(!settings.hotbarMatches && settings.hotbarStyle == settings.inventoryStyle) { "Unlinking the hotbar left ${settings.hotbarStyle}" }
+        // Two of each control now: the inventory's first, then the hotbar's.
+        val floors = context.computeOnClient<List<KitStepper>, Nothing> { client ->
+            client.gui.screen()!!.children().filterIsInstance<KitStepper>().filter { it.message.string.startsWith("Floor") }
+        }
+        check(floors.size == 2) { "The hotbar has no style of its own: ${floors.size} Floor steppers" }
+        click(context, floors[1], floors[1].width - 4)
+        check(settings.hotbarStyle.floor == Floor.PEDESTAL && settings.inventoryStyle.floor == Floor.NONE) {
+            "The hotbar's Floor set ${settings.hotbarStyle.floor}, and the inventory's is ${settings.inventoryStyle.floor}"
+        }
+        context.waitTicks(5)
+        context.takeScreenshot("rarity-style-hotbar")
+        context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
+        context.waitTicks(2)
+        context.takeScreenshot("rarity-style-vanilla")
+        context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
+
+        context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
+        context.waitTicks(2)
+        check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() == null }) { "Escape did not go back to the screen it opened over" }
+        context.runOnClient<Nothing> {
+            settings.rarityPreset = RarityPreset.GILDED
+            settings.inventoryStyle = SlotStyle()
+            settings.hotbarMatches = true
+            settings.markCommon = false
+        }
     }
 
     override fun runTest(context: ClientGameTestContext) {
@@ -84,8 +182,8 @@ class RarityOutlinesTest : FabricClientGameTest {
             val bow = context.computeOnClient<Item?, Nothing> { DsModClient.game.container.slots[10] }
             check(bow?.name == ServerText(ServerSpan("Rare Bow", 0x5555FF, bold = true))) { "The client read $bow" }
 
-            // Slot 36 is the first hotbar slot, which `container.0` fills.
-            val expected = framed(9 to Role.LEGENDARY, 10 to Role.RARE, 36 to Role.COMMON)
+            // Slot 36 is the first hotbar slot, which `container.0` fills with a Common item, unmarked until Mark Common is on.
+            val expected = marked(9 to Role.LEGENDARY, 10 to Role.RARE)
             check(marks(context) == expected) { "Marked ${marks(context)}" }
 
             context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }
@@ -115,9 +213,9 @@ class RarityOutlinesTest : FabricClientGameTest {
             check(title == "Test Chest") { "The container was titled $title" }
             val chestMarks = marks(context)
             // The chest's 54 slots, then the player's 27 and 9 that it shows.
-            val inChest = framed(
-                0 to Role.COMMON, 2 to Role.UNCOMMON, 4 to Role.RARE, 6 to Role.EPIC, 8 to Role.LEGENDARY, 19 to Role.MYTHIC,
-                21 to Role.DIVINE, 23 to Role.SPECIAL, 54 + 0 to Role.LEGENDARY, 54 + 1 to Role.RARE, 54 + 27 to Role.COMMON,
+            val inChest = marked(
+                2 to Role.UNCOMMON, 4 to Role.RARE, 6 to Role.EPIC, 8 to Role.LEGENDARY, 19 to Role.MYTHIC,
+                21 to Role.DIVINE, 23 to Role.SPECIAL, 54 + 0 to Role.LEGENDARY, 54 + 1 to Role.RARE,
             )
             check(chestMarks == inChest) { "Marked $chestMarks" }
             hover(context, 4)
@@ -128,12 +226,16 @@ class RarityOutlinesTest : FabricClientGameTest {
             val back = context.computeOnClient<Int, Nothing> { DsModClient.game.container.id }
             check(back == 0 && marks(context) == expected) { "Back in the inventory, container $back is marked ${marks(context)}" }
 
-            // With no menu open the hotbar carries the frames. Read the screenshot: gold, blue and white around the first three items.
+            // With no menu open the hotbar carries the marks. Read the screenshot: white, blue and gold behind the first three items.
+            context.runOnClient<Nothing> { DsModClient.settings.inventory.markCommon = true }
             world.server.runCommand("""item replace entity @a container.1 with bow[custom_data={item_data:{rarity:"RARE"}}]""")
             world.server.runCommand("""item replace entity @a container.2 with diamond_sword[custom_data={item_data:{rarity:"LEGENDARY"}}]""")
             context.waitTicks(10)
-            check(marks(context)[38] == SlotMark(Role.LEGENDARY, border = true)) { "The hotbar is marked ${marks(context)}" }
+            check(marks(context)[36] == SlotMark(Role.COMMON, rarity = true)) { "Mark Common did not mark the dirt: ${marks(context)}" }
+            check(marks(context)[38] == SlotMark(Role.LEGENDARY, rarity = true)) { "The hotbar is marked ${marks(context)}" }
             context.takeScreenshot("rarity-hotbar")
+
+            editor(context)
         }
     }
 }

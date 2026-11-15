@@ -15,7 +15,7 @@ import io.github.noxaur.dsmod.core.feature.general.ExplosionParticleHider
 import io.github.noxaur.dsmod.core.feature.general.FreeLook
 import io.github.noxaur.dsmod.core.feature.general.Fullbright
 import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
-import io.github.noxaur.dsmod.core.feature.inventory.RarityOutlines
+import io.github.noxaur.dsmod.core.feature.inventory.RarityMarks
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.feature.loot.LootAlerts
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerBossAlert
@@ -37,7 +37,7 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     FreeLook(config.general::freeLook),
     Fullbright(config.general::fullbright),
     ArmorSwapGuard(config.inventory::armorSwapGuard),
-    RarityOutlines(config.inventory::rarityOutlines),
+    RarityMarks(config.inventory::rarityMarks, config.inventory::markCommon),
     SlotLock(config.inventory::slotLock),
     LootAlerts(config.loot::lootAlerts, config.loot::lootAlertTier),
     SlayerBossAlert(config.slayer::slayerBossAlert),

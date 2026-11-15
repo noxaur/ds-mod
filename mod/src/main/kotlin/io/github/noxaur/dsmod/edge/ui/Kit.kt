@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge.ui
 
+import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
@@ -26,6 +27,9 @@ enum class Icon(val width: Int, val height: Int) {
     val sprite: Identifier = Identifier.fromNamespaceAndPath("dsmod", name.lowercase())
 }
 
+/** A texture of [width] by [height] that the kit blits cells from. */
+class Atlas(val id: Identifier, val width: Int, val height: Int)
+
 /**
  * Draws ds-mod's chrome in the player's [Theme]. Every shape is a few fills in GUI pixels and keeps no state,
  * so a screen calls these every frame with numbers it worked out in `init`. `kit.md` beside the ui skill
@@ -46,6 +50,8 @@ object Kit {
     const val DIVIDER_HEIGHT = 2
     const val GAP = 4
     const val INSET = 7
+    const val INVENTORY_WIDTH = 176
+    const val INVENTORY_HEIGHT = 166
 
     val theme: Theme get() = DsModClient.settings.hud.theme
     val font: Font get() = Minecraft.getInstance().font
@@ -225,13 +231,33 @@ object Kit {
     /** Fills the 16x16 item area at [x], [y] behind the item. */
     fun slotFill(g: GuiGraphicsExtractor, x: Int, y: Int, color: Int) = rect(g, x, y, 16, 16, color)
 
-    /** Frames the 16x16 item area at [x], [y] with a full 18x18 square. */
+    /** Frames the 16x16 item area at [x], [y] with a full 18x18 square, such as the two slots of a link. */
     fun slotBorder(g: GuiGraphicsExtractor, x: Int, y: Int, color: Int) {
         rect(g, x - 1, y - 1, 18, 1, color)
         rect(g, x - 1, y + 16, 18, 1, color)
         rect(g, x - 1, y, 1, 16, color)
         rect(g, x + 16, y, 1, 16, color)
     }
+
+    /** Draws cell [cell] of a rarity atlas behind the 16x16 item area at [x], [y], covering the slot's whole 18x18. */
+    fun slotArt(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int) =
+        g.blit(RenderPipelines.GUI_TEXTURED, atlas.id, x - 1, y - 1, (cell * SlotArt.SIZE).toFloat(), 0f, SlotArt.SIZE, SlotArt.SIZE, atlas.width, atlas.height)
+
+    /** Draws cell [cell]'s gem over the item at [x], [y], from the item's top-left pixel. */
+    fun slotGem(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int) = g.blit(
+        RenderPipelines.GUI_TEXTURED, atlas.id, x, y, (cell * SlotArt.SIZE).toFloat(), SlotArt.SIZE.toFloat(), SlotArt.GEM, SlotArt.GEM,
+        atlas.width, atlas.height,
+    )
+
+    /**
+     * The player's inventory as the resource pack draws it, 176x166, so a preview of their slots matches the
+     * real screen. [slotAt] draws one empty slot of it instead, for a preview that shows a slot alone.
+     */
+    fun inventory(g: GuiGraphicsExtractor, x: Int, y: Int) =
+        g.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, x, y, 0f, 0f, INVENTORY_WIDTH, INVENTORY_HEIGHT, 256, 256)
+
+    fun slotAt(g: GuiGraphicsExtractor, x: Int, y: Int) =
+        g.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, x, y, EMPTY_SLOT_U, EMPTY_SLOT_V, SLOT_SIZE, SLOT_SIZE, 256, 256)
 
     /** Darkens the item at [x], [y], drawn over it. */
     fun slotDim(g: GuiGraphicsExtractor, x: Int, y: Int) = rect(g, x, y, 16, 16, ARGB.color(DIM_ALPHA, theme.well))
@@ -275,5 +301,10 @@ object Kit {
     private fun channel(from: Int, to: Int, amount: Float) = (from + (to - from) * amount).roundToInt()
 
     private const val DIM_ALPHA = 184
+    private val INVENTORY = Identifier.withDefaultNamespace("textures/gui/container/inventory.png")
+
+    // The last slot of the inventory's main grid, which holds nothing but its frame.
+    private const val EMPTY_SLOT_U = 151f
+    private const val EMPTY_SLOT_V = 119f
     private val GOOD = Role.GOOD.argb()
 }

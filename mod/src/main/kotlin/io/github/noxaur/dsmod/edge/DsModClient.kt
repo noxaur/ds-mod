@@ -76,6 +76,9 @@ object DsModClient : ClientModInitializer {
     fun openHudEditor() =
         Minecraft.getInstance().let { it.setScreenAndShow(HudEditorScreen(readouts, config.instance.hud, it.gui.screen(), config::saveToFile)) }
 
+    fun openRarityStyle() =
+        Minecraft.getInstance().let { it.setScreenAndShow(RarityStyleScreen(config.instance.inventory, it.gui.screen(), config::saveToFile)) }
+
     override fun onInitializeClient() {
         config = ManagedConfig.create(
             FabricLoader.getInstance().configDir.resolve("dsmod/config.json").toFile(),
@@ -98,6 +101,7 @@ object DsModClient : ClientModInitializer {
         containers = ContainerPoller(game)
         config.instance.hud.edit = Runnable { openHudEditor() }
         config.instance.end.editBeam = Runnable { openBeaconEditor() }
+        config.instance.inventory.editRarityStyle = Runnable { openRarityStyle() }
         config.instance.contribute.open = Runnable { Contribute.open() }
         Recorder.register()
         Recording.register()

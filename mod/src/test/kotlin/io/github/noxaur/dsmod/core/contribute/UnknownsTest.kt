@@ -81,11 +81,11 @@ class UnknownsTest {
         var asked = 0
         val unknowns = Unknowns { asked++; setOf("Steve") }
 
-        repeat(500) { unknowns.see("rarity-outlines", "MYTHIC-ISH SWORD") }
+        repeat(500) { unknowns.see("rarity-marks", "MYTHIC-ISH SWORD") }
         assertEquals(1, asked, "only the first sight of a line is redacted")
 
         unknowns.take()
-        repeat(500) { unknowns.see("rarity-outlines", "MYTHIC-ISH SWORD") }
+        repeat(500) { unknowns.see("rarity-marks", "MYTHIC-ISH SWORD") }
         assertEquals(1, asked)
         assertFalse(unknowns.waiting)
     }

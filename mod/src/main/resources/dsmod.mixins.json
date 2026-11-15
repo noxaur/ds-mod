@@ -11,6 +11,7 @@
     "DropKeyMixin",
     "ExplosionParticleMixin",
     "FullbrightMixin",
+    "HudHotbarMixin",
     "KeyPressMixin",
     "MouseTurnMixin",
     "PerspectiveKeyMixin",

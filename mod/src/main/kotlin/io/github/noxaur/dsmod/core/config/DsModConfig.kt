@@ -13,6 +13,8 @@ import io.github.notenoughupdates.moulconfig.common.text.StructuredText
 import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.camera.ThirdPerson
 import io.github.noxaur.dsmod.core.camera.Views
+import io.github.noxaur.dsmod.core.container.RarityPreset
+import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.Theme
 
@@ -216,16 +218,47 @@ class DsModConfig : Config() {
 
     class Inventory {
         @Expose
-        @ConfigOption(name = "Rarity Outlines", desc = "Frame each item's slot in the color of its rarity.")
+        @ConfigOption(name = "Rarity Marks", desc = "Mark each item's slot in the color of its rarity.")
         @ConfigEditorBoolean
         @JvmField
-        var rarityOutlines = true
+        var rarityMarks = true
 
         @Expose
-        @ConfigOption(name = "Hotbar Outlines", desc = "Show the rarity frames on your hotbar too.")
-        @ConfigEditorBoolean
+        @ConfigOption(name = "Rarity Style", desc = "Pick a look for the marks, or Custom for the one you build with Edit Style.")
+        @ConfigEditorDropdown
         @JvmField
-        var hotbarOutlines = true
+        var rarityPreset = RarityPreset.GILDED
+
+        /** The edge sets this to open the editor, so the config itself needs no Minecraft. */
+        @ConfigOption(name = "Edit Style", desc = "Build your own look beside your inventory and hotbar. A change there switches Rarity Style to Custom.")
+        @ConfigEditorButton(buttonText = "Edit")
+        @JvmField
+        var editRarityStyle: Runnable = Runnable {}
+
+        /** The player's own style for every container, their inventory included, shown while [rarityPreset] is Custom. */
+        @Expose
+        @JvmField
+        var inventoryStyle = SlotStyle()
+
+        @Expose
+        @JvmField
+        var hotbarStyle = SlotStyle()
+
+        /** While true the hotbar is drawn in [inventoryStyle], and [hotbarStyle] waits for the player to unlink them. */
+        @Expose
+        @JvmField
+        var hotbarMatches = true
+
+        @Expose
+        @JvmField
+        var hotbarMarks = true
+
+        @Expose
+        @JvmField
+        var markCommon = false
+
+        /** The style containers show: the preset's, or the player's own under Custom. */
+        fun containerStyle(): SlotStyle = rarityPreset.style ?: inventoryStyle
 
         @Expose
         @ConfigOption(name = "Armor Swap Guard", desc = "Stop a right click from swapping the armor in your hand onto you. Sneak to swap.")

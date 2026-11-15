@@ -121,9 +121,22 @@ All-Time: 12
 
 ## Inventory
 
-### Rarity Outlines
+### Rarity Marks
 
-<sub>Hotbar Outlines turns the hotbar frames off.</sub>
+Each item's slot is marked in the color of its rarity, in every menu and on your hotbar.
+
+Rarity Style picks the look: Showcase, Gilded or Minimal, from loudest to quietest, or Custom for your own. Edit beside Edit Style opens your inventory with your hotbar under it, so you see each change on your own items. A change there starts from the look you had and switches Rarity Style to Custom.
+
+| Part | Choices |
+| --- | --- |
+| Border | None, Flat, Square, Rounded, Gilded |
+| Fill | None, Glow, Wash, Halo |
+| Floor | None, Pedestal, Sparks, Rise |
+| Gem | A small gem over the item's top-left corner |
+
+The hotbar uses your inventory's look until you untick Match Inventory, and then it has its own.
+
+<sub>Common items are not marked unless you tick Mark Common. With a resource pack that makes menus dark, the colors change to read well on it.</sub>
 
 ### Armor Swap Guard
 
