@@ -92,6 +92,15 @@ class AnimationsTest : FabricClientGameTest {
                 settings.noEquipReset = false
                 settings.swingStyle = SwingStyle.STILL
                 check(changed(vanilla, midSwing("animations-still")) == 0) { "Still moved the sword" }
+                // A spear swings by a stab of its own, which the style replaces too.
+                world.server.runCommand("item replace entity @a weapon.mainhand with diamond_spear")
+                context.waitTicks(80)
+                val spear = shot("animations-spear")
+                check(changed(spear, midSwing("animations-spear-still")) == 0) { "Still let the spear stab" }
+                settings.swingStyle = SwingStyle.VANILLA
+                check(changed(spear, midSwing("animations-spear-vanilla")) > 1000) { "The spear did not stab" }
+                world.server.runCommand("item replace entity @a weapon.mainhand with diamond_sword")
+                context.waitTicks(80)
 
                 // Slowed to a fifth, so the swing lasts 30 ticks and the frame 10 ticks in is a third of the way.
                 settings.swingSpeed = 0.2f

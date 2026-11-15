@@ -2,6 +2,8 @@ package io.github.noxaur.dsmod.edge.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.noxaur.dsmod.edge.HeldItems;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -37,6 +39,12 @@ abstract class HeldItemMixin {
     @Inject(method = "swingArm", at = @At("HEAD"), cancellable = true)
     private void dsmod$swing(float attack, PoseStack pose, int invert, HumanoidArm arm, CallbackInfo ci) {
         if (HeldItems.INSTANCE.swing(pose, arm, attack)) ci.cancel();
+    }
+
+    /** A spear swings by its own stab, which never reaches `swingArm`. */
+    @WrapOperation(method = "submitArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/effects/SpearAnimations;firstPersonAttack(FLcom/mojang/blaze3d/vertex/PoseStack;ILnet/minecraft/world/entity/HumanoidArm;)V"))
+    private void dsmod$stab(float attack, PoseStack pose, int invert, HumanoidArm arm, Operation<Void> original) {
+        if (!HeldItems.INSTANCE.swing(pose, arm, attack)) original.call(attack, pose, invert, arm);
     }
 
     @ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemSwapScale(F)F"))
