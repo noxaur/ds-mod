@@ -12,6 +12,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - Boss Drops keeps your placement, damage and loot from every dragon and Protector fight.
 - Slayer Tracker shows your quest progress, the XP to your next level and your average kill time.
 - Loot Alerts go off for drops at or above the rarity you set.
+- Command Binds send a command such as `/warp end` with a key, a few keys held together or keys pressed in turn. Keep them in groups you can fold, switch off and share.
 
 It also has a HUD editor, rarity outlines, Fullbright, and guards against two misclicks: taking a placed eye back out of the altar, and swapping armor with a right click.
 
@@ -25,7 +26,7 @@ Download the jar from [Releases](https://github.com/noxaur/ds-mod/releases) and 
 
 - A beta goes out every second day when there is something new, so a server update or a suggestion from the Discord doesn't wait months.
 - The mod draws its own settings screen and HUD. You can pick a dark theme or one that matches vanilla menus.
-- It only displays information. It has no macros and nothing that plays for you, because the server bans them.
+- It has no macros and nothing that plays for you, because the server bans them. Besides showing information, it only sends a command when you press that command's keys.
 
 ## Contributing
 
