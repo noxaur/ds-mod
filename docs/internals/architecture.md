@@ -4,7 +4,7 @@ ds-mod has three parts. The mod runs in the player's game. The backend is our ow
 
 ## The backend is an Effect API inside a Void app
 
-Void deploys the backend to Cloudflare Workers and owns the database and the sign-in tables. The API itself is defined and handled with Effect, and one catch-all route hands each request to it. The split keeps the way out open. A move to a single machine needs a new entry point, and no change to a rule.
+Void deploys the backend to Cloudflare Workers and owns the database, the file store and the sign-in tables. The API itself is defined and handled with Effect, and one catch-all route hands each request to it. The split keeps the way out open. The API takes its store and its caller as arguments, so a move to a single machine needs a new entry point, a new store and a sign-in, and no change to a rule.
 
 The contract is generated because a hand-written one drifts. The mod is Kotlin and can share no types with the backend, so the file is what it reads, and a test fails when the file is stale.
 

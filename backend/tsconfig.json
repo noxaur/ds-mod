@@ -24,7 +24,7 @@
       }
     ]
   },
-  "include": ["src", "routes", "scripts", "vite.config.ts", "auth.ts"],
+  "include": ["src", "routes", "scripts", "vite.config.ts", "auth.ts", "env.ts", "store.ts", "db"],
   "exclude": ["node_modules", "dist"],
   "extends": "./.void/tsconfig.json"
 }
