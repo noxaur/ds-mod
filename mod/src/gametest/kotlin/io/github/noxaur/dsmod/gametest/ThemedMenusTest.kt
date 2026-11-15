@@ -82,17 +82,18 @@ class ThemedMenusTest : FabricClientGameTest {
                 context.runOnClient<Nothing> { DsModClient.settings.inventory.themedMenus = true }
             }
             context.waitTicks(2)
+
+            theme(context, Theme.VANILLA)
+            ServerMenus.hover(context, 13)
+            checkPanel(context, context.takeScreenshot("themed-chest-vanilla"), Theme.VANILLA)
+            theme(context, Theme.CHARCOAL)
+            ServerMenus.hover(context, 6 * 9 - 5)
             // Only the drawing changes, so a click on Close still picks up the server's item.
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
             context.waitTicks(3)
             val carried = context.computeOnClient<String, Nothing> { it.player!!.containerMenu.carried.hoverName.string }
             check(carried == "Close") { "The click on the server's Close reached no slot, carrying '$carried'" }
             context.runOnClient<Nothing> { it.player!!.containerMenu.carried = ItemStack.EMPTY }
-
-            theme(context, Theme.VANILLA)
-            ServerMenus.hover(context, 13)
-            checkPanel(context, context.takeScreenshot("themed-chest-vanilla"), Theme.VANILLA)
-            theme(context, Theme.CHARCOAL)
 
             context.runOnClient<Nothing> { it.player!!.closeContainer() }
             context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }
