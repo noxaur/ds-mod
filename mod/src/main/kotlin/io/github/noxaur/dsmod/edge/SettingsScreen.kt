@@ -353,10 +353,10 @@ class SettingsScreen(
         sync()
     }
 
-    /** Where the row [id] is on the screen, if the pane shows it, so a link or a test can find it. */
-    fun spot(id: String): SettingRows.Spot? {
+    /** Where the row [id], or its ordered list's [entry], is on the screen, if the pane shows it, so a link or a test can find it. */
+    fun spot(id: String, entry: Int = -1): SettingRows.Spot? {
         sync()
-        return rows.spot(id)
+        return rows.spot(id, entry)
     }
 
     /** Scrolls the pane to the row [id]. */

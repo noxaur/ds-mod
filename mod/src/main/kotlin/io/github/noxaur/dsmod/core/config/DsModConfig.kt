@@ -5,6 +5,7 @@ import io.github.notenoughupdates.moulconfig.Config
 import io.github.notenoughupdates.moulconfig.annotations.Category
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorButton
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDraggableList
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDropdown
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorKeybind
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorSlider
@@ -16,18 +17,39 @@ import io.github.noxaur.dsmod.core.camera.ThirdPerson
 import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
+import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
+import io.github.noxaur.dsmod.core.feature.general.EquipmentLook
+import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
+import io.github.noxaur.dsmod.core.feature.general.InventoryLook
+import io.github.noxaur.dsmod.core.feature.general.InventoryRow
+import io.github.noxaur.dsmod.core.feature.general.PetLook
+import io.github.noxaur.dsmod.core.feature.general.PetPosition
+import io.github.noxaur.dsmod.core.hand.SwingStyle
+import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.input.CommandBind
+import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.core.ui.Theme
 
 /**
- * One category per area of the game. MoulConfig reads the fields directly, so every one it shows
- * needs `@JvmField`, and Gson saves only the ones with `@Expose`.
+ * The settings show categories and options in the order they are declared: what applies everywhere first, then each area
+ * of the game, and Contribute last. MoulConfig reads the fields directly, so every one it shows needs `@JvmField`, and
+ * Gson saves only the ones with `@Expose`.
  */
 class DsModConfig : Config() {
     override fun getTitle(): StructuredText = StructuredText.of("ds-mod")
+
+    @Expose
+    @Category(name = "General", desc = "The camera, your binds and the world.")
+    @JvmField
+    val general = General()
+
+    @Expose
+    @Category(name = "Interface", desc = "How ds-mod's HUD and screens look.")
+    @JvmField
+    val hud = Hud()
 
     @Expose
     @Category(name = "Chat", desc = "What reaches your chat.")
@@ -35,22 +57,12 @@ class DsModConfig : Config() {
     val chat = Chat()
 
     @Expose
-    @Category(name = "The End", desc = "Dragons, eyes, the egg and the Protector.")
-    @JvmField
-    val end = End()
-
-    @Expose
-    @Category(name = "General", desc = "How the game looks, and what it warns you about.")
-    @JvmField
-    val general = General()
-
-    @Expose
-    @Category(name = "Inventory", desc = "How menus look and sit, what their slots show, and what protects your items.")
+    @Category(name = "Inventory", desc = "How menus look, and what keeps items safe.")
     @JvmField
     val inventory = Inventory()
 
     @Expose
-    @Category(name = "Better UI", desc = "Tabs, a search and buttons that ds-mod adds to the game's menus.")
+    @Category(name = "Better UI", desc = "Tabs, a search and buttons for menus.")
     @JvmField
     val betterUi = BetterUi()
 
@@ -60,29 +72,29 @@ class DsModConfig : Config() {
     val loot = Loot()
 
     @Expose
+    @Category(name = "The End", desc = "Zealots, dragons and the Protector.")
+    @JvmField
+    val end = End()
+
+    @Expose
     @Category(name = "Slayers", desc = "Your slayer quests and bosses.")
     @JvmField
     val slayer = Slayer()
 
     @Expose
-    @Category(name = "Interface", desc = "How ds-mod's HUD and screens look.")
-    @JvmField
-    val hud = Hud()
-
-    @Expose
-    @Category(name = "Contribute", desc = "Help ds-mod's developers see parts of the game they cannot reach.")
+    @Category(name = "Contribute", desc = "Record the game for ds-mod's developers.")
     @JvmField
     val contribute = Contribute()
 
     class Chat {
         @Expose
-        @ConfigOption(name = "Ability Spam", desc = "Hide the message the server sends each time you use an ability that is on cooldown.")
+        @ConfigOption(name = "Ability Spam", desc = "Hide the message that an ability is on cooldown.")
         @ConfigEditorBoolean
         @JvmField
         var abilitySpam = true
 
         @Expose
-        @ConfigOption(name = "Copy Chat", desc = "Select chat messages with the right mouse button and copy them as text, format codes or JSON.")
+        @ConfigOption(name = "Copy Chat", desc = "Right-click messages to copy them as text, format codes or JSON.")
         @ConfigEditorBoolean
         @JvmField
         var copyChat = true
@@ -90,22 +102,35 @@ class DsModConfig : Config() {
 
     class End {
         @Expose
-        @ConfigOption(name = "Dragon Timer", desc = "Show when the egg returns, how many eyes are placed and how long the dragon has been alive.")
+        @ConfigOption(name = "Zealot Tracker", desc = "Count your Summoning Eyes and zealot kills, per hour and all-time.")
+        @ConfigEditorBoolean
+        @JvmField
+        var zealotTracker = true
+
+        @Expose
+        @ConfigOption(name = "Protect Placed Eyes", desc = "Ignore a quick second click that would take a placed eye back.")
+        @ConfigEditorBoolean
+        @JvmField
+        var protectPlacedEyes = true
+
+        @Expose
+        @ConfigOption(name = "Dragon Timer", desc = "Show the egg timer, the eyes placed and the dragon's time alive.")
         @ConfigEditorBoolean
         @JvmField
         var dragonTimer = true
 
         @Expose
-        @ConfigOption(name = "Golem Status", desc = "Show the Endstone Protector's stage and the kills left before it emerges.")
+        @ConfigOption(name = "Fireball Alert", desc = "Alert you when a dragon is about to throw fireballs.")
+        @ConfigEditorBoolean
+        @JvmField
+        var fireballAlert = true
+    
+
+        @Expose
+        @ConfigOption(name = "Golem Status", desc = "Show the Protector's stage and the kills left until it emerges.")
         @ConfigEditorBoolean
         @JvmField
         var golemStatus = true
-
-        @Expose
-        @ConfigOption(name = "Zealot Tracker", desc = "Count your Summoning Eyes and other rare drops this session, per hour in The End and all-time.")
-        @ConfigEditorBoolean
-        @JvmField
-        var zealotTracker = true
 
         @Expose
         @ConfigOption(name = "Boss Beacon", desc = "Show a beam where the Endstone Protector will emerge.")
@@ -127,33 +152,21 @@ class DsModConfig : Config() {
         var editBeam: Runnable = Runnable {}
 
         @Expose
-        @ConfigOption(name = "Boss Drops", desc = "Show your damage rank and loot from the last dragon or Protector, and keep a count of your fights.")
+        @ConfigOption(name = "Boss Drops", desc = "Show your rank, damage and loot from the last boss fight.")
         @ConfigEditorBoolean
         @JvmField
         var bossDrops = true
-
-        @Expose
-        @ConfigOption(name = "Protect Placed Eyes", desc = "Ignore a second click on the altar frame you just clicked with an eye, so you do not take the eye back out.")
-        @ConfigEditorBoolean
-        @JvmField
-        var protectPlacedEyes = true
-
-        @Expose
-        @ConfigOption(name = "Fireball Alert", desc = "Show a title and play a sound when a dragon is about to throw fireballs.")
-        @ConfigEditorBoolean
-        @JvmField
-        var fireballAlert = true
     }
 
     class General {
         @Expose
-        @ConfigOption(name = "DragSim Only", desc = "Run ds-mod only while you play on dragsim.co. Turn it off to use the mod on any server.")
+        @ConfigOption(name = "DragSim Only", desc = "Run ds-mod only on dragsim.co. Turn it off to use it on any server.")
         @ConfigEditorBoolean
         @JvmField
         var onlyOnDragSim = true
 
         @Expose
-        @ConfigOption(name = "Fullbright", desc = "Light the whole world, so caves and nights are as bright as day.")
+        @ConfigOption(name = "Fullbright", desc = "Light caves and nights as brightly as day.")
         @ConfigEditorBoolean
         @JvmField
         var fullbright = false
@@ -165,7 +178,121 @@ class DsModConfig : Config() {
         var explosionParticleHider = false
 
         @Expose
-        @ConfigOption(name = "Camera", desc = "Shape the third-person view with the settings below. At their defaults it is the game's own.")
+        @ConfigOption(name = "Animations", desc = "Shape how your held item swings and sits with the settings below.")
+        @ConfigEditorBoolean
+        @JvmField
+        var animations = true
+
+        @Expose
+        @ConfigOption(name = "Swing Style", desc = "Pick how your held item moves when you swing.")
+        @ConfigEditorDropdown
+        @JvmField
+        var swingStyle = SwingStyle.VANILLA
+
+        @Expose
+        @ConfigOption(name = "Swing Speed", desc = "Speed your swing up, or slow it down below 1.")
+        @ConfigEditorSlider(minValue = 0.1f, maxValue = 3f, minStep = 0.1f)
+        @JvmField
+        var swingSpeed = 1f
+
+        @Expose
+        @ConfigOption(name = "Ignore Haste", desc = "Swing at the same pace under Haste or Mining Fatigue.")
+        @ConfigEditorBoolean
+        @JvmField
+        var ignoreHaste = false
+
+        @Expose
+        @ConfigOption(name = "No Equip Reset", desc = "Keep your held item up instead of dipping after a swing or use.")
+        @ConfigEditorBoolean
+        @JvmField
+        var noEquipReset = false
+
+        @Expose
+        @ConfigOption(name = "Item Size", desc = "Grow or shrink your held item.")
+        @ConfigEditorSlider(minValue = 0.1f, maxValue = 2f, minStep = 0.05f)
+        @JvmField
+        var itemSize = 1f
+
+        @Expose
+        @ConfigOption(name = "Item Side", desc = "Move your held item out to the side, or in below zero.")
+        @ConfigEditorSlider(minValue = -1f, maxValue = 1f, minStep = 0.05f)
+        @JvmField
+        var itemSide = 0f
+
+        @Expose
+        @ConfigOption(name = "Item Height", desc = "Raise your held item, or lower it below zero.")
+        @ConfigEditorSlider(minValue = -1f, maxValue = 1f, minStep = 0.05f)
+        @JvmField
+        var itemHeight = 0f
+
+        @Expose
+        @ConfigOption(name = "Item Depth", desc = "Push your held item away, or bring it nearer below zero.")
+        @ConfigEditorSlider(minValue = -1f, maxValue = 1f, minStep = 0.05f)
+        @JvmField
+        var itemDepth = 0f
+
+        @Expose
+        @ConfigOption(name = "Equipment Display", desc = "Show your armor and pet on the HUD.")
+        @ConfigEditorBoolean
+        @JvmField
+        var equipmentDisplay = true
+
+        @Expose
+        @ConfigOption(name = "Equipment Pieces", desc = "Pick the pieces to show, and drag them into order.")
+        @ConfigEditorDraggableList(requireNonEmpty = true)
+        @JvmField
+        var equipmentPieces: MutableList<EquipmentPiece> = EquipmentPiece.entries.toMutableList()
+
+        @Expose
+        @ConfigOption(name = "Equipment Layout", desc = "Line the pieces up in a row or a column.")
+        @ConfigEditorDropdown
+        @JvmField
+        var equipmentLayout = EquipmentLayout.ROW
+
+        @Expose
+        @ConfigOption(name = "Pet Look", desc = "Show your pet as its head, or as its name and level.")
+        @ConfigEditorDropdown
+        @JvmField
+        var petLook = PetLook.ICON
+
+        @Expose
+        @ConfigOption(name = "Pet Position", desc = "Put your pet among the armor, or on a row above or below it.")
+        @ConfigEditorDropdown
+        @JvmField
+        var petPosition = PetPosition.WITH_ARMOR
+
+        @Expose
+        @ConfigOption(name = "Equipment Look", desc = "Show the pieces on the plate, on nothing, or in hotbar slots.")
+        @ConfigEditorDropdown
+        @JvmField
+        var equipmentLook = EquipmentLook.PLATE
+
+        @Expose
+        @ConfigOption(name = "Equipment Placement", desc = "Keep the pieces where you put them, or beside your hotbar.")
+        @ConfigEditorDropdown
+        @JvmField
+        var equipmentPlacement = HudDock.FREE
+
+        @Expose
+        @ConfigOption(name = "Inventory Preview", desc = "Show a grid of the items in your inventory on the HUD.")
+        @ConfigEditorBoolean
+        @JvmField
+        var inventoryPreview = false
+
+        @Expose
+        @ConfigOption(name = "Inventory Rows", desc = "Pick the rows to show, and drag them into order.")
+        @ConfigEditorDraggableList(requireNonEmpty = true)
+        @JvmField
+        var inventoryRows: MutableList<InventoryRow> = mutableListOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM)
+
+        @Expose
+        @ConfigOption(name = "Inventory Look", desc = "Show the items on the plate, on nothing, or as your inventory.")
+        @ConfigEditorDropdown
+        @JvmField
+        var inventoryLook = InventoryLook.PLATE
+
+        @Expose
+        @ConfigOption(name = "Camera", desc = "Shape the third-person view with the settings below.")
         @ConfigEditorBoolean
         @JvmField
         var camera = true
@@ -177,13 +304,13 @@ class DsModConfig : Config() {
         var cameraDistance = ThirdPerson.DISTANCE
 
         @Expose
-        @ConfigOption(name = "Camera Height", desc = "Raise the third-person camera by this many blocks, or lower it below zero.")
+        @ConfigOption(name = "Camera Height", desc = "Raise the third-person camera, or lower it below zero.")
         @ConfigEditorSlider(minValue = -2f, maxValue = 3f, minStep = 0.1f)
         @JvmField
         var cameraHeight = 0f
 
         @Expose
-        @ConfigOption(name = "Camera Tilt", desc = "Angle the third-person camera down by this many degrees, or up below zero. Your aim stays where it is.")
+        @ConfigOption(name = "Camera Tilt", desc = "Angle the third-person camera down, or up below zero.")
         @ConfigEditorSlider(minValue = -45f, maxValue = 45f, minStep = 1f)
         @JvmField
         var cameraTilt = 0f
@@ -195,13 +322,13 @@ class DsModConfig : Config() {
         var cameraViews = Views.ALL
 
         @Expose
-        @ConfigOption(name = "Camera Smoothing", desc = "Slide the camera out when you leave first person. Zero jumps there at once.")
+        @ConfigOption(name = "Camera Smoothing", desc = "Slide the camera out when you leave first person.")
         @ConfigEditorSlider(minValue = 0f, maxValue = 100f, minStep = 5f)
         @JvmField
         var cameraSmoothing = 0f
 
         @Expose
-        @ConfigOption(name = "Free Look", desc = "Look around in third person with the key below. You keep facing where you were, and other players see no turn.")
+        @ConfigOption(name = "Free Look", desc = "Look around in third person while you keep facing ahead.")
         @ConfigEditorBoolean
         @JvmField
         var freeLook = true
@@ -214,13 +341,13 @@ class DsModConfig : Config() {
         var freeLookKey = LEFT_ALT
 
         @Expose
-        @ConfigOption(name = "Free Look Mode", desc = "Pick whether you hold the key to look around, or press it once to start and again to stop.")
+        @ConfigOption(name = "Free Look Mode", desc = "Pick Hold to look while the key is down, or Toggle.")
         @ConfigEditorDropdown
         @JvmField
         var freeLookMode = KeyMode.HOLD
 
         @Expose
-        @ConfigOption(name = "Command Binds", desc = "Send a command with a key, keys held together or keys in order, such as /warp end on Shift + F6. Set them up with Edit below.")
+        @ConfigOption(name = "Command Binds", desc = "Send a command, such as /warp end, with a key or a few keys.")
         @ConfigEditorBoolean
         @JvmField
         var commandBinds = true
@@ -242,16 +369,28 @@ class DsModConfig : Config() {
         var offGroups: List<String> = emptyList()
 
         /** The edge sets this to open the editor, so the config itself needs no Minecraft. */
-        @ConfigOption(name = "Edit Command Binds", desc = "Name each bind, pick its keys, and choose where it works.")
+        @ConfigOption(name = "Edit Command Binds", desc = "Add your binds, pick their keys and choose where each works.")
         @ConfigEditorButton(buttonText = "Edit")
         @JvmField
         var editBinds: Runnable = Runnable {}
 
         @Expose
-        @ConfigOption(name = "Key Sequence Gap", desc = "Set how many milliseconds a bind whose keys go in order waits for its next key.")
+        @ConfigOption(name = "Key Sequence Gap", desc = "Set how many milliseconds a key sequence waits for its next key.")
         @ConfigEditorSlider(minValue = 50f, maxValue = 1000f, minStep = 50f)
         @JvmField
         var sequenceGap = 250f
+
+        @Expose
+        @ConfigOption(name = "Profile Viewer", desc = "Look up any player's profile with /pv and their name.")
+        @ConfigEditorBoolean
+        @JvmField
+        var profileViewer = true
+
+        @Expose
+        @ConfigOption(name = "Click Names", desc = "Click a player's name in chat to open their profile.")
+        @ConfigEditorBoolean
+        @JvmField
+        var profileNames = true
 
         private companion object {
             /** GLFW's code for the left Alt key. */
@@ -267,13 +406,13 @@ class DsModConfig : Config() {
         var rarityMarks = true
 
         @Expose
-        @ConfigOption(name = "Rarity Style", desc = "Pick a look for the marks, or Custom for the one you build with Edit Style.")
+        @ConfigOption(name = "Rarity Style", desc = "Pick a look for the marks, or Custom for your own.")
         @ConfigEditorDropdown
         @JvmField
         var rarityPreset = RarityPreset.GILDED
 
         /** The edge sets this to open the editor, so the config itself needs no Minecraft. */
-        @ConfigOption(name = "Edit Style", desc = "Build your own look beside your inventory and hotbar. A change there switches Rarity Style to Custom.")
+        @ConfigOption(name = "Edit Style", desc = "Build your own look for the marks, on your own items.")
         @ConfigEditorButton(buttonText = "Edit")
         @JvmField
         var editRarityStyle: Runnable = Runnable {}
@@ -304,37 +443,43 @@ class DsModConfig : Config() {
         fun containerStyle(): SlotStyle = rarityPreset.style ?: inventoryStyle
 
         @Expose
-        @ConfigOption(name = "Armor Swap Guard", desc = "Stop a right click from swapping the armor in your hand onto you. Sneak to swap.")
-        @ConfigEditorBoolean
-        @JvmField
-        var armorSwapGuard = false
-
-        @Expose
-        @ConfigOption(name = "Themed Menus", desc = "Draw menus, your inventory and plain tooltips in the Theme under Interface, which is dark in Charcoal.")
+        @ConfigOption(name = "Themed Menus", desc = "Draw menus and plain tooltips in the Theme under Interface.")
         @ConfigEditorBoolean
         @JvmField
         var themedMenus = true
 
         @Expose
-        @ConfigOption(name = "Stable Menus", desc = "Keep the bottom row of every menu and your inventory in one place, so Go Back and Close stay put as you move between menus.")
+        @ConfigOption(name = "Menu Look", desc = "Draw themed menus solid, or as glass that shows the world.")
+        @ConfigEditorDropdown
+        @JvmField
+        var menuLook = MenuLook.SOLID
+
+        @Expose
+        @ConfigOption(name = "Glass Opacity", desc = "Set how dark the glass is, from clear at 0 to solid at 100.")
+        @ConfigEditorSlider(minValue = 0f, maxValue = 100f, minStep = 5f)
+        @JvmField
+        var glassOpacity = 60f
+
+        @Expose
+        @ConfigOption(name = "Stable Menus", desc = "Keep Go Back, Close and your inventory in place in every menu.")
         @ConfigEditorBoolean
         @JvmField
         var stableMenus = true
 
         @Expose
-        @ConfigOption(name = "Hide Filler", desc = "Hide the blank glass panes that fill out a menu, so its items stand out.")
+        @ConfigOption(name = "Hide Filler", desc = "Hide the blank glass panes that pad out menus.")
         @ConfigEditorBoolean
         @JvmField
         var hideFiller = true
 
         @Expose
-        @ConfigOption(name = "Keep Cursor", desc = "Leave the cursor where it was when one menu opens another, instead of moving it to the middle.")
+        @ConfigOption(name = "Keep Cursor", desc = "Leave the cursor where it was when one menu opens another.")
         @ConfigEditorBoolean
         @JvmField
         var keepCursor = true
 
         @Expose
-        @ConfigOption(name = "Slot Lock", desc = "Lock slots and items of your inventory with the keys below, so no click or drop key moves them. Hold the slot key and move to another slot to link the two.")
+        @ConfigOption(name = "Slot Lock", desc = "Lock inventory slots and items so a misclick cannot move them.")
         @ConfigEditorBoolean
         @JvmField
         var slotLock = true
@@ -347,10 +492,16 @@ class DsModConfig : Config() {
         var slotLockKey = KEY_L
 
         @Expose
-        @ConfigOption(name = "Item Lock Key", desc = "Pick the key or mouse button that locks the item under the mouse, wherever you move it. It works on an item that does not stack.")
+        @ConfigOption(name = "Item Lock Key", desc = "Pick the key that locks an item that does not stack.")
         @ConfigEditorKeybind(defaultKey = KEY_K)
         @JvmField
         var itemLockKey = KEY_K
+
+        @Expose
+        @ConfigOption(name = "Armor Swap Guard", desc = "Stop a right click from swapping on armor. Sneak to swap.")
+        @ConfigEditorBoolean
+        @JvmField
+        var armorSwapGuard = false
 
         private companion object {
             /** GLFW's codes for the K and L keys. */
@@ -361,25 +512,25 @@ class DsModConfig : Config() {
 
     class BetterUi {
         @Expose
-        @ConfigOption(name = "Better UI", desc = "Add ds-mod's tabs and buttons to the game's menus. Each also has its own switch below.")
+        @ConfigOption(name = "Better UI", desc = "Turn everything below on or off at once.")
         @ConfigEditorBoolean
         @JvmField
         var enabled = true
 
         @Expose
-        @ConfigOption(name = "Back Buttons", desc = "Add Go Back to a menu that has none, which sends again the command that opened the menu you came from.")
+        @ConfigOption(name = "Back Buttons", desc = "Add Go Back to menus without one, by resending your last command.")
         @ConfigEditorBoolean
         @JvmField
         var backButtons = true
 
         @Expose
-        @ConfigOption(name = "Menu Tabs", desc = "Add tabs along the top and bottom of menus that send your commands, and a tab that searches the menu's items.")
+        @ConfigOption(name = "Menu Tabs", desc = "Add tabs that send your commands, and a search, to every menu.")
         @ConfigEditorBoolean
         @JvmField
         var menuTabs = true
 
         /** The edge sets this to open the editor, so the config itself needs no Minecraft. */
-        @ConfigOption(name = "Edit Tabs", desc = "Place, add and change the tabs: what each sends, its item and its name.")
+        @ConfigOption(name = "Edit Tabs", desc = "Add, move and change your tabs.")
         @ConfigEditorButton(buttonText = "Edit")
         @JvmField
         var editTabs: Runnable = Runnable {}
@@ -402,7 +553,7 @@ class DsModConfig : Config() {
 
     class Loot {
         @Expose
-        @ConfigOption(name = "Loot Alerts", desc = "Show a title and play a sound when you get a drop of the chosen tier or better.")
+        @ConfigOption(name = "Loot Alerts", desc = "Alert you to drops of the chosen tier or better.")
         @ConfigEditorBoolean
         @JvmField
         var lootAlerts = true
@@ -422,7 +573,7 @@ class DsModConfig : Config() {
         var slayerTracker = true
 
         @Expose
-        @ConfigOption(name = "Slayer Boss Alert", desc = "Show a title and play a sound when your slayer boss spawns.")
+        @ConfigOption(name = "Slayer Boss Alert", desc = "Alert you when your slayer boss spawns.")
         @ConfigEditorBoolean
         @JvmField
         var slayerBossAlert = true
@@ -442,6 +593,13 @@ class DsModConfig : Config() {
         @JvmField
         var theme = Theme.CHARCOAL
 
+        /** The edge sets this to open the editor, so the config itself needs no Minecraft. */
+        @ConfigOption(name = "Move HUD", desc = "Drag a block to move it, and scroll over it to resize it.")
+        @ConfigEditorButton(buttonText = "Edit")
+        @JvmField
+        var edit: Runnable = Runnable {}
+    
+
         @Expose
         @ConfigOption(name = "HUD Scale", desc = "Make every HUD block bigger or smaller.")
         @ConfigEditorSlider(minValue = 0.5f, maxValue = 3f, minStep = 0.25f)
@@ -453,25 +611,19 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var background = true
-
-        /** The edge sets this to open the editor, so the config itself needs no Minecraft. */
-        @ConfigOption(name = "Move HUD", desc = "Drag a block to move it, and scroll over it to resize it.")
-        @ConfigEditorButton(buttonText = "Edit")
-        @JvmField
-        var edit: Runnable = Runnable {}
     }
 
     class Contribute {
         /** The edge sets this to open the requests, so the config itself needs no Minecraft. */
-        @ConfigOption(name = "Contribute", desc = "See what ds-mod's developers ask players to record, and record it.")
+        @ConfigOption(name = "Contribute", desc = "See what ds-mod's developers ask players to record.")
         @ConfigEditorButton(buttonText = "Open")
         @JvmField
         var open: Runnable = Runnable {}
 
         @Expose
-        @ConfigOption(name = "Report Unread Lines", desc = "Send lines the mod could not read to ds-mod's developers, with player names removed. Off until you turn it on.")
+        @ConfigOption(name = "Report Game Data", desc = "Send game data new to ds-mod to its developers, names removed.")
         @ConfigEditorBoolean
         @JvmField
-        var reportUnknowns = false
+        var reportGameData = false
     }
 }

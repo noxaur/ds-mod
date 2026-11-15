@@ -10,6 +10,7 @@ import io.github.noxaur.dsmod.core.config.Switch
 import io.github.noxaur.dsmod.core.container.Border
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
+import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Look
 import io.github.noxaur.dsmod.core.ui.Section
@@ -52,7 +53,6 @@ class SettingsGalleryScreen : Screen(text { body("Settings Rows") }.toComponent(
         var none = 75
         var spans = listOf(Section(150, 160), Section(175, 200))
         var border = Border.GILDED
-        var gem = false
         var gate = false
         var dimNumber = 4f
         var dimTier = Tier.EPIC
@@ -61,12 +61,22 @@ class SettingsGalleryScreen : Screen(text { body("Settings Rows") }.toComponent(
         var dimPreset = RarityPreset.SHOWCASE
         var foundPreset = RarityPreset.GILDED
         var foundGem = false
+        var rows = mutableListOf(Row.TOP, Row.HOTBAR)
+        var dimPieces = mutableListOf(EquipmentPiece.HELMET, EquipmentPiece.PET)
     }
 
     private enum class Tier(private val label: String) {
         RARE("Rare"),
         EPIC("Epic"),
         RNGESUS("RNGesus"),
+        ;
+
+        override fun toString() = label
+    }
+
+    private enum class Row(private val label: String) {
+        TOP("Top Row"),
+        HOTBAR("Hotbar"),
         ;
 
         override fun toString() = label
@@ -111,20 +121,21 @@ class SettingsGalleryScreen : Screen(text { body("Settings Rows") }.toComponent(
             },
         ),
         listOf(
-            "Span, fold, action" to rows {
+            "Span, fold, action, order" to rows {
                 span(v::spans, "Beam Timing", "Pick when it shows.", max = 200, ticks = listOf(50, 100, 150))
-                fold("closedFold", "Custom Look", "Build your own.") { switch(v::gem, "Gem", "Put a gem.") }
                 fold("openFold", "Open Fold", "Build your own.") {
                     pick(Bind("Values.border", v::border::get, v::border::set), "Border", "Pick the ring.", Border.entries, label = { it.label }) {
                         Look.Slots(SlotStyle(border = it), 1)
                     }
                 }
                 action(::noop, "Move HUD", "Drag a block.", button = "Move")
+                order(v::rows, "Rows", "Order them.", id = "openOrder")
             },
             "Dimmed under an off switch" to rows {
                 number(v::dimNumber, "Distance", "Set it.", 1f..50f, step = 0.5f, dependsOn = gate)
                 choice(v::dimTier, "Tier", "Pick it.", dependsOn = gate)
                 keys(v::dimKey, "Key", "Pick it.", dependsOn = gate)
+                order(v::dimPieces, "Pieces", "Pick them.", id = "dimOrder", dependsOn = gate)
             },
         ),
     )
@@ -139,7 +150,7 @@ class SettingsGalleryScreen : Screen(text { body("Settings Rows") }.toComponent(
     /** The kinds of look the page's picks show. */
     val looks: Set<KClass<out Look>> = all.filterIsInstance<Pick<*>>().flatMap { pick -> pick.values.indices.map { pick.lookAt(it)::class } }.toSet()
 
-    private val opened = hashSetOf("openSwitch", "openFold")
+    private val opened = hashSetOf("openSwitch", "openFold", "openOrder")
     private val settingRows = SettingRows(opened, ::layout, { _, _ -> })
 
     /** Rows as a search for "gilded look" shows them, with the words it matched painted, drawn apart from the rows above. */
@@ -166,7 +177,8 @@ class SettingsGalleryScreen : Screen(text { body("Settings Rows") }.toComponent(
         v.theme = Theme.CHARCOAL
         v.tilt = 12f
         v.none = -1
-        v.gem = true
+        v.foundGem = true
+        v.rows = mutableListOf(Row.TOP)
     }
 
     override fun init() {

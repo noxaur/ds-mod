@@ -121,4 +121,12 @@ class SettingsSearchTest {
         assertEquals("Dragon Timer", marked("Dragon Timer", "  "))
         assertEquals(listOf(Piece("Dragon Timer", false)), SettingsSearch.pieces("Dragon Timer", listOf("zz")))
     }
+
+    @Test
+    fun `a word that names an entry of an ordered list opens the list, and its name alone does not`() {
+        val tree = SettingsTree.sections(DsModConfig())
+        val open = SettingsSearch.hits(tree, "boots").flatMap { it.open }
+        assertTrue("equipmentPieces" in open, "$open")
+        assertTrue(SettingsSearch.hits(tree, "equipment pieces").none { "equipmentPieces" in it.open })
+    }
 }

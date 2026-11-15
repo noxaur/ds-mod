@@ -1,0 +1,32 @@
+package io.github.noxaur.dsmod.debug
+
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
+import net.fabricmc.fabric.api.client.screen.v1.Screens
+import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.screens.ConnectScreen
+import net.minecraft.client.gui.screens.TitleScreen
+import net.minecraft.client.multiplayer.ServerData
+import net.minecraft.client.multiplayer.resolver.ServerAddress
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.contents.TranslatableContents
+
+/** A Join DragSim button above Singleplayer on the title screen, so a developer reaches the server in one click. */
+object JoinDragSim {
+    const val LABEL = "Join DragSim"
+    private const val ADDRESS = "dragsim.co"
+
+    fun register() {
+        ScreenEvents.AFTER_INIT.register { client, screen, _, _ ->
+            if (screen !is TitleScreen) return@register
+            val buttons = Screens.getWidgets(screen)
+            val singleplayer = buttons.firstOrNull { (it.message.contents as? TranslatableContents)?.key == "menu.singleplayer" }
+                ?: return@register
+            buttons += Button.builder(Component.literal(LABEL)) {
+                // Enabled skips the resource pack prompt, and the pack runClient seeds is already on disk.
+                val server = ServerData("DragSim", ADDRESS, ServerData.Type.OTHER)
+                    .apply { resourcePackStatus = ServerData.ServerPackStatus.ENABLED }
+                ConnectScreen.startConnecting(screen, client, ServerAddress.parseString(ADDRESS), server, false, null)
+            }.bounds(singleplayer.x, singleplayer.y - 24, singleplayer.width, singleplayer.height).build()
+        }
+    }
+}

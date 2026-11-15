@@ -1,12 +1,17 @@
 package io.github.noxaur.dsmod.core.backend
 
 import io.github.noxaur.dsmod.core.brief.Brief
+import io.github.noxaur.dsmod.core.game.ServerText
+import io.github.noxaur.dsmod.core.profile.Container
+import io.github.noxaur.dsmod.core.profile.Profile
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -25,8 +30,12 @@ import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 
-/** What a call to the backend failed on. [status] is the HTTP status, or null when the backend could not be reached. */
-class BackendException(val status: Int?, message: String, cause: Throwable? = null) : Exception(message, cause)
+/**
+ * What a call to the backend failed on. [status] is the HTTP status, or null when the backend could not be reached.
+ * [tag] is the `_tag` of the error's body, which tells apart failures that share a status, and is null when the body
+ * had none, as when a proxy answered.
+ */
+class BackendException(val status: Int?, message: String, cause: Throwable? = null, val tag: String? = null) : Exception(message, cause)
 
 /** The Minecraft session the game already holds, which is the only proof of who the player is. */
 interface Identity {
@@ -70,7 +79,41 @@ enum class Upload { SENT, UNKNOWN, CLOSED, TOO_BIG }
 @Serializable
 data class Sighting(val kind: String, val signature: String, val sample: String)
 
+/**
+ * An item from the player's own inventory, as the backend's `ItemSighting` has it. [entry] is the server's id for the
+ * item, and [data] is the part of its `custom_data` that says how it is built.
+ */
+data class ItemSighting(
+    val entry: String,
+    val material: String,
+    val itemModel: String?,
+    val skinId: String?,
+    val name: ServerText,
+    val lore: List<ServerText>,
+    val glint: Boolean,
+    val skullTexture: String?,
+    val color: Int?,
+    val data: JsonObject,
+)
+
 private val json = Json { ignoreUnknownKeys = true }
+
+/** A line of text as the contract's spans: `#RRGGBB` colors, and a flag only when it is set. */
+private fun ServerText.toJson() = buildJsonArray {
+    for (span in spans) {
+        add(
+            buildJsonObject {
+                put("text", span.text)
+                span.color?.let { put("color", "#%06X".format(it)) }
+                if (span.bold) put("bold", true)
+                if (span.italic) put("italic", true)
+                if (span.underlined) put("underlined", true)
+                if (span.strikethrough) put("strikethrough", true)
+                if (span.obfuscated) put("obfuscated", true)
+            },
+        )
+    }
+}
 
 /**
  * Talks to the backend as the signed-in player. Every call blocks, so a caller runs it with [async], which has one
@@ -105,6 +148,17 @@ class Backend(private val url: String, private val identity: Identity, private v
         }
     }
 
+    /** [name]'s profile, the one they play now unless [profile] names another of theirs. */
+    fun profile(name: String, profile: String?): Profile {
+        require(Profile.validName(name)) { "Not a Minecraft name: $name" }
+        val query = profile?.let { "?profile=" + URLEncoder.encode(it, Charsets.UTF_8) }.orEmpty()
+        return Profile.parse(send { get("/v1/players/$name/profile$query", it) }.body())
+    }
+
+    /** One of a profile's containers, as it was when [snapshot] was taken. */
+    fun container(snapshot: String, id: String): Container =
+        Profile.parseContainer(send { get("/v1/snapshots/${segment(snapshot)}/containers/${segment(id)}", it) }.body())
+
     fun skip(id: String) {
         send { post("/v1/contrib/requests/$id/skip", BodyPublishers.noBody(), null, it) }
     }
@@ -137,6 +191,31 @@ class Backend(private val url: String, private val identity: Identity, private v
         send { post("/v1/contrib/unknowns", BodyPublishers.ofString(body.toString()), "application/json", it) }
     }
 
+    fun items(items: List<ItemSighting>) {
+        val body = buildJsonObject {
+            put("modVersion", modVersion)
+            putJsonArray("items") {
+                items.forEach { item ->
+                    add(
+                        buildJsonObject {
+                            put("entry", item.entry)
+                            put("material", item.material)
+                            item.itemModel?.let { put("itemModel", it) }
+                            item.skinId?.let { put("skinId", it) }
+                            put("name", item.name.toJson())
+                            put("lore", buildJsonArray { item.lore.forEach { add(it.toJson()) } })
+                            put("glint", item.glint)
+                            item.skullTexture?.let { put("skullTexture", it) }
+                            item.color?.let { put("color", it) }
+                            put("data", item.data)
+                        },
+                    )
+                }
+            }
+        }
+        send { post("/v1/contrib/items", BodyPublishers.ofString(body.toString()), "application/json", it) }
+    }
+
     /** A code that the website trades for a session once, within a minute. */
     fun oneTimeToken(): String =
         json.parseToJsonElement(send { get("/api/auth/one-time-token/generate", it) }.body()).jsonObject.getValue("token").jsonPrimitive.content
@@ -164,9 +243,17 @@ class Backend(private val url: String, private val identity: Identity, private v
             token = null
             response = reach { call(signIn()) }
         }
-        if (response.statusCode() !in 200..299 && response.statusCode() !in answers) throw BackendException(response.statusCode(), "The backend answered ${response.statusCode()}.")
+        val status = response.statusCode()
+        if (status !in 200..299 && status !in answers) throw BackendException(status, "The backend answered $status.", tag = tag(response.body()))
         return response
     }
+
+    private fun tag(body: String?): String? = runCatching {
+        (json.parseToJsonElement(body.orEmpty()) as? JsonObject)?.get("_tag")?.jsonPrimitive?.content
+    }.getOrNull()
+
+    // A path segment the backend reads back whole: its ids are letters, digits, dashes, underscores and colons.
+    private fun segment(value: String) = value.also { require(it.matches(Regex("[A-Za-z0-9_:-]{1,64}"))) { "Not an id: $it" } }
 
     private fun signIn(): String {
         val challenge = reach { http.send(auth("/api/auth/minecraft/challenge", "{}"), BodyHandlers.ofString()) }

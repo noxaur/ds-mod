@@ -7,6 +7,7 @@ import io.github.noxaur.dsmod.core.config.Fold
 import io.github.noxaur.dsmod.core.config.KeyBind
 import io.github.noxaur.dsmod.core.config.Kind
 import io.github.noxaur.dsmod.core.config.Number
+import io.github.noxaur.dsmod.core.config.Order
 import io.github.noxaur.dsmod.core.config.Pick
 import io.github.noxaur.dsmod.core.config.Setting
 import io.github.noxaur.dsmod.core.config.Span
@@ -42,6 +43,9 @@ import org.lwjgl.glfw.GLFW
  * Every row gets the same behaviors, whatever its kind: the changed marker, dimming, a summary while closed, the
  * keyboard, a tooltip when its text is cut short, the words of a search painted where they match, and narration
  * through [narration], which the host adds as a widget. `controls.md` has each kind's conventions.
+ *
+ * An ordered list's entries are lines of their own under its row, each with the list as its setting and its place
+ * in [Line.entry], so the mouse, the keys and narration reach them as they reach rows.
  */
 class SettingRows(
     /** The rows that are open, which the host keeps across screens. */
@@ -62,7 +66,7 @@ class SettingRows(
         val extraX: Int, val extraWidth: Int, val markerX: Int, val markerY: Int,
     )
 
-    private class Line(val setting: Setting, val x: Int, val y: Int, val width: Int, val heading: Boolean, val rule: Boolean) {
+    private class Line(val setting: Setting, val x: Int, val y: Int, val width: Int, val heading: Boolean, val rule: Boolean, val entry: Int = -1) {
         var height = 0
         var nameX = 0
         var name: Component = Component.empty()
@@ -80,6 +84,13 @@ class SettingRows(
         var ew = 0
 
         var open = false
+
+        /** Whether an ordered list's entry shows, and whether it is the last shown one, which cannot hide. */
+        var on = false
+        var locked = false
+
+        /** How wide a closed ordered list's summary may be. */
+        var room = 0
         var guideTo = 0
         var changed = false
         var dimmed = false
@@ -100,6 +111,9 @@ class SettingRows(
         var resetTip: Tip? = null
 
         val bottom get() = y + height
+
+        /** What names this line across layouts: the row's id, and an entry's place after it. */
+        val key get() = if (entry < 0) setting.id else "${setting.id}#$entry"
     }
 
     private val lines = ArrayList<Line>()
@@ -132,6 +146,12 @@ class SettingRows(
     }
 
     private var dragging: Line? = null
+
+    /** An entry pressed and not yet dragged: where the press was, whether it toggles on release, and the list before it moved. */
+    private var pressY = 0.0
+    private var moved = false
+    private var toggleOnRelease = false
+    private var beforeDrag: Pair<List<Any?>, List<Any?>>? = null
     private var menu: AbstractWidget? = null
     private var menuOrigin = 0
     private var editor: KitTextField? = null
@@ -145,8 +165,8 @@ class SettingRows(
      */
     var found: MutableSet<String> = HashSet()
 
-    /** Whether a menu, a field or a key button has the keys, which the host then hands over before its own. */
-    val capturing get() = menu != null || editor != null || recorder != null
+    /** Whether a menu, a field, a key button or an entry's drag has the keys, which the host then hands over before its own. */
+    val capturing get() = menu != null || editor != null || recorder != null || (dragging?.entry ?: -1) >= 0
 
     /** The words of the search the rows show, painted where a row's text matches them. The host sets them on each layout. */
     var words: List<String> = emptyList()
@@ -201,8 +221,8 @@ class SettingRows(
     }
 
     fun begin() {
-        focusId = lines.getOrNull(focus)?.setting?.id
-        spokenId = lines.getOrNull(spoken)?.setting?.id
+        focusId = lines.getOrNull(focus)?.key
+        spokenId = lines.getOrNull(spoken)?.key
         lines.clear()
         dragging = null
         menu = null
@@ -219,9 +239,18 @@ class SettingRows(
             measure(line)
             lines += line
             at += line.height
-            if (setting.children.isNotEmpty() && (setting.id in opened || setting.id in found)) {
+            if ((setting.children.isNotEmpty() || setting is Order<*>) && (setting.id in opened || setting.id in found)) {
                 line.open = true
-                at = add(setting.children, x + INDENT, at, width - INDENT)
+                if (setting is Order<*>) {
+                    for (entry in setting.entries.indices) {
+                        val e = Line(setting, x + INDENT, at, width - INDENT, false, false, entry)
+                        measure(e)
+                        lines += e
+                        at += e.height
+                    }
+                } else {
+                    at = add(setting.children, x + INDENT, at, width - INDENT)
+                }
                 line.guideTo = at
                 at += OPEN_BELOW
             }
@@ -242,8 +271,8 @@ class SettingRows(
     }
 
     fun end() {
-        focus = focusId?.let { id -> lines.indexOfFirst { it.setting.id == id } } ?: -1
-        spoken = spokenId?.let { id -> lines.indexOfFirst { it.setting.id == id } } ?: -1
+        focus = focusId?.let { id -> lines.indexOfFirst { it.key == id } } ?: -1
+        spoken = spokenId?.let { id -> lines.indexOfFirst { it.key == id } } ?: -1
         if (keys && focus < 0 && lines.isNotEmpty()) focus = 0
         refresh()
     }
@@ -253,6 +282,15 @@ class SettingRows(
         val s = line.setting
         val inner = line.width - PAD * 2
         var reserve = 0
+        if (line.entry >= 0) {
+            line.height = ENTRY_HEIGHT
+            line.nameX = line.x + PAD + GRIP_ROOM
+            line.cw = Kit.SWITCH_WIDTH
+            line.ch = Kit.SWITCH_HEIGHT
+            line.cx = line.x + line.width - PAD - line.cw
+            line.cy = line.y + (ENTRY_HEIGHT - line.ch) / 2
+            return
+        }
         when (s) {
             is Switch -> {
                 line.cw = Kit.SWITCH_WIDTH
@@ -288,6 +326,13 @@ class SettingRows(
             is Action -> {
                 line.cw = font.width(s.button) + 16
                 line.ch = Kit.BUTTON_HEIGHT
+            }
+            is Order<*> -> {
+                line.cw = SETTINGS
+                line.ch = SETTINGS
+                // The summary takes at most a third of a narrow row, so the name and description keep their room.
+                line.room = minOf(ORDER_SUMMARY, inner / 3)
+                reserve = line.room + Kit.GAP
             }
             is Fold -> Unit
         }
@@ -349,8 +394,15 @@ class SettingRows(
     fun refresh() {
         for (line in lines) {
             val s = line.setting
-            line.changed = s.changed
+            line.changed = line.entry < 0 && s.changed
             line.dimmed = !line.heading && s.dimmed
+            if (s is Order<*> && line.entry >= 0) {
+                line.label = s.label(s.entries[line.entry])
+                line.name = marked(fit(line.label, line.cx - CONTROL_GAP - line.nameX), muted = false)
+                line.on = s.shown(line.entry)
+                line.locked = !s.canSwitch(line.entry)
+                continue
+            }
             when (s) {
                 is Switch -> {
                     line.muted = if (line.ew > 0 && !line.open) fit(s.closed(Keys::name), SUMMARY) else ""
@@ -387,6 +439,10 @@ class SettingRows(
                     line.mutedX = line.x + line.width - 2 - FOLD_PAD - font.width(line.muted)
                 }
                 is Action -> line.label = s.button
+                is Order<*> -> {
+                    line.muted = if (line.open) "" else fit(s.summary(Keys::name), line.room)
+                    line.mutedX = line.cx - Kit.GAP - font.width(line.muted)
+                }
             }
         }
     }
@@ -411,6 +467,9 @@ class SettingRows(
 
     private fun extraHeight(line: Line) = if (line.setting is Number) Kit.BUTTON_HEIGHT else SETTINGS
 
+    /** Whether the mouse is on an entry's grip, which drags it. */
+    private fun overGrip(line: Line, mouseX: Double) = line.entry >= 0 && mouseX < line.nameX - 1
+
     private fun markerY(line: Line) = top(line) + if (line.setting is Fold) 2 + (FOLD_HEIGHT - 3) / 2 else if (line.heading) 2 + 2 else NAME_TOP + 2
 
     private fun overMarker(line: Line, mouseX: Double, mouseY: Double) = line.changed && inside(mouseX, mouseY, line.nameX - 6, markerY(line) - 3, 6, 9)
@@ -427,9 +486,9 @@ class SettingRows(
         return -1
     }
 
-    /** Where the row [id] is, if it is laid out, so a link or a test can find it. */
-    fun spot(id: String): Spot? {
-        val l = lines.firstOrNull { it.setting.id == id } ?: return null
+    /** Where the row [id] is, or the line of its ordered list's [entry], if it is laid out, so a link or a test can find it. */
+    fun spot(id: String, entry: Int = -1): Spot? {
+        val l = lines.firstOrNull { it.setting.id == id && it.entry == entry } ?: return null
         return Spot(l.x, top(l), l.width, l.height, l.cx, origin + l.cy, l.cw, l.ch, l.ex, l.ew, l.nameX - 5, markerY(l))
     }
 
@@ -445,7 +504,7 @@ class SettingRows(
         val menu = menu
         val free = menu == null || !menu.isMouseOver(mx, my)
         val hovered = if (free && dragging == null) lineAt(mx, my) else -1
-        val hoverLine = lines.getOrNull(hovered)?.setting?.id
+        val hoverLine = lines.getOrNull(hovered)?.key
         if (hoverLine != hoverId) {
             hoverId = hoverLine
             if (hovered >= 0) spoken = hovered
@@ -480,6 +539,21 @@ class SettingRows(
         }
         if (line.rule) Kit.rule(g, line.x, top - 1, line.width, onWell = true)
         if (line.open) Kit.guide(g, line.x + GUIDE, top + line.height, line.guideTo - line.bottom)
+        if (line.entry >= 0) {
+            val held = dragging === line
+            if (lit || held) Kit.wellRow(g, line.x, top, line.width, line.height)
+            if (held) Kit.ring(g, line.x, top, line.width, line.height, Kit.theme.hoverOutline)
+            Kit.grip(g, line.x + PAD, top + (line.height - Kit.GRIP_HEIGHT) / 2, lit || held)
+            g.text(font, line.name, line.nameX, top + (line.height - 8) / 2, -1, true)
+            val state = when {
+                line.locked -> Kit.State.OFF
+                lit && !(hovered && overGrip(line, mx)) -> Kit.State.HOVER
+                else -> Kit.State.IDLE
+            }
+            Kit.switch(g, line.cx, origin + line.cy, line.on, state)
+            if (held || hovered && overGrip(line, mx)) g.requestCursor(CursorTypes.RESIZE_NS) else if (hovered && !line.locked) g.requestCursor(CursorTypes.POINTING_HAND)
+            return
+        }
         if (s is Fold) {
             val state = if (lit) Kit.State.HOVER else Kit.State.IDLE
             Kit.button(g, line.x + 2, top + 2, line.width - 4, FOLD_HEIGHT, state, "", 0)
@@ -554,6 +628,11 @@ class SettingRows(
                 Kit.button(g, line.cx, cy, line.cw, line.ch, controlState, line.label, font.width(line.label))
                 if (overControl) g.requestCursor(CursorTypes.POINTING_HAND)
             }
+            is Order<*> -> {
+                Kit.button(g, line.cx, cy, SETTINGS, SETTINGS, controlState, if (line.open) Icon.DOWN else Icon.RIGHT)
+                if (line.muted.isNotEmpty()) g.text(font, line.muted, line.mutedX, top + (line.height - 8) / 2, Role.MUTED.argb(), true)
+                if (hovered) g.requestCursor(CursorTypes.POINTING_HAND)
+            }
             is Fold -> Unit
         }
     }
@@ -565,6 +644,10 @@ class SettingRows(
                 font.split(text { body("Default: "); value(s.default(Keys::name) ?: "Each part's own") }.toComponent(), TIP_WIDTH) +
                     font.split(text { action("Click to reset.") }.toComponent(), TIP_WIDTH),
             ).also { line.resetTip = it }
+        }
+        if (line.entry >= 0) {
+            if (!line.locked) return null
+            return line.tip ?: Tip(font.split(text { body(line.label); muted(" stays, since one must show.") }.toComponent(), TIP_WIDTH)).also { line.tip = it }
         }
         if (!line.cut && !line.heading) return null
         return line.tip ?: Tip(
@@ -599,6 +682,18 @@ class SettingRows(
         if (event.button() == 0 && overMarker(line, mx, my)) return true.also { reset(line) }
         val right = event.button() == 1
         val shift = Keys.shift(event)
+        val order = line.setting
+        if (order is Order<*> && line.entry >= 0) {
+            if (right) return true
+            if (overControl(line, mx, my)) return true.also { change { order.switch(line.entry) } }
+            // A press on the grip or the name picks the entry up, and one that never moves toggles it, as a switch row's press does.
+            dragging = line
+            pressY = my
+            moved = false
+            toggleOnRelease = !overGrip(line, mx)
+            beforeDrag = order.entries.toList() to order.value.toList()
+            return true
+        }
         when (val s = line.setting) {
             is Switch -> when {
                 right -> Unit
@@ -627,13 +722,22 @@ class SettingRows(
                 }
             }
             is Action -> if (!right && overControl(line, mx, my)) s.run()
-            is Fold -> if (!right) fold(line, !line.open)
+            is Fold, is Order<*> -> if (!right) fold(line, !line.open)
         }
         return true
     }
 
     fun mouseDragged(event: MouseButtonEvent, dx: Double, dy: Double): Boolean {
         val line = dragging ?: return false
+        if (line.entry >= 0) {
+            if (!moved && Math.abs(event.y - pressY) < DRAG_START) return true
+            moved = true
+            // The entry moves to the line under the mouse, and stays at the list's ends past them.
+            val first = lines.indexOfFirst { it.setting === line.setting && it.entry == 0 }
+            val to = Math.floorDiv((event.y - top(lines[first])).toInt(), ENTRY_HEIGHT)
+            moveEntry(line, to)
+            return true
+        }
         when (line.setting) {
             is Number -> slide(line, event.x)
             is Span -> {
@@ -649,6 +753,11 @@ class SettingRows(
         recorder?.release(event.button())
         val line = dragging ?: return false
         dragging = null
+        if (line.entry >= 0) {
+            beforeDrag = null
+            if (!moved && toggleOnRelease) change { (line.setting as Order<*>).switch(line.entry) }
+            return true
+        }
         line.slider?.let {
             it.mouseReleased(event)
             take(line)
@@ -693,10 +802,35 @@ class SettingRows(
             swallow = true
             return true
         }
+        dragging?.takeIf { it.entry >= 0 }?.let { line ->
+            // Escape during a drag puts the list back, and the drag keeps every other key until it ends.
+            if (event.isEscape) {
+                beforeDrag?.let { (entries, shown) -> change { restore(line.setting as Order<*>, entries, shown) } }
+                dragging = null
+                beforeDrag = null
+            }
+            return true
+        }
         if (!keys || lines.isEmpty()) return false
         val line = lines.getOrNull(focus) ?: return false
         val s = line.setting
         val shift = Keys.shift(event)
+        // Up, Down and Escape on an entry do what they do on any row, and Alt with Up or Down moves it.
+        if (s is Order<*> && line.entry >= 0 && (Keys.alt(event) || !(event.isUp || event.isDown || event.isEscape))) {
+            when {
+                event.isUp || event.isDown -> moveEntry(line, line.entry + if (event.isUp) -1 else 1)
+                event.isLeft -> {
+                    // Left steps out to the list's row, as it steps out of a section's subsections.
+                    focus = lines.indexOfFirst { it.setting === s && it.entry < 0 }
+                    spoken = focus
+                }
+                event.isSelection || event.isConfirmation -> change { s.switch(line.entry) }
+                event.key() == GLFW.GLFW_KEY_BACKSPACE -> reset(line)
+                else -> return false
+            }
+            shownFocus = true
+            return true
+        }
         when {
             event.isUp || event.isDown -> {
                 focus = (focus + if (event.isUp) -1 else 1).coerceIn(0, lines.lastIndex)
@@ -719,7 +853,7 @@ class SettingRows(
                         it.keyPressed(event)
                         take(line)
                     }
-                    else -> if (s.children.isNotEmpty()) fold(line, by > 0) else return false
+                    else -> if (s.children.isNotEmpty() || s is Order<*>) fold(line, by > 0) else return false
                 }
             }
             event.key() == GLFW.GLFW_KEY_BACKSPACE -> reset(line)
@@ -775,9 +909,27 @@ class SettingRows(
             is KeyBind -> record(line)
             is Span -> line.slider?.selectNext()
             is Action -> s.run()
-            is Fold -> fold(line, !line.open)
+            is Fold, is Order<*> -> fold(line, !line.open)
         }
     }
+
+    /** Moves the entry on [line] to the place [to], with the keys or the mouse following it, and shows where it went. */
+    private fun moveEntry(line: Line, to: Int) {
+        val order = line.setting as Order<*>
+        val at = order.move(line.entry, to)
+        if (at == line.entry) return
+        val target = lines.indexOfFirst { it.setting === order && it.entry == at }
+        if (dragging === line) dragging = lines[target]
+        if (focus == lines.indexOf(line)) {
+            focus = target
+            spoken = target
+        }
+        changed()
+        lines[target].let { scrollTo(it.y - FOCUS_MARGIN, it.bottom + FOCUS_MARGIN) }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun restore(order: Order<*>, entries: List<Any?>, shown: List<Any?>) = (order as Order<Any?>).restore(entries, shown)
 
     private inline fun change(block: () -> Unit) {
         block()
@@ -875,6 +1027,12 @@ class SettingRows(
         (menu ?: editor ?: recorder)?.let { return it.updateNarration(output) }
         val at = if (spoken >= 0) spoken else focus
         val line = lines.getOrNull(at) ?: return
+        val order = line.setting as? Order<*>
+        if (order != null && line.entry >= 0) {
+            output.add(NarratedElementType.TITLE, order.entryNarration(line.entry))
+            output.add(NarratedElementType.HINT, ENTRY_HINT)
+            return
+        }
         output.add(NarratedElementType.TITLE, line.setting.narration(Keys::name, line.open))
         if (lines.size > 1) output.add(NarratedElementType.POSITION, I18n.get("narrator.position.list", at + 1, lines.size))
         output.add(NarratedElementType.HINT, line.setting.description)
@@ -906,5 +1064,10 @@ class SettingRows(
         private const val FOLD_PAD = 5
         private const val FOCUS_MARGIN = 4
         private const val TIP_WIDTH = 170
+        private const val ORDER_SUMMARY = 110
+        private const val ENTRY_HEIGHT = 16
+        private const val GRIP_ROOM = Kit.GRIP_WIDTH + 6
+        private const val DRAG_START = 2.0
+        private const val ENTRY_HINT = "Drag it by its grip, or press Alt with Up or Down, to move it."
     }
 }

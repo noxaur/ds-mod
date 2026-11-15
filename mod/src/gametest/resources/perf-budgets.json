@@ -40,6 +40,18 @@
       "unit": "µs",
       "cap": 50
     },
+    "item-sights": {
+      "group": "Tick",
+      "label": "Item sightings, 36 inventory slots",
+      "unit": "µs",
+      "cap": 15
+    },
+    "pet-poll": {
+      "group": "Tick",
+      "label": "Pet poll, armor stands within 6 blocks",
+      "unit": "µs",
+      "cap": 50
+    },
     "features": {
       "group": "Tick",
       "label": "Feature handlers and readouts per tick",

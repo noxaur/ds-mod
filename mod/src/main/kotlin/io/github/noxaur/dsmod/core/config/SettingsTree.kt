@@ -85,39 +85,86 @@ object SettingsTree {
 
     private fun declare(c: DsModConfig): List<SettingSection> {
         val sections = Sections().apply {
-            section("The End", Role.EPIC) {
-                group("Dragon") {
-                    switch(c.end::dragonTimer, "Dragon Timer", "Show when the egg returns, how many eyes are placed and how long the dragon has been alive.")
-                    switch(c.end::fireballAlert, "Fireball Alert", "Show a title and play a sound when a dragon is about to throw fireballs.")
-                    switch(c.end::protectPlacedEyes, "Protect Placed Eyes", "Ignore a second click on the altar frame you just clicked with an eye.")
+            // What applies everywhere comes first, then each area of the game, and Contribute last, as in DsModConfig.
+            section("General", Role.VALUE) {
+                val g = c.general
+                group("Server") {
+                    switch(g::onlyOnDragSim, "DragSim Only", "Run ds-mod only on dragsim.co.")
                 }
-                group("Protector") {
-                    switch(c.end::golemStatus, "Golem Status", "Show the Protector's stage and the kills left before it emerges.")
-                    switch(c.end::bossBeacon, "Boss Beacon", "Show a beam where the Endstone Protector will emerge.") {
-                        span(c.end::beamSections, "Beam Timing", "Pick when the beam shows, in zealots killed out of 200.", max = 200, ticks = listOf(50, 100, 150))
-                        switch(c.end::beamInFight, "During the Fight", "Keep the beam while the Protector is up.")
-                    }
+                group("World") {
+                    switch(g::fullbright, "Fullbright", "Light caves and nights as brightly as day.")
+                    switch(g::explosionParticleHider, "Explosion Particles", "Hide the clouds that explosions throw up.")
                 }
-                group("Drops") {
-                    switch(c.end::bossDrops, "Boss Drops", "Show your damage rank and loot from the last dragon or Protector.")
-                    switch(c.end::zealotTracker, "Zealot Tracker", "Count your Summoning Eyes and other rare drops.")
+                group("Animations", switch = toggle(g::animations, "Animations", "Shape how your held item swings and sits with the settings below.")) {
+                    choice(g::swingStyle, "Swing Style", "Pick how your held item moves when you swing.")
+                    number(g::swingSpeed, "Swing Speed", "Speed your swing up, or slow it down below 1.", 0.1f..3f, step = 0.1f, unit = "x")
+                    switch(g::ignoreHaste, "Ignore Haste", "Swing at the same pace under Haste or Mining Fatigue.")
+                    switch(g::noEquipReset, "No Equip Reset", "Keep your held item up instead of dipping after a swing or use.")
+                    number(g::itemSize, "Item Size", "Grow or shrink your held item.", 0.1f..2f, step = 0.05f, unit = "x")
+                    number(g::itemSide, "Item Side", "Move your held item out to the side, or in below zero.", -1f..1f, step = 0.05f)
+                    number(g::itemHeight, "Item Height", "Raise your held item, or lower it below zero.", -1f..1f, step = 0.05f)
+                    number(g::itemDepth, "Item Depth", "Push your held item away, or bring it nearer below zero.", -1f..1f, step = 0.05f)
+                }
+                group("Profile Viewer", switch = toggle(g::profileViewer, "Profile Viewer", "Look up any player's profile with /pv and their name.")) {
+                    switch(g::profileNames, "Click Names", "Click a player's name in chat to open their profile.")
                 }
             }
-            section("Combat", Role.BAD) {
-                group("Slayers") {
-                    switch(c.slayer::slayerTracker, "Slayer Tracker", "Count the slayer bosses you slay and time each.")
-                    switch(c.slayer::slayerBossAlert, "Slayer Boss Alert", "Show a title and play a sound when your slayer boss spawns.")
+            section("Camera", Role.ACTION) {
+                val g = c.general
+                group("Third Person", switch = toggle(g::camera, "Camera", "Shape the third-person view with the settings below.")) {
+                    number(g::cameraDistance, "Distance", "Set how many blocks the third-person camera sits from you.", 1f..50f, step = 0.5f)
+                    number(g::cameraHeight, "Height", "Raise the third-person camera, or lower it below zero.", -2f..3f, step = 0.1f)
+                    number(g::cameraTilt, "Tilt", "Angle the third-person camera down, or up below zero.", -45f..45f, step = 1f, unit = "°")
+                    choice(g::cameraViews, "F5 Views", "Pick which views F5 goes through.")
+                    number(g::cameraSmoothing, "Smoothing", "Slide the camera out when you leave first person.", 0f..100f, step = 5f)
                 }
-                group("Loot") {
-                    switch(c.loot::lootAlerts, "Loot Alerts", "Show a title and play a sound when you get a drop of the chosen tier or better.") {
-                        choice(c.loot::lootAlertTier, "Alert Tier", "Pick the lowest drop tier that alerts you.")
-                    }
+                group("Free Look", switch = toggle(g::freeLook, "Free Look", "Look around in third person while you keep facing ahead.")) {
+                    keys(g::freeLookKey, "Key", "Pick the key or mouse button for Free Look.")
+                    choice(g::freeLookMode, "Mode", "Pick Hold to look while the key is down, or Toggle.")
+                }
+            }
+            section("Binds", Role.DIVINE) {
+                val g = c.general
+                group(null) {
+                    val binds = switch(g::commandBinds, "Command Binds", "Send a command, such as /warp end, with a key or a few keys.")
+                    action(g::editBinds, "Edit Binds", "Add your binds, pick their keys and choose where each works.", button = "Edit", dependsOn = binds)
+                    number(g::sequenceGap, "Sequence Gap", "Set how many milliseconds a key sequence waits for its next key.", 50f..1000f, step = 50f, unit = " ms", dependsOn = binds)
+                }
+            }
+            section("Interface", Role.MUTED) {
+                val hud = c.hud
+                val g = c.general
+                group("Theme") {
+                    pick(hud::theme, "Theme", "Pick the colors of ds-mod's screens and controls.") { Look.Swatch(it) }
+                }
+                group("HUD") {
+                    number(hud::scale, "Scale", "Make every HUD block bigger or smaller.", 0.5f..3f, step = 0.25f, unit = "x", id = "hudScale")
+                    switch(hud::background, "Background", "Show a dark plate behind the HUD, so it reads over a bright world.", id = "hudBackground")
+                    action(hud::edit, "Move HUD", "Drag a block to move it, and scroll over it to resize it.", button = "Move", id = "moveHud")
+                }
+                group("Equipment Display", switch = toggle(g::equipmentDisplay, "Equipment Display", "Show your armor and pet on the HUD.")) {
+                    order(g::equipmentPieces, "Pieces", "Pick the pieces to show, and drag them into order.")
+                    choice(g::equipmentLayout, "Layout", "Line the pieces up in a row or a column.")
+                    choice(g::equipmentLook, "Look", "Show the pieces on the plate, on nothing, or in hotbar slots.")
+                    choice(g::equipmentPlacement, "Placement", "Keep the pieces where you put them, or beside your hotbar.")
+                    choice(g::petLook, "Pet Look", "Show your pet as its head, or as its name and level.")
+                    choice(g::petPosition, "Pet Position", "Put your pet among the armor, or on a row above or below it.")
+                }
+                group("Inventory Preview", switch = toggle(g::inventoryPreview, "Inventory Preview", "Show a grid of the items in your inventory on the HUD.")) {
+                    order(g::inventoryRows, "Rows", "Pick the rows to show, and drag them into order.")
+                    choice(g::inventoryLook, "Look", "Show the items on the plate, on nothing, or as your inventory.")
+                }
+            }
+            section("Chat", Role.WARNING) {
+                group(null) {
+                    switch(c.chat::abilitySpam, "Ability Spam", "Hide the message that an ability is on cooldown.")
+                    switch(c.chat::copyChat, "Copy Chat", "Right-click messages to copy them as text, format codes or JSON.")
                 }
             }
             section("Inventory", Role.GOOD) {
                 val inv = c.inventory
                 group("Rarity Marks", switch = toggle(inv::rarityMarks, "Rarity Marks", "Mark each item's slot in the color of its rarity.")) {
-                    pick(inv::rarityPreset, "Style", "Pick a ready-made look, or Custom for the one you build below.") { Look.Slots(it.style ?: inv.inventoryStyle) }
+                    pick(inv::rarityPreset, "Style", "Pick a look for the marks, or Custom for your own.") { Look.Slots(it.style ?: inv.inventoryStyle) }
                     fold("customLook", "Custom Look", "Build your own look from its parts, which switches Style to Custom.") {
                         // A part changes the look the player sees and makes it their own, as the Rarity Style screen does.
                         fun <T> part(name: String, get: (SlotStyle) -> T, with: SlotStyle.(T) -> SlotStyle) =
@@ -138,81 +185,67 @@ object SettingsTree {
                     }
                     switch(inv::markCommon, "Common Items", "Mark common items too.")
                     switch(inv::hotbarMarks, "Hotbar", "Mark your hotbar as well.")
-                    action(inv::editRarityStyle, "Edit Style", "Build a look beside your inventory, and give the hotbar its own.", button = "Edit")
+                    action(inv::editRarityStyle, "Edit Style", "Build your own look for the marks, on your own items.", button = "Edit")
                 }
                 group("Protection") {
-                    switch(inv::slotLock, "Slot Lock", "Lock slots and items of your inventory, so no click or drop key moves them.") {
-                        keys(inv::slotLockKey, "Slot Key", "Lock the slot under the mouse, or hold it and move to another slot to link the two.")
-                        keys(inv::itemLockKey, "Item Key", "Lock the item under the mouse, wherever you move it.")
+                    switch(inv::slotLock, "Slot Lock", "Lock inventory slots and items so a misclick cannot move them.") {
+                        keys(inv::slotLockKey, "Slot Key", "Pick the key or mouse button that locks the slot under the mouse.")
+                        keys(inv::itemLockKey, "Item Key", "Pick the key that locks an item that does not stack.")
                     }
-                    switch(inv::armorSwapGuard, "Armor Swap Guard", "Stop a right click from swapping the armor in your hand onto you, unless you sneak.")
+                    switch(inv::armorSwapGuard, "Armor Swap Guard", "Stop a right click from swapping on armor, unless you sneak.")
                 }
             }
             section("Menus", Role.LEGENDARY) {
+                val inv = c.inventory
                 group("Look") {
-                    switch(c.inventory::themedMenus, "Themed Menus", "Draw menus, your inventory and plain tooltips in your theme.")
-                    switch(c.inventory::stableMenus, "Stable Menus", "Keep the bottom row of every menu in one place.")
-                    switch(c.inventory::hideFiller, "Hide Filler", "Hide the blank glass panes that fill out a menu.")
-                    switch(c.inventory::keepCursor, "Keep Cursor", "Leave the cursor where it was when one menu opens another.")
+                    switch(inv::themedMenus, "Themed Menus", "Draw menus and plain tooltips in the Theme under Interface.") {
+                        choice(inv::menuLook, "Menu Look", "Draw themed menus solid, or as glass that shows the world.")
+                        number(inv::glassOpacity, "Glass Opacity", "Set how dark the glass is, from clear at 0 to solid at 100.", 0f..100f, step = 5f)
+                    }
+                    switch(inv::stableMenus, "Stable Menus", "Keep Go Back, Close and your inventory in place in every menu.")
+                    switch(inv::hideFiller, "Hide Filler", "Hide the blank glass panes that pad out menus.")
+                    switch(inv::keepCursor, "Keep Cursor", "Leave the cursor where it was when one menu opens another.")
                 }
-                group("Better UI", switch = toggle(c.betterUi::enabled, "Better UI", "Add ds-mod's tabs and buttons to the game's menus.", id = "betterUi")) {
-                    switch(c.betterUi::backButtons, "Back Buttons", "Add Go Back to a menu that has none.")
-                    switch(c.betterUi::menuTabs, "Menu Tabs", "Add tabs to menus that send your commands, and a search tab.") {
-                        action(c.betterUi::editTabs, "Edit Tabs", "Place, add and change the tabs: what each sends, its item and its name.", button = "Edit")
+                group("Better UI", switch = toggle(c.betterUi::enabled, "Better UI", "Turn everything below on or off at once.", id = "betterUi")) {
+                    switch(c.betterUi::backButtons, "Back Buttons", "Add Go Back to menus without one, by resending your last command.")
+                    switch(c.betterUi::menuTabs, "Menu Tabs", "Add tabs that send your commands, and a search, to every menu.") {
+                        action(c.betterUi::editTabs, "Edit Tabs", "Add, move and change your tabs.", button = "Edit")
                     }
                 }
             }
-            section("Chat", Role.WARNING) {
+            section("The End", Role.EPIC) {
+                group("Dragon") {
+                    switch(c.end::dragonTimer, "Dragon Timer", "Show the egg timer, the eyes placed and the dragon's time alive.")
+                    switch(c.end::fireballAlert, "Fireball Alert", "Alert you when a dragon is about to throw fireballs.")
+                    switch(c.end::protectPlacedEyes, "Protect Placed Eyes", "Ignore a quick second click that would take a placed eye back.")
+                }
+                group("Protector") {
+                    switch(c.end::golemStatus, "Golem Status", "Show the Protector's stage and the kills left until it emerges.")
+                    switch(c.end::bossBeacon, "Boss Beacon", "Show a beam where the Endstone Protector will emerge.") {
+                        span(c.end::beamSections, "Beam Timing", "Pick when the beam shows, in zealots killed out of 200.", max = 200, ticks = listOf(50, 100, 150))
+                        switch(c.end::beamInFight, "During the Fight", "Keep the beam while the Protector is up.")
+                    }
+                }
+                group("Drops") {
+                    switch(c.end::bossDrops, "Boss Drops", "Show your rank, damage and loot from the last boss fight.")
+                    switch(c.end::zealotTracker, "Zealot Tracker", "Count your Summoning Eyes and zealot kills, per hour and all-time.")
+                }
+            }
+            section("Combat", Role.BAD) {
+                group("Slayers") {
+                    switch(c.slayer::slayerTracker, "Slayer Tracker", "Count the slayer bosses you slay and time each from spawn to slain.")
+                    switch(c.slayer::slayerBossAlert, "Slayer Boss Alert", "Alert you when your slayer boss spawns.")
+                }
+                group("Loot") {
+                    switch(c.loot::lootAlerts, "Loot Alerts", "Alert you to drops of the chosen tier or better.") {
+                        choice(c.loot::lootAlertTier, "Alert Tier", "Pick the lowest drop tier that alerts you.")
+                    }
+                }
+            }
+            section("Contribute", Role.RARE) {
                 group(null) {
-                    switch(c.chat::abilitySpam, "Ability Spam", "Hide the message the server sends each time you use an ability that is on cooldown.")
-                    switch(c.chat::copyChat, "Copy Chat", "Select chat messages with the right mouse button and copy them.")
-                }
-            }
-            section("Camera", Role.ACTION) {
-                val g = c.general
-                group("Third Person", switch = toggle(g::camera, "Camera", "Shape the third-person view, which is the game's own at the defaults.")) {
-                    number(g::cameraDistance, "Distance", "Set how many blocks the camera sits from you.", 1f..50f, step = 0.5f)
-                    number(g::cameraHeight, "Height", "Raise the camera by this many blocks, or lower it below zero.", -2f..3f, step = 0.1f)
-                    number(g::cameraTilt, "Tilt", "Angle the camera down, or up below zero, while your aim stays where it is.", -45f..45f, step = 1f, unit = "°")
-                    choice(g::cameraViews, "F5 Views", "Pick which views F5 goes through.")
-                    number(g::cameraSmoothing, "Smoothing", "Slide the camera out when you leave first person, where zero jumps at once.", 0f..100f, step = 5f)
-                }
-                group("Free Look", switch = toggle(g::freeLook, "Free Look", "Look around in third person while you keep facing where you were.")) {
-                    keys(g::freeLookKey, "Key", "Pick the key or mouse button for Free Look.")
-                    choice(g::freeLookMode, "Mode", "Hold the key to look around, or press it once to start and again to stop.")
-                }
-            }
-            section("Binds", Role.DIVINE) {
-                val g = c.general
-                group(null) {
-                    val binds = switch(g::commandBinds, "Command Binds", "Send a command with a key, keys held together or keys in order.")
-                    action(g::editBinds, "Edit Binds", "Name each bind, pick its keys, and choose where it works.", button = "Edit", dependsOn = binds)
-                    number(g::sequenceGap, "Sequence Gap", "Set how long a bind whose keys go in order waits for its next key.", 50f..1000f, step = 50f, unit = " ms", dependsOn = binds)
-                }
-            }
-            section("Interface", Role.MUTED) {
-                val hud = c.hud
-                group("Theme") {
-                    pick(hud::theme, "Theme", "Pick the colors of ds-mod's screens and controls.") { Look.Swatch(it) }
-                }
-                group("HUD") {
-                    number(hud::scale, "Scale", "Make every HUD block bigger or smaller.", 0.5f..3f, step = 0.25f, unit = "x", id = "hudScale")
-                    switch(hud::background, "Background", "Show a dark plate behind the HUD, so it reads over a bright world.", id = "hudBackground")
-                    action(hud::edit, "Move HUD", "Drag a block over the game to move it, and scroll over it to resize it.", button = "Move", id = "moveHud")
-                }
-            }
-            section("General", Role.VALUE) {
-                val g = c.general
-                group("Server") {
-                    switch(g::onlyOnDragSim, "DragSim Only", "Run ds-mod only while you play on dragsim.co.")
-                }
-                group("World") {
-                    switch(g::fullbright, "Fullbright", "Light the whole world, so caves and nights are as bright as day.")
-                    switch(g::explosionParticleHider, "Explosion Particles", "Hide the clouds that explosions throw up.")
-                }
-                group("Contribute") {
-                    action(c.contribute::open, "Requests", "See what ds-mod's developers ask players to record, and record it.", id = "requests")
-                    switch(c.contribute::reportUnknowns, "Report Unread Lines", "Send lines the mod could not read to ds-mod's developers, with player names removed.")
+                    action(c.contribute::open, "Requests", "See what ds-mod's developers ask players to record.", id = "requests")
+                    switch(c.contribute::reportGameData, "Report Game Data", "Send game data new to ds-mod to its developers, names removed.")
                 }
             }
         }.sections

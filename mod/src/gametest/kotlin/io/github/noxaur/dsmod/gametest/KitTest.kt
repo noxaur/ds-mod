@@ -19,8 +19,8 @@ import kotlin.reflect.KClass
 class KitTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.screenWidth to it.window.screenHeight }
-        // The gallery is 575x335 GUI pixels, which needs more room than the test window has at GUI scale 2.
-        context.input.resizeWindow(1280, 720)
+        // The gallery is 575x335 GUI pixels with a glass strip 47 below it, which needs more room than the test window has at GUI scale 2.
+        context.input.resizeWindow(1280, 800)
         // An item needs a world's registries, and the gallery shows items in its slots.
         context.worldBuilder().create().use {
             context.setScreen { KitGalleryScreen() }

@@ -1,0 +1,131 @@
+{
+ "id": "pets",
+ "title": [
+  {
+   "text": "Pets"
+  }
+ ],
+ "columns": 9,
+ "slots": 9,
+ "hidden": false,
+ "items": [
+  {
+   "entry": null,
+   "material": "minecraft:player_head",
+   "count": 1,
+   "name": [
+    {
+     "text": "Golden Dragon",
+     "color": "#FFAA00"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "Combat Pet",
+      "color": "#AAAAAA"
+     }
+    ],
+    [],
+    [
+     {
+      "text": "Total XP: ",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "1,798,563,928",
+      "color": "#FFFFFF"
+     }
+    ],
+    [
+     {
+      "text": "Held Item: ",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "Lucky Clover",
+      "color": "#AA00AA"
+     }
+    ],
+    [
+     {
+      "text": "Skin: ",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "Ancient Golden Dragon Skin",
+      "color": "#FFFFFF"
+     }
+    ],
+    [
+     {
+      "text": "Candies Used: ",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "3",
+      "color": "#FFFFFF"
+     }
+    ],
+    [
+     {
+      "text": "Active",
+      "color": "#55FF55"
+     }
+    ],
+    [],
+    [
+     {
+      "text": "LEGENDARY",
+      "color": "#FFAA00",
+      "bold": true
+     }
+    ]
+   ],
+   "rarity": "LEGENDARY",
+   "glint": false,
+   "skullTexture": "eyJ0ZXh0dXJlcyI6IHsiU0tJTiI6IHsidXJsIjogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWJjMTIzIn19fQ=="
+  },
+  {
+   "entry": null,
+   "material": "minecraft:player_head",
+   "count": 1,
+   "name": [
+    {
+     "text": "Black Cat",
+     "color": "#AA00AA"
+    }
+   ],
+   "lore": [
+    [],
+    [
+     {
+      "text": "Total XP: ",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "0",
+      "color": "#FFFFFF"
+     }
+    ],
+    [],
+    [
+     {
+      "text": "EPIC",
+      "color": "#AA00AA",
+      "bold": true
+     }
+    ]
+   ],
+   "rarity": "EPIC",
+   "glint": false
+  },
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ]
+}

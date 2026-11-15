@@ -23,6 +23,7 @@ A field that no row should edit, such as a list an editor screen keeps, goes on 
 | Span | `span(c.end::beamSections, "Beam Timing", "Pick when the beam shows.", max = 200)` | Stretches of a scale, by `Sections`' rules |
 | Fold | `fold("customLook", "Custom Look", "Build your own look.") { .. }` | Rows the player rarely needs, under a bar |
 | Action | `action(hud::edit, "Move HUD", "Drag a block to move it.", button = "Move")` | A button that opens an editor screen, through a `Runnable` field `DsModClient` sets |
+| Order | `order(g::equipmentPieces, "Pieces", "Pick the pieces to show, and drag them into order.")` | Which values of an enum show and in what order, as a `MutableList` field, which MoulConfig edits with `@ConfigEditorDraggableList` |
 
 A group whose rows are one feature takes its switch beside the heading: `group("Free Look", switch = toggle(g::freeLook, "Free Look", "Look around in third person.")) { .. }`. A row that needs a switch elsewhere names it with `dependsOn`. Either one dims the row while the switch is off.
 
@@ -33,7 +34,7 @@ A row bound to part of a value, such as one part of a rarity style, takes a `Bin
 ## Wording
 
 - A name is Title Case, three words or fewer, and says what the setting is: "Slot Lock", "F5 Views".
-- A description is one sentence that starts with a verb and ends with a period. A row shows two lines of it and the rest in a tooltip, so put what matters first.
+- A description is one sentence that starts with a verb and ends with a period, in at most `Setting.DESCRIPTION_MAX` characters, so MoulConfig shows it at full size. A row shows two lines of it and the rest in a tooltip, so put what matters first. A row that is the same option as a `@ConfigOption` takes its wording.
 - A choice's values read in Title Case, from the enum's `toString`.
 
 ## Add a look

@@ -102,6 +102,18 @@ More rows the player rarely needs, under a raised bar with an arrow, as MoulConf
 - Closed, the bar sums up what is under it in muted text, such as `Gilded · Glow · None`.
 - Its changed marker shows when any row in it differs from its default, and a press on it resets them all.
 
+## Ordered list
+
+Which entries of a short list show, and in what order, such as the pieces of the equipment display. MoulConfig's draggable list, which SkyHanni uses for its text orders, is the peer: it lists the shown entries, a drag moves one, a plus adds a hidden one from a dropdown, a minus or a drag onto a bin removes one, a list that must keep one refuses to lose its last, and its search matches the entries. It takes no keys. ds-mod's lists every entry with a switch instead, so a hidden one is one press away and nothing sits behind a menu. `Order` in `core/config` holds its rules.
+
+- Closed, the row sums up the shown entries in order in muted text, such as `Helmet, Chestplate, Pet`. A press on the row, Enter, Space, or Right opens it under the row, behind a guide line, and Left closes it, as a fold does.
+- Each entry is a line of its own: a grip, the name, and a switch. A press on the switch or the name, Enter or Space shows or hides it, and it stays in its place, so showing it again puts it back where it was.
+- A press and drag on the grip or the name moves the entry to the line under the mouse, and the others make room as it passes. Past either end it stays at that end. The cursor shows an up and down resize over the grip and during the drag. Escape during the drag puts the list back.
+- Alt with Up or Down moves the entry the keys are on, and the keys follow it. Up and Down move between lines, and Left steps out to the row.
+- The last shown entry cannot hide: its switch is drawn off-limits, and its tooltip says why.
+- A search for an entry's name opens the list, so the hit shows.
+- The changed marker and Backspace reset the whole list, and the narrator says each entry's name, whether it is on, and its place, such as "Boots, switch, on, 4 of 5".
+
 ## Delete
 
 - A delete that cannot be undone asks for a second press on the same button, as SkyOcean's does. The first rings the button in `bad` and the screen's line says what the second will delete. A press anywhere else calls it off.
@@ -172,6 +184,16 @@ Browser tabs across the top of a pane, each one place of the screen with its own
 - A press in the sidebar takes the selected tab there, and Ctrl+press or a middle press opens it in a new tab after the selected one, in the background. Typing a search turns the selected tab into that search, as one step back.
 - The mouse's back and forward buttons and Alt+Left and Alt+Right walk the selected tab's history. Ctrl+Tab and Ctrl+Shift+Tab go to the next and previous tab, Ctrl+1 to Ctrl+8 to that tab, and Ctrl+9 to the last. On macOS the key is Cmd. These work in the search field too.
 - The tabs last until the game closes, as a browser's session does, so reopening the screen brings them back.
+
+## Turntable
+
+A model the player turns to look at, such as the player in the profile viewer. NEU's and Skyblocker's viewers only follow the mouse, so this is the mod's own; `Turntable` in `core/ui` holds its rules.
+
+- It turns slowly on its own, so the viewer sees all of it without a press.
+- A drag turns it: sideways around, and up and down within a limit, so it never turns over. On release it turns on from where it was let go.
+- Escape during a drag puts it back where the drag began, and does not close the screen.
+- With the mouse over it, the arrow keys turn it a step.
+- The cursor shows that it can be grabbed.
 
 ## Scrolling list
 

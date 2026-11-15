@@ -19,6 +19,7 @@ A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with 
 | Follow lines in chat | `DragonTimer` |
 | Read the tab list's info rows, or the sidebar's the same way | `GolemStatus` |
 | Read items and mark slots | `RarityMarks` |
+| Show items on the HUD, from the player's own inventory or an entity near them | `EquipmentDisplay` |
 | Change how the game draws, reading nothing from the server | `Fullbright` |
 | Count something and keep the total | `SlayerTracker` |
 | Hide a line the server sends, and tell the player once that you did | `AbilitySpam` |
@@ -71,13 +72,14 @@ Events are the `GameEvent`s that features see, recorded as they were posted, and
 - `actionbar` for the line above the hotbar, each time the server sends it.
 - `death` for the server's death event on an entity that is not a player, with its type, name and position.
 - `head` for a player head block the server placed, with its position.
-- `container` for a menu the player opened, or their own inventory again, and `slot` for each slot that changed. A slot carries the item's id, count, name, lore and `custom_data`. A big menu's slots arrive over a few ticks.
+- `pet` for the pet nearest the player, an armor stand within 6 blocks named like `[Lvl 100] Ender Dragon`, with its name and the head it wears, when the nearest one changes.
+- `container` for a menu the player opened, or their own inventory again, and `slot` for each slot that changed. A slot carries the item's id, count, name, lore and `custom_data`, and how it looks: a head's `skin`, leather's `dye`, the `glint` override, `foil` (whether the game draws the shine at all), an `item_model` other than the item's own as `model`, and the tooltip `style`. A big menu's slots arrive over a few ticks.
 
 Raw records are for you to read. No feature sees one until it is promoted:
 
 - `chat` and `title`.
 - `bossbars` and `tabheader`, the tab list's header and footer.
-- `itemcomponents` for the components a `slot` leaves out, such as `tooltip_style`, `profile` and `item_model`, in Minecraft's own codec JSON.
+- `itemcomponents` for the components a `slot` leaves out, such as `item_model`, and the full `profile`, in Minecraft's own codec JSON.
 - `entities` for players, named entities and anything wearing or holding an item, each with the block it stands in. Glowing entities, silverfish and creepers, displays (`text`, `item`), item frames (`item`, `rotation`, `facing`) and dropped named items come too.
 - `status` for the player's block, health and XP.
 - `sound`, `particles` and `block` for what the server played, spawned or changed.
@@ -104,7 +106,7 @@ An event's text is `plain` plus `spans`, with `§` codes already resolved into t
 
 - Run everything here through `./gradlew`, which fetches the rest.
 - `./gradlew check` must pass. It runs the tests and TLC on every spec in `../specs/`.
-- When you change `edge`, a screen or the build, also run `./gradlew runClientGameTest runProdClientGameTest`. Each boots the game behind the user, without taking their keyboard or their speakers. The second one loads the built jars the way a player does, so it catches packaging mistakes.
+- When you change `edge` or a screen, also run the game tests that cover it, by name: `./gradlew runClientGameTest -Pgametests=ChatTest,KitTest`. When you change the build, run `./gradlew runProdClientGameTest -Pgametests=SettingsScreenTest`, which loads the built jars the way a player does, so it catches packaging mistakes. Each boots the game behind the user, without taking their keyboard or their speakers. The beta pipeline runs every game test, so leave the whole suite to it.
 - To hear what a game test played, read `audio.wav` in its run folder, `build/run/clientGameTest/` or `build/run/prodClientGameTest/`. It holds the whole run from the game's start.
 - Versions are pinned in `gradle.properties`. The server decides the Minecraft version, so bump it only when the user asks.
 - A library that ships inside the release jar goes in the `shade` configuration and gets a `relocate` line and a `NOTICE` entry.

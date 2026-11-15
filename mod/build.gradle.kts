@@ -1,4 +1,17 @@
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.nio.file.StandardOpenOption.CREATE
+import java.nio.file.StandardOpenOption.TRUNCATE_EXISTING
+import java.nio.file.StandardOpenOption.WRITE
+import java.security.MessageDigest
+import java.util.concurrent.TimeUnit
 import java.time.Duration
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
 
 plugins {
     id("net.fabricmc.fabric-loom")
@@ -80,6 +93,10 @@ sourceSets.named("gametest") {
     compileClasspath += debug.output
     runtimeClasspath += debug.output
 }
+// The backend's answers that the unit tests read, so the game test draws the same profile.
+tasks.named<ProcessResources>("processGametestResources") {
+    from("src/test/resources") { include("profiles/**") }
+}
 
 dependencies {
     minecraft("com.mojang:minecraft:${property("minecraft_version")}")
@@ -106,10 +123,54 @@ kotlin {
     jvmToolchain(25)
 }
 
+// A fresh `run/` starts with the user's dev settings from `run-defaults/` and DragSim's resource pack. Each file is
+// copied only when `run/` lacks it, so what the user changes in game stays.
+val seedRun = tasks.register("seedRun") {
+    val defaults = file("run-defaults")
+    val run = file("run")
+    // The pack is 40 MB, so it lives in the Gradle home, shared by every checkout, and never in git. The client keeps a
+    // server's pack at downloads/<the id the server sends>/<sha1>, and verifies the hash, so a stale copy is replaced.
+    val cache = gradle.gradleUserHomeDir.resolve("caches/dsmod/dragsim.zip")
+    val pack = run.resolve("downloads/c2222eea-454f-35cd-b85c-93c1c5a59e17")
+    doNotTrackState("Copies into the game folder, which the game writes to")
+    doLast {
+        defaults.walkTopDown().filter { it.isFile }.forEach { source ->
+            val target = run.resolve(source.relativeTo(defaults))
+            if (!target.exists()) source.copyTo(target)
+        }
+        if (pack.exists()) return@doLast
+        val fetched = runCatching {
+            val request = HttpRequest.newBuilder(URI("https://dragsim.co/textures/dragsim.zip"))
+            if (cache.exists()) {
+                request.header("If-Modified-Since", RFC_1123_DATE_TIME.format(Instant.ofEpochMilli(cache.lastModified()).atZone(ZoneOffset.UTC)))
+            }
+            val partial = cache.resolveSibling("dragsim.zip.part").apply { parentFile.mkdirs() }
+            val transfer = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).followRedirects(HttpClient.Redirect.NORMAL).build()
+                .sendAsync(request.build(), HttpResponse.BodyHandlers.ofFile(partial.toPath(), CREATE, WRITE, TRUNCATE_EXISTING))
+            // A request's own timeout ends at the headers, so a server that stalls in the body would hold the game back.
+            val response = runCatching { transfer.get(2, TimeUnit.MINUTES) }.onFailure { transfer.cancel(true) }.getOrThrow()
+            if (response.statusCode() == 200) {
+                partial.renameTo(cache.apply { delete() })
+                response.headers().firstValue("Last-Modified").ifPresent {
+                    cache.setLastModified(ZonedDateTime.parse(it, RFC_1123_DATE_TIME).toInstant().toEpochMilli())
+                }
+            } else {
+                partial.delete()
+            }
+        }
+        fetched.exceptionOrNull()?.let { logger.warn("Could not fetch DragSim's resource pack, so the game will: $it") }
+        if (!cache.exists()) return@doLast
+        val sha1 = MessageDigest.getInstance("SHA-1").digest(cache.readBytes()).joinToString("") { "%02x".format(it) }
+        cache.copyTo(pack.resolve(sha1))
+    }
+}
+
 // `./gradlew runClient -Pbrief=<file>` names the window after the brief and shows its steps. See Brief.kt.
 tasks.named<JavaExec>("runClient") {
+    dependsOn(seedRun)
     val mods = devMods.elements
-    val brief = providers.gradleProperty("brief").map { file(it).absolutePath }
+    val root = layout.projectDirectory
+    val brief = providers.gradleProperty("brief").map { root.file(it).asFile.absolutePath }
     jvmArgumentProviders.add(
         CommandLineArgumentProvider {
             listOf(
@@ -192,9 +253,11 @@ dependencies {
     productionRuntimeMods("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
     productionRuntimeMods("net.fabricmc:fabric-language-kotlin:${property("fabric_kotlin_version")}")
 }
-// `-Pgametests=PerfTest,ChatTest` keeps only those tests, which is how CI stays inside its time limit.
+// A run names its tests, `-Pgametests=PerfTest,ChatTest`, or asks for every one with `-Pgametests=all`. The whole
+// suite takes minutes and an agent waits on each run, so it is for the beta pipeline, and a run that names none fails.
+val gametests = providers.gradleProperty("gametests")
 tasks.named<ProcessResources>("processGametestResources") {
-    val only = providers.gradleProperty("gametests").map { it.split(",") }.orNull
+    val only = gametests.map { it.split(",") }.filter { it != listOf("all") }.orNull
     inputs.property("gametests", only ?: emptyList<String>())
     if (only != null) {
         val manifest = destinationDir.resolve("fabric.mod.json")
@@ -230,6 +293,13 @@ tasks.register<net.fabricmc.loom.task.prod.ClientProductionRunTask>("runProdClie
     runDir = layout.buildDirectory.dir("run/prodClientGameTest")
     // A CI runner has no display.
     useXVFB = providers.environmentVariable("CI").isPresent
+}
+// Checked on the resolved graph, so an abbreviated task name counts too, and before anything compiles.
+val named = gametests.isPresent
+gradle.taskGraph.whenReady {
+    if (!named && allTasks.any { it.name == "runClientGameTest" || it.name == "runProdClientGameTest" }) {
+        throw GradleException("Name the game tests that cover the change, as in -Pgametests=ChatTest,KitTest. Every test runs in the beta pipeline, and -Pgametests=all runs them here.")
+    }
 }
 
 // `./gradlew cutFixture --args="<capture> <feature id> <name> <from>-<to> [--types a,b] [--info Key,Key] [--system regex]"`

@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.container.SlotMark
+import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.hud
 import io.github.noxaur.dsmod.core.text.Role
@@ -39,6 +40,7 @@ class SurfacesTest : FabricClientGameTest {
                     row("Sold") { value(1204) }
                     row("Rate") { value(310); muted("/h") }
                     bar("Storage", 0.8f, Role.WARNING) { warning("80%") }
+                    items(listOf(Item("minecraft:prismarine_shard", 12), null, Item("minecraft:dragon_breath", 1)))
                 })
                 Hud.show("boss", stats, hud("Boss Timer") {
                     row("Next") { value("2m 5s") }

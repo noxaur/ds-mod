@@ -33,6 +33,7 @@ enum class Kind(val spoken: String) {
     SPAN("span"),
     FOLD("fold"),
     ACTION("button"),
+    ORDER("list"),
 }
 
 /**
@@ -94,6 +95,14 @@ sealed class Setting(val id: String, val name: String, val description: String, 
     fun walk(): Sequence<Setting> = sequence {
         yield(this@Setting)
         for (child in children) yieldAll(child.walk())
+    }
+
+    companion object {
+        /**
+         * The most characters a description may have. MoulConfig shrinks the font of a longer one: 67 fit and 72 did
+         * not. `RulesTest` holds MoulConfig's options to it and `SettingsTreeTest` the tree's rows, so the two agree.
+         */
+        const val DESCRIPTION_MAX = 67
     }
 }
 
@@ -282,6 +291,81 @@ class Fold(id: String, name: String, description: String, override val children:
     override fun spoken(keys: (Int) -> String, open: Boolean) = if (open) "expanded" else "collapsed"
 }
 
+/**
+ * Which of [values] show, and in what order, as MoulConfig's draggable list keeps them: the value is the shown ones
+ * in order. The list the player sees holds every value, and a hidden one keeps the place it was given while this row
+ * lives, so showing it again puts it back where it was. At least [least] stay shown.
+ */
+class Order<T>(
+    id: String,
+    name: String,
+    description: String,
+    bind: Bind<List<T>>,
+    val values: List<T>,
+    val label: (T) -> String = { it.toString() },
+    val least: Int = 1,
+) : Valued<List<T>>(id, name, description, Kind.ORDER, bind) {
+    private var all = arrange(value)
+
+    /** Every value in the order the list shows: the shown ones in their order, the hidden ones where they were left. */
+    val entries: List<T>
+        get() {
+            val shown = value
+            // A change from outside, such as a reset, rebuilds the list around it.
+            if (all.filter { it in shown } != shown) all = arrange(shown)
+            return all
+        }
+
+    private fun arrange(shown: List<T>) = shown + values.filter { it !in shown }
+
+    override fun normalize(next: List<T>) = next.distinct().filter { it in values }
+
+    fun shown(index: Int) = entries[index] in value
+
+    /** Whether the entry at [index] can be switched now: a hidden one always, a shown one while more than [least] show. */
+    fun canSwitch(index: Int) = !shown(index) || value.size > least
+
+    /** Shows or hides the entry at [index] without moving it. */
+    fun switch(index: Int) {
+        if (!canSwitch(index)) return
+        val entry = entries[index]
+        val shown = value
+        value = if (entry in shown) shown - entry else entries.filter { it in shown || it == entry }
+    }
+
+    /** Moves the entry at [from] to [to], kept within the list, and returns where it went. */
+    fun move(from: Int, to: Int): Int {
+        val list = entries.toMutableList()
+        val at = to.coerceIn(0, list.lastIndex)
+        if (at == from) return from
+        list.add(at, list.removeAt(from))
+        val shown = value
+        all = list
+        value = list.filter { it in shown }
+        return at
+    }
+
+    /** Puts the list back as [before] held it, as Escape does after a drag. */
+    fun restore(before: List<T>, shown: List<T>) {
+        all = before
+        value = shown
+    }
+
+    private fun text(list: List<T>) = list.joinToString(", ") { label(it) }
+
+    override val labels: List<String> by lazy { values.map(label) }
+
+    override fun summary(keys: (Int) -> String) = text(value)
+
+    override fun default(keys: (Int) -> String) = text(default)
+
+    override fun spoken(keys: (Int) -> String, open: Boolean) =
+        Narration.join(text(value), "${value.size} of ${values.size} shown", if (open) "expanded" else "collapsed")
+
+    /** What the narrator says for the entry at [index]: its name, its switch, and its place in the list. */
+    fun entryNarration(index: Int) = Narration.join(label(entries[index]), Kind.SWITCH.spoken, if (shown(index)) "on" else "off", Narration.of(index, entries.size))
+}
+
 /** A button that runs [run], such as opening an editor screen that returns to the settings. [button] is its label. */
 class Action(id: String, name: String, description: String, val button: String, val run: () -> Unit) : Setting(id, name, description, Kind.ACTION) {
     override fun spoken(keys: (Int) -> String, open: Boolean) = button
@@ -343,6 +427,14 @@ class Rows {
         property: KMutableProperty0<List<Section>>, name: String, description: String, max: Int, ticks: List<Int> = emptyList(),
         id: String = property.name, dependsOn: Switch? = null,
     ) = add(Span(id, name, description, Bind.of(property), max, ticks), dependsOn)
+
+    /** An ordered list of [E]'s values that the player shows, hides and drags into order. */
+    inline fun <reified E : Enum<E>> order(
+        property: KMutableProperty0<MutableList<E>>, name: String, description: String, id: String = property.name, dependsOn: Switch? = null,
+    ) = order(Bind(Bind.field(property), { property.get().toList() }) { property.set(it.toMutableList()) }, name, description, enumValues<E>().toList(), id, dependsOn)
+
+    fun <T> order(bind: Bind<List<T>>, name: String, description: String, values: List<T>, id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null) =
+        add(Order(id, name, description, bind, values), dependsOn)
 
     fun fold(id: String, name: String, description: String, dependsOn: Switch? = null, rows: Rows.() -> Unit) =
         add(Fold(id, name, description, nested(rows)), dependsOn)

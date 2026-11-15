@@ -13,7 +13,11 @@ import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
 import java.nio.file.Path
 
-/** The developer's tools: `/dscapture` records without a brief, `/dskit` shows the kit and `/dskit rows` its settings rows, `/dssettings` opens the settings screen being built, and `-Pbrief` starts a brief at launch. */
+/**
+ * The developer's tools: `/dscapture` records without a brief, `/dskit` shows the kit and `/dskit rows` its settings
+ * rows, `/dssettings` opens the settings screen being built, `-Pbrief` starts a brief at launch, and the title screen
+ * has a button that joins DragSim.
+ */
 object DsModDebug : ClientModInitializer {
     /** The capture `/dscapture` started, while it runs. */
     private var capture: CaptureSession? = null
@@ -42,6 +46,7 @@ object DsModDebug : ClientModInitializer {
     override fun onInitializeClient() {
         // A developer tests in singleplayer and on servers of their own, so the debug build runs everywhere.
         DsModClient.anyServer = true
+        JoinDragSim.register()
         // `./gradlew runClient -Pbrief=<file>` sets this. The window does not exist yet, and takes its title when it opens.
         System.getProperty("dsmod.brief")?.let { Recording.startAtLaunch(Brief.read(Path.of(it))) }
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->

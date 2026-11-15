@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.ui
 
+import io.github.noxaur.dsmod.core.config.Order
 import io.github.noxaur.dsmod.core.config.Setting
 import io.github.noxaur.dsmod.core.config.SettingGroup
 import io.github.noxaur.dsmod.core.config.SettingSection
@@ -13,7 +14,7 @@ data class SettingHit(val section: Int, val group: SettingGroup, val rows: List<
 /**
  * The settings screen's search. A row matches when every word of the query is in its name, its description, a
  * choice's values, its group's heading or switch, or the names of the rows it sits under, ignoring case, as
- * MoulConfig matches. A group's heading thereby finds all its rows.
+ * MoulConfig matches. A group's heading thereby finds all its rows, and an ordered list's entries find it.
  */
 object SettingsSearch {
     fun words(query: String) = query.trim().lowercase().split(' ').filter { it.isNotEmpty() }
@@ -44,6 +45,8 @@ object SettingsSearch {
         for (child in row.children) if (found(child, "$above ${row.name.lowercase()}", words, open) == Found.SELF) below = true
         if (below) open += row.id
         val text = "$above ${row.searchText}"
+        // An ordered list opens when a word names one of its entries, so the entry shows.
+        if (row is Order<*> && words.all { it in text } && words.any { word -> row.labels.any { word in it.lowercase() } }) open += row.id
         return when {
             below || words.all { it in text } && !words.all { it in above } -> Found.SELF
             words.all { it in text } -> Found.ABOVE

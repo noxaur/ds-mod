@@ -126,6 +126,9 @@ class HudEditorTest : FabricClientGameTest {
                 val size = Hud.find(ID)!!.let { it.width * it.scale to it.height * it.scale }
                 val centered = (screen.width - size.first) / 2.0
                 val middle = (screen.height - size.second) / 2.0
+                // Every other feature's placeholder stacks down from the top-left, and grows with each feature until one of its
+                // edges is nearer the drop than the middle is. Those blocks come back when Done closes the editor.
+                Hud.placed().filter { it.id != ID }.forEach { Hud.hide(it.id) }
                 val snapped = dragTo(centered + 3, middle - 3, 0)
                 check(Math.abs(snapped.x - centered) < 0.6 && Math.abs(snapped.y - middle) < 0.6) { "The block did not center: ${snapped.x}, ${snapped.y}, wanted $centered, $middle on ${screen.width}x${screen.height} with $size" }
                 val free = dragTo(centered + 3, middle - 3, org.lwjgl.glfw.GLFW.GLFW_MOD_SHIFT)

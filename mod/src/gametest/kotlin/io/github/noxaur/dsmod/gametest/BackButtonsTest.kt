@@ -9,14 +9,15 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContex
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.commands.Commands
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 
 /**
  * Sends a command that opens a menu, walks into a menu from it that has no Go Back, and clicks the button the mod puts
  * there. The click must send the command again and reach no slot. A menu with its own Go Back, one with an item where
- * Go Back would sit, and one opened with no command in the run get no button. Read the screenshots in both themes,
- * and the tooltip, which names the command.
+ * Go Back would sit, a storage page with an empty slot there, and one opened with no command in the run get no button.
+ * Read the screenshots in both themes, and the tooltip, which names the command.
  */
 class BackButtonsTest : FabricClientGameTest {
     /** Where the open menu's visible Back button sits, or null when it has none. */
@@ -44,6 +45,12 @@ class BackButtonsTest : FabricClientGameTest {
             check(button(context) == null) { "A menu with its own Go Back got a second one" }
             from(context, world, "Item Where Back Sits", goBack = false) { it.setItem(27 + 3, ServerMenus.named(Items.CHEST, "Backpack Slot 1")) }
             check(button(context) == null) { "The Back button covered an item" }
+            from(context, world, "Storage Page (1/2)", goBack = false) { page ->
+                for (i in 0 until 4 * 9) page.setItem(i, ItemStack(Items.DIRT))
+                page.setItem(4 * 9 - 6, ItemStack.EMPTY)
+            }
+            check(button(context) == null) { "The Back button covered an empty storage slot" }
+            context.takeScreenshot("back-button-storage-page")
 
             from(context, world, "Backpack Slot 1", goBack = false)
             val at = button(context)

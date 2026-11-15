@@ -10,11 +10,15 @@ import io.github.noxaur.dsmod.core.feature.end.FireballAlert
 import io.github.noxaur.dsmod.core.feature.end.GolemStatus
 import io.github.noxaur.dsmod.core.feature.end.ProtectPlacedEyes
 import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
+import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
+import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
 import io.github.noxaur.dsmod.core.feature.general.ExplosionParticleHider
 import io.github.noxaur.dsmod.core.feature.general.FreeLook
+import io.github.noxaur.dsmod.core.feature.general.InventoryPreview
 import io.github.noxaur.dsmod.core.feature.general.Fullbright
+import io.github.noxaur.dsmod.core.feature.general.ProfileViewer
 import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
 import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
 import io.github.noxaur.dsmod.core.feature.inventory.HideFiller
@@ -39,20 +43,32 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     GolemStatus(config.end::golemStatus),
     ProtectPlacedEyes(config.end::protectPlacedEyes),
     ZealotTracker(config.end::zealotTracker),
+    Animations(config.general::animations),
     Camera(config.general::camera),
     CommandBinds(config.general::commandBinds),
+    EquipmentDisplay(
+        config.general::equipmentDisplay,
+        config.general::equipmentLayout,
+        config.general::equipmentPieces,
+        config.general::petLook,
+        config.general::petPosition,
+        config.general::equipmentLook,
+        config.general::equipmentPlacement,
+    ),
     ExplosionParticleHider(config.general::explosionParticleHider),
+    InventoryPreview(config.general::inventoryPreview, config.general::inventoryRows, config.general::inventoryLook),
     FreeLook(config.general::freeLook),
     Fullbright(config.general::fullbright),
+    ProfileViewer(config.general::profileViewer),
     ArmorSwapGuard(config.inventory::armorSwapGuard),
     RarityMarks(config.inventory::rarityMarks, config.inventory::markCommon),
     ThemedMenus(config.inventory::themedMenus),
     StableMenus(config.inventory::stableMenus),
     HideFiller(config.inventory::hideFiller),
     KeepCursor(config.inventory::keepCursor),
+    SlotLock(config.inventory::slotLock),
     BackButtons(config.betterUi::backButtons),
     MenuTabs(config.betterUi::menuTabs),
-    SlotLock(config.inventory::slotLock),
     LootAlerts(config.loot::lootAlerts, config.loot::lootAlertTier),
     SlayerBossAlert(config.slayer::slayerBossAlert),
     SlayerTracker(config.slayer::slayerTracker),

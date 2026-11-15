@@ -19,9 +19,20 @@ class SettingsTest {
         var key = 76
         var spans = listOf(Section(175, 200))
         var other = false
+        var pieces = mutableListOf(Piece.HELMET, Piece.BOOTS, Piece.PET)
     }
 
     private enum class Tier { RARE, EPIC, RNGESUS }
+
+    private enum class Piece(private val label: String) {
+        HELMET("Helmet"),
+        CHESTPLATE("Chestplate"),
+        BOOTS("Boots"),
+        PET("Pet"),
+        ;
+
+        override fun toString() = label
+    }
 
     private val v = Values()
     private val rows = Rows().apply {
@@ -33,6 +44,7 @@ class SettingsTest {
         number(v::gap, "Gap", "Set it.", 50f..1000f, step = 50f, unit = " ms")
         choice(v::tier, "Tier", "Pick it.")
         span(v::spans, "Timing", "Pick it.", max = 200)
+        order(v::pieces, "Pieces", "Pick them.")
         pick(Bind("Values.other", v::other::get, v::other::set), "Look", "Pick it.", listOf(false, true)) { Look.Slots(io.github.noxaur.dsmod.core.container.SlotStyle(), if (it) 3 else 1) }
     }.rows.also { SettingsTree.link(it, null) }
     private val byName = rows.flatMap { it.walk().toList() }.associateBy { it.name }
@@ -182,6 +194,69 @@ class SettingsTest {
         v.on = false
         assertEquals("Feature", number("Distance").dimmedBy?.name)
         assertNull(number("Height").dimmedBy)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun pieces() = byName.getValue("Pieces") as Order<Piece>
+
+    @Test
+    fun `an ordered list shows the shown entries in their order, then the hidden ones`() {
+        val pieces = pieces()
+        assertEquals(listOf(Piece.HELMET, Piece.BOOTS, Piece.PET, Piece.CHESTPLATE), pieces.entries)
+        assertEquals(listOf(true, true, true, false), pieces.entries.indices.map(pieces::shown))
+        assertEquals("Helmet, Boots, Pet", pieces.summary { "" })
+        assertTrue("chestplate" in pieces.searchText, "search knows the hidden entries too")
+    }
+
+    @Test
+    fun `an entry hides and shows again in its place, and the last one stays shown`() {
+        val pieces = pieces()
+        pieces.move(3, 1)
+        assertEquals(listOf(Piece.HELMET, Piece.CHESTPLATE, Piece.BOOTS, Piece.PET), pieces.entries, "a hidden entry moves too")
+        assertEquals(listOf(Piece.HELMET, Piece.BOOTS, Piece.PET), v.pieces, "and the value keeps only the shown ones")
+        pieces.switch(1)
+        assertEquals(listOf(Piece.HELMET, Piece.CHESTPLATE, Piece.BOOTS, Piece.PET), v.pieces, "it shows where it sits")
+        pieces.switch(0)
+        assertEquals(listOf(Piece.CHESTPLATE, Piece.BOOTS, Piece.PET), v.pieces)
+        assertEquals(Piece.HELMET, pieces.entries[0], "a hidden entry keeps its place")
+        pieces.switch(0)
+        assertEquals(Piece.HELMET, v.pieces.first(), "and shows in it again")
+        for (i in 1..3) pieces.switch(i)
+        assertEquals(listOf(Piece.HELMET), v.pieces)
+        assertFalse(pieces.canSwitch(0))
+        pieces.switch(0)
+        assertEquals(listOf(Piece.HELMET), v.pieces, "the last shown entry cannot hide")
+    }
+
+    @Test
+    fun `an entry moves by drag or key, stops at the ends, and Escape puts the list back`() {
+        val pieces = pieces()
+        val before = pieces.entries
+        val shown = pieces.value
+        assertEquals(2, pieces.move(0, 2), "a drag drops it on the line under the mouse")
+        assertEquals(listOf(Piece.BOOTS, Piece.PET, Piece.HELMET), v.pieces)
+        assertEquals(3, pieces.move(2, 3 + 1), "a key past the end stays at the end")
+        assertEquals(0, pieces.move(0, -1))
+        pieces.restore(before, shown)
+        assertEquals(before, pieces.entries)
+        assertEquals(shown, v.pieces)
+    }
+
+    @Test
+    fun `an ordered list is changed when its value is, resets, and is narrated`() {
+        val pieces = pieces()
+        assertFalse(pieces.changed)
+        pieces.move(0, 1)
+        assertTrue(pieces.changed)
+        assertEquals("Pieces, list, Boots, Helmet, Pet, 3 of 4 shown, collapsed, changed from Helmet, Boots, Pet", pieces.narration({ "" }))
+        assertEquals("Boots, switch, on, 1 of 4", pieces.entryNarration(0))
+        assertEquals("Chestplate, switch, off, 4 of 4", pieces.entryNarration(3))
+        pieces.reset()
+        assertEquals(listOf(Piece.HELMET, Piece.BOOTS, Piece.PET), v.pieces)
+        assertEquals(Piece.HELMET, pieces.entries[0], "a reset rebuilds the list around the value")
+        v.pieces = mutableListOf(Piece.PET, Piece.PET, Piece.BOOTS)
+        pieces.value = v.pieces
+        assertEquals(listOf(Piece.PET, Piece.BOOTS), v.pieces, "a value holds each entry once")
     }
 
     @Test

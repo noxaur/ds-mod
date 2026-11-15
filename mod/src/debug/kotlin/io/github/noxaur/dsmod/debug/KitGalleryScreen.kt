@@ -32,6 +32,9 @@ import org.lwjgl.glfw.GLFW
 
 private const val WIDTH = 575
 private const val HEIGHT = 335
+
+/** The glass strip under the panel: its gap, the strip, and its bottom tabs. */
+private const val GLASS_BELOW = 2 + 26 + 19
 private const val MIDDLE = 271
 private const val RIGHT = 396
 
@@ -61,7 +64,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         mark(Items.DIAMOND, 1, Role.RARE, 'f'), mark(Items.EMERALD, 3, Role.UNCOMMON, 'f'), mark(Items.IRON_INGOT, 1, Role.COMMON, 'f'),
         mark(Items.NETHER_STAR, 1, Role.MYTHIC, ' '), mark(Items.LAPIS_LAZULI, 38, Role.RARE, ' '),
         mark(Items.BLAZE_ROD, 1, Role.LEGENDARY, 'b'), mark(Items.SLIME_BALL, 7, Role.UNCOMMON, ' '), mark(Items.PRISMARINE_SHARD, 1, Role.DIVINE, 'b'),
-        mark(Items.PAPER, 20, Role.COMMON, 'd'), mark(Items.ENDER_EYE, 1, Role.EPIC, 'd'), mark(Items.QUARTZ, 9, Role.RARE, ' '),
+        mark(Items.PAPER, 20, Role.COMMON, 'd'), mark(Items.ENDER_EYE, 1, Role.EPIC, 'd'), mark(Items.QUARTZ, 9, Role.RARE, ' '), mark(Items.FEATHER, 4, Role.COMMON, 'h'),
     )
     private val wellRows = listOf(text { body("Dragon Timer") }, text { body("Fireball Alert") }).map { it.toComponent() }
     private val tabs = listOf(Items.GOLDEN_SWORD, Items.DIAMOND, Items.ENDER_PEARL, Items.EMERALD).map(::ItemStack)
@@ -78,7 +81,8 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
 
     override fun init() {
         ox = (width - WIDTH) / 2
-        oy = (height - HEIGHT) / 2
+        // The glass strip hangs below the panel over the world, so the two are centered together.
+        oy = (height - HEIGHT - GLASS_BELOW) / 2
         val y = oy + 51
         val done = addRenderableWidget(KitButton(ox + Kit.INSET, y, "Done", ::onClose))
         val stepper = addRenderableWidget(KitStepper(done.right + Kit.GAP, y, "Scale", 30) {})
@@ -160,14 +164,16 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         window(g, ox + MIDDLE, oy + 40)
         list(g, ox + RIGHT, oy + 7)
         plate(g, ox + RIGHT, oy + 159)
+        skeleton(g, ox + RIGHT + 128, oy + 159)
         tooltip(g, ox + MIDDLE + 30, oy + 84)
+        glass(g, ox, oy + HEIGHT + 2)
 
         super.extractRenderState(graphics, mouseX, mouseY, partialTick)
     }
 
     /** Tabs, a slot grid with every mark and a scrollbar, as a storage screen would have them. Its search field is a widget. */
     private fun window(g: GuiGraphicsExtractor, x: Int, y: Int) {
-        caption(g, "Tabs on both edges, slots, marks", x, y - 33)
+        caption(g, "Tabs, slots, marks", x, y - 33)
         for (i in 1 until tabs.size) g.item(tabs[i], x + 4 + i * 23 + 3, Kit.tab(g, x + 4 + i * 23, y, false))
         // Tabs on the bottom edge too: one under the mouse, then the selected one after the panel.
         g.item(tabs[2], x + 31, Kit.tab(g, x + 28, y + 118, false, TabEdge.BOTTOM, hovered = true))
@@ -188,6 +194,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
             g.item(mark.item, sx + 1, sy + 1)
             g.itemDecorations(font, mark.item, sx + 1, sy + 1)
             if (mark.style == 'd') Kit.slotDim(g, sx + 1, sy + 1)
+            if (mark.style == 'h') Kit.slotHover(g, sx + 1, sy + 1)
             if (mark.style == 'b' && DsModClient.settings.inventory.inventoryStyle.gem) {
                 Kit.slotGem(g, sx + 1, sy + 1, SlotArts.atlas(DsModClient.settings.inventory, Surface.CONTAINER), mark.role.ordinal)
             }
@@ -263,6 +270,20 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         Kit.pageTab(g, x + 4 + 93 + 30, line, 92, Kit.State.DOWN, true, "The End", Role.EPIC.argb(), close = Kit.State.IDLE)
     }
 
+    /** A strip of glass below the gallery, over the world as a glass menu is: slots, a well, buttons and tabs in each state. */
+    private fun glass(g: GuiGraphicsExtractor, x: Int, y: Int) {
+        val alpha = 153
+        Kit.glass(g, x, y, 240, 26, alpha)
+        g.text(font, "Glass", x + 7, y + 9, Kit.GLASS_INK, true)
+        for (i in 0 until 3) Kit.glassSlot(g, x + 40 + i * 18, y + 4)
+        g.item(tabs[3], x + 41, y + 5)
+        Kit.glassWell(g, x + 98, y + 4, 54, 18)
+        for (i in states.indices) Kit.button(g, x + 156 + i * 20, y + 5, Kit.BUTTON_HEIGHT, Kit.BUTTON_HEIGHT, states[i], Icon.BACK, glass = true)
+        g.item(tabs[0], x + 4, Kit.glassTab(g, x + 1, y + 26, true, alpha, TabEdge.BOTTOM))
+        g.item(tabs[1], x + 27, Kit.glassTab(g, x + 24, y + 26, false, alpha, TabEdge.BOTTOM))
+        g.item(tabs[2], x + 50, Kit.glassTab(g, x + 47, y + 26, false, alpha, TabEdge.BOTTOM, hovered = true))
+    }
+
     /** A plain tooltip over the slot grid, drawn last as the game draws one. */
     private fun tooltip(g: GuiGraphicsExtractor, x: Int, y: Int) {
         Kit.tooltip(g, x, y, tooltip.maxOf(font::width), tooltip.size * 10 - 2)
@@ -289,6 +310,17 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         Kit.plate(g, x, y, 120, 54)
         for (i in hud.indices) g.text(font, hud[i], x + 4, y + 4 + i * 10, -1, true)
         Kit.bar(g, x + 4, y + 44, 80, 0.8f, Role.WARNING.argb())
+    }
+
+    /** Bones where a loading screen's words will be, and the veil a notice sits on, over the lower half. */
+    private fun skeleton(g: GuiGraphicsExtractor, x: Int, y: Int) {
+        caption(g, "Veil", x, y - 12)
+        Kit.bone(g, x, y, 16, 16)
+        Kit.bone(g, x + 20, y + 2, 24, 7)
+        Kit.bar(g, x, y + 20, 44, 0f, Role.VALUE.argb())
+        Kit.bone(g, x, y + 32, 16, 16)
+        Kit.bone(g, x + 20, y + 34, 18, 7)
+        Kit.veil(g, x - 2, y + 28, 48, 26)
     }
 
     private fun caption(g: GuiGraphicsExtractor, text: String, x: Int, y: Int) = Kit.label(g, text, x, y, Kit.Ink.MUTED)

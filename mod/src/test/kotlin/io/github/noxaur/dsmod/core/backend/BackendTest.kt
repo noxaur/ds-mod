@@ -3,6 +3,10 @@ package io.github.noxaur.dsmod.core.backend
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
 import io.github.noxaur.dsmod.core.brief.Brief
+import io.github.noxaur.dsmod.core.game.ServerSpan
+import io.github.noxaur.dsmod.core.game.ServerText
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import java.net.InetSocketAddress
 import java.nio.file.Files
 import java.util.concurrent.CopyOnWriteArrayList
@@ -126,6 +130,41 @@ class BackendTest {
     }
 
     @Test
+    fun `a profile is asked for by name, and another of the player's by its id`() {
+        val body = checkNotNull(javaClass.getResource("/profiles/profile.json")).readText()
+        answers["/v1/players/Testwyrm/profile"] = { 200 to body }
+
+        assertEquals("Testwyrm", backend.profile("Testwyrm", null).player.name)
+        backend.profile("Testwyrm", "aaaaaaaa-0000-4000-8000-000000000001")
+
+        assertEquals(
+            listOf("/v1/players/Testwyrm/profile", "/v1/players/Testwyrm/profile?profile=aaaaaaaa-0000-4000-8000-000000000001"),
+            seen.map { it.path }.filter { it.startsWith("/v1/") },
+        )
+    }
+
+    @Test
+    fun `a container is asked for from its snapshot, colon and all`() {
+        val body = checkNotNull(javaClass.getResource("/profiles/containers/inventory.json")).readText()
+        answers["/v1/snapshots/s1/containers/storage:2"] = { 200 to body }
+
+        assertEquals(36, backend.container("s1", "storage:2").items.size)
+    }
+
+    @Test
+    fun `an error's tag tells apart failures that share a status`() {
+        answers["/v1/players/Nobody/profile"] = { 404 to """{"_tag":"PlayerNotFound"}""" }
+        answers["/v1/players/Proxy/profile"] = { 502 to "<html>Bad gateway</html>" }
+
+        val missing = assertFailsWith<BackendException> { backend.profile("Nobody", null) }
+        val proxied = assertFailsWith<BackendException> { backend.profile("Proxy", null) }
+
+        assertEquals(404 to "PlayerNotFound", missing.status to missing.tag)
+        assertEquals(502 to null, proxied.status to proxied.tag)
+        assertFailsWith<IllegalArgumentException> { backend.profile("not a name", null) }
+    }
+
+    @Test
     fun `the session token appears in no error`() {
         answers[generate] = { 500 to "session-1" }
 
@@ -220,6 +259,26 @@ class BackendTest {
         assertEquals("application/json", report.headers["content-type"])
         assertEquals(
             """{"modVersion":"1.2.3","sightings":[{"kind":"golem-status","signature":"Protector: # left","sample":"Protector: 5 left"}]}""",
+            String(report.body),
+        )
+    }
+
+    @Test
+    fun `reports items with exactly the keys the contract allows`() {
+        val span = ServerSpan("Scylla", color = 0xFFAA00, bold = true)
+        backend.items(
+            listOf(
+                ItemSighting(
+                    "scylla", "minecraft:iron_sword", null, "gold", ServerText(listOf(span)), listOf(ServerText(emptyList()), ServerText(listOf(ServerSpan("Damage")))),
+                    true, null, 0x112233, buildJsonObject { put("item_data", buildJsonObject { put("item_id", "scylla") }) },
+                ),
+            ),
+        )
+
+        val report = seen.last()
+        assertEquals("POST /v1/contrib/items", "${report.method} ${report.path}")
+        assertEquals(
+            """{"modVersion":"1.2.3","items":[{"entry":"scylla","material":"minecraft:iron_sword","skinId":"gold","name":[{"text":"Scylla","color":"#FFAA00","bold":true}],"lore":[[],[{"text":"Damage"}]],"glint":true,"color":1122867,"data":{"item_data":{"item_id":"scylla"}}}]}""",
             String(report.body),
         )
     }
