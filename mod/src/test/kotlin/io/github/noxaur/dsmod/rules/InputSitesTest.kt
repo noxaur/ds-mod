@@ -54,7 +54,7 @@ private const val MOD = "io/github/noxaur/dsmod/"
 private const val MIXIN = "Lorg/spongepowered/asm/mixin/Mixin;"
 
 /** What a call to [owner].[name] does to the player's input, or null when it does nothing to it. */
-private fun called(owner: String, name: String, opcode: Int): Sink? {
+private fun calledOn(owner: String, name: String, opcode: Int, ownScreen: Boolean = false): Sink? {
     val what = "${owner.substringAfterLast('/').replace('$', '.')}.$name"
     val getter = Regex("^(get|is|has|can)[A-Z]").containsMatchIn(name)
     return when {
@@ -67,6 +67,7 @@ private fun called(owner: String, name: String, opcode: Int): Sink? {
         owner == "net/fabricmc/fabric/api/client/networking/v1/ClientPlayNetworking" && name.startsWith("send") -> Sink("sends through $what")
         owner == "net/minecraft/client/KeyMapping" && name in setOf("click", "set", "setDown", "releaseAll", "resetToggleKeys") ->
             Sink("presses a key through $what")
+        owner == "net/minecraft/client/KeyMapping" && name == "consumeClick" -> Sink("takes the player's key presses through $what", acts = false)
         owner in setOf(
             "net/minecraft/client/player/LocalPlayer",
             "net/minecraft/client/player/AbstractClientPlayer",
@@ -74,13 +75,13 @@ private fun called(owner: String, name: String, opcode: Int): Sink? {
             "net/minecraft/world/entity/LivingEntity",
             "net/minecraft/world/entity/Entity",
             "net/minecraft/world/entity/player/Inventory",
-        ) && (name.startsWith("set") || name in setOf(
+        ) && (name.startsWith("set") || name.startsWith("send") || name in setOf(
             "drop", "swing", "closeContainer", "startUsingItem", "stopUsingItem", "releaseUsingItem", "jumpFromGround",
             "moveTo", "absMoveTo", "snapTo", "turn", "lookAt", "startRiding", "stopRiding",
         )) -> Sink("changes the player through $what")
         owner.startsWith("net/minecraft/client/player/") && owner.endsWith("Input") -> Sink("changes movement input through $what")
         owner in setOf("net/minecraft/client/gui/screens/Screen", "net/minecraft/client/gui/screens/inventory/AbstractContainerScreen") &&
-            opcode != Opcodes.INVOKESPECIAL && name in setOf("handleComponentClicked", "handleClickEvent", "slotClicked", "onClose", "mouseClicked", "keyPressed") ->
+            opcode != Opcodes.INVOKESPECIAL && !ownScreen && name in setOf("handleComponentClicked", "handleClickEvent", "slotClicked", "onClose", "mouseClicked", "keyPressed") ->
             Sink("plays a click or key on a screen through $what")
         owner == "net/minecraft/client/gui/screens/ChatScreen" && name == "handleChatInput" -> Sink("sends chat through $what")
         owner == "net/minecraft/client/Minecraft" && name in setOf("startAttack", "startUseItem", "continueAttack", "pickBlock") -> Sink("acts through $what")
@@ -93,6 +94,7 @@ private fun called(owner: String, name: String, opcode: Int): Sink? {
         // Reflection that runs or writes what it found, which the scan cannot follow. Looking a method up runs nothing.
         owner == "java/lang/reflect/Method" && name == "invoke" || owner == "java/lang/reflect/Field" && name.startsWith("set") ||
             owner == "java/lang/reflect/Constructor" && name == "newInstance" || owner == "java/lang/invoke/MethodHandle" && name.startsWith("invoke") ||
+            owner == "java/lang/invoke/VarHandle" && Regex("^(set|compareAnd|weakCompare|getAnd)").containsMatchIn(name) ||
             owner == "java/lang/Class" && name == "forName" || owner == "java/util/ServiceLoader" || owner.endsWith("misc/Unsafe") ||
             owner.startsWith("kotlin/reflect/") && name.startsWith("call") -> Sink("runs code by reflection through $what")
         else -> null
@@ -107,29 +109,59 @@ private fun built(type: String): Sink? = when {
     else -> null
 }
 
-/** What [insn] does to the player's input, or null when it does nothing to it. */
-private fun sink(insn: AbstractInsnNode): Sink? = when (insn) {
-    is MethodInsnNode -> called(insn.owner, insn.name, insn.opcode)
-    is InvokeDynamicInsnNode -> insn.bsmArgs.filterIsInstance<Handle>().firstNotNullOfOrNull { called(it.owner, it.name, 0) }
-    is TypeInsnNode -> if (insn.opcode == Opcodes.NEW) built(insn.desc) else null
-    is FieldInsnNode -> when {
-        insn.opcode == Opcodes.PUTFIELD && called(insn.owner, "set", 0) != null -> Sink("writes ${insn.owner.substringAfterLast('/')}.${insn.name}")
-        // A Fabric event such as `UseItemCallback.EVENT` is a field.
-        insn.opcode == Opcodes.GETSTATIC && insn.owner.startsWith("net/fabricmc/") -> called(insn.owner, insn.name, insn.opcode)
+/**
+ * Reads what instructions do to the player's input. A call is matched on its owner and on every class the owner
+ * extends or implements, so a subclass such as `ToggleKeyMapping`, or one of the mod's own, is no way around it.
+ */
+private class Sinks(private val mod: Map<String, ClassNode>) {
+    private val lineages = HashMap<String, List<String>>()
+
+    private fun lineage(owner: String): List<String> = lineages.getOrPut(owner) {
+        val supers = mod[owner]?.let { listOfNotNull(it.superName) + it.interfaces } ?: Sinks::class.java.classLoader
+            .getResourceAsStream("$owner.class")?.use { ClassReader(it) }?.let { listOfNotNull(it.superName) + it.interfaces }.orEmpty()
+        listOf(owner) + supers.flatMap(::lineage)
+    }
+
+    // A screen of the mod's own that closes itself plays nothing on the server's screens.
+    fun called(owner: String, name: String, opcode: Int) =
+        lineage(owner).firstNotNullOfOrNull { calledOn(it, name, opcode, ownScreen = owner.startsWith(MOD)) }
+
+    /** A method handle runs its method, and a constructor's handle builds its class. */
+    private fun handle(handle: Handle) = if (handle.name == "<init>") built(handle.owner) else called(handle.owner, handle.name, 0)
+
+    /** What [insn] does to the player's input, or null when it does nothing to it. */
+    fun of(insn: AbstractInsnNode): Sink? = when (insn) {
+        is MethodInsnNode -> called(insn.owner, insn.name, insn.opcode)
+        is InvokeDynamicInsnNode -> insn.bsmArgs.filterIsInstance<Handle>().firstNotNullOfOrNull(::handle)
+        is LdcInsnNode -> (insn.cst as? Handle)?.let(::handle)
+        is TypeInsnNode -> if (insn.opcode == Opcodes.NEW) built(insn.desc) else null
+        is FieldInsnNode -> when {
+            // `this$0` and its kind are the compiler's own fields on a nested class.
+            insn.opcode == Opcodes.PUTFIELD && !insn.name.contains('$') && called(insn.owner, "set", 0) != null -> Sink("writes ${insn.owner.substringAfterLast('/')}.${insn.name}")
+            // A Fabric event such as `UseItemCallback.EVENT` is a field.
+            insn.opcode == Opcodes.GETSTATIC && insn.owner.startsWith("net/fabricmc/") -> called(insn.owner, insn.name, insn.opcode)
+            else -> null
+        }
         else -> null
     }
-    else -> null
 }
 
-/** The mod methods [method] calls or takes a reference to, as owner and name. */
+/** A method by its owner, name and descriptor, so an overload is a method of its own. */
+private data class MethodRef(val owner: String, val name: String, val desc: String)
+
+/** The mod methods [method] calls or takes a reference to, constructors included. */
 private fun targets(method: MethodNode) = method.instructions.asSequence().flatMap { insn ->
     when (insn) {
-        is MethodInsnNode -> sequenceOf(insn.owner to insn.name)
-        is InvokeDynamicInsnNode -> insn.bsmArgs.asSequence().filterIsInstance<Handle>().map { it.owner to it.name }
-        is LdcInsnNode -> (insn.cst as? Handle)?.let { sequenceOf(it.owner to it.name) }.orEmpty()
+        is MethodInsnNode -> sequenceOf(MethodRef(insn.owner, insn.name, insn.desc))
+        is InvokeDynamicInsnNode -> insn.bsmArgs.asSequence().filterIsInstance<Handle>().map { MethodRef(it.owner, it.name, it.desc) }
+        is LdcInsnNode -> (insn.cst as? Handle)?.let { sequenceOf(MethodRef(it.owner, it.name, it.desc)) }.orEmpty()
         else -> emptySequence()
     }
-}.filter { it.first.startsWith(MOD) }
+}.filter { it.owner.startsWith(MOD) }
+
+/** The mod classes [method] builds, such as an anonymous callback it hands to a scheduler. */
+private fun builds(method: MethodNode) = method.instructions.asSequence()
+    .filterIsInstance<TypeInsnNode>().filter { it.opcode == Opcodes.NEW && it.desc.startsWith(MOD) }.map { it.desc }
 
 private fun display(internal: String) = internal.removePrefix(MOD).replace('/', '.').replace('$', '.')
 
@@ -142,31 +174,35 @@ private fun hash(digest: MessageDigest) = digest.digest().joinToString("") { "%0
 fun inputSites(classes: List<ByteArray>, widener: List<String> = emptyList()): List<InputSite> {
     val nodes = classes.associate { bytes -> ClassNode().also { ClassReader(bytes).accept(it, ClassReader.SKIP_FRAMES) }.let { it.name to (it to bytes) } }
     val groups = nodes.values.groupBy { (node, _) -> node.name.substringBefore('$') }
+    val sinks = Sinks(nodes.mapValues { it.value.first })
 
     val gates = mutableListOf<InputSite.Gate>()
-    // The methods of each gate that send, directly or through the gate's own methods, as owner and name.
-    val sending = mutableSetOf<Pair<String, String>>()
+    // The methods of each gate that send, directly or through the gate's own methods and classes.
+    val sending = mutableSetOf<MethodRef>()
     for ((group, members) in groups) {
         val classNodes = members.map { it.first }
         val mixin = classNodes.any { node -> node.invisibleAnnotations.orEmpty().any { it.desc == MIXIN } }
         val does = (listOfNotNull("is a mixin, so it can change any of Minecraft's code".takeIf { mixin }) +
-            classNodes.flatMap { node -> node.methods.flatMap { method -> method.instructions.mapNotNull(::sink).map { it.does } } }).distinct().sorted()
+            classNodes.flatMap { node -> node.methods.flatMap { method -> method.instructions.mapNotNull(sinks::of).map { it.does } } }).distinct().sorted()
         if (does.isEmpty()) continue
         val digest = MessageDigest.getInstance("SHA-256")
         // Without debug attributes, so moving a line or renaming a local keeps the audit.
         members.sortedBy { it.first.name }.forEach { (_, bytes) -> digest.update(ClassWriter(0).also { ClassReader(bytes).accept(it, ClassReader.SKIP_DEBUG) }.toByteArray()) }
         gates += InputSite.Gate(display(group), hash(digest), does)
 
-        val methods = classNodes.flatMap { node -> node.methods.map { node.name to it } }
+        val methods = classNodes.flatMap { node -> node.methods.map { MethodRef(node.name, it.name, it.desc) to it } }
         val own = methods.filter { (_, method) ->
-            method.instructions.any { sink(it)?.acts == true } ||
+            method.instructions.any { sinks.of(it)?.acts == true } ||
                 // An invoker runs a private Minecraft method, and an accessor that returns nothing writes a private field.
                 method.invisibleAnnotations.orEmpty().any { it.desc.endsWith("/Invoker;") } ||
                 method.invisibleAnnotations.orEmpty().any { it.desc.endsWith("/Accessor;") } && Type.getReturnType(method.desc) == Type.VOID_TYPE
-        }.map { (owner, method) -> owner to method.name }.toMutableSet()
+        }.map { it.first }.toMutableSet()
         do {
-            val more = methods.filter { (owner, method) -> (owner to method.name) !in own && targets(method).any { it in own } }
-            own += more.map { (owner, method) -> owner to method.name }
+            // A method sends when it calls one that does, or builds a class of the gate that has one, such as a callback.
+            val more = methods.filter { (ref, method) ->
+                ref !in own && (targets(method).any { it in own } || builds(method).any { built -> own.any { it.owner == built } })
+            }
+            own += more.map { it.first }
         } while (more.isNotEmpty())
         sending += own
     }
@@ -175,9 +211,8 @@ fun inputSites(classes: List<ByteArray>, widener: List<String> = emptyList()): L
     val calls = groups.filterKeys { display(it) !in gated }.flatMap { (group, members) ->
         members.flatMap { (node, _) ->
             node.methods.flatMap { method ->
-                targets(method).filter { it in sending }.filter { (owner, name) ->
-                    nodes[owner]?.first?.methods?.none { it.name == name && it.access and Opcodes.ACC_PRIVATE != 0 } ?: true
-                }.map { (owner, name) -> InputSite.Call("${display(group)}.${enclosing(method.name)}", "${display(owner)}.$name") }.toList()
+                targets(method).filter { it in sending }
+                    .map { InputSite.Call("${display(group)}.${enclosing(method.name)}", "${display(it.owner)}.${it.name}") }.toList()
             }
         }
     }
@@ -227,42 +262,73 @@ class InputSitesTest {
 
     @Test
     fun `the scan catches each kind of input site`() {
-        fun example(name: String, vararg insns: AbstractInsnNode, mixin: Boolean = false): ByteArray {
+        class M(val name: String, vararg val insns: AbstractInsnNode, val desc: String = "()V", val access: Int = Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC)
+        fun example(name: String, vararg methods: M, mixin: Boolean = false): ByteArray {
             val node = ClassNode().apply {
                 version = Opcodes.V21
                 access = Opcodes.ACC_PUBLIC
                 this.name = "${MOD}example/$name"
                 superName = "java/lang/Object"
                 if (mixin) visitAnnotation(MIXIN, false)
-                methods.add(MethodNode(Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "run", "()V", null, null).apply {
-                    insns.forEach(instructions::add)
-                    instructions.add(InsnNode(Opcodes.RETURN))
-                })
+                methods.forEach { m ->
+                    this.methods.add(MethodNode(m.access, m.name, m.desc, null, null).apply {
+                        m.insns.forEach(instructions::add)
+                        instructions.add(InsnNode(Opcodes.RETURN))
+                    })
+                }
             }
             return ClassWriter(ClassWriter.COMPUTE_MAXS).also(node::accept).toByteArray()
         }
-        fun call(owner: String, name: String) = MethodInsnNode(Opcodes.INVOKESTATIC, owner, name, "()V")
+        fun run(vararg insns: AbstractInsnNode) = M("run", *insns)
+        fun call(owner: String, name: String, desc: String = "()V") = MethodInsnNode(Opcodes.INVOKESTATIC, owner, name, desc)
+        fun new(type: String) = arrayOf(TypeInsnNode(Opcodes.NEW, type), InsnNode(Opcodes.POP))
+        fun reference(owner: String, name: String, tag: Int = Opcodes.H_INVOKESTATIC) = InvokeDynamicInsnNode(
+            "get", "()Ljava/lang/Object;",
+            Handle(Opcodes.H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory", "()V", false),
+            Handle(tag, owner, name, "()V", false),
+        )
         val sites = inputSites(
             listOf(
-                example("Command", call("net/minecraft/client/multiplayer/ClientPacketListener", "sendCommand")),
-                example("Click", call("net/minecraft/client/multiplayer/MultiPlayerGameMode", "handleContainerInput")),
-                example("Aim", InsnNode(Opcodes.ACONST_NULL), InsnNode(Opcodes.FCONST_0), FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/client/player/LocalPlayer", "yRot", "F")),
-                example("Packet", TypeInsnNode(Opcodes.NEW, "net/minecraft/network/protocol/game/ServerboundSwingPacket"), InsnNode(Opcodes.POP)),
-                example("Link", TypeInsnNode(Opcodes.NEW, "net/minecraft/network/chat/ClickEvent\$RunCommand"), InsnNode(Opcodes.POP)),
-                example("Refuse", call("net/fabricmc/fabric/api/client/screen/v1/ScreenMouseEvents", "allowMouseClick")),
-                example("Use", FieldInsnNode(Opcodes.GETSTATIC, "net/fabricmc/fabric/api/event/player/UseItemCallback", "EVENT", "Lnet/fabricmc/fabric/api/event/Event;"), InsnNode(Opcodes.POP)),
-                example("Reflect", call("java/lang/reflect/Method", "invoke")),
+                example("Command", run(call("net/minecraft/client/multiplayer/ClientPacketListener", "sendCommand"))),
+                example("Click", run(call("net/minecraft/client/multiplayer/MultiPlayerGameMode", "handleContainerInput"))),
+                example("Aim", run(InsnNode(Opcodes.ACONST_NULL), InsnNode(Opcodes.FCONST_0), FieldInsnNode(Opcodes.PUTFIELD, "net/minecraft/client/player/LocalPlayer", "yRot", "F"))),
+                example("Packet", run(*new("net/minecraft/network/protocol/game/ServerboundSwingPacket"))),
+                example("Link", run(*new("net/minecraft/network/chat/ClickEvent\$RunCommand"))),
+                example("LinkReference", run(reference("net/minecraft/network/chat/ClickEvent\$RunCommand", "<init>", Opcodes.H_NEWINVOKESPECIAL), InsnNode(Opcodes.POP))),
+                example("Refuse", run(call("net/fabricmc/fabric/api/client/screen/v1/ScreenMouseEvents", "allowMouseClick"))),
+                example("Use", run(FieldInsnNode(Opcodes.GETSTATIC, "net/fabricmc/fabric/api/event/player/UseItemCallback", "EVENT", "Lnet/fabricmc/fabric/api/event/Event;"), InsnNode(Opcodes.POP))),
+                example("Consume", run(call("net/minecraft/client/KeyMapping", "consumeClick"))),
+                example("Inventory", run(call("net/minecraft/client/player/LocalPlayer", "sendOpenInventory"))),
+                // ToggleKeyMapping extends KeyMapping, and the scan reads that from Minecraft's own class.
+                example("Toggle", run(call("net/minecraft/client/ToggleKeyMapping", "setDown"))),
+                example("Reflect", run(call("java/lang/reflect/Method", "invoke"))),
+                example("Handle", run(call("java/lang/invoke/VarHandle", "set"))),
                 example("Hook", mixin = true),
-                example("Caller", call("${MOD}example/Command", "run")),
-                example("Clicker", call("${MOD}example/Link", "run")),
-                example("Reader", call("net/minecraft/client/multiplayer/MultiPlayerGameMode", "getPlayerMode")),
+                example("Caller", run(call("${MOD}example/Command", "run"))),
+                example("Clicker", run(call("${MOD}example/Link", "run"))),
+                example("Reader", run(call("net/minecraft/client/multiplayer/MultiPlayerGameMode", "getPlayerMode"))),
+                // A private overload of a sending method hides no caller of the public one.
+                example(
+                    "Overload",
+                    M("send", call("net/minecraft/client/multiplayer/ClientPacketListener", "sendCommand"), desc = "(Ljava/lang/String;)V"),
+                    M("send", access = Opcodes.ACC_PRIVATE or Opcodes.ACC_STATIC),
+                ),
+                example("OverloadCaller", run(InsnNode(Opcodes.ACONST_NULL), call("${MOD}example/Overload", "send", "(Ljava/lang/String;)V"))),
+                // A method that hands a callback of the gate's own to a scheduler sends when the callback does.
+                example("Later", M("schedule", *new("${MOD}example/Later\$1"))),
+                example("Later\$1", M("run", call("net/minecraft/client/multiplayer/ClientPacketListener", "sendCommand"), access = Opcodes.ACC_PUBLIC)),
+                example("LaterCaller", run(call("${MOD}example/Later", "schedule"))),
             ),
         )
         assertEquals(
             listOf(
                 "call example.Caller.run -> example.Command.run",
-                "gate example.Aim", "gate example.Click", "gate example.Command", "gate example.Hook",
-                "gate example.Link", "gate example.Packet", "gate example.Reflect", "gate example.Refuse", "gate example.Use",
+                "call example.LaterCaller.run -> example.Later.schedule",
+                "call example.OverloadCaller.run -> example.Overload.send",
+                "gate example.Aim", "gate example.Click", "gate example.Command", "gate example.Consume", "gate example.Handle",
+                "gate example.Hook", "gate example.Inventory", "gate example.Later", "gate example.Link", "gate example.LinkReference",
+                "gate example.Overload", "gate example.Packet", "gate example.Reflect", "gate example.Refuse", "gate example.Toggle",
+                "gate example.Use",
             ),
             sites.map { it.key },
         )
