@@ -27,8 +27,6 @@ A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with 
 | Track a rate, and follow the player into and out of its area | `ZealotTracker` |
 | Mark a place in the world | `BossBeacon` |
 | Act on a key the player binds, or change the camera | `FreeLook` and `Camera`, with `Cameras` in `edge` and the rules in `core/camera` |
-| Send for the player on keys they bind, with a list they edit on a screen of the mod's own | `CommandBinds`, with `CommandKeys` and `CommandBindsScreen` in `edge` and the rules in `core/input` |
-| Refuse the player's own click, and keep what they set up between sessions | `SlotLock`, with `SlotGuards` in `edge` and the rules in `core/inventory` |
 | Handle the player's own input on a vanilla screen, reading nothing from the server | `CopyChat`, with `CopyChats` in `edge` |
 
 - A feature reads `GameEvent`s and the shared state: `tab`, `sidebar` and `container`. `sidebar` has every line as the server styled it, its `Key: value` lines through `info`, and the place. It returns its HUD block from `hud(now)`, built with `block { row("Label") { value(..) } }`, and its slot marks from `slots(now)`. `Readouts` in `edge` hands both to the UI layers when they change. Minecraft, the clock, the disk, placement and drawing belong to the shared layers, so extend the layer when a feature needs more from it.

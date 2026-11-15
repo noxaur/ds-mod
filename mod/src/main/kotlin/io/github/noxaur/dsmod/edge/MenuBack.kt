@@ -77,6 +77,6 @@ object MenuBack {
     fun send(command: String) {
         val connection = Minecraft.getInstance().connection ?: return
         trail.sent(System.currentTimeMillis(), command)
-        connection.sendCommand(command) // rule:no-automation Menu Button and Command Binds: one command, on the player's click
+        connection.sendCommand(command)
     }
 }

@@ -59,8 +59,8 @@ object CommandKeys {
     private fun send(bind: CommandBind) {
         val connection = Minecraft.getInstance().connection ?: return
         when (val message = bind.message) {
-            is Message.Command -> connection.sendCommand(message.text) // rule:no-automation Command Binds
-            is Message.Chat -> connection.sendChat(message.text) // rule:no-automation Command Binds
+            is Message.Command -> connection.sendCommand(message.text)
+            is Message.Chat -> connection.sendChat(message.text)
             null -> {}
         }
     }
