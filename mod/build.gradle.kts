@@ -2,6 +2,9 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.nio.file.StandardOpenOption.CREATE
+import java.nio.file.StandardOpenOption.TRUNCATE_EXISTING
+import java.nio.file.StandardOpenOption.WRITE
 import java.security.MessageDigest
 import java.time.Duration
 import java.time.Instant
@@ -132,13 +135,14 @@ val seedRun = tasks.register("seedRun") {
         }
         if (pack.exists()) return@doLast
         val fetched = runCatching {
-            val request = HttpRequest.newBuilder(URI("https://dragsim.co/textures/dragsim.zip"))
+            // A stalled server must not hold the game back, so a slow answer falls back to the cache or to the game.
+            val request = HttpRequest.newBuilder(URI("https://dragsim.co/textures/dragsim.zip")).timeout(Duration.ofSeconds(30))
             if (cache.exists()) {
                 request.header("If-Modified-Since", RFC_1123_DATE_TIME.format(Instant.ofEpochMilli(cache.lastModified()).atZone(ZoneOffset.UTC)))
             }
             val partial = cache.resolveSibling("dragsim.zip.part").apply { parentFile.mkdirs() }
-            val response = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build()
-                .send(request.build(), HttpResponse.BodyHandlers.ofFile(partial.toPath()))
+            val response = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).followRedirects(HttpClient.Redirect.NORMAL).build()
+                .send(request.build(), HttpResponse.BodyHandlers.ofFile(partial.toPath(), CREATE, WRITE, TRUNCATE_EXISTING))
             if (response.statusCode() == 200) {
                 partial.renameTo(cache.apply { delete() })
                 response.headers().firstValue("Last-Modified").ifPresent {
