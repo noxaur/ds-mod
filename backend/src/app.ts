@@ -5,6 +5,11 @@ import { HttpApiBuilder, HttpApiError, HttpApiMiddleware } from "effect/http-api
 import { Agent, Api, Caller, Player, SignedIn } from "./api.ts";
 import * as Contrib from "./contrib/contrib.ts";
 import { Store } from "./contrib/store.ts";
+import * as Items from "./items/items.ts";
+import { ItemStore } from "./items/store.ts";
+import * as Profiles from "./profiles/profiles.ts";
+import { ProfileStore } from "./profiles/store.ts";
+import { Upstream } from "./profiles/upstream.ts";
 
 /** Compares in the same time whether or not the first characters match, so the admin token cannot be guessed a letter at a time. */
 function same(given: string, expected: string) {
@@ -54,7 +59,16 @@ const ContribLive = HttpApiBuilder.group(Api, "contrib", (handlers) =>
     .handle("submit", ({ params, query, payload }) =>
       Effect.flatMap(Player, ({ userId }) => Contrib.submit(params.id, userId, query.modVersion, payload)),
     )
+    .handle("items", ({ payload }) =>
+      Effect.flatMap(Player, ({ userId }) => Items.report(userId, payload.modVersion, payload.items)),
+    )
     .handle("report", ({ payload }) => Contrib.report(payload.modVersion, payload.sightings)),
+);
+
+const ProfilesLive = HttpApiBuilder.group(Api, "profiles", (handlers) =>
+  handlers
+    .handle("profile", ({ params, query }) => Profiles.profile(params.name, query.profile))
+    .handle("container", ({ params }) => Profiles.container(params.snapshot, params.container)),
 );
 
 const AdminLive = HttpApiBuilder.group(Api, "admin", (handlers) =>
@@ -63,12 +77,18 @@ const AdminLive = HttpApiBuilder.group(Api, "admin", (handlers) =>
     .handle("requests", () => Contrib.reports)
     .handle("close", ({ params }) => Contrib.close(params.id))
     .handle("capture", ({ params }) => Contrib.captureOf(params.id))
+    .handle("items", ({ query }) => Items.appearances({ ...query, limit: query.limit ?? Items.MAX_APPEARANCES_PAGE }))
     .handle("unknowns", () => Contrib.unknowns),
 );
 
 const web = HttpRouter.toWebHandler(
   HttpApiBuilder.layer(Api).pipe(
-    Layer.provide([Health, Layer.provide(ContribLive, SignedInLive), Layer.provide(AdminLive, AgentLive)]),
+    Layer.provide([
+      Health,
+      Layer.provide(ContribLive, SignedInLive),
+      Layer.provide(ProfilesLive, SignedInLive),
+      Layer.provide(AdminLive, AgentLive),
+    ]),
     // The client sent what the errors quote, and a refusal is never logged, so they reach only that client.
     Layer.provide(HttpApiMiddleware.layerProblemDetails({ includeDetails: true })),
     Layer.provide(HttpServer.layerServices),
@@ -98,12 +118,23 @@ const logFailures = ErrorReporter.make(({ cause, error }) => {
  */
 export const MAX_BODY = ByteSize.megabytes(50);
 
+/** Where the API keeps what it keeps, and how it reaches dragsim.co. A test hands it in-memory ones. */
+export interface Services {
+  readonly contrib: Store["Service"];
+  readonly items: ItemStore["Service"];
+  readonly profiles: ProfileStore["Service"];
+  readonly upstream: Upstream["Service"];
+}
+
 /**
- * The API as a function from request to response, keeping its rows and files in [store]. [callerOf] says who a request
+ * The API as a function from request to response, keeping what it keeps in [services]. [callerOf] says who a request
  * is from, and is the only thing that can.
  */
-export const makeApp = (store: Store["Service"], callerOf: (request: Request) => Caller["Service"]) => {
-  const context = Context.make(Store, store).pipe(
+export const makeApp = (services: Services, callerOf: (request: Request) => Caller["Service"]) => {
+  const context = Context.make(Store, services.contrib).pipe(
+    Context.add(ItemStore, services.items),
+    Context.add(ProfileStore, services.profiles),
+    Context.add(Upstream, services.upstream),
     Context.add(ErrorReporter.CurrentErrorReporters, new Set([logFailures])),
     Context.add(HttpIncomingMessage.MaxBodySize, MAX_BODY),
   );

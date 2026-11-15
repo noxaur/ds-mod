@@ -534,9 +534,9 @@ class DsModConfig : Config() {
         var open: Runnable = Runnable {}
 
         @Expose
-        @ConfigOption(name = "Report Unread Lines", desc = "Send lines the mod could not read to its developers, without names.")
+        @ConfigOption(name = "Report Game Data", desc = "Send game data new to ds-mod to its developers, names removed.")
         @ConfigEditorBoolean
         @JvmField
-        var reportUnknowns = false
+        var reportGameData = false
     }
 }

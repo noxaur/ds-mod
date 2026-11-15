@@ -1,0 +1,451 @@
+{
+  "mode": "main",
+  "fetched_at": 1794762925634,
+  "player": {
+    "uuid": "11111111-2222-4333-8444-555555555555",
+    "player": "Testwyrm",
+    "rank": "MVP_PLUS"
+  },
+  "profiles": [
+    {
+      "id": "aaaaaaaa-0000-4000-8000-000000000001",
+      "name": "\u00a75Arcane",
+      "mode": "NORMAL",
+      "selected": false
+    },
+    {
+      "id": "bbbbbbbb-0000-4000-8000-000000000002",
+      "name": "\u00a75Superior",
+      "mode": "IRONMAN",
+      "selected": true
+    }
+  ],
+  "profile": {
+    "id": "bbbbbbbb-0000-4000-8000-000000000002",
+    "profile_name": "\u00a75Superior",
+    "profile_mode": "IRONMAN",
+    "coins": 35124030742.193535,
+    "motes": 0,
+    "bits": 94254,
+    "dragon_essence": 831916,
+    "accessory_power": "SIGHTED",
+    "inventory_hidden": false,
+    "skills": {
+      "combat": 175,
+      "mining": 49,
+      "taming": 2500000000,
+      "catacombs": 600000000,
+      "dragon_slaying": 125
+    },
+    "bestiary": {
+      "CRYPT_GHOUL": {
+        "kills": 74385
+      },
+      "NEST_ZEALOT": {
+        "kills": 368742
+      },
+      "VOIDGLOOM_SERAPH_MOB": {
+        "kills": 0
+      },
+      "REVENANT_HORROR_MOB": {
+        "kills": 1149
+      },
+      "WARDEN": {
+        "kills": 1962
+      },
+      "GOOP": {
+        "kills": 370
+      },
+      "THE_DISTURBED": {
+        "kills": 1542
+      },
+      "NEST_ZEALOT_BRUISER": {
+        "kills": 210934
+      },
+      "NEST_WATCHER": {
+        "kills": 98554
+      },
+      "NEST_DEFENDER": {
+        "kills": 66967
+      },
+      "SPECIAL_ZEALOT": {
+        "kills": 2226
+      },
+      "VOIDLING_DEVOTEE": {
+        "kills": 4142
+      },
+      "NEST_ENDERMITE": {
+        "kills": 0
+      }
+    },
+    "slayer": {
+      "zombie_xp": 17642500,
+      "zombie_level": 9,
+      "enderman_xp": 60444500,
+      "enderman_level": 9,
+      "spider_xp": 15,
+      "spider_level": 0
+    },
+    "inventory": {
+      "0": {
+        "entry": "scylla",
+        "count": 1,
+        "material": "minecraft:iron_sword",
+        "item_data": {
+          "item_name": "Scylla",
+          "item_type": "SWORD",
+          "rarity": "MYTHIC"
+        }
+      },
+      "1": {
+        "entry": "crypt_cache_item",
+        "count": 45,
+        "material": "minecraft:vault",
+        "item_data": {
+          "item_name": "Crypt Cache",
+          "item_type": "NONE",
+          "rarity": "EPIC"
+        }
+      },
+      "8": {
+        "entry": "glacial_scythe",
+        "count": 1,
+        "material": "minecraft:diamond_hoe",
+        "item_data": {
+          "item_name": "Glacial Scythe",
+          "item_type": "SWORD",
+          "rarity": "LEGENDARY"
+        }
+      },
+      "9": {
+        "entry": "reinforced_plating",
+        "count": 4,
+        "material": "minecraft:player_head",
+        "item_data": {
+          "item_name": "Reinforced Plating",
+          "item_type": "NONE",
+          "rarity": "RARE"
+        }
+      },
+      "34": {
+        "entry": "pure_seeds",
+        "count": 2,
+        "material": "minecraft:wheat_seeds",
+        "item_data": {
+          "item_name": "Pure Seeds",
+          "item_type": "REFORGE_STONE",
+          "rarity": "RARE"
+        }
+      },
+      "35": {
+        "entry": "endstone_rose_bush",
+        "count": 12,
+        "material": "minecraft:rose_bush",
+        "item_data": {
+          "item_name": "Endstone Rose Bush",
+          "item_type": "NONE",
+          "rarity": "EPIC"
+        }
+      },
+      "41": {
+        "entry": "maxor_helmet",
+        "count": 1,
+        "material": "minecraft:player_head",
+        "item_data": {
+          "item_name": "Storm Helmet",
+          "item_type": "HELMET",
+          "rarity": "MYTHIC"
+        }
+      },
+      "42": {
+        "entry": "maxor_chestplate",
+        "count": 1,
+        "material": "minecraft:leather_chestplate",
+        "item_data": {
+          "item_name": "Storm Chestplate",
+          "item_type": "CHESTPLATE",
+          "rarity": "MYTHIC"
+        }
+      },
+      "43": {
+        "entry": "maxor_leggings",
+        "count": 1,
+        "material": "minecraft:leather_leggings",
+        "item_data": {
+          "item_name": "Storm Leggings",
+          "item_type": "LEGGINGS",
+          "rarity": "MYTHIC"
+        }
+      },
+      "44": {
+        "entry": "maxor_boots",
+        "count": 1,
+        "material": "minecraft:leather_boots",
+        "item_data": {
+          "item_name": "Storm Boots",
+          "item_type": "BOOTS",
+          "rarity": "MYTHIC"
+        }
+      }
+    },
+    "ender_chest": {
+      "0": {
+        "entry": "ritual_residue",
+        "count": 64,
+        "material": "minecraft:player_head",
+        "item_data": {
+          "item_name": "Ritual Residue",
+          "item_type": "NONE",
+          "rarity": "EPIC"
+        }
+      },
+      "1": {
+        "entry": "ritual_residue",
+        "count": 64,
+        "material": "minecraft:player_head",
+        "item_data": {
+          "item_name": "Ritual Residue",
+          "item_type": "NONE",
+          "rarity": "EPIC"
+        }
+      },
+      "26": {
+        "entry": "minecraft:player_head",
+        "count": 5,
+        "material": "minecraft:player_head",
+        "item_data": {
+          "item_name": "minecraft:player_head",
+          "item_type": "NONE",
+          "rarity": "COMMON"
+        }
+      }
+    },
+    "storage": {
+      "0": {
+        "0": {
+          "entry": "voidfang_dagger",
+          "count": 1,
+          "material": "minecraft:netherite_sword",
+          "item_data": {
+            "item_name": "Voidfang Dagger",
+            "item_type": "SWORD",
+            "rarity": "MYTHIC"
+          }
+        },
+        "43": {
+          "entry": "aspect_of_the_end",
+          "count": 1,
+          "material": "minecraft:diamond_sword",
+          "item_data": {
+            "item_name": "Aspect of the End",
+            "item_type": "SWORD",
+            "rarity": "RARE"
+          }
+        }
+      },
+      "1": {},
+      "2": {
+        "44": {
+          "entry": "witching_wand",
+          "count": 1,
+          "material": "minecraft:blaze_rod",
+          "item_data": {
+            "item_name": "Witching Wand",
+            "item_type": "WAND",
+            "rarity": "EPIC"
+          }
+        }
+      }
+    },
+    "wardrobe": {
+      "equipped": 2,
+      "slots": {
+        "0": {
+          "helmet": {
+            "entry": "sorrow_helmet",
+            "count": 1,
+            "material": "minecraft:player_head",
+            "item_data": {
+              "item_name": "Sorrow Helmet",
+              "item_type": "HELMET",
+              "rarity": "MYTHIC"
+            }
+          },
+          "chestplate": {
+            "entry": "sorrow_chestplate",
+            "count": 1,
+            "material": "minecraft:leather_chestplate",
+            "item_data": {
+              "item_name": "Sorrow Chestplate",
+              "item_type": "CHESTPLATE",
+              "rarity": "MYTHIC"
+            }
+          },
+          "leggings": {
+            "entry": "sorrow_leggings",
+            "count": 1,
+            "material": "minecraft:leather_leggings",
+            "item_data": {
+              "item_name": "Sorrow Leggings",
+              "item_type": "LEGGINGS",
+              "rarity": "MYTHIC"
+            }
+          },
+          "boots": {
+            "entry": "sorrow_boots",
+            "count": 1,
+            "material": "minecraft:leather_boots",
+            "item_data": {
+              "item_name": "Sorrow Boots",
+              "item_type": "BOOTS",
+              "rarity": "MYTHIC"
+            }
+          }
+        },
+        "3": {
+          "chestplate": {
+            "entry": "void_chestplate",
+            "count": 1,
+            "material": "minecraft:leather_chestplate",
+            "item_data": {
+              "item_name": "Chestplate of the Void",
+              "item_type": "CHESTPLATE",
+              "rarity": "DIVINE"
+            }
+          }
+        }
+      }
+    },
+    "accessory_bag": {
+      "0": {
+        "entry": "void_relic",
+        "count": 1,
+        "material": "minecraft:player_head",
+        "item_data": {
+          "item_name": "Void Relic",
+          "item_type": "ACCESSORY",
+          "rarity": "DIVINE"
+        }
+      },
+      "1": {
+        "entry": "high_greed",
+        "count": 1,
+        "material": "minecraft:player_head",
+        "item_data": {
+          "item_name": "High Greed",
+          "item_type": "ACCESSORY",
+          "rarity": "MYTHIC"
+        }
+      },
+      "10": {
+        "entry": "zombie_relic",
+        "count": 1,
+        "material": "minecraft:player_head",
+        "item_data": {
+          "item_name": "Zombie Relic",
+          "item_type": "ACCESSORY",
+          "rarity": "MYTHIC"
+        }
+      }
+    },
+    "pets": [
+      {
+        "type": "GOLDEN_DRAGON",
+        "rarity": "LEGENDARY",
+        "totalXp": 1798563928,
+        "xpCurve": 2,
+        "candiesUsed": 3,
+        "active": true,
+        "equippedItem": "pet_item_lucky_clover",
+        "skinOverride": "pet_skin_golden_dragon_ancient"
+      },
+      {
+        "type": "BLACK_CAT",
+        "rarity": "EPIC",
+        "totalXp": 0,
+        "xpCurve": 2,
+        "candiesUsed": 0,
+        "active": false
+      }
+    ],
+    "haunted_candy_earned": 8396,
+    "draconic_experience": 370,
+    "updated_at": 1794762918524,
+    "stats": {
+      "base": {
+        "intelligence": 300,
+        "health": 600,
+        "mystery": 1
+      },
+      "additive": {
+        "health": 15
+      },
+      "multiplicative": {},
+      "increase_max": {
+        "health": 5
+      }
+    },
+    "collections": {
+      "obsidian": 2747774,
+      "mystery_ore": 3
+    },
+    "rng_meters": {
+      "revenant": {
+        "kills": 2495
+      },
+      "mine_node": {
+        "kills": 962
+      }
+    },
+    "dungeons": {
+      "class": "TANK",
+      "secrets": 12,
+      "zombie_kills": 31,
+      "skeletor_kills": 15,
+      "class_xp": {
+        "MAGE": 18932.5,
+        "TANK": 75730.5
+      },
+      "completions": {
+        "M1": 2,
+        "F7": 467
+      },
+      "best_score": {
+        "F7": 353
+      },
+      "essence": {
+        "wither_essence": 8608
+      }
+    },
+    "hotd": {
+      "tier": 10,
+      "exp": 85183989,
+      "core": 10,
+      "ender": 11932047,
+      "void": 43761698,
+      "resets": 20,
+      "ability": "void_infusion",
+      "tokens": 0,
+      "nodes": {
+        "MINING_FORTUNE": 50,
+        "DRAGONS_FAVOR": 1
+      }
+    },
+    "forge": [
+      {
+        "slot": 1,
+        "recipe": "obsidian",
+        "started": 1792679895946,
+        "duration": 1800000,
+        "stage": "RUNNING"
+      },
+      {
+        "slot": 0,
+        "recipe": "refined_end_stone",
+        "started": 1792679893796,
+        "duration": 1800000,
+        "stage": "READY"
+      }
+    ]
+  }
+}

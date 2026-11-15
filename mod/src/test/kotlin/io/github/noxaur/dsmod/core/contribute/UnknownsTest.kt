@@ -1,6 +1,8 @@
 package io.github.noxaur.dsmod.core.contribute
 
+import io.github.noxaur.dsmod.core.backend.BackendException
 import io.github.noxaur.dsmod.core.backend.Sighting
+import java.util.concurrent.CompletionException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -55,12 +57,29 @@ class UnknownsTest {
         unknowns.see("a", "x 2")
         assertFalse(unknowns.waiting, "a shape on its way is not collected twice")
 
-        unknowns.finished(batch, delivered = false)
+        unknowns.finished(batch, RuntimeException())
         assertEquals(batch, unknowns.take())
 
-        unknowns.finished(batch, delivered = true)
+        unknowns.finished(batch, null)
         unknowns.see("a", "x 3")
         assertFalse(unknowns.waiting)
+    }
+
+    @Test
+    fun `a batch the backend refused for good is dropped, and any other failure is tried again`() {
+        for (status in listOf(400, 404, 409, 413, 422)) {
+            val refused = Unknowns { emptySet() }
+            refused.see("a", "x $status")
+            refused.finished(refused.take(), CompletionException(BackendException(status, "refused")))
+            refused.see("a", "x $status")
+            assertFalse(refused.waiting, "$status is not tried again")
+        }
+        for (error in listOf(BackendException(401, "sign in"), BackendException(500, "down"), BackendException(503, "busy"), BackendException(null, "offline"), RuntimeException())) {
+            val failed = Unknowns { emptySet() }
+            failed.see("a", "x")
+            failed.finished(failed.take(), CompletionException(error))
+            assertTrue(failed.waiting, "$error is tried again")
+        }
     }
 
     @Test
@@ -69,7 +88,7 @@ class UnknownsTest {
             repeat(200) { unknowns.see("b", "round $round line ${"x".repeat(it)}") }
             val batch = unknowns.take()
             repeat(200) { unknowns.see("c", "round $round line ${"y".repeat(it)}") }
-            unknowns.finished(batch, delivered = false)
+            unknowns.finished(batch, RuntimeException())
         }
 
         assertEquals(50, unknowns.take().size)

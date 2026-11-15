@@ -32,6 +32,7 @@ import kotlin.io.path.writeText
 
 private const val WARM_UP_TICKS = 60
 private const val WINDOWS = 12
+private const val INVENTORY_SLOTS = 36
 private const val WINDOW_TICKS = 10
 private const val HUD_BLOCKS = 8
 private const val FIRST_MARKED_SLOT = 9
@@ -75,6 +76,14 @@ class PerfTest : FabricClientGameTest {
                 world.server.runCommand("team join line$line §$line")
                 world.server.runCommand("scoreboard players set §$line perf $line")
             }
+            // A full inventory of the server's items, read by item sightings while the player reports what is unseen.
+            repeat(INVENTORY_SLOTS) { slot ->
+                world.server.runCommand(
+                    """item replace entity @p container.$slot with diamond_sword[custom_data={item_data:{item_id:"perf_$slot",rarity:"LEGENDARY"}},""" +
+                        """custom_name='"Perf Sword $slot"',lore=['"Damage: +$slot"','"LEGENDARY SWORD"']]""",
+                )
+            }
+            context.runOnClient<Nothing> { DsModClient.settings.contribute.reportGameData = true }
             context.waitTicks(20)
             context.runOnClient<Nothing> {
                 val group = HudGroup("perf", 6, 6, background = true)
@@ -114,6 +123,7 @@ class PerfTest : FabricClientGameTest {
             context.runOnClient<Nothing> {
                 it.gui.setScreen(null)
                 repeat(HUD_BLOCKS) { block -> Hud.hide("perf-$block") }
+                DsModClient.settings.contribute.reportGameData = false
             }
             System.getProperty("dsmod.jar")?.let { samples["jar"] = mutableListOf(File(it).length() / 1024.0) }
 

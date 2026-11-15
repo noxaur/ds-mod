@@ -5,6 +5,7 @@ import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
 import com.mojang.authlib.properties.PropertyMap
 import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.Skulls
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -27,17 +28,26 @@ import java.util.Base64
 import java.util.UUID
 
 /** Walks the components and the NBT directly, because the codecs are slow and this runs on the client thread. */
-fun ItemStack.toItem() = Item(
-    BuiltInRegistries.ITEM.getKey(item).toString(),
-    count,
-    get(DataComponents.CUSTOM_NAME)?.toText(),
-    get(DataComponents.LORE)?.lines()?.map { it.toText() }.orEmpty(),
-    get(DataComponents.CUSTOM_DATA)?.copyTag()?.toJson() ?: JsonObject(emptyMap()),
-    get(DataComponents.PROFILE)?.partialProfile()?.properties()?.get(TEXTURES)?.firstOrNull()?.let { skin(it.value()) },
-    get(DataComponents.DYED_COLOR)?.rgb(),
-    get(DataComponents.ENCHANTMENT_GLINT_OVERRIDE),
-    get(DataComponents.TOOLTIP_STYLE)?.toString(),
-)
+fun ItemStack.toItem(): Item {
+    val id = BuiltInRegistries.ITEM.getKey(item).toString()
+    return Item(
+        id,
+        count,
+        get(DataComponents.CUSTOM_NAME)?.toText(),
+        get(DataComponents.LORE)?.lines()?.map { it.toText() }.orEmpty(),
+        get(DataComponents.CUSTOM_DATA)?.copyTag()?.toJson() ?: JsonObject(emptyMap()),
+        skullTexture()?.let(::skin),
+        get(DataComponents.DYED_COLOR)?.rgb(),
+        get(DataComponents.ENCHANTMENT_GLINT_OVERRIDE),
+        get(DataComponents.TOOLTIP_STYLE)?.toString(),
+        hasFoil(),
+        get(DataComponents.ITEM_MODEL)?.toString()?.takeIf { it != id },
+    )
+}
+
+/** The `textures` property of a player head's profile, as the server wrote it. */
+fun ItemStack.skullTexture(): String? =
+    get(DataComponents.PROFILE)?.partialProfile()?.properties()?.get(TEXTURES)?.firstOrNull()?.value()
 
 /**
  * A stack that draws as the [Item] and shows its tooltip. A head's skin goes back without the signature the server
@@ -50,8 +60,7 @@ fun Item.toStack(): ItemStack {
     name?.let { stack.set(DataComponents.CUSTOM_NAME, it.toComponent()) }
     if (lore.isNotEmpty()) stack.set(DataComponents.LORE, ItemLore(lore.map { it.toComponent() }))
     skin?.let {
-        val value = Base64.getEncoder().encodeToString("{\"textures\":{\"SKIN\":{\"url\":\"$SKINS$it\"}}}".toByteArray())
-        val properties = PropertyMap(ImmutableMultimap.of(TEXTURES, Property(TEXTURES, value)))
+        val properties = PropertyMap(ImmutableMultimap.of(TEXTURES, Property(TEXTURES, Skulls.property(it))))
         stack.set(DataComponents.PROFILE, ResolvableProfile.createResolved(GameProfile(UUID.nameUUIDFromBytes(it.toByteArray()), "", properties)))
     }
     dye?.let { stack.set(DataComponents.DYED_COLOR, DyedItemColor(it)) }
@@ -61,7 +70,6 @@ fun Item.toStack(): ItemStack {
 }
 
 private const val TEXTURES = "textures"
-private const val SKINS = "http://textures.minecraft.net/texture/"
 private val SKIN = Regex("""textures\.minecraft\.net/texture/([0-9a-f]+)""")
 
 /** The skin's part of a `textures` property's value, which is base64 of JSON naming the skin's address. */
