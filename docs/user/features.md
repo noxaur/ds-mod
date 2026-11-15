@@ -34,6 +34,7 @@ Open **Item Position** to move the item with Item X, Item Y and Item Z, or turn 
 | --- | --- |
 | Scale Swing | Makes the swing reach as far as Item Size makes the item big. On by default |
 | No Swing | Keeps the item still when you swing |
+| No Bow Swing | Keeps a bow or crossbow still when you swing it, for a bow that shoots on a click |
 | Ignore Haste | Keeps the swing at the same pace under Haste or Mining Fatigue |
 | No Equip Reset | Keeps the item up after a hit or a use, and when the server updates it, instead of lowering and raising it |
 

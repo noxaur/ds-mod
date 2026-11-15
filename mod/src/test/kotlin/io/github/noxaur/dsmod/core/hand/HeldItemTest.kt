@@ -57,6 +57,7 @@ class HeldItemTest {
         settings.itemRoll = 45f
         settings.scaleSwing = false
         settings.noSwing = true
+        settings.noBowSwing = true
         settings.ignoreHaste = true
         settings.noEquipReset = true
         settings.resetAnimations.run()
@@ -64,9 +65,9 @@ class HeldItemTest {
         assertEquals(false, settings.animations)
         assertEquals(
             listOf(fresh.swingStyle, fresh.swingSpeed, fresh.itemSize, fresh.itemX, fresh.itemY, fresh.itemZ, fresh.itemYaw, fresh.itemPitch,
-                fresh.itemRoll, fresh.scaleSwing, fresh.noSwing, fresh.ignoreHaste, fresh.noEquipReset),
+                fresh.itemRoll, fresh.scaleSwing, fresh.noSwing, fresh.noBowSwing, fresh.ignoreHaste, fresh.noEquipReset),
             listOf(settings.swingStyle, settings.swingSpeed, settings.itemSize, settings.itemX, settings.itemY, settings.itemZ, settings.itemYaw,
-                settings.itemPitch, settings.itemRoll, settings.scaleSwing, settings.noSwing, settings.ignoreHaste, settings.noEquipReset),
+                settings.itemPitch, settings.itemRoll, settings.scaleSwing, settings.noSwing, settings.noBowSwing, settings.ignoreHaste, settings.noEquipReset),
         )
     }
 }

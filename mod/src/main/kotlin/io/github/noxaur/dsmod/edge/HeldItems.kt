@@ -13,6 +13,7 @@ import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.HumanoidArm
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.ProjectileWeaponItem
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -38,6 +39,12 @@ object HeldItems {
     private val block = Ease()
 
     private fun side(arm: HumanoidArm) = if (arm == HumanoidArm.RIGHT) 1 else -1
+
+    /** What the player holds in the hand on [arm]'s side. */
+    private fun held(arm: HumanoidArm): ItemStack {
+        val player = Minecraft.getInstance().player ?: return ItemStack.EMPTY
+        return if (arm == player.mainArm) player.mainHandItem else player.offhandItem
+    }
 
     /**
      * Moves the item before the arm puts it in the hand, so X moves it across the screen rather than along the
@@ -70,7 +77,7 @@ object HeldItems {
     fun swing(pose: PoseStack, arm: HumanoidArm, attack: Float, spear: Boolean): Boolean {
         if (!on) return false
         val s = settings
-        if (s.noSwing) return true
+        if (s.noSwing || s.noBowSwing && held(arm).item is ProjectileWeaponItem) return true
         val side = side(arm)
         val reach = if (s.scaleSwing) s.itemSize else 1f
         when (s.swingStyle) {

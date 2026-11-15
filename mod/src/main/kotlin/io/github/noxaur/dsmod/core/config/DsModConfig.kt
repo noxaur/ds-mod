@@ -270,6 +270,13 @@ class DsModConfig : Config() {
         var noSwing = false
 
         @Expose
+        @ConfigOption(name = "No Bow Swing", desc = "Keep a bow still when you swing it, as when it shoots on a click.")
+        @ConfigEditorBoolean
+        @ConfigAccordionId(id = SWING_OPTIONS)
+        @JvmField
+        var noBowSwing = false
+
+        @Expose
         @ConfigOption(name = "Ignore Haste", desc = "Swing at the same pace under Haste or Mining Fatigue.")
         @ConfigEditorBoolean
         @ConfigAccordionId(id = SWING_OPTIONS)
@@ -302,6 +309,7 @@ class DsModConfig : Config() {
             itemRoll = fresh.itemRoll
             scaleSwing = fresh.scaleSwing
             noSwing = fresh.noSwing
+            noBowSwing = fresh.noBowSwing
             ignoreHaste = fresh.ignoreHaste
             noEquipReset = fresh.noEquipReset
         }
