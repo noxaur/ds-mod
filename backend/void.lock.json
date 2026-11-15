@@ -7,11 +7,11 @@
         "pattern": "api.ds-mod.perwko.com",
         "custom_domain": true
       }
-    ]
+    ],
+    "workers_dev": false,
+    "preview_urls": false
   },
   "resolved": {
-    "account_id": "865dded96630ca6a533584a80efad356",
-    "compatibility_date": "2026-02-24",
     "name": "dsmod-backend",
     "routes": [
       {
@@ -19,6 +19,8 @@
         "custom_domain": true
       }
     ],
+    "account_id": "865dded96630ca6a533584a80efad356",
+    "compatibility_date": "2026-02-24",
     "d1_databases": [
       {
         "binding": "DB",
@@ -32,7 +34,9 @@
         "binding": "STORAGE",
         "bucket_name": "dsmod-backend-storage"
       }
-    ]
+    ],
+    "workers_dev": false,
+    "preview_urls": false
   },
-  "text": "{\n  \"account_id\": \"865dded96630ca6a533584a80efad356\",\n  \"compatibility_date\": \"2026-02-24\",\n  \"name\": \"dsmod-backend\",\n  \"routes\": [\n    {\n      \"pattern\": \"api.ds-mod.perwko.com\",\n      \"custom_domain\": true\n    }\n  ],\n  \"d1_databases\": [\n    {\n      \"binding\": \"DB\",\n      \"database_name\": \"dsmod-backend-db\",\n      \"database_id\": \"a6c78345-b338-4a9d-bc5f-d3c4e767c093\",\n      \"migrations_dir\": \"./db/migrations\"\n    }\n  ],\n  \"r2_buckets\": [\n    {\n      \"binding\": \"STORAGE\",\n      \"bucket_name\": \"dsmod-backend-storage\"\n    }\n  ]\n}\n"
+  "text": "{\n  \"name\": \"dsmod-backend\",\n  \"routes\": [\n    {\n      \"pattern\": \"api.ds-mod.perwko.com\",\n      \"custom_domain\": true\n    }\n  ],\n  \"account_id\": \"865dded96630ca6a533584a80efad356\",\n  \"compatibility_date\": \"2026-02-24\",\n  \"d1_databases\": [\n    {\n      \"binding\": \"DB\",\n      \"database_name\": \"dsmod-backend-db\",\n      \"database_id\": \"a6c78345-b338-4a9d-bc5f-d3c4e767c093\",\n      \"migrations_dir\": \"./db/migrations\"\n    }\n  ],\n  \"r2_buckets\": [\n    {\n      \"binding\": \"STORAGE\",\n      \"bucket_name\": \"dsmod-backend-storage\"\n    }\n  ],\n  \"workers_dev\": false,\n  \"preview_urls\": false\n}\n"
 }
