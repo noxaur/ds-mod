@@ -125,6 +125,12 @@ class FavoritesTest : FabricClientGameTest {
             context.runOnClient<Nothing> { DsModClient.openSettings(loot) }
             context.waitTicks(5)
             point(loot, dx = 30, dy = 12)
+            // With Ctrl held it is left alone, as the keyboard's key is.
+            context.input.holdKey(GLFW.GLFW_KEY_LEFT_CONTROL)
+            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
+            context.input.releaseKey(GLFW.GLFW_KEY_LEFT_CONTROL)
+            context.waitTicks(2)
+            check("loot.lootAlerts" !in settings.favorites) { "Ctrl and the middle button starred Loot Alerts" }
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
             context.waitTicks(2)
             check("loot.lootAlerts" in settings.favorites) { "The middle button left ${settings.favorites}" }

@@ -258,11 +258,18 @@ object Settings {
             }
         }
 
+        /**
+         * Whether the Favorite Key may act: never while a text field has focus, nor with Ctrl or Alt held, so typing and
+         * MoulConfig's Ctrl+F still work, whether the key is on the keyboard or the mouse.
+         */
+        private fun keyFree() = Minecraft.getInstance().let { context?.focusedElement == null && !it.hasControlDown() && !it.hasAltDown() }
+
         override fun mouseInput(x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int, event: MouseEvent): Boolean {
             val key = config.instance.general.favoriteKey
             val press = event is MouseEvent.Click && event.mouseState
             if (event is MouseEvent.Click &&
-                hovered === this && (event.mouseButton == 0 && onStar(x, y, width, mouseX, mouseY) || Keys.isMouse(key) && event.mouseButton == key)
+                hovered === this &&
+                (event.mouseButton == 0 && onStar(x, y, width, mouseX, mouseY) || Keys.isMouse(key) && event.mouseButton == key && keyFree())
             ) {
                 if (press) toggle(option.path)
                 return true
@@ -273,10 +280,8 @@ object Settings {
         override fun keyboardInput(event: KeyboardEvent): Boolean {
             if (inner.keyboardInput(event)) return true
             val key = config.instance.general.favoriteKey
-            // Left alone while a text field has focus, and with Ctrl or Alt held, so typing and MoulConfig's Ctrl+F still work.
-            val client = Minecraft.getInstance()
             if (event !is KeyboardEvent.KeyPressed || !event.pressed || Keys.isMouse(key) || event.keycode != key || hovered !== this) return false
-            if (context?.focusedElement != null || client.hasControlDown() || client.hasAltDown()) return false
+            if (!keyFree()) return false
             toggle(option.path)
             eatChar = true
             return true
