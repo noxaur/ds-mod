@@ -18,6 +18,7 @@ import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
 import io.github.noxaur.dsmod.core.feature.inventory.HideFiller
 import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
 import io.github.noxaur.dsmod.core.feature.inventory.RarityOutlines
+import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.feature.inventory.StableMenus
 import io.github.noxaur.dsmod.core.feature.inventory.ThemedMenus
 import io.github.noxaur.dsmod.core.feature.loot.LootAlerts
@@ -45,6 +46,7 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     StableMenus(config.inventory::stableMenus),
     HideFiller(config.inventory::hideFiller),
     KeepCursor(config.inventory::keepCursor),
+    SlotLock(config.inventory::slotLock),
     LootAlerts(config.loot::lootAlerts, config.loot::lootAlertTier),
     SlayerBossAlert(config.slayer::slayerBossAlert),
     SlayerTracker(config.slayer::slayerTracker),

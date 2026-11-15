@@ -5,6 +5,7 @@ import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.features
+import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.WorldChanged
@@ -78,7 +79,8 @@ object DsModClient : ClientModInitializer {
             FabricLoader.getInstance().configDir.resolve("dsmod/config.json").toFile(),
             DsModConfig::class.java,
         )
-        game = Game(features(config.instance)) { active }
+        val all = features(config.instance)
+        game = Game(all) { active }
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
         Kit.register()
         Hud.register()
@@ -88,6 +90,7 @@ object DsModClient : ClientModInitializer {
         ArmorSwapGuards.register(config.instance.inventory)
         EyeGuards.register(config.instance.end)
         CopyChats.register(config.instance.chat)
+        SlotGuards.register(all.filterIsInstance<SlotLock>().single(), config.instance.inventory)
         readouts = Readouts(game, config.instance.hud).also { it.register() }
         tabs = TabListPoller(game)
         sidebars = SidebarPoller(game)

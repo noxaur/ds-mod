@@ -129,9 +129,21 @@ Camera's height and tilt are applied after the game has put the camera at the ey
 
 The key's press comes from `KeyMapping.click`, the place the game counts presses for its own key binds, and its release is read from the key's state each frame. A press read from the state would miss a tap that starts and ends inside one frame, and Toggle mode is nothing but taps.
 
+## A locked slot refuses the click before the game predicts it
+
+The client moves the item in its own inventory as it sends a click, so a click dropped at the packet would leave the player looking at a move the server never made. Every pick up, Shift click, number key, throw and double click in a menu passes through `AbstractContainerScreen.slotClicked` first, so `SlotClickMixin` refuses there and nothing is predicted or sent. The drop key outside a menu never reaches a screen, which is why `DropKeyMixin` exists beside it.
+
+A lock is an index in the player's own inventory. A menu numbers its slots its own way, and the same inventory slot has another number in a chest than in the inventory screen, so a lock kept by menu index would move to another slot with each menu.
+
+An item lock is the ID the server writes in `item_data.uuid`. In the captures every item that does not stack has one and no stackable item does, so two swords of one kind are told apart and a stack cannot be locked this way. Reading it copies the item's whole data tag, so `SlotGuards` keeps each ID by the data component, which stacks share.
+
+A Shift click lands wherever the menu's own code finds room, and each menu orders that its own way. `SlotGuards` only asks whether a locked slot could take the item, and when one could, it carries the item to a slot that is not locked with the two clicks a player would make. That needs the menu's rough order and never its exact one.
+
+The swap-hands key is not guarded. On dragsim.co it opens the server's menu and swaps nothing.
+
 ## Private fields are read through accessor mixins
 
-Minecraft keeps an open container's position and size on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the four fields. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on. The release jar declares no access widener of its own, so an accessor mixin is the only way release code reaches into Minecraft's internals.
+Minecraft keeps an open container's position and size on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the four fields, and the slot under the mouse. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on. The release jar declares no access widener of its own, so an accessor mixin is the only way release code reaches into Minecraft's internals.
 
 ## CI measures the mod in a real game
 
