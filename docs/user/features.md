@@ -113,7 +113,21 @@ Keys shown in red fire another bind too, and keys in yellow also do something in
 
 Theme picks the colors of ds-mod's screens: Charcoal is dark, and Vanilla matches the game's own menus. Move HUD, or `/dsmod hud`, opens the HUD editor.
 
-<sub>Scroll over a block to resize it. Hold Shift to place it without snapping.</sub>
+<sub>Scroll over a block to resize it, and right-click it to put it back in the stack. Hold Shift to place it without snapping. Escape during a drag puts the block back where it was.</sub>
+
+### Drag In Chat
+
+Open the chat and move the HUD as it is, without the editor. Point at a block to see its name.
+
+| Do this | To |
+| --- | --- |
+| Drag a block | Move it. It lines up with the screen's edges and middle and with the other blocks |
+| Hold Shift while you drag | Place it without lining up |
+| Press Escape while you drag | Put it back where it was |
+| Scroll over a block | Make it bigger or smaller |
+| Right-click a block | Put it back in the stack at its own size |
+
+The chat comes first: where its messages, the input or the command suggestions lie over a block, clicks and the wheel work on the chat as they always have. What you type still goes into the chat. A block docked beside the hotbar stays there, and blocks that only show during a fight are placed in the HUD editor.
 
 ## Chat
 

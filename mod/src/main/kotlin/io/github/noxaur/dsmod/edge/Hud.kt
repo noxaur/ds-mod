@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.hud.BarRow
 import io.github.noxaur.dsmod.core.hud.HudBlock
+import io.github.noxaur.dsmod.core.hud.HudBox
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.HudLook
@@ -73,6 +74,9 @@ object Hud {
      */
     class Placed(val id: String, val x: Float, val y: Float, val width: Int, val height: Int, val scale: Float) {
         fun contains(px: Double, py: Double) = px >= x && px < x + width * scale && py >= y && py < y + height * scale
+
+        /** Its box as drawn, at its scale. */
+        fun box() = HudBox(id, x, y, width * scale, height * scale)
     }
 
     private val groups = LinkedHashMap<String, Group>()

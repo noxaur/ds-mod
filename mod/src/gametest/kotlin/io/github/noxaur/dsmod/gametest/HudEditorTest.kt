@@ -99,7 +99,8 @@ class HudEditorTest : FabricClientGameTest {
             context.runOnClient<Nothing> { client ->
                 val screen = client.gui.screen()!!
                 val block = Hud.find(ID)!!
-                val to = screen.width / 2.0 to screen.height - 30.0
+                // Grabbed 5 in, so the block's bottom lands on the screen's, where it stays whole.
+                val to = screen.width / 2.0 to screen.height - block.height * block.scale - 2.0 + 5.0
                 check(screen.mouseClicked(press(block.x + 5.0, block.y + 5.0), false)) { "The block was not under the mouse" }
                 screen.mouseDragged(press(to.first, to.second), 0.0, 0.0)
                 screen.mouseReleased(press(to.first, to.second))
@@ -113,26 +114,52 @@ class HudEditorTest : FabricClientGameTest {
 
 
             // Let go three pixels off the middle of the screen, the block centers itself. With Shift it stays where it was dropped.
-            context.runOnClient<Nothing> { client ->
+            fun dragTo(screen: net.minecraft.client.gui.screens.Screen, x: Double, y: Double): Hud.Placed {
+                val block = Hud.find(ID)!!
+                check(screen.mouseClicked(press(block.x + 5.0, block.y + 5.0), false)) { "The block was not under the mouse" }
+                screen.mouseDragged(press(x + 5.0, y + 5.0), 0.0, 0.0)
+                screen.mouseReleased(press(x + 5.0, y + 5.0))
+                return Hud.find(ID)!!
+            }
+            val (centered, middle) = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
                 val screen = client.gui.screen()!!
-                fun dragTo(x: Double, y: Double, modifiers: Int): Hud.Placed {
-                    val block = Hud.find(ID)!!
-                    fun at(px: Double, py: Double) = MouseButtonEvent(px, py, MouseButtonInfo(0, modifiers))
-                    check(screen.mouseClicked(at(block.x + 5.0, block.y + 5.0), false)) { "The block was not under the mouse" }
-                    screen.mouseDragged(at(x + 5.0, y + 5.0), 0.0, 0.0)
-                    screen.mouseReleased(at(x + 5.0, y + 5.0))
-                    return Hud.find(ID)!!
-                }
                 val size = Hud.find(ID)!!.let { it.width * it.scale to it.height * it.scale }
                 val centered = (screen.width - size.first) / 2.0
                 val middle = (screen.height - size.second) / 2.0
                 // Every other feature's placeholder stacks down from the top-left, and grows with each feature until one of its
                 // edges is nearer the drop than the middle is. Those blocks come back when Done closes the editor.
                 Hud.placed().filter { it.id != ID }.forEach { Hud.hide(it.id) }
-                val snapped = dragTo(centered + 3, middle - 3, 0)
+                val snapped = dragTo(screen, centered + 3, middle - 3)
                 check(Math.abs(snapped.x - centered) < 0.6 && Math.abs(snapped.y - middle) < 0.6) { "The block did not center: ${snapped.x}, ${snapped.y}, wanted $centered, $middle on ${screen.width}x${screen.height} with $size" }
-                val free = dragTo(centered + 3, middle - 3, org.lwjgl.glfw.GLFW.GLFW_MOD_SHIFT)
+                centered to middle
+            }
+            // Shift is read from the keyboard, so one pressed after the press still frees the drag.
+            context.input.holdShift()
+            context.runOnClient<Nothing> { client ->
+                val free = dragTo(client.gui.screen()!!, centered + 3, middle - 3)
                 check(Math.abs(free.x - (centered + 3)) < 0.6 && Math.abs(free.y - (middle - 3)) < 0.6) { "Shift did not skip the snap: ${free.x}, ${free.y}" }
+            }
+            context.input.releaseShift()
+
+            // Escape during a drag puts the block back and leaves the editor open. Without a drag it closes the editor.
+            context.runOnClient<Nothing> { client ->
+                val screen = client.gui.screen()!!
+                val before = Hud.find(ID)!!
+                check(screen.mouseClicked(press(before.x + 5.0, before.y + 5.0), false)) { "The block was not under the mouse" }
+                screen.mouseDragged(press(before.x + 45.0, before.y + 35.0), 40.0, 30.0)
+                check(screen.keyPressed(net.minecraft.client.input.KeyEvent(org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE, 0, 0))) { "Escape was not taken" }
+                screen.mouseReleased(press(before.x + 45.0, before.y + 35.0))
+                val after = Hud.find(ID)!!
+                check(after.x == before.x && after.y == before.y && client.gui.screen() === screen) { "Escape left the block at ${after.x}, ${after.y}, not ${before.x}, ${before.y}" }
+            }
+
+            // A right press on a block resets it.
+            context.runOnClient<Nothing> { client ->
+                val screen = client.gui.screen()!!
+                val block = Hud.find(ID)!!
+                check(screen.mouseClicked(MouseButtonEvent(block.x + 5.0, block.y + 5.0, MouseButtonInfo(1, 0)), false)) { "The right press was not taken" }
+                screen.mouseReleased(MouseButtonEvent(block.x + 5.0, block.y + 5.0, MouseButtonInfo(1, 0)))
+                check(ID !in DsModClient.settings.hud.positions) { "The right press kept the position" }
             }
 
             context.runOnClient<Nothing> { client ->

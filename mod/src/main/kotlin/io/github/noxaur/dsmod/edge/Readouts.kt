@@ -108,8 +108,14 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
     }
 
     /** Forgets where the player put [id], so it goes back to the stack at its own scale of 1. */
-    fun reset(id: String) {
-        settings.positions.remove(id)
+    fun reset(id: String) = restore(id, null)
+
+    /** Where the player put [id], or null when it sits in the stack. */
+    fun position(id: String): Position? = settings.positions[id]
+
+    /** Puts [id] back at a [position] it had, or in the stack for null. */
+    fun restore(id: String, position: Position?) {
+        if (position == null) settings.positions.remove(id) else settings.positions[id] = position
         handed.fill(-1)
         push()
     }

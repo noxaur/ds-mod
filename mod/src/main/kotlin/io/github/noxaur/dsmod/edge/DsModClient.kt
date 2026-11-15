@@ -110,6 +110,7 @@ object DsModClient : ClientModInitializer {
         SlotGuards.register(all.filterIsInstance<SlotLock>().single(), config.instance.inventory)
         CommandKeys.register(config.instance.general)
         readouts = Readouts(game, config.instance.hud).also { it.register() }
+        ChatDrags.register(readouts, config.instance.hud, config::saveToFile)
         tabs = TabListPoller(game)
         sidebars = SidebarPoller(game)
         containers = ContainerPoller(game)
