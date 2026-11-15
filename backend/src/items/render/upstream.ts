@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { count, flag, lenient, numbers, record, strings, text } from "./read.ts";
+import { count, flag, lenient, numberEntries, record, strings, text } from "./read.ts";
 
 type Stats = Readonly<Record<string, number>>;
 
@@ -49,10 +49,10 @@ export interface UpstreamItem {
 export const statSet = (raw: unknown): StatSet => {
   const set = record(raw);
   return {
-    base: numbers(set["base"]) ?? {},
-    additive: numbers(set["additive"]) ?? {},
-    multiplicative: numbers(set["multiplicative"]) ?? {},
-    increaseMax: numbers(set["increase_max"]) ?? {},
+    base: numberEntries(set["base"]),
+    additive: numberEntries(set["additive"]),
+    multiplicative: numberEntries(set["multiplicative"]),
+    increaseMax: numberEntries(set["increase_max"]),
   };
 };
 

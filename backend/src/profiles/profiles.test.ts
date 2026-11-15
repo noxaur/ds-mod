@@ -503,6 +503,25 @@ test("a map or a list where a value was expected is named, since it would be dro
   expect(unmappedPaths(odd).toSorted()).toEqual(["profile.coins", "profile.inventory.*.extra.wither_scrolls.*"]);
 });
 
+test("one odd entry in a number map loses only itself, and a map where a list belongs is named", async () => {
+  const { profile, state } = backend();
+  const odd = {
+    ...player.profile,
+    collections: { ...player.profile.collections, new_collection: {} },
+    dungeons: { ...player.profile.dungeons, essence: { ...player.profile.dungeons.essence, odd: { amount: 1 } } },
+    forge: { jobs: [] },
+  };
+  state.player = { status: 200, body: { ...player, profile: odd } };
+  const value = await profile();
+  expect(value.collections.length).toBe(Object.keys(player.profile.collections).length);
+  expect(value.dungeons?.essence.length).toBe(Object.keys(player.profile.dungeons.essence).length);
+  expect(unmappedPaths({ profile: odd }).toSorted()).toEqual([
+    "profile.collections.*",
+    "profile.dungeons.essence.*",
+    "profile.forge",
+  ]);
+});
+
 test("a field added deep inside a section or an item is named by its path", () => {
   const added = {
     ...player,

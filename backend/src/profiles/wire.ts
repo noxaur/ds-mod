@@ -222,9 +222,11 @@ export const unmappedPaths = (value: unknown, shape: Shape = ANSWER_SHAPE, path 
   const found = new Set<string>();
   const add = (paths: readonly string[]) => paths.forEach((each) => found.add(each));
   if (isList(shape)) {
-    if (Array.isArray(value)) {
-      value.forEach((element) => add(unmappedPaths(element, shape.list, `${path}[]`)));
+    // A map where a list was expected is read as none, so it is named.
+    if (!Array.isArray(value)) {
+      return [path];
     }
+    value.forEach((element) => add(unmappedPaths(element, shape.list, `${path}[]`)));
     return [...found];
   }
   for (const [key, child] of Object.entries(value)) {
