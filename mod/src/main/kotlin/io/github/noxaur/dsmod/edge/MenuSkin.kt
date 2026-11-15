@@ -2,9 +2,14 @@ package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.container.MenuButton
 import io.github.noxaur.dsmod.core.ui.CursorMemory
+import io.github.noxaur.dsmod.core.ui.MenuLook
+import io.github.noxaur.dsmod.core.ui.Menus
 import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
@@ -18,6 +23,7 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.client.gui.screens.inventory.ShulkerBoxScreen
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.Identifier
 import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.inventory.ChestMenu
 import net.minecraft.world.inventory.ResultSlot
@@ -30,7 +36,10 @@ import net.minecraft.world.item.ItemStack
  * Only the screens whose texture is nothing more than that are themed. A furnace or an anvil keeps its own art,
  * because its arrows and fields live in the texture, and the server opens chests. The recipe book's button on a themed
  * menu is a kit button too, and so are the server's own [MenuButton]s, so they look like the Go Back the mod adds.
- * Only their drawing changes: a click on one still reaches its slot.
+ * Only their drawing changes: a click on one still reaches its slot. Under the Glass look the panel, slots and tabs are
+ * glass instead, and the screen leaves the world behind them undimmed. The game's HUD under a menu would show through
+ * glass. So the crosshair is hidden, the hotbar and the bars above it are too while a glass menu reaches down over them,
+ * and chat is cut off at the menu's left edge, which leaves it as much in view as a solid menu does.
  */
 object MenuSkin {
     private val settings get() = DsModClient.settings.inventory
@@ -48,6 +57,20 @@ object MenuSkin {
     private var buttons = arrayOfNulls<MenuButton>(0)
 
     fun register() {
+        for (id in BOTTOM_HUD) {
+            HudElementRegistry.replaceElement(id) { element -> HudElement { graphics, delta -> if (!coversHotbar(graphics.guiHeight())) element.extractRenderState(graphics, delta) } }
+        }
+        HudElementRegistry.replaceElement(VanillaHudElements.CROSSHAIR) { element ->
+            HudElement { graphics, delta -> if (glassMenu() == null) element.extractRenderState(graphics, delta) }
+        }
+        HudElementRegistry.replaceElement(VanillaHudElements.CHAT) { element ->
+            HudElement { graphics, delta ->
+                val menu = glassMenu() ?: return@HudElement element.extractRenderState(graphics, delta)
+                graphics.enableScissor(0, 0, menu.leftPos, graphics.guiHeight())
+                element.extractRenderState(graphics, delta)
+                graphics.disableScissor()
+            }
+        }
         // Fabric drops a screen's listeners on every init, so they are added again here.
         ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
             if (screen is ContainerScreen) ScreenEvents.afterTick(screen).register { findButtons(screen.menu) }
@@ -93,22 +116,44 @@ object MenuSkin {
             screen is HopperScreen || screen is DispenserScreen || screen is ShulkerBoxScreen
         )
 
+    /** The alpha of [screen]'s glass, from 0 for clear to 255, or -1 when the kit does not draw it as glass. */
+    fun glass(screen: AbstractContainerScreen<*>): Int =
+        if (settings.menuLook == MenuLook.GLASS && skins(screen)) Menus.glassAlpha(settings.glassOpacity) else -1
+
+    /** Whether a glass menu, with any tabs hanging under it, reaches down over the hotbar on a screen [height] tall. */
+    private fun coversHotbar(height: Int): Boolean {
+        val menu = glassMenu() ?: return false
+        return menu.topPos + menu.imageHeight + Kit.TAB_HEIGHT > height - BOTTOM_HUD_HEIGHT
+    }
+
+    /** The menu open now when the kit draws it as glass. */
+    private fun glassMenu(): ContainerScreenAccessor? {
+        val screen = Minecraft.getInstance().gui.screen() as? AbstractContainerScreen<*> ?: return null
+        return if (glass(screen) < 0) null else screen as ContainerScreenAccessor
+    }
+
     fun background(graphics: GuiGraphicsExtractor, screen: AbstractContainerScreen<*>) = DsModClient.game.metrics.time("menus.draw") {
+        val glass = glass(screen)
+        val solid = glass < 0
         screen as ContainerScreenAccessor
         val left = screen.leftPos
         val top = screen.topPos
-        Kit.panel(graphics, left, top, screen.imageWidth, screen.imageHeight)
+        if (solid) Kit.panel(graphics, left, top, screen.imageWidth, screen.imageHeight) else Kit.glass(graphics, left, top, screen.imageWidth, screen.imageHeight, glass)
         // The vanilla texture keeps a dark box behind the player, where the inventory screen draws them.
-        if (screen is InventoryScreen) Kit.well(graphics, left + 25, top + 7, 51, 72)
+        if (screen is InventoryScreen) {
+            if (solid) Kit.well(graphics, left + 25, top + 7, 51, 72) else Kit.glassWell(graphics, left + 25, top + 7, 51, 72)
+        }
         val slots = screen.menu.slots
         var result: ResultSlot? = null
         for (slot in slots) {
             if (!slot.isActive) continue
             if (slot is ResultSlot) {
                 result = slot
-                Kit.slot(graphics, left + slot.x - 5, top + slot.y - 5, Kit.RESULT_SLOT_SIZE)
+                val x = left + slot.x - 5
+                val y = top + slot.y - 5
+                if (solid) Kit.slot(graphics, x, y, Kit.RESULT_SLOT_SIZE) else Kit.glassSlot(graphics, x, y, Kit.RESULT_SLOT_SIZE)
             } else if (!Slots.hides(slot.index) && button(screen, slot.index) == null) {
-                Kit.slot(graphics, left + slot.x - 1, top + slot.y - 1)
+                if (solid) Kit.slot(graphics, left + slot.x - 1, top + slot.y - 1) else Kit.glassSlot(graphics, left + slot.x - 1, top + slot.y - 1)
             }
         }
         result ?: return@time
@@ -117,8 +162,13 @@ object MenuSkin {
         for (slot in slots) if (slot.x < result.x && slot.y in result.y - 17..result.y + 17) gridRight = maxOf(gridRight, slot.x + 17)
         val icon = Icon.ARROW
         val x = left + (gridRight + result.x - 5 - icon.width) / 2
-        Kit.icon(graphics, icon, x, top + result.y + (16 - icon.height) / 2, Kit.theme.ink, Kit.theme.inkShadow)
+        Kit.icon(graphics, icon, x, top + result.y + (16 - icon.height) / 2, ink(glass), inkShadow(glass))
     }
+
+    /** The ink of a menu's labels and icons: light with its shadow on [glass], or the theme's on a solid panel. */
+    fun ink(glass: Int) = if (glass < 0) Kit.theme.ink else Kit.GLASS_INK
+
+    fun inkShadow(glass: Int) = glass >= 0 || Kit.theme.inkShadow
 
     /** Draws the recipe book's [button] with the kit when the open menu is themed, or returns false to leave it vanilla. */
     fun recipeButton(graphics: GuiGraphicsExtractor, button: AbstractWidget): Boolean {
@@ -129,4 +179,14 @@ object MenuSkin {
         Kit.button(graphics, button.x, button.y, button.width, button.height, Kit.state(button.active, button.isHoveredOrFocused, pressed), Icon.BOOK)
         return true
     }
+
+    /** The game's HUD along the bottom middle of the screen, ds-mod's marks on the hotbar among it. */
+    private val BOTTOM_HUD = listOf(
+        VanillaHudElements.HOTBAR, Identifier.fromNamespaceAndPath("dsmod", "hotbar"), VanillaHudElements.ARMOR_BAR,
+        VanillaHudElements.HEALTH_BAR, VanillaHudElements.FOOD_BAR, VanillaHudElements.AIR_BAR, VanillaHudElements.MOUNT_HEALTH,
+        VanillaHudElements.INFO_BAR, VanillaHudElements.EXPERIENCE_LEVEL, VanillaHudElements.HELD_ITEM_TOOLTIP, VanillaHudElements.OVERLAY_MESSAGE,
+    )
+
+    /** How far up from the screen's bottom [BOTTOM_HUD] reaches, to the top of the action bar's text. */
+    private const val BOTTOM_HUD_HEIGHT = 72
 }

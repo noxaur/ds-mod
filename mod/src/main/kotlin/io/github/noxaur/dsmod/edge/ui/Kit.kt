@@ -118,19 +118,80 @@ object Kit {
     // A texture made or uploaded while a frame is being built broke every frame after it in the game tests, so the
     // paint happens at the end of a tick, between frames.
     fun register() {
-        ClientTickEvents.END_CLIENT_TICK.register { if (theme !== slotTheme) paintSlot(theme) }
+        ClientTickEvents.END_CLIENT_TICK.register {
+            val t = theme
+            if (t === slotTheme) return@register
+            slotTexture = paintSlot(slotTexture, SLOT_TEXTURE, t.slot, t.slotShade, t.slotLight)
+            glassSlotTexture = paintSlot(glassSlotTexture, GLASS_SLOT_TEXTURE, glassFace(t), glassShade(t), glassLight(t))
+            slotTheme = t
+        }
     }
 
-    private fun paintSlot(t: Theme) {
-        val texture = slotTexture ?: DynamicTexture({ "dsmod kit slot" }, SLOT_SIZE, SLOT_SIZE, false).also {
-            Minecraft.getInstance().textureManager.register(SLOT_TEXTURE, it)
-            slotTexture = it
+    private fun paintSlot(made: DynamicTexture?, id: Identifier, face: Int, topLeft: Int, bottomRight: Int): DynamicTexture {
+        val texture = made ?: DynamicTexture({ "dsmod $id" }, SLOT_SIZE, SLOT_SIZE, false).also {
+            Minecraft.getInstance().textureManager.register(id, it)
         }
-        val image = checkNotNull(texture.pixels)
-        bevelRects(0, 0, SLOT_SIZE, SLOT_SIZE, t.slot, t.slotShade, t.slotLight, image::fillRect)
+        bevelRects(0, 0, SLOT_SIZE, SLOT_SIZE, face, topLeft, bottomRight, checkNotNull(texture.pixels)::fillRect)
         texture.upload()
-        slotTheme = t
+        return texture
     }
+
+    /**
+     * Glass in place of a [panel]: the HUD plate's dark fill at [alpha], from 0 for clear to 255, inside its notched
+     * ring. It is dark in both themes, so a menu's labels on it take [GLASS_INK].
+     */
+    fun glass(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, alpha: Int) {
+        val t = theme
+        if (alpha > 0) rect(g, x + 1, y + 1, width - 2, height - 2, ARGB.color(alpha, t.plate))
+        ring(g, x, y, width, height, t.plateEdge)
+    }
+
+    /** A sunk square of glass, see-through whatever the glass's own alpha, so a clear menu still shows its grid. */
+    fun glassWell(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
+        val t = theme
+        bevel(g, x, y, width, height, glassFace(t), glassShade(t), glassLight(t))
+    }
+
+    /** A [slot] on glass: a [glassWell] the size of a slot, painted once per theme as [slot] is. */
+    fun glassSlot(g: GuiGraphicsExtractor, x: Int, y: Int, size: Int = SLOT_SIZE) {
+        if (size != SLOT_SIZE || theme !== slotTheme) return glassWell(g, x, y, size, size)
+        g.blit(RenderPipelines.GUI_TEXTURED, GLASS_SLOT_TEXTURE, x, y, 0f, 0f, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE)
+    }
+
+    /**
+     * A [tab] on a [glass] panel, filled at the panel's [alpha]. It stops at the panel's ring instead of reaching into
+     * the panel, since two see-through fills on each other would show a darker band. The [selected] one stands 2px
+     * taller, and one under the mouse is ringed in `hoverOutline`. Its content starts where a [tab]'s does.
+     */
+    fun glassTab(
+        g: GuiGraphicsExtractor, x: Int, panelY: Int, selected: Boolean, alpha: Int, edge: TabEdge = TabEdge.TOP,
+        hovered: Boolean = false, width: Int = TAB_WIDTH,
+    ): Int {
+        val t = theme
+        val color = if (hovered) t.hoverOutline else t.plateEdge
+        val fill = ARGB.color(alpha, t.plate)
+        // The rows the tab stands out from the panel, its ring included.
+        val out = if (selected) TAB_HEIGHT - 2 else TAB_HEIGHT - 4
+        val inner = width - 2
+        if (edge == TabEdge.BOTTOM) {
+            if (alpha > 0) rect(g, x + 1, panelY, inner, out - 1, fill)
+            rect(g, x, panelY, 1, out - 1, color)
+            rect(g, x + width - 1, panelY, 1, out - 1, color)
+            rect(g, x + 1, panelY + out - 1, inner, 1, color)
+            return if (selected) panelY + 1 else panelY
+        }
+        val top = panelY - out
+        if (alpha > 0) rect(g, x + 1, top + 1, inner, out - 1, fill)
+        rect(g, x + 1, top, inner, 1, color)
+        rect(g, x, top + 1, 1, out - 1, color)
+        rect(g, x + width - 1, top + 1, 1, out - 1, color)
+        return panelY - TAB_HEIGHT + if (selected) 4 else 5
+    }
+
+    // Glass's sunk parts, from the plate's tokens so they follow the theme: a light lower edge and a dark upper one.
+    private fun glassFace(t: Theme) = ARGB.color(GLASS_FACE_ALPHA, t.outline)
+    private fun glassShade(t: Theme) = ARGB.color(GLASS_SHADE_ALPHA, t.outline)
+    private fun glassLight(t: Theme) = ARGB.color(GLASS_LIGHT_ALPHA, t.plateEdge)
 
     /**
      * The backing of a tooltip whose text fills [width] by [height] at [x], [y]: the HUD's plate, nearly opaque so
@@ -385,6 +446,13 @@ object Kit {
 
     private const val DIM_ALPHA = 184
     private val SLOT_TEXTURE: Identifier = Identifier.fromNamespaceAndPath("dsmod", "kit/slot")
+    private val GLASS_SLOT_TEXTURE: Identifier = Identifier.fromNamespaceAndPath("dsmod", "kit/glass_slot")
+    private const val GLASS_FACE_ALPHA = 80
+    private const val GLASS_SHADE_ALPHA = 170
+    private const val GLASS_LIGHT_ALPHA = 140
+
+    /** Ink on glass, which is dark in both themes, so it is the light ink of the HUD, with its shadow. */
+    val GLASS_INK = Role.BODY.argb()
 
     /** The game's hotbar: a 1px rim around 9 cells. */
     private val HOTBAR: Identifier = Identifier.withDefaultNamespace("hud/hotbar")
@@ -392,6 +460,7 @@ object Kit {
     const val HOTBAR_HEIGHT = 22
     const val HOTBAR_CELL = 20
     private var slotTexture: DynamicTexture? = null
+    private var glassSlotTexture: DynamicTexture? = null
     private var slotTheme: Theme? = null
     private const val TOOLTIP_ALPHA = 240
 

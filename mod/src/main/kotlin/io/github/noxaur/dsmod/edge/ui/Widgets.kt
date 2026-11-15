@@ -64,7 +64,8 @@ class KitButton private constructor(
 
 /**
  * A tab on the [edge] of a menu whose edge is at [panelY], showing [item] or else [icon], which runs [action] when
- * pressed. [name] is what narration reads. The [selected] one joins the menu's panel.
+ * pressed. [name] is what narration reads. The [selected] one joins the menu's panel. [glass] gives the alpha of the
+ * menu's glass each frame, or -1 for a solid panel, and on glass the tab is a [Kit.glassTab].
  */
 class KitTab(
     x: Int,
@@ -73,6 +74,7 @@ class KitTab(
     name: String,
     private val item: ItemStack?,
     private val icon: Icon?,
+    private val glass: () -> Int = { -1 },
     action: () -> Unit,
 ) : Button(
     x,
@@ -86,11 +88,14 @@ class KitTab(
     var selected = false
 
     override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
-        val top = Kit.tab(graphics, x, panelY, selected, edge, isHoveredOrFocused)
+        val alpha = glass()
+        val top = if (alpha < 0) Kit.tab(graphics, x, panelY, selected, edge, isHoveredOrFocused) else Kit.glassTab(graphics, x, panelY, selected, alpha, edge, isHoveredOrFocused)
         if (item != null) {
             graphics.item(item, x + (width - 16) / 2, top)
         } else if (icon != null) {
-            Kit.icon(graphics, icon, x + (width - icon.width) / 2, top + (16 - icon.height) / 2, Kit.theme.ink, Kit.theme.inkShadow)
+            val t = Kit.theme
+            val ink = if (alpha < 0) t.ink else Kit.GLASS_INK
+            Kit.icon(graphics, icon, x + (width - icon.width) / 2, top + (16 - icon.height) / 2, ink, alpha >= 0 || t.inkShadow)
         }
     }
 }

@@ -1,5 +1,19 @@
 package io.github.noxaur.dsmod.core.ui
 
+import kotlin.math.roundToInt
+
+/** How a themed menu is drawn. */
+enum class MenuLook(private val label: String) {
+    /** The theme's panel, which hides the world behind it. */
+    SOLID("Solid"),
+
+    /** A dark sheet as see-through as the player sets, over the world with no dimming. */
+    GLASS("Glass"),
+    ;
+
+    override fun toString() = label
+}
+
 /** The rules for how the game's menus sit on the screen and treat the cursor, in GUI pixels and milliseconds. */
 object Menus {
     /** The height of a six-row chest menu, the tallest the server opens. */
@@ -20,6 +34,9 @@ object Menus {
 
     /** How soon after the player sends a command a menu counts as the one that command opened, with the server's ping. */
     const val COMMAND_MILLIS = 2_000L
+
+    /** The alpha, from 0 to 255, of glass the player set to [opacity] percent. */
+    fun glassAlpha(opacity: Float) = (opacity.coerceIn(0f, 100f) * 2.55f).roundToInt()
 }
 
 /**

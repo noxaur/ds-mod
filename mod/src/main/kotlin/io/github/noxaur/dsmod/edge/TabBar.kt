@@ -84,15 +84,16 @@ object TabBar {
             val tabs = settings.tabs.filter { it.slot in 0 until TabLayout.PER_EDGE }
             val selected = TabLayout.selected(tabs, MenuBack.opener(screen))
             val made = ArrayList<Pair<MenuTab, KitTab>>()
+            val glass = { MenuSkin.glass(screen) }
             var search: MenuTab? = null
             var openSearch: () -> Unit = {}
             for ((i, tab) in tabs.withIndex()) {
                 val x = left + TabLayout.x(tab.slot)
                 val widget = if (tab.search) {
                     search = tab
-                    KitTab(x, edgeY(tab.edge), tab.edge, "Search", null, Icon.SEARCH) { openSearch() }
+                    KitTab(x, edgeY(tab.edge), tab.edge, "Search", null, Icon.SEARCH, glass) { openSearch() }
                 } else {
-                    KitTab(x, edgeY(tab.edge), tab.edge, tab.tooltip.ifBlank { "/${tab.command}" }, icon(tab.item), null) { MenuBack.send(tab.command) }
+                    KitTab(x, edgeY(tab.edge), tab.edge, tab.tooltip.ifBlank { "/${tab.command}" }, icon(tab.item), null, glass) { MenuBack.send(tab.command) }
                 }
                 widget.selected = i == selected
                 widget.setTooltip(Tooltip.create(tooltip(tab)))
@@ -150,7 +151,9 @@ object TabBar {
             show()
 
             ScreenEvents.afterBackground(screen).register { _, graphics, _, _, _ ->
-                if (field.visible) Kit.tab(graphics, barX(), barY, true, bar.edge, width = barWidth)
+                if (!field.visible) return@register
+                val alpha = glass()
+                if (alpha < 0) Kit.tab(graphics, barX(), barY, true, bar.edge, width = barWidth) else Kit.glassTab(graphics, barX(), barY, true, alpha, bar.edge, width = barWidth)
             }
             ScreenEvents.afterTick(screen).register {
                 show()

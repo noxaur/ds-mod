@@ -37,6 +37,9 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `well` | Any | A dark sunk area |
 | `slot` | 18x18, or 26x26 | A sunk square with a 16x16 inside for an item. The big one is a crafting result's |
 | `plate` | Any | The HUD's backing: a translucent fill inside a notched ring |
+| `glass` | Any | A panel the world shows through: the plate's fill at an alpha the player sets, inside the plate's ring. Dark in both themes, so ink on it is `GLASS_INK` |
+| `glassSlot`, `glassWell` | 18x18, or any | A sunk square on glass, see-through at any alpha, so a clear menu still shows its grid |
+| `glassTab` | 22x19, or 17 when not selected | A tab on glass. It stops at the panel's ring, since two see-through fills on each other show a darker band, so the selected one stands taller instead of joining |
 | `hotbar` | 20 per cell plus 2, by 22 | A strip of slots cut from the game's own hotbar sprite, for a HUD block in the Hotbar look. The one piece of chrome that is not the kit's, because it has to match the player's hotbar under their resource pack |
 | `tooltip` | Text plus 4 on each side | A plain tooltip's backing: the plate's colors, nearly opaque. A tooltip with a style of its own keeps it |
 | `bar` | 6 tall | A well with a 4px fill that has a lit top row and a shaded bottom row |
@@ -76,7 +79,7 @@ Controls in a row are 4 apart, and rows are 4 apart. A label beside a control si
 
 ## The game's menus
 
-`MenuSkin` in `edge` draws the game's own menus with these shapes when Themed Menus is on: a `panel` over the menu, a `slot` under each slot, a `well` behind the player in the inventory, and an arrow from crafting slots to the result. Their labels take the theme's ink. Only menus whose texture is just those parts are drawn, so a new kind of menu is added to `MenuSkin.skins` and to `MenuBackgroundMixin` together.
+`MenuSkin` in `edge` draws the game's own menus with these shapes when Themed Menus is on: a `panel` over the menu, a `slot` under each slot, a `well` behind the player in the inventory, and an arrow from crafting slots to the result. Their labels take the theme's ink. The Glass look draws `glass`, `glassSlot`, `glassWell` and `glassTab` in their place, with labels in `GLASS_INK`. Only menus whose texture is just those parts are drawn, so a new kind of menu is added to `MenuSkin.skins` and to `MenuBackgroundMixin` together.
 
 ## Adding to the kit
 

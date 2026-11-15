@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
@@ -24,7 +25,8 @@ import javax.imageio.ImageIO
  * Opens a server menu, the inventory and a hopper with Themed Menus and Hide Filler on, and checks the colors the kit
  * drew: the panel in the theme's color, and a filler pane's slot left as bare panel. Read the screenshots in both
  * themes: a light title on the dark panel, a dark tooltip over the hovered item, no tooltip over filler, the server's
- * Go Back and Close and the recipe book's button drawn by the kit, and Close's own tooltip over it.
+ * Go Back and Close and the recipe book's button drawn by the kit, and Close's own tooltip over it. Under the Glass look
+ * the chest and the inventory show the world undimmed through a dark sheet, with light labels and glass tabs.
  */
 class ThemedMenusTest : FabricClientGameTest {
     /** The color of the GUI pixel at [x], [y] in [shot], without its alpha. */
@@ -47,6 +49,32 @@ class ThemedMenusTest : FabricClientGameTest {
         val (left, top) = corner(context)
         val panel = pixel(context, shot, left + 3, top + 3)
         check(panel == theme.panel and 0xFFFFFF) { "The panel is %06X in %s, not the theme's %06X".format(panel, shot, theme.panel and 0xFFFFFF) }
+    }
+
+    private fun look(context: ClientGameTestContext, look: MenuLook, opacity: Float = 60f) {
+        context.runOnClient<Nothing> {
+            DsModClient.settings.inventory.menuLook = look
+            DsModClient.settings.inventory.glassOpacity = opacity
+        }
+        context.waitTicks(2)
+    }
+
+    private fun brightness(color: Int) = (color shr 16 and 0xFF) + (color shr 8 and 0xFF) + (color and 0xFF)
+
+    /** Checks that glass left the world in [glass] undimmed, by a pixel off the menu that is dimmed in [solid]. */
+    private fun checkUndimmed(context: ClientGameTestContext, glass: Path, solid: Path) {
+        val clear = pixel(context, glass, 2, 2)
+        val dimmed = pixel(context, solid, 2, 2)
+        check(brightness(clear) > brightness(dimmed) + 60) { "The world behind %s is %06X, no brighter than %06X behind %s".format(glass, clear, dimmed, solid) }
+    }
+
+    /** Checks that glass at full opacity is the theme's plate, so the slider reaches solid. */
+    private fun checkFullGlass(context: ClientGameTestContext, name: String, theme: Theme) {
+        look(context, MenuLook.GLASS, 100f)
+        val shot = context.takeScreenshot(name)
+        val (left, top) = corner(context)
+        val panel = pixel(context, shot, left + 3, top + 3)
+        check(panel == theme.plate and 0xFFFFFF) { "Full glass is %06X in %s, not the theme's plate %06X".format(panel, shot, theme.plate and 0xFFFFFF) }
     }
 
     override fun runTest(context: ClientGameTestContext) {
@@ -85,7 +113,28 @@ class ThemedMenusTest : FabricClientGameTest {
 
             theme(context, Theme.VANILLA)
             ServerMenus.hover(context, 13)
-            checkPanel(context, context.takeScreenshot("themed-chest-vanilla"), Theme.VANILLA)
+            val vanilla = context.takeScreenshot("themed-chest-vanilla")
+            checkPanel(context, vanilla, Theme.VANILLA)
+
+            try {
+                checkFullGlass(context, "glass-chest-full-vanilla", Theme.VANILLA)
+                look(context, MenuLook.GLASS)
+                checkUndimmed(context, context.takeScreenshot("glass-chest-vanilla"), vanilla)
+                theme(context, Theme.CHARCOAL)
+                val glass = context.takeScreenshot("glass-chest-charcoal")
+                checkUndimmed(context, glass, charcoal)
+                checkFullGlass(context, "glass-chest-full-charcoal", Theme.CHARCOAL)
+                look(context, MenuLook.GLASS, 0f)
+                context.takeScreenshot("glass-chest-clear")
+                look(context, MenuLook.GLASS)
+                // Glass is a look of Themed Menus, so with them off the chest is vanilla's, dimmed as vanilla's is.
+                context.runOnClient<Nothing> { DsModClient.settings.inventory.themedMenus = false }
+                context.waitTicks(2)
+                checkUndimmed(context, glass, context.takeScreenshot("glass-chest-themed-off"))
+            } finally {
+                context.runOnClient<Nothing> { DsModClient.settings.inventory.themedMenus = true }
+                look(context, MenuLook.SOLID)
+            }
             theme(context, Theme.CHARCOAL)
             ServerMenus.hover(context, 6 * 9 - 5)
             // Only the drawing changes, so a click on Close still picks up the server's item.
@@ -98,15 +147,26 @@ class ThemedMenusTest : FabricClientGameTest {
             context.runOnClient<Nothing> { it.player!!.closeContainer() }
             context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }
             context.waitTicks(5)
+            val solid = HashMap<Theme, Path>()
             for (theme in listOf(Theme.CHARCOAL, Theme.VANILLA)) {
                 theme(context, theme)
                 val shot = context.takeScreenshot("themed-inventory-${theme.name.lowercase()}")
+                solid[theme] = shot
                 checkPanel(context, shot, theme)
                 val (x, y) = context.computeOnClient<Pair<Int, Int>, Nothing> { client ->
                     Screens.getWidgets(client.gui.screen()!!).filterIsInstance<ImageButton>().single().let { it.x to it.y }
                 }
                 val face = pixel(context, shot, x + 3, y + 3)
                 check(face in listOf(theme.raised, theme.hover).map { it and 0xFFFFFF }) { "The recipe book button is %06X in %s, not a kit button".format(face, shot) }
+            }
+            try {
+                look(context, MenuLook.GLASS)
+                for (theme in listOf(Theme.CHARCOAL, Theme.VANILLA)) {
+                    theme(context, theme)
+                    checkUndimmed(context, context.takeScreenshot("glass-inventory-${theme.name.lowercase()}"), solid.getValue(theme))
+                }
+            } finally {
+                look(context, MenuLook.SOLID)
             }
             theme(context, Theme.CHARCOAL)
 
