@@ -18,6 +18,21 @@ Hides the clouds that explosions throw up.
 
 <sub>Off by default.</sub>
 
+### Animations
+
+Changes how your held item swings and where it sits in first person. Each setting starts at the game's own, so nothing changes until you move one. Only you see it: your clicks and the swing other players see stay the same.
+
+| Setting | Does |
+| --- | --- |
+| Swing Style | Vanilla, 1.7 to hold the sword across the screen while you swing, Spin for a full turn, Stab to thrust it at the crosshair like a spear, or Still for no swing at all |
+| Swing Speed | Speeds your swing up to 3 times, or slows it down to a tenth |
+| Ignore Haste | Keeps the swing at the same pace under Haste or Mining Fatigue |
+| No Equip Reset | Keeps the item up after a hit or a use, and when the server updates it, instead of lowering and raising it |
+| Item Size | Grows the item to twice its size, or shrinks it to a tenth |
+| Item Side, Item Height, Item Depth | Moves the item out or in, up or down, and away or nearer |
+
+The 1.7 style follows your swing and not right click, because right click casts the ability on many swords here. Your empty hand and maps keep the game's own pose.
+
 ### Equipment Display
 
 Shows the armor you wear and your pet as a row of icons on the HUD, with each head's skin and each leather piece's dye. Your pet's head joins the row once you open the Pets menu or it floats near you, and until then the pet shows as its name under the row. Open the chat and point at a piece to read its tooltip. The pet's tooltip from the Pets menu names its held item.

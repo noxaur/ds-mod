@@ -234,6 +234,12 @@ Camera's height and tilt are applied after the game has put the camera at the ey
 
 The key's press comes from `KeyMapping.click`, the place the game counts presses for its own key binds, and its release is read from the key's state each frame. A press read from the state would miss a tap that starts and ends inside one frame, and Toggle mode is nothing but taps.
 
+## Animations change the drawing and never the swing
+
+The client sends the swing packet in `LocalPlayer.swing` before the game asks how long the swing lasts, and nothing that decides an attack reads the swing's progress, so Swing Speed changes only how the swing looks. It still slows or speeds the player's own arm in third person, because that arm reads the same progress. No Equip Reset holds the item up where the game would lower it, and the attack cooldown itself is left alone.
+
+The item is moved as the hand's pose is pushed, before any branch of the renderer runs, because eating and drinking put the item in the hand twice and a later hook would move it twice. It is scaled last, just before it is drawn, so it grows about the grip. Every swing style is the resting pose when the swing is at 0, as the game's own swing is, so a hand that is not swinging is the game's own whatever the style. `AnimationsTest` holds the defaults to the game's frame pixel for pixel. It turns off the vignette, which eases toward the light around the player for half a minute after a join and shades the whole frame, and the attack indicator, which a swing at the air starts.
+
 ## A command bind sees every key, and fires only in the world or a menu
 
 A bind of keys held together needs every press and release, wherever they happen, or a Shift held before a menu opened would be missed. So `KeyInputMixin` and `MouseInputMixin` hand each one to `CommandKeys` before the game acts, and `BindMatcher` in `core` holds the keys that are down. Whether a press may fire is a separate question, asked at the press: in the world, or in a container menu with no text field focused, and never with F3 held. `KeyMapping.click` would not do, because the game calls it only with no screen open.

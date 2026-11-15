@@ -24,6 +24,7 @@ import io.github.noxaur.dsmod.core.feature.general.InventoryLook
 import io.github.noxaur.dsmod.core.feature.general.InventoryRow
 import io.github.noxaur.dsmod.core.feature.general.PetLook
 import io.github.noxaur.dsmod.core.feature.general.PetPosition
+import io.github.noxaur.dsmod.core.hand.SwingStyle
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.ui.MenuLook
@@ -175,6 +176,60 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var explosionParticleHider = false
+
+        @Expose
+        @ConfigOption(name = "Animations", desc = "Shape how your held item swings and sits with the settings below.")
+        @ConfigEditorBoolean
+        @JvmField
+        var animations = true
+
+        @Expose
+        @ConfigOption(name = "Swing Style", desc = "Pick how your held item moves when you swing.")
+        @ConfigEditorDropdown
+        @JvmField
+        var swingStyle = SwingStyle.VANILLA
+
+        @Expose
+        @ConfigOption(name = "Swing Speed", desc = "Speed your swing up, or slow it down below 1.")
+        @ConfigEditorSlider(minValue = 0.1f, maxValue = 3f, minStep = 0.1f)
+        @JvmField
+        var swingSpeed = 1f
+
+        @Expose
+        @ConfigOption(name = "Ignore Haste", desc = "Swing at the same pace under Haste or Mining Fatigue.")
+        @ConfigEditorBoolean
+        @JvmField
+        var ignoreHaste = false
+
+        @Expose
+        @ConfigOption(name = "No Equip Reset", desc = "Keep your held item up instead of dipping after a swing or use.")
+        @ConfigEditorBoolean
+        @JvmField
+        var noEquipReset = false
+
+        @Expose
+        @ConfigOption(name = "Item Size", desc = "Grow or shrink your held item.")
+        @ConfigEditorSlider(minValue = 0.1f, maxValue = 2f, minStep = 0.05f)
+        @JvmField
+        var itemSize = 1f
+
+        @Expose
+        @ConfigOption(name = "Item Side", desc = "Move your held item out to the side, or in below zero.")
+        @ConfigEditorSlider(minValue = -1f, maxValue = 1f, minStep = 0.05f)
+        @JvmField
+        var itemSide = 0f
+
+        @Expose
+        @ConfigOption(name = "Item Height", desc = "Raise your held item, or lower it below zero.")
+        @ConfigEditorSlider(minValue = -1f, maxValue = 1f, minStep = 0.05f)
+        @JvmField
+        var itemHeight = 0f
+
+        @Expose
+        @ConfigOption(name = "Item Depth", desc = "Push your held item away, or bring it nearer below zero.")
+        @ConfigEditorSlider(minValue = -1f, maxValue = 1f, minStep = 0.05f)
+        @JvmField
+        var itemDepth = 0f
 
         @Expose
         @ConfigOption(name = "Equipment Display", desc = "Show your armor and pet on the HUD.")

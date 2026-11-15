@@ -10,6 +10,7 @@ import io.github.noxaur.dsmod.core.feature.end.FireballAlert
 import io.github.noxaur.dsmod.core.feature.end.GolemStatus
 import io.github.noxaur.dsmod.core.feature.end.ProtectPlacedEyes
 import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
+import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
 import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
@@ -41,6 +42,7 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     GolemStatus(config.end::golemStatus),
     ProtectPlacedEyes(config.end::protectPlacedEyes),
     ZealotTracker(config.end::zealotTracker),
+    Animations(config.general::animations),
     Camera(config.general::camera),
     CommandBinds(config.general::commandBinds),
     EquipmentDisplay(
