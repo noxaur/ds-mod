@@ -41,8 +41,9 @@ class ContainerPoller(private val game: Game) {
         val slots = open.slots
         if (open !== menu || openTitle != title || game.tap !== tapped) {
             val left = menu
-            if (left is InventoryMenu) inventory = Read(left, stacks, counts, items)
-            val kept = inventory?.takeIf { it.menu === open && game.tap === tapped }
+            // A new tap, such as a capture starting, has seen no slot yet, so nothing read before it may be kept.
+            if (game.tap !== tapped) inventory = null else if (left is InventoryMenu) inventory = Read(left, stacks, counts, items)
+            val kept = inventory?.takeIf { it.menu === open }
             menu = open
             title = openTitle
             tapped = game.tap

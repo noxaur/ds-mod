@@ -5,6 +5,9 @@ import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
 import com.mojang.authlib.properties.PropertyMap
 import io.github.noxaur.dsmod.core.feature.general.InventoryRow
+import io.github.noxaur.dsmod.core.game.ContainerOpened
+import io.github.noxaur.dsmod.core.game.GameEvent
+import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.HudLook
 import io.github.noxaur.dsmod.core.hud.ItemsRow
@@ -109,6 +112,23 @@ class InventoryPreviewTest : FabricClientGameTest {
                 context.waitTicks(20)
                 context.runOnClient<Nothing> { sampling = false }
                 check(shown.isNotEmpty() && shown.all { it == FILLED }) { "The grid did not hold all $FILLED items as the inventory was read again: $shown" }
+
+                // A capture that starts inside a menu has seen none of the inventory, so going back must send it whole.
+                ServerMenus.open(context, world, 6, "Big Chest")
+                val tapped = ArrayList<GameEvent>()
+                context.runOnClient<Nothing> {
+                    DsModClient.game.tap = { _, event -> tapped += event }
+                }
+                try {
+                    context.waitTicks(5)
+                    context.runOnClient<Nothing> { it.player!!.closeContainer() }
+                    context.waitTicks(10)
+                } finally {
+                    context.runOnClient<Nothing> { DsModClient.game.tap = null }
+                }
+                val back = tapped.filterIsInstance<ContainerOpened>().last()
+                val slots = tapped.drop(tapped.lastIndexOf(back)).count { it is SlotChanged && it.item != null }
+                check(back.id == 0 && !back.kept && slots == FILLED) { "A capture started in a menu got the inventory as $back with $slots items" }
 
                 general.inventoryLook = HudLook.HOTBAR
                 context.waitTicks(10)
