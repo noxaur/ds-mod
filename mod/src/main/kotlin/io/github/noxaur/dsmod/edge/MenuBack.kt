@@ -21,7 +21,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.item.ItemStack
 
 /**
- * Back Buttons. A chest menu the server gave no Go Back gets a button where Go Back sits in the server's menus, in the
+ * Back Buttons, under Better UI. A chest menu the server gave no Go Back gets a button where Go Back sits in the server's menus, in the
  * middle of the bottom row, left of Close. It sends the command that opened the last menu in the run, which
  * [MenuTrail] keeps. It shows only while that slot is empty or filler, so it never covers an item that does something.
  */
@@ -32,7 +32,7 @@ object MenuBack {
     private var menu: AbstractContainerMenu? = null
     private var back: String? = null
 
-    private val enabled get() = DsModClient.active && DsModClient.settings.inventory.backButtons
+    private val enabled get() = MenuTools.on && DsModClient.settings.betterUi.backButtons
 
     fun register() {
         ClientSendMessageEvents.COMMAND.register { trail.sent(System.currentTimeMillis(), it) }
@@ -49,7 +49,7 @@ object MenuBack {
             val chest = screen.menu.slots.subList(0, screen.menu.rowCount * 9)
             val slot = chest[chest.size - 6]
             screen as ContainerScreenAccessor
-            val button = KitButton(screen.leftPos + slot.x, screen.topPos + slot.y, Icon.BACK, GO_BACK) { press(command) }
+            val button = KitButton(screen.leftPos + slot.x, screen.topPos + slot.y, Icon.BACK, GO_BACK) { send(command) }
             button.setTooltip(Tooltip.create(text { body(GO_BACK); muted("\nSends /$command."); action("\nClick to go back.") }.toComponent()))
             button.visible = false
             Screens.getWidgets(screen).add(button)
@@ -65,9 +65,13 @@ object MenuBack {
 
     private fun named(stack: ItemStack) = stack.get(DataComponents.CUSTOM_NAME)?.string == GO_BACK
 
-    private fun press(command: String) {
+    /**
+     * Sends [command] for the player, on their click on a Back or Command button, and lets the trail know, so the menu
+     * it opens starts a run.
+     */
+    fun send(command: String) {
         val connection = Minecraft.getInstance().connection ?: return
         trail.sent(System.currentTimeMillis(), command)
-        connection.sendCommand(command) // rule:no-automation Menu Button: one command the player already sent, on their click
+        connection.sendCommand(command) // rule:no-automation Menu Button and Command Binds: one command, on the player's click
     }
 }

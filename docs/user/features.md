@@ -149,12 +149,6 @@ Hides the blank glass panes that pad out a menu, along with their tooltip and ho
 
 When one menu opens another, the cursor stays where it was instead of jumping to the middle.
 
-### Back Buttons
-
-A menu with no Go Back gets one in Go Back's usual place, if you reached it from a menu you opened with a command, such as `/storage`. Clicking it sends that command again. Hover it to see which command it sends.
-
-<sub>A menu you opened from an NPC or an item gets none, because no command reopens it.</sub>
-
 ### Slot Lock
 
 Locks slots and items of your inventory, so a misclick cannot move or drop them.
@@ -175,6 +169,32 @@ A padlock marks each one: yellow for a slot, blue for a linked slot and green fo
 - **Armor and the off hand** can be locked too.
 
 Slot Lock Key and Item Lock Key under Inventory in the settings take any key or mouse button. The server can still move a locked item itself, as when you sell it.
+
+## Better UI
+
+Buttons and a search field that ds-mod adds to the game's menus. The Better UI switch turns them all off at once, and each has its own switch too.
+
+### Back Buttons
+
+A menu with no Go Back gets one in Go Back's usual place, if you reached it from a menu you opened with a command, such as `/storage`. Clicking it sends that command again. Hover it to see which command it sends.
+
+<sub>A menu you opened from an NPC or an item gets none, because no command reopens it.</sub>
+
+### Menu Search
+
+A search field stands to the right of every menu and your inventory. Type in it and every item whose name and lore do not hold all your words is dimmed. Your search stays as you move from menu to menu, so you can flip through storage pages looking for one item.
+
+| Do this | To |
+| --- | --- |
+| Ctrl+F, or click the field | Start typing. Keys go to the field, so E and Q don't close the menu or drop an item |
+| Escape or Enter | Leave the field. The search stays |
+| Right click the field | Clear it |
+
+<sub>The text turns red when nothing in the menu matches.</sub>
+
+### Command Buttons
+
+A button under the search field for each command in Commands, under Better UI, which sends it when you click. It starts with `storage, ec, craft, forge`. List your own separated by commas, such as `storage, pets, warp end`.
 
 ## Chat
 

@@ -16,8 +16,10 @@ import io.github.noxaur.dsmod.core.feature.general.FreeLook
 import io.github.noxaur.dsmod.core.feature.general.Fullbright
 import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
 import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
+import io.github.noxaur.dsmod.core.feature.inventory.CommandButtons
 import io.github.noxaur.dsmod.core.feature.inventory.HideFiller
 import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
+import io.github.noxaur.dsmod.core.feature.inventory.MenuSearch
 import io.github.noxaur.dsmod.core.feature.inventory.RarityOutlines
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.feature.inventory.StableMenus
@@ -47,7 +49,9 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     StableMenus(config.inventory::stableMenus),
     HideFiller(config.inventory::hideFiller),
     KeepCursor(config.inventory::keepCursor),
-    BackButtons(config.inventory::backButtons),
+    BackButtons(config.betterUi::backButtons),
+    MenuSearch(config.betterUi::menuSearch),
+    CommandButtons(config.betterUi::commandButtons),
     SlotLock(config.inventory::slotLock),
     LootAlerts(config.loot::lootAlerts, config.loot::lootAlertTier),
     SlayerBossAlert(config.slayer::slayerBossAlert),

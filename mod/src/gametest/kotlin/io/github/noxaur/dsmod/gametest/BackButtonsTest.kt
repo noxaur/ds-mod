@@ -22,7 +22,7 @@ class BackButtonsTest : FabricClientGameTest {
     /** Where the open menu's visible Back button sits, or null when it has none. */
     private fun button(context: ClientGameTestContext) = context.computeOnClient<Pair<Int, Int>?, Nothing> { client ->
         val screen = client.gui.screen() as? ContainerScreen ?: return@computeOnClient null
-        Screens.getWidgets(screen).filterIsInstance<KitButton>().firstOrNull { it.visible }?.let { it.x to it.y }
+        Screens.getWidgets(screen).filterIsInstance<KitButton>().firstOrNull { it.visible && it.message.string == "Go Back" }?.let { it.x to it.y }
     }
 
     /** Opens the menu titled [title] from the open one, as a click in a server menu does. */
@@ -56,12 +56,12 @@ class BackButtonsTest : FabricClientGameTest {
             context.takeScreenshot("back-button-vanilla")
             context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
 
-            context.runOnClient<Nothing> { DsModClient.settings.inventory.backButtons = false }
+            context.runOnClient<Nothing> { DsModClient.settings.betterUi.backButtons = false }
             try {
                 context.waitTicks(2)
                 check(button(context) == null) { "The Back button stayed with Back Buttons off" }
             } finally {
-                context.runOnClient<Nothing> { DsModClient.settings.inventory.backButtons = true }
+                context.runOnClient<Nothing> { DsModClient.settings.betterUi.backButtons = true }
             }
             context.waitTicks(2)
 

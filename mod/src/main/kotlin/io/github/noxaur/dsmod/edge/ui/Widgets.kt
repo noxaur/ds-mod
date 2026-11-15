@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.AbstractButton
 import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.narration.NarratedElementType
 import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.input.InputWithModifiers
@@ -53,6 +54,33 @@ class KitButton private constructor(
             Kit.button(graphics, x, y, width, height, state, icon)
         } else {
             Kit.button(graphics, x, y, width, height, state, label, labelWidth)
+        }
+    }
+}
+
+/**
+ * A one-line text field 16 tall, with [hint] in muted text while it is empty. It is vanilla's `EditBox`, so selection,
+ * the clipboard keys, Home, End and Ctrl+arrows by the word all work. Only its frame is the kit's.
+ */
+class KitTextField(x: Int, y: Int, width: Int, name: String, hint: String) :
+    EditBox(Kit.font, x, y, width, Kit.BUTTON_HEIGHT, plain(name)) {
+    // EditBox draws its own frame when it is bordered, and places its text by the same flag, so the flag stays on and
+    // only the drawing is told otherwise.
+    private var drawing = false
+
+    init {
+        setHint(text { muted(hint) }.toComponent())
+    }
+
+    override fun isBordered() = !drawing && super.isBordered()
+
+    override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+        Kit.field(graphics, x, y, width, height, Kit.state(active, isHoveredOrFocused, false))
+        drawing = true
+        try {
+            super.extractWidgetRenderState(graphics, mouseX, mouseY, partialTick)
+        } finally {
+            drawing = false
         }
     }
 }

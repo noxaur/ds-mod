@@ -178,6 +178,12 @@ object Kit {
         if (checked) icon(g, Icon.CHECK, x + 2, y + 2, if (state == State.OFF) t.inkOff else GOOD, state != State.OFF)
     }
 
+    /** A text field's frame: a well, ringed in `hoverOutline` under the mouse or with focus. The text sits 4 in from its left. */
+    fun field(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
+        well(g, x, y, width, height)
+        if (state == State.HOVER || state == State.DOWN) ring(g, x - 1, y - 1, width + 2, height + 2, theme.hoverOutline)
+    }
+
     /**
      * A switched-on stretch of a range slider's track: a raised face in the accent color, which lifts under the
      * mouse and sinks while it is dragged.
