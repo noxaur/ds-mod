@@ -2,9 +2,9 @@ import { Effect, Schema } from "effect";
 import { and, asc, db, eq, sql } from "void/db";
 import { storage } from "void/storage";
 
-import { requests, skips, submissions, unknowns } from "./db/schema.ts";
-import { RequestSpec } from "./src/contrib/model.ts";
-import type { Store } from "./src/contrib/store.ts";
+import { requests, skips, submissions, unknowns } from "../db/schema.ts";
+import { RequestSpec } from "../src/contrib/model.ts";
+import type { Store } from "../src/contrib/store.ts";
 
 const decodeSpec = Schema.decodeUnknownSync(RequestSpec);
 const decodeStatus = Schema.decodeUnknownSync(Schema.Literals(["open", "filled", "closed"]));
@@ -19,7 +19,7 @@ const toRequest = (row: typeof requests.$inferSelect) => ({
 });
 
 /** The store on Cloudflare: rows in D1 and capture files in R2. It outlives a move off Void as the only file to rewrite. */
-export const d1Store: Store["Service"] = {
+export const contribStore: Store["Service"] = {
   insertRequest: ({ id, status, createdAt, ...spec }) =>
     run(() => db.insert(requests).values({ id, status, createdAt, spec })).pipe(Effect.asVoid),
   requests: run(() => db.select().from(requests).orderBy(asc(requests.createdAt))).pipe(
