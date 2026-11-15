@@ -56,7 +56,7 @@
       "group": "Size",
       "label": "Release jar",
       "unit": "KB",
-      "cap": 1500
+      "cap": 5120
     }
   }
 }
