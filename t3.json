@@ -16,13 +16,18 @@
     },
     {
       "name": "Run Backend",
-      "command": "cd backend && mise exec -- pnpm install && mise exec -- pnpm exec void db migrate && mise exec -- pnpm dev",
+      "command": "cd backend && mise exec -- pnpm install && (test -f .env || echo 'ADMIN_TOKEN=local-admin' > .env) && mise exec -- pnpm exec void db migrate && mise exec -- pnpm dev",
       "icon": "play"
     },
     {
       "name": "Run Web",
       "command": "cd web && mise exec -- pnpm install && mise exec -- pnpm dev",
       "icon": "play"
+    },
+    {
+      "name": "List Contribution Requests",
+      "command": "cd backend && DSMOD_ADMIN_TOKEN=$(sed -n 's/^ADMIN_TOKEN=//p' .env) mise exec -- pnpm -s dsctl list",
+      "icon": "debug"
     },
     {
       "name": "Reset Backend Database",

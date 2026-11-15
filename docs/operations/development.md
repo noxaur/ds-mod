@@ -61,6 +61,33 @@ cd mod && ./gradlew runClient -Pbrief=/tmp/golem-tiers.json
 
 The window's title starts with the brief's name, and the steps sit in the top right corner of the screen. The user presses the key the HUD names to start, which starts the capture, and again after each step. It is `]` on a US layout, and Next Recording Step in the game's controls. After the last step the capture is saved and the HUD names its file, so the user closes the game and the command returns. The capture is the newest file in `mod/run/dsmod/captures/`, and a `step` line marks where each step began. To abandon a run, the user types `/dscapture cancel`, which deletes the capture the brief started.
 
+### Ask players for a capture
+
+When the user's account cannot reach what a brief needs, publish the brief as a request for players who can reach it to record. One player's run proves little, so a request collects runs from several players.
+
+`dsctl` is how an agent does it. Locally its admin token is `ADMIN_TOKEN` in `backend/.env`, which git ignores, and `dsctl` reads it from `DSMOD_ADMIN_TOKEN`. Ask the user for the deployed one and the deployed address, which goes in `DSMOD_BACKEND`.
+
+```sh
+cd backend
+export DSMOD_ADMIN_TOKEN=$(sed -n 's/^ADMIN_TOKEN=//p' .env)
+pnpm -s dsctl create /tmp/golem-tiers.json --area "The End" --wanted 3 --timeout 600
+pnpm -s dsctl list
+pnpm -s dsctl pull <request id> ../mod/run/dsmod/captures
+```
+
+`pull` writes one `.jsonl` per run, and `cutFixture` takes them like any capture. `pnpm -s dsctl` with no command lists every command and option.
+
+### Change the backend's tables
+
+Edit `backend/db/schema.ts`, then in `backend/`:
+
+```sh
+pnpm exec void db generate
+pnpm exec void db migrate
+```
+
+Commit the SQL that `generate` writes. When `migrate` says the local database does not match, `pnpm exec void db reset` rebuilds it from the migrations.
+
 ## Add a feature
 
 Follow [mod/AGENTS.md](../../mod/AGENTS.md#features). A feature needs a fixture cut from a capture, so record the capture first. Then cut it, with the window in seconds from the capture's start:
