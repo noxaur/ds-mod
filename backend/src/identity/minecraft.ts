@@ -90,20 +90,22 @@ export const minecraft = (hasJoined: HasJoined = mojangHasJoined) =>
           let user = account === null ? null : await ctx.context.internalAdapter.findUserById(account.userId);
           if (user === null) {
             // Better Auth needs an email, and a player has none. This one can never receive mail.
-            user = await ctx.context.internalAdapter.createUser(
-              {
-                name: joined.name,
-                email: `${joined.uuid}@minecraft.invalid`,
-                emailVerified: false,
-              },
-              { method: PROVIDER },
-            );
+            const email = `${joined.uuid}@minecraft.invalid`;
+            // D1 has no transactions, so a sign-in can make the user and fail before the link. Only this plugin makes
+            // users, so the next sign-in links the user its email names instead of failing on that email forever.
+            user =
+              (await ctx.context.internalAdapter.findUserByEmail(email))?.user ??
+              (await ctx.context.internalAdapter.createUser(
+                { name: joined.name, email, emailVerified: false },
+                { method: PROVIDER },
+              ));
             await ctx.context.internalAdapter.createAccount({
               userId: user.id,
               providerId: PROVIDER,
               accountId: joined.uuid,
             });
-          } else if (user.name !== joined.name) {
+          }
+          if (user.name !== joined.name) {
             user = await ctx.context.internalAdapter.updateUser(user.id, { name: joined.name });
           }
           const session = await ctx.context.internalAdapter.createSession(user.id);
