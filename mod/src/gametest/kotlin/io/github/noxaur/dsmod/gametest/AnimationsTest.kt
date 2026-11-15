@@ -2,10 +2,17 @@ package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.hand.SwingStyle
 import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.gametest.mixin.HandAccessor
+import io.github.noxaur.dsmod.gametest.mixin.HudAccessor
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
 import net.minecraft.client.AttackIndicatorStatus
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.InteractionHand
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import java.awt.image.BufferedImage
 import java.nio.file.Path
 import javax.imageio.ImageIO
@@ -39,17 +46,39 @@ class AnimationsTest : FabricClientGameTest {
             it.player!!.swing(InteractionHand.MAIN_HAND)
         }
 
+        /**
+         * Waits until the hand draws the item the player holds, the swing has ended, the cooldown has run out, the item
+         * is fully raised again and the arm has caught up with the camera's last turn, then clears the item's name over
+         * the hotbar, so only the item can differ between two frames.
+         */
+        fun settle() {
+            context.waitFor { client ->
+                val player = client.player!!
+                val hand = client.gameRenderer.itemInHandRenderer as HandAccessor
+                ItemStack.matches(hand.mainHandItem, player.mainHandItem) && !player.swinging &&
+                    player.getAttackStrengthScale(0f) >= 1f && hand.mainHandHeight == 1f && hand.oMainHandHeight == 1f &&
+                    player.xBob == player.xRot && player.xBobO == player.xRot && player.yBob == player.yRot && player.yBobO == player.yRot
+            }
+            context.runOnClient<Nothing> { (it.gui.hud as HudAccessor).setToolHighlightTimer(0) }
+        }
+
+        /** Puts [item] in the hand and waits for the client to have it. */
+        fun hold(world: TestSingleplayerContext, item: Item) {
+            world.server.runCommand("item replace entity @a weapon.mainhand with ${BuiltInRegistries.ITEM.getKey(item).path}")
+            context.waitFor { it.player!!.mainHandItem.`is`(item) }
+            settle()
+        }
+
         /** The frame two ticks into a swing, which is mid-swing at the game's own speed. */
         fun midSwing(name: String, swingAt: () -> Unit = ::swing): BufferedImage {
             swingAt()
             context.waitTicks(2)
-            return shot(name).also { context.waitTicks(30) }
+            return shot(name).also { settle() }
         }
 
         context.worldBuilder().create().use { world ->
             listOf("gamerule advance_time false", "gamerule advance_weather false", "clear @a")
                 .forEach(world.server::runCommand)
-            world.server.runCommand("item replace entity @a weapon.mainhand with diamond_sword")
             context.input.lookAt(0f, 90f)
             // The vignette eases toward the light where the player stands for half a minute and shades the whole frame,
             // and the attack indicator shows the cooldown a swing at the air starts. Neither is the sword.
@@ -59,8 +88,7 @@ class AnimationsTest : FabricClientGameTest {
                 it.options.vignette().set(false)
                 it.options.attackIndicator().set(AttackIndicatorStatus.OFF)
             }
-            // Long enough for the sword's name over the hotbar to fade, so only the sword can differ.
-            context.waitTicks(80)
+            hold(world, Items.DIAMOND_SWORD)
             try {
                 settings.animations = false
                 val vanilla = shot("animations-vanilla")
@@ -93,14 +121,12 @@ class AnimationsTest : FabricClientGameTest {
                 settings.swingStyle = SwingStyle.STILL
                 check(changed(vanilla, midSwing("animations-still")) == 0) { "Still moved the sword" }
                 // A spear swings by a stab of its own, which the style replaces too.
-                world.server.runCommand("item replace entity @a weapon.mainhand with diamond_spear")
-                context.waitTicks(80)
+                hold(world, Items.DIAMOND_SPEAR)
                 val spear = shot("animations-spear")
                 check(changed(spear, midSwing("animations-spear-still")) == 0) { "Still let the spear stab" }
                 settings.swingStyle = SwingStyle.VANILLA
                 check(changed(spear, midSwing("animations-spear-vanilla")) > 1000) { "The spear did not stab" }
-                world.server.runCommand("item replace entity @a weapon.mainhand with diamond_sword")
-                context.waitTicks(80)
+                hold(world, Items.DIAMOND_SWORD)
 
                 // Slowed to a fifth, so the swing lasts 30 ticks and the frame 10 ticks in is a third of the way.
                 settings.swingSpeed = 0.2f
@@ -109,7 +135,12 @@ class AnimationsTest : FabricClientGameTest {
                     swing()
                     context.waitTicks(10)
                     val pose = shot("animations-${style.name.lowercase()}")
-                    context.waitTicks(30)
+                    // The rest of the slowed swing shows nothing new.
+                    context.runOnClient<Nothing> {
+                        it.player!!.swinging = false
+                        it.player!!.swingTime = 0
+                    }
+                    settle()
                     check(changed(vanilla, pose) > 1000) { "$style did not move the sword" }
                     style to pose
                 }
@@ -123,7 +154,7 @@ class AnimationsTest : FabricClientGameTest {
                 fun lasts(ticks: Int): Boolean {
                     swing()
                     context.waitTicks(ticks)
-                    return swinging().also { context.waitTicks(40) }
+                    return swinging().also { settle() }
                 }
                 settings.swingSpeed = 1f
                 check(!lasts(9)) { "The game's own swing lasted past 9 ticks" }

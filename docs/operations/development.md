@@ -107,16 +107,16 @@ cd mod
 
 `mise run check` must pass. It runs `check:mod`, `check:backend`, `check:web` and `check:docs`, and you can run each one alone.
 
-When you change `edge`, a screen or the build, also run the game tests:
+When you change `edge` or a screen, also run the game tests that cover it. A run names its tests, and one that names none fails:
 
 ```sh
 cd mod
-./gradlew runClientGameTest runProdClientGameTest
+./gradlew runClientGameTest -Pgametests=ChatTest,KitTest
 ```
 
-The second one loads the built jars the way a player does. Both run behind the user, taking no keyboard focus and writing the game's sound to `audio.wav` in the run folder instead of the speakers. [Issue 19](https://github.com/noxaur/ds-mod/issues/19) lists the platforms where that is incomplete.
+When you change the build, run `./gradlew runProdClientGameTest -Pgametests=SettingsScreenTest`, which loads the built jars the way a player does. Both run behind the user, taking no keyboard focus and writing the game's sound to `audio.wav` in the run folder instead of the speakers. [Issue 19](https://github.com/noxaur/ds-mod/issues/19) lists the platforms where that is incomplete.
 
-To run one game test, name it: `./gradlew runProdClientGameTest -Pgametests=PerfTest`. `PerfTest` writes its table to `build/run/prodClientGameTest/perf.md`.
+One test takes about 30 seconds, most of it booting the game. The whole suite takes minutes, so the beta pipeline runs it, and `-Pgametests=all` runs it here. Each test's time is in the log as `TestClock:`, and a test over 20 seconds fails the run. `PerfTest` writes its table to `build/run/prodClientGameTest/perf.md`.
 
 ## CI
 
