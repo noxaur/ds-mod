@@ -66,7 +66,7 @@ class BriefTest : FabricClientGameTest {
             // `/dscapture` must leave a brief's recording alone.
             var refused: String? = null
             val stolen = context.computeOnClient<java.nio.file.Path?, Nothing> { client -> DsModDebug.toggleCapture(client) { refused = it } }
-            check(stolen == null && refused.orEmpty().startsWith("A brief is recording")) { "/dscapture answered '$refused' with $stolen during a brief" }
+            check(stolen == null && refused.orEmpty().startsWith("A brief is on")) { "/dscapture answered '$refused' with $stolen during a brief" }
             check(context.computeOnClient<Boolean, Nothing> { Recorder.running }) { "/dscapture stopped the brief's recording" }
             context.runOnClient<Nothing> {
                 repeat(2) { KeyMapping.click(InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_RIGHT_BRACKET)) }

@@ -24,7 +24,18 @@ object Account {
         }
     }
 
-    val backend by lazy { Backend(Build.backend, identity) }
+    @Volatile
+    private var chosen: Backend? = null
+
+    /** The one client, built on first use. A game test sets a client of its own, for a backend on a local port. */
+    var backend: Backend
+        get() = chosen ?: synchronized(this) { chosen ?: Backend(Build.backend, identity, Build.version).also { chosen = it } }
+        set(value) {
+            chosen = value
+        }
+
+    /** The player's Minecraft name. */
+    val name: String get() = identity.name
 
     /** `/dsmod login`: trades the session for a link that signs the website in once, and opens it. The token never reaches chat or a log. */
     fun login() {
@@ -41,12 +52,15 @@ object Account {
             }
     }
 
-    private fun why(error: Throwable): String {
+    /** What went wrong with a call to the backend, said to the player. */
+    fun why(error: Throwable): String {
         val e = (error as? CompletionException)?.cause ?: error
         if (e !is BackendException) return "Something went wrong."
         return when (e.status) {
             null -> e.message.orEmpty()
+            400 -> "The backend could not read what was sent."
             401 -> "The backend would not sign you in."
+            404 -> "The backend does not know that request."
             503 -> "Mojang did not answer. Try again in a moment."
             else -> "The backend answered ${e.status}."
         }

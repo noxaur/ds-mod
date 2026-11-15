@@ -64,8 +64,15 @@ abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boo
         check(handlers.put(type, handler as (GameEvent, Long) -> Unit) == null) { "$id already handles ${type.simpleName}" }
     }
 
-    /** Adds to the counter `<id>.<name>`. Count a line that should have parsed and did not as `unparsed`. */
-    protected fun count(name: String) = metrics.count("$id.$name")
+    /**
+     * Records that [sample], text that reached this feature's branch, failed to parse. The counter `<id>.unparsed`
+     * is how a format change on the server shows up, and the sample goes to the player's report when they sent
+     * one. Pass the server's text as it is, because the report redacts it.
+     */
+    protected fun unparsed(sample: String) {
+        metrics.count("$id.unparsed")
+        metrics.onUnparsed?.invoke(id, sample)
+    }
 
     /** Keeps the chat line this handler is reading out of the player's chat. Every feature still sees the line. */
     protected fun hide() {

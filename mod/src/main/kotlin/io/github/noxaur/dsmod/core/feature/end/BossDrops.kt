@@ -42,7 +42,7 @@ class BossDrops(toggle: KMutableProperty0<Boolean>) : Feature("boss-drops", togg
             when {
                 '\n' in line && " DOWN!\n" in line -> {
                     readingLoot = false
-                    val boss = down.find(line)?.groupValues?.get(1) ?: return@on count("unparsed")
+                    val boss = down.find(line)?.groupValues?.get(1) ?: return@on unparsed(line)
                     // The summary reaches everyone nearby, and one without this line is for a fight the player did no damage in.
                     val (dealt, place) = mine.find(line)?.destructured ?: return@on
                     val name = boss.lowercase().split(' ').joinToString(" ") { it.replaceFirstChar(Char::uppercase) }

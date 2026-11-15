@@ -93,10 +93,10 @@ const logFailures = ErrorReporter.make(({ cause, error }) => {
 });
 
 /**
- * The largest body any endpoint reads, a capture of a few minutes being well under it once gzipped. A body is read
+ * The largest body any endpoint reads, a capture of half an hour in a busy place being under it once gzipped. A body is read
  * against it as it arrives, so a client cannot make the Worker hold more than this, whatever it claims to send.
  */
-export const MAX_BODY = ByteSize.megabytes(10);
+export const MAX_BODY = ByteSize.megabytes(50);
 
 /**
  * The API as a function from request to response, keeping its rows and files in [store]. [callerOf] says who a request

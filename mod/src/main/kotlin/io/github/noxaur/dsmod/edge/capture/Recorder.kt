@@ -7,7 +7,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.minecraft.client.Minecraft
@@ -74,11 +73,15 @@ object Recorder {
             }
         }
         ClientTickEvents.END_CLIENT_TICK.register { client -> session?.tick(client) }
-        // The background thread dies with the game, so quitting waits for every capture still being finished.
-        ClientLifecycleEvents.CLIENT_STOPPING.register {
-            session?.let(::stop)
-            Background.io.shutdown()
-            Background.io.awaitTermination(1, TimeUnit.MINUTES)
-        }
+    }
+
+    /**
+     * Quitting: stops what still runs, which keeps its file, and waits for every capture still being finished,
+     * because the background thread dies with the game. Whoever wants their capture gone stops it first.
+     */
+    fun quit() {
+        session?.let(::stop)
+        Background.io.shutdown()
+        Background.io.awaitTermination(1, TimeUnit.MINUTES)
     }
 }

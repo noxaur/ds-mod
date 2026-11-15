@@ -11,4 +11,5 @@ object Build {
 
     val backend: String = mod.getCustomValue("dsmod:backend").asString.trimEnd('/')
     val website: String = mod.getCustomValue("dsmod:website").asString.trimEnd('/')
+    val version: String = mod.version.friendlyString
 }

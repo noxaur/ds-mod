@@ -75,7 +75,7 @@ export const Api = HttpApi.make("dsmod")
           error: [HttpApiError.NotFound, HttpApiError.Conflict, HttpApiError.BadRequest],
         }).annotate(
           OpenApi.Description,
-          "Keeps the player's run of a request: the capture file, gzipped, at most 10 MB (413 above it, as for any body). A player has one run per request. A filled request still takes a run from a player who was recording when it filled, and a closed one, or one with twice the wanted number of runs, takes none (409).",
+          "Keeps the player's run of a request: the capture file, gzipped, at most 50 MB (413 above it, as for any body). A player has one run per request. A filled request still takes a run from a player who was recording when it filled, and a closed one, or one with twice the wanted number of runs, takes none (409).",
         ),
       )
       .add(
