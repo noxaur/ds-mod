@@ -44,7 +44,7 @@ describe("begin", () => {
       ],
     ]);
     const [url, init] = vi.mocked(fetch).mock.calls[0] ?? [];
-    expect(url).toBe("http://localhost:8787/api/auth/one-time-token/verify");
+    expect(url).toBe("http://127.0.0.1:8787/api/auth/one-time-token/verify");
     expect(init?.body).toBe(JSON.stringify({ token: "one-time-secret" }));
   });
 
@@ -120,7 +120,7 @@ describe("finish", () => {
       ["dsmod_session", "session-secret", { ...options, expires: new Date(expiresAt), path: "/" }],
     ]);
     const [url, init] = vi.mocked(fetch).mock.calls[0] ?? [];
-    expect(url).toBe("http://localhost:8787/api/auth/get-session");
+    expect(url).toBe("http://127.0.0.1:8787/api/auth/get-session");
     expect(init?.headers).toEqual({ authorization: "Bearer session-secret" });
   });
 
