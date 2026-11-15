@@ -54,7 +54,7 @@ The code is split into two source sets, and each becomes its own mod.
 
 ## Seeing the game
 
-Agents see the game through captures. A capture is a JSONL file of what the server showed the client, one event per line. With the debug build, the user types `/dscapture` in game to start one and again to save it, and it lands in `dsmod/captures/` inside the game folder. It refuses while a brief is recording.
+Agents see the game through captures. A capture is a JSONL file of what the server showed the client, one event per line. With the debug build, the user types `/dscapture` in game to start one and again to save it, and it lands in `dsmod/captures/` inside the game folder. It refuses while a brief is recording, and `/dscapture cancel` ends the brief and deletes the capture it started.
 
 Each line has a time `t`, a `type` and `data`. A type is either an event or a raw record.
 

@@ -1,14 +1,15 @@
 package io.github.noxaur.dsmod.gametest
 
 import com.mojang.blaze3d.platform.InputConstants
+import io.github.noxaur.dsmod.core.brief.Brief
 import io.github.noxaur.dsmod.debug.DsModDebug
 import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
-import net.minecraft.client.KeyMapping
-import io.github.noxaur.dsmod.core.brief.Brief
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.minecraft.client.KeyMapping
 import org.lwjgl.glfw.GLFW
+import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.readLines
 
@@ -77,6 +78,28 @@ class BriefTest : FabricClientGameTest {
                 """{"done":true}}""",
             )) { "Two presses in one tick recorded $both" }
             context.runOnClient<Nothing> { Recording.cancel() }
+
+            // A brief run inside `/dscapture`'s capture records its steps there, and leaves it running after the last.
+            val own = context.computeOnClient<java.nio.file.Path, Nothing> { DsModDebug.toggleCapture(it)!! }
+            context.runOnClient<Nothing> { Recording.start(brief) }
+            context.waitTicks(2)
+            context.runOnClient<Nothing> { repeat(4) { KeyMapping.click(InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_RIGHT_BRACKET)) } }
+            context.waitTicks(2)
+            check(context.computeOnClient<Boolean, Nothing> { Recorder.running }) { "The brief ended /dscapture's capture" }
+            context.runOnClient<Nothing> { Recording.cancel() }
+            check(context.computeOnClient<Boolean, Nothing> { Recorder.running }) { "Cancelling the brief ended /dscapture's capture" }
+            var saved: String? = null
+            context.runOnClient<Nothing> { client -> DsModDebug.toggleCapture(client) { saved = it } }
+            context.waitFor { saved != null }
+            check(own.readLines().count { "\"type\":\"step\"" in it } == 4) { "/dscapture's capture holds ${own.readLines().filter { "step" in it }}" }
+
+            // Cancelling a brief deletes the capture it started.
+            context.runOnClient<Nothing> { Recording.start(brief) }
+            context.runOnClient<Nothing> { KeyMapping.click(InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_RIGHT_BRACKET)) }
+            context.waitFor { Recorder.running }
+            val started = captures.listDirectoryEntries("*.jsonl").maxBy { it.fileName.toString() }
+            context.runOnClient<Nothing> { Recording.cancel() }
+            context.waitFor { !started.exists() }
         }
     }
 }
