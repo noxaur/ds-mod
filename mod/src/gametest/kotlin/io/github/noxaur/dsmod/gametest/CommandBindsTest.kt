@@ -47,6 +47,7 @@ class CommandBindsTest : FabricClientGameTest {
         context.waitForScreen(CommandBindsScreen::class.java)
         context.waitTicks(2)
         context.takeScreenshot("command-binds-empty")
+        readmeShot(context)
 
         fun screen() = context.computeOnClient<Screen, Nothing> { it.gui.screen()!! }
         fun <T : AbstractWidget> widgets(type: Class<T>) = context.computeOnClient<List<T>, Nothing> { client ->
@@ -384,5 +385,34 @@ class CommandBindsTest : FabricClientGameTest {
                 context.setScreen { null }
             }
         }
+    }
+
+    /** The README's picture: a few binds with the server's own commands, one group folded, the mouse away. */
+    private fun readmeShot(context: ClientGameTestContext) {
+        val general = DsModClient.settings.general
+        // The screen the test works on comes back after, so Done still returns to the settings.
+        val opened = context.computeOnClient<Screen, Nothing> { it.gui.screen()!! }
+        context.runOnClient<Nothing> { client ->
+            general.binds = listOf(
+                CommandBind("Warp End", "/warp end", listOf(GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_F6)),
+                CommandBind("Stash", "/viewstash", listOf(GLFW.GLFW_KEY_F7), where = Where.BOTH),
+                CommandBind("", "/sbmenu on", listOf(GLFW.GLFW_KEY_F8, GLFW.GLFW_KEY_F9), inOrder = true),
+                CommandBind("Shared", "/warp end", listOf(GLFW.GLFW_KEY_KP_1), group = "From a Friend", enabled = false),
+            )
+            general.bindGroups = listOf("From a Friend")
+            general.collapsedGroups = listOf("From a Friend")
+            client.gui.setScreen(CommandBindsScreen(general, null) {})
+        }
+        context.waitTicks(2)
+        context.input.setCursorPos(0.0, 0.0)
+        context.waitTicks(2)
+        context.takeScreenshot("command-binds-readme")
+        context.runOnClient<Nothing> { client ->
+            general.binds = emptyList()
+            general.bindGroups = emptyList()
+            general.collapsedGroups = emptyList()
+            client.gui.setScreen(opened)
+        }
+        context.waitTicks(2)
     }
 }

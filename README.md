@@ -14,6 +14,8 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - Loot Alerts go off for drops at or above the rarity you set.
 - Command Binds send a command such as `/warp end` with a key, a few keys held together or keys pressed in turn. Keep them in groups you can fold, switch off and share.
 
+  ![Command Binds: binds listed in groups on the left, the picked bind's command, keys and settings on the right](docs/images/command-binds.png)
+
 It also has a HUD editor, rarity outlines, Fullbright, and guards against two misclicks: taking a placed eye back out of the altar, and swapping armor with a right click.
 
 Toggle any feature in `/dsmod`. The [feature guide](docs/user/features.md) has the full list.
