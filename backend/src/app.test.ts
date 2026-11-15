@@ -10,6 +10,7 @@ import { Api } from "./api.ts";
 import { MAX_BODY, makeApp } from "./app.ts";
 import { MAX_UNKNOWNS } from "./contrib/contrib.ts";
 import { memoryStore } from "./contrib/store.ts";
+import { memoryServices } from "./memory.ts";
 
 const spec = {
   brief: { name: "Golem tiers", steps: [{ do: "Warp to the End" }, { do: "Stand still", seconds: 60 }] },
@@ -27,7 +28,7 @@ const gz = (...bytes: number[]) => new Uint8Array([0x1f, 0x8b, ...bytes]);
 /** A backend with nothing in it, and a way to call it as an agent, as a player, or as nobody. */
 function backend() {
   // Who is signed in is what Void would say: here, whoever the test's cookie names. The admin token is "secret".
-  const app = makeApp(memoryStore(), (request) => ({
+  const app = makeApp(memoryServices(), (request) => ({
     userId: request.headers.get("cookie"),
     adminToken: "secret",
   }));
@@ -178,7 +179,7 @@ test("only the exact admin token makes a caller an agent", async () => {
 });
 
 test("with no admin token set, nobody is an agent", async () => {
-  const app = makeApp(memoryStore(), () => ({ userId: null, adminToken: undefined }));
+  const app = makeApp(memoryServices(), () => ({ userId: null, adminToken: undefined }));
   for (const authorization of ["Bearer ", "Bearer undefined", ""]) {
     const response = await app(new Request("http://backend/v1/admin/requests", { headers: { authorization } }));
     expect(response.status).toBe(401);
@@ -257,7 +258,7 @@ test("a request that does not decode says where and what was expected, and only 
 
 test("invented sightings stop being kept at the cap, and known ones still count", async () => {
   const store = memoryStore();
-  const app = makeApp(store, () => ({ userId: "ann", adminToken: undefined }));
+  const app = makeApp(memoryServices({ contrib: store }), () => ({ userId: "ann", adminToken: undefined }));
   const post = (sightings: unknown[]) =>
     app(
       new Request("http://backend/v1/contrib/unknowns", {
@@ -301,7 +302,7 @@ test("a store that fails answers 500 with nothing in it, and only that reaches t
   expect((await call("ann", "POST", "/v1/contrib/requests/nothing/submissions?modVersion=1", huge)).status).toBe(413);
   expect(logged, "a refusal is the client's mistake, not the backend's").not.toHaveBeenCalled();
   const broken = { ...memoryStore(), requests: Effect.die(new Error("D1 is down")) };
-  const app = makeApp(broken, () => ({ userId: "ann", adminToken: undefined }));
+  const app = makeApp(memoryServices({ contrib: broken }), () => ({ userId: "ann", adminToken: undefined }));
   const response = await app(new Request("http://backend/v1/contrib/requests"));
   expect(response.status).toBe(500);
   expect(await response.text()).not.toContain("D1");
@@ -319,7 +320,7 @@ test("a player who already has a run is refused before their file reaches the st
       return store.insertSubmission(...args);
     },
   };
-  const app = makeApp(counting, () => ({ userId: "ann", adminToken: "secret" }));
+  const app = makeApp(memoryServices({ contrib: counting }), () => ({ userId: "ann", adminToken: "secret" }));
   const post = (path: string, body: BodyInit, type: string) =>
     app(
       new Request(`http://backend${path}`, {
