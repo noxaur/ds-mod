@@ -41,7 +41,8 @@ test("a material the game glints by itself glints unless players saw it without"
     expect(glints(material, false, null)).toBe(true);
     expect(glints(material, false, undefined)).toBe(true);
     expect(glints(material, false, "always")).toBe(true);
-    expect(glints(material, false, "mixed")).toBe(true);
+    // Some copies were seen plain, and the contract draws an item that glints only sometimes without it.
+    expect(glints(material, false, "mixed")).toBe(false);
     expect(glints(material, false, "never")).toBe(false);
   }
 });

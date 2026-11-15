@@ -8,7 +8,7 @@ import { makeApp } from "../app.ts";
 import { memoryServices } from "../memory.ts";
 import { CATALOG_FRESH_MS, CATALOG_RETRY_MS, FRESH_MS } from "./cache.ts";
 import { Container, Profile } from "./model.ts";
-import { memoryProfileStore } from "./store.ts";
+import { memoryProfileStore, WriteRefused } from "./store.ts";
 import { UpstreamDown } from "./upstream.ts";
 
 const fixture = (name: string): any => JSON.parse(readFileSync(join(import.meta.dirname, "fixtures", name), "utf8"));
@@ -220,6 +220,35 @@ test("a hidden player's items are kept nowhere", async () => {
   expect((await app(new Request("http://backend/v1/players/Testwyrm/profile"))).status).toBe(200);
   expect(kept.some((value) => value.includes("Testwyrm"))).toBe(true);
   expect(kept.join()).not.toContain("scylla");
+});
+
+test("a copy the store refuses costs the lookup nothing, and the name is written once", async () => {
+  // KV takes one write per key a second. This store refuses every write to a key it already holds.
+  const store = memoryProfileStore();
+  const written: string[] = [];
+  const services = memoryServices({
+    profiles: {
+      get: store.get,
+      put: (key, value, ttl) => {
+        if (written.includes(key)) {
+          return Effect.fail(new WriteRefused());
+        }
+        written.push(key);
+        return store.put(key, value, ttl);
+      },
+    },
+    upstream: {
+      get: (path) => Effect.succeed({ status: 200, body: path.startsWith("/data/catalog") ? catalog : player }),
+    },
+  });
+  const app = makeApp(services, () => ({ userId: "ann", adminToken: undefined }));
+  const other = player.profiles.find((entry) => !entry.selected)?.id ?? "";
+  // Another lookup of this profile wrote it a moment ago, so this one's copy is refused.
+  written.push(`profile:${player.player.uuid}:selected`);
+  expect((await app(new Request("http://backend/v1/players/Testwyrm/profile"))).status).toBe(200);
+  // Picking the other profile at once fetches again, which must not write the name a second time.
+  expect((await app(new Request(`http://backend/v1/players/Testwyrm/profile?profile=${other}`))).status).toBe(200);
+  expect(written.filter((key) => key.startsWith("name:"))).toHaveLength(1);
 });
 
 test("asking again soon reaches dragsim.co once, whatever the name's case", async () => {

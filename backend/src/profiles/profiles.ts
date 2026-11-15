@@ -89,7 +89,8 @@ export const profile = Effect.fn(function* (name: string, profileId: string | un
   const sections = sectionsOf(current);
 
   const id = crypto.randomUUID();
-  yield* (yield* ProfileStore).put(snapshotKey(id), { hidden, sections }, SNAPSHOT_SECONDS);
+  // A snapshot's key is new each time, so a refusal is the store failing, which no client can fix.
+  yield* Effect.orDie((yield* ProfileStore).put(snapshotKey(id), { hidden, sections }, SNAPSHOT_SECONDS));
 
   const worn = equipmentCells(current.inventory);
   const [helmet = null, chestplate = null, leggings = null, boots = null, held = null] = yield* draw([

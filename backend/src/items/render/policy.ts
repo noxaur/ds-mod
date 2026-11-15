@@ -19,7 +19,7 @@ const SELF_GLINTING = new Set([
 
 /**
  * Whether the item glints. The API sends no enchantments, so this is the best knowledge there is, in this order:
- * the catalog says it glows, a material the game glints by itself does unless enough players saw it without, and
+ * the catalog says it glows, a material the game glints by itself does unless enough players saw a copy without, and
  * otherwise what enough players agree on. `mixed` means the glint comes from enchantments the API does not send,
  * which is not something to draw on every copy, and null means too few players saw it to say.
  */
@@ -28,7 +28,7 @@ export const glints = (material: string, catalogGlowing: boolean, hint: ItemHint
     return true;
   }
   if (SELF_GLINTING.has(material)) {
-    return hint !== "never";
+    return hint !== "never" && hint !== "mixed";
   }
   return hint === "always";
 };

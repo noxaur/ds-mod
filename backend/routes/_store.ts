@@ -18,7 +18,7 @@ import {
   roomFor,
   type TextureTally,
 } from "../src/items/store.ts";
-import type { ProfileStore } from "../src/profiles/store.ts";
+import { type ProfileStore, WriteRefused } from "../src/profiles/store.ts";
 import { type Upstream, UpstreamDown } from "../src/profiles/upstream.ts";
 
 const decodeSpec = Schema.decodeUnknownSync(RequestSpec);
@@ -115,7 +115,8 @@ export const contribStore: Store["Service"] = {
 /** Copies of dragsim.co's answers in KV, which drops each when its time is up. */
 export const profileStore: ProfileStore["Service"] = {
   get: (key) => run(() => kv.get(key)),
-  put: (key, value, ttlSeconds) => run(() => kv.put(key, value, { ttl: ttlSeconds })),
+  put: (key, value, ttlSeconds) =>
+    Effect.tryPromise({ try: () => kv.put(key, value, { ttl: ttlSeconds }), catch: () => new WriteRefused() }),
 };
 
 /** dragsim.co itself. A network failure, or an answer that is not JSON, is dragsim.co being down. */

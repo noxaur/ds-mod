@@ -1,7 +1,7 @@
 import { Clock, Effect, Option, Schema } from "effect";
 
 import { PlayerNotFound, ProfileNotFound, UpstreamUnavailable } from "./model.ts";
-import { ProfileStore } from "./store.ts";
+import { ProfileStore, type WriteRefused } from "./store.ts";
 import { Upstream, UpstreamDown } from "./upstream.ts";
 import { decodeAnswer, decodeCatalog, decodeFound, NotFoundBody } from "./wire.ts";
 import type { Found, Progression } from "./wire.ts";
@@ -102,6 +102,13 @@ const fetchPlayer = Effect.fn(function* (name: string, profileId: string | undef
  * A player's answer, from the backend's copy while it is fresh, else from dragsim.co. When dragsim.co cannot be
  * reached the last copy it sent answers as stale, however old, because a profile a day old beats no profile.
  */
+/**
+ * Keeps a copy when the store will. A copy the store refused is only fetched again later, so it never costs the lookup
+ * that already has its answer.
+ */
+const keep = (write: Effect.Effect<void, WriteRefused>) =>
+  write.pipe(Effect.catchTag("WriteRefused", () => Effect.logWarning("The store refused a copy of a lookup")));
+
 export const lookup = Effect.fn(function* (name: string, profileId: string | undefined) {
   const store = yield* ProfileStore;
   const lower = name.toLowerCase();
@@ -119,8 +126,9 @@ export const lookup = Effect.fn(function* (name: string, profileId: string | und
   return yield* fetchPlayer(name, profileId).pipe(
     Effect.tap(({ found }) =>
       Effect.all([
-        store.put(nameKey(lower), found.player.uuid, KEEP_SECONDS),
-        store.put(profileKey(found.player.uuid, profileId), { fetchedAt: now, body: found }, KEEP_SECONDS),
+        // Written only when it changes, since every lookup of the player would otherwise write the same key.
+        uuid === found.player.uuid ? Effect.void : keep(store.put(nameKey(lower), found.player.uuid, KEEP_SECONDS)),
+        keep(store.put(profileKey(found.player.uuid, profileId), { fetchedAt: now, body: found }, KEEP_SECONDS)),
       ]),
     ),
     Effect.map(({ found }) => ({ fetchedAt: now, stale: false, found })),
@@ -130,7 +138,7 @@ export const lookup = Effect.fn(function* (name: string, profileId: string | und
         onSome: (copy) => Effect.succeed({ ...copy, stale: true }),
       }),
     ),
-    Effect.tapErrorTag("PlayerNotFound", () => store.put(missingKey(lower), 1, MISSING_SECONDS)),
+    Effect.tapErrorTag("PlayerNotFound", () => keep(store.put(missingKey(lower), 1, MISSING_SECONDS))),
   );
 });
 
@@ -186,7 +194,7 @@ export const catalog = Effect.gen(function* () {
   }
   return yield* fetchCatalog.pipe(
     Effect.map((fetched) => ({ ...fetched, fetchedAt: now })),
-    Effect.tap((fetched) => store.put(CATALOG_KEY, { fetchedAt: now, body: fetched.raw }, KEEP_SECONDS)),
+    Effect.tap((fetched) => keep(store.put(CATALOG_KEY, { fetchedAt: now, body: fetched.raw }, KEEP_SECONDS))),
     Effect.tap((fetched) => Effect.sync(() => parsed.set(store, fetched))),
     Effect.catchTag("UpstreamDown", () => {
       if (newest === undefined) {
