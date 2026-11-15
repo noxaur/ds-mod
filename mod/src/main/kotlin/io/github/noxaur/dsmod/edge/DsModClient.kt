@@ -12,6 +12,7 @@ import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
 import io.github.noxaur.dsmod.edge.contribute.Contribute
+import io.github.noxaur.dsmod.edge.profile.Profiles
 import io.github.noxaur.dsmod.edge.ui.Kit
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
@@ -119,6 +120,7 @@ object DsModClient : ClientModInitializer {
         Recorder.register()
         Recording.register()
         Contribute.register()
+        Profiles.registerNames()
         val log = LoggerFactory.getLogger("dsmod")
         game.metrics.sinks += { snapshot ->
             snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }
@@ -193,8 +195,10 @@ object DsModClient : ClientModInitializer {
                     )
                     .then(ClientCommands.literal("login").executes { Account.login(); 1 })
                     .then(ClientCommands.literal("submit").executes { Contribute.submit(); 1 })
-                    .then(ClientCommands.literal("cancel").executes { Contribute.cancel(); 1 }),
+                    .then(ClientCommands.literal("cancel").executes { Contribute.cancel(); 1 })
+                    .then(Profiles.dsmod()),
             )
+            Profiles.register(dispatcher)
         }
     }
 }

@@ -109,6 +109,30 @@ On the right:
 
 Keys shown in red fire another bind too, and keys in yellow also do something in the game. The line under the details says which.
 
+### Profile Viewer
+
+Shows any player's profile: their skills, slayers, stats, dungeons, Heart of the Dragon, forge, bestiary, collections, pets and the items they keep. Type `/pv` and a name, or `/pv` alone for your own. `/dsmod pv` does the same. `/pv 1` and `/pv 2` still open your vaults, because the server's own `/pv` takes a number of one or two digits.
+
+The player stands on the left in what they wear, turning slowly. The overview shows each dungeon class with its level, the picked one ringed. The Dungeons tab has the Catacombs level, each class with a tick beside the one picked, their essence, and the runs and best score of every floor, master floors beside the rest. Player Stats lists each stat once with its base value and, after it, what the other groups add. Hover a stat for its breakdown. Mining has the Heart of the Dragon, its nodes, and what the forge is making and when it is ready. The wardrobe rings the set the player wears, and the pets ring the active one, with its held item and skin beside the grid. A tab with nothing to show is left out.
+
+| Do this | To |
+| --- | --- |
+| Drag the player | Turn them to look around, up and down. Let go and they turn on from there |
+| Press the arrow keys with the mouse over the player | Turn them a step at a time |
+| Press Escape while you drag | Put them back where the drag began |
+| Press a tab along the top | Open the overview, player stats, dungeons, mining, the inventory, the ender chest, storage, the wardrobe, the accessory bag, pets, the bestiary or collections |
+| Hover the top kills | Read all ten, where the overview lists fewer |
+| Hover the player's name | See when dragsim.co last saved the profile, and when ds-mod read it |
+| Click a player's name in chat | Open their profile. Turn this off with Click Names |
+| Press a page number beside the grid | Show that storage or wardrobe page |
+| Press the profile's name under the player | Show their next profile. Right-click or scroll to go back |
+| Hover an item | Read its tooltip, as in a menu |
+| Hover a skill or a slayer | Read its XP |
+| Hover a stat on Player Stats | Read what each of its groups gives it |
+| Scroll, drag the scrollbar, or press Page Up, Page Down, Home or End | See the rest of a tab |
+
+Beside each grid are how many slots it fills and how many items of each rarity it holds, and on the inventory, what the player wears. Items carry your Rarity Marks, as in a menu. A player who hides their inventory has their items hidden here too. The profile comes from ds-mod's service, which signs in with your Minecraft account the first time you look someone up. "Out of date" under the name means dragsim.co did not answer, and the profile is the last copy, from up to a day before. Tooltips are rebuilt from the server's data, so a few lines can differ from the game's own. They wear the server's frame for each rarity, and another mod that adds to item tooltips adds to these too.
+
 ## Interface
 
 Theme picks the colors of ds-mod's screens: Charcoal is dark, and Vanilla matches the game's own menus. Move HUD, or `/dsmod hud`, opens the HUD editor.

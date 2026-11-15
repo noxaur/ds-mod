@@ -122,6 +122,21 @@ object Slots {
         for (slots in marks.values) slots[index]?.takeUnless { it.hide }?.let { front(graphics, surface, it, x, y) }
     }
 
+    /**
+     * Whether a slot the mod draws itself, such as the profile viewer's, marks [rarity] as Rarity Marks marks a menu's,
+     * by the same switches.
+     */
+    fun marks(rarity: Role?) = rarity != null && DsModClient.active && settings.rarityMarks && (rarity != Role.COMMON || settings.markCommon)
+
+    /** Draws [rarity]'s mark behind an item at [x], [y] that the mod draws itself, in the player's style for menus. */
+    fun rarityBack(graphics: GuiGraphicsExtractor, rarity: Role, x: Int, y: Int) =
+        Kit.slotArt(graphics, x, y, SlotArts.atlas(settings, Surface.CONTAINER), rarity.ordinal)
+
+    /** Draws [rarity]'s gem over that item, when the player's style has one. */
+    fun rarityFront(graphics: GuiGraphicsExtractor, rarity: Role, x: Int, y: Int) {
+        if (SlotArts.style(settings, Surface.CONTAINER).gem) Kit.slotGem(graphics, x, y, SlotArts.atlas(settings, Surface.CONTAINER), rarity.ordinal)
+    }
+
     private fun back(graphics: GuiGraphicsExtractor, surface: Surface, shown: Shown, x: Int, y: Int) {
         val rarity = shown.rarity
         if (rarity == null) Kit.slotFill(graphics, x, y, shown.color) else Kit.slotArt(graphics, x, y, SlotArts.atlas(settings, surface), rarity.ordinal)

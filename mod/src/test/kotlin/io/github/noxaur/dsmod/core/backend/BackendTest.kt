@@ -130,6 +130,41 @@ class BackendTest {
     }
 
     @Test
+    fun `a profile is asked for by name, and another of the player's by its id`() {
+        val body = checkNotNull(javaClass.getResource("/profiles/profile.json")).readText()
+        answers["/v1/players/Testwyrm/profile"] = { 200 to body }
+
+        assertEquals("Testwyrm", backend.profile("Testwyrm", null).player.name)
+        backend.profile("Testwyrm", "aaaaaaaa-0000-4000-8000-000000000001")
+
+        assertEquals(
+            listOf("/v1/players/Testwyrm/profile", "/v1/players/Testwyrm/profile?profile=aaaaaaaa-0000-4000-8000-000000000001"),
+            seen.map { it.path }.filter { it.startsWith("/v1/") },
+        )
+    }
+
+    @Test
+    fun `a container is asked for from its snapshot, colon and all`() {
+        val body = checkNotNull(javaClass.getResource("/profiles/containers/inventory.json")).readText()
+        answers["/v1/snapshots/s1/containers/storage:2"] = { 200 to body }
+
+        assertEquals(36, backend.container("s1", "storage:2").items.size)
+    }
+
+    @Test
+    fun `an error's tag tells apart failures that share a status`() {
+        answers["/v1/players/Nobody/profile"] = { 404 to """{"_tag":"PlayerNotFound"}""" }
+        answers["/v1/players/Proxy/profile"] = { 502 to "<html>Bad gateway</html>" }
+
+        val missing = assertFailsWith<BackendException> { backend.profile("Nobody", null) }
+        val proxied = assertFailsWith<BackendException> { backend.profile("Proxy", null) }
+
+        assertEquals(404 to "PlayerNotFound", missing.status to missing.tag)
+        assertEquals(502 to null, proxied.status to proxied.tag)
+        assertFailsWith<IllegalArgumentException> { backend.profile("not a name", null) }
+    }
+
+    @Test
     fun `the session token appears in no error`() {
         answers[generate] = { 500 to "session-1" }
 
