@@ -112,6 +112,32 @@ class CutFixtureTest {
     }
 
     @Test
+    fun `a return to the inventory that keeps its slots is written with every slot it kept`() {
+        val stone = Item("minecraft:stone", 1)
+        val dirt = Item("minecraft:dirt", 2)
+        val capture = capture(
+            1 to ContainerOpened(0, null, 46),
+            2 to SlotChanged(9, stone),
+            3 to SlotChanged(10, dirt),
+            4 to ContainerOpened(5, text("Shop"), 63),
+            5 to SlotChanged(0, Item("minecraft:emerald", 1)),
+            6 to ContainerOpened(0, null, 46, kept = true),
+            7 to SlotChanged(10, null),
+            8 to ContainerOpened(5, text("Shop"), 63),
+            9 to ContainerOpened(0, null, 46, kept = true),
+        )
+        fun events(seconds: ClosedFloatingPointRange<Double>) =
+            readCapture(dir.resolve("fixture.jsonl").also { cut(capture, seconds, setOf("container")) }).map { it.second }
+
+        assertEquals(
+            listOf(ContainerOpened(5, text("Shop"), 63), SlotChanged(0, Item("minecraft:emerald", 1)), ContainerOpened(0, null, 46), SlotChanged(9, stone), SlotChanged(10, dirt)),
+            events(5.5..6.5),
+        )
+        // Opened before the window, the kept inventory is its state, and the slot emptied since stays empty.
+        assertEquals(listOf(ContainerOpened(0, null, 46), SlotChanged(9, stone)), events(8.5..9.5).filter { it !is ContainerOpened || it.id == 0 }.takeLast(2))
+    }
+
+    @Test
     fun `a tab list is kept only when a named info row changes`() {
         val capture = capture(
             1 to tab("Area: The End", "Dragon: 100%"),

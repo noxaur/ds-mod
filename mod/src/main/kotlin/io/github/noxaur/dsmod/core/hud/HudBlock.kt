@@ -60,8 +60,11 @@ data class TextRow(override val text: Text) : HudRow
 /** A row with a bar under it, filled from 0 to 1. */
 data class BarRow(override val text: Text, val fraction: Float, val role: Role) : HudRow
 
-/** A row of item icons, left to right, with an empty cell for each null. [text] names them, for the replay's transcript. */
-data class ItemsRow(val items: List<Item?>) : HudRow {
+/**
+ * A row of item icons, left to right, with an empty cell for each null. A row [apart] from the one above it leaves the
+ * gap the inventory leaves above the hotbar. [text] names them, for the replay's transcript.
+ */
+data class ItemsRow(val items: List<Item?>, val apart: Boolean = false) : HudRow {
     override val text: Text get() = text { muted(items.joinToString(", ") { it?.name?.plain ?: it?.id ?: "-" }) }
 }
 
@@ -81,8 +84,8 @@ class HudBuilder {
         rows += TextRow(text(content))
     }
 
-    fun items(items: List<Item?>) {
-        rows += ItemsRow(items)
+    fun items(items: List<Item?>, apart: Boolean = false) {
+        rows += ItemsRow(items, apart)
     }
 }
 

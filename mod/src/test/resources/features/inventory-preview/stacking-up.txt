@@ -1,0 +1,102 @@
++   0.0s > (opened your inventory, 46 slots)
++   0.0s > (slot 5) 1 x Necrotic Storm Helmet
++   0.0s > (slot 6) 1 x Necrotic Storm Chestplate
++   0.0s > (slot 7) 1 x Necrotic Storm Leggings
++   0.0s > (slot 8) 1 x Necrotic Storm Boots
++   0.0s > (slot 9) 16 x Summoning Eye
+               Summoning Eye, -, -, -, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 10) 1 x Golden Eye
+               Summoning Eye, Golden Eye, -, -, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 11) 16 x Summoning Eye
+               Summoning Eye, Golden Eye, Summoning Eye, -, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 12) 1 x Golden Eye
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 13) 1 x Dragon Scale
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, -, -, -, -
+               -, -, -, -, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 14) 1 x Warden Catalyst
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, Warden Catalyst, -, -, -
+               -, -, -, -, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 15) 1 x Golden Eye
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, Warden Catalyst, Golden Eye, -, -
+               -, -, -, -, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 16) 10 x Summoning Eye
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, Warden Catalyst, Golden Eye, Summoning Eye, -
+               -, -, -, -, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 17) 8 x Protector Dragon Fragment
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, Warden Catalyst, Golden Eye, Summoning Eye, Protector Dragon Fragment
+               -, -, -, -, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 18) 1 x Arcane Dragon Chestplate
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, Warden Catalyst, Golden Eye, Summoning Eye, Protector Dragon Fragment
+               Arcane Dragon Chestplate, -, -, -, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 19) 5 x Arcane Dragon Fragment
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, Warden Catalyst, Golden Eye, Summoning Eye, Protector Dragon Fragment
+               Arcane Dragon Chestplate, Arcane Dragon Fragment, -, -, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 20) 1 x Protector Dragon Boots
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, Warden Catalyst, Golden Eye, Summoning Eye, Protector Dragon Fragment
+               Arcane Dragon Chestplate, Arcane Dragon Fragment, Protector Dragon Boots, -, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 21) 13 x Strong Dragon Fragment
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, Warden Catalyst, Golden Eye, Summoning Eye, Protector Dragon Fragment
+               Arcane Dragon Chestplate, Arcane Dragon Fragment, Protector Dragon Boots, Strong Dragon Fragment, -, -, -, -, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 22) 1 x Zombie Talisman
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, Warden Catalyst, Golden Eye, Summoning Eye, Protector Dragon Fragment
+               Arcane Dragon Chestplate, Arcane Dragon Fragment, Protector Dragon Boots, Strong Dragon Fragment, Zombie Talisman, -, -, -, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 23) 1 x Zombie Talisman
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, Warden Catalyst, Golden Eye, Summoning Eye, Protector Dragon Fragment
+               Arcane Dragon Chestplate, Arcane Dragon Fragment, Protector Dragon Boots, Strong Dragon Fragment, Zombie Talisman, Zombie Talisman, -, -, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 24) 1 x Null Ovoid
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, Warden Catalyst, Golden Eye, Summoning Eye, Protector Dragon Fragment
+               Arcane Dragon Chestplate, Arcane Dragon Fragment, Protector Dragon Boots, Strong Dragon Fragment, Zombie Talisman, Zombie Talisman, Null Ovoid, -, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 25) 1 x Golden Eye
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, Warden Catalyst, Golden Eye, Summoning Eye, Protector Dragon Fragment
+               Arcane Dragon Chestplate, Arcane Dragon Fragment, Protector Dragon Boots, Strong Dragon Fragment, Zombie Talisman, Zombie Talisman, Null Ovoid, Golden Eye, -
+               -, -, -, -, -, -, -, -, -
++   0.0s > (slot 27) 1 x Flint Arrow
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, Warden Catalyst, Golden Eye, Summoning Eye, Protector Dragon Fragment
+               Arcane Dragon Chestplate, Arcane Dragon Fragment, Protector Dragon Boots, Strong Dragon Fragment, Zombie Talisman, Zombie Talisman, Null Ovoid, Golden Eye, -
+               Flint Arrow, -, -, -, -, -, -, -, -
++   0.0s > (slot 31) 26 x Old Dragon Fragment
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, Warden Catalyst, Golden Eye, Summoning Eye, Protector Dragon Fragment
+               Arcane Dragon Chestplate, Arcane Dragon Fragment, Protector Dragon Boots, Strong Dragon Fragment, Zombie Talisman, Zombie Talisman, Null Ovoid, Golden Eye, -
+               Flint Arrow, -, -, -, Old Dragon Fragment, -, -, -, -
++   0.0s > (slot 36) 1 x Suspicious Giant's Sword
++   0.0s > (slot 37) 1 x Warped Aspect of the Void
++   0.0s > (slot 38) 1 x Fabled Frozen Scythe
++   0.0s > (slot 39) 1 x Precise Golden Gun
++   0.0s > (slot 40) 16 x Summoning Eye
++   0.0s > (slot 41) 16 x Summoning Eye
++   0.0s > (slot 42) 1 x Hot Potato Book
++   0.0s > (slot 43) 19 x End Stone Rose
++   0.0s > (slot 44) 1 x Magical Map
++   3.8s > (slot 16) 16 x Summoning Eye
++   3.8s > (slot 26) 10 x Summoning Eye
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, Warden Catalyst, Golden Eye, Summoning Eye, Protector Dragon Fragment
+               Arcane Dragon Chestplate, Arcane Dragon Fragment, Protector Dragon Boots, Strong Dragon Fragment, Zombie Talisman, Zombie Talisman, Null Ovoid, Golden Eye, Summoning Eye
+               Flint Arrow, -, -, -, Old Dragon Fragment, -, -, -, -
++   3.8s > (slot 40) emptied
++   4.7s > (slot 26) 16 x Summoning Eye
++   4.7s > (slot 28) 10 x Summoning Eye
+               Summoning Eye, Golden Eye, Summoning Eye, Golden Eye, Dragon Scale, Warden Catalyst, Golden Eye, Summoning Eye, Protector Dragon Fragment
+               Arcane Dragon Chestplate, Arcane Dragon Fragment, Protector Dragon Boots, Strong Dragon Fragment, Zombie Talisman, Zombie Talisman, Null Ovoid, Golden Eye, Summoning Eye
+               Flint Arrow, Summoning Eye, -, -, Old Dragon Fragment, -, -, -, -
++   4.7s > (slot 41) emptied

@@ -19,6 +19,7 @@ import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
 import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
+import io.github.noxaur.dsmod.core.feature.general.InventoryRow
 import io.github.noxaur.dsmod.core.feature.general.PetLook
 import io.github.noxaur.dsmod.core.feature.general.PetPosition
 import io.github.noxaur.dsmod.core.hud.HudDock
@@ -214,6 +215,24 @@ class DsModConfig : Config() {
         @ConfigEditorDropdown
         @JvmField
         var equipmentPlacement = HudDock.FREE
+
+        @Expose
+        @ConfigOption(name = "Inventory Preview", desc = "Show a grid of the items in your inventory on the HUD.")
+        @ConfigEditorBoolean
+        @JvmField
+        var inventoryPreview = false
+
+        @Expose
+        @ConfigOption(name = "Inventory Rows", desc = "Pick the rows to show, and drag them into order.")
+        @ConfigEditorDraggableList(requireNonEmpty = true)
+        @JvmField
+        var inventoryRows: MutableList<InventoryRow> = mutableListOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM)
+
+        @Expose
+        @ConfigOption(name = "Inventory Look", desc = "Show the items on the plate, on nothing, or in hotbar slots.")
+        @ConfigEditorDropdown
+        @JvmField
+        var inventoryLook = HudLook.PLATE
 
         @Expose
         @ConfigOption(name = "Camera", desc = "Shape the third-person view with the settings below.")

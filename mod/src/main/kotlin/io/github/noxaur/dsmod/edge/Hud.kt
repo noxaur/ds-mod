@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.HudLook
+import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.hud.ItemsRow
 import io.github.noxaur.dsmod.edge.ui.Kit
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
@@ -17,6 +18,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.world.entity.HumanoidArm
 import net.minecraft.world.item.ItemStack
+import java.util.IdentityHashMap
 
 private const val BAR_WIDTH = 80
 private const val BAR_GAP = 1
@@ -25,6 +27,9 @@ private const val BLOCK_GAP = 4
 // An item is 16px, and a pixel of air follows it as one follows a line of text.
 private const val ITEM = 16
 private const val ITEM_PITCH = ITEM + 1
+
+// The inventory leaves this much between its rows and the hotbar.
+private const val ROWS_GAP = 4
 
 // An item sits this far into a hotbar cell.
 private const val HOTBAR_INSET = 3
@@ -71,6 +76,11 @@ object Hud {
     }
 
     private val groups = LinkedHashMap<String, Group>()
+
+    // Each block's stacks by the item they were built from. A block shown again reuses the stack of an item it showed
+    // before, because building one costs tens of microseconds and an inventory changes one slot at a time. A slot that
+    // did not change holds the very same item, so identity finds it without hashing its lore.
+    private val stacksByItem = HashMap<String, IdentityHashMap<Item, ItemStack>>()
     private var shown = emptyList<Group>()
     private var placed = emptyList<Placed>()
     private var cells = emptyList<Cell>()
@@ -86,9 +96,12 @@ object Hud {
         val header = block.header.takeIf { it.spans.isNotEmpty() }?.toComponent()
         var height = if (header != null) line else 0
         var width = header?.let(font::width) ?: 0
+        val built = stacksByItem[id].orEmpty()
+        val kept = IdentityHashMap<Item, ItemStack>()
         val rows = block.rows.map { row ->
             val bar = row as? BarRow
-            val items = (row as? ItemsRow)?.items?.map { it?.toStack() }
+            if ((row as? ItemsRow)?.apart == true) height += ROWS_GAP
+            val items = (row as? ItemsRow)?.items?.map { item -> item?.let { kept.getOrPut(it) { built[it] ?: it.toStack() } } }
             val drawn = Row(row.text.toComponent(), bar, bar?.role?.argb() ?: 0, items, height)
             width = maxOf(
                 width,
@@ -106,6 +119,7 @@ object Hud {
             drawn
         }
 
+        stacksByItem[id] = kept
         groups.values.forEach { if (it.place.id != group.id) it.blocks.remove(id) }
         val target = groups.getOrPut(group.id) { Group(group) }
         target.place = group
@@ -114,6 +128,7 @@ object Hud {
     }
 
     fun hide(id: String) {
+        stacksByItem.remove(id)
         groups.values.forEach { it.blocks.remove(id) }
         layout()
     }

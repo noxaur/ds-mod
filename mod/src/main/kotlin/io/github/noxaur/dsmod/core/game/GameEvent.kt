@@ -39,12 +39,13 @@ data class Sidebar(val title: ServerText = ServerText(), val lines: List<ServerT
 
 /**
  * The player opened a menu, or is back in their own inventory. Every slot is empty until a [SlotChanged]
- * says otherwise. [size] counts the player's own slots that the menu shows, and [title] is null for the
- * player's own inventory. Posted only while a feature reads it.
+ * says otherwise, unless the slots are [kept]: back in their own inventory, it holds what it held when the last menu
+ * opened, and only the slots that changed since follow. [size] counts the player's own slots that the menu shows, and
+ * [title] is null for the player's own inventory. Posted only while a feature reads it.
  */
 @Serializable
 @SerialName("container")
-data class ContainerOpened(val id: Int, val title: ServerText? = null, val size: Int) : GameEvent
+data class ContainerOpened(val id: Int, val title: ServerText? = null, val size: Int, val kept: Boolean = false) : GameEvent
 
 /**
  * The line above the hotbar, each time the server sends it, even with the text it sent before. The server sends
