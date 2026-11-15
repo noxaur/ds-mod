@@ -227,6 +227,31 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var armorSwapGuard = false
+
+        @Expose
+        @ConfigOption(name = "Slot Lock", desc = "Lock slots and items of your inventory with the keys below, so no click or drop key moves them. Hold the slot key and move to another slot to link the two.")
+        @ConfigEditorBoolean
+        @JvmField
+        var slotLock = true
+
+        /** A key's GLFW code, a mouse button from 0 to 9, or -1 for none, as MoulConfig's editor writes it. */
+        @Expose
+        @ConfigOption(name = "Slot Lock Key", desc = "Pick the key or mouse button that locks the slot under the mouse.")
+        @ConfigEditorKeybind(defaultKey = KEY_L)
+        @JvmField
+        var slotLockKey = KEY_L
+
+        @Expose
+        @ConfigOption(name = "Item Lock Key", desc = "Pick the key or mouse button that locks the item under the mouse, wherever you move it. It works on an item that does not stack.")
+        @ConfigEditorKeybind(defaultKey = KEY_K)
+        @JvmField
+        var itemLockKey = KEY_K
+
+        private companion object {
+            /** GLFW's codes for the K and L keys. */
+            const val KEY_K = 75
+            const val KEY_L = 76
+        }
     }
 
     /** A drop's tier, lowest first. [word] is what the server writes before `DROP!`. */
