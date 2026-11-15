@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX `contrib_submissions_one_per_player` ON `contrib_submissions` (`request_id`,`user_id`);
