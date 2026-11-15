@@ -242,12 +242,13 @@ test("a copy the store refuses costs the lookup nothing, and the name is written
     },
   });
   const app = makeApp(services, () => ({ userId: "ann", adminToken: undefined }));
-  const other = player.profiles.find((entry) => !entry.selected)?.id ?? "";
   // Another lookup of this profile wrote it a moment ago, so this one's copy is refused.
-  written.push(`profile:${player.player.uuid}:selected`);
+  written.push("profile:11111111-2222-4333-8444-555555555555:selected");
   expect((await app(new Request("http://backend/v1/players/Testwyrm/profile"))).status).toBe(200);
   // Picking the other profile at once fetches again, which must not write the name a second time.
-  expect((await app(new Request(`http://backend/v1/players/Testwyrm/profile?profile=${other}`))).status).toBe(200);
+  expect((await app(new Request(`http://backend/v1/players/Testwyrm/profile?profile=${OTHER_PROFILE}`))).status).toBe(
+    200,
+  );
   expect(written.filter((key) => key.startsWith("name:"))).toHaveLength(1);
 });
 
