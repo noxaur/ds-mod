@@ -34,6 +34,7 @@ import net.minecraft.sounds.SoundEvents
 import net.minecraft.util.FormattedCharSequence
 import net.minecraft.util.Util
 import org.joml.Matrix3x2f
+import org.joml.Matrix3x2fc
 import org.joml.Vector2f
 import org.lwjgl.glfw.GLFW
 import java.util.IdentityHashMap
@@ -400,6 +401,33 @@ object CopyChats {
             }
             layout.parts[if (layout.parts.size == 1) 0 else layout.partOfRow[row]]
         }
+        val rows = ArrayList<Row>()
+        visible(client) { line, pose, top, bottom -> rows += Row(partOf[line], Matrix3x2f(pose), top, bottom) }
+        return rows
+    }
+
+    /** Whether a point in GUI pixels is on a row of the open chat, which Minecraft draws over the HUD. */
+    fun covers(client: Minecraft, x: Double, y: Double): Boolean {
+        val width = width(client)
+        val inverse = Matrix3x2f()
+        val local = Vector2f()
+        var hit = false
+        visible(client) { _, pose, top, bottom ->
+            if (!hit) {
+                pose.invert(inverse).transformPosition(x.toFloat(), y.toFloat(), local)
+                hit = ActiveTextCollector.isPointInRectangle(local.x, local.y, LEFT.toFloat(), top.toFloat(), (LEFT + width).toFloat(), bottom.toFloat())
+            }
+        }
+        return hit
+    }
+
+    /**
+     * Calls [row] for each row of chat on screen, from the top one down, with the index of its line in the chat's
+     * wrapped lines, and its [top] and [bottom] in the space its pose maps to the screen.
+     */
+    private inline fun visible(client: Minecraft, crossinline row: (line: Int, pose: Matrix3x2fc, top: Int, bottom: Int) -> Unit) {
+        val chat = client.gui.hud.chat
+        val lines = (chat as ChatComponentAccessor).trimmedMessages
         // Minecraft draws the rows on screen from the top one down to the newest, and then lines that belong to no
         // message. A row is told by that order and not by its text, because every empty line is the same object.
         val scrolled = chat.chatScrollbarPos
@@ -407,7 +435,6 @@ object CopyChats {
         val spacing = client.options.chatLineSpacing().get()
         val height = (9 * (spacing + 1)).toInt()
         val textToBottom = (8 * (spacing + 1) - 4 * spacing).roundToInt()
-        val rows = ArrayList<Row>()
         chat.captureClickableText(object : ActiveTextCollector {
             private var parameters = ActiveTextCollector.Parameters(Matrix3x2f())
 
@@ -419,12 +446,10 @@ object CopyChats {
 
             override fun accept(alignment: TextAlignment, x: Int, y: Int, parameters: ActiveTextCollector.Parameters, text: FormattedCharSequence) {
                 if (next < 0) return
-                val part = partOf[scrolled + next--]
-                rows += Row(part, Matrix3x2f(parameters.pose()), y + textToBottom - height, y + textToBottom)
+                row(scrolled + next--, parameters.pose(), y + textToBottom - height, y + textToBottom)
             }
 
             override fun acceptScrolling(text: Component, x: Int, left: Int, right: Int, top: Int, bottom: Int, parameters: ActiveTextCollector.Parameters) {}
         }, client.window.guiScaledHeight, client.gui.hud.guiTicks, ChatComponent.DisplayMode.FOREGROUND)
-        return rows
     }
 }

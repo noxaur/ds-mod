@@ -224,6 +224,12 @@ The art depends on the slot under it: a faint tint vanishes on Minecraft's gray 
 
 Fabric attaches HUD elements before or after the whole hotbar, so the art behind the hotbar's items comes from `HudHotbarMixin`, which runs as vanilla is about to draw each item, and the gems come after it as a HUD element.
 
+## The chat keeps what it draws over the HUD
+
+Drag In Chat moves the live HUD on the chat screen, where Minecraft draws the chat's rows, its input, the list of command suggestions and a command's usage over the HUD. So a press or a turn of the wheel there is the chat's, even over a block, and a block is the mouse's only where the player sees it. The suggestions' bounds are private, so accessors read them. A press the chat would leave unused is not enough: a plain line takes no left press but scrolls with the wheel, and a block that took one and not the other would show a hint the wheel then breaks. Copy Chat's rows tell where the chat is drawn, so both read the same rows. Escape puts a block back where it was, and one that came from the stack takes its old place there, because a group stacks its blocks in the features' order. The input has focus the whole time the chat is open, and its arrow keys move the cursor and recall sent lines, so the arrows nudge a block only while the mouse holds one: a player pressing a button on the HUD is not editing text. A feature with nothing to show stands in while the chat is open, after the blocks with something to show, so opening the chat moves no live block. A drag event carries the keys held at its press, so Shift is asked of the keyboard, and pressing it mid-drag frees the block, in the editor too.
+
+A docked block is dragged like any other, and the drag writes the feature's own Placement setting, so the setting stays the one place the dock is kept and the settings screen never disagrees with the HUD. Leaving the dock saves a scale that draws the block at the size the dock gave it, since a block that jumped in size under the mouse would land somewhere the player did not aim. The wheel takes a docked block out of the dock, because the dock draws at the hotbar's size and has no other.
+
 ## The HUD's scale snaps to screen pixels
 
 The kit's edges are one pixel wide, and the HUD is the one place a player scales freely. At a scale of 1.3 a one-pixel edge covers 2.6 screen pixels at GUI scale 2, so some edges come out two pixels wide and others three, and the frame looks broken. `Readouts` therefore rounds a block's scale, times the HUD's, to a whole number of screen pixels per HUD pixel. The editor steps by one screen pixel for the same reason: a smaller step would change the saved number and draw nothing new.
@@ -272,7 +278,7 @@ The swap-hands key is not guarded. On dragsim.co it opens the server's menu and 
 
 ## Private fields are read through accessor mixins
 
-Minecraft keeps an open container's position and size on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the four fields, and the slot under the mouse. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on.
+Minecraft keeps an open container's position and size on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the four fields, and the slot under the mouse. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on. `ChatScreenAccessor`, `CommandSuggestionsAccessor` and `SuggestionsListAccessor` read where the command suggestions and a command's usage are drawn, which Drag In Chat leaves the mouse to.
 
 ## CI measures the mod in a real game
 

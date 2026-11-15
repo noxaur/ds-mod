@@ -598,7 +598,12 @@ class DsModConfig : Config() {
         @ConfigEditorButton(buttonText = "Edit")
         @JvmField
         var edit: Runnable = Runnable {}
-    
+
+        @Expose
+        @ConfigOption(name = "Drag In Chat", desc = "Drag HUD blocks with chat open, and scroll over one to resize it.")
+        @ConfigEditorBoolean
+        @JvmField
+        var dragInChat = true
 
         @Expose
         @ConfigOption(name = "HUD Scale", desc = "Make every HUD block bigger or smaller.")
