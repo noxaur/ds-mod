@@ -70,7 +70,8 @@ const hide = (found: Found): Found => {
       ...profile,
       inventory: undefined,
       ender_chest: undefined,
-      wardrobe: undefined,
+      // Which slot is worn is not an item, so it stays.
+      wardrobe: profile.wardrobe?.equipped === undefined ? undefined : { equipped: profile.wardrobe.equipped },
       accessory_bag: undefined,
       storage: pages,
     },

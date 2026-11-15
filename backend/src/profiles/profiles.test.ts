@@ -191,6 +191,8 @@ test("a hidden profile lists its containers with no items, and no equipment", as
   state.player = { status: 200, body: { ...player, profile: { ...player.profile, inventory_hidden: true } } };
   const value = await profile();
   expect(value.equipment).toEqual({ helmet: null, chestplate: null, leggings: null, boots: null, held: null });
+  // Which wardrobe slot is worn is not an item, so hiding the items keeps it.
+  expect(value.equippedWardrobeSlot).toBe(2);
   expect(value.containers.length).toBeGreaterThan(5);
   expect(value.containers.filter((box) => box.id !== "pets").every((box) => box.hidden && box.slots === 0)).toBe(true);
   expect(await container(`/v1/snapshots/${value.snapshot}/containers/ender_chest`)).toMatchObject({
@@ -455,30 +457,50 @@ test("a profile answer is quick once cached", async () => {
  */
 const REAL_PATHS: readonly string[] = fixture("real-paths.json");
 
-const skeleton = (paths: readonly string[]): unknown => {
-  const root: Record<string, unknown> = {};
-  for (const path of paths) {
-    let at: Record<string, unknown> | unknown[] = root;
-    const parts = path.split(".");
-    parts.forEach((part, index) => {
-      const last = index === parts.length - 1;
-      const key = part === "*" ? "0" : part === "[]" ? 0 : part;
-      const next = parts[index + 1];
-      const holder = at as Record<string | number, unknown>;
-      // An empty map or list in one item is a leaf here, and a fuller one elsewhere has children, which win.
-      if (!last && (holder[key] === undefined || typeof holder[key] !== "object")) {
-        holder[key] = next === "[]" ? [] : {};
-      }
-      holder[key] ??= 1;
-      at = holder[key] as Record<string, unknown> | unknown[];
-    });
+/** A value with every path, `1` at each leaf. An empty map in one item is a leaf here and fuller elsewhere, and the fuller wins. */
+const build = (paths: readonly (readonly string[])[]): unknown => {
+  const deeper = paths.filter((parts) => parts.length > 0);
+  if (deeper.length === 0) {
+    return 1;
   }
-  return root;
+  if (deeper.every((parts) => parts[0] === "[]")) {
+    return [build(deeper.map((parts) => parts.slice(1)))];
+  }
+  const keys = [...new Set(deeper.map((parts) => parts[0] ?? ""))];
+  return Object.fromEntries(
+    keys.map((key) => [
+      key === "*" ? "0" : key,
+      build(deeper.filter((parts) => parts[0] === key).map((parts) => parts.slice(1))),
+    ]),
+  );
 };
+const skeleton = (paths: readonly string[]): unknown => build(paths.map((path) => path.split(".")));
 
 test("every field of a real player's answer is mapped, at every depth", () => {
   expect(REAL_PATHS.length).toBeGreaterThan(300);
   expect(unmappedPaths(skeleton(REAL_PATHS))).toEqual([]);
+});
+
+test("a profile names itself, with or without the list of profiles", async () => {
+  const { profile, state } = backend();
+  expect(await profile()).toMatchObject({
+    profileName: [{ text: "Superior", color: "#AA00AA" }],
+    profileMode: "IRONMAN",
+  });
+  state.player = { status: 200, body: { ...player, profiles: undefined } };
+  const alone = await profile("/v1/players/Testwyrm/profile?profile=" + String(player.profile.id));
+  expect(alone).toMatchObject({ profileName: [{ text: "Superior", color: "#AA00AA" }], profileMode: "IRONMAN" });
+});
+
+test("a map or a list where a value was expected is named, since it would be dropped", () => {
+  const scylla = player.profile.inventory["0"];
+  const odd = {
+    profile: {
+      coins: { nested: 1 },
+      inventory: { 0: { ...scylla, extra: { wither_scrolls: { mask: 7, new_scroll: { charges: 2 } } } } },
+    },
+  };
+  expect(unmappedPaths(odd).toSorted()).toEqual(["profile.coins", "profile.inventory.*.extra.wither_scrolls.*"]);
 });
 
 test("a field added deep inside a section or an item is named by its path", () => {

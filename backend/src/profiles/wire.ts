@@ -89,7 +89,8 @@ const Answer = Schema.Struct({
 
 /**
  * What the backend reads of an answer, down to every field, so a field dragsim.co adds at any depth shows in the log
- * instead of vanishing. A leaf is any value the backend passes on whole. An open map takes any key, such as a slot
+ * instead of vanishing. A leaf is a string, number or boolean the backend passes on, so a map or a list where one was
+ * expected is named too, since the backend would drop it. An open map takes any key, such as a slot
  * number or a mob's id, and reads each value with one shape.
  */
 type Shape = true | { readonly open: Shape } | { readonly list: Shape } | { readonly [key: string]: Shape };
@@ -212,8 +213,11 @@ export const ANSWER_SHAPE: Shape = {
  * list's element is `[]`, so a path is named once however many slots or mobs have it.
  */
 export const unmappedPaths = (value: unknown, shape: Shape = ANSWER_SHAPE, path = ""): readonly string[] => {
-  if (shape === true || value === null || typeof value !== "object") {
+  if (value === null || typeof value !== "object") {
     return [];
+  }
+  if (shape === true) {
+    return [path];
   }
   const found = new Set<string>();
   const add = (paths: readonly string[]) => paths.forEach((each) => found.add(each));

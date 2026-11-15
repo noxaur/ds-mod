@@ -194,6 +194,9 @@ export const Profile = Schema.Struct({
   ),
   /** Which of `profiles` this is. */
   profileId: Schema.String,
+  /** This profile's name and mode, from the profile itself, for when `profiles` does not list it. */
+  profileName: Line,
+  profileMode: Schema.String,
   skills: Schema.Array(Progress),
   slayers: Schema.Array(Progress),
   stats: Schema.Array(Stat),

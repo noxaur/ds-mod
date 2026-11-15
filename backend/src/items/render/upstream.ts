@@ -21,6 +21,8 @@ export interface UpstreamItem {
   readonly rarity: string | undefined;
   readonly reforge: string;
   readonly color: unknown;
+  /** `item_data.skull`, when the server says. */
+  readonly skull: boolean | undefined;
   readonly reforgeStats: StatSet;
   readonly stats: StatSet;
   readonly books: number;
@@ -76,6 +78,7 @@ export const readItem = (raw: unknown): UpstreamItem | undefined => {
     rarity: text(data["rarity"]),
     reforge: text(data["reforge"]) ?? "",
     color: data["color"],
+    skull: flag(data["skull"]),
     reforgeStats: statSet(data["reforge_stats"]),
     stats: statSet(item["item_stats"]),
     books: (count(modifiers["hot_potato_books"]) ?? 0) + (count(modifiers["golden_hot_potato_books"]) ?? 0),
