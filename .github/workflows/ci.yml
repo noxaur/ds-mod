@@ -46,11 +46,12 @@ jobs:
       - uses: actions/checkout@v7
       - id: setup
         uses: ./.github/actions/setup-mod
+        with:
+          cache: perf
       # The built jars in a real game, for PerfTest alone. The other game tests run in the beta pipeline,
-      # because together they take minutes. A restored cache loses the marks Loom leaves on each asset, so
-      # without --offline it checks every one of them again, which takes about 25 seconds.
+      # because together they take minutes.
       - working-directory: mod
-        run: ./gradlew runProdClientGameTest -Pgametests=PerfTest ${{ steps.setup.outputs.warm == 'true' && '--offline' || '' }}
+        run: ./gradlew runProdClientGameTest -Pgametests=PerfTest
       - if: always()
         run: cat mod/build/run/prodClientGameTest/perf.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
       - if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && hashFiles('mod/build/run/prodClientGameTest/perf.md') != ''
