@@ -80,6 +80,8 @@ The recorder reads private fields, which needs an access widener, and a mod decl
 
 Recording is client-thread work that no thread can do for it, because it reads game state. Writing happens on another thread, and the writer opens the file on its own thread, so starting a recording touches no disk on the client thread.
 
+A recording reads every item and name in view four times a second, and Minecraft's codec was most of what that cost: over a millisecond a pass with a full inventory and a crowd of armored mobs. Almost none of them change between passes, so the session encodes a value only when it differs from the copy it kept, and `PerfTest` caps both passes.
+
 ## The release jar carries its own MoulConfig
 
 Settings use MoulConfig, the settings screen SkyHanni uses. MoulConfig ships inside the release jar, relocated under `io.github.noxaur.dsmod.deps`, so ds-mod can't clash with another mod that carries a different MoulConfig. A MoulConfig type in a public signature therefore breaks any code compiled outside the jar, such as the game tests, which is why `DsModClient` exposes `DsModConfig` and not the `ManagedConfig` that holds it. `runProdClientGameTest` loads the built jars the way a player does, because a packaging mistake such as a missing access widener passes every unit test.
