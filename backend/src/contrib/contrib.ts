@@ -54,15 +54,15 @@ export const skip = Effect.fn(function* (requestId: string, userId: string) {
  * single client cannot fill a request alone.
  */
 export const submit = Effect.fn(function* (requestId: string, userId: string, modVersion: string, capture: Uint8Array) {
-  const store = yield* Store;
-  const request = yield* requestOf(requestId);
-  if (request.status === "closed" || (yield* store.submissionsOf(requestId)).length >= request.wanted * 2) {
-    return yield* new HttpApiError.Conflict();
-  }
   // The mod sends gzip, and an agent's tools read nothing else.
   const gzipped = capture[0] === 0x1f && capture[1] === 0x8b;
   if (!gzipped || capture.byteLength > MAX_CAPTURE_BYTES) {
     return yield* new HttpApiError.BadRequest();
+  }
+  const store = yield* Store;
+  const request = yield* requestOf(requestId);
+  if (request.status === "closed" || (yield* store.submissionsOf(requestId)).length >= request.wanted * 2) {
+    return yield* new HttpApiError.Conflict();
   }
   const id = yield* newId;
   const kept = yield* store.insertSubmission(

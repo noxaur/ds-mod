@@ -31,7 +31,7 @@ export class Store extends Context.Service<
     readonly doneBy: (userId: string) => Effect.Effect<readonly string[]>;
     /** False, and nothing is kept, when this player already has a run for the request. */
     readonly insertSubmission: (row: SubmissionRow, capture: Uint8Array) => Effect.Effect<boolean>;
-    /** Oldest first. */
+    /** Oldest first, in the same order every time, because a run's letter is its place in this list. */
     readonly submissions: Effect.Effect<readonly SubmissionRow[]>;
     readonly submissionsOf: (requestId: string) => Effect.Effect<readonly SubmissionRow[]>;
     readonly capture: (submissionId: string) => Effect.Effect<Uint8Array | null>;

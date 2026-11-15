@@ -3,11 +3,11 @@ import { and, asc, db, eq, sql } from "void/db";
 import { storage } from "void/storage";
 
 import { requests, skips, submissions, unknowns } from "../db/schema.ts";
-import { RequestSpec } from "../src/contrib/model.ts";
+import { Request, RequestSpec } from "../src/contrib/model.ts";
 import type { Store } from "../src/contrib/store.ts";
 
 const decodeSpec = Schema.decodeUnknownSync(RequestSpec);
-const decodeStatus = Schema.decodeUnknownSync(Schema.Literals(["open", "filled", "closed"]));
+const decodeStatus = Schema.decodeUnknownSync(Request.fields.status);
 // A database or storage failure is a defect: no client can do anything about it. makeApp logs it and answers 500.
 const run = <A>(query: () => PromiseLike<A>) => Effect.orDie(Effect.tryPromise(query));
 
@@ -63,10 +63,14 @@ export const contribStore: Store["Service"] = {
         });
       return true;
     }),
-  submissions: run(() => db.select().from(submissions).orderBy(asc(submissions.createdAt))),
+  submissions: run(() => db.select().from(submissions).orderBy(asc(submissions.createdAt), asc(submissions.id))),
   submissionsOf: (requestId) =>
     run(() =>
-      db.select().from(submissions).where(eq(submissions.requestId, requestId)).orderBy(asc(submissions.createdAt)),
+      db
+        .select()
+        .from(submissions)
+        .where(eq(submissions.requestId, requestId))
+        .orderBy(asc(submissions.createdAt), asc(submissions.id)),
     ),
   capture: (id) =>
     run(async () => {
