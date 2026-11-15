@@ -46,6 +46,8 @@ jobs:
       - uses: actions/checkout@v7
       - id: setup
         uses: ./.github/actions/setup-mod
+        with:
+          cache: perf
       # The built jars in a real game, for PerfTest alone. The other game tests run in the beta pipeline,
       # because together they take minutes.
       - working-directory: mod
