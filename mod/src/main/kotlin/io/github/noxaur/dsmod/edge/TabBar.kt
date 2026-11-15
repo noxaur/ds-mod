@@ -41,6 +41,8 @@ object TabBar {
 
     private val shown get() = on && settings.menuTabs
 
+    private const val SEARCH_LENGTH = 64
+
     // The query stays from menu to menu until the player closes the bar, so it can follow them through storage pages.
     private var query = ""
     private var words = emptyList<String>()
@@ -104,12 +106,10 @@ object TabBar {
             val barY = if (bar.edge == TabEdge.TOP) maxOf(edgeY(bar.edge), Kit.TAB_HEIGHT - 2) else minOf(edgeY(bar.edge), height - Kit.TAB_HEIGHT + 2)
             val covered = made.filter { (tab, _) -> tab.edge == bar.edge && TabLayout.x(tab.slot) < barLeft + barWidth && TabLayout.x(tab.slot) + Kit.TAB_WIDTH > barLeft }
             val contentY = if (bar.edge == TabEdge.TOP) barY - Kit.TAB_HEIGHT + 3 else barY
-            val field = KitTextField(barX + 3, contentY, barWidth - 6 - Kit.BUTTON_HEIGHT - 2, "Search", "Search...")
-            field.value = query
-            field.setResponder {
+            val field = KitTextField(barX + 3, contentY, barWidth - 6 - Kit.BUTTON_HEIGHT - 2, "Search", query, SEARCH_LENGTH) {
                 query = it
                 words = ItemSearch.words(it)
-            }
+            }.hint("Search...")
             var open = query.isNotEmpty()
             lateinit var close: KitButton
 

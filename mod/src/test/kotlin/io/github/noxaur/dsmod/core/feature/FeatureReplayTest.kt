@@ -140,7 +140,7 @@ class FeatureReplayTest {
                                     appendLine("             + slot $slot: hidden, on $item")
                                     continue
                                 }
-                                val shape = if (mark.border) "frame" else "fill"
+                                val shape = if (mark.rarity) "rarity" else "fill"
                                 val label = mark.label?.let { " \"${it.plain}\"" } ?: ""
                                 appendLine("             + slot $slot: ${mark.role} $shape$label on $item")
                             }

@@ -5,30 +5,38 @@ import io.github.noxaur.dsmod.core.text.TextBuilder
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.TabEdge
+import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.SlotArts
+import io.github.noxaur.dsmod.edge.Surface
 import io.github.noxaur.dsmod.edge.toComponent
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitButton
 import io.github.noxaur.dsmod.edge.ui.KitCheckbox
+import io.github.noxaur.dsmod.edge.ui.KitCycleButton
+import io.github.noxaur.dsmod.edge.ui.KitKeysButton
+import io.github.noxaur.dsmod.edge.ui.KitMenu
 import io.github.noxaur.dsmod.edge.ui.KitRangeSlider
 import io.github.noxaur.dsmod.edge.ui.KitStepper
 import io.github.noxaur.dsmod.edge.ui.KitTextField
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.input.KeyEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import org.lwjgl.glfw.GLFW
 
 private const val WIDTH = 575
-private const val HEIGHT = 220
+private const val HEIGHT = 255
 private const val MIDDLE = 271
 private const val RIGHT = 396
 
 /** Every shape, state, widget and icon of the kit on one screen, in the player's theme. `/dskit` opens it. */
 class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
     private class Line(val icon: Icon, val color: Int, val depth: Int, val text: Component)
-    private class Mark(val item: ItemStack, val color: Int, val style: Char)
+    private class Mark(val item: ItemStack, val role: Role, val color: Int, val style: Char)
 
     private var ox = 0
     private var oy = 0
@@ -76,8 +84,22 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         val rate = addRenderableWidget(KitCheckbox(icon.right + Kit.GAP, y + 3, "Rate", true) {})
         addRenderableWidget(KitCheckbox(rate.right + Kit.GAP * 2, y + 3, "Bar", false) {})
         // The storage window's search field, below its slot grid.
-        addRenderableWidget(KitTextField(ox + MIDDLE + 7, oy + 133, 99, "Search", "Search..."))
+        addRenderableWidget(KitTextField(ox + MIDDLE + 7, oy + 133, 99, "Search", "", 64) {}.hint("Search..."))
         addRenderableWidget(KitRangeSlider(ox + Kit.INSET, oy + 192, 252, "Range", 200, listOf(50, 100, 150), listOf(Section(20, 70), Section(175, 200))) {})
+        val field = addRenderableWidget(KitTextField(ox + Kit.INSET, oy + 226, 96, "Command", "/warp end", 256) {})
+        var keyX = field.x + field.width + 4 + Kit.GAP
+        val sets = listOf(listOf(GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_F6), listOf(GLFW.GLFW_KEY_F6), listOf(GLFW.GLFW_KEY_Q), listOf(GLFW.GLFW_KEY_F6, GLFW.GLFW_KEY_F7))
+        for ((i, clash) in listOf(null, Role.BAD, Role.WARNING, null).withIndex()) {
+            val keys = addRenderableWidget(KitKeysButton(keyX, oy + 226, 70, "Keys", sets[i], 4) {})
+            keys.clash = clash
+            keys.inOrder = i == 3
+            keyX += 70 + Kit.GAP
+        }
+        // The last one records, as after a press.
+        children().filterIsInstance<KitKeysButton>().last().onPress(KeyEvent(GLFW.GLFW_KEY_ENTER, 0, 0))
+        addRenderableWidget(KitCycleButton(keyX, oy + 226, 70, "Where", listOf("In the World", "In Menus"), "In the World", { it }) {})
+        // A context menu, as a right press beside the cycle button would open it.
+        addRenderableWidget(KitMenu(keyX + 70 + Kit.GAP - 2, oy + 214, width, height, listOf("Duplicate" to {}, "Delete" to {}), {}))
     }
 
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
@@ -111,11 +133,11 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
 
         caption(g, "Icons: ink, muted, roles on a well", x, oy + 121)
         val icons = Icon.entries
-        Kit.well(g, x + 147, oy + 132, 105, 14)
+        Kit.well(g, x + 164, oy + 132, 88, 14)
         for (i in icons.indices) {
             Kit.icon(g, icons[i], x + i * 8, oy + 136, t.ink, t.inkShadow)
-            Kit.icon(g, icons[i], x + 73 + i * 8, oy + 136, t.inkMuted, t.inkShadow)
-            Kit.icon(g, icons[i], x + 150 + i * 11, oy + 136, ROLES[i % ROLES.size].argb())
+            Kit.icon(g, icons[i], x + 82 + i * 8, oy + 136, t.inkMuted, t.inkShadow)
+            Kit.icon(g, icons[i], x + 167 + i * 8, oy + 136, ROLES[i % ROLES.size].argb())
         }
 
         caption(g, "Divider, rings and a line", x, oy + 150)
@@ -126,6 +148,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         Kit.line(g, x + 234, oy + 171, x + 251, oy + 162, Role.ACTION.argb())
 
         caption(g, "Range slider, and spans: idle, hover, down, off", x, oy + 180)
+        caption(g, "Text field, keys: held together, clashing, game's key, recording, a cycle button and a menu", x, oy + 214)
         for (i in states.indices) Kit.span(g, ox + MIDDLE + i * 30, oy + 193, 26, 14, states[i])
 
         window(g, ox + MIDDLE, oy + 40)
@@ -155,10 +178,13 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
             Kit.slot(g, sx, sy)
             val mark = marks.getOrNull(i) ?: continue
             if (mark.style == 'f') Kit.slotFill(g, sx + 1, sy + 1, mark.color)
+            if (mark.style == 'b') Kit.slotArt(g, sx + 1, sy + 1, SlotArts.atlas(DsModClient.settings.inventory, Surface.CONTAINER), mark.role.ordinal)
             g.item(mark.item, sx + 1, sy + 1)
             g.itemDecorations(font, mark.item, sx + 1, sy + 1)
             if (mark.style == 'd') Kit.slotDim(g, sx + 1, sy + 1)
-            if (mark.style == 'b') Kit.slotBorder(g, sx + 1, sy + 1, mark.color)
+            if (mark.style == 'b' && DsModClient.settings.inventory.inventoryStyle.gem) {
+                Kit.slotGem(g, sx + 1, sy + 1, SlotArts.atlas(DsModClient.settings.inventory, Surface.CONTAINER), mark.role.ordinal)
+            }
         }
         Kit.scrollbar(g, gx + 93, gy, 72, 6, 30)
     }
@@ -201,6 +227,6 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
 
         fun line(icon: Icon, role: Role, depth: Int, build: TextBuilder.() -> Unit) = Line(icon, role.argb(), depth, text(build).toComponent())
 
-        fun mark(item: Item, count: Int, role: Role, style: Char) = Mark(ItemStack(item, count), role.argb(if (style == 'b') 255 else 110), style)
+        fun mark(item: Item, count: Int, role: Role, style: Char) = Mark(ItemStack(item, count), role, role.argb(110), style)
     }
 }

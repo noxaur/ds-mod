@@ -11,6 +11,7 @@ import io.github.noxaur.dsmod.core.feature.end.GolemStatus
 import io.github.noxaur.dsmod.core.feature.end.ProtectPlacedEyes
 import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
 import io.github.noxaur.dsmod.core.feature.general.Camera
+import io.github.noxaur.dsmod.core.feature.general.CommandBinds
 import io.github.noxaur.dsmod.core.feature.general.ExplosionParticleHider
 import io.github.noxaur.dsmod.core.feature.general.FreeLook
 import io.github.noxaur.dsmod.core.feature.general.Fullbright
@@ -19,7 +20,7 @@ import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
 import io.github.noxaur.dsmod.core.feature.inventory.HideFiller
 import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
-import io.github.noxaur.dsmod.core.feature.inventory.RarityOutlines
+import io.github.noxaur.dsmod.core.feature.inventory.RarityMarks
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.feature.inventory.StableMenus
 import io.github.noxaur.dsmod.core.feature.inventory.ThemedMenus
@@ -39,11 +40,12 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     ProtectPlacedEyes(config.end::protectPlacedEyes),
     ZealotTracker(config.end::zealotTracker),
     Camera(config.general::camera),
+    CommandBinds(config.general::commandBinds),
     ExplosionParticleHider(config.general::explosionParticleHider),
     FreeLook(config.general::freeLook),
     Fullbright(config.general::fullbright),
     ArmorSwapGuard(config.inventory::armorSwapGuard),
-    RarityOutlines(config.inventory::rarityOutlines),
+    RarityMarks(config.inventory::rarityMarks, config.inventory::markCommon),
     ThemedMenus(config.inventory::themedMenus),
     StableMenus(config.inventory::stableMenus),
     HideFiller(config.inventory::hideFiller),

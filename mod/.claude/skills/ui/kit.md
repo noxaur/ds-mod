@@ -41,17 +41,19 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `bar` | 6 tall | A well with a 4px fill that has a lit top row and a shaded bottom row |
 | `scrollbar` | 6 wide | A well with a raised thumb |
 | `tab` | 22x21, or wider to hold a field | Sits on a panel's top or bottom edge. The selected one joins the panel, and the rest sit 2px further out in `tabOff`, or in `hover` under the mouse. Draw the rest before the panel and the selected one after it |
-| `field` | Any, 16 tall in a widget | A text field's frame: a well, ringed in `hoverOutline` under the mouse or with focus. The text sits 4 in |
 | `checkbox` | 10x10 | A well that holds the check icon when on. Hover and focus ring it in `hoverOutline` |
 | `span` | Any, 14 tall in a slider | A switched-on stretch of a range slider: a raised face in `accent`, lighter under the mouse and sunk while dragged |
 | `tick` | 1 wide | A mark across a track where its scale changes |
 | `flash` | Any | A white wash over something the player just acted on, which fades out. The same in both themes, because it lies on the game and not on a panel |
 | `divider` | 2 tall | A shade line over a light line, cut into the panel |
 | `ring` | Any | A notched 1px line in `accent` or a role, around the selected thing |
-| `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, search, arrow, lock, back |
+| `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, right, search, arrow, lock, back |
 | `line` | Any | A 1px stepped line between two points, with a dark line beside it, for joining two things that belong together |
+| `field` | Any, 16 tall in a text field | A well that a text field holds, ringed in `hoverOutline` under the mouse or with focus |
 | `label` | One line | A string in ink |
-| `slotFill`, `slotBorder`, `slotDim` | 16x16 inside, 18x18 border | The marks `Slots` puts on a container's slots, colored by role |
+| `slotFill`, `slotBorder`, `slotDim` | 16x16 inside, 18x18 border | Plain marks on a container's slots, colored by role: a fill behind the item, a frame around the slot, a dimming over the item |
+| `slotArt`, `slotGem` | 18x18, 7x7 | A rarity mark's back behind the item and its gem over it, cut from an `Atlas` that `SlotArts` bakes from the player's style |
+| `inventory`, `slotAt` | 176x166, 18x18 | The player's inventory, and one empty slot of it, from the resource pack's own texture, for a preview that must match the real screen |
 
 ## Widgets
 
@@ -60,10 +62,13 @@ A widget is a vanilla widget with a kit face. It takes its label as a string and
 | Widget | What it is |
 | --- | --- |
 | `KitButton` | A button with a label or an icon. An icon button is 16x16 |
-| `KitCheckbox` | A checkbox with its label 4px to the right |
-| `KitTextField` | A one-line field with a muted hint while empty. It is vanilla's `EditBox` with the kit's frame, so selection and the clipboard keys work |
+| `KitCheckbox` | A checkbox with its label 4px to the right. On a well its label is body text, since ink would not read there |
 | `KitTab` | A tab on a menu's top or bottom edge, with an item or an icon, that runs an action. Its `selected` state joins the panel |
 | `KitStepper` | A minus button, a value and a plus button, for a number with few useful steps |
+| `KitTextField` | Vanilla's `EditBox` on a 16 tall `field`, with its text 4 in. A press anywhere on the well lands |
+| `KitKeysButton` | A button that shows keys and records new ones, held together or in order, as the key bind section of `controls.md` says. Keys it shares are ringed in a role |
+| `KitCycleButton` | A button that steps through a few values, as the cycle button section of `controls.md` says |
+| `KitMenu` | A panel of actions beside the mouse, opened by a right press, as the context menu section of `controls.md` says. The item under the mouse or picked with Up and Down is lit |
 | `KitRangeSlider` | A 16 tall track with any number of spans, for picking stretches of a scale. Press and drag on the track to draw one or click to add one, drag an end or the middle, right-click to remove. The cursor shows what a press will do. `Sections` in `core/ui` holds its rules: a span is at least 5 long, and two within 3 of each other become one |
 
 Controls in a row are 4 apart, and rows are 4 apart. A label beside a control sits on the control's text baseline.

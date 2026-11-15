@@ -25,6 +25,7 @@ private const val MENU_HEIGHT = 166
 private const val FORM_WIDTH = 160
 private const val LABEL_HEIGHT = 8
 private const val DRAG_START = 3
+private const val COMMAND_LENGTH = 256
 
 /**
  * Sets up Menu Tabs on a menu the size of the inventory, with the places along its top and bottom edges. Drag a tab
@@ -40,6 +41,7 @@ class TabEditorScreen(private val settings: DsModConfig.BetterUi, private val pa
     private var formY = 0
     private var formHeight = 0
     private var readoutY = 0
+    private val labels = IntArray(3)
 
     /** The index in [tabs] of the tab the form changes, or -1. */
     private var selected = -1
@@ -81,19 +83,19 @@ class TabEditorScreen(private val settings: DsModConfig.BetterUi, private val pa
         val doneWidth = font.width("Done") + 16
         addRenderableWidget(KitButton(left + fieldWidth - doneWidth, y, "Done", ::onClose, doneWidth))
         y += Kit.BUTTON_HEIGHT + Kit.GAP + LABEL_HEIGHT + 2
-        command = addRenderableWidget(KitTextField(left, y, fieldWidth, "Command", "warp end"))
-        command.setResponder { typed -> change { it.copy(command = TabLayout.command(typed)) } }
+        labels[0] = y - LABEL_HEIGHT - 2
+        command = addRenderableWidget(KitTextField(left, y, fieldWidth, "Command", "", COMMAND_LENGTH) { typed -> change { it.copy(command = TabLayout.command(typed)) } }.hint("warp end"))
         y += rowHeight
-        item = addRenderableWidget(KitTextField(left, y, fieldWidth, "Item", "chest"))
-        item.setResponder { typed ->
+        labels[1] = y - LABEL_HEIGHT - 2
+        item = addRenderableWidget(KitTextField(left, y, fieldWidth, "Item", "", COMMAND_LENGTH) { typed ->
             val id = TabLayout.itemId(typed)
             val known = Identifier.tryParse(id)?.let(BuiltInRegistries.ITEM::containsKey) == true
             item.setTextColor(if (known || typed.isBlank()) Role.BODY.argb() else Role.BAD.argb())
             if (known) change { it.copy(item = id) }
-        }
+        }.hint("chest"))
         y += rowHeight
-        name = addRenderableWidget(KitTextField(left, y, fieldWidth, "Name", "Shown when you point at it"))
-        name.setResponder { typed -> change { it.copy(tooltip = typed.trim()) } }
+        labels[2] = y - LABEL_HEIGHT - 2
+        name = addRenderableWidget(KitTextField(left, y, fieldWidth, "Name", "", COMMAND_LENGTH) { typed -> change { it.copy(tooltip = typed.trim()) } }.hint("Shown when you point at it"))
         y += rowHeight
         val half = (fieldWidth - Kit.GAP) / 2
         addTab = addRenderableWidget(KitButton(left, y, "Add Tab", { add(MenuTab(command = "", item = "minecraft:paper")) }, half))
@@ -146,8 +148,8 @@ class TabEditorScreen(private val settings: DsModConfig.BetterUi, private val pa
         Kit.panel(graphics, formX, formY, FORM_WIDTH, formHeight)
         val left = formX + Kit.INSET
         Kit.label(graphics, TITLE, left, formY + Kit.INSET + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
-        for ((field, label) in listOf(command to "Command", item to "Item", name to "Name")) {
-            Kit.label(graphics, label, left, field.y - LABEL_HEIGHT - 2, if (field.active) Kit.Ink.NORMAL else Kit.Ink.OFF)
+        for ((i, pair) in listOf(command to "Command", item to "Item", name to "Name").withIndex()) {
+            Kit.label(graphics, pair.second, left, labels[i], if (pair.first.active) Kit.Ink.NORMAL else Kit.Ink.OFF)
         }
         Kit.label(graphics, readout(place), left, readoutY, Kit.Ink.MUTED)
         super.extractRenderState(graphics, mouseX, mouseY, partialTick)
