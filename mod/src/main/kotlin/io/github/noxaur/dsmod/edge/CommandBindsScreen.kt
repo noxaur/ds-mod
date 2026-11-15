@@ -19,6 +19,7 @@ import io.github.noxaur.dsmod.edge.ui.KitKeysButton
 import io.github.noxaur.dsmod.edge.ui.KitStepper
 import io.github.noxaur.dsmod.edge.ui.KitTextField
 import io.github.noxaur.dsmod.edge.ui.fit
+import io.github.noxaur.dsmod.edge.ui.wrap
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.screens.Screen
@@ -35,12 +36,15 @@ private const val SPLIT = 7
 private const val WIDTH = LIST_WIDTH + SPLIT + DETAIL_WIDTH
 private const val LABEL_WIDTH = 48
 private const val LABEL_HEIGHT = 8
+private const val LINE = 10
+private const val READOUT_LINES = 2
 private const val ROW = 22
 private const val ROW_STEP = ROW + 2
 private const val FIELD_STEP = Kit.BUTTON_HEIGHT + Kit.GAP
 private const val CHECK_STEP = Kit.CHECKBOX_SIZE + Kit.GAP
 private const val MAX_PRIORITY = 9
-private val AREAS = Area.entries - Area.ANYWHERE
+/** Anywhere, then each area a bind can be limited to. */
+private val AREAS: List<Area?> = listOf(null) + (Area.entries - Area.ANYWHERE)
 
 /**
  * Command Binds on one screen: the binds down the left under their groups' headings, and everything about the
@@ -74,19 +78,22 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
     private var panelHeight = 0
     private var left = 0
     private var top = 0
+    private var contentY = 0
     private var listY = 0
+    private var containerHeight = 0
     private var shown = 0
     private var detailX = 0
     private var readoutY = 0
-    private var readout = ""
+    private var readout = emptyList<String>()
     private var labels = emptyList<Triple<String, Int, Int>>()
 
     private val groups: List<String> get() = listOf("") + settings.bindGroups
     private val bind: CommandBind? get() = (picked as? Int)?.let(settings.binds::getOrNull)
     private val group: String? get() = picked as? String
     private val listHeight get() = shown * ROW_STEP - 2
-    private val rowWidth get() = LIST_WIDTH - Kit.SCROLLBAR_WIDTH - 2
-    private val scrollX get() = left + LIST_WIDTH - Kit.SCROLLBAR_WIDTH
+    private val rowsX get() = left + 2
+    private val rowWidth get() = LIST_WIDTH - Kit.SCROLLBAR_WIDTH - 6
+    private val scrollX get() = left + LIST_WIDTH - Kit.SCROLLBAR_WIDTH - 2
 
     init {
         // Opening shows the first bind, so its details are there without a click.
@@ -96,20 +103,23 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
     }
 
     override fun init() {
-        val detailHeight = FIELD_STEP * 5 + CHECK_STEP * 5 + LABEL_HEIGHT + Kit.GAP * 2 + Kit.BUTTON_HEIGHT
+        val detailHeight = FIELD_STEP * 6 + CHECK_STEP * 2 + READOUT_LINES * LINE + Kit.GAP * 2 + Kit.BUTTON_HEIGHT
         panelHeight = Kit.INSET * 2 + Kit.BUTTON_HEIGHT + Kit.GAP + detailHeight
         panelX = (width - WIDTH - Kit.INSET * 2) / 2
         panelY = (height - panelHeight) / 2
         left = panelX + Kit.INSET
         top = panelY + Kit.INSET
-        listY = top + Kit.BUTTON_HEIGHT + Kit.GAP
+        contentY = top + Kit.BUTTON_HEIGHT + Kit.GAP
+        // The rows sit 2 in from the container's edge.
+        listY = contentY + 2
         val bottom = panelY + panelHeight - Kit.INSET - Kit.BUTTON_HEIGHT
-        shown = (bottom - Kit.GAP - listY + 2) / ROW_STEP
+        containerHeight = bottom - Kit.GAP - contentY
+        shown = (containerHeight - 4 + 2) / ROW_STEP
         detailX = left + LIST_WIDTH + SPLIT
-        readoutY = listY
+        readoutY = contentY
 
         var x = left + WIDTH
-        for ((label, action) in listOf("Done" to ::onClose, "Import" to ::import)) {
+        for ((label, action) in listOf("Done" to ::onClose, "Export" to ::export, "Import" to ::import)) {
             val buttonWidth = font.width(label) + 16
             x -= buttonWidth
             addRenderableWidget(KitButton(x, top, label, action, buttonWidth))
@@ -124,7 +134,7 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
         for (entry in entries) {
             if (entry !is Entry.Bind) continue
             val bind = entry.bind
-            boxes[bind] = addRenderableWidget(KitCheckbox(left + 4, 0, "", bind.enabled, onWell = true) { on -> change(bind, bind.copy(enabled = on)) })
+            boxes[bind] = addRenderableWidget(KitCheckbox(rowsX + 2, 0, "", bind.enabled, onWell = true) { on -> change(bind, bind.copy(enabled = on)) })
         }
         keys = null
         delete = null
@@ -152,7 +162,7 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
             labels += Triple(text, detailX, y + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
         }
 
-        var y = listY
+        var y = contentY
         label("Command", y)
         addRenderableWidget(KitTextField(controlX, y, controlWidth, "Command", bind.command, CommandBind.MAX_LENGTH) { typed -> set { it.copy(command = typed) } })
             .setHint(text { muted("/warp end") }.toComponent())
@@ -169,6 +179,9 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
         label("Where", y)
         addRenderableWidget(KitCycleButton(controlX, y, controlWidth, "Where", Where.entries, bind.where, Where::title) { where -> set { it.copy(where = where) } })
         y += FIELD_STEP
+        label("Area", y)
+        addRenderableWidget(KitCycleButton(controlX, y, controlWidth, "Area", AREAS, bind.area, { it?.title ?: "Anywhere" }) { area -> set { it.copy(area = area) } })
+        y += FIELD_STEP
         label("Priority", y)
         val stepper = addRenderableWidget(KitStepper(controlX, y, "Priority", 20) { step ->
             set { it.copy(priority = (it.priority + step).coerceIn(-MAX_PRIORITY, MAX_PRIORITY)) }
@@ -182,16 +195,8 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
             set { it.copy(inOrder = on) }
             keys?.inOrder = on
         })
-        y += CHECK_STEP
-        labels += Triple("Only In", detailX, y + 1)
-        for ((i, area) in AREAS.withIndex()) {
-            addRenderableWidget(
-                KitCheckbox(controlX + i % 2 * (half + Kit.GAP), y + i / 2 * CHECK_STEP, area.title, area in bind.areas) { on ->
-                    set { now -> now.copy(areas = AREAS.filter { if (it == area) on else it in now.areas }) }
-                },
-            )
-        }
-        readoutY = y + CHECK_STEP * 3
+        y += CHECK_STEP + Kit.GAP
+        readoutY = y
 
         val deleteWidth = font.width("Delete") + 16
         delete = addRenderableWidget(KitButton(detailX + DETAIL_WIDTH - deleteWidth, bottom, "Delete", ::deleteBind, deleteWidth))
@@ -199,20 +204,16 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
         addRenderableWidget(KitButton(detailX + DETAIL_WIDTH - deleteWidth - Kit.GAP - copyWidth, bottom, "Duplicate", ::duplicate, copyWidth))
     }
 
-    /** The picked group: its name, which General keeps, and Export and Delete. */
+    /** The picked group: its name, which General keeps, and Delete. */
     private fun groupDetails(group: String, labels: MutableList<Triple<String, Int, Int>>, bottom: Int) {
         val controlX = detailX + LABEL_WIDTH
-        labels += Triple("Group", detailX, listY + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
-        addRenderableWidget(KitTextField(controlX, listY, DETAIL_WIDTH - LABEL_WIDTH, "Group Name", groupName(group), BindShare.GROUP_LENGTH, ::rename))
+        labels += Triple("Group", detailX, contentY + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
+        addRenderableWidget(KitTextField(controlX, contentY, DETAIL_WIDTH - LABEL_WIDTH, "Group Name", groupName(group), BindShare.GROUP_LENGTH, ::rename))
             .setEditable(group.isNotEmpty())
-        readoutY = listY + FIELD_STEP + Kit.GAP
-        val exportWidth = font.width("Export") + 16
+        readoutY = contentY + FIELD_STEP + Kit.GAP
         if (group.isNotEmpty()) {
             val deleteWidth = font.width("Delete") + 16
             delete = addRenderableWidget(KitButton(detailX + DETAIL_WIDTH - deleteWidth, bottom, "Delete", ::deleteGroup, deleteWidth))
-            addRenderableWidget(KitButton(detailX + DETAIL_WIDTH - deleteWidth - Kit.GAP - exportWidth, bottom, "Export", ::export, exportWidth))
-        } else {
-            addRenderableWidget(KitButton(detailX + DETAIL_WIDTH - exportWidth, bottom, "Export", ::export, exportWidth))
         }
     }
 
@@ -322,8 +323,9 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
         refresh()
     }
 
+    /** Copies the group of whatever is picked, so the binds can be pasted into another game with Import. */
     private fun export() {
-        val group = group ?: return
+        val group = group ?: bind?.group ?: ""
         val binds = settings.binds.filter { it.group == group }
         if (binds.isEmpty()) return say("${groupName(group)} has no binds to export.", bad = true)
         minecraft.keyboardHandler.clipboard = BindShare.encode(groupName(group), binds)
@@ -361,7 +363,7 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
         val game = bind?.keys?.singleOrNull()?.let(Keys::gameKey)
         keys?.clash = if (clash != null) Role.BAD else if (game != null) Role.WARNING else null
         val names = bind?.let { Keys.names(it.keys, it.inOrder) }
-        readout = fit(
+        readout = wrap(
             when {
                 armed && bind != null -> "Press Delete again to delete this bind."
                 armed && group != null -> "Press Delete again to delete it" + (settings.binds.count { it.group == group }.takeIf { it > 0 }?.let { " and its ${plural(it)}" } ?: "") + "."
@@ -377,6 +379,7 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
                 else -> "$names ${describe(bind)}."
             },
             DETAIL_WIDTH,
+            READOUT_LINES,
         )
     }
 
@@ -389,7 +392,7 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
 
     /** The line of the list under the mouse, or -1. */
     private fun entryAt(x: Double, y: Double): Int {
-        if (x < left || x >= left + rowWidth || y < listY || y >= listY + listHeight) return -1
+        if (x < rowsX || x >= rowsX + rowWidth || y < listY || y >= listY + listHeight) return -1
         val i = first + ((y - listY) / ROW_STEP).toInt()
         return i.takeIf { (y - listY) % ROW_STEP < ROW && it < entries.size } ?: -1
     }
@@ -542,31 +545,31 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         Kit.panel(graphics, panelX, panelY, WIDTH + Kit.INSET * 2, panelHeight)
         Kit.label(graphics, TITLE, left, top + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
+        // The list sits in a sunk container, as the game's own lists do, with the scrollbar inside its edge.
+        Kit.well(graphics, left, contentY, LIST_WIDTH, containerHeight)
         val clashing = settings.binds.filter { CommandBinds.clashes(it, settings.binds).isNotEmpty() }
-        val textX = left + 4 + Kit.CHECKBOX_SIZE + Kit.GAP
+        val textX = rowsX + 2 + Kit.CHECKBOX_SIZE + Kit.GAP
         for ((i, entry) in entries.withIndex()) {
             if (i - first !in 0 until shown) continue
             val y = listY + (i - first) * ROW_STEP
-            val chosen = entry.matches(picked)
+            if (entry.matches(picked)) Kit.ring(graphics, rowsX, y, rowWidth, ROW, Kit.theme.accent)
             when (entry) {
                 is Entry.Heading -> {
-                    val count = settings.binds.count { it.group == entry.group || entry.group.isEmpty() && it.group !in groups }
-                    Kit.label(graphics, fit(groupName(entry.group), rowWidth - 24), left + 2, y + ROW - LABEL_HEIGHT - 2)
-                    val counted = count.toString()
-                    Kit.label(graphics, counted, left + rowWidth - 2 - font.width(counted), y + ROW - LABEL_HEIGHT - 2, Kit.Ink.MUTED)
-                    if (chosen) Kit.ring(graphics, left - 1, y - 1, rowWidth + 2, ROW + 2, Kit.theme.accent)
+                    val count = settings.binds.count { it.group == entry.group || entry.group.isEmpty() && it.group !in groups }.toString()
+                    val name = fit(groupName(entry.group), rowWidth - 24)
+                    graphics.text(font, text { body(name) }.toComponent(), rowsX + 3, y + ROW - LABEL_HEIGHT - 3, -1, true)
+                    graphics.text(font, text { muted(count) }.toComponent(), rowsX + rowWidth - 3 - font.width(count), y + ROW - LABEL_HEIGHT - 3, -1, true)
                 }
                 is Entry.Bind -> {
                     val bind = entry.bind
-                    Kit.well(graphics, left, y, rowWidth, ROW)
-                    if (chosen) Kit.ring(graphics, left - 1, y - 1, rowWidth + 2, ROW + 2, Kit.theme.accent)
-                    val room = rowWidth - (textX - left) - 3
+                    val room = rowsX + rowWidth - 3 - textX
                     val name = fit(bind.title, room)
                     graphics.text(font, text { if (bind.enabled) body(name) else muted(name) }.toComponent(), textX, y + 3, -1, true)
                     val keys = fit(Keys.names(bind.keys, bind.inOrder), room)
                     val line = text {
                         when {
-                            bind.keys.isEmpty() || bind in clashing -> bad(if (bind.keys.isEmpty()) "No keys" else keys)
+                            bind.keys.isEmpty() -> bad("No keys")
+                            bind in clashing -> bad(keys)
                             bind.keys.size == 1 && Keys.gameKey(bind.keys[0]) != null -> warning(keys)
                             !bind.enabled -> muted(keys)
                             else -> value(keys)
@@ -585,7 +588,8 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
             Kit.scrollbar(graphics, scrollX, listY, listHeight, (listHeight - 2 - thumb) * first / (entries.size - shown), thumb)
         }
         for ((label, x, y) in labels) Kit.label(graphics, label, x, y, Kit.Ink.MUTED)
-        Kit.label(graphics, readout, detailX, readoutY, if (picked == null || said != null && saidBad) Kit.Ink.MUTED else Kit.Ink.NORMAL)
+        val ink = if (picked == null || said != null && saidBad) Kit.Ink.MUTED else Kit.Ink.NORMAL
+        for ((i, line) in readout.withIndex()) Kit.label(graphics, line, detailX, readoutY + i * LINE, ink)
         delete?.takeIf { armed }?.let { Kit.ring(graphics, it.x - 1, it.y - 1, it.width + 2, it.height + 2, Role.BAD.argb()) }
         super.extractRenderState(graphics, mouseX, mouseY, partialTick)
     }
@@ -604,8 +608,7 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
                 Where.MENUS -> "in menus"
                 Where.BOTH -> "in the world and menus"
             }
-            val areas = if (bind.areas.isEmpty()) "" else ", in " + bind.areas.joinToString(" or ") { it.title }
-            return "$what $where$areas"
+            return "$what $where" + (bind.area?.let { ", in ${it.title}" } ?: "")
         }
     }
 }

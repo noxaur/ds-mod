@@ -521,3 +521,20 @@ fun fit(text: String, width: Int): String {
     if (font.width(text) <= width) return text
     return font.plainSubstrByWidth(text, width - font.width("...")) + "..."
 }
+
+/** [text] broken at spaces into lines of at most [width] pixels, the last of [max] ending in an ellipsis when cut. */
+fun wrap(text: String, width: Int, max: Int): List<String> {
+    val lines = ArrayList<String>()
+    var line = ""
+    for (word in text.split(' ')) {
+        val next = if (line.isEmpty()) word else "$line $word"
+        if (line.isNotEmpty() && Kit.font.width(next) > width) {
+            lines += line
+            line = word
+        } else {
+            line = next
+        }
+    }
+    lines += line
+    return if (lines.size <= max) lines else lines.take(max - 1) + fit(lines.drop(max - 1).joinToString(" "), width)
+}

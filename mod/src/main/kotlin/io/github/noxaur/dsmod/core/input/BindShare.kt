@@ -2,7 +2,6 @@ package io.github.noxaur.dsmod.core.input
 
 import com.google.gson.GsonBuilder
 import com.google.gson.annotations.Expose
-import io.github.noxaur.dsmod.core.game.Area
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.Base64
@@ -49,7 +48,7 @@ object BindShare {
                 keys = (it.keys as List<Int?>?).orEmpty().filterNotNull().take(CommandBind.MAX_KEYS),
                 enabled = false,
                 where = (it.where as Where?) ?: Where.WORLD,
-                areas = (it.areas as List<*>?).orEmpty().filterIsInstance<Area>(),
+                area = it.area,
                 priority = it.priority,
                 extraKeys = it.extraKeys,
                 inOrder = it.inOrder,

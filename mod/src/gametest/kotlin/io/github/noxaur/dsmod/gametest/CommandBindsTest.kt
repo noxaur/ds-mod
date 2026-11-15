@@ -125,7 +125,7 @@ class CommandBindsTest : FabricClientGameTest {
         click(keys())
         context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
         context.waitTicks(2)
-        val where = widgets(KitCycleButton::class.java).single()
+        val where = widgets(KitCycleButton::class.java).single { it.message.string.startsWith("Where") }
         click(where)
         click(where)
         check(general.binds[1].keys == listOf(GLFW.GLFW_MOUSE_BUTTON_MIDDLE) && general.binds[1].where == Where.BOTH) { "The second bind is ${general.binds[1]}" }
@@ -149,8 +149,10 @@ class CommandBindsTest : FabricClientGameTest {
         click(keys())
         context.input.pressKey(GLFW.GLFW_KEY_F9)
         context.waitTicks(2)
-        click(named(Area.END.title).single())
-        check(general.binds.map { it.inOrder } == listOf(false, false, true, false) && general.binds[3].areas == listOf(Area.END)) { "The binds are ${general.binds}" }
+        // Area steps from Anywhere through Village and The Crypts to The End.
+        val area = widgets(KitCycleButton::class.java).single { it.message.string.startsWith("Area") }
+        repeat(3) { click(area) }
+        check(general.binds.map { it.inOrder } == listOf(false, false, true, false) && general.binds[3].area == Area.END) { "The binds are ${general.binds}" }
 
         // Duplicate adds a copy that starts off. Once ticked on, it clashes.
         pickRow(0)
@@ -227,6 +229,7 @@ class CommandBindsTest : FabricClientGameTest {
         context.input.pressMouse(0)
         context.waitTicks(2)
         check(field("Group Name").value == "General") { "The General heading did not show its group" }
+        context.takeScreenshot("command-binds-heading")
         context.clickScreenButton("Export")
         val shared = context.computeOnClient<String, Nothing> { it.keyboardHandler.clipboard }
         check(shared.startsWith("dsmod-binds:")) { "Export put $shared on the clipboard" }

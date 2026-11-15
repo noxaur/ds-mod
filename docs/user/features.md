@@ -192,9 +192,9 @@ On the right:
 - **Priority:** when two binds share keys, the higher one sends, and between equals the one listed first.
 - **Other Keys Held Too:** on by default, so a key you walk with does not stop the bind.
 - **Keys in Order:** the keys become a sequence, finished with Escape when you record them. Key Sequence Gap in the settings sets how long a sequence waits for its next key.
-- **Only In:** limit the bind to some areas. With none ticked it works anywhere.
+- **Area:** Anywhere, or the one area the bind works in, such as The End.
 
-**New Group** adds a group. Pick its heading to rename it, **Export** it to your clipboard to share, or delete it with its binds. **Import** adds a group someone shared. Imported binds start off, so read each command before you turn it on.
+**New Group** adds a group. Pick its heading to rename it, or to delete it with its binds. **Export** copies the group of whatever you picked to your clipboard to share, and **Import** adds a group someone shared. Imported binds start off, so read each command before you turn it on.
 
 Keys shown in red fire another bind too, and keys in yellow also do something in the game. The line under the details says which.
 

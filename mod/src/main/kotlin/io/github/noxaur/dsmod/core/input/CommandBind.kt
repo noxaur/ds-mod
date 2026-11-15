@@ -17,8 +17,8 @@ enum class Where(val title: String) {
 
 /**
  * A key, or a few keys together or in order, that sends [command]. Each key is a GLFW key code or a mouse button
- * from 0 to 9, as MoulConfig's key editor writes one. A bind fires only [where] it works and, when it names
- * [areas], only in one of them. [extraKeys] lets other held keys, such as the one you walk with, not stop it.
+ * from 0 to 9, as MoulConfig's key editor writes one. A bind fires only [where] it works and, when it names an
+ * [area], only there. [extraKeys] lets other held keys, such as the one you walk with, not stop it.
  * [inOrder] makes [keys] a sequence of presses rather than keys held together. [group] is the name of the group
  * it is listed in, empty for the first one.
  */
@@ -28,7 +28,7 @@ data class CommandBind(
     @Expose val keys: List<Int> = emptyList(),
     @Expose val enabled: Boolean = true,
     @Expose val where: Where = Where.WORLD,
-    @Expose val areas: List<Area> = emptyList(),
+    @Expose val area: Area? = null,
     @Expose val priority: Int = 0,
     @Expose val extraKeys: Boolean = true,
     @Expose val inOrder: Boolean = false,
@@ -52,7 +52,7 @@ data class CommandBind(
     fun clashesWith(other: CommandBind): Boolean =
         enabled && other.enabled && keys.isNotEmpty() && inOrder == other.inOrder &&
             (if (inOrder) keys == other.keys else keys.toSet() == other.keys.toSet()) &&
-            where.overlaps(other.where) && (areas.isEmpty() || other.areas.isEmpty() || areas.any { it in other.areas })
+            where.overlaps(other.where) && (area == null || other.area == null || area == other.area)
 
     sealed interface Message {
         /** A command, without its slash. */

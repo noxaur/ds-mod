@@ -27,10 +27,10 @@ class CommandBindTest {
 
     @Test
     fun `binds clash on the same keys where and in an area both work`() {
-        val end = CommandBind(keys = listOf(SHIFT, F6), areas = listOf(Area.END))
+        val end = CommandBind(keys = listOf(SHIFT, F6), area = Area.END)
         assertTrue(end.clashesWith(CommandBind(keys = listOf(F6, SHIFT))))
-        assertTrue(end.clashesWith(CommandBind(keys = listOf(F6, SHIFT), where = Where.BOTH, areas = listOf(Area.END, Area.VILLAGE))))
-        assertFalse(end.clashesWith(CommandBind(keys = listOf(F6, SHIFT), areas = listOf(Area.VILLAGE))))
+        assertTrue(end.clashesWith(CommandBind(keys = listOf(F6, SHIFT), where = Where.BOTH, area = Area.END)))
+        assertFalse(end.clashesWith(CommandBind(keys = listOf(F6, SHIFT), area = Area.VILLAGE)))
         assertFalse(end.clashesWith(CommandBind(keys = listOf(F6, SHIFT), where = Where.MENUS)))
         assertFalse(end.clashesWith(CommandBind(keys = listOf(F6, SHIFT), enabled = false)))
         assertFalse(end.clashesWith(CommandBind(keys = listOf(F6, SHIFT), inOrder = true)))
@@ -76,14 +76,14 @@ class CommandBindTest {
     }
 
     @Test
-    fun `a bind fires only where it works, in its areas, and when on`() {
-        val bind = CommandBind(command = "/a", keys = listOf(F6), areas = listOf(Area.END))
+    fun `a bind fires only where it works, in its area, and when on`() {
+        val bind = CommandBind(command = "/a", keys = listOf(F6), area = Area.END)
         assertNull(BindMatcher().press(F6, 0, listOf(bind), Where.MENUS, everywhere))
         assertNull(BindMatcher().press(F6, 0, listOf(bind), null, everywhere))
         assertNull(BindMatcher().press(F6, 0, listOf(bind), Where.WORLD) { it == Area.VILLAGE })
         assertEquals(bind, BindMatcher().press(F6, 0, listOf(bind), Where.WORLD) { it == Area.END })
         assertNull(BindMatcher().press(F6, 0, listOf(bind.copy(enabled = false)), Where.WORLD, everywhere))
-        val both = bind.copy(where = Where.BOTH, areas = emptyList())
+        val both = bind.copy(where = Where.BOTH, area = null)
         assertEquals(both, BindMatcher().press(F6, 0, listOf(both), Where.MENUS, everywhere))
     }
 
@@ -124,7 +124,7 @@ class BindShareTest {
     @Test
     fun `a shared group comes back with its binds switched off`() {
         val binds = listOf(
-            CommandBind("Warp", "/warp end", listOf(SHIFT, F6), where = Where.BOTH, areas = listOf(Area.END), priority = 3, group = "Mine"),
+            CommandBind("Warp", "/warp end", listOf(SHIFT, F6), where = Where.BOTH, area = Area.END, priority = 3, group = "Mine"),
             CommandBind("GG", "gg", listOf(F6, F7), inOrder = true, extraKeys = false),
         )
         val shared = BindShare.decode(BindShare.encode("Dungeons", binds))!!

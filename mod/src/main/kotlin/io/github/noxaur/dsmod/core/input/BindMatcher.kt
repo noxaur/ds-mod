@@ -22,7 +22,7 @@ class BindMatcher {
             typed.clear()
             return null
         }
-        val live = binds.filter { it.enabled && it.keys.isNotEmpty() && it.where.covers(at) && (it.areas.isEmpty() || it.areas.any(inArea)) }
+        val live = binds.filter { it.enabled && it.keys.isNotEmpty() && it.where.covers(at) && (it.area == null || inArea(it.area)) }
         val together = CommandBinds.first(
             live.filter { !it.inOrder && key in it.keys && held.containsAll(it.keys) && (it.extraKeys || it.keys.containsAll(held)) },
         )
@@ -53,7 +53,7 @@ class BindMatcher {
     /** Once [gap] has passed since the last press, fires the sequence it ended, if any. */
     fun idle(now: Long, gap: Long, binds: List<CommandBind>, inArea: (Area) -> Boolean): CommandBind? {
         if (typed.isEmpty() || now - typedAt < gap) return null
-        return finish(binds.filter { it.enabled && it.inOrder && it.where.covers(typedWhere) && (it.areas.isEmpty() || it.areas.any(inArea)) })
+        return finish(binds.filter { it.enabled && it.inOrder && it.where.covers(typedWhere) && (it.area == null || inArea(it.area)) })
     }
 
     /** Whether an ending of what was typed, at least [shortest] keys long, starts [bind]'s sequence and stops short of its end. */
