@@ -31,7 +31,7 @@ A key that works in the world, such as Free Look's.
 - A feature the player holds a key for offers Hold and Toggle.
 - A press comes from the game's key event, as `Cameras.pressed` takes it, so a tap shorter than a frame counts and a key typed into a screen does not. A held key repeats its event, and a repeat is not a press.
 - A key that works on a screen comes from that screen's key and mouse events, as `SlotGuards` takes it. It is left alone while a text field has focus, and it acts on the thing under the mouse.
-- A press and release in one place is the plain action, and a press held to another place joins the two. A line follows the mouse while it is held.
+- A press and release in one place is the plain action, and a press held to another place joins the two. A line follows the mouse while it is held. Afterwards the join shows only under the mouse, over what it crosses, so it clutters nothing at rest.
 - Hold ends at the release, also when a screen has opened since. A new world or the feature's switch ends it too.
 - Releasing puts back what the press changed.
 

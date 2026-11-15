@@ -104,8 +104,12 @@ object SlotGuards {
                 release(client, screen)
                 false
             }
-            ScreenEvents.afterBackground(screen).register { _, graphics, _, _, _ -> if (on) placed(screen, graphics) { links(screen, graphics) } }
-            ScreenEvents.afterForeground(screen).register { _, graphics, _, _, _ -> if (on) placed(screen, graphics) { padlocks(screen, graphics) } }
+            ScreenEvents.afterForeground(screen).register { _, graphics, _, _, _ -> if (on) {
+                    placed(screen, graphics) {
+                        padlocks(screen, graphics)
+                        link(screen, graphics)
+                    }
+                } }
             ScreenEvents.remove(screen).register {
                 pressing = false
                 refused = null
@@ -217,17 +221,21 @@ object SlotGuards {
         graphics.pose().popMatrix()
     }
 
-    /** A line from each hotbar slot to its partner, behind the items, and one that follows the mouse while a link is made. */
-    private fun links(screen: AbstractContainerScreen<*>, graphics: GuiGraphicsExtractor) {
-        val making = from?.takeIf { pressing }?.let { from ->
-            own((screen as ContainerScreenAccessor).hoveredSlot)?.takeIf { it != from && locks.link(from, it) != null }?.let { minOf(from, it) to maxOf(from, it) }
-        }
-        for ((hotbar, above) in locks.links.toList() + listOfNotNull(making)) {
-            val a = find(screen, above) ?: continue
-            val b = find(screen, hotbar) ?: continue
-            val (upper, lower) = if (a.y <= b.y) a to b else b to a
-            Kit.line(graphics, upper.x + 8, upper.y + 16, lower.x + 8, lower.y - 1, Role.ACTION.argb())
-        }
+    /**
+     * The link of the slot under the mouse, or the one being made: a frame around both slots and a line between
+     * them, over the items so no item hides it. Links at rest show only their padlocks.
+     */
+    private fun link(screen: AbstractContainerScreen<*>, graphics: GuiGraphicsExtractor) {
+        val over = own((screen as ContainerScreenAccessor).hoveredSlot) ?: return
+        val from = from.takeIf { pressing }
+        val other = if (from == null) locks.partner(over) else over.takeIf { it != from && locks.link(from, it) != null }
+        val a = find(screen, from ?: over) ?: return
+        val b = find(screen, other ?: return) ?: return
+        val (upper, lower) = if (a.y <= b.y) a to b else b to a
+        val color = Role.ACTION.argb()
+        Kit.slotBorder(graphics, a.x, a.y, color)
+        Kit.slotBorder(graphics, b.x, b.y, color)
+        Kit.line(graphics, upper.x + 8, upper.y + 17, lower.x + 8, lower.y - 2, color)
     }
 
     private fun padlocks(screen: AbstractContainerScreen<*>, graphics: GuiGraphicsExtractor) {

@@ -19,7 +19,7 @@ import org.lwjgl.glfw.GLFW
  * and then a click, a number key, the drop key and a double click each leave the slot as it was. Holding the key
  * from a hotbar slot to a slot above links the two, and a Shift click trades their places. Outside the menu the
  * drop key keeps a locked slot's item. Slots are the inventory's own: 0 to 8 is the hotbar and 9 the first above.
- * Read the screenshot for the padlocks and the link's line.
+ * Read the screenshots: a link shows its frames and line under the mouse and only its padlocks at rest.
  */
 class SlotLockTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
@@ -135,6 +135,8 @@ class SlotLockTest : FabricClientGameTest {
                 click(9)
                 check(carried() == 0) { "A click took the linked pickaxe" }
                 context.takeScreenshot("slot-lock")
+                hover(20)
+                context.takeScreenshot("slot-lock-rest")
 
                 shiftClick(9)
                 check(item(0).first == Items.DIAMOND_PICKAXE && item(9).first == Items.DIAMOND_SWORD) { "A Shift click did not trade the pair: ${item(0)} and ${item(9)}" }
