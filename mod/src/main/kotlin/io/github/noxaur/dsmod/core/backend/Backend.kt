@@ -199,7 +199,7 @@ class Backend(private val url: String, private val identity: Identity, private v
 
     companion object {
         /** The largest capture the backend keeps, which answers 413 above it. */
-        const val MAX_UPLOAD = 10_000_000L
+        const val MAX_UPLOAD = 50_000_000L
 
         /** What the submissions route answers when it will never take this recording. */
         private val REFUSED = setOf(404, 409, 413)
