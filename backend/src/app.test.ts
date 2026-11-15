@@ -271,3 +271,31 @@ test("a store that fails answers 500 with nothing in it, and only that reaches t
   expect(String(logged.mock.calls[0]?.[0])).toContain("D1 is down");
   logged.mockRestore();
 });
+
+test("a player who already has a run is refused before their file reaches the store", async () => {
+  const store = memoryStore();
+  let stored = 0;
+  const counting = {
+    ...store,
+    insertSubmission: (...args: Parameters<typeof store.insertSubmission>) => {
+      stored++;
+      return store.insertSubmission(...args);
+    },
+  };
+  const app = makeApp(counting, () => ({ userId: "ann", adminToken: "secret" }));
+  const post = (path: string, body: BodyInit, type: string) =>
+    app(
+      new Request(`http://backend${path}`, {
+        method: "POST",
+        headers: { authorization: "Bearer secret", "content-type": type },
+        body,
+      }),
+    );
+  const created = await post("/v1/admin/requests", JSON.stringify(spec), "application/json");
+  const { id } = z.object({ id: z.string() }).parse(await created.json());
+  const upload = () =>
+    post(`/v1/contrib/requests/${id}/submissions?modVersion=1.0.0`, gz(1), "application/octet-stream");
+  expect((await upload()).status).toBe(200);
+  expect((await upload()).status).toBe(409);
+  expect(stored).toBe(1);
+});
