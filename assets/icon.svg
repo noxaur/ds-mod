@@ -1,4 +1,58 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#7c3aed"/>
-  <text x="32" y="32" dy="0.35em" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="26" font-weight="600" fill="#ffffff">DM</text>
+  <defs>
+    <clipPath id="dragon"><path clip-rule="evenodd" d="M34 43 L44.5 34.5 L50 30 C51.5 26.5 52.5 23 53 18.5 C55.5 22 57 26 57.5 30.5 C64 30.5 71 28 78 22.5 C74.5 30.5 68.5 35 61.5 36.5 C66.5 38 71.5 37.5 76.5 35 C73 41 68 43.8 63 43.8 C65.5 45.8 68.5 46.6 71.5 46.2 C70.5 53 68.5 59.5 64 65.5 L64.6 60 C62 66 58 70.5 52.5 73.5 L54.3 69.4 C49.5 72.3 44.5 72 40.5 70.5 C35 68.5 30 69.5 24 74.5 C27 65.5 34 60.5 42.5 59.5 C50 58.5 55.5 56 55.5 51.5 C55.5 48 52.5 46.5 48.5 47.5 L39 51.5 L41.5 47.5 L46.5 44.5 L40.5 45.5 L38.5 47.5 L37.5 45.5 Z M44.5 37.8 L50.2 36 L47.6 39.5 Z"/></clipPath>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7.8"/></filter>
+    <filter id="emboss" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2.6" result="wide"/>
+      <feOffset in="wide" dx="2.2" dy="3" result="wideDown"/>
+      <feComposite in="SourceAlpha" in2="wideDown" operator="out" result="glowArea"/>
+      <feFlood flood-color="#fff" flood-opacity=".22"/>
+      <feComposite in2="glowArea" operator="in" result="glow"/>
+      <feOffset in="wide" dx="-2.2" dy="-3" result="wideUp"/>
+      <feComposite in="SourceAlpha" in2="wideUp" operator="out" result="shadeArea"/>
+      <feComponentTransfer in="SourceGraphic" result="dim">
+        <feFuncR type="linear" slope=".72"/><feFuncG type="linear" slope=".68"/><feFuncB type="linear" slope=".8"/>
+      </feComponentTransfer>
+      <feComposite in="dim" in2="shadeArea" operator="in" result="shade"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation=".55" result="tight"/>
+      <feOffset in="tight" dx=".7" dy=".9" result="streakOuter"/>
+      <feOffset in="tight" dx="1.7" dy="2.2" result="streakInner"/>
+      <feComposite in="streakOuter" in2="streakInner" operator="out" result="streakBand"/>
+      <feComposite in="streakBand" in2="SourceAlpha" operator="in" result="streakArea"/>
+      <feFlood flood-color="#fff" flood-opacity=".85"/>
+      <feComposite in2="streakArea" operator="in" result="streak"/>
+      <feOffset in="tight" dx="-.9" dy="-1.2" result="tightUp"/>
+      <feComposite in="SourceAlpha" in2="tightUp" operator="out" result="edgeArea"/>
+      <feComponentTransfer in="SourceGraphic" result="deep">
+        <feFuncR type="linear" slope=".5"/><feFuncG type="linear" slope=".42"/><feFuncB type="linear" slope=".62"/>
+      </feComponentTransfer>
+      <feComposite in="deep" in2="edgeArea" operator="in" result="edge"/>
+      <feMerge>
+        <feMergeNode in="SourceGraphic"/><feMergeNode in="shade"/><feMergeNode in="glow"/><feMergeNode in="edge"/><feMergeNode in="streak"/>
+      </feMerge>
+    </filter>
+    <filter id="drop" x="-30%" y="-30%" width="160%" height="170%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.8"/>
+      <feOffset dx="1" dy="2.6"/>
+      <feComponentTransfer><feFuncA type="linear" slope=".9"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="64" height="64" fill="#1e1e24"/>
+  <path transform="translate(-11.86 -8.49) scale(0.86)" fill="#0b0b0e" d="M44.5 37.8 L50.2 36 L47.6 39.5 Z"/>
+  <g transform="translate(-11.86 -8.49) scale(0.86)" filter="url(#drop)">
+    <g filter="url(#emboss)">
+      <g clip-path="url(#dragon)">
+      <rect width="100" height="100" fill="#ffbb00"/>
+      <g filter="url(#soft)">
+        <circle cx="74" cy="27" r="20" fill="#5a55ff"/>
+        <circle cx="71" cy="55.5" r="14" fill="#6c68ff"/>
+        <circle cx="29" cy="71" r="14" fill="#ffbb00"/>
+        <circle cx="54" cy="51" r="11.2" fill="#ffffff"/>
+        <circle cx="46" cy="38" r="7.5" fill="#ffffff"/>
+        <circle cx="35" cy="41.5" r="9.4" fill="#ffbb00"/>
+      </g>
+      </g>
+    </g>
+  </g>
 </svg>
