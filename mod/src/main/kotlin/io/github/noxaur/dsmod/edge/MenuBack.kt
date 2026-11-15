@@ -23,7 +23,8 @@ import net.minecraft.world.item.ItemStack
 /**
  * Back Buttons, under Better UI. A chest menu the server gave no Go Back gets a button where Go Back sits in the server's menus, in the
  * middle of the bottom row, left of Close. It sends the command that opened the last menu in the run, which
- * [MenuTrail] keeps. It shows only while that slot is empty or filler, so it never covers an item that does something.
+ * [MenuTrail] keeps. It shows only while that slot holds filler. An empty slot is one the player can put an item in,
+ * as every slot of a storage page is, so it never covers a slot the player uses.
  */
 object MenuBack {
     private const val GO_BACK = "Go Back"
@@ -55,13 +56,13 @@ object MenuBack {
             Screens.getWidgets(screen).add(button)
             ScreenEvents.afterTick(screen).register {
                 // The server fills a menu's slots over a few ticks, and can put its own Go Back in later.
-                button.visible = enabled && fits(slot.item) && chest.none { named(it.item) }
+                button.visible = enabled && filler(slot.item) && chest.none { named(it.item) }
                 Slots.cover(if (button.visible) slot.index else -1)
             }
         }
     }
 
-    private fun fits(stack: ItemStack) = stack.isEmpty || Filler.of(BuiltInRegistries.ITEM.getKey(stack.item).toString(), stack.get(DataComponents.CUSTOM_NAME)?.string)
+    private fun filler(stack: ItemStack) = Filler.of(BuiltInRegistries.ITEM.getKey(stack.item).toString(), stack.get(DataComponents.CUSTOM_NAME)?.string)
 
     private fun named(stack: ItemStack) = stack.get(DataComponents.CUSTOM_NAME)?.string == GO_BACK
 
