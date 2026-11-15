@@ -4,4 +4,9 @@ export default defineConfig({
   worker: {
     compatibility_date: "2026-02-24",
   },
+  cloudflare: {
+    name: "dsmod-backend",
+    // The mod bakes this address into its jar, so changing it strands every player on an older release.
+    routes: [{ pattern: "api.ds-mod.perwko.com", custom_domain: true }],
+  },
 });

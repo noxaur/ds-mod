@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "source": {
+    "name": "dsmod-backend",
+    "routes": [
+      {
+        "pattern": "api.ds-mod.perwko.com",
+        "custom_domain": true
+      }
+    ]
+  },
+  "resolved": {
+    "account_id": "865dded96630ca6a533584a80efad356",
+    "compatibility_date": "2026-02-24",
+    "name": "dsmod-backend",
+    "routes": [
+      {
+        "pattern": "api.ds-mod.perwko.com",
+        "custom_domain": true
+      }
+    ],
+    "d1_databases": [
+      {
+        "binding": "DB",
+        "database_name": "dsmod-backend-db",
+        "database_id": "a6c78345-b338-4a9d-bc5f-d3c4e767c093",
+        "migrations_dir": "./db/migrations"
+      }
+    ],
+    "r2_buckets": [
+      {
+        "binding": "STORAGE",
+        "bucket_name": "dsmod-backend-storage"
+      }
+    ]
+  },
+  "text": "{\n  \"account_id\": \"865dded96630ca6a533584a80efad356\",\n  \"compatibility_date\": \"2026-02-24\",\n  \"name\": \"dsmod-backend\",\n  \"routes\": [\n    {\n      \"pattern\": \"api.ds-mod.perwko.com\",\n      \"custom_domain\": true\n    }\n  ],\n  \"d1_databases\": [\n    {\n      \"binding\": \"DB\",\n      \"database_name\": \"dsmod-backend-db\",\n      \"database_id\": \"a6c78345-b338-4a9d-bc5f-d3c4e767c093\",\n      \"migrations_dir\": \"./db/migrations\"\n    }\n  ],\n  \"r2_buckets\": [\n    {\n      \"binding\": \"STORAGE\",\n      \"bucket_name\": \"dsmod-backend-storage\"\n    }\n  ]\n}\n"
+}

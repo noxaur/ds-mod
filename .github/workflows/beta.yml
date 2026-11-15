@@ -42,7 +42,9 @@ jobs:
       # Every check and every game test, PerfTest among them, against the jars about to be released.
       - if: steps.gate.outputs.release
         working-directory: mod
-        run: ./gradlew check build runProdClientGameTest -Pversion=${{ steps.version.outputs.version }}
+        run: >-
+          ./gradlew check build runProdClientGameTest -Pversion=${{ steps.version.outputs.version }}
+          -Pbackend_url=https://api.ds-mod.perwko.com -Pwebsite_url=https://ds-mod.perwko.com
       - if: always() && steps.gate.outputs.release
         run: cat mod/build/run/prodClientGameTest/perf.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
       - if: failure()
