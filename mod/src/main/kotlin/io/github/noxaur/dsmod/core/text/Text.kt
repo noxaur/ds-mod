@@ -12,6 +12,9 @@ enum class Role(val rgb: Int) {
     BAD(0xFF5555),
     WARNING(0xFFFF55),
 
+    // The words a search matched, painted over the text they sit in.
+    MATCH(0xFFFF55),
+
     // An item's rarity, in the color the server gives that rarity's item names.
     COMMON(0xFFFFFF),
     UNCOMMON(0x55FF55),
@@ -49,6 +52,7 @@ class TextBuilder {
     fun good(text: String) = add(text, Role.GOOD)
     fun bad(text: String) = add(text, Role.BAD)
     fun warning(text: String) = add(text, Role.WARNING)
+    fun match(text: String) = add(text, Role.MATCH)
 
     /** The mod's own name and feature headers, in the logo gradient. */
     fun brand(text: String) {
