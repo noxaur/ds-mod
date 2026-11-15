@@ -184,8 +184,8 @@ Your binds are listed on the left under their groups, each with its command, its
 | Tick the box on a row | Turn the bind on or off |
 | Tick the box on a group's heading | Turn the whole group on or off |
 | Press the arrow on a heading, or double-click it | Fold the group away, or open it again |
-| Drag a row or a heading, or press Alt and Up or Down | Move it. A bind under another group's heading joins that group |
-| Right-click a row or a heading | See what you can do to it, such as Move to another group |
+| Drag a row or a heading, or press ▲ or ▼ beside Duplicate, or Alt and Up or Down | Move it. A bind moved past a group's heading joins that group |
+| Right-click a row or a heading | See what you can do to it, such as Move Up or Turn Off |
 | Press **Duplicate** or **Delete** | Copy the bind, which starts off, or delete it with a second press |
 
 With nothing on the right typed in, Up and Down pick the next row, Left and Right fold and open a group, and Delete deletes.

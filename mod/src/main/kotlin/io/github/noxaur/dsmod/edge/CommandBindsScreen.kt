@@ -226,6 +226,15 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
         delete = addRenderableWidget(KitButton(detailX + DETAIL_WIDTH - deleteWidth, bottom, "Delete", ::deleteBind, deleteWidth))
         val copyWidth = font.width("Duplicate") + 16
         addRenderableWidget(KitButton(detailX + DETAIL_WIDTH - deleteWidth - Kit.GAP - copyWidth, bottom, "Duplicate", ::duplicate, copyWidth))
+        moveButtons(detailX + DETAIL_WIDTH - deleteWidth - copyWidth - Kit.GAP * 2, bottom)
+    }
+
+    /** Up and down buttons that end at [right], each off where it would move nothing. */
+    private fun moveButtons(right: Int, y: Int) {
+        for ((i, by) in listOf(1, -1).withIndex()) {
+            val button = KitButton(right - (Kit.BUTTON_HEIGHT + Kit.GAP) * (i + 1), y, if (by < 0) Icon.UP else Icon.DOWN, if (by < 0) "Move Up" else "Move Down") { nudge(by) }
+            addRenderableWidget(button).active = canNudge(by)
+        }
     }
 
     /** The picked group: its name, which General keeps, and Delete. */
@@ -238,6 +247,7 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
         if (group.isNotEmpty()) {
             val deleteWidth = font.width("Delete") + 16
             delete = addRenderableWidget(KitButton(detailX + DETAIL_WIDTH - deleteWidth, bottom, "Delete", ::deleteGroup, deleteWidth))
+            moveButtons(detailX + DETAIL_WIDTH - deleteWidth - Kit.GAP, bottom)
         }
     }
 
@@ -327,15 +337,6 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
         settings.binds = settings.binds.filter { it !== bind }
         pick(bind.group)
         say("Deleted ${bind.title}.")
-    }
-
-    private fun moveToGroup(bind: CommandBind, group: String) {
-        val moved = bind.copy(group = group)
-        // It goes last in its new group.
-        settings.binds = CommandBinds.entries(settings.binds.filter { it !== bind } + moved, groups).filterIsInstance<Entry.Bind>().map { it.bind }
-        collapse(group, false)
-        pick(settings.binds.indexOfFirst { it === moved })
-        say("Moved to ${groupName(group)}.")
     }
 
     private fun setEnabled(bind: CommandBind, on: Boolean) {
@@ -496,6 +497,37 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
         scrollTo(entries.indexOfFirst { it.matches(group) })
     }
 
+    /**
+     * Moves the picked bind a line, or the picked group past the next, as Alt with Up or Down does. A bind that
+     * lands in a folded group unfolds it, so it stays in sight.
+     */
+    private fun nudge(by: Int) {
+        val bind = bind
+        val group = group
+        when {
+            bind != null -> {
+                moveBind(bind, entries.indexOfFirst { it.matches(picked) } + by)
+                this.bind?.group?.takeIf { it in settings.collapsedGroups }?.let { collapse(it, false) }
+            }
+            !group.isNullOrEmpty() -> {
+                val order = settings.bindGroups
+                settings.bindGroups = CommandBinds.moveGroup(order, group, order.indexOf(group) + by)
+                rebuildWidgets()
+                scrollTo(entries.indexOfFirst { it.matches(group) })
+            }
+        }
+    }
+
+    /** Whether [nudge] would move anything: General and the first line stay first. */
+    private fun canNudge(by: Int): Boolean {
+        val group = group
+        return when {
+            bind != null -> entries.indexOfFirst { it.matches(picked) }.let { if (by < 0) it > 1 else it < entries.lastIndex }
+            !group.isNullOrEmpty() -> settings.bindGroups.indexOf(group) + by in settings.bindGroups.indices
+            else -> false
+        }
+    }
+
     /** Picks the line [by] lines from the picked one, passing over empty lines. */
     private fun step(by: Int) {
         val lines = entries.withIndex().filter { it.value !is Entry.Empty }
@@ -510,7 +542,7 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
                 val bind = entry.bind
                 items += "Duplicate" to ::duplicate
                 items += (if (bind.enabled) "Turn Off" else "Turn On") to { setEnabled(settings.binds[picked as Int], !bind.enabled) }
-                for (other in groups - bind.group) items += "Move to ${groupName(other)}" to { moveToGroup(settings.binds[picked as Int], other) }
+                moveItems(items)
                 items += "Delete" to ::deleteBind
             }
             is Entry.Heading, is Entry.Empty -> {
@@ -520,12 +552,19 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
                 val off = group in settings.offGroups
                 items += (if (off) "Turn On" else "Turn Off") to { switchGroup(group, off) }
                 if (group.isNotEmpty()) items += "Rename" to { groupField?.let { setFocused(it); it.moveCursorToEnd(false); it.setHighlightPos(0) } }
+                moveItems(items)
                 items += "Export" to ::export
                 if (group.isNotEmpty()) items += "Delete" to ::deleteGroup
             }
         }
         closeMenu()
         menu = addRenderableWidget(KitMenu(mouseX, mouseY, width, height, items, ::closeMenu)).also(::setFocused)
+    }
+
+    /** Move Up and Move Down, where each would move the picked line. */
+    private fun moveItems(items: MutableList<Pair<String, () -> Unit>>) {
+        if (canNudge(-1)) items += "Move Up" to { nudge(-1) }
+        if (canNudge(1)) items += "Move Down" to { nudge(1) }
     }
 
     private fun closeMenu() {
@@ -566,19 +605,7 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
             val bind = bind
             val group = group
             when {
-                event.hasAltDown() && (event.isUp || event.isDown) -> {
-                    val at = entries.indexOfFirst { it.matches(picked) }
-                    // A group moves past the whole next group, so it lands on that group's heading.
-                    when {
-                        bind != null -> moveBind(bind, if (event.isUp) at - 1 else at + 1)
-                        group != null && group.isNotEmpty() -> {
-                            val order = settings.bindGroups
-                            settings.bindGroups = CommandBinds.moveGroup(order, group, order.indexOf(group) + if (event.isUp) -1 else 1)
-                            rebuildWidgets()
-                        }
-                    }
-                    return true
-                }
+                event.hasAltDown() && (event.isUp || event.isDown) -> return true.also { nudge(if (event.isUp) -1 else 1) }
                 event.isUp -> return true.also { step(-1) }
                 event.isDown -> return true.also { step(1) }
                 event.isLeft -> return true.also {

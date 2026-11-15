@@ -61,13 +61,14 @@ A list of things the player made, such as command binds.
 - A row shows what tells the things apart, such as a switch, a name and keys. Fields a player always fills come first, and optional ones say so.
 - A row shows what tells the things apart and what each does, such as a switch, a name, the command, keys and where they work, so the player reads the list without picking each row. The row under the mouse is ringed in `hoverOutline`.
 - Groups are headings in the list, with an arrow that folds the group away, a switch for the whole group and a count. The folds are kept. Picking a heading shows the group. A row or heading is dragged to move it, and a row under another heading joins that group. A group with nothing in it shows a line that says what to drag there.
+- Up and down buttons beside the picked thing's other actions move it a line, and are off where they would move nothing. A bind moved past a heading joins that group, and unfolds it.
 - With nothing on the right focused, the keyboard works the list: Up and Down pick, Left and Right fold and unfold, Alt with Up or Down moves the picked row or group, and Delete deletes.
 - A right press on a row opens its context menu.
 
 ## Context menu
 
 - A right press opens it beside the mouse, kept on the screen, with what can be done to the thing under the mouse, which it picks.
-- Items are verbs, such as Duplicate, Turn Off or Move to Dungeons. A delete in it asks for its second press as the Delete button does.
+- Items are verbs, such as Duplicate, Turn Off or Move Up, and the menu keeps the same length however many things there are, so no item per group. An item that would do nothing is left out. A delete in it asks for its second press as the Delete button does.
 - Up and Down light an item and Enter runs it. Escape or a press outside closes it, and that press still does its own job.
 
 ## Range slider

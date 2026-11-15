@@ -236,13 +236,19 @@ class CommandBindsTest : FabricClientGameTest {
         check(general.binds.single { it.command == "/me end" }.group == "Dungeons") { "Dragging under Dungeons left ${general.binds}" }
         context.takeScreenshot("command-binds-groups")
 
-        // A right press opens the row's menu, which the keyboard works: the third item moves Shift + F6 to Dungeons.
+        // A right press opens the row's menu, which the keyboard works. The first row cannot go up, so the third
+        // item is Move Down.
         press(nameOf(boxes()[0]), button = 1)
         context.takeScreenshot("command-binds-menu")
         key(GLFW.GLFW_KEY_DOWN)
         key(GLFW.GLFW_KEY_DOWN)
         key(GLFW.GLFW_KEY_ENTER)
-        check(general.binds.single { it.command == "/me bound" }.group == "Dungeons") { "Move to Dungeons left ${general.binds}" }
+        check(general.binds.map { it.command } == listOf("other", "/me bound", "/me seq", "/me end")) { "Move Down left ${general.binds.map { it.command }}" }
+        // The down button moves it on, and past the last row of General it joins Dungeons.
+        check(named("Move Up").single().active) { "Move Up is off on the second row" }
+        repeat(2) { click(named("Move Down").single()) }
+        check(general.binds.single { it.command == "/me bound" }.group == "Dungeons") { "The down button left ${general.binds}" }
+        context.takeScreenshot("command-binds-moved")
         // Its first item duplicates, and Delete pressed twice takes the copy away.
         press(nameOf(boxes()[0]), button = 1)
         key(GLFW.GLFW_KEY_ENTER)
@@ -264,7 +270,7 @@ class CommandBindsTest : FabricClientGameTest {
         key(GLFW.GLFW_KEY_RIGHT)
         // Down and Up pick the next and the last line.
         key(GLFW.GLFW_KEY_DOWN)
-        check(field("Command").value == "/me end") { "Down picked ${field("Command").value}" }
+        check(field("Command").value == "/me bound") { "Down picked ${field("Command").value}" }
         key(GLFW.GLFW_KEY_UP)
         check(field("Group Name").value == "Dungeons") { "Up did not go back to the Dungeons heading" }
         // A heading's box turns its whole group off and on.
