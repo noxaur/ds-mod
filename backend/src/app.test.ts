@@ -103,6 +103,10 @@ test("a brief the mod would refuse is refused", async () => {
   const create = (brief: unknown) => call("agent", "POST", "/v1/admin/requests", { ...spec, brief });
   expect((await create({ name: "Golem", steps: [{ do: " " }] })).status, "a blank step").toBe(400);
   expect((await create({ name: "  ", steps: [{ do: "Wait" }] })).status, "a blank name").toBe(400);
+  expect(
+    (await create({ name: "Golem", steps: [{ do: "Wait", secs: 5 }] })).status,
+    "a key the mod does not know",
+  ).toBe(400);
   expect((await create({ name: "Golem", steps: [{ do: "Wait", seconds: 5 }] })).status).toBe(200);
 });
 

@@ -57,4 +57,7 @@ export const Api = HttpApi.make("dsmod")
       )
       .add(HttpApiEndpoint.get("unknowns", "/v1/admin/unknowns", { success: Schema.Array(Unknown), error: denied })),
   )
+  // The mod parses a brief strictly, so a key it does not know, such as `secs` for `seconds`, is refused here
+  // instead of being dropped and costing a step its timer.
+  .annotate(HttpApi.PayloadParseOptions, { onExcessProperty: "error" })
   .annotateMerge(OpenApi.annotations({ title: "ds-mod backend", version: "0.1.0" }));
