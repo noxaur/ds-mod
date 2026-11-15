@@ -34,6 +34,9 @@ object Recording {
     private var shown: Any? = null
     private var saved: String? = null
     private var leftServer = false
+
+    @Volatile
+    private var disconnected = false
     private lateinit var nextStep: KeyMapping
 
     /** The brief on screen, which the window title shows. */
@@ -114,6 +117,10 @@ object Recording {
     }
 
     private fun tick(client: Minecraft) {
+        if (disconnected) {
+            disconnected = false
+            if (request != null && cancel()) leftServer = true
+        }
         if (leftServer && client.player != null) {
             leftServer = false
             Chat.send(text { bad("Your recording was cancelled because you left the server. Nothing was sent.") })
@@ -154,12 +161,9 @@ object Recording {
 
     fun register() {
         nextStep = KeyMappingHelper.registerKeyMapping(KeyMapping("key.dsmod.next_step", GLFW.GLFW_KEY_RIGHT_BRACKET, KeyMapping.Category.MISC))
-        // A change of world on the same connection is no disconnect, and a brief's warps change the world.
-        ClientPlayConnectionEvents.DISCONNECT.register { _, client ->
-            client.execute {
-                if (request != null && cancel()) leftServer = true
-            }
-        }
+        // Fabric says so on the network thread, and the tick reads it on the client thread. A change of world on the
+        // same connection is no disconnect, and a brief's warps change the world.
+        ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> disconnected = true }
         ClientTickEvents.END_CLIENT_TICK.register(::tick)
     }
 }
