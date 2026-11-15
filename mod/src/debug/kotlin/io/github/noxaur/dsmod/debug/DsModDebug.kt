@@ -57,7 +57,11 @@ object DsModDebug : ClientModInitializer {
                     }
                     .then(
                         ClientCommands.literal("cancel").executes { context ->
-                            val said = if (Recording.cancel()) "Brief cancelled, and the capture it started deleted." else "No brief to cancel."
+                            val said = when {
+                                !Recording.cancel() -> "No brief to cancel."
+                                capture != null -> "Brief cancelled. Your capture keeps recording."
+                                else -> "Brief cancelled, and its capture deleted."
+                            }
                             context.source.sendFeedback(Component.literal(said))
                             1
                         },
