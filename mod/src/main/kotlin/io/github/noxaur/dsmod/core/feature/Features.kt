@@ -10,7 +10,9 @@ import io.github.noxaur.dsmod.core.feature.end.FireballAlert
 import io.github.noxaur.dsmod.core.feature.end.GolemStatus
 import io.github.noxaur.dsmod.core.feature.end.ProtectPlacedEyes
 import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
+import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.ExplosionParticleHider
+import io.github.noxaur.dsmod.core.feature.general.FreeLook
 import io.github.noxaur.dsmod.core.feature.general.Fullbright
 import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
 import io.github.noxaur.dsmod.core.feature.inventory.RarityOutlines
@@ -29,7 +31,9 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     GolemStatus(config.end::golemStatus),
     ProtectPlacedEyes(config.end::protectPlacedEyes),
     ZealotTracker(config.end::zealotTracker),
+    Camera(config.general::camera),
     ExplosionParticleHider(config.general::explosionParticleHider),
+    FreeLook(config.general::freeLook),
     Fullbright(config.general::fullbright),
     ArmorSwapGuard(config.inventory::armorSwapGuard),
     RarityOutlines(config.inventory::rarityOutlines),
