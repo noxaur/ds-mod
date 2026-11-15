@@ -81,7 +81,7 @@ export const dsctl = (args: readonly string[], target: Target) =>
         try: () => JSON.parse(readFileSync(first, "utf8")) as unknown,
         catch: (cause) => new Failed({ message: `Could not read ${first}: ${String(cause)}` }),
       });
-      // The API refuses a key it does not know too, but its answer cannot say which.
+      // The client sends only a typed spec, so the file is decoded here, which names a mistake before anything is sent.
       const spec = yield* Schema.decodeUnknownEffect(RequestSpec)(
         {
           brief,
@@ -169,7 +169,15 @@ export const dsctl = (args: readonly string[], target: Target) =>
     Effect.catchTags({
       Unauthorized: () =>
         Effect.fail(new Failed({ message: "The backend refused the admin token. Set DSMOD_ADMIN_TOKEN." })),
-      BadRequest: () => Effect.fail(new Failed({ message: "The backend refused what dsctl sent as malformed." })),
+      BadRequestProblem: (problem) =>
+        Effect.fail(
+          new Failed({
+            message: [
+              "The backend refused what dsctl sent:",
+              ...(problem.errors ?? []).map((issue) => `  ${issue.path.join(".")}: ${issue.message}`),
+            ].join("\n"),
+          }),
+        ),
       HttpClientError: (error) =>
         Effect.fail(new Failed({ message: `Could not reach ${target.backend}: ${error.message}` })),
       SchemaError: (error) =>

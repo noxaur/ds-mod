@@ -1,6 +1,6 @@
 import { ByteSize, Cause, Context, Effect, ErrorReporter, Layer, Option, Redacted } from "effect";
 import { HttpIncomingMessage, HttpRouter, HttpServer, HttpServerError } from "effect/http";
-import { HttpApiBuilder, HttpApiError } from "effect/http-api";
+import { HttpApiBuilder, HttpApiError, HttpApiMiddleware } from "effect/http-api";
 
 import { Agent, Api, Caller, Player, SignedIn } from "./api.ts";
 import * as Contrib from "./contrib/contrib.ts";
@@ -69,6 +69,8 @@ const AdminLive = HttpApiBuilder.group(Api, "admin", (handlers) =>
 const web = HttpRouter.toWebHandler(
   HttpApiBuilder.layer(Api).pipe(
     Layer.provide([Health, Layer.provide(ContribLive, SignedInLive), Layer.provide(AdminLive, AgentLive)]),
+    // The client sent what the errors quote, and a refusal is never logged, so they reach only that client.
+    Layer.provide(HttpApiMiddleware.layerProblemDetails({ includeDetails: true })),
     Layer.provide(HttpServer.layerServices),
   ),
   { disableLogger: true },
