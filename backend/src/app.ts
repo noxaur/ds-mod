@@ -1,5 +1,5 @@
-import { Context, Effect, ErrorReporter, Layer, Option, Redacted } from "effect";
-import { HttpRouter, HttpServer } from "effect/http";
+import { ByteSize, Context, Effect, ErrorReporter, Layer, Option, Redacted } from "effect";
+import { HttpIncomingMessage, HttpRouter, HttpServer } from "effect/http";
 import { HttpApiBuilder, HttpApiError } from "effect/http-api";
 
 import { Agent, Api, Caller, Player, SignedIn } from "./api.ts";
@@ -81,12 +81,19 @@ const logFailures = ErrorReporter.make(({ error }) => {
 });
 
 /**
+ * The largest body any endpoint reads, a capture of a few minutes being well under it once gzipped. A body is read
+ * against it as it arrives, so a client cannot make the Worker hold more than this, whatever it claims to send.
+ */
+export const MAX_BODY = ByteSize.megabytes(10);
+
+/**
  * The API as a function from request to response, keeping its rows and files in [store]. [callerOf] says who a request
  * is from, and is the only thing that can.
  */
 export const makeApp = (store: Store["Service"], callerOf: (request: Request) => Caller["Service"]) => {
   const context = Context.make(Store, store).pipe(
     Context.add(ErrorReporter.CurrentErrorReporters, new Set([logFailures])),
+    Context.add(HttpIncomingMessage.MaxBodySize, MAX_BODY),
   );
   return (request: Request) => web.handler(request, Context.add(context, Caller, callerOf(request)));
 };

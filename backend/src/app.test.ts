@@ -6,7 +6,7 @@ import * as z from "zod";
 import { openapi, openapiFile } from "../scripts/openapi.ts";
 import { Effect } from "effect";
 
-import { makeApp } from "./app.ts";
+import { MAX_BODY, makeApp } from "./app.ts";
 import { MAX_UNKNOWNS } from "./contrib/contrib.ts";
 import { memoryStore } from "./contrib/store.ts";
 
@@ -201,6 +201,15 @@ test("a closed request takes no skips, and a version is a short string", async (
   const long = "9".repeat(65);
   const report = { modVersion: long, sightings: [] };
   expect((await call("ann", "POST", "/v1/contrib/unknowns", report)).status).toBe(400);
+});
+
+test("a body over the limit is refused, and keeps nothing", async () => {
+  const { call, create, submit } = backend();
+  const id = await create();
+  const huge = new Uint8Array(Number(MAX_BODY) + 1);
+  huge.set([0x1f, 0x8b]);
+  expect((await submit("ann", id, huge)).status).toBe(413);
+  expect((await call("agent", "GET", "/v1/admin/requests")).value).toMatchObject([{ submissions: [] }]);
 });
 
 test("a request with no steps or a zero timer is refused", async () => {

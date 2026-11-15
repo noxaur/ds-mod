@@ -4,8 +4,6 @@ import { HttpApiError } from "effect/http-api";
 import type { RequestSpec } from "./model.ts";
 import { Store } from "./store.ts";
 
-/** A capture of a few minutes is well under this once gzipped, and a Worker would accept far more. */
-export const MAX_CAPTURE_BYTES = 10 * 1024 * 1024;
 /**
  * Any signed-in client can invent sightings, so the table stops taking new ones here and only counts the ones it
  * has. An agent reads them long before a real game has this many unknown things.
@@ -56,7 +54,7 @@ export const skip = Effect.fn(function* (requestId: string, userId: string) {
 export const submit = Effect.fn(function* (requestId: string, userId: string, modVersion: string, capture: Uint8Array) {
   // The mod sends gzip, and an agent's tools read nothing else.
   const gzipped = capture[0] === 0x1f && capture[1] === 0x8b;
-  if (!gzipped || capture.byteLength > MAX_CAPTURE_BYTES) {
+  if (!gzipped) {
     return yield* new HttpApiError.BadRequest();
   }
   const store = yield* Store;

@@ -320,7 +320,7 @@
             }
           }
         },
-        "description": "Keeps the player's run of a request: the capture file, gzipped, at most 10 MB. A player has one run per request, and a closed or full request takes none (409).",
+        "description": "Keeps the player's run of a request: the capture file, gzipped, at most 10 MB (413 above it, as for any body). A player has one run per request, and a closed or full request takes none (409).",
         "requestBody": {
           "content": {
             "application/octet-stream": {
