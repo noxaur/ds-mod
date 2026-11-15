@@ -40,6 +40,12 @@
       "unit": "µs",
       "cap": 50
     },
+    "pet-poll": {
+      "group": "Tick",
+      "label": "Pet poll, armor stands within 6 blocks",
+      "unit": "µs",
+      "cap": 50
+    },
     "features": {
       "group": "Tick",
       "label": "Feature handlers and readouts per tick",

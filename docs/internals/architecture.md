@@ -150,7 +150,7 @@ Each surface (chat, HUD, alerts, container slots, tooltips, world marks) has one
 
 ## An item on the HUD is drawn from the stack it was read from
 
-An `Item` keeps what features read: the id, the name, the lore and `custom_data`. dragsim.co's armor is a player head with a skin and leather with a dye, and neither is in an `Item`, so an icon rebuilt from the id is a Steve head and brown leather. `Hud` therefore asks `ContainerPoller` for the very stack each item was read from, matched by identity, which costs the poll nothing. The poller keeps the player's own inventory while another menu is open, because that menu does not hold the armor. An item no stack was read for, such as one from a fixture, falls back to a plain stack of its id.
+An `Item` keeps what features read: the id, the name, the lore and `custom_data`. dragsim.co's armor is a player head with a skin and leather with a dye, and neither is in an `Item`, so an icon rebuilt from the id is a Steve head and brown leather. `Hud` therefore asks the poller that read each item, `ContainerPoller` or `PetPoller`, for the very stack it was read from, matched by identity, which costs the poll nothing. `ContainerPoller` keeps the player's own inventory while another menu is open, because that menu does not hold the armor. An item no stack was read for, such as one from a fixture, falls back to a plain stack of its id.
 
 ## Chrome is drawn in code, from a theme
 

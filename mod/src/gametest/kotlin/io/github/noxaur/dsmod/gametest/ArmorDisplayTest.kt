@@ -12,7 +12,8 @@ import net.minecraft.world.item.Items
 /**
  * The worn armor shows on the HUD as the very stacks the player wears, so dyed leather keeps its color, and the chat's
  * free mouse reads a piece's tooltip. Read the screenshots: the row with a gap for the missing leggings, the tooltip
- * over the chestplate, the column, and Active Pet under the armor.
+ * over the chestplate, the column, and Active Pet under the armor, first by name and then by the head of the pet
+ * floating beside the player.
  */
 class ArmorDisplayTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
@@ -68,6 +69,19 @@ class ArmorDisplayTest : FabricClientGameTest {
             ).forEach(world.server::runCommand)
             context.waitTicks(20)
             check(context.computeOnClient<Boolean, Nothing> { Hud.find("active-pet") != null }) { "The pet is not on the HUD" }
+            context.takeScreenshot("active-pet-name")
+
+            // dragsim.co floats the pet beside the player as an armor stand wearing its head, named as the sidebar names it.
+            world.server.runCommand(
+                """execute at @a run summon armor_stand ~1 ~1 ~1 {CustomName:"[Lvl 100] Ender Dragon",Invisible:1b,NoGravity:1b,equipment:{head:{id:"minecraft:player_head",components:{"minecraft:profile":{name:"DsPet"},"minecraft:custom_name":"Pet Head"}}}}""",
+            )
+            context.waitTicks(30)
+            val icon = context.computeOnClient<net.minecraft.world.item.ItemStack?, Nothing> {
+                val block = checkNotNull(Hud.find("active-pet")) { "The pet is not on the HUD" }
+                // The icon is the first row under the header.
+                Hud.itemAt(block.x + (4 + 8) * block.scale.toDouble(), block.y + (4 + 10 + 8) * block.scale.toDouble())
+            }
+            check(icon?.get(DataComponents.PROFILE) != null) { "The pet's icon is not the head it wears: $icon" }
             context.takeScreenshot("active-pet")
 
             for (slot in listOf("head", "chest", "feet")) world.server.runCommand("item replace entity @a armor.$slot with minecraft:air")

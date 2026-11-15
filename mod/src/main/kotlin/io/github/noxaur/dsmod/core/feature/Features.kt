@@ -41,7 +41,7 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     GolemStatus(config.end::golemStatus),
     ProtectPlacedEyes(config.end::protectPlacedEyes),
     ZealotTracker(config.end::zealotTracker),
-    ActivePet(config.general::activePet),
+    ActivePet(config.general::activePet, config.general::activePetLook),
     ArmorDisplay(config.general::armorDisplay, config.general::armorLayout, config.general::armorPieces),
     Camera(config.general::camera),
     CommandBinds(config.general::commandBinds),

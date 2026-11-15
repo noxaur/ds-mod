@@ -19,6 +19,7 @@ import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.general.ArmorLayout
 import io.github.noxaur.dsmod.core.feature.general.ArmorPiece
+import io.github.noxaur.dsmod.core.feature.general.PetLook
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.Section
@@ -190,6 +191,12 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var activePet = true
+
+        @Expose
+        @ConfigOption(name = "Active Pet Look", desc = "Show the pet as its head, as it floats beside you, or by its name. Until its head is seen nearby, the name shows.")
+        @ConfigEditorDropdown
+        @JvmField
+        var activePetLook = PetLook.ICON
 
         @Expose
         @ConfigOption(name = "Camera", desc = "Shape the third-person view with the settings below. At their defaults it is the game's own.")

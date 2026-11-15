@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.SlotChanged
+import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import kotlin.reflect.KMutableProperty0
 
@@ -42,16 +43,26 @@ class ArmorDisplay(
     private var shownPieces = pieces.get().toList()
     private var block: HudBlock? = null
 
+    // Whether the armor may have changed since it was last read. A refresh with nothing new then costs two compares.
+    private var stale = true
+
     init {
-        // Neither handler needs to act, because hud reads the shared container. Handling them is what has the edge read the slots.
-        on<ContainerOpened> { _, _ -> }
-        on<SlotChanged> { _, _ -> }
+        on<ContainerOpened> { event, _ -> if (event.id == INVENTORY) stale = true }
+        on<SlotChanged> { event, _ -> if (container.id == INVENTORY && ArmorPiece.entries.any { it.slot == event.slot }) stale = true }
+        // Also run when the feature is switched off, so it reads the armor again when it comes back.
+        on<WorldChanged> { _, _ -> stale = true }
     }
 
     override fun hud(now: Long): HudBlock? {
-        val next = if (container.id == INVENTORY && container.slots.size > LAST_SLOT) read() else worn
-        if (next != worn || shownLayout != layout.get() || shownPieces != pieces.get()) {
-            worn = next
+        if (stale && container.id == INVENTORY && container.slots.size > LAST_SLOT) {
+            stale = false
+            val next = read()
+            if (next != worn) {
+                worn = next
+                block = build()
+            }
+        }
+        if (shownLayout != layout.get() || shownPieces != pieces.get()) {
             shownLayout = layout.get()
             shownPieces = pieces.get().toList()
             block = build()

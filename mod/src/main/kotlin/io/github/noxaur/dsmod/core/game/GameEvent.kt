@@ -76,3 +76,12 @@ data class HeadPlaced(val x: Int, val y: Int, val z: Int) : GameEvent
 @Serializable
 @SerialName("slot")
 data class SlotChanged(val slot: Int, val item: Item? = null) : GameEvent
+
+/**
+ * The pet nearest the player: an armor stand within a few blocks, named like `[Lvl 100] Ender Dragon`, wearing the
+ * pet's [head]. dragsim.co floats each player's pet beside them, so a pet of a player standing close may be the
+ * nearer one. Posted when the nearest pet changes, and only while a feature reads it.
+ */
+@Serializable
+@SerialName("pet")
+data class PetNear(val name: ServerText, val head: Item) : GameEvent

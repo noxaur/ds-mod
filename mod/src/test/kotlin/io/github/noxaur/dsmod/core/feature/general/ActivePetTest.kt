@@ -3,9 +3,12 @@ package io.github.noxaur.dsmod.core.feature.general
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.features
+import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.PetNear
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.Sidebar
+import io.github.noxaur.dsmod.core.hud.ItemsRow
 import io.github.noxaur.dsmod.core.text.Role
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -39,6 +42,34 @@ class ActivePetTest {
         game.post(++time, Sidebar())
         game.tick(time)
         assertEquals("Ender Dragon", hud()?.rows?.first()?.text?.plain?.removePrefix("Pet: "))
+    }
+
+    private val head = Item("minecraft:player_head", 1)
+
+    private fun near(name: String) {
+        game.post(++time, PetNear(ServerText(ServerSpan(name)), head))
+        game.tick(time)
+    }
+
+    private fun lines() = hud()!!.rows.map { if (it is ItemsRow) it.items else it.text.plain }
+
+    @Test
+    fun `the head of the pet nearby takes the name's place, whatever its level`() {
+        sidebar(pet("Ender Dragon", Role.EPIC.rgb))
+        assertEquals(listOf("Pet: Ender Dragon", "Level: 100"), lines(), "No head seen yet, so the name shows")
+        near("[Lvl 99] Ender Dragon")
+        assertEquals(listOf(listOf(head), "Level: 100"), lines())
+
+        config.general.activePetLook = PetLook.NAME
+        game.tick(time + 250)
+        assertEquals(listOf("Pet: Ender Dragon", "Level: 100"), lines())
+    }
+
+    @Test
+    fun `another pet nearby lends no head`() {
+        sidebar(pet("Ender Dragon", Role.EPIC.rgb))
+        near("[Lvl 100] Tiger")
+        assertEquals(listOf("Pet: Ender Dragon", "Level: 100"), lines())
     }
 
     @Test

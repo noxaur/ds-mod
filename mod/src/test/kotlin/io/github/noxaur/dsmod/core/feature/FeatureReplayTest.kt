@@ -9,6 +9,7 @@ import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.HeadPlaced
+import io.github.noxaur.dsmod.core.game.PetNear
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
@@ -95,6 +96,7 @@ class FeatureReplayTest {
         is HeadPlaced -> "(head placed) at ${event.x}, ${event.y}, ${event.z}"
         is ActionBar -> "(action bar) ${event.text.plain}"
         is EntityDied -> "(died) ${event.name.plain}"
+        is PetNear -> "(pet near) ${event.name.plain}"
         is SlotChanged -> "(slot ${event.slot}) " + (event.item?.let { "${it.count} x ${name(it)}" } ?: "emptied")
     }
 

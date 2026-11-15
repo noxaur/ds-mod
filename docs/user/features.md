@@ -222,7 +222,11 @@ Set your tabs up with Edit Tabs, under Better UI:
 
 ### Active Pet
 
-Shows the pet you have out on the HUD, with its level and its name in the color of its rarity. It reads the pet from the sidebar, so it shows nothing where the sidebar has no pet line.
+Shows the pet you have out on the HUD with its level. It reads the pet from the sidebar, so it shows nothing where the sidebar has no pet line.
+
+| Setting | Does |
+| --- | --- |
+| Active Pet Look | Shows the pet as its head, as it floats beside you, or by its name in the color of its rarity. Until the head has been near you, the name shows |
 
 ### Armor Display
 
