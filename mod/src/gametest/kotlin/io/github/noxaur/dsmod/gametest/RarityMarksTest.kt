@@ -97,8 +97,10 @@ class RarityMarksTest : FabricClientGameTest {
         }
         context.waitTicks(5)
         context.takeScreenshot("rarity-style-wide")
+        // A preset is picked in the settings, so the editor opens on it as it would from there.
         for (preset in RarityPreset.entries - RarityPreset.CUSTOM) {
             context.runOnClient<Nothing> { settings.rarityPreset = preset }
+            context.setScreen { RarityStyleScreen(settings, null) {} }
             context.waitTicks(2)
             context.takeScreenshot("rarity-preset-${preset.name.lowercase()}")
         }
@@ -220,6 +222,16 @@ class RarityMarksTest : FabricClientGameTest {
             check(chestMarks == inChest) { "Marked $chestMarks" }
             hover(context, 4)
             context.takeScreenshot("rarity-chest")
+
+            // The README's picture: the Minimal preset in a chest, with no tooltip or toast over it.
+            context.runOnClient<Nothing> {
+                DsModClient.settings.inventory.rarityPreset = RarityPreset.MINIMAL
+                it.gui.toastManager().clear()
+            }
+            context.input.setCursorPos(0.0, 0.0)
+            context.waitTicks(5)
+            context.takeScreenshot("rarity-chest-minimal")
+            context.runOnClient<Nothing> { DsModClient.settings.inventory.rarityPreset = RarityPreset.GILDED }
 
             context.runOnClient<Nothing> { it.player!!.closeContainer() }
             context.waitTicks(5)
