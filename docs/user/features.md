@@ -188,3 +188,9 @@ F5 back to first person also ends it. The Camera settings shape this view too.
 ### Fullbright
 
 <sub>Off by default.</sub>
+
+## Account
+
+### Sign in to the website
+
+Type `/dsmod login` to open the ds-mod website in your browser, signed in as your Minecraft account. The link works once, for a minute, and is never shown in chat.

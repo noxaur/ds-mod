@@ -151,7 +151,8 @@ object DsModClient : ClientModInitializer {
                             context.source.client.schedule { openHudEditor() }
                             1
                         },
-                    ),
+                    )
+                    .then(ClientCommands.literal("login").executes { Account.login(); 1 }),
             )
         }
     }

@@ -4,8 +4,9 @@ The website, in Next.js with Effect. Read the root `AGENTS.md` first.
 
 - Model work that can fail as an `Effect`, and run it at the edge: a server component, route handler or event handler calls `Effect.runPromise`.
 - Before using ui-sdk, follow the ui-sdk skill if it's installed, and read `node_modules/@ui-sdk/react/docs/llms.txt`. To build a new component, also search `node_modules/@ui-sdk/react/docs/core.md` by heading, and read `rendering.md` next to it.
-- Use pnpm. `mise run check:web` runs the format check, `tsc` and ESLint with zero warnings allowed. Fix the code, not the config.
-- Vite+ formats the code (`vp fmt`). Next.js builds the site and ESLint lints it, so do not turn on `vp check` or `vp lint`, which would add a second linter with other rules.
+- Use pnpm. `mise run check:web` runs the format check, `tsc`, ESLint with zero warnings allowed, and the tests. Fix the code, not the config.
+- Vite+ formats and runs the tests (`vp fmt`, `vp test`). Next.js builds the site and ESLint lints it, so do not turn on `vp check` or `vp lint`, which would add a second linter with other rules.
+- The website believes nothing from the browser. It hands the login token and the session cookie to the backend unread, and shows what the backend answers.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

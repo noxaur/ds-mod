@@ -9,7 +9,8 @@ export default defineConfig({
     // Threads end with the process, so a test stuck in a loop dies with the run that the time limit ends.
     pool: "threads",
   },
-  fmt: { ignorePatterns: [".void/**"], printWidth: 120 },
+  // Void writes the migrations, so formatting them would only make its next one differ.
+  fmt: { ignorePatterns: [".void/**", "db/migrations/**"], printWidth: 120 },
   lint: {
     ignorePatterns: [".void/**"],
     jsPlugins: ["./lint/dsmod.js"],
