@@ -8,6 +8,7 @@
     "CapturePacketsMixin",
     "ChatComponentAccessor",
     "ChatScreenAccessor",
+    "CommandSuggestionsAccessor",
     "ChestScreenMixin",
     "ContainerScreenAccessor",
     "ContainerScreenMixin",
@@ -28,6 +29,7 @@
     "PerspectiveKeyMixin",
     "ServerPacketsMixin",
     "SlotClickMixin",
+    "SuggestionsListAccessor",
     "SwingSpeedMixin",
     "TooltipMixin"
   ],
