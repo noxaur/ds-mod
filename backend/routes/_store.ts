@@ -1,16 +1,18 @@
 import { Effect, Schema } from "effect";
-import { and, asc, db, eq, sql } from "void/db";
+import { and, asc, db, eq, inArray, sql } from "void/db";
 import { kv } from "void/kv";
 import { storage } from "void/storage";
 
-import { requests, skips, submissions, unknowns } from "../db/schema.ts";
+import { itemSamples, itemSeen, itemTextures, requests, skips, submissions, unknowns } from "../db/schema.ts";
 import { RecordingRequest, RequestSpec } from "../src/contrib/model.ts";
 import type { Store } from "../src/contrib/store.ts";
-import { memoryItemStore } from "../src/items/store.ts";
+import { ItemSighting } from "../src/items/model.ts";
+import { appearancesFrom, type EntryTally, hintsFrom, type ItemStore, type TextureTally } from "../src/items/store.ts";
 import type { ProfileStore } from "../src/profiles/store.ts";
 import { type Upstream, UpstreamDown } from "../src/profiles/upstream.ts";
 
 const decodeSpec = Schema.decodeUnknownSync(RequestSpec);
+const decodeSighting = Schema.decodeUnknownSync(ItemSighting);
 const decodeStatus = Schema.decodeUnknownSync(RecordingRequest.fields.status);
 // A database or storage failure is a defect: no client can do anything about it. makeApp logs it and answers 500.
 const run = <A>(query: () => PromiseLike<A>) => Effect.orDie(Effect.tryPromise(query));
@@ -118,5 +120,101 @@ export const upstream: Upstream["Service"] = {
     }),
 };
 
-// Not built yet: the sightings go to D1.
-export const itemStore = memoryItemStore();
+const tallies = (entries?: readonly string[]) =>
+  db
+    .select({
+      entry: itemSeen.entry,
+      players: sql<number>`count(*)`,
+      glintPlayers: sql<number>`sum(${itemSeen.glint})`,
+      alwaysGlintPlayers: sql<number>`sum(${itemSeen.glint} * (1 - ${itemSeen.plain}))`,
+    })
+    .from(itemSeen)
+    .where(entries === undefined ? undefined : inArray(itemSeen.entry, [...entries]))
+    .groupBy(itemSeen.entry);
+
+const textureTallies = (entries?: readonly string[]) =>
+  db
+    .select({
+      entry: itemTextures.entry,
+      skinId: itemTextures.skinId,
+      texture: itemTextures.texture,
+      players: sql<number>`count(*)`,
+    })
+    .from(itemTextures)
+    .where(entries === undefined ? undefined : inArray(itemTextures.entry, [...entries]))
+    .groupBy(itemTextures.entry, itemTextures.skinId, itemTextures.texture);
+
+const rowsIn = async (table: typeof itemSeen | typeof itemTextures) =>
+  (await db.select({ rows: sql<number>`count(*)` }).from(table))[0]?.rows ?? 0;
+
+// D1 takes at most 100 bound values in a statement.
+const CHUNK = 90;
+
+/** The sightings in D1. Each statement is one the database runs alone, and the rules are in `items.ts`. */
+export const itemStore: ItemStore["Service"] = {
+  record: (userId, modVersion, observations, limits) =>
+    run(async () => {
+      let seen = await rowsIn(itemSeen);
+      let textures = await rowsIn(itemTextures);
+      for (const { entry, skinId, texture, glint, sample } of observations) {
+        const flags = { glint: glint ? 1 : 0, plain: glint ? 0 : 1 };
+        const updated = await db
+          .update(itemSeen)
+          .set({
+            glint: sql`max(${itemSeen.glint}, ${flags.glint})`,
+            plain: sql`max(${itemSeen.plain}, ${flags.plain})`,
+            modVersion,
+          })
+          .where(and(eq(itemSeen.entry, entry), eq(itemSeen.userId, userId)))
+          .returning({ entry: itemSeen.entry });
+        if (updated.length === 0) {
+          if (seen >= limits.maxRows) {
+            continue;
+          }
+          await db
+            .insert(itemSeen)
+            .values({ entry, userId, ...flags, modVersion })
+            .onConflictDoNothing();
+          seen += 1;
+        }
+        if (texture !== null) {
+          const changed = await db
+            .update(itemTextures)
+            .set({ texture })
+            .where(and(eq(itemTextures.entry, entry), eq(itemTextures.userId, userId), eq(itemTextures.skinId, skinId)))
+            .returning({ entry: itemTextures.entry });
+          if (changed.length === 0 && textures < limits.maxRows) {
+            await db.insert(itemTextures).values({ entry, userId, skinId, texture }).onConflictDoNothing();
+            textures += 1;
+          }
+        }
+        if (sample !== null) {
+          const [kept] = await db
+            .select({ rows: sql<number>`count(*)` })
+            .from(itemSamples)
+            .where(eq(itemSamples.entry, entry));
+          if ((kept?.rows ?? 0) < limits.maxSamples) {
+            await db.insert(itemSamples).values({ entry, userId, sample }).onConflictDoNothing();
+          }
+        }
+      }
+    }),
+  appearances: run(async () => {
+    const samples = new Map<string, ItemSighting[]>();
+    for (const row of await db.select({ entry: itemSamples.entry, sample: itemSamples.sample }).from(itemSamples)) {
+      samples.set(row.entry, [...(samples.get(row.entry) ?? []), decodeSighting(row.sample)]);
+    }
+    return appearancesFrom(await tallies(), await textureTallies(), samples);
+  }),
+  hints: (entries) =>
+    run(async () => {
+      const found: EntryTally[] = [];
+      const textures: TextureTally[] = [];
+      for (let from = 0; from < entries.length; from += CHUNK) {
+        const chunk = entries.slice(from, from + CHUNK);
+        found.push(...(await tallies(chunk)));
+        textures.push(...(await textureTallies(chunk)));
+      }
+      return hintsFrom(entries, found, textures);
+    }),
+};

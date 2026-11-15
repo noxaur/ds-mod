@@ -124,6 +124,14 @@ The mod checks a request's requirements itself, because the backend cannot know 
 
 Skipping tells the backend, which hides the request from that player and nobody else.
 
+## An item sighting is what the player's own inventory shows, agreed on by two players
+
+dragsim.co's API sends an item's data but no lore, enchantments or glint, and only some skull textures, so the backend learns how items really look from players. A sighting rides the consent of the unread-lines report: one switch, one batch and backoff (`Batch`), and nothing is read while it is off.
+
+- Only the player's own inventory, never a menu's slots. A menu can show another player's items, such as an auction's seller or a trade, and the redactor cannot find a name it was never told. The inventory is read from the tick, and a slot is looked at again only when its stack changes. A look the session has seen costs a few component reads, because the item is built only for a new one.
+- The backend counts distinct players and acts on a look only when at least two agree, because any signed-in client can send anything, and one client sending a thousand times is still one. Textures are refused unless every url is on `textures.minecraft.net`, so a client cannot make the backend or an agent's browser fetch what it chose.
+- `custom_data` goes through an allowlist, not a blocklist: the server keeps copy ids, owners and more there, and a key it adds later would otherwise leave the machine unreviewed. A head's `textures` property is cut to its urls in the mod, because the profile names its player beside the skin.
+
 ## A capture is redacted by rules that say where a name sits
 
 A capture holds player names and private chat, and a fixture cut from it goes into a public repository. `Redactor` rewrites a capture so it holds neither. `PlayerNames` is the one place that knows where the server puts a name, so the names `cutFixture` replaces everywhere are the names `FixtureLeakTest` looks for. The test cannot see typed text or a name kept to where a rule found it, which is why a fixture is still read before it is kept. Both live in `core` rather than the debug build, so that a release build can redact a capture as well.

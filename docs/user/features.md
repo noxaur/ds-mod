@@ -305,11 +305,16 @@ If you take longer than the request allows, or you leave the server or the game,
 
 Before it leaves your computer, ds-mod removes player names and what players typed, and it does not send your Minecraft login. Several players record each request, so one run does not have to be perfect.
 
-### Report Unread Lines
+### Report Unread Lines and Items
 
 <sub>Off by default.</sub>
 
-When you turn it on, lines the server sent that a feature could not read are sent to ds-mod's developers, with player names and what players typed removed, so a change on the server gets fixed sooner. The first goes about two minutes after one turns up, and then at most one report every twenty minutes. It sends nothing else.
+When you turn it on, two things are sent to ds-mod's developers, so a change on the server gets fixed sooner and items can be drawn as the game draws them.
+
+- Lines the server sent that a feature could not read, with player names and what players typed removed.
+- How the items in your own inventory look: the 36 slots, your armor and your offhand. Each item's name, lore, glint, skin, head texture and color go, with the parts of its data that say how it is built. Your name, the names in your tab list and the item's own ids are removed. Items in a menu, such as an auction or a trade, are never read, because they can belong to another player. Each look goes once a session.
+
+The first report goes about two minutes after something turns up, and then at most one report every twenty minutes. It sends nothing else, and turning it off stops everything at once.
 
 ## Account
 

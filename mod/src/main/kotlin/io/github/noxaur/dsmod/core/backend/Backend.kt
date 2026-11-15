@@ -1,12 +1,15 @@
 package io.github.noxaur.dsmod.core.backend
 
 import io.github.noxaur.dsmod.core.brief.Brief
+import io.github.noxaur.dsmod.core.game.ServerText
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -70,7 +73,41 @@ enum class Upload { SENT, UNKNOWN, CLOSED, TOO_BIG }
 @Serializable
 data class Sighting(val kind: String, val signature: String, val sample: String)
 
+/**
+ * An item from the player's own inventory, as the backend's `ItemSighting` has it. [entry] is the server's id for the
+ * item, and [data] is the part of its `custom_data` that says how it is built.
+ */
+data class ItemSighting(
+    val entry: String,
+    val material: String,
+    val itemModel: String?,
+    val skinId: String?,
+    val name: ServerText,
+    val lore: List<ServerText>,
+    val glint: Boolean,
+    val skullTexture: String?,
+    val color: Int?,
+    val data: JsonObject,
+)
+
 private val json = Json { ignoreUnknownKeys = true }
+
+/** A line of text as the contract's spans: `#RRGGBB` colors, and a flag only when it is set. */
+private fun ServerText.toJson() = buildJsonArray {
+    for (span in spans) {
+        add(
+            buildJsonObject {
+                put("text", span.text)
+                span.color?.let { put("color", "#%06X".format(it)) }
+                if (span.bold) put("bold", true)
+                if (span.italic) put("italic", true)
+                if (span.underlined) put("underlined", true)
+                if (span.strikethrough) put("strikethrough", true)
+                if (span.obfuscated) put("obfuscated", true)
+            },
+        )
+    }
+}
 
 /**
  * Talks to the backend as the signed-in player. Every call blocks, so a caller runs it with [async], which has one
@@ -135,6 +172,31 @@ class Backend(private val url: String, private val identity: Identity, private v
             }
         }
         send { post("/v1/contrib/unknowns", BodyPublishers.ofString(body.toString()), "application/json", it) }
+    }
+
+    fun items(items: List<ItemSighting>) {
+        val body = buildJsonObject {
+            put("modVersion", modVersion)
+            putJsonArray("items") {
+                items.forEach { item ->
+                    add(
+                        buildJsonObject {
+                            put("entry", item.entry)
+                            put("material", item.material)
+                            item.itemModel?.let { put("itemModel", it) }
+                            item.skinId?.let { put("skinId", it) }
+                            put("name", item.name.toJson())
+                            put("lore", buildJsonArray { item.lore.forEach { add(it.toJson()) } })
+                            put("glint", item.glint)
+                            item.skullTexture?.let { put("skullTexture", it) }
+                            item.color?.let { put("color", it) }
+                            put("data", item.data)
+                        },
+                    )
+                }
+            }
+        }
+        send { post("/v1/contrib/items", BodyPublishers.ofString(body.toString()), "application/json", it) }
     }
 
     /** A code that the website trades for a session once, within a minute. */

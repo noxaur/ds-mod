@@ -4,6 +4,8 @@ import io.github.noxaur.dsmod.core.backend.Backend
 import io.github.noxaur.dsmod.core.backend.Request
 import io.github.noxaur.dsmod.core.backend.Upload
 import io.github.noxaur.dsmod.core.capture.redactCapture
+import io.github.noxaur.dsmod.core.contribute.Batch
+import io.github.noxaur.dsmod.core.contribute.ItemSightings
 import io.github.noxaur.dsmod.core.contribute.Kept
 import io.github.noxaur.dsmod.core.contribute.Requirements
 import io.github.noxaur.dsmod.core.contribute.Unknowns
@@ -31,7 +33,7 @@ import kotlin.io.path.name
 
 /**
  * What a player does for ds-mod's developers: record the requests they qualify for, and, when they switch it on,
- * report the lines the mod could not read. Nothing here contacts the backend until the player does one of these.
+ * report the lines the mod could not read and how the items in their own inventory look. Nothing here contacts the backend until the player does one of these.
  * Network calls run on [Account.backend]'s thread, disk work on [Background.io], and what the player is told is
  * sent from the client thread. `specs/Contribute.tla` is the life of a run, and the code follows its names.
  */
@@ -46,7 +48,10 @@ object Contribute {
     /** The startup sweep. Offers are fetched only after it, so it never deletes a capture a run is writing. */
     private lateinit var swept: CompletableFuture<Unit>
 
-    private val unknowns = Unknowns { DsModClient.game.tabPlayers + Account.name }
+    private val names = { DsModClient.game.tabPlayers + Account.name }
+    private val unknowns = Unknowns(names)
+    private val items = ItemSightings(names)
+    private val sights = InventorySights(items)
     private val hear = { feature: String, sample: String -> unknowns.see(feature, sample) }
 
     private fun tell(build: TextBuilder.() -> Unit) = text(build).let { line -> Minecraft.getInstance().execute { Chat.send(line) } }
@@ -187,20 +192,29 @@ object Contribute {
         runCatching { CompletableFuture.allOf(*uploads.toTypedArray()).get(QUIT_SECONDS, TimeUnit.SECONDS) }
     }
 
-    /** Called every tick. Listens for lines the mod could not read while the player allows it, and sends them rarely. */
-    fun tick(game: Game, reportUnknowns: Boolean, now: Long) {
-        if ((game.metrics.onUnparsed != null) != reportUnknowns) game.metrics.onUnparsed = if (reportUnknowns) hear else null
-        if (!unknowns.waiting) return
-        if (!reportUnknowns) {
-            unknowns.drop()
+    /**
+     * Called every tick. While the player allows it, listens for lines the mod could not read and reads their own
+     * inventory, and sends each rarely. Both go on one switch, so a player who turns it off is collected from at once.
+     */
+    fun tick(game: Game, report: Boolean, now: Long) {
+        if ((game.metrics.onUnparsed != null) != report) game.metrics.onUnparsed = if (report) hear else null
+        if (report && DsModClient.active) game.metrics.time("item-sights") { sights.poll(Minecraft.getInstance()) } else sights.reset()
+        flush(game, unknowns, report, now, "contribute.unknowns") { unknowns(it) }
+        flush(game, items, report, now, "contribute.items") { items(it) }
+    }
+
+    private fun <T : Any> flush(game: Game, batch: Batch<T>, report: Boolean, now: Long, name: String, send: Backend.(List<T>) -> Unit) {
+        if (!batch.waiting) return
+        if (!report) {
+            batch.drop()
             return
         }
-        if (!unknowns.due(now)) return
-        val sightings = unknowns.take()
-        Account.backend.async { unknowns(sightings) }.whenComplete { _, error ->
+        if (!batch.due(now)) return
+        val taken = batch.take()
+        Account.backend.async { send(taken) }.whenComplete { _, error ->
             Minecraft.getInstance().execute {
-                unknowns.finished(sightings, delivered = error == null)
-                if (error != null) game.metrics.fail("contribute.unknowns", RuntimeException(Account.why(error)))
+                batch.finished(taken, delivered = error == null)
+                if (error != null) game.metrics.fail(name, RuntimeException(Account.why(error)))
             }
         }
     }
