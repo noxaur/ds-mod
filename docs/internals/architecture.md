@@ -8,6 +8,10 @@ Void deploys the backend to Cloudflare Workers and owns the database, the file s
 
 The contract is generated from the backend's API definition, because a hand-written one drifts. The mod is Kotlin and can share no types with the backend, so a file in a neutral format is the one thing both sides can hold to.
 
+## The website runs on Vercel, beside the backend
+
+Void deploys no Next.js app, so the website runs on Vercel and calls the backend from its own servers. Nothing in a browser talks to the backend, which keeps the session cookie on the website's domain and leaves the backend no other origin to trust. The cost is that the backend sees the website's few server addresses, not each player's, so Better Auth's per-address rate limit counts every player who logs in on the website together. When website logins fail with 429 under load, give the website a trusted key, as Void's auth guide describes, rather than reading the player's address from a header any client can send.
+
 ## A player is their Minecraft account, and the client is never believed
 
 The mod is open source, so anyone can build a client that sends whatever it likes. Sign-in therefore rests on something a client cannot fake. The backend issues a random server id, the client tells Mojang it is joining that server, and the backend asks Mojang who joined. Only the holder of an account's Minecraft session can make that call, so a modified client can sign in as its own account and as no other. No secret ships in the mod, because a secret in an open jar is public.

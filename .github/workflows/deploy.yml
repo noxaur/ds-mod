@@ -1,0 +1,57 @@
+name: deploy
+
+# The backend goes live once ci has passed on a commit to main. A separate workflow, because ci cancels a run
+# when a newer push arrives, and a deploy cut off mid-migration would leave D1 half-applied.
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+  actions: read
+
+# One deploy at a time, never one cut off by the next, and none dropped from the queue. By default a newly
+# queued run cancels the one already waiting, so a stale rerun could push out the deploy of main's tip.
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  backend:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: jdx/mise-action@v5
+        with:
+          install_args: node pnpm
+      - id: store
+        run: echo "path=$(pnpm store path)" >> "$GITHUB_OUTPUT"
+      - id: cache
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.store.outputs.path }}
+          key: backend-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('mise.toml', 'backend/pnpm-lock.yaml') }}
+      - working-directory: backend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          # A rerun of ci on an older commit must not deploy it over a newer one, whose migrations stay applied.
+          if [ "$(git ls-remote origin refs/heads/main | cut -f1)" != "$HEAD_SHA" ]; then
+            echo "deploy: skipped, $HEAD_SHA is no longer the tip of main." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          pnpm install --frozen-lockfile
+          # The saved target lives in the git-ignored .void/, so a fresh checkout must name it.
+          pnpm exec void deploy --platform cloudflare
+      - run: test "$(curl -sS -o /dev/null -w '%{http_code}' https://api.ds-mod.perwko.com/healthz)" = 204
+      - uses: ./.github/actions/time-limit
+        with:
+          warm: ${{ steps.cache.outputs.cache-hit }}
