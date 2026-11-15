@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.network.protocol.Packet
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
+import java.util.concurrent.TimeUnit
 
 /**
  * Holds the one capture that may be running. Nothing records until [start], and while none runs every hook here is
@@ -73,13 +74,11 @@ object Recorder {
             }
         }
         ClientTickEvents.END_CLIENT_TICK.register { client -> session?.tick(client) }
-        // The game is quitting, so finish the file here: the background thread would not outlive it.
+        // The background thread dies with the game, so quitting waits for every capture still being finished.
         ClientLifecycleEvents.CLIENT_STOPPING.register {
-            session?.let { running ->
-                session = null
-                running.detach()
-                finish(running)
-            }
+            session?.let(::stop)
+            Background.io.shutdown()
+            Background.io.awaitTermination(1, TimeUnit.MINUTES)
         }
     }
 }
