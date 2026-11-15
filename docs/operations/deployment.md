@@ -5,7 +5,7 @@ The backend runs on the user's Cloudflare account and the website on the user's 
 | Part | Address | Where | How it deploys |
 | --- | --- | --- | --- |
 | Backend | `https://api.ds-mod.perwko.com` | Worker `dsmod-backend` on Cloudflare, with its D1 database and R2 bucket | `.github/workflows/deploy.yml`, once `ci` passes on a push to `main` |
-| Website | `https://ds-mod.perwko.com` | Vercel project `ds-mod`, root directory `web/` | On every push to `main`, through Vercel's GitHub app. Pull requests get a preview |
+| Website | `https://ds-mod.perwko.com` | Vercel project `ds-mod`, root directory `web/` | On every push to `main`, through Vercel's GitHub app, when the push changes `web/`. A pull request that changes `web/` gets a preview |
 | Mod | Both, baked into the jar | `-Pbackend_url` and `-Pwebsite_url` in `.github/workflows/beta.yml` | With each beta release |
 
 The addresses are fixed: a jar keeps the ones it was built with, so moving either one strands every player on an older release.
@@ -46,6 +46,10 @@ sed -n 's/^ADMIN_TOKEN=//p' ~/.config/dsmod/production.env | tr -d '\n' | pnpm e
 
 ## The website
 
-`web/vercel.json` sets the install command. Vercel reads `packageManager` only from a `package.json` at the repository's root, and this repository has none, so without the command it installs with an old pnpm that ignores the lockfile and fails. `corepack enable` run inside `web/` picks the pinned pnpm from `web/package.json` instead.
+`web/vercel.json` overrides the project's build settings in Vercel.
+
+Vercel reads `packageManager` only from a `package.json` at the repository's root, and this repository has none, so without the install command it installs with an old pnpm that ignores the lockfile and fails. `corepack enable` run inside `web/` picks the pinned pnpm from `web/package.json` instead.
+
+`web/scripts/vercel-ignore.sh` skips a build when nothing in `web/` changed since the branch's last built commit, which Vercel gives as `VERCEL_GIT_PREVIOUS_SHA`. Vercel clones ten commits deep, so the script fetches an older base by its SHA, which works because the repository is public. A branch's first build has no previous commit, so it compares with where the branch left `main`. Whatever it cannot judge, it builds. A skipped build shows as canceled in Vercel and still counts toward the deployment quota. To build a skipped commit, redeploy it in Vercel with the project's Ignore Build Step unchecked.
 
 The project's settings in Vercel hold `BACKEND_URL=https://api.ds-mod.perwko.com` and Node 24. A change to either is made in Vercel and needs a redeploy.

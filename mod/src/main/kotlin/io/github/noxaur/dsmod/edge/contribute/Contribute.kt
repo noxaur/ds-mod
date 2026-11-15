@@ -33,7 +33,7 @@ import kotlin.io.path.name
 
 /**
  * What a player does for ds-mod's developers: record the requests they qualify for, and, when they switch it on,
- * report the lines the mod could not read and how the items in their own inventory look. Nothing here contacts the backend until the player does one of these.
+ * report the game data the mod has not seen before, today the lines it could not read and how the items in their own inventory look. Nothing here contacts the backend until the player does one of these.
  * Network calls run on [Account.backend]'s thread, disk work on [Background.io], and what the player is told is
  * sent from the client thread. `specs/Contribute.tla` is the life of a run, and the code follows its names.
  */
@@ -213,7 +213,7 @@ object Contribute {
         val taken = batch.take()
         Account.backend.async { send(taken) }.whenComplete { _, error ->
             Minecraft.getInstance().execute {
-                batch.finished(taken, delivered = error == null)
+                batch.finished(taken, error)
                 if (error != null) game.metrics.fail(name, RuntimeException(Account.why(error)))
             }
         }

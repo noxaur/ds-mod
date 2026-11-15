@@ -1,5 +1,6 @@
 import { colorOf, parseLegacy, push } from "../legacy.ts";
 import type { Line, Span } from "../model.ts";
+import { titleCase } from "../title.ts";
 import type { Ability, Catalog, CatalogItem } from "./catalog.ts";
 import { advance } from "./font.ts";
 import type { UpstreamItem } from "./upstream.ts";
@@ -62,13 +63,6 @@ const WEAPON = new Set(["SWORD", "BOW", "WAND", "AXE", "HOE", "SPADE"]);
 export const num = (value: number): string => String(Math.round(value * 100) / 100);
 
 const grouped = (value: number): string => value.toLocaleString("en-US", { maximumFractionDigits: 2 });
-
-const title = (id: string): string =>
-  id
-    .split("_")
-    .filter((word) => word !== "")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
 
 const plain = (line: Line): string => line.map((span) => span.text).join("");
 
@@ -134,7 +128,7 @@ const statLine = (
   }
   const line: Span[] = [];
   push(line, `${ICONS[id] ?? "✦"} `, { color });
-  push(line, `${info?.name ?? title(id)}: `, { color: GRAY });
+  push(line, `${info?.name ?? titleCase(id)}: `, { color: GRAY });
   for (const part of parts) {
     push(line, part.color === DARK_GRAY ? part.text : `${part.text} `, { color: part.color });
   }
@@ -268,7 +262,7 @@ export const name = (item: UpstreamItem, catalogItem: CatalogItem | undefined, f
  */
 const RECIPES: Line = [{ text: "Right-click to view recipes!", color: YELLOW }];
 
-const rune = (id: string): Line => [{ text: `◆ ${title(id)}`, color: PINK }];
+const rune = (id: string): Line => [{ text: `◆ ${titleCase(id)}`, color: PINK }];
 
 const kills = (count: number): Line => [
   { text: "Kills: ", color: GRAY },

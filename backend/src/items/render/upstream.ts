@@ -8,6 +8,7 @@ export interface StatSet {
   readonly base: Stats;
   readonly additive: Stats;
   readonly multiplicative: Stats;
+  readonly increaseMax: Stats;
 }
 
 /** An item as dragsim.co's player API sends it, with every field that is missing or of the wrong type left out. */
@@ -23,6 +24,12 @@ export interface UpstreamItem {
   readonly reforgeStats: StatSet;
   readonly stats: StatSet;
   readonly books: number;
+  readonly hotPotatoBooks: number;
+  readonly fumingBooks: number;
+  readonly finalSynchronizers: number;
+  readonly npcSellPrice: number | undefined;
+  /** `extra`, whose keys are the item's own modifiers, such as `drill`. */
+  readonly extra: Readonly<Record<string, unknown>>;
   readonly artOfWar: boolean;
   readonly recombobulated: boolean;
   readonly stars: number;
@@ -36,12 +43,14 @@ export interface UpstreamItem {
   readonly abilities: readonly string[];
 }
 
-const statSet = (raw: unknown): StatSet => {
+/** The four groups of stats the server sends for an item or a player, with a missing or odd one left empty. */
+export const statSet = (raw: unknown): StatSet => {
   const set = record(raw);
   return {
     base: numbers(set["base"]) ?? {},
     additive: numbers(set["additive"]) ?? {},
     multiplicative: numbers(set["multiplicative"]) ?? {},
+    increaseMax: numbers(set["increase_max"]) ?? {},
   };
 };
 
@@ -70,6 +79,11 @@ export const readItem = (raw: unknown): UpstreamItem | undefined => {
     reforgeStats: statSet(data["reforge_stats"]),
     stats: statSet(item["item_stats"]),
     books: (count(modifiers["hot_potato_books"]) ?? 0) + (count(modifiers["golden_hot_potato_books"]) ?? 0),
+    hotPotatoBooks: count(modifiers["hot_potato_books"]) ?? 0,
+    fumingBooks: count(modifiers["golden_hot_potato_books"]) ?? 0,
+    finalSynchronizers: count(modifiers["final_synchronizers"]) ?? 0,
+    npcSellPrice: count(data["npc_sell_price"]),
+    extra,
     artOfWar: flag(modifiers["art_of_war"]) ?? false,
     recombobulated: flag(modifiers["recombobulated"]) ?? false,
     stars: Math.max(count(modifiers["star_level"]) ?? 0, Stars(extra["dungeon_upgrade"])?.stars ?? 0),

@@ -62,21 +62,31 @@ class ItemSightings(private val own: () -> Set<String>) :
     }
 
     /**
-     * What of `custom_data` goes: the keys that say how an item is built. The ids of the copy, `item_data`'s `uuid` and
-     * `extra`'s `item_uuid`, and everything else the server keeps there, stay on the player's machine.
+     * What of `custom_data` goes: the keys that say how an item is built, and inside `item_data` and `extra` only the
+     * keys listed in [ITEM_DATA] and [EXTRA]. The ids of the copy and anything else the server keeps there, now or
+     * added later, stay on the player's machine.
      */
     private fun allowed(data: JsonObject): JsonObject {
         val kept = HashMap<String, JsonElement>()
-        (data["item_data"] as? JsonObject)?.let { kept["item_data"] = JsonObject(it - "uuid") }
-        (data["extra"] as? JsonObject)?.let { kept["extra"] = JsonObject(it - "item_uuid") }
+        (data["item_data"] as? JsonObject)?.let { kept["item_data"] = JsonObject(it.filterKeys { key -> key in ITEM_DATA }) }
+        (data["extra"] as? JsonObject)?.let { kept["extra"] = extra(it) }
         for (key in ALLOWED) data[key]?.let { kept[key] = it }
         return withoutUuids(JsonObject(kept)) as JsonObject
+    }
+
+    /** `extra` keeps the building blocks the renderer reads. A skin is only its `skinId`. */
+    private fun extra(extra: JsonObject): JsonObject {
+        val kept = extra.filterKeys { it in EXTRA }.toMutableMap()
+        (extra["item_skin"] as? JsonObject)?.get("skinId")?.let { kept["item_skin"] = JsonObject(mapOf("skinId" to it)) } ?: kept.remove("item_skin")
+        return JsonObject(kept)
     }
 
     private companion object {
         const val MAX_LORE = 80
         const val MAX_ID = 128
         const val MAX_TEXTURE = 4096
+        val ITEM_DATA = setOf("npc_sell_price", "reforge_stats", "color", "item_id", "reforge", "item_type", "item_name", "skull", "rarity")
+        val EXTRA = setOf("item_dye", "item_skin", "dungeon_upgrade", "wither_scrolls", "coating", "attunement", "drill", "enrichment")
         val ALLOWED = listOf("item_stats", "item_modifiers", "abilities")
         val UUID = Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
     }

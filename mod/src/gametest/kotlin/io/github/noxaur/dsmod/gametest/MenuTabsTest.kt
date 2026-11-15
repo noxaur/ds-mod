@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.TabBar
+import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import io.github.noxaur.dsmod.edge.ui.KitButton
 import io.github.noxaur.dsmod.edge.ui.KitTab
 import io.github.noxaur.dsmod.edge.ui.KitTextField
@@ -14,6 +15,7 @@ import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.fabricmc.fabric.mixin.client.gametest.input.KeyboardHandlerAccessor
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.components.ImageButton
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
@@ -29,7 +31,7 @@ import org.lwjgl.glfw.GLFW
  * Puts the default tabs on a menu and clicks them. A command tab sends its command, and the tab for the command that
  * opened the menu joins the panel. The search tab opens a bar toward the middle of the menu over the tabs beside it,
  * which dims the items that do not match, keeps E from closing the menu while typing, follows into the next menu and
- * closes with its button. Read the screenshots in both themes: the tabs, the selected tab, and the open bar.
+ * closes with its button. The tabs follow the inventory when the recipe book moves it. Read the screenshots in both themes: the tabs, the selected tab, and the open bar.
  */
 class MenuTabsTest : FabricClientGameTest {
     private class Shown(val name: String, val x: Int, val y: Int, val width: Int, val selected: Boolean)
@@ -141,6 +143,21 @@ class MenuTabsTest : FabricClientGameTest {
                 context.waitTicks(3)
                 check(tabs(context).size == 5 && tabs(context).none { it.selected }) { "The inventory's tabs are wrong" }
                 context.takeScreenshot("menu-tabs-inventory")
+
+                // The recipe book moves the inventory sideways, and the tabs must move with it.
+                val before = tabs(context).map { it.x }
+                val (book, leftBefore) = context.computeOnClient<Pair<Pair<Int, Int>, Int>, Nothing> { client ->
+                    val screen = client.gui.screen() as InventoryScreen
+                    val button = Screens.getWidgets(screen).filterIsInstance<ImageButton>().single()
+                    (button.x + button.width / 2 to button.y + button.height / 2) to (screen as ContainerScreenAccessor).leftPos
+                }
+                click(context, book.first, book.second)
+                val moved = context.computeOnClient<Int, Nothing> { (it.gui.screen() as ContainerScreenAccessor).leftPos } - leftBefore
+                check(moved != 0) { "The recipe book did not move the inventory" }
+                check(tabs(context).map { it.x } == before.map { it + moved }) { "The tabs stayed put when the recipe book moved the inventory by $moved" }
+                context.takeScreenshot("menu-tabs-recipe-book")
+                click(context, book.first + moved, book.second)
+                check(tabs(context).map { it.x } == before) { "The tabs did not come back when the recipe book closed" }
 
                 context.runOnClient<Nothing> { DsModClient.settings.betterUi.enabled = false }
                 context.waitTicks(2)

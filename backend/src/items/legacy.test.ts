@@ -51,3 +51,10 @@ test("a code at the very end or an unknown one does not throw", () => {
   expect(parseLegacy("text§")).toEqual([{ text: "text§" }]);
   expect(parseLegacy("a§zb")).toEqual([{ text: "a§zb" }]);
 });
+
+test("a hex color is read from `§x` and six digits", () => {
+  expect(parseLegacy("§x§1§2§a§B§c§dHex §lbold")).toEqual([
+    { text: "Hex ", color: "#12ABCD" },
+    { text: "bold", color: "#12ABCD", bold: true },
+  ]);
+});

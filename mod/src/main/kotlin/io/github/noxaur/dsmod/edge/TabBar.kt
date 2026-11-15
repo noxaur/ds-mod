@@ -16,6 +16,7 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.fabricmc.fabric.api.client.screen.v1.Screens
+import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen
@@ -74,6 +75,7 @@ object TabBar {
             screen as ContainerScreenAccessor
             stacks = arrayOfNulls(0)
             searched = null
+            dimmed.clear()
             val left = screen.leftPos
             val menuWidth = screen.imageWidth
             fun edgeY(edge: TabEdge) = if (edge == TabEdge.TOP) screen.topPos else screen.topPos + screen.imageHeight
@@ -97,16 +99,25 @@ object TabBar {
                 made += tab to widget
                 widgets.add(widget)
             }
+            // The recipe book moves the inventory and the crafting table sideways without laying them out again.
+            val ours = ArrayList<AbstractWidget>(made.map { it.second })
+            var laidOut = left
+            ScreenEvents.beforeExtract(screen).register { _, _, _, _, _ ->
+                val dx = screen.leftPos - laidOut
+                if (dx == 0) return@register
+                laidOut = screen.leftPos
+                for (widget in ours) widget.x += dx
+            }
             val bar = search ?: return@register
 
             // The bar is a wide joined tab holding the field and a close button, laid over the tabs it covers.
             val (barLeft, barWidth) = TabLayout.searchBar(bar.slot, menuWidth)
-            val barX = left + barLeft
+            fun barX() = screen.leftPos + barLeft
             // On a short screen an edge's tabs run off it. The bar stays on it, over the menu's edge, so its text shows.
             val barY = if (bar.edge == TabEdge.TOP) maxOf(edgeY(bar.edge), Kit.TAB_HEIGHT - 2) else minOf(edgeY(bar.edge), height - Kit.TAB_HEIGHT + 2)
             val covered = made.filter { (tab, _) -> tab.edge == bar.edge && TabLayout.x(tab.slot) < barLeft + barWidth && TabLayout.x(tab.slot) + Kit.TAB_WIDTH > barLeft }
             val contentY = if (bar.edge == TabEdge.TOP) barY - Kit.TAB_HEIGHT + 3 else barY
-            val field = KitTextField(barX + 3, contentY, barWidth - 6 - Kit.BUTTON_HEIGHT - 2, "Search", query, SEARCH_LENGTH) {
+            val field = KitTextField(barX() + 3, contentY, barWidth - 6 - Kit.BUTTON_HEIGHT - 2, "Search", query, SEARCH_LENGTH) {
                 query = it
                 words = ItemSearch.words(it)
             }.hint("Search...")
@@ -125,7 +136,7 @@ object TabBar {
                 if (screen.focused === field) screen.focused = null
                 show()
             }
-            close = KitButton(barX + barWidth - 3 - Kit.BUTTON_HEIGHT, contentY, Icon.CROSS, "Close Search", ::shut)
+            close = KitButton(barX() + barWidth - 3 - Kit.BUTTON_HEIGHT, contentY, Icon.CROSS, "Close Search", ::shut)
             close.setTooltip(Tooltip.create(text { action("Click to stop searching.") }.toComponent()))
             openSearch = {
                 open = true
@@ -134,10 +145,12 @@ object TabBar {
             }
             widgets.add(field)
             widgets.add(close)
+            ours += field
+            ours += close
             show()
 
             ScreenEvents.afterBackground(screen).register { _, graphics, _, _, _ ->
-                if (field.visible) Kit.tab(graphics, barX, barY, true, bar.edge, width = barWidth)
+                if (field.visible) Kit.tab(graphics, barX(), barY, true, bar.edge, width = barWidth)
             }
             ScreenEvents.afterTick(screen).register {
                 show()

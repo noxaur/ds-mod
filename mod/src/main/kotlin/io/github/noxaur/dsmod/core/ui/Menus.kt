@@ -7,7 +7,7 @@ object Menus {
 
     /**
      * The top of a menu [imageHeight] tall on a screen [screenHeight] tall, placed so that its bottom edge sits where a
-     * six-row menu's does. The server puts Go Back and Close in a menu's bottom row, and the player's inventory sits
+     * six-row menu's does. The server puts Go Back and Close in most menus' bottom row, and the player's inventory sits
      * below it, so both stay put when one menu opens another of a different height.
      */
     fun top(screenHeight: Int, imageHeight: Int) = (screenHeight - TALLEST) / 2 + TALLEST - imageHeight

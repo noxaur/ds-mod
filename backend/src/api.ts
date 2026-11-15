@@ -11,7 +11,7 @@ import {
 } from "effect/http-api";
 
 import { Offer, RecordingRequest, RequestReport, RequestSpec, Sighting, Unknown } from "./contrib/model.ts";
-import { ItemAppearance, ItemSighting } from "./items/model.ts";
+import { ItemAppearances, ItemSighting } from "./items/model.ts";
 import {
   Container,
   ContainerNotFound,
@@ -163,10 +163,21 @@ export const Api = HttpApi.make("dsmod")
         }).annotate(OpenApi.Summary, "A run's capture file, gzipped."),
       )
       .add(
-        HttpApiEndpoint.get("items", "/v1/admin/items", { success: Schema.Array(ItemAppearance) }).annotate(
-          OpenApi.Summary,
-          "What players saw of each item, with samples to test the rebuilt tooltips against.",
-        ),
+        HttpApiEndpoint.get("items", "/v1/admin/items", {
+          query: {
+            entry: Schema.optionalKey(Schema.String),
+            after: Schema.optionalKey(Schema.String),
+            limit: Schema.optionalKey(
+              Schema.FiniteFromString.check(Schema.isInt(), Schema.isBetween({ minimum: 1, maximum: 200 })),
+            ),
+          },
+          success: ItemAppearances,
+        })
+          .annotate(OpenApi.Summary, "What players saw of items, a page at a time.")
+          .annotate(
+            OpenApi.Description,
+            "With `entry`, that one entry with the samples to test the rebuilt tooltip against. Without it, up to `limit` entries (200 at most, and by default) in order, with no samples, and `next` is the `after` for the page after. Samples are only in the one-entry form so a reply stays small.",
+          ),
       )
       .add(
         HttpApiEndpoint.get("unknowns", "/v1/admin/unknowns", { success: Schema.Array(Unknown) }).annotate(

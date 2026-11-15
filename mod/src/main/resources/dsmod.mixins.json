@@ -19,6 +19,7 @@
     "KeyPressMixin",
     "MenuBackgroundMixin",
     "MenuLabelMixin",
+    "RecipeButtonMixin",
     "MouseInputMixin",
     "MouseTurnMixin",
     "PerspectiveKeyMixin",

@@ -46,8 +46,11 @@ export const push = (spans: Span[], text: string, style: Style): void => {
   spans.push({ text, ...style });
 };
 
-/** A style code: `§`, or the `&` the server's catalog also writes in some descriptions, then the code. */
-const MARKER = /[§&]([0-9a-fk-or])/giu;
+/**
+ * A style code: `§`, or the `&` the server's catalog also writes in some descriptions, then the code. `§x` and six
+ * `§` digits is the form that names a color the sixteen codes cannot.
+ */
+const MARKER = /[§&]([0-9a-fk-or])|§x((?:§[0-9a-f]){6})/giu;
 
 /**
  * Reads the server's `§` text into a line. A color code clears the styles before it, and `§r` clears everything back
@@ -60,9 +63,10 @@ export const parseLegacy = (text: string, color?: string): Line => {
   let from = 0;
   for (const match of text.matchAll(MARKER)) {
     push(spans, text.slice(from, match.index), style);
-    from = match.index + 2;
+    from = match.index + match[0].length;
+    const hex = match[2];
     const code = (match[1] ?? "").toLowerCase();
-    const next = COLORS[code];
+    const next = hex === undefined ? COLORS[code] : `#${hex.replaceAll("§", "").toUpperCase()}`;
     if (next !== undefined) {
       style = { color: next };
     } else if (code === "l") {

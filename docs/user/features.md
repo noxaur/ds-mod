@@ -155,7 +155,9 @@ The hotbar uses your inventory's look until you untick Match Inventory, and then
 
 Menus, your inventory and plain tooltips take the colors of the Theme under Interface, so Charcoal makes them dark.
 
-<sub>Chests, crafting tables, hoppers, dispensers and shulker boxes follow it. A furnace or an anvil keeps its own look, and item tooltips keep the server's rarity frames.</sub>
+The server's Go Back, Close and page arrows become buttons in the same colors.
+
+<sub>Chests, crafting tables, hoppers, dispensers and shulker boxes follow it, and so does the recipe book's button. A furnace or an anvil keeps its own look, and item tooltips keep the server's rarity frames.</sub>
 
 ### Stable Menus
 
@@ -326,11 +328,11 @@ If you take longer than the request allows, or you leave the server or the game,
 
 Before it leaves your computer, ds-mod removes player names and what players typed, and it does not send your Minecraft login. Several players record each request, so one run does not have to be perfect.
 
-### Report Unread Lines and Items
+### Report Game Data
 
 <sub>Off by default.</sub>
 
-When you turn it on, two things are sent to ds-mod's developers, so a change on the server gets fixed sooner and items can be drawn as the game draws them.
+When you turn it on, ds-mod sends game data it has not seen before to its developers, with player names removed, so a change on the server gets fixed sooner and items can be drawn as the game draws them. This one switch covers every kind of game data ds-mod reports, now and later, so it never asks again when it learns to report something new. Today that is two things.
 
 - Lines the server sent that a feature could not read, with player names and what players typed removed.
 - How the items in your own inventory look: the 36 slots, your armor and your offhand. Each item's name, lore, glint, skin, head texture and color go, with the parts of its data that say how it is built. Your name, the names in your tab list and the item's own ids are removed. Items in a menu, such as an auction or a trade, are never read, because they can belong to another player. Each look goes once a session.
