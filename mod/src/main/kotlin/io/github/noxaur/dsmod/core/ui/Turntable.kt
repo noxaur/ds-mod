@@ -8,7 +8,9 @@ package io.github.noxaur.dsmod.core.ui
  */
 class Turntable(private val speed: Float = SPEED) {
     private var base = 0f
-    private var since = 0L
+
+    // When the spin from [base] began, null until the first frame asks, so it starts facing the player.
+    private var since: Long? = null
     private var grabX = 0.0
     private var grabY = 0.0
     private var grabYaw = 0f
@@ -22,8 +24,15 @@ class Turntable(private val speed: Float = SPEED) {
     var pitch = 0f
         private set
 
-    /** Degrees around, from facing the player. */
-    fun yaw(now: Long): Float = if (dragging) dragYaw else base + (now - since) * speed / 1000f
+    /**
+     * Degrees around, from facing the player, within a turn. The game's clock is epoch milliseconds, which a `Float`
+     * cannot hold to the millisecond, so the angle is worked out in `Double` and wrapped before it is narrowed.
+     */
+    fun yaw(now: Long): Float {
+        if (dragging) return dragYaw
+        val start = since ?: now.also { since = it }
+        return ((base + (now - start) * speed / 1000.0) % 360.0).toFloat()
+    }
 
     fun press(x: Double, y: Double, now: Long) {
         grabYaw = yaw(now)

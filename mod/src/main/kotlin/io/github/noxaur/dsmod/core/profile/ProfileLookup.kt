@@ -110,6 +110,9 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
                     containers[id] = Load.Failed(failure(error))
                     return@main
                 }
+                // The new snapshot replaces the old, so what is still on its way from the old one, or from a second
+                // renewal another tab started, is dropped.
+                this.request++
                 state = Load.Loaded(answer)
                 containers.clear()
                 containers[id] = Load.Loading

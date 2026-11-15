@@ -89,6 +89,25 @@ class ProfileLookupTest {
     }
 
     @Test
+    fun `two tabs that find the snapshot expired end on one new snapshot`() {
+        source.profiles[0].second.complete(profile)
+        lookup.container("inventory")
+        lookup.container("ender_chest")
+        source.containers[0].second.completeExceptionally(failed(410, "SnapshotExpired"))
+        source.containers[1].second.completeExceptionally(failed(410, "SnapshotExpired"))
+        source.profiles[1].second.complete(profile.copy(snapshot = "new-1"))
+        // The second renewal belongs to the old snapshot, so it changes nothing.
+        source.profiles[2].second.complete(profile.copy(snapshot = "new-2"))
+        assertEquals("new-1", assertIs<Load.Loaded<Profile>>(lookup.state).value.snapshot)
+        source.containers.last().second.complete(inventory)
+        assertEquals("new-1/inventory", source.containers.last().first)
+        assertEquals(Load.Loaded(inventory), lookup.container("inventory"))
+        // The ender chest's own renewal was dropped, so it is asked for again from the new snapshot.
+        lookup.container("ender_chest")
+        assertEquals("new-1/ender_chest", source.containers.last().first)
+    }
+
+    @Test
     fun `retry asks again for what failed`() {
         source.profiles[0].second.completeExceptionally(failed(503, "UpstreamUnavailable"))
         val failure = assertIs<Load.Failed>(lookup.state).failure
