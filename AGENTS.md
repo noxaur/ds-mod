@@ -37,7 +37,7 @@ We can't compromise on these.
 
 ## API
 
-- `backend/src/api.ts` defines every REST endpoint, and `api/openapi.json` is generated from it with `pnpm openapi` in `backend/`. Change the definition first, regenerate, then change the callers.
+- `backend/src/api.ts` defines every REST endpoint except sign-in, which Better Auth serves at `/api/auth/*`, and `api/openapi.json` is generated from it with `pnpm openapi` in `backend/`. Change the definition first, regenerate, then change the callers.
 
 ## Formal specs
 

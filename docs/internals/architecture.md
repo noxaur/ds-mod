@@ -4,7 +4,7 @@ ds-mod has three parts. The mod runs in the player's game. The backend is our ow
 
 ## The backend is an Effect API inside a Void app
 
-Void deploys the backend to Cloudflare Workers and owns the database and the sign-in tables. The API itself is defined and handled with Effect, and one catch-all route hands each request to it. The split keeps the way out open. A move to a single machine needs a new entry point, and no change to a rule.
+Void deploys the backend to Cloudflare Workers and owns the database and the sign-in tables. The API itself is defined and handled with Effect, and one catch-all route hands each request to it. Sign-in is the exception: Void serves `/api/auth/*` with Better Auth before any route of ours, because Better Auth keeps the sessions every other route checks. A route that is not about a session belongs in the Effect API and its contract. The split keeps the way out open. A move to a single machine needs a new entry point, and no change to a rule.
 
 The contract is generated from the backend's API definition, because a hand-written one drifts. The mod is Kotlin and can share no types with the backend, so a file in a neutral format is the one thing both sides can hold to.
 
@@ -16,7 +16,7 @@ This proves who is asking and nothing about what they send. A signed-in client c
 
 Email and password sign-in is switched off, so no account exists that Mojang did not vouch for. A session ends 24 hours after it began and is never extended, so a stolen token dies by itself. The mod pays nothing for that, because it repeats the proof without the player noticing.
 
-The website has no sign-in page. A site that asked for the Microsoft login would need an Azure app that Mojang approves. Instead the mod, which is already signed in, trades its session for a link that works once within a minute. The token sits in the link's fragment, which a browser sends to no server and leaves out of the Referer, so the website takes it from the page's own script. The page then asks the player to confirm the account before it keeps the session, because anyone can send a player a link to their own account, and a browser signed in to it unnoticed would hand that person whatever the player does next.
+The website has no Microsoft login. A site that asked for it would need an Azure app that Mojang approves. Instead the mod, which is already signed in, trades its session for a link that works once within a minute. The token sits in the link's fragment, which a browser sends to no server and leaves out of the Referer, so the website takes it from the page's own script. The page then asks the player to confirm the account before it keeps the session, because anyone can send a player a link to their own account, and a browser signed in to it unnoticed would hand that person whatever the player does next.
 
 ## The mod knows the game only from packets
 
