@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.resources.Identifier
 import net.minecraft.util.ARGB
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /** A white sprite in `textures/gui/sprites/`, which [Kit.icon] tints. */
@@ -19,6 +20,7 @@ enum class Icon(val width: Int, val height: Int) {
     UP(5, 3),
     DOWN(5, 3),
     SEARCH(6, 7),
+    LOCK(5, 7),
     ;
 
     val sprite: Identifier = Identifier.fromNamespaceAndPath("dsmod", name.lowercase())
@@ -181,6 +183,32 @@ object Kit {
     fun icon(g: GuiGraphicsExtractor, icon: Icon, x: Int, y: Int, color: Int, shadow: Boolean = true) {
         if (shadow) g.blitSprite(RenderPipelines.GUI_TEXTURED, icon.sprite, x + 1, y + 1, icon.width, icon.height, ARGB.scaleRGB(color, 0.25f))
         g.blitSprite(RenderPipelines.GUI_TEXTURED, icon.sprite, x, y, icon.width, icon.height, color)
+    }
+
+    /** A 1px line of whole pixels from one point to another, with a dark line beside it so it reads over anything. */
+    fun line(g: GuiGraphicsExtractor, fromX: Int, fromY: Int, toX: Int, toY: Int, color: Int) {
+        val shadow = ARGB.scaleRGB(color, 0.25f)
+        val dx = abs(toX - fromX)
+        val dy = -abs(toY - fromY)
+        val sx = if (fromX < toX) 1 else -1
+        val sy = if (fromY < toY) 1 else -1
+        var error = dx + dy
+        var x = fromX
+        var y = fromY
+        while (true) {
+            rect(g, x + 1, y, 1, 1, shadow)
+            rect(g, x, y, 1, 1, color)
+            if (x == toX && y == toY) return
+            val twice = error * 2
+            if (twice >= dy) {
+                error += dy
+                x += sx
+            }
+            if (twice <= dx) {
+                error += dx
+                y += sy
+            }
+        }
     }
 
     /** A plain string in the theme's ink, which is chrome. Text that means something is built with `text { }`. */
