@@ -4,8 +4,7 @@ import { defineConfig } from "vite-plus";
 export default defineConfig({
   // The tests call the Effect API directly, and Void's plugin would start a second server inside the test runner.
   plugins: process.env["VITEST"] === undefined ? [voidPlugin()] : [],
-  // Void writes the migrations, so formatting them would only make its next one differ.
-  fmt: { ignorePatterns: [".void/**", "db/migrations/**"], printWidth: 120 },
+  fmt: { ignorePatterns: [".void/**"], printWidth: 120 },
   lint: {
     ignorePatterns: [".void/**"],
     jsPlugins: ["./lint/dsmod.js"],
