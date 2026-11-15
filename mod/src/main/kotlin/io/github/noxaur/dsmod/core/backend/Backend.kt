@@ -54,7 +54,7 @@ data class Request(
 ) {
     // The id names a file on the player's disk and a path on the backend, so it may hold nothing that leaves either.
     init {
-        require(id.matches(Regex("[A-Za-z0-9-]+"))) { "A request's id is letters, digits and dashes: $id" }
+        require(id.matches(Regex("[A-Za-z0-9-]{1,64}"))) { "A request's id is up to 64 letters, digits and dashes: $id" }
     }
 }
 
@@ -62,6 +62,9 @@ private object StrictBrief : KSerializer<Brief> by Brief.serializer() {
     override fun deserialize(decoder: Decoder): Brief =
         Json.decodeFromJsonElement(Brief.serializer(), (decoder as JsonDecoder).decodeJsonElement())
 }
+
+/** How an upload ended, when the backend answered it. Every answer but [SENT] means sending it again would fail again. */
+enum class Upload { SENT, UNKNOWN, CLOSED, TOO_BIG }
 
 /** A line, or an item, that reached a feature and failed to parse. */
 @Serializable
@@ -106,10 +109,20 @@ class Backend(private val url: String, private val identity: Identity, private v
         send { post("/v1/contrib/requests/$id/skip", BodyPublishers.noBody(), null, it) }
     }
 
-    /** Uploads the gzipped capture at [file] for request [id]. The backend takes at most [MAX_UPLOAD] bytes. */
-    fun submit(id: String, file: Path) {
+    /**
+     * Uploads the gzipped capture at [file] for request [id], and says whether the backend kept it or refused it for
+     * good. Any other failure, sign-in's included, throws, and the recording may be sent again. The backend takes at
+     * most [MAX_UPLOAD] bytes.
+     */
+    fun submit(id: String, file: Path): Upload {
         val query = "?modVersion=" + URLEncoder.encode(modVersion, Charsets.UTF_8)
-        send { post("/v1/contrib/requests/$id/submissions$query", BodyPublishers.ofFile(file), "application/octet-stream", it, UPLOAD_TIMEOUT) }
+        val response = send(REFUSED) { post("/v1/contrib/requests/$id/submissions$query", BodyPublishers.ofFile(file), "application/octet-stream", it, UPLOAD_TIMEOUT) }
+        return when (response.statusCode()) {
+            404 -> Upload.UNKNOWN
+            409 -> Upload.CLOSED
+            413 -> Upload.TOO_BIG
+            else -> Upload.SENT
+        }
     }
 
     fun unknowns(sightings: List<Sighting>) {
@@ -141,14 +154,17 @@ class Backend(private val url: String, private val identity: Identity, private v
         .header("Origin", origin)
         .header("Authorization", "Bearer $token")
 
-    /** Sends with the session, signs in first when there is none, and signs in again once when the backend says it ended. */
-    private fun send(call: (token: String) -> HttpResponse<String>): HttpResponse<String> {
+    /**
+     * Sends with the session, signs in first when there is none, and signs in again once when the backend says it
+     * ended. A status in [answers] is returned as an answer the caller reads, and any other failure throws.
+     */
+    private fun send(answers: Set<Int> = emptySet(), call: (token: String) -> HttpResponse<String>): HttpResponse<String> {
         var response = reach { call(token ?: signIn()) }
         if (response.statusCode() == 401) {
             token = null
             response = reach { call(signIn()) }
         }
-        if (response.statusCode() !in 200..299) throw BackendException(response.statusCode(), "The backend answered ${response.statusCode()}.")
+        if (response.statusCode() !in 200..299 && response.statusCode() !in answers) throw BackendException(response.statusCode(), "The backend answered ${response.statusCode()}.")
         return response
     }
 
@@ -184,6 +200,9 @@ class Backend(private val url: String, private val identity: Identity, private v
     companion object {
         /** The largest capture the backend keeps, which answers 413 above it. */
         const val MAX_UPLOAD = 10_000_000L
+
+        /** What the submissions route answers when it will never take this recording. */
+        private val REFUSED = setOf(404, 409, 413)
         private val TIMEOUT: Duration = Duration.ofSeconds(20)
         private val UPLOAD_TIMEOUT: Duration = Duration.ofSeconds(120)
     }

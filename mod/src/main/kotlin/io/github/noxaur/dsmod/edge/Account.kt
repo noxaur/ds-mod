@@ -61,8 +61,6 @@ object Account {
             400 -> "The backend could not read what was sent."
             401 -> "The backend would not sign you in."
             404 -> "The backend does not know that request."
-            409 -> "That request is closed, or it already has your recording."
-            413 -> "The recording is too big for the backend."
             503 -> "Mojang did not answer. Try again in a moment."
             else -> "The backend answered ${e.status}."
         }

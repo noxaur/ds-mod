@@ -1,8 +1,8 @@
 package io.github.noxaur.dsmod.edge.contribute
 
 import io.github.noxaur.dsmod.core.backend.Backend
-import io.github.noxaur.dsmod.core.backend.BackendException
 import io.github.noxaur.dsmod.core.backend.Request
+import io.github.noxaur.dsmod.core.backend.Upload
 import io.github.noxaur.dsmod.core.capture.redactCapture
 import io.github.noxaur.dsmod.core.contribute.Kept
 import io.github.noxaur.dsmod.core.contribute.Requirements
@@ -24,7 +24,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletionException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.fileSize
@@ -39,9 +38,6 @@ import kotlin.io.path.name
 object Contribute {
     private const val QUIT_SECONDS = 4L
     private val log = LoggerFactory.getLogger("dsmod")
-
-    /** Statuses that say the backend will never take this recording, so keeping it would only fail again. */
-    private val refused = setOf(400, 404, 409, 413)
 
     /** Kept files an upload holds, so a resend leaves them alone. */
     private val claimed = ConcurrentHashMap.newKeySet<Path>()
@@ -90,7 +86,7 @@ object Contribute {
         Chat.send(
             text {
                 body("Press "); value(Recording.key()); body(" to start recording, and again after each step. You have ")
-                value(clock(request.timeoutSeconds * 1000L)); body(". "); action("/dsmod cancel"); body(" stops without sending.")
+                body(clock(request.timeoutSeconds * 1000L) + ". "); action("/dsmod cancel"); body(" stops without sending.")
             },
         )
         return true
@@ -135,7 +131,7 @@ object Contribute {
                 log.error("Could not redact the recording {}", raw, e)
                 claimed.remove(gz)
                 Files.deleteIfExists(part)
-                tell { bad("The recording could not be prepared, so nothing was sent.") }
+                tell { bad("The recording could not be prepared, so nothing was sent. Open Contribute in the settings to record it again.") }
             } finally {
                 Files.deleteIfExists(raw)
             }
@@ -144,14 +140,15 @@ object Contribute {
 
     /** Sends a claimed [gz] and says how it went. A recording the backend refuses for good is deleted, and any other failure keeps it. */
     private fun upload(requestId: String, gz: Path) {
-        val upload = Account.backend.async { submit(requestId, gz) }.whenComplete { _, error ->
-            val failure = (error as? CompletionException)?.cause ?: error
+        val upload = Account.backend.async { submit(requestId, gz) }.whenComplete { answer, error ->
             try {
-                when {
-                    error == null -> Files.deleteIfExists(gz).also { tell { good("Sent. Thank you!") } }
-                    failure is BackendException && failure.status in refused ->
-                        Files.deleteIfExists(gz).also { tell { bad("Not sent, and deleted. " + Account.why(failure)) } }
-                    else -> tell { bad("Not sent. " + Account.why(failure!!) + " Your recording is kept. "); action("/dsmod submit"); bad(" tries again.") }
+                if (answer != null) Files.deleteIfExists(gz)
+                when (answer) {
+                    Upload.SENT -> tell { good("Sent. Thank you!") }
+                    Upload.UNKNOWN -> tell { bad("Not sent, and deleted. The backend no longer has that request.") }
+                    Upload.CLOSED -> tell { bad("Not sent, and deleted. That request is closed, has enough recordings, or already has yours.") }
+                    Upload.TOO_BIG -> tell { bad("Not sent, and deleted. The recording is too big for the backend.") }
+                    null -> tell { bad("Not sent. " + Account.why(error!!) + " Your recording is kept. "); action("/dsmod submit"); bad(" tries again.") }
                 }
             } finally {
                 claimed.remove(gz)

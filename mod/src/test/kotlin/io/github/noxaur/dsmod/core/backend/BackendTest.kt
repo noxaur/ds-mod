@@ -180,11 +180,36 @@ class BackendTest {
     }
 
     @Test
-    fun `a refused upload names its status`() {
+    fun `an upload the backend refuses for good is an answer, and any other failure throws`() {
         val file = Files.createTempFile("capture", ".gz")
-        answers["/v1/contrib/requests/r1/submissions"] = { 409 to "" }
+        val path = "/v1/contrib/requests/r1/submissions"
+        for ((status, answer) in listOf(404 to Upload.UNKNOWN, 409 to Upload.CLOSED, 413 to Upload.TOO_BIG, 200 to Upload.SENT)) {
+            answers[path] = { status to "" }
+            assertEquals(answer, backend.submit("r1", file))
+        }
+        // An empty 400 can be a body that broke on the way, and a 503 a backend that is down, so both may be sent again.
+        for (status in listOf(400, 503)) {
+            answers[path] = { status to "" }
+            assertEquals(status, assertFailsWith<BackendException> { backend.submit("r1", file) }.status)
+        }
+    }
 
-        assertEquals(409, assertFailsWith<BackendException> { backend.submit("r1", file) }.status)
+    @Test
+    fun `a sign-in the backend refuses is never read as a refused upload`() {
+        val file = Files.createTempFile("capture", ".gz")
+        val refusing = Backend(url, object : Identity {
+            override val name = "Steve"
+            override fun join(serverId: String) = error("no")
+        }, "1.2.3")
+
+        assertFailsWith<BackendException> { refusing.submit("r1", file) }
+    }
+
+    @Test
+    fun `an offer whose id is not a short name is left out`() {
+        answers["/v1/contrib/requests"] = { 200 to """[${offer.replace("\"r1\"", "\"../r1\"")}, ${offer.replace("\"r1\"", "\"${"a".repeat(65)}\"")}, $offer]""" }
+
+        assertEquals(listOf("r1"), backend.requests().map { it.id })
     }
 
     @Test
