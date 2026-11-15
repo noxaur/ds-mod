@@ -55,7 +55,7 @@ The code is split into two source sets, and each becomes its own mod.
 
 ## Seeing the game
 
-Agents see the game through captures. A capture is a JSONL file of what the server showed the client, one event per line. With the debug build, the user types `/dscapture` in game to start one and again to save it, and it lands in `dsmod/captures/` inside the game folder. It refuses while a brief is recording. Players record captures too, for a request an agent published, and the mod redacts and uploads those: [architecture](../docs/internals/architecture.md#a-contribution-is-a-brief-run-that-ends-in-an-upload).
+Agents see the game through captures. A capture is a JSONL file of what the server showed the client, one event per line. With the debug build, the user types `/dscapture` in game to start one and again to save it, and it lands in `dsmod/captures/` inside the game folder. It refuses while a brief is on. Players record captures too, for a request an agent published, and the mod redacts and uploads those: [architecture](../docs/internals/architecture.md#a-contribution-is-a-brief-run-that-ends-in-an-upload).
 
 Each line has a time `t`, a `type` and `data`. A type is either an event or a raw record.
 
