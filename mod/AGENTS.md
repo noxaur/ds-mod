@@ -106,7 +106,7 @@ An event's text is `plain` plus `spans`, with `§` codes already resolved into t
 
 - Run everything here through `./gradlew`, which fetches the rest.
 - `./gradlew check` must pass. It runs the tests and TLC on every spec in `../specs/`.
-- When you change `edge`, a screen or the build, also run `./gradlew runClientGameTest runProdClientGameTest`. Each boots the game behind the user, without taking their keyboard or their speakers. The second one loads the built jars the way a player does, so it catches packaging mistakes.
+- When you change `edge` or a screen, also run the game tests that cover it, by name: `./gradlew runClientGameTest -Pgametests=ChatTest,KitTest`. When you change the build, run `./gradlew runProdClientGameTest -Pgametests=SettingsScreenTest`, which loads the built jars the way a player does, so it catches packaging mistakes. Each boots the game behind the user, without taking their keyboard or their speakers. The beta pipeline runs every game test, so leave the whole suite to it.
 - To hear what a game test played, read `audio.wav` in its run folder, `build/run/clientGameTest/` or `build/run/prodClientGameTest/`. It holds the whole run from the game's start.
 - Versions are pinned in `gradle.properties`. The server decides the Minecraft version, so bump it only when the user asks.
 - A library that ships inside the release jar goes in the `shade` configuration and gets a `relocate` line and a `NOTICE` entry.

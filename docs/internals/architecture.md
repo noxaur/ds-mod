@@ -286,6 +286,10 @@ The window class is what lets a window manager tell the test from the game the d
 
 Both settings must be made from inside the game, just before it creates its window. A GLFW window hint lasts only until the next window, and Minecraft resets the hints first, so a launch flag can't carry it. OpenAL reads `ALSOFT_CONF` from the process environment when the first device opens, which a Java system property can't set, and Loom's production run task takes no environment. `wave` is the only driver listed, so when it fails the game is silent instead of falling back to the speakers.
 
+## A game test run names its tests
+
+Agents run game tests while they work, often several agents at once on the user's machine, and each one waits for its run to end. A run boots the game, which takes about 25 seconds, and each test then makes a fresh world, because Fabric ends every test on the title screen. The whole suite takes minutes, so a run must name its tests and the beta pipeline runs them all. `TestClock` fails a run when one test passes its cap, because a test that waits a fixed number of ticks costs every agent that runs it. The cap has room for a machine busy with other runs. `PerfTest` is exempt, because it measures over a fixed number of windows.
+
 ## CI's time limit is a step, not a timeout
 
 `timeout-minutes` cancels a job and says only that it was cancelled. It also can't tell a slow change from a cold cache: the first run after a version bump downloads Minecraft and takes about four minutes whatever the change does. The `time-limit` action runs last, reads when the job started, and fails with the time and what to do about it. It lets a run through when the cache was cold.
