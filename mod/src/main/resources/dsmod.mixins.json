@@ -6,12 +6,14 @@
     "ChatComponentAccessor",
     "CameraMixin",
     "ContainerScreenAccessor",
+    "DropKeyMixin",
     "ExplosionParticleMixin",
     "FullbrightMixin",
     "KeyPressMixin",
     "MouseTurnMixin",
     "PerspectiveKeyMixin",
-    "ServerPacketsMixin"
+    "ServerPacketsMixin",
+    "SlotClickMixin"
   ],
   "injectors": {
     "defaultRequire": 1
