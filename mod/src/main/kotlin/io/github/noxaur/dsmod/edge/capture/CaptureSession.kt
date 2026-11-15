@@ -214,7 +214,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
                                 put("z", entity.blockZ)
                                 put("nameVisible", entity.isCustomNameVisible)
                                 // The type already says what an entity recorded only for its glow, item or text is.
-                                if (named) put("name", texts.encode(entity.id, entity.displayName))
+                                if (named) put("name", texts.encode(entity.id to "name", entity.displayName))
                                 if (entity.isCurrentlyGlowing) put("glowing", true)
                                 if (equipment.isNotEmpty()) put("equipment", JsonObject(equipment))
                                 if (item != null) put("item", items.encode(entity.id to "item", item))
@@ -222,7 +222,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
                                     put("rotation", entity.rotation)
                                     put("facing", entity.direction.getName())
                                 }
-                                if (entity is Display.TextDisplay) put("text", texts.encode(entity.id, entity.text))
+                                if (entity is Display.TextDisplay) put("text", texts.encode(entity.id to "text", entity.text))
                             },
                         )
                     }
