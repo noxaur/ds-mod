@@ -290,9 +290,12 @@ tasks.register<net.fabricmc.loom.task.prod.ClientProductionRunTask>("runProdClie
     // A CI runner has no display.
     useXVFB = providers.environmentVariable("CI").isPresent
 }
-// Checked before anything compiles, so a run that names no tests fails at once.
-if (!gametests.isPresent && gradle.startParameter.taskNames.any { it.substringAfterLast(':') in setOf("runClientGameTest", "runProdClientGameTest") }) {
-    throw GradleException("Name the game tests that cover the change, as in -Pgametests=ChatTest,KitTest. Every test runs in the beta pipeline, and -Pgametests=all runs them here.")
+// Checked on the resolved graph, so an abbreviated task name counts too, and before anything compiles.
+val named = gametests.isPresent
+gradle.taskGraph.whenReady {
+    if (!named && allTasks.any { it.name == "runClientGameTest" || it.name == "runProdClientGameTest" }) {
+        throw GradleException("Name the game tests that cover the change, as in -Pgametests=ChatTest,KitTest. Every test runs in the beta pipeline, and -Pgametests=all runs them here.")
+    }
 }
 
 // `./gradlew cutFixture --args="<capture> <feature id> <name> <from>-<to> [--types a,b] [--info Key,Key] [--system regex]"`
