@@ -11,6 +11,7 @@ import io.github.noxaur.dsmod.core.feature.end.ProtectorStatus
 import io.github.noxaur.dsmod.core.feature.end.EyeGuard
 import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
 import io.github.noxaur.dsmod.core.feature.general.AbilityCooldowns
+import io.github.noxaur.dsmod.core.feature.general.ActivePet
 import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
@@ -20,6 +21,7 @@ import io.github.noxaur.dsmod.core.feature.general.EtherwarpOutline
 import io.github.noxaur.dsmod.core.feature.general.HideExplosions
 import io.github.noxaur.dsmod.core.feature.general.FreeLook
 import io.github.noxaur.dsmod.core.feature.general.InventoryHud
+import io.github.noxaur.dsmod.core.feature.general.PerformanceStats
 import io.github.noxaur.dsmod.core.feature.general.Fullbright
 import io.github.noxaur.dsmod.core.feature.general.ProfileViewer
 import io.github.noxaur.dsmod.core.feature.hud.ChatHudEditor
@@ -68,6 +70,16 @@ fun features(config: DsModConfig): List<Feature> = listOf(
         config.general::equipmentLook,
         config.general::equipmentPlacement,
     ),
+    ActivePet(
+        config.general::activePet,
+        config.general::activePetIcon,
+        config.general::activePetItem,
+        config.general::activePetXp,
+        config.general::activePetRate,
+        config.general::activePetNext,
+        config.general::markActivePet,
+        config.general::hideAutopet,
+    ),
     EtherwarpOutline(config.general::etherwarpOutline),
     HideExplosions(config.general::hideExplosions),
     InventoryHud(
@@ -78,6 +90,12 @@ fun features(config: DsModConfig): List<Feature> = listOf(
         config.general::inventoryLayout,
         config.general::inventoryOpacity,
         config.general::inventoryPickup,
+    ),
+    PerformanceStats(
+        config.general::performanceStats,
+        config.general::performanceValues,
+        config.general::performanceLayout,
+        config.general::performanceLook,
     ),
     FreeLook(config.general::freeLook),
     Fullbright(config.general::fullbright),

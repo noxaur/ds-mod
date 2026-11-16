@@ -145,6 +145,7 @@ object DsModClient : ClientModInitializer {
         CopyChats.register()
         SlotGuards.register(all.filterIsInstance<SlotLock>().single(), settings.inventory)
         CommandKeys.register(settings.general)
+        Pings.register(settings.general)
         readouts = Readouts(game, settings.hud).also { it.register() }
         ChatDrags.register(readouts, settings.hud, ::saveSettings)
         tabs = TabListPoller(game)
@@ -194,6 +195,7 @@ object DsModClient : ClientModInitializer {
             game.metrics.time("container-poll") { containers.poll(it) }
             // A pet changes when the player swaps it, so once a second is soon enough.
             if (ticks % PET_POLL_TICKS == 0) game.metrics.time("pet-poll") { pets.poll(it) }
+            Frames.tick(it)
             Packets.tick(it)
             game.tick(System.currentTimeMillis())
             readouts.push()

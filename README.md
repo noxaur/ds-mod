@@ -18,8 +18,10 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 
 ### HUD
 - **Ability Cooldowns** – Times every item ability, in a list and on the item's slot.
+- **Active Pet** – Shows your pet with its held item, its XP, and how long until it levels up.
 - **Equipment Display** – Shows your armor and pet as icons, on the HUD or beside your hotbar.
 - **Inventory HUD** – Shows your inventory as a grid on the HUD.
+- **Performance Stats** – Shows your FPS, your ping and the server's TPS, with a warning color when they lag.
 - **Chat HUD Editor** – Move any HUD block with the chat open, or open the full editor with `/dsmod hud`.
 
 ### Chat & Commands

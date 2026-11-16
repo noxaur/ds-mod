@@ -32,6 +32,9 @@ private const val BLOCK_GAP = 4
 private const val ITEM = 16
 private const val ITEM_PITCH = ITEM + 1
 
+// A block's icon stands this far left of its rows.
+private const val ICON_GAP = 4
+
 // The inventory leaves this much between its rows and the hotbar.
 private const val ROWS_GAP = 4
 
@@ -68,9 +71,14 @@ object Hud {
      */
     private class Row(val text: Component, val bar: BarRow?, val barColor: Int, val stacks: List<ItemStack?>?, val y: Int, val slot: Int, val x: Int = 0)
 
-    /** [alpha] is how solid the Inventory look's panel and slots are, and [pops] bobs an item as it lands, as the hotbar does. */
+    /**
+     * [alpha] is how solid the Inventory look's panel and slots are, and [pops] bobs an item as it lands, as the hotbar
+     * does. [icon] stands left of the rows, [iconY] down from the block's top.
+     */
     private class Block(
         val header: Component?,
+        val icon: ItemStack?,
+        val iconY: Int,
         val rows: List<Row>,
         val look: HudLook,
         val width: Int,
@@ -154,10 +162,14 @@ object Hud {
         var width = header?.let(font::width) ?: 0
         val built = stacksByItem[id].orEmpty()
         val kept = IdentityHashMap<Item, ItemStack>()
+        val icon = block.icon?.let { kept.getOrPut(it) { built[it] ?: it.toStack() } }
+        val iconY = height
+        // With an icon, every row starts past it.
+        val indent = if (icon != null) ITEM + ICON_GAP else 0
         // In columns the rows of icons stand side by side from where the first one starts. The hotbar's sprite only lies across.
         val columns = block.columns && !hotbar
         val pitch = pitch(block.look)
-        var columnX = 0
+        var columnX = indent
         var columnsTop = -1
         var columnsHeight = 0
         val rows = block.rows.map { row ->
@@ -174,10 +186,10 @@ object Hud {
                 return@map drawn
             }
             if (itemsRow?.apart == true) height += ROWS_GAP
-            val drawn = Row(row.text.toComponent(), bar, bar?.role?.argb() ?: 0, items, height, itemsRow?.slot ?: -1)
+            val drawn = Row(row.text.toComponent(), bar, bar?.role?.argb() ?: 0, items, height, itemsRow?.slot ?: -1, indent)
             width = maxOf(
                 width,
-                when {
+                indent + when {
                     items == null -> maxOf(font.width(drawn.text), if (bar != null) BAR_WIDTH else 0)
                     hotbar -> Kit.hotbarWidth(items.size)
                     inventory -> items.size * Kit.SLOT_SIZE + 2 * Kit.INSET
@@ -193,6 +205,7 @@ object Hud {
             drawn
         }
         if (columnsTop >= 0) height = maxOf(height, columnsTop + columnsHeight)
+        if (icon != null) height = maxOf(height, iconY + ITEM_PITCH)
         if (inventory) height += Kit.INSET
 
         stacksByItem[id] = kept
@@ -202,7 +215,7 @@ object Hud {
         // A block that joins, or whose place in the order changed, as when a live block turns into a stand-in, is sorted in.
         val moved = target.blocks[id]?.order != order
         target.blocks[id] = Block(
-            header, rows, block.look, width, height, placeable, block.overMenus, columns,
+            header, icon, iconY, rows, block.look, width, height, placeable, block.overMenus, columns,
             (block.opacity.coerceIn(0f, 1f) * Kit.OPAQUE).roundToInt(), block.pops, order,
         )
         if (moved) {
@@ -223,6 +236,9 @@ object Hud {
         groups.values.forEach { it.blocks.remove(id) }
         layout()
     }
+
+    /** Whether the player can see the HUD now: the game's own HUD is up, and Hide In F3 has not taken it off. */
+    val visible: Boolean get() = !Minecraft.getInstance().gui.hud.isHidden && !hiddenInF3()
 
     /** Whether Hide In F3 takes the HUD off now. A HUD the player cannot see can't be pointed at either. */
     private fun hiddenInF3() = DsModClient.settings.hud.hideInF3 && Minecraft.getInstance().debugOverlay.showDebugScreen()
@@ -278,6 +294,7 @@ object Hud {
             var y = 0
             for ((id, block) in visible) {
                 if (block.placeable) all += Placed(id, group.x.toFloat(), group.y + y * scale, plate(block.width), plate(block.height), scale, group.place.dock)
+                block.icon?.let { items += Cell(group.x + PADDING * scale, group.y + (y + PADDING + block.iconY) * scale, ITEM * scale, it) }
                 for (row in block.rows) {
                     row.stacks?.forEachIndexed { i, stack ->
                         if (stack != null) {
@@ -458,6 +475,10 @@ object Hud {
                     }
                 }
                 if (block.header != null) graphics.text(font, block.header, PADDING, top, -1, true)
+                block.icon?.let {
+                    graphics.item(it, PADDING, top + block.iconY)
+                    graphics.itemDecorations(font, it, PADDING, top + block.iconY)
+                }
                 for (r in block.rows.indices) {
                     val row = block.rows[r]
                     val y = top + row.y
@@ -504,9 +525,9 @@ object Hud {
                         }
                         continue
                     }
-                    graphics.text(font, row.text, PADDING, y, -1, true)
+                    graphics.text(font, row.text, PADDING + row.x, y, -1, true)
                     val bar = row.bar
-                    if (bar != null) Kit.bar(graphics, PADDING, y + line, BAR_WIDTH, bar.fraction, row.barColor)
+                    if (bar != null) Kit.bar(graphics, PADDING + row.x, y + line, BAR_WIDTH, bar.fraction, row.barColor)
                 }
                 top += block.height + BLOCK_GAP
             }

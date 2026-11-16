@@ -7,6 +7,7 @@ import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.game.InfoRows
+import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudBuilder
@@ -199,8 +200,9 @@ abstract class Feature(val id: String, internal val toggle: KMutableProperty0<Bo
         columns: Boolean = false,
         opacity: Float = 1f,
         pops: Boolean = false,
+        icon: Item? = null,
         rows: HudBuilder.() -> Unit,
-    ) = HudBlock(if (headed) header else text {}, HudBuilder().apply(rows).rows, look, dock, overMenus, columns, opacity, pops)
+    ) = HudBlock(if (headed) header else text {}, HudBuilder().apply(rows).rows, look, dock, overMenus, columns, opacity, pops, icon)
 
     /**
      * The marks on the open container, by slot index, or none. Called when [hud] is, so return the same

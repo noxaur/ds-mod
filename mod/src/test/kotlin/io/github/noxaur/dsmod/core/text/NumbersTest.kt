@@ -68,4 +68,12 @@ class NumbersTest {
         assertEquals("1k", short(999.96, 1))
         assertEquals("-1.2M", short(-1_234_567.0, 1))
     }
+
+    @Test
+    fun `a wait reads in whole minutes rounded up, and under a minute when none are left`() {
+        assertEquals("<1m", duration(0))
+        assertEquals("1m", duration(20_000))
+        assertEquals("3h 5m", duration((3 * 60 + 5) * 60_000L))
+        assertEquals("2d 4h", duration((52 * 60) * 60_000L))
+    }
 }

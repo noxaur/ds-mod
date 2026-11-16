@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.rules
 
 import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
@@ -11,10 +12,14 @@ import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldInsnNode
 import org.objectweb.asm.tree.InsnNode
 import org.objectweb.asm.tree.InvokeDynamicInsnNode
+import org.objectweb.asm.tree.LabelNode
 import org.objectweb.asm.tree.LdcInsnNode
+import org.objectweb.asm.tree.LineNumberNode
+import org.objectweb.asm.tree.LocalVariableNode
 import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.MethodNode
 import org.objectweb.asm.tree.TypeInsnNode
+import org.objectweb.asm.tree.VarInsnNode
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
@@ -252,6 +257,21 @@ private fun shape(node: ClassNode, mixin: AnnotationNode, sinks: Sinks): Shape {
     return Shape(draws && hooked, readOnly && reads && !hooked, does.distinct())
 }
 
+/**
+ * Kotlin copies its debug data, which [ClassReader.SKIP_DEBUG] drops as attributes, into annotations too: the source
+ * map, whose lines for an inlined call such as `DsModClient.runs` move with the file it is inlined from, and a
+ * coroutine's lines and local names. Only debuggers and stack traces read them.
+ */
+private val DEBUG_ANNOTATIONS = setOf("Lkotlin/jvm/internal/SourceDebugExtension;", "Lkotlin/coroutines/jvm/internal/DebugMetadata;")
+
+/** A class without its line numbers, local names, source file and source map, so moving a line keeps the audit. */
+private fun behavior(bytes: ByteArray) = ClassWriter(0).also { writer ->
+    ClassReader(bytes).accept(object : ClassVisitor(Opcodes.ASM9, writer) {
+        override fun visitAnnotation(descriptor: String, visible: Boolean) =
+            if (descriptor in DEBUG_ANNOTATIONS) null else super.visitAnnotation(descriptor, visible)
+    }, ClassReader.SKIP_DEBUG)
+}.toByteArray()
+
 private fun hash(digest: MessageDigest) = digest.digest().joinToString("") { "%02x".format(it) }.take(12)
 
 /** Every input site in [classes], the bytes of the compiled release classes, and in the access widener's [widener] lines. */
@@ -277,8 +297,7 @@ fun inputSites(classes: List<ByteArray>, widener: List<String> = emptyList()): L
             node.methods.flatMap { m -> m.instructions.filterIsInstance<LdcInsnNode>().mapNotNull { (it.cst as? Type)?.internalName } }
         }.filter { "${MOD}core/feature/Feature" in sinks.lineage(it) && it != "${MOD}core/feature/Feature" }.map { it.substringAfterLast('/') }.distinct().sorted()
         val digest = MessageDigest.getInstance("SHA-256")
-        // Without debug attributes, so moving a line or renaming a local keeps the audit.
-        members.sortedBy { it.first.name }.forEach { (_, bytes) -> digest.update(ClassWriter(0).also { ClassReader(bytes).accept(it, ClassReader.SKIP_DEBUG) }.toByteArray()) }
+        members.sortedBy { it.first.name }.forEach { (_, bytes) -> digest.update(behavior(bytes)) }
         gates += InputSite.Gate(display(group), if (draws) DRAWS else hash(digest), does, features)
         // A drawing mixin's code is not approved line by line, so a call it makes into a gate that acts is listed.
         if (draws) continue
@@ -422,6 +441,50 @@ class InputSitesTest {
     }
 
     @Test
+    fun `a gate's hash follows its code and not its lines`() {
+        /**
+         * A gate as Kotlin compiles it: [line] is where its call is, [inlined] the line of `DsModClient.runs` its source
+         * map points at, and the debug data that names both is written as attributes and as annotations.
+         */
+        fun gate(line: Int, inlined: Int, push: Int = Opcodes.ICONST_0, send: String = "sendCommand"): String {
+            val smap = "SMAP\nGate.kt\nKotlin\n*S Kotlin\n*F\n+ 1 Gate.kt\n${MOD}example/Gate\n+ 2 DsModClient.kt\n${MOD}edge/DsModClient\n*L\n" +
+                "1#1,40:1\n$inlined#2:41\n*S KotlinDebug\n*F\n+ 1 Gate.kt\n${MOD}example/Gate\n*L\n$line#1:41\n*E\n"
+            val node = ClassNode().apply {
+                version = Opcodes.V21
+                access = Opcodes.ACC_PUBLIC
+                name = "${MOD}example/Gate"
+                superName = "java/lang/Object"
+                sourceFile = "Gate.kt"
+                sourceDebug = smap
+                invisibleAnnotations = mutableListOf(AnnotationNode("Lkotlin/jvm/internal/SourceDebugExtension;").apply { values = mutableListOf("value", listOf(smap)) })
+                visibleAnnotations = mutableListOf(AnnotationNode("Lkotlin/coroutines/jvm/internal/DebugMetadata;").apply {
+                    values = mutableListOf("f", "Gate.kt", "l", listOf(line), "n", listOf("\$this\$run"))
+                })
+                methods.add(MethodNode(Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "run", "()V", null, null).apply {
+                    val start = LabelNode()
+                    val end = LabelNode()
+                    instructions.add(start)
+                    instructions.add(LineNumberNode(line, start))
+                    // Kotlin marks an inlined call with a local named for the function.
+                    instructions.add(InsnNode(push))
+                    instructions.add(VarInsnNode(Opcodes.ISTORE, 0))
+                    instructions.add(InsnNode(Opcodes.ACONST_NULL))
+                    instructions.add(MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/multiplayer/ClientPacketListener", send, "(Ljava/lang/String;)V"))
+                    instructions.add(end)
+                    instructions.add(InsnNode(Opcodes.RETURN))
+                    localVariables = mutableListOf(LocalVariableNode("\$i\$f\$runs", "I", null, start, end, 0))
+                })
+            }
+            return inputSites(listOf(ClassWriter(ClassWriter.COMPUTE_MAXS).also(node::accept).toByteArray())).filterIsInstance<InputSite.Gate>().single().hash
+        }
+        val base = gate(line = 16, inlined = 84)
+        assertEquals(base, gate(line = 21, inlined = 84), "Moving the gate's code down changed its hash.")
+        assertEquals(base, gate(line = 16, inlined = 86), "A blank line above DsModClient.runs changed the hash of the gate that inlines it.")
+        assertTrue(base != gate(line = 16, inlined = 84, push = Opcodes.ICONST_1), "Changing an instruction kept the gate's hash.")
+        assertTrue(base != gate(line = 16, inlined = 84, send = "sendChat"), "Changing what the gate calls kept its hash.")
+    }
+
+    @Test
     fun `the scan catches each kind of input site`() {
         class M(
             val name: String, vararg val insns: AbstractInsnNode, val desc: String = "()V",
@@ -506,7 +569,7 @@ class InputSitesTest {
                 // A container screen of the mod's own that forwards its close to Minecraft's.
                 example(
                     "Closing",
-                    M("onClose", org.objectweb.asm.tree.VarInsnNode(Opcodes.ALOAD, 0),
+                    M("onClose", VarInsnNode(Opcodes.ALOAD, 0),
                         MethodInsnNode(Opcodes.INVOKESPECIAL, "net/minecraft/client/gui/screens/inventory/InventoryScreen", "onClose", "()V"), access = Opcodes.ACC_PUBLIC),
                     superName = "net/minecraft/client/gui/screens/inventory/InventoryScreen",
                 ),

@@ -46,6 +46,12 @@ The tab list and the open container are client state, so the edge polls them. An
 
 A block the server placed before its chunk reached the client comes with no update at all, so a marker head that already stands is found by reading each chunk as it loads. A head is posted only when its skull has a skin, whether it came with the chunk or as a block update. The End is decorated with plain heads, and one of those posted as a marker would send the Protector's beam to a wall.
 
+## Ping is asked for, and TPS is read from the server's clock
+
+dragsim.co writes 0 for every player's latency in the tab list, so the tab list cannot give Performance Stats a ping. Nothing the client already sends and receives gives a round trip while the player stands still: the client answers keep-alives and the server's own pings without seeing the other leg, and a block or use acknowledgement comes back only when the player acts. So `Pings` sends vanilla's ping request, the one the F3 network chart sends, once a second, and only while Ping is shown on dragsim.co, and it is the one place the mod does. The answers arrive as `PingMeasured`, the chart's own included.
+
+The server sends its world's tick count about once a second, and a server that lags sends it late. The ticks over the time between the oldest and the newest count of the last ten seconds give its rate. One packet's interval alone would swing with every jitter in the network. A server that stops ticking stops sending, so a window that ended at the newest count would keep showing full speed through a freeze, and once the newest is three seconds old the wait counts as time with no ticks.
+
 ## Game says that a line was hidden, not the feature
 
 A player did not ask for a server line to go missing, so the first time a feature that is on by default hides one, the player is told where its switch is. Each feature used to write this notice itself, and only prose asked for it, which a new feature could skip. `Game` now sends it from `hide()`, reading the switch's name, section and default from `SettingsTree`, and keeps who has told in `hidden.json`. A feature the player turned on hides what they asked it to, so it says nothing.
@@ -57,6 +63,12 @@ Ability Cooldowns keeps no list of abilities. The server names each use, in the 
 The refusal `This ability is on cooldown for 3.35s` names no ability, so it goes to the timer whose end lies nearest the server's, and two that close are left alone. Matching by the held item was rejected because the refusal answers a press a round trip earlier, and the player may have scrolled since. The timers run on the wall clock, while the server counts its own ticks and falls behind when it lags, so a timer can read Ready a little early. Each refusal puts the timer back on the server's count.
 
 Riftwalker's blink is the one cooldown the server shows nothing of, so it starts on `Hit`, the player's own attack as the client sends it. `Hit` carries only the entity's type, because the charge needs nothing more, and a hit while the bonus charges does not restart it.
+
+## A pet's XP is read from the menu and moved by Combat XP
+
+dragsim.co shows a pet's XP only on its item in the Pets menu, so Active Pet takes each read as an exact point in time, and two reads at one level give the rate. Between reads the only thing that moves is the Combat XP the action bar shows behind each kill, and how much of it reaches the pet is the server's rule, which no capture shows. So the rule is not written down: the reads learn the pet XP per Combat XP, and each read puts the live estimate back on the server's number. Only a pet whose footer says `COMBAT PET` is moved this way, since another kind gains from another skill. A Combat XP line counts only right behind a death, as in Zealot Tracker, because the server repeats the last one for about a second.
+
+The Pets menu sends no `custom_data` on its pet items, while the Auction House sends each pet's `item_uuid`. So Active Pet keys what it remembers by that uuid when an item has one and by the pet's name when not, and two pets of one name share what the last menu read showed of either.
 
 ## Saved state belongs to the feature, and the disk to the edge
 
