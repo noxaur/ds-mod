@@ -19,6 +19,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.util.ARGB
 import kotlin.math.abs
+import kotlin.math.floor
 import kotlin.math.roundToInt
 
 /** A white sprite in `textures/gui/sprites/`, which [Kit.icon] tints. */
@@ -643,6 +644,16 @@ object Kit {
     /** Fills the 16x16 item area at [x], [y] behind the item. */
     fun slotFill(g: GuiGraphicsExtractor, x: Int, y: Int, color: Int) = rect(g, x, y, 16, 16, color)
 
+    /**
+     * The game's own cooldown wash over the 16x16 item at [x], [y]: half-white over the bottom [left] of it, so it drains
+     * down as the wait runs out, the way an ender pearl's does. The same in both themes, because it lies on the item.
+     */
+    fun cooldown(g: GuiGraphicsExtractor, x: Int, y: Int, left: Float) {
+        if (left <= 0f) return
+        val top = y + floor(16 * (1 - left.coerceAtMost(1f))).toInt()
+        rect(g, x, top, 16, y + 16 - top, ARGB.white(COOLDOWN_ALPHA))
+    }
+
     /** Frames the 16x16 item area at [x], [y] with a full 18x18 square, such as the two slots of a link. */
     fun slotBorder(g: GuiGraphicsExtractor, x: Int, y: Int, color: Int) {
         rect(g, x - 1, y - 1, 18, 1, color)
@@ -786,6 +797,7 @@ object Kit {
     private fun channel(from: Int, to: Int, amount: Float) = (from + (to - from) * amount).roundToInt()
 
     private const val DIM_ALPHA = 184
+    private const val COOLDOWN_ALPHA = 0.5f
     const val OPAQUE = 255
     private const val HOVER_STRENGTH = 0.5f
     private const val VEIL_ALPHA = 190

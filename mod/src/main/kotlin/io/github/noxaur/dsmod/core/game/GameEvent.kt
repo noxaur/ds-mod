@@ -93,6 +93,15 @@ data class SlotChanged(val slot: Int, val item: Item? = null) : GameEvent
 data class PetNear(val name: ServerText, val head: Item) : GameEvent
 
 /**
+ * The player's own attack landed on a living [entity] that is not an armor stand, such as `minecraft:enderman`, as the
+ * client sends it. The server says nothing of a hit, so this is the one event the player makes rather than the server.
+ * Posted only while a feature reads it.
+ */
+@Serializable
+@SerialName("hit")
+data class Hit(val entity: String) : GameEvent
+
+/**
  * The server put up text that floats in the world: a text display, the moment its [text] arrives or changes. Damage
  * numbers, NPC names and holograms are all these. A handler may `hide()` it or `replace()` its text, on this client
  * only, until the server changes the text again. Posted only while a feature reads it.

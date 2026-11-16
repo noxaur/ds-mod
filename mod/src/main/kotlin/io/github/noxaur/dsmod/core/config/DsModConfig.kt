@@ -199,6 +199,24 @@ class DsModConfig {
         }
 
         @JvmField
+        var abilityCooldowns = true
+
+        @JvmField
+        var cooldownList = true
+
+        @JvmField
+        var cooldownOnItems = true
+
+        @JvmField
+        var cooldownShortest = 2f
+
+        @JvmField
+        var cooldownReadyAlert = false
+
+        @JvmField
+        var cooldownAlertFrom = 20f
+
+        @JvmField
         var equipmentDisplay = true
 
         @JvmField
