@@ -64,15 +64,13 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
     /** The ids of the blocks standing in for a feature with nothing to show, while [placeholders] is on. */
     val standIns = HashSet<String>()
 
-    fun register() {
-        ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
-            if (screen !is AbstractContainerScreen<*>) return@register
-            // The marks are for the container the last poll saw, and this screen may show another. The next tick hands them over again.
-            game.readouts.forEach { Slots.clear(it.feature.id) }
-            handed.fill(-1)
-            // Slots drops every mark when the screen closes, and the hotbar still wants the inventory's.
-            ScreenEvents.remove(screen).register { handed.fill(-1) }
-        }
+    /** Call when a container screen opens. */
+    fun opened(screen: AbstractContainerScreen<*>) {
+        // The marks are for the container the last poll saw, and this screen may show another. The next tick hands them over again.
+        game.readouts.forEach { Slots.clear(it.feature.id) }
+        handed.fill(-1)
+        // Slots drops every mark when the screen closes, and the hotbar still wants the inventory's.
+        ScreenEvents.remove(screen).register { handed.fill(-1) }
     }
 
     /** Call once a tick, after [Game.tick]. */

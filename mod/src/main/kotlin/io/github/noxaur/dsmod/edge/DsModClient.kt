@@ -11,7 +11,6 @@ import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.features
-import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.LeftServer
@@ -39,6 +38,8 @@ import net.minecraft.client.Minecraft
 import org.slf4j.LoggerFactory
 import java.net.InetAddress
 import java.net.InetSocketAddress
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 
 object DsModClient : ClientModInitializer {
     private const val FLUSH_TICKS = 20 * 60
@@ -52,7 +53,8 @@ object DsModClient : ClientModInitializer {
         private set
     lateinit var game: Game
         private set
-    private lateinit var readouts: Readouts
+    lateinit var readouts: Readouts
+        private set
     lateinit var saved: SavedFiles
         private set
     private lateinit var tabs: TabListPoller
@@ -87,6 +89,9 @@ object DsModClient : ClientModInitializer {
     fun runs(type: Class<out Feature>): Boolean = byType[type]?.runs == true
 
     inline fun <reified F : Feature> runs() = runs(F::class.java)
+
+    /** The feature of [type] that runs now. */
+    fun <F : Feature> feature(type: Class<F>): F = type.cast(byType.getValue(type))
 
     /**
      * Opens the settings over the screen shown now, which Done goes back to, where the player left them: at the row
@@ -126,14 +131,38 @@ object DsModClient : ClientModInitializer {
         }
     }
 
-    override fun onInitializeClient() {
-        file = ConfigFile(FabricLoader.getInstance().configDir.resolve("dsmod/config.json"))
-        settings = file.load().apply { favorites = SettingsTree.favorites(favorites) }
-        warnUnreadable()
+    /** Builds what a launch starts from: every feature, the game's state, what the player saved, and what reads and shows them. */
+    private fun start() {
         val all = features(settings)
         game = Game(all) { active }
         byType = all.associateBy { it.javaClass }
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
+        readouts = Readouts(game, settings.hud)
+        tabs = TabListPoller(game)
+        sidebars = SidebarPoller(game)
+        containers = ContainerPoller(game)
+        pets = PetPoller(game)
+        game.metrics.sinks += { snapshot ->
+            snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }
+        }
+    }
+
+    /**
+     * Saves, runs [between], then starts again from what a launch loads, so no feature keeps what it saw. The game tests
+     * call it before each test, as Fabric restores the game's options, and clear the saved files in [between], so a test
+     * passes whichever ran before it.
+     */
+    fun restart(between: () -> Unit = {}) {
+        saved.close()
+        between()
+        start()
+    }
+
+    override fun onInitializeClient() {
+        file = ConfigFile(FabricLoader.getInstance().configDir.resolve("dsmod/config.json"))
+        settings = file.load().apply { favorites = SettingsTree.favorites(favorites) }
+        warnUnreadable()
+        start()
         Kit.register()
         Looks.register()
         SlotArts.register()
@@ -148,15 +177,11 @@ object DsModClient : ClientModInitializer {
         ArmorSwapGuards.register()
         EyeGuards.register()
         CopyChats.register()
-        SlotGuards.register(all.filterIsInstance<SlotLock>().single(), settings.inventory)
+        SlotGuards.register(settings.inventory)
         CommandKeys.register(settings.general)
         Pings.register(settings.general)
-        readouts = Readouts(game, settings.hud).also { it.register() }
-        ChatDrags.register(readouts, settings.hud, ::saveSettings)
-        tabs = TabListPoller(game)
-        sidebars = SidebarPoller(game)
-        containers = ContainerPoller(game)
-        pets = PetPoller(game)
+        ScreenEvents.AFTER_INIT.register { _, screen, _, _ -> if (screen is AbstractContainerScreen<*>) readouts.opened(screen) }
+        ChatDrags.register(settings.hud, ::saveSettings)
         Editors.register(Canvas.HUD_LAYOUT) { panel, host -> @Suppress("UNCHECKED_CAST") HudLayoutEditor(panel as Panel<Map<String, DsModConfig.Position>>, readouts, host) }
         Editors.register(Canvas.MENU_TABS) { panel, host -> @Suppress("UNCHECKED_CAST") TabPlacesEditor(panel as Panel<List<MenuTab>>, host) }
         Editors.register(Canvas.PLAYER_MODEL) { _, _ -> PlayerPreview() }
@@ -166,9 +191,6 @@ object DsModClient : ClientModInitializer {
         Recording.register()
         Contribute.register()
         Profiles.registerNames()
-        game.metrics.sinks += { snapshot ->
-            snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }
-        }
 
         ClientReceiveMessageEvents.ALLOW_GAME.register { message, overlay ->
             // A server may send the action bar as a chat line marked as an overlay, or as its own packet, which `Packets` sees.

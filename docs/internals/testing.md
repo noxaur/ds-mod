@@ -34,6 +34,10 @@ Agents run game tests while they work, often several agents at once on the user'
 
 `TestClock` fails a run when one test passes its cap, because a test that waits a fixed number of ticks costs every agent that runs it. The cap has room for a machine busy with other runs. `PerfTest` is exempt, because it measures over a fixed number of windows.
 
+## Each game test starts the mod afresh
+
+Every test in a run shares one game, because a boot per test would multiply the run's time. Fabric restores the game's options before each test, but the mod's state carried over: a timer one test started still counted down on the HUD of the next, and a test that compares frames to the pixel failed only after it. A run that picks some of the tests changes which test comes before which, so a test that passed in the full order failed in a picked one. So before each test the settings go back to their defaults and the mod starts again as a launch with no saved files would, through `DsModClient.restart`. The settings are reset in place, because the features and the edge's listeners hold their sections. A fresh game per test was rejected for its boot time, and a test that cleans up after itself for leaving the next leak to be found the same way.
+
 ## CI's time limit is a step, not a timeout
 
 `timeout-minutes` cancels a job and says only that it was cancelled. It also can't tell a slow change from a cold cache: the first run after a version bump downloads Minecraft and takes about four minutes whatever the change does. The `time-limit` action runs last, reads when the job started, and fails with the time and what to do about it. It lets a run through when the cache was cold.

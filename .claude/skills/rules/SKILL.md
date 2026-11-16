@@ -51,6 +51,7 @@ All of them run in `mise run check`, except the game tests and the CI rules.
 | A capture type has one producer | `CaptureWriter` rejects a raw record with an event's type |
 | The jars a player installs boot and open settings | `runProdClientGameTest` |
 | A unit test run takes at most 30 seconds | `timeout` on `tasks.test` in `mod/build.gradle.kts`, and `scripts/test-time-limit.ts` in `backend/` and in `web/`, the global setup of the tests in each `vite.config.ts` |
+| A game test passes whichever tests ran before it | `FreshStart` in `mod/src/gametest/` starts the mod afresh before each test |
 | A game test takes at most 20 seconds, its world included | `TestClock` in `mod/src/gametest/` |
 | A game test run names the tests it runs | The `gametests` check in `mod/build.gradle.kts` |
 | A CI job takes at most 3 minutes | `.github/actions/time-limit`, the last step of every job in `ci.yml` |

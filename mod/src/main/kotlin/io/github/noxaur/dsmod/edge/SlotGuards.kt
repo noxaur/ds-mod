@@ -39,7 +39,7 @@ object SlotGuards {
     /** Ticks to wait for the server to put the next crafting result back, before giving up. */
     private const val RESULT_WAIT = 5
 
-    private lateinit var feature: SlotLock
+    private val feature get() = DsModClient.feature(SlotLock::class.java)
     private lateinit var settings: DsModConfig.Inventory
 
     private val on: Boolean get() = DsModClient.runs<SlotLock>()
@@ -78,8 +78,7 @@ object SlotGuards {
     private var pending: Pair<AbstractContainerScreen<*>, Int>? = null
     private var pendingWaits = 0
 
-    fun register(feature: SlotLock, settings: DsModConfig.Inventory) {
-        this.feature = feature
+    fun register(settings: DsModConfig.Inventory) {
         this.settings = settings
         // The server refills a crafting result after the click, so the next craft waits for that packet.
         ClientTickEvents.END_CLIENT_TICK.register { client ->
