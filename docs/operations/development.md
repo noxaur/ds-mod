@@ -16,8 +16,8 @@ This gives the pinned JDK, Node and pnpm. Gradle comes from `mod/gradlew`, which
 | Part | Command | Notes |
 | --- | --- | --- |
 | Mod | `cd mod && ./gradlew runClient` | Starts the game with the debug build. |
-| Backend | `cd backend && pnpm install && pnpm dev` | Listens on `127.0.0.1:8787` only. |
-| Website | `cd web && pnpm install && pnpm dev` | Reads the backend at `BACKEND_URL`, `http://127.0.0.1:8787` by default. |
+| Backend | `cd backend && pnpm install && pnpm dev` | Listens on `127.0.0.1:16385` only. |
+| Website | `cd web && pnpm install && pnpm dev` | Reads the backend at `BACKEND_URL`, `http://127.0.0.1:16385` by default. |
 
 `runClient` signs in with the user's Microsoft account through DevAuth. It also loads Sodium, Mod Menu and the other mods in the `devMods` configuration. They don't ship in any jar.
 
