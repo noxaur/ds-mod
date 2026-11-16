@@ -26,6 +26,8 @@ The window class is what lets a window manager tell the test from the game the d
 
 Both settings must be made from inside the game, just before it creates its window. A GLFW window hint lasts only until the next window, and Minecraft resets the hints first, so a launch flag can't carry it. OpenAL reads `ALSOFT_CONF` from the process environment when the first device opens, which a Java system property can't set, and Loom's production run task takes no environment. `wave` is the only driver listed, so when it fails the game is silent instead of falling back to the speakers.
 
+The window has no keyboard focus, yet the game believes it has. Fabric marks it focused as the run starts and drops the window's own focus events, and it cancels the cursor grab, so a focused test game never takes the developer's mouse. The game hands a screen its mouse moves only while focused, so a drag in a test needs that focus, and the harness gives it back before each test in case one took it away.
+
 ## A game test run names its tests
 
 Agents run game tests while they work, often several agents at once on the user's machine, and each one waits for its run to end. A run boots the game, which takes about 25 seconds, and each test then makes a fresh world, because Fabric ends every test on the title screen. The whole suite takes minutes, so a run must name its tests and the beta pipeline runs them all.

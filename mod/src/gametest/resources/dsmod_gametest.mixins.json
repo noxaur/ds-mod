@@ -5,6 +5,7 @@
   "client": [
     "BackgroundWindowMixin",
     "ClickSpyMixin",
+    "FocusEachTestMixin",
     "HandAccessor",
     "HudAccessor"
   ],
