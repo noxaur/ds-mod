@@ -21,7 +21,7 @@ enum class Views(private val label: String, private val skipped: View?) {
     override fun toString() = label
 }
 
-/** Whether the Free Look key is held down or pressed once to switch. */
+/** Whether a feature's key, such as Free Look's, is held down or pressed once to switch. */
 enum class KeyMode(private val label: String) {
     HOLD("Hold"),
     TOGGLE("Toggle"),

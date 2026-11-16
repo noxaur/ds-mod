@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.brigadier.arguments.StringArgumentType
 import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
 import io.github.noxaur.dsmod.core.config.DsModConfig
@@ -89,6 +90,11 @@ object DsModClient : ClientModInitializer {
     fun openHudEditor() =
         Minecraft.getInstance().let { it.setScreenAndShow(HudEditorScreen(readouts, config.instance.hud, it.gui.screen(), config::saveToFile)) }
 
+    /** The game's own key event, which it sends only with no screen open, so the editor key does nothing over a screen. */
+    fun pressed(key: InputConstants.Key) {
+        if (Keys.matches(key, settings.hud.editKey)) Minecraft.getInstance().schedule { openHudEditor() }
+    }
+
     fun openRarityStyle() =
         Minecraft.getInstance().let { it.setScreenAndShow(RarityStyleScreen(config.instance.inventory, it.gui.screen(), config::saveToFile)) }
 
@@ -168,6 +174,7 @@ object DsModClient : ClientModInitializer {
             Packets.tick(it)
             game.tick(System.currentTimeMillis())
             readouts.push()
+            InventoryKey.tick(it)
             Contribute.tick(game, config.instance.contribute.reportGameData, System.currentTimeMillis())
             if (++ticks % FLUSH_TICKS == 0) {
                 saved.flush()

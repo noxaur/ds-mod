@@ -22,6 +22,7 @@ import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLook
 import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
+import io.github.noxaur.dsmod.core.feature.general.InventoryLayout
 import io.github.noxaur.dsmod.core.feature.general.InventoryLook
 import io.github.noxaur.dsmod.core.feature.general.InventoryRow
 import io.github.noxaur.dsmod.core.feature.general.PetLook
@@ -392,7 +393,44 @@ class DsModConfig : Config() {
         @ConfigOption(name = "Inventory Look", desc = "Show the items on the plate, on nothing, or as your inventory.")
         @ConfigEditorDropdown
         @JvmField
-        var inventoryLook = InventoryLook.PLATE
+        var inventoryLook = InventoryLook.INVENTORY
+
+
+        @Expose
+        @ConfigOption(name = "Inventory Placement", desc = "Keep the grid where you put it, or beside your hotbar.")
+        @ConfigEditorDropdown
+        @JvmField
+        var inventoryPlacement = HudDock.FREE
+
+        @Expose
+        @ConfigOption(name = "Inventory Key", desc = "Pick a key that shows or hides the grid, or none to always show it.")
+        @ConfigEditorKeybind(defaultKey = NO_KEY)
+        @JvmField
+        var inventoryKey = NO_KEY
+
+        @Expose
+        @ConfigOption(name = "Inventory Key Mode", desc = "Pick Hold to show the grid while the key is down, or Toggle.")
+        @ConfigEditorDropdown
+        @JvmField
+        var inventoryKeyMode = KeyMode.TOGGLE
+
+        @Expose
+        @ConfigOption(name = "Inventory Layout", desc = "Lay each row out across, as in the inventory, or down.")
+        @ConfigEditorDropdown
+        @JvmField
+        var inventoryLayout = InventoryLayout.ROWS
+
+        @Expose
+        @ConfigOption(name = "Inventory Opacity", desc = "Set how solid the Inventory look's panel is, from 0 to 100.")
+        @ConfigEditorSlider(minValue = 0f, maxValue = 100f, minStep = 5f)
+        @JvmField
+        var inventoryOpacity = 100f
+
+        @Expose
+        @ConfigOption(name = "Pickup Animation", desc = "Bob an item in the grid as it lands, as the hotbar does.")
+        @ConfigEditorBoolean
+        @JvmField
+        var inventoryPickup = false
 
         @Expose
         @ConfigOption(name = "Etherwarp Outline", desc = "Box the block Etherwarp will take you to while you sneak.")
@@ -534,12 +572,6 @@ class DsModConfig : Config() {
         private companion object {
             /** GLFW's code for the left Alt key. */
             const val LEFT_ALT = 342
-
-            /**
-             * No key. DragSim Utils and Odin open on Right Shift, and a player who runs either would open two
-             * screens with one press, so the player picks a key of their own.
-             */
-            const val NO_KEY = -1
 
             /** GLFW's code for F, NotEnoughUpdates' key for a favorite. */
             const val KEY_F = 70
@@ -758,6 +790,12 @@ class DsModConfig : Config() {
         var dragInChat = true
 
         @Expose
+        @ConfigOption(name = "HUD Editor Key", desc = "Pick a key that opens the HUD editor, or none.")
+        @ConfigEditorKeybind(defaultKey = NO_KEY)
+        @JvmField
+        var editKey = NO_KEY
+
+        @Expose
         @ConfigOption(name = "HUD Scale", desc = "Make every HUD block bigger or smaller.")
         @ConfigEditorSlider(minValue = 0.5f, maxValue = 3f, minStep = 0.25f)
         @JvmField
@@ -768,6 +806,12 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var background = true
+
+        @Expose
+        @ConfigOption(name = "Hide In F3", desc = "Hide ds-mod's HUD while the F3 debug screen is open.")
+        @ConfigEditorBoolean
+        @JvmField
+        var hideInF3 = false
     }
 
     class Contribute {
@@ -784,3 +828,9 @@ class DsModConfig : Config() {
         var reportGameData = false
     }
 }
+
+/**
+ * No key, which the settings screen shows as None. DragSim Utils and Odin open their settings on Right Shift, and a
+ * player who runs either would open two screens with one press, so the Settings Key leaves the player to pick one.
+ */
+private const val NO_KEY = -1

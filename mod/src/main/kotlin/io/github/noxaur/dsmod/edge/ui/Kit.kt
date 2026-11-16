@@ -80,9 +80,11 @@ object Kit {
         else -> State.IDLE
     }
 
-    fun panel(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
+    /** A panel, as solid as [alpha] from 0 to 255 says, for a HUD block the player lets the world show through. */
+    fun panel(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, alpha: Int = OPAQUE) {
+        if (alpha <= 0) return
         val t = theme
-        frame(g, x, y, width, height, t.outline, t.panel, t.panelLight, t.panelShade)
+        frame(g, x, y, width, height, fade(t.outline, alpha), fade(t.panel, alpha), fade(t.panelLight, alpha), fade(t.panelShade, alpha))
     }
 
     /**
@@ -126,10 +128,11 @@ object Kit {
      * dozens of the small one each frame, so [register] paints it once per theme into [SLOT_TEXTURE] and it is drawn as
      * one blit instead of five fills. Until the paint is done it is drawn with the fills.
      */
-    fun slot(g: GuiGraphicsExtractor, x: Int, y: Int, size: Int = SLOT_SIZE) {
+    fun slot(g: GuiGraphicsExtractor, x: Int, y: Int, size: Int = SLOT_SIZE, alpha: Int = OPAQUE) {
+        if (alpha <= 0) return
         val t = theme
-        if (size != SLOT_SIZE || t !== slotTheme) return bevel(g, x, y, size, size, t.slot, t.slotShade, t.slotLight)
-        g.blit(RenderPipelines.GUI_TEXTURED, SLOT_TEXTURE, x, y, 0f, 0f, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE)
+        if (size != SLOT_SIZE || t !== slotTheme) return bevel(g, x, y, size, size, fade(t.slot, alpha), fade(t.slotShade, alpha), fade(t.slotLight, alpha))
+        g.blit(RenderPipelines.GUI_TEXTURED, SLOT_TEXTURE, x, y, 0f, 0f, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, ARGB.white(alpha))
     }
 
     // A texture made or uploaded while a frame is being built broke every frame after it in the game tests, so the
@@ -170,9 +173,10 @@ object Kit {
     }
 
     /** A [slot] on glass: a [glassWell] the size of a slot, painted once per theme as [slot] is. */
-    fun glassSlot(g: GuiGraphicsExtractor, x: Int, y: Int, size: Int = SLOT_SIZE) {
+    fun glassSlot(g: GuiGraphicsExtractor, x: Int, y: Int, size: Int = SLOT_SIZE, alpha: Int = OPAQUE) {
+        if (alpha <= 0) return
         if (size != SLOT_SIZE || theme !== slotTheme) return glassWell(g, x, y, size, size)
-        g.blit(RenderPipelines.GUI_TEXTURED, GLASS_SLOT_TEXTURE, x, y, 0f, 0f, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE)
+        g.blit(RenderPipelines.GUI_TEXTURED, GLASS_SLOT_TEXTURE, x, y, 0f, 0f, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, ARGB.white(alpha))
     }
 
     /**
@@ -402,6 +406,13 @@ object Kit {
         rect(g, x + 16, y, 1, 16, color)
     }
 
+    /**
+     * Rings the 16x16 item area at [x], [y] as the slot the player holds, in the theme's accent, which reads on a light
+     * panel and a dark one where white is lost on light gray, or over the inventory's own texture in the Vanilla theme's.
+     */
+    fun held(g: GuiGraphicsExtractor, x: Int, y: Int, vanilla: Boolean) =
+        slotBorder(g, x, y, if (vanilla) Theme.VANILLA.accent else theme.accent)
+
     /** Draws cell [cell] of a rarity atlas behind the 16x16 item area at [x], [y], covering the slot's whole 18x18. */
     fun slotArt(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int) =
         g.blit(RenderPipelines.GUI_TEXTURED, atlas.id, x - 1, y - 1, (cell * SlotArt.SIZE).toFloat(), 0f, SlotArt.SIZE, SlotArt.SIZE, atlas.width, atlas.height)
@@ -419,14 +430,17 @@ object Kit {
     fun inventory(g: GuiGraphicsExtractor, x: Int, y: Int) =
         g.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, x, y, 0f, 0f, INVENTORY_WIDTH, INVENTORY_HEIGHT, 256, 256)
 
-    fun slotAt(g: GuiGraphicsExtractor, x: Int, y: Int) =
-        g.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, x, y, EMPTY_SLOT_U, EMPTY_SLOT_V, SLOT_SIZE, SLOT_SIZE, 256, 256)
+    fun slotAt(g: GuiGraphicsExtractor, x: Int, y: Int, alpha: Int = OPAQUE) {
+        if (alpha > 0) g.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, x, y, EMPTY_SLOT_U, EMPTY_SLOT_V, SLOT_SIZE, SLOT_SIZE, 256, 256, ARGB.white(alpha))
+    }
 
     /**
      * A panel of any size cut from the player's inventory as the resource pack draws it, the vanilla counterpart of
      * [panel]: its corners as they are, and its edges and face stretched from one pixel's width of them.
      */
-    fun inventoryPanel(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
+    fun inventoryPanel(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, alpha: Int = OPAQUE) {
+        if (alpha <= 0) return
+        val color = ARGB.white(alpha)
         val c = PANEL_CORNER
         val w = width - 2 * c
         val h = height - 2 * c
@@ -434,7 +448,7 @@ object Kit {
         val bottom = INVENTORY_HEIGHT - c
         // Each part: where it goes, from the panel's corner, and the region of the texture stretched over it.
         fun part(dx: Int, dy: Int, u: Int, v: Int, width: Int, height: Int, regionWidth: Int, regionHeight: Int) = g.blit(
-            RenderPipelines.GUI_TEXTURED, INVENTORY, x + dx, y + dy, u.toFloat(), v.toFloat(), width, height, regionWidth, regionHeight, 256, 256,
+            RenderPipelines.GUI_TEXTURED, INVENTORY, x + dx, y + dy, u.toFloat(), v.toFloat(), width, height, regionWidth, regionHeight, 256, 256, color,
         )
         part(0, 0, 0, 0, c, c, c, c)
         part(c, 0, c, 0, w, c, 1, c)
@@ -508,6 +522,9 @@ object Kit {
         fill(x + width - 1, y + 1, 1, height - 1, bottomRight)
     }
 
+    /** [color] with its own alpha scaled by [alpha], from 0 to 255. */
+    private fun fade(color: Int, alpha: Int) = if (alpha >= OPAQUE) color else ARGB.color(ARGB.alpha(color) * alpha / OPAQUE, color)
+
     private fun rect(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, color: Int) {
         if (width > 0 && height > 0) g.fill(x, y, x + width, y + height, color)
     }
@@ -522,6 +539,7 @@ object Kit {
     private fun channel(from: Int, to: Int, amount: Float) = (from + (to - from) * amount).roundToInt()
 
     private const val DIM_ALPHA = 184
+    const val OPAQUE = 255
     private const val HOVER_STRENGTH = 0.5f
     private const val VEIL_ALPHA = 190
     private const val BONE_ALPHA = 90
