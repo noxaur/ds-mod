@@ -59,44 +59,14 @@ The code is split into two source sets, and each becomes its own mod.
 
 Agents see the game through captures. A capture is a JSONL file of what the server showed the client, one event per line. With the debug build, the user types `/dscapture` in game to start one and again to save it, and it lands in `dsmod/captures/` inside the game folder. It refuses while a brief is on. Players record captures too, for a request an agent published, and the mod redacts and uploads those: [contributions](../docs/internals/contributions.md#a-contribution-is-a-brief-run-that-ends-in-an-upload).
 
-Each line has a time `t`, a `type` and `data`. A type is either an event or a raw record.
-
-Events are the `GameEvent`s that features see, recorded as they were posted, and `readCapture` gives them back in a test:
-
-- `system` for a line in chat. Player chat arrives this way too.
-- `world` for entering a world.
-- `tablist` for the rows of the tab list in the order the client draws them, when one changes.
-- `sidebar` for the sidebar's title and its lines from the top, when one changes.
-- `actionbar` for the line above the hotbar, each time the server sends it.
-- `death` for the server's death event on an entity that is not a player, with its type, name and position.
-- `head` for a player head block the server placed, with its position.
-- `pet` for the pet nearest the player, an armor stand within 6 blocks named like `[Lvl 100] Ender Dragon`, with its name and the head it wears, when the nearest one changes.
-- `container` for a menu the player opened, or their own inventory again, and `slot` for each slot that changed. A slot carries the item's id, count, name, lore and `custom_data`, and how it looks: a head's `skin`, leather's `dye`, the `glint` override, `foil` (whether the game draws the shine at all), an `item_model` other than the item's own as `model`, and the tooltip `style`. A big menu's slots arrive over a few ticks.
-
-Raw records are for you to read. No feature sees one until it is promoted:
-
-- `chat` and `title`.
-- `bossbars` and `tabheader`, the tab list's header and footer.
-- `itemcomponents` for the components a `slot` leaves out, such as `item_model`, and the full `profile`, in Minecraft's own codec JSON.
-- `entities` for players, named entities and anything wearing or holding an item, each with the block it stands in. Glowing entities, silverfish and creepers, displays (`text`, `item`), item frames (`item`, `rotation`, `facing`) and dropped named items come too.
-- `status` for the player's block, health and XP.
-- `sound`, `particles` and `block` for what the server played, spawned or changed.
-- `swing` and `use` for the player's attack and use buttons, before the game acts: position, yaw, pitch, the held item's `item`, `name` and `custom_data` `itemId`, and the `target` entity or `block` under the crosshair.
-- `unload` for a living entity the client dropped, with its `reason`. A mob that only left has `unload` and no `death` event.
-- `skulls` for skull blocks within four chunks, with `state` (rotation) and `profile`, and `blockstates` for the blocks in `BlockScan.kt`'s watch-list there. Both are entries like `entities`, keyed `x,y,z`, and include what stood there before the capture began.
-- `map` for a map the player carries or an item frame holds, when it changes: `colors` is base64 of the zlib-deflated 128x128 color bytes, present only when the pixels changed, and `decorations` are the markers.
-- `hud` for the rows of each HUD block ds-mod showed, and `metrics` for how long each feature took and what it counted. Its `capture-items` and `capture-entities` timers are what the recorder's own passes over items and entities cost the client thread, and `PerfTest` caps them.
-- `step` for the brief's step that starts on that line, with its `index` and `do`, and `done` after the last one. Cut a fixture's window from these.
-
-An event's text is `plain` plus `spans`, with `§` codes already resolved into the spans. A raw record's text is plain `text` plus the full `component`. `itemcomponents` and `entities` record all entries once with `"full": true`, then only the entries that changed, with null for a removed one.
+Each line has a time `t`, a `type` and `data`. A type is either an event or a raw record, and the KDoc on each one says what its line carries. Events are the `GameEvent`s in `core/game/GameEvent.kt` that features see, recorded as they were posted, and `readCapture` gives them back in a test. Raw records are the `RawRecord`s in `core/capture/RawRecord.kt`, for you to read, and no feature sees one until it is promoted. An event's text is `plain` plus `spans`, with `§` codes already resolved into the spans.
 
 - Work from captures. When none covers the case, write a brief: a name for the window, and the ordered steps the user plays, each with a note or a timer where it needs one. [Record from a brief](../docs/operations/captures.md#record-from-a-brief) has the format.
 - Finish the work that needs no capture, then end the response with one line the user answers with yes or no, such as "Record Golem tiers now? It takes about 3 minutes." On yes, start the client with the brief yourself and read the capture when the run ends.
 - The live server has real players on it, so the user does all the playing there. You start the client and they join.
 - Captures hold player names and private chat, so only a fixture goes in git.
 - `actionbar`, `death` and `sidebar` were raw records until 2026-11-14, with another shape, so an older capture cannot be cut for them.
-- To promote a raw type, design the `GameEvent` from a capture that shows the data, post it from `edge`, and delete its recorder in `CaptureSession`. A type has one producer, and `CaptureWriter` rejects a raw record that uses an event's type.
-- When you add a capture type, add it to `CaptureTest`, which makes a real server send each type and checks the file.
+- To promote a raw type, design the `GameEvent` from a capture that shows the data, post it from `edge`, and delete its `RawRecord` and its recorder. A type has one producer, so `CaptureWriterTest` fails on a raw record that shares an event's type.
 - To see a screen, write a client game test in `src/gametest` that opens it and calls `takeScreenshot`. The image lands in `build/run/clientGameTest/screenshots/`.
 
 
