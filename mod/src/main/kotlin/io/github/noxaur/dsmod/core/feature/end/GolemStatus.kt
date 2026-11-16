@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.core.feature.end
 
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
+import io.github.noxaur.dsmod.core.game.Fights
 import io.github.noxaur.dsmod.core.game.ProtectorRow
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.WorldChanged
@@ -46,11 +47,11 @@ class GolemStatus(toggle: KMutableProperty0<Boolean>) : Feature("golem-status", 
             tier = tiers
             toGo = left?.toString().orEmpty()
         }
-        line("☠ The Endstone Protector has emerged") { now ->
+        line(Fights.PROTECTOR_EMERGED) { now ->
             spawnedAt = now
             defeatedAt = 0
         }
-        line("The Endstone Protector has been defeated!") { now ->
+        line(Fights.PROTECTOR_DEFEATED) { now ->
             // The tab list ends the fight when the row leaves Spawned. A later defeat line is that fight, already over.
             if (stage == "Spawned" || spawnedAt > 0) defeatedAt = now
         }

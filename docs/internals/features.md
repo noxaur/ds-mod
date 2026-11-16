@@ -26,6 +26,10 @@ A tab list is one event with every row, because it is small and features read it
 
 The sidebar is an event with every line and its styles, not a parsed summary, so that a layer can one day draw the mod's own sidebar in place of the game's from the same state the features read.
 
+## Boss fights are folded once
+
+Several features follow a boss fight: Dragon Timer the dragon, Golem Status the Endstone Protector, and the slayer features the player's boss. Damage Numbers can act only while one is on. It can't ask those features, since a feature can be switched off and its state would then go stale. So `Game` folds the same lines and the same `Protector` row into `Fights` before any feature sees them, and those features read their lines with the parsers there.
+
 ## The area lock lives in Game
 
 Each feature used to compare the `Area` row itself, and four features had three different checks: one hid its HUD but kept saving loot from other areas, and one ran wherever the area was unknown. A feature now names an `Area`, and outside it gets only the tab list and a change of world. `FeatureReplayTest` replays every fixture outside its area to prove the feature stays quiet there.

@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.core.feature.slayer
 
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
+import io.github.noxaur.dsmod.core.game.Fights
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.clock
@@ -35,7 +36,7 @@ class SlayerTracker(toggle: KMutableProperty0<Boolean>) : Feature("slayer-tracke
             seen = true
             quest = "$xp XP of $mobs"
         }
-        for (end in listOf("  SLAYER QUEST COMPLETE!", "  SLAYER QUEST FAILED")) {
+        for (end in Fights.QUEST_ENDS) {
             line(end) {
                 quest = null
                 spawnedAt = null
@@ -45,9 +46,9 @@ class SlayerTracker(toggle: KMutableProperty0<Boolean>) : Feature("slayer-tracke
             level = "$slayer $at"
             toNext = left.replace(",", "").toLong()
         }
-        line(Regex("""☠ .*SLAYER BOSS"""), Regex("""☠ (?:NICE! )?SLAYER BOSS (SPAWNING|SLAIN)!""")) { (event), now ->
+        line(Fights.SLAYER_HEAD, Fights.SLAYER_BOSS) { (event), now ->
             seen = true
-            if (event == "SPAWNING") {
+            if (event == Fights.SPAWNING) {
                 spawnedAt = now
                 return@line
             }

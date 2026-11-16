@@ -58,7 +58,7 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     Animations(config.general::animations),
     Camera(config.general::camera),
     CommandBinds(config.general::commandBinds),
-    DamageNumbers(config.general::damageNumbers, config.general::damageShown, config.general::damageShort, config.general::damageDecimals),
+    DamageNumbers(config.general::damageNumbers, config.general::damageShown, config.general::damageShort, config.general::damageDecimals, config.general::damageInFights),
     EquipmentDisplay(
         config.general::equipmentDisplay,
         config.general::equipmentLayout,

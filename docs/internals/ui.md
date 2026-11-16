@@ -72,3 +72,5 @@ Damage numbers, NPC names and holograms are text displays, and a crowded fight f
 
 A hidden text is culled like an entity behind the camera, not given empty text, because a text display draws its background even with no text in it.
 
+An edit can carry an age it holds until, and the display drops it on its own tick, because a damage number and a hologram that is only a number look the same when they arrive. A hit's number is gone within two seconds, so Damage Numbers holds its edit until then, and a number still up gets its own look back. Each `FloatingText` carries the display's age too, so a hologram whose text changes later is never taken for a hit. Asking the features again on every tick would put a parser on the tick for every display, and a fixed age in the layer would also lapse edits that are meant to last, such as a renamed NPC.
+

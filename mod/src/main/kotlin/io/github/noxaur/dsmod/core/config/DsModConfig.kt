@@ -135,6 +135,9 @@ class DsModConfig {
         var damageDecimals = 1f
 
         @JvmField
+        var damageInFights = false
+
+        @JvmField
         var animations = true
 
         @JvmField

@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.core.feature
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerState
+import io.github.noxaur.dsmod.core.game.Fights
 import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Metrics
@@ -161,6 +162,19 @@ abstract class Feature(val id: String, internal val toggle: KMutableProperty0<Bo
     }
 
     internal var replacement: Text? = null
+
+    /**
+     * Holds the [hide] or the [replace] of the [FloatingText] this handler is reading only until the text is [age]
+     * milliseconds old, as [FloatingText.age] counts. After that the server's text shows again.
+     */
+    protected fun holdUntil(age: Long) {
+        holdAge = age
+    }
+
+    internal var holdAge: Long? = null
+
+    /** The boss fights that are on, which `Game` follows for every feature. */
+    internal lateinit var bossFights: Fights
 
     /** Prints a line to chat that needs no action: this feature's name, then [detail]. Call it from a handler. */
     protected fun notice(detail: Text) {

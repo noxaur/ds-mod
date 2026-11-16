@@ -135,7 +135,7 @@ class FeatureReplayTest {
         is ActionBar -> "(action bar) ${event.text.plain}"
         is EntityDied -> "(died) ${event.name.plain}"
         is PetNear -> "(pet near) ${event.name.plain}"
-        is FloatingText -> "(floating) ${event.text.plain.replace("\n", " / ")}"
+        is FloatingText -> "(floating) ${event.text.plain.replace("\n", " / ")}" + if (event.age > 0) ", on a display %.1fs old".format(Locale.ROOT, event.age / 1000.0) else ""
         is Hit -> "(you hit) ${event.entity}"
         is SlotChanged -> "(slot ${event.slot}) " + (event.item?.let { "${it.count} x ${name(it)}" } ?: "emptied")
     }
@@ -198,8 +198,9 @@ class FeatureReplayTest {
                     }
                     play(game, events, posted = { time, event, kept ->
                         appendLine("+%6.1fs > %s".format(Locale.ROOT, (time - start) / 1000.0, describe(event, infoRows)))
-                        if (!kept) appendLine(if (event is FloatingText) "             (hidden)" else "             (hidden from chat)")
-                        game.replaced?.let { appendLine("             (shown as) ${it.plain}") }
+                        val held = game.heldUntil?.let { ", until it is %.1fs old".format(Locale.ROOT, it / 1000.0) }.orEmpty()
+                        if (!kept) appendLine(if (event is FloatingText) "             (hidden$held)" else "             (hidden from chat)")
+                        game.replaced?.let { appendLine("             (shown as) ${it.plain}$held") }
                         for (message in game.messages) {
                             when (message) {
                                 is Notice -> appendLine("             (chat) ${message.feature} | ${message.detail.plain}")

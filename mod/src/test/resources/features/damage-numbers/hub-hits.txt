@@ -1,21 +1,21 @@
 +   0.0s > (floating) ✧4,876,445✧
-             (shown as) ✧4.9M✧
+             (shown as) ✧4.9M✧, until it is 2.0s old
 +   0.0s > (floating) ✧4,876,445✧
-             (shown as) ✧4.9M✧
+             (shown as) ✧4.9M✧, until it is 2.0s old
 +   0.0s > (floating) 4,540,375
-             (shown as) 4.5M
+             (shown as) 4.5M, until it is 2.0s old
 +   0.0s > (floating) ✧4,876,445✧
-             (shown as) ✧4.9M✧
+             (shown as) ✧4.9M✧, until it is 2.0s old
 +   0.0s > (floating) 98,438
-             (shown as) 98.4k
+             (shown as) 98.4k, until it is 2.0s old
 +   0.0s > (floating) ✧4,876,445✧
-             (shown as) ✧4.9M✧
+             (shown as) ✧4.9M✧, until it is 2.0s old
 +   0.0s > (floating) ✧4,876,445✧
-             (shown as) ✧4.9M✧
+             (shown as) ✧4.9M✧, until it is 2.0s old
 +   0.3s > (floating) ✧4,876,445✧
-             (shown as) ✧4.9M✧
+             (shown as) ✧4.9M✧, until it is 2.0s old
 +   0.3s > (floating) 4,540,375
-             (shown as) 4.5M
+             (shown as) 4.5M, until it is 2.0s old
 +   0.7s > (floating) Mine Merchant
 +   0.7s > (floating) Pickaxes & fuel
 +   0.7s > (floating) Draconic Altar / Right-click with an item to make a sacrifice
@@ -25,40 +25,40 @@
 +   0.7s > (floating) Left-click for the quietest den
 +   0.7s > (floating) Right-click to pick one
 +   1.0s > (floating) 98,438
-             (shown as) 98.4k
+             (shown as) 98.4k, until it is 2.0s old
 +   1.0s > (floating) 98,438
-             (shown as) 98.4k
+             (shown as) 98.4k, until it is 2.0s old
 +   1.0s > (floating) 98,438
-             (shown as) 98.4k
+             (shown as) 98.4k, until it is 2.0s old
 +   1.3s > (floating) 98,438
-             (shown as) 98.4k
+             (shown as) 98.4k, until it is 2.0s old
 +   1.3s > (floating) 98,438
-             (shown as) 98.4k
+             (shown as) 98.4k, until it is 2.0s old
 +   1.3s > (floating) 98,438
-             (shown as) 98.4k
+             (shown as) 98.4k, until it is 2.0s old
 +   1.7s > (floating) ✧4,876,445✧
-             (shown as) ✧4.9M✧
+             (shown as) ✧4.9M✧, until it is 2.0s old
 +   1.7s > (floating) ✧4,876,445✧
-             (shown as) ✧4.9M✧
+             (shown as) ✧4.9M✧, until it is 2.0s old
 +   1.7s > (floating) ✧4,876,445✧
-             (shown as) ✧4.9M✧
+             (shown as) ✧4.9M✧, until it is 2.0s old
 +   1.7s > (floating) ✧4,876,445✧
-             (shown as) ✧4.9M✧
+             (shown as) ✧4.9M✧, until it is 2.0s old
 +   2.0s > (floating) 4,540,375
-             (shown as) 4.5M
+             (shown as) 4.5M, until it is 2.0s old
 +   2.2s > (floating) 4,540,375
-             (shown as) 4.5M
+             (shown as) 4.5M, until it is 2.0s old
 +   2.2s > (floating) 4,540,375
-             (shown as) 4.5M
+             (shown as) 4.5M, until it is 2.0s old
 +   3.0s > (floating) 4,540,375
-             (shown as) 4.5M
+             (shown as) 4.5M, until it is 2.0s old
 +   3.0s > (floating) 4,540,375
-             (shown as) 4.5M
+             (shown as) 4.5M, until it is 2.0s old
 +   3.8s > (floating) Eye Dealer
 +   3.8s > (floating) Upgrades Shop
 +   4.3s > (floating) ✧19,914✧
-             (shown as) ✧19.9k✧
+             (shown as) ✧19.9k✧, until it is 2.0s old
 +   5.0s > (floating) ⏣ Dragon's Den / Step on the pad
 +   5.0s > (floating) ⏣ Void Sepulture / Step on the pad
 +   5.3s > (floating) 4,540,375
-             (shown as) 4.5M
+             (shown as) 4.5M, until it is 2.0s old

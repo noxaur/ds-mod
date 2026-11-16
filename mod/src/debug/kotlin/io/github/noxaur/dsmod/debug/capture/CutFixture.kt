@@ -75,7 +75,7 @@ fun cutFixture(
     var start: Map<Int, Item>? = null
     val events = ArrayList<Captured>()
     // A capture from before `floating` was an event has its text displays only in `entities`.
-    val legacy = if ("floating" in types && capture.useLines { lines -> lines.none { "\"type\":\"floating\"" in it } }) HashMap<String, String>() else null
+    val legacy = if ("floating" in types && capture.useLines { lines -> lines.none { "\"type\":\"floating\"" in it } }) HashMap<String, Shown>() else null
     capture.useLines { lines ->
         for (line in lines.filter(String::isNotBlank)) {
             val time = line.substringAfter("\"t\":").takeWhile(Char::isDigit).toLong()
@@ -168,12 +168,15 @@ fun main(args: Array<String>) {
     println("Wrote $written lines for $feature/$name, with $players players renamed.")
 }
 
+/** A text display an older capture showed: its [text] so far, and when the capture first had it. */
+private class Shown(val text: String, val since: Long)
+
 /**
  * The [FloatingText] of each text display in an older capture's `entities` line whose text is new: the server's
- * text, read the way the edge reads it, and [shown] is each display's text so far. The line is the recorder's sample,
- * so the text arrives up to a few ticks after the client had it.
+ * text, read the way the edge reads it, aged from when the capture first had the display. [shown] is each display so
+ * far. The line is the recorder's sample, so the text arrives up to a few ticks after the client had it.
  */
-private fun floating(line: String, shown: MutableMap<String, String>): List<Captured> {
+private fun floating(line: String, shown: MutableMap<String, Shown>): List<Captured> {
     val json = Json.parseToJsonElement(line).jsonObject
     val time = json.getValue("t").jsonPrimitive.long
     val tick = json["tick"]?.jsonPrimitive?.int
@@ -181,8 +184,11 @@ private fun floating(line: String, shown: MutableMap<String, String>): List<Capt
         if (entry !is JsonObject) return@mapNotNull null.also { shown.remove(id) }
         if (entry["entity"]?.jsonPrimitive?.content != "minecraft:text_display") return@mapNotNull null
         val text = entry["text"]?.jsonObject?.get("text")?.jsonPrimitive?.content ?: return@mapNotNull null
-        if (text.isEmpty() || shown.put(id, text) == text) return@mapNotNull null
-        Captured(time, FloatingText(Component.literal(text).toText()), tick)
+        val before = shown[id]
+        if (text.isEmpty() || before?.text == text) return@mapNotNull null
+        val since = before?.since ?: time
+        shown[id] = Shown(text, since)
+        Captured(time, FloatingText(Component.literal(text).toText(), time - since), tick)
     }
 }
 

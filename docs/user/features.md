@@ -346,13 +346,14 @@ Set your tabs up under Tabs, below Menu Tabs in the settings. It shows a small m
 
 ### Damage Numbers
 
-Shortens the damage numbers that pop up when a mob is hit, so 74,540,375 reads 74.5M, or hides them. A crit keeps its ✧ stars and its colors. Text over NPCs and other holograms stays as it is. Only you see the change. Turn it on in Combat.
+Shortens the damage numbers that pop up when a mob is hit, so 74,540,375 reads 74.5M, or hides them. A crit keeps its ✧ stars and its colors. Text over NPCs and other holograms stays as it is, and so does a number that stays up longer than two seconds, since a hit's number is gone by then. Only you see the change. Turn it on in Combat.
 
 | Setting | Does |
 | --- | --- |
 | Show | Shows every damage number, only crits, or none |
 | Short Numbers | Shortens numbers of a thousand and up with k, M, B or T. With it off, the numbers read as the server writes them |
 | Decimals | Sets how many decimals a short number keeps, from 0 to 3. Zeros at the end are dropped, so 1,000,000 reads 1M |
+| Boss Fights Only | Changes the numbers only while a dragon, the Endstone Protector or your slayer boss is up, and leaves them as the server shows them the rest of the time |
 
 <sub>Off by default.</sub>
 

@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.core.feature.end
 
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
+import io.github.noxaur.dsmod.core.game.Fights
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.clock
@@ -21,13 +22,12 @@ class DragonTimer(toggle: KMutableProperty0<Boolean>) : Feature("dragon-timer", 
             eggAt = null
             eyes = null
         }
-        // `☠ The ` also starts the Endstone Protector's lines, so the head names a dragon.
-        line(Regex("""☠ The .+ Dragon has """), Regex("""☠ The (\w+) Dragon has (spawned!|de-spawned\.)""")) { (name, news), now ->
-            dragon = name.takeIf { news == "spawned!" }
+        line(Fights.DRAGON_HEAD, Fights.DRAGON) { (name, news), now ->
+            dragon = name.takeIf { news == Fights.SPAWNED }
             spawnedAt = now
             eyes = null
         }
-        line("The Dragon Egg is respawning", Regex("""The Dragon Egg is respawning in (\d+) seconds\.""")) { (seconds), now ->
+        line(Fights.EGG_RESPAWNING, Regex("""The Dragon Egg is respawning in (\d+) seconds\.""")) { (seconds), now ->
             eggAt = now + seconds.toLong() * 1000
             dragon = null
         }

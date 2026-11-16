@@ -257,6 +257,7 @@ class CutFixtureTest {
         assertEquals(listOf("✧12✧", "98,438", "Done", "✧12✧"), out.map { it.text.plain })
         assertEquals(listOf(0xFFFFFF, 0xFFFF55, 0xFF5555, 0xFFFFFF), out[0].text.spans.map { it.color })
         assertEquals(listOf(0xAAAAAA), out[1].text.spans.map { it.color })
+        assertEquals(listOf(0L, 0L, 1000L, 0L), out.map { it.age })
     }
 }
 

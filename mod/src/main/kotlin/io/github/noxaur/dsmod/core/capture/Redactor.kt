@@ -159,7 +159,7 @@ class Redactor(private val names: Set<String>) {
         is ActionBar -> ActionBar(event.text.named())
         is EntityDied -> event.copy(name = event.name.named())
         is PetNear -> PetNear(event.name.named(), item(event.head))
-        is FloatingText -> FloatingText(event.text.named())
+        is FloatingText -> event.copy(text = event.text.named())
     }
 
     private fun item(item: Item) = item.copy(

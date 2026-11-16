@@ -6,12 +6,14 @@ import io.github.noxaur.dsmod.core.contribute.Places
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState
+import io.github.noxaur.dsmod.core.game.Fights
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.InfoRows
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SidebarState
 import io.github.noxaur.dsmod.core.game.SlotChanged
+import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.TabState
 import io.github.noxaur.dsmod.core.game.WorldChanged
@@ -82,6 +84,9 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     /** The open container, as of the last event the edge posted. */
     val container = ContainerState()
 
+    /** The boss fights that are on, as of the last event the edge posted. */
+    val fights = Fights()
+
     init {
         features.forEach {
             it.metrics = metrics
@@ -89,6 +94,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             it.sidebar = InfoRows(sidebar::info)
             it.inArea = { it.area.holds(tab, sidebar) }
             it.container = container
+            it.bossFights = fights
             it.messages = messages
             it.gate = active
         }
@@ -113,11 +119,19 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     var replaced: Text? = null
         private set
 
+    /**
+     * The age, in milliseconds, until which the hide or the replacement of the floating text just posted holds, or null
+     * when it holds for as long as the text. After it, the server's text shows again.
+     */
+    var heldUntil: Long? = null
+        private set
+
     /** Returns false when a feature hid [event], which the edge honors for a chat line and a floating text. */
     fun post(time: Long, event: GameEvent): Boolean {
         tap?.invoke(time, event)
         var shown = true
         replaced = null
+        heldUntil = null
         // Any feature may read the shared state, so a change to it makes every readout stale.
         val shared = when (event) {
             is TabList -> true.also {
@@ -125,6 +139,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
                 metrics.time("tab-list") {
                     tab.update(event.rows)
                     places.value = places.value.with(tab, sidebar)
+                    fights.protectorRow(tab.info(PROTECTOR))
                 }
             }
             is Sidebar -> true.also {
@@ -134,6 +149,11 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
                     places.value = places.value.with(tab, sidebar)
                 }
             }
+            is SystemMessage -> {
+                var changed = false
+                metrics.time("fights") { changed = fights.line(event.text.plain) }
+                changed
+            }
             is ContainerOpened -> true.also { metrics.time("container") { container.opened(event) } }
             is SlotChanged -> true.also { metrics.time("container") { container.changed(event) } }
             // The new world's tab list and sidebar have not arrived, so the old one's area must not outlive the hop.
@@ -142,6 +162,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
                 lastSidebar = null
                 tab.update(emptyList())
                 sidebar.update(Sidebar())
+                fights.clear()
             }
             else -> false
         }
@@ -157,6 +178,10 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             feature.replacement?.let {
                 feature.replacement = null
                 replaced = it
+            }
+            feature.holdAge?.let {
+                feature.holdAge = null
+                heldUntil = it
             }
             if (feature.hides) {
                 feature.hides = false
@@ -212,5 +237,8 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
 
     private companion object {
         const val REFRESH_MILLIS = 250L
+
+        /** The tab list's row with the Endstone Protector's stage. */
+        const val PROTECTOR = "Protector"
     }
 }

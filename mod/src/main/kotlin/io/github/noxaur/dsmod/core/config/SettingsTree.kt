@@ -345,6 +345,7 @@ object SettingsTree {
                     choice(g::damageShown, "Show", "Pick which damage numbers you see: all, only crits, or none.", id = "damageShown")
                     val short = switch(g::damageShort, "Short Numbers", "Shorten big numbers, so 1,234,567 reads 1.2M.")
                     number(g::damageDecimals, "Decimals", "Set how many decimals a short number keeps.", 0f..3f, step = 1f, id = "damageDecimals", dependsOn = short)
+                    switch(g::damageInFights, "Boss Fights Only", "Change damage numbers only while a boss fight is on.")
                 }
                 group("Slayers") {
                     switch(c.slayer::slayerTracker, "Slayer Tracker", "Count the slayer bosses you slay and time each from spawn to slain.")
