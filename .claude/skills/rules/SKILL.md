@@ -36,7 +36,7 @@ All of them run in `mise run check`, except the game tests and the CI rules.
 | The mod's code is not copied with a value or two changed | `ClonesTest` in `mod/…/rules/` finds a repeated block and a near-identical line |
 | Release code cannot use debug tools | The `main` and `debug` source sets |
 | Raw captures stay out of git | They are written to `mod/run/`, which is git-ignored |
-| A fixture holds no player name from a capture on this machine, and an alias wherever a player's name stands | `FixtureLeakTest` |
+| A fixture holds no player name from a capture on this machine, and an alias wherever a player's name stands | `FixtureLeakTest`, and `cutFixture` refuses such a fixture while the captures are still there |
 | Every feature shows what its transcript says | `FeatureReplayTest` replays each feature's fixtures |
 | A feature that reads nothing from the server has a game test | `FeatureReplayTest` |
 | Every feature class is listed in `features()` | `FeaturesListedTest` reads the compiled classes |
@@ -67,6 +67,7 @@ All of them run in `mise run check`, except the game tests and the CI rules.
 | `api/openapi.json` matches the backend's API definition | `app.test.ts` in `backend/src/` |
 | Backend code is formatted, type-safe and passes lint with no warnings | `vp check` in `check:backend` |
 | Backend failures are modeled with Effect, not `try` | `dsmod/no-try` in `backend/lint/dsmod.js` |
+| `vite` is the Vite+ core of `vite-plus`'s version, so Void and Vite+ share one Vite | `vite.test.ts` in `backend/test/` |
 | `backend/src/` imports nothing from Void | `no-restricted-imports` in `backend/vite.config.ts` |
 | The memory stores and `routes/_store.ts` pass one contract, which has a case for every `Store` method | `storeContract` in `backend/test/contract.ts`, keyed by each store's methods so a missing case fails `tsc` |
 | Backend dependencies are at least 14 days old | `minimumReleaseAge` in `backend/pnpm-workspace.yaml` |
