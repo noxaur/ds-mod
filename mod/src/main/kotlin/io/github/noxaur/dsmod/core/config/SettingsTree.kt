@@ -345,6 +345,12 @@ object SettingsTree {
                 }
             }
             section("Combat", Role.BAD) {
+                group("Damage Numbers", switch = toggle(c.general::damageNumbers, "Damage Numbers", "Shorten or hide the damage numbers that pop up on a hit.")) {
+                    val g = c.general
+                    choice(g::damageShown, "Show", "Pick which damage numbers you see: all, only crits, or none.", id = "damageShown")
+                    val short = switch(g::damageShort, "Short Numbers", "Shorten big numbers, so 1,234,567 reads 1.2M.")
+                    number(g::damageDecimals, "Decimals", "Set how many decimals a short number keeps.", 0f..3f, step = 1f, id = "damageDecimals", dependsOn = short)
+                }
                 group("Slayers") {
                     switch(c.slayer::slayerTracker, "Slayer Tracker", "Count the slayer bosses you slay and time each from spawn to slain.")
                     switch(c.slayer::slayerBossAlert, "Slayer Boss Alert", "Alert you when your slayer boss spawns.")
