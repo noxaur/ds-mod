@@ -45,7 +45,7 @@ Commit the SQL that `generate` writes. When `migrate` says the local database do
 
 ## Add a feature
 
-Follow [mod/AGENTS.md](../../mod/AGENTS.md#features). A feature needs a fixture cut from a capture, so record the capture first, as [captures](captures.md) describes, and cut the fixture from it.
+Follow the [`feature` skill](../../mod/.claude/skills/feature/SKILL.md). A feature needs a fixture cut from a capture, so record the capture first, as [captures](captures.md) describes, and cut the fixture from it.
 
 ## Checks
 

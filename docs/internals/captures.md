@@ -1,6 +1,6 @@
 # Captures
 
-How the mod records what the server showed, and how a recording becomes a test that holds no one's name. The capture format is in [mod/AGENTS.md](../../mod/AGENTS.md#seeing-the-game), and recording one is in [operations/captures.md](../operations/captures.md).
+How the mod records what the server showed, and how a recording becomes a test that holds no one's name. The capture format is in the `captures` skill's [format.md](../../mod/.claude/skills/captures/format.md), and recording one is in [operations/captures.md](../operations/captures.md).
 
 ## A capture is a recording of what the features saw
 
