@@ -343,8 +343,13 @@ test("a name outlives the first day, so a later copy still answers when dragsim.
   await stale("2026-11-16T15:30:00.000Z");
 });
 
-test("a 5xx, a failure and an answer that does not decode are all unavailable without a copy", async () => {
-  for (const answer of ["down", { status: 502, body: {} }, { status: 200, body: { profile: 7 } }] as const) {
+test("a 5xx, a failure, a 404 without the server's words and an answer that does not decode are all unavailable without a copy", async () => {
+  for (const answer of [
+    "down",
+    { status: 502, body: {} },
+    { status: 404, body: "<html>Not Found</html>" },
+    { status: 200, body: { profile: 7 } },
+  ] as const) {
     const { failure, state } = backend();
     state.player = answer;
     expect(await failure("/v1/players/Testwyrm/profile")).toEqual({ status: 503, tag: "UpstreamUnavailable" });
@@ -363,6 +368,16 @@ test("a missing catalog with no copy is unavailable", async () => {
   const { failure, state } = backend();
   state.catalog = "down";
   expect((await failure("/v1/players/Testwyrm/profile")).status).toBe(503);
+});
+
+test("a 404 without the server's words for a missing player falls back on the last copy and is not remembered", async () => {
+  const { get, profile, state, playerCalls } = backend();
+  await get("/v1/players/Testwyrm/profile");
+  state.player = { status: 404, body: { error: "Not Found" } };
+  vi.setSystemTime(Date.now() + FRESH_MS + 1);
+  expect((await profile()).stale).toBe(true);
+  expect((await profile()).stale).toBe(true);
+  expect(playerCalls()).toBe(3);
 });
 
 test("a name dragsim.co does not know is remembered for a minute", async () => {

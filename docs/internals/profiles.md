@@ -6,7 +6,7 @@ How the profile viewer gets another player's profile and draws its items as the 
 
 The mod and the website both show other players' profiles, and dragsim.co has no key and no stated limit, only an owner's goodwill. So only the backend talks to it, through one `Upstream` service, and it keeps copies in KV: a player's answer is served for two minutes, and kept for a day to answer as `stale` when dragsim.co is down. A lookup by name goes through a lowercase name to UUID entry, so `Name` and `name` share a copy, and a name dragsim.co does not know is remembered for a minute so a typo asked in a loop costs it nothing. The catalog is 2.3 MB, so each isolate also keeps its parse for an hour, and a warm Worker does not parse it again.
 
-A body that no longer decodes is dragsim.co's change and not the client's mistake, so it is logged and treated as unavailable, which a stale copy then covers. Treating it as a defect would answer an empty 500 and hide the stale copy a player could have had. A 404 with a `profile` asked for is told from a missing player by the server's own words, because dragsim.co sends the same status for both.
+A body that no longer decodes is dragsim.co's change and not the client's mistake, so it is logged and treated as unavailable, which a stale copy then covers. Treating it as a defect would answer an empty 500 and hide the stale copy a player could have had. Only the server's own words make a 404 a missing player, because dragsim.co sends the same status for a missing profile, and a 404 from a moved route would otherwise remember a miss and hide the stale copy. Without them, a 404 with a `profile` asked for is a missing profile, and one without is unavailable.
 
 ## Containers come from a snapshot, not a fresh lookup
 
