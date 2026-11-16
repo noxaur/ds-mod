@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.hud
 
+import io.github.noxaur.dsmod.core.text.amount
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.roundToInt
@@ -24,6 +25,9 @@ object HudScale {
         // A scale already past a bound, as a docked block's can be, never steps the wrong way to reach it.
         return if (next == current || (next - current) * by < 0) scale else next / unit
     }
+
+    /** [scale] as the HUD editors show it, such as `1.25x`. */
+    fun label(scale: Float) = amount(scale.toDouble(), 2, trim = true) + "x"
 
     private fun pixels(scale: Float, unit: Float) = maxOf(1, (scale * unit).roundToInt())
 }

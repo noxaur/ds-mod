@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.InputConstants;
 import io.github.noxaur.dsmod.edge.Cameras;
 import io.github.noxaur.dsmod.edge.DsModClient;
 import io.github.noxaur.dsmod.edge.InventoryKey;
-import io.github.noxaur.dsmod.edge.Settings;
 import net.minecraft.client.KeyMapping;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,6 +18,5 @@ abstract class KeyPressMixin {
         Cameras.INSTANCE.pressed(key);
         InventoryKey.INSTANCE.pressed(key);
         DsModClient.INSTANCE.pressed(key);
-        Settings.INSTANCE.pressed(key);
     }
 }

@@ -61,7 +61,7 @@ class HeldItemTest {
         settings.noBowSwing = true
         settings.ignoreHaste = true
         settings.noEquipReset = true
-        settings.resetAnimations.run()
+        settings.resetAnimations()
         val fresh = DsModConfig.General()
         assertEquals(false, settings.animations)
         assertEquals(

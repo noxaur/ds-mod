@@ -31,7 +31,7 @@ import org.lwjgl.glfw.GLFW
 
 /**
  * Menu Tabs, under Better UI: the player's tabs along the top and bottom of every menu and of the inventory, as
- * `TabEditorScreen` sets them up. A command tab sends its command, and the one whose command opened the menu shown
+ * the settings' `TabPlacesEditor` sets them up. A command tab sends its command, and the one whose command opened the menu shown
  * now joins the panel. The search tab opens a bar along its edge toward the middle of the menu, drawn over the tabs
  * it covers, which dims every item whose name and lore lack a word of the query.
  */

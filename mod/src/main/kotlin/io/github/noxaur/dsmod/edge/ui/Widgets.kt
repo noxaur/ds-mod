@@ -3,9 +3,12 @@ package io.github.noxaur.dsmod.edge.ui
 import com.mojang.blaze3d.platform.cursor.CursorTypes
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.core.ui.Look
+import io.github.noxaur.dsmod.core.ui.Narration
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.Sections
 import io.github.noxaur.dsmod.core.ui.TabEdge
+import io.github.noxaur.dsmod.core.ui.TypeAhead
 import io.github.noxaur.dsmod.edge.Keys
 import io.github.noxaur.dsmod.edge.toComponent
 import net.minecraft.client.gui.GuiGraphicsExtractor
@@ -13,14 +16,17 @@ import net.minecraft.client.gui.components.AbstractButton
 import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.components.EditBox
+import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.narration.NarratedElementType
 import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.input.CharacterEvent
 import net.minecraft.client.input.InputWithModifiers
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.input.MouseButtonInfo
 import net.minecraft.network.chat.CommonComponents
 import net.minecraft.network.chat.MutableComponent
+import net.minecraft.util.Util
 import net.minecraft.world.item.ItemStack
 
 private fun plain(label: String) = text { body(label) }.toComponent()
@@ -31,7 +37,7 @@ class KitButton private constructor(
     y: Int,
     width: Int,
     private val label: String,
-    private val icon: Icon?,
+    private var icon: Icon?,
     action: () -> Unit,
 ) : Button(x, y, width, Kit.BUTTON_HEIGHT, plain(label), { action() }, { it.get() }) {
     constructor(x: Int, y: Int, label: String, action: () -> Unit, width: Int = Kit.font.width(label) + 16) :
@@ -42,6 +48,14 @@ class KitButton private constructor(
 
     private val labelWidth = Kit.font.width(label)
     private var pressed = false
+
+    /** Shows another [icon] on an icon button, with [label] as what narration and its tooltip say it does. */
+    fun show(icon: Icon, label: String) {
+        if (icon == this.icon) return
+        this.icon = icon
+        message = plain(label)
+        setTooltip(Tooltip.create(plain(label)))
+    }
 
     /** Whether the button sits on a glass menu, asked each frame, which gives it a [Kit.button] of glass. */
     var glass: () -> Boolean = { false }
@@ -57,6 +71,7 @@ class KitButton private constructor(
 
     override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         val state = Kit.state(active, isHoveredOrFocused, pressed && isHovered)
+        val icon = icon
         if (icon != null) {
             Kit.button(graphics, x, y, width, height, state, icon, glass())
         } else {
@@ -228,6 +243,13 @@ class KitRangeSlider(
     var selected = -1
         private set
 
+    /** Selects the next section, so the keyboard can reach each one in turn. Returns whether there is one. */
+    fun selectNext(): Boolean {
+        if (sections.isEmpty()) return false
+        selected = (selected + 1) % sections.size
+        return true
+    }
+
     // A drag is worked out from the sections as the press found them, so a merge on the way can come undone.
     private var grab: Grab? = null
     private var base = sections
@@ -361,10 +383,14 @@ class KitRangeSlider(
 
 /**
  * A text field on a well, 16 tall. It is vanilla's `EditBox`, so every key a text field has works, with its text
- * 4 in from the well's left edge. [place] moves it by the well's corner, and a press anywhere on the well lands.
+ * 4 in from the well's left edge, or after an [icon] there. [place] moves it by the well's corner, and a press
+ * anywhere on the well lands.
  */
 class KitTextField(x: Int, y: Int, width: Int, label: String, value: String, maxLength: Int, onChange: (String) -> Unit) :
     EditBox(Kit.font, x + PAD, y + TOP, width - PAD * 2, Kit.font.lineHeight, plain(label)) {
+    private var icon: Icon? = null
+    private var lead = 0
+
     init {
         isBordered = false
         setMaxLength(maxLength)
@@ -375,18 +401,28 @@ class KitTextField(x: Int, y: Int, width: Int, label: String, value: String, max
     /** Shows [text] in muted text while the field is empty. */
     fun hint(text: String) = apply { setHint(text { muted(text) }.toComponent()) }
 
+    /** Puts [icon] at the well's left in muted text, which reads on a well in both themes, and the text after it. */
+    fun icon(icon: Icon) = apply {
+        val room = icon.width + PAD
+        this.icon = icon
+        x += room - lead
+        width -= room - lead
+        lead = room
+    }
+
     fun place(x: Int, y: Int) {
-        this.x = x + PAD
+        this.x = x + PAD + lead
         this.y = y + TOP
     }
 
     override fun isMouseOver(mouseX: Double, mouseY: Double) =
-        isActive && mouseX >= x - PAD && mouseX < x + width + PAD && mouseY >= y - TOP && mouseY < y - TOP + Kit.BUTTON_HEIGHT
+        isActive && mouseX >= x - PAD - lead && mouseX < x + width + PAD && mouseY >= y - TOP && mouseY < y - TOP + Kit.BUTTON_HEIGHT
 
     override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         if (!isVisible) return
         val over = isMouseOver(mouseX.toDouble(), mouseY.toDouble())
-        Kit.field(graphics, x - PAD, y - TOP, width + PAD * 2, Kit.BUTTON_HEIGHT, Kit.state(active, over || isFocused, false))
+        Kit.field(graphics, x - PAD - lead, y - TOP, width + PAD * 2 + lead, Kit.BUTTON_HEIGHT, Kit.state(active, over || isFocused, false))
+        icon?.let { Kit.icon(graphics, it, x - lead, y - TOP + (Kit.BUTTON_HEIGHT - it.height) / 2, Role.MUTED.argb()) }
         super.extractWidgetRenderState(graphics, mouseX, mouseY, partialTick)
     }
 
@@ -411,8 +447,9 @@ class KitKeysButton(
     private val name: String,
     keys: List<Int>,
     private val max: Int,
+    height: Int = Kit.BUTTON_HEIGHT,
     private val onChange: (List<Int>) -> Unit,
-) : AbstractButton(x, y, width, Kit.BUTTON_HEIGHT, plain(name)) {
+) : AbstractButton(x, y, width, height, plain(name)) {
     var keys = keys
         private set(value) {
             field = value
@@ -486,7 +523,8 @@ class KitKeysButton(
     }
 
     override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
-        val text = fit(if (recording) "> ${if (recorded.isEmpty()) "Press keys" else names(recorded)} <" else label, width - 6)
+        val prompt = if (max == 1) "Press a key" else "Press keys"
+        val text = fit(if (recording) "> ${if (recorded.isEmpty()) prompt else names(recorded)} <" else label, width - 6)
         val state = if (recording) Kit.State.DOWN else Kit.state(active, isHoveredOrFocused, false)
         Kit.button(graphics, x, y, width, height, state, text, Kit.font.width(text))
         clash?.let { Kit.ring(graphics, x - 1, y - 1, width + 2, height + 2, it.argb()) }
@@ -590,6 +628,10 @@ fun wrap(text: String, width: Int, max: Int): List<String> {
  * screen of [screenWidth] by [screenHeight]. The item under the mouse, or the one the arrow keys are on, is lit,
  * and a press or Enter does it and closes the menu through [onClose]. Escape closes it too. The screen closes it
  * on a press outside and lets that press do its own job, as `controls.md` says.
+ *
+ * A dropdown's menu has a check on the [checked] item, which it opens lit, and [below] places it under the dropdown.
+ * Typing a letter lights the next item that starts with it, as [TypeAhead] says, and the [words] of a search are
+ * painted where an item matches them.
  */
 class KitMenu(
     mouseX: Int,
@@ -598,13 +640,29 @@ class KitMenu(
     screenHeight: Int,
     private val items: List<Pair<String, () -> Unit>>,
     private val onClose: () -> Unit,
-) : AbstractWidget(0, 0, items.maxOf { Kit.font.width(it.first) } + PAD * 4, items.size * ITEM + PAD * 2, plain("Menu")) {
-    private var lit = 0
+    private val checked: Int = -1,
+    words: List<String> = emptyList(),
+) : AbstractWidget(0, 0, items.maxOf { Kit.font.width(it.first) } + PAD * 4 + if (checked >= 0) CHECK else 0, items.size * ITEM + PAD * 2, plain("Menu")) {
+    private var lit = checked.coerceAtLeast(0)
+    private val labels = items.map { it.first }
+    private val marked = labels.map { Kit.Marked.of(it, words) }
+    private val typeAhead = TypeAhead()
+    private val pointer = Pointer()
 
     init {
         // Beside the mouse, so the press that opened it lands on nothing in it.
         x = (mouseX + 2).let { if (it + width > screenWidth) mouseX - 2 - width else it }.coerceAtLeast(0)
         y = mouseY.coerceAtMost(screenHeight - height).coerceAtLeast(0)
+    }
+
+    /**
+     * Places the menu under the dropdown at [anchorX], [anchorY], at least as wide and lined up with its right edge,
+     * or over it where the screen has no room below.
+     */
+    fun below(anchorX: Int, anchorY: Int, anchorWidth: Int, anchorHeight: Int, screenWidth: Int, screenHeight: Int) = apply {
+        width = maxOf(width, anchorWidth)
+        x = (anchorX + anchorWidth - width).coerceIn(0, (screenWidth - width).coerceAtLeast(0))
+        y = if (anchorY + anchorHeight + 1 + height <= screenHeight) anchorY + anchorHeight + 1 else (anchorY - 1 - height).coerceAtLeast(0)
     }
 
     private fun at(mouseY: Double) = ((mouseY - y - PAD) / ITEM).toInt().takeIf { it in items.indices } ?: -1
@@ -627,27 +685,153 @@ class KitMenu(
         return true
     }
 
+    override fun charTyped(event: CharacterEvent): Boolean {
+        val char = typed(event) ?: return false
+        lit = typeAhead.type(char, Util.getMillis(), labels, lit)
+        return true
+    }
+
     private fun run(item: Int) {
         onClose()
         items[item].second()
     }
 
     override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
-        if (isHovered) at(mouseY.toDouble()).takeIf { it >= 0 }?.let { lit = it }
+        if (isHovered && pointer.moved(mouseX, mouseY)) at(mouseY.toDouble()).takeIf { it >= 0 }?.let { lit = it }
         Kit.panel(graphics, x, y, width, height)
-        for ((i, item) in items.withIndex()) {
+        val labelX = x + PAD * 2 + if (checked >= 0) CHECK else 0
+        for (i in items.indices) {
             val itemY = y + PAD + i * ITEM
             if (i == lit) Kit.button(graphics, x + PAD, itemY, width - PAD * 2, ITEM, Kit.State.HOVER, "", 0)
-            Kit.label(graphics, item.first, x + PAD * 2, itemY + (ITEM - 8) / 2)
+            if (i == checked) Kit.icon(graphics, Icon.CHECK, x + PAD * 2, itemY + (ITEM - Icon.CHECK.height) / 2, Kit.theme.ink, Kit.theme.inkShadow)
+            val label = marked[i]
+            if (label != null) Kit.label(graphics, label, labelX, itemY + (ITEM - 8) / 2) else Kit.label(graphics, labels[i], labelX, itemY + (ITEM - 8) / 2)
         }
     }
 
     override fun updateWidgetNarration(output: NarrationElementOutput) {
-        output.add(NarratedElementType.TITLE, plain(items[lit].first))
+        output.add(NarratedElementType.TITLE, Narration.item(labels[lit], lit, items.size, lit == checked))
     }
 
     private companion object {
         const val PAD = 3
         const val ITEM = 14
+        const val CHECK = Kit.GAP + 7
     }
+}
+
+/**
+ * A pick's menu: a panel of tiles under its dropdown, each showing a value's [looks] over its [labels], with the
+ * [selected] one ringed in the accent. The tile under the mouse, or the one the arrow keys are on, is lit, and a
+ * press or Enter picks it through [onPick] and closes the menu through [onClose]. Escape closes it too. Tiles wrap
+ * into rows no wider than the screen. Typing lights a tile by its name, as in [KitMenu], and the [words] of a search
+ * are painted where a name matches them.
+ */
+class KitPickMenu(
+    private val looks: List<Look>,
+    private val labels: List<String>,
+    private val selected: Int,
+    screenWidth: Int,
+    private val onPick: (Int) -> Unit,
+    private val onClose: () -> Unit,
+    words: List<String> = emptyList(),
+) : AbstractWidget(0, 0, 0, 0, plain("Menu")) {
+    private val marked = labels.map { Kit.Marked.of(it, words) }
+    private val typeAhead = TypeAhead()
+    private val pointer = Pointer()
+    private val tileWidth = maxOf(looks.maxOf(Looks::width), labels.maxOf(Kit.font::width)) + TILE_PAD * 2
+    private val perRow = ((screenWidth - PAD * 2 + GAP) / (tileWidth + GAP)).coerceIn(1, looks.size)
+    private val rows = (looks.size + perRow - 1) / perRow
+    private var lit = selected.coerceAtLeast(0)
+
+    init {
+        width = PAD * 2 + perRow * tileWidth + (perRow - 1) * GAP
+        height = PAD * 2 + rows * TILE + (rows - 1) * GAP
+    }
+
+    /** Places the menu under the dropdown at [anchorX], [anchorY], lined up with its right edge, or over it where there is no room. */
+    fun below(anchorX: Int, anchorY: Int, anchorWidth: Int, anchorHeight: Int, screenWidth: Int, screenHeight: Int) = apply {
+        x = (anchorX + anchorWidth - width).coerceIn(0, (screenWidth - width).coerceAtLeast(0))
+        y = if (anchorY + anchorHeight + 1 + height <= screenHeight) anchorY + anchorHeight + 1 else (anchorY - 1 - height).coerceAtLeast(0)
+    }
+
+    private fun tileX(i: Int) = x + PAD + i % perRow * (tileWidth + GAP)
+
+    private fun tileY(i: Int) = y + PAD + i / perRow * (TILE + GAP)
+
+    private fun at(mouseX: Double, mouseY: Double): Int {
+        for (i in looks.indices) if (mouseX >= tileX(i) && mouseX < tileX(i) + tileWidth && mouseY >= tileY(i) && mouseY < tileY(i) + TILE) return i
+        return -1
+    }
+
+    override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
+        val tile = at(event.x, event.y)
+        if (tile >= 0) pick(tile)
+    }
+
+    override fun keyPressed(event: KeyEvent): Boolean {
+        when {
+            event.isEscape -> onClose()
+            event.isLeft -> lit = (lit - 1).mod(looks.size)
+            event.isRight -> lit = (lit + 1).mod(looks.size)
+            event.isUp -> if (lit - perRow >= 0) lit -= perRow
+            event.isDown -> if (lit + perRow < looks.size) lit += perRow
+            event.isSelection || event.isConfirmation -> pick(lit)
+            else -> return false
+        }
+        return true
+    }
+
+    override fun charTyped(event: CharacterEvent): Boolean {
+        val char = typed(event) ?: return false
+        lit = typeAhead.type(char, Util.getMillis(), labels, lit)
+        return true
+    }
+
+    private fun pick(tile: Int) {
+        onClose()
+        onPick(tile)
+    }
+
+    override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+        if (isHovered && pointer.moved(mouseX, mouseY)) at(mouseX.toDouble(), mouseY.toDouble()).takeIf { it >= 0 }?.let { lit = it }
+        Kit.panel(graphics, x, y, width, height)
+        for (i in looks.indices) {
+            val tx = tileX(i)
+            val ty = tileY(i)
+            Kit.tile(graphics, tx, ty, tileWidth, TILE, i == lit, i == selected)
+            Looks.draw(graphics, looks[i], tx + (tileWidth - Looks.width(looks[i])) / 2, ty + TILE_PAD)
+            val labelX = tx + (tileWidth - Kit.font.width(labels[i])) / 2
+            val label = marked[i]
+            if (label != null) Kit.label(graphics, label, labelX, ty + TILE_PAD + Looks.HEIGHT + 3) else Kit.label(graphics, labels[i], labelX, ty + TILE_PAD + Looks.HEIGHT + 3)
+        }
+    }
+
+    override fun updateWidgetNarration(output: NarrationElementOutput) {
+        output.add(NarratedElementType.TITLE, Narration.item(labels[lit], lit, labels.size, lit == selected))
+    }
+
+    private companion object {
+        const val PAD = 3
+        const val GAP = 2
+        const val TILE_PAD = 3
+        const val TILE = TILE_PAD + Looks.HEIGHT + 3 + 8 + TILE_PAD
+    }
+}
+
+/** Whether the mouse moved since the last frame, so a menu lights what is under it only then and the keys keep what they lit. */
+private class Pointer {
+    private var x = Int.MIN_VALUE
+    private var y = Int.MIN_VALUE
+
+    fun moved(mouseX: Int, mouseY: Int) = (mouseX != x || mouseY != y).also {
+        x = mouseX
+        y = mouseY
+    }
+}
+
+/** The character a menu jumps by, or null for a space, which picks, or anything that is not text. */
+private fun typed(event: CharacterEvent): Char? {
+    val code = event.codepoint()
+    return if (!event.isAllowedChatCharacter || Character.isWhitespace(code) || Character.isSupplementaryCodePoint(code)) null else code.toChar()
 }

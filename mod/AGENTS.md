@@ -6,13 +6,13 @@ The Fabric mod, written in Kotlin. Read the root `AGENTS.md` first.
 
 The server is someone else's, closed and custom, so everything ds-mod knows about the game arrives in packets. The `edge` package holds the Fabric callbacks and is the only release code that touches Minecraft. It turns what the server sends into a `GameEvent` and posts it to `Game`. The `core` package holds the features and imports nothing from Minecraft or Fabric, so it runs in plain JVM tests.
 
-Settings use MoulConfig, the settings screen SkyHanni uses. A setting is an annotated field in `DsModConfig`, and `/dsmod` opens the screen.
+A setting is a field in `DsModConfig` and one line in `SettingsTree`, as the ui skill's `settings.md` says. `DsModConfig` is plain data, and the tree is the only schema: the one place a setting is named, described and given its row. `SettingsScreen` draws the tree, and `/dsmod`, the Settings Key and Mod Menu's config button open it through `DsModClient.openSettings`. `ConfigFile` saves the fields by name, so a field's name is its key in the player's file: never rename one that shipped.
 
 Load the `ui` skill before you add or change anything the player sees, hears or operates. It is at `mod/.claude/skills/ui/SKILL.md`.
 
 ## Features
 
-A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with its switch in `DsModConfig` and a `### <Name>` section in `docs/user/features.md`. Copy the feature closest to yours:
+A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with its switch in `DsModConfig` and `SettingsTree` and a `### <Name>` section in `docs/user/features.md`. Copy the feature closest to yours:
 
 | To | Copy |
 | --- | --- |
@@ -53,7 +53,7 @@ The code is split into two source sets, and each becomes its own mod.
 - `src/debug` holds developer tools such as `/dscapture`, `/dskit` and `cutFixture`. The debug jar contains the release jar plus these tools, and `runClient` loads both.
 - Put a tool in `src/debug` when only a developer or an agent needs it. The recorder is not one: it is in the release jar, and only a contribution the player accepted starts it. `Recorder` in `edge/capture` is its one switch, and while it is off each hook is a null check. Keep it that way: nothing the recorder does may run before `Recorder.start`.
 - The backend's address and the website's are `backend_url` and `website_url` in `gradle.properties`, written into the jar by the build. A player has no setting for them.
-- `runClient` also loads the third-party mods in the `devMods` configuration, such as Sodium and Mod Menu, and logs in with the user's Microsoft account through DevAuth. These mods never ship in a jar, and the game tests run without them.
+- `runClient` also loads the third-party mods in the `devMods` configuration, such as Sodium and Mod Menu, and logs in with the user's Microsoft account through DevAuth. These mods never ship in a jar. The game tests load only Mod Menu, whose config button `SettingsScreenTest` presses.
 
 ## Seeing the game
 
@@ -107,4 +107,4 @@ An event's text is `plain` plus `spans`, with `§` codes already resolved into t
 - When you change `edge` or a screen, also run the game tests that cover it, by name: `./gradlew runClientGameTest -Pgametests=ChatTest,KitTest`. When you change the build, run `./gradlew runProdClientGameTest -Pgametests=SettingsScreenTest`, which loads the built jars the way a player does, so it catches packaging mistakes. Each boots the game behind the user, without taking their keyboard or their speakers. The beta pipeline runs every game test, so leave the whole suite to it.
 - To hear what a game test played, read `audio.wav` in its run folder, `build/run/clientGameTest/` or `build/run/prodClientGameTest/`. It holds the whole run from the game's start.
 - Versions are pinned in `gradle.properties`. The server decides the Minecraft version, so bump it only when the user asks.
-- A library that ships inside the release jar goes in the `shade` configuration and gets a `relocate` line and a `NOTICE` entry.
+- The release jar carries no library, for the reason in the [overview](../docs/internals/overview.md#the-release-jar-carries-no-library). Ask the user before adding one: it needs shading, a `relocate` line and a `NOTICE` entry.

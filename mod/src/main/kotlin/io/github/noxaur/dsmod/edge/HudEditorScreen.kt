@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
-import io.github.noxaur.dsmod.core.text.amount
+import io.github.noxaur.dsmod.core.hud.HudScale
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.ui.EditorScreen
 import io.github.noxaur.dsmod.edge.ui.Kit
@@ -163,12 +163,10 @@ class HudEditorScreen(
         val id = selected
         name = id?.let(readouts::title) ?: HINT
         scale.active = id != null
-        scale.value = times(id?.let(readouts::scale) ?: 1f)
+        scale.value = HudScale.label(id?.let(readouts::scale) ?: 1f)
         reset.active = id != null && readouts.isPlaced(id)
-        hudScale.value = times(settings.scale)
+        hudScale.value = HudScale.label(settings.scale)
     }
 
     private fun inPanel(x: Double, y: Double) = x >= panelX && x < panelX + panelWidth && y >= panelY && y < panelY + panelHeight
-
-    private fun times(scale: Float) = amount(scale.toDouble(), 2, trim = true) + "x"
 }

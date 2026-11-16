@@ -1,9 +1,10 @@
 package io.github.noxaur.dsmod.core.ui
 
-import com.google.gson.annotations.Expose
+import kotlinx.serialization.Serializable
 
 /** One stretch of a scale that is switched on, from [from] up to and including [to]. */
-data class Section(@Expose val from: Int = 0, @Expose val to: Int = 0)
+@Serializable
+data class Section(val from: Int = 0, val to: Int = 0)
 
 /**
  * The stretches of a scale from 0 to `max` that are switched on, as a range slider edits them. Every list these

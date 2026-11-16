@@ -18,10 +18,12 @@ Use the jar without `-debug` in its name. The debug jar is for developers, and y
 
 ## Settings
 
-Type `/dsmod` or `/dsm` in chat to open the settings. Add words to search them, as in `/dsmod zealot`. The settings open where you left them, and ds-mod saves them in `config/dsmod/config.json` in your game folder when you close them.
+Type `/dsmod` or `/dsm` in chat to open the settings. Add words to search them, as in `/dsmod zealot`. With Mod Menu, the config button beside ds-mod opens them too. The settings open where you left them, and ds-mod saves them in `config/dsmod/config.json` in your game folder when you close them. If that file ever can't be read, ds-mod starts from the defaults, keeps the old file beside it, and tells you its name in chat.
+
+<img src="../images/settings.png" alt="The settings: sections down the left with Favorites first, and General open on the right, with a star beside Fullbright's name under the mouse">
 
 To open them with a key, pick one in **Settings Key** under General. It has no key at first, because DragSim Utils opens on Right Shift and one press would open both.
 
-Click the star beside a setting's name, or press F with your mouse over the setting, to keep it in **Favorites**, the first category. Pick another key or a mouse button in **Favorite Key** under General. F types into the search while you are searching, and Ctrl+F still jumps to the search. Favorites starts empty and lists your starred settings in the order the categories do. Click a star again to take it out. A setting you unstar inside Favorites stays there with an empty star until you leave the category, so you can star it again if you slipped. A search looks through every category, so Favorites hides while you search.
+Point at a setting and click the star beside its name, or press F, to keep it in **Favorites**, the first section. F also stars the setting you moved to with the arrow keys. Pick another key or a mouse button in **Favorite Key** under General. F types into the search while you are searching, and Ctrl+F still jumps to the search. Favorites starts empty and lists your starred settings in the order the sections do. Click a star again to take it out. A setting you unstar inside Favorites stays there with an empty star until you leave, so you can star it again if you slipped. A search looks through every section, so Favorites shows no matches while you search.
 
 ds-mod runs only while you play on dragsim.co, and stays out of the way in singleplayer and on other servers. To use it anywhere, turn off **DragSim Only** under General.

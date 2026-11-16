@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.core.ui
 
-import com.google.gson.annotations.Expose
+import kotlinx.serialization.Serializable
 
 /** The edge of a menu that a tab hangs from. */
 enum class TabEdge { TOP, BOTTOM }
@@ -9,13 +9,14 @@ enum class TabEdge { TOP, BOTTOM }
  * A tab the player put on the menus, at place [slot] of [edge] counted from the left. It sends [command] and shows
  * [item], or it is the search when [search] is true. [tooltip] names it, and a blank one shows the command instead.
  */
+@Serializable
 data class MenuTab(
-    @Expose val edge: TabEdge = TabEdge.BOTTOM,
-    @Expose val slot: Int = 0,
-    @Expose val command: String = "",
-    @Expose val item: String = "minecraft:chest",
-    @Expose val tooltip: String = "",
-    @Expose val search: Boolean = false,
+    val edge: TabEdge = TabEdge.BOTTOM,
+    val slot: Int = 0,
+    val command: String = "",
+    val item: String = "minecraft:chest",
+    val tooltip: String = "",
+    val search: Boolean = false,
 )
 
 /**

@@ -54,9 +54,11 @@ Chrome is everything that is not text: panels, buttons, slots, bars, marks. It i
 - **State:** a control shows idle, hover, pressed and off with its face and edges. Pressed also moves the label down 1px. Focus looks like hover, so the keyboard works without another style.
 - **Icons:** white sprites of at most 7x7 in `textures/gui/sprites/`, which `Kit.icon` tints with ink or a role.
 
-A screen is a vanilla `Screen` holding the kit's widgets. It takes the screen it was opened over and goes back to it on close, so a button in the settings returns to the settings. A screen says little: a title, its controls and one line that reads back what the player did. They are vanilla widgets with a kit face, so focus, narration and the keyboard work as they do in Minecraft. The settings screen is MoulConfig's and keeps its own look.
+A screen is a vanilla `Screen` holding the kit's widgets. It takes the screen it was opened over and goes back to it on close, so a button in the settings returns to the settings. A screen says little: a title, its controls and one line that reads back what the player did. They are vanilla widgets with a kit face, so focus, narration and the keyboard work as they do in Minecraft.
 
 [`kit.md`](kit.md) lists every token, component and size. Read it before you build a screen, or when you need a component it may not have.
+
+A setting is one line in `SettingsTree` with a kind of row, which brings its control, reset, search and keyboard. [`settings.md`](settings.md) says how to add a setting, a look, or a kind of row.
 
 ## Design the control whole
 
@@ -81,6 +83,7 @@ Text is built with `text { }` from `core.text`, where each piece states what it 
 | `action` | What a click will do |
 | `good`, `bad`, `warning` | State only: done, failed, about to fail |
 | `brand` | The mod's name and a feature's header |
+| `match` | The words a search matched, painted over the text they sit in |
 
 One line has one `value`. A line where everything is highlighted has no highlight.
 
@@ -96,7 +99,7 @@ One line has one `value`. A line where everything is highlighted has no highligh
 - **HUD groups:** blocks that belong to one activity share a `HudGroup`, which stacks them on one plate. The player owns the plate, the scale and the place of every block, so a feature sets none of them. A feature whose block sits beside vanilla's own HUD, as the armor does by the hotbar, may offer the player a `HudLook` and a `HudDock` in its settings and pass them to `block(look = .., dock = ..)`.
 - **Buttons:** one or two words in Title Case that name what the press does. "Reset", "Done".
 - **Setting names:** Title Case, one to three words. "Scale Tracker".
-- **Setting descriptions:** one sentence that starts with a verb and ends with a period. "Show the scales you earn per hour." A requirement or warning follows as its own sentence. MoulConfig shrinks a long one, so `RulesTest` caps its length, and the player docs hold the rest.
+- **Setting descriptions:** one sentence that starts with a verb and ends with a period. "Show the scales you earn per hour." A requirement or warning follows as its own sentence. A row shows two lines of it, so `RulesTest` caps its length, and the player docs hold the rest.
 - **Changed defaults:** when a feature changes something the server shows, tell the player once in chat and name the setting.
 - **Spelling:** American English. Write game nouns as the server writes them in a capture, capitals included.
 

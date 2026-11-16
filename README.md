@@ -24,11 +24,11 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 
 <p>
   <img src="docs/images/rarity-chest.png" width="49%" alt="A chest in the Minimal look: each rare item stands on a shelf in its rarity's color, with a small gem in its corner">
-  <img src="docs/images/rarity-editor.png" width="49%" alt="The rarity style editor beside the player's inventory, with a preview of three items">
+  <img src="docs/images/rarity-settings.png" width="49%" alt="Rarity Marks in the settings: the Gilded style, and the hotbar's border, fill, floor and gem, each with a preview of its slot">
 </p>
 
 <p>
-  <img src="docs/images/command-binds.png" alt="Command Binds: binds listed in groups on the left, and the picked bind's command, keys and settings on the right">
+  <img src="docs/images/command-binds.png" alt="Command Binds in the settings: each bind a line with its switch, name, command, keys and where it works, under its group, with a second group folded">
 </p>
 
 It also has a HUD editor, Fullbright, tidier menus, and guards against taking a placed eye back out of the altar or swapping armor with a right click.

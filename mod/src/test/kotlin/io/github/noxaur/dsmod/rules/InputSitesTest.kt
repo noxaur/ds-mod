@@ -262,7 +262,7 @@ class InputSitesTest {
             Files.walk(dir).asSequence().filter { it.extension == "class" }.map { it.readBytes() }.toList()
         }
         assertTrue(classes.size > 100, "InputSitesTest found ${classes.size} release classes. Build the main source set first.")
-        val found = inputSites(classes, root.resolve("src/main/aw/dsmod.accesswidener").readLines())
+        val found = inputSites(classes, root.resolve("src/main/resources/dsmod.accesswidener").readLines())
         val audit = audited(root.resolve("input-sites.txt").readLines())
         val unaudited = found.filter { audit[it.key] != it.line }
         val gone = audit.keys - found.map { it.key }.toSet()

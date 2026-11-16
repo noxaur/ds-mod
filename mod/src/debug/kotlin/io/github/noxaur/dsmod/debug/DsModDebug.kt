@@ -13,8 +13,8 @@ import net.minecraft.network.chat.Component
 import java.nio.file.Path
 
 /**
- * The developer's tools: `/dscapture` records without a brief, `/dskit` shows the kit, `-Pbrief` starts a brief at
- * launch, and the title screen has a button that joins DragSim.
+ * The developer's tools: `/dscapture` records without a brief, `/dskit` shows the kit and `/dskit rows` its settings
+ * rows, `-Pbrief` starts a brief at launch, and the title screen has a button that joins DragSim.
  */
 object DsModDebug : ClientModInitializer {
     /** The capture `/dscapture` started, while it runs. */
@@ -56,11 +56,23 @@ object DsModDebug : ClientModInitializer {
                     },
             )
             dispatcher.register(
-                ClientCommands.literal("dskit").executes { context ->
-                    // The chat screen closes after the command returns, so open on the next tick.
-                    context.source.client.schedule { context.source.client.setScreenAndShow(KitGalleryScreen()) }
-                    1
-                },
+                ClientCommands.literal("dskit")
+                    .executes { context ->
+                        // The chat screen closes after the command returns, so open on the next tick.
+                        context.source.client.schedule { context.source.client.setScreenAndShow(KitGalleryScreen()) }
+                        1
+                    }
+                    .apply {
+                        // A page of settings rows, lists or panels.
+                        for (page in SettingsGalleryScreen.Page.entries) {
+                            then(
+                                ClientCommands.literal(page.name.lowercase()).executes { context ->
+                                    context.source.client.schedule { context.source.client.setScreenAndShow(SettingsGalleryScreen(page)) }
+                                    1
+                                },
+                            )
+                        }
+                    },
             )
         }
     }
