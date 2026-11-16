@@ -141,7 +141,7 @@ gate edge.mixin.MouseInputMixin b812670e4219
     approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.MouseTurnMixin 3be6f5bde644
     hooks MouseHandler.turnPlayer
-    approved by github.com/noxaur 2026-11-16T01:17:00Z
+    approved by github.com/noxaur 2026-11-16T15:44:00Z
 gate edge.mixin.PerspectiveKeyMixin fef175750217
     hooks Minecraft.handleKeybinds
     approved by github.com/noxaur 2026-11-16T01:17:00Z
