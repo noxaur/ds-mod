@@ -19,13 +19,13 @@ import org.lwjgl.glfw.GLFW
  * Drives the groups of the binds list in the settings: a group named by typing, a bind dragged under its heading
  * joining it, Escape during a drag, the right-press menu worked by the keys, Alt with Up or Down, a heading's arrow
  * and the keys folding it, its switch, export and import, a group moved and deleted with a second press. Read the
- * screenshots, mid-drag and the README's among them.
+ * screenshots, mid-drag and the feature guide's among them.
  */
 class CommandBindGroupsTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = setUp(context)
         BindsDriver(context).groups()
-        BindsDriver(context).readme()
+        BindsDriver(context).guide()
         context.runOnClient<Nothing> {
             val general = DsModClient.settings.general
             general.binds = emptyList()
@@ -146,8 +146,8 @@ class CommandBindGroupsTest : FabricClientGameTest {
         check(general.collapsedGroups == listOf("Dungeons")) { "A double press left ${general.collapsedGroups}" }
     }
 
-    /** The README's picture: a few binds with the server's own commands, one group folded, the mouse away. */
-    private fun BindsDriver.readme() {
+    /** The feature guide's picture: a few binds with the server's own commands, one group folded, the mouse away. */
+    private fun BindsDriver.guide() {
         val general = DsModClient.settings.general
         context.runOnClient<Nothing> {
             general.binds = listOf(
@@ -164,6 +164,6 @@ class CommandBindGroupsTest : FabricClientGameTest {
         list()
         context.input.setCursorPos(0.0, 0.0)
         context.waitTicks(2)
-        context.takeScreenshot("command-binds-readme")
+        context.takeScreenshot("command-binds-guide")
     }
 }
