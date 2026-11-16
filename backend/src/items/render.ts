@@ -28,9 +28,28 @@ export interface Renderer {
 
 const MAX_COUNT = 99;
 
-/** A renderer for dragsim.co's `catalog.json` and the hints players agree on. Make one per request. */
-export const makeRenderer = (catalogJson: unknown, hints: ReadonlyMap<string, ItemHints>): Renderer => {
+/** How many worn pieces list each ability. One piece counts once, even if its ability list repeats a key. */
+const wornAbilities = (worn: readonly unknown[]): ReadonlyMap<string, number> => {
+  const abilities = new Map<string, number>();
+  for (const raw of worn) {
+    for (const key of new Set(readItem(raw)?.abilities ?? [])) {
+      abilities.set(key, (abilities.get(key) ?? 0) + 1);
+    }
+  }
+  return abilities;
+};
+
+/**
+ * A renderer for dragsim.co's `catalog.json` and the hints players agree on. `worn` is the armor from
+ * `equipmentCells`, and a full-set header counts how many of those pieces share the ability. Make one per request.
+ */
+export const makeRenderer = (
+  catalogJson: unknown,
+  hints: ReadonlyMap<string, ItemHints>,
+  worn: readonly unknown[] = [],
+): Renderer => {
   const catalog = decodeCatalog(catalogJson);
+  const equipped = wornAbilities(worn);
   return {
     render: (raw) => {
       const item = readItem(raw);
@@ -42,7 +61,7 @@ export const makeRenderer = (catalogJson: unknown, hints: ReadonlyMap<string, It
       const texture =
         item.material === "minecraft:player_head" ? skullTexture(item.skin, item.skinId, hint, entry?.skin) : undefined;
       const color = parseColor(item.color) ?? parseColor(record(item.dye)["color"] ?? item.dye) ?? entry?.color;
-      const { lines } = lore(catalog, item, entry);
+      const { lines } = lore(catalog, item, entry, equipped);
       const facts = factsOf(catalog, item);
       return {
         entry: item.entry ?? null,

@@ -55,11 +55,16 @@ export const WireProfile = Schema.Struct({
   dungeons: optional(Schema.Unknown),
   hotd: optional(Schema.Unknown),
   forge: optional(Schema.Unknown),
+  /*
+   * Plain numbers, read one entry at a time. A value that is not a finite number is skipped, so it costs that entry
+   * and never the profile.
+   */
   /** Total XP by skill. */
-  skills: optional(Schema.Record(Schema.String, Schema.Number)),
+  skills: optional(Schema.Unknown),
   /** `zombie_xp` and `zombie_level` for each slayer. */
-  slayer: optional(Schema.Record(Schema.String, Schema.Number)),
-  bestiary: optional(Schema.Record(Schema.String, Schema.Struct({ kills: optional(Schema.Number) }))),
+  slayer: optional(Schema.Unknown),
+  /** Each mob is `{ kills }`. A kills value that is not a finite number drops that mob. */
+  bestiary: optional(Schema.Unknown),
 });
 export type WireProfile = typeof WireProfile.Type;
 
