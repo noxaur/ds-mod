@@ -335,6 +335,42 @@ class DsModConfig : Config() {
         }
 
         @Expose
+        @ConfigOption(name = "Ability Cooldowns", desc = "Time your item abilities and Riftwalker's charged hit.")
+        @ConfigEditorBoolean
+        @JvmField
+        var abilityCooldowns = true
+
+        @Expose
+        @ConfigOption(name = "Cooldown List", desc = "List the abilities you are waiting on, on the HUD.")
+        @ConfigEditorBoolean
+        @JvmField
+        var cooldownList = true
+
+        @Expose
+        @ConfigOption(name = "Cooldown on Items", desc = "Drain a wash over the item and count down its seconds.")
+        @ConfigEditorBoolean
+        @JvmField
+        var cooldownOnItems = true
+
+        @Expose
+        @ConfigOption(name = "Shortest Listed", desc = "List only cooldowns at least this many seconds long.")
+        @ConfigEditorSlider(minValue = 0f, maxValue = 20f, minStep = 0.5f)
+        @JvmField
+        var cooldownShortest = 2f
+
+        @Expose
+        @ConfigOption(name = "Ready Alert", desc = "Alert you when a long cooldown is over.")
+        @ConfigEditorBoolean
+        @JvmField
+        var cooldownReadyAlert = false
+
+        @Expose
+        @ConfigOption(name = "Alert From", desc = "Alert only for cooldowns at least this many seconds long.")
+        @ConfigEditorSlider(minValue = 1f, maxValue = 120f, minStep = 1f)
+        @JvmField
+        var cooldownAlertFrom = 20f
+
+        @Expose
         @ConfigOption(name = "Equipment Display", desc = "Show your armor and pet on the HUD.")
         @ConfigEditorBoolean
         @JvmField

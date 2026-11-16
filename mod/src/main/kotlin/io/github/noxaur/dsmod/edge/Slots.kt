@@ -1,8 +1,10 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.container.SlotCooldown
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import io.github.noxaur.dsmod.edge.ui.Kit
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
@@ -15,6 +17,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.world.inventory.Slot
 import java.util.BitSet
+import kotlin.math.ceil
 
 private const val HOTBAR_FIRST = 36
 private const val HOTBAR_SLOTS = 9
@@ -31,24 +34,35 @@ private const val FILL_ALPHA = 110
  * A hidden slot draws nothing here: `ContainerScreenMixin` asks [hides] and skips its item, highlight and tooltip.
  */
 object Slots {
-    /** [rarity] is the mark's role when the player's rarity style draws it, or null for a plain fill in [color]. */
-    private class Shown(val color: Int, val rarity: Role?, val hide: Boolean, val label: Component?)
+    /**
+     * [rarity] is the mark's role when the player's rarity style draws it, or null for a plain fill in [color], and a
+     * [cooldown] draws neither.
+     */
+    private class Shown(val color: Int, val rarity: Role?, val hide: Boolean, val label: Component?, val cooldown: SlotCooldown?)
 
     private val marks = HashMap<String, Map<Int, Shown>>()
     private val hidden = BitSet()
+
+    /** Whether any mark is a cooldown, which the hotbar shows whatever the player's switch for marks there says. */
+    private var cooldowns = false
+
+    /** The seconds a cooldown shows, built once each. */
+    private val counts = HashMap<String, Component>()
     private var covered = -1
     private lateinit var settings: DsModConfig.Inventory
 
     /** Marks slots by their index in the open container's menu, replacing what [id] marked before. */
     fun mark(id: String, slots: Map<Int, SlotMark>) {
         marks[id] = slots.mapValues { (_, mark) ->
-            Shown(mark.role.argb(FILL_ALPHA), mark.role.takeIf { mark.rarity }, mark.hide, mark.label?.toComponent())
+            Shown(mark.role.argb(FILL_ALPHA), mark.role.takeIf { mark.rarity }, mark.hide, mark.label?.toComponent(), mark.cooldown)
         }
+        cooldowns = marks.values.any { slots -> slots.values.any { it.cooldown != null } }
         rehide()
     }
 
     fun clear(id: String) {
         marks.remove(id)
+        cooldowns = marks.values.any { slots -> slots.values.any { it.cooldown != null } }
         rehide()
     }
 
@@ -70,9 +84,9 @@ object Slots {
 
     fun register(settings: DsModConfig.Inventory) {
         this.settings = settings
-        // The backs go under the items from `HudHotbarMixin`. This draws the gems, after vanilla drew the items.
+        // The backs go under the items from `HudHotbarMixin`. This draws the gems and the cooldowns, after vanilla drew the items.
         HudElementRegistry.attachElementAfter(VanillaHudElements.HOTBAR, Identifier.fromNamespaceAndPath("dsmod", "hotbar")) { graphics, _ ->
-            if (!onHotbar() || !SlotArts.style(settings, Surface.HOTBAR).gem) return@attachElementAfter
+            if (!onHotbar() || !cooldowns && !(settings.hotbarMarks && SlotArts.style(settings, Surface.HOTBAR).gem)) return@attachElementAfter
             DsModClient.game.metrics.time("slots.draw") {
                 val left = graphics.guiWidth() / 2 - 88
                 val top = graphics.guiHeight() - 19
@@ -91,10 +105,12 @@ object Slots {
                 each(screen, graphics) { slot, shown ->
                     front(graphics, Surface.CONTAINER, shown, slot.x, slot.y)
                     shown.label?.let { graphics.text(font, it, slot.x, slot.y, -1, true) }
+                    shown.cooldown?.let { cooldown(graphics, it, slot.x, slot.y) }
                 }
             }
             ScreenEvents.remove(screen).register {
                 marks.clear()
+                cooldowns = false
                 hidden.clear()
                 covered = -1
             }
@@ -104,7 +120,7 @@ object Slots {
     /** Called by `HudHotbarMixin` as vanilla is about to draw the hotbar item at [x], [y]. */
     @JvmStatic
     fun hotbarSlot(graphics: GuiGraphicsExtractor, x: Int, y: Int) {
-        if (!onHotbar()) return
+        if (!onHotbar() || !settings.hotbarMarks) return
         val from = x - (graphics.guiWidth() / 2 - 88)
         val i = from / HOTBAR_PITCH
         // The offhand slot comes through here too, left of the first slot.
@@ -117,9 +133,30 @@ object Slots {
         for (slots in marks.values) slots[index]?.takeUnless { it.hide }?.let { back(graphics, surface, it, x, y) }
     }
 
-    /** Draws what goes over the item in slot [index]: the gem of a rarity mark, when the style has one. */
+    /**
+     * Draws what goes over the item in slot [index]: the gem of a rarity mark, when the style has one, and a cooldown.
+     * On the hotbar the gem follows the player's switch for marks there, and a cooldown its feature's own.
+     */
     fun drawFront(graphics: GuiGraphicsExtractor, surface: Surface, index: Int, x: Int, y: Int) {
-        for (slots in marks.values) slots[index]?.takeUnless { it.hide }?.let { front(graphics, surface, it, x, y) }
+        for (slots in marks.values) {
+            val shown = slots[index]?.takeUnless { it.hide } ?: continue
+            if (surface != Surface.HOTBAR || settings.hotbarMarks) front(graphics, surface, shown, x, y)
+            shown.cooldown?.let { cooldown(graphics, it, x, y) }
+        }
+    }
+
+    /** The wash of a [cooldown] over the item at [x], [y], and its seconds where the stack count goes, as of this frame. */
+    private fun cooldown(graphics: GuiGraphicsExtractor, cooldown: SlotCooldown, x: Int, y: Int) {
+        val now = System.currentTimeMillis()
+        val left = cooldown.end - now
+        if (left <= 0) return
+        Kit.cooldown(graphics, x, y, left.toFloat() / (cooldown.end - cooldown.start))
+        val seconds = ceil(left / 1000.0).toLong()
+        val label = if (seconds < 60) "$seconds" else "${seconds / 60}m"
+        val text = counts.getOrPut(label) { text { value(label) }.toComponent() }
+        val font = Minecraft.getInstance().font
+        // Over the item, where the game writes a stack's count.
+        graphics.text(font, text, x + 17 - font.width(text), y + 9, -1, true)
     }
 
     /**
@@ -138,6 +175,7 @@ object Slots {
     }
 
     private fun back(graphics: GuiGraphicsExtractor, surface: Surface, shown: Shown, x: Int, y: Int) {
+        if (shown.cooldown != null) return
         val rarity = shown.rarity
         if (rarity == null) Kit.slotFill(graphics, x, y, shown.color) else Kit.slotArt(graphics, x, y, SlotArts.atlas(settings, surface), rarity.ordinal)
     }
@@ -148,7 +186,7 @@ object Slots {
     }
 
     private fun onHotbar(): Boolean {
-        if (marks.isEmpty() || !settings.hotbarMarks) return false
+        if (marks.isEmpty() || !settings.hotbarMarks && !cooldowns) return false
         val player = Minecraft.getInstance().player ?: return false
         // A mark's slot is an index in the open menu, which is the inventory's only while no other menu is open.
         return player.containerMenu === player.inventoryMenu && !player.isSpectator

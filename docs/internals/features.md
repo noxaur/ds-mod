@@ -46,6 +46,14 @@ The tab list and the open container are client state, so the edge polls them. An
 
 A block the server placed before its chunk reached the client comes with no update at all, so a marker head that already stands is found by reading each chunk as it loads. Only a head with a skin is posted from there. The End is decorated with plain heads, and one of those posted as a marker would send the Protector's beam to a wall.
 
+## An ability's use comes from the server, its length from the lore
+
+Ability Cooldowns keeps no list of abilities. The server names each use, in the action bar's `-100 Mana (Giant's Slam)` or a chat line, and the `Cooldown` line under that name's heading in the lore of an item the player carries gives the length, so a new weapon is timed with no change here. The mana part stays up through a few of the server's half-second updates, so a use is the part arriving, never each repeat. Only the player's own slots are read: in a menu those are its last four rows, and a profile menu's upper rows hold another player's items.
+
+The refusal `This ability is on cooldown for 3.35s` names no ability, so it goes to the timer whose end lies nearest the server's, and two that close are left alone. Matching by the held item was rejected because the refusal answers a press a round trip earlier, and the player may have scrolled since. The timers run on the wall clock, while the server counts its own ticks and falls behind when it lags, so a timer can read Ready a little early. Each refusal puts the timer back on the server's count.
+
+Riftwalker's blink is the one cooldown the server shows nothing of, so it starts on `Hit`, the player's own attack as the client sends it. `Hit` carries only the entity's type, because the charge needs nothing more, and a hit while the bonus charges does not restart it.
+
 ## Saved state belongs to the feature, and the disk to the edge
 
 A feature declares one immutable state object and replaces it to change it. The edge loads it at start and writes the changed ones about once a minute, on its own thread, through a temporary file and a rename. A file that fails to parse is moved aside, because a tracker's history is worth more than a clean start.

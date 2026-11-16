@@ -1,0 +1,322 @@
++   0.0s > (opened your inventory, 46 slots)
++   0.0s > (slot 5) 1 x Necrotic Storm Helmet
++   0.0s > (slot 6) 1 x Necrotic Storm Chestplate
++   0.0s > (slot 7) 1 x Necrotic Storm Leggings
++   0.0s > (slot 8) 1 x Necrotic Storm Boots
++   0.0s > (slot 9) 16 x Summoning Eye
++   0.0s > (slot 10) 1 x Golden Eye
++   0.0s > (slot 11) 16 x Summoning Eye
++   0.0s > (slot 12) 1 x Golden Eye
++   0.0s > (slot 13) 1 x Dragon Scale
++   0.0s > (slot 14) 1 x Warden Catalyst
++   0.0s > (slot 15) 1 x Golden Eye
++   0.0s > (slot 16) 10 x Summoning Eye
++   0.0s > (slot 17) 8 x Protector Dragon Fragment
++   0.0s > (slot 18) 1 x Arcane Dragon Chestplate
++   0.0s > (slot 19) 5 x Arcane Dragon Fragment
++   0.0s > (slot 20) 1 x Protector Dragon Boots
++   0.0s > (slot 21) 13 x Strong Dragon Fragment
++   0.0s > (slot 22) 1 x Zombie Talisman
++   0.0s > (slot 23) 1 x Zombie Talisman
++   0.0s > (slot 27) 1 x Flint Arrow
++   0.0s > (slot 31) 13 x Old Dragon Fragment
++   0.0s > (slot 36) 1 x Suspicious Giant's Sword
++   0.0s > (slot 37) 1 x Warped Aspect of the Void
++   0.0s > (slot 38) 1 x Fabled Frozen Scythe
++   0.0s > (slot 39) 1 x Precise Golden Gun
++   0.0s > (slot 40) 16 x Summoning Eye
++   0.0s > (slot 43) 16 x End Stone Rose
++   0.0s > (slot 44) 1 x SkyBlock Menu (Right Click)
++   0.4s > (action bar) 1,501/1,501❤      +376.36 Combat (22.9%)     ✎ Mana 3,093/3,143
++   0.6s > (action bar) 1,501/1,501❤      +376.36 Combat (22.9%)     ✎ Mana 3,013/3,143
++   1.1s > (action bar) 1,501/1,501❤      +376.36 Combat (22.9%)     ✎ Mana 3,143/3,143
++   1.5s > [-] [VIP] Player1
++   1.6s > [DRAGON] Player2: hello
++   1.6s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,053/3,143
++   2.1s > (action bar) 1,501/1,501❤      +376.36 Combat (22.9%)     ✎ Mana 3,093/3,143
++   2.5s > (action bar) 1,501/1,501❤      +376.36 Combat (22.9%)     ✎ Mana 2,993/3,143
++   3.0s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,093/3,143
++   3.5s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 2,993/3,143
++   3.6s > (action bar) 1,501/1,501❤     -100 Mana (Giant's Slam)     ✎ Mana 2,893/3,143
+             Ability Cooldowns
+               Giant's Slam: 4.4s
+             + slot 36: cooldown until +8.0s on Suspicious Giant's Sword
++   3.6s > You hear something falling from the sky.
++   4.1s > (action bar) 1,501/1,501❤     -100 Mana (Giant's Slam)     ✎ Mana 3,045/3,143
+             Ability Cooldowns
+               Giant's Slam: 4.0s
++   4.5s > [+] [MVP+] Player3
+             Ability Cooldowns
+               Giant's Slam: 3.5s
++   4.6s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 2,895/3,143
++   5.1s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,046/3,143
+             Ability Cooldowns
+               Giant's Slam: 3.0s
++   5.1s > [+] [VIP] Player1
++   5.6s > (action bar) 1,479/1,501❤     180✯ Magic Find     ✎ Mana 2,896/3,143
+             Ability Cooldowns
+               Giant's Slam: 2.5s
++   6.1s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,047/3,143
+             Ability Cooldowns
+               Giant's Slam: 2.0s
++   6.6s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 2,897/3,143
+             Ability Cooldowns
+               Giant's Slam: 1.5s
++   7.1s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,049/3,143
+             Ability Cooldowns
+               Giant's Slam: 1.0s
++   7.3s > [DRAGON] Player4: hello
+             Ability Cooldowns
+               Giant's Slam: 0.8s
++   7.6s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 2,899/3,143
+             Ability Cooldowns
+               Giant's Slam: 0.5s
++   8.0s > [DRAGON] Player4: hello
+             Ability Cooldowns
+               Giant's Slam: 0.1s
++   8.1s > (action bar) 1,501/1,501❤     -100 Mana (Giant's Slam)     ✎ Mana 3,000/3,143
+             Ability Cooldowns
+               Giant's Slam: 4.4s
+             - slot 36
+             + slot 36: cooldown until +12.5s on Suspicious Giant's Sword
++   8.1s > You hear something falling from the sky.
++   8.5s > (action bar) 1,501/1,501❤     -100 Mana (Giant's Slam)     ✎ Mana 2,900/3,143
+             Ability Cooldowns
+               Giant's Slam: 4.0s
++   9.0s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,052/3,143
+             Ability Cooldowns
+               Giant's Slam: 3.5s
++   9.1s > This ability is on cooldown for 3.35s
+             Ability Cooldowns
+               Giant's Slam: 3.4s
+             - slot 36
+             + slot 36: cooldown until +12.4s on Suspicious Giant's Sword
++   9.1s > [+] Player5
++   9.5s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 2,952/3,143
+             Ability Cooldowns
+               Giant's Slam: 2.9s
++  10.0s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,053/3,143
+             Ability Cooldowns
+               Giant's Slam: 2.4s
++  10.5s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 2,953/3,143
+             Ability Cooldowns
+               Giant's Slam: 1.9s
++  11.1s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,055/3,143
+             Ability Cooldowns
+               Giant's Slam: 1.4s
++  11.6s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 2,955/3,143
+             Ability Cooldowns
+               Giant's Slam: 0.9s
++  11.8s > The Endstone Protector has been defeated!
+             Ability Cooldowns
+               Giant's Slam: 0.7s
++  11.8s >                                                                                 
+                       ENDSTONE PROTECTOR DOWN!
+
+                 [MVP+] Player6 dealt the final blow.
+
+               1st Damager [MVP+] Player6 - 195.5M
+                  2nd Damager Player7 - 3.8M
+
+                  Your Damage: 195.5M (Position #1)
+                                                                                
++  11.8s > (slot 43) 17 x End Stone Rose
++  12.0s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,056/3,143
+             Ability Cooldowns
+               Giant's Slam: 0.5s
++  12.2s > [-] Player8
+             Ability Cooldowns
+               Giant's Slam: 0.3s
++  12.5s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 2,956/3,143
+             Ability Cooldowns
+               Giant's Slam: Ready
+             - slot 36
++  12.7s > (opened "Player7's Profile", 90 slots)
++  12.7s > (slot 0) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 1) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 2) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 3) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 4) 1 x Player7
++  12.7s > (slot 5) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 6) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 7) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 8) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 9) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 10) 1 x Spiked Strong Dragon Helmet
++  12.7s > (slot 11) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 12) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 13) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 14) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 15) 1 x Combat Skill
++  12.7s > (slot 16) 1 x Balance
++  12.7s > (slot 17) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 18) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 19) 1 x Spiked Strong Dragon Chestplate
++  12.7s > (slot 20) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 21) 1 x [Lvl 100] Golem
++  12.7s > (slot 22) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 23) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 24) 1 x Carrot Buff
++  12.7s > (slot 25) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 26) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 27) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 28) 1 x Spiked Strong Dragon Leggings
++  12.7s > (slot 29) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 30) 1 x Promising Pickaxe
++  12.7s > (slot 31) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 32) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 33) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 34) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 35) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 36) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 37) 1 x Spiked Strong Dragon Boots
++  12.7s > (slot 38) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 39) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 40) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 41) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 42) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 43) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 44) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 45) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 46) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 47) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 48) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 49) 1 x Close
++  12.7s > (slot 50) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 51) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 52) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 53) 1 x minecraft:white_stained_glass_pane
++  12.7s > (slot 54) 16 x Summoning Eye
++  12.7s > (slot 55) 1 x Golden Eye
++  12.7s > (slot 56) 16 x Summoning Eye
++  12.7s > (slot 57) 1 x Golden Eye
++  12.7s > (slot 58) 1 x Dragon Scale
++  12.7s > (slot 59) 1 x Warden Catalyst
++  12.7s > (slot 60) 1 x Golden Eye
++  12.7s > (slot 61) 10 x Summoning Eye
++  12.7s > (slot 62) 8 x Protector Dragon Fragment
++  12.7s > (slot 63) 1 x Arcane Dragon Chestplate
++  12.7s > (slot 64) 5 x Arcane Dragon Fragment
++  12.7s > (slot 65) 1 x Protector Dragon Boots
++  12.7s > (slot 66) 13 x Strong Dragon Fragment
++  12.7s > (slot 67) 1 x Zombie Talisman
++  12.7s > (slot 68) 1 x Zombie Talisman
++  12.7s > (slot 72) 1 x Flint Arrow
++  12.7s > (slot 76) 13 x Old Dragon Fragment
++  12.7s > (slot 81) 1 x Suspicious Giant's Sword
++  12.7s > (slot 82) 1 x Warped Aspect of the Void
++  12.7s > (slot 83) 1 x Fabled Frozen Scythe
++  12.7s > (slot 84) 1 x Precise Golden Gun
++  12.7s > (slot 85) 16 x Summoning Eye
++  12.7s > (slot 88) 17 x End Stone Rose
++  12.7s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  12.7s > (action bar) 1,501/1,501❤      +376.36 Combat (22.9%)     ✎ Mana 2,906/3,143
++  12.7s > RARE DROP! (Summoning Eye) (✯ 180%)
++  12.7s > (slot 61) 11 x Summoning Eye
++  12.8s > (action bar) 1,501/1,501❤      +376.36 Combat (22.9%)     ✎ Mana 2,906/3,143
++  13.0s > [-] [MVP+] Player3
++  13.1s > (action bar) 1,501/1,501❤      +376.36 Combat (22.9%)     ✎ Mana 3,143/3,143
++  13.2s > (opened your inventory, 46 slots)
++  13.2s > (slot 5) 1 x Necrotic Storm Helmet
++  13.2s > (slot 6) 1 x Necrotic Storm Chestplate
++  13.2s > (slot 7) 1 x Necrotic Storm Leggings
++  13.2s > (slot 8) 1 x Necrotic Storm Boots
++  13.2s > (slot 9) 16 x Summoning Eye
++  13.2s > (slot 10) 1 x Golden Eye
++  13.2s > (slot 11) 16 x Summoning Eye
++  13.2s > (slot 12) 1 x Golden Eye
++  13.2s > (slot 13) 1 x Dragon Scale
++  13.2s > (slot 14) 1 x Warden Catalyst
++  13.2s > (slot 15) 1 x Golden Eye
++  13.2s > (slot 16) 11 x Summoning Eye
++  13.2s > (slot 17) 8 x Protector Dragon Fragment
++  13.2s > (slot 18) 1 x Arcane Dragon Chestplate
++  13.2s > (slot 19) 5 x Arcane Dragon Fragment
++  13.2s > (slot 20) 1 x Protector Dragon Boots
++  13.2s > (slot 21) 13 x Strong Dragon Fragment
++  13.2s > (slot 22) 1 x Zombie Talisman
++  13.2s > (slot 23) 1 x Zombie Talisman
++  13.2s > (slot 27) 1 x Flint Arrow
++  13.2s > (slot 31) 13 x Old Dragon Fragment
++  13.2s > (slot 36) 1 x Suspicious Giant's Sword
++  13.2s > (slot 37) 1 x Warped Aspect of the Void
++  13.2s > (slot 38) 1 x Fabled Frozen Scythe
++  13.2s > (slot 39) 1 x Precise Golden Gun
++  13.3s > (slot 40) 16 x Summoning Eye
++  13.3s > (slot 43) 17 x End Stone Rose
++  13.3s > (slot 44) 1 x SkyBlock Menu (Right Click)
++  13.5s > (action bar) 1,501/1,501❤      +376.36 Combat (22.9%)     ✎ Mana 3,143/3,143
++  14.0s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,093/3,143
++  14.6s > (action bar) 1,501/1,501❤      +376.36 Combat (23.0%)     ✎ Mana 2,993/3,143
+             (nothing)
++  14.6s > (action bar) 1,501/1,501❤      +376.36 Combat (23.0%)     ✎ Mana 2,993/3,143
++  14.7s > (action bar) 1,501/1,501❤      +376.36 Combat (23.0%)     ✎ Mana 2,943/3,143
++  15.1s > (action bar) 1,501/1,501❤      +376.36 Combat (23.0%)     ✎ Mana 3,093/3,143
++  15.6s > (action bar) 1,501/1,501❤      +376.36 Combat (23.0%)     ✎ Mana 3,013/3,143
++  15.7s > [+] [MVP+] Player3
++  16.1s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,093/3,143
++  16.4s > (action bar) 1,501/1,501❤      +376.36 Combat (23.0%)     ✎ Mana 3,043/3,143
++  16.4s > (action bar) 1,501/1,501❤      +376.36 Combat (23.0%)     ✎ Mana 3,043/3,143
++  16.7s > (action bar) 1,501/1,501❤      +376.36 Combat (23.0%)     ✎ Mana 2,943/3,143
++  17.0s > (action bar) 1,501/1,501❤      +376.36 Combat (23.0%)     ✎ Mana 3,143/3,143
++  17.1s > (action bar) 1,501/1,501❤      +376.36 Combat (23.0%)     ✎ Mana 3,143/3,143
++  17.5s > (action bar) 1,501/1,501❤      +376.36 Combat (23.0%)     ✎ Mana 2,993/3,143
++  17.7s > (action bar) 1,501/1,501❤      +376.36 Combat (23.0%)     ✎ Mana 2,993/3,143
++  17.7s > (action bar) 1,501/1,501❤      +376.36 Combat (23.1%)     ✎ Mana 2,943/3,143
++  18.2s > (action bar) 1,501/1,501❤      +376.36 Combat (23.1%)     ✎ Mana 3,093/3,143
++  18.6s > (action bar) 1,501/1,501❤      +376.36 Combat (23.1%)     ✎ Mana 2,993/3,143
++  18.7s > (action bar) 1,501/1,501❤      +376.36 Combat (23.1%)     ✎ Mana 2,943/3,143
++  19.2s > (action bar) 1,501/1,501❤      +376.36 Combat (23.1%)     ✎ Mana 3,093/3,143
++  19.7s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 2,943/3,143
++  19.9s > (action bar) 1,501/1,501❤      +376.36 Combat (23.1%)     ✎ Mana 2,943/3,143
++  20.3s > (action bar) 1,501/1,501❤      +376.36 Combat (23.1%)     ✎ Mana 3,043/3,143
++  20.7s > (action bar) 1,501/1,501❤      +376.36 Combat (23.1%)     ✎ Mana 2,943/3,143
++  20.9s > (action bar) 1,501/1,501❤      +376.36 Combat (23.1%)     ✎ Mana 2,943/3,143
++  21.3s > (action bar) 1,501/1,501❤      +376.36 Combat (23.1%)     ✎ Mana 3,043/3,143
++  21.8s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 2,943/3,143
++  22.3s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,043/3,143
++  22.7s > (action bar) 1,501/1,501❤      +376.36 Combat (23.1%)     ✎ Mana 2,993/3,143
++  23.1s > (action bar) 1,501/1,501❤      +376.36 Combat (23.1%)     ✎ Mana 3,093/3,143
++  23.6s > (action bar) 1,501/1,501❤      +376.36 Combat (23.1%)     ✎ Mana 2,993/3,143
++  23.8s > [BOSS] Old Dragon: I call upon the god of thunder.. Kill them all!
++  23.9s > (action bar) 1,501/1,501❤      +376.36 Combat (23.1%)     ✎ Mana 2,943/3,143
++  24.1s > (action bar) 1,501/1,501❤      +376.36 Combat (23.1%)     ✎ Mana 3,143/3,143
++  24.1s > (action bar) 1,501/1,501❤      +376.36 Combat (23.2%)     ✎ Mana 3,143/3,143
++  24.4s > (action bar) 1,501/1,501❤      +376.36 Combat (23.2%)     ✎ Mana 3,043/3,143
++  24.8s > (action bar) 1,501/1,501❤      +376.36 Combat (23.2%)     ✎ Mana 2,943/3,143
++  25.4s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,043/3,143
++  25.8s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 2,943/3,143
++  26.0s > [-] [VIP+] Player9
++  26.3s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,093/3,143
++  26.8s > (action bar) 1,453/1,501❤     180✯ Magic Find     ✎ Mana 2,993/3,143
++  27.3s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,043/3,143
++  27.8s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 2,943/3,143
++  28.3s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,043/3,143
++  28.8s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 2,943/3,143
++  29.4s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,043/3,143
++  29.8s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 2,943/3,143
++  30.3s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,043/3,143
++  30.7s > (action bar) 1,501/1,501❤      +216.3 Combat (23.2%)     ✎ Mana 2,993/3,143
++  30.7s > [-] Player10
++  31.2s > (action bar) 1,501/1,501❤      +216.3 Combat (23.2%)     ✎ Mana 3,093/3,143
++  31.4s > (action bar) 1,501/1,501❤      +376.36 Combat (23.2%)     ✎ Mana 3,043/3,143
++  31.8s > (action bar) 1,501/1,501❤      +376.36 Combat (23.2%)     ✎ Mana 2,993/3,143
++  32.3s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,143/3,243
++  32.4s > (action bar) 1,501/1,501❤     -50 Mana (Instant Arrow)     ✎ Mana 3,093/3,243
+             + slot 39: cooldown until +33.4s on Precise Golden Gun
++  32.9s > (action bar) 1,501/1,501❤     -50 Mana (Instant Arrow)     ✎ Mana 3,093/3,243
++  32.9s > [-] Player11
++  33.4s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,243/3,243
++  33.4s > (action bar) 1,501/1,501❤     -50 Mana (Instant Arrow)     ✎ Mana 3,193/3,243
+             - slot 39
+             + slot 39: cooldown until +34.4s on Precise Golden Gun
++  33.9s > (action bar) 1,501/1,501❤     -50 Mana (Instant Arrow)     ✎ Mana 3,193/3,243
++  34.4s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,243/3,243
++  34.9s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,243/3,143
+             - slot 39
++  35.2s > [-] [DRAGON] Player12
++  35.4s > (action bar) 1,501/1,501❤     180✯ Magic Find     ✎ Mana 3,043/3,143
++  35.6s > (action bar) 1,501/1,501❤      +376.36 Combat (23.2%)     ✎ Mana 3,043/3,143
++  35.6s > RARE DROP! (Summoning Eye) (✯ 180%)
++  35.6s > (slot 16) 12 x Summoning Eye
++  35.7s > (action bar) 1,501/1,501❤      +376.36 Combat (23.2%)     ✎ Mana 2,943/3,143

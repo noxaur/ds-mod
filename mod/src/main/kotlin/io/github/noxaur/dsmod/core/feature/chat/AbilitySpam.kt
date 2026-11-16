@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.chat
 
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.game.Abilities
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.text.text
@@ -22,7 +23,7 @@ class AbilitySpam(toggle: KMutableProperty0<Boolean>) : Feature("ability-spam", 
     init {
         on<SystemMessage> { message, _ ->
             // Anchored at the start, where a player's chat line has their name.
-            if (!message.text.plain.startsWith("This ability is on cooldown for ")) return@on
+            if (!Abilities.isRefusal(message.text.plain)) return@on
             hide()
             if (told.value.told) return@on
             told.value = AbilitySpamTold(told = true)

@@ -73,6 +73,7 @@ Events are the `GameEvent`s that features see, recorded as they were posted, and
 - `death` for the server's death event on an entity that is not a player, with its type, name and position.
 - `head` for a player head block the server placed, with its position.
 - `pet` for the pet nearest the player, an armor stand within 6 blocks named like `[Lvl 100] Ender Dragon`, with its name and the head it wears, when the nearest one changes.
+- `hit` for the player's own attack landing on a living entity that is not an armor stand, with its type. It is the one event the player makes and not the server.
 - `container` for a menu the player opened, or their own inventory again, and `slot` for each slot that changed. A slot carries the item's id, count, name, lore and `custom_data`, and how it looks: a head's `skin`, leather's `dye`, the `glint` override, `foil` (whether the game draws the shine at all), an `item_model` other than the item's own as `model`, and the tooltip `style`. A big menu's slots arrive over a few ticks.
 
 Raw records are for you to read. No feature sees one until it is promoted:
