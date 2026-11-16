@@ -202,7 +202,7 @@ Text the server sent is a separate type, `ServerText`, which carries whatever co
 
 ## UI layers keep what they are given
 
-Each surface (chat, HUD, alerts, container slots, tooltips, world marks) has one object in `edge` that draws a plain model from `core`. A model is handed over when something changes, and the layer converts it to Minecraft's types once and redraws it from then on. A feature that built its text every frame would allocate in the render loop, where a dropped frame is a bug, so the layers offer no per-frame hook.
+Each surface (chat, HUD, alerts, container slots, world marks) has one object in `edge` that draws a plain model from `core`. A model is handed over when something changes, and the layer converts it to Minecraft's types once and redraws it from then on. A feature that built its text every frame would allocate in the render loop, where a dropped frame is a bug, so the layers offer no per-frame hook.
 
 ## An item on the HUD is drawn from the mod's own record of it
 

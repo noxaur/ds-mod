@@ -99,7 +99,6 @@ object DsModClient : ClientModInitializer {
         MenuSkin.register()
         MenuBack.register()
         TabBar.register()
-        Tooltips.register()
         World.register()
         ArmorSwapGuards.register(config.instance.inventory)
         EyeGuards.register(config.instance.end)
