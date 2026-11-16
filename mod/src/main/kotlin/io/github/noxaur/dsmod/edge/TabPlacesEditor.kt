@@ -8,6 +8,7 @@ import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.Narration
 import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.core.ui.TabLayout
+import io.github.noxaur.dsmod.edge.ui.BoxEditor
 import io.github.noxaur.dsmod.edge.ui.Editor
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
@@ -34,20 +35,13 @@ import org.lwjgl.glfw.GLFW
  * press on the menu gives it the keys: the arrows move the picked tab, Tab picks the next, Delete asks for a second
  * press, and Escape gives the keys back. Each change applies at once.
  */
-class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host: Editor.Host) : Editor {
-    private var x = 0
-    private var top = 0
-    private var width = 0
-    private var origin = 0
-    private var clipTop = 0
-    private var clipBottom = 0
+class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host: Editor.Host) : BoxEditor() {
 
     // The menu, from the content's top, and the form beside or under it.
     private var menuY = 0
     private var formX = 0
     private var formY = 0
     private var formWidth = 0
-    private var height = 0
     private var buttonsY = 0
     private var readoutY = 0
     private val buttons = EditorButtons(BUTTONS)
@@ -99,9 +93,7 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
     override val capturing get() = entered || dragging || grabbed >= 0
 
     override fun layout(x: Int, y: Int, width: Int): Int {
-        this.x = x
-        top = y
-        this.width = width
+        place(x, y, width)
         menuY = y + Kit.TAB_HEIGHT - 2
         val menuBottom = menuY + MENU_HEIGHT + Kit.TAB_HEIGHT - 2
         labelWidth = LABELS.maxOf(font::width) + Kit.GAP
@@ -139,9 +131,7 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
     }
 
     override fun view(origin: Int, clipTop: Int, clipBottom: Int, screenWidth: Int, screenHeight: Int) {
-        this.origin = origin
-        this.clipTop = clipTop
-        this.clipBottom = clipBottom
+        super.view(origin, clipTop, clipBottom, screenWidth, screenHeight)
         val left = formX + labelWidth
         for ((i, field) in fields.withIndex()) {
             val itemRoom = if (field === item) Kit.SLOT_SIZE + Kit.GAP else 0
@@ -149,9 +139,6 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
             field.place(left + itemRoom, origin + formY + i * FIELD_STEP)
         }
     }
-
-    override fun isOver(mouseX: Double, mouseY: Double) =
-        mouseY >= clipTop && mouseY < clipBottom && mouseX >= x && mouseX < x + width && mouseY >= origin + top && mouseY < origin + top + height
 
     private fun menuTop() = origin + menuY
 

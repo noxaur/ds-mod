@@ -3,7 +3,7 @@ package io.github.noxaur.dsmod.edge
 import com.mojang.blaze3d.platform.cursor.CursorTypes
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Turntable
-import io.github.noxaur.dsmod.edge.ui.Editor
+import io.github.noxaur.dsmod.edge.ui.BoxEditor
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.SettingRows
 import net.minecraft.client.Minecraft
@@ -11,7 +11,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
-import net.minecraft.client.renderer.entity.state.AvatarRenderState
 import org.joml.Quaternionf
 import org.joml.Vector3f
 import kotlin.math.PI
@@ -23,14 +22,8 @@ import kotlin.math.sqrt
  * tilt either way reads. A drag turns it around and tips it, Escape during the drag puts it back, and Left and Right
  * turn it a step while the keys are on the row. Outside a world there is no player to draw, and it says so.
  */
-class PlayerPreview : Editor {
+class PlayerPreview : BoxEditor() {
     private val turntable = Turntable(speed = 0f).apply { turn(START_YAW, 0f, 0L) }
-    private var x = 0
-    private var top = 0
-    private var width = 0
-    private var origin = 0
-    private var clipTop = 0
-    private var clipBottom = 0
 
     override val capturing get() = turntable.dragging
 
@@ -39,22 +32,12 @@ class PlayerPreview : Editor {
     val pitch get() = turntable.pitch
 
     override fun layout(x: Int, y: Int, width: Int): Int {
-        this.x = x
-        top = y
-        this.width = width
+        place(x, y, width)
+        height = HEIGHT
         return HEIGHT
     }
 
     override fun refresh() = Unit
-
-    override fun view(origin: Int, clipTop: Int, clipBottom: Int, screenWidth: Int, screenHeight: Int) {
-        this.origin = origin
-        this.clipTop = clipTop
-        this.clipBottom = clipBottom
-    }
-
-    override fun isOver(mouseX: Double, mouseY: Double) =
-        mouseY >= clipTop && mouseY < clipBottom && mouseX >= x && mouseX < x + width && mouseY >= origin + top && mouseY < origin + top + HEIGHT
 
     override fun draw(g: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, keys: Boolean): SettingRows.Tip? {
         val y = origin + top
@@ -66,20 +49,8 @@ class PlayerPreview : Editor {
             g.text(Kit.font, line, x + (width - Kit.font.width(line)) / 2, y + (HEIGHT - 8) / 2, -1, false)
             return null
         }
-        val state = Minecraft.getInstance().entityRenderDispatcher.getRenderer(player).createRenderState(player, 1f)
-        state.shadowPieces.clear()
-        state.outlineColor = 0
-        state.nameTag = null
-        state.scoreText = null
-        if (state is AvatarRenderState) {
-            // Facing the viewer and looking ahead. A spin turns it from there as it is drawn.
-            state.bodyRot = 180f
-            state.yRot = 0f
-            state.xRot = 0f
-            state.boundingBoxWidth /= state.scale
-            state.boundingBoxHeight /= state.scale
-            state.scale = 1f
-        }
+        // Facing the viewer. A spin turns it from there as it is drawn.
+        val state = InventoryModel.state(player, 0f)
         // The game's own size takes a little over half the box, and a bigger model grows toward the box's full height,
         // which the largest Size reaches, so a bigger Size still looks bigger. A model stretched past that shrinks to fit.
         val room = (HEIGHT - 4) / (state.boundingBoxHeight * MARGIN)
@@ -87,7 +58,7 @@ class PlayerPreview : Editor {
         val scale = minOf(room / sqrt(LARGEST * reach), room / reach)
         val tip = Quaternionf().rotateX(turntable.pitch * DEGREES)
         val rotation = Quaternionf().rotateZ(PI.toFloat()).mul(tip).rotateY(-turntable.yaw(0L) * DEGREES)
-        val middle = Vector3f(0f, state.boundingBoxHeight * PlayerModels.tall / 2f + Y_OFFSET, 0f)
+        val middle = Vector3f(0f, state.boundingBoxHeight * PlayerModels.tall / 2f + InventoryModel.Y_OFFSET, 0f)
         g.enableScissor(x + 1, maxOf(y + 1, clipTop), x + width - 1, minOf(y + HEIGHT - 1, clipBottom))
         g.entity(state, scale, middle, rotation, tip, x + 1, y + 1, x + width - 1, y + HEIGHT - 1)
         g.disableScissor()
@@ -137,9 +108,6 @@ class PlayerPreview : Editor {
         /** The largest Size, which fits the box at its full height. */
         const val LARGEST = 3f
         const val DEGREES = (PI / 180).toFloat()
-
-        /** The inventory's own offset, which keeps the feet off the bottom of the box. */
-        const val Y_OFFSET = 0.0625f
         const val OUTSIDE = "Join a world to see your model here."
     }
 }
