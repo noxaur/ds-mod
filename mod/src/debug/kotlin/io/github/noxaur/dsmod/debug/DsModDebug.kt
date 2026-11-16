@@ -64,12 +64,17 @@ object DsModDebug : ClientModInitializer {
                         context.source.client.schedule { context.source.client.setScreenAndShow(KitGalleryScreen()) }
                         1
                     }
-                    .then(
-                        ClientCommands.literal("rows").executes { context ->
-                            context.source.client.schedule { context.source.client.setScreenAndShow(SettingsGalleryScreen()) }
-                            1
-                        },
-                    ),
+                    .apply {
+                        // A page of settings rows, lists or panels.
+                        for (page in SettingsGalleryScreen.Page.entries) {
+                            then(
+                                ClientCommands.literal(page.name.lowercase()).executes { context ->
+                                    context.source.client.schedule { context.source.client.setScreenAndShow(SettingsGalleryScreen(page)) }
+                                    1
+                                },
+                            )
+                        }
+                    },
             )
             dispatcher.register(
                 ClientCommands.literal("dssettings").executes { context ->

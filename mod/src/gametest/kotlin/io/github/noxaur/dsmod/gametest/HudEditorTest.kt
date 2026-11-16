@@ -10,8 +10,10 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
+import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.input.MouseButtonInfo
+import org.lwjgl.glfw.GLFW
 import kotlin.io.path.readText
 import kotlin.math.roundToInt
 
@@ -19,7 +21,8 @@ private const val ID = "dragon-timer"
 
 /**
  * Opens the editor with nothing on the HUD, then over a live block. Moves and resizes the block, works every
- * control on the panel, drags the block under the panel and resets it from there, and checks the place is saved.
+ * control on the panel, drags the block under the panel and resets it from there, nudges it with an arrow, puts a
+ * drag back with Escape, and checks the place is saved.
  */
 class HudEditorTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
@@ -99,7 +102,8 @@ class HudEditorTest : FabricClientGameTest {
             context.runOnClient<Nothing> { client ->
                 val screen = client.gui.screen()!!
                 val block = Hud.find(ID)!!
-                val to = screen.width / 2.0 to screen.height - 30.0
+                // Whole on the screen and clear of every line it could take, so it rests where it is let go.
+                val to = screen.width / 2.0 + 17 to screen.height - block.height * block.scale - 9.0 + 5
                 check(screen.mouseClicked(press(block.x + 5.0, block.y + 5.0), false)) { "The block was not under the mouse" }
                 screen.mouseDragged(press(to.first, to.second), 0.0, 0.0)
                 screen.mouseReleased(press(to.first, to.second))
@@ -139,8 +143,19 @@ class HudEditorTest : FabricClientGameTest {
                 val screen = client.gui.screen()!!
                 val block = Hud.find(ID)!!
                 check(screen.mouseClicked(press(block.x + 5.0, block.y + 5.0), false)) { "The block was not under the mouse" }
-                screen.mouseDragged(press(block.x + 105.0, block.y + 65.0), 100.0, 60.0)
-                screen.mouseReleased(press(block.x + 105.0, block.y + 65.0))
+                screen.mouseDragged(press(block.x - 95.0, block.y - 55.0), -100.0, -60.0)
+                screen.mouseReleased(press(block.x - 95.0, block.y - 55.0))
+                // The arrows nudge the block pressed last a pixel, and Escape during a drag puts it back.
+                val at = Hud.find(ID)!!
+                screen.keyPressed(KeyEvent(GLFW.GLFW_KEY_RIGHT, 0, 0))
+                check(Hud.find(ID)!!.x == at.x + 1) { "Right moved the block to ${Hud.find(ID)!!.x}, not ${at.x + 1}" }
+                val before = Hud.find(ID)!!
+                check(screen.mouseClicked(press(before.x + 5.0, before.y + 5.0), false)) { "The block was not under the mouse" }
+                screen.mouseDragged(press(before.x + 45.0, before.y + 25.0), 40.0, 20.0)
+                screen.keyPressed(KeyEvent(GLFW.GLFW_KEY_ESCAPE, 0, 0))
+                screen.mouseReleased(press(before.x + 45.0, before.y + 25.0))
+                check(Hud.find(ID)!!.x == before.x && Hud.find(ID)!!.y == before.y) { "Escape left the block at ${Hud.find(ID)!!.x}, ${Hud.find(ID)!!.y}" }
+                check(client.gui.screen() === screen) { "Escape during a drag closed the editor: ${client.gui.screen()}" }
             }
             val placed = DsModClient.settings.hud.positions.getValue(ID)
             context.clickScreenButton("Done")

@@ -145,6 +145,10 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.CommandBindGroupsTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.CommandKeysTest"
       },
       {
@@ -193,7 +197,11 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.TabEditorTest"
+        "value": "io.github.noxaur.dsmod.gametest.TabPlacesTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.HudLayoutTest"
       },
       {
         "adapter": "kotlin",

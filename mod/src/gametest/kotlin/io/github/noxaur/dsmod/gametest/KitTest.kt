@@ -13,8 +13,8 @@ import org.lwjgl.glfw.GLFW
 import kotlin.reflect.KClass
 
 /**
- * Screenshots the kit's gallery in each theme at GUI scale 2, and in Charcoal at GUI scale 1, then its page of
- * settings rows, which must show every kind of row and every look.
+ * Screenshots the kit's gallery in each theme at GUI scale 2, and in Charcoal at GUI scale 1, then its pages of
+ * settings rows, lists and panels, which together must show every kind of row and every look.
  */
 class KitTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
@@ -43,13 +43,26 @@ class KitTest : FabricClientGameTest {
 
     /** The settings rows' page: every kind and every look, in both themes, with a choice's and a pick's menu open. */
     private fun rows(context: ClientGameTestContext) {
+        val kinds = HashSet<Kind>()
+        val looks = HashSet<KClass<out Look>>()
+        for (page in listOf(SettingsGalleryScreen.Page.LISTS, SettingsGalleryScreen.Page.PANELS)) {
+            context.setScreen { SettingsGalleryScreen(page) }
+            context.waitTicks(2)
+            context.input.setCursorPos(0.0, 0.0)
+            context.waitTicks(2)
+            val name = page.name.lowercase()
+            context.takeScreenshot("kit-$name-charcoal")
+            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
+            context.waitTicks(2)
+            context.takeScreenshot("kit-$name-vanilla")
+            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
+            context.runOnClient<Nothing> { client -> (client.gui.screen() as SettingsGalleryScreen).let { kinds += it.kinds; looks += it.looks } }
+        }
         context.setScreen { SettingsGalleryScreen() }
         context.waitTicks(2)
-        val (kinds, looks) = context.computeOnClient<Pair<Set<Kind>, Set<KClass<out Look>>>, Nothing> { client ->
-            (client.gui.screen() as SettingsGalleryScreen).let { it.kinds to it.looks }
-        }
+        context.runOnClient<Nothing> { client -> (client.gui.screen() as SettingsGalleryScreen).let { kinds += it.kinds; looks += it.looks } }
         val missing = Kind.entries.filter { it !in kinds } + Look::class.sealedSubclasses.filter { it !in looks }.map { it.simpleName }
-        check(missing.isEmpty()) { "The gallery of settings rows does not show $missing" }
+        check(missing.isEmpty()) { "No page of the gallery of settings rows shows $missing" }
         fun press(id: String) {
             val spot = context.computeOnClient<SettingRows.Spot?, Nothing> { (it.gui.screen() as SettingsGalleryScreen).spot(id) } ?: error("No row $id")
             context.input.setCursorPos((spot.controlX + 8) * 2.0, (spot.controlY + 8) * 2.0)

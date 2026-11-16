@@ -67,7 +67,7 @@ internal object SettingsSteps {
 }
 
 /** Drives the settings screen as the player's mouse and keys would, in GUI pixels at GUI scale 2. */
-internal class SettingsDriver(val context: ClientGameTestContext) {
+internal open class SettingsDriver(val context: ClientGameTestContext) {
     fun move(x: Int, y: Int) {
         context.input.setCursorPos(x * 2.0, y * 2.0)
         context.waitTick()

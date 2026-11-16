@@ -241,16 +241,20 @@ class SettingRowsTest : FabricClientGameTest {
         check(context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).spot("lootAlertTier") != null }) { "The search for a choice's value shows no Alert Tier" }
         context.takeScreenshot("own-settings-search-option")
 
-        // An action opens its editor, which returns to the settings.
-        open(context, SettingsTabs(at("Binds")))
-        val edit = spot("editBinds")
-        click(edit.controlX + 4, edit.controlY + 8)
-        val opened = context.computeOnClient<String, Nothing> { it.gui.screen()?.javaClass?.simpleName ?: "nothing" }
-        check(opened == "CommandBindsScreen") { "Edit Binds opened $opened" }
+        // MoulConfig's Edit button for the binds opens these settings at the list, and Escape goes back to MoulConfig.
+        context.runOnClient<Nothing> { DsModClient.openSettings() }
+        context.waitTicks(2)
+        val moul = context.computeOnClient<String, Nothing> { it.gui.screen()?.javaClass?.name ?: "nothing" }
+        context.runOnClient<Nothing> { DsModClient.settings.general.editBinds.run() }
+        context.waitTicks(2)
+        check(context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as? SettingsScreen)?.spot("binds") != null }) { "Edit Binds did not open the settings at the list" }
         context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
         context.waitTicks(2)
-        check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() is SettingsScreen }) { "The binds editor did not return to the settings" }
+        val back = context.computeOnClient<String, Nothing> { it.gui.screen()?.javaClass?.name ?: "nothing" }
+        check(back == moul) { "Escape from the settings opened over MoulConfig went to $back, not $moul" }
+        context.setScreen { null }
 
+        // An action opens its screen, which returns to the settings.
         open(context, SettingsTabs(at("Contribute")))
         val requests = spot("requests")
         click(requests.controlX + 4, requests.controlY + 8)
