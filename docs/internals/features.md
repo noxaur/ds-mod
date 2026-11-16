@@ -1,6 +1,6 @@
 # Features
 
-How a feature gets its input and hands back what it shows. The contract an agent writes against is in [mod/AGENTS.md](../../mod/AGENTS.md#features).
+How a feature gets its input and hands back what it shows. The contract an agent writes against is in the [`feature` skill](../../mod/.claude/skills/feature/SKILL.md).
 
 ## Features run on events and ticks, never in a frame
 
