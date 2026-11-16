@@ -15,7 +15,7 @@ import java.util.Base64
  * Active Pet's block on the HUD, with its icon left of its rows. The sidebar names the pet, a pet floating beside the
  * player gives its head, and the Pets menu its held item and XP, with the active pet marked. A held item in chat and a
  * level up in the sidebar follow. Read the screenshots: the name in Epic purple with the hint, the head beside it, the
- * mark in the menu, the bar at 40%, and after the level up the new item and the hint again.
+ * mark in the menu, the bar at 40%, the rate after a second read, and after the level up the new item and the hint again.
  */
 class ActivePetTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
@@ -69,6 +69,17 @@ class ActivePetTest : FabricClientGameTest {
                 context.runOnClient<Nothing> { it.player!!.closeContainer() }
                 context.waitTicks(10)
                 context.takeScreenshot("active-pet")
+
+                // A second read of the menu, a few seconds on, gives the rate and the time to the next level.
+                context.waitTicks(60)
+                ServerMenus.open(context, world, 6, "Pets") { chest ->
+                    chest.setItem(13, card(head.copy(), active = true, "Progress to Level 38: 50%", "5,000/10,000 XP"))
+                }
+                context.runOnClient<Nothing> { it.player!!.closeContainer() }
+                context.waitTicks(10)
+                val paced = context.computeOnClient<List<String>, Nothing> { DsModClient.game.readouts.single { r -> r.feature.id == ID }.hud!!.rows.map { r -> r.text.plain } }
+                check(paced.any { it.startsWith("XP per Hour: ") } && paced.any { it.startsWith("Next Level: ") }) { "Two reads gave no rate: $paced" }
+                context.takeScreenshot("active-pet-rate")
 
                 world.server.runCommand("""tellraw @a "Equipped Lucky Clover on [Lvl 37] Ender Dragon!"""")
                 pet(38)

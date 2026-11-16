@@ -237,7 +237,16 @@ class DsModConfig {
         var activePetXp = true
 
         @JvmField
+        var activePetRate = true
+
+        @JvmField
+        var activePetNext = true
+
+        @JvmField
         var markActivePet = true
+
+        @JvmField
+        var hideAutopet = false
 
         @JvmField
         var inventoryPreview = false
