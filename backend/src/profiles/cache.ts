@@ -91,9 +91,12 @@ const fetchPlayer = Effect.fn(function* (name: string, profileId: string | undef
       onSome: (decoded) => decoded.error,
     });
     // Asked for a profile, a 404 says either. Only the server's own words for a missing player mean that.
-    return yield* profileId !== undefined && !MISSING_PLAYER.test(message)
-      ? new ProfileNotFound()
-      : new PlayerNotFound();
+    if (MISSING_PLAYER.test(message)) {
+      return yield* new PlayerNotFound();
+    }
+    if (profileId !== undefined) {
+      return yield* new ProfileNotFound();
+    }
   }
   if (status !== 200) {
     yield* Effect.logWarning(`dragsim.co answered ${String(status)} for a player`);
