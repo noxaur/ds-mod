@@ -18,7 +18,8 @@ data class BossLog(val bosses: Map<String, BossRecord> = emptyMap())
  * Keeps the player's own results from the End's bosses. The server sends one message of several lines when a
  * dragon or the Endstone Protector falls, and its `Your Damage` line is the player's own, so the fight counts
  * only for a player who is in it. A dragon's loot follows about ten seconds later as its own lines, by which
- * time the Protector may have fallen too, so the loot goes to the last dragon and not to the last boss.
+ * time the Protector may have fallen too, so the loot goes to a dragon and not to the last boss. Another
+ * dragon can fall during that wait, so each summary waits its turn and the header takes the oldest one.
  */
 class BossDrops(toggle: KMutableProperty0<Boolean>) : Feature("boss-drops", toggle, Area.END) {
     private val log = saved(BossLog())
@@ -29,6 +30,8 @@ class BossDrops(toggle: KMutableProperty0<Boolean>) : Feature("boss-drops", togg
     private var fights = 0
     private var loot = emptyList<Pair<Int, String>>()
     private var lootAt: Long? = null
+    private var lootDragon: String? = null
+    private val awaitingLoot = ArrayDeque<String>()
 
     // A player's chat line is one line with their name first, so only the server's summary has these on lines of their own.
     private val down = Regex("""^\s+([A-Z][A-Z ]*[A-Z]) DOWN!$""", RegexOption.MULTILINE)
@@ -41,7 +44,10 @@ class BossDrops(toggle: KMutableProperty0<Boolean>) : Feature("boss-drops", togg
             val (dealt, place) = yours?.destructured ?: return@line
             val name = boss.lowercase().split(' ').joinToString(" ") { it.replaceFirstChar(Char::uppercase) }
             last = name
-            if (name.endsWith(" Dragon")) lastDragon = name
+            if (name.endsWith(" Dragon")) {
+                lastDragon = name
+                awaitingLoot.addLast(name)
+            }
             damage = dealt
             position = place.toInt()
             fights++
@@ -50,12 +56,14 @@ class BossDrops(toggle: KMutableProperty0<Boolean>) : Feature("boss-drops", togg
         }
         line("Here is your loot from the last dragon:") { now ->
             lootAt = now
+            // The header names no dragon. It belongs to the summary that is still waiting, not whichever dragon fell since.
+            lootDragon = awaitingLoot.removeFirstOrNull() ?: lastDragon
             if (last == lastDragon) loot = emptyList()
         }
         line(Regex(""" - \d+x """), Regex(""" - (\d+)x (.+)""")) { (amount, item), now ->
             // The rows arrive in the same tick as their header, so a row long after it belongs to some other list.
             if (now - (lootAt ?: return@line) > LOOT_MILLIS) return@line
-            val dragon = lastDragon ?: return@line
+            val dragon = lootDragon ?: return@line
             if (last == dragon) loot = loot + (amount.toInt() to item)
             record(dragon) { it.copy(loot = it.loot + (item to (it.loot[item] ?: 0) + amount.toInt())) }
         }

@@ -266,6 +266,10 @@
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.JoinDragSimTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.EndTrackerEdgeTest"
       }
     ]
   }

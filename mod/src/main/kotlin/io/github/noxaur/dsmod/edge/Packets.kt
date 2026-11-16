@@ -32,7 +32,21 @@ object Packets {
     fun worldChanged() = waiting.clear()
 
     fun block(pos: BlockPos, state: BlockState) {
-        if (state.block === Blocks.PLAYER_HEAD) head(pos.immutable())
+        if (state.block === Blocks.PLAYER_HEAD) hold(pos.immutable())
+    }
+
+    /**
+     * The block update is handled before the skull's profile packet, so a head with no profile yet is held for [tick].
+     * [tick] posts it once the profile is there and drops it if the skull is still bare, the same rule [chunk] keeps.
+     */
+    private fun hold(pos: BlockPos) {
+        val entity = Minecraft.getInstance().level?.getBlockEntity(pos) as? SkullBlockEntity
+        if (entity?.ownerProfile != null) {
+            head(pos)
+            return
+        }
+        val game = DsModClient.game
+        if (game.reaches(HeadPlaced::class.java) || game.tap != null || game.wants(HeadPlaced::class.java)) waiting += pos
     }
 
     /**
@@ -55,14 +69,25 @@ object Packets {
         if (!reaches && game.wants(HeadPlaced::class.java)) waiting += pos
     }
 
-    /** Posts the heads that were held back, once a feature can be handed them and if they still stand. */
+    /** Posts the heads that were held back, once a feature can be handed them and the skull has a skin. */
     fun tick(client: Minecraft) {
-        if (waiting.isEmpty() || !DsModClient.game.reaches(HeadPlaced::class.java)) return
+        if (waiting.isEmpty()) return
+        val game = DsModClient.game
         val level = client.level
+        val still = LinkedHashSet<BlockPos>()
         for (pos in waiting) {
-            if (level?.getBlockState(pos)?.block === Blocks.PLAYER_HEAD) DsModClient.game.post(System.currentTimeMillis(), HeadPlaced(pos.x, pos.y, pos.z))
+            if (level?.getBlockState(pos)?.block !== Blocks.PLAYER_HEAD) continue
+            val entity = level.getBlockEntity(pos) as? SkullBlockEntity
+            when {
+                entity == null -> still += pos
+                entity.ownerProfile == null -> {}
+                game.reaches(HeadPlaced::class.java) || game.tap != null ->
+                    game.post(System.currentTimeMillis(), HeadPlaced(pos.x, pos.y, pos.z))
+                game.wants(HeadPlaced::class.java) -> still += pos
+            }
         }
         waiting.clear()
+        waiting += still
     }
 
     fun entityEvent(packet: ClientboundEntityEventPacket) {
