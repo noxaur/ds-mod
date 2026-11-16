@@ -200,7 +200,8 @@ class ActivePet(
         val total = if (xp) progress.needed!! else 1.0
         val at = if (xp) progress.xp!! else progress.fraction.toDouble()
         val pace = pace
-        if (pace == null || pace.key != key || pace.level != card.pet.level || pace.total != total || pace.xp != xp) {
+        // Less XP than the last read is another pet of the same name, summoned in the menu.
+        if (pace == null || pace.key != key || pace.level != card.pet.level || pace.total != total || pace.xp != xp || at < pace.read) {
             this.pace = Pace(key, card.pet.level, total, xp, now, at)
             return
         }
@@ -211,7 +212,14 @@ class ActivePet(
         pace.readAt = now
     }
 
+    /**
+     * A summon in chat, or Autopet's. A pet of the same name and level may be another one, so its XP is read again and
+     * its rate starts over.
+     */
     private fun summoned(name: String, level: Int) {
+        pace = null
+        progress.remove(keyOf(name))
+        block = null
         set(Pet(name, level, known.value.pets[keyOf(name)]?.rarity ?: pet?.takeIf { it.name == name }?.rarity ?: Role.COMMON))
     }
 

@@ -309,6 +309,20 @@ class ActivePetTest {
     }
 
     @Test
+    fun `a summon of another pet of the same name and level starts the rate over`() {
+        post(pet(level = 37), *menu(13 to card(level = 37, progress = xp(1000))))
+        pass(60_000L)
+        post(*menu(13 to card(level = 37, progress = xp(1100))))
+        post(ContainerOpened(0, null, 46), chat("Autopet equipped your [Lvl 37] Black Cat! VIEW RULE"))
+        assertEquals("Open your Pets menu to read its XP.", rows()?.last())
+        post(*menu(13 to card(level = 37, progress = xp(8000))))
+        assertEquals("Open your Pets menu again to see a rate.", rows()?.last())
+        pass(60_000L)
+        post(*menu(13 to card(level = 37, progress = xp(500))))
+        assertEquals("Open your Pets menu again to see a rate.", rows()?.last())
+    }
+
+    @Test
     fun `the rate rows can be turned off`() {
         post(pet(level = 37), *menu(13 to card(level = 37, progress = xp(1000))))
         config.general.activePetRate = false
