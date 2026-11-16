@@ -30,7 +30,7 @@ A surface is a place the mod can put information. Choose it by how long the info
 
 Each surface has one shared layer: a plain model in `core` and one object in `edge` that draws it. The layers keep what they are given and redraw it themselves, so they are called when something changes, never every frame.
 
-A feature lives in `core` and cannot call a layer. It returns its HUD block from `hud(now)` and its slot marks from `slots(now)`, and says something once with `notice(detail)` or `alert(title, detail)`. `Readouts` hands all of it to the layers. A handler keeps a server line out of chat with `hide()`. `mod/AGENTS.md` says how the other surfaces get a route.
+A feature lives in `core` and cannot call a layer. It returns its HUD block from `hud(now)` and its slot marks from `slots(now)`, and says something once with `notice(detail)` or `alert(title, detail)`. `Readouts` hands all of it to the layers. A handler keeps a server line out of chat with `hide()`. A surface with no layer yet, such as tooltips, gets one in `edge`, a route through `Feature`, `Game` and `Readouts`, and its part of the transcript in `FeatureReplayTest`, built by the first feature that needs it.
 
 | Surface | Model in `core` | Hand it to |
 | --- | --- | --- |
@@ -45,7 +45,7 @@ A type in `surfaces.md` that no layer draws yet is added to that surface's layer
 
 ## Draw chrome with the kit
 
-Chrome is everything that is not text: panels, buttons, slots, bars, marks. It is pixel art drawn in code by `Kit` in `edge/ui`, in the colors of the player's `Theme`. `KitTest` fails the build on a shape drawn anywhere else.
+Chrome is everything that is not text: panels, buttons, slots, bars, marks. It is pixel art drawn in code by `Kit` in `edge/ui`, in the colors of the player's `Theme`.
 
 - **Grid:** one kit pixel is one GUI pixel, so chrome grows with Minecraft's GUI scale as vanilla's does. Every size and position is a whole number. The HUD alone has its own scale, which the player sets and `Readouts` snaps to whole screen pixels, so a 1px edge stays one pixel wide.
 - **Frame:** a 1px outline with its four corner pixels left out, and inside it a 1px bevel, light on the top and left and shade on the bottom and right. That is a raised thing: a panel, a button, a tab, a scrollbar thumb. A sunk thing swaps the two edges and has no outline: a slot, a well, a bar's track, a checkbox.
@@ -73,7 +73,7 @@ A kind that `controls.md` lacks gets its section there once the survey is done. 
 
 ## Color by role
 
-Text is built with `text { }` from `core.text`, where each piece states what it means and the role owns the color. `TextLayerTest` and the `text-by-role` rule fail the build on a raw color or a `§` code.
+Text is built with `text { }` from `core.text`, where each piece states what it means and the role owns the color.
 
 | Role | Use it for |
 | --- | --- |
