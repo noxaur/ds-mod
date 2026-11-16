@@ -1,7 +1,9 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.text.amount
 import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.edge.ui.EditorScreen
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitButton
 import io.github.noxaur.dsmod.edge.ui.KitCheckbox
@@ -10,14 +12,12 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
-import java.util.Locale
 
 private const val TITLE = "HUD Editor"
 private const val HINT = "Drag or nudge with arrows, scroll to resize, right-click to reset."
 private const val SCALE = "Scale"
 private const val HUD_SCALE = "HUD Scale"
 private const val VALUE_WIDTH = 30
-private const val LABEL_HEIGHT = 8
 
 /**
  * Drag a block or nudge it with the arrows to move it, into or out of a dock beside the hotbar, scroll over it to
@@ -27,9 +27,9 @@ private const val LABEL_HEIGHT = 8
 class HudEditorScreen(
     private val readouts: Readouts,
     private val settings: DsModConfig.Hud,
-    private val parent: Screen?,
-    private val onSave: () -> Unit,
-) : Screen(text { body(TITLE) }.toComponent()) {
+    parent: Screen?,
+    onSave: () -> Unit,
+) : EditorScreen(TITLE, parent, onSave) {
     private val mover = HudMover(readouts)
     private var selected: String? = null
 
@@ -54,13 +54,13 @@ class HudEditorScreen(
         val doneWidth = font.width("Done") + 16
         val content = maxOf(controls + maxOf(font.width("Reset") + 16, Kit.CHECKBOX_SIZE + Kit.GAP + font.width("Background")), font.width(HINT))
         panelWidth = content + Kit.INSET * 2
-        panelHeight = Kit.INSET * 2 + Kit.BUTTON_HEIGHT * 3 + LABEL_HEIGHT + Kit.GAP * 3
+        panelHeight = Kit.INSET * 2 + Kit.BUTTON_HEIGHT * 3 + Kit.LABEL_HEIGHT + Kit.GAP * 3
         panelX = (width - panelWidth) / 2
         panelY = height - panelHeight - Kit.GAP
         labelX = panelX + Kit.INSET
         val top = panelY + Kit.INSET
         nameY = top + Kit.BUTTON_HEIGHT + Kit.GAP
-        scaleY = nameY + LABEL_HEIGHT + Kit.GAP
+        scaleY = nameY + Kit.LABEL_HEIGHT + Kit.GAP
         hudScaleY = scaleY + Kit.BUTTON_HEIGHT + Kit.GAP
         val controlX = labelX + labelWidth + Kit.GAP
 
@@ -76,11 +76,9 @@ class HudEditorScreen(
         refresh()
     }
 
-    override fun onClose() = minecraft.gui.setScreen(parent)
-
     override fun removed() {
         readouts.editing = false
-        onSave()
+        super.removed()
     }
 
     // The HUD under this screen is what the player is editing, so nothing dims or blurs it.
@@ -92,10 +90,10 @@ class HudEditorScreen(
         selected?.let(Hud::find)?.let { if (it !== hovered) mover.ring(graphics, it, Kit.theme.accent, grabbable = false) }
 
         Kit.panel(graphics, panelX, panelY, panelWidth, panelHeight)
-        Kit.label(graphics, TITLE, labelX, panelY + Kit.INSET + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
+        Kit.label(graphics, TITLE, labelX, panelY + Kit.INSET + (Kit.BUTTON_HEIGHT - Kit.LABEL_HEIGHT) / 2)
         Kit.label(graphics, name, labelX, nameY, if (selected == null) Kit.Ink.MUTED else Kit.Ink.NORMAL)
-        Kit.label(graphics, SCALE, labelX, scaleY + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2, if (scale.active) Kit.Ink.NORMAL else Kit.Ink.OFF)
-        Kit.label(graphics, HUD_SCALE, labelX, hudScaleY + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
+        Kit.label(graphics, SCALE, labelX, scaleY + (Kit.BUTTON_HEIGHT - Kit.LABEL_HEIGHT) / 2, if (scale.active) Kit.Ink.NORMAL else Kit.Ink.OFF)
+        Kit.label(graphics, HUD_SCALE, labelX, hudScaleY + (Kit.BUTTON_HEIGHT - Kit.LABEL_HEIGHT) / 2)
         super.extractRenderState(graphics, mouseX, mouseY, partialTick)
     }
 
@@ -164,5 +162,5 @@ class HudEditorScreen(
 
     private fun inPanel(x: Double, y: Double) = x >= panelX && x < panelX + panelWidth && y >= panelY && y < panelY + panelHeight
 
-    private fun times(scale: Float) = String.format(Locale.US, "%.2f", scale).trimEnd('0').trimEnd('.') + "x"
+    private fun times(scale: Float) = amount(scale.toDouble(), 2, trim = true) + "x"
 }

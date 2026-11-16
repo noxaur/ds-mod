@@ -21,6 +21,8 @@ import io.github.noxaur.dsmod.core.profile.Rank
 import io.github.noxaur.dsmod.core.profile.Stat
 import io.github.noxaur.dsmod.core.profile.StatValue
 import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.core.text.amount
+import io.github.noxaur.dsmod.core.text.grouped
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.core.ui.Turntable
@@ -521,7 +523,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
 
         val classLevels: List<String> = classes.map { it.level.toString() }
 
-        val completions = dungeons?.takeIf { it.completions > 0 }?.let { String.format(Locale.US, "%,d runs", it.completions) }.orEmpty()
+        val completions = dungeons?.takeIf { it.completions > 0 }?.let { "${grouped(it.completions)} runs" }.orEmpty()
 
         val stats = table("Stats", LIST_WIDTH, shown.stats.map { stat -> Row(muted(stat.name), listOf(stat.value.toComponent())) })
 
@@ -595,7 +597,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
             val rows = shown.bestiary.map { mob ->
                 if (mob.kills == 0L) Row(muted(mob.name), listOf(text { muted("0") }.toComponent())) else Row(body(mob.name), listOf(text { value(mob.kills) }.toComponent()))
             }
-            halves("Bestiary", CONTENT_WIDTH, rows, note = String.format(Locale.US, "%,d kills", total))
+            halves("Bestiary", CONTENT_WIDTH, rows, note = "${grouped(total)} kills")
         }
 
         val collections by lazy { table("Collections", HALF_WIDTH, shown.collections.map { Row(body(it.name), listOf(text { value(amount(it.amount)) }.toComponent())) }, empty = "None yet.") }
@@ -854,9 +856,9 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         val next = p.xpForNextLevel
         when {
             p.maxed -> lines += text { good("Maxed") }.toComponent()
-            next != null -> lines += text { muted("Progress: "); value("${number(p.xpIntoLevel)} / ${number(next)}") }.toComponent()
+            next != null -> lines += text { muted("Progress: "); value("${grouped(p.xpIntoLevel.toLong())} / ${grouped(next.toLong())}") }.toComponent()
         }
-        lines += text { muted("Total XP: "); value(number(p.totalXp)) }.toComponent()
+        lines += text { muted("Total XP: "); value(grouped(p.totalXp.toLong())) }.toComponent()
         return lines
     }
 
@@ -1076,11 +1078,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
 
         /** A mode such as `IRONMAN` as the player reads it: Ironman. An unknown one is shown the same way. */
         fun title(mode: String) = mode.lowercase(Locale.US).split('_').joinToString(" ") { word -> word.replaceFirstChar { it.titlecase(Locale.US) } }
-
-        fun number(value: Double) = String.format(Locale.US, "%,d", value.toLong())
-
-        /** A number the server sends as a double: whole when it is whole, else to one place. */
-        fun amount(value: Double) = if (value % 1.0 == 0.0) number(value) else String.format(Locale.US, "%,.1f", value)
 
         /** Time left in its two largest units, such as 1h 4m or 21m 3s. */
         fun remaining(millis: Long): String {
