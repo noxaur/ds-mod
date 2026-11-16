@@ -52,6 +52,23 @@ class ProtectPlacedEyesTest : FabricClientGameTest {
                 context.waitTicks(25)
                 click()
                 check(!on()) { "A click after the guard ran out was dropped" }
+
+                // That click started a guard while the eye was still held. The server then clears the hand,
+                // and the button keeps repeating. Each repeat must be dropped, or the next one takes the eye.
+                world.server.runCommand("clear @a")
+                context.waitTicks(10)
+                val stayed = on()
+                repeat(10) {
+                    context.input.pressMouse(1)
+                    context.waitTicks(4)
+                }
+                check(on() == stayed) { "A repeat got through after the eye left the hand" }
+
+                // The player lets go. Once the guard from the last dropped click has run out, the same block takes a click.
+                context.waitTicks(20)
+                context.input.pressMouse(1)
+                context.waitTicks(3)
+                check(on() != stayed) { "A click after the guard lapsed was dropped" }
             } finally {
                 DsModClient.settings.end.protectPlacedEyes = true
             }

@@ -44,7 +44,7 @@ The player's own inventory is the exception, because the HUD shows it after ever
 
 The tab list and the open container are client state, so the edge polls them. An action bar or an entity's death leaves nothing to poll, and their order against each other carries meaning: the server sends the Combat XP in the action bar right after the death of the mob the player killed, and that pairing is the only sign of whose kill it was. So `ServerPacketsMixin` posts both from the packet handler, with the time each was handled. Polled once a tick, the two would arrive in the poll's order and not the server's.
 
-A block the server placed before its chunk reached the client comes with no update at all, so a marker head that already stands is found by reading each chunk as it loads. Only a head with a skin is posted from there. The End is decorated with plain heads, and one of those posted as a marker would send the Protector's beam to a wall.
+A block the server placed before its chunk reached the client comes with no update at all, so a marker head that already stands is found by reading each chunk as it loads. A head is posted only when its skull has a skin, whether it came with the chunk or as a block update. The End is decorated with plain heads, and one of those posted as a marker would send the Protector's beam to a wall.
 
 ## Game says that a line was hidden, not the feature
 

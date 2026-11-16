@@ -293,6 +293,11 @@ specs.forEach { cfg ->
         workingDir = file("../specs")
         val meta = layout.buildDirectory.dir("tlc/$name")
         args("-config", cfg.name, "-metadir", meta.get().asFile.path, "-deadlock", "$name.tla")
+        // TLC unpacks Naturals.tla and the other standard modules into java.io.tmpdir. The specs run in
+        // parallel, and in one shared /tmp one run can parse another's half-written module.
+        val tmp = meta.map { it.dir("tmp") }
+        jvmArgs(tmp.map { "-Djava.io.tmpdir=${it.asFile.path}" }.get())
+        doFirst { tmp.get().asFile.mkdirs() }
         inputs.files(cfg, file("../specs/$name.tla"))
         outputs.dir(meta)
     }

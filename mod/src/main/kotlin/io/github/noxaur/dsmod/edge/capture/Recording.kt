@@ -68,8 +68,14 @@ object Recording {
         Minecraft.getInstance().updateTitle()
     }
 
+    /** Drops `]` presses that arrived while no run was taking them, so they cannot finish the next one. */
+    private fun drainNextStep() {
+        if (::nextStep.isInitialized) while (nextStep.consumeClick()) Unit
+    }
+
     /** Abandons the run and deletes the capture it started. False when there was no run. */
     fun cancel(): Boolean {
+        drainNextStep()
         if (run == null) return false
         capture?.let { unwanted -> Recorder.stop(unwanted) { Files.deleteIfExists(unwanted.file) } }
         end()
@@ -138,12 +144,18 @@ object Recording {
 
     private fun tick(client: Minecraft) {
         val now = System.currentTimeMillis()
-        if (ended(run, now)) return
+        if (ended(run, now)) {
+            drainNextStep()
+            return
+        }
         if (leftServer && client.player != null) {
             leftServer = false
             Chat.send(text { bad("Your recording was cancelled because you left the server. Nothing was sent.") })
         }
-        val run = run ?: return
+        val run = run ?: run {
+            drainNextStep()
+            return
+        }
         var presses = 0
         while (nextStep.consumeClick()) presses++
         val steps = run.step(now, presses)
