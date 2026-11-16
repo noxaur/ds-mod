@@ -21,7 +21,7 @@ const COLUMNS = 9;
  * - `inventory` has keys 0 to 44. 0 to 8 are the hotbar, 9 to 35 the rows above it, and 41 to 44 the worn helmet,
  *   chestplate, leggings and boots. 36 to 40 were empty on all three, so what they are is unknown.
  * - `ender_chest` has keys 0 to 26 and `storage` has 30 pages of keys 0 to 44. `accessory_bag` has no page and went to
- *   key 40, so its size is the data's.
+ *   key 40. The bag grows with the data up to ten rows, and a key past that is not a slot.
  * - A key outside these places is never dropped. Each container lists the items it has no place for in an `:other`
  *   container beside it, packed in key order, because where such an item sits is unknown.
  * - `wardrobe.slots` has keys 0 to 8, each a helmet, chestplate, leggings and boots. `equipped` names the slot that is
@@ -35,6 +35,8 @@ const MAIN_FIRST = 9;
 const MAIN_SLOTS = 27;
 const ENDER_CHEST_SLOTS = 27;
 const STORAGE_PAGE_SLOTS = 45;
+/** Ten rows. Captures reached key 40, and a key past this would make the grid follow it. */
+const ACCESSORY_BAG_SLOTS = COLUMNS * 10;
 const WARDROBE_PAGE = 9;
 
 const plain = (text: string): Line => [{ text }];
@@ -69,11 +71,15 @@ const cell = (items: Readonly<Record<string, unknown>> | null | undefined, key: 
 const lastKey = (keys: readonly string[]): number =>
   Math.max(-1, ...keys.filter((key) => SLOT_KEY.test(key)).map(Number));
 
-/** Slots numbered from 0, in as many full rows as the items need, and at least `minimum` slots. */
-const rows = (items: Readonly<Record<string, unknown>> | null | undefined, minimum: number): readonly unknown[] => {
-  const last = lastKey(Object.keys(items ?? {}));
+/** Slots numbered from 0, in full rows, at least `minimum` and never past `maximum`. */
+const rows = (
+  items: Readonly<Record<string, unknown>> | null | undefined,
+  minimum: number,
+  maximum: number,
+): readonly unknown[] => {
+  const last = lastKey(Object.keys(items ?? {}).filter((key) => !SLOT_KEY.test(key) || Number(key) < maximum));
   const slots = Math.max(minimum, Math.ceil((last + 1) / COLUMNS) * COLUMNS);
-  return Array.from({ length: slots }, (_, key) => cell(items, key));
+  return Array.from({ length: Math.min(slots, maximum) }, (_, key) => cell(items, key));
 };
 
 const grid = (id: string, title: string, cells: readonly unknown[]): Layout => ({
@@ -142,25 +148,29 @@ export const layoutsOf = (sections: Sections): readonly Layout[] => {
       ...Array.from({ length: HOTBAR_SLOTS }, (_, key) => cell(sections.inventory, HOTBAR_FIRST + key)),
     ]),
     ...others("inventory:other", "Inventory (other slots)", strays(sections.inventory, isInventorySlot)),
-    grid("ender_chest", "Ender Chest", rows(sections.ender_chest, ENDER_CHEST_SLOTS)),
+    grid("ender_chest", "Ender Chest", rows(sections.ender_chest, ENDER_CHEST_SLOTS, ENDER_CHEST_SLOTS)),
     ...others(
       "ender_chest:other",
       "Ender Chest (other)",
-      strays(sections.ender_chest, () => true),
+      strays(sections.ender_chest, (key) => key < ENDER_CHEST_SLOTS),
     ),
     ...pages.map((key) =>
-      grid(`storage:${key}`, `Storage ${String(Number(key) + 1)}`, rows(storage[key], STORAGE_PAGE_SLOTS)),
+      grid(
+        `storage:${key}`,
+        `Storage ${String(Number(key) + 1)}`,
+        rows(storage[key], STORAGE_PAGE_SLOTS, STORAGE_PAGE_SLOTS),
+      ),
     ),
     ...others("storage:other", "Storage (other)", [
-      ...pages.flatMap((key) => strays(storage[key], () => true)),
+      ...pages.flatMap((key) => strays(storage[key], (slot) => slot < STORAGE_PAGE_SLOTS)),
       ...pageKeys.filter((key) => !SLOT_KEY.test(key)).flatMap((key) => strays(storage[key], () => false)),
     ]),
     ...wardrobePages(sections.wardrobe ?? {}),
-    grid("accessories", "Accessory Bag", rows(sections.accessory_bag, COLUMNS)),
+    grid("accessories", "Accessory Bag", rows(sections.accessory_bag, COLUMNS, ACCESSORY_BAG_SLOTS)),
     ...others(
       "accessories:other",
       "Accessory Bag (other)",
-      strays(sections.accessory_bag, () => true),
+      strays(sections.accessory_bag, (key) => key < ACCESSORY_BAG_SLOTS),
     ),
     ...(pets.length === 0 ? [] : [grid(PETS_ID, "Pets", packed(pets))]),
   ];
