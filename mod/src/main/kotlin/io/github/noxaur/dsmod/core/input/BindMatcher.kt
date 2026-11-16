@@ -57,12 +57,12 @@ class BindMatcher {
      * were typed. A bind set to both still covers a move between the world and a menu.
      */
     fun idle(now: Long, gap: Long, binds: List<CommandBind>, at: Where?, inArea: (Area) -> Boolean): CommandBind? {
-        val across = at != null && binds.any { liveAcross(it, at, inArea) }
-        if (typed.isNotEmpty() && (at == null || !across)) {
+        if (typed.isEmpty()) return null
+        if (at == null || binds.none { liveAcross(it, at, inArea) }) {
             typed.clear()
             return null
         }
-        if (typed.isEmpty() || now - typedAt < gap || at == null) return null
+        if (now - typedAt < gap) return null
         return finish(binds.filter { liveAcross(it, at, inArea) })
     }
 
