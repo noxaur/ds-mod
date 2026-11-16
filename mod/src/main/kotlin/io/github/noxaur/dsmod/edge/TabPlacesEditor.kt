@@ -78,7 +78,10 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         val id = TabLayout.itemId(typed)
         val known = Identifier.tryParse(id)?.let(BuiltInRegistries.ITEM::containsKey) == true
         item.setTextColor(if (known || typed.isBlank()) Role.BODY.argb() else Role.BAD.argb())
-        if (known) change { it.copy(item = id) }
+        when {
+            known -> change { it.copy(item = id) }
+            typed.isBlank() -> change { it.copy(item = "") }
+        }
     }.hint("chest")
     private val name = KitTextField(0, 0, 0, "Name", "", COMMAND_LENGTH) { typed -> change { it.copy(tooltip = typed.trim()) } }.hint("Optional")
     private val fields = listOf(command, item, name)
@@ -219,6 +222,12 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
     }
 
     /** The middle of place [slot] along [edge], on the screen, so a test can press it. */
+    /** Where form field [which] is, 0 the command, 1 the item and 2 the name, so a test can type in it. */
+    fun fieldSpot(which: Int): IntArray {
+        val field = fields[which]
+        return intArrayOf(field.x, field.y, field.width, field.height)
+    }
+
     fun placeAt(edge: TabEdge, slot: Int): Pair<Int, Int> {
         val y = if (edge == TabEdge.TOP) menuTop() - Kit.TAB_HEIGHT + 2 else menuTop() + MENU_HEIGHT - 2
         return x + TabLayout.x(slot) + Kit.TAB_WIDTH / 2 to y + Kit.TAB_HEIGHT / 2

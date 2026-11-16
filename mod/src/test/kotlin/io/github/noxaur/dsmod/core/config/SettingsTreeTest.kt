@@ -1,6 +1,8 @@
 package io.github.noxaur.dsmod.core.config
 
 import io.github.noxaur.dsmod.core.container.Border
+import io.github.noxaur.dsmod.core.container.Fill
+import io.github.noxaur.dsmod.core.container.Floor
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.descriptors.elementNames
@@ -39,6 +41,31 @@ class SettingsTreeTest {
     fun `a reset of every row leaves the hotbar matching the inventory`() {
         for (row in rows) row.reset()
         assertTrue(config.inventory.hotbarMatches, "a reset of the hotbar's parts turned Match Inventory off")
+    }
+
+    @Test
+    fun `resetting a look part under a preset keeps that preset and the rest of its look`() {
+        config.inventory.rarityPreset = RarityPreset.SHOWCASE
+        val border = rows.single { it.id == "border" } as Pick<*>
+        assertEquals(Border.ROUNDED, border.value)
+        assertFalse(border.changed, "a preset's border reads as changed from the Gilded default")
+        border.reset()
+        assertEquals(RarityPreset.SHOWCASE, config.inventory.rarityPreset, "resetting the border forced Custom")
+        assertEquals(Border.ROUNDED, config.inventory.containerStyle().border)
+        assertEquals(Fill.HALO, config.inventory.containerStyle().fill, "resetting the border wrote a Gilded fill into the look")
+        assertEquals(Floor.PEDESTAL, config.inventory.containerStyle().floor)
+    }
+
+    @Test
+    fun `resetting a hotbar part under a preset leaves the hotbar matching the inventory`() {
+        config.inventory.rarityPreset = RarityPreset.SHOWCASE
+        val border = rows.filterIsInstance<Choice<*>>().single { it.id == "hotbarBorder" }
+        assertEquals(Border.ROUNDED, border.value)
+        assertFalse(border.changed, "a matching hotbar border reads as changed from the Gilded default")
+        border.reset()
+        assertTrue(config.inventory.hotbarMatches, "resetting the border turned Match Inventory off")
+        assertEquals(Border.ROUNDED, config.inventory.hotbarLook().border)
+        assertEquals(Fill.HALO, config.inventory.hotbarLook().fill, "resetting the border stored a hybrid hotbar look")
     }
 
     @Test

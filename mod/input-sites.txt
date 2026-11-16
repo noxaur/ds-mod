@@ -45,11 +45,10 @@ gate edge.CommandKeys 6beafabd10f8  CommandBinds
     sends through ClientPacketListener.sendChat
     sends through ClientPacketListener.sendCommand
     approved by github.com/noxaur 2026-11-16T08:42:00Z
-gate edge.CopyChats 19952a107159  CopyChat
+gate edge.CopyChats f21712999623  CopyChat
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate edge.EyeGuards b42b9f42c41e  ProtectPlacedEyes
     can refuse the player's actions through UseBlockCallback.EVENT
     approved by github.com/noxaur 2026-11-16T08:42:00Z

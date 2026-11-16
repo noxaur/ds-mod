@@ -98,6 +98,9 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
 
     fun record(type: RawRecord, data: () -> JsonObject) = writer.record(type, data)
 
+    /** The client tick finished. See [io.github.noxaur.dsmod.core.capture.CaptureWriter.endTick]. */
+    fun endedClientTick() = writer.endTick()
+
     fun tick(client: Minecraft) {
         val player = client.player ?: return
         val level = client.level ?: return
