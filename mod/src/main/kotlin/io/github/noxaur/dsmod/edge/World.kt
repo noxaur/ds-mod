@@ -128,7 +128,7 @@ object World {
             // Text is sized in blocks, so it grows with distance to stay the same size on screen, and rises to stay clear of the box.
             val scale = (meters * 0.25f).coerceAtLeast(1f)
             mark.labelStyle = TextGizmo.Style.forColorAndCentered(mark.color).withScale(TextGizmo.Style.DEFAULT_SCALE * scale)
-            mark.labelAt = mark.top.add(0.0, 0.4 + meters / 24.0, 0.0)
+            mark.labelAt = mark.top.add(0.0, 0.5 + meters / 16.0, 0.0)
         }
         Gizmos.billboardText(label, mark.labelAt, mark.labelStyle).setAlwaysOnTop()
     }

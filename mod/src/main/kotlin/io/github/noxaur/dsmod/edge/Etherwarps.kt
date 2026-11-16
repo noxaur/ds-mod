@@ -40,7 +40,7 @@ object Etherwarps {
     private var pitch = 0f
     private var foundRange = 0
 
-    /** Where the line stops on this frame, drawn or not, or null when nothing is boxed. The game test reads it. */
+    /** The block boxed on this frame, and why a warp there fails, or null when nothing is boxed. The game test reads it. */
     var target: Etherwarp.Target? = null
         private set
 
