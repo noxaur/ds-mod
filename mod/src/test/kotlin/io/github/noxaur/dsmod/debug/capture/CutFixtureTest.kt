@@ -11,6 +11,7 @@ import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
+import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.game.ServerText
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -181,5 +182,23 @@ class CutFixtureTest {
             listOf(2500L to "Area: The End", 2500L to "⏣ Dragon's Nest", 4000L to "⏣ Void Sepulture", 6000L to "Area: Hub", 7000L to "inside"),
             shown,
         )
+    }
+
+    @Test
+    fun `the area's rows are written again after a change of world`() {
+        val capture = capture(
+            1 to tab("Area: The End"),
+            2 to WorldChanged,
+            3 to tab("Area: The End"),
+            4 to say("inside"),
+            5 to WorldChanged,
+            7 to tab("Area: The End"),
+        )
+        val out = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 0.0..4.5, setOf("system", "world"), area = Area.END) })
+        assertEquals(listOf(TabList::class, WorldChanged::class, TabList::class, SystemMessage::class), out.map { it.second::class })
+        // A cut that starts after the hop and before the new tab list starts nowhere.
+        val late = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 6.0..9.0, setOf("system", "world"), area = Area.END) })
+        assertEquals(listOf(TabList::class), late.map { it.second::class })
+        assertEquals(7000L, late.single().first)
     }
 }

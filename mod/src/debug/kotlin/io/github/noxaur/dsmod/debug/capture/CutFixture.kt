@@ -83,6 +83,13 @@ fun cutFixture(
                 if (event.kept) slots.putAll(inventory)
             }
             if (event is SlotChanged) if (event.item == null) slots.remove(event.slot) else slots[event.slot] = event.item!!
+            // `Game` forgets the tab list and the sidebar with the world, so the next world's rows must be written again.
+            if (event == WorldChanged) {
+                tab = null
+                sidebar = null
+                shown = null
+                place = null
+            }
             when {
                 event is TabList -> {
                     val state = TabState().apply { update(event.rows) }
