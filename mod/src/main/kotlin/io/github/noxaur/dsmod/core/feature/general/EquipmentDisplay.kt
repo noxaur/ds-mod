@@ -146,7 +146,10 @@ class EquipmentDisplay(
                 block = build()
             }
         }
-        if (shown != settings()) {
+        // Compared field by field, so a refresh with nothing new allocates nothing.
+        if (shown.layout != layout.get() || shown.pieces != pieces.get() || shown.petLook != petLook.get() ||
+            shown.petPosition != petPosition.get() || shown.look != look.get() || shown.placement != placement.get()
+        ) {
             shown = settings()
             block = build()
         }

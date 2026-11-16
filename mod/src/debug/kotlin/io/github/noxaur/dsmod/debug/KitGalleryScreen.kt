@@ -253,8 +253,9 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         val w = 52
         var line = y + 12 + Kit.TAB_BAR_HEIGHT - 1
         Kit.tabBar(g, x, y + 12, 278)
+        val tabTop = line
         fun tab(at: Int, state: Kit.State, selected: Boolean, name: String, swatch: Int, close: Kit.State?) =
-            Kit.pageTab(g, x + at, line, w, state, selected, fit(name, Kit.pageTabLabel(w, true, true)), swatch, close = close)
+            Kit.pageTab(g, x + at, tabTop, w, state, selected, fit(name, Kit.pageTabLabel(w, true, true)), swatch, close = close)
         tab(4, Kit.State.IDLE, false, "Combat", Role.BAD.argb(), null)
         tab(57, Kit.State.HOVER, false, "Menus", Role.LEGENDARY.argb(), Kit.State.IDLE)
         tab(110, Kit.State.HOVER, false, "Inventory", Role.GOOD.argb(), Kit.State.HOVER)
