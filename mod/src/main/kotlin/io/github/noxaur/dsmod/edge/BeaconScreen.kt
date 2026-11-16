@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.game.ProtectorRow
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.Sections
+import io.github.noxaur.dsmod.edge.ui.EditorScreen
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitButton
 import io.github.noxaur.dsmod.edge.ui.KitCheckbox
@@ -14,7 +15,6 @@ import net.minecraft.client.gui.screens.Screen
 
 private const val TITLE = "Beam Timing"
 private const val WIDTH = 300
-private const val LABEL_HEIGHT = 8
 private const val MAX = ProtectorRow.CYCLE_KILLS
 
 // The server raises the Protector one tier for every 50 kills.
@@ -28,8 +28,8 @@ private val DEFAULT = listOf(Section(175, 200))
  * cursor and the line under it say what a press does and did. Closing saves through [onSave] and goes back to
  * [parent], which is the settings when the player came from there.
  */
-class BeaconScreen(private val settings: DsModConfig.End, private val parent: Screen?, private val onSave: () -> Unit) :
-    Screen(text { body(TITLE) }.toComponent()) {
+class BeaconScreen(private val settings: DsModConfig.End, parent: Screen?, onSave: () -> Unit) :
+    EditorScreen(TITLE, parent, onSave) {
     private var panelX = 0
     private var panelY = 0
     private var panelHeight = 0
@@ -44,7 +44,7 @@ class BeaconScreen(private val settings: DsModConfig.End, private val parent: Sc
 
     override fun init() {
         val panelWidth = WIDTH + Kit.INSET * 2
-        panelHeight = Kit.INSET * 2 + Kit.BUTTON_HEIGHT * 3 + LABEL_HEIGHT * 2 + Kit.GAP * 5 + 2
+        panelHeight = Kit.INSET * 2 + Kit.BUTTON_HEIGHT * 3 + Kit.LABEL_HEIGHT * 2 + Kit.GAP * 5 + 2
         panelX = (width - panelWidth) / 2
         panelY = (height - panelHeight) / 2
         left = panelX + Kit.INSET
@@ -61,9 +61,9 @@ class BeaconScreen(private val settings: DsModConfig.End, private val parent: Sc
         tiersY = sliderY + Kit.BUTTON_HEIGHT + 2
         // Each tier's name sits in the middle of its quarter of the track.
         tierX = IntArray(TIER_NAMES.size) { left + WIDTH * (2 * it + 1) / 8 - font.width(TIER_NAMES[it]) / 2 }
-        readoutY = tiersY + LABEL_HEIGHT + Kit.GAP * 2
+        readoutY = tiersY + Kit.LABEL_HEIGHT + Kit.GAP * 2
 
-        val bottom = readoutY + LABEL_HEIGHT + Kit.GAP * 2
+        val bottom = readoutY + Kit.LABEL_HEIGHT + Kit.GAP * 2
         val fight = addRenderableWidget(
             KitCheckbox(left, bottom + (Kit.BUTTON_HEIGHT - Kit.CHECKBOX_SIZE) / 2, "During the Fight", settings.beamInFight) {
                 settings.beamInFight = it
@@ -83,13 +83,9 @@ class BeaconScreen(private val settings: DsModConfig.End, private val parent: Sc
         refresh()
     }
 
-    override fun onClose() = minecraft.gui.setScreen(parent)
-
-    override fun removed() = onSave()
-
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         Kit.panel(graphics, panelX, panelY, WIDTH + Kit.INSET * 2, panelHeight)
-        Kit.label(graphics, TITLE, left, top + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
+        Kit.label(graphics, TITLE, left, top + (Kit.BUTTON_HEIGHT - Kit.LABEL_HEIGHT) / 2)
         for (i in TIER_NAMES.indices) Kit.label(graphics, TIER_NAMES[i], tierX[i], tiersY, Kit.Ink.MUTED)
         Kit.label(graphics, readout, left, readoutY, if (slider.sections.isEmpty()) Kit.Ink.MUTED else Kit.Ink.NORMAL)
         super.extractRenderState(graphics, mouseX, mouseY, partialTick)
