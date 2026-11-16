@@ -68,7 +68,7 @@ object SettingsTree {
         return sections
     }
 
-    /** The section and the switch of a fresh config that [toggle] binds to, such as `config.chat::abilitySpam`. */
+    /** The section and the switch of a fresh config that [toggle] binds to, such as `config.chat::hideCooldownMessages`. */
     fun home(toggle: KMutableProperty0<Boolean>): Pair<SettingSection, Switch> {
         val field = Bind.field(toggle)
         return fresh.firstNotNullOf { section -> section.walk().filterIsInstance<Switch>().firstOrNull { it.field == field }?.let { section to it } }
@@ -118,7 +118,7 @@ object SettingsTree {
                 }
                 group("World") {
                     switch(g::fullbright, "Fullbright", "Light caves and nights as brightly as day.")
-                    switch(g::explosionParticleHider, "Explosion Particles", "Hide the clouds that explosions throw up.")
+                    switch(g::hideExplosions, "Hide Explosions", "Hide the clouds that explosions throw up.")
                 }
                 group("Etherwarp", switch = toggle(g::etherwarpOutline, "Etherwarp Outline", "Box the block Etherwarp will take you to while you sneak.")) {
                     choice(g::etherwarpStyle, "Style", "Draw the box as edges, a tinted fill, or both.", id = "etherwarpStyle")
@@ -208,7 +208,7 @@ object SettingsTree {
                         if (it.isEmpty()) "Stacked" else if (it.size == 1) "1 block moved" else "${it.size} blocks moved"
                     }
                     action(Opens.HUD_EDITOR, "Move HUD", "Move your HUD over the game, with the world behind it.", button = "Move", id = "moveHud")
-                    switch(hud::dragInChat, "Drag In Chat", "Drag HUD blocks with chat open, and scroll over one to resize it.")
+                    switch(hud::chatHudEditor, "Chat HUD Editor", "Drag HUD blocks with chat open, and scroll over one to resize it.")
                     keys(hud::editKey, "HUD Editor Key", "Pick a key that opens the HUD editor, or none.", id = "hudEditKey")
                     switch(hud::hideInF3, "Hide In F3", "Hide ds-mod's HUD while the F3 debug screen is open.")
                 }
@@ -220,7 +220,7 @@ object SettingsTree {
                     choice(g::petLook, "Pet Look", "Show your pet as its head, or as its name and level.")
                     choice(g::petPosition, "Pet Position", "Put your pet among the armor, or on a row above or below it.")
                 }
-                group("Inventory Preview", switch = toggle(g::inventoryPreview, "Inventory Preview", "Show a grid of the items in your inventory on the HUD.")) {
+                group("Inventory HUD", switch = toggle(g::inventoryHud, "Inventory HUD", "Show a grid of the items in your inventory on the HUD.")) {
                     order(g::inventoryRows, "Rows", "Pick the rows to show, and drag them into order.")
                     choice(g::inventoryLook, "Look", "Show the items on the plate, on nothing, or as your inventory.")
                     choice(g::inventoryLayout, "Layout", "Lay each row out across, as in the inventory, or down.")
@@ -233,13 +233,13 @@ object SettingsTree {
             }
             section("Chat", Role.WARNING) {
                 group(null) {
-                    switch(c.chat::abilitySpam, "Ability Spam", "Hide the message that an ability is on cooldown.")
+                    switch(c.chat::hideCooldownMessages, "Hide Cooldown Messages", "Hide the message that an ability is on cooldown.")
                     switch(c.chat::copyChat, "Copy Chat", "Right-click messages to copy them as text, format codes or JSON.")
                 }
             }
             section("Inventory", Role.GOOD) {
                 val inv = c.inventory
-                group("Rarity Marks", switch = toggle(inv::rarityMarks, "Rarity Marks", "Mark each item's slot in the color of its rarity.")) {
+                group("Item Rarity", switch = toggle(inv::itemRarity, "Item Rarity", "Mark each item's slot in the color of its rarity.")) {
                     pick(inv::rarityPreset, "Style", "Pick a look for the marks, or Custom for your own.") { Look.Slots(it.style ?: inv.inventoryStyle) }
                     fold("customLook", "Custom Look", "Build your own look from its parts, which switches Style to Custom.") {
                         // A part shows the look on screen. Writing a different one makes that look the player's own.
@@ -303,12 +303,12 @@ object SettingsTree {
             section("Menus", Role.LEGENDARY) {
                 val inv = c.inventory
                 group("Look") {
-                    switch(inv::themedMenus, "Themed Menus", "Draw menus and plain tooltips in the Theme under Interface.") {
+                    switch(inv::menuTheme, "Menu Theme", "Draw menus and plain tooltips in the Theme under Interface.") {
                         choice(inv::menuLook, "Menu Look", "Draw themed menus solid, or as glass that shows the world.")
                         number(inv::glassOpacity, "Glass Opacity", "Set how dark the glass is, from clear at 0 to solid at 100.", 0f..100f, step = 5f)
                     }
-                    switch(inv::stableMenus, "Stable Menus", "Keep Go Back, Close and your inventory in place in every menu.")
-                    switch(inv::hideFiller, "Hide Filler", "Hide the blank glass panes that pad out menus.")
+                    switch(inv::fixedMenuLayout, "Fixed Menu Layout", "Keep Go Back, Close and your inventory in place in every menu.")
+                    switch(inv::hideGlassPanes, "Hide Glass Panes", "Hide the blank glass panes that pad out menus.")
                     switch(inv::keepCursor, "Keep Cursor", "Leave the cursor where it was when one menu opens another.")
                 }
                 group("Better UI", switch = toggle(c.betterUi::enabled, "Better UI", "Turn everything below on or off at once.", id = "betterUi")) {
@@ -325,27 +325,33 @@ object SettingsTree {
                 group("Dragon") {
                     switch(c.end::dragonTimer, "Dragon Timer", "Show the egg timer, the eyes placed and the dragon's time alive.")
                     switch(c.end::fireballAlert, "Fireball Alert", "Alert you when a dragon is about to throw fireballs.")
-                    switch(c.end::protectPlacedEyes, "Protect Placed Eyes", "Ignore a quick second click that would take a placed eye back.")
+                    switch(c.end::eyeGuard, "Eye Guard", "Ignore a quick second click that would take a placed eye back.")
                 }
                 group("Protector") {
-                    switch(c.end::golemStatus, "Golem Status", "Show the Protector's stage and the kills left until it emerges.")
-                    switch(c.end::bossBeacon, "Boss Beacon", "Show a beam where the Endstone Protector will emerge.") {
+                    switch(c.end::protectorStatus, "Protector Status", "Show the Protector's stage and the kills left until it emerges.")
+                    switch(c.end::protectorSpawnBeam, "Protector Spawn Beam", "Show a beam where the Endstone Protector will emerge.") {
                         span(c.end::beamSections, "Beam Timing", "Pick when the beam shows, in zealots killed out of 200.", max = 200, ticks = listOf(50, 100, 150))
                         switch(c.end::beamInFight, "During the Fight", "Keep the beam while the Protector is up.")
                     }
                 }
                 group("Drops") {
-                    switch(c.end::bossDrops, "Boss Drops", "Show your rank, damage and loot from the last boss fight.")
+                    switch(c.end::bossFightTracker, "Boss Fight Tracker", "Show your rank, damage and loot from the last boss fight.")
                     switch(c.end::zealotTracker, "Zealot Tracker", "Count your Summoning Eyes and zealot kills, per hour and all-time.")
                 }
             }
             section("Combat", Role.BAD) {
+                group("Damage Numbers", switch = toggle(c.general::damageNumbers, "Damage Numbers", "Shorten or hide the damage numbers that pop up on a hit.")) {
+                    val g = c.general
+                    choice(g::damageShown, "Show", "Pick which damage numbers you see: all, only crits, or none.", id = "damageShown")
+                    val short = switch(g::damageShort, "Short Numbers", "Shorten big numbers, so 1,234,567 reads 1.2M.")
+                    number(g::damageDecimals, "Decimals", "Set how many decimals a short number keeps.", 0f..3f, step = 1f, id = "damageDecimals", dependsOn = short)
+                }
                 group("Slayers") {
                     switch(c.slayer::slayerTracker, "Slayer Tracker", "Count the slayer bosses you slay and time each from spawn to slain.")
                     switch(c.slayer::slayerBossAlert, "Slayer Boss Alert", "Alert you when your slayer boss spawns.")
                 }
                 group("Loot") {
-                    switch(c.loot::lootAlerts, "Loot Alerts", "Alert you to drops of the chosen tier or better.") {
+                    switch(c.loot::rareDropAlert, "Rare Drop Alert", "Alert you to drops of the chosen tier or better.") {
                         choice(c.loot::lootAlertTier, "Alert Tier", "Pick the lowest drop tier that alerts you.")
                     }
                 }

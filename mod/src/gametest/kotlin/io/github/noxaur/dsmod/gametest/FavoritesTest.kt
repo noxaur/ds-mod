@@ -61,17 +61,17 @@ class FavoritesTest : FabricClientGameTest {
             hear(context, "Fullbright, switch, off, starred", "Over a starred row")
 
             // F over a row stars it, and types nothing into the search.
-            over("explosionParticleHider")
+            over("hideExplosions")
             driver.key(GLFW.GLFW_KEY_F)
-            check("explosionParticleHider" in starred()) { "F over Explosion Particles left ${starred()}" }
+            check("hideExplosions" in starred()) { "F over Hide Explosions left ${starred()}" }
             check(!tabs.current.place.searching) { "F over a row started a search for \"${tabs.current.place.query}\"" }
 
             // Ctrl+F focuses the search, and F then types there and stars nothing.
             driver.key(GLFW.GLFW_KEY_F, control = true)
-            check("explosionParticleHider" in starred()) { "Ctrl+F unstarred the row" }
+            check("hideExplosions" in starred()) { "Ctrl+F unstarred the row" }
             context.input.typeChars("ful")
             context.waitTicks(2)
-            check(starred() == listOf("fullbright", "explosionParticleHider")) { "Typing in the search changed the stars: ${starred()}" }
+            check(starred() == listOf("fullbright", "hideExplosions")) { "Typing in the search changed the stars: ${starred()}" }
             // A search finds Fullbright once, in its own section, and nothing in Favorites.
             check(shown() == listOf("fullbright")) { "Searching \"ful\" lists ${shown()}" }
             context.takeScreenshot("settings-favorites-search")
@@ -86,9 +86,9 @@ class FavoritesTest : FabricClientGameTest {
             driver.key(GLFW.GLFW_KEY_DOWN)
             driver.move(2, 2)
             driver.key(GLFW.GLFW_KEY_F)
-            check("explosionParticleHider" !in starred()) { "F on the keys' row left ${starred()}" }
+            check("hideExplosions" !in starred()) { "F on the keys' row left ${starred()}" }
             driver.key(GLFW.GLFW_KEY_F)
-            check("explosionParticleHider" in starred()) { "F on the keys' row again left ${starred()}" }
+            check("hideExplosions" in starred()) { "F on the keys' row again left ${starred()}" }
             driver.key(GLFW.GLFW_KEY_ESCAPE)
             // That press on the row toggled Fullbright itself, so it goes back.
             context.runOnClient<Nothing> { settings.general.fullbright = false }
@@ -99,24 +99,24 @@ class FavoritesTest : FabricClientGameTest {
                 tabs.current.go(at("Combat").section)
             }
             open(context, tabs)
-            over("lootAlerts")
+            over("rareDropAlert")
             context.input.holdControl()
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
             context.input.releaseControl()
             context.waitTicks(2)
-            check("lootAlerts" !in starred()) { "Ctrl and the middle button starred Loot Alerts" }
+            check("rareDropAlert" !in starred()) { "Ctrl and the middle button starred Rare Drop Alert" }
             // A middle press with Ctrl is the row's own, which toggles the switch, so it goes back.
-            context.runOnClient<Nothing> { settings.loot.lootAlerts = true }
-            over("lootAlerts")
+            context.runOnClient<Nothing> { settings.loot.rareDropAlert = true }
+            over("rareDropAlert")
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
             context.waitTicks(2)
-            check("lootAlerts" in starred()) { "The middle button left ${starred()}" }
+            check("rareDropAlert" in starred()) { "The middle button left ${starred()}" }
             context.runOnClient<Nothing> { settings.general.favoriteKey = GLFW.GLFW_KEY_F }
 
             // Favorites lists them in the tree's order, under their sections and groups.
             context.runOnClient<Nothing> { tabs.current.go(SettingsScreen.FAVORITES) }
             open(context, tabs)
-            check(shown() == listOf("fullbright", "explosionParticleHider", "lootAlerts")) { "Favorites lists ${shown()}" }
+            check(shown() == listOf("fullbright", "hideExplosions", "rareDropAlert")) { "Favorites lists ${shown()}" }
             context.takeScreenshot("settings-favorites")
             theme(context, Theme.VANILLA)
             context.takeScreenshot("settings-favorites-vanilla")
@@ -135,12 +135,12 @@ class FavoritesTest : FabricClientGameTest {
             open(context, tabs)
             context.runOnClient<Nothing> { tabs.current.go(SettingsScreen.FAVORITES) }
             open(context, tabs)
-            check(shown() == listOf("explosionParticleHider", "lootAlerts")) { "After leaving, Favorites lists ${shown()}" }
+            check(shown() == listOf("hideExplosions", "rareDropAlert")) { "After leaving, Favorites lists ${shown()}" }
 
             // Closing saves the stars.
             context.setScreen { TitleScreen() }
             val saved = JsonParser.parseString(FabricLoader.getInstance().configDir.resolve("dsmod/config.json").readText()).asJsonObject
-            check(saved["favorites"].asJsonArray.map { it.asString } == listOf("explosionParticleHider", "lootAlerts")) { "The file holds ${saved["favorites"]}" }
+            check(saved["favorites"].asJsonArray.map { it.asString } == listOf("hideExplosions", "rareDropAlert")) { "The file holds ${saved["favorites"]}" }
         } finally {
             context.runOnClient<Nothing> {
                 settings.favorites = emptyList()

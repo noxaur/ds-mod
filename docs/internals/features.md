@@ -10,7 +10,7 @@ A feature returns what it shows instead of calling a UI layer. The replay test c
 
 A feature's HUD block is built with `block { }`, which heads it with the feature's title. A feature can't then retype or misname itself, and the header is built once.
 
-Hiding a server line is the one thing a handler decides on the spot. Fabric asks whether a line may show before it reaches the chat, so `Game.post` returns the answer and the edge posts chat from that question. A line another mod refuses first never reaches the features, because Fabric stops asking at the first refusal.
+Hiding a server line, or hiding or replacing a floating text, is the one thing a handler decides on the spot. Fabric asks whether a line may show before it reaches the chat, so `Game.post` returns the answer and the edge posts chat from that question. A line another mod refuses first never reaches the features, because Fabric stops asking at the first refusal.
 
 A chat line or an alert is collected the same way and delivered at the end of the tick. Printed from inside the handler, it would land above the server line that caused it, because the handler runs before that line reaches the chat.
 
@@ -38,7 +38,7 @@ Some places exist only in the sidebar: the Dungeon Hub's tab list has no info ro
 
 Reading an item out of Minecraft is the costly part of a menu: a chest of 54 items with long lore took 5.5 ms in one tick. So the poll reads for at most a millisecond a tick, and a big menu arrives over a few ticks. A slot that is still null just after the menu opened may only be unread.
 
-The player's own inventory is the exception, because the HUD shows it after every menu the player closes. Read again from nothing, an inventory of long-lored items took three ticks, and the Inventory Preview emptied and refilled for them. So the poller and `ContainerState` both keep the inventory while another menu is open, and its `ContainerOpened` says `kept`, followed by only the slots whose stack changed. A new world brings a new inventory menu, which is read from nothing.
+The player's own inventory is the exception, because the HUD shows it after every menu the player closes. Read again from nothing, an inventory of long-lored items took three ticks, and the Inventory HUD emptied and refilled for them. So the poller and `ContainerState` both keep the inventory while another menu is open, and its `ContainerOpened` says `kept`, followed by only the slots whose stack changed. A new world brings a new inventory menu, which is read from nothing.
 
 ## Packets that leave no state are posted as they arrive
 

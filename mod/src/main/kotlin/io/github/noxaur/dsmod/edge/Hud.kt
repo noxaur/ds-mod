@@ -425,7 +425,7 @@ object Hud {
         val client = Minecraft.getInstance()
         val font = client.font
         val line = font.lineHeight + 1
-        // The Inventory look matches the inventory screen, which Themed Menus draws with the kit, solid or as glass.
+        // The Inventory look matches the inventory screen, which Menu Theme draws with the kit, solid or as glass.
         val themed = MenuSkin.themed
         val glass = MenuSkin.glassAlpha
         val menu = client.gui.screen() is AbstractContainerScreen<*>

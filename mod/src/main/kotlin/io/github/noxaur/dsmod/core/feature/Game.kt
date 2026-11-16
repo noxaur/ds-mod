@@ -16,6 +16,7 @@ import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.TabState
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
+import io.github.noxaur.dsmod.core.text.Text
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.world.Mark
 import kotlinx.serialization.Serializable
@@ -108,10 +109,15 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
      */
     fun reaches(type: Class<out GameEvent>) = active() && features.any { it.enabled && type in it.handlers && it.area.holds(tab, sidebar) }
 
-    /** Returns false when a feature hid [event], which the edge honors for a chat line. */
+    /** The text a feature put in place of the [io.github.noxaur.dsmod.core.game.FloatingText] just posted, or null to keep the server's. */
+    var replaced: Text? = null
+        private set
+
+    /** Returns false when a feature hid [event], which the edge honors for a chat line and a floating text. */
     fun post(time: Long, event: GameEvent): Boolean {
         tap?.invoke(time, event)
         var shown = true
+        replaced = null
         // Any feature may read the shared state, so a change to it makes every readout stale.
         val shared = when (event) {
             is TabList -> true.also {
@@ -148,6 +154,10 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             val handler = if (reaches) feature.handlers[event.javaClass] else null
             if (handler != null) metrics.time(feature.id) { handler(event, time) }
             if (handler != null || shared) readouts[i].stale = true
+            feature.replacement?.let {
+                feature.replacement = null
+                replaced = it
+            }
             if (feature.hides) {
                 feature.hides = false
                 shown = false

@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.core.text
 
+import io.github.noxaur.dsmod.core.game.ServerSpan
+import io.github.noxaur.dsmod.core.game.ServerText
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -41,5 +43,28 @@ class TextTest {
     @Test
     fun `brand of one character is the first stop`() {
         assertEquals(listOf(0xFFBB00), text { brand("x") }.spans.map { it.rgb })
+    }
+
+    @Test
+    fun `server text keeps the server's colors spread across the new text`() {
+        val white = 0xFFFFFF
+        val yellow = 0xFFFF55
+        val gold = 0xFFAA00
+        val red = 0xFF5555
+        val crit = ServerText(
+            ServerSpan("✧4,", white), ServerSpan("8", yellow), ServerSpan("7", gold), ServerSpan("6", red), ServerSpan(",", red),
+            ServerSpan("4", gold), ServerSpan("4", yellow), ServerSpan("5✧", white),
+        )
+        val short = text { server("✧4.9M✧", crit) }
+        assertEquals("✧4.9M✧", short.plain)
+        assertEquals(listOf(white, white, gold, red, yellow, white), short.spans.flatMap { span -> span.text.map { span.rgb } })
+    }
+
+    @Test
+    fun `server text in one color stays one span, and uncolored text is white`() {
+        val gray = 0xAAAAAA
+        assertEquals(listOf(Span("98.4k", gray)), text { server("98.4k", ServerText(ServerSpan("98,438", gray))) }.spans)
+        assertEquals(listOf(Span("1M", 0xFFFFFF)), text { server("1M", ServerText(ServerSpan("1,000,000"))) }.spans)
+        assertEquals(listOf(Span("7", gray)), text { server("7", ServerText(ServerSpan("1", 0xFFFFFF), ServerSpan("2", gray), ServerSpan("3", gray))) }.spans)
     }
 }

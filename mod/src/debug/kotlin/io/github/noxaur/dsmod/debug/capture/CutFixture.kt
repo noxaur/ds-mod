@@ -10,6 +10,7 @@ import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.GameEvent
+import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.Sidebar
@@ -19,6 +20,14 @@ import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.TabState
 import io.github.noxaur.dsmod.core.game.WorldChanged
+import io.github.noxaur.dsmod.edge.toText
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
+import net.minecraft.network.chat.Component
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.useLines
@@ -65,55 +74,63 @@ fun cutFixture(
     var container: ContainerOpened? = null
     var start: Map<Int, Item>? = null
     val events = ArrayList<Captured>()
+    // A capture from before `floating` was an event has its text displays only in `entities`.
+    val legacy = if ("floating" in types && capture.useLines { lines -> lines.none { "\"type\":\"floating\"" in it } }) HashMap<String, String>() else null
     capture.useLines { lines ->
         for (line in lines.filter(String::isNotBlank)) {
             val time = line.substringAfter("\"t\":").takeWhile(Char::isDigit).toLong()
             if (origin < 0) origin = time
-            if (line.substringAfter("\"type\":\"").substringBefore('"') !in kept) continue
-            val captured = readCaptureLine(line)!!
-            val event = captured.event
-            val tick = captured.tick
+            val type = line.substringAfter("\"type\":\"").substringBefore('"')
+            val read = when {
+                type == "entities" && legacy != null -> floating(line, legacy)
+                type in kept -> listOf(readCaptureLine(line)!!)
+                else -> continue
+            }
             val second = (time - origin) / 1000.0
             if (second > seconds.endInclusive) break
-            val before = second < seconds.start
-            if (!before && start == null) {
-                container = open?.copy(kept = false)
-                start = slots.toMap()
-            }
-            if (event is ContainerOpened) {
-                if (open?.id == INVENTORY) inventory = slots.toMap()
-                open = event
-                slots.clear()
-                if (event.kept) slots.putAll(inventory)
-            }
-            if (event is SlotChanged) if (event.item == null) slots.remove(event.slot) else slots[event.slot] = event.item!!
-            // `Game` forgets the tab list and the sidebar with the world, so the next world's rows must be written again.
-            if (event == WorldChanged) {
-                if (before) {
-                    tab = null
-                    sidebar = null
+            for (captured in read) {
+                val event = captured.event
+                val tick = captured.tick
+                val before = second < seconds.start
+                if (!before && start == null) {
+                    container = open?.copy(kept = false)
+                    start = slots.toMap()
                 }
-                shown = null
-                place = null
-            }
-            when {
-                event is TabList -> {
-                    val state = TabState().apply { update(event.rows) }
-                    val values = rows.map(state::info)
-                    if (before) tab = event else if (everyTab || values != shown) events += Captured(time, event, tick)
-                    shown = values
+                if (event is ContainerOpened) {
+                    if (open?.id == INVENTORY) inventory = slots.toMap()
+                    open = event
+                    slots.clear()
+                    if (event.kept) slots.putAll(inventory)
                 }
-                event is Sidebar -> {
-                    val now = SidebarState().apply { update(event) }.place
-                    if (before) sidebar = event else if ("sidebar" in types || now != place) events += Captured(time, event, tick)
-                    place = now
+                if (event is SlotChanged) if (event.item == null) slots.remove(event.slot) else slots[event.slot] = event.item!!
+                // `Game` forgets the tab list and the sidebar with the world, so the next world's rows must be written again.
+                if (event == WorldChanged) {
+                    if (before) {
+                        tab = null
+                        sidebar = null
+                    }
+                    shown = null
+                    place = null
                 }
-                event is ContainerOpened && !before -> {
-                    events += Captured(time, event.copy(kept = false), tick)
-                    if (event.kept) slots.forEach { (slot, item) -> events += Captured(time, SlotChanged(slot, item), tick) }
+                when {
+                    event is TabList -> {
+                        val state = TabState().apply { update(event.rows) }
+                        val values = rows.map(state::info)
+                        if (before) tab = event else if (everyTab || values != shown) events += Captured(time, event, tick)
+                        shown = values
+                    }
+                    event is Sidebar -> {
+                        val now = SidebarState().apply { update(event) }.place
+                        if (before) sidebar = event else if ("sidebar" in types || now != place) events += Captured(time, event, tick)
+                        place = now
+                    }
+                    event is ContainerOpened && !before -> {
+                        events += Captured(time, event.copy(kept = false), tick)
+                        if (event.kept) slots.forEach { (slot, item) -> events += Captured(time, SlotChanged(slot, item), tick) }
+                    }
+                    before -> Unit
+                    event !is SystemMessage || system == null || system.containsMatchIn(event.text.plain) -> events += Captured(time, event, tick)
                 }
-                before -> Unit
-                event !is SystemMessage || system == null || system.containsMatchIn(event.text.plain) -> events += Captured(time, event, tick)
             }
         }
     }
@@ -149,6 +166,24 @@ fun main(args: Array<String>) {
         options["--system"]?.let(::Regex),
     )
     println("Wrote $written lines for $feature/$name, with $players players renamed.")
+}
+
+/**
+ * The [FloatingText] of each text display in an older capture's `entities` line whose text is new: the server's
+ * text, read the way the edge reads it, and [shown] is each display's text so far. The line is the recorder's sample,
+ * so the text arrives up to a few ticks after the client had it.
+ */
+private fun floating(line: String, shown: MutableMap<String, String>): List<Captured> {
+    val json = Json.parseToJsonElement(line).jsonObject
+    val time = json.getValue("t").jsonPrimitive.long
+    val tick = json["tick"]?.jsonPrimitive?.int
+    return json.getValue("data").jsonObject.getValue("entries").jsonObject.mapNotNull { (id, entry) ->
+        if (entry !is JsonObject) return@mapNotNull null.also { shown.remove(id) }
+        if (entry["entity"]?.jsonPrimitive?.content != "minecraft:text_display") return@mapNotNull null
+        val text = entry["text"]?.jsonObject?.get("text")?.jsonPrimitive?.content ?: return@mapNotNull null
+        if (text.isEmpty() || shown.put(id, text) == text) return@mapNotNull null
+        Captured(time, FloatingText(Component.literal(text).toText()), tick)
+    }
 }
 
 /** The player's own inventory, which the client always numbers 0. */

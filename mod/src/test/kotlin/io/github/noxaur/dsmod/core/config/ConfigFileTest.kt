@@ -47,13 +47,14 @@ class ConfigFileTest {
         Files.copy(Path.of(javaClass.getResource("/config/moulconfig.json")!!.toURI()), path)
         val c = ConfigFile(path).load()
         assertEquals(listOf("general.fullbright", "loot.lootAlerts", "hud.scale", "end.editBeam", "general.resetAnimations"), c.favorites)
-        assertEquals(listOf("fullbright", "lootAlerts", "hudScale", "beamSections", "resetAnimations"), SettingsTree.favorites(c.favorites))
+        // Loot Alerts became Rare Drop Alert, and its star went with the old name.
+        assertEquals(listOf("fullbright", "hudScale", "beamSections", "resetAnimations"), SettingsTree.favorites(c.favorites))
 
-        assertFalse(c.chat.abilitySpam)
+        assertFalse(c.chat.hideCooldownMessages)
         assertFalse(c.chat.copyChat)
 
         c.end.run {
-            assertFalse(zealotTracker || protectPlacedEyes || dragonTimer || fireballAlert || golemStatus || bossBeacon || bossDrops)
+            assertFalse(zealotTracker || eyeGuard || dragonTimer || fireballAlert || protectorStatus || protectorSpawnBeam || bossFightTracker)
             assertEquals(listOf(Section(20, 60), Section(150, 200)), beamSections)
             assertTrue(beamInFight)
         }
@@ -62,7 +63,7 @@ class ConfigFileTest {
             assertFalse(onlyOnDragSim)
             assertEquals(344, settingsKey)
             assertEquals(71, favoriteKey)
-            assertTrue(fullbright && explosionParticleHider)
+            assertTrue(fullbright && hideExplosions)
             assertFalse(animations)
             assertEquals(SwingStyle.EXHIBITION, swingStyle)
             assertEquals(listOf(1.5f, 0.75f, 0.25f, -0.5f, 0.1f, 45f, -30f, 12f), listOf(swingSpeed, itemSize, itemX, itemY, itemZ, itemYaw, itemPitch, itemRoll))
@@ -75,7 +76,7 @@ class ConfigFileTest {
             assertEquals(PetPosition.BELOW, petPosition)
             assertEquals(EquipmentLook.HOTBAR, equipmentLook)
             assertEquals(HudDock.RIGHT_OF_HOTBAR, equipmentPlacement)
-            assertTrue(inventoryPreview)
+            assertTrue(inventoryHud)
             assertEquals(listOf(InventoryRow.HOTBAR, InventoryRow.TOP), inventoryRows)
             assertEquals(InventoryLook.INVENTORY, inventoryLook)
             assertFalse(etherwarpOutline || etherwarpFailed || etherwarpThroughWalls)
@@ -104,12 +105,12 @@ class ConfigFileTest {
         }
 
         c.inventory.run {
-            assertFalse(rarityMarks)
+            assertFalse(itemRarity)
             assertEquals(RarityPreset.CUSTOM, rarityPreset)
             // MoulConfig's Gson wrote a style as {}, since its fields had no @Expose, so the old file holds no custom look.
             assertEquals(SlotStyle(), inventoryStyle)
             assertEquals(SlotStyle(), hotbarStyle)
-            assertFalse(hotbarMatches || hotbarMarks || themedMenus || stableMenus || hideFiller || keepCursor || slotLock)
+            assertFalse(hotbarMatches || hotbarMarks || menuTheme || fixedMenuLayout || hideGlassPanes || keepCursor || slotLock)
             assertTrue(markCommon && armorSwapGuard)
             assertEquals(MenuLook.GLASS, menuLook)
             assertEquals(35f, glassOpacity)
@@ -122,14 +123,14 @@ class ConfigFileTest {
             assertEquals(listOf(MenuTab(TabEdge.TOP, 2, "bazaar", "minecraft:gold_ingot", "Bazaar"), MenuTab(TabEdge.BOTTOM, 6, item = "", tooltip = "Search", search = true)), tabs)
         }
 
-        assertFalse(c.loot.lootAlerts)
+        assertFalse(c.loot.rareDropAlert)
         assertEquals(DsModConfig.LootTier.RNGESUS, c.loot.lootAlertTier)
         assertFalse(c.slayer.slayerTracker || c.slayer.slayerBossAlert)
 
         c.hud.run {
             assertEquals(mapOf("zealot-tracker" to DsModConfig.Position(0.25f, 0.5f, 1.5f), "dragon-timer" to DsModConfig.Position(0.75f, 0.125f, 0.75f)), positions)
             assertEquals(Theme.VANILLA, theme)
-            assertFalse(dragInChat || background)
+            assertFalse(chatHudEditor || background)
             assertEquals(1.75f, scale)
         }
 
@@ -141,7 +142,7 @@ class ConfigFileTest {
         val c = DsModConfig()
         c.general.cameraDistance = 9f
         c.inventory.inventoryStyle = SlotStyle(gem = true)
-        c.hud.positions["boss-drops"] = DsModConfig.Position(0.5f, 0.5f, 2f)
+        c.hud.positions["boss-fight-tracker"] = DsModConfig.Position(0.5f, 0.5f, 2f)
         ConfigFile(path).save(c)
         val back = ConfigFile(path).load()
         assertEquals(ConfigFile.encode(c), ConfigFile.encode(back))

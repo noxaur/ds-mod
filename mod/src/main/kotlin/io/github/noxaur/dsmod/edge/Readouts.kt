@@ -51,7 +51,7 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
         }
 
     /**
-     * While the chat is open for Drag In Chat, a feature that is on and has nothing to show stands in as its title
+     * While the chat is open for Chat HUD Editor, a feature that is on and has nothing to show stands in as its title
      * alone, which the chat outlines, so it can be placed from there too. Only those blocks are handed over again.
      */
     var placeholders = false

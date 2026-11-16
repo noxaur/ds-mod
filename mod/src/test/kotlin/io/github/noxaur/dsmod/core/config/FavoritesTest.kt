@@ -6,19 +6,19 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class FavoritesTest {
-    private val all = listOf("general.fullbright", "end.zealotTracker", "loot.lootAlerts", "slayer.slayerTracker")
+    private val all = listOf("general.fullbright", "end.zealotTracker", "loot.rareDropAlert", "slayer.slayerTracker")
 
     @Test
     fun `a press stars a setting and a second press unstars it`() {
-        val starred = Favorites.toggle(emptyList(), "loot.lootAlerts")
-        assertEquals(listOf("loot.lootAlerts"), starred)
-        assertEquals(emptyList(), Favorites.toggle(starred, "loot.lootAlerts"))
+        val starred = Favorites.toggle(emptyList(), "loot.rareDropAlert")
+        assertEquals(listOf("loot.rareDropAlert"), starred)
+        assertEquals(emptyList(), Favorites.toggle(starred, "loot.rareDropAlert"))
     }
 
     @Test
     fun `favorites keep the settings' own order, not the order they were starred in`() {
-        val starred = listOf("slayer.slayerTracker", "general.fullbright", "loot.lootAlerts")
-        assertEquals(listOf("general.fullbright", "loot.lootAlerts", "slayer.slayerTracker"), Favorites.pick(all, starred) { it })
+        val starred = listOf("slayer.slayerTracker", "general.fullbright", "loot.rareDropAlert")
+        assertEquals(listOf("general.fullbright", "loot.rareDropAlert", "slayer.slayerTracker"), Favorites.pick(all, starred) { it })
     }
 
     @Test
@@ -41,16 +41,16 @@ class FavoritesTest {
     @Test
     fun `a row unstarred in Favorites stays until the player leaves`() {
         val view = FavoritesView()
-        val starred = listOf("general.fullbright", "loot.lootAlerts")
+        val starred = listOf("general.fullbright", "loot.rareDropAlert")
         val after = view.toggle(starred, "general.fullbright", here = true)
-        assertEquals(listOf("loot.lootAlerts"), after)
+        assertEquals(listOf("loot.rareDropAlert"), after)
         // The row stays in place, so a quick second press lands on it and stars it again.
-        assertEquals(listOf("general.fullbright", "loot.lootAlerts"), view.rows(all, after) { it })
+        assertEquals(listOf("general.fullbright", "loot.rareDropAlert"), view.rows(all, after) { it })
         val again = view.toggle(after, "general.fullbright", here = true)
-        assertEquals(listOf("loot.lootAlerts", "general.fullbright"), again)
-        assertEquals(listOf("general.fullbright", "loot.lootAlerts"), view.rows(all, again) { it })
+        assertEquals(listOf("loot.rareDropAlert", "general.fullbright"), again)
+        assertEquals(listOf("general.fullbright", "loot.rareDropAlert"), view.rows(all, again) { it })
 
-        view.toggle(again, "loot.lootAlerts", here = true).let { left ->
+        view.toggle(again, "loot.rareDropAlert", here = true).let { left ->
             view.left()
             assertEquals(listOf("general.fullbright"), view.rows(all, left) { it })
         }
@@ -59,9 +59,9 @@ class FavoritesTest {
     @Test
     fun `Favorites lists each starred row under its group, a heading's switch as a row, and not a row under another`() {
         val tree = SettingsTree.sections(DsModConfig())
-        val hits = Favorites.hits(tree, listOf("slotLockKey", "etherwarpOutline", "etherwarpWidth", "slotLock", "lootAlerts", "gone"))
+        val hits = Favorites.hits(tree, listOf("slotLockKey", "etherwarpOutline", "etherwarpWidth", "slotLock", "rareDropAlert", "gone"))
         assertEquals(
-            listOf("Etherwarp" to listOf("etherwarpOutline", "etherwarpWidth"), "Protection" to listOf("slotLock"), "Loot" to listOf("lootAlerts")),
+            listOf("Etherwarp" to listOf("etherwarpOutline", "etherwarpWidth"), "Protection" to listOf("slotLock"), "Loot" to listOf("rareDropAlert")),
             hits.map { it.group.name to it.rows.map(Setting::id) },
         )
         assertEquals(listOf("General", "Inventory", "Combat"), hits.map { tree[it.section].name })
@@ -78,7 +78,7 @@ class FavoritesTest {
     @Test
     fun `a setting unstarred in its own category leaves Favorites at once`() {
         val view = FavoritesView()
-        val after = view.toggle(listOf("general.fullbright", "loot.lootAlerts"), "general.fullbright", here = false)
-        assertEquals(listOf("loot.lootAlerts"), view.rows(all, after) { it })
+        val after = view.toggle(listOf("general.fullbright", "loot.rareDropAlert"), "general.fullbright", here = false)
+        assertEquals(listOf("loot.rareDropAlert"), view.rows(all, after) { it })
     }
 }

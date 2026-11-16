@@ -19,7 +19,7 @@ import net.minecraft.client.gui.screens.TitleScreen
 import kotlin.io.path.readText
 
 /**
- * Works Boss Beacon's Beam Timing row with the real mouse: a click adds a section, a press and drag draws one, a
+ * Works Protector Spawn Beam's Beam Timing row with the real mouse: a click adds a section, a press and drag draws one, a
  * section drawn or stretched into its neighbor joins it and comes apart again when the mouse backs off, and a right
  * click removes one. Checks each step in the settings, that During the Fight turns on from its row, that closing
  * saves both, and that the changed marker puts them back. Read the screenshots in both themes.
@@ -31,8 +31,8 @@ class BeamTimingTest : FabricClientGameTest {
         val end = DsModClient.settings.end
         try {
             open(context, SettingsTabs(at("The End")))
-            // Boss Beacon's button opens its settings, unless an earlier test left them open.
-            val beacon = driver.spot("bossBeacon")
+            // Protector Spawn Beam's button opens its settings, unless an earlier test left them open.
+            val beacon = driver.spot("protectorSpawnBeam")
             if (context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).spot("beamSections") == null }) driver.click(beacon.extraX + 7, beacon.controlY + 6)
             check(end.beamSections == listOf(Section(175, 200))) { "The settings start with ${end.beamSections}" }
             val span = driver.spot("beamSections")
