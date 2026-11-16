@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.player.ModelTarget
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
+import io.github.noxaur.dsmod.edge.PlayerModels
 import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
@@ -12,6 +13,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.CameraType
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
+import net.minecraft.client.renderer.entity.player.AvatarRenderer
 import net.minecraft.client.renderer.entity.state.AvatarRenderState
 import net.minecraft.util.Mth
 import java.awt.image.BufferedImage
@@ -128,21 +130,29 @@ class PlayerModelTest : FabricClientGameTest {
                 context.waitTicks(5)
                 moved(spinning, shot("player-model-spin-later")).let { check(it > still) { "Spin moved only $it pixels" } }
 
-                // While it spins, the model faces where the spin says, however the player's body and head are turned.
+                // While it spins, the model faces where the spin says as it is drawn, however the body is turned, and the
+                // head turns with it. Without a spin both follow the player.
                 fun facing(body: Float) = context.computeOnClient<Pair<Float, Float>, Nothing> { client ->
                     val player = client.player!!
                     player.yBodyRot = body
                     player.yBodyRotO = body
-                    val state = client.entityRenderDispatcher.getRenderer(player).createRenderState(player, 1f) as AvatarRenderState
-                    state.bodyRot to state.yRot
+                    player.yHeadRot = body + 40f
+                    player.yHeadRotO = body + 40f
+                    val renderer = client.entityRenderDispatcher.getRenderer(player)
+                    val state = renderer.createRenderState(player, 1f) as AvatarRenderState
+                    val model = (renderer as AvatarRenderer<*>).model
+                    model.setupAnim(state)
+                    PlayerModels.facing(state, state.bodyRot) to model.head.yRot
                 }
                 settings.modelSpin = 0.01f
                 val (ahead, head) = facing(0f)
                 val (turned, _) = facing(90f)
                 check(abs(Mth.wrapDegrees(turned - ahead)) < 1f) { "Turning the body 90 degrees turned the spinning model from $ahead to $turned" }
-                check(head == 0f) { "The spinning model's head turned $head degrees from its body" }
+                check(head == 0f) { "The spinning model's head turned $head radians from its body" }
                 settings.modelSpin = 0f
-                check(abs(Mth.wrapDegrees(facing(90f).first - facing(0f).first - 90f)) < 1f) { "Without a spin the model did not follow the body" }
+                val (followed, followedHead) = facing(0f)
+                check(abs(Mth.wrapDegrees(facing(90f).first - followed - 90f)) < 1f) { "Without a spin the model did not follow the body" }
+                check(followedHead != 0f) { "Without a spin the head did not follow the player's look" }
                 settings.modelPose = ModelPose.GAME
 
                 // The mannequin stands on the right of the frame. Only Me leaves it as the game draws it, and
@@ -161,6 +171,25 @@ class PlayerModelTest : FabricClientGameTest {
                 context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }
                 context.waitTicks(2)
                 context.takeScreenshot("player-model-inventory")
+                // The inventory turns the model toward the mouse, and a spin still turns it there. The mouse stays put.
+                val box = context.computeOnClient<IntArray, Nothing> { client ->
+                    val k = client.window.guiScale.toInt()
+                    val left = (client.window.guiScaledWidth - 176) / 2
+                    val top = (client.window.guiScaledHeight - 166) / 2
+                    intArrayOf((left + 26) * k, (top + 8) * k, 49 * k, 70 * k)
+                }
+                fun model(name: String) = shot(name).getSubimage(box[0], box[1], box[2], box[3])
+                settings.modelPose = ModelPose.T_POSE
+                settings.modelTiltSideways = 0f
+                context.waitTicks(2)
+                val held = moved(model("player-model-inventory-still"), model("player-model-inventory-still-later"))
+                check(held < 50) { "With the mouse still and no spin, the inventory's model moved $held pixels" }
+                settings.modelSpin = 0.5f
+                val spinStart = model("player-model-inventory-spin")
+                context.waitTicks(5)
+                val spun = moved(spinStart, model("player-model-inventory-spin-later"))
+                check(spun > 500) { "Spin turned the inventory's model by only $spun pixels" }
+                settings.modelSpin = 0f
                 // The rows, with the changed ones marked.
                 context.setScreen { SettingsScreen(null, SettingsTabs(at("General")), reveal = "resetPlayerModel") }
                 context.waitTicks(2)

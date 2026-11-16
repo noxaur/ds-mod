@@ -72,11 +72,9 @@ class PlayerPreview : Editor {
         state.nameTag = null
         state.scoreText = null
         if (state is AvatarRenderState) {
-            // Facing the viewer and looking ahead, unless the spin already says where the model faces.
-            if (!PlayerModels.spinning) {
-                state.bodyRot = 180f
-                state.yRot = 0f
-            }
+            // Facing the viewer and looking ahead. A spin turns it from there as it is drawn.
+            state.bodyRot = 180f
+            state.yRot = 0f
             state.xRot = 0f
             state.boundingBoxWidth /= state.scale
             state.boundingBoxHeight /= state.scale

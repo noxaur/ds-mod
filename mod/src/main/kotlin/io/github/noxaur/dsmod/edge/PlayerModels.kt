@@ -30,14 +30,11 @@ object PlayerModels {
         (state.id == Minecraft.getInstance().player?.id || settings.modelTarget == ModelTarget.EVERYONE && state.id > 0)
 
     /**
-     * While the model spins, it faces where the spin has got to and nowhere else, so walking and looking around
-     * neither speed it up nor hold it back. The head turns with the body, and still looks up and down.
+     * The way the model faces: while it spins, where the spin has got to and nowhere else, so walking, looking around
+     * and the inventory's following of the mouse neither speed it up nor hold it back. Otherwise the game's [bodyRot].
      */
-    fun face(state: AvatarRenderState) {
-        if (!spinning || !applies(state)) return
-        state.bodyRot = ModelShape.spin(System.nanoTime(), settings.modelSpin)
-        state.yRot = 0f
-    }
+    fun facing(state: AvatarRenderState, bodyRot: Float): Float =
+        if (spinning && applies(state)) ModelShape.spin(System.nanoTime(), settings.modelSpin) else bodyRot
 
     /** Whether the player's own model spins, so its facing is the spin's. */
     val spinning: Boolean get() = settings.modelSpin != 0f && DsModClient.runs<PlayerModel>()
@@ -54,7 +51,7 @@ object PlayerModels {
 
     /**
      * Runs after the game has turned the model to face where the player faces, with the feet at the origin and the
-     * face toward -z, turned by [face] while it spins. Every turn is about the point the model stands on, so a tilted
+     * face toward -z, turned by [facing] while it spins. Every turn is about the point the model stands on, so a tilted
      * model leans with its feet on the ground and spins like a top, and a flipped one stands on its head and leans
      * from there.
      */
@@ -75,12 +72,15 @@ object PlayerModels {
     }
 
     /**
-     * Holds the limbs in the chosen pose, after the game has posed them for this frame. The armor's models are posed
-     * from the same state, so the armor and the held items follow the limbs.
+     * Holds the limbs in the chosen pose, after the game has posed them for this frame, and turns the head with the
+     * body while it spins, though it still looks up and down. The armor's models are posed from the same state, so the
+     * armor and the held items follow.
      */
     fun pose(model: HumanoidModel<*>, state: AvatarRenderState) {
-        val limbs = settings.modelPose.limbs ?: return
-        if (!applies(state)) return
+        val limbs = settings.modelPose.limbs
+        if (limbs == null && !spinning || !applies(state)) return
+        if (spinning) model.head.yRot = 0f
+        if (limbs == null) return
         turn(model.rightArm, limbs.rightArm)
         turn(model.leftArm, limbs.leftArm)
         turn(model.rightLeg, limbs.rightLeg)

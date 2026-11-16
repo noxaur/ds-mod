@@ -154,8 +154,7 @@ gate edge.mixin.PerspectiveKeyMixin fef175750217
     approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.PlayerPoseMixin 2dacd2ed0a3a
     hooks HumanoidModel.setupAnim
-gate edge.mixin.PlayerShapeMixin 0fd0e6a03cf8
-    hooks AvatarRenderer.extractRenderState
+gate edge.mixin.PlayerShapeMixin b04e55336509
     hooks AvatarRenderer.setupRotations
 gate edge.mixin.RecipeButtonMixin draws
     hooks ImageButton.extractContents
