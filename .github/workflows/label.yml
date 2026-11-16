@@ -20,15 +20,15 @@ jobs:
       - uses: actions/github-script@v9
         with:
           script: |
-            const labels = { feat: 'enhancement', fix: 'bug', docs: 'documentation' }
+            const labels = new Map([['feat', 'enhancement'], ['fix', 'bug'], ['docs', 'documentation']])
             const item = context.payload.pull_request ?? context.payload.issue
-            const label = labels[/^(\w+)(\([^)]*\))?!?:/.exec(item.title)?.[1]]
+            const label = labels.get(/^(\w+)(\([^)]*\))?!?:/.exec(item.title)?.[1])
             // A title without one of these types keeps its labels, such as the bug label of the issue form.
             if (!label) return
             const { owner, repo } = context.repo
             const issue_number = item.number
             const current = item.labels.map(l => l.name)
-            for (const stale of Object.values(labels).filter(l => l !== label && current.includes(l))) {
+            for (const stale of [...labels.values()].filter(l => l !== label && current.includes(l))) {
               await github.rest.issues.removeLabel({ owner, repo, issue_number, name: stale })
             }
             if (!current.includes(label)) {
