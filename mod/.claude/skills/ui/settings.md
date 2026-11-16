@@ -6,7 +6,6 @@ ds-mod's settings screen draws every setting from one tree, `SettingsTree` in `c
 
 1. Add the field to its class in `DsModConfig` with a default, and nothing else: no annotation, no name. The default is what the changed marker and reset use, read from a fresh `DsModConfig()`, so write it nowhere else. The field's name is its key in the player's config file, so never rename one that shipped. A new class of values needs `@Serializable`.
 2. Add one line to `SettingsTree` in its section and group, with a kind from the table below. Write no drawing or input code.
-3. Run `SettingsTreeTest`. It fails on a saved field that no row reaches, on two rows that reach one field, on a repeated id, and on a name or a description worded against the ui skill.
 
 A field that no row should edit goes on `SettingsTree.STORED` with the reason. It is empty, because every field the player sets has a row: a list of things the player made is an Items row, and a canvas is a Panel row. A row that edits several fields at once names the rest with `Bind.spanning`.
 

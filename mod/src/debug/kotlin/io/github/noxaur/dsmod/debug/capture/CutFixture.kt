@@ -31,6 +31,7 @@ import kotlinx.serialization.json.long
 import net.minecraft.network.chat.Component
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.useLines
 
 /**
@@ -141,6 +142,13 @@ fun cutFixture(
     // The carried state was posted on earlier ticks the window does not keep, so it has no tick of its own.
     val lines = (state.map { Captured(origin + (seconds.start * 1000).toLong(), it) } + events)
         .map { captureLine(it.time, redactor.redact(it.event), it.tick) }
+    // A name the redactor did not know here, but another capture beside this one shows, is caught before the captures go.
+    val others = capture.toAbsolutePath().parent.listDirectoryEntries("*.jsonl")
+    val leaked = PlayerNames.leaked(PlayerNames.of(capture, *others.toTypedArray()), lines.joinToString("\n"))
+    check(leaked.isEmpty()) {
+        "The fixture would hold the player names $leaked, which a capture in ${capture.parent} shows. Teach PlayerNames " +
+            "where they stand from a capture that shows the line, then cut the fixture again."
+    }
     Files.createDirectories(fixture.parent)
     Files.write(fixture, lines)
     return lines.size to redactor.count
