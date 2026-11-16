@@ -61,3 +61,7 @@ A rarity style has glows that change opacity pixel by pixel, which as fills woul
 The art depends on the slot under it: a faint tint vanishes on Minecraft's gray and a dim one sinks into a dark resource pack's black. The mod can't see the pixels under a slot, so it reads the chest texture's slot from the selected resource packs when a container screen opens and the packs have changed. The hotbar lies over the world, so its art is always the dark kind.
 
 Fabric attaches HUD elements before or after the whole hotbar, so the art behind the hotbar's items comes from `HudHotbarMixin`, which runs as vanilla is about to draw each item, and the gems come after it as a HUD element.
+
+## A cooldown is drawn from its start and end
+
+A slot's cooldown is handed to `Slots` as the times it starts and ends, and the layer works out each frame's wash and seconds from the clock, because readouts refresh four times a second and a wash that stepped at that rate would stutter. It shows on the hotbar whatever Rarity Marks' switch for marks there says, because that switch is about rarity art.

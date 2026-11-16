@@ -10,6 +10,7 @@ import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.HeadPlaced
+import io.github.noxaur.dsmod.core.game.Hit
 import io.github.noxaur.dsmod.core.game.PetNear
 import io.github.noxaur.dsmod.core.game.FrameRate
 import io.github.noxaur.dsmod.core.game.PingMeasured
@@ -136,6 +137,7 @@ class FeatureReplayTest {
         is ActionBar -> "(action bar) ${event.text.plain}"
         is EntityDied -> "(died) ${event.name.plain}"
         is PetNear -> "(pet near) ${event.name.plain}"
+        is Hit -> "(you hit) ${event.entity}"
         is ServerTime -> "(server time) tick ${event.gameTime}"
         is PingMeasured -> "(ping) ${event.millis} ms"
         is FrameRate -> "(frame rate) ${event.fps} fps"
@@ -171,6 +173,11 @@ class FeatureReplayTest {
                                 val item = name(game.container.slots[slot]!!)
                                 if (mark.hide) {
                                     appendLine("             + slot $slot: hidden, on $item")
+                                    continue
+                                }
+                                val cooldown = mark.cooldown
+                                if (cooldown != null) {
+                                    appendLine("             + slot $slot: cooldown until +%.1fs on %s".format(Locale.ROOT, (cooldown.end - start) / 1000.0, item))
                                     continue
                                 }
                                 val shape = if (mark.rarity) "rarity" else "fill"

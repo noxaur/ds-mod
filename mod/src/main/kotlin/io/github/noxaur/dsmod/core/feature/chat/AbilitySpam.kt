@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.chat
 
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.game.Abilities
 import io.github.noxaur.dsmod.core.game.Area
 import kotlin.reflect.KMutableProperty0
 
@@ -10,6 +11,6 @@ import kotlin.reflect.KMutableProperty0
  */
 class AbilitySpam(toggle: KMutableProperty0<Boolean>) : Feature("ability-spam", toggle, Area.ANYWHERE) {
     init {
-        line("This ability is on cooldown for ") { hide() }
+        line(Abilities.REFUSAL) { hide() }
     }
 }

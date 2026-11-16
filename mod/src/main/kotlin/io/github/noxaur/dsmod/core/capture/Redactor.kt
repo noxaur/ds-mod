@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.FrameRate
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.HeadPlaced
+import io.github.noxaur.dsmod.core.game.Hit
 import io.github.noxaur.dsmod.core.game.PetNear
 import io.github.noxaur.dsmod.core.game.PingMeasured
 import io.github.noxaur.dsmod.core.game.Item
@@ -155,7 +156,7 @@ class Redactor(private val names: Set<String>) {
         is ContainerOpened -> event.copy(title = event.title?.named())
         is SlotChanged -> event.copy(item = event.item?.let(::item))
         WorldChanged -> event
-        is HeadPlaced, is ServerTime, is PingMeasured, is FrameRate -> event
+        is HeadPlaced, is Hit, is ServerTime, is PingMeasured, is FrameRate -> event
         is ActionBar -> ActionBar(event.text.named())
         is EntityDied -> event.copy(name = event.name.named())
         is PetNear -> PetNear(event.name.named(), item(event.head))
