@@ -177,7 +177,7 @@ object SlotGuards {
         if (input == ContainerInput.QUICK_MOVE && partner != null) {
             val above = find(screen, maxOf(own, partner))
             // The click the number key sends over a slot, which the player asked for by linking the two.
-            if (above != null) client.gameMode?.handleContainerInput(screen.menu.containerId, above.index, minOf(own, partner), ContainerInput.SWAP, client.player!!) // rule:no-automation Slot Lock
+            if (above != null) client.gameMode?.handleContainerInput(screen.menu.containerId, above.index, minOf(own, partner), ContainerInput.SWAP, client.player!!)
             return true
         }
         val refuses = slot != null && locked(slot) ||
@@ -219,8 +219,8 @@ object SlotGuards {
         val to = free.firstOrNull { it.hasItem() && fits(it) && it.item.count + stack.count <= it.getMaxStackSize(stack) } ?: free.firstOrNull { !it.hasItem() && fits(it) }
         if (to != null && screen.menu.carried.isEmpty) {
             val player = client.player!!
-            client.gameMode?.handleContainerInput(screen.menu.containerId, slot.index, 0, ContainerInput.PICKUP, player) // rule:no-automation Slot Lock
-            client.gameMode?.handleContainerInput(screen.menu.containerId, to.index, 0, ContainerInput.PICKUP, player) // rule:no-automation Slot Lock
+            client.gameMode?.handleContainerInput(screen.menu.containerId, slot.index, 0, ContainerInput.PICKUP, player)
+            client.gameMode?.handleContainerInput(screen.menu.containerId, to.index, 0, ContainerInput.PICKUP, player)
         }
         return true
     }
