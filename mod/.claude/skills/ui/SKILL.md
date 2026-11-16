@@ -35,14 +35,13 @@ A feature lives in `core` and cannot call a layer. It returns its HUD block from
 | Surface | Model in `core` | Hand it to |
 | --- | --- | --- |
 | Chat | `text { }` | `Chat.send`, `Chat.notice` |
-| HUD | `hud("Header") { row(..); bar(..); items(..) }` in a `HudGroup` | `Hud.show`, `Hud.hide` |
+| HUD | `HudBlock`, which a feature builds with `block { row(..); bar(..); items(..) }`, in a `HudGroup` | `Hud.show`, `Hud.hide` |
 | Alert | `text { }` | `Alerts.title`, `Alerts.actionBar`, `Alerts.sound` |
 | Container overlay | `SlotMark` | `Slots.mark`, `Slots.clear` |
-| Tooltip | `text { }` per line | `Tooltips.add` |
 | World | `Waypoint`, `BlockBox`, `Path`, `Ring` | `World.show`, `World.hide` |
 | Own screen | `Theme` | The kit in `edge/ui` |
 
-A type in `surfaces.md` that no layer draws yet is added to that surface's layer, with its case in `SurfacesTest`. Edits to the server's HUD have no layer yet, so the first feature there builds it the same way.
+A type in `surfaces.md` that no layer draws yet is added to that surface's layer, with its case in `SurfacesTest`. Tooltips and edits to the server's HUD have no layer yet, so the first feature there builds it the same way.
 
 ## Draw chrome with the kit
 

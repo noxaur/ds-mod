@@ -1,7 +1,5 @@
 package io.github.noxaur.dsmod.core.text
 
-import java.util.Locale
-
 /** What a piece of text means to the player. A feature picks the role, and the role owns the color. */
 enum class Role(val rgb: Int) {
     BODY(0xDBE6FB),
@@ -54,7 +52,7 @@ class TextBuilder {
 
     fun body(text: String) = add(text, Role.BODY)
     fun value(text: String) = add(text, Role.VALUE)
-    fun value(number: Long) = add(String.format(Locale.US, "%,d", number), Role.VALUE)
+    fun value(number: Long) = add(grouped(number), Role.VALUE)
     fun muted(text: String) = add(text, Role.MUTED)
     fun action(text: String) = add(text, Role.ACTION)
     fun good(text: String) = add(text, Role.GOOD)

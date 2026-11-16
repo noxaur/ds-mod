@@ -22,7 +22,7 @@ Internal docs record the decisions, the constraints and the traps that the code 
 - [UI](internals/ui.md): text roles, the layers, the kit and its themes, the HUD and world marks.
 - [Settings](internals/settings.md): the tree as the only schema and why MoulConfig went, the config file and its keys, and favorites in the screen.
 - [Menus](internals/menus.md): how the server's menus are redrawn, and the controls Better UI adds to them.
-- [Input and the camera](internals/input.md): Free Look, Animations, Command Binds and Slot Lock, and where each meets Minecraft's input.
+- [Input and the camera](internals/input.md): Free Look, Animations, Command Binds and Slot Lock, where each meets Minecraft's input, and why the user audits every place the mod acts for the player.
 - [Testing and CI](internals/testing.md): replay tests, the perf caps, game tests behind the developer, and CI's time limit.
 
 ### Runbooks

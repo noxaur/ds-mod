@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.container.Filler
+import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.MenuTrail
 import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
@@ -33,7 +34,7 @@ object MenuBack {
     private var menu: AbstractContainerMenu? = null
     private var back: String? = null
 
-    private val enabled get() = TabBar.on && DsModClient.settings.betterUi.backButtons
+    private val enabled get() = TabBar.on && DsModClient.runs<BackButtons>()
 
     fun register() {
         ClientSendMessageEvents.COMMAND.register { trail.sent(System.currentTimeMillis(), it) }
@@ -77,6 +78,6 @@ object MenuBack {
     fun send(command: String) {
         val connection = Minecraft.getInstance().connection ?: return
         trail.sent(System.currentTimeMillis(), command)
-        connection.sendCommand(command) // rule:no-automation Menu Button and Command Binds: one command, on the player's click
+        connection.sendCommand(command)
     }
 }

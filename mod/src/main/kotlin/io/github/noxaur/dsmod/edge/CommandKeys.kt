@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.feature.general.CommandBinds
 import io.github.noxaur.dsmod.core.input.BindMatcher
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.CommandBind.Message
@@ -22,7 +23,7 @@ object CommandKeys {
     private lateinit var settings: DsModConfig.General
     private val matcher = BindMatcher()
 
-    private val on: Boolean get() = DsModClient.active && settings.commandBinds
+    private val on: Boolean get() = DsModClient.runs<CommandBinds>()
 
     fun register(settings: DsModConfig.General) {
         this.settings = settings
@@ -59,8 +60,8 @@ object CommandKeys {
     private fun send(bind: CommandBind) {
         val connection = Minecraft.getInstance().connection ?: return
         when (val message = bind.message) {
-            is Message.Command -> connection.sendCommand(message.text) // rule:no-automation Command Binds
-            is Message.Chat -> connection.sendChat(message.text) // rule:no-automation Command Binds
+            is Message.Command -> connection.sendCommand(message.text)
+            is Message.Chat -> connection.sendChat(message.text)
             null -> {}
         }
     }

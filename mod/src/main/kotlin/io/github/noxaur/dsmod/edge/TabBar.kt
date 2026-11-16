@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.ItemSearch
@@ -12,6 +13,7 @@ import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitButton
 import io.github.noxaur.dsmod.edge.ui.KitTab
 import io.github.noxaur.dsmod.edge.ui.KitTextField
+import java.util.BitSet
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
@@ -26,7 +28,6 @@ import net.minecraft.resources.Identifier
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
-import java.util.BitSet
 
 /**
  * Menu Tabs, under Better UI: the player's tabs along the top and bottom of every menu and of the inventory, as
@@ -40,7 +41,7 @@ object TabBar {
     /** Whether Better UI is on, which every control it holds asks first. */
     val on: Boolean get() = DsModClient.active && settings.enabled
 
-    private val shown get() = on && settings.menuTabs
+    private val shown get() = on && DsModClient.runs<MenuTabs>()
 
     private const val SEARCH_LENGTH = 64
 

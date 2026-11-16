@@ -18,7 +18,6 @@ We can't compromise on these.
 - Before adding complexity for a speculative or vanishingly unlikely race or edge case, explain the concrete failure mode, likelihood and complexity cost to the user and get their buy-in.
 - If a short request has two possible meanings, ask one question before you start.
 - Call a bug fixed only when a test, log or capture shows it.
-- Follow the server's rules: no macros, scripts or other automated actions. Auto-clicking is allowed under 10 CPS, and only while the player is actively moving. The server's owner supports DragSim Utils, so a feature that mod has may send or block input for the player, and no other feature may.
 - A rule in prose gets skipped, so turn a repeated mistake into a check. See Rules.
 
 
@@ -63,15 +62,15 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | Rule | Enforced by |
 | --- | --- |
 | `core` imports nothing from Minecraft, Fabric or `edge` | `core-is-pure` in `mod/…/Rules.kt` |
-| The release build sends for the player only in a feature DragSim Utils has | `no-automation` in `mod/…/Rules.kt` |
-| The release build runs only on dragsim.co, unless the player turns DragSim Only off | `Game` gates every feature, `GameTest`, `DragSimTest` and the game test `OnlyOnDragSimTest` |
+| Each place the release build sends or refuses input for the player is one the user audited | `InputSitesTest` against `mod/input-sites.txt`, which only the user edits |
+| The release build runs only on dragsim.co, unless the player turns DragSim Only off | `Game` gates every feature in `core`, `SwitchesTest` makes the edge ask `Feature.runs`, and `GameTest`, `DragSimTest` and the game test `OnlyOnDragSimTest` |
 | A feature fires only in the area it names | `Feature` takes an `Area` and `Game` gates on it. `FeatureReplayTest` replays each fixture outside the area |
 | A feature reads no area for itself, from the tab list or the sidebar, and sits in its area's folder | `area-by-declaration` in `mod/…/Rules.kt`, and `RulesTest` |
 | The mod's text and colors come from its text layer | `text-by-role` in `mod/…/Rules.kt` |
 | The mod's shapes are drawn by its kit, in the player's theme | `draw-with-kit` in `mod/…/Rules.kt` |
 | Release code cannot use debug tools | The `main` and `debug` source sets |
 | Raw captures stay out of git | They are written to `mod/run/`, which is git-ignored |
-| A fixture holds no player name from a capture on this machine | `FixtureLeakTest` |
+| A fixture holds no player name from a capture on this machine, and an alias wherever a player's name stands | `FixtureLeakTest` |
 | Every feature shows what its transcript says | `FeatureReplayTest` replays each feature's fixtures |
 | A feature that reads nothing from the server has a game test | `FeatureReplayTest` |
 | Every feature has a section in the player docs | `RulesTest` |

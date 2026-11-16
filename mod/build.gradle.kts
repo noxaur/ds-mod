@@ -265,6 +265,7 @@ tasks.test {
     timeout = Duration.ofSeconds(30)
     // RulesTest reads the sources, so a source change must rerun it.
     inputs.dir("src")
+    inputs.file("input-sites.txt")
     // Print the whole failure, so a broken rule shows its fix in the terminal.
     testLogging {
         events("failed")

@@ -40,6 +40,14 @@ A Shift click lands wherever the menu's own code finds room, and each menu order
 
 The swap-hands key is not guarded. On dragsim.co it opens the server's menu and swaps nothing.
 
+## The user audits each place the mod acts for the player
+
+Whether the mod may send input for the player, or refuse the player's own, is the user's decision, made by reading the code. A lint over the source caught only the method names its author thought of, and an exemption comment let whoever wrote the line approve it. So `InputSitesTest` reads the compiled release classes, where an alias, a wrapper, a lambda or a call split over lines is the same instruction, and fails on any site missing from `mod/input-sites.txt`.
+
+A gate is audited as a whole class, because when it acts matters as much as the line that acts. Its hash leaves out line numbers and local names, so moving code keeps the audit and changing it does not. A call into a gate that acts, or a read of one of its fields, from outside the gates is listed without a hash, so a new trigger needs an audit and an edit to an old one does not. It counts whichever of the gate's methods it calls, because tracing which ones send missed callbacks kept in a field or built by reference. A gate that only refuses a click or adds a chat link needs no list of callers, because the player still makes the move. Every mixin is a gate, since a mixin can rewrite Minecraft's code without calling anything the scan knows.
+
+Agents push with the user's credentials, so no check can tell the user's edit to the file from an agent's. A permission rule keeps agents out of the file, and the user's review of the pull request is the audit.
+
 ## Private fields are read through accessor mixins
 
 Minecraft keeps an open container's position and size on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the four fields, and the slot under the mouse. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on. `ChatScreenAccessor`, `CommandSuggestionsAccessor` and `SuggestionsListAccessor` read where the command suggestions and a command's usage are drawn, which Drag In Chat leaves the mouse to.

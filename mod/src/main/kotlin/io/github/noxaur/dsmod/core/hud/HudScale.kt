@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.hud
 
+import io.github.noxaur.dsmod.core.text.amount
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.roundToInt
@@ -26,7 +27,7 @@ object HudScale {
     }
 
     /** [scale] as the HUD editors show it, such as `1.25x`. */
-    fun label(scale: Float) = String.format(java.util.Locale.ROOT, "%.2f", scale).trimEnd('0').trimEnd('.') + "x"
+    fun label(scale: Float) = amount(scale.toDouble(), 2, trim = true) + "x"
 
     private fun pixels(scale: Float, unit: Float) = maxOf(1, (scale * unit).roundToInt())
 }

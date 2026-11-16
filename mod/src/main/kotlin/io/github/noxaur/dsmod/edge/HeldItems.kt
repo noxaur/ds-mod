@@ -3,9 +3,12 @@ package io.github.noxaur.dsmod.edge
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.core.hand.Ease
 import io.github.noxaur.dsmod.core.hand.HeldItem
 import io.github.noxaur.dsmod.core.hand.SwingStyle
+import kotlin.math.sin
+import kotlin.math.sqrt
 import net.minecraft.client.Minecraft
 import net.minecraft.client.model.effects.SpearAnimations
 import net.minecraft.core.component.DataComponents
@@ -14,8 +17,6 @@ import net.minecraft.world.entity.HumanoidArm
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.ProjectileWeaponItem
-import kotlin.math.sin
-import kotlin.math.sqrt
 
 private const val PI = Math.PI.toFloat()
 
@@ -32,7 +33,7 @@ private const val BLOCK_LIFT = 0.12f
  */
 object HeldItems {
     private val settings: DsModConfig.General get() = DsModClient.settings.general
-    private val on: Boolean get() = DsModClient.active && settings.animations
+    private val on: Boolean get() = DsModClient.runs<Animations>()
     private val steady: Boolean get() = on && settings.noEquipReset
 
     /** How far into the block-hit pose the main hand is. */

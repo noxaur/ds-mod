@@ -89,6 +89,9 @@ object Kit {
     const val TAB_HEIGHT = 21
     const val CHECKBOX_SIZE = 10
     const val DIVIDER_HEIGHT = 2
+
+    /** The height of a line of text. */
+    const val LABEL_HEIGHT = 8
     const val GAP = 4
     const val INSET = 7
     const val INVENTORY_WIDTH = 176

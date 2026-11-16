@@ -151,7 +151,12 @@ object PlayerNames {
      * place, as a staff account is named after the server: a name the sidebar's title, its `⏣` place, the tab list's
      * area or its header also shows would otherwise turn hundreds of the server's lines into `PlayerN`.
      */
-    fun of(vararg captures: Path): Set<String> {
+    fun of(vararg captures: Path): Set<String> = learn(captures).let { (names, server) -> names.filterTo(HashSet()) { it !in server } }
+
+    /** Every name a rule finds where a player's name stands in [captures], those the server also writes as its own included. */
+    fun found(vararg captures: Path): Set<String> = learn(captures).first
+
+    private fun learn(captures: Array<out Path>): Pair<Set<String>, Set<String>> {
         val names = HashSet<String>()
         val server = HashSet<String>()
         for (capture in captures) capture.useLines { lines ->
@@ -182,6 +187,6 @@ object PlayerNames {
                 }
             }
         }
-        return names.filterTo(HashSet()) { isName(it) && it !in server }
+        return names.filterTo(HashSet(), ::isName) to server
     }
 }

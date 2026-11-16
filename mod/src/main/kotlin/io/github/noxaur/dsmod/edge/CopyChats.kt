@@ -3,13 +3,18 @@ package io.github.noxaur.dsmod.edge
 import com.google.gson.JsonArray
 import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.serialization.JsonOps
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.feature.chat.CopyChat
 import io.github.noxaur.dsmod.core.text.FormatCodes
 import io.github.noxaur.dsmod.core.text.StyledRun
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Selection
 import io.github.noxaur.dsmod.edge.mixin.ChatComponentAccessor
 import io.github.noxaur.dsmod.edge.ui.Kit
+import java.util.IdentityHashMap
+import java.util.Optional
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.roundToInt
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
@@ -37,11 +42,6 @@ import org.joml.Matrix3x2f
 import org.joml.Matrix3x2fc
 import org.joml.Vector2f
 import org.lwjgl.glfw.GLFW
-import java.util.IdentityHashMap
-import java.util.Optional
-import kotlin.math.ceil
-import kotlin.math.floor
-import kotlin.math.roundToInt
 
 /**
  * Copy Chat. The right button selects messages of the open chat the way a file manager selects files: a press
@@ -127,7 +127,7 @@ object CopyChats {
     /** One row of chat as Minecraft lays it out: [top] and [bottom] are in the space [pose] maps to the screen. */
     private class Row(val part: Part, val pose: Matrix3x2f, val top: Int, val bottom: Int)
 
-    fun register(settings: DsModConfig.Chat) {
+    fun register() {
         // Fabric drops a screen's listeners on every init, so they are added again here.
         ScreenEvents.AFTER_INIT.register { client, screen, _, _ ->
             if (screen !is ChatScreen) return@register
@@ -137,7 +137,7 @@ object CopyChats {
                 selection = Selection()
                 layouts.clear()
             }
-            ScreenMouseEvents.allowMouseClick(screen).register { _, event -> !settings.copyChat || !pressed(client, event) }
+            ScreenMouseEvents.allowMouseClick(screen).register { _, event -> !DsModClient.runs<CopyChat>() || !pressed(client, event) }
             ScreenMouseEvents.allowMouseRelease(screen).register { _, event ->
                 if (event.button() != 1 || drag == null) return@register true
                 drag = null
