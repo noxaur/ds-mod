@@ -6,7 +6,7 @@ import { titleCase } from "../items/title.ts";
 import type { Profile } from "./model.ts";
 import { mobName } from "./names.ts";
 import { skillProgress } from "./progress.ts";
-import type { Progression, WireProfile } from "./wire.ts";
+import type { Progression } from "./wire.ts";
 
 /*
  * The sections dragsim.co sends as plain data. Each is read leniently, so a section that changes shape costs only
@@ -15,10 +15,20 @@ import type { Progression, WireProfile } from "./wire.ts";
 
 export const playerStats = (catalog: Catalog, raw: unknown): Profile["playerStats"] => statSheet(catalog, statSet(raw));
 
-/** Every mob of the bestiary, most kills first, including the ones with none. */
-export const bestiary = (raw: WireProfile["bestiary"]): Profile["bestiary"] =>
-  Object.entries(raw ?? {})
-    .map(([id, { kills }]) => ({ id, name: mobName(id), kills: Math.floor(kills ?? 0) }))
+/** Every mob of the bestiary, most kills first, including the ones with none. A bad kills value drops that mob. */
+export const bestiary = (raw: unknown): Profile["bestiary"] =>
+  Object.entries(record(raw))
+    .flatMap(([id, entry]) => {
+      if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
+        return [];
+      }
+      const kills = record(entry)["kills"];
+      // Null is how the server leaves a count out. Anything else that is not finite is a shape change.
+      if (kills !== undefined && kills !== null && !Number.isFinite(kills)) {
+        return [];
+      }
+      return [{ id, name: mobName(id), kills: Math.floor(count(kills) ?? 0) }];
+    })
     .toSorted((a, b) => b.kills - a.kills);
 
 export const collections = (catalog: Catalog, raw: unknown): Profile["collections"] =>

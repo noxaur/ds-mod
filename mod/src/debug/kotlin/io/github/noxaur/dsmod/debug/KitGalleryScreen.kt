@@ -190,13 +190,14 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
             Kit.slot(g, sx, sy)
             val mark = marks.getOrNull(i) ?: continue
             if (mark.style == 'f') Kit.slotFill(g, sx + 1, sy + 1, mark.color)
-            if (mark.style == 'b') Kit.slotArt(g, sx + 1, sy + 1, SlotArts.atlas(DsModClient.settings.inventory, Surface.CONTAINER), mark.role.ordinal)
+            val atlas = if (mark.style == 'b') SlotArts.atlas(DsModClient.settings.inventory, Surface.CONTAINER) else null
+            if (atlas != null) Kit.slotArt(g, sx + 1, sy + 1, atlas, mark.role.ordinal)
             g.item(mark.item, sx + 1, sy + 1)
             g.itemDecorations(font, mark.item, sx + 1, sy + 1)
             if (mark.style == 'd') Kit.slotDim(g, sx + 1, sy + 1)
             if (mark.style == 'h') Kit.slotHover(g, sx + 1, sy + 1)
-            if (mark.style == 'b' && DsModClient.settings.inventory.inventoryStyle.gem) {
-                Kit.slotGem(g, sx + 1, sy + 1, SlotArts.atlas(DsModClient.settings.inventory, Surface.CONTAINER), mark.role.ordinal)
+            if (atlas != null && DsModClient.settings.inventory.inventoryStyle.gem) {
+                Kit.slotGem(g, sx + 1, sy + 1, atlas, mark.role.ordinal)
             }
         }
         Kit.scrollbar(g, gx + 93, gy, 72, 6, 30)
