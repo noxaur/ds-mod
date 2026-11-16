@@ -22,6 +22,12 @@
       "unit": "µs",
       "cap": 60
     },
+    "etherwarp.frame": {
+      "group": "Frame",
+      "label": "Etherwarp Outline, 121 blocks of line",
+      "unit": "µs",
+      "cap": 25
+    },
     "tab-poll": {
       "group": "Tick",
       "label": "Tab list poll",

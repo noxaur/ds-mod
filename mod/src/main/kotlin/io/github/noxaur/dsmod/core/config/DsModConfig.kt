@@ -34,6 +34,7 @@ import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.core.ui.Theme
+import io.github.noxaur.dsmod.core.world.BoxStyle
 
 /**
  * The settings show categories and options in the order they are declared: what applies everywhere first, then each area
@@ -392,6 +393,42 @@ class DsModConfig : Config() {
         @ConfigEditorDropdown
         @JvmField
         var inventoryLook = InventoryLook.PLATE
+
+        @Expose
+        @ConfigOption(name = "Etherwarp Outline", desc = "Box the block Etherwarp will take you to while you sneak.")
+        @ConfigEditorBoolean
+        @JvmField
+        var etherwarpOutline = true
+
+        @Expose
+        @ConfigOption(name = "Etherwarp Style", desc = "Draw the box as edges, a tinted fill, or both.")
+        @ConfigEditorDropdown
+        @JvmField
+        var etherwarpStyle = BoxStyle.BOTH
+
+        @Expose
+        @ConfigOption(name = "Etherwarp Width", desc = "Set how thick the box's edges are.")
+        @ConfigEditorSlider(minValue = 1f, maxValue = 5f, minStep = 0.5f)
+        @JvmField
+        var etherwarpWidth = 2f
+
+        @Expose
+        @ConfigOption(name = "Failed Warps", desc = "Box a block you can't warp to as well, and say why.")
+        @ConfigEditorBoolean
+        @JvmField
+        var etherwarpFailed = true
+
+        @Expose
+        @ConfigOption(name = "Box Through Walls", desc = "Show the whole box, even behind the blocks in front of it.")
+        @ConfigEditorBoolean
+        @JvmField
+        var etherwarpThroughWalls = true
+
+        @Expose
+        @ConfigOption(name = "Box Without Sneak", desc = "Show the box before you sneak, too.")
+        @ConfigEditorBoolean
+        @JvmField
+        var etherwarpWithoutSneak = false
 
         @Expose
         @ConfigOption(name = "Camera", desc = "Shape the third-person view with the settings below.")

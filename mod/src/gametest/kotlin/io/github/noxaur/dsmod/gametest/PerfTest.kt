@@ -18,6 +18,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionHand
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
@@ -115,6 +116,7 @@ class PerfTest : FabricClientGameTest {
                 }
                 samples.getOrPut("features", ::ArrayList) += features / 1000.0 / WINDOW_TICKS
             }
+            etherwarp(context, world, samples)
             recording(context, world, samples)
             val calibrate = context.computeOnClient<Double, Nothing> {
                 repeat(3) { spin() }
@@ -157,6 +159,37 @@ class PerfTest : FabricClientGameTest {
             check(failed.isEmpty()) {
                 "Over the cap: ${failed.joinToString()}. The table is in perf.md. Make the code faster, or raise the cap in perf-budgets.json if the user agrees."
             }
+        }
+    }
+
+    /**
+     * Adds a sample of Etherwarp Outline's frame per window, while the player sneaks with an Aspect of the Void and
+     * looks out over the flat world at nothing, so the line is followed its whole way: the range and the stretch
+     * past it where a target is too far. The view changes each tick, so each frame follows it again.
+     */
+    private fun etherwarp(context: ClientGameTestContext, world: TestSingleplayerContext, samples: HashMap<String, MutableList<Double>>) {
+        context.runOnClient<Nothing> { it.gui.setScreen(null) }
+        world.server.runOnServer<Nothing> { server ->
+            server.playerList.players.first().setItemInHand(InteractionHand.MAIN_HAND, ItemStack(Items.DIAMOND_SHOVEL).also { stack ->
+                stack.set(DataComponents.LORE, ItemLore(listOf("Etherwarp", "looking at, up to 57 blocks away.").map(Component::literal)))
+            })
+        }
+        context.input.holdKey { it.keyShift }
+        context.input.lookAt(0f, 0f)
+        context.waitTicks(20)
+        try {
+            repeat(WINDOWS) { window ->
+                context.runOnClient<Nothing> { DsModClient.game.metrics.flush() }
+                repeat(WINDOW_TICKS) { tick ->
+                    context.input.lookAt((window * WINDOW_TICKS + tick).toFloat(), 0f)
+                    context.waitTick()
+                }
+                val timer = context.computeOnClient<Metrics.Timer?, Nothing> { DsModClient.game.metrics.snapshot().timers["etherwarp.frame"] }
+                checkNotNull(timer) { "Etherwarp Outline drew no frame" }
+                samples.getOrPut("etherwarp.frame", ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
+            }
+        } finally {
+            context.input.releaseKey { it.keyShift }
         }
     }
 
