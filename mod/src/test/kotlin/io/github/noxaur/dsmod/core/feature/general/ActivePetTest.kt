@@ -193,6 +193,16 @@ class ActivePetTest {
     }
 
     @Test
+    fun `leaving the server while the feature is off forgets the pet once it is back on`() {
+        post(pet())
+        config.general.activePet = false
+        post(LeftServer)
+        config.general.activePet = true
+        post()
+        assertNull(hud())
+    }
+
+    @Test
     fun `a summon in chat switches the pet, in the rarity it was last seen in`() {
         post(pet("Wolf", rgb = Role.EPIC.rgb), pet())
         post(dungeon(), chat("Activated [Lvl 100] Wolf!"))

@@ -209,6 +209,16 @@ class EquipmentDisplayTest {
     }
 
     @Test
+    fun `leaving the server while the feature is off forgets the pet once it is back on`() {
+        post(pet())
+        config.general.equipmentDisplay = false
+        post(LeftServer)
+        config.general.equipmentDisplay = true
+        post()
+        assertNull(rows())
+    }
+
+    @Test
     fun `no pet line, or Pet None, shows no pet`() {
         post(pet())
         post(sidebar(ServerText(ServerSpan("Booster: Whale Booster"))))
