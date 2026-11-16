@@ -80,34 +80,36 @@ F5 back to first person also ends it. The Camera settings shape this view too.
 
 ### Command Binds
 
-Sends a command with a key, with keys held together such as Shift + F6, or with keys pressed in turn such as F7 then F8. Open it with **Edit** beside Edit Command Binds in the settings.
+Sends a command with a key, with keys held together such as Shift + F6, or with keys pressed in turn such as F7 then F8. Set your binds up under Binds in the settings, or press **Edit** beside Edit Command Binds, which opens the list.
 
-Your binds are listed on the left under their groups, each with its command, its keys and where it works. Everything about the one you pick is on the right, and a change takes effect as you make it.
+Each bind is a line with its switch, name, command, keys and where it works, under its group's heading. A change takes effect as you make it.
 
 | Do this | To |
 | --- | --- |
-| Press **New Bind**, type the command, then press **Keys** and hold the keys | Add a bind. Let go of the keys to finish. Without a slash, the bind says its text in chat |
-| Tick the box on a row | Turn the bind on or off |
-| Tick the box on a group's heading | Turn the whole group on or off |
+| Press **Add Bind**, type the command, then press its keys button and hold the keys | Add a bind. Let go of the keys to finish. Without a slash, the bind says its text in chat |
+| Press the switch on a line | Turn the bind on or off |
+| Press the switch on a group's heading | Turn the whole group on or off |
 | Press the arrow on a heading, or double-click it | Fold the group away, or open it again |
-| Drag a row or a heading, or press ▲ or ▼ beside Duplicate, or Alt and Up or Down | Move it. A bind moved past a group's heading joins that group |
-| Right-click a row or a heading | See what you can do to it, such as Move Up or Turn Off |
+| Drag a line by its grip, or a heading, or press Alt and Up or Down | Move it. A bind dropped under a group's heading joins that group. Escape during the drag puts it back |
+| Press Where | Step through World, Menus and Both. Right-click steps back |
+| Press ▸ at the end of a line | Open the rest of the bind under it |
+| Right-click a line or a heading | See what you can do to it, such as Move Up or Turn Off |
 | Press **Duplicate** or **Delete** | Copy the bind, which starts off, or delete it with a second press |
 
-With nothing on the right typed in, Up and Down pick the next row, Left and Right fold and open a group, and Delete deletes.
+Up and Down move between the lines, Left and Right fold and open a group, Space turns the picked heading's group on or off, Tab moves between the text boxes, and Delete deletes. The Menu key or Shift + F10 opens what you can do to the picked line.
 
-On the right:
+Under a bind:
 
-- **Name:** optional. The list shows the command without one.
-- **Where:** in the world, in menus such as chests and your inventory, or in both. A bind never fires while you type in chat or a text field.
+- **Area:** Anywhere, or the one area the bind works in, such as The End.
 - **Priority:** when two binds share keys, the higher one sends, and between equals the one listed first.
 - **Other Keys Held Too:** on by default, so a key you walk with does not stop the bind.
-- **Keys in Order:** the keys become a sequence, finished with Escape when you record them. Key Sequence Gap in the settings sets how long a sequence waits for its next key.
-- **Area:** Anywhere, or the one area the bind works in, such as The End.
+- **Keys in Order:** the keys become a sequence, finished with Escape when you record them. Sequence Gap sets how long a sequence waits for its next key.
 
-**New Group** adds a group. Pick its heading to rename it, or to delete it with its binds. **Export** copies the group of whatever you picked to your clipboard to share, and **Import** adds a group someone shared. Imported binds start off, so read each command before you turn it on.
+The name is optional, and a bind shows its command without one. A bind never fires while you type in chat or a text field.
 
-Keys shown in red fire another bind too, and keys in yellow also do something in the game. The line under the details says which.
+**Add Group** adds a group with its name ready to type. Press ▸ on its heading to rename it, export it or delete it with its binds. **Export** copies the group of the line you picked to your clipboard to share, and **Import** adds what someone shared as a new group. Imported binds start off, so read each command before you turn it on.
+
+Keys ringed in red fire another bind too, and keys in yellow also do something in the game. The line under the list says which.
 
 ### Profile Viewer
 
@@ -135,9 +137,17 @@ Beside each grid are how many slots it fills and how many items of each rarity i
 
 ## Interface
 
-Theme picks the colors of ds-mod's screens: Charcoal is dark, and Vanilla matches the game's own menus. Move HUD, or `/dsmod hud`, opens the HUD editor.
+Theme picks the colors of ds-mod's screens: Charcoal is dark, and Vanilla matches the game's own menus.
 
-<sub>Scroll over a block to resize it. Hold Shift to place it without snapping.</sub>
+Layout, under HUD, is a small copy of your screen with your HUD on it. **Move HUD**, or `/dsmod hud`, opens the same editor over the game, so you see the world behind your HUD.
+
+| Do this | To |
+| --- | --- |
+| Drag a block | Move it. It lines up with the screen's edges and middle and with the other blocks, and stays on the screen. Hold Shift to place it freely, and press Escape during the drag to put it back |
+| Scroll over a block, or press + or − with it picked | Make it bigger or smaller |
+| Press the arrow keys with a block picked | Nudge it a pixel, or ten with Shift |
+| Press Backspace, or Reset, with a block picked | Stack it with the others again |
+| Right-click a block | See what you can do to it |
 
 ## Chat
 
@@ -178,7 +188,7 @@ A message is copied whole, also when it wraps over several rows. A block the ser
 
 Each item's slot is marked in the color of its rarity, in every menu and on your hotbar.
 
-Rarity Style picks the look: Showcase, Gilded or Minimal, from loudest to quietest, or Custom for your own. Edit beside Edit Style opens your inventory with your hotbar under it, so you see each change on your own items. A change there starts from the look you had and switches Rarity Style to Custom.
+Rarity Style picks the look: Showcase, Gilded or Minimal, from loudest to quietest, or Custom for your own. Custom Look, under it, picks each part with a preview of it. A change there starts from the look you had and switches Rarity Style to Custom.
 
 | Part | Choices |
 | --- | --- |
@@ -187,7 +197,7 @@ Rarity Style picks the look: Showcase, Gilded or Minimal, from loudest to quiete
 | Floor | None, Pedestal, Sparks, Rise |
 | Gem | A small gem over the item's top-left corner |
 
-The hotbar uses your inventory's look until you untick Match Inventory, and then it has its own.
+The hotbar uses your inventory's look until you turn off Match Inventory under Hotbar, and then its own Border, Fill, Floor and Gem, starting from the look it had. **Edit** beside Edit Style opens them.
 
 <sub>Common items are not marked unless you tick Mark Common. With a resource pack that makes menus dark, the colors change to read well on it.</sub>
 
@@ -256,16 +266,17 @@ Tabs along the top and bottom of every menu and your inventory. A tab sends its 
 
 Click Search, or press Ctrl+F, and a search bar opens along that edge toward the middle of the menu, over the tabs beside it. Every item whose name and lore don't hold all your words is dimmed, and your search stays as you move from menu to menu. While you type, E and Q type letters instead of closing the menu or dropping an item. Escape leaves the bar, a right click clears it, and its × closes it. The text turns red when nothing in the menu matches.
 
-Set your tabs up with Edit Tabs:
+Set your tabs up under Tabs, below Menu Tabs in the settings, or press **Edit** beside Edit Tabs. It shows a small menu with a place for a tab at each spot along its top and bottom.
 
 | Do this | To |
 | --- | --- |
 | Drag a tab to another place | Move it. A tab already there takes its old place. Escape during the drag puts it back |
 | Click an empty place | Add a tab there, then type its command |
 | Click a tab | Change its command, its item, such as `chest` or `player_head`, and the name shown when you point at it |
-| Arrow keys or Delete, with a tab chosen | Move it a place, or remove it |
+| Arrow keys with a tab chosen | Move it a place along its edge, or to the other edge with Up or Down. Tab picks the next tab |
+| Delete, or the Delete button, with a tab chosen | Remove it, with a second press |
 | Add Search | Put the search tab back after you deleted it |
-| Reset | Go back to the starting tabs |
+| The mark beside Tabs | Go back to the starting tabs |
 
 <sub>Each edge has seven places. On a short screen at a large GUI scale, the tabs can run off the top or bottom of the screen.</sub>
 

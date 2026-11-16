@@ -120,18 +120,19 @@ Which entries of a short list show, and in what order, such as the pieces of the
 
 ## List of things to edit
 
-A list of things the player made, such as command binds.
+A list of things the player made, such as command binds, edited where it sits in the settings.
 
-- The list sits in a sunk container on the left, with its scrollbar inside, and everything about the picked thing is on the right, always shown, so nothing hides behind a More button or a second window. A change takes effect at once, as in the settings.
-- A choice of one from a few, such as an area, is a cycle button, not a grid of checkboxes.
-- Actions on the whole list, such as Import and Export, sit in the screen's top bar.
-- Opening the screen picks the first thing, so its details are there without a click.
-- A row shows what tells the things apart, such as a switch, a name and keys. Fields a player always fills come first, and optional ones say so.
-- A row shows what tells the things apart and what each does, such as a switch, a name, the command, keys and where they work, so the player reads the list without picking each row. The row under the mouse is ringed in `hoverOutline`.
-- Groups are headings in the list, with an arrow that folds the group away, a switch for the whole group and a count. The folds are kept. Picking a heading shows the group. A row or heading is dragged to move it, and a row under another heading joins that group. A group with nothing in it shows a line that says what to drag there.
-- Up and down buttons beside the picked thing's other actions move it a line, and are off where they would move nothing. A bind moved past a heading joins that group, and unfolds it.
-- With nothing on the right focused, the keyboard works the list: Up and Down pick, Left and Right fold and unfold, Alt with Up or Down moves the picked row or group, and Delete deletes.
-- A right press on a row opens its context menu.
+- Each thing is a line of cells that tell the things apart and say what each does, such as a switch, a name, the command, keys and where they work, so the player reads the list without opening anything. Fields a player always fills come first, and optional ones say so in their hint. The line under the mouse is ringed in `hoverOutline`.
+- What does not fit on the line opens under it from ▸ at its end, one thing's details at a time, with the line's actions: up and down, Duplicate and Delete. A change takes effect at once, as in the settings.
+- A choice of one from a few on a line, such as where it works, is a cycle button: a press steps on, a right press steps back. In the details, a choice from many, such as an area, is a cycle button too, not a grid of checkboxes.
+- Actions on the whole list, Add, Add Group, Import and Export, sit under it. A new thing opens its first field to type into, and a new group its name, selected.
+- An empty list says what to do and keeps its buttons. No example things ship.
+- Groups are headings, with an arrow that folds the group away, a switch for the whole group and a count. The folds are kept, and a double press on a heading folds it too. ▸ on a heading opens its name, Export and Delete. A group with nothing in it shows a line that says what to drag there.
+- A line is dragged by its grip, and a heading by its own, and the lines make room as it passes. A line dropped under another heading joins that group. Escape during the drag puts the list back.
+- Up and down buttons move a thing a line, and are off where they would move nothing. A thing moved past a heading joins that group, and unfolds it.
+- Up and Down from the row above enter the list. Inside, Up and Down pick a line, Left and Right fold and unfold a heading or move between a line's cells, Space switches the picked group, Enter opens a line's details or presses the cell, Alt with Up or Down moves the picked line or group, Delete deletes, Tab moves between text fields, and Escape leaves the list.
+- A right press on a line opens its context menu, and so do the Menu key and Shift+F10.
+- Keys are recorded on the keys cell with every convention of a key bind, and keys that clash with another thing or with the game are ringed, with the line under the list saying which.
 
 ## Context menu
 
@@ -158,6 +159,27 @@ A list of things the player made, such as command binds.
 - A drag moves it from where it was grabbed, and the thing stays on the screen.
 - Arrow keys nudge it one pixel. Escape during a drag puts it back.
 - The cursor shows that it can be grabbed.
+
+## Layout of the HUD
+
+The HUD's blocks placed on the screen, as in SkyHanni's, Skytils' and Odin's editors. The settings show it as a scaled copy of the screen, drawn from the real blocks, with the hotbar as a landmark, and Move HUD opens the same editor over the game.
+
+- Every convention of a draggable thing. A dragged block lines up with the screen's edges and middle and with the other blocks within a few pixels, and Shift places it freely. It never leaves the screen.
+- The wheel over a block, and + and −, resize it a step. Shift with an arrow nudges ten pixels.
+- A press picks a block, and the line under the copy names it with its scale beside −, + and Reset. Backspace or Delete stacks the picked block again, and the row's changed marker stacks every block.
+- A right press on a block opens its menu: Bigger, Smaller, Reset.
+- Tab picks the next block. Escape leaves the copy, then closes the screen.
+- With nothing on the HUD, the copy says so, since a block shows only where its feature has something to show.
+
+## Places for tabs
+
+A small menu with a place for a tab along its top and bottom edges, as the tabs show on every menu.
+
+- A press on an empty place adds a tab there and opens its command to type. A press on a tab picks it, and its command, item and name sit beside the menu, or under it on a narrow pane.
+- A tab is dragged to another place, and a tab already there takes its old place. Escape during the drag puts it back.
+- The item is typed by its name and its icon shows beside the field, which reads red while no item has that name.
+- With a tab picked, Left and Right move it along its edge, Up and Down to the other edge, Tab picks the next tab, Delete asks for a second press, and Escape leaves.
+- The row's changed marker puts every tab back where it started.
 
 ## Navigation tree
 

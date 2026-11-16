@@ -2,7 +2,7 @@
 
 The pixel kit that draws ds-mod's chrome. `Theme` in `core/ui` owns the colors, `Kit` in `edge/ui` owns the shapes, and the widgets beside it own input. Sizes are in GUI pixels.
 
-The gallery is the kit's picture: `/dskit` in the debug build opens it, and `/dskit rows` its page of settings rows, every kind with every look. `KitTest` screenshots both in both themes, the first at two GUI scales, and fails on a kind of row or a look the page lacks. Open those images before you design, since they show what the kit already has.
+The gallery is the kit's picture: `/dskit` in the debug build opens it, and `/dskit rows` its page of settings rows, every kind with every look, `/dskit lists` its page of Items rows and `/dskit panels` its page of Panel rows. `KitTest` screenshots every page in both themes, the first at two GUI scales, and fails on a kind of row or a look the page lacks. Open those images before you design, since they show what the kit already has.
 
 ## Tokens
 
@@ -101,6 +101,7 @@ A widget is a vanilla widget with a kit face. It takes its label as a string and
 | `KitMenu` | A panel of actions beside the mouse, opened by a right press, as the context menu section of `controls.md` says. The item under the mouse or picked with Up and Down is lit, and typing lights one by its first letters, as `TypeAhead` in `core/ui` rules. With a `checked` item and `below`, it is a dropdown's menu |
 | `KitPickMenu` | A pick's menu: a row of tiles under its dropdown, each a `Look` over its name, as the pick section of `controls.md` says. Typing lights a tile as in `KitMenu` |
 | `SettingRows` | The rows of a settings screen, each a `Setting` with the face of its kind, and the behaviors every row shares, as `settings.md` says. It lays out on change and draws only the rows that show. Its `narration` is one entry of the screen's narration, which the screen adds with `addWidget` |
+| `Editor` | A row that edits many values in place, such as `ItemsEditor` for a list and the editors of a canvas. `SettingRows` hosts it under the row's header, lays it out on change, hands it the input while the player is inside it, and draws its menus over the rows |
 | `Looks` | Draws each `Look` a pick shows, 18 tall. Slot looks come from one atlas of every border, fill and floor alone, painted once |
 | `KitRangeSlider` | A 16 tall track with any number of spans, for picking stretches of a scale. Press and drag on the track to draw one or click to add one, drag an end or the middle, right-click to remove. The cursor shows what a press will do. `Sections` in `core/ui` holds its rules: a span is at least 5 long, and two within 3 of each other become one |
 
