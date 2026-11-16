@@ -62,6 +62,7 @@ gate edge.SlotGuards 8e92c6e06e5f  SlotLock
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
+    approved by github.com/noxaur 2026-11-16T14:50:00Z
 gate edge.TabBar 75f014239d9d  MenuTabs
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
