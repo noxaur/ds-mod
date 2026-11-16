@@ -1,14 +1,14 @@
 import { betterAuth } from "better-auth";
 import { memoryAdapter } from "better-auth/adapters/memory";
 import { afterEach, expect, test, vi } from "vite-plus/test";
-import * as z from "zod";
+import { Schema } from "effect";
 
 import { type HasJoined, mojangHasJoined } from "./minecraft.ts";
 import { signInOptions } from "./options.ts";
 
 const UUID = "069a79f4-44e9-4726-a5be-fca90e38aaf5";
-const Signed = z.object({ token: z.string(), uuid: z.string() });
-const Challenge = z.object({ serverId: z.string() });
+const Signed = Schema.decodeUnknownSync(Schema.Struct({ token: Schema.String, uuid: Schema.String }));
+const Challenge = Schema.decodeUnknownSync(Schema.Struct({ serverId: Schema.String }));
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -38,7 +38,7 @@ function backend(joins: string[]) {
         body: JSON.stringify(body),
       }),
     );
-  const challenge = async () => Challenge.parse(await (await post("/minecraft/challenge")).json()).serverId;
+  const challenge = async () => Challenge(await (await post("/minecraft/challenge")).json()).serverId;
   const sessionOf = (token: string) =>
     auth.api.getSession({ headers: new Headers({ authorization: `Bearer ${token}` }) });
   return { auth, post, challenge, sessionOf };
@@ -52,7 +52,7 @@ test("a player who joined the challenge gets a session for the account Mojang na
 
   const response = await post("/minecraft/verify", { name: "notch", serverId });
   expect(response.status).toBe(200);
-  const { token, uuid } = Signed.parse(await response.json());
+  const { token, uuid } = Signed(await response.json());
   expect(uuid).toBe(UUID);
   expect((await sessionOf(token))?.user.name).toBe("Notch");
 });
@@ -61,6 +61,18 @@ test("a client that only claims a name is refused", async () => {
   const { post, challenge } = backend([]);
   const response = await post("/minecraft/verify", { name: "Notch", serverId: await challenge() });
   expect(response.status).toBe(401);
+});
+
+test("a malformed name or server id is refused before the challenge is spent", async () => {
+  const joins: string[] = [];
+  const { post, challenge } = backend(joins);
+  const serverId = await challenge();
+  joins.push(`Notch ${serverId}`);
+  const malformed = [{ name: "Not a name!", serverId }, { name: "Notch", serverId: `${serverId}0` }, { name: "Notch" }];
+  for (const body of malformed) {
+    expect((await post("/minecraft/verify", body)).status).toBe(400);
+  }
+  expect((await post("/minecraft/verify", { name: "Notch", serverId })).status).toBe(200);
 });
 
 test("a server id the backend did not issue is refused, even when Mojang saw the join", async () => {
@@ -95,7 +107,7 @@ test("the same account signs in to the same user twice, under its new name", asy
   for (const name of ["Notch", "Notch2"]) {
     const serverId = await challenge();
     joins.push(`${name} ${serverId}`);
-    const { token } = Signed.parse(await (await post("/minecraft/verify", { name, serverId })).json());
+    const { token } = Signed(await (await post("/minecraft/verify", { name, serverId })).json());
     const session = await sessionOf(token);
     expect(session?.user.name).toBe(name);
     users.push(session?.user.id ?? "");
@@ -111,7 +123,7 @@ test("a player whose first sign-in made their user but not its link signs in to 
     joins.push(`Notch ${serverId}`);
     const response = await post("/minecraft/verify", { name: "Notch", serverId });
     expect(response.status).toBe(200);
-    return (await sessionOf(Signed.parse(await response.json()).token))?.user.id;
+    return (await sessionOf(Signed(await response.json()).token))?.user.id;
   };
   const first = await signIn();
   const context = await auth.$context;
@@ -127,7 +139,7 @@ test("a signed-in player cannot rename their account or unlink it from Mojang", 
   const { post, challenge, sessionOf } = backend(joins);
   const serverId = await challenge();
   joins.push(`Notch ${serverId}`);
-  const { token } = Signed.parse(await (await post("/minecraft/verify", { name: "Notch", serverId })).json());
+  const { token } = Signed(await (await post("/minecraft/verify", { name: "Notch", serverId })).json());
   const bearer = { authorization: `Bearer ${token}` };
 
   expect((await post("/update-user", { name: "Victim" }, bearer)).status).toBe(404);

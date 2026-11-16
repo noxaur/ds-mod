@@ -1,10 +1,9 @@
 import { readFileSync } from "node:fs";
 
 import { expect, test, vi } from "vite-plus/test";
-import * as z from "zod";
 
 import { openapi, openapiFile } from "../scripts/openapi.ts";
-import { Effect } from "effect";
+import { Effect, Schema } from "effect";
 
 import { Api } from "./api.ts";
 import { MAX_BODY, makeApp } from "./app.ts";
@@ -24,6 +23,12 @@ const invented = (from: number) =>
 
 /** Bytes that start as gzip does, which is all the backend checks of a capture. */
 const gz = (...bytes: number[]) => new Uint8Array([0x1f, 0x8b, ...bytes]);
+const Created = Schema.decodeUnknownSync(Schema.Struct({ id: Schema.String }));
+const Listed = Schema.decodeUnknownSync(
+  Schema.Array(
+    Schema.Struct({ submissions: Schema.Array(Schema.Struct({ id: Schema.String, contributor: Schema.String })) }),
+  ),
+);
 
 /** A backend with nothing in it, and a way to call it as an agent, as a player, or as nobody. */
 function backend() {
@@ -52,8 +57,7 @@ function backend() {
     const value: unknown = type.includes("json") ? await response.json() : new Uint8Array(await response.arrayBuffer());
     return { status: response.status, value };
   };
-  const create = async () =>
-    z.object({ id: z.string() }).parse((await call("agent", "POST", "/v1/admin/requests", spec)).value).id;
+  const create = async () => Created((await call("agent", "POST", "/v1/admin/requests", spec)).value).id;
   const submit = (who: string, id: string, capture = gz(1, 2, 3)) =>
     call(who, "POST", `/v1/contrib/requests/${id}/submissions?modVersion=1.0.0`, capture);
   return { call, create, submit };
@@ -132,8 +136,7 @@ test("an agent reads every run back, with a letter in place of the player", asyn
       ],
     },
   ]);
-  const first =
-    z.array(z.object({ submissions: z.array(z.object({ id: z.string() })) })).parse(value)[0]?.submissions[0]?.id ?? "";
+  const first = Listed(value)[0]?.submissions[0]?.id ?? "";
   expect((await call("agent", "GET", `/v1/admin/submissions/${first}/capture`)).value).toEqual(gz(7, 8));
 });
 
@@ -279,15 +282,12 @@ test("invented sightings stop being kept at the cap, and known ones still count"
 test("runs past the 26th are lettered AA, AB, so no two players share a letter", async () => {
   const { call, submit } = backend();
   const created = await call("agent", "POST", "/v1/admin/requests", { ...spec, wanted: 20 });
-  const id = z.object({ id: z.string() }).parse(created.value).id;
+  const id = Created(created.value).id;
   for (let player = 0; player < 28; player++) {
     expect((await submit(`player${String(player)}`, id)).status).toBe(200);
   }
   const { value } = await call("agent", "GET", "/v1/admin/requests");
-  const letters = z
-    .array(z.object({ submissions: z.array(z.object({ contributor: z.string() })) }))
-    .parse(value)[0]
-    ?.submissions.map((submission) => submission.contributor);
+  const letters = Listed(value)[0]?.submissions.map((submission) => submission.contributor);
   expect(letters?.slice(24)).toEqual(["Y", "Z", "AA", "AB"]);
 });
 
@@ -330,7 +330,7 @@ test("a player who already has a run is refused before their file reaches the st
       }),
     );
   const created = await post("/v1/admin/requests", JSON.stringify(spec), "application/json");
-  const { id } = z.object({ id: z.string() }).parse(await created.json());
+  const { id } = Created(await created.json());
   const upload = () =>
     post(`/v1/contrib/requests/${id}/submissions?modVersion=1.0.0`, gz(1), "application/octet-stream");
   expect((await upload()).status).toBe(200);
