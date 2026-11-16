@@ -53,16 +53,24 @@ class BindMatcher {
     /**
      * Once [gap] has passed since the last press, fires the sequence it ended, if any.
      * [at] is where the player is on this tick. Chat, a focused field, F3, or Command Binds being off
-     * pass null, and a menu does not cover a sequence typed in the world. Any of those drops it.
+     * pass null and drop it. So does a place no live in-order bind covers together with where the keys
+     * were typed. A bind set to both still covers a move between the world and a menu.
      */
     fun idle(now: Long, gap: Long, binds: List<CommandBind>, at: Where?, inArea: (Area) -> Boolean): CommandBind? {
-        if (typed.isNotEmpty() && (at == null || !at.covers(typedWhere))) {
+        val across = at != null && binds.any { liveAcross(it, at, inArea) }
+        if (typed.isNotEmpty() && (at == null || !across)) {
             typed.clear()
             return null
         }
-        if (typed.isEmpty() || now - typedAt < gap) return null
-        return finish(binds.filter { it.enabled && it.inOrder && it.where.covers(typedWhere) && (it.area == null || inArea(it.area)) })
+        if (typed.isEmpty() || now - typedAt < gap || at == null) return null
+        return finish(binds.filter { liveAcross(it, at, inArea) })
     }
+
+    /** An in-order bind that is on and covers both [at] and where the sequence was typed. */
+    private fun liveAcross(bind: CommandBind, at: Where, inArea: (Area) -> Boolean) =
+        bind.enabled && bind.inOrder && bind.keys.isNotEmpty() &&
+            bind.where.covers(at) && bind.where.covers(typedWhere) &&
+            (bind.area == null || inArea(bind.area))
 
     /** Whether an ending of what was typed, at least [shortest] keys long, starts [bind]'s sequence and stops short of its end. */
     private fun continues(bind: CommandBind, shortest: Int) =

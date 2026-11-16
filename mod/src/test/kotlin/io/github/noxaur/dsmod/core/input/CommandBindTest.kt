@@ -140,6 +140,23 @@ class CommandBindTest {
         assertNull(matcher.idle(5200, 250, both, null, everywhere), "dropped before the gap ends")
         assertNull(matcher.idle(6000, 250, both, Where.MENUS, everywhere))
     }
+
+    @Test
+    fun `a both bind typed in one place fires after the player moves to the other`() {
+        val short = CommandBind(command = "/a", keys = listOf(F6, F7), inOrder = true, where = Where.BOTH)
+        val long = CommandBind(command = "/b", keys = listOf(F6, F7, F6), inOrder = true, where = Where.BOTH)
+        val both = listOf(short, long)
+        val matcher = BindMatcher()
+        matcher.press(F6, 1000, both, Where.WORLD, everywhere)
+        matcher.press(F7, 1100, both, Where.WORLD, everywhere)
+        assertNull(matcher.idle(1200, 250, both, Where.MENUS, everywhere), "the gap has not elapsed")
+        assertEquals(short, matcher.idle(1350, 250, both, Where.MENUS, everywhere))
+
+        matcher.press(F6, 2000, both, Where.MENUS, everywhere)
+        assertNull(matcher.idle(2100, 250, both, Where.WORLD, everywhere))
+        assertNull(matcher.press(F7, 2200, both, Where.WORLD, everywhere), "F6 F7 could still become F6 F7 F6")
+        assertEquals(long, matcher.press(F6, 2300, both, Where.WORLD, everywhere))
+    }
 }
 
 class BindShareTest {
