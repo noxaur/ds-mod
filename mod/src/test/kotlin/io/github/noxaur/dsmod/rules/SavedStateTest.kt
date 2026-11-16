@@ -10,6 +10,7 @@ import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KType
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.starProjectedType
+import kotlin.reflect.full.superclasses
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -18,24 +19,28 @@ private val leaves = setOf(String::class, Boolean::class, Char::class, Byte::cla
 private val readOnly = setOf(List::class, Set::class, Map::class, Collection::class, Pair::class, Triple::class)
 
 /**
- * What in [type], reached as [path], a save could lose: a value that changes in place, which `Saved` never writes
- * because only replacing its `value` marks it changed, and a field with no default, which a save written before
- * the field existed lacks, so it would not load.
+ * What in the state whose default is [default], named [path], a save could lose: a value that changes in place,
+ * which `Saved` never writes because only replacing its `value` marks it changed, and a field with no default,
+ * which a save written before the field existed lacks, so it would not load. A default that is one case of a sealed
+ * state stands for all of them.
  */
-fun savedProblems(type: KType, path: String, seen: MutableSet<KClass<*>> = mutableSetOf()): List<String> {
+fun savedProblems(default: Any, path: String): List<String> =
+    default::class.let { problems((it.superclasses.firstOrNull(KClass<*>::isSealed) ?: it).starProjectedType, path, mutableSetOf()) }
+
+private fun problems(type: KType, path: String, seen: MutableSet<KClass<*>>): List<String> {
     val kind = type.classifier as? KClass<*> ?: return listOf("$path is a type parameter")
     if (type.toString().startsWith("kotlin.collections.Mutable") || kind.java.isArray) return listOf("$path can change in place")
     if (kind in leaves || kind.java.isEnum) return emptyList()
-    if (kind in readOnly) return type.arguments.flatMapIndexed { i, arg -> arg.type?.let { savedProblems(it, "$path[$i]", seen) }.orEmpty() }
+    if (kind in readOnly) return type.arguments.flatMapIndexed { i, arg -> arg.type?.let { problems(it, "$path[$i]", seen) }.orEmpty() }
     if (!kind.java.name.startsWith("io.github.noxaur.")) return listOf("$path is a ${kind.qualifiedName}, which may change in place")
     if (!seen.add(kind)) return emptyList()
-    if (kind.isSealed) return kind.sealedSubclasses.flatMap { savedProblems(it.starProjectedType, "$path(${it.simpleName})", seen) }
+    if (kind.isSealed) return kind.sealedSubclasses.flatMap { problems(it.starProjectedType, "$path(${it.simpleName})", seen) }
     val descriptor = serializer(type).descriptor
     val missing = if (descriptor.kind != StructureKind.CLASS) emptyList() else (0 until descriptor.elementsCount)
         .filterNot(descriptor::isElementOptional).map { "$path.${descriptor.getElementName(it)} has no default" }
     return missing + kind.memberProperties.flatMap { property ->
         if (property is KMutableProperty1<*, *>) listOf("$path.${property.name} is a var")
-        else savedProblems(property.returnType, "$path.${property.name}", seen)
+        else problems(property.returnType, "$path.${property.name}", seen)
     }
 }
 
@@ -45,11 +50,19 @@ private data class Inner(var count: Int = 0)
 @Serializable
 private data class Bad(val list: MutableList<Int> = mutableListOf(), val inner: Map<String, Inner> = emptyMap(), val noDefault: Int)
 
+internal sealed interface Kept
+
+@Serializable
+internal data object Empty : Kept
+
+@Serializable
+internal data class Full(val count: Int) : Kept
+
 class SavedStateTest {
     @Test
     fun `every saved state is immutable and has a default for every field`() {
         val problems = features(DsModConfig()).flatMap { feature ->
-            feature.state?.let { savedProblems(it.value::class.starProjectedType, feature.id) }.orEmpty()
+            feature.state?.value?.let { savedProblems(it, feature.id) }.orEmpty()
         }
         assertEquals(
             emptyList(),
@@ -61,10 +74,11 @@ class SavedStateTest {
     }
 
     @Test
-    fun `the walk catches a mutable collection, a nested var and a field with no default`() {
+    fun `the walk catches a mutable collection, a nested var and a field with no default, in any case of a sealed state`() {
         assertEquals(
             setOf("bad.noDefault has no default", "bad.inner[1].count is a var", "bad.list can change in place"),
-            savedProblems(Bad::class.starProjectedType, "bad").toSet(),
+            savedProblems(Bad(noDefault = 0), "bad").toSet(),
         )
+        assertEquals(listOf("kept(Full).count has no default"), savedProblems(Empty, "kept"))
     }
 }
