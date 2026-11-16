@@ -16,9 +16,9 @@ import kotlin.io.path.writeText
 class AbilitySpamTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         // An earlier run may have saved that the player was told already.
-        val file = FabricLoader.getInstance().configDir.resolve("dsmod/data/ability-spam.json")
+        val file = FabricLoader.getInstance().configDir.resolve("dsmod/data/hidden.json")
         file.parent.createDirectories()
-        file.writeText("""{"told":false}""")
+        file.writeText("""{"told":[]}""")
         context.runOnClient<Nothing> { DsModClient.saved.load() }
 
         val kept = CopyOnWriteArrayList<String>()

@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.feature
 
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.contribute.Places
 import io.github.noxaur.dsmod.core.game.Area
@@ -15,7 +16,13 @@ import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.TabState
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
+import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.world.Mark
+import kotlinx.serialization.Serializable
+
+/** The features that have told the player they hide a server line. */
+@Serializable
+data class Hidden(val told: Set<String> = emptySet())
 
 /**
  * Runs the features. The edge calls [post] for each event and [tick] once a tick, then hands each
@@ -57,6 +64,9 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     /** The places the player has been, which decide the contributions they are offered. The edge saves it. */
     val places = Saved(Places.serializer(), Places())
     private var lastTab: TabList? = null
+
+    /** The features that told the player they hide a line, so each tells them once. The edge saves it. */
+    val hidden = Saved(Hidden.serializer(), Hidden())
 
     /** The sidebar, as of the last event the edge posted. */
     val sidebar = SidebarState()
@@ -141,9 +151,21 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             if (feature.hides) {
                 feature.hides = false
                 shown = false
+                if (feature.id !in hidden.value.told) tellHidden(feature)
             }
         }
         return shown
+    }
+
+    /**
+     * Tells the player where to turn [feature] off, the first time it hides a line, because they did not ask for a
+     * server line to go missing. A feature the player turned on themselves hides what they asked it to.
+     */
+    private fun tellHidden(feature: Feature) {
+        hidden.value = Hidden(hidden.value.told + feature.id)
+        val (section, switch) = SettingsTree.home(feature.toggle)
+        if (!switch.default) return
+        messages += Notice(feature.title, text { body("Hid a message from the server. Turn off "); value(switch.name); body(" under "); value(section.name); body(" in /dsmod to see them.") })
     }
 
     fun tick(time: Long) {

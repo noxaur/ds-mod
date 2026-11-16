@@ -23,7 +23,7 @@ import kotlin.reflect.KMutableProperty0
  * [alert], or keeps a server line out of chat with [hide]. The shared layers draw and print all of it, so a feature touches no screen itself. [toggle] is its switch in the settings, and while that is off, none of these run.
  * Outside [area] the feature shows nothing and sees only the tab list, the sidebar and a change of world.
  */
-abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boolean>, val area: Area) {
+abstract class Feature(val id: String, internal val toggle: KMutableProperty0<Boolean>, val area: Area) {
     /** The name the player knows the feature by: [id] in Title Case. */
     val title = id.split('-').joinToString(" ") { it.replaceFirstChar(Char::uppercase) }
     private val header = text { brand(title) }
@@ -84,7 +84,10 @@ abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boo
         metrics.onUnparsed?.invoke(id, sample)
     }
 
-    /** Keeps the chat line this handler is reading out of the player's chat. Every feature still sees the line. */
+    /**
+     * Keeps the chat line this handler is reading out of the player's chat. Every feature still sees the line. The
+     * first time a feature that is on by default hides one, [Game] tells the player where its switch is.
+     */
     protected fun hide() {
         hides = true
     }
