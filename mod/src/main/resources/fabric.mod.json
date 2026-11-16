@@ -16,6 +16,12 @@
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.edge.DsModClient"
       }
+    ],
+    "modmenu": [
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.edge.ModMenu"
+      }
     ]
   },
   "accessWidener": "dsmod.accesswidener",

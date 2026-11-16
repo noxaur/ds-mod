@@ -89,6 +89,8 @@ dependencies {
     implementation("net.fabricmc:fabric-loader:${property("loader_version")}")
     implementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
     implementation("net.fabricmc:fabric-language-kotlin:${property("fabric_kotlin_version")}")
+    // Mod Menu's config button opens the settings. Only its API is compiled against, and a player without it never loads that class.
+    compileOnly("maven.modrinth:modmenu:${property("modmenu_version")}") { isTransitive = false }
 
     devMods("maven.modrinth:sodium:${property("sodium_version")}")
     devMods("maven.modrinth:immediatelyfast:${property("immediatelyfast_version")}")
@@ -196,6 +198,9 @@ tasks.assemble { dependsOn(debugJar) }
 dependencies {
     productionRuntimeMods("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
     productionRuntimeMods("net.fabricmc:fabric-language-kotlin:${property("fabric_kotlin_version")}")
+    // SettingsScreenTest presses Mod Menu's config button, so both game test runs load Mod Menu.
+    productionRuntimeMods("maven.modrinth:modmenu:${property("modmenu_version")}") { isTransitive = false }
+    "gametestImplementation"("maven.modrinth:modmenu:${property("modmenu_version")}") { isTransitive = false }
 }
 // A run names its tests, `-Pgametests=PerfTest,ChatTest`, or asks for every one with `-Pgametests=all`. The whole
 // suite takes minutes and an agent waits on each run, so it is for the beta pipeline, and a run that names none fails.
