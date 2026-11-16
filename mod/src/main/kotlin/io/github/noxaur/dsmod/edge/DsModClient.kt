@@ -178,6 +178,8 @@ object DsModClient : ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> onDragSim = false }
         ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ ->
             Packets.worldChanged()
+            // The end-of-tick draw runs before readouts replace the marks, so the old world must already be clear.
+            World.worldChanged()
             game.post(System.currentTimeMillis(), WorldChanged)
             tabs.forget()
             sidebars.forget()
