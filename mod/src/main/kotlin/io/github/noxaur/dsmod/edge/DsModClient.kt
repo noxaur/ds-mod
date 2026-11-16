@@ -8,7 +8,6 @@ import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.game.DragSim
-import io.github.noxaur.dsmod.core.game.Hit
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.edge.capture.Recorder
@@ -25,13 +24,8 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
-import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.world.InteractionResult
-import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.entity.decoration.ArmorStand
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Field
 import java.net.InetAddress
@@ -116,6 +110,7 @@ object DsModClient : ClientModInitializer {
         TabBar.register()
         World.register()
         Etherwarps.register()
+        Hits.register()
         ArmorSwapGuards.register()
         EyeGuards.register()
         CopyChats.register()
@@ -146,15 +141,6 @@ object DsModClient : ClientModInitializer {
             // A server may send the action bar as a chat line marked as an overlay, or as its own packet, which `Packets` sees.
             if (overlay) Packets.actionBar(message)
             overlay || !game.wants(SystemMessage::class.java) || game.post(System.currentTimeMillis(), SystemMessage(message.toText()))
-        }
-        // Fabric runs this on both sides in singleplayer, and only the client's own player's swing is the player's hit.
-        AttackEntityCallback.EVENT.register { player, level, _, entity, _ ->
-            if (level.isClientSide && player === Minecraft.getInstance().player && entity is LivingEntity && entity !is ArmorStand &&
-                game.wants(Hit::class.java)
-            ) {
-                game.post(System.currentTimeMillis(), Hit(BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString()))
-            }
-            InteractionResult.PASS
         }
         // Read once per connection, because the Fullbright mixin asks [active] every frame.
         lookUpDragSim()
