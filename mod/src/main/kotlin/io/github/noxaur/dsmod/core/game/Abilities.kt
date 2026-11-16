@@ -30,9 +30,6 @@ object Abilities {
     /** The Warden Helmet's Chameleon, which makes a helmet count toward any set. */
     private const val ANY_SET = "counts as the helmet of any armor set"
 
-    /** Whether [plain] is the server refusing an ability that is still on cooldown. */
-    fun isRefusal(plain: String) = plain.startsWith(REFUSAL)
-
     /** How long the refusal in [plain] says is left, or null when it is not one or does not parse. */
     fun refusalMillis(plain: String): Long? = REFUSAL_LINE.matchEntire(plain)?.groupValues?.get(1)?.let(::millis)
 

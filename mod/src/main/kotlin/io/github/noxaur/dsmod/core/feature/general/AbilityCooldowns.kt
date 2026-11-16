@@ -10,7 +10,6 @@ import io.github.noxaur.dsmod.core.game.Hit
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.SetCharge
 import io.github.noxaur.dsmod.core.game.SlotChanged
-import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.text
@@ -91,16 +90,11 @@ class AbilityCooldowns(
             lastCast = cast
             ready(now)
         }
-        on<SystemMessage> { message, now ->
-            val plain = message.text.plain
-            when {
-                Abilities.isRefusal(plain) -> Abilities.refusalMillis(plain)?.let { refused(it, now) } ?: unparsed(plain)
-                plain.startsWith("HOWL!") -> start("Howl", now)
-                // A player's line has a colon after their name, so no one can start it by typing it.
-                SOULCRY in plain && ':' !in plain -> start("Soulcry", now)
-                plain.startsWith(USED) -> start(plain.removePrefix(USED).trimEnd('!', '.', ' '), now)
-            }
-        }
+        line(Regex.fromLiteral(Abilities.REFUSAL), Abilities::refusalMillis) { left, now -> refused(left, now) }
+        line("HOWL!") { now -> start("Howl", now) }
+        // `☠ Soulcry! +250 ⫽ Ferocity against Endermen for 4s.`
+        line(SOULCRY, SOULCRY) { _, now -> start("Soulcry", now) }
+        line(USED, USED_LINE) { (ability), now -> start(ability, now) }
         on<Hit> { _, now ->
             read()
             val bonus = charge ?: return@on
@@ -265,7 +259,8 @@ class AbilityCooldowns(
         const val BOOTS = 8
 
         const val USED = "You used "
-        const val SOULCRY = "Soulcry! +"
+        val USED_LINE = Regex("""You used (.+?)[!.]?""")
+        val SOULCRY = Regex("""(?:☠ )?Soulcry! \+.*""")
         const val SAME_USE_MILLIS = 500L
         const val SLACK_MILLIS = 1000L
         const val LEARN_MILLIS = 300L
