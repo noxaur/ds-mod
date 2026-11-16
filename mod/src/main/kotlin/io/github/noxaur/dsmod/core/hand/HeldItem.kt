@@ -1,23 +1,26 @@
 package io.github.noxaur.dsmod.core.hand
 
+import com.google.gson.annotations.SerializedName
 import kotlin.math.exp
 import kotlin.math.roundToInt
 
 /** How the held item moves when the player swings. */
 enum class SwingStyle(private val label: String) {
+    /** Also what a saved Still loads as, the style No Swing replaced, since Gson loads a name it doesn't know as null. */
+    @SerializedName(value = "VANILLA", alternate = ["STILL"])
     VANILLA("Vanilla"),
 
     /** The old block-hit: the sword held across the screen as it swings. */
     BLOCK_HIT("1.7"),
+
+    /** The block-hit with the sword sliding down and back on each swing instead of arcing. */
+    EXHIBITION("Exhibition"),
 
     /** One full turn per swing. */
     SPIN("Spin"),
 
     /** Straight out at the crosshair and back, as the game swings a spear. */
     STAB("Stab"),
-
-    /** No movement at all. */
-    STILL("Still"),
     ;
 
     override fun toString() = label
