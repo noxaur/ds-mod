@@ -20,18 +20,23 @@ private const val UI = "io/github/noxaur/dsmod/edge/ui/"
 private val shapes = setOf("fill", "fillGradient", "outline", "blit", "blitSprite", "horizontalLine", "verticalLine", "textHighlight", "textWithBackdrop")
 
 /** Every place in [classes] outside `Kit` that draws a shape on the graphics itself, as `file:line`. */
-fun shapesOutsideKit(classes: List<ClassNode>): List<String> = classes.filter { !(it.name.startsWith(UI) && it.sourceFile == "Kit.kt") }.flatMap { node ->
-    node.methods.flatMap { method ->
-        var line = 0
-        method.instructions.mapNotNull { insn ->
-            if (insn is LineNumberNode) line = insn.line
-            // A method reference such as `graphics::fill` is a handle among the bootstrap arguments.
-            val draws = insn is MethodInsnNode && insn.owner == GRAPHICS && insn.name in shapes ||
-                insn is InvokeDynamicInsnNode && insn.bsmArgs.filterIsInstance<Handle>().any { it.owner == GRAPHICS && it.name in shapes }
-            if (draws) "${node.name.substringBeforeLast('/')}/${node.sourceFile}:$line" else null
+fun shapesOutsideKit(classes: List<ClassNode>): List<String> {
+    val supers = classes.associate { it.name to it.superName }
+    // A call through a mod class that extends the graphics names that class as its owner.
+    fun graphics(owner: String): Boolean = owner == GRAPHICS || supers[owner]?.let(::graphics) == true
+    return classes.filter { !(it.name.startsWith(UI) && it.sourceFile == "Kit.kt") }.flatMap { node ->
+        node.methods.flatMap { method ->
+            var line = 0
+            method.instructions.mapNotNull { insn ->
+                if (insn is LineNumberNode) line = insn.line
+                // A method reference such as `graphics::fill` is a handle among the bootstrap arguments.
+                val draws = insn is MethodInsnNode && graphics(insn.owner) && insn.name in shapes ||
+                    insn is InvokeDynamicInsnNode && insn.bsmArgs.filterIsInstance<Handle>().any { graphics(it.owner) && it.name in shapes }
+                if (draws) "${node.name.substringBeforeLast('/')}/${node.sourceFile}:$line" else null
+            }
         }
-    }
-}.distinct()
+    }.distinct()
+}
 
 class KitTest {
     @Test
@@ -65,13 +70,15 @@ class KitTest {
             Handle(Opcodes.H_INVOKEVIRTUAL, GRAPHICS, "fill", "(IIIII)V", false),
         )
         assertEquals(
-            listOf("io/github/noxaur/dsmod/edge/Split.kt:9", "io/github/noxaur/dsmod/edge/Reference.kt:9"),
+            listOf("Split", "Reference", "Subclass").map { "io/github/noxaur/dsmod/edge/$it.kt:9" },
             shapesOutsideKit(
                 listOf(
                     calling("Split.kt", "fill"),
                     calling("Other.kt", "text"),
                     calling("Cells.kt", "fill", "java/util/Arrays"),
                     calling("Reference.kt", "fill", insn = reference),
+                    calling("Subclass.kt", "fill", "io/github/noxaur/dsmod/edge/Custom"),
+                    ClassNode().apply { name = "io/github/noxaur/dsmod/edge/Custom"; superName = GRAPHICS; sourceFile = "Custom.kt" },
                 ),
             ),
         )
