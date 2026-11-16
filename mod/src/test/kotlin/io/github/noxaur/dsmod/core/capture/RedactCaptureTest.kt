@@ -185,7 +185,7 @@ class RedactCaptureTest {
         assertTrue("h1dc2c096de8131d" in out.single(), out.single())
     }
 
-    private fun plains(out: List<String>) = out.mapNotNull(::readCaptureLine).mapNotNull { (it.second as? SystemMessage)?.text }
+    private fun plains(out: List<String>) = out.mapNotNull(::readCaptureLine).mapNotNull { (it.event as? SystemMessage)?.text }
 
     @Test
     fun `whatever follows a known name and a colon is typed text, in a line no rule knows`() {

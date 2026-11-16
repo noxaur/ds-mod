@@ -61,8 +61,8 @@ class CutFixtureTest {
             4 to say("Alice: and again"),
         )
         val out = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 0.0..10.0, setOf("system")) })
-        assertEquals(listOf("[MVP+] Player1: hello", "Player2 has obtained a thing", "Player1: hello"), out.map { (it.second as SystemMessage).text.plain })
-        assertEquals(listOf("[MVP+] Player1", ": hello"), (out[0].second as SystemMessage).text.spans.map { it.text })
+        assertEquals(listOf("[MVP+] Player1: hello", "Player2 has obtained a thing", "Player1: hello"), out.map { (it.event as SystemMessage).text.plain })
+        assertEquals(listOf("[MVP+] Player1", ": hello"), (out[0].event as SystemMessage).text.spans.map { it.text })
     }
 
     @Test
@@ -114,10 +114,10 @@ class CutFixtureTest {
             8 to say("inside"),
         )
         val events = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 7.0..9.0, setOf("system", "tablist", "container")) })
-        assertEquals(listOf(TabList::class, ContainerOpened::class, SlotChanged::class, SystemMessage::class), events.map { it.second::class })
-        assertEquals(2, (events[2].second as SlotChanged).slot)
-        assertEquals("Area: The End", (events[0].second as TabList).rows.last().plain)
-        assertEquals(7000L, events[0].first)
+        assertEquals(listOf(TabList::class, ContainerOpened::class, SlotChanged::class, SystemMessage::class), events.map { it.event::class })
+        assertEquals(2, (events[2].event as SlotChanged).slot)
+        assertEquals("Area: The End", (events[0].event as TabList).rows.last().plain)
+        assertEquals(7000L, events[0].time)
     }
 
     @Test
@@ -136,7 +136,7 @@ class CutFixtureTest {
             9 to ContainerOpened(0, null, 46, kept = true),
         )
         fun events(seconds: ClosedFloatingPointRange<Double>) =
-            readCapture(dir.resolve("fixture.jsonl").also { cut(capture, seconds, setOf("container")) }).map { it.second }
+            readCapture(dir.resolve("fixture.jsonl").also { cut(capture, seconds, setOf("container")) }).map { it.event }
 
         assertEquals(
             listOf(ContainerOpened(5, text("Shop"), 63), SlotChanged(0, Item("minecraft:emerald", 1)), ContainerOpened(0, null, 46), SlotChanged(9, stone), SlotChanged(10, dirt)),
@@ -156,7 +156,7 @@ class CutFixtureTest {
             5 to tab("Area: Hub", "Dragon: 60%"),
         )
         val out = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 1.5..9.0, setOf("tablist"), listOf("Area")) })
-        assertEquals(listOf("Area: The End", "Area: Hub"), out.map { (it.second as TabList).rows.first { row -> row.plain.startsWith("Area") }.plain })
+        assertEquals(listOf("Area: The End", "Area: Hub"), out.map { (it.event as TabList).rows.first { row -> row.plain.startsWith("Area") }.plain })
     }
 
     @Test
@@ -195,13 +195,31 @@ class CutFixtureTest {
             7 to tab("Area: The End"),
         )
         val out = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 0.0..4.5, setOf("system"), area = Area.END) })
-        assertEquals(listOf(TabList::class, WorldChanged::class, TabList::class, SystemMessage::class), out.map { it.second::class })
+        assertEquals(listOf(TabList::class, WorldChanged::class, TabList::class, SystemMessage::class), out.map { it.event::class })
         // A hop inside the window keeps the tab list the window started with.
         val hop = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 3.5..6.0, setOf("system"), area = Area.END) })
-        assertEquals(listOf(TabList::class, SystemMessage::class, WorldChanged::class), hop.map { it.second::class })
+        assertEquals(listOf(TabList::class, SystemMessage::class, WorldChanged::class), hop.map { it.event::class })
         // A cut that starts after the hop and before the new tab list starts nowhere.
         val late = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 6.0..9.0, setOf("system"), area = Area.END) })
-        assertEquals(listOf(TabList::class), late.map { it.second::class })
-        assertEquals(7000L, late.single().first)
+        assertEquals(listOf(TabList::class), late.map { it.event::class })
+        assertEquals(7000L, late.single().time)
+    }
+
+    @Test
+    fun `a cut keeps the client tick on each event it keeps`() {
+        val capture = dir.resolve("capture.jsonl").also { file ->
+            file.writeLines(
+                listOf(
+                    captureLine(0, Sidebar(lines = listOf(text("Name: Carol"))), tick = 1),
+                    captureLine(1_000, say("before"), tick = 2),
+                    captureLine(2_000, say("inside"), tick = 5),
+                    captureLine(2_000, say("same tick"), tick = 5),
+                    captureLine(3_000, say("next"), tick = 8),
+                ),
+            )
+        }
+        val events = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 2.0..4.0, setOf("system")) })
+        assertEquals(listOf(5, 5, 8), events.map { it.tick })
+        assertEquals(listOf("inside", "same tick", "next"), events.map { (it.event as SystemMessage).text.plain })
     }
 }

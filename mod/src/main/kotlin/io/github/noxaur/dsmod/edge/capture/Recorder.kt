@@ -63,6 +63,14 @@ object Recorder {
         session?.input(client, RawRecord.of(type))
     }
 
+    /**
+     * The client tick finished. Events posted before this belong to the tick that just ended, and the next
+     * record belongs to the next one. Call it at the end of `END_CLIENT_TICK`, after the listeners that post.
+     */
+    fun endedClientTick() {
+        session?.endedClientTick()
+    }
+
     fun register() {
         ClientEntityEvents.ENTITY_UNLOAD.register { entity, _ -> session?.unload(entity) }
         ClientReceiveMessageEvents.CHAT.register { message, _, sender, _, _ ->
