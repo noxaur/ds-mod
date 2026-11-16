@@ -5,10 +5,11 @@ import { storage } from "void/storage";
 
 import { itemSamples, itemSeen, itemTextures, requests, skips, submissions, unknowns } from "../db/schema.ts";
 import { RecordingRequest, RequestSpec } from "../src/contrib/model.ts";
-import type { Store } from "../src/contrib/store.ts";
+import { roomForUnknown, type Store } from "../src/contrib/store.ts";
 import { ItemSighting } from "../src/items/model.ts";
 import {
   admit,
+  admitSamples,
   appearancesFrom,
   type EntryTally,
   fold,
@@ -99,7 +100,7 @@ export const contribStore: Store["Service"] = {
         return;
       }
       const [total] = await db.select({ rows: sql<number>`count(*)` }).from(unknowns);
-      if ((total?.rows ?? 0) < maxRows) {
+      if (roomForUnknown(total?.rows ?? 0, maxRows)) {
         await db
           .insert(unknowns)
           .values({ ...unknown, count: 1 })
@@ -274,10 +275,8 @@ export const itemStore: ItemStore["Service"] = {
               set: { texture },
             }),
         ),
-        ...kept.flatMap(({ entry, sample }) =>
-          sample !== null && (sampleRows.get(entry) ?? 0) < limits.maxSamples
-            ? [db.insert(itemSamples).values({ entry, userId, sample }).onConflictDoNothing()]
-            : [],
+        ...admitSamples(kept, (entry) => sampleRows.get(entry) ?? 0, limits.maxSamples).map(({ entry, sample }) =>
+          db.insert(itemSamples).values({ entry, userId, sample }).onConflictDoNothing(),
         ),
       ]);
     }),

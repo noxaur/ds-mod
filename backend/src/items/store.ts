@@ -99,6 +99,14 @@ export const admit = <T>(items: readonly T[], hasRow: (item: T) => boolean, room
   return items.filter((item) => hasRow(item) || left-- > 0);
 };
 
+/** The kept entries a player adds a sample to: those with one worth keeping, while fewer than `maxSamples` have it. */
+export const admitSamples = (
+  kept: readonly Folded[],
+  samplesOf: (entry: string) => number,
+  maxSamples: number,
+): { readonly entry: string; readonly sample: ItemSighting }[] =>
+  kept.flatMap(({ entry, sample }) => (sample !== null && samplesOf(entry) < maxSamples ? [{ entry, sample }] : []));
+
 /** One page of entries from a sorted list that holds one more than `limit` when there is a next page. */
 export const pageOf = (entries: readonly string[], limit: number) => ({
   entries: entries.slice(0, limit),
@@ -254,9 +262,9 @@ export const memoryItemStore = (): ItemStore["Service"] => {
         )) {
           textures.set(key, { entry, skinId, texture, players: 1, userId });
         }
-        for (const { entry, sample } of kept) {
+        for (const { entry, sample } of admitSamples(kept, (name) => samples.get(name)?.size ?? 0, limits.maxSamples)) {
           const byPlayer = samples.get(entry) ?? new Map<string, ItemSighting>();
-          if (sample !== null && !byPlayer.has(userId) && byPlayer.size < limits.maxSamples) {
+          if (!byPlayer.has(userId)) {
             byPlayer.set(userId, sample);
             samples.set(entry, byPlayer);
           }
