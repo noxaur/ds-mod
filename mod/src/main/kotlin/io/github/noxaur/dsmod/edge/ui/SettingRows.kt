@@ -268,6 +268,9 @@ class SettingRows(
     }
 
     fun begin() {
+        // A resize rebuilds the rows without a click outside the field, so the typed number is taken first.
+        // Escape closes the field without taking it, and that path does not come through here.
+        editor?.let { commit() }
         focusId = lines.getOrNull(focus)?.key
         spokenId = lines.getOrNull(spoken)?.key
         lines.clear()
@@ -576,6 +579,9 @@ class SettingRows(
     /** The ids of the rows laid out, in order, without headings' switches and list entries, so a test can read what a page lists. */
     fun ids() = lines.filter { !it.heading && it.entry < 0 }.map { it.setting.id }
 
+    /** Whether the row [id] paints its changed marker, so a test can see that a refresh redrew it. */
+    fun marked(id: String) = lines.firstOrNull { it.setting.id == id && it.entry < 0 }?.changed == true
+
     /** The editor of the row [id], once it has been laid out, so a test can find its controls. */
     fun editor(id: String): Editor? = made[id]
 
@@ -835,7 +841,10 @@ class SettingRows(
                     take(line)
                 }
             }
-            is Action -> if (!right && overControl(line, mx, my)) s.run()
+            is Action -> if (!right && overControl(line, mx, my)) {
+                s.run()
+                refresh()
+            }
             is Fold, is Order<*> -> if (!right) fold(line, !line.open)
             is Items<*>, is Panel<*> -> Unit
         }
@@ -910,7 +919,8 @@ class SettingRows(
 
     /** The wheel over a number or a dropdown steps it, by ten with Shift. Elsewhere it is the host's, to scroll. */
     fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double, shift: Boolean): Boolean {
-        if (menu != null || amount == 0.0) return false
+        // An open field keeps what was typed. Stepping it would leave the stepped value behind when Escape discards the text.
+        if (menu != null || editor != null || amount == 0.0) return false
         val i = lineAt(mouseX, mouseY).takeIf { it >= 0 } ?: return false
         val line = lines[i]
         line.editor?.let { return it.isOver(mouseX, mouseY) && it.mouseScrolled(mouseX, mouseY, amount, shift) }
@@ -1045,7 +1055,8 @@ class SettingRows(
             return true
         }
         val line = lines.getOrNull(focus) ?: return false
-        if (!keys || !shownFocus || line.setting !is Number) return false
+        // A click puts the keys on the row before the focus is shown, and the next digit still opens the field.
+        if (!keys || line.setting !is Number) return false
         val c = event.codepoint()
         if (c !in '0'.code..'9'.code && c != '-'.code && c != '.'.code) return false
         edit(line, Character.toString(c))
@@ -1060,7 +1071,10 @@ class SettingRows(
             is Choice<*> -> openMenu(line)
             is KeyBind -> record(line)
             is Span -> line.slider?.selectNext()
-            is Action -> s.run()
+            is Action -> {
+                s.run()
+                refresh()
+            }
             is Fold, is Order<*> -> fold(line, !line.open)
             is Items<*>, is Panel<*> -> Unit
         }

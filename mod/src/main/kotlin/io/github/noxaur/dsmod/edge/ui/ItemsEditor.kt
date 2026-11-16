@@ -74,6 +74,9 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     /** The list's line the keys or the last press are on, of which kind, whether the keys are inside the list, and on which control. */
     private var picked: Entry? = null
     private var pickedKind = Kind.NOTHING
+
+    /** The group Export means once the keys or the mouse have moved onto the foot, which has no group of its own. */
+    private var footGroup: String? = null
     private var inside = false
     private var cursor = 0
     private var shownFocus = false
@@ -96,6 +99,9 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
 
     /** A line pressed and maybe being dragged: where the press was, whether it moved, and the list before, for Escape. */
     private var dragged: Entry? = null
+
+    /** The entry the drag started on, so cancelling it puts the selection back there. */
+    private var draggedFrom: Entry? = null
     private var pressY = 0.0
     private var moved = false
     private var before: Grouped<T>? = null
@@ -644,6 +650,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
 
     private fun startDrag(entry: Entry, mouseY: Double) {
         dragged = entry
+        draggedFrom = entry
         pressY = mouseY
         moved = false
         before = list
@@ -688,6 +695,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         }
         if (dragged == null) return false
         dragged = null
+        draggedFrom = null
         before = null
         moved = false
         refresh()
@@ -722,7 +730,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
             Does.UP, Does.DOWN -> nudge(entry!!, if (hit.does == Does.UP) -1 else 1)
             Does.DUPLICATE -> duplicate(entry as Entry.Item)
             Does.DELETE -> delete(entry!!)
-            Does.EXPORT -> export(group(entry ?: picked))
+            Does.EXPORT -> export(if (hit.line.kind == Kind.FOOT) footGroup ?: "" else group(entry ?: picked))
             Does.NAME -> openField(hit, (entry as Entry.Heading).group, type.groupLength, NAME, "")
             Does.ADD -> add()
             Does.ADD_GROUP -> addGroup()
@@ -763,6 +771,12 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     }
 
     private fun pick(line: Line?, keepCursor: Boolean) {
+        // The foot line has no entry of its own. Export still means the group that was picked before it.
+        if (line?.kind == Kind.FOOT) {
+            if (pickedKind != Kind.FOOT) footGroup = group(picked)
+        } else {
+            footGroup = null
+        }
         picked = line?.entry
         pickedKind = line?.kind ?: Kind.NOTHING
         if (!keepCursor) cursor = 0
@@ -1038,11 +1052,14 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         if (dragged != null && moved) {
             // Escape during a drag puts the list back, and the drag keeps every other key until it ends.
             if (event.isEscape) {
+                val home = draggedFrom
                 before?.let { items.value = it }
                 dragged = null
+                draggedFrom = null
                 before = null
                 moved = false
                 host.relayout()
+                pickEntry(home)
                 host.changed()
             }
             return true
