@@ -5,7 +5,7 @@
 +   3.0s > You hear something falling from the sky.
 +   3.0s > This ability is on cooldown for 4.35s
              (hidden from chat)
-             (chat) Ability Spam | Hid a cooldown message. Turn off Ability Spam in /dsmod to see them.
+             (chat) Ability Spam | Hid a message from the server. Turn off Ability Spam under Chat in /dsmod to see them.
 +   4.5s > The Endstone Protector has been defeated!
 +   4.5s >                                                                                 
                        ENDSTONE PROTECTOR DOWN!
@@ -18,4 +18,4 @@
 
                    Your Damage: 33.8M (Position #2)
                                                                                 
-saved ability-spam.json = {"told":true}
+saved hidden.json = {"told":["ability-spam"]}
