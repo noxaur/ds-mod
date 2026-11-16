@@ -64,6 +64,12 @@ The refusal `This ability is on cooldown for 3.35s` names no ability, so it goes
 
 Riftwalker's blink is the one cooldown the server shows nothing of, so it starts on `Hit`, the player's own attack as the client sends it. `Hit` carries only the entity's type, because the charge needs nothing more, and a hit while the bonus charges does not restart it.
 
+## A pet's XP is read from the menu and moved by Combat XP
+
+dragsim.co shows a pet's XP only on its item in the Pets menu, so Active Pet takes each read as an exact point in time, and two reads at one level give the rate. Between reads the only thing that moves is the Combat XP the action bar shows behind each kill, and how much of it reaches the pet is the server's rule, which no capture shows. So the rule is not written down: the reads learn the pet XP per Combat XP, and each read puts the live estimate back on the server's number. Only a pet whose footer says `COMBAT PET` is moved this way, since another kind gains from another skill. A Combat XP line counts only right behind a death, as in Zealot Tracker, because the server repeats the last one for about a second.
+
+The Pets menu sends no `custom_data` on its pet items, while the Auction House sends each pet's `item_uuid`. So Active Pet keys what it remembers by that uuid when an item has one and by the pet's name when not, and two pets of one name share what the last menu read showed of either.
+
 ## Saved state belongs to the feature, and the disk to the edge
 
 A feature declares one immutable state object and replaces it to change it. The edge loads it at start and writes the changed ones about once a minute, on its own thread, through a temporary file and a rename. A file that fails to parse is moved aside, because a tracker's history is worth more than a clean start.

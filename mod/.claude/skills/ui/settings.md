@@ -55,7 +55,7 @@ Only when no kind fits, and ask the user first, since every kind is one more thi
 2. Add its entry to `Kind`, with the word the narrator calls it, and its builder to `Rows`.
 3. Give it a face in `SettingRows` in `edge/ui`: where its control sits in `measure`, what it shows in `refresh`, how it draws in `face`, and what a press, a drag, the wheel and each key do. Draw with the kit and text by role.
 4. Show it idle, changed and dimmed on the gallery's page of rows, or of lists or panels for a kind that edits many values in place. `KitTest` fails on a kind no page has.
-5. Write its section in `controls.md` after surveying the peers, and add its row to the table above.
+5. Write its section in `controls.md`, and add its row to the table above.
 
 ## What every row gets
 

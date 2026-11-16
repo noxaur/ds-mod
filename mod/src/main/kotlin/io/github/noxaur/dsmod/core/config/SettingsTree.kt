@@ -225,6 +225,15 @@ object SettingsTree {
                     choice(g::performanceLayout, "Layout", "Line the values up in a row or a column.")
                     choice(g::performanceLook, "Look", "Show the values on the plate, or on nothing.")
                 }
+                group("Active Pet", switch = toggle(g::activePet, "Active Pet", "Show your pet, its level, held item and XP on the HUD.")) {
+                    switch(g::activePetIcon, "Icon", "Show your pet's head beside its name.")
+                    switch(g::activePetItem, "Held Item", "Show the pet item your pet holds.")
+                    switch(g::activePetXp, "XP", "Show how far your pet is to its next level.")
+                    switch(g::activePetRate, "XP Rate", "Show how fast your pet gains XP.")
+                    switch(g::activePetNext, "Next Level", "Show how long until your pet reaches its next level.")
+                    switch(g::markActivePet, "Mark In Menu", "Mark your active pet in the Pets menu.")
+                    switch(g::hideAutopet, "Hide Autopet", "Hide the chat line Autopet sends when it swaps your pet.")
+                }
                 group("Inventory HUD", switch = toggle(g::inventoryHud, "Inventory HUD", "Show a grid of the items in your inventory on the HUD.")) {
                     order(g::inventoryRows, "Rows", "Pick the rows to show, and drag them into order.")
                     choice(g::inventoryLook, "Look", "Show the items on the plate, on nothing, or as your inventory.")

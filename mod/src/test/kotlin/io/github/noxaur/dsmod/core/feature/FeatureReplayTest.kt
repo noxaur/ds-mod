@@ -160,7 +160,7 @@ class FeatureReplayTest {
                 val infoRows = HashSet<String>()
                 val transcript = buildString {
                     fun readout() {
-                        val lines = game.readouts.single().hud?.let { block -> listOfNotNull(block.header.plain.ifEmpty { null }) + block.rows.map { "  " + it.text.plain } }
+                        val lines = game.readouts.single().hud?.let { block -> listOfNotNull(block.header.plain.ifEmpty { null }, block.icon?.let { "  (icon) ${name(it)}" }) + block.rows.map { "  " + it.text.plain } }
                             ?: emptyList()
                         if (lines != shown) {
                             shown = lines
