@@ -116,7 +116,8 @@ class AbilityCooldowns(
     private fun start(name: String, now: Long) {
         read()
         val key = name.lowercase()
-        val ability = known[key] ?: unheaded(name) ?: return
+        // A heading's length is read again with the items, and a loose one only here, so look it up from the items now.
+        val ability = (if (key in loreNamed) unheaded(name) else null) ?: known[key] ?: unheaded(name) ?: return
         val running = timers[key]
         // Soulcry's chat line and its action bar part tell of one use a tick or two apart.
         if (running != null && now - running.start < SAME_USE_MILLIS && now < running.end) return

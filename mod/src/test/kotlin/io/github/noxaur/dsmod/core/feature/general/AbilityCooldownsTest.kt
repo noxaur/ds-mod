@@ -145,6 +145,11 @@ class AbilityCooldownsTest {
         post(SystemMessage(line("You used Void Infusion!")))
         assertEquals(listOf("Void Infusion: 1m 48s"), rows)
         assertEquals(setOf(38), readout.slots.keys)
+        // An upgrade rewrites the drill's lore, and the next use follows it.
+        at(110_000)
+        post(SlotChanged(38, drill.copy(lore = listOf(line("Selected Ability: Void Infusion"), line("Cooldown: 60s")))))
+        post(SystemMessage(line("You used Void Infusion!")))
+        assertEquals(listOf("Void Infusion: 1m 0s"), rows)
     }
 
     @Test
