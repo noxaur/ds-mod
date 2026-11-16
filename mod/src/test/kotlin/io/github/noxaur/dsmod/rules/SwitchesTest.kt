@@ -4,12 +4,14 @@ import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.features
 import org.objectweb.asm.ClassReader
+import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AbstractInsnNode
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldInsnNode
 import org.objectweb.asm.tree.InsnNode
+import org.objectweb.asm.tree.InvokeDynamicInsnNode
 import org.objectweb.asm.tree.LineNumberNode
 import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.MethodNode
@@ -46,8 +48,12 @@ fun switchReads(classes: List<ClassNode>, switches: Set<Pair<String, String>>, s
             var line = 0
             method.instructions.mapNotNull { insn ->
                 if (insn is LineNumberNode) line = insn.line
+                fun getter(owner: String, name: String) = name == "getEnabled" && (owner == FEATURE || owner in subclasses)
+                // A method reference such as Java's `feature::getEnabled` is a handle among the bootstrap arguments.
+                val handles = (insn as? InvokeDynamicInsnNode)?.bsmArgs.orEmpty().filterIsInstance<Handle>()
                 val reads = insn is FieldInsnNode && insn.opcode == Opcodes.GETFIELD && (insn.owner to insn.name) in switches ||
-                    insn is MethodInsnNode && insn.name == "getEnabled" && (insn.owner == FEATURE || insn.owner in subclasses)
+                    insn is MethodInsnNode && getter(insn.owner, insn.name) ||
+                    handles.any { it.tag == Opcodes.H_GETFIELD && (it.owner to it.name) in switches || getter(it.owner, it.name) }
                 if (reads) "${node.name.substringBeforeLast('/')}/${node.sourceFile}:$line" else null
             }
         }
@@ -73,7 +79,7 @@ class SwitchesTest {
     }
 
     @Test
-    fun `the scan catches a switch read and a read of enabled`() {
+    fun `the scan catches a switch read, a read of enabled and a reference to it`() {
         fun reading(name: String, insn: AbstractInsnNode) = ClassNode().apply {
             this.name = "io/github/noxaur/dsmod/edge/$name"
             sourceFile = "$name.kt"
@@ -84,15 +90,36 @@ class SwitchesTest {
                 instructions.add(InsnNode(Opcodes.RETURN))
             })
         }
+        // What javac emits for `BooleanSupplier on = feature::getEnabled`.
+        fun reference(target: Handle) = InvokeDynamicInsnNode(
+            "getAsBoolean",
+            "(L$FEATURE;)Ljava/util/function/BooleanSupplier;",
+            Handle(
+                Opcodes.H_INVOKESTATIC,
+                "java/lang/invoke/LambdaMetafactory",
+                "metafactory",
+                "(Ljava/lang/invoke/MethodHandles\$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;" +
+                    "Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;",
+                false,
+            ),
+            Type.getMethodType("()Z"),
+            target,
+            Type.getMethodType("()Z"),
+        )
         val reads = switchReads(
             listOf(
                 reading("Switch", FieldInsnNode(Opcodes.GETFIELD, "io/github/noxaur/dsmod/core/config/DsModConfig\$Chat", "copyChat", "Z")),
                 reading("Enabled", MethodInsnNode(Opcodes.INVOKEVIRTUAL, FEATURE, "getEnabled", "()Z")),
                 reading("Runs", MethodInsnNode(Opcodes.INVOKEVIRTUAL, FEATURE, "getRuns", "()Z")),
+                reading("Reference", reference(Handle(Opcodes.H_INVOKEVIRTUAL, FEATURE, "getEnabled", "()Z", false))),
+                reading("RunsReference", reference(Handle(Opcodes.H_INVOKEVIRTUAL, FEATURE, "getRuns", "()Z", false))),
             ),
             switches(),
             emptySet(),
         )
-        assertEquals(listOf("io/github/noxaur/dsmod/edge/Switch.kt:7", "io/github/noxaur/dsmod/edge/Enabled.kt:7"), reads)
+        assertEquals(
+            listOf("Switch", "Enabled", "Reference").map { "io/github/noxaur/dsmod/edge/$it.kt:7" },
+            reads,
+        )
     }
 }
