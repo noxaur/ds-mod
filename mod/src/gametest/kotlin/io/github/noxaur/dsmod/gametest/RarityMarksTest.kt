@@ -176,7 +176,7 @@ class RarityMarksTest : FabricClientGameTest {
             hover(context, 4)
             context.takeScreenshot("rarity-chest")
 
-            // The README's picture: the Minimal preset in a chest, with no tooltip or toast over it.
+            // The feature guide's picture: the Minimal preset in a chest, with no tooltip or toast over it.
             context.runOnClient<Nothing> {
                 DsModClient.settings.inventory.rarityPreset = RarityPreset.MINIMAL
                 it.gui.toastManager().clear()
