@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge.capture
 
 import io.github.noxaur.dsmod.core.capture.ChangeLog
+import io.github.noxaur.dsmod.core.capture.RawRecord
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -58,8 +59,8 @@ class BlockScan(private val changes: ChangeLog) {
         val deadline = System.nanoTime() + BUDGET_NANOS
         do scan(level, queue.removeFirst()) while (queue.isNotEmpty() && System.nanoTime() < deadline)
         if (queue.isEmpty()) {
-            changes.offerEntries("blockstates", JsonObject(emptyMap()), states)
-            changes.offerEntries("skulls", JsonObject(emptyMap()), skulls)
+            changes.offerEntries(RawRecord.BLOCKSTATES, JsonObject(emptyMap()), states)
+            changes.offerEntries(RawRecord.SKULLS, JsonObject(emptyMap()), skulls)
         }
     }
 

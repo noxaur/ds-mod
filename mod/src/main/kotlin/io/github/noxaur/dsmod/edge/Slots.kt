@@ -167,23 +167,29 @@ object Slots {
     fun marks(rarity: Role?) = rarity != null && DsModClient.runs<RarityMarks>() && (rarity != Role.COMMON || settings.markCommon)
 
     /** Draws [rarity]'s mark behind an item at [x], [y] that the mod draws itself, in the player's style for menus. */
-    fun rarityBack(graphics: GuiGraphicsExtractor, rarity: Role, x: Int, y: Int) =
-        Kit.slotArt(graphics, x, y, SlotArts.atlas(settings, Surface.CONTAINER), rarity.ordinal)
+    fun rarityBack(graphics: GuiGraphicsExtractor, rarity: Role, x: Int, y: Int) {
+        val atlas = SlotArts.atlas(settings, Surface.CONTAINER) ?: return
+        Kit.slotArt(graphics, x, y, atlas, rarity.ordinal)
+    }
 
     /** Draws [rarity]'s gem over that item, when the player's style has one. */
     fun rarityFront(graphics: GuiGraphicsExtractor, rarity: Role, x: Int, y: Int) {
-        if (SlotArts.style(settings, Surface.CONTAINER).gem) Kit.slotGem(graphics, x, y, SlotArts.atlas(settings, Surface.CONTAINER), rarity.ordinal)
+        if (!SlotArts.style(settings, Surface.CONTAINER).gem) return
+        val atlas = SlotArts.atlas(settings, Surface.CONTAINER) ?: return
+        Kit.slotGem(graphics, x, y, atlas, rarity.ordinal)
     }
 
     private fun back(graphics: GuiGraphicsExtractor, surface: Surface, shown: Shown, x: Int, y: Int) {
         if (shown.cooldown != null) return
         val rarity = shown.rarity
-        if (rarity == null) Kit.slotFill(graphics, x, y, shown.color) else Kit.slotArt(graphics, x, y, SlotArts.atlas(settings, surface), rarity.ordinal)
+        if (rarity == null) Kit.slotFill(graphics, x, y, shown.color)
+        else SlotArts.atlas(settings, surface)?.let { Kit.slotArt(graphics, x, y, it, rarity.ordinal) }
     }
 
     private fun front(graphics: GuiGraphicsExtractor, surface: Surface, shown: Shown, x: Int, y: Int) {
         val rarity = shown.rarity ?: return
-        if (SlotArts.style(settings, surface).gem) Kit.slotGem(graphics, x, y, SlotArts.atlas(settings, surface), rarity.ordinal)
+        if (!SlotArts.style(settings, surface).gem) return
+        SlotArts.atlas(settings, surface)?.let { Kit.slotGem(graphics, x, y, it, rarity.ordinal) }
     }
 
     private fun onHotbar(): Boolean {

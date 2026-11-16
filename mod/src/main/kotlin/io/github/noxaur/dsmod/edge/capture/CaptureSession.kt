@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.edge.capture
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.capture.CaptureWriter
 import io.github.noxaur.dsmod.core.capture.ChangeLog
+import io.github.noxaur.dsmod.core.capture.RawRecord
 import io.github.noxaur.dsmod.core.game.Metrics
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -78,7 +79,7 @@ private fun JsonObjectBuilder.entityFields(entity: Entity) {
 class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
     private val writer = CaptureWriter(dir)
     private val metricsSink = { snapshot: Metrics.Snapshot ->
-        writer.record("metrics") { Json.encodeToJsonElement(Metrics.Snapshot.serializer(), snapshot).jsonObject }
+        writer.record(RawRecord.METRICS) { Json.encodeToJsonElement(Metrics.Snapshot.serializer(), snapshot).jsonObject }
     }
     private val changes = ChangeLog { type, data -> writer.record(type) { data } }
     private val blockScan = BlockScan(changes)
@@ -95,7 +96,10 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
 
     val file: Path get() = writer.file
 
-    fun record(type: String, data: () -> JsonObject) = writer.record(type, data)
+    fun record(type: RawRecord, data: () -> JsonObject) = writer.record(type, data)
+
+    /** The client tick finished. See [io.github.noxaur.dsmod.core.capture.CaptureWriter.endTick]. */
+    fun endedClientTick() = writer.endTick()
 
     fun tick(client: Minecraft) {
         val player = client.player ?: return
@@ -108,7 +112,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
                 hud.title?.let { put("title", it.toCaptureJson()) }
                 hud.subtitle?.let { put("subtitle", it.toCaptureJson()) }
             }
-            changes.offer("title", title, force = hud.titleTime > titleTime)
+            changes.offer(RawRecord.TITLE, title, force = hud.titleTime > titleTime)
         }
         titleTime = hud.titleTime
 
@@ -118,7 +122,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
         if (ticks++ % 5 != 0) return
 
         changes.offer(
-            "bossbars",
+            RawRecord.BOSSBARS,
             buildJsonObject {
                 put(
                     "bars",
@@ -137,7 +141,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
 
         // The rows are the `tablist` event. The header and footer are private to the client and no feature reads them.
         changes.offer(
-            "tabheader",
+            RawRecord.TABHEADER,
             buildJsonObject {
                 hud.tabList.header?.let { put("header", it.toCaptureJson()) }
                 hud.tabList.footer?.let { put("footer", it.toCaptureJson()) }
@@ -149,7 +153,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
         // Both passes below run Minecraft's item codec on this thread, so a capture's `metrics` say what they cost.
         game.metrics.time("capture-items") {
             changes.offerEntries(
-                "itemcomponents",
+                RawRecord.ITEMCOMPONENTS,
                 buildJsonObject {
                     put("id", menu.containerId)
                     // The player's own inventory has no menu type.
@@ -169,13 +173,13 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
         val mapIds = LinkedHashSet<MapId>()
         game.metrics.time("capture-entities") {
             player.inventory.nonEquipmentItems.plus(player.offhandItem).forEach { stack -> stack.get(DataComponents.MAP_ID)?.let(mapIds::add) }
-            changes.offerChanges("entities", entities.pass(level, player, mapIds))
+            changes.offerChanges(RawRecord.ENTITIES, entities.pass(level, player, mapIds))
         }
         items.pass()
         maps.offer(level, mapIds)
 
         changes.offer(
-            "hud",
+            RawRecord.HUD,
             buildJsonObject {
                 for (readout in game.readouts) {
                     val block = readout.hud ?: continue
@@ -185,7 +189,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
         )
 
         changes.offer(
-            "status",
+            RawRecord.STATUS,
             buildJsonObject {
                 put("x", player.blockX)
                 put("y", player.blockY)
@@ -213,7 +217,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
                     put("volume", packet.volume)
                     put("pitch", packet.pitch)
                 }
-                writer.record("sound") { data }
+                writer.record(RawRecord.SOUND) { data }
             }
             is ClientboundLevelParticlesPacket -> {
                 val data = buildJsonObject {
@@ -224,7 +228,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
                     put("count", packet.count)
                     put("speed", packet.maxSpeed)
                 }
-                writer.record("particles") { data }
+                writer.record(RawRecord.PARTICLES) { data }
             }
             is ClientboundBlockUpdatePacket -> block(packet.pos, packet.blockState)
             is ClientboundSectionBlocksUpdatePacket -> packet.runUpdates(::block)
@@ -235,7 +239,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
      * The player's click, before the game decides what it does: `swing` for the attack button, `use` for
      * the use button, each with the held item and what the crosshair is on.
      */
-    fun input(client: Minecraft, type: String) {
+    fun input(client: Minecraft, type: RawRecord) {
         val player = client.player ?: return
         val held = player.mainHandItem
         val hit = client.hitResult
@@ -266,7 +270,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
             put("health", entity.health)
             put("reason", entity.removalReason?.name)
         }
-        writer.record("unload") { data }
+        writer.record(RawRecord.UNLOAD) { data }
     }
 
     private fun block(pos: BlockPos, state: BlockState) {
@@ -277,7 +281,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
             put("z", pos.z)
             put("state", BlockStateParser.serialize(state))
         }
-        writer.record("block") { data }
+        writer.record(RawRecord.BLOCK) { data }
     }
 
     /** Stops recording what the game posts and measures. Call it on the client thread, where [Game] runs. */

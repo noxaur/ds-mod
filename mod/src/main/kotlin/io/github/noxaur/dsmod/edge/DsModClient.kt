@@ -1,8 +1,13 @@
 package io.github.noxaur.dsmod.edge
 
+import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.brigadier.arguments.StringArgumentType
-import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
+import io.github.noxaur.dsmod.core.config.Canvas
+import io.github.noxaur.dsmod.core.config.ConfigFile
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.Opens
+import io.github.noxaur.dsmod.core.config.Panel
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.features
@@ -10,11 +15,15 @@ import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.WorldChanged
+import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
 import io.github.noxaur.dsmod.edge.contribute.Contribute
 import io.github.noxaur.dsmod.edge.profile.Profiles
+import io.github.noxaur.dsmod.edge.ui.Editors
 import io.github.noxaur.dsmod.edge.ui.Kit
+import io.github.noxaur.dsmod.edge.ui.Looks
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
@@ -27,7 +36,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
 import org.slf4j.LoggerFactory
-import java.lang.reflect.Field
 import java.net.InetAddress
 import java.net.InetSocketAddress
 
@@ -36,10 +44,11 @@ object DsModClient : ClientModInitializer {
     private const val TAB_POLL_TICKS = 5
     private const val PET_POLL_TICKS = 20
 
-    private lateinit var config: ManagedConfig<DsModConfig>
+    private val log = LoggerFactory.getLogger("dsmod")
+    private lateinit var file: ConfigFile
 
-    // The jar relocates MoulConfig, so a type from it in a signature would not link for a mod built outside.
-    val settings: DsModConfig get() = config.instance
+    lateinit var settings: DsModConfig
+        private set
     lateinit var game: Game
         private set
     private lateinit var readouts: Readouts
@@ -65,46 +74,66 @@ object DsModClient : ClientModInitializer {
     var anyServer = false
 
     /** Whether the mod runs on the server the player is on. */
-    val active: Boolean get() = anyServer || onDragSim || !config.instance.general.onlyOnDragSim
+    val active: Boolean get() = anyServer || onDragSim || !settings.general.onlyOnDragSim
 
     private var byType = emptyMap<Class<out Feature>, Feature>()
 
-    /** Whether the feature of [type] runs now, which is false off dragsim.co whatever its switch says. */
+    /** Whether the feature of [type] runs now, which is false off dragsim.co whatever its switch says, and outside its area. */
     fun runs(type: Class<out Feature>): Boolean = byType[type]?.runs == true
 
     inline fun <reified F : Feature> runs() = runs(F::class.java)
 
-    /** Opens the settings where the player left them, scrolled to [setting] of `DsModConfig` when it is given. */
-    fun openSettings(setting: Field? = null) = Settings.open(setting)
+    /**
+     * Opens the settings over the screen shown now, which Done goes back to, where the player left them: at the row
+     * [id], or searched for [search], when one is given. It is the one way in, for `/dsmod`, `/dsm`, the Settings Key
+     * and Mod Menu.
+     */
+    fun openSettings(id: String? = null, search: String? = null) =
+        Minecraft.getInstance().let { it.setScreenAndShow(SettingsScreen(it.gui.screen(), reveal = id, query = search)) }
+
+    /** Writes the settings to disk. The settings screen does it when it closes, and every editor that changes them. */
+    fun saveSettings() {
+        runCatching { file.save(settings) }.onFailure { log.error("Could not save the settings", it) }
+    }
+
+    /**
+     * The game's own key event, which it sends only with no screen open, so a key typed into chat is not a press.
+     * The settings open on the next tick, after the game has handed out the typed character, or the search would take it.
+     */
+    fun pressed(key: InputConstants.Key) {
+        if (Keys.matches(key, settings.general.settingsKey)) Minecraft.getInstance().schedule { openSettings() }
+        if (Keys.matches(key, settings.hud.editKey)) Minecraft.getInstance().schedule { openHudEditor() }
+    }
 
     /** Each of the mod's own screens goes back to the screen it was opened over, so a button in the settings returns there. */
-    fun openBeaconEditor() = Minecraft.getInstance().let { it.setScreenAndShow(BeaconScreen(config.instance.end, it.gui.screen(), config::saveToFile)) }
-
-    fun openTabEditor() =
-        Minecraft.getInstance().let { it.setScreenAndShow(TabEditorScreen(config.instance.betterUi, it.gui.screen(), config::saveToFile)) }
-
-    fun openBindsEditor() =
-        Minecraft.getInstance().let { it.setScreenAndShow(CommandBindsScreen(config.instance.general, it.gui.screen(), config::saveToFile)) }
-
     fun openHudEditor() =
-        Minecraft.getInstance().let { it.setScreenAndShow(HudEditorScreen(readouts, config.instance.hud, it.gui.screen(), config::saveToFile)) }
+        Minecraft.getInstance().let { it.setScreenAndShow(HudEditorScreen(readouts, settings.hud, it.gui.screen(), ::saveSettings)) }
 
-    fun openRarityStyle() =
-        Minecraft.getInstance().let { it.setScreenAndShow(RarityStyleScreen(config.instance.inventory, it.gui.screen(), config::saveToFile)) }
+    /** Tells the player once, in their first world, that their settings file could not be read and where it went. */
+    private fun warnUnreadable() {
+        val kept = file.unreadable ?: return
+        log.error("Could not read the settings, so they start from the defaults. The old file is {}", kept)
+        var told = false
+        ClientPlayConnectionEvents.JOIN.register { _, _, client ->
+            if (told) return@register
+            told = true
+            client.schedule { Chat.send(text { bad("ds-mod could not read your settings and started from the defaults. Your old file is kept as config/dsmod/${kept.fileName}.") }) }
+        }
+    }
 
     override fun onInitializeClient() {
-        config = ManagedConfig.create(
-            FabricLoader.getInstance().configDir.resolve("dsmod/config.json").toFile(),
-            DsModConfig::class.java,
-        )
-        val all = features(config.instance)
+        file = ConfigFile(FabricLoader.getInstance().configDir.resolve("dsmod/config.json"))
+        settings = file.load().apply { favorites = SettingsTree.favorites(favorites) }
+        warnUnreadable()
+        val all = features(settings)
         game = Game(all) { active }
         byType = all.associateBy { it.javaClass }
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
-        Settings.register(config)
         Kit.register()
+        Looks.register()
+        SlotArts.register()
         Hud.register()
-        Slots.register(config.instance.inventory)
+        Slots.register(settings.inventory)
         MenuSkin.register()
         MenuBack.register()
         TabBar.register()
@@ -114,25 +143,22 @@ object DsModClient : ClientModInitializer {
         ArmorSwapGuards.register()
         EyeGuards.register()
         CopyChats.register()
-        SlotGuards.register(all.filterIsInstance<SlotLock>().single(), config.instance.inventory)
-        CommandKeys.register(config.instance.general)
-        readouts = Readouts(game, config.instance.hud).also { it.register() }
-        ChatDrags.register(readouts, config.instance.hud, config::saveToFile)
+        SlotGuards.register(all.filterIsInstance<SlotLock>().single(), settings.inventory)
+        CommandKeys.register(settings.general)
+        readouts = Readouts(game, settings.hud).also { it.register() }
+        ChatDrags.register(readouts, settings.hud, ::saveSettings)
         tabs = TabListPoller(game)
         sidebars = SidebarPoller(game)
         containers = ContainerPoller(game)
         pets = PetPoller(game)
-        config.instance.hud.edit = Runnable { openHudEditor() }
-        config.instance.end.editBeam = Runnable { openBeaconEditor() }
-        config.instance.betterUi.editTabs = Runnable { openTabEditor() }
-        config.instance.general.editBinds = Runnable { openBindsEditor() }
-        config.instance.inventory.editRarityStyle = Runnable { openRarityStyle() }
-        config.instance.contribute.open = Runnable { Contribute.open() }
+        Editors.register(Canvas.HUD_LAYOUT) { panel, host -> @Suppress("UNCHECKED_CAST") HudLayoutEditor(panel as Panel<Map<String, DsModConfig.Position>>, readouts, host) }
+        Editors.register(Canvas.MENU_TABS) { panel, host -> @Suppress("UNCHECKED_CAST") TabPlacesEditor(panel as Panel<List<MenuTab>>, host) }
+        Opens.register(Opens.HUD_EDITOR, ::openHudEditor)
+        Opens.register(Opens.REQUESTS, Contribute::open)
         Recorder.register()
         Recording.register()
         Contribute.register()
         Profiles.registerNames()
-        val log = LoggerFactory.getLogger("dsmod")
         game.metrics.sinks += { snapshot ->
             snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }
         }
@@ -153,6 +179,8 @@ object DsModClient : ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> onDragSim = false }
         ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ ->
             Packets.worldChanged()
+            // The end-of-tick draw runs before readouts replace the marks, so the old world must already be clear.
+            World.worldChanged()
             game.post(System.currentTimeMillis(), WorldChanged)
             tabs.forget()
             sidebars.forget()
@@ -169,11 +197,14 @@ object DsModClient : ClientModInitializer {
             Packets.tick(it)
             game.tick(System.currentTimeMillis())
             readouts.push()
-            Contribute.tick(game, config.instance.contribute.reportGameData, System.currentTimeMillis())
+            InventoryKey.tick(it)
+            Contribute.tick(game, settings.contribute.reportGameData, System.currentTimeMillis())
             if (++ticks % FLUSH_TICKS == 0) {
                 saved.flush()
                 game.metrics.flush()
             }
+            // After every listener registered before this one, so the capture's tick covers what this tick posted.
+            Recorder.endedClientTick()
         }
         // In this order: a request's run cut short is deleted, the recorder finishes what it holds, then an upload gets its moment.
         ClientLifecycleEvents.CLIENT_STOPPING.register {
@@ -194,7 +225,7 @@ object DsModClient : ClientModInitializer {
                     .then(
                         ClientCommands.argument("search", StringArgumentType.greedyString()).executes { context ->
                             val search = StringArgumentType.getString(context, "search")
-                            context.source.client.schedule { Settings.open(search = search) }
+                            context.source.client.schedule { openSettings(search = search) }
                             1
                         },
                     )

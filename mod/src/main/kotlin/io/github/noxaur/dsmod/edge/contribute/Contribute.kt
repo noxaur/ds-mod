@@ -68,7 +68,7 @@ object Contribute {
     /** Opens the screen of offers, and fills it in when the backend answers. */
     fun open() {
         val client = Minecraft.getInstance()
-        val screen = ContributeScreen(signingIn = !Account.backend.signedIn)
+        val screen = ContributeScreen(signingIn = !Account.backend.signedIn, parent = client.gui.screen())
         client.setScreenAndShow(screen)
         val places = DsModClient.game.places.value
         swept.thenCompose { Account.backend.async { requests() } }.whenComplete { requests, error ->

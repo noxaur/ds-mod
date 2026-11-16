@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.hand.Etherwarp
 import io.github.noxaur.dsmod.core.hand.Etherwarp.Miss
 import io.github.noxaur.dsmod.edge.DsModClient
@@ -136,7 +135,7 @@ class EtherwarpOutlineTest : FabricClientGameTest {
                 context.waitTicks(2)
                 check(target(context) == Etherwarp.Target(12, 101, 0, null)) { "Box Without Sneak shows no box: ${target(context)}" }
 
-                context.runOnClient<Nothing> { DsModClient.openSettings(DsModConfig.General::class.java.getField("etherwarpOutline")) }
+                context.runOnClient<Nothing> { DsModClient.openSettings("etherwarpOutline") }
                 context.waitTicks(20)
                 context.takeScreenshot("etherwarp-settings")
                 context.setScreen { null }

@@ -4,6 +4,10 @@ package io.github.noxaur.dsmod.core.game
  * Where a feature runs. The tab list's info row [key] reads [value] there, and the sidebar's place starts with
  * [place], each taken from a capture and each null when it does not tell the area. [folder] is the package under
  * `core/feature` whose features all belong to it.
+ *
+ * For a new place, add an entry with the tab list row or the sidebar place a capture shows, preferring whichever
+ * arrives first. A dungeon, the Dungeon Hub and a part of an area are told by the sidebar's `⏣` line, as
+ * [CATACOMBS], [DUNGEON_HUB] and [VOID_SEPULTURE] are.
  */
 enum class Area(val key: String?, val value: String?, val place: String?, val folder: String?) {
     ANYWHERE(null, null, null, null),

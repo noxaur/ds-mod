@@ -1,180 +1,154 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
-import io.github.noxaur.dsmod.core.config.Favorites
+import com.google.gson.JsonParser
+import io.github.noxaur.dsmod.core.ui.Place
+import io.github.noxaur.dsmod.core.ui.SettingsTabs
+import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
-import io.github.noxaur.dsmod.edge.Settings
+import io.github.noxaur.dsmod.edge.SettingsScreen
+import io.github.noxaur.dsmod.gametest.SettingsSteps.at
+import io.github.noxaur.dsmod.gametest.SettingsSteps.hear
+import io.github.noxaur.dsmod.gametest.SettingsSteps.open
+import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
+import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
+import io.github.noxaur.dsmod.gametest.SettingsSteps.theme
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.gui.screens.TitleScreen
 import org.lwjgl.glfw.GLFW
-import java.lang.reflect.Field
 import kotlin.io.path.readText
 
 /**
- * Stars settings with the real mouse and keyboard: a press on the star, the Favorite Key over a setting, and a mouse
- * button bound as that key. The key types into a focused search instead, and Ctrl+F still focuses it. Favorites starts
- * empty with a line that says how to fill it, lists starred settings in their own order, and keeps a row unstarred there
- * until the player leaves, so a quick second press stars it again. A search hides Favorites, and the stars are saved
- * when the screen closes, which opens again where the player left it.
+ * Stars settings with the real mouse and keyboard: a press on the star, the Favorite Key over a row or on the row
+ * the keys are on, and a mouse button bound as that key. The key types into a focused search instead, and Ctrl+F
+ * still focuses it. Favorites starts empty with a line that says how to fill it, lists starred rows in the tree's
+ * order, and keeps a row unstarred there until the player leaves, so a quick second press stars it again. A search
+ * finds nothing in Favorites, and the stars are saved when the screen closes.
  */
 class FavoritesTest : FabricClientGameTest {
-    private val fullbright = DsModConfig.General::class.java.getField("fullbright")
-    private val particles = DsModConfig.General::class.java.getField("explosionParticleHider")
-    private val loot = DsModConfig.Loot::class.java.getField("lootAlerts")
-
     override fun runTest(context: ClientGameTestContext) {
+        val window = setUp(context)
         val settings = DsModClient.settings
-        fun screen() = context.computeOnClient<String, Nothing> { it.gui.screen()?.javaClass?.simpleName ?: "none" }
-        fun open() = screen().contains("MoulConfig")
-        fun shown(): List<String> = context.computeOnClient<List<String>, Nothing> { Settings.favorites }
-        fun listed(): Set<String> = context.computeOnClient<Set<String>, Nothing> { Settings.listed }
-        fun category(field: Field) = context.computeOnClient<String, Nothing> { Settings.category(field) }
-        fun show(category: String) {
-            context.runOnClient<Nothing> { Settings.show(category) }
-            context.waitTicks(3)
+        val driver = SettingsDriver(context)
+        fun starred() = context.computeOnClient<List<String>, Nothing> { DsModClient.settings.favorites.toList() }
+        fun shown() = context.computeOnClient<List<String>, Nothing> { (it.gui.screen() as SettingsScreen).shown() }
+
+        /** Presses the star of the row [id], or puts the mouse on it with [press] false. */
+        fun star(id: String, press: Boolean = true) {
+            val spot = driver.spot(id)
+            check(spot.starX >= 0) { "$id has no star" }
+            if (press) driver.click(spot.starX + 3, spot.starY + 3) else driver.move(spot.starX + 3, spot.starY + 3)
         }
 
-        /** Moves the mouse to [dx], [dy] from the star of [field], where it was last drawn. */
-        fun point(field: Field, dx: Int = 3, dy: Int = 3) {
-            val (x, y) = context.computeOnClient<Pair<Int, Int>, Nothing> { Settings.star(field) }
-            val scale = context.computeOnClient<Double, Nothing> { it.window.guiScale.toDouble() }
-            context.input.setCursorPos((x + dx) * scale, (y + dy) * scale)
-            context.waitTicks(2)
-        }
+        /** Puts the mouse on the middle of the row [id], away from its control. */
+        fun over(id: String) = driver.spot(id).let { driver.move(it.x + 20, it.y + it.height / 2) }
 
-        fun press(field: Field) {
-            point(field)
-            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
-            context.waitTicks(2)
-        }
-
-        fun ctrlF() {
-            context.input.holdKey(GLFW.GLFW_KEY_LEFT_CONTROL)
-            context.input.pressKey(GLFW.GLFW_KEY_F)
-            context.input.releaseKey(GLFW.GLFW_KEY_LEFT_CONTROL)
-            context.waitTicks(2)
-        }
-
-        context.waitForScreen(TitleScreen::class.java)
         try {
-            settings.favorites = emptyList()
-
-            // Favorites is first and starts empty, with a line that says how to fill it.
-            context.runOnClient<Nothing> { Settings.open() }
-            show(Settings.FAVORITES)
-            check(open()) { "The settings did not open, got ${screen()}" }
-            check(listed().first() == Settings.FAVORITES && shown().isEmpty()) { "Favorites is not first and empty: ${listed()}, ${shown()}" }
+            context.runOnClient<Nothing> { settings.favorites = emptyList() }
+            val tabs = SettingsTabs(Place(SettingsScreen.FAVORITES))
+            open(context, tabs)
+            check(shown().isEmpty()) { "An empty Favorites lists ${shown()}" }
             context.takeScreenshot("settings-favorites-empty")
 
-            // A press on Fullbright's star stars it and nothing else.
-            context.runOnClient<Nothing> { DsModClient.openSettings(fullbright) }
-            context.waitTicks(5)
-            point(fullbright)
-            context.takeScreenshot("settings-star-hover")
-            press(fullbright)
-            check(settings.favorites == listOf("general.fullbright")) { "The press left ${settings.favorites}" }
-            check(!settings.general.fullbright) { "The press on the star also switched Fullbright on" }
+            // A press on the star stars the row. Its star shows while the mouse is on it.
+            context.runOnClient<Nothing> { tabs.current.go(at("General").section) }
+            open(context, tabs)
+            star("fullbright", press = false)
+            context.takeScreenshot("settings-favorites-star-hover")
+            star("fullbright")
+            check(starred() == listOf("fullbright")) { "The press left ${starred()}" }
+            hear(context, "Fullbright, switch, off, starred", "Over a starred row")
 
-            // F over a setting, away from its star, stars it, and its letter does not land in the search.
-            point(particles, dx = 30, dy = 12)
-            context.input.pressKey(GLFW.GLFW_KEY_F)
-            context.waitTicks(2)
-            check("general.explosionParticleHider" in settings.favorites) { "F over Explosion Particle Hider left ${settings.favorites}" }
-            check(Settings.FAVORITES in listed()) { "F typed into the search, which shows ${listed()}" }
-            context.input.setCursorPos(0.0, 0.0)
-            context.waitTicks(2)
-            context.takeScreenshot("settings-starred")
+            // F over a row stars it, and types nothing into the search.
+            over("explosionParticleHider")
+            driver.key(GLFW.GLFW_KEY_F)
+            check("explosionParticleHider" in starred()) { "F over Explosion Particles left ${starred()}" }
+            check(!tabs.current.place.searching) { "F over a row started a search for \"${tabs.current.place.query}\"" }
 
-            // Ctrl+F is MoulConfig's, and focuses the search. F then types there and stars nothing.
-            point(particles, dx = 30, dy = 12)
-            ctrlF()
-            check("general.explosionParticleHider" in settings.favorites) { "Ctrl+F unstarred the setting" }
+            // Ctrl+F focuses the search, and F then types there and stars nothing.
+            driver.key(GLFW.GLFW_KEY_F, control = true)
+            check("explosionParticleHider" in starred()) { "Ctrl+F unstarred the row" }
             context.input.typeChars("ful")
             context.waitTicks(2)
-            check("general.explosionParticleHider" in settings.favorites) { "Typing in the search changed the stars: ${settings.favorites}" }
-            // A search hides Favorites, as the rule in core says, and finds Fullbright in its own category.
-            check((Settings.FAVORITES in listed()) == Favorites.listed("ful") && category(fullbright) in listed()) { "Searching showed ${listed()}" }
-            ctrlF()
-            context.runOnClient<Nothing> { Settings.search("") }
-            context.waitTicks(2)
+            check(starred() == listOf("fullbright", "explosionParticleHider")) { "Typing in the search changed the stars: ${starred()}" }
+            // A search finds Fullbright once, in its own section, and nothing in Favorites.
+            check(shown() == listOf("fullbright")) { "Searching \"ful\" lists ${shown()}" }
+            context.takeScreenshot("settings-favorites-search")
+            driver.key(GLFW.GLFW_KEY_ESCAPE)
+            context.runOnClient<Nothing> { tabs.current.search("") }
+            open(context, tabs)
 
-            // A setting scrolled partly under the header takes neither the key nor a press there, only inside the pane.
-            context.runOnClient<Nothing> { DsModClient.openSettings(fullbright) }
-            // MoulConfig slides its scroll over 150 ms, so the stars are read once it has stopped.
-            context.waitTicks(10)
-            val top = context.computeOnClient<Pair<Int, Int>, Nothing> { Settings.star(fullbright) }.second
-            point(particles, dx = 30, dy = 12)
-            context.input.scroll(-1.0)
-            context.waitTicks(10)
-            val scrolled = context.computeOnClient<Pair<Int, Int>, Nothing> { Settings.star(fullbright) }.second
-            // The first box starts 6 above its star and the pane a little above that, so 16 above the star is the header.
-            // That point must fall on Fullbright's box, which now starts 6 above its star and runs over 30 below it.
-            check(top - 16 in scrolled - 6..scrolled + 30) { "One notch moved Fullbright's star from $top to $scrolled, which leaves the header off its box" }
-            point(fullbright, dx = 30, dy = top - 16 - scrolled)
-            context.input.pressKey(GLFW.GLFW_KEY_F)
-            context.waitTicks(2)
-            point(fullbright, dx = 3, dy = top - 16 - scrolled)
+            // The keys' row takes the Favorite Key once they show, wherever the mouse is.
+            over("fullbright")
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
             context.waitTicks(2)
-            check(settings.favorites == listOf("general.fullbright", "general.explosionParticleHider")) { "F or a press over the header left ${settings.favorites}" }
+            driver.key(GLFW.GLFW_KEY_DOWN)
+            driver.move(2, 2)
+            driver.key(GLFW.GLFW_KEY_F)
+            check("explosionParticleHider" !in starred()) { "F on the keys' row left ${starred()}" }
+            driver.key(GLFW.GLFW_KEY_F)
+            check("explosionParticleHider" in starred()) { "F on the keys' row again left ${starred()}" }
+            driver.key(GLFW.GLFW_KEY_ESCAPE)
+            // That press on the row toggled Fullbright itself, so it goes back.
+            context.runOnClient<Nothing> { settings.general.fullbright = false }
 
-            // A mouse button bound as the Favorite Key works the same way.
-            settings.general.favoriteKey = GLFW.GLFW_MOUSE_BUTTON_MIDDLE
-            context.runOnClient<Nothing> { DsModClient.openSettings(loot) }
-            context.waitTicks(5)
-            point(loot, dx = 30, dy = 12)
-            // With Ctrl held it is left alone, as the keyboard's key is.
-            context.input.holdKey(GLFW.GLFW_KEY_LEFT_CONTROL)
-            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
-            context.input.releaseKey(GLFW.GLFW_KEY_LEFT_CONTROL)
-            context.waitTicks(2)
-            check("loot.lootAlerts" !in settings.favorites) { "Ctrl and the middle button starred Loot Alerts" }
-            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
-            context.waitTicks(2)
-            check("loot.lootAlerts" in settings.favorites) { "The middle button left ${settings.favorites}" }
-            settings.general.favoriteKey = GLFW.GLFW_KEY_F
-
-            // Favorites lists them in the settings' own order.
-            show(Settings.FAVORITES)
-            check(shown() == listOf("general.fullbright", "general.explosionParticleHider", "loot.lootAlerts")) { "Favorites shows ${shown()}" }
-            context.takeScreenshot("settings-favorites")
-
-            // A quick second press on a star unstarred here lands on the same row, which stays, and stars it again.
-            point(fullbright)
-            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
-            context.waitTicks(1)
-            check("general.fullbright" !in settings.favorites && shown().first() == "general.fullbright") { "The unstarred row moved: ${shown()}" }
-            context.input.setCursorPos(0.0, 0.0)
-            context.waitTicks(2)
-            context.takeScreenshot("settings-favorites-kept")
-            point(fullbright)
-            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
-            context.waitTicks(2)
-            check("general.fullbright" in settings.favorites && "general.explosionParticleHider" in settings.favorites) {
-                "The second press left ${settings.favorites}"
+            // A mouse button bound as the Favorite Key stars the row under the mouse, and not with Ctrl held.
+            context.runOnClient<Nothing> {
+                settings.general.favoriteKey = GLFW.GLFW_MOUSE_BUTTON_MIDDLE
+                tabs.current.go(at("Combat").section)
             }
+            open(context, tabs)
+            over("lootAlerts")
+            context.input.holdControl()
+            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
+            context.input.releaseControl()
+            context.waitTicks(2)
+            check("lootAlerts" !in starred()) { "Ctrl and the middle button starred Loot Alerts" }
+            // A middle press with Ctrl is the row's own, which toggles the switch, so it goes back.
+            context.runOnClient<Nothing> { settings.loot.lootAlerts = true }
+            over("lootAlerts")
+            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
+            context.waitTicks(2)
+            check("lootAlerts" in starred()) { "The middle button left ${starred()}" }
+            context.runOnClient<Nothing> { settings.general.favoriteKey = GLFW.GLFW_KEY_F }
 
-            // A row unstarred here goes once the player leaves Favorites.
-            press(fullbright)
-            show(category(fullbright))
-            show(Settings.FAVORITES)
-            check(shown() == listOf("general.explosionParticleHider", "loot.lootAlerts")) { "After leaving, Favorites shows ${shown()}" }
+            // Favorites lists them in the tree's order, under their sections and groups.
+            context.runOnClient<Nothing> { tabs.current.go(SettingsScreen.FAVORITES) }
+            open(context, tabs)
+            check(shown() == listOf("fullbright", "explosionParticleHider", "lootAlerts")) { "Favorites lists ${shown()}" }
+            context.takeScreenshot("settings-favorites")
+            theme(context, Theme.VANILLA)
+            context.takeScreenshot("settings-favorites-vanilla")
+            theme(context, Theme.CHARCOAL)
 
-            // Closing saves the stars, and the screen opens again on Favorites.
-            context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
-            context.waitTicks(3)
-            check(!open()) { "Escape left ${screen()}" }
-            val saved = FabricLoader.getInstance().configDir.resolve("dsmod/config.json").readText()
-            check("\"loot.lootAlerts\"" in saved && "\"general.fullbright\"" !in saved) { "The config file holds $saved" }
-            context.runOnClient<Nothing> { DsModClient.openSettings() }
-            context.waitTicks(3)
-            check(context.computeOnClient<String, Nothing> { Settings.selected } == Settings.FAVORITES) { "The settings did not open on Favorites" }
-        } finally {
-            settings.favorites = emptyList()
-            settings.general.favoriteKey = GLFW.GLFW_KEY_F
+            // A row unstarred here stays, so a second press lands on it and stars it again.
+            star("fullbright")
+            check("fullbright" !in starred() && shown().first() == "fullbright") { "The unstarred row moved: ${shown()}" }
+            context.takeScreenshot("settings-favorites-kept")
+            star("fullbright")
+            check("fullbright" in starred()) { "The second press left ${starred()}" }
+
+            // Once the player leaves Favorites, a row unstarred there goes.
+            star("fullbright")
+            context.runOnClient<Nothing> { tabs.current.go(at("General").section) }
+            open(context, tabs)
+            context.runOnClient<Nothing> { tabs.current.go(SettingsScreen.FAVORITES) }
+            open(context, tabs)
+            check(shown() == listOf("explosionParticleHider", "lootAlerts")) { "After leaving, Favorites lists ${shown()}" }
+
+            // Closing saves the stars.
             context.setScreen { TitleScreen() }
+            val saved = JsonParser.parseString(FabricLoader.getInstance().configDir.resolve("dsmod/config.json").readText()).asJsonObject
+            check(saved["favorites"].asJsonArray.map { it.asString } == listOf("explosionParticleHider", "lootAlerts")) { "The file holds ${saved["favorites"]}" }
+        } finally {
+            context.runOnClient<Nothing> {
+                settings.favorites = emptyList()
+                settings.general.favoriteKey = GLFW.GLFW_KEY_F
+                DsModClient.saveSettings()
+            }
+            context.setScreen { TitleScreen() }
+            restore(context, window)
         }
     }
 }

@@ -12,46 +12,54 @@ class Rule(
     val fix: String,
     val example: String,
     val except: String? = null,
+    /** Forms beside [example] that the rule must catch, including ones split over lines. */
+    val examples: List<String> = emptyList(),
+    val span: Span = Span.LINE,
 )
+
+/** [LINE] matches one source line. [FILE] matches the whole file, so a hit may span lines. */
+enum class Span { LINE, FILE }
 
 val rules = listOf(
     Rule(
-        id = "core-is-pure",
-        files = "src/main/kotlin/**/core/**.kt",
-        forbid = Regex("""^import (net\.minecraft|net\.fabricmc|com\.mojang|io\.github\.noxaur\.dsmod\.edge)\."""),
-        fix = "core takes plain data and returns plain models. Read Minecraft in the edge package and pass the values in, " +
-            "and return what the player should see for the edge to draw.",
-        example = "import net.minecraft.client.Minecraft",
-    ),
-    Rule(
         id = "area-by-declaration",
         files = "src/main/kotlin/**/core/feature/**.kt",
-        forbid = Regex("""\binfo\("(Area|Dungeon)"\)|\.(row|place)\b|"(The End|Village|The Crypts|Catacombs|Dungeon Hub|Void Sepulture)""""),
+        // InfoRows keeps the area rows from a feature, but a TabList or Sidebar event still carries every line.
+        forbid = Regex(""""(The End|Village|The Crypts|Catacombs|Dungeon Hub|Void Sepulture)""""),
         fix = "A feature never asks where the player is. Pass its `Area` to `Feature(..)` and `Game` gives it events and a " +
             "readout only there. For a place `Area` lacks, add an entry with the tab list row or the sidebar place a capture shows.",
-        example = """if (tab.info("Area") != "The End") return null""",
+        example = """if (event.lines.any { "Dungeon Hub" in it.plain }) return""",
+    ),
+    Rule(
+        id = "chat-by-line",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        except = "src/main/kotlin/**/core/feature/Feature.kt",
+        // Every old shape, `plain.startsWith`, `in plain` and a regex with or without `^`, sat inside this handler.
+        // Whitespace and a line break are legal around the type argument and `::class`, and both still subscribe.
+        forbid = Regex("""on<\s*SystemMessage\s*>|SystemMessage\s*::\s*class"""),
+        fix = "Read a chat line with `line(head) { .. }`, or `line(head, pattern) { (a, b), now -> .. }` to parse it. " +
+            "`head` is the line's start, a String or a Regex for a start that varies, because a player can type anything " +
+            "after their name. A line whose head matches and whose pattern does not counts as unparsed by itself.",
+        example = """on<SystemMessage> { message, _ -> if ("FIREBALL" in message.text.plain) alert() }""",
+        examples = listOf(
+            "on<\n    SystemMessage\n>",
+            "on< SystemMessage >",
+            "SystemMessage :: class",
+        ),
+        span = Span.FILE,
     ),
     Rule(
         id = "text-by-role",
         files = "src/main/**.{kt,java}",
         // PlayerNames strips the `§` codes of an older capture's raw text and reads them to tell an NPC's label. It colors nothing.
         except = "src/main/kotlin/**/{core/text/Text,edge/Chat,core/ui/Theme,core/capture/PlayerNames}.kt",
-        forbid = Regex(
-            """§|\bChatFormatting\.|\bTextColor\.|\.withColor\(|\bComponent\.(literal|translatable)\(|""" +
-                """\b0x[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?\b""",
-        ),
+        // A color in a call is caught in the bytecode by TextLayerTest. A hex literal could be any int there, and a `§` char
+        // compiles to one, so both are read in the source.
+        // A `_` between hex digits is still one literal, and eight digits are a color with alpha.
+        forbid = Regex("""§|\b0x[0-9A-Fa-f](?:_?[0-9A-Fa-f]){5}(?:(?:_?[0-9A-Fa-f]){2})?\b"""),
         fix = "Say what the text means and let the text layer color it: build it with `text { body(..); value(..) }` " +
             "from core.text and print it with `Chat.send`. If no role fits, add one to `Role`.",
-        example = "Component.literal(\"§eSold 5 scales!\")",
-    ),
-    Rule(
-        id = "draw-with-kit",
-        files = "src/main/**.{kt,java}",
-        except = "src/main/kotlin/**/edge/ui/Kit.kt",
-        // A drawing call takes a position and a size, so `IntArray.fill(-1)` with one argument is left alone.
-        forbid = Regex("""\.(fill|fillGradient|outline|blit|blitSprite|horizontalLine|verticalLine|textHighlight|textWithBackdrop)\([^)]*,"""),
-        fix = "Draw chrome with `Kit` in edge/ui, so it follows the grid and the player's theme. If the kit lacks a shape, " +
-            "add it there, to kit.md and to the gallery.",
-        example = "graphics.fill(0, 0, 80, 2, Role.MUTED.argb(120))",
+        example = "val gold = 0xFF_AA_00",
+        examples = listOf("val glass = 0xFF_AA_00_FF", "val gold = 0xFFAA00"),
     ),
 )

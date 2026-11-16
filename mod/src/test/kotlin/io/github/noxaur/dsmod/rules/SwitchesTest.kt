@@ -3,7 +3,6 @@ package io.github.noxaur.dsmod.rules
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.features
-import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
@@ -15,17 +14,10 @@ import org.objectweb.asm.tree.InvokeDynamicInsnNode
 import org.objectweb.asm.tree.LineNumberNode
 import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.MethodNode
-import java.nio.file.Files
-import java.nio.file.Path
-import kotlin.io.path.exists
-import kotlin.io.path.extension
-import kotlin.io.path.readBytes
 import kotlin.jvm.internal.CallableReference
 import kotlin.reflect.KMutableProperty0
-import kotlin.streams.asSequence
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 private val FEATURE = Type.getInternalName(Feature::class.java)
 
@@ -62,11 +54,7 @@ fun switchReads(classes: List<ClassNode>, switches: Set<Pair<String, String>>, s
 class SwitchesTest {
     @Test
     fun `outside core a feature's switch is read only through the feature`() {
-        val classes = listOf("build/classes/kotlin/main", "build/classes/java/main").map(Path::of).filter { it.exists() }.flatMap { dir ->
-            Files.walk(dir).asSequence().filter { it.extension == "class" }
-                .map { ClassNode().also { node -> ClassReader(it.readBytes()).accept(node, ClassReader.SKIP_FRAMES) } }.toList()
-        }
-        assertTrue(classes.size > 100, "SwitchesTest found ${classes.size} release classes. Build the main source set first.")
+        val classes = releaseClasses()
         val subclasses = features(DsModConfig()).map { Type.getInternalName(it.javaClass) }.toSet()
         val reads = switchReads(classes, switches(), subclasses)
         assertEquals(

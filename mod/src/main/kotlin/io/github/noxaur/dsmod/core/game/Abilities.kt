@@ -18,7 +18,8 @@ data class SetCharge(val name: String, val worn: Int, val pieces: Int, val milli
  * as `-100 Mana (Giant's Slam)` in the action bar, and a press too early is refused in chat.
  */
 object Abilities {
-    private const val REFUSAL = "This ability is on cooldown for "
+    /** How the server starts its refusal of an ability still on cooldown. */
+    const val REFUSAL = "This ability is on cooldown for "
     private val REFUSAL_LINE = Regex("""This ability is on cooldown for (\d+(?:\.\d+)?)s""")
     private val CAST = Regex("""-[\d,]+ Mana \((.+?)\)""")
     private val HEADING = Regex("""(?:Item Ability: )?(.+?) ?(?:(?:SNEAK )?(?:RIGHT|LEFT) CLICK|OFFHAND KEY)""")

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 
 import { Effect } from "effect";
-import { expect, test } from "vite-plus/test";
+import { expect, onTestFinished, test, vi } from "vite-plus/test";
 
 import { makeApp } from "../src/app.ts";
 import { memoryServices } from "../src/memory.ts";
@@ -62,10 +62,12 @@ test("an agent publishes a brief, players record it, and pull writes one file pe
 
   expect(await lines("list")).toEqual([`${id}  filled  2/2 runs, 0 skipped  Golem tiers`]);
   const out = directory();
-  const stem = `golem-tiers-${id.slice(0, 8)}`;
+  const stem = `golem-tiers-${id}`;
   expect(await lines("pull", id, out)).toEqual([join(out, `${stem}-a.jsonl`), join(out, `${stem}-b.jsonl`)]);
   expect(readdirSync(out).toSorted()).toEqual([`${stem}-a.jsonl`, `${stem}-b.jsonl`]);
-  expect(readFileSync(join(out, `${stem}-a.jsonl`), "utf8")).toBe('{"type":"step"}\n');
+  // Two uploads in the same millisecond are ordered by id, so either player's run can be A.
+  const runs = readdirSync(out).map((file) => readFileSync(join(out, file), "utf8"));
+  expect(runs.toSorted()).toEqual(['{"type":"chat"}\n', '{"type":"step"}\n']);
 });
 
 test("two briefs with the same name pulled into one directory keep every run", async () => {
@@ -83,6 +85,28 @@ test("two briefs with the same name pulled into one directory keep every run", a
       .map((file) => readFileSync(join(out, file), "utf8").trim())
       .toSorted(),
   ).toEqual(ids.toSorted());
+});
+
+test("two requests that share the first eight id characters keep both runs", async () => {
+  const ids = ["12345678-aaaa-4000-8000-000000000001", "12345678-bbbb-4000-8000-000000000002"] as const;
+  vi.spyOn(crypto, "randomUUID").mockReturnValueOnce(ids[0]).mockReturnValueOnce(ids[1]);
+  onTestFinished(() => {
+    vi.restoreAllMocks();
+  });
+  const { lines, upload } = backend();
+  expect(await lines("create", briefFile(golem))).toEqual([ids[0]]);
+  expect(await lines("create", briefFile(golem))).toEqual([ids[1]]);
+  await upload("ann", ids[0], gzipSync("first\n"));
+  await upload("ann", ids[1], gzipSync("second\n"));
+  const out = directory();
+  for (const id of ids) {
+    await lines("pull", id, out);
+  }
+  expect(readdirSync(out).toSorted()).toEqual(ids.map((id) => `golem-tiers-${id}-a.jsonl`));
+  expect(ids.map((id) => readFileSync(join(out, `golem-tiers-${id}-a.jsonl`), "utf8").trim())).toEqual([
+    "first",
+    "second",
+  ]);
 });
 
 test("list --json is the backend's report, for an agent to parse", async () => {
@@ -120,13 +144,15 @@ test("unknowns lists the most seen first, one line each", async () => {
 test("a run that cannot be read is named as a problem, and the others are still written", async () => {
   const { run, lines, upload } = backend();
   const [id = ""] = await lines("create", briefFile(golem));
-  await upload("ann", id, new Uint8Array([0x1f, 0x8b, 1, 2]));
+  const broken: unknown = await (await upload("ann", id, new Uint8Array([0x1f, 0x8b, 1, 2]))).json();
   await upload("bob", id, gzipSync("{}\n"));
   const out = directory();
-  expect(await run("pull", id, out)).toEqual({
-    out: [join(out, `golem-tiers-${id.slice(0, 8)}-b.jsonl`)],
-    problems: [expect.stringMatching(/^Run A .* is not a gzipped capture\.$/)],
-  });
+  // Two uploads in the same millisecond are ordered by id, so either run can be A.
+  const result = await run("pull", id, out);
+  expect(result.problems).toEqual([expect.stringMatching(/^Run [AB] .* is not a gzipped capture\.$/)]);
+  expect(result.problems[0]).toContain(`(${String(Reflect.get(Object(broken), "id"))})`);
+  const letter = result.problems[0]?.charAt(4) === "A" ? "b" : "a";
+  expect(result.out).toEqual([join(out, `golem-tiers-${id}-${letter}.jsonl`)]);
 });
 
 test("a brief that cannot be read or published says which, naming the problem", async () => {

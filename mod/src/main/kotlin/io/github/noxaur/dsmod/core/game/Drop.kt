@@ -6,13 +6,13 @@ package io.github.noxaur.dsmod.core.game
  */
 data class Drop(val tier: String, val item: String) {
     companion object {
-        // A player's chat line has their name first, so only the server's own lines start with the tier.
-        private val announced = Regex("""^([A-Z]+(?: [A-Z]+)*) DROP! (?:\((.+?)\)(?: \(.*\))?|(.+))$""")
+        /** The start of a drop line, for a feature's `line` handler to pass with [parse]. */
+        val head = Regex("""[A-Z]+(?: [A-Z]+)* DROP! """)
+        private val announced = Regex("""([A-Z]+(?: [A-Z]+)*) DROP! (?:\((.+?)\)(?: \(.*\))?|(.+))""")
 
-        /** The drop a chat line announces, or null for any other line. */
+        /** The drop a line that starts with [head] announces, or null when it does not parse. */
         fun parse(line: String): Drop? {
-            if (" DROP! " !in line) return null
-            val (tier, parenthesised, bare) = announced.find(line)?.destructured ?: return null
+            val (tier, parenthesised, bare) = announced.matchEntire(line)?.destructured ?: return null
             return Drop(tier, parenthesised.ifEmpty { bare })
         }
     }

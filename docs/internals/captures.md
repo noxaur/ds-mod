@@ -1,14 +1,22 @@
 # Captures
 
-How the mod records what the server showed, and how a recording becomes a test that holds no one's name. The capture format is in [mod/AGENTS.md](../../mod/AGENTS.md#seeing-the-game), and recording one is in [operations/captures.md](../operations/captures.md).
+How the mod records what the server showed, and how a recording becomes a test that holds no one's name. Each capture type's line is in the KDoc on its `GameEvent` or `RawRecord`, and recording one is in [operations/captures.md](../operations/captures.md).
 
 ## A capture is a recording of what the features saw
 
 The edge turns what the server sends into a `GameEvent`, and the capture records the events as they were posted. A test replays the recording through the same `Game` the player runs, so nothing stands between a capture and a test that could drift from the real input.
 
-A type of data is either an event or a raw record, and never both. Raw records exist because nobody can design an event for data they have not seen: the recorder writes everything else the server sent, with full fidelity, so the first capture of a screen shows what its event must carry. A feature that needs that data promotes it to an event. Two producers for one type would let a test pass on data the player's game never builds, so `CaptureWriter` rejects a raw record with an event's type.
+A type of data is either an event or a raw record, and never both. Raw records exist because nobody can design an event for data they have not seen: the recorder writes everything else the server sent, with full fidelity, so the first capture of a screen shows what its event must carry. A feature that needs that data promotes it to an event. Two producers for one type would let a test pass on data the player's game never builds, so raw types are a closed list, `RawRecord`, and `CaptureWriterTest` fails on one that shares an event's type.
 
 Only an excerpt of a capture goes in git, as a feature's fixture, with the player names and their chat replaced. The transcript beside it is the expected result, written as a player would describe it, so a reviewer who knows the game can judge it without reading the code.
+
+## A line carries the client tick that posted it
+
+The client posts events as they arrive and calls `Game.tick` once, from `END_CLIENT_TICK`. A capture's `t` is `System.currentTimeMillis()` at the post, so it is not a tick: two events 49ms apart can be one tick or two, and two events 1ms apart can be two ticks when the boundary falls between them. Grouping a replay by `t / 50` therefore merges ticks and splits them, and the transcript shows a HUD the player never had, or hides one they did.
+
+The writer keeps a counter, stamps it on the line as `tick`, and advances it by one when that client tick ends. The advance is a single increment on the client thread, read into the record before the line is queued, so an empty tick adds no line and the cost of a tick does not grow with how much the tick recorded. A line without `tick` is a capture from before this. Replaying one ticks after every event, because that is how its transcript was written, and a guessed boundary would change it. A line that has `tick` is posted with the other events of that tick, and the replay ticks once after them.
+
+`cutFixture` copies `tick` onto each event it keeps. The tab list, sidebar and container it writes for the state at the window's start have none: those were posted on earlier ticks the window does not keep. Redaction copies `tick` too, since it rebuilds an event line.
 
 ## The recorder is in the release jar, and runs only for a contribution
 

@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.core.container
 
+import kotlinx.serialization.Serializable
+
 /** A ring around the slot, drawn over the fill and the floor. */
 enum class Border(val label: String) {
     NONE("None"),
@@ -29,6 +31,7 @@ enum class Floor(val label: String) {
  * How a rarity mark looks, built from the rarity's one color. [gem] puts a small gem over the item's top-left
  * corner, where no stack count or durability bar sits. The defaults are the Gilded preset's.
  */
+@Serializable
 data class SlotStyle(
     val border: Border = Border.GILDED,
     val fill: Fill = Fill.GLOW,

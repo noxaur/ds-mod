@@ -35,7 +35,7 @@ import io.github.noxaur.dsmod.core.feature.loot.LootAlerts
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerBossAlert
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerTracker
 
-/** Every feature the mod has. A feature missing here never runs, and `FeatureReplayTest` replays each one. */
+/** Every feature the mod has. `FeaturesListedTest` fails on a feature missing here, and `FeatureReplayTest` replays each one. */
 fun features(config: DsModConfig): List<Feature> = listOf(
     AbilitySpam(config.chat::abilitySpam),
     CopyChat(config.chat::copyChat),
@@ -68,7 +68,15 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     ),
     EtherwarpOutline(config.general::etherwarpOutline),
     ExplosionParticleHider(config.general::explosionParticleHider),
-    InventoryPreview(config.general::inventoryPreview, config.general::inventoryRows, config.general::inventoryLook),
+    InventoryPreview(
+        config.general::inventoryPreview,
+        config.general::inventoryRows,
+        config.general::inventoryLook,
+        config.general::inventoryPlacement,
+        config.general::inventoryLayout,
+        config.general::inventoryOpacity,
+        config.general::inventoryPickup,
+    ),
     FreeLook(config.general::freeLook),
     Fullbright(config.general::fullbright),
     ProfileViewer(config.general::profileViewer),

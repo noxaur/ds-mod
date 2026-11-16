@@ -25,4 +25,13 @@ class HudSnapTest {
     fun `the nearer line wins`() {
         assertEquals(100f, HudSnap.snap(101f, 40f, edges = listOf(100f, 104f), centers = emptyList(), reach = 5f))
     }
+
+    @Test
+    fun `the map keeps the screen's shape and turns its points back into the screen's`() {
+        val map = HudMap(640, 360, 320, 400)
+        assertEquals(0.5f, map.scale)
+        assertEquals(320 to 180, map.width to map.height)
+        assertEquals(200f to 100f, map.screen(100.0) to map.screen(50.0))
+        assertEquals(160 to 90, HudMap(640, 360, 320, 90).let { it.width to it.height }, "a short room takes the height first")
+    }
 }

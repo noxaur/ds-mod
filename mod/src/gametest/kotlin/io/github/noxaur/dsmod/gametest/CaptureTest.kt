@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.capture.RawRecord
+import io.github.noxaur.dsmod.core.capture.eventTypes
 import io.github.noxaur.dsmod.debug.DsModDebug
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -16,7 +18,55 @@ import kotlin.io.path.readLines
 
 /** Makes a real server send each kind of interface, and checks that the capture file holds it. */
 class CaptureTest : FabricClientGameTest {
+    /** What a line of each type must hold, by type. */
+    private val expected = listOf(
+        "system" to "RARE DROP!",
+        "world" to "{}",
+        "chat" to "Hello from the server",
+        "hud" to "Eyes: 0/8",
+        "metrics" to "dragon-timer",
+        "actionbar" to "Mana 100",
+        "title" to "Fight",
+        "sidebar" to "Coins",
+        // The server blanks the line's name and puts its text in the team, as dragsim.co does.
+        "sidebar" to "\"plain\":\"Purse: 531\"",
+        "bossbars" to "Young Dragon",
+        "container" to "\"size\":46",
+        "slot" to "Aspect of the Test",
+        // What the `slot` event leaves out.
+        "itemcomponents" to "dragsim:epic",
+        "entities" to "Hologram",
+        "entities" to "minecraft:dragon_head",
+        "sound" to "minecraft:entity.ender_dragon.growl",
+        "particles" to "minecraft:flame",
+        "block" to "minecraft:end_portal_frame[eye=true",
+        "tablist" to "\"rows\"",
+        "tabheader" to "dragsim.co",
+        "status" to "\"health\"",
+        "swing" to "ASPECT_OF_THE_TEST",
+        "use" to "Aspect of the Test",
+        "death" to "Victim",
+        "head" to "\"y\":",
+        "pet" to "Test Pet",
+        "hit" to "minecraft:husk",
+        "unload" to "Leaver",
+        "unload" to "Victim",
+        "skulls" to "DsHead",
+        "skulls" to "rotation=4",
+        "skulls" to "textures",
+        "blockstates" to "minecraft:obsidian",
+        "blockstates" to "minecraft:stone_button",
+        "entities" to "Quiz Label",
+        "entities" to "minecraft:silverfish",
+        "entities" to "\"glowing\":true",
+        "entities" to "minecraft:filled_map",
+        "map" to "\"colors\"",
+    )
+
     override fun runTest(context: ClientGameTestContext) {
+        // `BriefTest` checks `step`, which only a brief records.
+        val unchecked = eventTypes + RawRecord.entries.map { it.type } - expected.map { it.first }.toSet() - RawRecord.STEP.type
+        check(unchecked.isEmpty()) { "No check for the capture types $unchecked. Make the server send each one here, and add what its line must hold to `expected`." }
         context.worldBuilder().create().use { world ->
             // The server owns map data, so make a real one for the frame to show.
             var mapId = 0
@@ -57,6 +107,7 @@ class CaptureTest : FabricClientGameTest {
                 """execute at @a run summon pig ~ ~ ~-3 {CustomName:"Victim",NoAI:1b,Silent:1b}""",
                 """execute at @a run summon pig ~ ~ ~-4 {CustomName:"Leaver",NoAI:1b,Silent:1b}""",
                 """tellraw @a "RARE DROP!"""",
+                "say Hello from the server",
                 """tellraw @a "§5✦ §dThe Egg has Spawned!"""",
             ).forEach(world.server::runCommand)
             context.waitTicks(20)
@@ -72,6 +123,9 @@ class CaptureTest : FabricClientGameTest {
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT)
             world.server.runOnServer<Nothing> { it.playerList.broadcastAll(ClientboundTabListPacket(Component.literal("Dragon Sim"), Component.literal("dragsim.co"))) }
             context.waitTicks(40)
+            // Last, because a new world drops the entities and blocks the checks above read.
+            world.server.runCommand("execute in minecraft:the_nether run tp @a 0 100 0")
+            context.waitTicks(20)
             // The file is finished off the client thread, and the toggle says so when it is whole.
             var said: String? = null
             context.runOnClient<Nothing> { client -> DsModDebug.toggleCapture(client) { said = it } }
@@ -80,49 +134,9 @@ class CaptureTest : FabricClientGameTest {
 
             val events = file.readLines().map { Json.parseToJsonElement(it).jsonObject }
             val byType = events.groupBy({ it.getValue("type").jsonPrimitive.content }, { it.getValue("data").toString() })
-            listOf(
-                "system" to "RARE DROP!",
-                "hud" to "Eyes: 0/8",
-                "metrics" to "dragon-timer",
-                "actionbar" to "Mana 100",
-                "title" to "Fight",
-                "sidebar" to "Coins",
-                // The server blanks the line's name and puts its text in the team, as dragsim.co does.
-                "sidebar" to "\"plain\":\"Purse: 531\"",
-                "bossbars" to "Young Dragon",
-                "container" to "\"size\":46",
-                "slot" to "Aspect of the Test",
-                // What the `slot` event leaves out.
-                "itemcomponents" to "dragsim:epic",
-                "entities" to "Hologram",
-                "entities" to "minecraft:dragon_head",
-                "sound" to "minecraft:entity.ender_dragon.growl",
-                "particles" to "minecraft:flame",
-                "block" to "minecraft:end_portal_frame[eye=true",
-                "tablist" to "\"rows\"",
-                "tabheader" to "dragsim.co",
-                "status" to "\"health\"",
-                "swing" to "ASPECT_OF_THE_TEST",
-                "use" to "Aspect of the Test",
-                "death" to "Victim",
-                "head" to "\"y\":",
-                "pet" to "Test Pet",
-                "hit" to "minecraft:husk",
-                "unload" to "Leaver",
-                "unload" to "Victim",
-                "skulls" to "DsHead",
-                "skulls" to "rotation=4",
-                "skulls" to "textures",
-                "blockstates" to "minecraft:obsidian",
-                "blockstates" to "minecraft:stone_button",
-                "entities" to "Quiz Label",
-                "entities" to "minecraft:silverfish",
-                "entities" to "\"glowing\":true",
-                "entities" to "minecraft:filled_map",
-                "map" to "\"colors\"",
-            ).forEach { (type, expected) ->
-                check(byType[type].orEmpty().any { expected in it }) {
-                    "No '$type' event containing $expected. Got: ${byType[type]}"
+            expected.forEach { (type, part) ->
+                check(byType[type].orEmpty().any { part in it }) {
+                    "No '$type' event containing $part. Got: ${byType[type]}"
                 }
             }
             check(byType["death"].orEmpty().none { "Leaver" in it }) { "The mob that left was recorded as dead: ${byType["death"]}" }

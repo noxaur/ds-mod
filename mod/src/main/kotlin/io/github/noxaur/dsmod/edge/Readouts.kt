@@ -108,7 +108,7 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
             val id = feature.id
             val block = readout.hud ?: when {
                 editing && feature.hasHud -> hud(feature.title) {}
-                placeholders && feature.hasHud && feature.runs -> HudBlock(text { muted(feature.title) }, emptyList(), HudLook.CLEAR)
+                placeholders && feature.hasHud && feature.on -> HudBlock(text { muted(feature.title) }, emptyList(), HudLook.CLEAR)
                 else -> null
             }
             if (readout.hud == null && block != null) standIns += id else standIns -= id
@@ -127,14 +127,17 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
     fun place(id: String, x: Float, y: Float) = save(id, x, y, scale(id))
 
     /**
-     * Makes [block] one screen pixel per HUD pixel bigger for each step [by], keeping its corner where it is. A docked
-     * block is drawn at the hotbar's size, so it leaves the dock to take another.
+     * Makes [block] one screen pixel per HUD pixel bigger for each step [by], keeping its corner where it is, or nearer
+     * the top-left where the bigger block would run off the screen. A docked block is drawn at the hotbar's size, so it
+     * leaves the dock to take another.
      */
     fun resize(block: Hud.Placed, by: Int) {
         val scale = scale(block.id)
         val next = HudScale.step(scale, by, settings.scale, guiScale, MIN_SCALE, MAX_SCALE)
         // A step that changes nothing, at a bound, leaves a docked block in its dock.
-        if (next != scale) save(block.id, block.x, block.y, next)
+        if (next == scale) return
+        val drawn = HudScale.snap(next * settings.scale, guiScale)
+        save(block.id, minOf(block.x, width - block.width * drawn), minOf(block.y, height - block.height * drawn), next)
     }
 
     /** Docks the block of feature [id] at [dock] beside the hotbar, as its placement setting does. */
@@ -176,11 +179,21 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
         push()
     }
 
+    /** Places every block again, after the saved places changed from outside, such as the layout's reset in the settings. */
+    fun replace() {
+        handed.fill(-1)
+        push()
+    }
+
     /** Whether the player moved [id] out of the stack, to a place or a dock, so a reset would change something. */
     fun isPlaced(id: String) = id in settings.positions || dockOf(id) != HudDock.FREE
 
-    /** The block's own scale, before the HUD's. A docked block's is the one that draws it at the hotbar's size. */
-    fun scale(id: String) = if (dockOf(id) != HudDock.FREE) 1f / settings.scale else settings.positions[id]?.scale ?: 1f
+    /**
+     * The block's own scale, before the HUD's. A docked block's is the one it is drawn at there: the hotbar's size, or
+     * smaller where the room beside the hotbar is narrower, so it leaves the dock and resizes from the size it shows.
+     */
+    fun scale(id: String) =
+        if (dockOf(id) != HudDock.FREE) (Hud.find(id)?.scale ?: 1f) / settings.scale else settings.positions[id]?.scale ?: 1f
 
     fun title(id: String) = feature(id).title
 

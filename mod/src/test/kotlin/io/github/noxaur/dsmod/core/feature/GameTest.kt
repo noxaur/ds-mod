@@ -62,6 +62,16 @@ class GameTest {
     }
 
     @Test
+    fun `an edge feature locked to an area runs only there, and stays on for the HUD`() {
+        val eyes = game.readouts.single { it.feature.id == "protect-placed-eyes" }.feature
+        assertEquals(false to true, eyes.runs to eyes.on)
+        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+        assertEquals(true, eyes.runs)
+        game.post(1, WorldChanged)
+        assertEquals(false, eyes.runs)
+    }
+
+    @Test
     fun `a feature that is switched back on hears the sidebar again`() {
         var heard = 0
         val listener = object : Feature("listener", config.end::dragonTimer, Area.ANYWHERE) {
@@ -104,5 +114,26 @@ class GameTest {
         game.tick(1_000)
         assertNotNull(game.readouts.single { it.feature.id == "golem-status" }.hud)
         assertEquals(false, game.post(1_000, refusal))
+    }
+
+    @Test
+    fun `a feature on by default tells the player once where its switch is`() {
+        say(0, "This ability is on cooldown for 4.35s")
+        say(1, "This ability is on cooldown for 4.30s")
+        assertEquals(listOf("Hid a message from the server. Turn off Ability Spam under Chat in /dsmod to see them."), game.messages.map { it.detail.plain })
+        assertEquals(setOf("ability-spam"), game.hidden.value.told)
+    }
+
+    @Test
+    fun `a feature the player turned on hides without telling them`() {
+        val hider = object : Feature("hider", config.general::fullbright, Area.ANYWHERE) {
+            init {
+                on<SystemMessage> { _, _ -> hide() }
+            }
+        }
+        config.general.fullbright = true
+        val game = Game(listOf(hider))
+        assertEquals(false, game.post(0, SystemMessage(ServerText(ServerSpan("Anything")))))
+        assertEquals(emptyList(), game.messages)
     }
 }

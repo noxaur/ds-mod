@@ -2,7 +2,6 @@ package io.github.noxaur.dsmod.core.feature.slayer
 
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
-import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.clock
@@ -30,40 +29,27 @@ class SlayerTracker(toggle: KMutableProperty0<Boolean>) : Feature("slayer-tracke
     private var level: String? = null
     private var toNext = 0L
 
-    // Anchored at the start, where a player's chat line has their name.
-    private val boss = Regex("""^☠ (?:NICE! )?SLAYER BOSS (SPAWNING|SLAIN)!$""")
-    private val goal = Regex("""^   » Slay ([\d,]+) Combat XP worth of (.+)\.$""")
-    private val nextLevel = Regex("""^   (.+ Slayer) LVL (\d+) - Next LVL in ([\d,]+) XP!$""")
-
     init {
         on<WorldChanged> { _, _ -> spawnedAt = null }
-        on<SystemMessage> { message, now ->
-            val line = message.text.plain
-            when {
-                line.startsWith("   » Slay ") -> {
-                    val (xp, mobs) = goal.find(line)?.destructured ?: return@on unparsed(line)
-                    seen = true
-                    quest = "$xp XP of $mobs"
-                    return@on
-                }
-                line == "  SLAYER QUEST COMPLETE!" || line == "  SLAYER QUEST FAILED" -> {
-                    quest = null
-                    spawnedAt = null
-                    return@on
-                }
-                line.startsWith("   ") && " Slayer LVL " in line -> {
-                    val (slayer, at, left) = nextLevel.find(line)?.destructured ?: return@on unparsed(line)
-                    level = "$slayer $at"
-                    toNext = left.replace(",", "").toLong()
-                    return@on
-                }
+        line("   » Slay ", Regex("""   » Slay ([\d,]+) Combat XP worth of (.+)\.""")) { (xp, mobs), _ ->
+            seen = true
+            quest = "$xp XP of $mobs"
+        }
+        for (end in listOf("  SLAYER QUEST COMPLETE!", "  SLAYER QUEST FAILED")) {
+            line(end) {
+                quest = null
+                spawnedAt = null
             }
-            if (!line.startsWith("☠ ") || "SLAYER BOSS" !in line) return@on
-            val (event) = boss.find(line)?.destructured ?: return@on unparsed(line)
+        }
+        line(Regex("""   .+ Slayer LVL """), Regex("""   (.+ Slayer) LVL (\d+) - Next LVL in ([\d,]+) XP!""")) { (slayer, at, left), _ ->
+            level = "$slayer $at"
+            toNext = left.replace(",", "").toLong()
+        }
+        line(Regex("""☠ .*SLAYER BOSS"""), Regex("""☠ (?:NICE! )?SLAYER BOSS (SPAWNING|SLAIN)!""")) { (event), now ->
             seen = true
             if (event == "SPAWNING") {
                 spawnedAt = now
-                return@on
+                return@line
             }
             slain++
             allTime.value = SlayerKills(allTime.value.slain + 1)

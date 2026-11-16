@@ -53,8 +53,8 @@ Times every item ability you use, such as Giant's Slam, the Tuba's Howl, a katan
 
 | Setting | Does |
 | --- | --- |
-| Cooldown List | Lists the abilities you are waiting on, on the HUD. Move it in the HUD editor |
-| Cooldown on Items | Drains the wash over the item and counts down its seconds |
+| List | Lists the abilities you are waiting on, on the HUD. Move it in the HUD editor |
+| On Items | Drains the wash over the item and counts down its seconds |
 | Shortest Listed | Leaves cooldowns shorter than this off the list, so a weapon you click every second does not flicker there. Their items still show the wash |
 | Ready Alert | Shows a title with a sound when a cooldown is over. Off by default |
 | Alert From | Alerts only for cooldowns at least this long, 20 seconds by default, so the Tuba and the drill alert and Giant's Slam does not |
@@ -76,12 +76,18 @@ Shows the armor you wear and your pet as a row of icons on the HUD, with each he
 
 ### Inventory Preview
 
-Shows the items in your inventory as a grid on the HUD, nine to a row as your inventory holds them, with each stack's count. While another menu is open, the grid keeps your inventory as you last saw it. Open the chat and point at an item to read its tooltip, and move the grid in the HUD editor. Turn it on in General.
+Shows the items in your inventory as a grid on the HUD, nine to a row as your inventory holds them, with each stack's count, durability bar and cooldown. Rarity Marks colors each slot as it does in your inventory, and with your hotbar in the grid the slot you hold is ringed. The grid steps aside while a menu or your inventory is open, since they show your items already. Open the chat and point at an item to read its tooltip, and move or resize the grid in the HUD editor. Turn it on in General.
 
 | Setting | Does |
 | --- | --- |
-| Inventory Rows | Picks which rows show, and their order. The three rows of your inventory show by default, and your hotbar can join them, set a little apart as it is in your inventory |
-| Inventory Look | Shows the items on the HUD's plate, on nothing, or in a panel of slots like your inventory's: in your theme, solid or as glass as Menu Look says, while Themed Menus is on, and as your resource pack draws the inventory while it is off |
+| Inventory Rows | Picks which rows show, and their order. The three rows of your inventory show by default, and your hotbar, your armor and your offhand can join them, each set a little apart as your hotbar is in your inventory |
+| Inventory Look | Draws the grid in a panel of slots like your inventory's: in your theme, solid or as glass as Menu Look says, while Themed Menus is on, and as your resource pack draws the inventory while it is off. Plate and Clear show the items alone, on the HUD's plate or on nothing |
+| Inventory Placement | Keeps the grid where you put it in the HUD editor, or puts it beside your hotbar, past your offhand slot, at your GUI's size or smaller where the room there is narrower |
+| Inventory Key | Binds a key that shows and hides the grid. With none, the grid always shows |
+| Inventory Key Mode | Shows the grid only while you hold the key, or switches it with each press |
+| Inventory Layout | Lays each row out across, as your inventory does, or down, so the grid stands tall beside the edge of your screen |
+| Inventory Opacity | Sets how solid the Inventory look's panel and slots are, so the world shows through as much as you like |
+| Pickup Animation | Bobs an item in the grid as it lands in your inventory, as your hotbar does |
 
 ### Etherwarp Outline
 
@@ -120,34 +126,36 @@ F5 back to first person also ends it. The Camera settings shape this view too.
 
 ### Command Binds
 
-Sends a command with a key, with keys held together such as Shift + F6, or with keys pressed in turn such as F7 then F8. Open it with **Edit** beside Edit Command Binds in the settings.
+Sends a command with a key, with keys held together such as Shift + F6, or with keys pressed in turn such as F7 then F8. Set your binds up under Binds in the settings.
 
-Your binds are listed on the left under their groups, each with its command, its keys and where it works. Everything about the one you pick is on the right, and a change takes effect as you make it.
+Each bind is a line with its switch, name, command, keys and where it works, under its group's heading. A change takes effect as you make it.
 
 | Do this | To |
 | --- | --- |
-| Press **New Bind**, type the command, then press **Keys** and hold the keys | Add a bind. Let go of the keys to finish. Without a slash, the bind says its text in chat |
-| Tick the box on a row | Turn the bind on or off |
-| Tick the box on a group's heading | Turn the whole group on or off |
+| Press **Add Bind**, type the command, then press its keys button and hold the keys | Add a bind. Let go of the keys to finish. Without a slash, the bind says its text in chat |
+| Press the switch on a line | Turn the bind on or off |
+| Press the switch on a group's heading | Turn the whole group on or off |
 | Press the arrow on a heading, or double-click it | Fold the group away, or open it again |
-| Drag a row or a heading, or press ▲ or ▼ beside Duplicate, or Alt and Up or Down | Move it. A bind moved past a group's heading joins that group |
-| Right-click a row or a heading | See what you can do to it, such as Move Up or Turn Off |
+| Drag a line by its grip, or a heading, or press Alt and Up or Down | Move it. A bind dropped under a group's heading joins that group. Escape during the drag puts it back |
+| Press Where | Step through World, Menus and Both. Right-click steps back |
+| Press ▸ at the end of a line | Open the rest of the bind under it |
+| Right-click a line or a heading | See what you can do to it, such as Move Up or Turn Off |
 | Press **Duplicate** or **Delete** | Copy the bind, which starts off, or delete it with a second press |
 
-With nothing on the right typed in, Up and Down pick the next row, Left and Right fold and open a group, and Delete deletes.
+Up and Down move between the lines, Left and Right fold and open a group, Space turns the picked heading's group on or off, Tab moves between the text boxes, and Delete deletes. The Menu key or Shift + F10 opens what you can do to the picked line.
 
-On the right:
+Under a bind:
 
-- **Name:** optional. The list shows the command without one.
-- **Where:** in the world, in menus such as chests and your inventory, or in both. A bind never fires while you type in chat or a text field.
+- **Area:** Anywhere, or the one area the bind works in, such as The End.
 - **Priority:** when two binds share keys, the higher one sends, and between equals the one listed first.
 - **Other Keys Held Too:** on by default, so a key you walk with does not stop the bind.
-- **Keys in Order:** the keys become a sequence, finished with Escape when you record them. Key Sequence Gap in the settings sets how long a sequence waits for its next key.
-- **Area:** Anywhere, or the one area the bind works in, such as The End.
+- **Keys in Order:** the keys become a sequence, finished with Escape when you record them. Sequence Gap sets how long a sequence waits for its next key.
 
-**New Group** adds a group. Pick its heading to rename it, or to delete it with its binds. **Export** copies the group of whatever you picked to your clipboard to share, and **Import** adds a group someone shared. Imported binds start off, so read each command before you turn it on.
+The name is optional, and a bind shows its command without one. A bind never fires while you type in chat or a text field.
 
-Keys shown in red fire another bind too, and keys in yellow also do something in the game. The line under the details says which.
+**Add Group** adds a group with its name ready to type. Press ▸ on its heading to rename it, export it or delete it with its binds. **Export** copies the group of the line you picked to your clipboard to share, and **Import** adds what someone shared as a new group. Imported binds start off, so read each command before you turn it on.
+
+Keys ringed in red fire another bind too, and keys in yellow also do something in the game. The line under the list says which.
 
 ### Profile Viewer
 
@@ -175,9 +183,17 @@ Beside each grid are how many slots it fills and how many items of each rarity i
 
 ## Interface
 
-Theme picks the colors of ds-mod's screens: Charcoal is dark, and Vanilla matches the game's own menus. Move HUD, or `/dsmod hud`, opens the HUD editor.
+Theme picks the colors of ds-mod's screens: Charcoal is dark, and Vanilla matches the game's own menus.
 
-<sub>Scroll over a block to resize it, and right-click it to put it back in the stack. The arrow keys nudge the block you clicked last a pixel, or ten with Shift. Hold Shift to place it without snapping. Escape during a drag puts the block back where it was. A block that can sit beside the hotbar docks there when you drop it near the spot, and leaves it when you drag it away.</sub>
+Layout, under HUD, is a small copy of your screen with your HUD on it. **Move HUD**, `/dsmod hud` or the HUD Editor Key opens the same editor over the game, so you see the world behind your HUD. Hide In F3 takes the HUD off while the F3 debug screen is open.
+
+| Do this | To |
+| --- | --- |
+| Drag a block | Move it. It lines up with the screen's edges and middle and with the other blocks, and stays on the screen. Hold Shift to place it freely, and press Escape during the drag to put it back |
+| Scroll over a block, or press + or − with it picked | Make it bigger or smaller |
+| Press the arrow keys with a block picked | Nudge it a pixel, or ten with Shift |
+| Right-click a block, or press Backspace or Reset with it picked | Put it back in the stack at its own size, undocked |
+| Drop a block near the spot beside the hotbar | Dock it there, as Equipment Display's Placement does. Drag it away to undock it at the same size |
 
 ### Drag In Chat
 
@@ -234,7 +250,7 @@ A message is copied whole, also when it wraps over several rows. A block the ser
 
 Each item's slot is marked in the color of its rarity, in every menu and on your hotbar.
 
-Rarity Style picks the look: Showcase, Gilded or Minimal, from loudest to quietest, or Custom for your own. Edit beside Edit Style opens your inventory with your hotbar under it, so you see each change on your own items. A change there starts from the look you had and switches Rarity Style to Custom.
+Rarity Style picks the look: Showcase, Gilded or Minimal, from loudest to quietest, or Custom for your own. Custom Look, under it, picks each part with a preview of it. A change there starts from the look you had and switches Rarity Style to Custom.
 
 | Part | Choices |
 | --- | --- |
@@ -243,7 +259,7 @@ Rarity Style picks the look: Showcase, Gilded or Minimal, from loudest to quiete
 | Floor | None, Pedestal, Sparks, Rise |
 | Gem | A small gem over the item's top-left corner |
 
-The hotbar uses your inventory's look until you untick Match Inventory, and then it has its own.
+The hotbar uses your inventory's look until you turn off Match Inventory under Hotbar, and then its own Border, Fill, Floor and Gem, starting from the look it had.
 
 <sub>Common items are not marked unless you tick Mark Common. With a resource pack that makes menus dark, the colors change to read well on it.</sub>
 
@@ -312,16 +328,17 @@ Tabs along the top and bottom of every menu and your inventory. A tab sends its 
 
 Click Search, or press Ctrl+F, and a search bar opens along that edge toward the middle of the menu, over the tabs beside it. Every item whose name and lore don't hold all your words is dimmed, and your search stays as you move from menu to menu. While you type, E and Q type letters instead of closing the menu or dropping an item. Escape leaves the bar, a right click clears it, and its × closes it. The text turns red when nothing in the menu matches.
 
-Set your tabs up with Edit Tabs:
+Set your tabs up under Tabs, below Menu Tabs in the settings. It shows a small menu with a place for a tab at each spot along its top and bottom.
 
 | Do this | To |
 | --- | --- |
 | Drag a tab to another place | Move it. A tab already there takes its old place. Escape during the drag puts it back |
 | Click an empty place | Add a tab there, then type its command |
 | Click a tab | Change its command, its item, such as `chest` or `player_head`, and the name shown when you point at it |
-| Arrow keys or Delete, with a tab chosen | Move it a place, or remove it |
+| Arrow keys with a tab chosen | Move it a place along its edge, or to the other edge with Up or Down. Tab picks the next tab |
+| Delete, or the Delete button, with a tab chosen | Remove it, with a second press |
 | Add Search | Put the search tab back after you deleted it |
-| Reset | Go back to the starting tabs |
+| The mark beside Tabs | Go back to the starting tabs |
 
 <sub>Each edge has seven places. On a short screen at a large GUI scale, the tabs can run off the top or bottom of the screen.</sub>
 
@@ -379,7 +396,7 @@ Kills Left: 97
 
 A beam where the next Endstone Protector will emerge, from the moment the last one falls.
 
-It shows for the last 25 kills of the 200-kill cycle. Edit beside Beam Timing opens a bar of the cycle, and the beam shows inside the blue sections.
+It shows for the last 25 kills of the 200-kill cycle. Beam Timing, under Boss Beacon in the settings, is a bar of the cycle, and the beam shows inside the blue sections.
 
 <sub>Drag to draw, move or resize a section. Right-click removes one. During the Fight keeps the beam on after the Protector emerges.</sub>
 

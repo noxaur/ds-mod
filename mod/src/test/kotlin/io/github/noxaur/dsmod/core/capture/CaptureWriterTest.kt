@@ -1,9 +1,14 @@
 package io.github.noxaur.dsmod.core.capture
 
+import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.ServerText
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import java.nio.file.Files
 import java.util.concurrent.CountDownLatch
@@ -21,7 +26,7 @@ class CaptureWriterTest {
         var now = 1_000L
         val writer = CaptureWriter(dir) { now }
 
-        writer.record("bossbars") { buildJsonObject { put("title", "first") } }
+        writer.record(RawRecord.BOSSBARS) { buildJsonObject { put("title", "first") } }
         now = 2_000L
         writer.record(1_500L, drop)
         writer.close()
@@ -29,8 +34,8 @@ class CaptureWriterTest {
         assertEquals("1970-01-01T00-00-01Z.jsonl", writer.file.fileName.toString())
         assertEquals(
             listOf(
-                """{"t":1000,"type":"bossbars","data":{"title":"first"}}""",
-                """{"t":1500,"type":"system","data":{"text":{"plain":"RARE DROP! Summoning Eye",""" +
+                """{"t":1000,"tick":0,"type":"bossbars","data":{"title":"first"}}""",
+                """{"t":1500,"tick":0,"type":"system","data":{"text":{"plain":"RARE DROP! Summoning Eye",""" +
                     """"spans":[{"text":"RARE DROP! ","color":"#FFAA00","bold":true},{"text":"Summoning Eye"}]}}}""",
             ),
             writer.file.readLines(),
@@ -40,17 +45,37 @@ class CaptureWriterTest {
     @Test
     fun `readCapture gives back the events and skips raw records`() {
         val writer = CaptureWriter(dir) { 1_000L }
-        writer.record("bossbars") { buildJsonObject { put("title", "first") } }
+        writer.record(RawRecord.BOSSBARS) { buildJsonObject { put("title", "first") } }
         writer.record(1_500L, drop)
         writer.close()
 
-        assertEquals(listOf(1_500L to drop), readCapture(writer.file))
+        assertEquals(listOf(Captured(1_500L, drop, tick = 0)), readCapture(writer.file))
+    }
+
+    @Test
+    fun `stamps the client tick on each record and advances it when the tick ends`() {
+        val writer = CaptureWriter(dir) { 1_000L }
+        val bar = ActionBar(ServerText(ServerSpan("Kills: 4")))
+        writer.record(1_000L, drop)
+        writer.record(RawRecord.SOUND) { buildJsonObject { put("sound", "minecraft:entity.player.hurt") } }
+        writer.endTick()
+        writer.record(1_001L, bar)
+        writer.endTick()
+        writer.endTick()
+        writer.record(1_100L, drop)
+        writer.close()
+
+        assertEquals(
+            listOf(0, 0, 1, 3),
+            writer.file.readLines().map { Json.parseToJsonElement(it).jsonObject.getValue("tick").jsonPrimitive.int },
+        )
+        assertEquals(listOf(Captured(1_000L, drop, 0), Captured(1_001L, bar, 1), Captured(1_100L, drop, 3)), readCapture(writer.file))
     }
 
     @Test
     fun `close waits for every record, however long the writer takes`() {
         val writer = CaptureWriter(dir)
-        writer.record("bossbars") {
+        writer.record(RawRecord.BOSSBARS) {
             Thread.sleep(300)
             buildJsonObject { put("title", "slow") }
         }
@@ -65,7 +90,7 @@ class CaptureWriterTest {
     fun `close says when the writer did not finish in time`() {
         val release = CountDownLatch(1)
         val writer = CaptureWriter(dir, closeMillis = 50)
-        writer.record("bossbars") {
+        writer.record(RawRecord.BOSSBARS) {
             release.await()
             buildJsonObject { }
         }
@@ -80,7 +105,7 @@ class CaptureWriterTest {
     @Test
     fun `close says when a record was lost`() {
         val writer = CaptureWriter(dir)
-        writer.record("bossbars") { error("this record cannot be built") }
+        writer.record(RawRecord.BOSSBARS) { error("this record cannot be built") }
         writer.record(1_500L, drop)
 
         assertFailsWith<CaptureIncompleteException> { writer.close() }
@@ -88,9 +113,7 @@ class CaptureWriterTest {
     }
 
     @Test
-    fun `a raw record cannot take the type of an event`() {
-        CaptureWriter(dir).use { writer ->
-            assertFailsWith<IllegalStateException> { writer.record("system") { buildJsonObject { } } }
-        }
+    fun `no raw record takes the type of an event`() {
+        assertEquals(emptyList(), RawRecord.entries.filter { it.type in eventTypes }, "each type has one producer, so delete the raw record that became an event")
     }
 }

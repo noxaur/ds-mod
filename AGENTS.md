@@ -20,7 +20,6 @@ We can't compromise on these.
 - Call a bug fixed only when a test, log or capture shows it.
 - A rule in prose gets skipped, so turn a repeated mistake into a check. See Rules.
 
-
 ## Layout
 
 | Directory | What it is | Its rules |
@@ -28,101 +27,34 @@ We can't compromise on these.
 | `mod/` | The Fabric mod, in Kotlin, built with Gradle | `mod/AGENTS.md` |
 | `backend/` | The REST service, in TypeScript with Effect, hosted with Void on Cloudflare | `backend/AGENTS.md` |
 | `web/` | The website, in Next.js with Effect | `web/AGENTS.md` |
-| `api/` | `openapi.json`, the REST contract between the mod, the backend and the website | Below |
+| `api/` | `openapi.json`, the REST contract between the mod, the backend and the website | API |
 | `specs/` | TLA+ specs for any project | Formal specs |
-| `docs/` | Guides for players and contributors, and the reasons behind the code | Docs |
+| `docs/` | Guides for players and contributors, and the reasons behind the code | The `docs` skill |
 
-"Server" means dragsim.co. Our own service is the backend.
+"Server" means dragsim.co. Our own service is the backend. Skills sit in `.claude/skills/` beside the `AGENTS.md` that names them.
 
 ## API
 
-- `backend/src/api.ts` defines every REST endpoint except sign-in, which Better Auth serves at `/api/auth/*`, and `api/openapi.json` is generated from it with `pnpm openapi` in `backend/`. Change the definition first, regenerate, then change the callers.
+- `backend/src/api.ts` defines every REST endpoint except sign-in, which Better Auth serves at `/api/auth/*`, and `api/openapi.json` is generated from it. Change the definition first, then the callers.
 
 ## Formal specs
 
-- TLA+ specs live in `specs/`. A spec is `Name.tla` with `Name.cfg` beside it. `mod/`'s Gradle build runs TLC on all of them.
 - When you change a state machine that has a spec, change the spec first and run TLC on it, then change the code.
 - Write a spec for a new feature only when it has interleaving states that a unit test can't enumerate. A parser or an overlay needs a test.
 
 ## Docs
 
-Most code changes need no doc change. Before you change an area, read its page in `docs/internals/`.
-
-- `docs/internals/` records why: each architectural decision, the constraint that decided it, and traps the source can't show. Before you add a paragraph, ask what a maintainer would get wrong without it. Leave out how-to steps, code tours, file lists and test results.
-- `docs/internals/` has one page per area, listed in `docs/README.md`. A section's heading states the decision, and its text names the constraint and the alternative it rejected. What a feature does for the player belongs in `docs/user/`, not here. Add a page only for an area none covers, and use the words in `glossary.md`.
-- `docs/user/` helps players do a task, in the mod's voice, with no implementation details or contributor tooling. Update the section when how to use a feature changes.
-- `docs/operations/` holds setup, run and release procedures. Its reader is an agent, and the machine, desktop and accounts belong to the user, so write "the user's".
-- State each fact once, in the page that owns it, and link to the source instead of copying it. When a decision changes, rewrite or delete the text in the same change.
-- `CONTRIBUTING.md` holds only the policy for outside contributors and links `docs/operations/development.md` for setup, running and checks. `docs/README.md` links every page with one line on what it covers.
+Before you change an area, read its page in `docs/internals/`. Most code changes need no doc change. Update the page when a change alters a decision it records, or how a player uses a feature, and load the `docs` skill first.
 
 ## Rules
 
-Each rule is paired with what enforces it. All of them run in `mise run check`, except the game tests and the CI rules.
-
-| Rule | Enforced by |
-| --- | --- |
-| `core` imports nothing from Minecraft, Fabric or `edge` | `core-is-pure` in `mod/…/Rules.kt` |
-| Each place the release build sends or refuses input for the player is one the user audited | `InputSitesTest` against `mod/input-sites.txt`, which only the user edits |
-| The release build runs only on dragsim.co, unless the player turns DragSim Only off | `Game` gates every feature in `core`, `SwitchesTest` makes the edge ask `Feature.runs`, and `GameTest`, `DragSimTest` and the game test `OnlyOnDragSimTest` |
-| A feature fires only in the area it names | `Feature` takes an `Area` and `Game` gates on it. `FeatureReplayTest` replays each fixture outside the area |
-| A feature reads no area for itself, from the tab list or the sidebar, and sits in its area's folder | `area-by-declaration` in `mod/…/Rules.kt`, and `RulesTest` |
-| The mod's text and colors come from its text layer | `text-by-role` in `mod/…/Rules.kt` |
-| The mod's shapes are drawn by its kit, in the player's theme | `draw-with-kit` in `mod/…/Rules.kt` |
-| Release code cannot use debug tools | The `main` and `debug` source sets |
-| Raw captures stay out of git | They are written to `mod/run/`, which is git-ignored |
-| A fixture holds no player name from a capture on this machine, and an alias wherever a player's name stands | `FixtureLeakTest` |
-| Every feature shows what its transcript says | `FeatureReplayTest` replays each feature's fixtures |
-| A feature that reads nothing from the server has a game test | `FeatureReplayTest` |
-| Every feature has a section in the player docs | `RulesTest` |
-| A setting's description is short enough that the settings screen shows it at full size | `RulesTest` |
-| A feature's handler and readout average under 20µs | `FeatureReplayTest` |
-| A capture type has one producer | `CaptureWriter` rejects a raw record with an event's type |
-| The jars a player installs boot and open settings | `runProdClientGameTest` |
-| A unit test run takes at most 30 seconds | `timeout` on `tasks.test` in `mod/build.gradle.kts`, and `scripts/test-time-limit.ts` in `backend/` and in `web/`, the global setup of the tests in each `vite.config.ts` |
-| A game test takes at most 20 seconds, its world included | `TestClock` in `mod/src/gametest/` |
-| A game test run names the tests it runs | The `gametests` check in `mod/build.gradle.kts` |
-| A CI job takes at most 3 minutes | `.github/actions/time-limit`, the last step of every job in `ci.yml` |
-| The mod stays inside its frame, tick and size caps | `PerfTest` against `mod/src/gametest/resources/perf-budgets.json`, in CI's `perf` job |
-| A beta ships only when every check and game test passes | `.github/workflows/beta.yml` |
-| Every capture type reaches the file | `CaptureTest`, and `BriefTest` for `step` |
-| A redacted capture holds no player name the mod knows, and no typed chat | `RedactCaptureTest` |
-| The backend believes a sign-in only when Mojang confirms it | `minecraft.test.ts` in `backend/src/identity/` |
-| A player cannot reach an agent's routes, and an agent never sees who recorded a run | `app.test.ts` in `backend/src/` |
-| The website signs a browser in only after the player confirms whose account it is | `signIn.test.ts` in `web/app/login/` |
-| Specs hold their invariants | TLC on `specs/` |
-| `api/openapi.json` matches the backend's API definition | `app.test.ts` in `backend/src/` |
-| Backend code is formatted, type-safe and passes lint with no warnings | `vp check` in `check:backend` |
-| Backend failures are modeled with Effect, not `try` | `dsmod/no-try` in `backend/lint/dsmod.js` |
-| `backend/src/` imports nothing from Void | `no-restricted-imports` in `backend/vite.config.ts` |
-| Backend dependencies are at least 14 days old | `minimumReleaseAge` in `backend/pnpm-workspace.yaml` |
-| The website is type-safe | `tsc` with `strict` and the extra flags in `web/tsconfig.json` |
-| Website code is formatted | `vp fmt --check` in `web/package.json` |
-| Website code passes strict lint with no warnings | `typescript-eslint` strict-type-checked in `web/eslint.config.mjs` |
-| Website failures are modeled with Effect, not `try` | `no-restricted-syntax` in `web/eslint.config.mjs` |
-| Every interactive control comes from ui-sdk | `react/forbid-elements` and `no-restricted-imports` in `web/eslint.config.mjs` |
-| Web dependencies are at least 14 days old | `minimumReleaseAge` in `web/pnpm-workspace.yaml` |
-| `docs/README.md` links every page in `docs/` | `check:docs` |
-| `docs/internals/` records why, not steps | `check:docs` rejects a recipe heading |
-| `docs/operations/` addresses an agent, who owns no machine or account | `check:docs` rejects "your" |
-
-When a mistake happens a second time, stop it at the highest level that works:
-
-1. Change the structure so the mistake cannot be written, as the source sets do.
-2. Use a type that rejects it.
-3. Add a lint rule. In `mod/` that is `src/test/kotlin/io/github/noxaur/dsmod/rules/Rules.kt`: a pattern that must not appear in some files, a `fix` that says what to write instead, and an `example` line it must catch. In `web/` it is `eslint.config.mjs`, and in `backend/` it is `lint/dsmod.js`, each with a message that says what to write instead.
-4. Add a test.
-5. Write it in an `AGENTS.md`, only for a judgment call that no check can make.
-
-Then add a row to the table. If a row has nothing enforcing it, enforce it in the same change. Delete a rule once the structure makes the mistake impossible.
-
-A rule failure prints the file, the line and the fix. For an exception the user agreed to, end the line with a comment: `rule:<id> <reason>` in `mod/`, or `eslint-disable-next-line <rule> -- <reason>` in `web/`.
+Every rule is enforced by a check in `mise run check`, and a failure prints the fix. When a mistake happens a second time, or before you add, change or remove a check or an exception, load the `rules` skill.
 
 ## Checks
 
-- `mise install` gives you the pinned JDK, Node and pnpm.
-- `mise run check` must pass. It runs `check:mod`, `check:backend`, `check:web` and `check:docs`, and each one runs alone too.
+- `mise run check` must pass, and `mise install` gives the pinned tools it needs.
 - Test the real implementation instead of copying its logic into the test.
-- CI runs the same checks, and `PerfTest` in a real game. When a job nears its 3 minutes, make it faster or move the slow part to the beta pipeline. Raise a limit or a perf cap only when the user agrees.
+- When a CI job nears its 3 minutes, make it faster or move the slow part to the beta pipeline. Raise a limit or a perf cap only when the user agrees.
 
 ## Branches and pull requests
 
