@@ -71,7 +71,7 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | The mod's shapes are drawn by its kit, in the player's theme | `draw-with-kit` in `mod/…/Rules.kt` |
 | Release code cannot use debug tools | The `main` and `debug` source sets |
 | Raw captures stay out of git | They are written to `mod/run/`, which is git-ignored |
-| A fixture holds no player name from a capture on this machine | `FixtureLeakTest` |
+| A fixture holds no player name from a capture on this machine, and an alias wherever a player's name stands | `FixtureLeakTest` |
 | Every feature shows what its transcript says | `FeatureReplayTest` replays each feature's fixtures |
 | A feature that reads nothing from the server has a game test | `FeatureReplayTest` |
 | Every feature has a section in the player docs | `RulesTest` |
