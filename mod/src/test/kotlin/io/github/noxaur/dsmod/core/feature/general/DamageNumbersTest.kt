@@ -146,10 +146,31 @@ class DamageNumbersTest {
         assertEquals("74.5M", seen(hit))
         say("The Endstone Protector has been defeated!")
         assertEquals("74,540,375", seen(hit))
+        protector("Resting (200)")
         protector("Spawned")
         assertEquals("74.5M", seen(hit))
         protector("Resting (200)")
         assertEquals("74,540,375", seen(hit))
+    }
+
+    @Test
+    fun `the Protector's defeat ends the fight while its tab row still reads Spawned`() {
+        config.general.damageInFights = true
+        say("☠ The Endstone Protector has emerged from the ground! (Tier 5/5)")
+        protector("Spawned")
+        say("The Endstone Protector has been defeated!")
+        assertEquals("74,540,375", seen(hit))
+        protector("Spawned")
+        assertEquals("74,540,375", seen(hit))
+        protector("Resting (200)")
+        protector("Spawned")
+        assertEquals("74.5M", seen(hit))
+    }
+
+    @Test
+    fun `chat lines reach the fights with no other feature on`() {
+        config.general.damageInFights = true
+        assertEquals(true, game.wants(SystemMessage::class.java))
     }
 
     @Test

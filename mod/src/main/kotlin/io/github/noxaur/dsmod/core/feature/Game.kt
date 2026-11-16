@@ -10,6 +10,7 @@ import io.github.noxaur.dsmod.core.game.Fights
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.InfoRows
 import io.github.noxaur.dsmod.core.game.Metrics
+import io.github.noxaur.dsmod.core.game.SHARED_EVENTS
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SidebarState
 import io.github.noxaur.dsmod.core.game.SlotChanged
@@ -103,10 +104,11 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     /**
      * Whether anything would read an event of [type]. A source that costs something asks before it builds
      * one. Every feature may read [tab] and [sidebar], and they decide its area, so both are wanted while any
-     * feature is on. A container is wanted only while a feature that handles one is on.
+     * feature is on, and so are chat lines, which tell [fights]. A container is wanted only while a feature that
+     * handles one is on.
      */
     fun wants(type: Class<out GameEvent>) =
-        tap != null || active() && features.any { it.enabled && (type == TabList::class.java || type == Sidebar::class.java || type in it.handlers) }
+        tap != null || active() && features.any { it.enabled && (type in SHARED_EVENTS || type in it.handlers) }
 
     /**
      * Whether a feature would be handed an event of [type] right now, which also takes the player being in the

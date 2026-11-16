@@ -10,6 +10,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed interface GameEvent
 
+/**
+ * The events that `Game` folds into the state every feature may read: the tab list and the sidebar, which tell the
+ * area, and chat lines, which tell the boss fights. The edge posts them while any feature is on.
+ */
+val SHARED_EVENTS: Set<Class<out GameEvent>> = setOf(TabList::class.java, Sidebar::class.java, SystemMessage::class.java)
+
 /** A line the server put in chat. On dragsim.co player chat arrives this way too. */
 @Serializable
 @SerialName("system")

@@ -28,7 +28,7 @@ The sidebar is an event with every line and its styles, not a parsed summary, so
 
 ## Boss fights are folded once
 
-Several features follow a boss fight: Dragon Timer the dragon, Golem Status the Endstone Protector, and the slayer features the player's boss. Damage Numbers can act only while one is on. It can't ask those features, since a feature can be switched off and its state would then go stale. So `Game` folds the same lines and the same `Protector` row into `Fights` before any feature sees them, and those features read their lines with the parsers there.
+Several features follow a boss fight: Dragon Timer the dragon, Golem Status the Endstone Protector, and the slayer features the player's boss. Damage Numbers can act only while one is on. It can't ask those features, since a feature can be switched off and its state would then go stale. So `Game` folds the same lines and the same `Protector` row into `Fights` before any feature sees them, and those features read their lines with the parsers there. Chat lines are posted while any feature is on, as the tab list is, because a player who keeps only Damage Numbers on would otherwise never hear a fight start. The Protector's defeat in chat ends its fight even while the tab row still reads `Spawned`, since chat runs a second or two ahead of the tab list.
 
 ## The area lock lives in Game
 

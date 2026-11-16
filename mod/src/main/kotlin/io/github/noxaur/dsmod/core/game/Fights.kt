@@ -15,7 +15,10 @@ class Fights {
     private var emerged = false
     private var spawned = false
 
-    val protector: Boolean get() = emerged || spawned
+    // Chat is a second or two ahead of the tab list, so a defeat outranks a row that still reads `Spawned`.
+    private var defeated = false
+
+    val protector: Boolean get() = emerged || spawned && !defeated
 
     /** Whether any boss fight is on. */
     val on: Boolean get() = dragon || slayer || protector
@@ -26,8 +29,14 @@ class Fights {
         when {
             DRAGON_HEAD.matchesAt(text, 0) -> DRAGON.matchEntire(text)?.let { dragon = it.groupValues[2] == SPAWNED }
             text.startsWith(EGG_RESPAWNING) -> dragon = false
-            text.startsWith(PROTECTOR_EMERGED) -> emerged = true
-            text.startsWith(PROTECTOR_DEFEATED) -> emerged = false
+            text.startsWith(PROTECTOR_EMERGED) -> {
+                emerged = true
+                defeated = false
+            }
+            text.startsWith(PROTECTOR_DEFEATED) -> {
+                emerged = false
+                defeated = true
+            }
             SLAYER_HEAD.matchesAt(text, 0) -> SLAYER_BOSS.matchEntire(text)?.let { slayer = it.groupValues[1] == SPAWNING }
             QUEST_ENDS.any(text::startsWith) -> slayer = false
         }
@@ -40,6 +49,7 @@ class Fights {
         val now = value?.let(ProtectorRow::parse)?.stage == SPAWNED_STAGE
         // The row moving on from the fight ends it, whether or not the defeat reached chat.
         if (spawned && !now) emerged = false
+        if (!now) defeated = false
         spawned = now
         return on != before
     }
@@ -50,6 +60,7 @@ class Fights {
         slayer = false
         emerged = false
         spawned = false
+        defeated = false
     }
 
     companion object {
