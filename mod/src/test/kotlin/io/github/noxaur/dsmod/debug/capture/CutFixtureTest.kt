@@ -4,6 +4,7 @@ import io.github.noxaur.dsmod.core.capture.captureLine
 import io.github.noxaur.dsmod.core.capture.readCapture
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
+import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.SlotChanged
@@ -13,6 +14,7 @@ import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.game.ServerText
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.nio.file.Path
@@ -222,4 +224,39 @@ class CutFixtureTest {
         assertEquals(listOf(5, 5, 8), events.map { it.tick })
         assertEquals(listOf("inside", "same tick", "next"), events.map { (it.event as SystemMessage).text.plain })
     }
+
+    @Test
+    fun `an older capture's text displays become floating text, once per new text`() {
+        fun entities(second: Int, full: Boolean, vararg entries: Pair<String, String?>) = buildJsonObject {
+            put("t", second * 1000L)
+            put("type", "entities")
+            put("data", buildJsonObject {
+                put("full", full)
+                put("entries", buildJsonObject {
+                    for ((id, shown) in entries) {
+                        if (shown == null) put(id, JsonNull) else put(id, buildJsonObject {
+                            put("entity", if (id == "pig") "minecraft:pig" else "minecraft:text_display")
+                            put("text", buildJsonObject { put("text", shown) })
+                        })
+                    }
+                })
+            })
+        }.toString()
+        val capture = dir.resolve("legacy.jsonl").also {
+            it.writeLines(
+                listOf(
+                    sidebar,
+                    entities(1, true, "1" to "§f✧§e1§c2§f✧", "pig" to "Pig"),
+                    entities(2, false, "1" to "§f✧§e1§c2§f✧", "2" to "§798,438"),
+                    entities(3, false, "1" to null, "2" to "§7Done"),
+                    entities(4, false, "1" to "§f✧§e1§c2§f✧"),
+                ),
+            )
+        }
+        val out = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 0.0..10.0, setOf("floating")) }).map { it.event as FloatingText }
+        assertEquals(listOf("✧12✧", "98,438", "Done", "✧12✧"), out.map { it.text.plain })
+        assertEquals(listOf(0xFFFFFF, 0xFFFF55, 0xFF5555, 0xFFFFFF), out[0].text.spans.map { it.color })
+        assertEquals(listOf(0xAAAAAA), out[1].text.spans.map { it.color })
+    }
 }
+
