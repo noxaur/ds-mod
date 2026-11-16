@@ -50,6 +50,7 @@ We can't compromise on these.
 Most code changes need no doc change. Before you change an area, read its page in `docs/internals/`.
 
 - `docs/internals/` records why: each architectural decision, the constraint that decided it, and traps the source can't show. Before you add a paragraph, ask what a maintainer would get wrong without it. Leave out how-to steps, code tours, file lists and test results.
+- `docs/internals/` has one page per area, listed in `docs/README.md`. A section's heading states the decision, and its text names the constraint and the alternative it rejected. What a feature does for the player belongs in `docs/user/`, not here. Add a page only for an area none covers, and use the words in `glossary.md`.
 - `docs/user/` helps players do a task, in the mod's voice, with no implementation details or contributor tooling. Update the section when how to use a feature changes.
 - `docs/operations/` holds setup, run and release procedures. Its reader is an agent, and the machine, desktop and accounts belong to the user, so write "the user's".
 - State each fact once, in the page that owns it, and link to the source instead of copying it. When a decision changes, rewrite or delete the text in the same change.
