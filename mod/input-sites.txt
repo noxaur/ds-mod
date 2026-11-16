@@ -19,7 +19,7 @@ gate edge.ArmorSwapGuards b9c4dd2640b0
 gate edge.Chat 7c62093eb80b  the [ds-mod] prefix opens settings
 gate edge.ChatDrags f6bd1b276e60
 gate edge.CommandKeys 6beafabd10f8  Command Binds
-gate edge.CopyChats 6905f3eeadfe  Copy Chat
+gate edge.CopyChats 19952a107159  Copy Chat
 gate edge.EyeGuards b42b9f42c41e
 gate edge.MenuBack ff8ff383383c  Back Buttons and Menu Tabs
 gate edge.SlotGuards f47bde8c5d14  Slot Lock and Armor Swap Guard
@@ -41,7 +41,7 @@ gate edge.mixin.FullbrightMixin 4c8ba0a85eab
 gate edge.mixin.HeldItemMixin 58c78f6ea473
 gate edge.mixin.HudHotbarMixin 2f5e0a35a25f
 gate edge.mixin.KeyInputMixin 5ebcb38f55be
-gate edge.mixin.KeyPressMixin 24020b1c12dc
+gate edge.mixin.KeyPressMixin f3167d4d9147
 gate edge.mixin.MenuBackdropMixin 26956081c86e
 gate edge.mixin.MenuBackgroundMixin e2dedafa684d
 gate edge.mixin.MenuLabelMixin 908778adba07
