@@ -9,7 +9,7 @@ The words below mean one thing each, in code, docs and conversation. Use them as
 - **Event**: a `GameEvent` the edge posts to `Game`, such as a chat line, a tab list or a slot. Features see events and nothing else from the server.
 - **Raw record**: a type of data the recorder writes that no feature sees yet. A feature that needs it promotes it to an event.
 - **Readout**: what a feature shows: its HUD block, its slot marks, its world marks, and the notices and alerts it says once.
-- **Gate**: a release class, with its nested classes, that sends input for the player or refuses their own, or any mixin. `InputSitesTest` finds each one in the compiled classes, and the user audits it in `mod/input-sites.txt`.
+- **Gate**: a release class, with its nested classes, that sends input for the player or refuses their own, or any mixin that can change Minecraft's code. `InputSitesTest` finds each one in the compiled classes and lists it in `mod/input-sites.txt`.
 - **Surface**: a place the mod can put information, such as chat, the HUD or a container overlay. Each has one layer in `edge` that draws it.
 - **Role**: what a piece of the mod's text means, such as body, value or muted. The text layer maps a role to a color.
 - **Kit**: `Kit` in `edge/ui`, which draws every shape the mod shows, in the player's theme.

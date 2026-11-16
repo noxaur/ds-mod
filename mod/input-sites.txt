@@ -1,44 +1,142 @@
-# The places in the release build that send input for the player, change or refuse the player's own input, or call
-# a class that sends. InputSitesTest finds them in the compiled classes and fails on any that is missing here or has
-# changed since its line was written. Only the user edits this file: each line is their audit of the code it names.
+# Written by InputSitesTest, so edit the code, never this file. Each site sends input for the player, changes or
+# refuses the player's own input, or calls a class that sends. A change here was approved where it was made: the
+# agent keeps one that sends and refuses as before, and asks the user before it keeps one that does anything new.
+# On a merge conflict, keep both sides and run the test, which writes the file again.
 #
-# gate <class> <hash>  the whole class, nested classes and lambdas included. Any change to its code changes the hash.
-# call <method> -> <gate's method>  a method outside the gates that may call into one that sends.
-# Anything after the hash, or after the call, is a note.
+# gate <class> <hash>  <features it asks>   the whole class, nested classes and lambdas included, and what it does.
+#                                           `draws` for a mixin that only hooks drawing, approved by its hooks.
+# call <method> -> <gate's member>          a method outside the gates that may reach one that sends.
+#     approved by github.com/<login> <time>  the user approved this site, as it is here, in the conversation. It
+#                                           goes when the site changes, and an agent's own approval has none.
 
 call edge.DsModClient.onInitializeClient -> edge.CommandKeys.register
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
 call edge.DsModClient.onInitializeClient -> edge.MenuBack.register
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
+call edge.DsModClient.onInitializeClient -> edge.SlotGuards.register
+call edge.profile.ProfileScreen.dress -> edge.profile.ProfileModel.<init>
+call edge.profile.ProfileScreen.dress -> edge.profile.ProfileModel.dress
+call edge.profile.ProfileScreen.dress -> edge.profile.ProfileModel.getUuid
+call edge.profile.ProfileScreen.extractRenderState -> edge.profile.ProfileModel.draw
+call edge.profile.ProfileScreen.ghost_delegate -> edge.profile.ProfileModel.<init>
 gate aw/dsmod.accesswidener 4f33ddcbbdf7
-gate edge.Chat 7c62093eb80b  the [ds-mod] prefix opens settings
-gate edge.CommandKeys cd38c2e12592  Command Binds
-gate edge.CopyChats fb0d05613b59  Copy Chat
-gate edge.MenuBack b923fde446e1  Back Buttons and Menu Tabs
-gate edge.SlotGuards b39380c1e913  Slot Lock and Armor Swap Guard
-gate edge.TabBar d66d925151ca  Menu Tabs
+    opens Minecraft's private code
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
+gate edge.Chat 7c62093eb80b
+    builds text that runs a command when the player clicks it
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
+gate edge.CommandKeys 1bd6797698bd  CommandBinds
+    sends through ClientPacketListener.sendChat
+    sends through ClientPacketListener.sendCommand
+gate edge.CopyChats 382886e4776f  CopyChat
+    can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
+    can refuse the player's input through ScreenMouseEvents.allowMouseClick
+    can refuse the player's input through ScreenMouseEvents.allowMouseRelease
+gate edge.MenuBack 2ea8a1c343d9  BackButtons
+    can refuse or change sent chat through ClientSendMessageEvents.COMMAND
+    sends through ClientPacketListener.sendCommand
+gate edge.SlotGuards 04245f644b13  SlotLock
+    acts through MultiPlayerGameMode.handleContainerInput
+    can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
+    can refuse the player's input through ScreenMouseEvents.allowMouseClick
+    can refuse the player's input through ScreenMouseEvents.allowMouseRelease
+gate edge.TabBar 98a18bf48215  MenuTabs
+    can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
+    can refuse the player's input through ScreenMouseEvents.allowMouseClick
+gate edge.capture.Recording 9b3a6a17e0f5
+    takes the player's key presses through KeyMapping.consumeClick
 gate edge.mixin.CameraMixin 38be690c7e6d
+    hooks Camera.alignWithEntity
+    hooks Camera.getMaxZoom
+    hooks Camera.update
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.CaptureInputMixin b980f3b71960
+    hooks Minecraft.startAttack
+    hooks Minecraft.startUseItem
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.CapturePacketsMixin df3c170949d4
-gate edge.mixin.ChatComponentAccessor 0de2ee54ddad
-gate edge.mixin.ChestScreenMixin 402124e5a624
-gate edge.mixin.ContainerScreenAccessor 41a15991e191
+    hooks ClientPacketListener.handleBlockUpdate
+    hooks ClientPacketListener.handleChunkBlocksUpdate
+    hooks ClientPacketListener.handleParticleEvent
+    hooks ClientPacketListener.handleSoundEvent
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
+gate edge.mixin.ChestScreenMixin draws
+    hooks ContainerScreen.extractBackground
 gate edge.mixin.ContainerScreenMixin 5147eddf96ea
+    hooks AbstractContainerScreen.extractSlot
+    hooks AbstractContainerScreen.extractSlotHighlightBack
+    hooks AbstractContainerScreen.extractSlotHighlightFront
+    hooks AbstractContainerScreen.extractTooltip
+    hooks AbstractContainerScreen.init
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.CursorMixin ec46fb6ba006
+    hooks MouseHandler.grabMouse
+    hooks MouseHandler.releaseMouse
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.DropKeyMixin 1b430b670807
-gate edge.mixin.ExplosionParticleMixin 22967fbbbdf8
-gate edge.mixin.FullbrightMixin 118bcf07aa5c
-gate edge.mixin.HeldItemMixin 99d0eef2a197
-gate edge.mixin.HudHotbarMixin 2f5e0a35a25f
+    hooks LocalPlayer.drop
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
+gate edge.mixin.ExplosionParticleMixin ad9f4482623d  ExplosionParticleHider
+    hooks ParticleEngine.createParticle
+gate edge.mixin.FullbrightMixin 4c8ba0a85eab  Fullbright
+    hooks LightmapRenderStateExtractor.extract
+gate edge.mixin.HeldItemMixin 58c78f6ea473
+    hooks ItemInHandRenderer.itemUsed
+    hooks ItemInHandRenderer.shouldInstantlyReplaceVisibleItem
+    hooks ItemInHandRenderer.submitArmWithItem
+    hooks ItemInHandRenderer.swingArm
+    hooks ItemInHandRenderer.tick
+gate edge.mixin.HudHotbarMixin draws
+    hooks Hud.extractSlot
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.KeyInputMixin 5ebcb38f55be
-gate edge.mixin.KeyPressMixin aea73a446c97
-gate edge.mixin.MenuBackdropMixin 26956081c86e
-gate edge.mixin.MenuBackgroundMixin e2dedafa684d
-gate edge.mixin.MenuLabelMixin 908778adba07
+    hooks KeyboardHandler.keyPress
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
+gate edge.mixin.KeyPressMixin 89dfd3ae31b7
+    hooks KeyMapping.click
+gate edge.mixin.MenuBackdropMixin draws
+    hooks Screen.extractTransparentBackground
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
+gate edge.mixin.MenuBackgroundMixin draws
+    hooks CraftingScreen.extractBackground
+    hooks DispenserScreen.extractBackground
+    hooks HopperScreen.extractBackground
+    hooks InventoryScreen.extractBackground
+    hooks ShulkerBoxScreen.extractBackground
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
+gate edge.mixin.MenuLabelMixin draws
+    hooks AbstractContainerScreen.extractLabels
+    hooks InventoryScreen.extractLabels
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.MouseInputMixin b812670e4219
+    hooks MouseHandler.onButton
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.MouseTurnMixin 3be6f5bde644
+    hooks MouseHandler.turnPlayer
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.PerspectiveKeyMixin fef175750217
-gate edge.mixin.RecipeButtonMixin 58afff2ab543
+    hooks Minecraft.handleKeybinds
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
+gate edge.mixin.RecipeButtonMixin draws
+    hooks ImageButton.extractContents
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.ServerPacketsMixin b124a2319630
+    hooks ClientPacketListener.handleBlockUpdate
+    hooks ClientPacketListener.handleChunkBlocksUpdate
+    hooks ClientPacketListener.handleEntityEvent
+    hooks ClientPacketListener.setActionBarText
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.SlotClickMixin 4a2f8fda01b4
+    hooks AbstractContainerScreen.slotClicked
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.SwingSpeedMixin ced2e765eeaf
-gate edge.mixin.TooltipMixin e44c92fc34b0
-gate edge.profile.Profiles 01c2950dc627  a name in chat opens /dsmod pv
+    hooks LivingEntity.getCurrentSwingDuration
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
+gate edge.mixin.TooltipMixin draws
+    hooks TooltipRenderUtil.extractTooltipBackground
+    approved by github.com/noxaur 2026-11-16T01:17:00Z
+gate edge.profile.ProfileModel 9754f8aaeae5
+    changes the player through AbstractClientPlayer.setId
+    changes the player through AbstractClientPlayer.setItemSlot
+gate edge.profile.Profiles c790da592ab9  ProfileViewer
+    builds text that runs a command when the player clicks it
