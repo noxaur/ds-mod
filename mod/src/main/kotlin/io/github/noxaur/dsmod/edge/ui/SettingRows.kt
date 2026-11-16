@@ -185,7 +185,7 @@ class SettingRows(
     val capturing get() = menu != null || editor != null || recorder != null || (dragging?.entry ?: -1) >= 0 || capturer() != null
 
     /** Whether a key button records, a row's or an editor's, so the mouse's back and forward buttons are keys to it. */
-    val recording get() = recorder != null || capturer()?.recording == true
+    val recordingKeys get() = recorder != null || capturer()?.recording == true
 
     /** The editor that holds the keys and the mouse now, if any. */
     private fun capturer(): Editor? {

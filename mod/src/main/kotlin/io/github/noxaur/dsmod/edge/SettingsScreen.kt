@@ -469,7 +469,7 @@ class SettingsScreen(
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
         sync()
         // The mouse's back and forward buttons walk the selected tab's history, wherever the mouse is, unless a key is being recorded.
-        if (!rows.recording && (event.button() == MOUSE_BACK || event.button() == MOUSE_FORWARD)) return true.also { history(event.button() == MOUSE_BACK) }
+        if (!rows.recordingKeys && (event.button() == MOUSE_BACK || event.button() == MOUSE_FORWARD)) return true.also { history(event.button() == MOUSE_BACK) }
         if ((rows.capturing || event.x >= side && event.y >= BAR) && rows.mouseClicked(event, doubleClick)) {
             setFocused(null)
             return true
