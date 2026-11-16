@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.hand.Etherwarp
 import io.github.noxaur.dsmod.core.hand.Etherwarp.Miss
 import io.github.noxaur.dsmod.edge.DsModClient
@@ -23,7 +24,7 @@ import javax.imageio.ImageIO
  * Aspect of the Void whose lore is written as dragsim.co writes it. A wall 10 blocks out is boxed green, then red
  * as No Room once a block sits above it, and a block past the 57-block range is red as Too Far. Water, grass and a
  * torch on the line do not stop it, a slab is boxed as half a block, and nothing is boxed without the item or the
- * sneak. Read the screenshots: a green box, a red box labeled No Room, and a red box labeled Too Far.
+ * sneak. Read the screenshots: a green box, a red box labeled No Room, a red box labeled Too Far, and the settings.
  */
 class EtherwarpOutlineTest : FabricClientGameTest {
     private val aspect = listOf(
@@ -134,6 +135,11 @@ class EtherwarpOutlineTest : FabricClientGameTest {
                 DsModClient.settings.general.etherwarpWithoutSneak = true
                 context.waitTicks(2)
                 check(target(context) == Etherwarp.Target(12, 101, 0, null)) { "Box Without Sneak shows no box: ${target(context)}" }
+
+                context.runOnClient<Nothing> { DsModClient.openSettings(DsModConfig.General::class.java.getField("etherwarpOutline")) }
+                context.waitTicks(20)
+                context.takeScreenshot("etherwarp-settings")
+                context.setScreen { null }
             } finally {
                 context.input.releaseKey { it.keyShift }
                 DsModClient.settings.general.etherwarpFailed = true
