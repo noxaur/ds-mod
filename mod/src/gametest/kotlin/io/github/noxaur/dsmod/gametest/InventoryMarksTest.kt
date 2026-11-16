@@ -13,6 +13,7 @@ import io.github.noxaur.dsmod.gametest.InventoryGrid.pixel
 import io.github.noxaur.dsmod.gametest.InventoryGrid.waitForItem
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.minecraft.client.gui.screens.ChatScreen
 
 /**
  * What the grid marks and where it goes: the held slot ringed, a Legendary item's slot painted by Rarity Marks, a
@@ -100,6 +101,21 @@ class InventoryMarksTest : FabricClientGameTest {
         check(first.first >= width / 2 + 91 + 7 && last.first < width) { "The docked grid is not right of the hotbar: $first to $last" }
         check(last.second >= height - 22) { "The docked grid's hotbar row is not level with the hotbar: $last" }
         context.takeScreenshot("inventory-preview-docked-right")
+
+        // A wheel step grows the grid from the size it shows docked, and it leaves the dock at that size. The chat's
+        // lines and input lie left of and below the spot, so the wheel turns over the grid's top right.
+        val guiScale = context.computeOnClient<Int, Nothing> { it.window.guiScale }
+        val docked = context.computeOnClient<Hud.Placed, Nothing> { checkNotNull(Hud.find(ID)) }
+        check(docked.scale < 1f) { "The docked grid did not shrink to the room beside the hotbar: ${docked.scale}" }
+        context.runOnClient<Nothing> { it.gui.setScreen(ChatScreen("", false)) }
+        context.waitForScreen(ChatScreen::class.java)
+        context.input.setCursorPos((docked.x + docked.width * docked.scale - 3.0) * guiScale, (docked.y + 3.0) * guiScale)
+        context.input.scroll(1.0)
+        context.waitFor { Hud.find(ID)?.dock == HudDock.FREE }
+        val grown = context.computeOnClient<Float, Nothing> { checkNotNull(Hud.find(ID)).scale }
+        check(grown == docked.scale + 1f / guiScale) { "A step up from a docked grid drawn at ${docked.scale} drew it at $grown, not ${docked.scale + 1f / guiScale}" }
+        context.setScreen { null }
+        DsModClient.settings.hud.positions.remove(ID)
     }
 
     /** Where the docked grid draws the hotbar row's first item and its last, scanning the screen in GUI pixels. */

@@ -223,14 +223,19 @@ object Hud {
         layout()
     }
 
+    /** Whether Hide In F3 takes the HUD off now. A HUD the player cannot see can't be pointed at either. */
+    private fun hiddenInF3() = DsModClient.settings.hud.hideInF3 && Minecraft.getInstance().debugOverlay.showDebugScreen()
+
     /** The block under a point in GUI pixels, topmost first. */
     fun at(px: Double, py: Double): Placed? {
+        if (hiddenInF3()) return null
         for (i in placed.size - 1 downTo 0) if (placed[i].contains(px, py)) return placed[i]
         return null
     }
 
     /** The item drawn under a point in GUI pixels, or null. */
     fun itemAt(px: Double, py: Double): ItemStack? {
+        if (hiddenInF3()) return null
         for (i in cells.indices) {
             val cell = cells[i]
             if (px >= cell.x && px < cell.x + cell.size && py >= cell.y && py < cell.y + cell.size) return cell.stack
@@ -239,7 +244,7 @@ object Hud {
     }
 
     /** Every block on the screen that the HUD editor can move, in the order they are drawn. */
-    fun placed(): List<Placed> = placed
+    fun placed(): List<Placed> = if (hiddenInF3()) emptyList() else placed
 
     fun find(id: String): Placed? {
         for (i in placed.indices) if (placed[i].id == id) return placed[i]
@@ -405,7 +410,7 @@ object Hud {
         HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, Identifier.fromNamespaceAndPath("dsmod", "hud")) { graphics, delta ->
             if (shown.isEmpty()) return@attachElementBefore
             val client = Minecraft.getInstance()
-            if (DsModClient.settings.hud.hideInF3 && client.debugOverlay.showDebugScreen()) return@attachElementBefore
+            if (hiddenInF3()) return@attachElementBefore
             DsModClient.game.metrics.time("hud.draw") {
                 val font = client.font
                 val line = font.lineHeight + 1

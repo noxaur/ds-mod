@@ -51,8 +51,15 @@ class HudKeysTest : FabricClientGameTest {
             context.input.pressKey(GLFW.GLFW_KEY_F3)
             context.waitFor { it.debugOverlay.showDebugScreen() }
             check(draws() > 0) { "The HUD hid under F3 with Hide In F3 off" }
+            val grid = context.computeOnClient<Hud.Placed, Nothing> { checkNotNull(Hud.find(ID)) }
             hud.hideInF3 = true
             check(draws() == 0L) { "The HUD drew under F3 with Hide In F3 on" }
+            // What the player can't see, the chat's mouse can't point at, drag or read a tooltip from.
+            context.runOnClient<Nothing> {
+                check(Hud.at(grid.x + 9.0, grid.y + 9.0) == null && Hud.itemAt(grid.x + 16.0, grid.y + 16.0) == null && Hud.placed().isEmpty()) {
+                    "The HUD hidden in F3 can still be pointed at"
+                }
+            }
             context.takeScreenshot("hud-hidden-in-f3")
             context.input.pressKey(GLFW.GLFW_KEY_F3)
             context.waitFor { !it.debugOverlay.showDebugScreen() }
