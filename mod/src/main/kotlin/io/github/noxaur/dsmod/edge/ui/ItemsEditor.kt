@@ -301,7 +301,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         hit.active = when (hit.does) {
             Does.UP -> entry != null && items.canNudge(entry, -1)
             Does.DOWN -> entry != null && items.canNudge(entry, 1)
-            Does.EXPORT -> items.count(group(entry ?: picked)) > 0
+            Does.EXPORT -> items.count(exportGroup(hit)) > 0
             else -> true
         }
         when (hit.does) {
@@ -730,7 +730,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
             Does.UP, Does.DOWN -> nudge(entry!!, if (hit.does == Does.UP) -1 else 1)
             Does.DUPLICATE -> duplicate(entry as Entry.Item)
             Does.DELETE -> delete(entry!!)
-            Does.EXPORT -> export(if (hit.line.kind == Kind.FOOT) footGroup ?: "" else group(entry ?: picked))
+            Does.EXPORT -> export(exportGroup(hit))
             Does.NAME -> openField(hit, (entry as Entry.Heading).group, type.groupLength, NAME, "")
             Does.ADD -> add()
             Does.ADD_GROUP -> addGroup()
@@ -896,6 +896,10 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         openField(hit, group, type.groupLength, NAME, "")
         field?.setHighlightPos(0)
     }
+
+    /** The group Export copies. On the foot it is the group picked before the foot, which [pick] remembers. */
+    private fun exportGroup(hit: Hit): String =
+        if (hit.line.kind == Kind.FOOT) footGroup ?: group(picked) else group(hit.line.entry ?: picked)
 
     private fun export(group: String) {
         val text = items.export(group) ?: return say("${items.groupName(group)} has no ${type.noun}s to export.", bad = true)

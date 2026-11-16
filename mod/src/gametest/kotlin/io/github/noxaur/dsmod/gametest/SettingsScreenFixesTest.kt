@@ -76,6 +76,7 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         check(context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).marked("itemSize") }.not()) {
             "Reset Animations left Item Size's changed marker up"
         }
+
     }
 
     private fun BindsDriver.lists() {
@@ -109,6 +110,16 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         press(foot(), "Export")
         val copied = context.computeOnClient<String, Nothing> { Minecraft.getInstance().keyboardHandler.clipboard }
         check(copied.startsWith("dsmod-binds:")) { "Export copied \"$copied\" instead of the Dungeons bind" }
+        context.runOnClient<Nothing> {
+            val screen = it.gui.screen() as SettingsScreen
+            screen.resize(screen.width, screen.height)
+            // An empty clipboard does not replace the previous copy, so the marker has to be text.
+            Minecraft.getInstance().keyboardHandler.clipboard = "none"
+        }
+        context.waitTicks(2)
+        press(foot(), "Export")
+        val again = context.computeOnClient<String, Nothing> { Minecraft.getInstance().keyboardHandler.clipboard }
+        check(again.startsWith("dsmod-binds:")) { "After a relayout Export copied \"$again\" instead of the Dungeons bind" }
 
         general.binds = emptyList()
         general.bindGroups = emptyList()
