@@ -122,7 +122,7 @@ export const dsctl = (args: readonly string[], target: Target) =>
         catch: (cause) => new Failed({ message: `Could not make ${second}: ${String(cause)}` }),
       });
       // The request's id keeps two briefs with the same name, pulled into one directory, from overwriting each other.
-      const stem = `${slug(request.brief.name)}-${request.id.slice(0, 8)}`;
+      const stem = `${slug(request.brief.name)}-${request.id}`;
       const runs = yield* Effect.forEach(request.submissions, (submission) => {
         const file = join(second, `${stem}-${submission.contributor.toLowerCase()}.jsonl`);
         return client.admin.capture({ params: { id: submission.id } }).pipe(
