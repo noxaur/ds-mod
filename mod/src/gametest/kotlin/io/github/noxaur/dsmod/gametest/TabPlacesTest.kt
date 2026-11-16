@@ -77,12 +77,12 @@ class TabPlacesTest : FabricClientGameTest {
         check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() is SettingsScreen }) { "Escape during a drag closed the settings" }
         check(tabs().first { it.command == "ec" }.slot == 1) { "Escape did not put the dragged tab back" }
 
-        // A press on an empty place adds a tab there with its command to type, and the item is typed by its name.
+        // A press on an empty place adds a tab there with its command to type, and the item, reached with Tab, is typed by its name.
         place(TabEdge.BOTTOM, 5).let { click(it.first, it.second) }
         context.input.typeChars("/pets")
         context.waitTicks(2)
-        val item = context.computeOnClient<Pair<Int, Int>, Nothing> { editor().controlAt("Item") }
-        click(item.first, item.second)
+        // Tab goes on from the command to the item.
+        key(GLFW.GLFW_KEY_TAB)
         // The test's keyboard sends no modifiers with a key, so the field is emptied with Backspace.
         repeat("paper".length) { key(GLFW.GLFW_KEY_BACKSPACE) }
         context.input.typeChars("bone")

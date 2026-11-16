@@ -107,6 +107,8 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
 
     override val capturing get() = field != null || recorder != null || menu != null || dragged != null && moved
 
+    override val recording get() = recorder != null
+
     override fun layout(x: Int, y: Int, width: Int): Int {
         this.x = x
         this.width = width

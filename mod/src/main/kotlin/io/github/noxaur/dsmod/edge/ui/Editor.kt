@@ -71,6 +71,9 @@ interface Editor {
     /** Whether it holds the keys and the mouse now: an open field, menu or key button, or a drag. */
     val capturing: Boolean
 
+    /** Whether a key button records, so every key and mouse button goes to it, the mouse's back and forward too. */
+    val recording: Boolean get() = false
+
     /** Says what the keys or the mouse are on, or returns false to let the row speak for itself. */
     fun narrate(output: NarrationElementOutput): Boolean
 

@@ -384,7 +384,17 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         }
         val typing = focused
         if (typing != null) {
-            if (event.isEscape || event.isConfirmation) focus(null) else typing.keyPressed(event)
+            when {
+                event.isEscape || event.isConfirmation -> focus(null)
+                // Tab and Shift + Tab move between the form's fields, as in the binds list.
+                event.key() == GLFW.GLFW_KEY_TAB -> {
+                    val by = if (Keys.shift(event)) -1 else 1
+                    var at = fields.indexOf(typing)
+                    do at = Math.floorMod(at + by, fields.size) while (!fields[at].active)
+                    focus(fields[at])
+                }
+                else -> typing.keyPressed(event)
+            }
             return true
         }
         if (!entered) {

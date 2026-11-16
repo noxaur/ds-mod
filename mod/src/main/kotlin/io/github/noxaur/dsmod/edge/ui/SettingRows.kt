@@ -184,6 +184,9 @@ class SettingRows(
     /** Whether a menu, a field, a key button or an entry's drag has the keys, which the host then hands over before its own. */
     val capturing get() = menu != null || editor != null || recorder != null || (dragging?.entry ?: -1) >= 0 || capturer() != null
 
+    /** Whether a key button records, a row's or an editor's, so the mouse's back and forward buttons are keys to it. */
+    val recording get() = recorder != null || capturer()?.recording == true
+
     /** The editor that holds the keys and the mouse now, if any. */
     private fun capturer(): Editor? {
         for (line in lines) if (line.editor?.capturing == true) return line.editor

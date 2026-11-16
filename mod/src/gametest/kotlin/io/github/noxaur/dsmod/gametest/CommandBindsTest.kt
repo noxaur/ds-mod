@@ -110,6 +110,12 @@ class CommandBindsTest : FabricClientGameTest {
         check(general.binds.size == 2) { "A press elsewhere did not call the delete off" }
         press(lineOf(1, details = true), "Delete")
         check(general.binds.size == 1) { "Two presses on Delete left ${general.binds}" }
+
+        // While keys are recorded, the mouse's back button is a key, not a step back through the settings.
+        press(lineOf(0), "Keys")
+        context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_4)
+        context.waitTicks(2)
+        check(general.binds.single().keys == listOf(GLFW.GLFW_MOUSE_BUTTON_4)) { "Recording the back button left ${general.binds.single().keys}" }
     }
 
     private fun clear() {
