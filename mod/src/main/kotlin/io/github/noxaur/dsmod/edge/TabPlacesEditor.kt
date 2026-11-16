@@ -303,17 +303,17 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
         val px = event.x()
         val py = event.y()
+        // A press elsewhere, a field scrolled under the tab bar included, takes the keys back and still does its own job.
+        if (!isOver(px, py)) {
+            leave()
+            return false
+        }
         for (field in fields) {
             if (field.active && field.isMouseOver(px, py)) {
                 focus(field)
                 field.mouseClicked(event, doubleClick)
                 return true
             }
-        }
-        if (!isOver(px, py)) {
-            // A press elsewhere takes the keys back and still does its own job.
-            leave()
-            return false
         }
         focus(null)
         entered = true

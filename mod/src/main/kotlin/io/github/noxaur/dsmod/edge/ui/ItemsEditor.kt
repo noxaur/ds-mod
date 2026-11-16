@@ -264,6 +264,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
 
     /** Reads the list again into what each line shows. Call it after a change, never per frame. */
     override fun refresh() {
+        tip = null
         val value = list
         val words = host.words()
         val clashing = BooleanArray(value.items.size) { items.clashes(it).isNotEmpty() }
@@ -504,7 +505,12 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     }
 
     /** Names the other use of a ringed key, as vanilla's controls name a clash. */
+    /** The clash tip last made, and the item it is for, kept until a refresh so the screen's hover delay runs out. */
+    private var tip: SettingRows.Tip? = null
+    private var tipIndex = -1
+
     private fun clashTip(index: Int): SettingRows.Tip {
+        tip?.let { if (tipIndex == index) return it }
         val other = items.clashes(index).firstOrNull()
         val keys = type.cells.filterIsInstance<Cell.Keys<T>>().first().get(list.items[index])
         val line = if (other != null) {
@@ -512,7 +518,8 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         } else {
             text { body("Also the game's "); value(keys.firstOrNull()?.let(Keys::gameKey) ?: ""); body(" key.") }
         }
-        return SettingRows.Tip(font.split(line.toComponent(), TIP))
+        tipIndex = index
+        return SettingRows.Tip(font.split(line.toComponent(), TIP)).also { tip = it }
     }
 
     private fun drawHit(g: GuiGraphicsExtractor, hit: Hit, hovered: Boolean, focused: Boolean, mx: Double, my: Double) {
@@ -586,7 +593,8 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
             menu = null
         }
         field?.let { open ->
-            if (open.isMouseOver(mx, my)) return true.also { open.mouseClicked(event, doubleClick) }
+            // A field scrolled out of the pane, such as under the tab bar, takes no press.
+            if (isOver(mx, my) && open.isMouseOver(mx, my)) return true.also { open.mouseClicked(event, doubleClick) }
             closeField()
         }
         recorder?.let { keys ->
