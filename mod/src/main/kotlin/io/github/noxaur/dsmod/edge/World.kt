@@ -1,12 +1,15 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.world.BlockBox
+import io.github.noxaur.dsmod.core.world.BoxStyle
 import io.github.noxaur.dsmod.core.world.Mark
 import io.github.noxaur.dsmod.core.world.Path
 import io.github.noxaur.dsmod.core.world.Point
 import io.github.noxaur.dsmod.core.world.Ring
 import io.github.noxaur.dsmod.core.world.Waypoint
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.minecraft.client.Minecraft
 import net.minecraft.gizmos.GizmoStyle
 import net.minecraft.gizmos.Gizmos
 import net.minecraft.gizmos.TextGizmo
@@ -15,10 +18,12 @@ import net.minecraft.world.phys.Vec3
 
 private const val BEAM_HEIGHT = 64.0
 private const val LINE_WIDTH = 2f
+private const val FILL_ALPHA = 70
 
 /**
  * Marks drawn in the world. Positions are converted once when shown. They are handed to Minecraft once
- * per tick, and it replays them every frame, so a mark costs nothing in the frame loop.
+ * per tick, and it replays them every frame, so a mark costs nothing in the frame loop. A [FrameBox] is the one
+ * exception, for a box that follows the view: its owner hands it over on each frame with [draw].
  */
 object World {
     private sealed interface Shown
@@ -30,6 +35,25 @@ object World {
         var label = name
         var labelAt = at
         var style: TextGizmo.Style = TextGizmo.Style.forColorAndCentered(color)
+    }
+
+    /**
+     * A box drawn for one frame at a time, built once while it stays the same: in [style], with edges [width] wide,
+     * in front of what hides it when [onTop], and with a [label] above it.
+     */
+    class FrameBox(box: AABB, role: Role, style: BoxStyle, width: Float, internal val onTop: Boolean, internal val label: String?) {
+        // A box drawn behind the world lies on the block's faces, and would flicker against them.
+        val box: AABB = if (onTop) box else box.inflate(0.002)
+        internal val style: GizmoStyle = when (style) {
+            BoxStyle.OUTLINE -> GizmoStyle.stroke(role.argb(), width)
+            BoxStyle.FILLED -> GizmoStyle.fill(role.argb(FILL_ALPHA))
+            BoxStyle.BOTH -> GizmoStyle.strokeAndFill(role.argb(), width, role.argb(FILL_ALPHA))
+        }
+        internal val color = role.argb()
+        internal val top = Vec3(box.center.x, box.maxY, box.center.z)
+        internal var meters = -1
+        internal var labelAt = top
+        internal var labelStyle: TextGizmo.Style = TextGizmo.Style.forColorAndCentered(color)
     }
 
     private val marks = LinkedHashMap<String, List<Shown>>()
@@ -90,8 +114,27 @@ object World {
         }
     }
 
+    /**
+     * Draws [mark] on this frame only. Call it on each frame while the game gathers the frame's shapes, from Fabric's
+     * `AFTER_BLOCK_OUTLINE_EXTRACTION`, which runs on the client thread before they are handed to the renderer.
+     */
+    fun draw(mark: FrameBox) {
+        val box = Gizmos.cuboid(mark.box, mark.style)
+        if (mark.onTop) box.setAlwaysOnTop()
+        val label = mark.label ?: return
+        val meters = Minecraft.getInstance().gameRenderer.mainCamera().position().distanceTo(mark.top).toInt()
+        if (meters != mark.meters) {
+            mark.meters = meters
+            // Text is sized in blocks, so it grows with distance to stay the same size on screen, and rises to stay clear of the box.
+            val scale = (meters * 0.25f).coerceAtLeast(1f)
+            mark.labelStyle = TextGizmo.Style.forColorAndCentered(mark.color).withScale(TextGizmo.Style.DEFAULT_SCALE * scale)
+            mark.labelAt = mark.top.add(0.0, 0.4 + meters / 24.0, 0.0)
+        }
+        Gizmos.billboardText(label, mark.labelAt, mark.labelStyle).setAlwaysOnTop()
+    }
+
     private fun box(x: Double, y: Double, z: Double, mark: Mark) =
-        ShownBox(AABB(x, y, z, x + 1, y + 1, z + 1), GizmoStyle.strokeAndFill(mark.role.argb(), LINE_WIDTH, mark.role.argb(70)))
+        ShownBox(AABB(x, y, z, x + 1, y + 1, z + 1), GizmoStyle.strokeAndFill(mark.role.argb(), LINE_WIDTH, mark.role.argb(FILL_ALPHA)))
 
     private fun Point.vec() = Vec3(x, y, z)
 }
