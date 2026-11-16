@@ -19,8 +19,8 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.chunk.LevelChunk
 
 /**
- * What the server sends that leaves nothing behind to poll: `ServerPacketsMixin` calls these on the client thread
- * as each packet is handled, so an event keeps the time and the order it arrived in.
+ * What the server sends that leaves nothing behind to poll: `ServerPacketsMixin` calls these as each packet is handled,
+ * so an event keeps the time and the order it arrived in. All but [pong] are called on the client thread.
  */
 object Packets {
     fun actionBar(text: Component) {
@@ -35,11 +35,15 @@ object Packets {
 
     /**
      * The answer to a ping request, which carries the time on the game's own clock that the request left with. The
-     * F3 network chart's requests are answered the same way, and count as well.
+     * F3 network chart's requests are answered the same way, and count as well. The game handles it on the network
+     * thread, so the round trip is read there, before it waits for a frame, and posted on the client thread.
      */
     fun pong(sent: Long) {
-        val game = DsModClient.game
-        if (game.wants(PingMeasured::class.java)) game.post(System.currentTimeMillis(), PingMeasured(Util.getMillis() - sent))
+        val ping = PingMeasured(Util.getMillis() - sent)
+        Minecraft.getInstance().execute {
+            val game = DsModClient.game
+            if (game.wants(PingMeasured::class.java)) game.post(System.currentTimeMillis(), ping)
+        }
     }
 
     // Heads seen before any feature could be handed them. A head arrives with its chunk or as a block update in the

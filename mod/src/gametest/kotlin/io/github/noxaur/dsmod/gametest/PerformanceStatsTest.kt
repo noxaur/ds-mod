@@ -49,7 +49,8 @@ class PerformanceStatsTest : FabricClientGameTest {
                     general.performanceValues = mutableListOf(Stat.FPS, Stat.TPS)
                     it.debugOverlay.pingLogger.reset()
                 }
-                context.waitTicks(50)
+                // Long enough for one more request, which the mod asks once a second.
+                context.waitTicks(30)
                 check(context.computeOnClient<Int, Nothing> { it.debugOverlay.pingLogger.size() } == 0) { "The mod asked for ping while Ping was not shown" }
                 check(shown().map { it.plain.substringBefore(':') } == listOf("FPS", "TPS")) { "Ping is still shown: ${line()}" }
             }

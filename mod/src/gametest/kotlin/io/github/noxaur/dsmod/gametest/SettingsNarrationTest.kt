@@ -91,8 +91,8 @@ class SettingsNarrationTest : FabricClientGameTest {
         over("equipmentPieces", "Pieces, list, Helmet, Chestplate, Leggings, Boots, Pet, 5 of 5 shown, expanded")
         open(context, SettingsTabs(at("General")))
         over("fullbright", "Fullbright, switch, off")
-        // The sidebar's lines start 24 down, and The End comes after Favorites, General's six subsections and six sections. The bar's first tab is 4 in from the sidebar's 116.
-        move(30, 24 + 16 + 16 + 6 * 13 + 6 * 16 + 8)
+        // The sidebar's lines start 24 down, and The End comes after Favorites, General's seven subsections and six sections. The bar's first tab is 4 in from the sidebar's 116.
+        move(30, 24 + 16 + 16 + 7 * 13 + 6 * 16 + 8)
         hear(context, "The End, section, collapsed", "Over The End in the sidebar")
         move(120 + 30, 9)
         hear(context, "General, tab, selected", "Over the tab")
