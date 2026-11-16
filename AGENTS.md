@@ -89,6 +89,7 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | A beta ships only when every check and game test passes | `.github/workflows/beta.yml` |
 | Every capture type reaches the file | `CaptureTest`, and `BriefTest` for `step` |
 | A redacted capture holds no player name the mod knows, and no typed chat | `RedactCaptureTest` |
+| The memory stores and `routes/_store.ts` pass one contract, which has a case for every `Store` method | `storeContract` in `backend/test/contract.ts`, keyed by each store's methods so a missing case fails `tsc` |
 | The backend believes a sign-in only when Mojang confirms it | `minecraft.test.ts` in `backend/src/identity/` |
 | A player cannot reach an agent's routes, and an agent never sees who recorded a run | `app.test.ts` in `backend/src/` |
 | The website signs a browser in only after the player confirms whose account it is | `signIn.test.ts` in `web/app/login/` |
