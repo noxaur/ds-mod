@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.core.feature.general
 
 import io.github.noxaur.dsmod.core.game.ContainerState.Companion.INVENTORY
 import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.Pet
 import io.github.noxaur.dsmod.core.game.PetCard
 import io.github.noxaur.dsmod.core.game.PetNear
@@ -111,6 +112,13 @@ class EquipmentDisplay(
             val card = event.item?.let(PetCard::of) ?: return@on
             menuPet = card.pet.name to card.icon
             held = card.held?.name
+            block = build()
+        }
+        // The next session may bring another pet, and the sidebar names it only when it arrives. A head stays its pet's.
+        on<LeftServer> { _, _ ->
+            pet = null
+            menuPet = null
+            held = null
             block = build()
         }
         on<Sidebar> { event, _ ->

@@ -25,6 +25,14 @@ data class SystemMessage(val text: ServerText) : GameEvent
 data object WorldChanged : GameEvent
 
 /**
+ * The client left the server. A feature forgets here what belongs to one session on it, such as the pet the player
+ * had out, which a change of world keeps. The next join changes the world as well.
+ */
+@Serializable
+@SerialName("left")
+data object LeftServer : GameEvent
+
+/**
  * The tab list as the client draws it: down the first column, then down the next. Posted only when a row
  * changes, and only while a feature reads it.
  */

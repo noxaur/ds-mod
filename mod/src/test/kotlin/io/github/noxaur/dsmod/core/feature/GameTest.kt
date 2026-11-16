@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.core.feature
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.game.Area
+import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.Sidebar
@@ -86,6 +87,36 @@ class GameTest {
         config.end.dragonTimer = true
         game.tick(2_000)
         assertEquals(2, heard)
+    }
+
+    @Test
+    fun `a feature locked to an area hears the player leave the server from anywhere`() {
+        var heard = 0
+        val listener = object : Feature("listener", config.end::dragonTimer, Area.END) {
+            init {
+                on<LeftServer> { _, _ -> heard++ }
+            }
+        }
+        Game(listOf(listener)).post(0, LeftServer)
+        assertEquals(1, heard)
+    }
+
+    @Test
+    fun `a feature switched on after the player left the server hears none of its sidebar`() {
+        var heard = 0
+        val listener = object : Feature("listener", config.end::dragonTimer, Area.ANYWHERE) {
+            init {
+                on<Sidebar> { _, _ -> heard++ }
+            }
+        }
+        val game = Game(listOf(listener))
+        config.end.dragonTimer = false
+        game.tick(0)
+        game.post(1, Sidebar(lines = listOf(ServerText(ServerSpan("⏣ Village")))))
+        game.post(2, LeftServer)
+        config.end.dragonTimer = true
+        game.tick(3)
+        assertEquals(0, heard)
     }
 
     @Test

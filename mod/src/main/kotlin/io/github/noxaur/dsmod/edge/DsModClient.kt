@@ -14,6 +14,7 @@ import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.SystemMessage
+import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.MenuTab
@@ -60,6 +61,10 @@ object DsModClient : ClientModInitializer {
     private lateinit var pets: PetPoller
     private var ticks = 0
     private var onDragSim = false
+
+    /** Set on the network thread when the client leaves a server, for the next client tick to tell the features. */
+    @Volatile
+    private var left = false
 
     /** dragsim.co's addresses, so a player who joins by IP is on it too. Looked up off the client thread, and empty until then. */
     @Volatile
@@ -178,7 +183,8 @@ object DsModClient : ClientModInitializer {
             log.info("Joined {} at {}, which is {}dragsim.co", handler.serverData?.ip ?: "singleplayer", reached, if (onDragSim) "" else "not ")
             lookUpDragSim()
         }
-        ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> onDragSim = false }
+        // Fabric says so on the network thread, and the game drops the tasks queued for its thread as it disconnects.
+        ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> left = true }
         ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ ->
             Packets.worldChanged()
             // The end-of-tick draw runs before readouts replace the marks, so the old world must already be clear.
@@ -189,6 +195,12 @@ object DsModClient : ClientModInitializer {
         }
         ClientChunkEvents.CHUNK_LOAD.register { _, chunk -> Packets.chunk(chunk) }
         ClientTickEvents.END_CLIENT_TICK.register {
+            // The features hear it while the game still counts as on dragsim.co.
+            if (left) {
+                left = false
+                game.post(System.currentTimeMillis(), LeftServer)
+                onDragSim = false
+            }
             if (ticks % TAB_POLL_TICKS == 0) {
                 game.metrics.time("tab-poll") { tabs.poll(it) }
                 game.metrics.time("sidebar-poll") { sidebars.poll(it) }

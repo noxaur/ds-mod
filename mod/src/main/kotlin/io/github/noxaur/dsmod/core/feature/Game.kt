@@ -14,6 +14,7 @@ import io.github.noxaur.dsmod.core.game.SidebarState
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.TabState
+import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.Text
@@ -50,6 +51,9 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         internal var stale = true
         internal var on = feature.enabled
         internal var refreshedAt = 0L
+
+        /** Whether the player left the server while the feature was off, so it must forget that session when it comes back. */
+        internal var missedLeave = false
     }
 
     val readouts = features.map(::Readout)
@@ -136,8 +140,9 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             }
             is ContainerOpened -> true.also { metrics.time("container") { container.opened(event) } }
             is SlotChanged -> true.also { metrics.time("container") { container.changed(event) } }
-            // The new world's tab list and sidebar have not arrived, so the old one's area must not outlive the hop.
-            WorldChanged -> true.also {
+            // The new world's tab list and sidebar have not arrived, so the old one's area must not outlive the hop. A
+            // disconnect changes no world, and a feature switched on after it must not hear the old server's sidebar.
+            WorldChanged, LeftServer -> true.also {
                 lastTab = null
                 lastSidebar = null
                 tab.update(emptyList())
@@ -148,9 +153,12 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         val active = active()
         for (i in features.indices) {
             val feature = features[i]
-            if (!active || !feature.enabled) continue
-            // Outside its area a feature still follows the tab list, the sidebar and the world, which is how it knows it left.
-            val reaches = event is TabList || event is Sidebar || event is WorldChanged || feature.area.holds(tab, sidebar)
+            if (!active || !feature.enabled) {
+                if (event == LeftServer) readouts[i].missedLeave = true
+                continue
+            }
+            // Outside its area a feature still follows the tab list, the sidebar, the world and the server, which is how it knows it left.
+            val reaches = event is TabList || event is Sidebar || event is WorldChanged || event is LeftServer || feature.area.holds(tab, sidebar)
             val handler = if (reaches) feature.handlers[event.javaClass] else null
             if (handler != null) metrics.time(feature.id) { handler(event, time) }
             if (handler != null || shared) readouts[i].stale = true
@@ -187,9 +195,10 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
                 readout.on = enabled
                 // A feature that is off sees no events. It forgets its world when it goes off, and hears the tab
                 // list and the sidebar again when it comes back, because the next ones arrive only when a row changes.
-                for (missed in if (readout.on) listOfNotNull(lastTab, lastSidebar) else listOf(WorldChanged)) {
-                    feature.handlers[missed.javaClass]?.let { metrics.time(feature.id) { it(missed, time) } }
-                }
+                // A server it left meanwhile comes first, so it forgets that session before it hears the new one.
+                val missed = if (readout.on) listOfNotNull(LeftServer.takeIf { readout.missedLeave }, lastTab, lastSidebar) else listOf(WorldChanged)
+                if (readout.on) readout.missedLeave = false
+                for (event in missed) feature.handlers[event.javaClass]?.let { metrics.time(feature.id) { it(event, time) } }
             }
             if (!readout.stale && enabled && time - readout.refreshedAt in 0 until REFRESH_MILLIS) continue
             readout.stale = !enabled

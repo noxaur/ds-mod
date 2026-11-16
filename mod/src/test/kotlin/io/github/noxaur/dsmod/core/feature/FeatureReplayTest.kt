@@ -23,6 +23,7 @@ import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
+import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.world.Mark
 import io.github.noxaur.dsmod.core.world.Waypoint
@@ -125,6 +126,7 @@ class FeatureReplayTest {
     private fun describe(event: GameEvent, previous: MutableSet<String>) = when (event) {
         is SystemMessage -> event.text.plain
         WorldChanged -> "(the world changed)"
+        LeftServer -> "(left the server)"
         is TabList -> {
             val info = event.rows.map { it.plain.trim() }.filter { ": " in it }.toSet()
             val changed = (info - previous).ifEmpty { setOf("no info row changed") }

@@ -23,6 +23,7 @@ class CaptureTest : FabricClientGameTest {
     private val expected = listOf(
         "system" to "RARE DROP!",
         "world" to "{}",
+        "left" to "{}",
         "chat" to "Hello from the server",
         "hud" to "Eyes: 0/8",
         "metrics" to "dragon-timer",
@@ -73,6 +74,7 @@ class CaptureTest : FabricClientGameTest {
         // `BriefTest` checks `step`, which only a brief records.
         val unchecked = eventTypes + RawRecord.entries.map { it.type } - expected.map { it.first }.toSet() - RawRecord.STEP.type
         check(unchecked.isEmpty()) { "No check for the capture types $unchecked. Make the server send each one here, and add what its line must hold to `expected`." }
+        lateinit var file: Path
         context.worldBuilder().create().use { world ->
             // The server owns map data, so make a real one for the frame to show.
             var mapId = 0
@@ -85,7 +87,7 @@ class CaptureTest : FabricClientGameTest {
             ).forEach(world.server::runCommand)
             context.waitTicks(40)
             context.runOnClient<Nothing> { DsModClient.settings.general.performanceStats = true }
-            val file = context.computeOnClient<Path, Nothing> { DsModDebug.toggleCapture(it)!! }
+            file = context.computeOnClient<Path, Nothing> { DsModDebug.toggleCapture(it)!! }
             context.enterTheEnd()
             listOf(
                 """scoreboard objectives add ds dummy "Dragon Sim"""",
@@ -133,22 +135,25 @@ class CaptureTest : FabricClientGameTest {
             // Last, because a new world drops the entities and blocks the checks above read.
             world.server.runCommand("execute in minecraft:the_nether run tp @a 0 100 0")
             context.waitTicks(20)
-            // The file is finished off the client thread, and the toggle says so when it is whole.
-            var said: String? = null
-            context.runOnClient<Nothing> { client -> DsModDebug.toggleCapture(client) { said = it } }
-            context.waitFor { said != null }
-            context.runOnClient<Nothing> { DsModClient.settings.general.performanceStats = false }
-            check(said == "Capture saved: $file") { "The capture ended with '$said'" }
-
-            val events = file.readLines().map { Json.parseToJsonElement(it).jsonObject }
-            val byType = events.groupBy({ it.getValue("type").jsonPrimitive.content }, { it.getValue("data").toString() })
-            expected.forEach { (type, part) ->
-                check(byType[type].orEmpty().any { part in it }) {
-                    "No '$type' event containing $part. Got: ${byType[type]}"
-                }
-            }
-            check(byType["death"].orEmpty().none { "Leaver" in it }) { "The mob that left was recorded as dead: ${byType["death"]}" }
-            check(byType["unload"].orEmpty().none { "Leaver" in it && "KILLED" in it }) { "The mob that left was recorded as killed: ${byType["unload"]}" }
         }
+        // Leaving the world leaves its server, so the capture runs on past it to record that. Fabric says so on the
+        // network thread, and the features hear it at the end of the next client tick.
+        context.waitTick()
+        // The file is finished off the client thread, and the toggle says so when it is whole.
+        var said: String? = null
+        context.runOnClient<Nothing> { client -> DsModDebug.toggleCapture(client) { said = it } }
+        context.waitFor { said != null }
+        context.runOnClient<Nothing> { DsModClient.settings.general.performanceStats = false }
+        check(said == "Capture saved: $file") { "The capture ended with '$said'" }
+
+        val events = file.readLines().map { Json.parseToJsonElement(it).jsonObject }
+        val byType = events.groupBy({ it.getValue("type").jsonPrimitive.content }, { it.getValue("data").toString() })
+        expected.forEach { (type, part) ->
+            check(byType[type].orEmpty().any { part in it }) {
+                "No '$type' event containing $part. Got: ${byType[type]}"
+            }
+        }
+        check(byType["death"].orEmpty().none { "Leaver" in it }) { "The mob that left was recorded as dead: ${byType["death"]}" }
+        check(byType["unload"].orEmpty().none { "Leaver" in it && "KILLED" in it }) { "The mob that left was recorded as killed: ${byType["unload"]}" }
     }
 }
