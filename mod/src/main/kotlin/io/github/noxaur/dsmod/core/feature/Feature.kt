@@ -33,6 +33,7 @@ import kotlin.reflect.KMutableProperty0
  * - Change how the game draws, reading nothing from the server: `Fullbright`.
  * - Count something and keep the total: `SlayerTracker`.
  * - Hide a line the server sends: `AbilitySpam`.
+ * - Shorten or hide text the server floats in the world, such as damage numbers: `DamageNumbers`.
  * - Tell the player something once, and read a setting besides the switch: `LootAlerts`.
  * - Track a rate, and follow the player into and out of its area: `ZealotTracker`.
  * - Mark a place in the world: `BossBeacon`.
