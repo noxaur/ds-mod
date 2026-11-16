@@ -53,6 +53,10 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.SettingsScreenFixesTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.SettingOrderTest"
       },
       {
@@ -237,6 +241,10 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.SlotLockShiftTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.SurfacesTest"
       },
       {
@@ -274,6 +282,10 @@
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.EndTrackerEdgeTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.HudUiFixesTest"
       }
     ]
   }

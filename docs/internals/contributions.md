@@ -10,7 +10,7 @@ A request has a time limit measured from the moment the player accepts, not from
 
 The run's life crosses the client thread, the io thread, the backend's thread and the disk, which outlives a quit or a crash, so [`specs/Contribute.tla`](../../specs/Contribute.tla) models it. Three decisions come from it:
 
-- An upload claims its file, and a resend skips claimed files. A resend that listed a file an upload was still sending would send it twice and fail on the deleted file.
+- An upload claims its file, and a resend skips claimed files. A resend that listed a file an upload was still sending would send it twice and fail on the deleted file. A file the backend has already kept stays claimed when deleting it fails, so a resend in the same game does not upload it again. A claim lives in memory, so after a crash between the backend keeping a file and its delete, the next start sends it once more, and the backend refuses it because it keeps one run per player.
 - The redactor writes a `.part` and renames it, so only a whole, redacted `.gz` is ever kept or sent. The next start deletes anything else in `dsmod/contributions/`, which is a raw capture or a half redaction.
 - The offers are fetched only after that sweep, so the sweep can never delete a capture a run has started.
 

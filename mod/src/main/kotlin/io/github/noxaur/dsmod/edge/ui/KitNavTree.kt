@@ -227,7 +227,7 @@ class KitNavTree(
                 }
                 if (i == over && cut[i] && !onChevron(row, mouseX.toDouble())) graphics.setTooltipForNextFrame(Kit.font, fullNames[row.section], mouseX, mouseY)
             } else {
-                if (keyboard && row == tree.cursor) Kit.navRow(graphics, x, top, width, SUB, Kit.State.HOVER, false)
+                if (lit) Kit.navRow(graphics, x, top, width, SUB, Kit.State.HOVER, false)
                 Kit.label(graphics, labels[i], x + TEXT_X, top + 3, if (lit || tree.marked(row)) Kit.Ink.NORMAL else Kit.Ink.MUTED)
             }
         }

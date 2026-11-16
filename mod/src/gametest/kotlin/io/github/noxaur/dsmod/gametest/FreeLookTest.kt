@@ -39,8 +39,11 @@ class FreeLookTest : FabricClientGameTest {
                 val facing = head()
                 check(facing.first != 0f) { "The mouse does not turn the player in this test, so it proves nothing" }
 
+                // The key and the mouse both land before the next tick, so that tick is the frame that arms Free Look.
                 context.input.holdKey(key)
-                context.waitTicks(3)
+                context.input.moveCursor(400.0, 100.0)
+                context.waitTicks(1)
+                check(head() == facing) { "The press frame turned the player from $facing to ${head()}" }
                 check(Cameras.looking && view() == CameraType.THIRD_PERSON_BACK) { "Holding the key gave ${view()}, looking ${Cameras.looking}" }
                 mouse(400.0, 100.0)
                 check(head() == facing) { "Free Look turned the player from $facing to ${head()}" }

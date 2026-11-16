@@ -44,6 +44,12 @@ object Cameras {
     /** A press since the last frame. A tap can start and end inside one frame, so the press comes from the game's key event. */
     private var tapped = false
 
+    /**
+     * [turn] already built the orbit for this press. The mouse is applied before [frame], and Toggle reads a press
+     * while an orbit exists as the press that stops, so this one must not.
+     */
+    private var armed = false
+
     /** Whether the key was down a frame ago. A key held down repeats its event, and a repeat is not a new press. */
     private var wasDown = false
 
@@ -72,19 +78,18 @@ object Cameras {
         val allowed = player != null && DsModClient.runs<FreeLook>()
         val down = allowed && Keys.held(client, settings.freeLookKey)
         val pressed = allowed && tapped && !wasDown
+        val spent = armed
         tapped = false
+        armed = false
         wasDown = down
         if (orbit == null) {
             if (!pressed) return
-            before = client.options.cameraType
-            orbit = Orbit(player!!.yRot, player.xRot)
-            looker = player
-            if (before.isFirstPerson) show(client, type(views.third))
+            begin(client, player)
             return
         }
         // F5 round to first person ends it and keeps that view, because there the camera is the aim.
         val left = client.options.cameraType.isFirstPerson
-        val over = if (settings.freeLookMode == KeyMode.HOLD) !down && !pressed else pressed
+        val over = if (settings.freeLookMode == KeyMode.HOLD) !down && !pressed else pressed && !spent
         if (!allowed || player !== looker || left || over) {
             orbit = null
             looker = null
@@ -92,9 +97,30 @@ object Cameras {
         }
     }
 
-    /** Takes the mouse's turn for Free Look, and says whether it did. */
+    /** Starts the orbit for a press that [frame] has not seen yet, and switches out of first person with it. */
+    private fun begin(client: Minecraft, player: LocalPlayer): Orbit {
+        before = client.options.cameraType
+        val started = Orbit(player.yRot, player.xRot)
+        orbit = started
+        looker = player
+        if (before.isFirstPerson) show(client, type(views.third))
+        return started
+    }
+
+    /**
+     * Takes the mouse's turn for Free Look, and says whether it did. The orbit has to exist here: this runs before
+     * [frame], and a delta that misses it turns the head the server sees.
+     */
     fun turn(x: Double, y: Double): Boolean {
-        orbit?.turn(x, y) ?: return false
+        val current = orbit ?: run {
+            if (!tapped || wasDown) return false
+            val client = Minecraft.getInstance()
+            val player = client.player
+            if (player == null || !DsModClient.runs<FreeLook>()) return false
+            armed = true
+            begin(client, player)
+        }
+        current.turn(x, y)
         return true
     }
 

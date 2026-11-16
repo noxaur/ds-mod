@@ -20,7 +20,7 @@ The item is moved as the hand's pose is pushed, before any branch of the rendere
 
 ## A command bind sees every key, and fires only in the world or a menu
 
-A bind of keys held together needs every press and release, wherever they happen, or a Shift held before a menu opened would be missed. So `KeyInputMixin` and `MouseInputMixin` hand each one to `CommandKeys` before the game acts, and `BindMatcher` in `core` holds the keys that are down. Whether a press may fire is a separate question, asked at the press: in the world, or in a container menu with no text field focused, and never with F3 held. `KeyMapping.click` would not do, because the game calls it only with no screen open.
+A bind of keys held together needs every press and release, wherever they happen, or a Shift held before a menu opened would be missed. So `KeyInputMixin` and `MouseInputMixin` hand each one to `CommandKeys` before the game acts, and `BindMatcher` in `core` holds the keys that are down. Whether a press may fire is a separate question, asked at the press and again on the tick that would finish a sequence still waiting out its gap: in the world, or in a container menu with no text field focused, and never with F3 held. A waiting sequence is dropped when Command Binds is off, or when no bind still live covers both where the keys were typed and where the player is now. A bind set to both still covers a move between the world and a menu. One set only to the world, or only to menus, does not, because the gap would otherwise send it after the player had left that place. `KeyMapping.click` would not do, because the game calls it only with no screen open.
 
 GLFW repeats a held key as its own action, and a repeat is not a press. A release can go unseen, as when the window loses focus, so each tick forgets keys that are no longer down.
 
@@ -36,7 +36,7 @@ A lock is an index in the player's own inventory. A menu numbers its slots its o
 
 An item lock is the ID the server writes in `item_data.uuid`. In the captures every item that does not stack has one and no stackable item does, so two swords of one kind are told apart and a stack cannot be locked this way. Reading it copies the item's whole data tag, so `SlotGuards` keeps each ID by the data component, which stacks share.
 
-A Shift click lands wherever the menu's own code finds room, and each menu orders that its own way. `SlotGuards` only asks whether a locked slot could take the item, and when one could, it carries the item to a slot that is not locked with the two clicks a player would make. That needs the menu's rough order and never its exact one.
+A Shift click lands wherever the menu's own code finds room, and each menu orders that its own way. When that room includes a locked slot, `SlotGuards` still fills every unlocked slot the menu would use, a partial stack included, and repeats a crafting or furnace result until the source is empty or those slots are full. It refuses the click only when every slot that could take any of the stack is locked. The clicks are the ones a player would send: a pick up, a place, and a right click for each item a partial slot still has room for. A stack already on the cursor is set down outside that move and picked back up, because a Shift click never uses it. That needs the menu's rough order and never its exact one.
 
 The swap-hands key is not guarded. On dragsim.co it opens the server's menu and swaps nothing.
 

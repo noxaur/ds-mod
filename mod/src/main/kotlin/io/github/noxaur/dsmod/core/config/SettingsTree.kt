@@ -242,12 +242,15 @@ object SettingsTree {
                 group("Rarity Marks", switch = toggle(inv::rarityMarks, "Rarity Marks", "Mark each item's slot in the color of its rarity.")) {
                     pick(inv::rarityPreset, "Style", "Pick a look for the marks, or Custom for your own.") { Look.Slots(it.style ?: inv.inventoryStyle) }
                     fold("customLook", "Custom Look", "Build your own look from its parts, which switches Style to Custom.") {
-                        // A part changes the look the player sees and makes it their own, as the Rarity Style screen does.
+                        // A part shows the look on screen. Writing a different one makes that look the player's own.
+                        // While a preset is active the part's default is that preset, so a reset leaves it in place.
                         fun <T> part(name: String, get: (SlotStyle) -> T, with: SlotStyle.(T) -> SlotStyle) =
                             Bind("Inventory.inventoryStyle.$name", { get(inv.containerStyle()) }) {
-                                inv.inventoryStyle = inv.containerStyle().with(it)
-                                inv.rarityPreset = RarityPreset.CUSTOM
-                            }
+                                if (it != get(inv.containerStyle())) {
+                                    inv.inventoryStyle = inv.containerStyle().with(it)
+                                    inv.rarityPreset = RarityPreset.CUSTOM
+                                }
+                            }.follows { inv.rarityPreset.style?.let(get) }
                         pick(part("border", { it.border }) { copy(border = it) }, "Border", "Pick the ring around the slot.", Border.entries, label = { it.label }) {
                             Look.Slots(inv.containerStyle().copy(border = it), 1)
                         }
@@ -268,14 +271,15 @@ object SettingsTree {
                         }
                         switch(match, "Match Inventory", "Mark the hotbar in the same look as your inventory.")
                         // A part shows the hotbar's look as it is, and a change makes it the hotbar's own, as Custom Look does
-                        // for Style. Set to what it shows, as a reset of the rows does, it leaves the hotbar matching.
+                        // for Style. While the hotbar matches, the part's default is the look on screen, so a reset
+                        // writes that part back and leaves Match Inventory on.
                         fun <T> part(name: String, get: (SlotStyle) -> T, with: SlotStyle.(T) -> SlotStyle) =
                             Bind("Inventory.hotbarStyle.$name", { get(inv.hotbarLook()) }) {
                                 if (it != get(inv.hotbarLook())) {
                                     inv.hotbarStyle = inv.hotbarLook().with(it)
                                     inv.hotbarMatches = false
                                 }
-                            }
+                            }.follows { if (inv.hotbarMatches) get(inv.hotbarLook()) else null }
                         pick(part("border", { it.border }) { copy(border = it) }, "Border", "Pick the ring around each hotbar slot.", Border.entries, id = "hotbarBorder", label = { it.label }) {
                             Look.Slots(inv.hotbarLook().copy(border = it), 1)
                         }

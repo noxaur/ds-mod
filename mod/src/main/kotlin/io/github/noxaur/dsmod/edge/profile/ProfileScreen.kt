@@ -647,7 +647,8 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
             pet.heldItem?.let { fact("Held", it.name) },
             pet.skinOverride?.let { fact("Skin", it.name.removeSuffix(" Skin")) },
             Row(muted("Candies"), listOf(text { value(pet.candiesUsed.toLong()) }.toComponent())),
-        ) + pet.perks.map { perk -> Row(colored(perk), listOf(text { value("+${amount(perk.value)}/lvl") }.toComponent())) }
+        ) + pet.perks.map { perk -> Row(colored(perk), listOf(text { value("+${amount(perk.value)}/lvl") }.toComponent())) } +
+            pet.description.map { line -> Row({ _ -> line.toComponent() }, emptyList()) }
     }
 
     private val texts = IdentityHashMap<Any, Texts>()
@@ -910,8 +911,14 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         graphics.disableScissor()
 
         val sx = contentX + SIDE_X
-        var y = viewY
+        val sideTop = viewY - scroll
+        graphics.enableScissor(sx, viewY, contentX + CONTENT_WIDTH, viewY + viewHeight)
+        var y = sideTop
         val paged = pagedTab()
+        if (paged != null) {
+            val buttons = children().filterIsInstance<KitButton>().filter { it.message.string.all(Char::isDigit) }
+            for (i in buttons.indices) buttons[i].y = sideTop + SECTION + i / PAGES_PER_ROW * (Kit.BUTTON_HEIGHT + Kit.GAP)
+        }
         if (paged != null) {
             Kit.label(graphics, "Pages", sx, y, Kit.Ink.MUTED)
             val rowsOfPages = (paged.pages.size + PAGES_PER_ROW - 1) / PAGES_PER_ROW
@@ -930,7 +937,8 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         }
         if (pets) y = draw(graphics, texts.activePet, sx, y)
         if (items != null) y = draw(graphics, contents(summary, items, worn), sx, y)
-        return height
+        graphics.disableScissor()
+        return maxOf(height, y - sideTop)
     }
 
     // The count beside the grid shown, built again only when the grid is another.
