@@ -99,7 +99,7 @@ F5 back to first person also ends it. The Camera settings shape this view too.
 
 ### Command Binds
 
-Sends a command with a key, with keys held together such as Shift + F6, or with keys pressed in turn such as F7 then F8. Set your binds up under Binds in the settings, or press **Edit** beside Edit Command Binds, which opens the list.
+Sends a command with a key, with keys held together such as Shift + F6, or with keys pressed in turn such as F7 then F8. Set your binds up under Binds in the settings.
 
 Each bind is a line with its switch, name, command, keys and where it works, under its group's heading. A change takes effect as you make it.
 
@@ -232,7 +232,7 @@ Rarity Style picks the look: Showcase, Gilded or Minimal, from loudest to quiete
 | Floor | None, Pedestal, Sparks, Rise |
 | Gem | A small gem over the item's top-left corner |
 
-The hotbar uses your inventory's look until you turn off Match Inventory under Hotbar, and then its own Border, Fill, Floor and Gem, starting from the look it had. **Edit** beside Edit Style opens them.
+The hotbar uses your inventory's look until you turn off Match Inventory under Hotbar, and then its own Border, Fill, Floor and Gem, starting from the look it had.
 
 <sub>Common items are not marked unless you tick Mark Common. With a resource pack that makes menus dark, the colors change to read well on it.</sub>
 
@@ -301,7 +301,7 @@ Tabs along the top and bottom of every menu and your inventory. A tab sends its 
 
 Click Search, or press Ctrl+F, and a search bar opens along that edge toward the middle of the menu, over the tabs beside it. Every item whose name and lore don't hold all your words is dimmed, and your search stays as you move from menu to menu. While you type, E and Q type letters instead of closing the menu or dropping an item. Escape leaves the bar, a right click clears it, and its × closes it. The text turns red when nothing in the menu matches.
 
-Set your tabs up under Tabs, below Menu Tabs in the settings, or press **Edit** beside Edit Tabs. It shows a small menu with a place for a tab at each spot along its top and bottom.
+Set your tabs up under Tabs, below Menu Tabs in the settings. It shows a small menu with a place for a tab at each spot along its top and bottom.
 
 | Do this | To |
 | --- | --- |
@@ -369,7 +369,7 @@ Kills Left: 97
 
 A beam where the next Endstone Protector will emerge, from the moment the last one falls.
 
-It shows for the last 25 kills of the 200-kill cycle. Edit beside Beam Timing opens a bar of the cycle, and the beam shows inside the blue sections.
+It shows for the last 25 kills of the 200-kill cycle. Beam Timing, under Boss Beacon in the settings, is a bar of the cycle, and the beam shows inside the blue sections.
 
 <sub>Drag to draw, move or resize a section. Right-click removes one. During the Fight keeps the beam on after the Protector emerges.</sub>
 

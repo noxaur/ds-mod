@@ -1,12 +1,10 @@
 # Settings
 
-ds-mod's own settings screen draws every setting from one tree, `SettingsTree` in `core/config`. The tree is the schema of the settings: each line binds a field of `DsModConfig` to a kind of row, and the screen gets its control, search, reset and keyboard from the kind. Every setting is edited in the screen itself, and only an editor that needs the game behind it, such as Move HUD, opens a screen of its own. `/dssettings` opens the screen in the debug build, and `/dskit rows`, `/dskit lists` and `/dskit panels` show every kind in the gallery.
-
-Until the screen replaces MoulConfig's, a setting the player sees is also annotated for MoulConfig in `DsModConfig`, as the fields beside it are.
+ds-mod's settings screen draws every setting from one tree, `SettingsTree` in `core/config`. The tree is the only schema of the settings, and the one place a setting's name and description live: each line binds a field of `DsModConfig` to a kind of row, and the screen gets its control, search, reset and keyboard from the kind. Every setting is edited in the screen itself, and only an editor that needs the game behind it, such as Move HUD, opens a screen of its own. `/dsmod` opens the screen, and `/dskit rows`, `/dskit lists` and `/dskit panels` show every kind in the gallery.
 
 ## Add a setting
 
-1. Add the field to its class in `DsModConfig` with `@Expose` and a default. The default is what the changed marker and reset use, read from a fresh `DsModConfig()`, so write it nowhere else.
+1. Add the field to its class in `DsModConfig` with a default, and nothing else: no annotation, no name. The default is what the changed marker and reset use, read from a fresh `DsModConfig()`, so write it nowhere else. The field's name is its key in the player's config file, so never rename one that shipped. A new class of values needs `@Serializable`.
 2. Add one line to `SettingsTree` in its section and group, with a kind from the table below. Write no drawing or input code.
 3. Run `SettingsTreeTest`. It fails on a saved field that no row reaches, on two rows that reach one field, on a repeated id, and on a name or a description worded against the ui skill.
 
@@ -22,10 +20,10 @@ A field that no row should edit goes on `SettingsTree.STORED` with the reason. I
 | Keys | `keys(g::freeLookKey, "Key", "Pick the key for Free Look.")` | One key or mouse button, as a GLFW code or -1 |
 | Span | `span(c.end::beamSections, "Beam Timing", "Pick when the beam shows.", max = 200)` | Stretches of a scale, by `Sections`' rules |
 | Fold | `fold("customLook", "Custom Look", "Build your own look.") { .. }` | Rows the player rarely needs, under a bar |
-| Action | `action(hud::edit, "Move HUD", "Move your HUD over the game, with the world behind it.", button = "Move")` | A button that runs a `Runnable` field: a reset of a group, as Reset Animations does, or a screen of its own that `DsModClient` sets, only for an editor that needs the game behind it or a screen that is not a setting, such as Contribute's requests |
+| Action | `action("resetAnimations", "Reset Animations", "Put every Animations setting back.", button = "Reset", run = g::resetAnimations)`, or `action(Opens.HUD_EDITOR, "Move HUD", "..", button = "Move", id = "moveHud")` | A button: a reset of a group, or a screen of the edge's that `DsModClient` registers for its `Opens`, only for an editor that needs the game behind it or a screen that is not a setting, such as Contribute's requests |
 | Items | `items(binds, "Binds", "Name each bind, pick its keys and choose where it works.", CommandBinds)` | A list of things the player made, in groups, each a line of cells with details under it, by an `ItemKind` in `core`. Its value is a `Grouped`, bound across the list's fields with `Bind.spanning` |
 | Panel | `panel(Bind.of(ui::tabs), "Tabs", "Press a place to add a tab there, and drag a tab to move it.", Canvas.MENU_TABS)` | A canvas the player edits by pointing, such as the HUD layout or the menu tabs, drawn by the `Editor` that `DsModClient` registers for its `Canvas` |
-| Order | `order(g::equipmentPieces, "Pieces", "Pick the pieces to show, and drag them into order.")` | Which values of an enum show and in what order, as a `MutableList` field, which MoulConfig edits with `@ConfigEditorDraggableList` |
+| Order | `order(g::equipmentPieces, "Pieces", "Pick the pieces to show, and drag them into order.")` | Which values of an enum show and in what order, as a `MutableList` field |
 
 A group whose rows are one feature takes its switch beside the heading: `group("Free Look", switch = toggle(g::freeLook, "Free Look", "Look around in third person.")) { .. }`. A row that needs a switch elsewhere names it with `dependsOn`. Either one dims the row while the switch is off.
 
@@ -36,7 +34,7 @@ A row bound to part of a value, such as one part of a rarity style, takes a `Bin
 ## Wording
 
 - A name is Title Case, three words or fewer, and says what the setting is: "Slot Lock", "F5 Views".
-- A description is one sentence that starts with a verb and ends with a period, in at most `Setting.DESCRIPTION_MAX` characters, so MoulConfig shows it at full size. A row shows two lines of it and the rest in a tooltip, so put what matters first. A row that is the same option as a `@ConfigOption` takes its wording.
+- A description is one sentence that starts with a verb and ends with a period, in at most `Setting.DESCRIPTION_MAX` characters. A row shows two lines of it and the rest in a tooltip, so put what matters first.
 - A choice's values read in Title Case, from the enum's `toString`.
 
 ## Add a look
@@ -70,4 +68,5 @@ Only when no kind fits, and ask the user first, since every kind is one more thi
 - Narration of its name, kind, value, change and dimming, from `Setting.narration`.
 - The keyboard: Up and Down move between rows, Enter and Space press, Left and Right step a value or open and close, and focus looks like hover.
 - The description cut to two lines, with the whole of it in a tooltip.
+- A star beside the name on a starred row and on the row under the mouse or the keys, which a press or the Favorite Key toggles, and Favorites, the first section, lists.
 - Saving: a change applies at once, and the screen writes the config when it closes.

@@ -50,8 +50,6 @@ A block the server placed before its chunk reached the client comes with no upda
 
 A feature declares one immutable state object and replaces it to change it. The edge loads it at start and writes the changed ones about once a minute, on its own thread, through a temporary file and a rename. A file that fails to parse is moved aside, because a tracker's history is worth more than a clean start.
 
-MoulConfig has a data file class, and ds-mod does not use it: it writes on the caller's thread, and after a failed load its next save overwrites the bad file.
-
 ## Metrics are pulled
 
 `Metrics` adds up timings, counts and failures in memory, and a flush hands one snapshot to each sink. Recording costs the client thread no I/O, and a new receiver is one more sink. Today the release build logs failures, and a running capture writes each snapshot into the file.
