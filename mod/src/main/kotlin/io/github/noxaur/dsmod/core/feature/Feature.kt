@@ -30,7 +30,7 @@ import kotlin.reflect.KMutableProperty0
  * - Show items on the HUD, from the player's own inventory or an entity near them: `EquipmentDisplay`.
  * - Change how the game draws, reading nothing from the server: `Fullbright`.
  * - Count something and keep the total: `SlayerTracker`.
- * - Hide a line the server sends, and tell the player once that you did: `AbilitySpam`.
+ * - Hide a line the server sends: `AbilitySpam`.
  * - Tell the player something once, and read a setting besides the switch: `LootAlerts`.
  * - Track a rate, and follow the player into and out of its area: `ZealotTracker`.
  * - Mark a place in the world: `BossBeacon`.
