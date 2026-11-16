@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.edge.ui
 import io.github.noxaur.dsmod.core.config.Canvas
 import io.github.noxaur.dsmod.core.config.Items
 import io.github.noxaur.dsmod.core.config.Panel
+import io.github.noxaur.dsmod.core.config.Preview
 import io.github.noxaur.dsmod.core.config.Setting
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.narration.NarrationElementOutput
@@ -81,18 +82,19 @@ interface Editor {
     fun close() = Unit
 }
 
-/** Makes the editor of each row that has one: a list's own, and each panel's from the canvas the edge registered. */
+/** Makes the editor of each row that has one: a list's own, and each panel's and preview's from the canvas the edge registered. */
 object Editors {
-    private val canvases = HashMap<Canvas, (Panel<*>, Editor.Host) -> Editor>()
+    private val canvases = HashMap<Canvas, (Setting, Editor.Host) -> Editor>()
 
     /** Gives [canvas] its face, which `DsModClient` does for each one at start. */
-    fun register(canvas: Canvas, make: (Panel<*>, Editor.Host) -> Editor) {
+    fun register(canvas: Canvas, make: (Setting, Editor.Host) -> Editor) {
         canvases[canvas] = make
     }
 
     fun of(setting: Setting, host: Editor.Host): Editor = when (setting) {
         is Items<*> -> ItemsEditor(setting, host)
         is Panel<*> -> canvases[setting.canvas]?.invoke(setting, host) ?: error("No face for ${setting.canvas}")
+        is Preview -> canvases[setting.canvas]?.invoke(setting, host) ?: error("No face for ${setting.canvas}")
         else -> error("${setting.id} has no editor")
     }
 }

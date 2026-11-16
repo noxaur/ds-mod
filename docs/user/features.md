@@ -40,6 +40,24 @@ Open **Item Position** to move the item with Item X, Item Y and Item Z, or turn 
 
 **Reset** beside Reset Animations puts every setting back to the game's own. The 1.7 and Exhibition styles follow your swing and not right click, because right click casts the ability on many swords here. Your empty hand and maps keep the game's own pose.
 
+### Player Model
+
+Resizes, tilts, spins and poses your player in third person and in your inventory, as Odin's Player Size does. Only you see it: your hitbox, your camera and what other players see stay the same, and first person is untouched. Each setting starts at the game's own.
+
+| Setting | Does |
+| --- | --- |
+| Players | Changes only your own model, or every player's, mannequins included |
+| Size | Grows the model up to three times its size, or shrinks it to a tenth |
+| Tilt Forward | Leans the model forward from its feet, or back below zero |
+| Tilt Sideways | Leans the model to its right from its feet, or left below zero |
+| Upside Down | Stands the model on its head |
+| Spin | Spins the model up to five turns a second, the other way below zero. It turns at the same pace whichever way you walk or look, and the head turns with it |
+| Pose | Holds the arms and legs still in a T-Pose, Star, Arms Up, Zombie, Dab or Sit, while the head follows where you look. Armor and held items follow the limbs |
+
+**Preview**, at the top of the settings, shows your player with every setting on while you are in a world. Drag it to turn it around and tip it, or press Left and Right with the row picked. Open **Stretch** to make the model wider, taller or deeper than its size. The settings combine: a T-Pose with a spin, or Tilt Forward at 90 with Arms Up. **Reset** beside Reset Model puts every setting but Players back to the game's own.
+
+<sub>Off by default.</sub>
+
 ### Equipment Display
 
 Shows the armor you wear and your pet as a row of icons on the HUD, with each head's skin and each leather piece's dye. Your pet's head joins the row once you open the Pets menu or it floats near you, and until then the pet shows as its name under the row. Open the chat and point at a piece to read its tooltip. The pet's tooltip from the Pets menu names its held item.

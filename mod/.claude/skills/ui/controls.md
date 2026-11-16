@@ -230,6 +230,7 @@ A model the player turns to look at, such as the player in the profile viewer. N
 - Escape during a drag puts it back where the drag began, and does not close the screen.
 - With the mouse over it, the arrow keys turn it a step.
 - The cursor shows that it can be grabbed.
+- A settings Preview holds still instead, for the reason in [settings](../../../../docs/internals/settings.md#a-preview-is-a-row-that-holds-no-value), and starts turned a little so a tilt either way reads. Its arrows work while the keys are on its row, and only Left and Right, so Up and Down still move between rows.
 
 ## Scrolling list
 

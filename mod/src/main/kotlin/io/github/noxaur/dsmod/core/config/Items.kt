@@ -368,8 +368,14 @@ class Items<T>(id: String, name: String, description: String, bind: Bind<Grouped
     }
 }
 
-/** Which of ds-mod's editors a [Panel] draws, which the edge gives a face. */
-enum class Canvas { HUD_LAYOUT, MENU_TABS }
+/** Which of ds-mod's editors a [Panel] or a [Preview] draws, which the edge gives a face. */
+enum class Canvas { HUD_LAYOUT, MENU_TABS, PLAYER_MODEL }
+
+/**
+ * A picture of what the rows around it do, such as the player's model with Player Model's settings on it. It holds
+ * no value, so it has no changed marker and no reset, and the edge draws it on its [canvas] under the row's name.
+ */
+class Preview(id: String, name: String, description: String, val canvas: Canvas) : Setting(id, name, description, Kind.PREVIEW)
 
 /**
  * An editor that is a picture rather than rows, such as the HUD's layout: it fills the row's width under its name,

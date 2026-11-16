@@ -24,6 +24,7 @@ A field that no row should edit goes on `SettingsTree.STORED` with the reason. I
 | Items | `items(binds, "Binds", "Name each bind, pick its keys and choose where it works.", CommandBinds)` | A list of things the player made, in groups, each a line of cells with details under it, by an `ItemKind` in `core`. Its value is a `Grouped`, bound across the list's fields with `Bind.spanning` |
 | Panel | `panel(Bind.of(ui::tabs), "Tabs", "Press a place to add a tab there, and drag a tab to move it.", Canvas.MENU_TABS)` | A canvas the player edits by pointing, such as the HUD layout or the menu tabs, drawn by the `Editor` that `DsModClient` registers for its `Canvas` |
 | Order | `order(g::equipmentPieces, "Pieces", "Pick the pieces to show, and drag them into order.")` | Which values of an enum show and in what order, as a `MutableList` field |
+| Preview | `preview("modelPreview", "Preview", "Drag your model to turn it, and see the settings below on it.", Canvas.PLAYER_MODEL)` | A picture of what the rows around it do, which holds no value, drawn by the `Editor` that `DsModClient` registers for its `Canvas` |
 
 A group whose rows are one feature takes its switch beside the heading: `group("Free Look", switch = toggle(g::freeLook, "Free Look", "Look around in third person.")) { .. }`. A row that needs a switch elsewhere names it with `dependsOn`. Either one dims the row while the switch is off.
 

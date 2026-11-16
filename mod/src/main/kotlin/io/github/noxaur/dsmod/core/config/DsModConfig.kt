@@ -16,6 +16,8 @@ import io.github.noxaur.dsmod.core.feature.general.PetPosition
 import io.github.noxaur.dsmod.core.hand.SwingStyle
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.input.CommandBind
+import io.github.noxaur.dsmod.core.player.ModelPose
+import io.github.noxaur.dsmod.core.player.ModelTarget
 import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.Section
@@ -183,6 +185,54 @@ class DsModConfig {
             noBowSwing = fresh.noBowSwing
             ignoreHaste = fresh.ignoreHaste
             noEquipReset = fresh.noEquipReset
+        }
+
+        @JvmField
+        var playerModel = false
+
+        @JvmField
+        var modelTarget = ModelTarget.SELF
+
+        @JvmField
+        var modelSize = 1f
+
+        @JvmField
+        var modelWidth = 1f
+
+        @JvmField
+        var modelHeight = 1f
+
+        @JvmField
+        var modelDepth = 1f
+
+        @JvmField
+        var modelTiltForward = 0f
+
+        @JvmField
+        var modelTiltSideways = 0f
+
+        @JvmField
+        var modelUpsideDown = false
+
+        /** Turns a second, the other way below zero. */
+        @JvmField
+        var modelSpin = 0f
+
+        @JvmField
+        var modelPose = ModelPose.GAME
+
+        /** Copies each Player Model setting but the switch and whose model from a fresh config. */
+        fun resetPlayerModel() {
+            val fresh = General()
+            modelSize = fresh.modelSize
+            modelWidth = fresh.modelWidth
+            modelHeight = fresh.modelHeight
+            modelDepth = fresh.modelDepth
+            modelTiltForward = fresh.modelTiltForward
+            modelTiltSideways = fresh.modelTiltSideways
+            modelUpsideDown = fresh.modelUpsideDown
+            modelSpin = fresh.modelSpin
+            modelPose = fresh.modelPose
         }
 
         @JvmField
