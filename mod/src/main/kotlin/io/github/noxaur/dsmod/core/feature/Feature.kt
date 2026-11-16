@@ -40,7 +40,7 @@ import kotlin.reflect.KMutableProperty0
  * - Handle the player's own input on a vanilla screen, reading nothing from the server: `CopyChat`, with `CopyChats`
  *   in `edge`.
  */
-abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boolean>, val area: Area) {
+abstract class Feature(val id: String, internal val toggle: KMutableProperty0<Boolean>, val area: Area) {
     /** The name the player knows the feature by: [id] in Title Case. */
     val title = id.split('-').joinToString(" ") { it.replaceFirstChar(Char::uppercase) }
     private val header = text { brand(title) }
@@ -145,7 +145,10 @@ abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boo
         metrics.onUnparsed?.invoke(id, sample)
     }
 
-    /** Keeps the chat line this handler is reading out of the player's chat. Every feature still sees the line. */
+    /**
+     * Keeps the chat line this handler is reading out of the player's chat. Every feature still sees the line. The
+     * first time a feature that is on by default hides one, [Game] tells the player where its switch is.
+     */
     protected fun hide() {
         hides = true
     }

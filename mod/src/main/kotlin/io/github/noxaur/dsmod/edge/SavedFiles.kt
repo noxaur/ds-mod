@@ -14,13 +14,13 @@ import kotlin.io.path.writeText
 
 /**
  * Keeps each feature's [io.github.noxaur.dsmod.core.feature.Saved] state in `<dir>/<feature id>.json`, and the game's
- * own, the places the player has been, in `places.json`. [load] reads
- * the files once at start. [flush] hands the changed ones to a writer thread, which writes a temporary file and
+ * own in `places.json`, the places the player has been, and `hidden.json`, the features that told them they hide a
+ * line. [load] reads the files once at start. [flush] hands the changed ones to a writer thread, which writes a temporary file and
  * renames it over the old one, so the client thread never waits on the disk and a crash cannot leave half a file.
  */
 class SavedFiles(private val dir: Path, private val game: Game) {
     private val states = game.readouts.mapNotNull { readout -> readout.feature.state?.let { readout.feature.id to it } } +
-        ("places" to game.places)
+        ("places" to game.places) + ("hidden" to game.hidden)
     private val writer = lazy { Executors.newSingleThreadExecutor { Thread(it, "dsmod-save").apply { isDaemon = true } } }
     private val failures = ConcurrentLinkedQueue<Pair<String, Exception>>()
 

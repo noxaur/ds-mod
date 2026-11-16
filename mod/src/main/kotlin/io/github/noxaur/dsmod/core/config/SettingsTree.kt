@@ -68,6 +68,12 @@ object SettingsTree {
         return sections
     }
 
+    /** The section and the switch of a fresh config that [toggle] binds to, such as `config.chat::abilitySpam`. */
+    fun home(toggle: KMutableProperty0<Boolean>): Pair<SettingSection, Switch> {
+        val field = Bind.field(toggle)
+        return fresh.firstNotNullOf { section -> section.walk().filterIsInstance<Switch>().firstOrNull { it.field == field }?.let { section to it } }
+    }
+
     /**
      * [saved] favorites as row ids. Versions up to 0.1.0 starred MoulConfig's options by path, as `general.fullbright`,
      * so a path becomes the id of the row that edits its field, or of the row that took over its button's job.
