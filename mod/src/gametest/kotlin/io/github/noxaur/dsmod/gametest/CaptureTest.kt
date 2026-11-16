@@ -48,6 +48,7 @@ class CaptureTest : FabricClientGameTest {
         "death" to "Victim",
         "head" to "\"y\":",
         "pet" to "Test Pet",
+        "hit" to "minecraft:husk",
         "unload" to "Leaver",
         "unload" to "Victim",
         "skulls" to "DsHead",
@@ -115,6 +116,9 @@ class CaptureTest : FabricClientGameTest {
                 "kill @e[name=Victim]",
                 "execute as @e[name=Leaver] run tp @s ~ ~ ~5000",
             ).forEach(world.server::runCommand)
+            // A mob just ahead of the crosshair, for the left press to hit.
+            world.server.runCommand("execute as @a at @s anchored eyes positioned ^ ^ ^2 run summon husk ~ ~-1 ~ {NoAI:1b,Silent:1b}")
+            context.waitTicks(5)
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT)
             world.server.runOnServer<Nothing> { it.playerList.broadcastAll(ClientboundTabListPacket(Component.literal("Dragon Sim"), Component.literal("dragsim.co"))) }

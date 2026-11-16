@@ -91,3 +91,12 @@ data class SlotChanged(val slot: Int, val item: Item? = null) : GameEvent
 @Serializable
 @SerialName("pet")
 data class PetNear(val name: ServerText, val head: Item) : GameEvent
+
+/**
+ * The player's own attack landed on a living [entity] that is not an armor stand, such as `minecraft:enderman`, as the
+ * client sends it. The server says nothing of a hit, so this is the one event the player makes rather than the server.
+ * Posted only while a feature reads it.
+ */
+@Serializable
+@SerialName("hit")
+data class Hit(val entity: String) : GameEvent
