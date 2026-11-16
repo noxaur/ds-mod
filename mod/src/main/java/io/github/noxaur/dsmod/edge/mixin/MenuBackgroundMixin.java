@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 /**
- * Themed Menus: the screens whose texture is only a panel, slots and a box for the player draw that with the kit
+ * Menu Theme: the screens whose texture is only a panel, slots and a box for the player draw that with the kit
  * instead. The inventory still draws the player after it. The chest menu has its own mixin.
  */
 @Mixin({InventoryScreen.class, CraftingScreen.class, HopperScreen.class, DispenserScreen.class, ShulkerBoxScreen.class})

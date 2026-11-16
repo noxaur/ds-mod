@@ -28,11 +28,11 @@ import java.util.UUID
 import javax.imageio.ImageIO
 
 /**
- * The world the Inventory Preview game tests share: an inventory of named items with lore as long as dragsim.co's, a
+ * The world the Inventory HUD game tests share: an inventory of named items with lore as long as dragsim.co's, a
  * head with a skin, dyed leather, a stack of 13 and a Legendary sword, and the grid switched on over it.
  */
 object InventoryGrid {
-    const val ID = "inventory-preview"
+    const val ID = "inventory-hud"
     const val DYE = 0x3366CC
 
     /** The face of the inventory texture's panel. */
@@ -60,12 +60,12 @@ object InventoryGrid {
             }
             // The poller reads long-lored items over a few ticks, so the test starts once every one has arrived.
             context.waitFor { DsModClient.game.container.slots.let { slots -> slots.size > 44 && slots.subList(9, 45).count { it != null } == FILLED } }
-            general.inventoryPreview = true
+            general.inventoryHud = true
             try {
                 context.waitFor { Hud.find(ID) != null }
                 test(world)
             } finally {
-                general.inventoryPreview = false
+                general.inventoryHud = false
                 general.inventoryRows = mutableListOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM)
                 general.inventoryLook = InventoryLook.INVENTORY
                 general.inventoryPlacement = HudDock.FREE

@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Free Look, Inventory Preview, the Settings Key and the HUD Editor Key: each press of a key or mouse button in the world, where the game counts its own key binds' presses. */
+/** Free Look, Inventory HUD, the Settings Key and the HUD Editor Key: each press of a key or mouse button in the world, where the game counts its own key binds' presses. */
 @Mixin(KeyMapping.class)
 abstract class KeyPressMixin {
     @Inject(method = "click", at = @At("HEAD"))

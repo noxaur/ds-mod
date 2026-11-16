@@ -212,9 +212,9 @@ class SettingRowsTest : FabricClientGameTest {
         click(shut.extraX + 7, shut.controlY + 6)
         check(context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).spot("slotLockKey") == null }) { "Slot Lock's button did not close its settings" }
 
-        // The End: a span under Boss Beacon, drawn by a press and drag on its empty track.
+        // The End: a span under Protector Spawn Beam, drawn by a press and drag on its empty track.
         open(context, SettingsTabs(at("The End")))
-        val beacon = spot("bossBeacon")
+        val beacon = spot("protectorSpawnBeam")
         click(beacon.extraX + 7, beacon.controlY + 6)
         val span = spot("beamSections")
         val trackX = span.x + SettingRows.PAD

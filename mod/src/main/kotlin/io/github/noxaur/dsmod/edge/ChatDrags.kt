@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
-import io.github.noxaur.dsmod.core.feature.hud.DragInChat
+import io.github.noxaur.dsmod.core.feature.hud.ChatHudEditor
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.mixin.ChatScreenAccessor
 import io.github.noxaur.dsmod.edge.mixin.CommandSuggestionsAccessor
@@ -15,7 +15,7 @@ import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
 
 /**
- * Drag In Chat. With the chat open, a block on the HUD moves, docks, resizes and resets by [HudMover]'s rules, as it
+ * Chat HUD Editor. With the chat open, a block on the HUD moves, docks, resizes and resets by [HudMover]'s rules, as it
  * does in the HUD editor, and a feature with nothing to show stands in as its outlined title so it can be placed too.
  * Minecraft draws the chat over the HUD, so where a row of chat, the input, the command suggestions or a command's
  * usage lie over a block, the press, the wheel and the hover are the chat's and it works as it always has. The
@@ -110,9 +110,9 @@ object ChatDrags {
         }
     }
 
-    private fun on(client: Minecraft) = DsModClient.runs<DragInChat>() && !client.gui.hud.isHidden
+    private fun on(client: Minecraft) = DsModClient.runs<ChatHudEditor>() && !client.gui.hud.isHidden
 
-    /** The block at a point in GUI pixels that the chat leaves to Drag In Chat, or null. */
+    /** The block at a point in GUI pixels that the chat leaves to Chat HUD Editor, or null. */
     private fun under(client: Minecraft, screen: ChatScreen, x: Double, y: Double): Hud.Placed? {
         if (!on(client)) return null
         val block = Hud.at(x, y) ?: return null
