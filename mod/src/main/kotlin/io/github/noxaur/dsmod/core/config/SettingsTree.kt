@@ -246,11 +246,14 @@ object SettingsTree {
                             inv.hotbarMatches = it
                         }
                         switch(match, "Match Inventory", "Mark the hotbar in the same look as your inventory.")
-                        // A part shows the hotbar's look as it is, and makes it the hotbar's own, as Custom Look does for Style.
+                        // A part shows the hotbar's look as it is, and a change makes it the hotbar's own, as Custom Look does
+                        // for Style. Set to what it shows, as a reset of the rows does, it leaves the hotbar matching.
                         fun <T> part(name: String, get: (SlotStyle) -> T, with: SlotStyle.(T) -> SlotStyle) =
                             Bind("Inventory.hotbarStyle.$name", { get(inv.hotbarLook()) }) {
-                                inv.hotbarStyle = inv.hotbarLook().with(it)
-                                inv.hotbarMatches = false
+                                if (it != get(inv.hotbarLook())) {
+                                    inv.hotbarStyle = inv.hotbarLook().with(it)
+                                    inv.hotbarMatches = false
+                                }
                             }
                         pick(part("border", { it.border }) { copy(border = it) }, "Border", "Pick the ring around each hotbar slot.", Border.entries, id = "hotbarBorder", label = { it.label }) {
                             Look.Slots(inv.hotbarLook().copy(border = it), 1)

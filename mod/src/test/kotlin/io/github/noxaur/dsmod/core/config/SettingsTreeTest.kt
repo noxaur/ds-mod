@@ -36,6 +36,21 @@ class SettingsTreeTest {
     }
 
     @Test
+    fun `a reset of every row leaves the hotbar matching the inventory`() {
+        for (row in rows) row.reset()
+        assertTrue(config.inventory.hotbarMatches, "a reset of the hotbar's parts turned Match Inventory off")
+    }
+
+    @Test
+    fun `a hotbar part set to another look makes it the hotbar's own`() {
+        val border = rows.filterIsInstance<Choice<*>>().single { it.id == "hotbarBorder" }
+        border.reset()
+        assertTrue(config.inventory.hotbarMatches, "the border set to what it shows unmatched the hotbar")
+        border.step(1)
+        assertFalse(config.inventory.hotbarMatches, "a new border left the hotbar matching")
+    }
+
+    @Test
     fun `every row has its own id`() {
         val ids = rows.map { it.id }
         assertEquals(ids.size, ids.toSet().size, "repeated: ${ids.groupBy { it }.filterValues { it.size > 1 }.keys}")
