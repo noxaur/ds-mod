@@ -91,7 +91,7 @@ const runs = [
 
 const insertRuns = async (contrib: Stores["contrib"]) => {
   for (const row of runs) {
-    await run(contrib.insertSubmission(row, capture(1)));
+    await run(contrib.insertSubmission(row, capture(1), 100));
   }
 };
 
@@ -170,30 +170,40 @@ const suites: { readonly [Name in keyof Stores]: Cases<Stores[Name]> } = {
       "doneBy lists the skips and runs of that player alone": async ({ contrib }) => {
         await run(contrib.insertSkip("r1", "ann"));
         await run(contrib.insertSkip("r1", "bob"));
-        await run(contrib.insertSubmission(submission("s1", "r2", "ann"), capture(1)));
-        await run(contrib.insertSubmission(submission("s2", "r3", "bob"), capture(2)));
+        await run(contrib.insertSubmission(submission("s1", "r2", "ann"), capture(1), 100));
+        await run(contrib.insertSubmission(submission("s2", "r3", "bob"), capture(2), 100));
         expect((await run(contrib.doneBy("ann"))).toSorted()).toEqual(["r1", "r2"]);
         expect(await run(contrib.doneBy("nobody"))).toEqual([]);
       },
     },
     insertSubmission: {
       "a player's second run is refused and leaves nothing behind": async ({ contrib }) => {
-        expect(await run(contrib.insertSubmission(submission("s1", "r1", "ann"), capture(1)))).toBe(true);
-        expect(await run(contrib.insertSubmission(submission("s2", "r1", "ann"), capture(2)))).toBe(false);
+        expect(await run(contrib.insertSubmission(submission("s1", "r1", "ann"), capture(1), 100))).toBe(true);
+        expect(await run(contrib.insertSubmission(submission("s2", "r1", "ann"), capture(2), 100))).toBe(false);
         expect(await run(contrib.capture("s1"))).toEqual(capture(1));
         expect(await run(contrib.capture("s2"))).toBeNull();
-        expect(await run(contrib.insertSubmission(submission("s3", "r2", "ann"), capture(3)))).toBe(true);
-        expect(await run(contrib.insertSubmission(submission("s4", "r1", "bob"), capture(4)))).toBe(true);
+        expect(await run(contrib.insertSubmission(submission("s3", "r2", "ann"), capture(3), 100))).toBe(true);
+        expect(await run(contrib.insertSubmission(submission("s4", "r1", "bob"), capture(4), 100))).toBe(true);
       },
       "two uploads of one player at once keep one": async ({ contrib }) => {
         const results = await Promise.all([
-          run(contrib.insertSubmission(submission("s1", "r1", "ann"), capture(1))),
-          run(contrib.insertSubmission(submission("s2", "r1", "ann"), capture(2))),
+          run(contrib.insertSubmission(submission("s1", "r1", "ann"), capture(1), 100)),
+          run(contrib.insertSubmission(submission("s2", "r1", "ann"), capture(2), 100)),
         ]);
         expect(results.toSorted()).toEqual([false, true]);
         const kept = await run(contrib.submissionsOf("r1"));
         expect(kept).toHaveLength(1);
         expect(await run(contrib.capture(kept[0]?.id ?? ""))).not.toBeNull();
+      },
+      "two players at once stay within twice the wanted runs": async ({ contrib }) => {
+        expect(await run(contrib.insertSubmission(submission("s0", "r1", "ann"), capture(1), 2))).toBe(true);
+        const results = await Promise.all([
+          run(contrib.insertSubmission(submission("s1", "r1", "bob"), capture(2), 2)),
+          run(contrib.insertSubmission(submission("s2", "r1", "cat"), capture(3), 2)),
+        ]);
+        expect(results.toSorted()).toEqual([false, true]);
+        expect((await run(contrib.submissionsOf("r1"))).map(({ id }) => id)).toEqual(["s0", "s1"]);
+        expect(await run(contrib.capture("s2"))).toBeNull();
       },
     },
     submissions: {
@@ -211,7 +221,7 @@ const suites: { readonly [Name in keyof Stores]: Cases<Stores[Name]> } = {
     },
     capture: {
       "a capture comes back as it went in, and an unknown id is null": async ({ contrib }) => {
-        await run(contrib.insertSubmission(submission("s1", "r1", "ann"), capture(1, 2, 3)));
+        await run(contrib.insertSubmission(submission("s1", "r1", "ann"), capture(1, 2, 3), 100));
         expect(await run(contrib.capture("s1"))).toEqual(capture(1, 2, 3));
         expect(await run(contrib.capture("nothing"))).toBeNull();
       },
@@ -229,6 +239,12 @@ const suites: { readonly [Name in keyof Stores]: Cases<Stores[Name]> } = {
           { ...unknown("a"), count: 3 },
           { ...unknown("b"), count: 1 },
         ]);
+      },
+      "two new sightings at once keep one when one slot is left": async ({ contrib }) => {
+        await run(contrib.countUnknown(unknown("a"), 2));
+        await Promise.all([run(contrib.countUnknown(unknown("b"), 2)), run(contrib.countUnknown(unknown("c"), 2))]);
+        const kept = (await run(contrib.unknowns)).map(({ signature }) => signature).toSorted();
+        expect(kept).toEqual(["a", "b"]);
       },
     },
     unknowns: {
@@ -296,6 +312,41 @@ const suites: { readonly [Name in keyof Stores]: Cases<Stores[Name]> } = {
           await run(items.record(who, "1", [seen(`${who}1`), seen(`${who}2`)], limits));
         }
         expect(await names(items)).toEqual(["ann1", "ann2", "bob1"]);
+      },
+      "two reports at once keep one new item when one slot is left": async ({ items }) => {
+        const limits = { maxRows: 2, maxPlayerRows: 2, maxSamples: 1 };
+        await run(items.record("ann", "1", [seen("first")], limits));
+        await Promise.all([
+          run(items.record("bob", "1", [seen("second")], limits)),
+          run(items.record("cat", "1", [seen("third")], limits)),
+        ]);
+        expect(await names(items)).toEqual(["first", "second"]);
+      },
+      "two reports at once keep one new texture when one slot is left": async ({ items }) => {
+        const limits = { maxRows: 2, maxPlayerRows: 2, maxSamples: 1 };
+        await run(items.record("ann", "1", [seen("a", { texture: "ta" })], limits));
+        await run(items.record("bob", "1", [seen("b")], limits));
+        await Promise.all([
+          run(items.record("ann", "1", [seen("a", { skinId: "gold", texture: "g" })], limits)),
+          run(items.record("bob", "1", [seen("b", { texture: "tb" })], limits)),
+        ]);
+        const textures = async (entry: string) =>
+          (await appearances(items, { entry })).items[0]?.textures.map(
+            ({ skinId, texture }) => `${skinId}:${texture}`,
+          ) ?? [];
+        expect((await textures("a")).toSorted()).toEqual([":ta", "gold:g"]);
+        expect(await textures("b")).toEqual([]);
+      },
+      "two reports at once keep one sample when one slot is left": async ({ items }) => {
+        const limits = { maxRows: 10, maxPlayerRows: 10, maxSamples: 1 };
+        await run(items.record("ann", "1", [seen("a")], limits));
+        await run(items.record("bob", "1", [seen("a")], limits));
+        await Promise.all([
+          run(items.record("ann", "1", [seen("a", { sample: sample("a", "ann") })], limits)),
+          run(items.record("bob", "1", [seen("a", { sample: sample("a", "bob") })], limits)),
+        ]);
+        const { items: found } = await appearances(items, { entry: "a" });
+        expect(found[0]?.samples.map(({ name }) => name)).toEqual([[{ text: "ann" }]]);
       },
       "textures stop at the same caps, and a refused item keeps no texture or sample": async ({ items }) => {
         const limits = { maxRows: 100, maxPlayerRows: 2, maxSamples: 5 };
