@@ -28,9 +28,11 @@ Both settings must be made from inside the game, just before it creates its wind
 
 The window has no keyboard focus, yet the game believes it has. Fabric marks it focused as the run starts and drops the window's own focus events, and it cancels the cursor grab, so a focused test game never takes the developer's mouse. The game hands a screen its mouse moves only while focused, so a drag in a test needs that focus, and the harness gives it back before each test in case one took it away.
 
-## A game test run names its tests
+## A commit runs the game tests its change reaches
 
-Agents run game tests while they work, often several agents at once on the user's machine, and each one waits for its run to end. A run boots the game, which takes about 25 seconds, and each test then makes a fresh world, because Fabric ends every test on the title screen. The whole suite takes minutes, so a run must name its tests and the beta pipeline runs them all.
+Agents run game tests while they work, often several agents at once on the user's machine, and each one waits for its run to end. A run boots the game, which takes about 25 seconds, and each test then makes a fresh world, because Fabric ends every test on the title screen. The whole suite takes minutes, so the beta pipeline runs it, and a commit runs only the tests its change reaches. An agent once had to choose and name them, and an instruction to do so was skipped or answered with the wrong tests.
+
+The pick walks names in the source: a changed file reaches the tests that name it, or that name a file that names it. Recording which classes each test runs was rejected, because the mod runs in the tick and render loops, so its central classes run in every test, and a mixin's code is merged into Minecraft's classes, out of a recorder's sight. A file most tests reach is a hub that a walk does not cross, and a change to it runs one smoke test. The pick diffs against the last green run, so a failed run is retried by the next commit, and with none it diffs against `main`.
 
 `TestClock` fails a run when one test passes its cap, because a test that waits a fixed number of ticks costs every agent that runs it. The cap has room for a machine busy with other runs. `PerfTest` is exempt, because it measures over a fixed number of windows.
 

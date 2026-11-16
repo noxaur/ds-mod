@@ -22,4 +22,3 @@ Record the capture with the `captures` skill, and cut the fixture as [Cut a fixt
 
 - Keep the lines the feature must ignore, which prove it ignores them.
 - When a name in a fixture slipped through, or a word was taken for one, teach `PlayerNames` from a capture that shows the line. It is the one place that knows where names sit.
-- Write a game test when you add to `edge`. A feature that only reads events and returns readouts is covered by its replay.

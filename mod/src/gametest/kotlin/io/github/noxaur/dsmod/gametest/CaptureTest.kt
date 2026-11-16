@@ -17,7 +17,10 @@ import org.lwjgl.glfw.GLFW
 import java.nio.file.Path
 import kotlin.io.path.readLines
 
-/** Makes a real server send each kind of interface, and checks that the capture file holds it. */
+/**
+ * Makes a real server send each kind of interface, and checks that the capture file holds it. Covers
+ * [io.github.noxaur.dsmod.edge.SidebarPoller].
+ */
 class CaptureTest : FabricClientGameTest {
     /** What a line of each type must hold, by type. */
     private val expected = listOf(

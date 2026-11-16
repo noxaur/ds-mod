@@ -3,6 +3,10 @@ java = "temurin-25"
 node = "24"
 pnpm = "10.34.9"
 
+# A commit runs the game tests its change reaches. See .githooks/pre-commit.
+[hooks]
+postinstall = "git config core.hooksPath .githooks"
+
 [tasks."check:mod"]
 dir = "mod"
 run = "./gradlew check"

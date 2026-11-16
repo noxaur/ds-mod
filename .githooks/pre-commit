@@ -1,0 +1,21 @@
+#!/bin/sh
+# Runs the game tests that the mod's change since their last green run reaches, against the jars a player installs.
+# mise install points git here, and GameTestPick.kt picks the tests. The game logs hundreds of lines, so they go to a
+# file, and only a failure prints its end.
+git diff --cached --quiet -- mod && exit 0
+# The tests build the working copy, so it must be what the commit holds.
+if ! git diff --quiet -- mod || [ -n "$(git ls-files --others --exclude-standard -- mod)" ]; then
+  echo "mod/ has changes that are not staged, and the game tests would run on them instead of on the commit. Stage them, or move them out of the working copy, and commit again."
+  exit 1
+fi
+cd mod || exit 1
+mkdir -p build/gametests
+log=build/gametests/run.log
+if mise exec -- ./gradlew -q runProdClientGameTest >"$log" 2>&1; then
+  grep -m1 -E '^(Game tests the change reaches|No game test reaches)' "$log"
+  exit 0
+fi
+grep -m1 '^Game tests the change reaches' "$log"
+tail -n 40 "$log"
+echo "The game tests failed, so nothing was committed. The whole log is mod/$log."
+exit 1

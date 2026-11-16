@@ -9,7 +9,10 @@ import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-/** The real edge loads the saved file in a running game, counts a drop and a kill the server sends, and writes them back. */
+/**
+ * The real edge loads the saved file in a running game, counts a drop and a kill the server sends, and writes them back.
+ * Covers [io.github.noxaur.dsmod.edge.SavedFiles].
+ */
 class ZealotTrackerTest : FabricClientGameTest {
     private val file = FabricLoader.getInstance().configDir.resolve("dsmod/data/zealot-tracker.json")
 

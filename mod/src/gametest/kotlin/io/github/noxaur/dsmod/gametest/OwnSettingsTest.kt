@@ -21,7 +21,7 @@ import org.lwjgl.glfw.GLFW
  * section expanded, a search with hits and one with none, the narrow sidebar at GUI scale 3, and the tab bar with
  * several tabs, a blank one, a drag, an overflow and the 427x240 size. Each tab press, drag and key is checked
  * against the tabs, and the tabs outlive the screen. Escape goes back to the screen it was opened over.
- * `SettingRowsTest` drives the rows.
+ * `SettingRowsTest` drives the rows. Covers [io.github.noxaur.dsmod.edge.ui.KitTabBar].
  */
 class OwnSettingsTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = SettingsDriver(context).screen()

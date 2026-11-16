@@ -12,7 +12,7 @@ import org.lwjgl.glfw.GLFW
  * The signals no capture holds yet, sent by a real server: the Tuba's `HOWL!` in chat, the action bar's mana part, and
  * the player's own hit while wearing Riftwalker, which the edge posts from the attack. Read the screenshots: the list
  * with three timers, the wash over the sword and the Tuba on the hotbar with their seconds, and in the inventory the
- * wash over the four armor pieces as well.
+ * wash over the four armor pieces as well. Covers [io.github.noxaur.dsmod.edge.Hits].
  */
 class AbilityCooldownsTest : FabricClientGameTest {
     private fun readout(context: ClientGameTestContext) = context.computeOnClient<Pair<HudBlock?, Map<Int, SlotMark>>, Nothing> {
