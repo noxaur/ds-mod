@@ -9,6 +9,7 @@ import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.config.Switch
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.core.ui.NavRow
 import io.github.noxaur.dsmod.core.ui.NavTree
 import io.github.noxaur.dsmod.core.ui.Place
 import io.github.noxaur.dsmod.core.ui.Scroll
@@ -438,6 +439,9 @@ class SettingsScreen(
         sync()
         return rows.spot(id, entry)
     }
+
+    /** How far down the screen the middle of the sidebar's line for [section] is, if the sidebar shows it, so a test can find it. */
+    fun line(section: String): Int? = nav.middle(NavRow(sections.indexOfFirst { it.name == section }))
 
     /** The ids of the rows the pane lists now, in order, so a test can read a page. */
     fun shown() = rows.ids()

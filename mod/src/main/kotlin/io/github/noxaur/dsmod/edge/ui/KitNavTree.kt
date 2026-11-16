@@ -102,6 +102,12 @@ class KitNavTree(
         if (tops[i] < scroll.offset) scroll.to(tops[i]) else if (tops[i + 1] > scroll.offset + height) scroll.to(tops[i + 1] - height)
     }
 
+    /** How far down the screen the middle of [row]'s line is, or null while the tree hides it, so a test can find it. */
+    fun middle(row: NavRow): Int? {
+        val i = tree.rows.indexOf(row).takeIf { it >= 0 } ?: return null
+        return y + (tops[i] + tops[i + 1]) / 2 - scroll.offset
+    }
+
     /** Up and Down move the cursor, Right and Left open and close, and Enter opens what the cursor is on. */
     fun key(event: KeyEvent): Boolean {
         when {
