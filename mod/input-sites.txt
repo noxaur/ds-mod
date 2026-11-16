@@ -52,6 +52,8 @@ gate edge.CopyChats f21712999623  CopyChat
 gate edge.EyeGuards c98f4ca5c7eb  ProtectPlacedEyes
     can refuse the player's actions through UseBlockCallback.EVENT
     approved by github.com/noxaur 2026-11-16T15:39:00Z
+gate edge.Hits af5b845f21bf
+    can refuse the player's actions through AttackEntityCallback.EVENT
 gate edge.MenuBack ff8ff383383c  BackButtons
     can refuse or change sent chat through ClientSendMessageEvents.COMMAND
     sends through ClientPacketListener.sendCommand

@@ -40,6 +40,27 @@ Open **Item Position** to move the item with Item X, Item Y and Item Z, or turn 
 
 **Reset** beside Reset Animations puts every setting back to the game's own. The 1.7 and Exhibition styles follow your swing and not right click, because right click casts the ability on many swords here. Your empty hand and maps keep the game's own pose.
 
+### Ability Cooldowns
+
+```
+Ability Cooldowns
+Giant's Slam: 3.2s
+Void Infusion: 1m 12s
+Between Worlds: Ready
+```
+
+Times every item ability you use, such as Giant's Slam, the Tuba's Howl, a katana's Soulcry and your drill's ability, and the 8 seconds Riftwalker armor needs between two blinking hits. The item's slot drains a white wash as the wait runs out, as an ender pearl's does, with the seconds left where its count goes, on your hotbar and in every menu. A ready ability shows Ready on the list for two seconds.
+
+| Setting | Does |
+| --- | --- |
+| List | Lists the abilities you are waiting on, on the HUD. Move it in the HUD editor |
+| On Items | Drains the wash over the item and counts down its seconds |
+| Shortest Listed | Leaves cooldowns shorter than this off the list, so a weapon you click every second does not flicker there. Their items still show the wash |
+| Ready Alert | Shows a title with a sound when a cooldown is over. Off by default |
+| Alert From | Alerts only for cooldowns at least this long, 20 seconds by default, so the Tuba and the drill alert and Giant's Slam does not |
+
+<sub>The length comes from the item's own lore, so carry the item. If you press too early, the server says how long is left, and the timer follows it, even when a buff makes the cooldown shorter than the lore says.</sub>
+
 ### Equipment Display
 
 Shows the armor you wear and your pet as a row of icons on the HUD, with each head's skin and each leather piece's dye. Your pet's head joins the row once you open the Pets menu or it floats near you, and until then the pet shows as its name under the row. Open the chat and point at a piece to read its tooltip. The pet's tooltip from the Pets menu names its held item.

@@ -127,6 +127,13 @@ object SettingsTree {
                     switch(g::etherwarpThroughWalls, "Through Walls", "Show the whole box, even behind the blocks in front of it.")
                     switch(g::etherwarpWithoutSneak, "Without Sneak", "Show the box before you sneak, too.")
                 }
+                group("Ability Cooldowns", switch = toggle(g::abilityCooldowns, "Ability Cooldowns", "Time your item abilities and Riftwalker's charged hit.")) {
+                    switch(g::cooldownList, "List", "List the abilities you are waiting on, on the HUD.", id = "cooldownList")
+                    switch(g::cooldownOnItems, "On Items", "Drain a wash over the item and count down its seconds.", id = "cooldownOnItems")
+                    number(g::cooldownShortest, "Shortest Listed", "List only cooldowns at least this many seconds long.", 0f..20f, step = 0.5f, unit = "s")
+                    switch(g::cooldownReadyAlert, "Ready Alert", "Alert you when a long cooldown is over.")
+                    number(g::cooldownAlertFrom, "Alert From", "Alert only for cooldowns at least this many seconds long.", 1f..120f, step = 1f, unit = "s")
+                }
                 group("Animations", switch = toggle(g::animations, "Animations", "Shape how your held item swings and sits with the settings below.")) {
                     choice(g::swingStyle, "Swing Style", "Pick how your held item moves when you swing.")
                     number(g::swingSpeed, "Swing Speed", "Speed your swing up, or slow it down below 1.", 0.1f..3f, step = 0.1f, unit = "x")
