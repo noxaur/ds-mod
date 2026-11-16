@@ -15,7 +15,11 @@ sealed interface GameEvent
 @SerialName("system")
 data class SystemMessage(val text: ServerText) : GameEvent
 
-/** The client entered a world: on joining, and each time the server moves it to another one. */
+/**
+ * The client entered a world: on joining, and each time the server moves it to another one. A feature clears what
+ * belongs to one world here. `Game` also runs this handler when the player switches the feature off, because a
+ * feature that is off sees no events.
+ */
 @Serializable
 @SerialName("world")
 data object WorldChanged : GameEvent
