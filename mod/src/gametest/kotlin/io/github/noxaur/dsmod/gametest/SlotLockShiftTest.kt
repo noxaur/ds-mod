@@ -176,7 +176,7 @@ class SlotLockShiftTest : FabricClientGameTest {
                 }
 
                 // Room for 1, which is under half. The click is not kept pending.
-                val less = resultThatDoesNotFit(context, world, planks = 63)
+                val less = resultThatDoesNotFit(context, world, planks = 63, freeAfter = true)
                 check(less.clicks.isEmpty() && less.result == 4 && less.planks == 63 && less.log) {
                     "A result with room for one sent ${less.clicks}, left ${less.result} in the result and ${less.planks} planks"
                 }
@@ -218,7 +218,7 @@ class SlotLockShiftTest : FabricClientGameTest {
     }
 
     /** One log in the craft grid and [planks] already in the only slot that can hold more. The result is 4. */
-    private fun resultThatDoesNotFit(context: ClientGameTestContext, world: TestSingleplayerContext, planks: Int): ResultAttempt {
+    private fun resultThatDoesNotFit(context: ClientGameTestContext, world: TestSingleplayerContext, planks: Int, freeAfter: Boolean = false): ResultAttempt {
         world.server.runOnServer<Nothing> { server ->
             val player = server.playerList.players.single()
             player.inventory.clearContent()
@@ -262,6 +262,14 @@ class SlotLockShiftTest : FabricClientGameTest {
             SlotGuards.refuses(screen, screen.menu.getSlot(0), 0, ContainerInput.QUICK_MOVE)
         }
         context.waitTicks(10)
+        if (freeAfter) {
+            // Room opens after the cancel. A click still pending would now take the result by itself.
+            world.server.runOnServer<Nothing> { server ->
+                server.playerList.players.single().inventory.setItem(2, ItemStack.EMPTY)
+                server.playerList.players.single().containerMenu.broadcastChanges()
+            }
+            context.waitTicks(10)
+        }
         return context.computeOnClient<ResultAttempt, Nothing> { client ->
             val screen = client.gui.screen() as AbstractContainerScreen<*>
             val result = screen.menu.getSlot(0).item.count
