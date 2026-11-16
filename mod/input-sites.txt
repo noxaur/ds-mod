@@ -180,10 +180,9 @@ gate edge.mixin.SwingSpeedMixin ced2e765eeaf
 gate edge.mixin.TooltipMixin draws
     hooks TooltipRenderUtil.extractTooltipBackground
     approved by github.com/noxaur 2026-11-16T01:17:00Z
-gate edge.profile.ProfileModel 9754f8aaeae5
+gate edge.profile.ProfileModel b326cc5227a6
     changes the player through AbstractClientPlayer.setId
     changes the player through AbstractClientPlayer.setItemSlot
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate edge.profile.Profiles 7e089e4c1e06  ProfileViewer
     builds text that runs a command when the player clicks it
     approved by github.com/noxaur 2026-11-16T08:42:00Z

@@ -17,6 +17,9 @@ class Limbs(val rightArm: Turn, val leftArm: Turn, val rightLeg: Turn, val leftL
 
 private val STRAIGHT = Turn(0f, 0f, 0f)
 
+/** Both arms turned [x] degrees about the model's x, forward and up when negative, with the legs straight. */
+private fun armsForward(x: Float) = Turn(x, 0f, 0f).let { Limbs(it, it, STRAIGHT, STRAIGHT) }
+
 /**
  * A pose the arms and legs hold, which spin and tilt turn as one. The head still follows where the player looks. A
  * part's z turn swings it outward for the right side, so the left side takes it negated.
@@ -25,8 +28,8 @@ enum class ModelPose(private val label: String, val limbs: Limbs?) {
     GAME("Game's Own", null),
     T_POSE("T-Pose", Limbs(Turn(0f, 0f, 90f), Turn(0f, 0f, -90f), STRAIGHT, STRAIGHT)),
     STAR("Star", Limbs(Turn(0f, 0f, 135f), Turn(0f, 0f, -135f), Turn(0f, 0f, 25f), Turn(0f, 0f, -25f))),
-    ARMS_UP("Arms Up", Limbs(Turn(-180f, 0f, 0f), Turn(-180f, 0f, 0f), STRAIGHT, STRAIGHT)),
-    ZOMBIE("Zombie", Limbs(Turn(-90f, 0f, 0f), Turn(-90f, 0f, 0f), STRAIGHT, STRAIGHT)),
+    ARMS_UP("Arms Up", armsForward(-180f)),
+    ZOMBIE("Zombie", armsForward(-90f)),
     DAB("Dab", Limbs(Turn(-20f, 0f, 125f), Turn(-100f, 50f, 0f), STRAIGHT, STRAIGHT)),
 
     /** The game's own seat on a horse, held in the air. */

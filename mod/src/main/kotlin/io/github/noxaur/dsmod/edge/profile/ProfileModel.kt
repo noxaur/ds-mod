@@ -3,11 +3,11 @@ package io.github.noxaur.dsmod.edge.profile
 import com.mojang.authlib.GameProfile
 import io.github.noxaur.dsmod.core.profile.DrawnItem
 import io.github.noxaur.dsmod.core.profile.Equipment
+import io.github.noxaur.dsmod.edge.InventoryModel
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.client.player.RemotePlayer
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState
 import net.minecraft.client.resources.DefaultPlayerSkin
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.player.PlayerModelPart
@@ -59,28 +59,14 @@ class ProfileModel(level: ClientLevel, val uuid: UUID, name: String) {
      * in place of following the mouse.
      */
     fun draw(g: GuiGraphicsExtractor, x0: Int, y0: Int, x1: Int, y1: Int, scale: Int, yaw: Float, pitch: Float) {
-        val state = Minecraft.getInstance().entityRenderDispatcher.getRenderer(player).createRenderState(player, 1f)
-        state.shadowPieces.clear()
-        state.outlineColor = 0
-        // The screen writes the name above the box, as the inventory leaves the player's own unnamed.
-        state.nameTag = null
-        state.scoreText = null
-        if (state is LivingEntityRenderState) {
-            state.bodyRot = 180f + yaw
-            state.yRot = 0f
-            state.xRot = 0f
-            state.boundingBoxWidth /= state.scale
-            state.boundingBoxHeight /= state.scale
-            state.scale = 1f
-        }
+        // The screen writes the name above the box.
+        val state = InventoryModel.state(player, yaw)
         val tip = Quaternionf().rotateX(pitch * (PI / 180).toFloat())
         val rotation = Quaternionf().rotateZ(PI.toFloat()).mul(tip)
-        g.entity(state, scale.toFloat(), Vector3f(0f, state.boundingBoxHeight / 2f + Y_OFFSET, 0f), rotation, tip, x0, y0, x1, y1)
+        g.entity(state, scale.toFloat(), Vector3f(0f, state.boundingBoxHeight / 2f + InventoryModel.Y_OFFSET, 0f), rotation, tip, x0, y0, x1, y1)
     }
 
     private companion object {
-        // The inventory's own offset, which keeps the feet off the bottom of the box.
-        const val Y_OFFSET = 0.0625f
         const val MODEL_ID = -1000
     }
 }

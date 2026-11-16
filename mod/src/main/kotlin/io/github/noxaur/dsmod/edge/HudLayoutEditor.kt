@@ -7,6 +7,7 @@ import io.github.noxaur.dsmod.core.hud.HudMap
 import io.github.noxaur.dsmod.core.hud.HudScale
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Narration
+import io.github.noxaur.dsmod.edge.ui.BoxEditor
 import io.github.noxaur.dsmod.edge.ui.Editor
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.SettingRows
@@ -35,17 +36,10 @@ class HudLayoutEditor(
     private val panel: Panel<Map<String, DsModConfig.Position>>,
     private val readouts: Readouts,
     private val host: Editor.Host,
-) : Editor {
-    private var x = 0
-    private var top = 0
-    private var width = 0
-    private var origin = 0
-    private var clipTop = 0
-    private var clipBottom = 0
+) : BoxEditor() {
     private var map = HudMap(1, 1, 1, 1)
     private var mapX = 0
     private var footY = 0
-    private var height = 0
     private val buttons = EditorButtons(BUTTONS)
 
     private val mover = HudMover(readouts)
@@ -64,9 +58,7 @@ class HudLayoutEditor(
     override fun layout(x: Int, y: Int, width: Int): Int {
         // While the layout shows, a block with nothing to show still shows its header, so it can be placed.
         if (!readouts.editing) readouts.editing = true
-        this.x = x
-        top = y
-        this.width = width
+        place(x, y, width)
         val window = Minecraft.getInstance().window
         map = HudMap(window.guiScaledWidth, window.guiScaledHeight, width, MAP_TALL)
         mapX = x + (width - map.width) / 2
@@ -105,17 +97,7 @@ class HudLayoutEditor(
         hintText = wrap(hint, width, HINT_LINES).map { text { muted(it) }.toComponent() }
     }
 
-    override fun view(origin: Int, clipTop: Int, clipBottom: Int, screenWidth: Int, screenHeight: Int) {
-        this.origin = origin
-        this.clipTop = clipTop
-        this.clipBottom = clipBottom
-    }
-
-    override fun isOver(mouseX: Double, mouseY: Double) =
-        mouseY >= clipTop && mouseY < clipBottom && mouseX >= x && mouseX < x + width && mouseY >= origin + top && mouseY < origin + top + height
-
-    private fun overMap(mouseX: Double, mouseY: Double) =
-        mouseY >= clipTop && mouseY < clipBottom && mouseX >= mapX && mouseX < mapX + map.width && mouseY >= origin + top && mouseY < origin + top + map.height
+    private fun overMap(mouseX: Double, mouseY: Double) = isOver(mouseX, mouseY, mapX, map.width, map.height)
 
     /** The block under a point of the screen showing the settings, by the point of the game's screen it stands for. */
     private fun blockAt(mouseX: Double, mouseY: Double): Hud.Placed? {
