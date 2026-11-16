@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.edge.ui.Atlas
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.resources.Identifier
@@ -17,18 +18,22 @@ enum class Surface { CONTAINER, HOTBAR }
 
 /**
  * Bakes the player's rarity style into one atlas per [Surface]: a row of 18x18 backs, one cell per [Role], and a row
- * of gems under it. A slot then costs one blit, and the atlas is painted again only when its style changes or the
- * resource packs make a chest's slots dark or light.
+ * of gems under it. A slot then costs one blit. The atlas is painted again only when its style changes or the
+ * resource packs make a chest's slots dark or light, and that paint waits for the end of the client tick: a texture
+ * uploaded while a frame is being built breaks every frame after it.
  */
 object SlotArts {
-    private class Baked(val texture: DynamicTexture, val atlas: Atlas) {
-        var style: SlotStyle? = null
-        var dark = false
-    }
+    private class Baked(val texture: DynamicTexture, val atlas: Atlas)
+
+    private class Ready(val atlas: Atlas, val style: SlotStyle, val dark: Boolean)
 
     private val width = Role.entries.size * SlotArt.SIZE
     private val height = SlotArt.SIZE + SlotArt.GEM
     private val baked = HashMap<Surface, Baked>()
+    private val ready = HashMap<Surface, Ready>()
+    // What the next tick should paint, by surface. Plain arrays, because a draw asks for every marked slot.
+    private val wantedStyle = arrayOfNulls<SlotStyle>(Surface.entries.size)
+    private val wantedDark = BooleanArray(Surface.entries.size)
     private val chest = Identifier.withDefaultNamespace("textures/gui/container/generic_54.png")
     private val log = LoggerFactory.getLogger("dsmod")
     private var packs: List<String>? = null
@@ -40,12 +45,38 @@ object SlotArts {
     fun style(settings: DsModConfig.Inventory, surface: Surface): SlotStyle =
         if (surface == Surface.HOTBAR) settings.hotbarLook() else settings.containerStyle()
 
-    fun atlas(settings: DsModConfig.Inventory, surface: Surface): Atlas {
+    /**
+     * The atlas to draw for [surface], or null when none has been uploaded yet. Records what the next tick should
+     * paint. A restyle keeps returning the previous atlas until that paint has been uploaded.
+     */
+    fun atlas(settings: DsModConfig.Inventory, surface: Surface): Atlas? {
         val style = style(settings, surface)
         val dark = surface == Surface.HOTBAR || containerDark
-        val art = baked.getOrPut(surface) { create(surface.name.lowercase()) }
-        if (art.style != style || art.dark != dark) paint(art, style, dark)
-        return art.atlas
+        wantedStyle[surface.ordinal] = style
+        wantedDark[surface.ordinal] = dark
+        return ready[surface]?.atlas
+    }
+
+    // A texture made or uploaded while a frame is being built broke every frame after it in the game tests, so the
+    // paint happens at the end of a tick, between frames. [bake] is the real upload; a test passes its own.
+    fun tick(bake: (Surface, SlotStyle, Boolean) -> Atlas = ::paintAndUpload) {
+        for (surface in Surface.entries) {
+            val style = wantedStyle[surface.ordinal] ?: continue
+            val dark = wantedDark[surface.ordinal]
+            val have = ready[surface]
+            if (have != null && have.style == style && have.dark == dark) continue
+            ready[surface] = Ready(bake(surface, style, dark), style, dark)
+        }
+    }
+
+    fun register() {
+        ClientTickEvents.END_CLIENT_TICK.register { tick() }
+    }
+
+    /** Drops a remembered atlas. Tests start from nothing; the game never calls this. */
+    internal fun reset() {
+        wantedStyle.fill(null)
+        ready.clear()
     }
 
     /** Reads the chest's slot again when the selected resource packs changed. Call it as a container screen opens. */
@@ -59,6 +90,12 @@ object SlotArts {
                 resource.open().use { stream -> NativeImage.read(stream).use { it.getPixel(CHEST_SLOT_X, CHEST_SLOT_Y) } }
             }.map { (ARGB.red(it) * 299 + ARGB.green(it) * 587 + ARGB.blue(it) * 114) / 1000 < DARK_BELOW }.orElse(false)
         }.onFailure { log.warn("Could not read the chest texture, so rarity marks assume a light slot", it) }.getOrDefault(false)
+    }
+
+    private fun paintAndUpload(surface: Surface, style: SlotStyle, dark: Boolean): Atlas {
+        val art = baked.getOrPut(surface) { create(surface.name.lowercase()) }
+        paint(art, style, dark)
+        return art.atlas
     }
 
     private fun create(name: String): Baked {
@@ -78,8 +115,6 @@ object SlotArts {
             for (j in 0 until SlotArt.GEM) for (i in 0 until SlotArt.GEM) image.setPixel(left + i, SlotArt.SIZE + j, gem[j * SlotArt.GEM + i])
         }
         art.texture.upload()
-        art.style = style
-        art.dark = dark
     }
 
     private const val CHEST_SLOT_X = 8

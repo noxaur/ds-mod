@@ -8,6 +8,7 @@ import { makeApp } from "../app.ts";
 import { memoryServices } from "../memory.ts";
 import { CATALOG_FRESH_MS, CATALOG_RETRY_MS, FRESH_MS } from "./cache.ts";
 import { Container, Profile } from "./model.ts";
+import { layoutsOf } from "./layout.ts";
 import { unmappedPaths } from "./wire.ts";
 import { memoryProfileStore, WriteRefused } from "./store.ts";
 import { UpstreamDown } from "./upstream.ts";
@@ -794,4 +795,54 @@ test("an item with no place is never dropped, and its container is listed only t
   // The hotbar keeps its order, and armor still dresses the model.
   expect((await entries("inventory")).slice(-3)).toEqual(["scylla", "crypt_cache_item", "glacial_scythe"]);
   expect(value.equipment.helmet?.entry).toBe("maxor_helmet");
+});
+
+test("a slot key past a container's grid stays beside it and does not grow the grid", () => {
+  const stray = { entry: "stray" };
+  const talisman = { entry: "talisman" };
+  const byId = Object.fromEntries(
+    layoutsOf({
+      ender_chest: { "100000": stray },
+      storage: { "0": { "100000": stray } },
+      // Key 40 is inside the bag the captures reached. A key far past that is not a slot.
+      accessory_bag: { "40": talisman, "100000": stray },
+    }).map((layout) => [layout.id, layout]),
+  );
+  expect(byId["ender_chest"]?.slots).toBe(27);
+  expect(byId["storage:0"]?.slots).toBe(45);
+  expect(byId["accessories"]?.slots).toBe(45);
+  expect(byId["accessories"]?.cells[40]).toEqual(talisman);
+  expect(byId["ender_chest:other"]?.cells).toContainEqual(stray);
+  expect(byId["storage:other"]?.cells).toContainEqual(stray);
+  expect(byId["accessories:other"]?.cells).toContainEqual(stray);
+});
+
+test("one skill, slayer, or bestiary value that is not a finite number is skipped", async () => {
+  const { profile, state } = backend();
+  state.player = {
+    status: 200,
+    body: {
+      ...player,
+      profile: {
+        ...player.profile,
+        skills: { ...player.profile.skills, mining: null, farming: "nope", enchanting: Number.POSITIVE_INFINITY },
+        slayer: { ...player.profile.slayer, spider_xp: null, enderman_level: "nine" },
+        bestiary: { ...player.profile.bestiary, NEST_ZEALOT: { kills: "nope" }, BROKEN: "nope" },
+      },
+    },
+  };
+  const value = await profile();
+  const skills = Object.fromEntries(value.skills.map((skill) => [skill.id, skill]));
+  expect(skills["combat"]).toMatchObject({ level: 2, totalXp: 175 });
+  expect(skills["mining"]).toBeUndefined();
+  expect(skills["farming"]).toBeUndefined();
+  expect(skills["enchanting"]).toBeUndefined();
+  expect(skills["taming"]).toMatchObject({ level: 100 });
+  expect(value.slayers.find((slayer) => slayer.id === "zombie")).toMatchObject({ level: 9, totalXp: 17642500 });
+  // The xp entry is skipped, so the slayer is not listed. A bad level does not drop the xp beside it.
+  expect(value.slayers.find((slayer) => slayer.id === "spider")).toBeUndefined();
+  expect(value.slayers.find((slayer) => slayer.id === "enderman")).toMatchObject({ level: 0, totalXp: 60444500 });
+  expect(value.bestiary.find((mob) => mob.id === "NEST_ZEALOT")).toBeUndefined();
+  expect(value.bestiary.find((mob) => mob.id === "BROKEN")).toBeUndefined();
+  expect(value.bestiary.find((mob) => mob.id === "CRYPT_GHOUL")).toMatchObject({ kills: 74385 });
 });

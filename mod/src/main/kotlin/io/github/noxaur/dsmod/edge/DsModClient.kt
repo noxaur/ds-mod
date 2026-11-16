@@ -131,6 +131,7 @@ object DsModClient : ClientModInitializer {
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
         Kit.register()
         Looks.register()
+        SlotArts.register()
         Hud.register()
         Slots.register(settings.inventory)
         MenuSkin.register()
