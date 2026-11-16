@@ -24,14 +24,21 @@ Changes how your held item swings and where it sits in first person. Each settin
 
 | Setting | Does |
 | --- | --- |
-| Swing Style | Vanilla, 1.7 to hold the sword across the screen while you swing, Spin for a full turn, Stab to thrust it at the crosshair like a spear, or Still for no swing at all |
+| Swing Style | Vanilla, 1.7 to hold the sword across the screen while you swing, Exhibition for the same with the sword sliding down on each hit, Spin for a full turn, or Stab to thrust it at the crosshair like a spear |
 | Swing Speed | Speeds your swing up to 3 times, or slows it down to a tenth |
+| Item Size | Grows the item to twice its size, or shrinks it to a tenth |
+
+Open **Item Position** to move the item with Item X, Item Y and Item Z, or turn it about its grip with Item Yaw, Item Pitch and Item Roll. Your off hand mirrors them. Open **Swing Options** for:
+
+| Setting | Does |
+| --- | --- |
+| Scale Swing | Makes the swing reach as far as Item Size makes the item big. On by default |
+| No Swing | Keeps the item still when you swing |
+| No Bow Swing | Keeps a bow or crossbow still when you swing it, for a bow that shoots on a click |
 | Ignore Haste | Keeps the swing at the same pace under Haste or Mining Fatigue |
 | No Equip Reset | Keeps the item up after a hit or a use, and when the server updates it, instead of lowering and raising it |
-| Item Size | Grows the item to twice its size, or shrinks it to a tenth |
-| Item Side, Item Height, Item Depth | Moves the item out or in, up or down, and away or nearer |
 
-The 1.7 style follows your swing and not right click, because right click casts the ability on many swords here. Your empty hand and maps keep the game's own pose.
+**Reset** beside Reset Animations puts every setting back to the game's own. The 1.7 and Exhibition styles follow your swing and not right click, because right click casts the ability on many swords here. Your empty hand and maps keep the game's own pose.
 
 ### Equipment Display
 
@@ -44,7 +51,7 @@ Shows the armor you wear and your pet as a row of icons on the HUD, with each he
 | Pet Look | Shows your pet as its head among the armor, or as its name and level in the color of its rarity, with its held item once you opened the Pets menu |
 | Pet Position | Puts your pet among the armor, in the order of Equipment Pieces, or on a row of its own above or below it |
 | Equipment Look | Shows the pieces on the HUD's plate, on nothing, or in slots like your hotbar's, which follow your resource pack |
-| Equipment Placement | Keeps the pieces where you put them in the HUD editor, or puts them beside your hotbar, at its size and past your offhand slot |
+| Equipment Placement | Keeps the pieces where you put them in the HUD editor, or puts them beside your hotbar, at its size and past your offhand slot. Dragging the pieces out of that spot or into it sets this for you |
 
 ### Inventory Preview
 
@@ -54,6 +61,18 @@ Shows the items in your inventory as a grid on the HUD, nine to a row as your in
 | --- | --- |
 | Inventory Rows | Picks which rows show, and their order. The three rows of your inventory show by default, and your hotbar can join them, set a little apart as it is in your inventory |
 | Inventory Look | Shows the items on the HUD's plate, on nothing, or in a panel of slots like your inventory's: in your theme, solid or as glass as Menu Look says, while Themed Menus is on, and as your resource pack draws the inventory while it is off |
+
+### Etherwarp Outline
+
+While you sneak with an Aspect of the End or Aspect of the Void that has Etherwarp, a green box sits on the block a sneak right click would warp you to. It reads the range from the item's lore, so a blade with a longer reach gets its own. A red box means the warp would fail there, and says why: Too Far for a block past the range, or No Room when the two blocks above it are not clear. No box means nothing on your look line can be warped to. Water, lava, grass, flowers and torches don't stop the line, so you warp through them, and a slab is boxed as the half block it is. It only shows you where you'd land, and never warps for you.
+
+| Setting | Does |
+| --- | --- |
+| Etherwarp Style | Draws the box as its edges, as a tinted fill, or both |
+| Etherwarp Width | Sets how thick the edges are |
+| Failed Warps | Shows the red box with its reason. Turn it off to see a box only where the warp works |
+| Box Through Walls | Shows the whole box, even behind the blocks in front of it. Turn it off to let blocks hide it |
+| Box Without Sneak | Shows the box while you stand too, from where your eye will be once you sneak. Off by default |
 
 ### Camera
 
@@ -146,8 +165,24 @@ Layout, under HUD, is a small copy of your screen with your HUD on it. **Move HU
 | Drag a block | Move it. It lines up with the screen's edges and middle and with the other blocks, and stays on the screen. Hold Shift to place it freely, and press Escape during the drag to put it back |
 | Scroll over a block, or press + or − with it picked | Make it bigger or smaller |
 | Press the arrow keys with a block picked | Nudge it a pixel, or ten with Shift |
-| Press Backspace, or Reset, with a block picked | Stack it with the others again |
-| Right-click a block | See what you can do to it |
+| Right-click a block, or press Backspace or Reset with it picked | Put it back in the stack at its own size, undocked |
+| Drop a block near the spot beside the hotbar | Dock it there, as Equipment Display's Placement does. Drag it away to undock it at the same size |
+
+### Drag In Chat
+
+Open the chat and move the HUD as it is, without the editor. Point at a block to see its name. A feature that is on but has nothing to show right now, such as the Dragon Timer away from The End, stands in as its outlined name, so you can place it too.
+
+| Do this | To |
+| --- | --- |
+| Drag a block | Move it. It lines up with the screen's edges and middle and with the other blocks |
+| Hold Shift while you drag | Place it without lining up |
+| Press the arrow keys while you hold a block | Nudge it a pixel, or ten with Shift |
+| Press Escape while you hold a block | Put it back where it was |
+| Drop a block near the spot beside the hotbar | Dock it there, as Equipment Display's Placement does. Drag it away to undock it at the same size |
+| Scroll over a block | Make it bigger or smaller. A docked block leaves the dock to change size |
+| Right-click a block | Put it back in the stack at its own size, undocked |
+
+The chat comes first: where its messages, the input or the list of command suggestions lie over a block, clicks and the wheel work on the chat as they always have. What you type still goes into the chat, and the arrow keys move the cursor and recall what you sent unless you hold a block.
 
 ## Chat
 

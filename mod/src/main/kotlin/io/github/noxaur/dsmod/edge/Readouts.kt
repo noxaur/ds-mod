@@ -5,10 +5,14 @@ import io.github.noxaur.dsmod.core.config.DsModConfig.Position
 import io.github.noxaur.dsmod.core.feature.Alert
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.Notice
+import io.github.noxaur.dsmod.core.hud.HudBlock
+import io.github.noxaur.dsmod.core.hud.HudBox
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudGroup
+import io.github.noxaur.dsmod.core.hud.HudLook
 import io.github.noxaur.dsmod.core.hud.HudScale
 import io.github.noxaur.dsmod.core.hud.hud
+import io.github.noxaur.dsmod.core.text.text
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
@@ -45,6 +49,21 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
             handed.fill(-1)
             push()
         }
+
+    /**
+     * While the chat is open for Drag In Chat, a feature that is on and has nothing to show stands in as its title
+     * alone, which the chat outlines, so it can be placed from there too. Only those blocks are handed over again.
+     */
+    var placeholders = false
+        set(value) {
+            if (field == value) return
+            field = value
+            for (i in handed.indices) if (game.readouts[i].hud == null) handed[i] = -1
+            push()
+        }
+
+    /** The ids of the blocks standing in for a feature with nothing to show, while [placeholders] is on. */
+    val standIns = HashSet<String>()
 
     fun register() {
         ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
@@ -85,20 +104,59 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
             val readout = game.readouts[i]
             if (handed[i] == readout.version) continue
             handed[i] = readout.version
-            val id = readout.feature.id
-            val block = readout.hud ?: if (editing && readout.feature.hasHud) hud(readout.feature.title) {} else null
-            if (block == null) Hud.hide(id) else Hud.show(id, group(id, block.dock), block)
+            val feature = readout.feature
+            val id = feature.id
+            val block = readout.hud ?: when {
+                editing && feature.hasHud -> hud(feature.title) {}
+                placeholders && feature.hasHud && feature.enabled -> HudBlock(text { muted(feature.title) }, emptyList(), HudLook.CLEAR)
+                else -> null
+            }
+            if (readout.hud == null && block != null) standIns += id else standIns -= id
+            // A block that stands in follows the ones with something to show, so those stay where they were.
+            val order = if (readout.hud == null) handed.size + i else i
+            if (block == null) Hud.hide(id) else Hud.show(id, group(id, feature.placement?.get() ?: block.dock), block, order = order)
             if (readout.slots.isEmpty()) Slots.clear(id) else Slots.mark(id, readout.slots)
             if (readout.marks.isEmpty()) World.hide(id) else World.show(id, readout.marks)
         }
     }
 
-    /** Moves the block of feature [id] so its corner is at a point in GUI pixels, and remembers it. */
+    /**
+     * Moves the block of feature [id] so its corner is at a point in GUI pixels, and remembers it. A docked block
+     * leaves the dock at the size it had there.
+     */
     fun place(id: String, x: Float, y: Float) = save(id, x, y, scale(id))
 
-    /** Makes [block] one screen pixel per HUD pixel bigger for each step [by], keeping its corner where it is. */
+    /**
+     * Makes [block] one screen pixel per HUD pixel bigger for each step [by], keeping its corner where it is, or nearer
+     * the top-left where the bigger block would run off the screen. A docked block is drawn at the hotbar's size, so it
+     * leaves the dock to take another.
+     */
     fun resize(block: Hud.Placed, by: Int) {
-        save(block.id, block.x, block.y, HudScale.step(scale(block.id), by, settings.scale, guiScale, MIN_SCALE, MAX_SCALE))
+        val scale = scale(block.id)
+        val next = HudScale.step(scale, by, settings.scale, guiScale, MIN_SCALE, MAX_SCALE)
+        // A step that changes nothing, at a bound, leaves a docked block in its dock.
+        if (next == scale) return
+        val drawn = HudScale.snap(next * settings.scale, guiScale)
+        save(block.id, minOf(block.x, width - block.width * drawn), minOf(block.y, height - block.height * drawn), next)
+    }
+
+    /** Docks the block of feature [id] at [dock] beside the hotbar, as its placement setting does. */
+    fun dock(id: String, dock: HudDock) {
+        feature(id).placement?.set(dock)
+        handed.fill(-1)
+        push()
+    }
+
+    /** Where the block of feature [id] is docked, or [HudDock.FREE]. */
+    fun dockOf(id: String): HudDock = feature(id).placement?.get() ?: HudDock.FREE
+
+    /** The boxes the block of feature [id] would fill in each dock spot, or none for a feature that does not dock. */
+    fun dockSpots(id: String): Map<HudDock, HudBox> {
+        if (feature(id).placement == null) return emptyMap()
+        val scale = HudScale.snap(1f, guiScale)
+        val spots = HashMap<HudDock, HudBox>()
+        for (dock in HudDock.entries) if (dock != HudDock.FREE) Hud.dockSpot(id, dock, scale)?.let { spots[dock] = it }
+        return spots
     }
 
     /** Makes the whole HUD one screen pixel per HUD pixel bigger for each step [by]. */
@@ -107,37 +165,39 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
         push()
     }
 
-    /** Forgets where the player put [id], so it goes back to the stack at its own scale of 1. */
-    fun reset(id: String) = put(id, null)
+    /** Forgets where the player put [id] and undocks it, so it goes back to the stack at its own scale of 1. */
+    fun reset(id: String) = restore(id, null, HudDock.FREE)
 
-    fun isPlaced(id: String) = id in settings.positions
+    /** Where the player put [id], or null when it sits in the stack. */
+    fun position(id: String): Position? = settings.positions[id]
 
-    /** Where the player put [id], or null where it stacks, for an editor to put back with [put]. */
-    fun saved(id: String) = settings.positions[id]
-
-    /** Puts [id] back where [position] says, or back in the stack for null, as Escape during a drag does. */
-    fun put(id: String, position: Position?) {
+    /** Puts [id] back at a [position] it had, or in the stack for null, and in the [dock] it had. */
+    fun restore(id: String, position: Position?, dock: HudDock) {
         if (position == null) settings.positions.remove(id) else settings.positions[id] = position
-        replace()
+        feature(id).placement?.set(dock)
+        handed.fill(-1)
+        push()
     }
 
-    /** Places every block again, after the saved places changed from outside, such as a reset in the settings. */
+    /** Places every block again, after the saved places changed from outside, such as the layout's reset in the settings. */
     fun replace() {
         handed.fill(-1)
         push()
     }
 
-    /** The scaled screen the HUD is placed on, in GUI pixels. */
-    val screenWidth get() = width
-    val screenHeight get() = height
+    /** Whether the player moved [id] out of the stack, to a place or a dock, so a reset would change something. */
+    fun isPlaced(id: String) = id in settings.positions || dockOf(id) != HudDock.FREE
 
-    /** The block's own scale, before the HUD's. */
-    fun scale(id: String) = settings.positions[id]?.scale ?: 1f
+    /** The block's own scale, before the HUD's. A docked block's is the one that draws it at the hotbar's size. */
+    fun scale(id: String) = if (dockOf(id) != HudDock.FREE) 1f / settings.scale else settings.positions[id]?.scale ?: 1f
 
-    fun title(id: String) = game.readouts.first { it.feature.id == id }.feature.title
+    fun title(id: String) = feature(id).title
+
+    private fun feature(id: String) = game.readouts.first { it.feature.id == id }.feature
 
     private fun save(id: String, x: Float, y: Float, scale: Float) {
         settings.positions[id] = Position(x.coerceIn(0f, width.toFloat()) / width, y.coerceIn(0f, height.toFloat()) / height, scale)
+        feature(id).placement?.set(HudDock.FREE)
         handed.fill(-1)
         push()
     }

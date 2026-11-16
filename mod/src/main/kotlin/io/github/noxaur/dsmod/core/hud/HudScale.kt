@@ -21,7 +21,8 @@ object HudScale {
         val low = maxOf(1, ceil(min * unit - EPSILON).toInt())
         val high = maxOf(low, floor(max * unit + EPSILON).toInt())
         val next = (current + by).coerceIn(low, high)
-        return if (next == current) scale else next / unit
+        // A scale already past a bound, as a docked block's can be, never steps the wrong way to reach it.
+        return if (next == current || (next - current) * by < 0) scale else next / unit
     }
 
     /** [scale] as the HUD editors show it, such as `1.25x`. */

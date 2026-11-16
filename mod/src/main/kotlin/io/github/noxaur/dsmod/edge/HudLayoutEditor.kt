@@ -3,18 +3,16 @@ package io.github.noxaur.dsmod.edge
 import com.mojang.blaze3d.platform.cursor.CursorTypes
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Panel
-import io.github.noxaur.dsmod.core.hud.HudBox
 import io.github.noxaur.dsmod.core.hud.HudMap
 import io.github.noxaur.dsmod.core.hud.HudScale
-import io.github.noxaur.dsmod.core.hud.HudSnap
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Narration
 import io.github.noxaur.dsmod.edge.ui.Editor
 import io.github.noxaur.dsmod.edge.ui.Kit
-import io.github.noxaur.dsmod.edge.ui.KitMenu
 import io.github.noxaur.dsmod.edge.ui.SettingRows
 import io.github.noxaur.dsmod.edge.ui.fit
 import io.github.noxaur.dsmod.edge.ui.wrap
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.narration.NarratedElementType
 import net.minecraft.client.gui.narration.NarrationElementOutput
@@ -26,12 +24,12 @@ import org.lwjgl.glfw.GLFW
 
 /**
  * The HUD's layout in the settings: a small copy of the screen with every HUD block drawn where it sits, by the
- * HUD itself, and the hotbar for a landmark. A block is dragged to move it, lining up with the screen's edges and
- * middle and with the other blocks unless Shift is held, and it always stays whole on the screen. The wheel over a
- * block resizes it, and a right press opens what can be done to it. A press gives the map the keys: the arrows
- * nudge the picked block a pixel, ten with Shift, + and - resize it, Backspace puts it back in the stack, Tab picks
- * the next, and Escape gives the keys back, or puts a dragged block back. Under the map, the picked block's name
- * and size, with Smaller, Bigger and Reset.
+ * HUD itself, and the hotbar for a landmark. A point on the copy stands for a point of the game's screen, so
+ * [HudMover] moves the blocks by the same rules as the HUD editor and the chat screen: a drag lines up, docks and
+ * stays on the screen, the wheel resizes and a right press resets. A press gives the map the keys: the arrows nudge
+ * the picked block, + and - resize it, Backspace puts it back in the stack, Tab picks the next, and Escape gives the
+ * keys back, or puts a dragged block back. Under the map, the picked block's name and size, with Smaller, Bigger
+ * and Reset.
  */
 class HudLayoutEditor(
     private val panel: Panel<Map<String, DsModConfig.Position>>,
@@ -44,21 +42,16 @@ class HudLayoutEditor(
     private var origin = 0
     private var clipTop = 0
     private var clipBottom = 0
-    private var screenWidth = 0
-    private var screenHeight = 0
     private var map = HudMap(1, 1, 1, 1)
     private var mapX = 0
     private var footY = 0
     private var height = 0
     private val buttons = IntArray(BUTTONS.size * 2)
 
+    private val mover = HudMover(readouts)
     private var selected: String? = null
-    private var grabbed: String? = null
-    private var grabX = 0f
-    private var grabY = 0f
-    private var startedAt: DsModConfig.Position? = null
+    private val grabbed get() = mover.held
     private var entered = false
-    private var menu: KitMenu? = null
     private var name = ""
     private var nameText: Component = Component.empty()
     private var empty = ""
@@ -66,7 +59,7 @@ class HudLayoutEditor(
     private var hintText = emptyList<Component>()
     private var seen: Map<String, DsModConfig.Position> = emptyMap()
 
-    override val capturing get() = entered || grabbed != null || menu != null
+    override val capturing get() = entered || grabbed != null
 
     override fun layout(x: Int, y: Int, width: Int): Int {
         // While the layout shows, a block with nothing to show still shows its header, so it can be placed.
@@ -74,7 +67,8 @@ class HudLayoutEditor(
         this.x = x
         top = y
         this.width = width
-        map = HudMap(readouts.screenWidth, readouts.screenHeight, width, MAP_TALL)
+        val window = Minecraft.getInstance().window
+        map = HudMap(window.guiScaledWidth, window.guiScaledHeight, width, MAP_TALL)
         mapX = x + (width - map.width) / 2
         empty = fit("Your HUD shows here once you are in a world.", map.width - 8)
         footY = y + map.height + Kit.GAP
@@ -105,7 +99,7 @@ class HudLayoutEditor(
         hint = when {
             grabbed != null -> "Shift drags it without lining up. Escape puts it back."
             Hud.placed().isEmpty() -> ""
-            id == null -> "Click a block to pick it, and right-click it for more."
+            id == null -> "Click a block to pick it, and right-click it to stack it again."
             readouts.isPlaced(id) -> "Arrows nudge it, + and - resize it, Backspace stacks it again."
             else -> "It stacks with the others until you drag it."
         }
@@ -113,12 +107,9 @@ class HudLayoutEditor(
     }
 
     override fun view(origin: Int, clipTop: Int, clipBottom: Int, screenWidth: Int, screenHeight: Int) {
-        if (origin != this.origin) menu = null
         this.origin = origin
         this.clipTop = clipTop
         this.clipBottom = clipBottom
-        this.screenWidth = screenWidth
-        this.screenHeight = screenHeight
     }
 
     override fun isOver(mouseX: Double, mouseY: Double) =
@@ -153,7 +144,7 @@ class HudLayoutEditor(
         val mx = mapX
         val font = Kit.font
         Kit.well(g, mx, my, map.width, map.height)
-        val hovered = if (grabbed == null && menu?.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) != true) blockAt(mouseX.toDouble(), mouseY.toDouble()) else null
+        val hovered = if (grabbed == null) blockAt(mouseX.toDouble(), mouseY.toDouble()) else null
         g.enableScissor(mx + 1, maxOf(my + 1, clipTop), mx + map.width - 1, minOf(my + map.height - 1, clipBottom))
         val pose = g.pose()
         pose.pushMatrix()
@@ -171,11 +162,7 @@ class HudLayoutEditor(
                 block === hovered -> Kit.theme.hoverOutline
                 else -> continue
             }
-            pose.pushMatrix()
-            pose.translate(block.x, block.y)
-            pose.scale(block.scale, block.scale)
-            Kit.ring(g, 0, 0, block.width, block.height, color)
-            pose.popMatrix()
+            mover.ring(g, block, color, grabbable = false)
         }
         pose.popMatrix()
         g.disableScissor()
@@ -200,10 +187,6 @@ class HudLayoutEditor(
         return null
     }
 
-    override fun drawOver(g: GuiGraphicsExtractor, mouseX: Int, mouseY: Int) {
-        menu?.extractRenderState(g, mouseX, mouseY, 0f)
-    }
-
     private fun buttonActive(i: Int): Boolean {
         val id = selected ?: return false
         return when (i) {
@@ -215,10 +198,6 @@ class HudLayoutEditor(
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
         val px = event.x
         val py = event.y
-        menu?.let { open ->
-            if (open.isMouseOver(px, py)) return true.also { open.mouseClicked(event, doubleClick) }
-            menu = null
-        }
         if (!isOver(px, py)) {
             // A press elsewhere takes the keys back and still does its own job.
             leave()
@@ -240,49 +219,28 @@ class HudLayoutEditor(
             return true
         }
         select(block.id)
-        if (event.button() == 1) {
-            menu = KitMenu(px.toInt(), py.toInt(), screenWidth, screenHeight, buildList {
-                add("Bigger" to { press(BIGGER) })
-                add("Smaller" to { press(SMALLER) })
-                if (readouts.isPlaced(block.id)) add("Reset" to { press(RESET) })
-            }, { menu = null })
-            return true
+        when (event.button()) {
+            0 -> mover.grab(block, map.screen(px - mapX).toDouble(), map.screen(py - (origin + top)).toDouble())
+            1 -> press(RESET)
         }
-        if (event.button() != 0) return true
-        grabbed = block.id
-        grabX = map.screen(px - mapX) - block.x
-        grabY = map.screen(py - (origin + top)) - block.y
-        startedAt = readouts.saved(block.id)
         refresh()
         return true
     }
 
     override fun mouseDragged(event: MouseButtonEvent, dx: Double, dy: Double): Boolean {
-        val id = grabbed ?: return false
-        val block = Hud.find(id) ?: return true
-        val sx = map.screen(event.x - mapX)
-        val sy = map.screen(event.y - (origin + top))
-        val others = Hud.placed().filter { it.id != id }.map { HudBox(it.x, it.y, it.width * it.scale, it.height * it.scale) }
-        val (nx, ny) = HudSnap.place(
-            sx - grabX, sy - grabY, block.width * block.scale, block.height * block.scale, others,
-            map.screenWidth.toFloat(), map.screenHeight.toFloat(), free = Keys.shift(event),
-        )
-        readouts.place(id, nx, ny)
-        seen = panel.value
-        host.changed()
+        if (!mover.drag(map.screen(event.x - mapX).toDouble(), map.screen(event.y - (origin + top)).toDouble())) return false
+        changed()
         return true
     }
 
     override fun mouseReleased(event: MouseButtonEvent): Boolean {
-        if (grabbed == null) return false
-        grabbed = null
-        startedAt = null
+        if (!mover.release()) return false
         refresh()
         return true
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double, shift: Boolean): Boolean {
-        if (amount == 0.0 || menu != null) return false
+        if (amount == 0.0) return false
         val block = blockAt(mouseX, mouseY) ?: return false
         select(block.id)
         resize(if (amount > 0) 1 else -1)
@@ -303,15 +261,8 @@ class HudLayoutEditor(
 
     private fun resize(by: Int) {
         val block = selected?.let(Hud::find) ?: return
-        readouts.resize(block, by)
-        // A bigger block still stays whole on the screen.
-        Hud.find(block.id)?.let { keepOnScreen(it, it.x, it.y) }
+        mover.scroll(block, by.toDouble())
         changed()
-    }
-
-    private fun keepOnScreen(block: Hud.Placed, toX: Float, toY: Float) {
-        val (nx, ny) = HudSnap.place(toX, toY, block.width * block.scale, block.height * block.scale, emptyList(), map.screenWidth.toFloat(), map.screenHeight.toFloat(), free = true)
-        if (nx != block.x || ny != block.y || !readouts.isPlaced(block.id)) readouts.place(block.id, nx, ny)
     }
 
     private fun changed() {
@@ -325,18 +276,9 @@ class HudLayoutEditor(
     }
 
     override fun keyPressed(event: KeyEvent): Boolean {
-        menu?.let {
-            it.keyPressed(event)
-            return true
-        }
-        grabbed?.let { id ->
-            // Escape during a drag puts the block back where it was, and the drag keeps every other key until it ends.
-            if (event.isEscape) {
-                readouts.put(id, startedAt)
-                grabbed = null
-                startedAt = null
-                changed()
-            }
+        if (grabbed != null) {
+            // Escape during a drag puts the block back where it was, an arrow nudges it, and the drag keeps every other key.
+            if (event.isEscape && mover.cancel() || Hud.find(grabbed!!)?.let { mover.nudge(it, event) } == true) changed()
             return true
         }
         if (!entered) {
@@ -347,7 +289,6 @@ class HudLayoutEditor(
         }
         val key = event.key()
         val block = selected?.let(Hud::find)
-        val step = if (Keys.shift(event)) NUDGE_FAR else 1
         when {
             event.isEscape -> leave()
             key == GLFW.GLFW_KEY_TAB -> {
@@ -357,12 +298,7 @@ class HudLayoutEditor(
                     select(placed[Math.floorMod(at + if (Keys.shift(event)) -1 else 1, placed.size)].id)
                 }
             }
-            block != null && (event.isLeft || event.isRight || event.isUp || event.isDown) -> {
-                val dx = if (event.isLeft) -step else if (event.isRight) step else 0
-                val dy = if (event.isUp) -step else if (event.isDown) step else 0
-                keepOnScreen(block, block.x + dx, block.y + dy)
-                changed()
-            }
+            block != null && mover.nudge(block, event) -> changed()
             block != null && (key == GLFW.GLFW_KEY_EQUAL || key == GLFW.GLFW_KEY_KP_ADD) -> resize(1)
             block != null && (key == GLFW.GLFW_KEY_MINUS || key == GLFW.GLFW_KEY_KP_SUBTRACT) -> resize(-1)
             block != null && (key == GLFW.GLFW_KEY_BACKSPACE || key == GLFW.GLFW_KEY_DELETE) -> press(RESET)
@@ -376,17 +312,11 @@ class HudLayoutEditor(
 
     override fun leave() {
         entered = false
-        menu = null
-        grabbed?.let { readouts.put(it, startedAt) }
-        grabbed = null
+        if (mover.cancel()) changed()
         refresh()
     }
 
     override fun narrate(output: NarrationElementOutput): Boolean {
-        menu?.let {
-            it.updateNarration(output)
-            return true
-        }
         if (!entered) return false
         output.add(NarratedElementType.TITLE, Narration.join(panel.name, "editor", name.ifEmpty { "no block picked" }))
         if (hint.isNotEmpty()) output.add(NarratedElementType.HINT, hint)
@@ -400,7 +330,6 @@ class HudLayoutEditor(
     private companion object {
         const val MAP_TALL = 180
         const val HOTBAR_CELLS = 9
-        const val NUDGE_FAR = 10
         const val HINT_LINES = 2
         val BUTTONS = listOf("-", "+", "Reset")
         const val SMALLER = 0

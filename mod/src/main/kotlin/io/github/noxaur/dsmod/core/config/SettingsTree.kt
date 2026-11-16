@@ -83,19 +83,41 @@ object SettingsTree {
                 group("Server") {
                     switch(g::onlyOnDragSim, "DragSim Only", "Run ds-mod only on dragsim.co.")
                 }
+                group("Settings") {
+                    keys(g::settingsKey, "Settings Key", "Pick a key that opens these settings, as /dsmod does.")
+                    keys(g::favoriteKey, "Favorite Key", "Pick a key that stars the setting under your mouse.")
+                }
                 group("World") {
                     switch(g::fullbright, "Fullbright", "Light caves and nights as brightly as day.")
                     switch(g::explosionParticleHider, "Explosion Particles", "Hide the clouds that explosions throw up.")
                 }
+                group("Etherwarp", switch = toggle(g::etherwarpOutline, "Etherwarp Outline", "Box the block Etherwarp will take you to while you sneak.")) {
+                    choice(g::etherwarpStyle, "Style", "Draw the box as edges, a tinted fill, or both.", id = "etherwarpStyle")
+                    number(g::etherwarpWidth, "Width", "Set how thick the box's edges are.", 1f..5f, step = 0.5f, id = "etherwarpWidth")
+                    switch(g::etherwarpFailed, "Failed Warps", "Box a block you can't warp to as well, and say why.")
+                    switch(g::etherwarpThroughWalls, "Through Walls", "Show the whole box, even behind the blocks in front of it.")
+                    switch(g::etherwarpWithoutSneak, "Without Sneak", "Show the box before you sneak, too.")
+                }
                 group("Animations", switch = toggle(g::animations, "Animations", "Shape how your held item swings and sits with the settings below.")) {
                     choice(g::swingStyle, "Swing Style", "Pick how your held item moves when you swing.")
                     number(g::swingSpeed, "Swing Speed", "Speed your swing up, or slow it down below 1.", 0.1f..3f, step = 0.1f, unit = "x")
-                    switch(g::ignoreHaste, "Ignore Haste", "Swing at the same pace under Haste or Mining Fatigue.")
-                    switch(g::noEquipReset, "No Equip Reset", "Keep your held item up instead of dipping after a swing or use.")
                     number(g::itemSize, "Item Size", "Grow or shrink your held item.", 0.1f..2f, step = 0.05f, unit = "x")
-                    number(g::itemSide, "Item Side", "Move your held item out to the side, or in below zero.", -1f..1f, step = 0.05f)
-                    number(g::itemHeight, "Item Height", "Raise your held item, or lower it below zero.", -1f..1f, step = 0.05f)
-                    number(g::itemDepth, "Item Depth", "Push your held item away, or bring it nearer below zero.", -1f..1f, step = 0.05f)
+                    fold("itemPosition", "Item Position", "Move and turn your held item.") {
+                        number(g::itemX, "Item X", "Move your held item out to the side, or in below zero.", -1f..1f, step = 0.05f)
+                        number(g::itemY, "Item Y", "Raise your held item, or lower it below zero.", -1f..1f, step = 0.05f)
+                        number(g::itemZ, "Item Z", "Push your held item away, or bring it nearer below zero.", -1f..1f, step = 0.05f)
+                        number(g::itemYaw, "Item Yaw", "Turn your held item left or right about its grip, in degrees.", -180f..180f, step = 1f, unit = "°")
+                        number(g::itemPitch, "Item Pitch", "Tip your held item forward or back about its grip, in degrees.", -180f..180f, step = 1f, unit = "°")
+                        number(g::itemRoll, "Item Roll", "Tilt your held item sideways about its grip, in degrees.", -180f..180f, step = 1f, unit = "°")
+                    }
+                    fold("swingOptions", "Swing Options", "Fine-tune how your held item swings and dips.") {
+                        switch(g::scaleSwing, "Scale Swing", "Make the swing reach as far as Item Size makes the item big.")
+                        switch(g::noSwing, "No Swing", "Keep your held item still when you swing.")
+                        switch(g::noBowSwing, "No Bow Swing", "Keep a bow still when you swing it, as when it shoots on a click.")
+                        switch(g::ignoreHaste, "Ignore Haste", "Swing at the same pace under Haste or Mining Fatigue.")
+                        switch(g::noEquipReset, "No Equip Reset", "Keep your held item up instead of dipping after a swing or use.")
+                    }
+                    action(g::resetAnimations, "Reset Animations", "Put every Animations setting back to the game's own.", button = "Reset")
                 }
                 group("Profile Viewer", switch = toggle(g::profileViewer, "Profile Viewer", "Look up any player's profile with /pv and their name.")) {
                     switch(g::profileNames, "Click Names", "Click a player's name in chat to open their profile.")
@@ -150,6 +172,7 @@ object SettingsTree {
                         if (it.isEmpty()) "Stacked" else if (it.size == 1) "1 block moved" else "${it.size} blocks moved"
                     }
                     action(hud::edit, "Move HUD", "Move your HUD over the game, with the world behind it.", button = "Move", id = "moveHud")
+                    switch(hud::dragInChat, "Drag In Chat", "Drag HUD blocks with chat open, and scroll over one to resize it.")
                 }
                 group("Equipment Display", switch = toggle(g::equipmentDisplay, "Equipment Display", "Show your armor and pet on the HUD.")) {
                     order(g::equipmentPieces, "Pieces", "Pick the pieces to show, and drag them into order.")

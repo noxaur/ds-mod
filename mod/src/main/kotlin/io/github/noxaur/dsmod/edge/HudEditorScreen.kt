@@ -1,9 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
-import io.github.noxaur.dsmod.core.hud.HudBox
 import io.github.noxaur.dsmod.core.hud.HudScale
-import io.github.noxaur.dsmod.core.hud.HudSnap
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitButton
@@ -13,22 +11,18 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
-import kotlin.math.sign
 
 private const val TITLE = "HUD Editor"
-private const val HINT = "Drag to move, scroll to resize."
-private const val NUDGE_FAR = 10
+private const val HINT = "Drag or nudge with arrows, scroll to resize, right-click to reset."
 private const val SCALE = "Scale"
 private const val HUD_SCALE = "HUD Scale"
 private const val VALUE_WIDTH = 30
 private const val LABEL_HEIGHT = 8
 
 /**
- * Drag a block to move it and scroll over it to resize it, over the game, so the world shows behind the HUD. A
- * dragged block lines up with the screen's edges and center and with the other blocks when it comes near one,
- * unless Shift is held, and stays whole on the screen. Escape during a drag puts it back. The arrows nudge the last
- * block clicked a pixel, ten with Shift. The panel at the bottom works on that block, and on the whole HUD. The
- * settings' Layout row is the same editor, drawn small. Closing saves through [onSave] and goes back to [parent].
+ * Drag a block or nudge it with the arrows to move it, into or out of a dock beside the hotbar, scroll over it to
+ * resize it and right-click it to reset it, by [HudMover]'s rules, which the chat screen shares. The panel at the bottom works on the last block clicked or scrolled, and on the whole HUD.
+ * Closing saves through [onSave] and goes back to [parent].
  */
 class HudEditorScreen(
     private val readouts: Readouts,
@@ -36,10 +30,7 @@ class HudEditorScreen(
     private val parent: Screen?,
     private val onSave: () -> Unit,
 ) : Screen(text { body(TITLE) }.toComponent()) {
-    private var grabbed: String? = null
-    private var grabX = 0.0
-    private var grabY = 0.0
-    private var startedAt: DsModConfig.Position? = null
+    private val mover = HudMover(readouts)
     private var selected: String? = null
 
     private var panelX = 0
@@ -85,9 +76,6 @@ class HudEditorScreen(
         refresh()
     }
 
-    // The arrows nudge a block, so no button takes the keys on open.
-    override fun setInitialFocus() = setFocused(null)
-
     override fun onClose() = minecraft.gui.setScreen(parent)
 
     override fun removed() {
@@ -99,9 +87,9 @@ class HudEditorScreen(
     override fun extractBackground(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) = Unit
 
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
-        val hovered = grabbed?.let(Hud::find) ?: if (inPanel(mouseX.toDouble(), mouseY.toDouble())) null else Hud.at(mouseX.toDouble(), mouseY.toDouble())
-        hovered?.let { ring(graphics, it) }
-        selected?.let(Hud::find)?.let { if (it !== hovered) ring(graphics, it) }
+        val hovered = mover.held?.let(Hud::find) ?: if (inPanel(mouseX.toDouble(), mouseY.toDouble())) null else Hud.at(mouseX.toDouble(), mouseY.toDouble())
+        hovered?.let { mover.ring(graphics, it, Kit.theme.accent, grabbable = true) }
+        selected?.let(Hud::find)?.let { if (it !== hovered) mover.ring(graphics, it, Kit.theme.accent, grabbable = false) }
 
         Kit.panel(graphics, panelX, panelY, panelWidth, panelHeight)
         Kit.label(graphics, TITLE, labelX, panelY + Kit.INSET + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
@@ -117,54 +105,35 @@ class HudEditorScreen(
             return true
         }
         val block = Hud.at(event.x, event.y) ?: return super.mouseClicked(event, doubleClick)
-        grabbed = block.id
-        grabX = event.x - block.x
-        grabY = event.y - block.y
-        startedAt = readouts.saved(block.id)
-        // A press on a block gives the arrows to it, not to the button pressed last.
-        focused = null
+        when (event.button()) {
+            0 -> mover.grab(block, event.x, event.y)
+            1 -> mover.reset(block)
+            else -> return super.mouseClicked(event, doubleClick)
+        }
         select(block.id)
         return true
     }
 
     override fun mouseDragged(event: MouseButtonEvent, dx: Double, dy: Double): Boolean {
-        val id = grabbed ?: return super.mouseDragged(event, dx, dy)
-        val block = Hud.find(id) ?: return true
-        val others = Hud.placed().filter { it.id != id }.map { HudBox(it.x, it.y, it.width * it.scale, it.height * it.scale) }
-        val (x, y) = HudSnap.place(
-            (event.x - grabX).toFloat(), (event.y - grabY).toFloat(), block.width * block.scale, block.height * block.scale, others,
-            width.toFloat(), height.toFloat(), free = event.hasShiftDown(),
-        )
-        readouts.place(id, x, y)
+        if (!mover.drag(event.x, event.y)) return super.mouseDragged(event, dx, dy)
         refresh()
         return true
     }
 
     override fun mouseReleased(event: MouseButtonEvent): Boolean {
-        grabbed = null
-        startedAt = null
+        mover.release()
         return super.mouseReleased(event)
     }
 
+    // Escape during a drag puts the block back, and otherwise closes the editor. The arrows nudge the block held, or
+    // else the one picked last, and move between the panel's controls when there is none.
     override fun keyPressed(event: KeyEvent): Boolean {
-        grabbed?.let { id ->
-            // Escape during a drag puts the block back where it was, and does not close the editor.
-            if (event.isEscape) {
-                readouts.put(id, startedAt)
-                grabbed = null
-                refresh()
-            }
+        if (event.isEscape && mover.cancel()) {
+            refresh()
             return true
         }
-        val block = selected?.let(Hud::find)
-        if (block != null && focused == null && (event.isLeft || event.isRight || event.isUp || event.isDown)) {
-            val step = if (event.hasShiftDown()) NUDGE_FAR else 1
-            val (x, y) = HudSnap.place(
-                block.x + if (event.isLeft) -step else if (event.isRight) step else 0,
-                block.y + if (event.isUp) -step else if (event.isDown) step else 0,
-                block.width * block.scale, block.height * block.scale, emptyList(), width.toFloat(), height.toFloat(), free = true,
-            )
-            readouts.place(block.id, x, y)
+        val block = (mover.held ?: selected)?.let(Hud::find)
+        if (block != null && mover.nudge(block, event)) {
             refresh()
             return true
         }
@@ -174,7 +143,7 @@ class HudEditorScreen(
     override fun mouseScrolled(mouseX: Double, mouseY: Double, scrollX: Double, scrollY: Double): Boolean {
         if (scrollY == 0.0 || inPanel(mouseX, mouseY)) return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY)
         val block = Hud.at(mouseX, mouseY) ?: return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY)
-        readouts.resize(block, scrollY.sign.toInt())
+        mover.scroll(block, scrollY)
         select(block.id)
         return true
     }
@@ -191,15 +160,6 @@ class HudEditorScreen(
         scale.value = HudScale.label(id?.let(readouts::scale) ?: 1f)
         reset.active = id != null && readouts.isPlaced(id)
         hudScale.value = HudScale.label(settings.scale)
-    }
-
-    private fun ring(graphics: GuiGraphicsExtractor, block: Hud.Placed) {
-        val pose = graphics.pose()
-        pose.pushMatrix()
-        pose.translate(block.x, block.y)
-        pose.scale(block.scale, block.scale)
-        Kit.ring(graphics, 0, 0, block.width, block.height, Kit.theme.accent)
-        pose.popMatrix()
     }
 
     private fun inPanel(x: Double, y: Double) = x >= panelX && x < panelX + panelWidth && y >= panelY && y < panelY + panelHeight

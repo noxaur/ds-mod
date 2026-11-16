@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.notenoughupdates.moulconfig.common.IMinecraft
+import com.mojang.brigadier.arguments.StringArgumentType
 import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
 import io.github.noxaur.dsmod.core.config.Canvas
 import io.github.noxaur.dsmod.core.config.DsModConfig
@@ -71,13 +71,8 @@ object DsModClient : ClientModInitializer {
     /** Whether the mod runs on the server the player is on. A feature in the edge asks this before its own switch. */
     val active: Boolean get() = anyServer || onDragSim || !config.instance.general.onlyOnDragSim
 
-    /** Opens the settings, scrolled to [setting] of `DsModConfig` when it is given. */
-    fun openSettings(setting: Field? = null) {
-        // Each call builds a new editor, so the one that is told where to go must be the one that opens.
-        val editor = config.getEditor()
-        if (setting != null) editor.goToOption(editor.getOptionFromField(setting)!!)
-        IMinecraft.INSTANCE.openWrappedScreen(editor)
-    }
+    /** Opens the settings where the player left them, scrolled to [setting] of `DsModConfig` when it is given. */
+    fun openSettings(setting: Field? = null) = Settings.open(setting)
 
     /** Writes the settings to disk, as MoulConfig's screen does when it closes. */
     fun saveSettings() = config.saveToFile()
@@ -99,6 +94,7 @@ object DsModClient : ClientModInitializer {
         val all = features(config.instance)
         game = Game(all) { active }
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
+        Settings.register(config)
         Kit.register()
         Looks.register()
         Hud.register()
@@ -108,12 +104,14 @@ object DsModClient : ClientModInitializer {
         TabBar.register()
         Tooltips.register()
         World.register()
+        Etherwarps.register()
         ArmorSwapGuards.register(config.instance.inventory)
         EyeGuards.register(config.instance.end)
         CopyChats.register(config.instance.chat)
         SlotGuards.register(all.filterIsInstance<SlotLock>().single(), config.instance.inventory)
         CommandKeys.register(config.instance.general)
         readouts = Readouts(game, config.instance.hud).also { it.register() }
+        ChatDrags.register(readouts, config.instance.hud, config::saveToFile)
         tabs = TabListPoller(game)
         sidebars = SidebarPoller(game)
         containers = ContainerPoller(game)
@@ -181,14 +179,22 @@ object DsModClient : ClientModInitializer {
             Contribute.quit()
             saved.close()
         }
+        // `/dsm` is the short name, as `/sh` is SkyHanni's. `/du` is DragSim Utils', and a player may run both mods.
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
-            dispatcher.register(
-                ClientCommands.literal("dsmod")
+            for (name in listOf("dsmod", "dsm")) dispatcher.register(
+                ClientCommands.literal(name)
                     .executes { context ->
                         // The chat screen closes after the command returns, so open on the next tick.
                         context.source.client.schedule { openSettings() }
                         1
                     }
+                    .then(
+                        ClientCommands.argument("search", StringArgumentType.greedyString()).executes { context ->
+                            val search = StringArgumentType.getString(context, "search")
+                            context.source.client.schedule { Settings.open(search = search) }
+                            1
+                        },
+                    )
                     .then(
                         ClientCommands.literal("hud").executes { context ->
                             context.source.client.schedule { openHudEditor() }

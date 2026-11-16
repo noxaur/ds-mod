@@ -19,7 +19,7 @@ private const val ID = "dragon-timer"
 /**
  * Drives the HUD's layout in the settings over a live block: a drag moves it and keeps it on the screen, Escape
  * during a drag puts it back, the wheel and + resize it, the arrows nudge it, Backspace stacks it again, a right
- * press opens its menu, and Move HUD opens the full editor over the game, which returns to the settings. Read the
+ * press stacks it again, and Move HUD opens the full editor over the game, which returns to the settings. Read the
  * screenshots in both themes, mid-drag among them.
  */
 class HudLayoutTest : FabricClientGameTest {
@@ -107,6 +107,8 @@ class HudLayoutTest : FabricClientGameTest {
         val wheeled = placed().scale
         key(GLFW.GLFW_KEY_EQUAL)
         check(placed().scale > wheeled) { "+ did not resize the block: ${placed().scale}" }
+        // Grown in the corner, it moves in rather than past the screen's edge.
+        placed().let { check(it.x + it.width * it.scale <= screen.first + 0.5 && it.y + it.height * it.scale <= screen.second + 0.5) { "The grown block left the screen at ${it.x}, ${it.y}" } }
 
         // The arrows nudge it a pixel, and ten with Shift.
         move(point().first, point().second)
@@ -116,13 +118,13 @@ class HudLayoutTest : FabricClientGameTest {
         key(GLFW.GLFW_KEY_LEFT, shift = true)
         check(placed().x == x - 11) { "Shift + Left moved the block to ${placed().x}, not ${x - 11}" }
 
-        // A right press opens what can be done to the block.
-        click(point().first, point().second, GLFW.GLFW_MOUSE_BUTTON_RIGHT)
-        context.takeScreenshot("hud-layout-menu")
-        key(GLFW.GLFW_KEY_ESCAPE)
+        context.takeScreenshot("hud-layout-picked")
 
-        // Backspace stacks it again.
-        click(point().first, point().second)
+        // A right press stacks it again, as in the HUD editor and the chat. An arrow places it once more, and Backspace stacks it.
+        click(point().first, point().second, GLFW.GLFW_MOUSE_BUTTON_RIGHT)
+        check(ID !in hud.positions) { "A right press kept the block's place" }
+        key(GLFW.GLFW_KEY_RIGHT)
+        check(ID in hud.positions) { "Right did not place the stacked block" }
         key(GLFW.GLFW_KEY_BACKSPACE)
         check(ID !in hud.positions) { "Backspace kept the block's place" }
         key(GLFW.GLFW_KEY_ESCAPE)

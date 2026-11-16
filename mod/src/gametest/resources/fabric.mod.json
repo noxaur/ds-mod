@@ -33,6 +33,14 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.FavoritesTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.SettingsKeyTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.KitTest"
       },
       {
@@ -77,6 +85,22 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.DragInChatTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.DragInChatPriorityTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.DragInChatStandInTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.HudDockTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.TabListTest"
       },
       {
@@ -109,7 +133,15 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.EtherwarpOutlineTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.AnimationsTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.AnimationsPoseTest"
       },
       {
         "adapter": "kotlin",

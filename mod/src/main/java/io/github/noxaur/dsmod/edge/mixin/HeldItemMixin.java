@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Animations: the first-person held item's place, size, swing and dip. The place goes in as the hand's pose is
  * pushed, before any branch runs, because eating and drinking put the item in the hand twice and would move it twice.
- * The size goes in just before the item is drawn, after every swing and use pose.
+ * The turn and the size go in just before the item is drawn, after every swing and use pose.
  */
 @Mixin(ItemInHandRenderer.class)
 abstract class HeldItemMixin {
@@ -31,20 +31,20 @@ abstract class HeldItemMixin {
     }
 
     @Inject(method = "submitArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;I)V"))
-    private void dsmod$size(AbstractClientPlayer player, float frameInterp, float xRot, InteractionHand hand, float attack, ItemStack stack,
+    private void dsmod$turnAndSize(AbstractClientPlayer player, float frameInterp, float xRot, InteractionHand hand, float attack, ItemStack stack,
                             float inverseArmHeight, PoseStack pose, SubmitNodeCollector collector, int light, CallbackInfo ci) {
-        HeldItems.INSTANCE.size(pose);
+        HeldItems.INSTANCE.turnAndSize(pose, hand == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite());
     }
 
     @Inject(method = "swingArm", at = @At("HEAD"), cancellable = true)
     private void dsmod$swing(float attack, PoseStack pose, int invert, HumanoidArm arm, CallbackInfo ci) {
-        if (HeldItems.INSTANCE.swing(pose, arm, attack)) ci.cancel();
+        if (HeldItems.INSTANCE.swing(pose, arm, attack, false)) ci.cancel();
     }
 
     /** A spear swings by its own stab, which never reaches `swingArm`. */
     @WrapOperation(method = "submitArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/effects/SpearAnimations;firstPersonAttack(FLcom/mojang/blaze3d/vertex/PoseStack;ILnet/minecraft/world/entity/HumanoidArm;)V"))
     private void dsmod$stab(float attack, PoseStack pose, int invert, HumanoidArm arm, Operation<Void> original) {
-        if (!HeldItems.INSTANCE.swing(pose, arm, attack)) original.call(attack, pose, invert, arm);
+        if (!HeldItems.INSTANCE.swing(pose, arm, attack, true)) original.call(attack, pose, invert, arm);
     }
 
     @ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getItemSwapScale(F)F"))

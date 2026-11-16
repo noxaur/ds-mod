@@ -138,13 +138,13 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         Kit.bar(g, x + 128, oy + 111, 60, 0.62f, Role.WARNING.argb())
         Kit.bar(g, x + 192, oy + 111, 60, 1f, Role.VALUE.argb())
 
-        caption(g, "Icons: ink, muted, roles on a well", x, oy + 121)
+        caption(g, "Icons: ink, and roles on a well", x, oy + 121)
         val icons = Icon.entries
-        Kit.well(g, x + 164, oy + 132, 88, 14)
+        val well = x + icons.size * 8 + 4
+        Kit.well(g, well, oy + 132, icons.size * 8 + 4, 14)
         for (i in icons.indices) {
             Kit.icon(g, icons[i], x + i * 8, oy + 136, t.ink, t.inkShadow)
-            Kit.icon(g, icons[i], x + 82 + i * 8, oy + 136, t.inkMuted, t.inkShadow)
-            Kit.icon(g, icons[i], x + 167 + i * 8, oy + 136, ROLES[i % ROLES.size].argb())
+            Kit.icon(g, icons[i], well + 3 + i * 8, oy + 136, ROLES[i % ROLES.size].argb())
         }
 
         caption(g, "Divider, rings and a line", x, oy + 150)

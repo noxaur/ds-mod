@@ -39,6 +39,19 @@ A key that works in the world, such as Free Look's.
 - Hold ends at the release, also when a screen has opened since. A new world or the feature's switch ends it too.
 - Releasing puts back what the press changed.
 
+## Favorite
+
+A star that keeps a thing in a list of favorites, such as a setting in the settings' Favorites.
+
+- A star sits on every thing that can be starred, beside its name, where it covers nothing at any length. A left press stars or unstars it, and the press does nothing else to the thing.
+- A key stars the thing under the mouse, F by default as in NotEnoughUpdates, and the player can bind another key or a mouse button. It is left alone while a text field has focus and with Ctrl or Alt held, and its character never reaches a search.
+- An unstarred star is faint and lights up under the mouse, and a starred one is in `action`. A tooltip names both ways: "Click or press F to star.".
+- Favorites is the first entry of the list it belongs to, and holds the starred things in the order the full list has them, not the order they were starred. A short line at its top says how to add to it.
+- A search looks through everything, so Favorites hides while it runs and each match shows once.
+- A thing unstarred inside Favorites keeps its row, with its star empty, until the player leaves Favorites, so the rows below do not move under a second press and a slip is undone in place.
+- Nothing starts starred, because the player picks their favorites. An empty Favorites says what will show there, and the first open of the screen goes to the first full category instead.
+- The stars are saved with the settings.
+
 ## Cycle button
 
 A button that steps through a few values, such as where a bind works.
@@ -162,13 +175,13 @@ A list of things the player made, such as command binds, edited where it sits in
 
 ## Layout of the HUD
 
-The HUD's blocks placed on the screen, as in SkyHanni's, Skytils' and Odin's editors. The settings show it as a scaled copy of the screen, drawn from the real blocks, with the hotbar as a landmark, and Move HUD opens the same editor over the game.
+The HUD's blocks placed on the screen, as in SkyHanni's, Skytils' and Odin's editors. The HUD editor over the game, the chat screen and the settings' scaled copy of the screen all move blocks through `HudMover`, so they behave alike. The copy draws the real blocks, with the hotbar as a landmark.
 
-- Every convention of a draggable thing. A dragged block lines up with the screen's edges and middle and with the other blocks within a few pixels, and Shift places it freely. It never leaves the screen.
-- The wheel over a block, and + and −, resize it a step. Shift with an arrow nudges ten pixels.
-- A press picks a block, and the line under the copy names it with its scale beside −, + and Reset. Backspace or Delete stacks the picked block again, and the row's changed marker stacks every block.
-- A right press on a block opens its menu: Bigger, Smaller, Reset.
-- Tab picks the next block. Escape leaves the copy, then closes the screen.
+- Every convention of a draggable thing. A dragged block lines up with the screen's edges and middle and with the other blocks within a few pixels, docks beside the hotbar near a spot it can dock in, and Shift places it freely. It never leaves the screen.
+- The wheel over a block resizes it a step, and so do + and − with it picked. Shift with an arrow nudges ten pixels.
+- A right press stacks the block again, undocked, and so do Backspace and Delete with it picked. The settings' changed marker stacks every block.
+- A press picks a block, and the line under the copy names it with its scale beside −, + and Reset.
+- In the copy, Tab picks the next block, and Escape leaves the copy, then closes the screen.
 - With nothing on the HUD, the copy says so, since a block shows only where its feature has something to show.
 
 ## Places for tabs
