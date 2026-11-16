@@ -289,6 +289,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
         game.tap = null
         game.metrics.flush()
         game.metrics.sinks -= metricsSink
+        blockScan.detach()
     }
 
     /** Finishes the file, waiting for the writer thread. Throws when the file is not whole, as [CaptureWriter.close] does. */
