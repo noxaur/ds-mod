@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.PetNear
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
@@ -197,6 +198,14 @@ class EquipmentDisplayTest {
         post(pet())
         post(Sidebar())
         assertEquals(listOf("[Lvl 100] Ender Dragon"), rows())
+    }
+
+    @Test
+    fun `leaving the server forgets the pet, and keeps the heads seen`() {
+        post(pet(), near("[Lvl 100] Ender Dragon"), LeftServer)
+        assertNull(rows())
+        post(pet())
+        assertEquals(listOf(listOf(head)), rows().orEmpty().map { (it as List<*>).filterNotNull() })
     }
 
     @Test

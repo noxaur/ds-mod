@@ -14,6 +14,7 @@ import io.github.noxaur.dsmod.core.game.SidebarState
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.TabState
+import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.Text
@@ -136,8 +137,9 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             }
             is ContainerOpened -> true.also { metrics.time("container") { container.opened(event) } }
             is SlotChanged -> true.also { metrics.time("container") { container.changed(event) } }
-            // The new world's tab list and sidebar have not arrived, so the old one's area must not outlive the hop.
-            WorldChanged -> true.also {
+            // The new world's tab list and sidebar have not arrived, so the old one's area must not outlive the hop. A
+            // disconnect changes no world, and a feature switched on after it must not hear the old server's sidebar.
+            WorldChanged, LeftServer -> true.also {
                 lastTab = null
                 lastSidebar = null
                 tab.update(emptyList())
@@ -149,8 +151,8 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         for (i in features.indices) {
             val feature = features[i]
             if (!active || !feature.enabled) continue
-            // Outside its area a feature still follows the tab list, the sidebar and the world, which is how it knows it left.
-            val reaches = event is TabList || event is Sidebar || event is WorldChanged || feature.area.holds(tab, sidebar)
+            // Outside its area a feature still follows the tab list, the sidebar, the world and the server, which is how it knows it left.
+            val reaches = event is TabList || event is Sidebar || event is WorldChanged || event is LeftServer || feature.area.holds(tab, sidebar)
             val handler = if (reaches) feature.handlers[event.javaClass] else null
             if (handler != null) metrics.time(feature.id) { handler(event, time) }
             if (handler != null || shared) readouts[i].stale = true

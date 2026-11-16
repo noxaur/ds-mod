@@ -8,6 +8,7 @@ import io.github.noxaur.dsmod.core.game.CombatXp
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.Pet
 import io.github.noxaur.dsmod.core.game.PetCard
 import io.github.noxaur.dsmod.core.game.PetItem
@@ -124,6 +125,8 @@ class ActivePet(
             event.lines.firstOrNull { it.plain.trimStart().startsWith(SIDEBAR) }?.let { read(it, SIDEBAR) }
         }
         on<ContainerOpened> { _, _ -> menuSlot = -1 }
+        // The next session may bring another pet, and the sidebar names it only when it arrives.
+        on<LeftServer> { _, _ -> set(null) }
         on<SlotChanged> { event, now ->
             val item = event.item
             if (item?.name?.plain == PetCard.MENU) item.lore.firstOrNull { it.plain.startsWith(SELECTED) }?.let { read(it, SELECTED) }

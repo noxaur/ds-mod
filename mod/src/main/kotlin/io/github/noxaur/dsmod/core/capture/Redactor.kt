@@ -14,6 +14,7 @@ import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
+import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -154,6 +155,7 @@ class Redactor(private val names: Set<String>) {
         is ContainerOpened -> event.copy(title = event.title?.named())
         is SlotChanged -> event.copy(item = event.item?.let(::item))
         WorldChanged -> event
+        LeftServer -> event
         is HeadPlaced -> event
         is Hit -> event
         is ActionBar -> ActionBar(event.text.named())

@@ -4,6 +4,7 @@ import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.Pet
 import io.github.noxaur.dsmod.core.game.PetCard
 import io.github.noxaur.dsmod.core.game.PetNear
@@ -122,6 +123,13 @@ class EquipmentDisplay(
         }
         // Also run when the feature is switched off, so it reads the armor again when it comes back.
         on<WorldChanged> { _, _ -> stale = true }
+        // The next session may bring another pet, and the sidebar names it only when it arrives. A head stays its pet's.
+        on<LeftServer> { _, _ ->
+            pet = null
+            menuPet = null
+            held = null
+            block = build()
+        }
         on<Sidebar> { event, _ ->
             // Between worlds the sidebar is empty until the new one arrives, and the pet is still out.
             if (event.lines.all { it.plain.isBlank() }) return@on

@@ -9,6 +9,7 @@ import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.PetNear
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
@@ -183,6 +184,12 @@ class ActivePetTest {
     fun `the pet stays across a world change, through the blank sidebar between worlds`() {
         post(pet(), WorldChanged, Sidebar())
         assertEquals("[Lvl 100] Black Cat", rows()?.first())
+    }
+
+    @Test
+    fun `leaving the server forgets the pet`() {
+        post(pet(), LeftServer)
+        assertNull(hud())
     }
 
     @Test

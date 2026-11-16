@@ -32,6 +32,8 @@ Each feature used to compare the `Area` row itself, and four features had three 
 
 Before the server names an area the player is in none, because a wrong count is saved for good and a late readout costs a quarter of a second. A change of world empties the tab and sidebar state, and each poller posts again even when its rows are the same, so the old lobby's area never outlives the hop and a hop between two identical lobbies does not leave the features deaf.
 
+Leaving the server changes no world, since the game drops its world without entering another, so `LeftServer` empties the same state and is where a feature forgets what one session holds, such as the pet that a change of world keeps. Fabric reports the disconnect on the network thread, and the game drops every task queued for its own thread while it disconnects, so a flag carries it to the next client tick instead of `Minecraft.execute`.
+
 Some places exist only in the sidebar: the Dungeon Hub's tab list has no info row, and the Void Sepulture is still `Area: The End` in the tab list. So an `Area` is told by a tab row, a sidebar place, or both.
 
 ## A big menu is read over several ticks
