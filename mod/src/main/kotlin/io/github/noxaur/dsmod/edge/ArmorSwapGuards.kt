@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.core.component.DataComponents
 import net.minecraft.world.InteractionResult
@@ -11,9 +11,9 @@ import net.minecraft.world.InteractionResult
  * lets it through, because some armor has an ability on sneak and right click.
  */
 object ArmorSwapGuards {
-    fun register(settings: DsModConfig.Inventory) {
+    fun register() {
         UseItemCallback.EVENT.register { player, level, hand ->
-            val swaps = level.isClientSide && DsModClient.active && settings.armorSwapGuard && !player.isShiftKeyDown &&
+            val swaps = level.isClientSide && DsModClient.runs<ArmorSwapGuard>() && !player.isShiftKeyDown &&
                 player.getItemInHand(hand).get(DataComponents.EQUIPPABLE)?.swappable == true
             // Fabric sends nothing to the server for a failed use.
             if (swaps) InteractionResult.FAIL else InteractionResult.PASS

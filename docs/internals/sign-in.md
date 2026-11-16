@@ -12,7 +12,7 @@ This proves who is asking and nothing about what they send. A signed-in client c
 
 Email and password sign-in is switched off, so no account exists that Mojang did not vouch for. A session ends 24 hours after it began and is never extended, so a stolen token dies by itself. The mod pays nothing for that, because it repeats the proof without the player noticing.
 
-The sign-in route is a Better Auth plugin, and Better Auth's `createAuthEndpoint` takes a zod schema for the request body. That is why the backend depends on zod beside Effect Schema.
+The sign-in route is a Better Auth plugin. Its `createAuthEndpoint` takes any Standard Schema for the request body, so the route passes an Effect Schema through `Schema.toStandardSchemaV1` and the backend needs no second schema library. Better Auth brings its own zod, and the backend does not list it, so `import "zod"` does not resolve.
 
 ## The website signs in through the mod
 

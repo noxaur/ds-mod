@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.feature.general.EtherwarpOutline
 import io.github.noxaur.dsmod.core.hand.Etherwarp
 import io.github.noxaur.dsmod.core.text.Role
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionEvents
@@ -59,7 +60,7 @@ object Etherwarps {
         val client = Minecraft.getInstance()
         val player = client.player
         val s = settings
-        if (!DsModClient.active || !s.etherwarpOutline || player == null || client.gui.screen() != null || client.gui.hud.isHidden ||
+        if (!DsModClient.runs<EtherwarpOutline>() || player == null || client.gui.screen() != null || client.gui.hud.isHidden ||
             !player.isShiftKeyDown && !s.etherwarpWithoutSneak
         ) {
             return clear()

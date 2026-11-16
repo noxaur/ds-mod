@@ -1,4 +1,4 @@
-import { record } from "./read.ts";
+import { numberEntries, record } from "./read.ts";
 
 /**
  * An item as the mod sees it in the game: its `id`, its tooltip and the server's `custom_data`. The tests turn one into
@@ -13,18 +13,14 @@ export interface GameItem {
   readonly data: Readonly<Record<string, unknown>>;
 }
 
-const numbers = (value: unknown): Record<string, number> =>
-  Object.fromEntries(
-    Object.entries(record(value)).filter((entry): entry is [string, number] => typeof entry[1] === "number"),
-  );
-
+/** The game's stat set, whose base stats are `stats`, in the API's shape, whose base stats are `base`. */
 const statSet = (value: unknown) => {
   const set = record(value);
   return {
-    base: numbers(set["stats"]),
-    additive: numbers(set["additive"]),
-    multiplicative: numbers(set["multiplicative"]),
-    increase_max: numbers(set["increase_max"]),
+    base: numberEntries(set["stats"]),
+    additive: numberEntries(set["additive"]),
+    multiplicative: numberEntries(set["multiplicative"]),
+    increase_max: numberEntries(set["increase_max"]),
   };
 };
 

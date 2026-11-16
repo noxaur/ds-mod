@@ -16,6 +16,8 @@ Runners differ in speed, and one runner differs from run to run. `PerfTest` time
 
 The game takes about 40 seconds to boot on a runner, where it renders in software. So CI runs `PerfTest` alone, and the other game tests run before a beta release. A broken screen can therefore reach `main`, and it is caught within two days, before any player gets it.
 
+A beta ships only when CI passed on its commit. The backend, web and docs checks run only in CI, and a beta that ran them again would spend its time installing Node packages for a release that holds none of them.
+
 ## A game test runs behind the developer
 
 Agents run the game tests while a person works on the same machine, often with their own game open. So the test game opens without the keyboard, under the window class `dsmod-gametest`, and writes its sound to a file. All of it lives in the `gametest` source set, so `runClient` and the release jar are untouched.
@@ -34,4 +36,4 @@ Agents run game tests while they work, often several agents at once on the user'
 
 `timeout-minutes` cancels a job and says only that it was cancelled. It also can't tell a slow change from a cold cache: the first run after a version bump downloads Minecraft and takes about four minutes whatever the change does. The `time-limit` action runs last, reads when the job started, and fails with the time and what to do about it. It lets a run through when the cache was cold.
 
-The cache key covers every file that can change what is downloaded, `build.gradle.kts` and `mise.toml` among them. An edit to one of those that changes no dependency is therefore let through once too.
+The cache key is the files that decide what is downloaded: `mise.toml`, the wrapper, and `gradle.properties`, which holds every version the build scripts read. Keying on `build.gradle.kts` as well let every edit to the build through the limit unchecked, though no such edit downloads anything.

@@ -63,14 +63,14 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | --- | --- |
 | `core` imports nothing from Minecraft, Fabric or `edge` | `core-is-pure` in `mod/…/Rules.kt` |
 | Each place the release build sends or refuses input for the player is one the user audited | `InputSitesTest` against `mod/input-sites.txt`, which only the user edits |
-| The release build runs only on dragsim.co, unless the player turns DragSim Only off | `Game` gates every feature, `GameTest`, `DragSimTest` and the game test `OnlyOnDragSimTest` |
+| The release build runs only on dragsim.co, unless the player turns DragSim Only off | `Game` gates every feature in `core`, `SwitchesTest` makes the edge ask `Feature.runs`, and `GameTest`, `DragSimTest` and the game test `OnlyOnDragSimTest` |
 | A feature fires only in the area it names | `Feature` takes an `Area` and `Game` gates on it. `FeatureReplayTest` replays each fixture outside the area |
 | A feature reads no area for itself, from the tab list or the sidebar, and sits in its area's folder | `area-by-declaration` in `mod/…/Rules.kt`, and `RulesTest` |
 | The mod's text and colors come from its text layer | `text-by-role` in `mod/…/Rules.kt` |
 | The mod's shapes are drawn by its kit, in the player's theme | `draw-with-kit` in `mod/…/Rules.kt` |
 | Release code cannot use debug tools | The `main` and `debug` source sets |
 | Raw captures stay out of git | They are written to `mod/run/`, which is git-ignored |
-| A fixture holds no player name from a capture on this machine | `FixtureLeakTest` |
+| A fixture holds no player name from a capture on this machine, and an alias wherever a player's name stands | `FixtureLeakTest` |
 | Every feature shows what its transcript says | `FeatureReplayTest` replays each feature's fixtures |
 | A feature that reads nothing from the server has a game test | `FeatureReplayTest` |
 | Every feature has a section in the player docs | `RulesTest` |
