@@ -53,10 +53,10 @@ class BackendTest {
             exchange.requestBody.readBytes(),
         )
         seen += request
-        val (status, body) = when (exchange.requestURI.path) {
+        val (status, body) = answers[exchange.requestURI.path]?.invoke(request) ?: when (exchange.requestURI.path) {
             "/api/auth/minecraft/challenge" -> 200 to """{"serverId":"${"%040x".format(++challenges)}"}"""
             "/api/auth/minecraft/verify" -> 200 to """{"token":"session-${++sessions}","uuid":"u","name":"Steve"}"""
-            else -> answers[exchange.requestURI.path]?.invoke(request) ?: (204 to "")
+            else -> 204 to ""
         }
         val bytes = body.toByteArray()
         exchange.sendResponseHeaders(status, if (status == 204) -1 else bytes.size.toLong())
@@ -113,6 +113,16 @@ class BackendTest {
     fun `an unreachable backend is an error with no status to blame on the player`() {
         server.stop(0)
         assertEquals(null, assertFailsWith<BackendException> { backend.oneTimeToken() }.status)
+    }
+
+    @Test
+    fun `a server with no sign-in at the address is not mistaken for a backend that refused`() {
+        answers["/api/auth/minecraft/challenge"] = { 404 to """{"error":"Unknown route"}""" }
+
+        val failure = assertFailsWith<BackendException> { backend.oneTimeToken() }
+
+        assertEquals(null, failure.status)
+        assertEquals("Nothing at $url answers as the ds-mod backend.", failure.message)
     }
 
     @Test
