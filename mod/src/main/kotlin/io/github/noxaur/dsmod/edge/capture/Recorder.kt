@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge.capture
 
 import io.github.noxaur.dsmod.core.capture.CaptureIncompleteException
+import io.github.noxaur.dsmod.core.capture.RawRecord
 import io.github.noxaur.dsmod.edge.Background
 import io.github.noxaur.dsmod.edge.DsModClient
 import kotlinx.serialization.json.JsonObject
@@ -47,9 +48,9 @@ object Recorder {
         false
     }
 
-    /** Adds a raw record to the running capture. */
+    /** Adds a raw record of the [RawRecord] named [type] to the running capture. */
     fun record(type: String, data: () -> JsonObject) {
-        session?.record(type, data)
+        session?.record(RawRecord.of(type), data)
     }
 
     /** Called by `CapturePacketsMixin` on the client thread. */
@@ -59,13 +60,13 @@ object Recorder {
 
     /** Called by `CaptureInputMixin` on the client thread, for `swing` or `use`. */
     fun onInput(client: Minecraft, type: String) {
-        session?.input(client, type)
+        session?.input(client, RawRecord.of(type))
     }
 
     fun register() {
         ClientEntityEvents.ENTITY_UNLOAD.register { entity, _ -> session?.unload(entity) }
         ClientReceiveMessageEvents.CHAT.register { message, _, sender, _, _ ->
-            session?.record("chat") {
+            session?.record(RawRecord.CHAT) {
                 buildJsonObject {
                     sender?.let { put("sender", it.name) }
                     message.toCaptureJson().forEach { (key, value) -> put(key, value) }

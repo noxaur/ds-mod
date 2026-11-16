@@ -62,6 +62,16 @@ class GameTest {
     }
 
     @Test
+    fun `an edge feature locked to an area runs only there, and stays on for the HUD`() {
+        val eyes = game.readouts.single { it.feature.id == "protect-placed-eyes" }.feature
+        assertEquals(false to true, eyes.runs to eyes.on)
+        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+        assertEquals(true, eyes.runs)
+        game.post(1, WorldChanged)
+        assertEquals(false, eyes.runs)
+    }
+
+    @Test
     fun `a feature that is switched back on hears the sidebar again`() {
         var heard = 0
         val listener = object : Feature("listener", config.end::dragonTimer, Area.ANYWHERE) {

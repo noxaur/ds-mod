@@ -11,23 +11,23 @@ import kotlin.test.assertEquals
 
 class ChangeLogTest {
     private val recorded = mutableListOf<String>()
-    private val log = ChangeLog { type, data -> recorded += "$type $data" }
+    private val log = ChangeLog { type, data -> recorded += "${type.type} $data" }
 
     private fun text(value: String) = buildJsonObject { put("text", value) }
 
     @Test
     fun `offer records a value once until it changes`() {
-        log.offer("sidebar", text("a"))
-        log.offer("sidebar", text("a"))
-        log.offer("sidebar", text("b"))
+        log.offer(RawRecord.TITLE, text("a"))
+        log.offer(RawRecord.TITLE, text("a"))
+        log.offer(RawRecord.TITLE, text("b"))
 
-        assertEquals(listOf("""sidebar {"text":"a"}""", """sidebar {"text":"b"}"""), recorded)
+        assertEquals(listOf("""title {"text":"a"}""", """title {"text":"b"}"""), recorded)
     }
 
     @Test
     fun `offer with force records an unchanged value`() {
-        log.offer("actionbar", text("a"))
-        log.offer("actionbar", text("a"), force = true)
+        log.offer(RawRecord.TITLE, text("a"))
+        log.offer(RawRecord.TITLE, text("a"), force = true)
 
         assertEquals(2, recorded.size)
     }
@@ -35,14 +35,14 @@ class ChangeLogTest {
     @Test
     fun `offerEntries records everything first, then only changed and removed entries`() {
         val header = buildJsonObject { put("id", 1) }
-        log.offerEntries("container", header, mapOf("0" to JsonPrimitive("sword"), "1" to JsonPrimitive("bow")))
-        log.offerEntries("container", header, mapOf("0" to JsonPrimitive("sword"), "1" to JsonPrimitive("bow")))
-        log.offerEntries("container", header, mapOf("0" to JsonPrimitive("axe")))
+        log.offerEntries(RawRecord.ITEMCOMPONENTS, header, mapOf("0" to JsonPrimitive("sword"), "1" to JsonPrimitive("bow")))
+        log.offerEntries(RawRecord.ITEMCOMPONENTS, header, mapOf("0" to JsonPrimitive("sword"), "1" to JsonPrimitive("bow")))
+        log.offerEntries(RawRecord.ITEMCOMPONENTS, header, mapOf("0" to JsonPrimitive("axe")))
 
         assertEquals(
             listOf(
-                """container {"id":1,"full":true,"entries":{"0":"sword","1":"bow"}}""",
-                """container {"id":1,"full":false,"entries":{"0":"axe","1":null}}""",
+                """itemcomponents {"id":1,"full":true,"entries":{"0":"sword","1":"bow"}}""",
+                """itemcomponents {"id":1,"full":false,"entries":{"0":"axe","1":null}}""",
             ),
             recorded,
         )
@@ -50,17 +50,17 @@ class ChangeLogTest {
 
     @Test
     fun `offerEntries starts over when the header changes`() {
-        log.offerEntries("container", buildJsonObject { put("id", 1) }, mapOf("0" to JsonPrimitive("sword")))
-        log.offerEntries("container", buildJsonObject { put("id", 2) }, mapOf("0" to JsonPrimitive("sword")))
+        log.offerEntries(RawRecord.ITEMCOMPONENTS, buildJsonObject { put("id", 1) }, mapOf("0" to JsonPrimitive("sword")))
+        log.offerEntries(RawRecord.ITEMCOMPONENTS, buildJsonObject { put("id", 2) }, mapOf("0" to JsonPrimitive("sword")))
 
-        assertEquals("""container {"id":2,"full":true,"entries":{"0":"sword"}}""", recorded.last())
+        assertEquals("""itemcomponents {"id":2,"full":true,"entries":{"0":"sword"}}""", recorded.last())
     }
 
     @Test
     fun `offerEntries records an empty first snapshot`() {
-        log.offerEntries("nametags", JsonObject(emptyMap()), emptyMap())
+        log.offerEntries(RawRecord.SKULLS, JsonObject(emptyMap()), emptyMap())
 
-        assertEquals(listOf("""nametags {"full":true,"entries":{}}"""), recorded)
+        assertEquals(listOf("""skulls {"full":true,"entries":{}}"""), recorded)
     }
 
     @Test
@@ -69,11 +69,11 @@ class ChangeLogTest {
         val blocks = LinkedHashMap<String, JsonElement>()
         blocks["1,2,3"] = JsonPrimitive("minecraft:end_portal_frame[eye=false]")
         blocks["4,5,6"] = JsonPrimitive("minecraft:obsidian")
-        log.offerEntries("blockstates", header, blocks)
+        log.offerEntries(RawRecord.BLOCKSTATES, header, blocks)
         blocks.clear()
         blocks["1,2,3"] = JsonPrimitive("minecraft:end_portal_frame[eye=true]")
-        log.offerEntries("blockstates", header, blocks)
-        log.offerEntries("blockstates", header, blocks)
+        log.offerEntries(RawRecord.BLOCKSTATES, header, blocks)
+        log.offerEntries(RawRecord.BLOCKSTATES, header, blocks)
 
         assertEquals(
             listOf(
@@ -86,9 +86,9 @@ class ChangeLogTest {
 
     @Test
     fun `offerChanges records everything first, then only what the caller says changed`() {
-        log.offerChanges("entities", mapOf("1" to JsonPrimitive("zombie"), "2" to JsonPrimitive("pig")))
-        log.offerChanges("entities", emptyMap())
-        log.offerChanges("entities", mapOf("1" to JsonPrimitive("husk"), "2" to JsonNull))
+        log.offerChanges(RawRecord.ENTITIES, mapOf("1" to JsonPrimitive("zombie"), "2" to JsonPrimitive("pig")))
+        log.offerChanges(RawRecord.ENTITIES, emptyMap())
+        log.offerChanges(RawRecord.ENTITIES, mapOf("1" to JsonPrimitive("husk"), "2" to JsonNull))
 
         assertEquals(
             listOf(
@@ -101,7 +101,7 @@ class ChangeLogTest {
 
     @Test
     fun `offerChanges records an empty first offer`() {
-        log.offerChanges("entities", emptyMap())
+        log.offerChanges(RawRecord.ENTITIES, emptyMap())
 
         assertEquals(listOf("""entities {"full":true,"entries":{}}"""), recorded)
     }

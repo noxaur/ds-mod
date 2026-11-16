@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit
 /** A capture file that lacks records, because the writer failed on one or did not finish in time. */
 class CaptureIncompleteException(message: String, cause: Throwable? = null) : IOException(message, cause)
 
-/** The `type` of every line that holds a [GameEvent]. Any other type is a raw record that only a reader of the file uses. */
-private val eventTypes = GameEvent.serializer().descriptor.getElementDescriptor(1).let { subclasses ->
+/** The `type` of every line that holds a [GameEvent]. Every other type is a [RawRecord]. */
+val eventTypes = GameEvent.serializer().descriptor.getElementDescriptor(1).let { subclasses ->
     (0 until subclasses.elementsCount).map(subclasses::getElementName).toSet()
 }
 
@@ -47,10 +47,9 @@ class CaptureWriter(
     fun record(time: Long, event: GameEvent) = write { captureLine(time, event) }
 
     /** Records raw data that no [GameEvent] carries yet. */
-    fun record(type: String, data: () -> JsonObject) {
-        check(type !in eventTypes) { "'$type' is a GameEvent. Post it to Game, and the capture records it from there." }
+    fun record(type: RawRecord, data: () -> JsonObject) {
         val time = clock()
-        write { line(time, type, data()) }
+        write { line(time, type.type, data()) }
     }
 
     private fun write(line: () -> String) {

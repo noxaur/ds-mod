@@ -37,11 +37,13 @@ All of them run in `mise run check`, except the game tests and the CI rules.
 | A fixture holds no player name from a capture on this machine, and an alias wherever a player's name stands | `FixtureLeakTest` |
 | Every feature shows what its transcript says | `FeatureReplayTest` replays each feature's fixtures |
 | A feature that reads nothing from the server has a game test | `FeatureReplayTest` |
+| Every feature class is listed in `features()` | `FeaturesListedTest` reads the compiled classes |
 | Every feature has a section in the player docs | `RulesTest` |
 | Every saved setting has exactly one row in `SettingsTree`, or is listed as stored only with a reason, and every row has its own id, a Title Case name of three words or fewer and a one-sentence description | `SettingsTreeTest` |
 | The kit gallery shows every kind of settings row and every look a pick draws | `KitTest` |
 | A setting's description in `SettingsTree` is short enough that the settings screen shows it at full size | `RulesTest` |
 | A saved setting keeps its key in the config file, so a player who updates keeps what they set | `ConfigFileTest` loads a file 0.1.0 wrote and checks every value |
+| A feature's saved state is immutable and has a default for every field, so a change is written and an older save loads | `SavedStateTest` walks every feature's `state` |
 | A feature's handler and readout average under 20µs | `FeatureReplayTest` |
 | A capture type has one producer | `CaptureWriter` rejects a raw record with an event's type |
 | The jars a player installs boot and open settings | `runProdClientGameTest` |
@@ -61,6 +63,7 @@ All of them run in `mise run check`, except the game tests and the CI rules.
 | Backend code is formatted, type-safe and passes lint with no warnings | `vp check` in `check:backend` |
 | Backend failures are modeled with Effect, not `try` | `dsmod/no-try` in `backend/lint/dsmod.js` |
 | `backend/src/` imports nothing from Void | `no-restricted-imports` in `backend/vite.config.ts` |
+| The memory stores and `routes/_store.ts` pass one contract, which has a case for every `Store` method | `storeContract` in `backend/test/contract.ts`, keyed by each store's methods so a missing case fails `tsc` |
 | Backend dependencies are at least 14 days old | `minimumReleaseAge` in `backend/pnpm-workspace.yaml` |
 | The website is type-safe | `tsc` with `strict` and the extra flags in `web/tsconfig.json` |
 | Website code is formatted | `vp fmt --check` in `web/package.json` |

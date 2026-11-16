@@ -4,11 +4,15 @@ import io.github.noxaur.dsmod.core.capture.PlayerNames
 import io.github.noxaur.dsmod.core.capture.Redactor
 import io.github.noxaur.dsmod.core.capture.captureLine
 import io.github.noxaur.dsmod.core.capture.readCaptureLine
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.feature.features
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.Sidebar
+import io.github.noxaur.dsmod.core.game.SidebarState
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
@@ -20,10 +24,13 @@ import kotlin.io.path.useLines
 
 /**
  * Cuts the events of one window out of [capture] into [fixture], redacted. [types] are the event types to keep,
- * and `container` keeps `slot` too. The fixture begins with the state at the window's start: the last tab list
- * and sidebar before it and the open container. A return to the player's inventory that keeps its slots is written
- * with every slot it kept, so a fixture never needs what came before it. A tab list inside the window is kept only when one of the [info] rows
- * changed, and every one is kept when there are none. A system line is kept when it matches [system], or always without one.
+ * and `container` keeps `slot` too. The tab list and the sidebar that tell [area], and each change of world, are kept
+ * whatever [types] says, because a fixture without them replays as if the player never left. The fixture begins with the state at the
+ * window's start: the last tab list and sidebar before it and the open container. A return to the player's inventory
+ * that keeps its slots is written with every slot it kept, so a fixture never needs what came before it. A tab list
+ * inside the window is kept only when one of the [info] rows or the area's row changed, and every one is kept when
+ * `tablist` is a type and there are no [info] rows. A sidebar inside the window is kept when `sidebar` is a type, and
+ * otherwise only when its place changed. A system line is kept when it matches [system], or always without one.
  * Returns the number of lines written and of players renamed.
  */
 fun cutFixture(
@@ -31,15 +38,24 @@ fun cutFixture(
     fixture: Path,
     seconds: ClosedFloatingPointRange<Double>,
     types: Set<String>,
+    area: Area,
     info: List<String> = emptyList(),
     system: Regex? = null,
 ): Pair<Int, Int> {
-    val kept = if ("container" in types) types + "slot" else types
+    val kept = types + buildSet {
+        if ("container" in types) add("slot")
+        if (area != Area.ANYWHERE) add("world")
+        if (area.key != null) add("tablist")
+        if (area.place != null) add("sidebar")
+    }
+    val rows = if ("tablist" in types) info + listOfNotNull(area.key) else listOfNotNull(area.key)
+    val everyTab = "tablist" in types && info.isEmpty()
     val redactor = Redactor(PlayerNames.of(capture))
     var origin = -1L
     var tab: TabList? = null
     var sidebar: Sidebar? = null
     var shown: List<String?>? = null
+    var place: String? = null
     // The open container and its slots, the player's own inventory as it was when another menu opened, and the
     // container and slots as the window starts.
     var open: ContainerOpened? = null
@@ -68,14 +84,27 @@ fun cutFixture(
                 if (event.kept) slots.putAll(inventory)
             }
             if (event is SlotChanged) if (event.item == null) slots.remove(event.slot) else slots[event.slot] = event.item!!
+            // `Game` forgets the tab list and the sidebar with the world, so the next world's rows must be written again.
+            if (event == WorldChanged) {
+                if (before) {
+                    tab = null
+                    sidebar = null
+                }
+                shown = null
+                place = null
+            }
             when {
                 event is TabList -> {
                     val state = TabState().apply { update(event.rows) }
-                    val values = info.map(state::info)
-                    if (before) tab = event else if (info.isEmpty() || values != shown) events += time to event
+                    val values = rows.map(state::info)
+                    if (before) tab = event else if (everyTab || values != shown) events += time to event
                     shown = values
                 }
-                event is Sidebar && before -> sidebar = event
+                event is Sidebar -> {
+                    val now = SidebarState().apply { update(event) }.place
+                    if (before) sidebar = event else if ("sidebar" in types || now != place) events += time to event
+                    place = now
+                }
                 event is ContainerOpened && !before -> {
                     events += time to event.copy(kept = false)
                     if (event.kept) slots.forEach { (slot, item) -> events += time to SlotChanged(slot, item) }
@@ -98,8 +127,8 @@ fun cutFixture(
 
 /**
  * `cutFixture <capture> <feature id> <name> <from>-<to> [--types a,b] [--info Key,Key] [--system regex]`
- * writes `src/test/resources/features/<feature id>/<name>.jsonl`. The window is in seconds from the capture's
- * first line, and `--types` defaults to `system,tablist`.
+ * writes `src/test/resources/features/<feature id>/<name>.jsonl`, keeping the rows that tell the feature's area. The
+ * window is in seconds from the capture's first line, and `--types` defaults to `system,tablist`.
  */
 fun main(args: Array<String>) {
     val (capture, feature, name, window) = args
@@ -110,6 +139,7 @@ fun main(args: Array<String>) {
         Path.of("src/test/resources/features/$feature/$name.jsonl"),
         from..to,
         (options["--types"] ?: "system,tablist").split(',').toSet(),
+        features(DsModConfig()).singleOrNull { it.id == feature }?.area ?: error("No feature has the id $feature."),
         options["--info"]?.split(',').orEmpty(),
         options["--system"]?.let(::Regex),
     )
