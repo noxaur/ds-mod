@@ -39,7 +39,7 @@ We can't compromise on these.
 
 ## Formal specs
 
-- When you change a state machine that has a spec, change the spec first and run TLC on it, then change the code.
+- When you change a state machine that has a spec, change the spec first, then the code. `mise run check` runs TLC on it.
 - Write a spec for a new feature only when it has interleaving states that a unit test can't enumerate. A parser or an overlay needs a test.
 
 ## Docs
