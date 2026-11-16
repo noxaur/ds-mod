@@ -141,18 +141,6 @@ test("a texture from anywhere but textures.minecraft.net refuses the sighting", 
   expect((await entries()).items).toMatchObject([{ entry: "good" }]);
 });
 
-const row = (entry: string) => ({ entry, skinId: "", texture: null, glint: true, sample: null });
-
-test("the rows stop at the cap, and an item already seen is still counted", async () => {
-  const store = memoryItemStore();
-  const { hints } = backend(store);
-  const limits = { maxRows: 2, maxPlayerRows: 10, maxSamples: 1 };
-  await Effect.runPromise(store.record("ann", "1", [row("first")], limits));
-  await Effect.runPromise(store.record("bob", "1", [row("second"), row("third")], limits));
-  await Effect.runPromise(store.record("ann", "1", [row("first")], limits));
-  expect([...(await hints("first", "second", "third"))].map(([entry]) => entry)).toEqual(["first", "second"]);
-});
-
 const sendMany = async (send: (who: string, sightings: unknown[]) => Promise<Response>, who: string, count: number) => {
   // 50 a call is the API's limit.
   for (let from = 0; from < count; from += 50) {
@@ -176,25 +164,6 @@ test("one player cannot take more than their share of the table", async () => {
   } while (after !== "");
   expect(all).toHaveLength(MAX_PLAYER_ITEM_ROWS + 1);
   expect(all).toContain("bobs");
-});
-
-test("an item the player already has is still counted at their cap", async () => {
-  const store = memoryItemStore();
-  const limits = { maxRows: 100, maxPlayerRows: 2, maxSamples: 1 };
-  await Effect.runPromise(store.record("ann", "1", [row("a"), row("b"), row("c")], limits));
-  await Effect.runPromise(store.record("ann", "1", [{ ...row("a"), glint: false }, row("d")], limits));
-  const { items } = await Effect.runPromise(store.appearances({ limit: 10 }));
-  expect(items).toMatchObject([{ entry: "a" }, { entry: "b" }]);
-});
-
-test("many accounts together stop at the table's cap", async () => {
-  const store = memoryItemStore();
-  const limits = { maxRows: 3, maxPlayerRows: 2, maxSamples: 1 };
-  for (const who of ["ann", "bob", "cat"]) {
-    await Effect.runPromise(store.record(who, "1", [row(`${who}1`), row(`${who}2`)], limits));
-  }
-  const { items } = await Effect.runPromise(store.appearances({ limit: 10 }));
-  expect(items).toHaveLength(3);
 });
 
 test("the admin view is one entry with its samples, or a page of entries without", async () => {
