@@ -14,7 +14,7 @@ The key's press comes from `KeyMapping.click`, the place the game counts presses
 
 The client sends the swing packet in `LocalPlayer.swing` before the game asks how long the swing lasts, and nothing that decides an attack reads the swing's progress, so Swing Speed changes only how the swing looks. It still slows or speeds the player's own arm in third person, because that arm reads the same progress. No Equip Reset holds the item up where the game would lower it, and the attack cooldown itself is left alone.
 
-The item is moved as the hand's pose is pushed, before any branch of the renderer runs, because eating and drinking put the item in the hand twice and a later hook would move it twice. It is scaled last, just before it is drawn, so it grows about the grip. Every swing style is the resting pose when the swing is at 0, as the game's own swing is, so a hand that is not swinging is the game's own whatever the style.
+The item is moved as the hand's pose is pushed, before any branch of the renderer runs, because eating and drinking put the item in the hand twice and a later hook would move it twice. It is turned and scaled last, just before it is drawn, so it turns and grows about the grip whatever the swing or a use did to it. Every swing style is the resting pose when the swing is at 0, as the game's own swing is, so a hand that is not swinging is the game's own whatever the style.
 
 `AnimationsTest` holds the defaults to the game's frame pixel for pixel. It turns off the vignette, which eases toward the light around the player for half a minute after a join and shades the whole frame, and the attack indicator, which a swing at the air starts.
 
@@ -42,4 +42,4 @@ The swap-hands key is not guarded. On dragsim.co it opens the server's menu and 
 
 ## Private fields are read through accessor mixins
 
-Minecraft keeps an open container's position and size on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the four fields, and the slot under the mouse. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on.
+Minecraft keeps an open container's position and size on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the four fields, and the slot under the mouse. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on. `ChatScreenAccessor`, `CommandSuggestionsAccessor` and `SuggestionsListAccessor` read where the command suggestions and a command's usage are drawn, which Drag In Chat leaves the mouse to.

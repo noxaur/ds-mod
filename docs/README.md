@@ -20,6 +20,7 @@ Internal docs record the decisions, the constraints and the traps that the code 
 - [Sign-in](internals/sign-in.md): why a player is their Minecraft account, and how the mod and the website sign in.
 - [Profiles](internals/profiles.md): how the backend looks players up and rebuilds item tooltips, and how the viewer draws them.
 - [UI](internals/ui.md): text roles, the layers, the kit and its themes, the HUD and world marks.
+- [Settings](internals/settings.md): how favorites and the settings key are built on MoulConfig's screen.
 - [Menus](internals/menus.md): how the server's menus are redrawn, and the controls Better UI adds to them.
 - [Input and the camera](internals/input.md): Free Look, Animations, Command Binds and Slot Lock, and where each meets Minecraft's input.
 - [Testing and CI](internals/testing.md): replay tests, the perf caps, game tests behind the developer, and CI's time limit.
