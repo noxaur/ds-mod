@@ -68,6 +68,15 @@ class CutFixtureTest {
     }
 
     @Test
+    fun `a name another capture beside it shows, where no rule finds it here, is refused`() {
+        dir.resolve("other.jsonl").writeLines(listOf(captureLine(0, say("Erin has obtained a thing"))))
+        val capture = capture(1 to tab(), 2 to say("Thanks Erin for the carry"))
+        val refused = runCatching { cut(capture, 0.0..10.0, setOf("system")) }.exceptionOrNull()
+        assertTrue(refused is IllegalStateException && "Erin" in refused.message.orEmpty(), "$refused")
+        assertFalse(dir.resolve("fixture.jsonl").toFile().exists())
+    }
+
+    @Test
     fun `names inside a boss summary and the player's own name are redacted`() {
         val capture = capture(
             1 to tab(),

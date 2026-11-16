@@ -155,6 +155,21 @@ object PlayerNames {
      */
     fun of(vararg captures: Path): Set<String> = learn(captures).let { (names, server) -> names.filterTo(HashSet()) { it !in server } }
 
+    /**
+     * Each of [names] that [text] holds anywhere. A fixture holds aliases, so a player who is called one cannot be told
+     * from it and is left out. A Minecraft name stands as one whole word, so reading the text's words once keeps this
+     * as fast with a thousand names as with ten.
+     */
+    fun leaked(names: Set<String>, text: String): Set<String> {
+        val (plain, other) = names.filterNot { it.matches(alias) }.partition { it.matches(word) }
+        val wanted = plain.toSet()
+        return word.findAll(text).map { it.value }.filter { it in wanted }.toSortedSet() +
+            other.filter { Regex("""(?<!\w)${Regex.escape(it)}(?!\w)""").containsMatchIn(text) }
+    }
+
+    /** The name [Redactor] gives a player in a fixture. */
+    val alias = Regex("""Player\d+""")
+
     /** Every name a rule finds where a player's name stands in [captures], those the server also writes as its own included. */
     fun found(vararg captures: Path): Set<String> = learn(captures).first
 

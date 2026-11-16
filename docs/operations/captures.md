@@ -64,4 +64,4 @@ cd mod
 
 `--types` picks the events to keep (`system,tablist` by default, and `container` brings its slots). For a feature locked to an area, it always keeps each change of world and the tab list rows and the sidebar place that tell the area, at the window's start and at each change. `--info` names the other tab list info rows the feature reads, so that only a change to one keeps a tab list. `--system` keeps only the system lines that match a regex. The command redacts player names, typed chat and skins.
 
-Run `mise run check:mod` before deleting the capture, because `FixtureLeakTest` looks for the capture's names in every fixture and has nothing to compare once the capture is gone. Then read the fixture: a name the server writes in a line no rule knows is not redacted, and the test sees neither that nor typed text.
+Read the fixture: a name the server writes in a line no rule knows is not redacted, and no check sees that or typed text.
