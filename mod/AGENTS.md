@@ -7,7 +7,6 @@ The Fabric mod, in Kotlin. Read the root `AGENTS.md` first.
 - `src/main` is the jar players install. `src/debug` holds what only a developer or an agent needs, and `runClient` loads both.
 - DragSim Utils is all rights reserved, and its source is published to be read. Learn from it what the server sends and how a feature should behave, then write ds-mod's own code and prove it with a capture. Copy no code and no data file from it. When a feature needs a table the game can't show, tell the user.
 - The server decides the Minecraft version, so bump it in `gradle.properties` only when the user asks. The release jar carries no library, for the reason in the [overview](../docs/internals/overview.md#the-release-jar-carries-no-library). Ask the user before adding one: it needs shading, a `relocate` line and a `NOTICE` entry.
-- After a change to `edge`, a screen or the build, run the game tests that cover it by name, as [Checks](../docs/operations/development.md#checks) says. The beta pipeline runs the whole suite.
 
 ## Skills
 

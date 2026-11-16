@@ -18,6 +18,7 @@ import java.util.UUID
 /**
  * A server lists fake players the way dragsim.co builds its tab list, and the real client sorts and draws them.
  * The mod's rows must match the order of the client's own private method, and the readouts must match the rows.
+ * Covers [io.github.noxaur.dsmod.edge.TabListPoller].
  */
 class TabListTest : FabricClientGameTest {
     /** A tab list entry that is not a player. It borrows a real connection, because the packet reads the latency from it. */

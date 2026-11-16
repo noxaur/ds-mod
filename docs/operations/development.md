@@ -51,14 +51,9 @@ Follow the [`feature` skill](../../mod/.claude/skills/feature/SKILL.md). A featu
 
 `mise run check` must pass. It runs `check:mod`, `check:backend`, `check:web` and `check:docs`, and each one runs alone too.
 
-When a change touches `edge` or a screen, also run the game tests that cover it. A run names its tests, and one that names none fails:
+A commit also runs the game tests that the mod's change since their last green run reaches, against the jars a player installs. `mise install` points git at `.githooks/`, whose `pre-commit` starts them, and `GameTestPick.kt` in `mod/src/debug/` says how a change reaches a test. The tests run behind the user, taking no keyboard focus and writing the game's sound to `audio.wav` in the run folder instead of the speakers. [Issue 19](https://github.com/noxaur/ds-mod/issues/19) lists the platforms where that is incomplete.
 
-```sh
-cd mod
-./gradlew runClientGameTest -Pgametests=ChatTest,KitTest
-```
-
-When a change touches the build, run `./gradlew runProdClientGameTest -Pgametests=SettingsScreenTest`, which loads the built jars the way a player does. Both run behind the user, taking no keyboard focus and writing the game's sound to `audio.wav` in the run folder instead of the speakers. [Issue 19](https://github.com/noxaur/ds-mod/issues/19) lists the platforms where that is incomplete.
+To run them by hand, `./gradlew runProdClientGameTest` picks them the same way, `-Pgametests=ChatTest,KitTest` names them, and `runClientGameTest` runs them on the debug build without building the jars.
 
 One test takes about 30 seconds, most of it booting the game. The whole suite takes minutes, so the beta pipeline runs it, and `-Pgametests=all` runs it here. Each test's time is in the log as `TestClock:`, and a test over 20 seconds fails the run. `PerfTest` writes its table to `build/run/prodClientGameTest/perf.md`.
 

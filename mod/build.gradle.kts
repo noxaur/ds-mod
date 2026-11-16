@@ -202,15 +202,33 @@ dependencies {
     productionRuntimeMods("maven.modrinth:modmenu:${property("modmenu_version")}") { isTransitive = false }
     "gametestImplementation"("maven.modrinth:modmenu:${property("modmenu_version")}") { isTransitive = false }
 }
-// A run names its tests, `-Pgametests=PerfTest,ChatTest`, or asks for every one with `-Pgametests=all`. The whole
-// suite takes minutes and an agent waits on each run, so it is for the beta pipeline, and a run that names none fails.
+// A run with no `-Pgametests` runs the tests that the change since its last green run reaches, as GameTestPick.kt
+// picks them, and the pre-commit hook starts one. `-Pgametests=PerfTest,ChatTest` names them, and `-Pgametests=all`
+// runs every one, which takes minutes, so it is for the beta pipeline.
 val gametests = providers.gradleProperty("gametests")
+val picked = layout.buildDirectory.file("gametests/picked")
+val pickGameTests = tasks.register<JavaExec>("pickGameTests") {
+    group = "verification"
+    description = "Picks the game tests that the change since the last green run reaches. See GameTestPick.kt."
+    classpath = sourceSets["debug"].runtimeClasspath
+    mainClass = "io.github.noxaur.dsmod.debug.GameTestPickKt"
+    args(projectDir.path, picked.get().asFile.path)
+    outputs.file(picked)
+    outputs.upToDateWhen { false }
+}
 tasks.named<ProcessResources>("processGametestResources") {
-    val only = gametests.map { it.split(",") }.filter { it != listOf("all") }.orNull
-    inputs.property("gametests", only ?: emptyList<String>())
-    if (only != null) {
+    val named = gametests.map { it.split(",") }.filter { it != listOf("all") }.orNull
+    val pick = picked.get().asFile.takeIf { !gametests.isPresent }
+    if (pick != null) {
+        dependsOn(pickGameTests)
+        inputs.file(picked)
+    } else {
+        inputs.property("gametests", named ?: emptyList<String>())
+    }
+    if (named != null || pick != null) {
         val manifest = destinationDir.resolve("fabric.mod.json")
         doLast {
+            val only = named ?: pick!!.readLines().filter(String::isNotBlank)
             @Suppress("UNCHECKED_CAST")
             val json = groovy.json.JsonSlurper().parse(manifest) as MutableMap<String, Any>
             val entrypoints = json["entrypoints"] as MutableMap<String, List<Map<String, String>>>
@@ -243,11 +261,16 @@ tasks.register<net.fabricmc.loom.task.prod.ClientProductionRunTask>("runProdClie
     // A CI runner has no display.
     useXVFB = providers.environmentVariable("CI").isPresent
 }
-// Checked on the resolved graph, so an abbreviated task name counts too, and before anything compiles.
-val named = gametests.isPresent
-gradle.taskGraph.whenReady {
-    if (!named && allTasks.any { it.name == "runClientGameTest" || it.name == "runProdClientGameTest" }) {
-        throw GradleException("Name the game tests that cover the change, as in -Pgametests=ChatTest,KitTest. Every test runs in the beta pipeline, and -Pgametests=all runs them here.")
+// A picked run is skipped when the change reaches no test. Only a green run on the jars a player installs keeps the
+// tree it ran on, so a debug run never lets a commit skip them.
+if (!gametests.isPresent) {
+    val pick = picked.get().asFile
+    val tree = pick.resolveSibling("tree")
+    val passed = pick.resolveSibling("passed")
+    tasks.matching { it.name == "runClientGameTest" || it.name == "runProdClientGameTest" }.configureEach {
+        dependsOn(pickGameTests)
+        onlyIf("the change reaches a game test") { pick.readLines().any(String::isNotBlank) }
+        if (name == "runProdClientGameTest") doLast { tree.copyTo(passed, overwrite = true) }
     }
 }
 
