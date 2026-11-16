@@ -5,18 +5,15 @@ import { storage } from "void/storage";
 
 import { itemSamples, itemSeen, itemTextures, requests, skips, submissions, unknowns } from "../db/schema.ts";
 import { RecordingRequest, RequestSpec } from "../src/contrib/model.ts";
-import { roomForUnknown, type Store } from "../src/contrib/store.ts";
+import type { Store } from "../src/contrib/store.ts";
 import { ItemSighting } from "../src/items/model.ts";
 import {
-  admit,
-  admitSamples,
   appearancesFrom,
   type EntryTally,
   fold,
   hintsFrom,
   type ItemStore,
   pageOf,
-  roomFor,
   type TextureTally,
 } from "../src/items/store.ts";
 import { type ProfileStore, WriteRefused } from "../src/profiles/store.ts";
@@ -63,13 +60,19 @@ export const contribStore: Store["Service"] = {
       ...(await db.select({ id: skips.requestId }).from(skips).where(eq(skips.userId, userId))),
       ...(await db.select({ id: submissions.requestId }).from(submissions).where(eq(submissions.userId, userId))),
     ]).pipe(Effect.map((rows) => rows.map((row) => row.id))),
-  insertSubmission: (row, capture) =>
+  insertSubmission: (row, capture, maxRuns) =>
     run(async () => {
       // The file first, so a row always has one: a run that counts towards filling a request is a run an agent can
-      // read. When the row is refused or never written, the file is left with no row, which nothing reads.
+      // read. When the row is refused or never written, the file is deleted, which nothing reads.
       await storage.put(`captures/${row.id}`, capture);
-      // The row's unique index is what stops one player's two uploads at once from both being kept.
-      const kept = await db.insert(submissions).values(row).onConflictDoNothing().returning({ id: submissions.id });
+      // One statement: the cap and the one-run-per-player index both decide here, so two uploads cannot both pass.
+      const kept = await db.all<{ id: string }>(sql`
+        INSERT INTO ${submissions} (id, request_id, user_id, mod_version, bytes, created_at)
+        SELECT ${row.id}, ${row.requestId}, ${row.userId}, ${row.modVersion}, ${row.bytes}, ${row.createdAt}
+        WHERE (SELECT count(*) FROM ${submissions} WHERE request_id = ${row.requestId}) < ${maxRuns}
+        ON CONFLICT DO NOTHING
+        RETURNING id
+      `);
       if (kept.length === 0) {
         await storage.delete(`captures/${row.id}`);
       }
@@ -90,26 +93,18 @@ export const contribStore: Store["Service"] = {
       return object === null ? null : new Uint8Array(await object.arrayBuffer());
     }),
   countUnknown: (unknown, maxRows) =>
-    run(async () => {
-      const counted = await db
-        .update(unknowns)
-        .set({ count: sql`${unknowns.count} + 1` })
-        .where(and(eq(unknowns.kind, unknown.kind), eq(unknowns.signature, unknown.signature)))
-        .returning({ kind: unknowns.kind });
-      if (counted.length > 0) {
-        return;
-      }
-      const [total] = await db.select({ rows: sql<number>`count(*)` }).from(unknowns);
-      if (roomForUnknown(total?.rows ?? 0, maxRows)) {
-        await db
-          .insert(unknowns)
-          .values({ ...unknown, count: 1 })
-          .onConflictDoUpdate({
-            target: [unknowns.kind, unknowns.signature],
-            set: { count: sql`${unknowns.count} + 1` },
-          });
-      }
-    }),
+    run(() =>
+      // A known signature is counted. A new one is inserted only while the table is under the cap. One statement,
+      // so two new signatures at once cannot both pass.
+      db.run(sql`
+        INSERT INTO ${unknowns} (kind, signature, sample, count, mod_version, first_seen)
+        SELECT ${unknown.kind}, ${unknown.signature}, ${unknown.sample}, 1, ${unknown.modVersion}, ${unknown.firstSeen}
+        WHERE EXISTS (
+          SELECT 1 FROM ${unknowns} WHERE kind = ${unknown.kind} AND signature = ${unknown.signature}
+        ) OR (SELECT count(*) FROM ${unknowns}) < ${maxRows}
+        ON CONFLICT(kind, signature) DO UPDATE SET count = count + 1
+      `),
+    ),
   unknowns: run(() => db.select().from(unknowns)),
 };
 
@@ -171,16 +166,6 @@ const talliesOf = async (entries: readonly string[]) => {
   return { found, textures };
 };
 
-/** How many rows a table has, counted to `cap` and no further, so a full table is not scanned for each request. */
-const cappedRows = (table: typeof itemSeen | typeof itemTextures, cap: number) =>
-  db.select({ rows: sql<number>`count(*)` }).from(
-    db
-      .select({ one: sql`1` })
-      .from(table)
-      .limit(cap)
-      .as("capped"),
-  );
-
 type Statements = Parameters<typeof db.batch>[0];
 
 /** Sends statements to D1 as one round trip that succeeds or fails whole. */
@@ -191,7 +176,91 @@ const batch = async (statements: Statements[number][]) => {
   }
 };
 
-/** The sightings in D1. The rules are in `items.ts` and `store.ts`, and this reads, then writes in one batch. */
+/**
+ * A new row is kept only while this player and the table are under their caps. A row that is already there is
+ * updated even when the table is full. The counts are read in the insert, so two reports cannot both pass them.
+ */
+const seenWrite = (userId: string, modVersion: string, limits: { maxRows: number; maxPlayerRows: number }) => {
+  return (entry: string, glint: boolean, plain: boolean) =>
+    db
+      .insert(itemSeen)
+      .select(
+        db
+          .select({
+            entry: sql`${entry}`.as("entry"),
+            userId: sql`${userId}`.as("user_id"),
+            glint: sql`${glint ? 1 : 0}`.as("glint"),
+            plain: sql`${plain ? 1 : 0}`.as("plain"),
+            modVersion: sql`${modVersion}`.as("mod_version"),
+          })
+          .from(sql`(select 1) as one`).where(sql`
+            EXISTS (SELECT 1 FROM ${itemSeen} WHERE entry = ${entry} AND user_id = ${userId})
+            OR (
+              (SELECT count(*) FROM ${itemSeen} WHERE user_id = ${userId}) < ${limits.maxPlayerRows}
+              AND (SELECT count(*) FROM ${itemSeen}) < ${limits.maxRows}
+            )
+          `),
+      )
+      .onConflictDoUpdate({
+        target: [itemSeen.entry, itemSeen.userId],
+        set: {
+          glint: sql`max(${itemSeen.glint}, excluded.glint)`,
+          plain: sql`max(${itemSeen.plain}, excluded.plain)`,
+          modVersion: sql`excluded.mod_version`,
+        },
+      });
+};
+
+const textureWrite = (userId: string, limits: { maxRows: number; maxPlayerRows: number }) => {
+  return (entry: string, skinId: string, texture: string) =>
+    db
+      .insert(itemTextures)
+      .select(
+        db
+          .select({
+            entry: sql`${entry}`.as("entry"),
+            userId: sql`${userId}`.as("user_id"),
+            skinId: sql`${skinId}`.as("skin_id"),
+            texture: sql`${texture}`.as("texture"),
+          })
+          .from(sql`(select 1) as one`).where(sql`
+            EXISTS (SELECT 1 FROM ${itemSeen} WHERE entry = ${entry} AND user_id = ${userId})
+            AND (
+              EXISTS (
+                SELECT 1 FROM ${itemTextures}
+                WHERE entry = ${entry} AND user_id = ${userId} AND skin_id = ${skinId}
+              )
+              OR (
+                (SELECT count(*) FROM ${itemTextures} WHERE user_id = ${userId}) < ${limits.maxPlayerRows}
+                AND (SELECT count(*) FROM ${itemTextures}) < ${limits.maxRows}
+              )
+            )
+          `),
+      )
+      .onConflictDoUpdate({
+        target: [itemTextures.entry, itemTextures.userId, itemTextures.skinId],
+        set: { texture: sql`excluded.texture` },
+      });
+};
+
+const sampleWrite = (userId: string, maxSamples: number) => (entry: string, sample: ItemSighting) =>
+  db
+    .insert(itemSamples)
+    .select(
+      db
+        .select({
+          entry: sql`${entry}`.as("entry"),
+          userId: sql`${userId}`.as("user_id"),
+          sample: sql`${JSON.stringify(sample)}`.as("sample"),
+        })
+        .from(sql`(select 1) as one`).where(sql`
+          EXISTS (SELECT 1 FROM ${itemSeen} WHERE entry = ${entry} AND user_id = ${userId})
+          AND (SELECT count(*) FROM ${itemSamples} WHERE entry = ${entry}) < ${maxSamples}
+        `),
+    )
+    .onConflictDoNothing();
+
+/** The sightings in D1. The rules are in `items.ts` and `store.ts`, and each cap is decided inside one write batch. */
 export const itemStore: ItemStore["Service"] = {
   record: (userId, modVersion, observations, limits) =>
     run(async () => {
@@ -199,85 +268,15 @@ export const itemStore: ItemStore["Service"] = {
       if (folded.length === 0) {
         return;
       }
-      // At most 50 entries in a request, so one statement holds them all.
-      const entries = folded.map(({ entry }) => entry);
-      const textured = folded.some(({ textures }) => textures.size > 0);
-      const [have, yours, haveTextures, yourTextures, sampled] = await db.batch([
-        db
-          .select({ entry: itemSeen.entry })
-          .from(itemSeen)
-          .where(and(eq(itemSeen.userId, userId), inArray(itemSeen.entry, entries))),
-        db
-          .select({ rows: sql<number>`count(*)` })
-          .from(itemSeen)
-          .where(eq(itemSeen.userId, userId)),
-        db
-          .select({ entry: itemTextures.entry, skinId: itemTextures.skinId })
-          .from(itemTextures)
-          .where(and(eq(itemTextures.userId, userId), inArray(itemTextures.entry, entries))),
-        db
-          .select({ rows: sql<number>`count(*)` })
-          .from(itemTextures)
-          .where(eq(itemTextures.userId, userId)),
-        db
-          .select({ entry: itemSamples.entry, rows: sql<number>`count(*)` })
-          .from(itemSamples)
-          .where(inArray(itemSamples.entry, entries))
-          .groupBy(itemSamples.entry),
-      ]);
-      const seenKeys = new Set(have.map(({ entry }) => entry));
-      const textureKeys = new Set(haveTextures.map(({ entry, skinId }) => `${entry}\n${skinId}`));
-      const sampleRows = new Map(sampled.map(({ entry, rows }) => [entry, rows]));
-      const wantsRow = folded.some(({ entry }) => !seenKeys.has(entry));
-      const wantsTexture =
-        textured &&
-        folded.some(({ entry, textures }) =>
-          [...textures.keys()].some((skin) => !textureKeys.has(`${entry}\n${skin}`)),
-        );
-      // The table-wide counts only matter when this request would add a row, and they stop at the cap.
-      const [everyone, everyoneTextures] = await Promise.all([
-        wantsRow ? cappedRows(itemSeen, limits.maxRows) : [{ rows: 0 }],
-        wantsTexture ? cappedRows(itemTextures, limits.maxRows) : [{ rows: 0 }],
-      ]);
-      const kept = admit(
-        folded,
-        ({ entry }) => seenKeys.has(entry),
-        roomFor(limits, yours[0]?.rows ?? 0, everyone[0]?.rows ?? 0),
-      );
-      const wanted = kept.flatMap(({ entry, textures }) =>
-        [...textures].map(([skinId, texture]) => ({ entry, skinId, texture })),
-      );
-      const keptTextures = admit(
-        wanted,
-        ({ entry, skinId }) => textureKeys.has(`${entry}\n${skinId}`),
-        roomFor(limits, yourTextures[0]?.rows ?? 0, everyoneTextures[0]?.rows ?? 0),
-      );
+      const seen = seenWrite(userId, modVersion, limits);
+      const texture = textureWrite(userId, limits);
+      const sample = sampleWrite(userId, limits.maxSamples);
       await batch([
-        ...kept.map(({ entry, glint, plain }) =>
-          db
-            .insert(itemSeen)
-            .values({ entry, userId, glint: glint ? 1 : 0, plain: plain ? 1 : 0, modVersion })
-            .onConflictDoUpdate({
-              target: [itemSeen.entry, itemSeen.userId],
-              set: {
-                glint: sql`max(${itemSeen.glint}, ${glint ? 1 : 0})`,
-                plain: sql`max(${itemSeen.plain}, ${plain ? 1 : 0})`,
-                modVersion,
-              },
-            }),
+        ...folded.map(({ entry, glint, plain }) => seen(entry, glint, plain)),
+        ...folded.flatMap(({ entry, textures }) =>
+          [...textures].map(([skinId, value]) => texture(entry, skinId, value)),
         ),
-        ...keptTextures.map(({ entry, skinId, texture }) =>
-          db
-            .insert(itemTextures)
-            .values({ entry, userId, skinId, texture })
-            .onConflictDoUpdate({
-              target: [itemTextures.entry, itemTextures.userId, itemTextures.skinId],
-              set: { texture },
-            }),
-        ),
-        ...admitSamples(kept, (entry) => sampleRows.get(entry) ?? 0, limits.maxSamples).map(({ entry, sample }) =>
-          db.insert(itemSamples).values({ entry, userId, sample }).onConflictDoNothing(),
-        ),
+        ...folded.flatMap(({ entry, sample: kept }) => (kept === null ? [] : [sample(entry, kept)])),
       ]);
     }),
   appearances: ({ entry, after, limit }) =>
