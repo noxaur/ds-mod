@@ -31,7 +31,8 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 
 /**
- * What a call to the backend failed on. [status] is the HTTP status, or null when the backend could not be reached.
+ * What a call to the backend failed on. [status] is the HTTP status, or null when the backend could not be reached or
+ * something else answers at its address.
  * [tag] is the `_tag` of the error's body, which tells apart failures that share a status, and is null when the body
  * had none, as when a proxy answered.
  */
@@ -257,7 +258,10 @@ class Backend(private val url: String, private val identity: Identity, private v
 
     private fun signIn(): String {
         val challenge = reach { http.send(auth("/api/auth/minecraft/challenge", "{}"), BodyHandlers.ofString()) }
-        if (challenge.statusCode() != 200) throw BackendException(challenge.statusCode(), "The backend would not start a sign-in.")
+        // Every ds-mod backend has this route, so a 404 means something else holds the address, such as another
+        // project's dev server on the port. Read as a status, it would blame a request the player never made.
+        if (challenge.statusCode() == 404) throw BackendException(null, "Nothing at $origin answers as the ds-mod backend.")
+        if (challenge.statusCode() != 200) throw BackendException(challenge.statusCode(), "The backend answered ${challenge.statusCode()} to a sign-in.")
         val serverId = json.parseToJsonElement(challenge.body()).jsonObject.getValue("serverId").jsonPrimitive.content
         try {
             identity.join(serverId)
@@ -267,7 +271,7 @@ class Backend(private val url: String, private val identity: Identity, private v
         val verify = reach {
             http.send(auth("/api/auth/minecraft/verify", buildJsonObject { put("name", identity.name); put("serverId", serverId) }.toString()), BodyHandlers.ofString())
         }
-        if (verify.statusCode() != 200) throw BackendException(verify.statusCode(), "The backend did not accept the sign-in.")
+        if (verify.statusCode() != 200) throw BackendException(verify.statusCode(), "The backend answered ${verify.statusCode()} to the account's proof.")
         return json.parseToJsonElement(verify.body()).jsonObject.getValue("token").jsonPrimitive.content.also { token = it }
     }
 
