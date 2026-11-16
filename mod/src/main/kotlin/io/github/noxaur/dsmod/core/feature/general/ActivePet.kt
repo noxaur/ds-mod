@@ -79,8 +79,14 @@ class ActivePet(
         on<ContainerOpened> { _, _ -> menuSlot = -1 }
         on<SlotChanged> { event, _ ->
             if (container.title?.plain != PetCard.MENU) return@on
-            if (event.slot == menuSlot) menuSlot = -1
-            val card = event.item?.let(PetCard::of) ?: return@on
+            val card = event.item?.let(PetCard::of)
+            if (event.slot == menuSlot && card == null) {
+                menuSlot = -1
+                // The active pet's item turning into a summon button is a despawn, which a dungeon's sidebar would not say.
+                // Another pet's item there is the menu turning a page.
+                if (event.item?.name?.plain?.let(Pet::nameOf) == pet?.name) set(null)
+            }
+            if (card == null) return@on
             menuSlot = event.slot
             card.unread?.let(::unparsed)
             val name = card.pet.name
@@ -89,7 +95,9 @@ class ActivePet(
             remember(name) {
                 it.copy(icon = PetIcon(card.icon.id, card.icon.skin, card.icon.model), held = card.held, rarity = card.pet.rarity, maxLevel = card.pet.level.takeIf { card.progress?.max == true })
             }
-            if (pet?.name != name) set(card.pet) else block = null
+            // The menu is as live as the sidebar, and the only word on the level where a dungeon's sidebar names no pet.
+            set(card.pet)
+            block = null
         }
         on<PetNear> { event, _ ->
             val name = Pet.nameOf(event.name.plain) ?: return@on

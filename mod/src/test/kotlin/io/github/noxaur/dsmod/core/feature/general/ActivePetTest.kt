@@ -134,6 +134,21 @@ class ActivePetTest {
     }
 
     @Test
+    fun `in a dungeon, despawning the pet in the menu hides it, and turning a page does not`() {
+        post(pet(), dungeon(), *menu(13 to card()))
+        post(SlotChanged(13, other("Wolf")))
+        assertEquals("[Lvl 100] Black Cat", rows()?.first())
+        post(SlotChanged(13, card()), SlotChanged(13, other("Black Cat")))
+        assertNull(hud())
+    }
+
+    @Test
+    fun `in a dungeon, the menu brings the level the pet reached, with its XP`() {
+        post(pet(level = 37), dungeon(), *menu(13 to card(level = 38, progress = arrayOf("", "10%"))))
+        assertEquals(listOf("[Lvl 38] Black Cat", "Item: Gold Claws", "XP: 10%"), rows())
+    }
+
+    @Test
     fun `the pet stays across a world change, through the blank sidebar between worlds`() {
         post(pet(), WorldChanged, Sidebar())
         assertEquals("[Lvl 100] Black Cat", rows()?.first())

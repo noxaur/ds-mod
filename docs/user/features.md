@@ -76,7 +76,7 @@ Shows the armor you wear and your pet as a row of icons on the HUD, with each he
 
 ### Active Pet
 
-Shows the pet you have out on the HUD: its head, its name and level in the color of its rarity, the pet item it holds, and how far it is to its next level, or MAX LEVEL. It is off until you turn it on. The name and level follow the sidebar, so they change the moment you summon another pet or it levels up, and the block goes when the sidebar says Pet: None. A dungeon's sidebar names no pet, so the last one stays there.
+Shows the pet you have out on the HUD: its head, its name and level in the color of its rarity, the pet item it holds, and how far it is to its next level, or MAX LEVEL. It is off until you turn it on. The name and level follow the sidebar, so they change the moment you summon another pet or it levels up, and the block goes when the sidebar says Pet: None. A dungeon's sidebar names no pet, so there the block follows chat and the Pets menu: a summon in chat or the menu switches it, and despawning in the menu takes it away.
 
 Open the Pets menu once to fill in the rest: the head and the held item are kept for each pet after that, even across restarts, and change when chat says you gave your pet another item. The XP is read each time you open the menu, and goes after a level up until you open it again. Until then the head is that of your pet floating beside you. Open the chat and point at the head to read its tooltip.
 
