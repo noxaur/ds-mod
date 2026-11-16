@@ -108,13 +108,28 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
     }
 
     /** Forgets where the player put [id], so it goes back to the stack at its own scale of 1. */
-    fun reset(id: String) {
-        settings.positions.remove(id)
+    fun reset(id: String) = put(id, null)
+
+    fun isPlaced(id: String) = id in settings.positions
+
+    /** Where the player put [id], or null where it stacks, for an editor to put back with [put]. */
+    fun saved(id: String) = settings.positions[id]
+
+    /** Puts [id] back where [position] says, or back in the stack for null, as Escape during a drag does. */
+    fun put(id: String, position: Position?) {
+        if (position == null) settings.positions.remove(id) else settings.positions[id] = position
+        replace()
+    }
+
+    /** Places every block again, after the saved places changed from outside, such as a reset in the settings. */
+    fun replace() {
         handed.fill(-1)
         push()
     }
 
-    fun isPlaced(id: String) = id in settings.positions
+    /** The scaled screen the HUD is placed on, in GUI pixels. */
+    val screenWidth get() = width
+    val screenHeight get() = height
 
     /** The block's own scale, before the HUD's. */
     fun scale(id: String) = settings.positions[id]?.scale ?: 1f

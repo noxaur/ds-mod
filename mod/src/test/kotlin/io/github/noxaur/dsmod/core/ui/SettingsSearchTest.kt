@@ -102,7 +102,7 @@ class SettingsSearchTest {
         val tree = SettingsTree.sections(DsModConfig())
         assertTrue(SettingsSearch.hits(tree, "rarity").any { hit -> hit.group.name == "Rarity Marks" })
         val halo = SettingsSearch.hits(tree, "halo").single()
-        assertEquals(setOf("customLook"), halo.open)
+        assertEquals(setOf("customLook", "hotbarMarks"), halo.open, "both the inventory's own look and the hotbar's have the fill")
     }
 
     private fun marked(text: String, query: String) =

@@ -2,17 +2,21 @@ package io.github.noxaur.dsmod.edge
 
 import io.github.notenoughupdates.moulconfig.common.IMinecraft
 import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
+import io.github.noxaur.dsmod.core.config.Canvas
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.Panel
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.WorldChanged
+import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
 import io.github.noxaur.dsmod.edge.contribute.Contribute
 import io.github.noxaur.dsmod.edge.profile.Profiles
+import io.github.noxaur.dsmod.edge.ui.Editors
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.Looks
 import net.fabricmc.api.ClientModInitializer
@@ -81,17 +85,11 @@ object DsModClient : ClientModInitializer {
     /** Each of the mod's own screens goes back to the screen it was opened over, so a button in the settings returns there. */
     fun openBeaconEditor() = Minecraft.getInstance().let { it.setScreenAndShow(BeaconScreen(config.instance.end, it.gui.screen(), config::saveToFile)) }
 
-    fun openTabEditor() =
-        Minecraft.getInstance().let { it.setScreenAndShow(TabEditorScreen(config.instance.betterUi, it.gui.screen(), config::saveToFile)) }
-
-    fun openBindsEditor() =
-        Minecraft.getInstance().let { it.setScreenAndShow(CommandBindsScreen(config.instance.general, it.gui.screen(), config::saveToFile)) }
+    /** Opens ds-mod's own settings at the row [id] over the screen shown now, which Done goes back to. */
+    fun openOwnSettings(id: String) = Minecraft.getInstance().let { it.setScreenAndShow(SettingsScreen(it.gui.screen(), reveal = id)) }
 
     fun openHudEditor() =
         Minecraft.getInstance().let { it.setScreenAndShow(HudEditorScreen(readouts, config.instance.hud, it.gui.screen(), config::saveToFile)) }
-
-    fun openRarityStyle() =
-        Minecraft.getInstance().let { it.setScreenAndShow(RarityStyleScreen(config.instance.inventory, it.gui.screen(), config::saveToFile)) }
 
     override fun onInitializeClient() {
         config = ManagedConfig.create(
@@ -120,11 +118,14 @@ object DsModClient : ClientModInitializer {
         sidebars = SidebarPoller(game)
         containers = ContainerPoller(game)
         pets = PetPoller(game)
+        Editors.register(Canvas.HUD_LAYOUT) { panel, host -> @Suppress("UNCHECKED_CAST") HudLayoutEditor(panel as Panel<Map<String, DsModConfig.Position>>, readouts, host) }
+        Editors.register(Canvas.MENU_TABS) { panel, host -> @Suppress("UNCHECKED_CAST") TabPlacesEditor(panel as Panel<List<MenuTab>>, host) }
         config.instance.hud.edit = Runnable { openHudEditor() }
         config.instance.end.editBeam = Runnable { openBeaconEditor() }
-        config.instance.betterUi.editTabs = Runnable { openTabEditor() }
-        config.instance.general.editBinds = Runnable { openBindsEditor() }
-        config.instance.inventory.editRarityStyle = Runnable { openRarityStyle() }
+        // MoulConfig's buttons for the lists open ds-mod's own settings, where each is edited inline.
+        config.instance.betterUi.editTabs = Runnable { openOwnSettings("tabs") }
+        config.instance.general.editBinds = Runnable { openOwnSettings("binds") }
+        config.instance.inventory.editRarityStyle = Runnable { openOwnSettings("hotbarMatches") }
         config.instance.contribute.open = Runnable { Contribute.open() }
         Recorder.register()
         Recording.register()

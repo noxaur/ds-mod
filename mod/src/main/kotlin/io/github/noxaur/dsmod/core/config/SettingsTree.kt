@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.container.Fill
 import io.github.noxaur.dsmod.core.container.Floor
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
+import io.github.noxaur.dsmod.core.input.CommandBinds
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Look
 import kotlin.reflect.KMutableProperty0
@@ -53,17 +54,8 @@ class Groups {
  * `SettingsTreeTest` fails on a saved field that no row reaches and that [STORED] does not name.
  */
 object SettingsTree {
-    /** Saved fields that no row edits, each with the reason. */
-    val STORED = mapOf(
-        "General.binds" to "Edited on the Command Binds screen.",
-        "General.bindGroups" to "Edited on the Command Binds screen.",
-        "General.collapsedGroups" to "Edited on the Command Binds screen.",
-        "General.offGroups" to "Edited on the Command Binds screen.",
-        "BetterUi.tabs" to "Edited on the tab editor.",
-        "Hud.positions" to "Edited on the Move HUD screen.",
-        "Inventory.hotbarStyle" to "Edited on the Rarity Style screen, as is whether it follows the inventory's.",
-        "Inventory.hotbarMatches" to "Edited on the Rarity Style screen.",
-    )
+    /** Saved fields that no row edits, each with the reason. Every saved field has a row now. */
+    val STORED = emptyMap<String, String>()
 
     private val fresh by lazy { declare(DsModConfig()) }
 
@@ -127,8 +119,18 @@ object SettingsTree {
                 val g = c.general
                 group(null) {
                     val binds = switch(g::commandBinds, "Command Binds", "Send a command, such as /warp end, with a key or a few keys.")
-                    action(g::editBinds, "Edit Binds", "Add your binds, pick their keys and choose where each works.", button = "Edit", dependsOn = binds)
                     number(g::sequenceGap, "Sequence Gap", "Set how many milliseconds a key sequence waits for its next key.", 50f..1000f, step = 50f, unit = " ms", dependsOn = binds)
+                    val list = Bind(
+                        "General.binds",
+                        { Grouped(g.binds, g.bindGroups, g.collapsedGroups, g.offGroups) },
+                        {
+                            g.binds = it.items
+                            g.bindGroups = it.groups
+                            g.collapsedGroups = it.folded
+                            g.offGroups = it.off
+                        },
+                    ).spanning("General.bindGroups", "General.collapsedGroups", "General.offGroups")
+                    items(list, "Binds", "Name each bind, pick its keys and choose where it works.", CommandBinds, dependsOn = binds)
                 }
             }
             section("Interface", Role.MUTED) {
@@ -140,7 +142,14 @@ object SettingsTree {
                 group("HUD") {
                     number(hud::scale, "Scale", "Make every HUD block bigger or smaller.", 0.5f..3f, step = 0.25f, unit = "x", id = "hudScale")
                     switch(hud::background, "Background", "Show a dark plate behind the HUD, so it reads over a bright world.", id = "hudBackground")
-                    action(hud::edit, "Move HUD", "Drag a block to move it, and scroll over it to resize it.", button = "Move", id = "moveHud")
+                    val positions = Bind("Hud.positions", { HashMap(hud.positions) }, {
+                        hud.positions.clear()
+                        hud.positions.putAll(it)
+                    })
+                    panel(positions, "Layout", "Drag a block to move it, and scroll over it to resize it.", Canvas.HUD_LAYOUT, id = "hudLayout") {
+                        if (it.isEmpty()) "Stacked" else if (it.size == 1) "1 block moved" else "${it.size} blocks moved"
+                    }
+                    action(hud::edit, "Move HUD", "Move your HUD over the game, with the world behind it.", button = "Move", id = "moveHud")
                 }
                 group("Equipment Display", switch = toggle(g::equipmentDisplay, "Equipment Display", "Show your armor and pet on the HUD.")) {
                     order(g::equipmentPieces, "Pieces", "Pick the pieces to show, and drag them into order.")
@@ -184,8 +193,30 @@ object SettingsTree {
                         switch(part("gem", { it.gem }) { copy(gem = it) }, "Gem", "Put a small gem over the item's top-left corner.")
                     }
                     switch(inv::markCommon, "Common Items", "Mark common items too.")
-                    switch(inv::hotbarMarks, "Hotbar", "Mark your hotbar as well.")
-                    action(inv::editRarityStyle, "Edit Style", "Build your own look for the marks, on your own items.", button = "Edit")
+                    switch(inv::hotbarMarks, "Hotbar", "Mark your hotbar as well.") {
+                        // Unmatching starts the hotbar's own look from what it showed, so nothing jumps.
+                        val match = Bind("Inventory.hotbarMatches", { inv.hotbarMatches }) {
+                            if (!it && inv.hotbarMatches) inv.hotbarStyle = inv.containerStyle()
+                            inv.hotbarMatches = it
+                        }
+                        switch(match, "Match Inventory", "Mark the hotbar in the same look as your inventory.")
+                        // A part shows the hotbar's look as it is, and makes it the hotbar's own, as Custom Look does for Style.
+                        fun <T> part(name: String, get: (SlotStyle) -> T, with: SlotStyle.(T) -> SlotStyle) =
+                            Bind("Inventory.hotbarStyle.$name", { get(inv.hotbarLook()) }) {
+                                inv.hotbarStyle = inv.hotbarLook().with(it)
+                                inv.hotbarMatches = false
+                            }
+                        pick(part("border", { it.border }) { copy(border = it) }, "Border", "Pick the ring around each hotbar slot.", Border.entries, id = "hotbarBorder", label = { it.label }) {
+                            Look.Slots(inv.hotbarLook().copy(border = it), 1)
+                        }
+                        pick(part("fill", { it.fill }) { copy(fill = it) }, "Fill", "Pick the color inside each hotbar slot.", Fill.entries, id = "hotbarFill", label = { it.label }) {
+                            Look.Slots(inv.hotbarLook().copy(fill = it), 1)
+                        }
+                        pick(part("floor", { it.floor }) { copy(floor = it) }, "Floor", "Pick what each hotbar item stands on.", Floor.entries, id = "hotbarFloor", label = { it.label }) {
+                            Look.Slots(inv.hotbarLook().copy(floor = it), 1)
+                        }
+                        switch(part("gem", { it.gem }) { copy(gem = it) }, "Gem", "Put a small gem over each hotbar item's corner.", id = "hotbarGem")
+                    }
                 }
                 group("Protection") {
                     switch(inv::slotLock, "Slot Lock", "Lock inventory slots and items so a misclick cannot move them.") {
@@ -209,7 +240,10 @@ object SettingsTree {
                 group("Better UI", switch = toggle(c.betterUi::enabled, "Better UI", "Turn everything below on or off at once.", id = "betterUi")) {
                     switch(c.betterUi::backButtons, "Back Buttons", "Add Go Back to menus without one, by resending your last command.")
                     switch(c.betterUi::menuTabs, "Menu Tabs", "Add tabs that send your commands, and a search, to every menu.") {
-                        action(c.betterUi::editTabs, "Edit Tabs", "Add, move and change your tabs.", button = "Edit")
+                        val ui = c.betterUi
+                        panel(Bind.of(ui::tabs), "Tabs", "Press a place to add a tab there, and drag a tab to move it.", Canvas.MENU_TABS, id = "tabs") {
+                            if (it.size == 1) "1 tab" else "${it.size} tabs"
+                        }
                     }
                 }
             }

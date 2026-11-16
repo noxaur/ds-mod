@@ -10,6 +10,7 @@ import io.github.noxaur.dsmod.core.ui.Place
 import io.github.noxaur.dsmod.core.ui.Scroll
 import io.github.noxaur.dsmod.core.ui.SettingsSearch
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
+import io.github.noxaur.dsmod.edge.ui.Editor
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitButton
@@ -64,6 +65,8 @@ class SettingsScreen(
     private val tabs: SettingsTabs = session,
     private val config: DsModConfig = DsModClient.settings,
     private val save: () -> Unit = DsModClient::saveSettings,
+    /** A row to open at, as a button elsewhere does that names the setting it edits. */
+    private var reveal: String? = null,
 ) : Screen(text { body("ds-mod") }.toComponent()) {
     private sealed class Item(val y: Int, val height: Int)
     private class Heading(
@@ -134,7 +137,25 @@ class SettingsScreen(
         contentWidth = (width - side - SIDES * 2).coerceAtMost(MAX_WIDTH)
         pane.view = height - BAR
         clear = null
+        reveal?.let(::goTo)
         show()
+        reveal?.let(rows::reveal)
+        reveal = null
+    }
+
+    /** Takes the selected tab to the section that holds the row [id], with the rows above it opened. */
+    private fun goTo(id: String) {
+        val section = sections.indexOfFirst { s -> s.walk().any { it.id == id } }.takeIf { it >= 0 } ?: return
+        fun path(rows: List<Setting>): List<String>? {
+            for (row in rows) {
+                if (row.id == id) return emptyList()
+                path(row.children)?.let { return listOf(row.id) + it }
+            }
+            return null
+        }
+        sections[section].groups.firstNotNullOfOrNull { path(it.rows) }?.let(opened::addAll)
+        keep()
+        if (tabs.current.place.section != section || tabs.current.place.searching) tabs.current.go(section)
     }
 
     /** Keeps where the selected tab's pane is, before the tab changes or the screen goes. */
@@ -359,6 +380,12 @@ class SettingsScreen(
         return rows.spot(id, entry)
     }
 
+    /** The editor of the row [id], told where the pane is, so a test can find its controls. */
+    fun editor(id: String): Editor? {
+        sync()
+        return rows.editor(id)
+    }
+
     /** Scrolls the pane to the row [id]. */
     fun reveal(id: String) {
         rows.reveal(id)
@@ -503,6 +530,7 @@ class SettingsScreen(
     // screen goes, which is also when it opens an editor, as MoulConfig's screen writes on close.
     override fun removed() {
         keep()
+        rows.dispose()
         save()
     }
 

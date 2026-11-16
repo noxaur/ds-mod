@@ -442,6 +442,9 @@ class DsModConfig : Config() {
         /** The style containers show: the preset's, or the player's own under Custom. */
         fun containerStyle(): SlotStyle = rarityPreset.style ?: inventoryStyle
 
+        /** The look the hotbar's marks are drawn in: the inventory's while they match, or the hotbar's own. */
+        fun hotbarLook(): SlotStyle = if (hotbarMatches) containerStyle() else hotbarStyle
+
         @Expose
         @ConfigOption(name = "Themed Menus", desc = "Draw menus and plain tooltips in the Theme under Interface.")
         @ConfigEditorBoolean

@@ -1,13 +1,15 @@
 package io.github.noxaur.dsmod.core.input
 
 import com.google.gson.annotations.Expose
+import io.github.noxaur.dsmod.core.config.Cell
+import io.github.noxaur.dsmod.core.config.ItemKind
 import io.github.noxaur.dsmod.core.game.Area
 
 /** Where a bind's keys work: with no screen open, in a menu such as a chest or the inventory, or in both. */
-enum class Where(val title: String) {
-    WORLD("In the World"),
-    MENUS("In Menus"),
-    BOTH("In Both"),
+enum class Where(val title: String, val short: String) {
+    WORLD("In the World", "World"),
+    MENUS("In Menus", "Menus"),
+    BOTH("In Both", "Both"),
     ;
 
     fun covers(at: Where) = this == BOTH || this == at
@@ -70,63 +72,55 @@ data class CommandBind(
     }
 }
 
-/** The rules over a list of binds. */
-object CommandBinds {
-    /** One line of the list as the player sees it: a group's heading, a bind under it, or the line of a group with none. */
-    sealed interface Entry {
-        data class Heading(val group: String) : Entry
+/**
+ * The rules over a list of binds, and what the settings' list of them shows: a line of a switch, a name, the
+ * command, the keys and where they work, with the area, the priority and how the keys are read under it.
+ */
+object CommandBinds : ItemKind<CommandBind> {
+    /** Anywhere, then each area a bind can be limited to. */
+    private val AREAS: List<Area?> = listOf(null) + (Area.entries - Area.ANYWHERE)
 
-        class Bind(val bind: CommandBind) : Entry
+    override val noun = "bind"
+    override val first = "General"
+    override val groupLength = BindShare.GROUP_LENGTH
 
-        data class Empty(val group: String) : Entry
-    }
+    override val cells: List<Cell<CommandBind>> = listOf(
+        Cell.Check("On", CommandBind::enabled) { b, on -> b.copy(enabled = on) },
+        Cell.Text("Name", CommandBind::name, { b, name -> b.copy(name = name) }, hint = "Name", max = CommandBind.MAX_LENGTH, width = 64),
+        Cell.Text("Command", CommandBind::command, { b, command -> b.copy(command = command) }, hint = "/warp end", max = CommandBind.MAX_LENGTH),
+        Cell.Keys("Keys", CommandBind::keys, { b, keys -> b.copy(keys = keys) }, CommandBind.MAX_KEYS, CommandBind::inOrder, width = 92),
+        Cell.Pick("Where", CommandBind::where, { b, where -> b.copy(where = where) }, Where.entries, Where::short, width = 42),
+    )
 
-    /**
-     * Each of [groups] as a heading followed by its binds in order, or by an empty line when it has none. The binds
-     * of a group in [collapsed] are left out. A bind of a group that is gone sits in the first.
-     */
-    fun entries(binds: List<CommandBind>, groups: List<String>, collapsed: Collection<String> = emptyList()): List<Entry> = groups.flatMap { group ->
-        val mine = binds.filter { home(it, groups) == group }
-        listOf(Entry.Heading(group)) + when {
-            group in collapsed -> emptyList()
-            mine.isEmpty() -> listOf(Entry.Empty(group))
-            else -> mine.map(Entry::Bind)
-        }
-    }
+    override val details: List<Cell<CommandBind>> = listOf(
+        Cell.Pick("Area", CommandBind::area, { b, area -> b.copy(area = area) }, AREAS, { it?.title ?: "Anywhere" }, width = 96),
+        Cell.Count("Priority", CommandBind::priority, { b, priority -> b.copy(priority = priority) }, -MAX_PRIORITY, MAX_PRIORITY),
+        Cell.Check("Other Keys Held Too", CommandBind::extraKeys) { b, on -> b.copy(extraKeys = on) },
+        Cell.Check("Keys in Order", CommandBind::inOrder) { b, on -> b.copy(inOrder = on) },
+    )
 
-    private fun home(bind: CommandBind, groups: List<String>) = if (bind.group in groups) bind.group else groups.first()
+    override fun group(item: CommandBind) = item.group
 
-    /**
-     * Moves [bind] to line [to] of the list as shown, where it joins the group whose heading is above it. A
-     * collapsed group's binds keep their order, and one moved onto its heading goes last in it. Returns the binds
-     * in the list's order, and the moved bind, which is a new one when its group changed.
-     */
-    fun move(binds: List<CommandBind>, groups: List<String>, collapsed: Collection<String>, bind: CommandBind, to: Int): Pair<List<CommandBind>, CommandBind> {
-        val shown = entries(binds, groups, collapsed).filterNot { it is Entry.Bind && it.bind === bind }.toMutableList()
-        val at = to.coerceIn(1, shown.size)
-        val heading = shown.subList(0, at).last { it is Entry.Heading } as Entry.Heading
-        val moved = if (bind.group == heading.group) bind else bind.copy(group = heading.group)
-        shown.add(at, Entry.Bind(moved))
-        val order = groups.flatMap { group ->
-            if (group in collapsed) {
-                binds.filter { it !== bind && home(it, groups) == group } + listOfNotNull(moved.takeIf { it.group == group })
-            } else {
-                val start = shown.indexOf(Entry.Heading(group))
-                shown.drop(start + 1).takeWhile { it !is Entry.Heading }.filterIsInstance<Entry.Bind>().map { it.bind }
-            }
-        }
-        return order to moved
-    }
+    override fun regroup(item: CommandBind, group: String) = item.copy(group = group)
 
-    /** [order] with [group] moved to place [to], counted among the groups after the first, which stays first. */
-    fun moveGroup(order: List<String>, group: String, to: Int): List<String> {
-        val rest = order - group
-        return rest.toMutableList().apply { add(to.coerceIn(0, rest.size), group) }
-    }
+    override fun blank(group: String) = CommandBind(group = group)
+
+    override fun title(item: CommandBind) = item.title
+
+    override fun on(item: CommandBind) = item.enabled
+
+    override fun switched(item: CommandBind, on: Boolean) = item.copy(enabled = on)
+
+    /** The other binds that [item] clashes with, in list order. */
+    override fun clashes(item: CommandBind, live: List<CommandBind>) = live.filter { it !== item && item.clashesWith(it) }
+
+    override fun encode(group: String, items: List<CommandBind>) = BindShare.encode(group, items)
+
+    override fun decode(text: String) = BindShare.decode(text)?.let { it.group to it.binds }
 
     /** The bind that sends when several could: the highest [CommandBind.priority], then the first listed. */
     fun first(binds: Iterable<CommandBind>): CommandBind? = binds.maxByOrNull { it.priority }
 
-    /** The other binds that [bind] clashes with, in list order. */
-    fun clashes(bind: CommandBind, binds: List<CommandBind>): List<CommandBind> = binds.filter { it !== bind && bind.clashesWith(it) }
+    /** The furthest a priority goes either way. */
+    const val MAX_PRIORITY = 9
 }

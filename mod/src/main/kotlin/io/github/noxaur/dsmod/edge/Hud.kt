@@ -13,6 +13,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.minecraft.client.AttackIndicatorStatus
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
@@ -283,66 +284,69 @@ object Hud {
         }
         HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, Identifier.fromNamespaceAndPath("dsmod", "hud")) { graphics, _ ->
             if (shown.isEmpty()) return@attachElementBefore
-            DsModClient.game.metrics.time("hud.draw") {
-                val font = Minecraft.getInstance().font
-                val line = font.lineHeight + 1
-                // The Inventory look matches the inventory screen, which Themed Menus draws with the kit, solid or as glass.
-                val themed = MenuSkin.themed
-                val glass = MenuSkin.glassAlpha
-                val pose = graphics.pose()
-                for (g in shown.indices) {
-                    val group = shown[g]
-                    pose.pushMatrix()
-                    pose.translate(group.x.toFloat(), group.y.toFloat())
-                    pose.scale(group.place.scale, group.place.scale)
-                    val plates = group.plates
-                    for (p in 0 until plates.size / 2) Kit.plate(graphics, 0, plates[p * 2], plate(group.width), plate(plates[p * 2 + 1]))
-                    var top = PADDING
-                    for (b in group.shown.indices) {
-                        val block = group.shown[b]
-                        val hotbar = block.look == HudLook.HOTBAR
-                        val inventory = block.look == HudLook.INVENTORY
-                        if (inventory) {
-                            when {
-                                glass >= 0 -> Kit.glass(graphics, PADDING, top, block.width, block.height, glass)
-                                themed -> Kit.panel(graphics, PADDING, top, block.width, block.height)
-                                else -> Kit.inventoryPanel(graphics, PADDING, top, block.width, block.height)
-                            }
-                        }
-                        if (block.header != null) graphics.text(font, block.header, PADDING, top, -1, true)
-                        for (r in block.rows.indices) {
-                            val row = block.rows[r]
-                            val y = top + row.y
-                            val stacks = row.stacks
-                            if (stacks != null) {
-                                if (hotbar) Kit.hotbar(graphics, PADDING, y, stacks.size)
-                                val across = across(block.look)
-                                val down = down(block.look)
-                                val pitch = pitch(block.look)
-                                for (i in stacks.indices) {
-                                    val x = PADDING + across + i * pitch
-                                    if (inventory) {
-                                        when {
-                                            glass >= 0 -> Kit.glassSlot(graphics, x - 1, y + down - 1)
-                                            themed -> Kit.slot(graphics, x - 1, y + down - 1)
-                                            else -> Kit.slotAt(graphics, x - 1, y + down - 1)
-                                        }
-                                    }
-                                    val stack = stacks[i] ?: continue
-                                    graphics.item(stack, x, y + down)
-                                    graphics.itemDecorations(font, stack, x, y + down)
-                                }
-                                continue
-                            }
-                            graphics.text(font, row.text, PADDING, y, -1, true)
-                            val bar = row.bar
-                            if (bar != null) Kit.bar(graphics, PADDING, y + line, BAR_WIDTH, bar.fraction, row.barColor)
-                        }
-                        top += block.height + BLOCK_GAP
+            DsModClient.game.metrics.time("hud.draw") { draw(graphics) }
+        }
+    }
+
+    /** Draws every block where it sits, as the game's HUD does each frame, and as the settings' layout draws it small. */
+    fun draw(graphics: GuiGraphicsExtractor) {
+        val font = Minecraft.getInstance().font
+        val line = font.lineHeight + 1
+        // The Inventory look matches the inventory screen, which Themed Menus draws with the kit, solid or as glass.
+        val themed = MenuSkin.themed
+        val glass = MenuSkin.glassAlpha
+        val pose = graphics.pose()
+        for (g in shown.indices) {
+            val group = shown[g]
+            pose.pushMatrix()
+            pose.translate(group.x.toFloat(), group.y.toFloat())
+            pose.scale(group.place.scale, group.place.scale)
+            val plates = group.plates
+            for (p in 0 until plates.size / 2) Kit.plate(graphics, 0, plates[p * 2], plate(group.width), plate(plates[p * 2 + 1]))
+            var top = PADDING
+            for (b in group.shown.indices) {
+                val block = group.shown[b]
+                val hotbar = block.look == HudLook.HOTBAR
+                val inventory = block.look == HudLook.INVENTORY
+                if (inventory) {
+                    when {
+                        glass >= 0 -> Kit.glass(graphics, PADDING, top, block.width, block.height, glass)
+                        themed -> Kit.panel(graphics, PADDING, top, block.width, block.height)
+                        else -> Kit.inventoryPanel(graphics, PADDING, top, block.width, block.height)
                     }
-                    pose.popMatrix()
                 }
+                if (block.header != null) graphics.text(font, block.header, PADDING, top, -1, true)
+                for (r in block.rows.indices) {
+                    val row = block.rows[r]
+                    val y = top + row.y
+                    val stacks = row.stacks
+                    if (stacks != null) {
+                        if (hotbar) Kit.hotbar(graphics, PADDING, y, stacks.size)
+                        val across = across(block.look)
+                        val down = down(block.look)
+                        val pitch = pitch(block.look)
+                        for (i in stacks.indices) {
+                            val x = PADDING + across + i * pitch
+                            if (inventory) {
+                                when {
+                                    glass >= 0 -> Kit.glassSlot(graphics, x - 1, y + down - 1)
+                                    themed -> Kit.slot(graphics, x - 1, y + down - 1)
+                                    else -> Kit.slotAt(graphics, x - 1, y + down - 1)
+                                }
+                            }
+                            val stack = stacks[i] ?: continue
+                            graphics.item(stack, x, y + down)
+                            graphics.itemDecorations(font, stack, x, y + down)
+                        }
+                        continue
+                    }
+                    graphics.text(font, row.text, PADDING, y, -1, true)
+                    val bar = row.bar
+                    if (bar != null) Kit.bar(graphics, PADDING, y + line, BAR_WIDTH, bar.fraction, row.barColor)
+                }
+                top += block.height + BLOCK_GAP
             }
+            pose.popMatrix()
         }
     }
 }

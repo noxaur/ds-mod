@@ -12,9 +12,16 @@ import kotlin.reflect.KProperty0
 
 /**
  * How a row reads and writes its value in `DsModConfig`. [field] names what it reaches, as `Class.field`, or
- * `Class.field.part` for a part of a value, so a test can check that every saved field has exactly one row.
+ * `Class.field.part` for a part of a value, and [also] any more fields one value spans, such as a list's groups, so
+ * a test can check that every saved field has exactly one row.
  */
 class Bind<T>(val field: String, val get: () -> T, val set: (T) -> Unit) {
+    var also: List<String> = emptyList()
+        private set
+
+    /** Names the other saved [fields] this one value spans. */
+    fun spanning(vararg fields: String) = apply { also = fields.toList() }
+
     companion object {
         fun <T> of(property: KMutableProperty0<T>) = Bind(field(property), property::get, property::set)
 
@@ -34,6 +41,8 @@ enum class Kind(val spoken: String) {
     FOLD("fold"),
     ACTION("button"),
     ORDER("list"),
+    ITEMS("list"),
+    PANEL("editor"),
 }
 
 /**
@@ -109,6 +118,9 @@ sealed class Setting(val id: String, val name: String, val description: String, 
 /** A row with a value of its own, bound to `DsModConfig`. Its default is its value in a fresh config, which the tree sets. */
 sealed class Valued<T>(id: String, name: String, description: String, kind: Kind, private val bind: Bind<T>) : Setting(id, name, description, kind) {
     val field get() = bind.field
+
+    /** Every field the row reaches: its own, and the others its value spans. */
+    val fields get() = listOf(bind.field) + bind.also
 
     var value: T
         get() = bind.get()
@@ -438,6 +450,14 @@ class Rows {
 
     fun fold(id: String, name: String, description: String, dependsOn: Switch? = null, rows: Rows.() -> Unit) =
         add(Fold(id, name, description, nested(rows)), dependsOn)
+
+    /** A list the player builds of [kind]'s items, under groups, edited inline. */
+    fun <T> items(bind: Bind<Grouped<T>>, name: String, description: String, kind: ItemKind<T>, id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null) =
+        add(Items(id, name, description, bind, kind), dependsOn)
+
+    /** An editor drawn as a picture of what it edits, on the edge's [canvas], summed up by [describe]. */
+    fun <T> panel(bind: Bind<T>, name: String, description: String, canvas: Canvas, id: String, dependsOn: Switch? = null, describe: (T) -> String) =
+        add(Panel(id, name, description, bind, canvas, describe), dependsOn)
 
     /** A button that runs the editor `DsModClient` puts in [property], read when pressed, so the config needs no Minecraft. */
     fun action(property: KProperty0<Runnable>, name: String, description: String, button: String = "Open", id: String = property.name, dependsOn: Switch? = null) =

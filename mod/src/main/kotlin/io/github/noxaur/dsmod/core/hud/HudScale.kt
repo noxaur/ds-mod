@@ -24,5 +24,8 @@ object HudScale {
         return if (next == current) scale else next / unit
     }
 
+    /** [scale] as the HUD editors show it, such as `1.25x`. */
+    fun label(scale: Float) = String.format(java.util.Locale.ROOT, "%.2f", scale).trimEnd('0').trimEnd('.') + "x"
+
     private fun pixels(scale: Float, unit: Float) = maxOf(1, (scale * unit).roundToInt())
 }

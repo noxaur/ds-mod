@@ -22,7 +22,7 @@ class SettingsTreeTest {
 
     @Test
     fun `every saved field is reached by exactly one row, or is stored only, with a reason`() {
-        val reached = rows.filterIsInstance<Valued<*>>().map { it.field }
+        val reached = rows.filterIsInstance<Valued<*>>().flatMap { it.fields }
         assertEquals(reached, reached.distinct(), "two rows reach the same field: ${reached.groupBy { it }.filterValues { it.size > 1 }.keys}")
         for (field in saved) {
             val whole = field in reached

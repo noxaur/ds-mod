@@ -38,7 +38,7 @@ object SlotArts {
         private set
 
     fun style(settings: DsModConfig.Inventory, surface: Surface): SlotStyle =
-        if (surface == Surface.HOTBAR && !settings.hotbarMatches) settings.hotbarStyle else settings.containerStyle()
+        if (surface == Surface.HOTBAR) settings.hotbarLook() else settings.containerStyle()
 
     fun atlas(settings: DsModConfig.Inventory, surface: Surface): Atlas {
         val style = style(settings, surface)
