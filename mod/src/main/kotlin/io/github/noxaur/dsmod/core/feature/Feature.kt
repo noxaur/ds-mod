@@ -22,6 +22,22 @@ import kotlin.reflect.KMutableProperty0
  * turns that state into what the player sees in [hud], [slots] and [marks], says something once with [notice] and
  * [alert], or keeps a server line out of chat with [hide]. The shared layers draw and print all of it, so a feature touches no screen itself. [toggle] is its switch in the settings, and while that is off, none of these run.
  * Outside [area] the feature shows nothing and sees only the tab list, the sidebar and a change of world.
+ *
+ * A feature is listed in [features], or it never runs. Start from the feature closest to yours:
+ * - Follow lines in chat: `DragonTimer`.
+ * - Read the tab list's info rows, or the sidebar's the same way: `GolemStatus`.
+ * - Read items and mark slots: `RarityMarks`.
+ * - Show items on the HUD, from the player's own inventory or an entity near them: `EquipmentDisplay`.
+ * - Change how the game draws, reading nothing from the server: `Fullbright`.
+ * - Count something and keep the total: `SlayerTracker`.
+ * - Hide a line the server sends: `AbilitySpam`.
+ * - Tell the player something once, and read a setting besides the switch: `LootAlerts`.
+ * - Track a rate, and follow the player into and out of its area: `ZealotTracker`.
+ * - Mark a place in the world: `BossBeacon`.
+ * - Act on a key the player binds, or change the camera: `FreeLook` and `Camera`, with `Cameras` in `edge` and the
+ *   rules in `core/camera`.
+ * - Handle the player's own input on a vanilla screen, reading nothing from the server: `CopyChat`, with `CopyChats`
+ *   in `edge`.
  */
 abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boolean>, val area: Area) {
     /** The name the player knows the feature by: [id] in Title Case. */
@@ -45,7 +61,13 @@ abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boo
 
     internal val handlers = HashMap<Class<out GameEvent>, (GameEvent, Long) -> Unit>()
     internal lateinit var metrics: Metrics
+    /**
+     * The tab list's `Key: value` rows, read with [InfoRows.info]. `Game` keeps the rows that tell the area, so
+     * pass [area] instead of reading one. A feature that needs another part of the tab list extends [InfoRows].
+     */
     internal lateinit var tab: InfoRows
+
+    /** The sidebar's `Key: value` rows, read and extended as [tab] is. */
     internal lateinit var sidebar: InfoRows
     internal lateinit var inArea: () -> Boolean
     internal lateinit var container: ContainerState
