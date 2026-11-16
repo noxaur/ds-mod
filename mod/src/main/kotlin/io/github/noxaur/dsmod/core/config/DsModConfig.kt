@@ -253,6 +253,30 @@ class DsModConfig {
         @JvmField
         var equipmentPlacement = HudDock.FREE
 
+        @JvmField
+        var activePet = false
+
+        @JvmField
+        var activePetIcon = true
+
+        @JvmField
+        var activePetItem = true
+
+        @JvmField
+        var activePetXp = true
+
+        @JvmField
+        var activePetRate = true
+
+        @JvmField
+        var activePetNext = true
+
+        @JvmField
+        var markActivePet = true
+
+        @JvmField
+        var hideAutopet = false
+
         @JsonNames("inventoryPreview")
 
         @JvmField

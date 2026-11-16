@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.core.feature.end
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.Area
+import io.github.noxaur.dsmod.core.game.CombatXp
 import io.github.noxaur.dsmod.core.game.Drop
 import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.TabList
@@ -56,10 +57,10 @@ class ZealotTracker(toggle: KMutableProperty0<Boolean>) : Feature("zealot-tracke
             diedNext = (diedNext + 1) % died.size
         }
         on<ActionBar> { bar, now ->
-            if (" Combat (" !in bar.text.plain) return@on
+            if (CombatXp.MARK !in bar.text.plain) return@on
             var confirmed = 0
             for (i in died.indices) {
-                if (died[i] == 0L || now - died[i] !in 0..KILL_WINDOW_MILLIS) continue
+                if (died[i] == 0L || now - died[i] !in 0..CombatXp.KILL_WINDOW_MILLIS) continue
                 died[i] = 0
                 confirmed++
             }
@@ -98,7 +99,6 @@ class ZealotTracker(toggle: KMutableProperty0<Boolean>) : Feature("zealot-tracke
     private companion object {
         const val EYE = "Summoning Eye"
         const val MIN_RATE_MILLIS = 60_000L
-        const val KILL_WINDOW_MILLIS = 20L
         const val MILLIS_PER_HOUR = 3_600_000.0
     }
 }
