@@ -38,9 +38,7 @@ class SettingsTab(place: Place) {
     fun go(section: Int) {
         val to = Place(section)
         if (to != place) visit(to)
-        scroll = 0
-        current = 0
-        jump = -1
+        toTop()
     }
 
     /**
@@ -51,14 +49,18 @@ class SettingsTab(place: Place) {
         if (query == place.query) return
         val to = Place(place.section, query)
         if (!place.searching && to.searching) visit(to) else place = to
-        scroll = 0
-        current = 0
-        jump = -1
+        toTop()
     }
 
     fun back() = walk(back, forward)
 
     fun forward() = walk(forward, back)
+
+    private fun toTop() {
+        scroll = 0
+        current = 0
+        jump = -1
+    }
 
     private fun visit(to: Place) {
         back += here()

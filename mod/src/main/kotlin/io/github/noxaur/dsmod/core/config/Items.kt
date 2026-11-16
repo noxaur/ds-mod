@@ -11,7 +11,10 @@ data class Grouped<T>(
     val groups: List<String> = emptyList(),
     val folded: List<String> = emptyList(),
     val off: List<String> = emptyList(),
-)
+) {
+    /** The list with [items], and [change] made to every list of group names, which stay together. */
+    fun withItems(items: List<T>, change: (List<String>) -> List<String>) = Grouped(items, change(groups), change(folded), change(off))
+}
 
 /**
  * One part of an item that its line shows and edits, such as a bind's switch, its name or its keys. A line shows
@@ -117,7 +120,7 @@ class Items<T>(id: String, name: String, description: String, bind: Bind<Grouped
         if (list.items.isEmpty() && list.groups.isEmpty()) return emptyList()
         val groups = listOf("") + list.groups
         return groups.flatMap { group ->
-            val mine = list.items.indices.filter { home(list.items[it], groups) == group }
+            val mine = indicesIn(group, list, groups)
             listOf(Entry.Heading(group)) + when {
                 group in list.folded -> emptyList()
                 mine.isEmpty() -> listOf(Entry.Empty(group))
@@ -125,6 +128,9 @@ class Items<T>(id: String, name: String, description: String, bind: Bind<Grouped
             }
         }
     }
+
+    private fun indicesIn(group: String, list: Grouped<T> = value, groups: List<String> = this.groups) =
+        list.items.indices.filter { home(list.items[it], groups) == group }
 
     fun count(group: String) = value.items.count { home(it) == group }
 
@@ -140,7 +146,11 @@ class Items<T>(id: String, name: String, description: String, bind: Bind<Grouped
     }
 
     fun set(index: Int, item: T) {
-        value = value.copy(items = value.items.toMutableList().also { it[index] = item })
+        editItems { this[index] = item }
+    }
+
+    private inline fun editItems(edit: MutableList<T>.() -> Unit) {
+        value = value.copy(items = value.items.toMutableList().apply(edit))
     }
 
     /**
@@ -160,7 +170,7 @@ class Items<T>(id: String, name: String, description: String, bind: Bind<Grouped
         var landed = -1
         for (group in groups) {
             if (group in list.folded) {
-                list.items.indices.filter { it != index && home(list.items[it], groups) == group }.mapTo(order) { list.items[it] }
+                indicesIn(group, list, groups).filter { it != index }.mapTo(order) { list.items[it] }
                 if (heading.group == group) {
                     landed = order.size
                     order += moved
@@ -228,7 +238,7 @@ class Items<T>(id: String, name: String, description: String, bind: Bind<Grouped
         fold(group, false)
         val fresh = type.blank(group)
         val list = value.items
-        val last = list.indices.lastOrNull { home(list[it]) == group }
+        val last = indicesIn(group).lastOrNull()
         val at = if (last != null) {
             last + 1
         } else {
@@ -236,13 +246,13 @@ class Items<T>(id: String, name: String, description: String, bind: Bind<Grouped
             val before = groups.takeWhile { it != group }.toSet()
             list.indices.lastOrNull { home(list[it]) in before }?.plus(1) ?: 0
         }
-        value = value.copy(items = list.toMutableList().apply { add(at, fresh) })
+        editItems { add(at, fresh) }
         return at
     }
 
     /** Puts a copy of the item at [index] after it, switched off so it cannot clash before the player reads it. */
     fun duplicate(index: Int): Int {
-        value = value.copy(items = value.items.toMutableList().apply { add(index + 1, type.switched(get(index), false)) })
+        editItems { add(index + 1, type.switched(get(index), false)) }
         return index + 1
     }
 
@@ -279,12 +289,7 @@ class Items<T>(id: String, name: String, description: String, bind: Bind<Grouped
         if (name == type.first || name in groups) return "Another group is called $name."
         fun List<String>.renamed() = map { if (it == group) name else it }
         val list = value
-        value = Grouped(
-            list.items.map { if (type.group(it) == group) type.regroup(it, name) else it },
-            list.groups.renamed(),
-            list.folded.renamed(),
-            list.off.renamed(),
-        )
+        value = list.withItems(list.items.map { if (type.group(it) == group) type.regroup(it, name) else it }) { it.renamed() }
         return null
     }
 
@@ -293,7 +298,7 @@ class Items<T>(id: String, name: String, description: String, bind: Bind<Grouped
         if (group.isEmpty()) return 0
         val list = value
         val gone = list.items.count { type.group(it) == group }
-        value = Grouped(list.items.filter { type.group(it) != group }, list.groups - group, list.folded - group, list.off - group)
+        value = list.withItems(list.items.filter { type.group(it) != group }) { it - group }
         return gone
     }
 
@@ -378,9 +383,7 @@ enum class Canvas { HUD_LAYOUT, MENU_TABS }
  */
 class Panel<T>(id: String, name: String, description: String, bind: Bind<T>, val canvas: Canvas, private val describe: (T) -> String) :
     Valued<T>(id, name, description, Kind.PANEL, bind) {
-    override fun summary(keys: (Int) -> String) = describe(value)
-
-    override fun default(keys: (Int) -> String) = describe(default)
+    override fun show(v: T, keys: (Int) -> String) = describe(v)
 
     override fun spoken(keys: (Int) -> String, open: Boolean) = describe(value)
 }

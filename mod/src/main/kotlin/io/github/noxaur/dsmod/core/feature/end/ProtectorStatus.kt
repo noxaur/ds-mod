@@ -67,15 +67,14 @@ class ProtectorStatus(toggle: KMutableProperty0<Boolean>) : Feature("protector-s
                 row("Stage") { value("Spawned") }
                 if (spawnedAt > 0) row("Alive") { value(clock(now - spawnedAt)) }
             }
-            stage == "Resting" -> block {
-                row("Stage") { value("Resting") }
-                row("Kills Left") { value(toGo) }
-            }
-            stage == "Rising" -> block {
-                row("Stage") { value("Rising $tier") }
-                row("Kills Left") { value(toGo) }
-            }
+            stage == "Resting" -> killsLeft("Resting")
+            stage == "Rising" -> killsLeft("Rising $tier")
             else -> null
         }
+    }
+
+    private fun killsLeft(label: String) = block {
+        row("Stage") { value(label) }
+        row("Kills Left") { value(toGo) }
     }
 }

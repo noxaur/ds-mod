@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.Game
+import io.github.noxaur.dsmod.core.game.ChangeGate
 import io.github.noxaur.dsmod.core.game.TabList
 import net.minecraft.client.Minecraft
 import net.minecraft.client.multiplayer.PlayerInfo
@@ -22,21 +23,18 @@ private const val MAX_ROWS = 80
  * is also posted when [Game.tap] changes, so a capture that starts later still begins with the rows.
  */
 class TabListPoller(private val game: Game) {
-    private var last = emptyList<Component>()
-    private var tapped = game.tap
+    private val gate = ChangeGate(emptyList<Component>(), game.tap)
 
     /** Posts the tab list at the next poll even when no row changed, after [Game] forgot it with the old world. */
     fun forget() {
-        last = emptyList()
+        gate.forget(emptyList())
     }
 
     fun poll(client: Minecraft) {
         if (!game.wants(TabList::class.java)) return
         val overlay = client.gui.hud.tabList
         val rows = client.connection?.listedOnlinePlayers.orEmpty().sortedWith(tabOrder).take(MAX_ROWS).map(overlay::getNameForDisplay)
-        if (rows == last && game.tap === tapped) return
-        last = rows
-        tapped = game.tap
+        if (!gate.passes(rows, game.tap)) return
         game.post(System.currentTimeMillis(), TabList(rows.map { it.toText() }))
     }
 }

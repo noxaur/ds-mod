@@ -22,7 +22,7 @@ class BindMatcher {
             typed.clear()
             return null
         }
-        val live = binds.filter { it.enabled && it.keys.isNotEmpty() && it.where.covers(at) && (it.area == null || inArea(it.area)) }
+        val live = binds.filter { live(it, at, inArea) }
         val together = CommandBinds.first(
             live.filter { !it.inOrder && key in it.keys && held.containsAll(it.keys) && (it.extraKeys || it.keys.containsAll(held)) },
         )
@@ -68,9 +68,11 @@ class BindMatcher {
 
     /** An in-order bind that is on and covers both [at] and where the sequence was typed. */
     private fun liveAcross(bind: CommandBind, at: Where, inArea: (Area) -> Boolean) =
-        bind.enabled && bind.inOrder && bind.keys.isNotEmpty() &&
-            bind.where.covers(at) && bind.where.covers(typedWhere) &&
-            (bind.area == null || inArea(bind.area))
+        bind.inOrder && live(bind, at, inArea) && bind.where.covers(typedWhere)
+
+    /** A bind that is on, has keys, and covers [at] and the area the player is in. */
+    private fun live(bind: CommandBind, at: Where, inArea: (Area) -> Boolean) =
+        bind.enabled && bind.keys.isNotEmpty() && bind.where.covers(at) && (bind.area == null || inArea(bind.area))
 
     /** Whether an ending of what was typed, at least [shortest] keys long, starts [bind]'s sequence and stops short of its end. */
     private fun continues(bind: CommandBind, shortest: Int) =

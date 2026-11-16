@@ -38,17 +38,10 @@ class ZealotTracker(toggle: KMutableProperty0<Boolean>) : Feature("zealot-tracke
 
     init {
         on<TabList> { _, now ->
-            val since = endSince
-            if (here && since == null) endSince = now
-            if (!here && since != null) {
-                endMillis += now - since
-                endSince = null
-            }
+            if (here && endSince == null) endSince = now
+            if (!here) leaveEnd(now)
         }
-        on<WorldChanged> { _, now ->
-            endSince?.let { endMillis += now - it }
-            endSince = null
-        }
+        on<WorldChanged> { _, now -> leaveEnd(now) }
         on<EntityDied> { death, now ->
             val name = death.name.plain
             if ("Zealot" !in name || "Bruiser" in name) return@on
@@ -72,6 +65,11 @@ class ZealotTracker(toggle: KMutableProperty0<Boolean>) : Feature("zealot-tracke
             session += name to (session[name] ?: 0) + 1
             allTime.value = allTime.value.copy(drops = allTime.value.drops.let { it + (name to (it[name] ?: 0) + 1) })
         }
+    }
+
+    private fun leaveEnd(now: Long) {
+        endSince?.let { endMillis += now - it }
+        endSince = null
     }
 
     override fun hud(now: Long): HudBlock? {

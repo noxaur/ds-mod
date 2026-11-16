@@ -1,13 +1,10 @@
 package io.github.noxaur.dsmod.core.feature.general
 
-import io.github.noxaur.dsmod.core.feature.Feature
-import io.github.noxaur.dsmod.core.game.Area
-import io.github.noxaur.dsmod.core.game.ContainerOpened
+import io.github.noxaur.dsmod.core.game.ContainerState.Companion.INVENTORY
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.PetNear
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SlotChanged
-import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudLook
@@ -82,7 +79,7 @@ class EquipmentDisplay(
     private val petPosition: KMutableProperty0<PetPosition>,
     private val look: KMutableProperty0<EquipmentLook>,
     override val placement: KMutableProperty0<HudDock>,
-) : Feature("equipment-display", toggle, Area.ANYWHERE) {
+) : InventoryReader("equipment-display", toggle) {
     private class Pet(val name: String, val level: Long, val rarity: Role)
 
     /** The settings the block was built with, so a refresh rebuilds it only when one changed. */
@@ -108,11 +105,7 @@ class EquipmentDisplay(
     private var shown = settings()
     private var block: HudBlock? = null
 
-    // Whether the armor may have changed since it was last read. A refresh with nothing new then costs a few compares.
-    private var stale = true
-
     init {
-        on<ContainerOpened> { event, _ -> if (event.id == INVENTORY) stale = true }
         on<SlotChanged> { event, _ ->
             if (container.id == INVENTORY && ARMOR.any { it.slot == event.slot }) stale = true
             val item = event.item ?: return@on
@@ -122,8 +115,6 @@ class EquipmentDisplay(
             held = item.lore.zipWithNext().firstOrNull { (label, _) -> label.plain.startsWith(HELD) }?.second?.plain?.trim()
             block = build()
         }
-        // Also run when the feature is switched off, so it reads the armor again when it comes back.
-        on<WorldChanged> { _, _ -> stale = true }
         on<Sidebar> { event, _ ->
             // Between worlds the sidebar is empty until the new one arrives, and the pet is still out.
             if (event.lines.all { it.plain.isBlank() }) return@on
@@ -155,9 +146,7 @@ class EquipmentDisplay(
                 block = build()
             }
         }
-        if (shown.layout != layout.get() || shown.pieces != pieces.get() || shown.petLook != petLook.get() ||
-            shown.petPosition != petPosition.get() || shown.look != look.get() || shown.placement != placement.get()
-        ) {
+        if (shown != settings()) {
             shown = settings()
             block = build()
         }
@@ -204,9 +193,6 @@ class EquipmentDisplay(
     }
 
     private companion object {
-        /** The player's own inventory, which the client always numbers 0. */
-        const val INVENTORY = 0
-
         val ARMOR = EquipmentPiece.entries.filter { it.slot >= 0 }
 
         /** The inventory's slots up to the boots. */

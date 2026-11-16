@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.game.Abilities
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
+import io.github.noxaur.dsmod.core.game.ContainerState.Companion.INVENTORY
 import io.github.noxaur.dsmod.core.game.Hit
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.SetCharge
@@ -251,7 +252,6 @@ class AbilityCooldowns(
     }
 
     private companion object {
-        const val INVENTORY = 0
         const val PLAYER_SLOTS = 36
 
         /** The inventory's helmet, chestplate, leggings and boots slots. */

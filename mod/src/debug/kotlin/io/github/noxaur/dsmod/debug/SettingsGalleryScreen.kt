@@ -140,7 +140,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
             "Choice and pick: idle, changed" to rows {
                 choice(v::tier, "Alert Tier", "Pick the lowest tier.")
                 choice(v::views, "F5 Views", "Pick the views.")
-                pick(v::preset, "Style", "Pick a look.") { Look.Slots(it.style ?: SlotStyle()) }
+                pick(v::preset, "Style", "Pick a look.") { slotLook(it) }
                 pick(v::theme, "Theme", "Pick the colors.") { Look.Swatch(it) }
             },
             "Keys: set, cleared" to rows {
@@ -149,9 +149,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
             },
             "Dimmed too" to rows {
                 span(v::dimSpans, "Timing", "Pick it.", max = 200, dependsOn = gate)
-                pick(Bind("Values.dimPreset", v::dimPreset::get, v::dimPreset::set), "Style", "Pick it.", RarityPreset.entries, dependsOn = gate) {
-                    Look.Slots(it.style ?: SlotStyle())
-                }
+                pick(Bind.of(v::dimPreset), "Style", "Pick it.", RarityPreset.entries, dependsOn = gate) { slotLook(it) }
                 action("noop", "Edit Binds", "Edit them.", button = "Edit", dependsOn = gate) {}
             },
         ),
@@ -159,7 +157,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
             "Span, fold, action, order" to rows {
                 span(v::spans, "Beam Timing", "Pick when it shows.", max = 200, ticks = listOf(50, 100, 150))
                 fold("openFold", "Open Fold", "Build your own.") {
-                    pick(Bind("Values.border", v::border::get, v::border::set), "Border", "Pick the ring.", Border.entries, label = { it.label }) {
+                    pick(Bind.of(v::border), "Border", "Pick the ring.", Border.entries, label = { it.label }) {
                         Look.Slots(SlotStyle(border = it), 1)
                     }
                 }
@@ -176,22 +174,22 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
     )
 
 
-    private fun binds(property: kotlin.reflect.KMutableProperty0<Grouped<CommandBind>>) = Bind("Values.${property.name}", property::get, property::set)
+    private fun slotLook(preset: RarityPreset) = Look.Slots(preset.style ?: SlotStyle())
 
     private val listsPage = listOf(
         Column(
             360,
             listOf(
                 "Items: groups, a folded one, an off one, clashes" to rows {
-                    items(binds(v::binds), "Binds", "Name each bind, pick its keys and choose where it works.", CommandBinds, id = "galleryBinds")
+                    items(Bind.of(v::binds), "Binds", "Name each bind, pick its keys and choose where it works.", CommandBinds, id = "galleryBinds")
                 },
             ),
         ),
         Column(
             244,
             listOf(
-                "Items: empty" to rows { items(binds(v::noBinds), "Binds", "Add one.", CommandBinds, id = "noBinds") },
-                "Items: dimmed" to rows { items(binds(v::dimBinds), "Binds", "Add one.", CommandBinds, id = "dimBinds", dependsOn = gate) },
+                "Items: empty" to rows { items(Bind.of(v::noBinds), "Binds", "Add one.", CommandBinds, id = "noBinds") },
+                "Items: dimmed" to rows { items(Bind.of(v::dimBinds), "Binds", "Add one.", CommandBinds, id = "dimBinds", dependsOn = gate) },
             ),
         ),
     )
@@ -201,7 +199,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
             COLUMN,
             listOf(
                 "Panel: menu tabs, changed" to rows {
-                    panel(Bind("Values.tabs", v::tabs::get, v::tabs::set), "Tabs", "Press a place to add a tab.", Canvas.MENU_TABS, id = "galleryTabs") { "${it.size} tabs" }
+                    panel(Bind.of(v::tabs), "Tabs", "Press a place to add a tab.", Canvas.MENU_TABS, id = "galleryTabs") { "${it.size} tabs" }
                 },
             ),
         ),
@@ -221,7 +219,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
             COLUMN,
             listOf(
                 "Panel: dimmed" to rows {
-                    panel(Bind("Values.dimTabs", v::dimTabs::get, v::dimTabs::set), "Tabs", "Press a place.", Canvas.MENU_TABS, id = "dimTabs", dependsOn = gate) { "${it.size} tabs" }
+                    panel(Bind.of(v::dimTabs), "Tabs", "Press a place.", Canvas.MENU_TABS, id = "dimTabs", dependsOn = gate) { "${it.size} tabs" }
                 },
             ),
         ),
@@ -246,9 +244,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
 
     /** Rows as a search for "gilded look" shows them, with the words it matched painted, drawn apart from the rows above. */
     private val found = "Found by a search: gilded look" to rows {
-        pick(Bind("Values.foundPreset", v::foundPreset::get, v::foundPreset::set), "Style", "Pick a ready-made look.", RarityPreset.entries, id = "foundStyle") {
-            Look.Slots(it.style ?: SlotStyle())
-        }
+        pick(Bind.of(v::foundPreset), "Style", "Pick a ready-made look.", RarityPreset.entries, id = "foundStyle") { slotLook(it) }
         fold("foundFold", "Custom Look", "Build your own look.") { switch(v::foundGem, "Gem", "Put a gem.", id = "foundGem") }
     }
     private val foundRows = SettingRows(HashSet(), ::layout, { _, _ -> })

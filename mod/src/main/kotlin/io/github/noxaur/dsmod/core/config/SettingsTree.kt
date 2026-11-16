@@ -105,10 +105,11 @@ object SettingsTree {
     }
 
     private fun declare(c: DsModConfig): List<SettingSection> {
+        val g = c.general
+        val inv = c.inventory
         val sections = Sections().apply {
             // What applies everywhere comes first, then each area of the game, and Contribute last.
             section("General", Role.VALUE) {
-                val g = c.general
                 group("Server") {
                     switch(g::onlyOnDragSim, "DragSim Only", "Run ds-mod only on dragsim.co.")
                 }
@@ -139,12 +140,12 @@ object SettingsTree {
                     number(g::swingSpeed, "Swing Speed", "Speed your swing up, or slow it down below 1.", 0.1f..3f, step = 0.1f, unit = "x")
                     number(g::itemSize, "Item Size", "Grow or shrink your held item.", 0.1f..2f, step = 0.05f, unit = "x")
                     fold("itemPosition", "Item Position", "Move and turn your held item.") {
-                        number(g::itemX, "Item X", "Move your held item out to the side, or in below zero.", -1f..1f, step = 0.05f)
-                        number(g::itemY, "Item Y", "Raise your held item, or lower it below zero.", -1f..1f, step = 0.05f)
-                        number(g::itemZ, "Item Z", "Push your held item away, or bring it nearer below zero.", -1f..1f, step = 0.05f)
-                        number(g::itemYaw, "Item Yaw", "Turn your held item left or right about its grip, in degrees.", -180f..180f, step = 1f, unit = "°")
-                        number(g::itemPitch, "Item Pitch", "Tip your held item forward or back about its grip, in degrees.", -180f..180f, step = 1f, unit = "°")
-                        number(g::itemRoll, "Item Roll", "Tilt your held item sideways about its grip, in degrees.", -180f..180f, step = 1f, unit = "°")
+                        offset(g::itemX, "Item X", "Move your held item out to the side, or in below zero.")
+                        offset(g::itemY, "Item Y", "Raise your held item, or lower it below zero.")
+                        offset(g::itemZ, "Item Z", "Push your held item away, or bring it nearer below zero.")
+                        angle(g::itemYaw, "Item Yaw", "Turn your held item left or right about its grip, in degrees.")
+                        angle(g::itemPitch, "Item Pitch", "Tip your held item forward or back about its grip, in degrees.")
+                        angle(g::itemRoll, "Item Roll", "Tilt your held item sideways about its grip, in degrees.")
                     }
                     fold("swingOptions", "Swing Options", "Fine-tune how your held item swings and dips.") {
                         switch(g::scaleSwing, "Scale Swing", "Make the swing reach as far as Item Size makes the item big.")
@@ -160,7 +161,6 @@ object SettingsTree {
                 }
             }
             section("Camera", Role.ACTION) {
-                val g = c.general
                 group("Third Person", switch = toggle(g::camera, "Camera", "Shape the third-person view with the settings below.")) {
                     number(g::cameraDistance, "Distance", "Set how many blocks the third-person camera sits from you.", 1f..50f, step = 0.5f)
                     number(g::cameraHeight, "Height", "Raise the third-person camera, or lower it below zero.", -2f..3f, step = 0.1f)
@@ -174,7 +174,6 @@ object SettingsTree {
                 }
             }
             section("Binds", Role.DIVINE) {
-                val g = c.general
                 group(null) {
                     val binds = switch(g::commandBinds, "Command Binds", "Send a command, such as /warp end, with a key or a few keys.")
                     number(g::sequenceGap, "Sequence Gap", "Set how many milliseconds a key sequence waits for its next key.", 50f..1000f, step = 50f, unit = " ms", dependsOn = binds)
@@ -193,7 +192,6 @@ object SettingsTree {
             }
             section("Interface", Role.MUTED) {
                 val hud = c.hud
-                val g = c.general
                 group("Theme") {
                     pick(hud::theme, "Theme", "Pick the colors of ds-mod's screens and controls.") { Look.Swatch(it) }
                 }
@@ -238,29 +236,25 @@ object SettingsTree {
                 }
             }
             section("Inventory", Role.GOOD) {
-                val inv = c.inventory
                 group("Item Rarity", switch = toggle(inv::itemRarity, "Item Rarity", "Mark each item's slot in the color of its rarity.")) {
                     pick(inv::rarityPreset, "Style", "Pick a look for the marks, or Custom for your own.") { Look.Slots(it.style ?: inv.inventoryStyle) }
                     fold("customLook", "Custom Look", "Build your own look from its parts, which switches Style to Custom.") {
                         // A part shows the look on screen. Writing a different one makes that look the player's own.
                         // While a preset is active the part's default is that preset, so a reset leaves it in place.
-                        fun <T> part(name: String, get: (SlotStyle) -> T, with: SlotStyle.(T) -> SlotStyle) =
-                            Bind("Inventory.inventoryStyle.$name", { get(inv.containerStyle()) }) {
-                                if (it != get(inv.containerStyle())) {
-                                    inv.inventoryStyle = inv.containerStyle().with(it)
-                                    inv.rarityPreset = RarityPreset.CUSTOM
-                                }
-                            }.follows { inv.rarityPreset.style?.let(get) }
-                        pick(part("border", { it.border }) { copy(border = it) }, "Border", "Pick the ring around the slot.", Border.entries, label = { it.label }) {
-                            Look.Slots(inv.containerStyle().copy(border = it), 1)
-                        }
-                        pick(part("fill", { it.fill }) { copy(fill = it) }, "Fill", "Pick the color inside the slot, behind the item.", Fill.entries, label = { it.label }) {
-                            Look.Slots(inv.containerStyle().copy(fill = it), 1)
-                        }
-                        pick(part("floor", { it.floor }) { copy(floor = it) }, "Floor", "Pick what the item stands on.", Floor.entries, label = { it.label }) {
-                            Look.Slots(inv.containerStyle().copy(floor = it), 1)
-                        }
-                        switch(part("gem", { it.gem }) { copy(gem = it) }, "Gem", "Put a small gem over the item's top-left corner.")
+                        slotParts(
+                            field = "Inventory.inventoryStyle",
+                            idPrefix = "",
+                            look = inv::containerStyle,
+                            preset = { inv.rarityPreset.style },
+                            write = {
+                                inv.inventoryStyle = it
+                                inv.rarityPreset = RarityPreset.CUSTOM
+                            },
+                            border = "Pick the ring around the slot.",
+                            fill = "Pick the color inside the slot, behind the item.",
+                            floor = "Pick what the item stands on.",
+                            gem = "Put a small gem over the item's top-left corner.",
+                        )
                     }
                     switch(inv::markCommon, "Common Items", "Mark common items too.")
                     switch(inv::hotbarMarks, "Hotbar", "Mark your hotbar as well.") {
@@ -273,23 +267,20 @@ object SettingsTree {
                         // A part shows the hotbar's look as it is, and a change makes it the hotbar's own, as Custom Look does
                         // for Style. While the hotbar matches, the part's default is the look on screen, so a reset
                         // writes that part back and leaves Match Inventory on.
-                        fun <T> part(name: String, get: (SlotStyle) -> T, with: SlotStyle.(T) -> SlotStyle) =
-                            Bind("Inventory.hotbarStyle.$name", { get(inv.hotbarLook()) }) {
-                                if (it != get(inv.hotbarLook())) {
-                                    inv.hotbarStyle = inv.hotbarLook().with(it)
-                                    inv.hotbarMatches = false
-                                }
-                            }.follows { if (inv.hotbarMatches) get(inv.hotbarLook()) else null }
-                        pick(part("border", { it.border }) { copy(border = it) }, "Border", "Pick the ring around each hotbar slot.", Border.entries, id = "hotbarBorder", label = { it.label }) {
-                            Look.Slots(inv.hotbarLook().copy(border = it), 1)
-                        }
-                        pick(part("fill", { it.fill }) { copy(fill = it) }, "Fill", "Pick the color inside each hotbar slot.", Fill.entries, id = "hotbarFill", label = { it.label }) {
-                            Look.Slots(inv.hotbarLook().copy(fill = it), 1)
-                        }
-                        pick(part("floor", { it.floor }) { copy(floor = it) }, "Floor", "Pick what each hotbar item stands on.", Floor.entries, id = "hotbarFloor", label = { it.label }) {
-                            Look.Slots(inv.hotbarLook().copy(floor = it), 1)
-                        }
-                        switch(part("gem", { it.gem }) { copy(gem = it) }, "Gem", "Put a small gem over each hotbar item's corner.", id = "hotbarGem")
+                        slotParts(
+                            field = "Inventory.hotbarStyle",
+                            idPrefix = "hotbar",
+                            look = inv::hotbarLook,
+                            preset = { if (inv.hotbarMatches) inv.hotbarLook() else null },
+                            write = {
+                                inv.hotbarStyle = it
+                                inv.hotbarMatches = false
+                            },
+                            border = "Pick the ring around each hotbar slot.",
+                            fill = "Pick the color inside each hotbar slot.",
+                            floor = "Pick what each hotbar item stands on.",
+                            gem = "Put a small gem over each hotbar item's corner.",
+                        )
                     }
                 }
                 group("Protection") {
@@ -301,7 +292,6 @@ object SettingsTree {
                 }
             }
             section("Menus", Role.LEGENDARY) {
-                val inv = c.inventory
                 group("Look") {
                     switch(inv::menuTheme, "Menu Theme", "Draw menus and plain tooltips in the Theme under Interface.") {
                         choice(inv::menuLook, "Menu Look", "Draw themed menus solid, or as glass that shows the world.")
@@ -341,7 +331,6 @@ object SettingsTree {
             }
             section("Combat", Role.BAD) {
                 group("Damage Numbers", switch = toggle(c.general::damageNumbers, "Damage Numbers", "Shorten or hide the damage numbers that pop up on a hit.")) {
-                    val g = c.general
                     choice(g::damageShown, "Show", "Pick which damage numbers you see: all, only crits, or none.", id = "damageShown")
                     val short = switch(g::damageShort, "Short Numbers", "Shorten big numbers, so 1,234,567 reads 1.2M.")
                     number(g::damageDecimals, "Decimals", "Set how many decimals a short number keeps.", 0f..3f, step = 1f, id = "damageDecimals", dependsOn = short)
@@ -367,3 +356,28 @@ object SettingsTree {
         return sections
     }
 }
+
+/**
+ * The Border, Fill, Floor and Gem rows of a slot look, saved under [field]. Each shows [look] as it is, a change goes
+ * to [write], and a reset leaves the [preset] look in place while there is one. A row's id is its part, after [idPrefix].
+ */
+private fun Rows.slotParts(
+    field: String, idPrefix: String, look: () -> SlotStyle, preset: () -> SlotStyle?, write: (SlotStyle) -> Unit,
+    border: String, fill: String, floor: String, gem: String,
+) {
+    fun id(part: String) = if (idPrefix.isEmpty()) part else idPrefix + part.replaceFirstChar { it.uppercase() }
+    fun <T> part(part: String, get: (SlotStyle) -> T, with: SlotStyle.(T) -> SlotStyle) =
+        Bind("$field.$part", { get(look()) }) {
+            if (it != get(look())) write(look().with(it))
+        }.follows { preset()?.let(get) }
+    fun <T> choose(part: String, name: String, description: String, values: List<T>, label: (T) -> String, get: (SlotStyle) -> T, with: SlotStyle.(T) -> SlotStyle) =
+        pick(part(part, get, with), name, description, values, id(part), label = label) { Look.Slots(look().with(it), 1) }
+    choose("border", "Border", border, Border.entries, { it.label }, { it.border }) { copy(border = it) }
+    choose("fill", "Fill", fill, Fill.entries, { it.label }, { it.fill }) { copy(fill = it) }
+    choose("floor", "Floor", floor, Floor.entries, { it.label }, { it.floor }) { copy(floor = it) }
+    switch(part("gem", { it.gem }) { copy(gem = it) }, "Gem", gem, id("gem"))
+}
+
+private fun Rows.offset(property: KMutableProperty0<Float>, name: String, description: String) = number(property, name, description, -1f..1f, step = 0.05f)
+
+private fun Rows.angle(property: KMutableProperty0<Float>, name: String, description: String) = number(property, name, description, -180f..180f, step = 1f, unit = "°")

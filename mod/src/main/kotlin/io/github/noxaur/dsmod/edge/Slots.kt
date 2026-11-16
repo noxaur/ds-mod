@@ -57,14 +57,12 @@ object Slots {
         marks[id] = slots.mapValues { (_, mark) ->
             Shown(mark.role.argb(FILL_ALPHA), mark.role.takeIf { mark.rarity }, mark.hide, mark.label?.toComponent(), mark.cooldown)
         }
-        cooldowns = marks.values.any { slots -> slots.values.any { it.cooldown != null } }
-        rehide()
+        recount()
     }
 
     fun clear(id: String) {
         marks.remove(id)
-        cooldowns = marks.values.any { slots -> slots.values.any { it.cooldown != null } }
-        rehide()
+        recount()
     }
 
     /** Whether the slot at [index] in the open menu is hidden, asked for each slot each frame. */
@@ -75,7 +73,8 @@ object Slots {
         covered = index
     }
 
-    private fun rehide() {
+    private fun recount() {
+        cooldowns = marks.values.any { slots -> slots.values.any { it.cooldown != null } }
         hidden.clear()
         for (slots in marks.values) for ((index, shown) in slots) if (shown.hide) hidden.set(index)
     }
@@ -168,26 +167,30 @@ object Slots {
 
     /** Draws [rarity]'s mark behind an item at [x], [y] that the mod draws itself, in the player's style for menus. */
     fun rarityBack(graphics: GuiGraphicsExtractor, rarity: Role, x: Int, y: Int) {
-        val atlas = SlotArts.atlas(settings, Surface.CONTAINER) ?: return
-        Kit.slotArt(graphics, x, y, atlas, rarity.ordinal)
+        art(graphics, Surface.CONTAINER, rarity, x, y)
     }
 
     /** Draws [rarity]'s gem over that item, when the player's style has one. */
     fun rarityFront(graphics: GuiGraphicsExtractor, rarity: Role, x: Int, y: Int) {
-        if (!SlotArts.style(settings, Surface.CONTAINER).gem) return
-        val atlas = SlotArts.atlas(settings, Surface.CONTAINER) ?: return
-        Kit.slotGem(graphics, x, y, atlas, rarity.ordinal)
+        gem(graphics, Surface.CONTAINER, rarity, x, y)
     }
 
     private fun back(graphics: GuiGraphicsExtractor, surface: Surface, shown: Shown, x: Int, y: Int) {
         if (shown.cooldown != null) return
         val rarity = shown.rarity
         if (rarity == null) Kit.slotFill(graphics, x, y, shown.color)
-        else SlotArts.atlas(settings, surface)?.let { Kit.slotArt(graphics, x, y, it, rarity.ordinal) }
+        else art(graphics, surface, rarity, x, y)
     }
 
     private fun front(graphics: GuiGraphicsExtractor, surface: Surface, shown: Shown, x: Int, y: Int) {
-        val rarity = shown.rarity ?: return
+        gem(graphics, surface, shown.rarity ?: return, x, y)
+    }
+
+    private fun art(graphics: GuiGraphicsExtractor, surface: Surface, rarity: Role, x: Int, y: Int) {
+        SlotArts.atlas(settings, surface)?.let { Kit.slotArt(graphics, x, y, it, rarity.ordinal) }
+    }
+
+    private fun gem(graphics: GuiGraphicsExtractor, surface: Surface, rarity: Role, x: Int, y: Int) {
         if (!SlotArts.style(settings, surface).gem) return
         SlotArts.atlas(settings, surface)?.let { Kit.slotGem(graphics, x, y, it, rarity.ordinal) }
     }

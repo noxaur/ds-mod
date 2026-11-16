@@ -26,7 +26,7 @@ class ContainerState {
         if (event.slot in items.indices) items[event.slot] = event.item
     }
 
-    private companion object {
+    companion object {
         /** The player's own inventory, which the client always numbers 0. */
         const val INVENTORY = 0
     }

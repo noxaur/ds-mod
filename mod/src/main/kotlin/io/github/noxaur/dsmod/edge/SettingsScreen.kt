@@ -215,27 +215,26 @@ class SettingsScreen(
     /** Typing searches from the selected tab, which becomes that search. */
     private fun onSearch(text: String) {
         if (text == tabs.current.place.query) return
-        keep()
-        tabs.current.search(text)
-        show()
+        retab { tabs.current.search(text) }
     }
 
     /** A press on a section takes the selected tab there, and opens it again if its arrow had closed it. */
     private fun select(section: Int) {
-        keep()
-        tabs.current.go(section)
-        tree.select(section)
-        show()
+        retab {
+            tabs.current.go(section)
+            tree.select(section)
+        }
     }
 
     /** Opens [section] at its subsection [sub]: the pane jumps there from another section, and glides within one. */
     private fun jump(section: Int, sub: Int) {
         val tab = tabs.current
         if (tab.place.searching || section != tab.place.section) {
-            keep()
-            tab.go(section)
-            tab.jump = sub
-            return show()
+            retab {
+                tab.go(section)
+                tab.jump = sub
+            }
+            return
         }
         tree.jump(section, sub)
         nav.refresh()
@@ -252,9 +251,7 @@ class SettingsScreen(
 
     private fun pick(index: Int) {
         if (index == tabs.selected) return
-        keep()
-        tabs.select(index)
-        show()
+        retab { tabs.select(index) }
     }
 
     private fun close(index: Int) {
@@ -264,9 +261,7 @@ class SettingsScreen(
 
     /** Opens a blank tab, selected, with the keyboard in the search field. */
     private fun newTab() {
-        keep()
-        tabs.new()
-        show()
+        retab { tabs.new() }
         setFocused(search)
     }
 
@@ -303,6 +298,10 @@ class SettingsScreen(
     private fun build() {
         val items = ArrayList<Item>()
         val tops = ArrayList<Int>()
+        fun centered(y: Int, text: String, ink: Kit.Ink) {
+            val line = fit(text, contentWidth)
+            items += Empty(y, line, contentX + (contentWidth - font.width(line)) / 2, ink)
+        }
         val place = tabs.current.place
         var y = TOP
         var above = FIRST_ABOVE
@@ -319,8 +318,7 @@ class SettingsScreen(
             foundFor = place.query
             if (hits.isEmpty()) {
                 y += EMPTY_TOP
-                val line = fit("No setting matches \"${place.query.trim()}\".", contentWidth)
-                items += Empty(y, line, contentX + (contentWidth - font.width(line)) / 2, Kit.Ink.NORMAL)
+                centered(y, "No setting matches \"${place.query.trim()}\".", Kit.Ink.NORMAL)
                 y += 8 + GAP
                 val label = "Clear Search"
                 val button = KitButton(0, BAR + y, label, { search.value = "" })
@@ -341,8 +339,7 @@ class SettingsScreen(
                     "No favorites yet." to Kit.Ink.NORMAL,
                     (if (key == null) "Click a setting's star to keep it here." else "Click a setting's star, or press $key over it, to keep it here.") to Kit.Ink.MUTED,
                 )) {
-                    val fitted = fit(line, contentWidth)
-                    items += Empty(y, fitted, contentX + (contentWidth - font.width(fitted)) / 2, ink)
+                    centered(y, line, ink)
                     y += 8 + GAP
                 }
             }
@@ -352,8 +349,7 @@ class SettingsScreen(
             rows.found = HashSet()
             nav.counts(null)
             y += EMPTY_TOP
-            val line = fit("Pick a section or search.", contentWidth)
-            items += Empty(y, line, contentX + (contentWidth - font.width(line)) / 2, Kit.Ink.MUTED)
+            centered(y, "Pick a section or search.", Kit.Ink.MUTED)
             y += 8
         } else {
             foundFor = null
@@ -365,14 +361,13 @@ class SettingsScreen(
                     y += above
                     above = ABOVE
                     tops += y
-                    items += heading(y, null, group.name, group.switch)
-                    y += HEADING + BELOW
+                    y = headed(items, y, null, group.name, group.switch, group.rows)
                 } else {
                     y += BELOW
                     above = ABOVE
+                    items += group(y, group.rows)
+                    y += items.last().height
                 }
-                items += group(y, group.rows)
-                y += items.last().height
             }
         }
         rows.end()
@@ -394,10 +389,7 @@ class SettingsScreen(
             above = ABOVE
             val section = sections[hit.section].name
             val group = hit.group.name
-            items += heading(y, if (group == null) null else section, group ?: section, if (switches) hit.group.switch else null)
-            y += HEADING + BELOW
-            items += group(y, hit.rows)
-            y += items.last().height
+            y = headed(items, y, if (group == null) null else section, group ?: section, if (switches) hit.group.switch else null, hit.rows)
         }
         return y
     }
@@ -409,6 +401,14 @@ class SettingsScreen(
 
     /** Whether the Favorite Key may act: not while the search has the keys, nor with Ctrl or Alt held, so typing and Ctrl+F work. */
     private fun favoriteFree(event: InputWithModifiers) = focused !== search && !Keys.control(event) && !Keys.alt(event)
+
+    /** Adds a heading at [y] with [settings] in a well under it, and returns the y under them. */
+    private fun headed(items: MutableList<Item>, y: Int, prefix: String?, name: String, switch: Switch?, settings: List<Setting>): Int {
+        items += heading(y, prefix, name, switch)
+        val well = group(y + HEADING + BELOW, settings)
+        items += well
+        return y + HEADING + BELOW + well.height
+    }
 
     private fun heading(y: Int, prefix: String?, name: String, switch: Switch?): Heading {
         val separatorX = contentX + if (prefix == null) 0 else font.width(prefix)
@@ -551,7 +551,7 @@ class SettingsScreen(
             val thumbY = BAR + 2 + 1 + pane.thumbY(track - 2)
             val thumb = pane.thumb(track - 2)
             thumbGrab = if (event.y >= thumbY && event.y < thumbY + thumb) event.y - thumbY else thumb / 2.0
-            pane.drag(event.y - BAR - 3 - thumbGrab, track - 2)
+            dragThumb(event.y)
             return true
         }
         if (event.x < side) rows.keys = false
@@ -568,8 +568,12 @@ class SettingsScreen(
     override fun mouseDragged(event: MouseButtonEvent, dx: Double, dy: Double): Boolean {
         if (rows.mouseDragged(event, dx, dy)) return true
         if (thumbGrab < 0) return super.mouseDragged(event, dx, dy)
-        pane.drag(event.y - BAR - 3 - thumbGrab, track - 2)
+        dragThumb(event.y)
         return true
+    }
+
+    private fun dragThumb(y: Double) {
+        pane.drag(y - BAR - 3 - thumbGrab, track - 2)
     }
 
     override fun mouseReleased(event: MouseButtonEvent): Boolean {

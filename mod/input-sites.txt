@@ -45,7 +45,7 @@ gate edge.CommandKeys 24edfabcaa05  CommandBinds
     sends through ClientPacketListener.sendChat
     sends through ClientPacketListener.sendCommand
     approved by github.com/noxaur 2026-11-16T14:34:00Z
-gate edge.CopyChats f21712999623  CopyChat
+gate edge.CopyChats 93a9affe30cd  CopyChat
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
@@ -58,12 +58,11 @@ gate edge.MenuBack ff8ff383383c  BackButtons
     can refuse or change sent chat through ClientSendMessageEvents.COMMAND
     sends through ClientPacketListener.sendCommand
     approved by github.com/noxaur 2026-11-16T08:42:00Z
-gate edge.SlotGuards 8e92c6e06e5f  SlotLock
+gate edge.SlotGuards 34753ec99a1d  SlotLock
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-    approved by github.com/noxaur 2026-11-16T15:48:00Z
 gate edge.TabBar 75f014239d9d  MenuTabs
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
@@ -112,13 +111,12 @@ gate edge.mixin.FloatingTextMixin 1178eba96f0a
 gate edge.mixin.FullbrightMixin 4c8ba0a85eab  Fullbright
     hooks LightmapRenderStateExtractor.extract
     approved by github.com/noxaur 2026-11-16T08:42:00Z
-gate edge.mixin.HeldItemMixin 58c78f6ea473
+gate edge.mixin.HeldItemMixin e4628f3e6681
     hooks ItemInHandRenderer.itemUsed
     hooks ItemInHandRenderer.shouldInstantlyReplaceVisibleItem
     hooks ItemInHandRenderer.submitArmWithItem
     hooks ItemInHandRenderer.swingArm
     hooks ItemInHandRenderer.tick
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate edge.mixin.HiddenTextMixin a90e72dc5f00
     hooks EntityRenderer.shouldRender
 gate edge.mixin.HudHotbarMixin draws

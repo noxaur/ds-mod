@@ -56,7 +56,7 @@ class ItemSightings(private val own: () -> Set<String>) :
         return (at as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull
     }
 
-    private fun withoutUuids(text: ServerText) = ServerText(text.spans.map { ServerSpan(UUID.replace(it.text, ""), it.color, it.bold, it.italic, it.underlined, it.strikethrough, it.obfuscated) })
+    private fun withoutUuids(text: ServerText) = ServerText(text.spans.map { it.copy(text = UUID.replace(it.text, "")) })
 
     private fun withoutUuids(json: JsonElement): JsonElement = when (json) {
         is JsonObject -> JsonObject(json.mapValues { (_, value) -> withoutUuids(value) })

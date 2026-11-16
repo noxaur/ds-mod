@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.HeadPlaced
@@ -52,7 +53,7 @@ object Packets {
             return
         }
         val game = DsModClient.game
-        if (game.reaches(HeadPlaced::class.java) || game.tap != null || game.wants(HeadPlaced::class.java)) waiting.putIfAbsent(pos, 0)
+        if (game.seesHeads() || game.wants(HeadPlaced::class.java)) waiting.putIfAbsent(pos, 0)
     }
 
     /**
@@ -69,10 +70,9 @@ object Packets {
 
     private fun head(pos: BlockPos) {
         val game = DsModClient.game
-        val reaches = game.reaches(HeadPlaced::class.java)
         // A capture records the head when it is seen, whether or not a feature is there to take it.
-        if (reaches || game.tap != null) game.post(System.currentTimeMillis(), HeadPlaced(pos.x, pos.y, pos.z))
-        if (!reaches && game.wants(HeadPlaced::class.java)) waiting[pos] = 0
+        if (game.seesHeads()) postHead(game, pos)
+        if (!game.reaches(HeadPlaced::class.java) && game.wants(HeadPlaced::class.java)) waiting[pos] = 0
     }
 
     /** Posts the heads that were held back, once a feature can be handed them and the skull has a skin. */
@@ -89,8 +89,8 @@ object Packets {
                 when {
                     entity == null -> true
                     entity.ownerProfile == null -> (held.value + 1 < BARE_SKULL_TICKS).also { held.setValue(held.value + 1) }
-                    game.reaches(HeadPlaced::class.java) || game.tap != null -> {
-                        game.post(System.currentTimeMillis(), HeadPlaced(pos.x, pos.y, pos.z))
+                    game.seesHeads() -> {
+                        postHead(game, pos)
                         false
                     }
                     else -> game.wants(HeadPlaced::class.java)
@@ -99,6 +99,10 @@ object Packets {
             if (!keep) each.remove()
         }
     }
+
+    private fun Game.seesHeads() = reaches(HeadPlaced::class.java) || tap != null
+
+    private fun postHead(game: Game, pos: BlockPos) = game.post(System.currentTimeMillis(), HeadPlaced(pos.x, pos.y, pos.z))
 
     fun entityEvent(packet: ClientboundEntityEventPacket) {
         val game = DsModClient.game

@@ -151,7 +151,7 @@ class KitNavTree(
             val thumbY = y + 1 + scroll.thumbY(height - 2)
             val thumb = scroll.thumb(height - 2)
             thumbGrab = if (event.y >= thumbY && event.y < thumbY + thumb) event.y - thumbY else thumb / 2.0
-            scroll.drag(event.y - y - 1 - thumbGrab, height - 2)
+            dragThumb(event.y)
             return
         }
         val i = rowAt(event.y).takeIf { it >= 0 } ?: return
@@ -168,8 +168,10 @@ class KitNavTree(
     }
 
     override fun onDrag(event: MouseButtonEvent, dx: Double, dy: Double) {
-        if (thumbGrab >= 0) scroll.drag(event.y - y - 1 - thumbGrab, height - 2)
+        if (thumbGrab >= 0) dragThumb(event.y)
     }
+
+    private fun dragThumb(mouseY: Double) = scroll.drag(mouseY - y - 1 - thumbGrab, height - 2)
 
     override fun onRelease(event: MouseButtonEvent) {
         thumbGrab = -1.0

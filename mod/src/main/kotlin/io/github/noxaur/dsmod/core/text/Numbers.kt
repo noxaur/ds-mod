@@ -14,8 +14,10 @@ fun grouped(number: Long): String = String.format(Locale.US, "%,d", number)
 fun amount(value: Double, places: Int = 1, trim: Boolean = false): String {
     if (value % 1.0 == 0.0) return grouped(value.toLong())
     val shown = String.format(Locale.US, "%,.${places}f", value)
-    return if (trim) shown.trimEnd('0').trimEnd('.') else shown
+    return if (trim) shown.withoutTrailingZeros() else shown
 }
+
+private fun String.withoutTrailingZeros() = trimEnd('0').trimEnd('.')
 
 private val SUFFIXES = arrayOf("", "k", "M", "B", "T")
 
@@ -32,5 +34,5 @@ fun short(value: Double, places: Int): String {
         shown = Math.round(value / 1000.0.pow(tier) * scale) / scale
     }
     val digits = String.format(Locale.US, "%.${places}f", shown)
-    return (if (places > 0) digits.trimEnd('0').trimEnd('.') else digits) + SUFFIXES[tier]
+    return (if (places > 0) digits.withoutTrailingZeros() else digits) + SUFFIXES[tier]
 }

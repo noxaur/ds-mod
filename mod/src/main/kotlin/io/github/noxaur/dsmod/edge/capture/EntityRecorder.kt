@@ -135,10 +135,11 @@ class EntityRecorder {
     private fun entry(entity: Entity, mapIds: MutableSet<MapId>): JsonObject? {
         val living = entity as? LivingEntity
         val equipped = living != null && slots.any { !living.getItemBySlot(it).isEmpty }
-        val item = when (entity) {
-            is ItemFrame -> entity.item
-            is ItemEntity -> entity.item.takeIf { it.has(DataComponents.CUSTOM_NAME) }
-            is Display.ItemDisplay -> entity.itemStack
+        val frame = entity as? ItemFrame
+        val item = when {
+            frame != null -> frame.item
+            entity is ItemEntity -> entity.item.takeIf { it.has(DataComponents.CUSTOM_NAME) }
+            entity is Display.ItemDisplay -> entity.itemStack
             else -> null
         }
         item?.get(DataComponents.MAP_ID)?.let(mapIds::add)
@@ -158,8 +159,8 @@ class EntityRecorder {
             entity.blockZ,
             entity.isCustomNameVisible,
             entity.isCurrentlyGlowing,
-            (entity as? ItemFrame)?.rotation ?: 0,
-            (entity as? ItemFrame)?.direction,
+            frame?.rotation ?: 0,
+            frame?.direction,
         )
         if (shape != entry.shape) {
             entry.shape = shape
@@ -182,15 +183,13 @@ class EntityRecorder {
 
         val json = buildJsonObject {
             put("entity", BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString())
-            put("x", shape.x)
-            put("y", shape.y)
-            put("z", shape.z)
+            position(shape.x, shape.y, shape.z)
             put("nameVisible", shape.nameVisible)
             entry.name?.let { put("name", it) }
             if (shape.glowing) put("glowing", true)
             if (equipped) put("equipment", buildJsonObject { slots.forEachIndexed { index, slot -> entry.encoded[index]?.let { put(slot.getName(), it) } } })
             entry.encoded[shown]?.let { put("item", it) }
-            if (entity is ItemFrame) {
+            if (frame != null) {
                 put("rotation", shape.rotation)
                 put("facing", shape.facing!!.getName())
             }
