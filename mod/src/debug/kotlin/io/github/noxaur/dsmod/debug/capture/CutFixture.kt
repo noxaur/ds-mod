@@ -24,8 +24,8 @@ import kotlin.io.path.useLines
 
 /**
  * Cuts the events of one window out of [capture] into [fixture], redacted. [types] are the event types to keep,
- * and `container` keeps `slot` too. The tab list and the sidebar that tell [area] are kept whatever [types] says,
- * because a fixture without them replays as if the player never left. The fixture begins with the state at the
+ * and `container` keeps `slot` too. The tab list and the sidebar that tell [area], and each change of world, are kept
+ * whatever [types] says, because a fixture without them replays as if the player never left. The fixture begins with the state at the
  * window's start: the last tab list and sidebar before it and the open container. A return to the player's inventory
  * that keeps its slots is written with every slot it kept, so a fixture never needs what came before it. A tab list
  * inside the window is kept only when one of the [info] rows or the area's row changed, and every one is kept when
@@ -44,6 +44,7 @@ fun cutFixture(
 ): Pair<Int, Int> {
     val kept = types + buildSet {
         if ("container" in types) add("slot")
+        if (area != Area.ANYWHERE) add("world")
         if (area.key != null) add("tablist")
         if (area.place != null) add("sidebar")
     }

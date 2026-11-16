@@ -185,7 +185,7 @@ class CutFixtureTest {
     }
 
     @Test
-    fun `the area's rows are written again after a change of world`() {
+    fun `a change of world is kept with no flag, and the area's rows are written again after it`() {
         val capture = capture(
             1 to tab("Area: The End"),
             2 to WorldChanged,
@@ -194,13 +194,13 @@ class CutFixtureTest {
             5 to WorldChanged,
             7 to tab("Area: The End"),
         )
-        val out = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 0.0..4.5, setOf("system", "world"), area = Area.END) })
+        val out = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 0.0..4.5, setOf("system"), area = Area.END) })
         assertEquals(listOf(TabList::class, WorldChanged::class, TabList::class, SystemMessage::class), out.map { it.second::class })
         // A hop inside the window keeps the tab list the window started with.
-        val hop = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 3.5..6.0, setOf("system", "world"), area = Area.END) })
+        val hop = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 3.5..6.0, setOf("system"), area = Area.END) })
         assertEquals(listOf(TabList::class, SystemMessage::class, WorldChanged::class), hop.map { it.second::class })
         // A cut that starts after the hop and before the new tab list starts nowhere.
-        val late = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 6.0..9.0, setOf("system", "world"), area = Area.END) })
+        val late = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 6.0..9.0, setOf("system"), area = Area.END) })
         assertEquals(listOf(TabList::class), late.map { it.second::class })
         assertEquals(7000L, late.single().first)
     }
