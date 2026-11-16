@@ -1,0 +1,21 @@
++   0.0s > [QUEST HINT] Adventurer — Place a Summoning Eye [Show me]
++   0.6s > Player1: hello
++   0.8s > Player2: hello
++   1.4s > [-] Player3
++   3.0s > You hear something falling from the sky.
++   3.0s > This ability is on cooldown for 4.35s
+             (hidden from chat)
+             (chat) Hide Cooldown Messages | Hid a message from the server. Turn off Hide Cooldown Messages under Chat in /dsmod to see them.
++   4.5s > The Endstone Protector has been defeated!
++   4.5s >                                                                                 
+                       ENDSTONE PROTECTOR DOWN!
+
+                Player4 dealt the final blow.
+
+                1st Damager [VIP] Player5 - 80.8M
+                2nd Damager [MVP+] Player6 - 33.8M
+               3rd Damager Player4 - 22.1M
+
+                   Your Damage: 33.8M (Position #2)
+                                                                                
+saved hidden.json = {"told":["hide-cooldown-messages"]}

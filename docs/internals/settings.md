@@ -6,7 +6,7 @@ How ds-mod's own settings screen draws every setting from one tree, why it repla
 
 The settings screen was MoulConfig's, the one SkyHanni uses, until ds-mod's own covered every setting. MoulConfig reads a setting's name, description and editor from annotations on its field, and lays every category out as one column of boxes it draws itself. Three things decided against keeping it. The own screen's layout, a sidebar of sections beside browser tabs with lists and canvases edited in place, can't be built from its boxes. Its editors are not the kit's, so a control's conventions, its look in both themes and its narration had to be built twice, once per screen. And the annotations were a second copy of every name and description, which `SettingsTreeTest` had to hold to the tree's. So `DsModConfig` is plain data, `SettingsTree` is the one place a setting is named, described and given its kind of row, and `/dsmod`, the Settings Key and Mod Menu's config button all open `SettingsScreen` through `DsModClient.openSettings`. MoulConfig also shipped inside the release jar, so the jar is smaller without it.
 
-The editors that only MoulConfig's buttons opened went with it. Beam Timing's screen is the Span row under Boss Beacon now, and the buttons that opened the own screen at a list are gone, since the list is a row where the player already is.
+The editors that only MoulConfig's buttons opened went with it. Beam Timing's screen is the Span row under Protector Spawn Beam now, and the buttons that opened the own screen at a list are gone, since the list is a row where the player already is.
 
 ## The config file keeps MoulConfig's file and keys
 

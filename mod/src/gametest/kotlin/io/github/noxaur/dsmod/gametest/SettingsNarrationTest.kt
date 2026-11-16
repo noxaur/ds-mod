@@ -74,12 +74,12 @@ class SettingsNarrationTest : FabricClientGameTest {
 
         open(context, SettingsTabs(at("The End")))
         if (context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).spot("beamSections") == null }) {
-            val beacon = spot("bossBeacon")
+            val beacon = spot("protectorSpawnBeam")
             move(beacon.extraX + 7, beacon.controlY + 6)
             context.input.pressMouse(0)
             context.waitTicks(2)
         }
-        over("bossBeacon", "Boss Beacon, switch, on, expanded")
+        over("protectorSpawnBeam", "Protector Spawn Beam, switch, on, expanded")
         over("beamSections", "Beam Timing, span, 175 to 200")
 
         open(context, SettingsTabs(at("Interface")))

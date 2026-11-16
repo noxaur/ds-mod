@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package io.github.noxaur.dsmod.core.config
 
 import io.github.noxaur.dsmod.core.camera.KeyMode
@@ -25,13 +27,15 @@ import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.core.world.BoxStyle
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 /**
  * Every saved setting, as plain data. `SettingsTree` names each field, describes it and gives it a row, and
  * `ConfigFile` writes it to `config/dsmod/config.json` by the field names, so a field's name is its key in the file:
- * renaming one loses what players set. A field's initializer is its default. The mixins read the fields from Java,
- * so each has `@JvmField`.
+ * a renamed field keeps its old name in `@JsonNames`, or players lose what they set. A field's initializer is its
+ * default. The mixins read the fields from Java, so each has `@JvmField`.
  */
 @Serializable
 class DsModConfig {
@@ -68,8 +72,9 @@ class DsModConfig {
 
     @Serializable
     class Chat {
+        @JsonNames("abilitySpam")
         @JvmField
-        var abilitySpam = true
+        var hideCooldownMessages = true
 
         @JvmField
         var copyChat = true
@@ -80,8 +85,10 @@ class DsModConfig {
         @JvmField
         var zealotTracker = true
 
+        @JsonNames("protectPlacedEyes")
+
         @JvmField
-        var protectPlacedEyes = true
+        var eyeGuard = true
 
         @JvmField
         var dragonTimer = true
@@ -90,19 +97,26 @@ class DsModConfig {
         var fireballAlert = true
     
 
-        @JvmField
-        var golemStatus = true
+        @JsonNames("golemStatus")
+    
 
         @JvmField
-        var bossBeacon = true
+        var protectorStatus = true
+
+        @JsonNames("bossBeacon")
+
+        @JvmField
+        var protectorSpawnBeam = true
 
         /** The parts of the Protector's cycle that show the beam, in zealots killed since the last defeat, out of 200. */
         var beamSections: List<Section> = listOf(Section(175, 200))
 
         var beamInFight = false
 
+        @JsonNames("bossDrops")
+
         @JvmField
-        var bossDrops = true
+        var bossFightTracker = true
     }
 
     @Serializable
@@ -121,8 +135,10 @@ class DsModConfig {
         @JvmField
         var fullbright = false
 
+        @JsonNames("explosionParticleHider")
+
         @JvmField
-        var explosionParticleHider = false
+        var hideExplosions = false
 
         @JvmField
         var damageNumbers = false
@@ -287,8 +303,10 @@ class DsModConfig {
         @JvmField
         var equipmentPlacement = HudDock.FREE
 
+        @JsonNames("inventoryPreview")
+
         @JvmField
-        var inventoryPreview = false
+        var inventoryHud = false
 
         @JvmField
         var inventoryRows: MutableList<InventoryRow> = mutableListOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM)
@@ -395,8 +413,9 @@ class DsModConfig {
 
     @Serializable
     class Inventory {
+        @JsonNames("rarityMarks")
         @JvmField
-        var rarityMarks = true
+        var itemRarity = true
 
         @JvmField
         var rarityPreset = RarityPreset.GILDED
@@ -424,8 +443,10 @@ class DsModConfig {
         /** The look the hotbar's marks are drawn in: the inventory's while they match, or the hotbar's own. */
         fun hotbarLook(): SlotStyle = if (hotbarMatches) containerStyle() else hotbarStyle
 
+        @JsonNames("themedMenus")
+
         @JvmField
-        var themedMenus = true
+        var menuTheme = true
 
         @JvmField
         var menuLook = MenuLook.SOLID
@@ -433,11 +454,15 @@ class DsModConfig {
         @JvmField
         var glassOpacity = 60f
 
-        @JvmField
-        var stableMenus = true
+        @JsonNames("stableMenus")
 
         @JvmField
-        var hideFiller = true
+        var fixedMenuLayout = true
+
+        @JsonNames("hideFiller")
+
+        @JvmField
+        var hideGlassPanes = true
 
         @JvmField
         var keepCursor = true
@@ -490,8 +515,9 @@ class DsModConfig {
 
     @Serializable
     class Loot {
+        @JsonNames("lootAlerts")
         @JvmField
-        var lootAlerts = true
+        var rareDropAlert = true
 
         @JvmField
         var lootAlertTier = LootTier.EPIC
@@ -518,8 +544,10 @@ class DsModConfig {
         @JvmField
         var theme = Theme.CHARCOAL
 
+        @JsonNames("dragInChat")
+
         @JvmField
-        var dragInChat = true
+        var chatHudEditor = true
 
         @JvmField
         var editKey = NO_KEY

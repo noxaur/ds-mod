@@ -16,7 +16,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.ChatScreen
 
 /**
- * What the grid marks and where it goes: the held slot ringed, a Legendary item's slot painted by Rarity Marks, a
+ * What the grid marks and where it goes: the held slot ringed, a Legendary item's slot painted by Item Rarity, a
  * stack that lands bobbing as on the hotbar, the grid and its plate stepping aside for a menu, and the grid docked
  * right of the hotbar. Read the screenshots: the ring, the bob, a menu open, and the docked grid.
  */
@@ -29,12 +29,12 @@ class InventoryMarksTest : FabricClientGameTest {
         // The hotbar row marks the slot the player holds, as the hotbar does, and moves with it.
         context.runOnClient<Nothing> { it.player!!.inventory.selectedSlot = 2 }
         context.waitTick()
-        val heldShot = context.takeScreenshot("inventory-preview-held")
+        val heldShot = context.takeScreenshot("inventory-hud-held")
         val ring = Theme.CHARCOAL.accent and 0xFFFFFF
         check(pixel(context, heldShot, cell(context, 3, 2, gaps = 1), 0, -9) == ring) { "The held slot has no ring" }
         check(pixel(context, heldShot, cell(context, 3, 3, gaps = 1), 0, -9) != ring) { "A slot the player does not hold has a ring" }
 
-        // Rarity Marks paints a Legendary item's slot as it does in the inventory, and leaves a plain one alone.
+        // Item Rarity paints a Legendary item's slot as it does in the inventory, and leaves a plain one alone.
         check(pixel(context, heldShot, cell(context, 0, 6), -7, -7) != pixel(context, heldShot, cell(context, 1, 2), -7, -7)) {
             "The Legendary sword's slot looks like the plain sword's"
         }
@@ -45,12 +45,12 @@ class InventoryMarksTest : FabricClientGameTest {
         fun land() = context.runOnClient<Nothing> { it.player!!.inventory.getItem(1).popTime = POP }
         val still = pixel(context, heldShot, obsidian, -6, 0)
         land()
-        val unpopped = pixel(context, context.takeScreenshot("inventory-preview-pickup-off"), obsidian, -6, 0)
+        val unpopped = pixel(context, context.takeScreenshot("inventory-hud-pickup-off"), obsidian, -6, 0)
         check(unpopped == still) { "The grid bobbed a stack with Pickup Animation off" }
         general.inventoryPickup = true
         context.waitFor { DsModClient.game.readouts.first { it.feature.id == ID }.hud?.pops == true }
         land()
-        val popped = pixel(context, context.takeScreenshot("inventory-preview-pickup"), obsidian, -6, 0)
+        val popped = pixel(context, context.takeScreenshot("inventory-hud-pickup"), obsidian, -6, 0)
         check(popped != still) { "A stack that landed did not bob: %06X".format(popped) }
         general.inventoryPickup = false
 
@@ -63,9 +63,9 @@ class InventoryMarksTest : FabricClientGameTest {
         try {
             // Glass menus neither dim nor blur, so the head in the grid's first slot shows plainly until the grid steps aside.
             val head = cell(context, 0, 0)
-            val open = context.takeScreenshot("inventory-preview-before-menu")
+            val open = context.takeScreenshot("inventory-hud-before-menu")
             ServerMenus.open(context, world, 1, "Small Chest")
-            val behind = context.takeScreenshot("inventory-preview-menu-open")
+            val behind = context.takeScreenshot("inventory-hud-menu-open")
             check(pixel(context, behind, head, 0, 0) != pixel(context, open, head, 0, 0)) { "The grid still shows under an open menu" }
             context.runOnClient<Nothing> { it.player!!.closeContainer() }
             context.waitFor { it.gui.screen() == null }
@@ -77,9 +77,9 @@ class InventoryMarksTest : FabricClientGameTest {
                 val block = checkNotNull(Hud.find(ID))
                 block.x + 2.0 * block.scale to block.y + block.height / 2.0 * block.scale
             }
-            val plated = context.takeScreenshot("inventory-preview-plate-before-menu")
+            val plated = context.takeScreenshot("inventory-hud-plate-before-menu")
             ServerMenus.open(context, world, 1, "Small Chest")
-            val unplated = context.takeScreenshot("inventory-preview-plate-menu-open")
+            val unplated = context.takeScreenshot("inventory-hud-plate-menu-open")
             // The plate darkens the world behind it, so the same pixel without it is lighter.
             check(pixel(context, unplated, margin, 0, 0) != pixel(context, plated, margin, 0, 0)) { "The grid's plate stays under an open menu" }
             context.runOnClient<Nothing> { it.player!!.closeContainer() }
@@ -100,7 +100,7 @@ class InventoryMarksTest : FabricClientGameTest {
         }
         check(first.first >= width / 2 + 91 + 7 && last.first < width) { "The docked grid is not right of the hotbar: $first to $last" }
         check(last.second >= height - 22) { "The docked grid's hotbar row is not level with the hotbar: $last" }
-        context.takeScreenshot("inventory-preview-docked-right")
+        context.takeScreenshot("inventory-hud-docked-right")
 
         // A wheel step grows the grid from the size it shows docked, and it leaves the dock at that size. The chat's
         // lines and input lie left of and below the spot, so the wheel turns over the grid's top right.

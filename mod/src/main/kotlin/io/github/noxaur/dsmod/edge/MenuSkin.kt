@@ -2,8 +2,8 @@ package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.container.MenuButton
 import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
-import io.github.noxaur.dsmod.core.feature.inventory.StableMenus
-import io.github.noxaur.dsmod.core.feature.inventory.ThemedMenus
+import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
+import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
 import io.github.noxaur.dsmod.core.ui.CursorMemory
 import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.Menus
@@ -33,7 +33,7 @@ import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
 
 /**
- * Themed Menus, Stable Menus and Keep Cursor, which the mixins in `edge/mixin` ask. A themed menu is drawn by the kit in
+ * Menu Theme, Fixed Menu Layout and Keep Cursor, which the mixins in `edge/mixin` ask. A themed menu is drawn by the kit in
  * place of its texture: a panel, a slot under each of its slots, and the well the inventory shows the player in.
  * Only the screens whose texture is nothing more than that are themed. A furnace or an anvil keeps its own art,
  * because its arrows and fields live in the texture, and the server opens chests. The recipe book's button on a themed
@@ -47,9 +47,9 @@ object MenuSkin {
 
     val cursor = CursorMemory()
 
-    val themed: Boolean get() = DsModClient.runs<ThemedMenus>()
+    val themed: Boolean get() = DsModClient.runs<MenuTheme>()
 
-    val stable: Boolean get() = DsModClient.runs<StableMenus>()
+    val stable: Boolean get() = DsModClient.runs<FixedMenuLayout>()
 
     val keepsCursor: Boolean get() = DsModClient.runs<KeepCursor>()
 

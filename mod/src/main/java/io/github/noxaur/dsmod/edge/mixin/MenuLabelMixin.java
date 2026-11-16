@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 /**
- * Themed Menus: a themed menu's title and inventory label are chrome, so they take the theme's ink. Vanilla's dark gray
+ * Menu Theme: a themed menu's title and inventory label are chrome, so they take the theme's ink. Vanilla's dark gray
  * stays the default, so a color the server gives the title still wins. The inventory screen draws its own labels.
  * Glass is dark in both themes, so a glass menu's labels take the light ink.
  */

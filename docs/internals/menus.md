@@ -4,7 +4,7 @@ How the mod redraws the server's menus and adds controls to them. What each sett
 
 ## The game's menus are redrawn, not retextured
 
-Themed Menus draws a menu with the kit instead of recoloring its texture, for the reason the kit exists: one theme is a list of colors, and a texture per theme would be art to keep by hand. The mixins wrap only the call that blits the menu's texture. The rest of the screen still runs, so the inventory still draws the player, and Fabric's background event still fires for the slot marks. A screen whose texture holds more than a panel and slots, such as a furnace's flame or an anvil's field, is left alone. Drawing those in the kit is work for a screen the server does not open.
+Menu Theme draws a menu with the kit instead of recoloring its texture, for the reason the kit exists: one theme is a list of colors, and a texture per theme would be art to keep by hand. The mixins wrap only the call that blits the menu's texture. The rest of the screen still runs, so the inventory still draws the player, and Fabric's background event still fires for the slot marks. A screen whose texture holds more than a panel and slots, such as a furnace's flame or an anvil's field, is left alone. Drawing those in the kit is work for a screen the server does not open.
 
 The recipe book's button is drawn by the kit where the game draws it, not replaced by a widget of the mod's, because the game moves that button itself when the book opens. The server's own Go Back, Close and page arrows are drawn as kit buttons in their slots, because a menu that mixes item buttons with the mod's reads as two systems. Only the drawing changes, so the click is still the player's own on the server's slot, and the server's tooltip stays. The server marks them with nothing but an item and a name, and it spells "Next page" in storage and "Next Page" in the auction house, so `MenuButton` lists each name a capture has shown.
 
@@ -12,17 +12,17 @@ A tooltip with its own `tooltip_style` keeps it. dragsim.co gives every item a s
 
 ## Glass is a look, not a feature
 
-Glass is a look of Themed Menus and not a feature of its own, so the player finds everything about how a menu looks in one place, and a menu the kit cannot draw, such as a furnace, never turns half glass.
+Glass is a look of Menu Theme and not a feature of its own, so the player finds everything about how a menu looks in one place, and a menu the kit cannot draw, such as a furnace, never turns half glass.
 
 Glass is the HUD plate's dark fill at the player's alpha in both themes, not the theme's panel made see-through. Vanilla's light gray panel over a bright sky would leave its dark labels unreadable, while a dark sheet takes the light ink in either theme. A menu opened in the world dims the world with one gradient and no blur, and glass skips only that gradient, so every other screen keeps its dimming. The HUD shows through a glass menu as the world does, because seeing what is behind is the point of glass. Only the crosshair is hidden, since it would sit in the middle of the menu as a stray mark.
 
 The buttons the kit draws on a menu turn to glass with it, so a glass menu does not carry opaque buttons from the theme. Glass tabs stand taller rather than join the panel: two see-through fills laid on each other show a darker band where they meet.
 
-## Stable Menus keeps the bottom edge still
+## Fixed Menu Layout keeps the bottom edge still
 
-Stable Menus keeps a menu's bottom edge where a six-row menu's sits, not its top, because the server puts Go Back and Close in the bottom row of most menus and the player's inventory sits under it. Storage pages and the Ender Chest are the exception: they hold the player's items in every row below the top, so their Go Back, Close and page arrows sit in the top row. A chest menu's texture recenters itself on the screen and ignores the menu's top, so `ChestScreenMixin` moves the texture by the same amount. Without that the slots would move and the art would not.
+Fixed Menu Layout keeps a menu's bottom edge where a six-row menu's sits, not its top, because the server puts Go Back and Close in the bottom row of most menus and the player's inventory sits under it. Storage pages and the Ender Chest are the exception: they hold the player's items in every row below the top, so their Go Back, Close and page arrows sit in the top row. A chest menu's texture recenters itself on the screen and ignores the menu's top, so `ChestScreenMixin` moves the texture by the same amount. Without that the slots would move and the art would not.
 
-Hide Filler only skips drawing, so a click on a hidden pane still goes to the server.
+Hide Glass Panes only skips drawing, so a click on a hidden pane still goes to the server.
 
 ## Keep Cursor cannot tell the server's close from the player's
 

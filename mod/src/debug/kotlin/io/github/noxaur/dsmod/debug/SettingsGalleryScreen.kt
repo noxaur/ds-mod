@@ -129,7 +129,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
                 switch(v::on, "Dragon Timer", "Show when the egg returns.")
                 switch(v::off, "Fullbright", "Light the whole world.")
                 switch(v::feature, "Slot Lock", "Lock slots and items.") { keys(v::key, "Slot Key", "Lock the slot.") }
-                switch(v::open, "Boss Beacon", "Show a beam.", id = "openSwitch") { keys(v::none, "Item Key", "Lock the item.") }
+                switch(v::open, "Protector Spawn Beam", "Show a beam.", id = "openSwitch") { keys(v::none, "Item Key", "Lock the item.") }
             },
             "Number: from the minimum, signed" to rows {
                 number(v::distance, "Distance", "Set the distance.", 1f..50f, step = 0.5f)
