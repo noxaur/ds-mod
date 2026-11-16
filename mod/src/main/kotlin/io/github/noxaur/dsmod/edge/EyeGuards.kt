@@ -27,8 +27,11 @@ object EyeGuards {
             val again = now < until && hit.blockPos == guarded
             // The name carries the server's color code in front, so match its end.
             val held = player.getItemInHand(hand).hoverName.string
-            // A dropped click guards the block anew, so a held button never gets one through.
-            if (hand == InteractionHand.MAIN_HAND && (held.endsWith("Summoning Eye") || held.endsWith("Golden Eye"))) {
+            val eye = hand == InteractionHand.MAIN_HAND && (held.endsWith("Summoning Eye") || held.endsWith("Golden Eye"))
+            // A dropped click guards the block anew, even after the eye has left the hand. The server
+            // clears the hand before the held button's repeats stop, and the next one would take the eye.
+            if (again) until = now + GUARD_MILLIS
+            else if (eye) {
                 guarded = hit.blockPos.immutable()
                 until = now + GUARD_MILLIS
             }

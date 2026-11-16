@@ -50,9 +50,8 @@ gate edge.CopyChats 19952a107159  CopyChat
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
     approved by github.com/noxaur 2026-11-16T08:42:00Z
-gate edge.EyeGuards b42b9f42c41e  ProtectPlacedEyes
+gate edge.EyeGuards c98f4ca5c7eb  ProtectPlacedEyes
     can refuse the player's actions through UseBlockCallback.EVENT
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate edge.MenuBack ff8ff383383c  BackButtons
     can refuse or change sent chat through ClientSendMessageEvents.COMMAND
     sends through ClientPacketListener.sendCommand
