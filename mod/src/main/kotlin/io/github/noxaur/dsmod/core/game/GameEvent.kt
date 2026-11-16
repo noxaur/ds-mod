@@ -94,7 +94,7 @@ data class PetNear(val name: ServerText, val head: Item) : GameEvent
 
 /**
  * The player's own attack landed on a living [entity] that is not an armor stand, such as `minecraft:enderman`, as the
- * client sends it. The server says nothing of a hit, so this is the one event the player makes rather than the server.
+ * client sends it. The server says nothing of a hit, so this event comes from the player rather than the server.
  * Posted only while a feature reads it.
  */
 @Serializable
@@ -109,3 +109,24 @@ data class Hit(val entity: String) : GameEvent
 @Serializable
 @SerialName("floating")
 data class FloatingText(val text: ServerText) : GameEvent
+
+/**
+ * The server's clock: [gameTime] is how many ticks its world has run. The server sends it about once a second, so the
+ * ticks between two of them over the time between them are its ticks per second. Posted only while a feature reads it.
+ */
+@Serializable
+@SerialName("time")
+data class ServerTime(val gameTime: Long) : GameEvent
+
+/** The server answered a ping request after [millis], there and back. Posted only while a feature reads it. */
+@Serializable
+@SerialName("ping")
+data class PingMeasured(val millis: Long) : GameEvent
+
+/**
+ * The frames the client drew in the last second, as the game counts them itself once a second. It comes from the
+ * client rather than the server, and is posted once a second, only while a feature reads it.
+ */
+@Serializable
+@SerialName("fps")
+data class FrameRate(val fps: Int) : GameEvent

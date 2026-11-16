@@ -36,3 +36,15 @@ fun short(value: Double, places: Int): String {
     val digits = String.format(Locale.US, "%.${places}f", shown)
     return (if (places > 0) digits.withoutTrailingZeros() else digits) + SUFFIXES[tier]
 }
+
+/** A wait of [millis], in whole minutes rounded up, as `45m`, `3h 5m` or `2d 4h`, or `<1m` for none left. */
+fun duration(millis: Long): String {
+    val minutes = (millis + 59_999) / 60_000
+    val hours = minutes / 60
+    return when {
+        hours >= 24 -> "${hours / 24}d ${hours % 24}h"
+        hours > 0 -> "${hours}h ${minutes % 60}m"
+        minutes > 0 -> "${minutes}m"
+        else -> "<1m"
+    }
+}
