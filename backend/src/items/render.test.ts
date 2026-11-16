@@ -82,6 +82,37 @@ test("a full set bonus names its pieces", () => {
   expect(lines("sorrow_helmet").some((line) => line.startsWith("Piece Bonus: Sorrow"))).toBe(true);
 });
 
+test("a worn set counts the pieces that share its ability", () => {
+  const piece = item("riftwalker_chestplate");
+  const drawn = makeRenderer(catalog, new Map(), [piece, piece, piece, piece]).render(piece);
+  const text = (drawn?.lore ?? []).map(plain);
+  expect(text.some((line) => line.includes("Full Set Bonus: Vivacious Darkness (4/4)"))).toBe(true);
+});
+
+const copy = (value: unknown): Record<string, unknown> =>
+  typeof value === "object" && value !== null ? { ...value } : {};
+
+test("a negative stat has one sign", () => {
+  const slow = {
+    ...item("scylla"),
+    item_stats: { base: { speed: -5, intelligence: 10 }, additive: {}, multiplicative: {}, increase_max: {} },
+    item_data: {
+      ...copy(item("scylla")["item_data"]),
+      reforge_stats: {
+        base: { speed: -3, intelligence: -12 },
+        additive: {},
+        multiplicative: {},
+        increase_max: {},
+      },
+    },
+  };
+  const drawn = renderer.render(slow);
+  const text = (drawn?.lore ?? []).map(plain);
+  expect(text.some((line) => line.includes("Speed: -5 (-3)"))).toBe(true);
+  expect(text.some((line) => line.includes("Intelligence: +10 (-12)"))).toBe(true);
+  expect(text.some((line) => line.includes("+-"))).toBe(false);
+});
+
 test("a skull whose item data says it is no skull is still a skull with a skin id's texture", () => {
   const seen = btoa(JSON.stringify({ textures: { SKIN: { url: "http://textures.minecraft.net/texture/abc123" } } }));
   const hints = new Map([["sorrow_helmet", { glint: null, textures: new Map([["superior_baby", seen]]) }]]);

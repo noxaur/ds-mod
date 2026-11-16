@@ -39,10 +39,11 @@ const sectionsOf = (profile: WireProfile): Sections => ({
 });
 
 /** Draws the items of one answer, which may hold nulls where a slot is empty. */
-const draw = Effect.fn(function* (items: readonly unknown[]) {
+const draw = Effect.fn(function* (items: readonly unknown[], inventory: Sections["inventory"]) {
   const present = items.filter((item) => item !== null && item !== undefined);
   const hints = yield* (yield* ItemStore).hints(entriesOf(present));
-  const renderer = makeRenderer((yield* catalog).raw, hints);
+  const worn = equipmentCells(inventory);
+  const renderer = makeRenderer((yield* catalog).raw, hints, [worn.helmet, worn.chestplate, worn.leggings, worn.boots]);
   return items.map((item) => (item === null || item === undefined ? null : renderer.render(item)));
 });
 
@@ -102,13 +103,10 @@ export const profile = Effect.fn(function* (name: string, profileId: string | un
   yield* Effect.orDie((yield* ProfileStore).put(snapshotKey(id), { hidden, sections }, SNAPSHOT_SECONDS));
 
   const worn = equipmentCells(current.inventory);
-  const [helmet = null, chestplate = null, leggings = null, boots = null, held = null] = yield* draw([
-    worn.helmet,
-    worn.chestplate,
-    worn.leggings,
-    worn.boots,
-    worn.held,
-  ]);
+  const [helmet = null, chestplate = null, leggings = null, boots = null, held = null] = yield* draw(
+    [worn.helmet, worn.chestplate, worn.leggings, worn.boots, worn.held],
+    current.inventory,
+  );
 
   return {
     snapshot: id,
@@ -170,5 +168,5 @@ export const container = Effect.fn(function* (snapshot: string, containerId: str
       items: layout.cells.map((pet) => (pet === null ? null : petOf(items, pet).item)),
     };
   }
-  return { ...summaryOf(layout, hidden), items: hidden ? [] : yield* draw(layout.cells) };
+  return { ...summaryOf(layout, hidden), items: hidden ? [] : yield* draw(layout.cells, sections.inventory) };
 });
