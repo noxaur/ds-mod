@@ -10,6 +10,7 @@ import io.github.noxaur.dsmod.core.config.Kind
 import io.github.noxaur.dsmod.core.config.Number
 import io.github.noxaur.dsmod.core.config.Order
 import io.github.noxaur.dsmod.core.config.Panel
+import io.github.noxaur.dsmod.core.config.Preview
 import io.github.noxaur.dsmod.core.config.Pick
 import io.github.noxaur.dsmod.core.config.Setting
 import io.github.noxaur.dsmod.core.config.Span
@@ -391,7 +392,7 @@ class SettingRows(
                 line.room = minOf(ORDER_SUMMARY, inner / 3)
                 reserve = line.room + Kit.GAP
             }
-            is Fold, is Items<*>, is Panel<*> -> Unit
+            is Fold, is Items<*>, is Panel<*>, is Preview -> Unit
         }
         if (s is Fold) {
             line.height = FOLD_HEIGHT + 4
@@ -421,7 +422,7 @@ class SettingRows(
         val textHeight = NAME_TOP + 10 + LINE * shown.size + 3
         line.height = maxOf(MIN_HEIGHT, textHeight, line.ch + PAD_Y * 2)
         val right = line.x + line.width - PAD
-        if (s is Items<*> || s is Panel<*>) {
+        if (s is Items<*> || s is Panel<*> || s is Preview) {
             val editor = made.getOrPut(s.id) { editors(s, host) }
             line.editor = editor
             line.cx = line.x + PAD
@@ -508,7 +509,7 @@ class SettingRows(
                     line.mutedX = line.x + line.width - 2 - FOLD_PAD - font.width(line.muted)
                 }
                 is Action -> line.label = s.button
-                is Items<*>, is Panel<*> -> line.editor?.refresh()
+                is Items<*>, is Panel<*>, is Preview -> line.editor?.refresh()
                 is Order<*> -> {
                     summarize(line, if (line.open) "" else fit(s.summary(Keys::name).orEmpty(), line.room))
                 }
@@ -734,7 +735,7 @@ class SettingRows(
                 openButton(g, line, line.cx, cy, controlState, top)
                 if (hovered) g.requestCursor(CursorTypes.POINTING_HAND)
             }
-            is Items<*>, is Panel<*>, is Fold -> Unit
+            is Items<*>, is Panel<*>, is Preview, is Fold -> Unit
         }
     }
 
@@ -847,7 +848,7 @@ class SettingRows(
                 refresh()
             }
             is Fold, is Order<*> -> if (!right) fold(line, !line.open)
-            is Items<*>, is Panel<*> -> Unit
+            is Items<*>, is Panel<*>, is Preview -> Unit
         }
         return true
     }
@@ -1077,7 +1078,7 @@ class SettingRows(
                 refresh()
             }
             is Fold, is Order<*> -> fold(line, !line.open)
-            is Items<*>, is Panel<*> -> Unit
+            is Items<*>, is Panel<*>, is Preview -> Unit
         }
     }
 

@@ -53,6 +53,7 @@ enum class Kind(val spoken: String) {
     ORDER("list"),
     ITEMS("list"),
     PANEL("editor"),
+    PREVIEW("preview"),
 }
 
 /**
@@ -467,6 +468,10 @@ class Rows {
     /** An editor drawn as a picture of what it edits, on the edge's [canvas], summed up by [describe]. */
     fun <T> panel(bind: Bind<T>, name: String, description: String, canvas: Canvas, id: String, dependsOn: Switch? = null, describe: (T) -> String) =
         add(Panel(id, name, description, bind, canvas, describe), dependsOn)
+
+    /** A picture on [canvas] of what the rows around it do, which holds no value. */
+    fun preview(id: String, name: String, description: String, canvas: Canvas, dependsOn: Switch? = null) =
+        add(Preview(id, name, description, canvas), dependsOn)
 
     /** A button that runs [run], such as a reset of a group. */
     fun action(id: String, name: String, description: String, button: String, dependsOn: Switch? = null, run: () -> Unit) =

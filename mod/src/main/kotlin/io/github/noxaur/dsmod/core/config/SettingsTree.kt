@@ -156,6 +156,22 @@ object SettingsTree {
                     }
                     action("resetAnimations", "Reset Animations", "Put every Animations setting back to the game's own.", button = "Reset", run = g::resetAnimations)
                 }
+                group("Player Model", switch = toggle(g::playerModel, "Player Model", "Resize, tilt, spin and pose players, as only you see them.")) {
+                    preview("modelPreview", "Preview", "Drag your model to turn it, and see the settings below on it.", Canvas.PLAYER_MODEL)
+                    choice(g::modelTarget, "Players", "Change only your own model, or every player's.")
+                    number(g::modelSize, "Size", "Grow or shrink the model.", 0.1f..3f, step = 0.05f, unit = "x")
+                    fold("modelStretch", "Stretch", "Make the model wider, taller or deeper than its size.") {
+                        number(g::modelWidth, "Width", "Make the model wider, or thinner below 1.", 0.1f..3f, step = 0.05f, unit = "x")
+                        number(g::modelHeight, "Height", "Make the model taller, or shorter below 1.", 0.1f..3f, step = 0.05f, unit = "x")
+                        number(g::modelDepth, "Depth", "Make the model deeper, or flatter below 1.", 0.1f..3f, step = 0.05f, unit = "x")
+                    }
+                    number(g::modelTiltForward, "Tilt Forward", "Lean the model forward, or back below zero, in degrees.", -180f..180f, step = 1f, unit = "°")
+                    number(g::modelTiltSideways, "Tilt Sideways", "Lean the model to its right, or left below zero, in degrees.", -180f..180f, step = 1f, unit = "°")
+                    switch(g::modelUpsideDown, "Upside Down", "Stand the model on its head.")
+                    number(g::modelSpin, "Spin", "Spin the model this many turns a second, the other way below zero.", -5f..5f, step = 0.1f, unit = "/s")
+                    choice(g::modelPose, "Pose", "Hold the model's arms and legs still in a pose.")
+                    action("resetPlayerModel", "Reset Model", "Put every Player Model setting back to the game's own.", button = "Reset", run = g::resetPlayerModel)
+                }
                 group("Profile Viewer", switch = toggle(g::profileViewer, "Profile Viewer", "Look up any player's profile with /pv and their name.")) {
                     switch(g::profileNames, "Click Names", "Click a player's name in chat to open their profile.")
                 }

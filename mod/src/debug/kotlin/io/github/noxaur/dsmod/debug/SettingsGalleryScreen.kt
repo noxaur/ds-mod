@@ -221,6 +221,9 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
                 "Panel: dimmed" to rows {
                     panel(Bind.of(v::dimTabs), "Tabs", "Press a place.", Canvas.MENU_TABS, id = "dimTabs", dependsOn = gate) { "${it.size} tabs" }
                 },
+                "Preview: the player's model" to rows {
+                    preview("galleryPreview", "Preview", "Drag the model to turn it.", Canvas.PLAYER_MODEL)
+                },
             ),
         ),
     )
