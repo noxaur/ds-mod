@@ -295,6 +295,9 @@ class KitRangeSlider(
             if (hit != null) {
                 selected = -1
                 sections = Sections.remove(sections, hit.first)
+                // The left button may still be down from a drag. Leaving the grab set makes the next drag
+                // event rebuild the track from the list taken at the left press, which puts this section back.
+                grab = null
                 onChange()
             }
             return
@@ -665,7 +668,12 @@ class KitMenu(
         y = if (anchorY + anchorHeight + 1 + height <= screenHeight) anchorY + anchorHeight + 1 else (anchorY - 1 - height).coerceAtLeast(0)
     }
 
-    private fun at(mouseY: Double) = ((mouseY - y - PAD) / ITEM).toInt().takeIf { it in items.indices } ?: -1
+    private fun at(mouseY: Double): Int {
+        val index = (mouseY - y - PAD) / ITEM
+        // Toward zero, so a click in the padding above the first item is not item 0.
+        if (index < 0) return -1
+        return index.toInt().takeIf { it in items.indices } ?: -1
+    }
 
     override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
         val item = at(event.y)
