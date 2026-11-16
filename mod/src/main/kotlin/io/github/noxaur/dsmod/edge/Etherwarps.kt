@@ -21,6 +21,8 @@ object Etherwarps {
     private val settings: DsModConfig.General get() = DsModClient.settings.general
 
     private val at = BlockPos.MutableBlockPos()
+
+    // The world the line is followed through, held only while it is, so a world the player left is not kept.
     private var level: ClientLevel? = null
     private val blocks = Etherwarp.Blocks { x, y, z ->
         val level = level!!
@@ -39,6 +41,7 @@ object Etherwarps {
     private var yaw = 0f
     private var pitch = 0f
     private var foundRange = 0
+    private var world = 0
 
     /** The block boxed on this frame, and why a warp there fails, or null when nothing is boxed. The game test reads it. */
     var target: Etherwarp.Target? = null
@@ -75,7 +78,7 @@ object Etherwarps {
             val z = player.z
             val now = level.gameTime
             if (now != tick || x != eyeX || y != eyeY || z != eyeZ || player.yRot != yaw || player.xRot != pitch ||
-                range != foundRange || level !== this.level
+                range != foundRange || System.identityHashCode(level) != world
             ) {
                 tick = now
                 eyeX = x
@@ -84,9 +87,14 @@ object Etherwarps {
                 yaw = player.yRot
                 pitch = player.xRot
                 foundRange = range
-                this.level = level
+                world = System.identityHashCode(level)
                 val look = player.getViewVector(1f)
-                val found = Etherwarp.target(x, y, z, look.x, look.y, look.z, range, if (s.etherwarpFailed) Etherwarp.BEYOND else 0, blocks)
+                this.level = level
+                val found = try {
+                    Etherwarp.target(x, y, z, look.x, look.y, look.z, range, if (s.etherwarpFailed) Etherwarp.BEYOND else 0, blocks)
+                } finally {
+                    this.level = null
+                }
                 target = found?.takeIf { it.miss == null || s.etherwarpFailed }
                 box = target?.let { target ->
                     val pos = BlockPos(target.x, target.y, target.z)
