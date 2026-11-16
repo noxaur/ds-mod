@@ -36,8 +36,6 @@ import net.minecraft.world.item.component.CustomData
 object SlotGuards {
     private const val FLASH_MILLIS = 300L
     private const val WORN_FIRST = 36
-    /** A result can craft once per item in the grid. Past this the click is not making progress. */
-    private const val GUARD = 256
     /** Ticks to wait for the server to put the next crafting result back, before giving up. */
     private const val RESULT_WAIT = 5
 
@@ -222,9 +220,10 @@ object SlotGuards {
 
     /**
      * A Shift click moves an item to wherever the menu has room, which may be a locked slot that is empty or holds
-     * more of the same. The stack then goes to every unlocked slot in that order, as much as each one holds, with
-     * the clicks a player would make. A result keeps crafting until it is empty or those slots are full. Returns
-     * whether it took the click over. It refuses, and sends nothing, only when every slot that could take any is locked.
+     * more of the same. The stack then goes to every unlocked slot in that order. One left click picks it up, one
+     * left click fills each of those slots, and one left click puts back what did not fit. A result is taken only
+     * when the whole output fits, and the next craft waits for the server to refill it. Returns whether it took the
+     * click over. It sends nothing when a locked slot is the reason and the move cannot be made safely.
      */
     private fun steered(client: Minecraft, screen: AbstractContainerScreen<*>, slot: Slot): Boolean {
         val stack = slot.item
@@ -236,56 +235,56 @@ object SlotGuards {
         val opened = shiftPlaces(moving, described, stackable = stack.isStackable)
         val lockedTakes = vanilla.any { (index, _) -> described.first { it.index == index }.locked }
         val lockedCould = described.any { it.locked && (it.acceptsEmpty || it.same && it.count < it.limit) }
-        if (opened.isEmpty()) return lockedTakes || yields && lockedCould
+        if (opened.isEmpty()) {
+            // Nothing unlocked can take any, so a later tick must not keep asking.
+            if (lockedTakes || yields && lockedCould) pending = null
+            return lockedTakes || yields && lockedCould
+        }
         if (!yields && !lockedTakes || yields && !lockedCould) return false
+        // A result cannot take a leftover back. Taking part of it consumes the craft and deletes the rest.
+        if (yields && opened.sumOf { it.second } < moving) {
+            pending = null
+            return true
+        }
         // A Shift click leaves the cursor alone. Set a held stack down outside this move, and pick it back up after.
         val carried = screen.menu.carried
-        val park = if (carried.isEmpty) null else park(screen, carried, described.map { it.index }.toSet() + slot.index) ?: return false
-        val mode = client.gameMode ?: return false
-        val player = client.player ?: return false
-        fun click(index: Int, button: Int) {
-            mode.handleContainerInput(screen.menu.containerId, index, button, ContainerInput.PICKUP, player)
+        val reserved = described.map { it.index }.toSet() + slot.index
+        val park = if (carried.isEmpty) null else park(screen, carried, reserved)
+        if (!carried.isEmpty && park == null) {
+            pending = null
+            return true
         }
-        if (park != null) click(park.index, 0)
-        var guard = 0
-        var blocked = false
-        while (slot.hasItem() && guard++ < GUARD) {
-            val count = slot.item.count
-            val room = shiftPlaces(count, into.map { described(slot.item, it) }, stackable = slot.item.isStackable).sumOf { it.second }
-            if (room <= 0) {
-                blocked = true
-                break
-            }
-            // A normal slot can take the whole stack onto the cursor and put back what did not fit.
-            // A result slot cannot take anything back, so take only a whole stack or a right-click half that fits.
-            val take = when {
-                !yields || room >= count -> count
-                room >= (count + 1) / 2 -> (count + 1) / 2
-                else -> break
-            }
-            click(slot.index, if (take == count) 0 else 1)
-            var left = screen.menu.carried.count
-            for ((index, amount) in shiftPlaces(left, into.map { described(screen.menu.carried, it) }, stackable = screen.menu.carried.isStackable)) {
-                if (amount == left) click(index, 0) else repeat(amount) { click(index, 1) }
-                left -= amount
-            }
-            if (!screen.menu.carried.isEmpty) {
-                if (!slot.mayPlace(screen.menu.carried)) break
-                click(slot.index, 0)
-            }
-            if (!yields) break
+        val mode = client.gameMode
+        val player = client.player
+        if (mode == null || player == null) {
+            pending = null
+            return true
         }
-        if (park != null && screen.menu.carried.isEmpty) click(park.index, 0)
-        // The client does not refill a result slot; the server sends it. Keep going on later ticks while the grid has ingredients.
-        val gridLeft = yields && !blocked && screen.menu.slots.any { it !== slot && own(it) == null && it.hasItem() }
+        fun click(index: Int) {
+            mode.handleContainerInput(screen.menu.containerId, index, 0, ContainerInput.PICKUP, player)
+        }
+        if (park != null) click(park.index)
+        click(slot.index)
+        // A left click inserts min(cursor, room), which is the amount this slot was planned to take.
+        for ((index, _) in shiftPlaces(screen.menu.carried.count, into.map { described(screen.menu.carried, it) }, stackable = screen.menu.carried.isStackable)) {
+            click(index)
+        }
+        if (!screen.menu.carried.isEmpty && slot.mayPlace(screen.menu.carried)) click(slot.index)
+        if (park != null && screen.menu.carried.isEmpty) click(park.index)
+        // The client does not refill a result slot; the server sends it. One craft per tick, while the grid has ingredients.
+        val gridLeft = yields && screen.menu.slots.any { it !== slot && own(it) == null && it.hasItem() }
         pending = if (gridLeft) screen to slot.index else null
         if (gridLeft) pendingWaits = 0
         return true
     }
 
-    /** A free slot outside [reserved] that can hold [carried] while the Shift click runs. */
+    /** An empty unlocked slot of the player's inventory, not a destination, where [carried] can sit out this move. */
     private fun park(screen: AbstractContainerScreen<*>, carried: ItemStack, reserved: Set<Int>): Slot? =
-        screen.menu.slots.firstOrNull { it.isActive && !it.hasItem() && it.index !in reserved && !locked(it) && it.mayPlace(carried) }
+        screen.menu.slots.firstOrNull {
+            val own = own(it)
+            it.isActive && !it.hasItem() && it.index !in reserved && !locked(it) && it.mayPlace(carried) &&
+                (own in SlotLocks.HOTBAR || own in SlotLocks.ABOVE)
+        }
 
     private fun described(stack: ItemStack, slot: Slot): ShiftSlot {
         val item = slot.item
