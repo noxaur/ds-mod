@@ -342,6 +342,20 @@ Set your tabs up under Tabs, below Menu Tabs in the settings. It shows a small m
 
 <sub>Each edge has seven places. On a short screen at a large GUI scale, the tabs can run off the top or bottom of the screen.</sub>
 
+## Combat
+
+### Damage Numbers
+
+Shortens the damage numbers that pop up when a mob is hit, so 74,540,375 reads 74.5M, or hides them. A crit keeps its ✧ stars and its colors. Text over NPCs and other holograms stays as it is. Only you see the change. Turn it on in Combat.
+
+| Setting | Does |
+| --- | --- |
+| Show | Shows every damage number, only crits, or none |
+| Short Numbers | Shortens numbers of a thousand and up with k, M, B or T. With it off, the numbers read as the server writes them |
+| Decimals | Sets how many decimals a short number keeps, from 0 to 3. Zeros at the end are dropped, so 1,000,000 reads 1M |
+
+<sub>Off by default.</sub>
+
 ## Loot
 
 ### Loot Alerts

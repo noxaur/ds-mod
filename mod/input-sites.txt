@@ -105,6 +105,9 @@ gate edge.mixin.DropKeyMixin 1b430b670807
 gate edge.mixin.ExplosionParticleMixin ad9f4482623d  ExplosionParticleHider
     hooks ParticleEngine.createParticle
     approved by github.com/noxaur 2026-11-16T08:42:00Z
+gate edge.mixin.FloatingTextMixin 1178eba96f0a
+    hooks Display.TextDisplay.getText
+    hooks Display.TextDisplay.onSyncedDataUpdated
 gate edge.mixin.FullbrightMixin 4c8ba0a85eab  Fullbright
     hooks LightmapRenderStateExtractor.extract
     approved by github.com/noxaur 2026-11-16T08:42:00Z
@@ -115,6 +118,8 @@ gate edge.mixin.HeldItemMixin 58c78f6ea473
     hooks ItemInHandRenderer.swingArm
     hooks ItemInHandRenderer.tick
     approved by github.com/noxaur 2026-11-16T08:42:00Z
+gate edge.mixin.HiddenTextMixin a90e72dc5f00
+    hooks EntityRenderer.shouldRender
 gate edge.mixin.HudHotbarMixin draws
     hooks Hud.extractSlot
     approved by github.com/noxaur 2026-11-16T01:17:00Z
