@@ -66,11 +66,11 @@ A setting is one line in `SettingsTree` with a kind of row, which brings its con
 Anything the player operates, on the mod's own screen or on a vanilla one, ships finished. The first cut is the finished feature, so a convention the player has to ask for later is a missing part of it.
 
 1. Name the kind of control: list selection, context menu, key bind, range slider, text field, draggable thing, scrolling list.
-2. Read its section in [`controls.md`](controls.md). Survey the peer mods listed there for what players of that kind already know.
+2. Read its section in [`controls.md`](controls.md).
 3. Build every convention that applies, with the keyboard and the mouse, before the first commit.
 4. Say in the PR which conventions you left out, and why.
 
-A kind that `controls.md` lacks gets its section there once the survey is done. A kit widget holds its kind's conventions, so a second control of that kind reuses the widget. Put the rules of a control in `core`, as `Sections` does for the slider, so a unit test can drive each one.
+A kind that `controls.md` lacks gets its section there in the same change. A kit widget holds its kind's conventions, so a second control of that kind reuses the widget. Put the rules of a control in `core`, as `Sections` does for the slider, so a unit test can drive each one.
 
 ## Color by role
 

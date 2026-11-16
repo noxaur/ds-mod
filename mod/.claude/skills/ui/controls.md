@@ -1,8 +1,6 @@
 # Controls
 
-What a player expects of each kind of control, from the desktop and from the mods they already use. A control ships with every line of its kind that applies. When the kind is not here, survey it first, then add its section in the same change.
-
-Peers to survey: SkyHanni, SkyOcean, Chat Patches, Chatting and Firmament. Their source shows which conventions Minecraft players already know, and a subagent can read it for you.
+What a player expects of each kind of control, from the desktop and from the mods they already use. A control ships with every line of its kind that applies. When the kind is not here, add its section in the same change.
 
 ## List selection
 
