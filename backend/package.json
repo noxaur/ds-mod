@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vp dev --port 8787 --strictPort --host 127.0.0.1",
+    "dev": "vp dev --port 16385 --strictPort --host 127.0.0.1",
     "openapi": "node scripts/openapi.ts",
     "prepare": "node scripts/placeholder-tsconfig.ts && void prepare",
     "check": "pnpm run prepare && vp check && vp test run",
