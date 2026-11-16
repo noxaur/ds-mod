@@ -1,0 +1,63 @@
+package io.github.noxaur.dsmod.gametest
+
+import io.github.noxaur.dsmod.edge.profile.ProfileScreen
+import io.github.noxaur.dsmod.edge.profile.Profiles
+import io.github.noxaur.dsmod.edge.ui.KitTab
+import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
+import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.screens.ChatScreen
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.Style
+import java.util.Optional
+
+/**
+ * A player's name in a chat line from the server links to their profile: its hover says so, and its click runs the
+ * mod's own command, which opens the viewer. The rank and the message around the name keep their styles. Then what
+ * the viewer says while it loads, when dragsim.co is down, and when the copy is an old one.
+ */
+class ProfileStatesTest : FabricClientGameTest {
+    override fun runTest(context: ClientGameTestContext) {
+        OnProfiles(context).use { profiles ->
+            context.worldBuilder().create().use { world ->
+                context.runOnClient<Nothing> { it.gui.hud.chat.clearMessages(false) }
+                world.server.runCommand("""tellraw @a [{"text":"[MVP+] ","color":"aqua"},{"text":"Testwyrm","color":"aqua"},{"text":": anyone for F7?","color":"white"}]""")
+                context.waitTicks(5)
+                val linked = context.computeOnClient<Map<String, String?>, Nothing> {
+                    val line = Profiles.names(Component.empty().append("[MVP+] Testwyrm: anyone for F7?"))
+                    val pieces = LinkedHashMap<String, String?>()
+                    line.visit({ style, piece -> pieces[piece] = (style.clickEvent as? ClickEvent.RunCommand)?.command(); Optional.empty<Unit>() }, Style.EMPTY)
+                    pieces
+                }
+                check(linked == mapOf("[MVP+] " to null, "Testwyrm" to "/dsmod pv Testwyrm", ": anyone for F7?" to null)) { "The name linked as $linked" }
+
+                context.setScreen { ChatScreen("", false) }
+                val height = context.computeOnClient<Int, Nothing> { it.window.guiScaledHeight }
+                profiles.move(52, height - 45)
+                context.takeScreenshot("profile-chat-name")
+                // A click on the name runs its command as the chat screen runs it, and Fabric keeps it from the server.
+                context.runOnClient<Nothing> { it.connection!!.sendUnattendedCommand("dsmod pv Testwyrm", null) }
+                context.waitForScreen(ProfileScreen::class.java)
+
+                context.setScreen { null }
+                profiles.command("pv Slow")
+                context.waitForScreen(ProfileScreen::class.java)
+                context.waitTicks(10)
+                context.takeScreenshot("state-loading")
+                profiles.waitUntil("the slow profile loaded") { profiles.screen(it).children().any { w -> w is KitTab } }
+
+                context.setScreen { null }
+                profiles.command("pv Down")
+                context.waitForScreen(ProfileScreen::class.java)
+                profiles.waitUntil("the retry button showed") { profiles.screen(it).children().any { w -> (w as? AbstractWidget)?.message?.string == "Retry" } }
+                context.takeScreenshot("state-upstream-down")
+
+                profiles.open("Stale")
+                val corner = context.computeOnClient<Pair<Int, Int>, Nothing> { profiles.screen(it).contentX - 55 to profiles.screen(it).viewY + 30 }
+                profiles.move(corner.first, corner.second)
+                context.takeScreenshot("state-stale")
+            }
+        }
+    }
+}

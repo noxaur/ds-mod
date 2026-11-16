@@ -37,6 +37,6 @@ What a player typed is found by shape, not by a list of formats. The server's wh
 
 Typed text is found only in a `system` event, so a raw `chat` record, whose event carries the same line, is dropped, and so is an older capture's `system` line that does not read as today's event. A component that spells a name across several pieces, one per color, is replaced by its redacted plain text, because no single string holds the name to replace, and an older raw text that names someone loses its `§` codes for the same reason.
 
-## FixtureLeakTest checks only the machine that cut the fixture
+## FixtureLeakTest checks names two ways, because CI has no captures
 
-`FixtureLeakTest` looks for the names `PlayerNames` learns from the captures in `mod/run/dsmod/captures/`. Raw captures never reach git, so on a fresh checkout or in CI the test has nothing to compare and passes. It guards the one machine where a leak can start. It cannot see typed text, or a name kept to where a rule found it, which is why a fixture is still read before it is kept.
+`FixtureLeakTest` looks for the names `PlayerNames` learns from the captures in `mod/run/dsmod/captures/`, wherever they stand in a fixture. Raw captures never reach git, so that check guards only the machine that cut the fixture. So the test also reads each fixture as if it were a capture, and fails on any name in a place `PlayerNames` knows holds one that is not a `PlayerN` alias. That check runs everywhere, CI included, and catches a fixture written or edited by hand. Neither sees typed text, or a name the server writes in a line no rule knows, which is why a fixture is still read before it is kept.

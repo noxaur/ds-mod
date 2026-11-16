@@ -15,7 +15,9 @@ runs:
       with:
         install_args: java
     # One cache for the dependencies, the Gradle distribution, Minecraft and its remapped jars. The key is
-    # every file that decides what gets downloaded, so a hit means the build needs no network.
+    # every file that decides what gets downloaded, so a hit means the build needs no network. Every version,
+    # the plugins' included, lives in gradle.properties, so an edit to the build scripts keeps the cache and
+    # stays under the time limit.
     - id: cache
       uses: actions/cache@v6
       with:
@@ -23,4 +25,4 @@ runs:
           ~/.gradle/caches
           ~/.gradle/wrapper
           mod/.gradle/loom-cache
-        key: ${{ inputs.cache }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('mise.toml', 'mod/gradle.properties', 'mod/gradle/wrapper/gradle-wrapper.properties', 'mod/build.gradle.kts', 'mod/settings.gradle.kts') }}
+        key: ${{ inputs.cache }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('mise.toml', 'mod/gradle.properties', 'mod/gradle/wrapper/gradle-wrapper.properties') }}

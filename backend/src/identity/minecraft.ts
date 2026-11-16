@@ -1,7 +1,7 @@
 import type { BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthEndpoint } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
-import * as z from "zod";
+import { Schema } from "effect";
 
 const PROVIDER = "minecraft";
 const CHALLENGE_SECONDS = 60;
@@ -14,6 +14,14 @@ export interface Joined {
 
 /** Asks Mojang whether [name] joined with [serverId]. Null when it did not, and an error when Mojang cannot say. */
 export type HasJoined = (name: string, serverId: string) => Promise<Joined | null>;
+
+const Profile = Schema.Struct({ id: Schema.String.check(Schema.isPattern(/^[0-9a-f]{32}$/u)), name: Schema.String });
+const Verify = Schema.toStandardSchemaV1(
+  Schema.Struct({
+    name: Schema.String.check(Schema.isPattern(/^\w{1,16}$/u)),
+    serverId: Schema.String.check(Schema.isPattern(/^[0-9a-f]{40}$/u)),
+  }),
+);
 
 const unavailable = () => new APIError("SERVICE_UNAVAILABLE", { message: "Mojang did not answer." });
 
@@ -31,7 +39,7 @@ export const mojangHasJoined: HasJoined = async (name, serverId) => {
   if (response.status !== 200) {
     throw unavailable();
   }
-  const profile = z.object({ id: z.string().regex(/^[0-9a-f]{32}$/), name: z.string() }).parse(await response.json());
+  const profile = Schema.decodeUnknownSync(Profile)(await response.json());
   return { uuid: profile.id.replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, "$1-$2-$3-$4-$5"), name: profile.name };
 };
 
@@ -66,7 +74,7 @@ export const minecraft = (hasJoined: HasJoined = mojangHasJoined) =>
         "/minecraft/verify",
         {
           method: "POST",
-          body: z.object({ name: z.string().regex(/^\w{1,16}$/), serverId: z.string().regex(/^[0-9a-f]{40}$/) }),
+          body: Verify,
         },
         async (ctx) => {
           // Consumed before Mojang is asked, so one challenge buys one question.
