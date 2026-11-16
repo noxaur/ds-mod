@@ -141,7 +141,7 @@ class Redactor(private val names: Set<String>) {
             if (type == "system") return null
             null
         }
-        if (event != null) return captureLine(event.first, redact(event.second))
+        if (event != null) return captureLine(event.time, redact(event.event), event.tick)
         return JsonObject(json + ("data" to scrub(json.getValue("data"), "", emptySet()))).toString()
     }
 

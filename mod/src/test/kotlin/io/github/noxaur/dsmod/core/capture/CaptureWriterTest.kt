@@ -1,9 +1,14 @@
 package io.github.noxaur.dsmod.core.capture
 
+import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.ServerText
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import java.nio.file.Files
 import java.util.concurrent.CountDownLatch
@@ -29,8 +34,8 @@ class CaptureWriterTest {
         assertEquals("1970-01-01T00-00-01Z.jsonl", writer.file.fileName.toString())
         assertEquals(
             listOf(
-                """{"t":1000,"type":"bossbars","data":{"title":"first"}}""",
-                """{"t":1500,"type":"system","data":{"text":{"plain":"RARE DROP! Summoning Eye",""" +
+                """{"t":1000,"tick":0,"type":"bossbars","data":{"title":"first"}}""",
+                """{"t":1500,"tick":0,"type":"system","data":{"text":{"plain":"RARE DROP! Summoning Eye",""" +
                     """"spans":[{"text":"RARE DROP! ","color":"#FFAA00","bold":true},{"text":"Summoning Eye"}]}}}""",
             ),
             writer.file.readLines(),
@@ -44,7 +49,27 @@ class CaptureWriterTest {
         writer.record(1_500L, drop)
         writer.close()
 
-        assertEquals(listOf(1_500L to drop), readCapture(writer.file))
+        assertEquals(listOf(Captured(1_500L, drop, tick = 0)), readCapture(writer.file))
+    }
+
+    @Test
+    fun `stamps the client tick on each record and advances it when the tick ends`() {
+        val writer = CaptureWriter(dir) { 1_000L }
+        val bar = ActionBar(ServerText(ServerSpan("Kills: 4")))
+        writer.record(1_000L, drop)
+        writer.record(RawRecord.SOUND) { buildJsonObject { put("sound", "minecraft:entity.player.hurt") } }
+        writer.endTick()
+        writer.record(1_001L, bar)
+        writer.endTick()
+        writer.endTick()
+        writer.record(1_100L, drop)
+        writer.close()
+
+        assertEquals(
+            listOf(0, 0, 1, 3),
+            writer.file.readLines().map { Json.parseToJsonElement(it).jsonObject.getValue("tick").jsonPrimitive.int },
+        )
+        assertEquals(listOf(Captured(1_000L, drop, 0), Captured(1_001L, bar, 1), Captured(1_100L, drop, 3)), readCapture(writer.file))
     }
 
     @Test

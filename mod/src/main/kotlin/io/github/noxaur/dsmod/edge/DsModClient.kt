@@ -202,6 +202,8 @@ object DsModClient : ClientModInitializer {
                 saved.flush()
                 game.metrics.flush()
             }
+            // After every listener registered before this one, so the capture's tick covers what this tick posted.
+            Recorder.endedClientTick()
         }
         // In this order: a request's run cut short is deleted, the recorder finishes what it holds, then an upload gets its moment.
         ClientLifecycleEvents.CLIENT_STOPPING.register {
