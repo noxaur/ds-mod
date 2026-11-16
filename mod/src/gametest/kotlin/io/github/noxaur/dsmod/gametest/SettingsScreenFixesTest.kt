@@ -34,6 +34,8 @@ class SettingsScreenFixesTest : FabricClientGameTest {
 
     private fun SettingsDriver.rows() {
         val distance = { DsModClient.settings.general.cameraDistance }
+        val distanceBefore = distance()
+        val itemSizeBefore = DsModClient.settings.general.itemSize
         val tabs = SettingsTabs(at("Camera"))
         open(context, tabs)
         val d = spot("cameraDistance")
@@ -76,7 +78,12 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         check(context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).marked("itemSize") }.not()) {
             "Reset Animations left Item Size's changed marker up"
         }
-
+        // The next game test reads these settings, so leave them as this one found them.
+        context.runOnClient<Nothing> {
+            DsModClient.settings.general.cameraDistance = distanceBefore
+            DsModClient.settings.general.itemSize = itemSizeBefore
+            DsModClient.saveSettings()
+        }
     }
 
     private fun BindsDriver.lists() {
