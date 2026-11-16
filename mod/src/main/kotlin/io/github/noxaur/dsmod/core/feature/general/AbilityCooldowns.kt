@@ -59,6 +59,9 @@ class AbilityCooldowns(
     private val timers = HashMap<String, Timer>()
     private val learned = HashMap<String, Learned>()
 
+    /** The abilities found by [unheaded], whose items name them anywhere in the lore rather than under a heading. */
+    private val loreNamed = HashSet<String>()
+
     /** The charging bonus the worn set has now, or null. */
     private var charge: SetCharge? = null
 
@@ -74,7 +77,12 @@ class AbilityCooldowns(
     init {
         on<ContainerOpened> { _, _ -> stale = true }
         on<SlotChanged> { _, _ -> stale = true }
-        on<WorldChanged> { _, _ -> lastCast = null }
+        // Also run when the feature is switched off, which stops the container events, so it reads the items again.
+        on<WorldChanged> { _, _ ->
+            lastCast = null
+            charge = null
+            stale = true
+        }
         on<ActionBar> { bar, now ->
             val plain = bar.text.plain
             val cast = Abilities.cast(plain)
@@ -161,6 +169,7 @@ class AbilityCooldowns(
             val item = slots[i] ?: continue
             if (item.lore.none { it.plain.contains(name, ignoreCase = true) }) continue
             val millis = Abilities.cooldown(item) ?: continue
+            loreNamed += name.lowercase()
             return Known(name, millis).also { known[name.lowercase()] = it }
         }
         return null
@@ -231,6 +240,11 @@ class AbilityCooldowns(
             for (key in read(item).keys) {
                 val t = timers[key] ?: continue
                 if (now < t.end && (timer == null || t.end > timer.end)) timer = t
+            }
+            for (key in loreNamed) {
+                val t = timers[key] ?: continue
+                if (now >= t.end || timer != null && t.end <= timer.end || item.lore.none { it.plain.contains(t.name, ignoreCase = true) }) continue
+                timer = t
             }
             timer ?: continue
             next[slot] = SlotMark.cooldown(timer.start, timer.end)

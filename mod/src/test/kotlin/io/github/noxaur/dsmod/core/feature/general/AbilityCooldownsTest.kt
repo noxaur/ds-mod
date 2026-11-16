@@ -144,6 +144,7 @@ class AbilityCooldownsTest {
         post(*inventory(38 to drill))
         post(SystemMessage(line("You used Void Infusion!")))
         assertEquals(listOf("Void Infusion: 1m 48s"), rows)
+        assertEquals(setOf(38), readout.slots.keys)
     }
 
     @Test
@@ -183,6 +184,23 @@ class AbilityCooldownsTest {
         at(3_000)
         post(Hit("minecraft:enderman"))
         assertEquals(listOf("Between Worlds: 5.0s"), rows)
+    }
+
+    @Test
+    fun `armor taken off while the feature was off no longer charges`() {
+        val set = inventory(5 to riftwalker("helmet", 4), 6 to riftwalker("chestplate", 4), 7 to riftwalker("leggings", 4), 8 to riftwalker("boots", 4))
+        post(*set)
+        post(Hit("minecraft:enderman"))
+        // Past the charge and the two seconds its Ready stays on the list.
+        at(11_000)
+        config.general.abilityCooldowns = false
+        at(1)
+        // The container state follows the slots while the feature is off, and the feature sees none of it.
+        post(SlotChanged(5, null), SlotChanged(6, null), SlotChanged(7, null), SlotChanged(8, null))
+        config.general.abilityCooldowns = true
+        at(1)
+        post(Hit("minecraft:enderman"))
+        assertNull(readout.hud)
     }
 
     @Test
