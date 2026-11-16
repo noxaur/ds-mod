@@ -146,6 +146,8 @@ F5 back to first person also ends it. The Camera settings shape this view too.
 
 Sends a command with a key, with keys held together such as Shift + F6, or with keys pressed in turn such as F7 then F8. Set your binds up under Binds in the settings.
 
+<img src="../images/command-binds.png" alt="Command Binds in the settings: each bind a line with its switch, name, command, keys and where it works, under its group, with a second group folded">
+
 Each bind is a line with its switch, name, command, keys and where it works, under its group's heading. A change takes effect as you make it.
 
 | Do this | To |
@@ -267,6 +269,11 @@ A message is copied whole, also when it wraps over several rows. A block the ser
 ### Rarity Marks
 
 Each item's slot is marked in the color of its rarity, in every menu and on your hotbar.
+
+<p>
+  <img src="../images/rarity-chest.png" width="49%" alt="A chest in the Minimal look: each rare item stands on a shelf in its rarity's color, with a small gem in its corner">
+  <img src="../images/rarity-settings.png" width="49%" alt="Rarity Marks in the settings: the Gilded style, and the hotbar's border, fill, floor and gem, each with a preview of its slot">
+</p>
 
 Rarity Style picks the look: Showcase, Gilded or Minimal, from loudest to quietest, or Custom for your own. Custom Look, under it, picks each part with a preview of it. A change there starts from the look you had and switches Rarity Style to Custom.
 

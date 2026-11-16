@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
@@ -92,9 +93,11 @@ class SettingsNarrationTest : FabricClientGameTest {
         over("equipmentPieces", "Pieces, list, Helmet, Chestplate, Leggings, Boots, Pet, 5 of 5 shown, expanded")
         open(context, SettingsTabs(at("General")))
         over("fullbright", "Fullbright, switch, off")
-        // The sidebar's lines start 24 down, and The End comes after Favorites, General's subsections and six sections. The bar's first tab is 4 in from the sidebar's 116.
-        val subsections = SettingsScreen.sections(DsModConfig()).first { it.name == "General" }.named.size
-        move(30, 24 + 16 + 16 + subsections * 13 + 6 * 16 + 8)
+        // The sidebar's lines start 24 down, and The End comes after Favorites, General and its subsections, and the
+        // sections between. The bar's first tab is 4 in from the sidebar's 116.
+        val tree = SettingsTree.sections(DsModConfig())
+        val between = tree.indexOfFirst { it.name == "The End" } - 1
+        move(30, 24 + 16 + 16 + tree.first().named.size * 13 + between * 16 + 8)
         hear(context, "The End, section, collapsed", "Over The End in the sidebar")
         move(120 + 30, 9)
         hear(context, "General, tab, selected", "Over the tab")

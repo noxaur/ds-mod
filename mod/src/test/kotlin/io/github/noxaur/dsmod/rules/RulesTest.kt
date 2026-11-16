@@ -83,6 +83,13 @@ class RulesTest {
     }
 
     @Test
+    fun `every feature has a line in the README`() {
+        val readme = Path.of("../README.md").readText()
+        val missing = features(DsModConfig()).map { it.title }.filter { "- **$it** – " !in readme }
+        assertEquals(emptyList(), missing, "README.md needs a line `- **<Name>** – <one short sentence>` under a group in Features for each of these. Screenshots go in docs/user/features.md: $missing\n")
+    }
+
+    @Test
     fun `every setting's description fits the settings screen at full size`() {
         val long = SettingsTree.sections(DsModConfig()).flatMap { it.walk() }.filter { it.description.length > Setting.DESCRIPTION_MAX }.map { "${it.name}: ${it.description}" }
         assertEquals(emptyList(), long, "Cut each description in SettingsTree to one short sentence of at most ${Setting.DESCRIPTION_MAX} characters. The player docs hold the rest: $long\n")
