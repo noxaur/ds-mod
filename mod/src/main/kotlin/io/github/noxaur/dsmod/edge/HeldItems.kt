@@ -40,10 +40,18 @@ object HeldItems {
 
     private fun side(arm: HumanoidArm) = if (arm == HumanoidArm.RIGHT) 1 else -1
 
-    /** What the player holds in the hand on [arm]'s side. */
-    private fun held(arm: HumanoidArm): ItemStack {
-        val player = Minecraft.getInstance().player ?: return ItemStack.EMPTY
-        return if (arm == player.mainArm) player.mainHandItem else player.offhandItem
+    /** Whether the hand being drawn now holds an item No Swing or No Bow Swing keeps still. */
+    private var still = false
+
+    /**
+     * The swing to draw the hand with: none for an item kept still. It is read from the [stack] the hand draws, which
+     * lags the player's own while the hand swaps items, and taken away before the game reads it, because a charged
+     * crossbow leaves its resting pose for any swing at all.
+     */
+    fun swingAmount(stack: ItemStack, attack: Float): Float {
+        val s = settings
+        still = on && (s.noSwing || s.noBowSwing && stack.item is ProjectileWeaponItem)
+        return if (still) 0f else attack
     }
 
     /**
@@ -77,7 +85,7 @@ object HeldItems {
     fun swing(pose: PoseStack, arm: HumanoidArm, attack: Float, spear: Boolean): Boolean {
         if (!on) return false
         val s = settings
-        if (s.noSwing || s.noBowSwing && held(arm).item is ProjectileWeaponItem) return true
+        if (still) return true
         val side = side(arm)
         val reach = if (s.scaleSwing) s.itemSize else 1f
         when (s.swingStyle) {

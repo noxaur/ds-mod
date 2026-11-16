@@ -6,6 +6,8 @@ import io.github.noxaur.dsmod.gametest.HeldItemScene.Companion.changed
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.item.Items
+import java.awt.image.BufferedImage
 
 /**
  * With every setting at its default, the held sword is the game's own to the pixel, at rest, mid-swing and in the dip
@@ -63,6 +65,22 @@ class AnimationsTest : FabricClientGameTest {
         settings.swingSpeed = 2f
         check(!lasts(4)) { "At twice the speed the swing lasted past 4 ticks" }
         settings.swingSpeed = 1f
+
+        // No Bow Swing goes by the item the hand draws, which stays the bow while it lowers for a sword just put in
+        // the hand. A swing already under way then must leave the frame as it would be with no swing.
+        settings.noBowSwing = true
+        fun swap(name: String, swinging: Boolean): BufferedImage {
+            hold(Items.BOW)
+            if (swinging) swing()
+            command("item replace entity @a weapon.mainhand with diamond_sword")
+            context.waitFor { it.player!!.mainHandItem.`is`(Items.DIAMOND_SWORD) }
+            context.waitTicks(1)
+            return shot(name).also { settle() }
+        }
+        check(changed(swap("animations-swap", false), swap("animations-swap-swing", true)) == 0) {
+            "No Bow Swing let the lowering bow swing once a sword was in the hand"
+        }
+        settings.noBowSwing = false
 
         command("effect give @a haste infinite 2")
         context.waitFor { it.player!!.hasEffect(MobEffects.HASTE) }

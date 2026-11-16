@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.gametest.HeldItemScene.Companion.changed
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.minecraft.world.item.CrossbowItem
 import net.minecraft.world.item.Items
 
 /**
@@ -76,6 +77,12 @@ class AnimationsPoseTest : FabricClientGameTest {
         check(changed(bow, midSwing("animations-bow-swing")) > 1000) { "The bow did not swing" }
         settings.noBowSwing = true
         check(changed(bow, midSwing("animations-no-bow-swing")) == 0) { "No Bow Swing let the bow swing" }
+        // A loaded crossbow rests turned aside and leaves that pose for any swing, so it must see no swing at all.
+        command("""item replace entity @a weapon.mainhand with crossbow[charged_projectiles=[{id:"arrow"}]]""")
+        context.waitFor { CrossbowItem.isCharged(it.player!!.mainHandItem) }
+        settle()
+        val crossbow = shot("animations-crossbow")
+        check(changed(crossbow, midSwing("animations-no-bow-swing-crossbow")) == 0) { "No Bow Swing let the loaded crossbow move" }
         hold(Items.DIAMOND_SWORD)
         check(changed(vanillaSwing, midSwing("animations-no-bow-swing-sword")) == 0) { "No Bow Swing changed the sword's swing" }
         settings.noBowSwing = false
