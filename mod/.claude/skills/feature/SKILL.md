@@ -22,6 +22,5 @@ Load the `ui` skill too when the feature shows the player anything.
 Record the capture with the `captures` skill, and cut the fixture as [Cut a fixture](../../../../docs/operations/captures.md#cut-a-fixture) says.
 
 - Keep the lines the feature must ignore, which prove it ignores them.
-- Keep the tab list for a feature locked to an area, and the sidebar with `--types ..,sidebar` when the sidebar tells the area. Without them the fixture replays as if the player never left.
 - When a name in a fixture slipped through, or a word was taken for one, teach `PlayerNames` from a capture that shows the line. It is the one place that knows where names sit.
 - Write a game test when you add to `edge`. A feature that only reads events and returns readouts is covered by its replay.
