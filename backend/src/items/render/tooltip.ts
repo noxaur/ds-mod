@@ -112,19 +112,20 @@ const statLine = (
   const info = catalog.stats.get(id);
   const color = colorOf(info?.color ?? "7") ?? GRAY;
   const suffix = PERCENT.has(id) ? "%" : "";
-  const parts: { text: string; color: string }[] = [{ text: `+${num(total)}${suffix}`, color }];
+  const signed = (value: number): string => `${value > 0 ? "+" : ""}${num(value)}${suffix}`;
+  const parts: { text: string; color: string }[] = [{ text: signed(total), color }];
   if (reforge !== 0) {
-    parts.push({ text: `(+${num(reforge)}${suffix})`, color: BLUE });
+    parts.push({ text: `(${signed(reforge)})`, color: BLUE });
   }
   if (book + aow !== 0) {
-    parts.push({ text: `(+${num(book + aow)}${suffix})`, color: YELLOW });
+    parts.push({ text: `(${signed(book + aow)})`, color: YELLOW });
   }
   if (enrich !== 0) {
-    parts.push({ text: `(+${num(enrich)}${suffix})`, color: PINK });
+    parts.push({ text: `(${signed(enrich)})`, color: PINK });
   }
   if (dungeon) {
     const scale = SCALED.has(id) ? 1 + rules.dungeonBonus + item.stars * rules.starMultiplier : 1;
-    parts.push({ text: `(+${num(total * scale)}${suffix})`, color: DARK_GRAY });
+    parts.push({ text: `(${signed(total * scale)})`, color: DARK_GRAY });
   }
   const line: Span[] = [];
   push(line, `${ICONS[id] ?? "✦"} `, { color });
@@ -180,14 +181,14 @@ const abilityBody = (ability: Ability): Line[] => {
 };
 
 /** The header above an ability's text, laid out to the width `wide` of the widest line of the tooltip. */
-const abilityHeader = (ability: Ability, wide: number): Line => {
+const abilityHeader = (ability: Ability, wide: number, worn: number): Line => {
   const header: Span[] = [];
   const triggered = ability.trigger !== "" && ability.trigger !== "PASSIVE" && ability.trigger !== "FULL SET BONUS";
   if (ability.trigger === "FULL SET BONUS") {
     const set = ability.fullSet;
     push(header, `${set ? "Full Set Bonus" : "Piece Bonus"}: ${ability.name}${set ? " " : ""}`, { color: GOLD });
     if (set) {
-      push(header, `(0/${String(ability.maxCount)})`, { color: GRAY });
+      push(header, `(${String(worn)}/${String(ability.maxCount)})`, { color: GRAY });
     }
   } else {
     push(header, ability.name, { color: GOLD });
@@ -285,6 +286,7 @@ export const lore = (
   catalog: Catalog,
   item: UpstreamItem,
   catalogItem: CatalogItem | undefined,
+  worn: ReadonlyMap<string, number> = new Map(),
 ): { readonly lines: readonly Line[]; readonly dungeon: boolean } => {
   const dungeon = item.entry !== undefined && catalog.dungeon.has(item.entry);
   const own = item.entry === undefined ? undefined : catalog.itemAbilities.get(item.entry);
@@ -312,7 +314,7 @@ export const lore = (
     reforge,
     extras,
     description,
-    ...abilities.map((ability) => [abilityHeader(ability, wide), ...abilityBody(ability)]),
+    ...abilities.map((ability) => [abilityHeader(ability, wide, worn.get(ability.key) ?? 0), ...abilityBody(ability)]),
   ]);
   const end = footer(item, catalogItem, dungeon);
   const recipes = item.type === "NONE" && item.abilities.length === 0 ? [RECIPES] : [];
