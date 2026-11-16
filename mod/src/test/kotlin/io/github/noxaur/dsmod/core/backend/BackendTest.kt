@@ -263,12 +263,12 @@ class BackendTest {
 
     @Test
     fun `reports sightings with exactly the keys the contract allows`() {
-        backend.unknowns(listOf(Sighting("golem-status", "Protector: # left", "Protector: 5 left")))
+        backend.unknowns(listOf(Sighting("protector-status", "Protector: # left", "Protector: 5 left")))
 
         val report = seen.last()
         assertEquals("application/json", report.headers["content-type"])
         assertEquals(
-            """{"modVersion":"1.2.3","sightings":[{"kind":"golem-status","signature":"Protector: # left","sample":"Protector: 5 left"}]}""",
+            """{"modVersion":"1.2.3","sightings":[{"kind":"protector-status","signature":"Protector: # left","sample":"Protector: 5 left"}]}""",
             String(report.body),
         )
     }

@@ -112,7 +112,7 @@ Padding mirrors. What sits at the end of a row, a tab or a field, such as a × o
 
 ## The game's menus
 
-`MenuSkin` in `edge` draws the game's own menus with these shapes when Themed Menus is on: a `panel` over the menu, a `slot` under each slot, a `well` behind the player in the inventory, and an arrow from crafting slots to the result. Their labels take the theme's ink. The Glass look draws `glass`, `glassSlot`, `glassWell`, `glassTab` and glass buttons in their place, with labels in `GLASS_INK`. Only menus whose texture is just those parts are drawn, so a new kind of menu is added to `MenuSkin.skins` and to `MenuBackgroundMixin` together.
+`MenuSkin` in `edge` draws the game's own menus with these shapes when Menu Theme is on: a `panel` over the menu, a `slot` under each slot, a `well` behind the player in the inventory, and an arrow from crafting slots to the result. Their labels take the theme's ink. The Glass look draws `glass`, `glassSlot`, `glassWell`, `glassTab` and glass buttons in their place, with labels in `GLASS_INK`. Only menus whose texture is just those parts are drawn, so a new kind of menu is added to `MenuSkin.skins` and to `MenuBackgroundMixin` together.
 
 ## Adding to the kit
 

@@ -21,12 +21,12 @@ class OnlyOnDragSimTest : FabricClientGameTest {
                 check(!DsModClient.active) { "The mod runs in singleplayer with DragSim Only on" }
                 world.server.runCommand("""tellraw @a "$refusal"""")
                 context.waitTicks(10)
-                check(hidden.isEmpty()) { "Ability Spam hid $hidden off dragsim.co" }
+                check(hidden.isEmpty()) { "Hide Cooldown Messages hid $hidden off dragsim.co" }
 
                 DsModClient.settings.general.onlyOnDragSim = false
                 world.server.runCommand("""tellraw @a "$refusal"""")
                 context.waitTicks(10)
-                check(hidden == listOf(refusal)) { "With DragSim Only off, Ability Spam hid $hidden" }
+                check(hidden == listOf(refusal)) { "With DragSim Only off, Hide Cooldown Messages hid $hidden" }
             } finally {
                 DsModClient.settings.general.onlyOnDragSim = true
                 DsModClient.anyServer = true

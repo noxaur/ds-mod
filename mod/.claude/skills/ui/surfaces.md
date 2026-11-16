@@ -53,7 +53,7 @@ Every type of interface ds-mod can show, grouped by surface. A feature uses the 
 - HUD editor: drag to position and scale.
 - Feature screen: a full screen the mod owns, such as tracker history.
 - Vanilla screen addition: a button on the pause menu or inventory.
-- Vanilla screen restyle: a game menu drawn by the kit in the theme, and moved where it should sit, as Themed Menus and Stable Menus do.
+- Vanilla screen restyle: a game menu drawn by the kit in the theme, and moved where it should sit, as Menu Theme and Fixed Menu Layout do.
 
 ## In the world
 

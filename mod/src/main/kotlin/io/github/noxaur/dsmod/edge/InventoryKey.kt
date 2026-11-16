@@ -2,15 +2,15 @@ package io.github.noxaur.dsmod.edge
 
 import com.mojang.blaze3d.platform.InputConstants
 import io.github.noxaur.dsmod.core.camera.KeyMode
-import io.github.noxaur.dsmod.core.feature.general.InventoryPreview
+import io.github.noxaur.dsmod.core.feature.general.InventoryHud
 import net.minecraft.client.Minecraft
 
 /**
- * Inventory Preview's key. With none bound the grid always shows. Under Hold it shows while the key is down, and under
+ * Inventory HUD's key. With none bound the grid always shows. Under Hold it shows while the key is down, and under
  * Toggle each press shows or hides it, starting shown. The HUD editor always shows it, so the player can place it.
  */
 object InventoryKey {
-    private const val ID = "inventory-preview"
+    private const val ID = "inventory-hud"
 
     private val settings get() = DsModClient.settings.general
 
@@ -29,7 +29,7 @@ object InventoryKey {
 
     /** Call once a tick. */
     fun tick(client: Minecraft) {
-        val on = DsModClient.runs<InventoryPreview>()
+        val on = DsModClient.runs<InventoryHud>()
         val key = settings.inventoryKey
         val down = Keys.held(client, key)
         val pressed = tapped && !wasDown

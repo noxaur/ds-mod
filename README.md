@@ -10,7 +10,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 
 ### Camera & Visuals
 - **Fullbright** – Lights caves and nights as brightly as day.
-- **Explosion Particle Hider** – Hides the clouds that explosions throw up.
+- **Hide Explosions** – Hides the clouds that explosions throw up.
 - **Animations** – Restyle your swing as 1.7, Exhibition, Spin or Stab, and move or resize your held item.
 - **Camera** – Set the third-person distance, height and tilt, and which views F5 cycles through.
 - **Free Look** – Hold Left Alt to look around in third person without turning.
@@ -19,34 +19,34 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 ### HUD
 - **Ability Cooldowns** – Times every item ability, in a list and on the item's slot.
 - **Equipment Display** – Shows your armor and pet as icons, on the HUD or beside your hotbar.
-- **Inventory Preview** – Shows your inventory as a grid on the HUD.
-- **Drag In Chat** – Move any HUD block with the chat open, or open the full editor with `/dsmod hud`.
+- **Inventory HUD** – Shows your inventory as a grid on the HUD.
+- **Chat HUD Editor** – Move any HUD block with the chat open, or open the full editor with `/dsmod hud`.
 
 ### Chat & Commands
 - **Command Binds** – Send a command with a key, a combo or a sequence. Group, fold and share them.
 - **Profile Viewer** – Type `/pv` and a name to see their skills, slayers, dungeons, pets and items.
 - **Copy Chat** – Select messages and copy them as text, format codes or JSON.
-- **Ability Spam** – Hides the "ability is on cooldown" messages.
+- **Hide Cooldown Messages** – Hides the "ability is on cooldown" messages.
 
 ### Inventory & Menus
-- **Rarity Marks** – Colors each slot by its item's rarity, in a look you pick or build.
+- **Item Rarity** – Colors each slot by its item's rarity, in a look you pick or build.
 - **Slot Lock** – Lock slots and items so a misclick can't move or drop them.
 - **Armor Swap Guard** – Stops a right click from swapping the armor you wear.
 - **Menu Tabs** – Your own command tabs and an item search in every menu.
 - **Back Buttons** – Adds Go Back to menus that have none.
-- **Themed Menus** – Dark or glass menus, inventory and tooltips.
-- **Stable Menus** – Go Back, Close and your inventory sit in the same place in every menu.
-- **Hide Filler** – Hides the blank glass panes that pad out menus.
+- **Menu Theme** – Dark or glass menus, inventory and tooltips.
+- **Fixed Menu Layout** – Go Back, Close and your inventory sit in the same place in every menu.
+- **Hide Glass Panes** – Hides the blank glass panes that pad out menus.
 - **Keep Cursor** – The cursor stays put when one menu opens another.
 
 ### The End
 - **Zealot Tracker** – Eyes, eyes per hour and kills per eye, for the session and all-time.
 - **Dragon Timer** – The egg countdown, the eyes placed and how long the dragon has been alive.
 - **Fireball Alert** – Warns you before a dragon throws fireballs.
-- **Golem Status** – The Endstone Protector's stage and the kills left until it emerges.
-- **Boss Beacon** – A beam where the next Protector will emerge, as soon as the last one dies.
-- **Boss Drops** – Your placement, damage and loot from every dragon and Protector fight.
-- **Protect Placed Eyes** – Stops a second click from taking back the eye you just placed.
+- **Protector Status** – The Endstone Protector's stage and the kills left until it emerges.
+- **Protector Spawn Beam** – A beam where the next Protector will emerge, as soon as the last one dies.
+- **Boss Fight Tracker** – Your placement, damage and loot from every dragon and Protector fight.
+- **Eye Guard** – Stops a second click from taking back the eye you just placed.
 
 ### Combat
 - **Damage Numbers** – Shortens damage numbers to 74.5M, shows only crits, or hides them.
@@ -54,7 +54,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 ### Slayers & Loot
 - **Slayer Tracker** – Quest progress, the XP to your next level and your average kill time.
 - **Slayer Boss Alert** – A title and a sound when your slayer boss spawns.
-- **Loot Alerts** – A title and a sound for drops at or above the rarity you set.
+- **Rare Drop Alert** – A title and a sound for drops at or above the rarity you set.
 
 Toggle any feature in `/dsmod`. The [feature guide](docs/user/features.md) has screenshots and every setting.
 
