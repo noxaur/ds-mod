@@ -25,6 +25,17 @@ val rules = listOf(
         example = """if (event.lines.any { "Dungeon Hub" in it.plain }) return""",
     ),
     Rule(
+        id = "chat-by-line",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        except = "src/main/kotlin/**/core/feature/Feature.kt",
+        // Every old shape, `plain.startsWith`, `in plain` and a regex with or without `^`, sat inside this handler.
+        forbid = Regex("""on<SystemMessage>|SystemMessage::class"""),
+        fix = "Read a chat line with `line(head) { .. }`, or `line(head, pattern) { (a, b), now -> .. }` to parse it. " +
+            "`head` is the line's start, a String or a Regex for a start that varies, because a player can type anything " +
+            "after their name. A line whose head matches and whose pattern does not counts as unparsed by itself.",
+        example = """on<SystemMessage> { message, _ -> if ("FIREBALL" in message.text.plain) alert() }""",
+    ),
+    Rule(
         id = "text-by-role",
         files = "src/main/**.{kt,java}",
         // PlayerNames strips the `§` codes of an older capture's raw text and reads them to tell an NPC's label. It colors nothing.

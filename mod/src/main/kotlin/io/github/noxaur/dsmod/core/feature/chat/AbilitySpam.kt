@@ -2,7 +2,6 @@ package io.github.noxaur.dsmod.core.feature.chat
 
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
-import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.text.text
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KMutableProperty0
@@ -20,11 +19,9 @@ class AbilitySpam(toggle: KMutableProperty0<Boolean>) : Feature("ability-spam", 
     private val told = saved(AbilitySpamTold())
 
     init {
-        on<SystemMessage> { message, _ ->
-            // Anchored at the start, where a player's chat line has their name.
-            if (!message.text.plain.startsWith("This ability is on cooldown for ")) return@on
+        line("This ability is on cooldown for ") {
             hide()
-            if (told.value.told) return@on
+            if (told.value.told) return@line
             told.value = AbilitySpamTold(told = true)
             notice(text { body("Hid a cooldown message. Turn off "); value("Ability Spam"); body(" in /dsmod to see them.") })
         }
