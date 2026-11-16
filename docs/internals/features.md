@@ -48,6 +48,12 @@ The tab list and the open container are client state, so the edge polls them. An
 
 A block the server placed before its chunk reached the client comes with no update at all, so a marker head that already stands is found by reading each chunk as it loads. A head is posted only when its skull has a skin, whether it came with the chunk or as a block update. The End is decorated with plain heads, and one of those posted as a marker would send the Protector's beam to a wall.
 
+## Ping is asked for, and TPS is read from the server's clock
+
+dragsim.co writes 0 for every player's latency in the tab list, so the tab list cannot give Performance Stats a ping. Nothing the client already sends and receives gives a round trip while the player stands still: the client answers keep-alives and the server's own pings without seeing the other leg, and a block or use acknowledgement comes back only when the player acts. So `Pings` sends vanilla's ping request, the one the F3 network chart sends, once a second, and only while Ping is shown on dragsim.co, and it is the one place the mod does. The answers arrive as `PingMeasured`, the chart's own included.
+
+The server sends its world's tick count about once a second, and a server that lags sends it late. The ticks over the time between the oldest and the newest count of the last ten seconds give its rate. One packet's interval alone would swing with every jitter in the network. A server that stops ticking stops sending, so a window that ended at the newest count would keep showing full speed through a freeze, and once the newest is three seconds old the wait counts as time with no ticks.
+
 ## Game says that a line was hidden, not the feature
 
 A player did not ask for a server line to go missing, so the first time a feature that is on by default hides one, the player is told where its switch is. Each feature used to write this notice itself, and only prose asked for it, which a new feature could skip. `Game` now sends it from `hide()`, reading the switch's name, section and default from `SettingsTree`, and keeps who has told in `hidden.json`. A feature the player turned on hides what they asked it to, so it says nothing.
