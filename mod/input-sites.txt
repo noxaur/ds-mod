@@ -44,6 +44,7 @@ gate edge.ChatDrags f6bd1b276e60  DragInChat
 gate edge.CommandKeys 24edfabcaa05  CommandBinds
     sends through ClientPacketListener.sendChat
     sends through ClientPacketListener.sendCommand
+    approved by github.com/noxaur 2026-11-16T14:34:00Z
 gate edge.CopyChats 19952a107159  CopyChat
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
