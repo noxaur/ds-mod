@@ -108,7 +108,7 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
             val id = feature.id
             val block = readout.hud ?: when {
                 editing && feature.hasHud -> hud(feature.title) {}
-                placeholders && feature.hasHud && feature.runs -> HudBlock(text { muted(feature.title) }, emptyList(), HudLook.CLEAR)
+                placeholders && feature.hasHud && feature.on -> HudBlock(text { muted(feature.title) }, emptyList(), HudLook.CLEAR)
                 else -> null
             }
             if (readout.hud == null && block != null) standIns += id else standIns -= id

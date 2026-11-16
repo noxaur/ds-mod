@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge.capture
 
 import io.github.noxaur.dsmod.core.capture.CaptureWriter
+import io.github.noxaur.dsmod.core.capture.RawRecord
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -41,7 +42,7 @@ class MapRecorder(private val writer: CaptureWriter) {
             seen[id.id()] = Seen(colors, decorations)
             val scale = map.scale.toInt()
             val locked = map.locked
-            writer.record("map") {
+            writer.record(RawRecord.MAP) {
                 buildJsonObject {
                     put("id", id.id())
                     put("scale", scale)

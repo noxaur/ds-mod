@@ -52,6 +52,12 @@ function backend() {
       headers.set("content-type", "application/json");
       init.body = JSON.stringify(body);
     }
+    // The store orders runs by time and then by random id, so each request starts in a later millisecond than the
+    // last, and a test's runs are lettered in the order it sends them.
+    const last = Date.now();
+    while (Date.now() === last) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
     const response = await app(new Request(`http://backend${path}`, init));
     const type = response.headers.get("content-type") ?? "";
     const value: unknown = type.includes("json") ? await response.json() : new Uint8Array(await response.arrayBuffer());

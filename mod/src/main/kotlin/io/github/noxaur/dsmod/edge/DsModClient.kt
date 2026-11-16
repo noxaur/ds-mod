@@ -78,7 +78,7 @@ object DsModClient : ClientModInitializer {
 
     private var byType = emptyMap<Class<out Feature>, Feature>()
 
-    /** Whether the feature of [type] runs now, which is false off dragsim.co whatever its switch says. */
+    /** Whether the feature of [type] runs now, which is false off dragsim.co whatever its switch says, and outside its area. */
     fun runs(type: Class<out Feature>): Boolean = byType[type]?.runs == true
 
     inline fun <reified F : Feature> runs() = runs(F::class.java)

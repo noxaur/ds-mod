@@ -2,13 +2,16 @@ package io.github.noxaur.dsmod.debug.capture
 
 import io.github.noxaur.dsmod.core.capture.captureLine
 import io.github.noxaur.dsmod.core.capture.readCapture
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.ServerSpan
+import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
+import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.game.ServerText
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -23,9 +26,9 @@ import kotlin.test.assertTrue
 
 class CutFixtureTest {
     private val dir = createTempDirectory("cut-fixture")
-    private val sidebar = """{"t":0,"type":"sidebar","data":{"lines":[{"text":"Name: Carol"}]}}"""
-
     private fun text(vararg parts: String) = ServerText(parts.map { ServerSpan(it) })
+
+    private val sidebar = captureLine(0, Sidebar(lines = listOf(text("Name: Carol"))))
 
     private fun say(line: String) = SystemMessage(text(line))
 
@@ -36,9 +39,15 @@ class CutFixtureTest {
         file.writeLines(listOf(sidebar) + events.map { (second, event) -> captureLine(second * 1000L, event) })
     }
 
-    private fun cut(capture: Path, seconds: ClosedFloatingPointRange<Double>, types: Set<String>, info: List<String> = emptyList()): String {
+    private fun cut(
+        capture: Path,
+        seconds: ClosedFloatingPointRange<Double>,
+        types: Set<String>,
+        info: List<String> = emptyList(),
+        area: Area = Area.ANYWHERE,
+    ): String {
         val fixture = dir.resolve("fixture.jsonl")
-        cutFixture(capture, fixture, seconds, types, info)
+        cutFixture(capture, fixture, seconds, types, area, info)
         readCapture(fixture)
         return fixture.readText()
     }
@@ -148,5 +157,51 @@ class CutFixtureTest {
         )
         val out = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 1.5..9.0, setOf("tablist"), listOf("Area")) })
         assertEquals(listOf("Area: The End", "Area: Hub"), out.map { (it.second as TabList).rows.first { row -> row.plain.startsWith("Area") }.plain })
+    }
+
+    @Test
+    fun `the rows that tell the feature's area are kept with no flag, at the start and at each change`() {
+        val capture = capture(
+            1 to tab("Area: The End", "Dragon: 100%"),
+            2 to Sidebar(lines = listOf(text("⏣ Dragon's Nest"))),
+            3 to tab("Area: The End", "Dragon: 90%"),
+            4 to Sidebar(lines = listOf(text("⏣ Void Sepulture"), text("Purse: 5"))),
+            5 to Sidebar(lines = listOf(text("⏣ Void Sepulture"), text("Purse: 6"))),
+            6 to tab("Area: Hub"),
+            7 to say("inside"),
+        )
+        val out = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 2.5..9.0, setOf("system"), area = Area.VOID_SEPULTURE) })
+        val shown = out.map { (time, event) ->
+            time to when (event) {
+                is TabList -> event.rows.first { it.plain.startsWith("Area") }.plain
+                is Sidebar -> event.lines.first().plain
+                else -> (event as SystemMessage).text.plain
+            }
+        }
+        assertEquals(
+            listOf(2500L to "Area: The End", 2500L to "⏣ Dragon's Nest", 4000L to "⏣ Void Sepulture", 6000L to "Area: Hub", 7000L to "inside"),
+            shown,
+        )
+    }
+
+    @Test
+    fun `a change of world is kept with no flag, and the area's rows are written again after it`() {
+        val capture = capture(
+            1 to tab("Area: The End"),
+            2 to WorldChanged,
+            3 to tab("Area: The End"),
+            4 to say("inside"),
+            5 to WorldChanged,
+            7 to tab("Area: The End"),
+        )
+        val out = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 0.0..4.5, setOf("system"), area = Area.END) })
+        assertEquals(listOf(TabList::class, WorldChanged::class, TabList::class, SystemMessage::class), out.map { it.second::class })
+        // A hop inside the window keeps the tab list the window started with.
+        val hop = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 3.5..6.0, setOf("system"), area = Area.END) })
+        assertEquals(listOf(TabList::class, SystemMessage::class, WorldChanged::class), hop.map { it.second::class })
+        // A cut that starts after the hop and before the new tab list starts nowhere.
+        val late = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 6.0..9.0, setOf("system"), area = Area.END) })
+        assertEquals(listOf(TabList::class), late.map { it.second::class })
+        assertEquals(7000L, late.single().first)
     }
 }

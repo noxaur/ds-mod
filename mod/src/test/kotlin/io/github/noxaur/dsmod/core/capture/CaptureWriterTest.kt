@@ -21,7 +21,7 @@ class CaptureWriterTest {
         var now = 1_000L
         val writer = CaptureWriter(dir) { now }
 
-        writer.record("bossbars") { buildJsonObject { put("title", "first") } }
+        writer.record(RawRecord.BOSSBARS) { buildJsonObject { put("title", "first") } }
         now = 2_000L
         writer.record(1_500L, drop)
         writer.close()
@@ -40,7 +40,7 @@ class CaptureWriterTest {
     @Test
     fun `readCapture gives back the events and skips raw records`() {
         val writer = CaptureWriter(dir) { 1_000L }
-        writer.record("bossbars") { buildJsonObject { put("title", "first") } }
+        writer.record(RawRecord.BOSSBARS) { buildJsonObject { put("title", "first") } }
         writer.record(1_500L, drop)
         writer.close()
 
@@ -50,7 +50,7 @@ class CaptureWriterTest {
     @Test
     fun `close waits for every record, however long the writer takes`() {
         val writer = CaptureWriter(dir)
-        writer.record("bossbars") {
+        writer.record(RawRecord.BOSSBARS) {
             Thread.sleep(300)
             buildJsonObject { put("title", "slow") }
         }
@@ -65,7 +65,7 @@ class CaptureWriterTest {
     fun `close says when the writer did not finish in time`() {
         val release = CountDownLatch(1)
         val writer = CaptureWriter(dir, closeMillis = 50)
-        writer.record("bossbars") {
+        writer.record(RawRecord.BOSSBARS) {
             release.await()
             buildJsonObject { }
         }
@@ -80,7 +80,7 @@ class CaptureWriterTest {
     @Test
     fun `close says when a record was lost`() {
         val writer = CaptureWriter(dir)
-        writer.record("bossbars") { error("this record cannot be built") }
+        writer.record(RawRecord.BOSSBARS) { error("this record cannot be built") }
         writer.record(1_500L, drop)
 
         assertFailsWith<CaptureIncompleteException> { writer.close() }
@@ -88,9 +88,7 @@ class CaptureWriterTest {
     }
 
     @Test
-    fun `a raw record cannot take the type of an event`() {
-        CaptureWriter(dir).use { writer ->
-            assertFailsWith<IllegalStateException> { writer.record("system") { buildJsonObject { } } }
-        }
+    fun `no raw record takes the type of an event`() {
+        assertEquals(emptyList(), RawRecord.entries.filter { it.type in eventTypes }, "each type has one producer, so delete the raw record that became an event")
     }
 }
