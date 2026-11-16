@@ -21,16 +21,16 @@ object Kept {
         file.name.takeIf { it.endsWith(SUFFIX) && SEPARATOR in it }?.substringBefore(SEPARATOR)?.takeIf { it.isNotEmpty() }
 
     /** The kept recordings in [dir], oldest first. Call it off the client thread. */
-    fun waiting(dir: Path): List<Path> =
-        if (Files.isDirectory(dir)) Files.list(dir).use { it.toList() }.filter { requestId(it) != null }.sorted() else emptyList()
+    fun waiting(dir: Path) = files(dir).filter { requestId(it) != null }.sorted()
 
     /**
      * Deletes everything in [dir] that is not a kept recording, which only a start of the game may do: a run may be
      * writing one. It tries every file, then throws when one would not go.
      */
     fun sweep(dir: Path) {
-        if (!Files.isDirectory(dir)) return
-        val failed = Files.list(dir).use { it.toList() }.filter { requestId(it) == null }.filter { runCatching { Files.deleteIfExists(it) }.isFailure }
+        val failed = files(dir).filter { requestId(it) == null }.filter { runCatching { Files.deleteIfExists(it) }.isFailure }
         if (failed.isNotEmpty()) throw java.io.IOException("Could not delete $failed")
     }
+
+    private fun files(dir: Path): List<Path> = if (Files.isDirectory(dir)) Files.list(dir).use { it.toList() } else emptyList()
 }

@@ -319,11 +319,13 @@ object CopyChats {
         val layout = if (partOfRow.isNotEmpty() && partOfRow.last() == lines.lastIndex) {
             Layout(width, lines.mapIndexed { i, pieces -> Part(message, i, pieces, lines.size == 1) }, partOfRow)
         } else {
-            Layout(width, listOf(Part(message, 0, lines.flatten(), true)), emptyList())
+            whole(width, message, lines.flatten())
         }
         layouts[message] = layout
         return layout
     }
+
+    private fun whole(width: Int, message: GuiMessage, pieces: List<Pair<Style, String>>) = Layout(width, listOf(Part(message, 0, pieces, true)), emptyList())
 
     private fun draw(client: Minecraft, graphics: GuiGraphicsExtractor, x: Int, y: Int) {
         mouseX = x
@@ -376,11 +378,14 @@ object CopyChats {
 
     private fun under(client: Minecraft, rows: List<Row>, x: Double, y: Double): Part? {
         val width = width(client)
+        val inverse = Matrix3x2f()
         val local = Vector2f()
-        return rows.firstOrNull { row ->
-            row.pose.invert(Matrix3x2f()).transformPosition(x.toFloat(), y.toFloat(), local)
-            ActiveTextCollector.isPointInRectangle(local.x, local.y, LEFT.toFloat(), row.top.toFloat(), (LEFT + width).toFloat(), row.bottom.toFloat())
-        }?.part
+        return rows.firstOrNull { row -> hits(row.pose, x, y, row.top, row.bottom, width, inverse, local) }?.part
+    }
+
+    private fun hits(pose: Matrix3x2fc, x: Double, y: Double, top: Int, bottom: Int, width: Int, inverse: Matrix3x2f, local: Vector2f): Boolean {
+        pose.invert(inverse).transformPosition(x.toFloat(), y.toFloat(), local)
+        return ActiveTextCollector.isPointInRectangle(local.x, local.y, LEFT.toFloat(), top.toFloat(), (LEFT + width).toFloat(), bottom.toFloat())
     }
 
     private fun rows(client: Minecraft): List<Row> {
@@ -402,7 +407,7 @@ object CopyChats {
                 if (full > shown) {
                     layout.parts[layout.partOfRow[full - shown + row]]
                 } else {
-                    layout = Layout(layout.width, listOf(Part(message, 0, layout.parts.flatMap { it.pieces }, true)), emptyList())
+                    layout = whole(layout.width, message, layout.parts.flatMap { it.pieces })
                     layouts[message] = layout
                     layout.parts[0]
                 }
@@ -422,10 +427,7 @@ object CopyChats {
         val local = Vector2f()
         var hit = false
         visible(client) { _, pose, top, bottom ->
-            if (!hit) {
-                pose.invert(inverse).transformPosition(x.toFloat(), y.toFloat(), local)
-                hit = ActiveTextCollector.isPointInRectangle(local.x, local.y, LEFT.toFloat(), top.toFloat(), (LEFT + width).toFloat(), bottom.toFloat())
-            }
+            if (!hit) hit = hits(pose, x, y, top, bottom, width, inverse, local)
         }
         return hit
     }

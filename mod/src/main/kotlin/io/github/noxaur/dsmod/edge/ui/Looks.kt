@@ -75,16 +75,20 @@ object Looks {
                 val top = (r * 2 + dark) * SlotArt.SIZE
                 for ((c, part) in parts.withIndex()) {
                     val art = SlotArt.back(part, role.rgb, dark == 1)
-                    for (j in 0 until SlotArt.SIZE) for (i in 0 until SlotArt.SIZE) image.setPixel(c * SlotArt.SIZE + i, top + j, art[j * SlotArt.SIZE + i])
+                    blit(image, c * SlotArt.SIZE, top, SlotArt.SIZE, art)
                 }
             }
             val gem = SlotArt.gem(role.rgb)
-            for (j in 0 until SlotArt.GEM) for (i in 0 until SlotArt.GEM) image.setPixel(r * SlotArt.SIZE + i, GEM_ROW * SlotArt.SIZE + j, gem[j * SlotArt.GEM + i])
+            blit(image, r * SlotArt.SIZE, GEM_ROW * SlotArt.SIZE, SlotArt.GEM, gem)
         }
         val texture = DynamicTexture({ "ds-mod looks" }, image)
         Minecraft.getInstance().textureManager.register(ATLAS.id, texture)
         texture.upload()
         painted = true
+    }
+
+    private fun blit(image: NativeImage, x: Int, y: Int, size: Int, pixels: IntArray) {
+        for (j in 0 until size) for (i in 0 until size) image.setPixel(x + i, y + j, pixels[j * size + i])
     }
 
     private const val DARK_BELOW = 90

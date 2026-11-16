@@ -27,13 +27,17 @@ abstract class HeldItemMixin {
     @Inject(method = "submitArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V", shift = At.Shift.AFTER))
     private void dsmod$place(AbstractClientPlayer player, float frameInterp, float xRot, InteractionHand hand, float attack, ItemStack stack,
                              float inverseArmHeight, PoseStack pose, SubmitNodeCollector collector, int light, CallbackInfo ci) {
-        HeldItems.INSTANCE.place(pose, hand == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite(), stack);
+        HeldItems.INSTANCE.place(pose, dsmod$armOf(player, hand), stack);
     }
 
     @Inject(method = "submitArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;I)V"))
     private void dsmod$turnAndSize(AbstractClientPlayer player, float frameInterp, float xRot, InteractionHand hand, float attack, ItemStack stack,
                             float inverseArmHeight, PoseStack pose, SubmitNodeCollector collector, int light, CallbackInfo ci) {
-        HeldItems.INSTANCE.turnAndSize(pose, hand == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite());
+        HeldItems.INSTANCE.turnAndSize(pose, dsmod$armOf(player, hand));
+    }
+
+    private static HumanoidArm dsmod$armOf(AbstractClientPlayer player, InteractionHand hand) {
+        return hand == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite();
     }
 
     @Inject(method = "swingArm", at = @At("HEAD"), cancellable = true)

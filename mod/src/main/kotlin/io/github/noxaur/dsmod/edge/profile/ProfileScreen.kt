@@ -21,6 +21,7 @@ import io.github.noxaur.dsmod.core.profile.Rank
 import io.github.noxaur.dsmod.core.profile.Stat
 import io.github.noxaur.dsmod.core.profile.StatValue
 import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.core.text.TextBuilder
 import io.github.noxaur.dsmod.core.text.amount
 import io.github.noxaur.dsmod.core.text.grouped
 import io.github.noxaur.dsmod.core.text.text
@@ -59,6 +60,9 @@ private const val LEFT_WIDTH = 96
 private const val CONTENT_WIDTH = 296
 private const val INNER_HEIGHT = 184
 private const val HEADER = 20
+private const val VIEW_WIDTH = CONTENT_WIDTH + Kit.GAP + Kit.SCROLLBAR_WIDTH
+private const val PANEL_WIDTH = Kit.INSET * 2 + LEFT_WIDTH + Kit.INSET + VIEW_WIDTH
+private const val PANEL_HEIGHT = Kit.INSET * 2 + INNER_HEIGHT
 
 // A sheet has two columns: bars down the left, wells of rows down the right.
 private const val PROGRESS_WIDTH = 144
@@ -77,6 +81,18 @@ private const val SIDE_X = GRID_WIDTH + 8
 private const val SIDE_WIDTH = CONTENT_WIDTH - SIDE_X
 private const val PAGE_BUTTON = 22
 private const val PAGES_PER_ROW = 5
+
+// Where page button [i] stands from the side panel's left edge, and from the top of its Pages heading.
+private fun pageX(i: Int) = i % PAGES_PER_ROW * (PAGE_BUTTON + Kit.GAP)
+
+private fun pageY(i: Int) = SECTION + i / PAGES_PER_ROW * (Kit.BUTTON_HEIGHT + Kit.GAP)
+
+private fun inside(mouseX: Int, mouseY: Int, x: Int, y: Int, width: Int, height: Int) = mouseX in x until x + width && mouseY in y until y + height
+
+/** How tall what was drawn from [top] down to [bottom] stands, without the gap that each drawing leaves under itself. */
+private fun extent(bottom: Int, top: Int) = bottom - Kit.GAP - top
+
+private val Profile.playerUuid get() = runCatching { UUID.fromString(player.uuid) }.getOrNull()
 
 /** The kinds of container with a tab of their own, each with the item on its tab. One tab holds every page of a kind. */
 private val TAB_ITEMS = mapOf(
@@ -210,19 +226,21 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         fun height(limit: Int = rows.size) = SECTION + ((if (header != null) 1 else 0) + rows.size.coerceAtMost(limit)).coerceAtLeast(1) * ROW + 5 + Kit.GAP
     }
 
-    private val profile get() = (lookup.state as? Load.Loaded)?.value ?: last
+    private val fetched get() = (lookup.state as? Load.Loaded)?.value
+
+    private val profile get() = fetched ?: last
+
+    private fun nameOf(profile: Profile?) = profile?.player?.name ?: lookup.name
 
     override fun init() {
         SlotArts.checkPacks()
-        val width = Kit.INSET * 2 + LEFT_WIDTH + Kit.INSET + CONTENT_WIDTH + Kit.GAP + Kit.SCROLLBAR_WIDTH
-        val height = Kit.INSET * 2 + INNER_HEIGHT
-        panelX = (this.width - width) / 2
-        panelY = (this.height - height + Kit.TAB_HEIGHT) / 2
+        panelX = (width - PANEL_WIDTH) / 2
+        panelY = (height - PANEL_HEIGHT + Kit.TAB_HEIGHT) / 2
         left = panelX + Kit.INSET
         top = panelY + Kit.INSET
         contentX = left + LEFT_WIDTH + Kit.INSET
         built = lookup.state
-        (lookup.state as? Load.Loaded)?.value?.let { last = it }
+        fetched?.let { last = it }
         val profile = profile
         if (profile != null) {
             if (dressed !== profile) dress(profile)
@@ -243,9 +261,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
             }
             pagedTab()?.let { paged ->
                 for (i in paged.pages.indices) {
-                    val x = contentX + SIDE_X + i % PAGES_PER_ROW * (PAGE_BUTTON + Kit.GAP)
-                    val y = viewY + SECTION + i / PAGES_PER_ROW * (Kit.BUTTON_HEIGHT + Kit.GAP)
-                    addRenderableWidget(KitButton(x, y, "${i + 1}", { turn(paged, i) }, PAGE_BUTTON)).setTooltip(Tooltip.create(paged.pages[i].title.toComponent()))
+                    addRenderableWidget(KitButton(contentX + SIDE_X + pageX(i), viewY + pageY(i), "${i + 1}", { turn(paged, i) }, PAGE_BUTTON)).setTooltip(Tooltip.create(paged.pages[i].title.toComponent()))
                 }
             }
         }
@@ -274,7 +290,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
     /** The overview, then the sheets of numbers, the containers, and the long lists last. A tab with nothing in it is left out. */
     private fun tabs(profile: Profile): List<Tab> {
         val head = ItemStack(Items.PLAYER_HEAD).apply {
-            runCatching { UUID.fromString(profile.player.uuid) }.getOrNull()?.let { set(DataComponents.PROFILE, ResolvableProfile.createUnresolved(it)) }
+            profile.playerUuid?.let { set(DataComponents.PROFILE, ResolvableProfile.createUnresolved(it)) }
         }
         fun sheet(kind: String, name: String, icon: ItemStack, shown: Boolean) = Tab(kind, name, icon, emptyList()).takeIf { shown }
         val stats = profile.playerStats
@@ -304,7 +320,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         val worn = profile.equipment
         equipment = listOf(worn.helmet, worn.chestplate, worn.leggings, worn.boots, worn.held).map { it?.let(::shown) }
         val level = minecraft.level ?: return
-        val uuid = runCatching { UUID.fromString(profile.player.uuid) }.getOrNull() ?: return
+        val uuid = profile.playerUuid ?: return
         val current = model?.takeIf { it.uuid == uuid } ?: ProfileModel(level, uuid, profile.player.name).also { model = it }
         current.dress(worn)
     }
@@ -363,20 +379,24 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
 
     /** What the screen should say over its veil now, if anything: the profile's state first, then the shown tab's. */
     private fun notice(): Notice? {
-        val name = profile?.player?.name ?: lookup.name
+        val name = nameOf(profile)
         when (val state = lookup.state) {
-            is Load.Loading -> return Notice(text { muted(LOADING) }.toComponent(), null, 0, wholeScreen = profile == null)
-            is Load.Failed -> return Notice(state.failure.message.toComponent(), Icon.WARN, Role.BAD.argb(), wholeScreen = profile == null, failure = state.failure)
+            is Load.Loading -> return loading(profile == null)
+            is Load.Failed -> return failed(state.failure, profile == null)
             is Load.Loaded -> Unit
         }
         val summary = shownSummary() ?: return null
         if (summary.hidden) return Notice(text { body("$name keeps their inventory hidden.") }.toComponent(), Icon.LOCK, Role.MUTED.argb(), wholeScreen = false)
         return when (val load = shownContainer()) {
-            is Load.Loading -> Notice(text { muted(LOADING) }.toComponent(), null, 0, wholeScreen = false)
-            is Load.Failed -> Notice(load.failure.message.toComponent(), Icon.WARN, Role.BAD.argb(), wholeScreen = false, failure = load.failure)
+            is Load.Loading -> loading(false)
+            is Load.Failed -> failed(load.failure, false)
             is Load.Loaded, null -> null
         }
     }
+
+    private fun loading(wholeScreen: Boolean) = Notice(text { muted(LOADING) }.toComponent(), null, 0, wholeScreen)
+
+    private fun failed(failure: Failure, wholeScreen: Boolean) = Notice(failure.message.toComponent(), Icon.WARN, Role.BAD.argb(), wholeScreen, failure)
 
     /** The middle of what the notice covers: the whole inside of the panel, or the tab's content. */
     private fun noticeCenter(notice: Notice) = if (notice.wholeScreen) left + (LEFT_WIDTH + Kit.INSET + CONTENT_WIDTH) / 2 else contentX + CONTENT_WIDTH / 2
@@ -402,8 +422,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         hovered = null
         var tooltip: List<Component>? = null
         var item: ItemStack? = null
-        val width = Kit.INSET * 2 + LEFT_WIDTH + Kit.INSET + CONTENT_WIDTH + Kit.GAP + Kit.SCROLLBAR_WIDTH
-        Kit.panel(graphics, panelX, panelY, width, Kit.INSET * 2 + INNER_HEIGHT)
+        Kit.panel(graphics, panelX, panelY, PANEL_WIDTH, PANEL_HEIGHT)
 
         val profile = profile
         val notice = notice()
@@ -420,7 +439,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
             m.draw(graphics, left + 1, boxTop, left + LEFT_WIDTH - 1, boxBottom, ((boxBottom - boxTop) / MODEL_HEIGHTS).roundToInt(), turntable.yaw(now), turntable.pitch)
             if (profile != null && (turntable.dragging || overModel(mouseX.toDouble(), mouseY.toDouble()))) graphics.requestCursor(CursorTypes.RESIZE_ALL)
         }
-        if (profile != null && mouseX in left until left + LEFT_WIDTH && mouseY in top until nameBottom) tooltip = ages(profile, now)
+        if (profile != null && inside(mouseX, mouseY, left, top, LEFT_WIDTH, nameBottom - top)) tooltip = ages(profile, now)
 
         if (!headless) Kit.label(graphics, fit(shownSummary()?.title?.plain ?: shownTab()?.name.orEmpty(), GRID_WIDTH), contentX, top + (Kit.BUTTON_HEIGHT - 8) / 2)
 
@@ -435,7 +454,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
                 tab == STATS -> playerStats(graphics, profile, y, mx, vy, hover)
                 tab == DUNGEONS -> dungeons(graphics, profile, y, mx, vy, hover)
                 tab == MINING -> mining(graphics, profile, y, now)
-                tab == BESTIARY -> side(graphics, texts(profile).bestiary, contentX, y) - Kit.GAP - y
+                tab == BESTIARY -> extent(side(graphics, texts(profile).bestiary, contentX, y), y)
                 tab == COLLECTIONS -> collections(graphics, profile, y)
                 else -> overview(graphics, profile, y, mx, vy, false, hover)
             }
@@ -469,9 +488,9 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
     /** The veil over what is waiting or empty, and the notice's box in its middle. Loading's dots step in place. */
     private fun drawNotice(graphics: GuiGraphicsExtractor, notice: Notice, now: Long) {
         if (notice.wholeScreen) {
-            Kit.veil(graphics, left, top, LEFT_WIDTH + Kit.INSET + CONTENT_WIDTH + Kit.GAP + Kit.SCROLLBAR_WIDTH, INNER_HEIGHT)
+            Kit.veil(graphics, left, top, LEFT_WIDTH + Kit.INSET + VIEW_WIDTH, INNER_HEIGHT)
         } else {
-            Kit.veil(graphics, contentX, viewY, CONTENT_WIDTH + Kit.GAP + Kit.SCROLLBAR_WIDTH, viewHeight)
+            Kit.veil(graphics, contentX, viewY, VIEW_WIDTH, viewHeight)
         }
         val lines = font.split(notice.message, NOTICE_TEXT).take(2)
         val iconWidth = notice.icon?.let { it.width + 4 } ?: 0
@@ -498,7 +517,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         private val shown = profile ?: SKELETON
 
         val names: List<Component> = run {
-            val name = text { body(profile?.player?.name ?: lookup.name) }.toComponent()
+            val name = text { body(nameOf(profile)) }.toComponent()
             val prefix = profile?.player?.rank?.prefix?.takeIf { it.plain.isNotBlank() }?.toComponent()
             val mode = profile?.profileMode?.takeIf { it != "NORMAL" }?.let { text { muted(title(it)) }.toComponent() }
             val joined = prefix?.let { Component.empty().append(it).append(" ").append(name) }
@@ -550,7 +569,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
             table(
                 "Runs", LIST_WIDTH,
                 listOf("Completions" to d.completions.toDouble(), "Secrets" to d.secrets, "Zombie Kills" to d.zombieKills, "Skeletor Kills" to d.skeletorKills)
-                    .map { (name, n) -> Row(muted(name), listOf(text { value(amount(n)) }.toComponent())) },
+                    .map { (name, n) -> figure(muted(name), n) },
             )
         }
 
@@ -575,20 +594,20 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         }
 
         val essence by lazy {
-            halves("Essence", PROGRESS_WIDTH, dungeons?.essence.orEmpty().map { Row(body(it.name.removeSuffix(" Essence")), listOf(text { value(amount(it.amount)) }.toComponent())) })
+            halves("Essence", PROGRESS_WIDTH, dungeons?.essence.orEmpty().map { figure(body(it.name.removeSuffix(" Essence")), it.amount) })
         }
 
         val heart by lazy {
             val hotd = shown.hotd ?: return@lazy null
             val rows = listOf("Tier" to hotd.tier, "Experience" to hotd.exp, "Core" to hotd.core, "Ender" to hotd.ender, "Void" to hotd.void, "Tokens" to hotd.tokens, "Resets" to hotd.resets)
-                .map { (name, n) -> Row(muted(name), listOf(text { value(amount(n)) }.toComponent())) } +
+                .map { (name, n) -> figure(muted(name), n) } +
                 listOfNotNull(hotd.ability?.let { Row(muted("Ability"), listOf(text { body(it.name) }.toComponent())) })
             table("Heart of the Dragon", PROGRESS_WIDTH, rows)
         }
 
         val nodes by lazy {
             shown.hotd?.let { hotd ->
-                table("Nodes", LIST_WIDTH, hotd.nodes.map { Row(body(it.name), listOf(text { value(amount(it.level)) }.toComponent())) }, empty = "No nodes yet.")
+                table("Nodes", LIST_WIDTH, hotd.nodes.map { figure(body(it.name), it.level) }, empty = "No nodes yet.")
             }
         }
 
@@ -600,9 +619,9 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
             halves("Bestiary", CONTENT_WIDTH, rows, note = "${grouped(total)} kills")
         }
 
-        val collections by lazy { table("Collections", HALF_WIDTH, shown.collections.map { Row(body(it.name), listOf(text { value(amount(it.amount)) }.toComponent())) }, empty = "None yet.") }
+        val collections by lazy { counts("Collections", shown.collections.map { it.name to it.amount }) }
 
-        val meters by lazy { table("RNG Meters", HALF_WIDTH, shown.rngMeters.map { Row(body(it.name), listOf(text { value(amount(it.progress)) }.toComponent())) }, empty = "None yet.") }
+        val meters by lazy { counts("RNG Meters", shown.rngMeters.map { it.name to it.progress }) }
 
         val pets: List<Shown?> by lazy { shown.pets.map { shown(it.item) } }
 
@@ -659,9 +678,16 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
     }
 
     /** A name in the body color, cut to its room. */
-    private fun body(name: String): (Int) -> Component = { w -> text { body(fit(name, w)) }.toComponent() }
+    private fun body(name: String) = named(name, TextBuilder::body)
 
-    private fun muted(name: String): (Int) -> Component = { w -> text { muted(fit(name, w)) }.toComponent() }
+    private fun muted(name: String) = named(name, TextBuilder::muted)
+
+    private fun named(name: String, role: TextBuilder.(String) -> Unit): (Int) -> Component = { w -> text { role(fit(name, w)) }.toComponent() }
+
+    private fun counts(title: String, entries: List<Pair<String, Double>>) = table(title, HALF_WIDTH, entries.map { (name, n) -> figure(body(name), n) }, empty = "None yet.")
+
+    /** A row of a name and one amount. */
+    private fun figure(name: (Int) -> Component, n: Double) = Row(name, listOf(text { value(amount(n)) }.toComponent()))
 
     /** A stat's name in the color the game gives the stat. */
     private fun colored(stat: StatValue): (Int) -> Component = { w ->
@@ -722,7 +748,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
                 if (picked) Kit.icon(graphics, Icon.CHECK, x + 23 + font.width(label), y + 1, Role.GOOD.argb())
             }
             Kit.bar(graphics, x + 20, y + 10, PROGRESS_WIDTH - 20, p.fraction, (if (p.maxed) Role.GOOD else Role.VALUE).argb())
-            if (mouseX in x until x + PROGRESS_WIDTH && mouseY in y until y + 16) hover(progressTooltip(p, picked))
+            if (inside(mouseX, mouseY, x, y, PROGRESS_WIDTH, 16)) hover(progressTooltip(p, picked))
             y += CELL_STEP
         }
         return y + Kit.GAP
@@ -756,7 +782,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
                 right += t.gap
             }
         }
-        if (mouseX in x until x + t.width && mouseY in y until bottom) {
+        if (inside(mouseX, mouseY, x, y, t.width, bottom - y)) {
             if (tip != null) hover(tip) else t.tips.getOrNull((mouseY - y - 3) / ROW - header)?.let(hover)
         }
         return bottom + Kit.GAP
@@ -794,7 +820,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
             val stack = icon(c.id)
             graphics.item(stack, ix, y + 2)
             graphics.itemDecorations(font, stack, ix, y + 2, texts.classLevels[i])
-            if (mouseX in cx until cx + cell && mouseY in y until y + CLASS_HEIGHT) hover(progressTooltip(c, picked))
+            if (inside(mouseX, mouseY, cx, y, cell, CLASS_HEIGHT)) hover(progressTooltip(c, picked))
         }
         return y + CLASS_HEIGHT + Kit.GAP
     }
@@ -807,7 +833,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         val texts = texts(profile)
         var left = progress(graphics, texts, "Skills", profile.skills, contentX, top, mouseX, mouseY, ghostly, hover)
         left = progress(graphics, texts, "Slayers", profile.slayers, contentX, left, mouseX, mouseY, ghostly, hover)
-        val x = contentX + PROGRESS_WIDTH + Kit.GAP
+        val x = rightX
         var right = if (profile.stats.isEmpty()) top else draw(graphics, texts.stats, x, top, ghostly = ghostly)
         right = classes(graphics, texts, x, right, mouseX, mouseY, ghostly, hover)
         if (texts.kills.rows.isNotEmpty()) {
@@ -815,12 +841,12 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
             val limit = room.coerceIn(1, texts.kills.rows.size)
             right = draw(graphics, texts.kills, x, right, mouseX, mouseY, ghostly, limit, texts.allKills.takeIf { limit < texts.kills.rows.size }, hover)
         }
-        return maxOf(left, right) - Kit.GAP - top
+        return extent(maxOf(left, right), top)
     }
 
     /** The player's stats in two wells, each stat's breakdown in its hover. */
     private fun playerStats(graphics: GuiGraphicsExtractor, profile: Profile, top: Int, mouseX: Int, mouseY: Int, hover: (List<Component>) -> Unit) =
-        side(graphics, texts(profile).playerStats, contentX, top, mouseX, mouseY, hover) - Kit.GAP - top
+        extent(side(graphics, texts(profile).playerStats, contentX, top, mouseX, mouseY, hover), top)
 
     /**
      * The Catacombs: its level and each class down the left, the picked class ticked, and the essence under them; the
@@ -830,9 +856,9 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         val texts = texts(profile)
         var left = progress(graphics, texts, "Catacombs", texts.catacombs, contentX, top, mouseX, mouseY, false, hover)
         if (texts.dungeons?.essence?.isNotEmpty() == true) left = side(graphics, texts.essence, contentX, left)
-        val x = contentX + PROGRESS_WIDTH + Kit.GAP
+        val x = rightX
         val right = draw(graphics, texts.floors, x, draw(graphics, texts.runs, x, top))
-        return maxOf(left, right) - Kit.GAP - top
+        return extent(maxOf(left, right), top)
     }
 
     /** The Heart of the Dragon and the forge down the left, and the Heart's nodes down the right. */
@@ -840,14 +866,14 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         val texts = texts(profile)
         var left = texts.heart?.let { draw(graphics, it, contentX, top) } ?: top
         texts.forge(now)?.let { left = draw(graphics, it, contentX, left) }
-        val right = texts.nodes?.let { draw(graphics, it, contentX + PROGRESS_WIDTH + Kit.GAP, top) } ?: top
-        return maxOf(left, right) - Kit.GAP - top
+        val right = texts.nodes?.let { draw(graphics, it, rightX, top) } ?: top
+        return extent(maxOf(left, right), top)
     }
 
     /** The collections, and beside them the RNG meters. */
     private fun collections(graphics: GuiGraphicsExtractor, profile: Profile, top: Int): Int {
         val texts = texts(profile)
-        return side(graphics, listOf(texts.collections, texts.meters), contentX, top) - Kit.GAP - top
+        return extent(side(graphics, listOf(texts.collections, texts.meters), contentX, top), top)
     }
 
     private fun progressTooltip(p: Progress, selected: Boolean): List<Component> {
@@ -875,7 +901,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         val items: List<Shown?>? = when {
             pets -> texts.pets
             summary.hidden -> null
-            else -> (lookup.container(summary.id) as? Load.Loaded)?.value?.let { loaded ->
+            else -> (shownContainer() as? Load.Loaded)?.value?.let { loaded ->
                 if (stacked !== loaded) {
                     stacked = loaded
                     stacks = loaded.items.map { it?.let(::shown) }
@@ -917,14 +943,14 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         val paged = pagedTab()
         if (paged != null) {
             val buttons = children().filterIsInstance<KitButton>().filter { it.message.string.all(Char::isDigit) }
-            for (i in buttons.indices) buttons[i].y = sideTop + SECTION + i / PAGES_PER_ROW * (Kit.BUTTON_HEIGHT + Kit.GAP)
+            for (i in buttons.indices) buttons[i].y = sideTop + pageY(i)
         }
         if (paged != null) {
             Kit.label(graphics, "Pages", sx, y, Kit.Ink.MUTED)
             val rowsOfPages = (paged.pages.size + PAGES_PER_ROW - 1) / PAGES_PER_ROW
             val shown = page(paged)
-            val px = sx + shown % PAGES_PER_ROW * (PAGE_BUTTON + Kit.GAP)
-            val py = y + SECTION + shown / PAGES_PER_ROW * (Kit.BUTTON_HEIGHT + Kit.GAP)
+            val px = sx + pageX(shown)
+            val py = y + pageY(shown)
             y += SECTION + rowsOfPages * (Kit.BUTTON_HEIGHT + Kit.GAP) + Kit.GAP
             // The page shown is ringed, as a selected tab joins its panel.
             Kit.ring(graphics, px - 1, py - 1, PAGE_BUTTON + 2, Kit.BUTTON_HEIGHT + 2, Kit.theme.accent)
@@ -972,7 +998,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         if (mark != null) Slots.rarityBack(graphics, mark, x + 1, y + 1)
         graphics.item(shown.stack, x + 1, y + 1)
         graphics.itemDecorations(font, shown.stack, x + 1, y + 1)
-        val over = mouseX in x until x + Kit.SLOT_SIZE && mouseY in y until y + Kit.SLOT_SIZE
+        val over = inside(mouseX, mouseY, x, y, Kit.SLOT_SIZE, Kit.SLOT_SIZE)
         if (over) Kit.slotHover(graphics, x + 1, y + 1)
         if (mark != null) Slots.rarityFront(graphics, mark, x + 1, y + 1)
         if (over) hover(shown.item, shown.stack)
@@ -984,6 +1010,9 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
     val overflows get() = maxScroll() > 0
 
     private fun thumbHeight() = ((viewHeight - 2) * viewHeight / contentHeight.coerceAtLeast(viewHeight)).coerceAtLeast(8)
+
+    /** Where the sheets' right column starts, beside the bars. */
+    private val rightX get() = contentX + PROGRESS_WIDTH + Kit.GAP
 
     private fun scrollbarX() = contentX + CONTENT_WIDTH + Kit.GAP
 

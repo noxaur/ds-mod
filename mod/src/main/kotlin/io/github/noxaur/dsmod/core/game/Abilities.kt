@@ -31,7 +31,7 @@ object Abilities {
     private const val ANY_SET = "counts as the helmet of any armor set"
 
     /** How long the refusal in [plain] says is left, or null when it is not one or does not parse. */
-    fun refusalMillis(plain: String): Long? = REFUSAL_LINE.matchEntire(plain)?.groupValues?.get(1)?.let(::millis)
+    fun refusalMillis(plain: String): Long? = REFUSAL_LINE.seconds(plain)
 
     /** The ability an action bar names in its mana part, such as `Giant's Slam`, or null when it has none. */
     fun cast(bar: String): String? = if (" Mana (" in bar) CAST.find(bar)?.groupValues?.get(1) else null
@@ -55,7 +55,7 @@ object Abilities {
                 continue
             }
             val name = heading ?: continue
-            val cooldown = COOLDOWN.matchEntire(plain)?.groupValues?.get(1)?.let(::millis) ?: continue
+            val cooldown = COOLDOWN.seconds(plain) ?: continue
             if (cooldown > 0) (found ?: ArrayList<Ability>(1).also { found = it }) += Ability(name, cooldown)
         }
         return found ?: emptyList()
@@ -63,7 +63,7 @@ object Abilities {
 
     /** The first `Cooldown` line anywhere in [item]'s lore, for an ability that has no heading, or null when it has none. */
     fun cooldown(item: Item): Long? = item.lore.firstNotNullOfOrNull { line ->
-        COOLDOWN.matchEntire(line.plain.trim())?.groupValues?.get(1)?.let(::millis)?.takeIf { it > 0 }
+        COOLDOWN.seconds(line.plain.trim())?.takeIf { it > 0 }
     }
 
     /** The charging set bonus in a worn piece's lore, or null when it has none. */
@@ -100,6 +100,9 @@ object Abilities {
         if (plain.none { it in ''..'' }) return plain.trim()
         return plain.filterNot { it in ''..'' }.trim()
     }
+
+    /** The milliseconds a whole [plain] line names in its first group, or null when the line is not this regex's. */
+    private fun Regex.seconds(plain: String) = matchEntire(plain)?.groupValues?.get(1)?.let(::millis)
 
     private fun millis(seconds: String) = (seconds.toDouble() * 1000).roundToLong()
 }

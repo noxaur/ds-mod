@@ -53,6 +53,7 @@ enum class Kind(val spoken: String) {
     ORDER("list"),
     ITEMS("list"),
     PANEL("editor"),
+    PREVIEW("preview"),
 }
 
 /**
@@ -145,6 +146,13 @@ sealed class Valued<T>(id: String, name: String, description: String, kind: Kind
         private set
         get() = bind.follows?.invoke() ?: field
 
+    /** [v] as the summary, the default tip and the narrator show it, or null when the row has none to show. */
+    protected open fun show(v: T, keys: (Int) -> String): String? = null
+
+    override fun summary(keys: (Int) -> String) = show(value, keys)
+
+    override fun default(keys: (Int) -> String) = show(default, keys)
+
     /** Takes the default from the same row of a tree built on a fresh config. */
     @Suppress("UNCHECKED_CAST")
     internal fun adopt(fresh: Setting) {
@@ -220,11 +228,9 @@ class Number(
     /** The value [text] means, such as `4.5`, `-12°` or `250 ms`, or null when it is not a number. */
     fun parse(text: String): Float? = text.trim().removeSuffix(unit.trim()).trim().replace(',', '.').toFloatOrNull()?.let(::normalize)
 
-    override fun summary(keys: (Int) -> String) = format() + unit
+    override fun show(v: Float, keys: (Int) -> String) = format(v) + unit
 
-    override fun default(keys: (Int) -> String) = format(default) + unit
-
-    override fun spoken(keys: (Int) -> String, open: Boolean) = format() + unit
+    override fun spoken(keys: (Int) -> String, open: Boolean) = show(value, keys)
 
     private companion object {
         val POWERS = doubleArrayOf(1.0, 10.0, 100.0, 1000.0)
@@ -257,9 +263,7 @@ open class Choice<T> internal constructor(
 
     override val labels: List<String> by lazy { values.map(label) }
 
-    override fun summary(keys: (Int) -> String) = label(value)
-
-    override fun default(keys: (Int) -> String) = label(default)
+    override fun show(v: T, keys: (Int) -> String) = label(v)
 
     override fun spoken(keys: (Int) -> String, open: Boolean) = Narration.join(shown, Narration.of(index, values.size))
 }
@@ -284,11 +288,9 @@ class KeyBind(id: String, name: String, description: String, bind: Bind<Int>) : 
         value = NONE
     }
 
-    override fun summary(keys: (Int) -> String) = keys(value)
+    override fun show(v: Int, keys: (Int) -> String) = keys(v)
 
-    override fun default(keys: (Int) -> String) = keys(default)
-
-    override fun spoken(keys: (Int) -> String, open: Boolean) = keys(value)
+    override fun spoken(keys: (Int) -> String, open: Boolean) = show(value, keys)
 
     companion object {
         const val NONE = -1
@@ -298,14 +300,10 @@ class KeyBind(id: String, name: String, description: String, bind: Bind<Int>) : 
 /** Stretches of a scale from 0 to [max], with a tick at each of [ticks]. `Sections` holds the rules of a stretch. */
 class Span(id: String, name: String, description: String, bind: Bind<List<Section>>, val max: Int, val ticks: List<Int>) :
     Valued<List<Section>>(id, name, description, Kind.SPAN, bind) {
-    override fun summary(keys: (Int) -> String) = text(value)
-
-    override fun default(keys: (Int) -> String) = text(default)
+    override fun show(v: List<Section>, keys: (Int) -> String) = v.joinToString(", ") { "${it.from}–${it.to}" }.ifEmpty { "Never" }
 
     // The en dash of a stretch is read as a word.
-    override fun spoken(keys: (Int) -> String, open: Boolean) = text(value).replace("–", " to ")
-
-    private fun text(sections: List<Section>) = sections.joinToString(", ") { "${it.from}–${it.to}" }.ifEmpty { "Never" }
+    override fun spoken(keys: (Int) -> String, open: Boolean) = show(value, keys).replace("–", " to ")
 }
 
 /** More rows the player rarely needs, under a bar that opens them. It is changed when any of them is, and resets them all. */
@@ -379,16 +377,12 @@ class Order<T>(
         value = shown
     }
 
-    private fun text(list: List<T>) = list.joinToString(", ") { label(it) }
-
     override val labels: List<String> by lazy { values.map(label) }
 
-    override fun summary(keys: (Int) -> String) = text(value)
-
-    override fun default(keys: (Int) -> String) = text(default)
+    override fun show(v: List<T>, keys: (Int) -> String) = v.joinToString(", ") { label(it) }
 
     override fun spoken(keys: (Int) -> String, open: Boolean) =
-        Narration.join(text(value), "${value.size} of ${values.size} shown", if (open) "expanded" else "collapsed")
+        Narration.join(show(value, keys), "${value.size} of ${values.size} shown", if (open) "expanded" else "collapsed")
 
     /** What the narrator says for the entry at [index]: its name, its switch, and its place in the list. */
     fun entryNarration(index: Int) = Narration.join(label(entries[index]), Kind.SWITCH.spoken, if (shown(index)) "on" else "off", Narration.of(index, entries.size))
@@ -474,6 +468,10 @@ class Rows {
     /** An editor drawn as a picture of what it edits, on the edge's [canvas], summed up by [describe]. */
     fun <T> panel(bind: Bind<T>, name: String, description: String, canvas: Canvas, id: String, dependsOn: Switch? = null, describe: (T) -> String) =
         add(Panel(id, name, description, bind, canvas, describe), dependsOn)
+
+    /** A picture on [canvas] of what the rows around it do, which holds no value. */
+    fun preview(id: String, name: String, description: String, canvas: Canvas, dependsOn: Switch? = null) =
+        add(Preview(id, name, description, canvas), dependsOn)
 
     /** A button that runs [run], such as a reset of a group. */
     fun action(id: String, name: String, description: String, button: String, dependsOn: Switch? = null, run: () -> Unit) =

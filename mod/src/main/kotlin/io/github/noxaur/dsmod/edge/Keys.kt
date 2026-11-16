@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
 import net.minecraft.client.input.InputWithModifiers
+import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.resources.language.I18n
 import org.lwjgl.glfw.GLFW
 
@@ -28,6 +29,13 @@ object Keys {
     fun shift(input: InputWithModifiers) = input.hasShiftDown() || Minecraft.getInstance().hasShiftDown()
 
     fun alt(input: InputWithModifiers) = input.hasAltDown() || Minecraft.getInstance().hasAltDown()
+
+    /** 1 for the plus keys and -1 for the minus keys, which resize a HUD block, and 0 for any other. */
+    fun resizeStep(event: KeyEvent) = when (event.key()) {
+        GLFW.GLFW_KEY_EQUAL, GLFW.GLFW_KEY_KP_ADD -> 1
+        GLFW.GLFW_KEY_MINUS, GLFW.GLFW_KEY_KP_SUBTRACT -> -1
+        else -> 0
+    }
 
     /** What the game calls the [bound] key, such as "F6" or "Mouse Button 4", or "None". */
     fun name(bound: Int): String = when {

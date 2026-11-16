@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.Game
+import io.github.noxaur.dsmod.core.game.ChangeGate
 import io.github.noxaur.dsmod.core.game.Sidebar
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
@@ -19,12 +20,11 @@ private const val MAX_LINES = 15
  * capture that starts later still begins with the lines.
  */
 class SidebarPoller(private val game: Game) {
-    private var last = emptyList<Component>()
-    private var tapped = game.tap
+    private val gate = ChangeGate(emptyList<Component>(), game.tap)
 
     /** Posts the sidebar at the next poll even when no line changed, after [Game] forgot it with the old world. */
     fun forget() {
-        last = listOf(Component.empty())
+        gate.forget(listOf(Component.empty()))
     }
 
     fun poll(client: Minecraft) {
@@ -38,9 +38,7 @@ class SidebarPoller(private val game: Game) {
             listOf(objective.displayName) + scoreboard.listPlayerScores(objective).filter { !it.isHidden }.sortedWith(sidebarOrder).take(MAX_LINES)
                 .map { PlayerTeam.formatNameForTeam(scoreboard.getPlayersTeam(it.owner), it.ownerName()) }
         }
-        if (shown == last && game.tap === tapped) return
-        last = shown
-        tapped = game.tap
+        if (!gate.passes(shown, game.tap)) return
         val event = if (shown.isEmpty()) Sidebar() else Sidebar(shown.first().toText(), shown.drop(1).map { it.toText() })
         game.post(System.currentTimeMillis(), event)
     }

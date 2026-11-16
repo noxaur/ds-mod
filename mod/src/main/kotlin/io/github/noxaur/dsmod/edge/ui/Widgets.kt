@@ -191,9 +191,14 @@ class KitStepper(x: Int, y: Int, private val name: String, valueWidth: Int, priv
     override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         val over = if (isHovered) side(mouseX.toDouble()) else 0
         val size = Kit.BUTTON_HEIGHT
-        Kit.button(graphics, x, y, size, size, Kit.state(active, isFocused || over == -1, pressed == -1 && over == -1), "-", MINUS_WIDTH)
-        Kit.button(graphics, right - size, y, size, size, Kit.state(active, isFocused || over == 1, pressed == 1 && over == 1), "+", PLUS_WIDTH)
+        stepButton(graphics, x, over, -1, "-", MINUS_WIDTH)
+        stepButton(graphics, right - size, over, 1, "+", PLUS_WIDTH)
         Kit.label(graphics, value, x + valueX, y + (size - 8) / 2, if (active) Kit.Ink.NORMAL else Kit.Ink.OFF)
+    }
+
+    private fun stepButton(graphics: GuiGraphicsExtractor, buttonX: Int, over: Int, sign: Int, label: String, labelWidth: Int) {
+        val size = Kit.BUTTON_HEIGHT
+        Kit.button(graphics, buttonX, y, size, size, Kit.state(active, isFocused || over == sign, pressed == sign && over == sign), label, labelWidth)
     }
 
     override fun updateWidgetNarration(output: NarrationElementOutput) {
@@ -313,9 +318,12 @@ class KitRangeSlider(
 
     override fun onDrag(event: MouseButtonEvent, dx: Double, dy: Double) {
         val at = value(event.x)
-        when (grab ?: return) {
-            Grab.START -> show(Sections.resize(base, grabbed, Sections.Edge.START, at, max), base[grabbed].to)
-            Grab.END -> show(Sections.resize(base, grabbed, Sections.Edge.END, at, max), base[grabbed].from)
+        when (val mode = grab ?: return) {
+            Grab.START, Grab.END -> {
+                val start = mode == Grab.START
+                val edge = if (start) Sections.Edge.START else Sections.Edge.END
+                show(Sections.resize(base, grabbed, edge, at, max), if (start) base[grabbed].to else base[grabbed].from)
+            }
             Grab.MIDDLE -> {
                 val size = base[grabbed].to - base[grabbed].from
                 val from = (base[grabbed].from + at - pressedAt).coerceIn(0, max - size)
@@ -664,8 +672,8 @@ class KitMenu(
      */
     fun below(anchorX: Int, anchorY: Int, anchorWidth: Int, anchorHeight: Int, screenWidth: Int, screenHeight: Int) = apply {
         width = maxOf(width, anchorWidth)
-        x = (anchorX + anchorWidth - width).coerceIn(0, (screenWidth - width).coerceAtLeast(0))
-        y = if (anchorY + anchorHeight + 1 + height <= screenHeight) anchorY + anchorHeight + 1 else (anchorY - 1 - height).coerceAtLeast(0)
+        x = belowX(anchorX, anchorWidth, width, screenWidth)
+        y = belowY(anchorY, anchorHeight, height, screenHeight)
     }
 
     private fun at(mouseY: Double): Int {
@@ -694,8 +702,7 @@ class KitMenu(
     }
 
     override fun charTyped(event: CharacterEvent): Boolean {
-        val char = typed(event) ?: return false
-        lit = typeAhead.type(char, Util.getMillis(), labels, lit)
+        lit = typeAhead.jump(event, labels, lit) ?: return false
         return true
     }
 
@@ -705,15 +712,14 @@ class KitMenu(
     }
 
     override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
-        if (isHovered && pointer.moved(mouseX, mouseY)) at(mouseY.toDouble()).takeIf { it >= 0 }?.let { lit = it }
+        lit = pointer.lit(isHovered, mouseX, mouseY, lit) { at(mouseY.toDouble()) }
         Kit.panel(graphics, x, y, width, height)
         val labelX = x + PAD * 2 + if (checked >= 0) CHECK else 0
         for (i in items.indices) {
             val itemY = y + PAD + i * ITEM
             if (i == lit) Kit.button(graphics, x + PAD, itemY, width - PAD * 2, ITEM, Kit.State.HOVER, "", 0)
             if (i == checked) Kit.icon(graphics, Icon.CHECK, x + PAD * 2, itemY + (ITEM - Icon.CHECK.height) / 2, Kit.theme.ink, Kit.theme.inkShadow)
-            val label = marked[i]
-            if (label != null) Kit.label(graphics, label, labelX, itemY + (ITEM - 8) / 2) else Kit.label(graphics, labels[i], labelX, itemY + (ITEM - 8) / 2)
+            Kit.markedLabel(graphics, marked[i], labels[i], labelX, itemY + (ITEM - 8) / 2)
         }
     }
 
@@ -759,8 +765,8 @@ class KitPickMenu(
 
     /** Places the menu under the dropdown at [anchorX], [anchorY], lined up with its right edge, or over it where there is no room. */
     fun below(anchorX: Int, anchorY: Int, anchorWidth: Int, anchorHeight: Int, screenWidth: Int, screenHeight: Int) = apply {
-        x = (anchorX + anchorWidth - width).coerceIn(0, (screenWidth - width).coerceAtLeast(0))
-        y = if (anchorY + anchorHeight + 1 + height <= screenHeight) anchorY + anchorHeight + 1 else (anchorY - 1 - height).coerceAtLeast(0)
+        x = belowX(anchorX, anchorWidth, width, screenWidth)
+        y = belowY(anchorY, anchorHeight, height, screenHeight)
     }
 
     private fun tileX(i: Int) = x + PAD + i % perRow * (tileWidth + GAP)
@@ -791,8 +797,7 @@ class KitPickMenu(
     }
 
     override fun charTyped(event: CharacterEvent): Boolean {
-        val char = typed(event) ?: return false
-        lit = typeAhead.type(char, Util.getMillis(), labels, lit)
+        lit = typeAhead.jump(event, labels, lit) ?: return false
         return true
     }
 
@@ -802,7 +807,7 @@ class KitPickMenu(
     }
 
     override fun extractWidgetRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
-        if (isHovered && pointer.moved(mouseX, mouseY)) at(mouseX.toDouble(), mouseY.toDouble()).takeIf { it >= 0 }?.let { lit = it }
+        lit = pointer.lit(isHovered, mouseX, mouseY, lit) { at(mouseX.toDouble(), mouseY.toDouble()) }
         Kit.panel(graphics, x, y, width, height)
         for (i in looks.indices) {
             val tx = tileX(i)
@@ -810,8 +815,7 @@ class KitPickMenu(
             Kit.tile(graphics, tx, ty, tileWidth, TILE, i == lit, i == selected)
             Looks.draw(graphics, looks[i], tx + (tileWidth - Looks.width(looks[i])) / 2, ty + TILE_PAD)
             val labelX = tx + (tileWidth - Kit.font.width(labels[i])) / 2
-            val label = marked[i]
-            if (label != null) Kit.label(graphics, label, labelX, ty + TILE_PAD + Looks.HEIGHT + 3) else Kit.label(graphics, labels[i], labelX, ty + TILE_PAD + Looks.HEIGHT + 3)
+            Kit.markedLabel(graphics, marked[i], labels[i], labelX, ty + TILE_PAD + Looks.HEIGHT + 3)
         }
     }
 
@@ -836,7 +840,24 @@ private class Pointer {
         x = mouseX
         y = mouseY
     }
+
+    /** The item [at] reports under the mouse once it has moved over [hovered] menu, else [lit]. */
+    inline fun lit(hovered: Boolean, mouseX: Int, mouseY: Int, lit: Int, at: () -> Int): Int {
+        if (!hovered || !moved(mouseX, mouseY)) return lit
+        return at().takeIf { it >= 0 } ?: lit
+    }
 }
+
+/** What the next letter lights, or null when the event is not one a menu jumps by. */
+private fun TypeAhead.jump(event: CharacterEvent, labels: List<String>, lit: Int): Int? {
+    val char = typed(event) ?: return null
+    return type(char, Util.getMillis(), labels, lit)
+}
+
+private fun belowX(anchorX: Int, anchorWidth: Int, width: Int, screenWidth: Int) = (anchorX + anchorWidth - width).coerceIn(0, (screenWidth - width).coerceAtLeast(0))
+
+private fun belowY(anchorY: Int, anchorHeight: Int, height: Int, screenHeight: Int) =
+    if (anchorY + anchorHeight + 1 + height <= screenHeight) anchorY + anchorHeight + 1 else (anchorY - 1 - height).coerceAtLeast(0)
 
 /** The character a menu jumps by, or null for a space, which picks, or anything that is not text. */
 private fun typed(event: CharacterEvent): Char? {

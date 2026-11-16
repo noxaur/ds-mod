@@ -159,6 +159,7 @@ object DsModClient : ClientModInitializer {
         pets = PetPoller(game)
         Editors.register(Canvas.HUD_LAYOUT) { panel, host -> @Suppress("UNCHECKED_CAST") HudLayoutEditor(panel as Panel<Map<String, DsModConfig.Position>>, readouts, host) }
         Editors.register(Canvas.MENU_TABS) { panel, host -> @Suppress("UNCHECKED_CAST") TabPlacesEditor(panel as Panel<List<MenuTab>>, host) }
+        Editors.register(Canvas.PLAYER_MODEL) { _, _ -> PlayerPreview() }
         Opens.register(Opens.HUD_EDITOR, ::openHudEditor)
         Opens.register(Opens.REQUESTS, Contribute::open)
         Recorder.register()
