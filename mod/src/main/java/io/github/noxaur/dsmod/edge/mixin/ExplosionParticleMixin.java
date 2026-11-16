@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge.mixin;
 
+import io.github.noxaur.dsmod.core.feature.general.ExplosionParticleHider;
 import io.github.noxaur.dsmod.edge.DsModClient;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
@@ -16,7 +17,7 @@ abstract class ExplosionParticleMixin {
     @Inject(method = "createParticle", at = @At("HEAD"), cancellable = true)
     private void dsmod$hideExplosion(ParticleOptions options, double x, double y, double z, double xd, double yd, double zd, CallbackInfoReturnable<Particle> cir) {
         if ((options.getType() == ParticleTypes.EXPLOSION || options.getType() == ParticleTypes.EXPLOSION_EMITTER)
-            && DsModClient.INSTANCE.getActive() && DsModClient.INSTANCE.getSettings().general.explosionParticleHider) {
+            && DsModClient.INSTANCE.runs(ExplosionParticleHider.class)) {
             cir.setReturnValue(null);
         }
     }

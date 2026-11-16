@@ -1,6 +1,9 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.container.MenuButton
+import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
+import io.github.noxaur.dsmod.core.feature.inventory.StableMenus
+import io.github.noxaur.dsmod.core.feature.inventory.ThemedMenus
 import io.github.noxaur.dsmod.core.ui.CursorMemory
 import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.Menus
@@ -44,11 +47,11 @@ object MenuSkin {
 
     val cursor = CursorMemory()
 
-    val themed: Boolean get() = DsModClient.active && settings.themedMenus
+    val themed: Boolean get() = DsModClient.runs<ThemedMenus>()
 
-    val stable: Boolean get() = DsModClient.active && settings.stableMenus
+    val stable: Boolean get() = DsModClient.runs<StableMenus>()
 
-    val keepsCursor: Boolean get() = DsModClient.active && settings.keepCursor
+    val keepsCursor: Boolean get() = DsModClient.runs<KeepCursor>()
 
     private var buttonMenu: AbstractContainerMenu? = null
     private var buttonStacks = arrayOfNulls<ItemStack>(0)

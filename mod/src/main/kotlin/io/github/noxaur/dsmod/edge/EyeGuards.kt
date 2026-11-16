@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.feature.end.ProtectPlacedEyes
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionHand
@@ -20,9 +20,9 @@ object EyeGuards {
     private var guarded: BlockPos? = null
     private var until = 0L
 
-    fun register(settings: DsModConfig.End) {
+    fun register() {
         UseBlockCallback.EVENT.register { player, level, hand, hit ->
-            if (!level.isClientSide || !DsModClient.active || !settings.protectPlacedEyes) return@register InteractionResult.PASS
+            if (!level.isClientSide || !DsModClient.runs<ProtectPlacedEyes>()) return@register InteractionResult.PASS
             val now = System.currentTimeMillis()
             val again = now < until && hit.blockPos == guarded
             // The name carries the server's color code in front, so match its end.
