@@ -1,12 +1,16 @@
 package io.github.noxaur.dsmod.rules
 
 import io.github.noxaur.dsmod.core.capture.PlayerNames
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.readLines
 import kotlin.io.path.readText
 import kotlin.streams.asSequence
 import kotlin.test.Test
@@ -40,6 +44,13 @@ class FixtureLeakTest {
     @Test
     fun `every name a fixture holds where a player's name stands is an alias`() {
         val fixtures = Files.walk(Path.of("src/test/resources/features")).asSequence().filter { it.toString().endsWith(".jsonl") }.toList()
+        // PlayerNames reads a line's type from its text, without parsing the line, so a type written any other way is unread.
+        val reformatted = fixtures.flatMap { file ->
+            file.readLines().withIndex().filter { (_, line) ->
+                line.substringAfter("\"type\":\"", "").substringBefore('"') != Json.parseToJsonElement(line).jsonObject["type"]?.jsonPrimitive?.content
+            }.map { (i, _) -> "${file.invariantSeparatorsPathString}:${i + 1}: is not in the form cutFixture writes. Cut the fixture again." }
+        }
+        assertEquals(emptyList(), reformatted, reformatted.joinToString("\n", postfix = "\n"))
         val leaks = fixtures.flatMap { file ->
             PlayerNames.found(file).filterNot { it.matches(ALIAS) }.sorted().map {
                 "${file.invariantSeparatorsPathString}: holds $it where a player's name stands. Cut the fixture again with " +
