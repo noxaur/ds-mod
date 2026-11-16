@@ -50,7 +50,10 @@ class GolemStatus(toggle: KMutableProperty0<Boolean>) : Feature("golem-status", 
             spawnedAt = now
             defeatedAt = 0
         }
-        line("The Endstone Protector has been defeated!") { now -> defeatedAt = now }
+        line("The Endstone Protector has been defeated!") { now ->
+            // The tab list ends the fight when the row leaves Spawned. A later defeat line is that fight, already over.
+            if (stage == "Spawned" || spawnedAt > 0) defeatedAt = now
+        }
     }
 
     override fun hud(now: Long): HudBlock? {

@@ -56,7 +56,7 @@ Etherwarp Outline's box is the one mark drawn per frame, because it follows the 
 
 ## Rarity marks are baked from one color
 
-A rarity style has glows that change opacity pixel by pixel, which as fills would be a few hundred rectangles per slot and thousands per chest, every frame. So `SlotArt` in `core` paints each rarity's 18x18 once, from the rarity's color alone, and `SlotArts` keeps one atlas per surface that it paints again only when the style changes. A marked slot then costs one blit, and the slots of a chest batch into one draw because they share the texture.
+A rarity style has glows that change opacity pixel by pixel, which as fills would be a few hundred rectangles per slot and thousands per chest, every frame. So `SlotArt` in `core` paints each rarity's 18x18 once, from the rarity's color alone, and `SlotArts` keeps one atlas per surface. It paints that atlas at the end of a client tick, and only when the style or the darkness of the slot changes. A frame draws the previous atlas, or nothing the first time, until that paint has been uploaded between frames. A marked slot then costs one blit, and the slots of a chest batch into one draw because they share the texture.
 
 The art depends on the slot under it: a faint tint vanishes on Minecraft's gray and a dim one sinks into a dark resource pack's black. The mod can't see the pixels under a slot, so it reads the chest texture's slot from the selected resource packs when a container screen opens and the packs have changed. The hotbar lies over the world, so its art is always the dark kind.
 

@@ -84,6 +84,15 @@ object World {
         shown = marks.values.flatten()
     }
 
+    /** Marks the next end-of-tick draw will submit. A world change has to drop these before that draw. */
+    fun marksQueued() = shown.size
+
+    /** Drops every mark. The level-change path calls this, because the next draw runs before the new world's readouts. */
+    fun worldChanged() {
+        marks.clear()
+        shown = emptyList()
+    }
+
     fun register() {
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             if (shown.isEmpty() || client.level == null) return@register
