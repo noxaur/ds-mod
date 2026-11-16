@@ -3,6 +3,8 @@ package io.github.noxaur.dsmod.core.config
 import com.google.gson.annotations.Expose
 import io.github.notenoughupdates.moulconfig.Config
 import io.github.notenoughupdates.moulconfig.annotations.Category
+import io.github.notenoughupdates.moulconfig.annotations.ConfigAccordionId
+import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorAccordion
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorBoolean
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorButton
 import io.github.notenoughupdates.moulconfig.annotations.ConfigEditorDraggableList
@@ -33,6 +35,7 @@ import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.core.ui.Theme
+import io.github.noxaur.dsmod.core.world.BoxStyle
 
 /**
  * The settings show categories and options in the order they are declared: what applies everywhere first, then each area
@@ -216,40 +219,121 @@ class DsModConfig : Config() {
         var swingSpeed = 1f
 
         @Expose
+        @ConfigOption(name = "Item Size", desc = "Grow or shrink your held item.")
+        @ConfigEditorSlider(minValue = 0.1f, maxValue = 2f, minStep = 0.05f)
+        @JvmField
+        var itemSize = 1f
+
+        @ConfigOption(name = "Item Position", desc = "Move and turn your held item.")
+        @ConfigEditorAccordion(id = ITEM_POSITION)
+        @JvmField
+        var itemPosition = false
+
+        @Expose
+        @ConfigOption(name = "Item X", desc = "Move your held item out to the side, or in below zero.")
+        @ConfigEditorSlider(minValue = -1f, maxValue = 1f, minStep = 0.05f)
+        @ConfigAccordionId(id = ITEM_POSITION)
+        @JvmField
+        var itemX = 0f
+
+        @Expose
+        @ConfigOption(name = "Item Y", desc = "Raise your held item, or lower it below zero.")
+        @ConfigEditorSlider(minValue = -1f, maxValue = 1f, minStep = 0.05f)
+        @ConfigAccordionId(id = ITEM_POSITION)
+        @JvmField
+        var itemY = 0f
+
+        @Expose
+        @ConfigOption(name = "Item Z", desc = "Push your held item away, or bring it nearer below zero.")
+        @ConfigEditorSlider(minValue = -1f, maxValue = 1f, minStep = 0.05f)
+        @ConfigAccordionId(id = ITEM_POSITION)
+        @JvmField
+        var itemZ = 0f
+
+        @Expose
+        @ConfigOption(name = "Item Yaw", desc = "Turn your held item left or right about its grip, in degrees.")
+        @ConfigEditorSlider(minValue = -180f, maxValue = 180f, minStep = 1f)
+        @ConfigAccordionId(id = ITEM_POSITION)
+        @JvmField
+        var itemYaw = 0f
+
+        @Expose
+        @ConfigOption(name = "Item Pitch", desc = "Tip your held item forward or back about its grip, in degrees.")
+        @ConfigEditorSlider(minValue = -180f, maxValue = 180f, minStep = 1f)
+        @ConfigAccordionId(id = ITEM_POSITION)
+        @JvmField
+        var itemPitch = 0f
+
+        @Expose
+        @ConfigOption(name = "Item Roll", desc = "Tilt your held item sideways about its grip, in degrees.")
+        @ConfigEditorSlider(minValue = -180f, maxValue = 180f, minStep = 1f)
+        @ConfigAccordionId(id = ITEM_POSITION)
+        @JvmField
+        var itemRoll = 0f
+
+        @ConfigOption(name = "Swing Options", desc = "Fine-tune how your held item swings and dips.")
+        @ConfigEditorAccordion(id = SWING_OPTIONS)
+        @JvmField
+        var swingOptions = false
+
+        @Expose
+        @ConfigOption(name = "Scale Swing", desc = "Make the swing reach as far as Item Size makes the item big.")
+        @ConfigEditorBoolean
+        @ConfigAccordionId(id = SWING_OPTIONS)
+        @JvmField
+        var scaleSwing = true
+
+        @Expose
+        @ConfigOption(name = "No Swing", desc = "Keep your held item still when you swing.")
+        @ConfigEditorBoolean
+        @ConfigAccordionId(id = SWING_OPTIONS)
+        @JvmField
+        var noSwing = false
+
+        @Expose
+        @ConfigOption(name = "No Bow Swing", desc = "Keep a bow still when you swing it, as when it shoots on a click.")
+        @ConfigEditorBoolean
+        @ConfigAccordionId(id = SWING_OPTIONS)
+        @JvmField
+        var noBowSwing = false
+
+        @Expose
         @ConfigOption(name = "Ignore Haste", desc = "Swing at the same pace under Haste or Mining Fatigue.")
         @ConfigEditorBoolean
+        @ConfigAccordionId(id = SWING_OPTIONS)
         @JvmField
         var ignoreHaste = false
 
         @Expose
         @ConfigOption(name = "No Equip Reset", desc = "Keep your held item up instead of dipping after a swing or use.")
         @ConfigEditorBoolean
+        @ConfigAccordionId(id = SWING_OPTIONS)
         @JvmField
         var noEquipReset = false
 
-        @Expose
-        @ConfigOption(name = "Item Size", desc = "Grow or shrink your held item.")
-        @ConfigEditorSlider(minValue = 0.1f, maxValue = 2f, minStep = 0.05f)
+        @ConfigOption(name = "Reset Animations", desc = "Put every Animations setting back to the game's own.")
+        @ConfigEditorButton(buttonText = "Reset")
         @JvmField
-        var itemSize = 1f
+        var resetAnimations: Runnable = Runnable(::resetAnimations)
 
-        @Expose
-        @ConfigOption(name = "Item Side", desc = "Move your held item out to the side, or in below zero.")
-        @ConfigEditorSlider(minValue = -1f, maxValue = 1f, minStep = 0.05f)
-        @JvmField
-        var itemSide = 0f
-
-        @Expose
-        @ConfigOption(name = "Item Height", desc = "Raise your held item, or lower it below zero.")
-        @ConfigEditorSlider(minValue = -1f, maxValue = 1f, minStep = 0.05f)
-        @JvmField
-        var itemHeight = 0f
-
-        @Expose
-        @ConfigOption(name = "Item Depth", desc = "Push your held item away, or bring it nearer below zero.")
-        @ConfigEditorSlider(minValue = -1f, maxValue = 1f, minStep = 0.05f)
-        @JvmField
-        var itemDepth = 0f
+        /** Copies each Animations setting but the switch from a fresh config, so the defaults are declared once. */
+        fun resetAnimations() {
+            val fresh = General()
+            swingStyle = fresh.swingStyle
+            swingSpeed = fresh.swingSpeed
+            itemSize = fresh.itemSize
+            itemX = fresh.itemX
+            itemY = fresh.itemY
+            itemZ = fresh.itemZ
+            itemYaw = fresh.itemYaw
+            itemPitch = fresh.itemPitch
+            itemRoll = fresh.itemRoll
+            scaleSwing = fresh.scaleSwing
+            noSwing = fresh.noSwing
+            noBowSwing = fresh.noBowSwing
+            ignoreHaste = fresh.ignoreHaste
+            noEquipReset = fresh.noEquipReset
+        }
 
         @Expose
         @ConfigOption(name = "Equipment Display", desc = "Show your armor and pet on the HUD.")
@@ -347,6 +431,42 @@ class DsModConfig : Config() {
         @ConfigEditorBoolean
         @JvmField
         var inventoryPickup = false
+
+        @Expose
+        @ConfigOption(name = "Etherwarp Outline", desc = "Box the block Etherwarp will take you to while you sneak.")
+        @ConfigEditorBoolean
+        @JvmField
+        var etherwarpOutline = true
+
+        @Expose
+        @ConfigOption(name = "Etherwarp Style", desc = "Draw the box as edges, a tinted fill, or both.")
+        @ConfigEditorDropdown
+        @JvmField
+        var etherwarpStyle = BoxStyle.BOTH
+
+        @Expose
+        @ConfigOption(name = "Etherwarp Width", desc = "Set how thick the box's edges are.")
+        @ConfigEditorSlider(minValue = 1f, maxValue = 5f, minStep = 0.5f)
+        @JvmField
+        var etherwarpWidth = 2f
+
+        @Expose
+        @ConfigOption(name = "Failed Warps", desc = "Box a block you can't warp to as well, and say why.")
+        @ConfigEditorBoolean
+        @JvmField
+        var etherwarpFailed = true
+
+        @Expose
+        @ConfigOption(name = "Box Through Walls", desc = "Show the whole box, even behind the blocks in front of it.")
+        @ConfigEditorBoolean
+        @JvmField
+        var etherwarpThroughWalls = true
+
+        @Expose
+        @ConfigOption(name = "Box Without Sneak", desc = "Show the box before you sneak, too.")
+        @ConfigEditorBoolean
+        @JvmField
+        var etherwarpWithoutSneak = false
 
         @Expose
         @ConfigOption(name = "Camera", desc = "Shape the third-person view with the settings below.")
@@ -455,6 +575,10 @@ class DsModConfig : Config() {
 
             /** GLFW's code for F, NotEnoughUpdates' key for a favorite. */
             const val KEY_F = 70
+
+            /** The folds in General that hold Animations' finer settings. */
+            const val ITEM_POSITION = 0
+            const val SWING_OPTIONS = 1
         }
     }
 
