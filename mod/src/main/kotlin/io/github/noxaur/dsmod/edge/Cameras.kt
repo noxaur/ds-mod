@@ -8,6 +8,8 @@ import io.github.noxaur.dsmod.core.camera.ThirdPerson
 import io.github.noxaur.dsmod.core.camera.View
 import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.feature.general.Camera
+import io.github.noxaur.dsmod.core.feature.general.FreeLook
 import net.minecraft.client.CameraType
 import net.minecraft.client.Minecraft
 import net.minecraft.client.player.LocalPlayer
@@ -29,7 +31,7 @@ object Cameras {
     private const val CLEAR = 0.2
 
     private val settings: DsModConfig.General get() = DsModClient.settings.general
-    private val shaping: Boolean get() = DsModClient.active && settings.camera
+    private val shaping: Boolean get() = DsModClient.runs<Camera>()
     private val views: Views get() = if (shaping) settings.cameraViews else Views.ALL
 
     private val slide = Slide()
@@ -67,7 +69,7 @@ object Cameras {
     /** Runs before each frame's camera is placed, so a press or a release shows in that same frame. */
     fun frame(client: Minecraft) {
         val player = client.player
-        val allowed = player != null && DsModClient.active && settings.freeLook
+        val allowed = player != null && DsModClient.runs<FreeLook>()
         val down = allowed && Keys.held(client, settings.freeLookKey)
         val pressed = allowed && tapped && !wasDown
         tapped = false

@@ -33,6 +33,14 @@ abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boo
         get() = toggle.get()
         set(value) = toggle.set(value)
 
+    /**
+     * Whether the feature runs now: its switch is on and the mod is active on this server. Code outside `core` asks
+     * this and never the switch, because off dragsim.co a switch that is on still runs nothing.
+     */
+    val runs: Boolean get() = enabled && gate()
+
+    internal var gate: () -> Boolean = { true }
+
     internal val handlers = HashMap<Class<out GameEvent>, (GameEvent, Long) -> Unit>()
     internal lateinit var metrics: Metrics
     internal lateinit var tab: TabState

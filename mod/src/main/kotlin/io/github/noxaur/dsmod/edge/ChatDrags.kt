@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.feature.hud.DragInChat
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.mixin.ChatScreenAccessor
 import io.github.noxaur.dsmod.edge.mixin.CommandSuggestionsAccessor
@@ -109,7 +110,7 @@ object ChatDrags {
         }
     }
 
-    private fun on(client: Minecraft) = DsModClient.active && settings.dragInChat && !client.gui.hud.isHidden
+    private fun on(client: Minecraft) = DsModClient.runs<DragInChat>() && !client.gui.hud.isHidden
 
     /** The block at a point in GUI pixels that the chat leaves to Drag In Chat, or null. */
     private fun under(client: Minecraft, screen: ChatScreen, x: Double, y: Double): Hud.Placed? {

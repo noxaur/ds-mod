@@ -9,6 +9,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import io.github.noxaur.dsmod.core.capture.PlayerNames
+import io.github.noxaur.dsmod.core.feature.general.ProfileViewer
 import io.github.noxaur.dsmod.core.profile.Profile
 import io.github.noxaur.dsmod.core.profile.ProfileLookup
 import io.github.noxaur.dsmod.core.profile.ProfileSource
@@ -18,6 +19,7 @@ import io.github.noxaur.dsmod.edge.Chat
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.restyle
 import io.github.noxaur.dsmod.edge.toComponent
+import java.util.concurrent.CompletableFuture
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
@@ -26,7 +28,6 @@ import net.minecraft.commands.SharedSuggestionProvider
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
-import java.util.concurrent.CompletableFuture
 
 /**
  * Profile Viewer's commands: `/pv` for the player's own profile, `/pv <name>` for anyone's, and the same under
@@ -36,7 +37,7 @@ import java.util.concurrent.CompletableFuture
  * A player's name in chat opens their profile when clicked.
  */
 object Profiles {
-    private val on get() = DsModClient.active && DsModClient.settings.general.profileViewer
+    private val on get() = DsModClient.runs<ProfileViewer>()
 
     /** The backend, which caches every lookup for every player, so the screen asks only when the player does. */
     var source: ProfileSource = object : ProfileSource {
@@ -81,8 +82,9 @@ object Profiles {
             .then(ClientCommands.argument("player", PlayerName).suggests(::suggest).executes { open(it, it.getArgument("player", String::class.java)) })
 
     private fun open(context: CommandContext<FabricClientCommandSource>, name: String): Int {
-        if (!DsModClient.settings.general.profileViewer) {
-            Chat.send(text { bad("Profile Viewer is off. Turn it on in /dsmod to look players up.") })
+        if (!DsModClient.runs<ProfileViewer>()) {
+            val why = if (DsModClient.active) "Profile Viewer is off. Turn it on in /dsmod to look players up." else "Profile Viewer works only on dragsim.co."
+            Chat.send(text { bad(why) })
             return 0
         }
         // The chat screen closes after the command returns, so open on the next tick.

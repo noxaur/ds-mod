@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.edge
 import com.mojang.brigadier.arguments.StringArgumentType
 import io.github.notenoughupdates.moulconfig.managed.ManagedConfig
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
@@ -63,8 +64,15 @@ object DsModClient : ClientModInitializer {
     /** Lets the mod run on any server whatever the setting says. The debug build sets it, so `runClient` and the game tests run anywhere. */
     var anyServer = false
 
-    /** Whether the mod runs on the server the player is on. A feature in the edge asks this before its own switch. */
+    /** Whether the mod runs on the server the player is on. */
     val active: Boolean get() = anyServer || onDragSim || !config.instance.general.onlyOnDragSim
+
+    private var byType = emptyMap<Class<out Feature>, Feature>()
+
+    /** Whether the feature of [type] runs now, which is false off dragsim.co whatever its switch says. */
+    fun runs(type: Class<out Feature>): Boolean = byType[type]?.runs == true
+
+    inline fun <reified F : Feature> runs() = runs(F::class.java)
 
     /** Opens the settings where the player left them, scrolled to [setting] of `DsModConfig` when it is given. */
     fun openSettings(setting: Field? = null) = Settings.open(setting)
@@ -91,6 +99,7 @@ object DsModClient : ClientModInitializer {
         )
         val all = features(config.instance)
         game = Game(all) { active }
+        byType = all.associateBy { it.javaClass }
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
         Settings.register(config)
         Kit.register()
@@ -102,9 +111,9 @@ object DsModClient : ClientModInitializer {
         Tooltips.register()
         World.register()
         Etherwarps.register()
-        ArmorSwapGuards.register(config.instance.inventory)
-        EyeGuards.register(config.instance.end)
-        CopyChats.register(config.instance.chat)
+        ArmorSwapGuards.register()
+        EyeGuards.register()
+        CopyChats.register()
         SlotGuards.register(all.filterIsInstance<SlotLock>().single(), config.instance.inventory)
         CommandKeys.register(config.instance.general)
         readouts = Readouts(game, config.instance.hud).also { it.register() }

@@ -37,7 +37,7 @@ object SlotGuards {
     private lateinit var feature: SlotLock
     private lateinit var settings: DsModConfig.Inventory
 
-    private val on: Boolean get() = DsModClient.active && settings.slotLock
+    private val on: Boolean get() = DsModClient.runs<SlotLock>()
     private val locks: SlotLocks get() = feature.locks
 
     /** The slot the key went down over, while [pressing]. */

@@ -77,6 +77,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             it.sidebar = sidebar
             it.container = container
             it.messages = messages
+            it.gate = active
         }
     }
 
