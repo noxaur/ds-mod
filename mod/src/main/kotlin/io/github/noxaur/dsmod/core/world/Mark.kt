@@ -20,3 +20,13 @@ data class Path(val points: List<Point>, override val role: Role = Role.VALUE) :
 
 /** A flat circle around a point. */
 data class Ring(val center: Point, val radius: Float, override val role: Role = Role.VALUE) : Mark
+
+/** How a box is drawn: its edges, a tinted fill, or both. */
+enum class BoxStyle(private val label: String) {
+    OUTLINE("Outline"),
+    FILLED("Filled"),
+    BOTH("Both"),
+    ;
+
+    override fun toString() = label
+}

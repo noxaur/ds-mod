@@ -57,7 +57,7 @@ The code is split into two source sets, and each becomes its own mod.
 
 ## Seeing the game
 
-Agents see the game through captures. A capture is a JSONL file of what the server showed the client, one event per line. With the debug build, the user types `/dscapture` in game to start one and again to save it, and it lands in `dsmod/captures/` inside the game folder. It refuses while a brief is on. Players record captures too, for a request an agent published, and the mod redacts and uploads those: [architecture](../docs/internals/architecture.md#a-contribution-is-a-brief-run-that-ends-in-an-upload).
+Agents see the game through captures. A capture is a JSONL file of what the server showed the client, one event per line. With the debug build, the user types `/dscapture` in game to start one and again to save it, and it lands in `dsmod/captures/` inside the game folder. It refuses while a brief is on. Players record captures too, for a request an agent published, and the mod redacts and uploads those: [contributions](../docs/internals/contributions.md#a-contribution-is-a-brief-run-that-ends-in-an-upload).
 
 Each line has a time `t`, a `type` and `data`. A type is either an event or a raw record.
 
@@ -90,7 +90,7 @@ Raw records are for you to read. No feature sees one until it is promoted:
 
 An event's text is `plain` plus `spans`, with `§` codes already resolved into the spans. A raw record's text is plain `text` plus the full `component`. `itemcomponents` and `entities` record all entries once with `"full": true`, then only the entries that changed, with null for a removed one.
 
-- Work from captures. When none covers the case, write a brief: a name for the window, and the ordered steps the user plays, each with a note or a timer where it needs one. [Record a capture](../docs/operations/development.md#record-a-capture) has the format.
+- Work from captures. When none covers the case, write a brief: a name for the window, and the ordered steps the user plays, each with a note or a timer where it needs one. [Record from a brief](../docs/operations/captures.md#record-from-a-brief) has the format.
 - Finish the work that needs no capture, then end the response with one line the user answers with yes or no, such as "Record Golem tiers now? It takes about 3 minutes." On yes, start the client with the brief yourself and read the capture when the run ends.
 - The live server has real players on it, so the user does all the playing there. You start the client and they join.
 - Captures hold player names and private chat, so only a fixture goes in git.

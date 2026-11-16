@@ -117,6 +117,10 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.EtherwarpOutlineTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.AnimationsTest"
       },
       {
