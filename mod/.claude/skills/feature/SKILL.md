@@ -15,7 +15,7 @@ Load the `ui` skill too when the feature shows the player anything.
 
 ## State
 
-- State that outlives the session is one immutable `@Serializable` class given to `saved()`, with a default for every field. Replace its `value` to change it, because a change made in place is never written.
+- State that outlives the session is one `@Serializable` class given to `saved()`. Replace its `value` to change it.
 
 ## Fixtures
 

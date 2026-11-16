@@ -49,10 +49,13 @@ abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boo
         set(value) = toggle.set(value)
 
     /**
-     * Whether the feature runs now: its switch is on and the mod is active on this server. Code outside `core` asks
-     * this and never the switch, because off dragsim.co a switch that is on still runs nothing.
+     * Whether the feature is on wherever the player is: its switch is on and the mod is active on this server. Code
+     * outside `core` asks this or [runs] and never the switch, because off dragsim.co a switch that is on still runs nothing.
      */
-    val runs: Boolean get() = enabled && gate()
+    val on: Boolean get() = enabled && gate()
+
+    /** Whether the feature runs now: it is [on] and the player is in [area]. The edge asks this before it sends or blocks input. */
+    val runs: Boolean get() = on && inArea()
 
     internal var gate: () -> Boolean = { true }
 

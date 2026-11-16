@@ -45,7 +45,8 @@ data class Sidebar(val title: ServerText = ServerText(), val lines: List<ServerT
  * The player opened a menu, or is back in their own inventory. Every slot is empty until a [SlotChanged]
  * says otherwise, unless the slots are [kept]: back in their own inventory, it holds what it held when the last menu
  * opened, and only the slots that changed since follow. [size] counts the player's own slots that the menu shows, and
- * [title] is null for the player's own inventory. Posted only while a feature reads it.
+ * [title] is null for the player's own inventory. A big menu's slots arrive over a few ticks. Posted only while a
+ * feature reads it.
  */
 @Serializable
 @SerialName("container")
