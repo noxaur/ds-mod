@@ -10,7 +10,7 @@ A feature returns what it shows instead of calling a UI layer. The replay test c
 
 A feature's HUD block is built with `block { }`, which heads it with the feature's title. A feature can't then retype or misname itself, and the header is built once.
 
-Hiding a server line is the one thing a handler decides on the spot. Fabric asks whether a line may show before it reaches the chat, so `Game.post` returns the answer and the edge posts chat from that question. A line another mod refuses first never reaches the features, because Fabric stops asking at the first refusal.
+Hiding a server line, or hiding or replacing a floating text, is the one thing a handler decides on the spot. Fabric asks whether a line may show before it reaches the chat, so `Game.post` returns the answer and the edge posts chat from that question. A line another mod refuses first never reaches the features, because Fabric stops asking at the first refusal.
 
 A chat line or an alert is collected the same way and delivered at the end of the tick. Printed from inside the handler, it would land above the server line that caused it, because the handler runs before that line reaches the chat.
 
@@ -49,6 +49,14 @@ A block the server placed before its chunk reached the client comes with no upda
 ## Game says that a line was hidden, not the feature
 
 A player did not ask for a server line to go missing, so the first time a feature that is on by default hides one, the player is told where its switch is. Each feature used to write this notice itself, and only prose asked for it, which a new feature could skip. `Game` now sends it from `hide()`, reading the switch's name, section and default from `SettingsTree`, and keeps who has told in `hidden.json`. A feature the player turned on hides what they asked it to, so it says nothing.
+
+## An ability's use comes from the server, its length from the lore
+
+Ability Cooldowns keeps no list of abilities. The server names each use, in the action bar's `-100 Mana (Giant's Slam)` or a chat line, and the `Cooldown` line under that name's heading in the lore of an item the player carries gives the length, so a new weapon is timed with no change here. The mana part stays up through a few of the server's half-second updates, so a use is the part arriving, never each repeat. Only the player's own slots are read: in a menu those are its last four rows, and a profile menu's upper rows hold another player's items.
+
+The refusal `This ability is on cooldown for 3.35s` names no ability, so it goes to the timer whose end lies nearest the server's, and two that close are left alone. Matching by the held item was rejected because the refusal answers a press a round trip earlier, and the player may have scrolled since. The timers run on the wall clock, while the server counts its own ticks and falls behind when it lags, so a timer can read Ready a little early. Each refusal puts the timer back on the server's count.
+
+Riftwalker's blink is the one cooldown the server shows nothing of, so it starts on `Hit`, the player's own attack as the client sends it. `Hit` carries only the entity's type, because the charge needs nothing more, and a hit while the bonus charges does not restart it.
 
 ## Saved state belongs to the feature, and the disk to the edge
 

@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.camera.ThirdPerson
 import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
+import io.github.noxaur.dsmod.core.feature.general.DamageShown
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLook
 import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
@@ -124,6 +125,18 @@ class DsModConfig {
         var explosionParticleHider = false
 
         @JvmField
+        var damageNumbers = false
+
+        @JvmField
+        var damageShown = DamageShown.ALL
+
+        @JvmField
+        var damageShort = true
+
+        @JvmField
+        var damageDecimals = 1f
+
+        @JvmField
         var animations = true
 
         @JvmField
@@ -234,6 +247,24 @@ class DsModConfig {
             modelSpin = fresh.modelSpin
             modelPose = fresh.modelPose
         }
+
+        @JvmField
+        var abilityCooldowns = true
+
+        @JvmField
+        var cooldownList = true
+
+        @JvmField
+        var cooldownOnItems = true
+
+        @JvmField
+        var cooldownShortest = 2f
+
+        @JvmField
+        var cooldownReadyAlert = false
+
+        @JvmField
+        var cooldownAlertFrom = 20f
 
         @JvmField
         var equipmentDisplay = true

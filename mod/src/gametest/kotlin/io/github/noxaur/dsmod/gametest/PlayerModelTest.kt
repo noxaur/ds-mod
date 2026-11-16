@@ -4,8 +4,8 @@ import io.github.noxaur.dsmod.core.player.ModelPose
 import io.github.noxaur.dsmod.core.player.ModelTarget
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.edge.SettingsScreen
-import io.github.noxaur.dsmod.gametest.HeldItemScene.Companion.changed
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -181,7 +181,17 @@ class PlayerModelTest : FabricClientGameTest {
                 settings.modelSpin = 2f
                 settings.modelPose = ModelPose.ZOMBIE
                 context.waitTicks(2)
-                check(changed(first, shot("player-model-first-person-on")) == 0) { "Player Model changed first person" }
+                // A block on ds-mod's HUD, such as a cooldown an earlier test started, may count down between the frames.
+                val hud = context.computeOnClient<List<IntArray>, Nothing> { client ->
+                    val k = client.window.guiScale.toFloat()
+                    Hud.placed().map { intArrayOf(((it.x - 4) * k).toInt(), ((it.y - 4) * k).toInt(), ((it.x + it.width * it.scale + 4) * k).toInt(), ((it.y + it.height * it.scale + 4) * k).toInt()) }
+                }
+                val on = shot("player-model-first-person-on")
+                var outside = 0
+                for (y in 0 until first.height) for (x in 0 until first.width) {
+                    if (first.getRGB(x, y) != on.getRGB(x, y) && hud.none { x >= it[0] && x < it[2] && y >= it[1] && y < it[3] }) outside++
+                }
+                check(outside == 0) { "Player Model changed first person by $outside pixels" }
 
                 settings.resetPlayerModel()
                 check(settings.modelSize == 1f && settings.modelPose == ModelPose.GAME) { "Reset left the model changed" }

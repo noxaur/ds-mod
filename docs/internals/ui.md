@@ -6,7 +6,7 @@ How the mod draws what features hand it. How to pick a surface and build on it i
 
 Minecraft mods usually write color codes inline, and their colors drift from feature to feature. In ds-mod a feature says what a piece of text means, such as body, value or muted, and `core.text` maps that role to a color. The palette then lives in one file, and `TextLayerTest` fails the build on a color code or a color call anywhere else in the release code. It reads the compiled classes, because a regex over lines misses a call split across them.
 
-Text the server sent is a separate type, `ServerText`, which carries whatever color the server chose. A feature reads one and builds the other, so the server's colors cannot leak into what the mod shows.
+Text the server sent is a separate type, `ServerText`, which carries whatever color the server chose. A feature reads one and builds the other, so the server's colors cannot leak into what the mod shows. The one exception is text the mod rewrites in the server's place, such as a shortened damage number: `server()` in the builder spreads the server's own colors across the new text, because a crit that lost its gradient would read as a plain hit.
 
 ## UI layers keep what they are given
 
@@ -61,3 +61,14 @@ A rarity style has glows that change opacity pixel by pixel, which as fills woul
 The art depends on the slot under it: a faint tint vanishes on Minecraft's gray and a dim one sinks into a dark resource pack's black. The mod can't see the pixels under a slot, so it reads the chest texture's slot from the selected resource packs when a container screen opens and the packs have changed. The hotbar lies over the world, so its art is always the dark kind.
 
 Fabric attaches HUD elements before or after the whole hotbar, so the art behind the hotbar's items comes from `HudHotbarMixin`, which runs as vanilla is about to draw each item, and the gems come after it as a HUD element.
+
+## A cooldown is drawn from its start and end
+
+A slot's cooldown is handed to `Slots` as the times it starts and ends, and the layer works out each frame's wash and seconds from the clock, because readouts refresh four times a second and a wash that stepped at that rate would stutter. It shows on the hotbar whatever Rarity Marks' switch for marks there says, because that switch is about rarity art.
+
+## A floating text is edited once, when its text arrives
+
+Damage numbers, NPC names and holograms are text displays, and a crowded fight floats dozens of numbers a second, each drawn every frame. So the edit is decided when the server's text reaches the display, through its synced data: the edge posts a `FloatingText`, keeps the feature's answer on the entity, and the display reads it back only when it rebuilds what it draws. A frame pays one field read. Rewriting in the renderer would run the feature's parser per display per frame, and writing the edit into the entity's synced data would be overwritten by the server's next update.
+
+A hidden text is culled like an entity behind the camera, not given empty text, because a text display draws its background even with no text in it.
+

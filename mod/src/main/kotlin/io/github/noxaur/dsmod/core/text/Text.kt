@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.core.text
 
+import io.github.noxaur.dsmod.core.game.ServerText
+
 /** What a piece of text means to the player. A feature picks the role, and the role owns the color. */
 enum class Role(val rgb: Int) {
     BODY(0xDBE6FB),
@@ -73,6 +75,23 @@ class TextBuilder {
             val at = i.toFloat() / last * (brandStops.size - 1)
             val from = at.toInt().coerceAtMost(brandStops.size - 2)
             spans += Span(char.toString(), mix(brandStops[from], brandStops[from + 1], at - from))
+        }
+    }
+
+    /**
+     * [text] in place of the server's own [like], such as a damage number the mod shortens. It keeps the server's
+     * colors, spread across [text] in order, so a crit's gradient still runs end to end. A span with no color is white.
+     */
+    fun server(text: String, like: ServerText) {
+        val colors = like.spans.flatMap { span -> List(span.text.codePointCount(0, span.text.length)) { span.color ?: 0xFFFFFF } }
+        val points = text.codePoints().toArray()
+        if (colors.isEmpty()) return add(text, Role.COMMON)
+        val shade = IntArray(points.size) { i -> colors[if (points.size == 1) colors.size / 2 else Math.round(i * (colors.size - 1f) / (points.size - 1))] }
+        var start = 0
+        for (i in points.indices) {
+            if (i + 1 < points.size && shade[i + 1] == shade[i]) continue
+            spans += Span(String(points, start, i + 1 - start), shade[i])
+            start = i + 1
         }
     }
 

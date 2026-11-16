@@ -139,6 +139,7 @@ object DsModClient : ClientModInitializer {
         TabBar.register()
         World.register()
         Etherwarps.register()
+        Hits.register()
         ArmorSwapGuards.register()
         EyeGuards.register()
         CopyChats.register()

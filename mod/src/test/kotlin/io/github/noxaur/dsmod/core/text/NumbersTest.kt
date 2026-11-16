@@ -39,4 +39,33 @@ class NumbersTest {
         assertEquals("0.05", amount(0.05, 2, trim = true))
         assertEquals("0.5", amount(0.5f.toDouble(), 2, trim = true))
     }
+
+    @Test
+    fun `a short number takes a suffix and the decimals asked, without zeros at the end`() {
+        assertEquals("1.2M", short(1_234_567.0, 1))
+        assertEquals("1.23M", short(1_234_567.0, 2))
+        assertEquals("1M", short(1_234_567.0, 0))
+        assertEquals("4.9M", short(4_876_445.0, 1))
+        assertEquals("98.4k", short(98_438.0, 1))
+        assertEquals("1M", short(1_000_000.0, 1))
+        assertEquals("19.9k", short(19_914.0, 1))
+        assertEquals("1.5B", short(1.5e9, 1))
+        assertEquals("2T", short(2e12, 1))
+        assertEquals("3000T", short(3e15, 1))
+    }
+
+    @Test
+    fun `a short number under a thousand keeps its digits`() {
+        assertEquals("338", short(338.0, 1))
+        assertEquals("0", short(0.0, 2))
+        assertEquals("12.5", short(12.5, 1))
+    }
+
+    @Test
+    fun `a short number rounds before it picks the suffix`() {
+        assertEquals("1M", short(999_960.0, 1))
+        assertEquals("999.9k", short(999_940.0, 1))
+        assertEquals("1k", short(999.96, 1))
+        assertEquals("-1.2M", short(-1_234_567.0, 1))
+    }
 }

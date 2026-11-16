@@ -10,9 +10,11 @@ import io.github.noxaur.dsmod.core.feature.end.FireballAlert
 import io.github.noxaur.dsmod.core.feature.end.GolemStatus
 import io.github.noxaur.dsmod.core.feature.end.ProtectPlacedEyes
 import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
+import io.github.noxaur.dsmod.core.feature.general.AbilityCooldowns
 import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
+import io.github.noxaur.dsmod.core.feature.general.DamageNumbers
 import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
 import io.github.noxaur.dsmod.core.feature.general.EtherwarpOutline
 import io.github.noxaur.dsmod.core.feature.general.ExplosionParticleHider
@@ -46,9 +48,18 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     GolemStatus(config.end::golemStatus),
     ProtectPlacedEyes(config.end::protectPlacedEyes),
     ZealotTracker(config.end::zealotTracker),
+    AbilityCooldowns(
+        config.general::abilityCooldowns,
+        config.general::cooldownList,
+        config.general::cooldownOnItems,
+        config.general::cooldownShortest,
+        config.general::cooldownReadyAlert,
+        config.general::cooldownAlertFrom,
+    ),
     Animations(config.general::animations),
     Camera(config.general::camera),
     CommandBinds(config.general::commandBinds),
+    DamageNumbers(config.general::damageNumbers, config.general::damageShown, config.general::damageShort, config.general::damageDecimals),
     EquipmentDisplay(
         config.general::equipmentDisplay,
         config.general::equipmentLayout,

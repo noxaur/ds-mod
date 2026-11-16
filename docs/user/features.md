@@ -58,6 +58,27 @@ Resizes, tilts, spins and poses your player in third person and in your inventor
 
 <sub>Off by default.</sub>
 
+### Ability Cooldowns
+
+```
+Ability Cooldowns
+Giant's Slam: 3.2s
+Void Infusion: 1m 12s
+Between Worlds: Ready
+```
+
+Times every item ability you use, such as Giant's Slam, the Tuba's Howl, a katana's Soulcry and your drill's ability, and the 8 seconds Riftwalker armor needs between two blinking hits. The item's slot drains a white wash as the wait runs out, as an ender pearl's does, with the seconds left where its count goes, on your hotbar and in every menu. A ready ability shows Ready on the list for two seconds.
+
+| Setting | Does |
+| --- | --- |
+| List | Lists the abilities you are waiting on, on the HUD. Move it in the HUD editor |
+| On Items | Drains the wash over the item and counts down its seconds |
+| Shortest Listed | Leaves cooldowns shorter than this off the list, so a weapon you click every second does not flicker there. Their items still show the wash |
+| Ready Alert | Shows a title with a sound when a cooldown is over. Off by default |
+| Alert From | Alerts only for cooldowns at least this long, 20 seconds by default, so the Tuba and the drill alert and Giant's Slam does not |
+
+<sub>The length comes from the item's own lore, so carry the item. If you press too early, the server says how long is left, and the timer follows it, even when a buff makes the cooldown shorter than the lore says.</sub>
+
 ### Equipment Display
 
 Shows the armor you wear and your pet as a row of icons on the HUD, with each head's skin and each leather piece's dye. Your pet's head joins the row once you open the Pets menu or it floats near you, and until then the pet shows as its name under the row. Open the chat and point at a piece to read its tooltip. The pet's tooltip from the Pets menu names its held item.
@@ -338,6 +359,20 @@ Set your tabs up under Tabs, below Menu Tabs in the settings. It shows a small m
 | The mark beside Tabs | Go back to the starting tabs |
 
 <sub>Each edge has seven places. On a short screen at a large GUI scale, the tabs can run off the top or bottom of the screen.</sub>
+
+## Combat
+
+### Damage Numbers
+
+Shortens the damage numbers that pop up when a mob is hit, so 74,540,375 reads 74.5M, or hides them. A crit keeps its ✧ stars and its colors. Text over NPCs and other holograms stays as it is. Only you see the change. Turn it on in Combat.
+
+| Setting | Does |
+| --- | --- |
+| Show | Shows every damage number, only crits, or none |
+| Short Numbers | Shortens numbers of a thousand and up with k, M, B or T. With it off, the numbers read as the server writes them |
+| Decimals | Sets how many decimals a short number keeps, from 0 to 3. Zeros at the end are dropped, so 1,000,000 reads 1M |
+
+<sub>Off by default.</sub>
 
 ## Loot
 

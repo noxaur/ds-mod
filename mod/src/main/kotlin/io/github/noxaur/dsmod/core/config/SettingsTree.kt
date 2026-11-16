@@ -127,6 +127,13 @@ object SettingsTree {
                     switch(g::etherwarpThroughWalls, "Through Walls", "Show the whole box, even behind the blocks in front of it.")
                     switch(g::etherwarpWithoutSneak, "Without Sneak", "Show the box before you sneak, too.")
                 }
+                group("Ability Cooldowns", switch = toggle(g::abilityCooldowns, "Ability Cooldowns", "Time your item abilities and Riftwalker's charged hit.")) {
+                    switch(g::cooldownList, "List", "List the abilities you are waiting on, on the HUD.", id = "cooldownList")
+                    switch(g::cooldownOnItems, "On Items", "Drain a wash over the item and count down its seconds.", id = "cooldownOnItems")
+                    number(g::cooldownShortest, "Shortest Listed", "List only cooldowns at least this many seconds long.", 0f..20f, step = 0.5f, unit = "s")
+                    switch(g::cooldownReadyAlert, "Ready Alert", "Alert you when a long cooldown is over.")
+                    number(g::cooldownAlertFrom, "Alert From", "Alert only for cooldowns at least this many seconds long.", 1f..120f, step = 1f, unit = "s")
+                }
                 group("Animations", switch = toggle(g::animations, "Animations", "Shape how your held item swings and sits with the settings below.")) {
                     choice(g::swingStyle, "Swing Style", "Pick how your held item moves when you swing.")
                     number(g::swingSpeed, "Swing Speed", "Speed your swing up, or slow it down below 1.", 0.1f..3f, step = 0.1f, unit = "x")
@@ -349,6 +356,12 @@ object SettingsTree {
                 }
             }
             section("Combat", Role.BAD) {
+                group("Damage Numbers", switch = toggle(c.general::damageNumbers, "Damage Numbers", "Shorten or hide the damage numbers that pop up on a hit.")) {
+                    val g = c.general
+                    choice(g::damageShown, "Show", "Pick which damage numbers you see: all, only crits, or none.", id = "damageShown")
+                    val short = switch(g::damageShort, "Short Numbers", "Shorten big numbers, so 1,234,567 reads 1.2M.")
+                    number(g::damageDecimals, "Decimals", "Set how many decimals a short number keeps.", 0f..3f, step = 1f, id = "damageDecimals", dependsOn = short)
+                }
                 group("Slayers") {
                     switch(c.slayer::slayerTracker, "Slayer Tracker", "Count the slayer bosses you slay and time each from spawn to slain.")
                     switch(c.slayer::slayerBossAlert, "Slayer Boss Alert", "Alert you when your slayer boss spawns.")

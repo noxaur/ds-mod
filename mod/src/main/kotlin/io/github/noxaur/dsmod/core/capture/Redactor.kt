@@ -5,6 +5,8 @@ import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.HeadPlaced
+import io.github.noxaur.dsmod.core.game.FloatingText
+import io.github.noxaur.dsmod.core.game.Hit
 import io.github.noxaur.dsmod.core.game.PetNear
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.ServerText
@@ -153,9 +155,11 @@ class Redactor(private val names: Set<String>) {
         is SlotChanged -> event.copy(item = event.item?.let(::item))
         WorldChanged -> event
         is HeadPlaced -> event
+        is Hit -> event
         is ActionBar -> ActionBar(event.text.named())
         is EntityDied -> event.copy(name = event.name.named())
         is PetNear -> PetNear(event.name.named(), item(event.head))
+        is FloatingText -> FloatingText(event.text.named())
     }
 
     private fun item(item: Item) = item.copy(
