@@ -1,8 +1,5 @@
 package io.github.noxaur.dsmod.edge.ui
 
-import io.github.notenoughupdates.moulconfig.common.MyResourceLocation
-import io.github.notenoughupdates.moulconfig.common.RenderContext
-import io.github.notenoughupdates.moulconfig.common.TextureFilter
 import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Piece
@@ -591,14 +588,6 @@ object Kit {
     fun icon(g: GuiGraphicsExtractor, icon: Icon, x: Int, y: Int, color: Int, shadow: Boolean = true) {
         if (shadow) g.blitSprite(RenderPipelines.GUI_TEXTURED, icon.sprite, x + 1, y + 1, icon.width, icon.height, ARGB.scaleRGB(color, 0.25f))
         g.blitSprite(RenderPipelines.GUI_TEXTURED, icon.sprite, x, y, icon.width, icon.height, color)
-    }
-
-    /** [icon] on MoulConfig's settings screen, which draws through its own context and not the game's. */
-    fun icon(context: RenderContext, icon: Icon, x: Int, y: Int, color: Int) {
-        val texture = MyResourceLocation(icon.sprite.namespace, "textures/gui/sprites/${icon.sprite.path}.png")
-        for ((at, tint) in listOf(1 to ARGB.scaleRGB(color, 0.25f), 0 to color)) {
-            context.drawTexturedTintedRect(texture, (x + at).toFloat(), (y + at).toFloat(), icon.width.toFloat(), icon.height.toFloat(), 0f, 0f, 1f, 1f, tint, TextureFilter.NEAREST)
-        }
     }
 
     /** A 1px line of whole pixels from one point to another, with a dark line beside it so it reads over anything. */

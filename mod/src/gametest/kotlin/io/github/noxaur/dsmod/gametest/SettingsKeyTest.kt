@@ -1,8 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.edge.DsModClient
-import io.github.noxaur.dsmod.edge.Settings
+import io.github.noxaur.dsmod.edge.SettingsScreen
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.ChatScreen
@@ -16,7 +15,7 @@ class SettingsKeyTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val settings = DsModClient.settings.general
         fun screen() = context.computeOnClient<String, Nothing> { it.gui.screen()?.javaClass?.simpleName ?: "none" }
-        fun open() = screen().contains("MoulConfig")
+        fun open() = screen() == "SettingsScreen"
         fun close() {
             context.runOnClient<Nothing> { it.gui.setScreen(null) }
             context.waitTicks(2)
@@ -49,11 +48,12 @@ class SettingsKeyTest : FabricClientGameTest {
 
                 context.runOnClient<Nothing> { it.connection!!.sendCommand("dsmod zealot") }
                 context.waitTicks(3)
-                val end = context.computeOnClient<String, Nothing> { Settings.category(DsModConfig.End::class.java.getField("zealotTracker")) }
-                val found = context.computeOnClient<Set<String>, Nothing> { Settings.listed }
-                check(open() && found == setOf(end)) { "/dsmod zealot opened ${screen()} on $found" }
+                check(open()) { "/dsmod zealot opened ${screen()}" }
+                val found = context.computeOnClient<List<String>, Nothing> { (it.gui.screen() as SettingsScreen).shown() }
+                val query = context.computeOnClient<String, Nothing> { SettingsScreen.session().current.place.query }
+                check(query == "zealot" && "zealotTracker" in found) { "/dsmod zealot searched \"$query\" and lists $found" }
                 context.takeScreenshot("settings-search")
-                context.runOnClient<Nothing> { Settings.search("") }
+                context.runOnClient<Nothing> { SettingsScreen.session().current.search("") }
             } finally {
                 settings.settingsKey = -1
                 close()

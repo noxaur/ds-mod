@@ -41,6 +41,8 @@ class KitNavTree(
     private val onJump: (Int, Int) -> Unit,
     private val onFold: () -> Unit,
     private val onOpen: (Int, Int) -> Unit,
+    /** An icon in place of a section's swatch, such as Favorites' star, by section. */
+    private val icons: List<Icon?> = emptyList(),
 ) : AbstractWidget(x, y, width, height, text { body("Sections") }.toComponent()) {
     private val scroll = Scroll()
     private val fullNames = names.map { text { body(it) }.toComponent() }
@@ -200,7 +202,13 @@ class KitNavTree(
             if (row.isSection) {
                 val dim = counts != null && counts[row.section] == 0
                 Kit.navRow(graphics, x, top, width, SECTION, if (lit) Kit.State.HOVER else Kit.State.IDLE, tree.marked(row))
-                Kit.swatch(graphics, x + PAD, top + (SECTION - ICON) / 2, ICON, if (dim) ARGB.color(DIM_ALPHA, colors[row.section]) else colors[row.section])
+                val color = if (dim) ARGB.color(DIM_ALPHA, colors[row.section]) else colors[row.section]
+                val icon = icons.getOrNull(row.section)
+                if (icon != null) {
+                    Kit.icon(graphics, icon, x + PAD + (ICON - icon.width) / 2, top + (SECTION - icon.height) / 2, color)
+                } else {
+                    Kit.swatch(graphics, x + PAD, top + (SECTION - ICON) / 2, ICON, color)
+                }
                 Kit.label(graphics, labels[i], x + TEXT_X, top + 4, if (dim) Kit.Ink.OFF else Kit.Ink.NORMAL)
                 val countLabels = countLabels
                 if (countLabels != null) {

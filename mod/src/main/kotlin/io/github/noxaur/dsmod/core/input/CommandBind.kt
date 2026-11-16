@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose
 import io.github.noxaur.dsmod.core.config.Cell
 import io.github.noxaur.dsmod.core.config.ItemKind
 import io.github.noxaur.dsmod.core.game.Area
+import kotlinx.serialization.Serializable
 
 /** Where a bind's keys work: with no screen open, in a menu such as a chest or the inventory, or in both. */
 enum class Where(val title: String, val short: String) {
@@ -19,11 +20,12 @@ enum class Where(val title: String, val short: String) {
 
 /**
  * A key, or a few keys together or in order, that sends [command]. Each key is a GLFW key code or a mouse button
- * from 0 to 9, as MoulConfig's key editor writes one. A bind fires only [where] it works and, when it names an
+ * from 0 to 9, as `KeyBind` holds one. A bind fires only [where] it works and, when it names an
  * [area], only there. [extraKeys] lets other held keys, such as the one you walk with, not stop it.
  * [inOrder] makes [keys] a sequence of presses rather than keys held together. [group] is the name of the group
  * it is listed in, empty for the first one.
  */
+@Serializable
 data class CommandBind(
     @Expose val name: String = "",
     @Expose val command: String = "",

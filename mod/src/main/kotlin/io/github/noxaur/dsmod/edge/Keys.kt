@@ -8,7 +8,7 @@ import net.minecraft.client.input.InputWithModifiers
 import net.minecraft.client.resources.language.I18n
 import org.lwjgl.glfw.GLFW
 
-/** A bound key as MoulConfig's editor writes it: a GLFW key code, a mouse button from 0 to 9, or -1 for none. */
+/** A bound key as `KeyBind` holds it: a GLFW key code, a mouse button from 0 to 9, or -1 for none. */
 object Keys {
     private const val MOUSE_BUTTONS = 9
 

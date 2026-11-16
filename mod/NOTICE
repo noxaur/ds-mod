@@ -1,11 +1,2 @@
 ds-mod
 Copyright 2026 the ds-mod authors
-
-The release jar bundles these libraries under the package
-io.github.noxaur.dsmod.deps:
-
-MoulConfig, licensed under LGPL-3.0-or-later
-https://github.com/NotEnoughUpdates/MoulConfig
-
-LibNinePatch, licensed under MPL-2.0 (see LICENSE-LibNinePatch)
-https://github.com/Juuxel/LibNinePatch

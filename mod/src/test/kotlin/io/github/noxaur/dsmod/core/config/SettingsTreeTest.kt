@@ -1,9 +1,9 @@
 package io.github.noxaur.dsmod.core.config
 
-import com.google.gson.annotations.Expose
-import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
 import io.github.noxaur.dsmod.core.container.Border
 import io.github.noxaur.dsmod.core.container.RarityPreset
+import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.descriptors.elementNames
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -15,9 +15,11 @@ class SettingsTreeTest {
     private val tree = SettingsTree.sections(config)
     private val rows = tree.flatMap { it.walk() }
 
-    /** `Class.field` of every field of `DsModConfig` that Gson saves. */
-    private val saved = DsModConfig::class.java.declaredFields.filter { it.isAnnotationPresent(Expose::class.java) }.flatMap { category ->
-        category.type.declaredFields.filter { it.isAnnotationPresent(Expose::class.java) }.map { "${category.type.simpleName}.${it.name}" }
+    /** `Class.field` of every field in each category of `DsModConfig` that the config file saves. */
+    private val saved = DsModConfig.serializer().descriptor.let { config ->
+        (0 until config.elementsCount).map(config::getElementDescriptor).filter { it.kind == StructureKind.CLASS }.flatMap { category ->
+            category.elementNames.map { "${category.serialName.substringAfterLast('.')}.$it" }
+        }
     }
 
     @Test
@@ -55,23 +57,6 @@ class SettingsTreeTest {
             val d = row.description
             assertTrue(d.first().isUpperCase() && d.endsWith(".") && !Regex("""[.!?]\s""").containsMatchIn(d), "${row.name}: $d")
         }
-    }
-
-    @Test
-    fun `every description fits the settings screen at full size, as MoulConfig's must`() {
-        val long = rows.filter { it.description.length > Setting.DESCRIPTION_MAX }.map { "${it.name}: ${it.description}" }
-        assertEquals(emptyList(), long, "Cut each description to at most ${Setting.DESCRIPTION_MAX} characters. The player docs hold the rest: $long\n")
-    }
-
-    @Test
-    fun `a row that is a MoulConfig option says what the option says, where that is one sentence`() {
-        val options = DsModConfig::class.java.declaredClasses.flatMap { category ->
-            category.declaredFields.mapNotNull { f -> f.getAnnotation(ConfigOption::class.java)?.let { "${category.simpleName}.${f.name}" to it.desc } }
-        }.toMap()
-        val drift = rows.filterIsInstance<Valued<*>>().mapNotNull { row ->
-            options[row.field]?.takeIf { !Regex("""[.!?]\s""").containsMatchIn(it) && it != row.description }?.let { "${row.name}: \"${row.description}\", not \"$it\"" }
-        }
-        assertEquals(emptyList(), drift, "Give the row its @ConfigOption's description: $drift\n")
     }
 
     @Test

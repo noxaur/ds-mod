@@ -17,6 +17,7 @@ import io.github.noxaur.dsmod.core.config.Switch
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Look
+import io.github.noxaur.dsmod.core.ui.Narration
 import io.github.noxaur.dsmod.core.ui.SettingsSearch
 import io.github.noxaur.dsmod.edge.Keys
 import io.github.noxaur.dsmod.edge.toComponent
@@ -57,9 +58,17 @@ class SettingRows(
     private val relayout: () -> Unit,
     private val scrollTo: (top: Int, bottom: Int) -> Unit,
     private val editors: (Setting, Editor.Host) -> Editor = Editors::of,
+    /** The stars beside the rows' names, or null for rows that take none, such as the gallery's. */
+    private val stars: Stars? = null,
 ) {
     /** A tooltip's lines, made once. */
     class Tip(val lines: List<FormattedCharSequence>)
+
+    /**
+     * Whether each row is starred, what a press on its star does, and the Favorite Key, a key's GLFW code or a mouse
+     * button, which the star's tooltip names.
+     */
+    class Stars(val on: (String) -> Boolean, val toggle: (String) -> Unit, val key: () -> Int)
 
     /**
      * Where a row is on the screen: the row, its control, the second part of its control (a number's field or a
@@ -69,6 +78,10 @@ class SettingRows(
         val x: Int, val y: Int, val width: Int, val height: Int,
         val controlX: Int, val controlY: Int, val controlWidth: Int, val controlHeight: Int,
         val extraX: Int, val extraWidth: Int, val markerX: Int, val markerY: Int,
+        /** The star's top-left corner, or -1 for a row that has none. */
+        val starX: Int, val starY: Int,
+        /** A span's slider: its track's left, top and width. */
+        val sliderX: Int = -1, val sliderY: Int = -1, val sliderWidth: Int = 0,
     )
 
     private class Line(val setting: Setting, val x: Int, val y: Int, val width: Int, val heading: Boolean, val rule: Boolean, val entry: Int = -1) {
@@ -115,6 +128,12 @@ class SettingRows(
         var editor: Editor? = null
         var tip: Tip? = null
         var resetTip: Tip? = null
+
+        /** Where the star sits, in content coordinates, or -1 with no star, and whether the row is starred. */
+        var starX = -1
+        var starY = 0
+        var starred = false
+        var starTip: Tip? = null
 
         val bottom get() = y + height
 
@@ -286,7 +305,7 @@ class SettingRows(
         return at
     }
 
-    /** A group's heading switch at [x], [y], beside the heading's name at [nameX]. */
+    /** A group's heading switch at [x], [y], beside the heading's name at [nameX], with its star after it, [HEADING_STAR] wide. */
     fun heading(switch: Switch, x: Int, y: Int, nameX: Int) {
         val line = Line(switch, x, y, Kit.SWITCH_WIDTH, true, false)
         line.height = Kit.SWITCH_HEIGHT
@@ -295,6 +314,10 @@ class SettingRows(
         line.cy = y
         line.cw = Kit.SWITCH_WIDTH
         line.ch = Kit.SWITCH_HEIGHT
+        if (stars != null) {
+            line.starX = x + Kit.SWITCH_WIDTH + Kit.GAP
+            line.starY = y + (Kit.SWITCH_HEIGHT - Icon.STAR.height) / 2
+        }
         lines += line
     }
 
@@ -371,13 +394,21 @@ class SettingRows(
             line.name = text { body(s.name) }.toComponent()
             line.marked = Kit.Marked.of(s.name, words)
             line.cut = true
+            if (stars != null) {
+                line.starX = line.nameX + font.width(s.name) + STAR_GAP
+                line.starY = line.y + 2 + (FOLD_HEIGHT - Icon.STAR.height) / 2
+            }
             return
         }
         val textWidth = inner - line.cw - reserve - CONTROL_GAP
-        val name = fit(s.name, textWidth)
+        val name = fit(s.name, if (stars == null) textWidth else textWidth - STAR_ROOM)
         val all = wrap(s.description, textWidth, Int.MAX_VALUE)
         val shown = wrap(s.description, textWidth, DESCRIPTION_LINES)
         line.nameX = line.x + PAD
+        if (stars != null) {
+            line.starX = line.nameX + font.width(name) + STAR_GAP
+            line.starY = line.y + NAME_TOP
+        }
         line.name = marked(name, muted = false)
         line.description = shown.map { marked(it, muted = true) }
         line.cut = name != s.name || all.size > DESCRIPTION_LINES
@@ -433,6 +464,9 @@ class SettingRows(
         for (line in lines) {
             val s = line.setting
             line.changed = line.entry < 0 && s.changed
+            line.starred = line.starX >= 0 && stars?.on(s.id) == true
+            // The tip names the state and the Favorite Key, either of which a change may have changed.
+            line.starTip = null
             line.dimmed = !line.heading && s.dimmed
             if (s is Order<*> && line.entry >= 0) {
                 line.label = s.label(s.entries[line.entry])
@@ -513,11 +547,15 @@ class SettingRows(
 
     private fun overMarker(line: Line, mouseX: Double, mouseY: Double) = line.changed && inside(mouseX, mouseY, line.nameX - 6, markerY(line) - 3, 6, 9)
 
+    /** Whether the mouse is on the row's star, or a pixel around it, as a 7x7 target is easy to miss. */
+    private fun overStar(line: Line, mouseX: Double, mouseY: Double) =
+        line.starX >= 0 && inside(mouseX, mouseY, line.starX - 1, origin + line.starY - 1, Icon.STAR.width + 2, Icon.STAR.height + 2)
+
     private fun lineAt(mouseX: Double, mouseY: Double): Int {
         for (i in lines.indices) {
             val line = lines[i]
             if (line.heading) {
-                if (inside(mouseX, mouseY, line.cx - 2, top(line) - 1, line.cw + 4, line.ch + 2) || overMarker(line, mouseX, mouseY)) return i
+                if (inside(mouseX, mouseY, line.cx - 2, top(line) - 1, line.cw + 4, line.ch + 2) || overMarker(line, mouseX, mouseY) || overStar(line, mouseX, mouseY)) return i
             } else if (over(line, mouseX, mouseY)) {
                 return i
             }
@@ -528,8 +566,15 @@ class SettingRows(
     /** Where the row [id] is, or the line of its ordered list's [entry], if it is laid out, so a link or a test can find it. */
     fun spot(id: String, entry: Int = -1): Spot? {
         val l = lines.firstOrNull { it.setting.id == id && it.entry == entry } ?: return null
-        return Spot(l.x, top(l), l.width, l.height, l.cx, origin + l.cy, l.cw, l.ch, l.ex, l.ew, l.nameX - 5, markerY(l))
+        val slider = l.slider
+        return Spot(
+            l.x, top(l), l.width, l.height, l.cx, origin + l.cy, l.cw, l.ch, l.ex, l.ew, l.nameX - 5, markerY(l),
+            l.starX, if (l.starX < 0) -1 else origin + l.starY, slider?.x ?: -1, slider?.y ?: -1, slider?.width ?: 0,
+        )
     }
+
+    /** The ids of the rows laid out, in order, without headings' switches and list entries, so a test can read what a page lists. */
+    fun ids() = lines.filter { !it.heading && it.entry < 0 }.map { it.setting.id }
 
     /** The editor of the row [id], once it has been laid out, so a test can find its controls. */
     fun editor(id: String): Editor? = made[id]
@@ -562,6 +607,17 @@ class SettingRows(
             face(g, line, top, i == hovered, lit && line.editor == null, menu != null && i == focus, mx, my)
             val editorTip = line.editor?.draw(g, mouseX, mouseY, keys && i == focus)
             if (line.changed) Kit.marker(g, line.nameX - 5, markerY(line), if (i == hovered && overMarker(line, mx, my)) Kit.State.HOVER else Kit.State.IDLE)
+            // A star shows on a starred row, and on the row under the mouse or the keys, faint until the mouse is on it.
+            if (line.starX >= 0 && (line.starred || lit || i == hovered)) {
+                val onStar = i == hovered && overStar(line, mx, my)
+                val color = when {
+                    line.starred -> Role.ACTION.argb()
+                    onStar -> Role.BODY.argb()
+                    else -> Role.MUTED.argb()
+                }
+                Kit.icon(g, Icon.STAR, line.starX, origin + line.starY, color)
+                if (onStar) g.requestCursor(CursorTypes.POINTING_HAND)
+            }
             if (line.dimmed) Kit.dim(g, line.x, top, line.width, line.height)
             if (i == hovered) tip = editorTip ?: if (line.editor?.isOver(mx, my) == true) null else tip(line, mx, my)
         }
@@ -683,6 +739,13 @@ class SettingRows(
 
     private fun tip(line: Line, mx: Double, my: Double): Tip? {
         val s = line.setting
+        if (overStar(line, mx, my)) {
+            return line.starTip ?: run {
+                val verb = if (line.starred) "unstar" else "star"
+                val key = stars?.key?.invoke()?.takeIf { it >= 0 }?.let(Keys::name)
+                Tip(font.split(text { action(if (key == null) "Click to $verb." else "Click or press $key to $verb.") }.toComponent(), TIP_WIDTH))
+            }.also { line.starTip = it }
+        }
         if (overMarker(line, mx, my)) {
             return line.resetTip ?: Tip(
                 font.split(text { body("Default: "); value(s.default(Keys::name) ?: "Each part's own") }.toComponent(), TIP_WIDTH) +
@@ -726,6 +789,7 @@ class SettingRows(
         keys = true
         shownFocus = false
         if (event.button() == 0 && overMarker(line, mx, my)) return true.also { reset(line) }
+        if (event.button() == 0 && overStar(line, mx, my)) return true.also { star(line) }
         line.editor?.let { editor ->
             if (editor.isOver(mx, my) && editor.mouseClicked(event, doubleClick)) pressed = editor
             return true
@@ -776,6 +840,22 @@ class SettingRows(
             is Items<*>, is Panel<*> -> Unit
         }
         return true
+    }
+
+    /**
+     * The Favorite Key: stars or unstars the row under the mouse, or, for a key on the [keyboard], the row the keys
+     * are on while they show. Returns whether there was one.
+     */
+    fun starAt(mouseX: Double, mouseY: Double, keyboard: Boolean): Boolean {
+        val line = (if (keyboard && keys && shownFocus) lines.getOrNull(focus) else null) ?: lines.getOrNull(lineAt(mouseX, mouseY)) ?: return false
+        if (line.starX < 0) return false
+        star(line)
+        return true
+    }
+
+    private fun star(line: Line) {
+        stars?.toggle?.invoke(line.setting.id)
+        refresh()
     }
 
     /** Puts the keys on line [i], and tells an editor they left it. */
@@ -1108,7 +1188,8 @@ class SettingRows(
             output.add(NarratedElementType.HINT, ENTRY_HINT)
             return
         }
-        output.add(NarratedElementType.TITLE, line.setting.narration(Keys::name, line.open))
+        val narration = line.setting.narration(Keys::name, line.open)
+        output.add(NarratedElementType.TITLE, if (line.starred) Narration.join(narration, "starred") else narration)
         if (lines.size > 1) output.add(NarratedElementType.POSITION, I18n.get("narrator.position.list", at + 1, lines.size))
         output.add(NarratedElementType.HINT, line.setting.description)
     }
@@ -1149,6 +1230,12 @@ class SettingRows(
         private const val ENTRY_HEIGHT = 16
         private const val GRIP_ROOM = Kit.GRIP_WIDTH + 6
         private const val DRAG_START = 2.0
+        private const val STAR_GAP = 4
+        private const val STAR_ROOM = STAR_GAP + 7
+
+        /** How far a heading's star reaches past its switch, so the heading's rule starts after it. */
+        const val HEADING_STAR = Kit.GAP + 7
+
         private const val ENTRY_HINT = "Drag it by its grip, or press Alt with Up or Down, to move it."
     }
 }

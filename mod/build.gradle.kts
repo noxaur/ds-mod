@@ -17,25 +17,11 @@ plugins {
     id("net.fabricmc.fabric-loom")
     kotlin("jvm")
     kotlin("plugin.serialization")
-    id("com.gradleup.shadow")
 }
-
-interface Injected {
-    @get:Inject val archives: ArchiveOperations
-}
-val archives = objects.newInstance<Injected>().archives
 
 val tla = configurations.create("tla")
 
-// Libraries copied into the release jar under our own package.
-val shade = configurations.create("shade")
-configurations.implementation { extendsFrom(shade) }
-
 repositories {
-    maven("https://maven.notenoughupdates.org/releases/") {
-        name = "NotEnoughUpdates"
-        content { includeGroup("org.notenoughupdates.moulconfig") }
-    }
     exclusiveContent {
         forRepository { maven("https://api.modrinth.com/maven") { name = "Modrinth" } }
         filter { includeGroup("maven.modrinth") }
@@ -70,8 +56,8 @@ sourceSets.test {
 }
 
 loom {
-    // The recorder reads private Minecraft fields. The jar ships this file merged with MoulConfig's, see `accessWidener` below.
-    accessWidenerPath = file("src/main/aw/dsmod.accesswidener")
+    // The recorder reads private Minecraft fields.
+    accessWidenerPath = file("src/main/resources/dsmod.accesswidener")
     mods {
         register("dsmod") { sourceSet(sourceSets.main.get()) }
         register("dsmod_debug") { sourceSet(debug) }
@@ -103,7 +89,6 @@ dependencies {
     implementation("net.fabricmc:fabric-loader:${property("loader_version")}")
     implementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
     implementation("net.fabricmc:fabric-language-kotlin:${property("fabric_kotlin_version")}")
-    shade("org.notenoughupdates.moulconfig:modern-${property("minecraft_version")}:${property("moulconfig_version")}")
 
     devMods("maven.modrinth:sodium:${property("sodium_version")}")
     devMods("maven.modrinth:immediatelyfast:${property("immediatelyfast_version")}")
@@ -182,29 +167,6 @@ tasks.named<JavaExec>("runClient") {
     )
 }
 
-// A mod declares one access widener, and MoulConfig needs its own declared by the mod that carries it. So the jar's
-// file is ours followed by the lines of the one in MoulConfig's jar.
-val moulconfigAccessWidener = tasks.register<Sync>("moulconfigAccessWidener") {
-    val archives = archives
-    from(shade.elements.map { jars -> jars.map { archives.zipTree(it) } }) { include("moulconfig.accesswidener") }
-    into(layout.buildDirectory.dir("generated/moulconfig"))
-}
-val accessWidener = tasks.register("accessWidener") {
-    val ours = file("src/main/aw/dsmod.accesswidener")
-    val theirs = moulconfigAccessWidener.map { it.destinationDir.resolve("moulconfig.accesswidener") }
-    val merged = layout.buildDirectory.file("generated/accesswidener/dsmod.accesswidener")
-    inputs.file(ours)
-    inputs.file(theirs)
-    outputs.file(merged)
-    doLast {
-        val header = ours.readLines().first()
-        val body = (ours.readLines().drop(1) + theirs.get().readLines().drop(1)).filter { it.isNotBlank() }
-        check(theirs.get().readLines().first() == header) { "MoulConfig's access widener no longer has the header '$header'." }
-        merged.get().asFile.apply { parentFile.mkdirs() }.writeText((listOf(header, "") + body).joinToString("\n", postfix = "\n"))
-    }
-}
-sourceSets.main { resources.srcDir(accessWidener.map { layout.buildDirectory.dir("generated/accesswidener").get() }) }
-
 tasks.withType<ProcessResources>().configureEach {
     val version = project.version
     val backend = providers.gradleProperty("backend_url").get()
@@ -215,27 +177,9 @@ tasks.withType<ProcessResources>().configureEach {
     filesMatching("fabric.mod.json") { expand("version" to version, "backend_url" to backend, "website_url" to website) }
 }
 
-tasks.jar {
-    archiveClassifier = "thin"
-    destinationDirectory = layout.buildDirectory.dir("devlibs")
-}
-
 // Release build: build/libs/dsmod-<version>.jar
-tasks.shadowJar {
-    archiveClassifier = ""
-    configurations = emptyList()
-    relocate("io.github.notenoughupdates.moulconfig", "io.github.noxaur.dsmod.deps.moulconfig")
-    mergeServiceFiles()
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+tasks.jar {
     from("../LICENSE", "NOTICE")
-    val archives = archives
-    val shaded = shade.elements.map { jars -> jars.map { archives.zipTree(it) } }
-    // MoulConfig's jar carries LibNinePatch's fabric.mod.json and LICENSE, which would replace ours.
-    from(shaded) { exclude("fabric.mod.json", "LICENSE", "moulconfig.accesswidener") }
-    from(shaded) {
-        include("LICENSE")
-        rename { "LICENSE-LibNinePatch" }
-    }
 }
 
 // Debug build: build/libs/dsmod-<version>-debug.jar, the release jar plus the debug tools.
@@ -243,10 +187,10 @@ val debugJar = tasks.register<Jar>("debugJar") {
     archiveClassifier = "debug"
     from(debug.output)
     from("../LICENSE", "NOTICE")
-    from(tasks.shadowJar) { into("META-INF/jars") }
+    from(tasks.jar) { into("META-INF/jars") }
 }
 
-tasks.assemble { dependsOn(tasks.shadowJar, debugJar) }
+tasks.assemble { dependsOn(debugJar) }
 
 // `./gradlew runProdClientGameTest` runs the same game tests against the built jars, as a player would load them.
 dependencies {
@@ -285,11 +229,11 @@ tasks.register<net.fabricmc.loom.task.prod.ClientProductionRunTask>("runProdClie
     dependsOn(cleanProdClientGameTest)
     group = "verification"
     description = "Runs the client game tests against the release and debug jars."
-    // Loom would add the unshaded jar by default, so list the mods explicitly.
+    // Loom would add the release jar beside the debug jar that already holds it, so list the mods explicitly.
     mods.setFrom(debugJar, gametestJar, configurations.productionRuntimeMods)
     jvmArgs.add("-Dfabric.client.gametest")
     // PerfTest weighs the jar a player installs.
-    jvmArgs.add(tasks.shadowJar.flatMap { it.archiveFile }.map { "-Ddsmod.jar=${it.asFile.path}" })
+    jvmArgs.add(tasks.jar.flatMap { it.archiveFile }.map { "-Ddsmod.jar=${it.asFile.path}" })
     runDir = layout.buildDirectory.dir("run/prodClientGameTest")
     // A CI runner has no display.
     useXVFB = providers.environmentVariable("CI").isPresent

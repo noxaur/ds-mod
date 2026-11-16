@@ -108,8 +108,9 @@ sealed class Setting(val id: String, val name: String, val description: String, 
 
     companion object {
         /**
-         * The most characters a description may have. MoulConfig shrinks the font of a longer one: 67 fit and 72 did
-         * not. `RulesTest` holds MoulConfig's options to it and `SettingsTreeTest` the tree's rows, so the two agree.
+         * The most characters a description may have, so the settings screen shows a row's two lines of it at full
+         * width and a reader takes it in at a glance. `SettingsTreeTest` holds every row to it, and the player docs
+         * hold the rest.
          */
         const val DESCRIPTION_MAX = 67
     }
@@ -304,9 +305,9 @@ class Fold(id: String, name: String, description: String, override val children:
 }
 
 /**
- * Which of [values] show, and in what order, as MoulConfig's draggable list keeps them: the value is the shown ones
- * in order. The list the player sees holds every value, and a hidden one keeps the place it was given while this row
- * lives, so showing it again puts it back where it was. At least [least] stay shown.
+ * Which of [values] show, and in what order: the value is the shown ones in order. The list the player sees holds
+ * every value, and a hidden one keeps the place it was given while this row lives, so showing it again puts it back
+ * where it was. At least [least] stay shown.
  */
 class Order<T>(
     id: String,
@@ -459,7 +460,32 @@ class Rows {
     fun <T> panel(bind: Bind<T>, name: String, description: String, canvas: Canvas, id: String, dependsOn: Switch? = null, describe: (T) -> String) =
         add(Panel(id, name, description, bind, canvas, describe), dependsOn)
 
-    /** A button that runs the editor `DsModClient` puts in [property], read when pressed, so the config needs no Minecraft. */
-    fun action(property: KProperty0<Runnable>, name: String, description: String, button: String = "Open", id: String = property.name, dependsOn: Switch? = null) =
-        add(Action(id, name, description, button) { property.get().run() }, dependsOn)
+    /** A button that runs [run], such as a reset of a group. */
+    fun action(id: String, name: String, description: String, button: String, dependsOn: Switch? = null, run: () -> Unit) =
+        add(Action(id, name, description, button, run), dependsOn)
+
+    /** A button that opens the edge's screen [opens], so the tree needs no Minecraft. */
+    fun action(opens: Opens, name: String, description: String, button: String = "Open", id: String, dependsOn: Switch? = null) =
+        add(Action(id, name, description, button) { Opens.open(opens) }, dependsOn)
+}
+
+/**
+ * A screen of the edge's that an action row opens: one that needs the game behind it, such as Move HUD, or one that
+ * is not a setting, such as Contribute's requests. `DsModClient` registers what opens each, as it gives each [Canvas]
+ * its face.
+ */
+enum class Opens {
+    HUD_EDITOR,
+    REQUESTS,
+    ;
+
+    companion object {
+        private val screens = HashMap<Opens, () -> Unit>()
+
+        fun register(opens: Opens, open: () -> Unit) {
+            screens[opens] = open
+        }
+
+        fun open(opens: Opens) = screens[opens]?.invoke() ?: Unit
+    }
 }

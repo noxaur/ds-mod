@@ -168,13 +168,11 @@ class SettingsTest {
         assertEquals("Timing, span, 175 to 200", byName.getValue("Timing").narration(keys))
         val more = Rows().apply {
             fold("f", "Fold", "More.") { switch(v::other, "Other", "Turn it on.") }
-            action(::editor, "Move HUD", "Drag a block.", button = "Move")
+            action("moveHud", "Move HUD", "Drag a block.", button = "Move") {}
         }.rows
         assertEquals("Fold, fold, collapsed", more[0].narration(keys))
         assertEquals("Move HUD, button, Move", more[1].narration(keys))
     }
-
-    private val editor = Runnable {}
 
     @Test
     fun `the narrator hears that a row is changed, and which switch dims it`() {

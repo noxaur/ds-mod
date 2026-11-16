@@ -152,7 +152,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
                 pick(Bind("Values.dimPreset", v::dimPreset::get, v::dimPreset::set), "Style", "Pick it.", RarityPreset.entries, dependsOn = gate) {
                     Look.Slots(it.style ?: SlotStyle())
                 }
-                action(::noop, "Edit Binds", "Edit them.", button = "Edit", dependsOn = gate)
+                action("noop", "Edit Binds", "Edit them.", button = "Edit", dependsOn = gate) {}
             },
         ),
         listOf(
@@ -163,7 +163,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
                         Look.Slots(SlotStyle(border = it), 1)
                     }
                 }
-                action(::noop, "Move HUD", "Drag a block.", button = "Move")
+                action("noop", "Move HUD", "Drag a block.", button = "Move") {}
                 order(v::rows, "Rows", "Order them.", id = "openOrder")
             },
             "Dimmed under an off switch" to rows {
@@ -175,7 +175,6 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
         ),
     )
 
-    private val noop = Runnable {}
 
     private fun binds(property: kotlin.reflect.KMutableProperty0<Grouped<CommandBind>>) = Bind("Values.${property.name}", property::get, property::set)
 
@@ -214,7 +213,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
                     panel(Bind("Hud.positions", { HashMap(hud.positions) }, { hud.positions.clear(); hud.positions.putAll(it) }), "Layout", "Drag a block.", Canvas.HUD_LAYOUT, id = "galleryLayout") {
                         "${it.size} moved"
                     }
-                    action(::noop, "Move HUD", "Move it over the game.", button = "Move", id = "galleryMove")
+                    action("galleryMove", "Move HUD", "Move it over the game.", button = "Move") {}
                 },
             ),
         ),

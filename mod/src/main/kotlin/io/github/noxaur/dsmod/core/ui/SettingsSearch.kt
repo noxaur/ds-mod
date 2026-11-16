@@ -13,8 +13,8 @@ data class SettingHit(val section: Int, val group: SettingGroup, val rows: List<
 
 /**
  * The settings screen's search. A row matches when every word of the query is in its name, its description, a
- * choice's values, its group's heading or switch, or the names of the rows it sits under, ignoring case, as
- * MoulConfig matches. A group's heading thereby finds all its rows, and an ordered list's entries find it.
+ * choice's values, its group's heading or switch, or the names of the rows it sits under, ignoring case. A group's
+ * heading thereby finds all its rows, and an ordered list's entries find it.
  */
 object SettingsSearch {
     fun words(query: String) = query.trim().lowercase().split(' ').filter { it.isNotEmpty() }

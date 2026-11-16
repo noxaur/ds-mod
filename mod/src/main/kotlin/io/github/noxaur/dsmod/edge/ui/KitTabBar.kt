@@ -35,6 +35,8 @@ class KitTabBar(
     private val onClose: (Int) -> Unit,
     private val onNew: () -> Unit,
     private val onMove: (Int, Int) -> Unit,
+    /** An icon in place of a section's swatch, such as Favorites' star, by section. */
+    private val icons: List<Icon?> = emptyList(),
 ) : AbstractWidget(x, y, width, Kit.TAB_BAR_HEIGHT, text { body("Tabs") }.toComponent()) {
     private val strip = TabStrip()
     private val brandWidth = Kit.font.width(BRAND)
@@ -166,8 +168,9 @@ class KitTabBar(
             overClose -> Kit.State.HOVER
             else -> Kit.State.IDLE
         }
-        val swatch = if (!place.searching && place.section >= 0) colors[place.section] else 0
-        Kit.pageTab(graphics, tabX, lineY, strip.width, state, selected, labels[i], swatch, if (place.searching) Icon.SEARCH else null, close)
+        val icon = if (place.searching) Icon.SEARCH else icons.getOrNull(place.section)
+        val swatch = if (icon == null && place.section >= 0) colors[place.section] else 0
+        Kit.pageTab(graphics, tabX, lineY, strip.width, state, selected, labels[i], swatch, icon, close)
     }
 
     /** The tab, × or plus under the mouse, or else the selected tab. */

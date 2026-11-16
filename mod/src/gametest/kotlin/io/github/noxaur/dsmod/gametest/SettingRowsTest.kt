@@ -6,7 +6,6 @@ import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.container.Border
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
-import io.github.noxaur.dsmod.core.ui.Place
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
@@ -235,23 +234,20 @@ class SettingRowsTest : FabricClientGameTest {
         theme(context, Theme.CHARCOAL)
 
         // A search finds an option inside a choice, and opens the switch that holds it.
-        open(context, SettingsTabs(Place(0)))
+        open(context, SettingsTabs(at("General")))
         context.input.typeChars("rngesus")
         context.waitTicks(2)
         check(context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).spot("lootAlertTier") != null }) { "The search for a choice's value shows no Alert Tier" }
         context.takeScreenshot("own-settings-search-option")
 
-        // MoulConfig's Edit button for the binds opens these settings at the list, and Escape goes back to MoulConfig.
-        context.runOnClient<Nothing> { DsModClient.openSettings() }
+        // A link to a row opens the settings there, over the screen shown now, and Escape goes back to it.
+        context.setScreen { TitleScreen() }
+        context.runOnClient<Nothing> { DsModClient.openSettings("binds") }
         context.waitTicks(2)
-        val moul = context.computeOnClient<String, Nothing> { it.gui.screen()?.javaClass?.name ?: "nothing" }
-        context.runOnClient<Nothing> { DsModClient.settings.general.editBinds.run() }
-        context.waitTicks(2)
-        check(context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as? SettingsScreen)?.spot("binds") != null }) { "Edit Binds did not open the settings at the list" }
+        check(context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as? SettingsScreen)?.spot("binds") != null }) { "A link to the binds did not open the settings at the list" }
         context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
         context.waitTicks(2)
-        val back = context.computeOnClient<String, Nothing> { it.gui.screen()?.javaClass?.name ?: "nothing" }
-        check(back == moul) { "Escape from the settings opened over MoulConfig went to $back, not $moul" }
+        check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() is TitleScreen }) { "Escape from the settings did not go back to the title screen" }
         context.setScreen { null }
 
         // An action opens its screen, which returns to the settings.

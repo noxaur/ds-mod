@@ -1,7 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
-import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.ui.Place
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.Theme
@@ -13,7 +12,7 @@ import net.minecraft.client.gui.screens.TitleScreen
 
 /** Steps the game tests of ds-mod's own settings screen share. */
 internal object SettingsSteps {
-    val names = SettingsTree.sections(DsModConfig()).map { it.name }
+    val names = SettingsScreen.sections(DsModConfig()).map { it.name }
 
     /** The place of the section [name], so a step names the section it means and survives a new order of sections. */
     fun at(name: String, query: String = "") = Place(names.indexOf(name).also { check(it >= 0) { "No section $name" } }, query)

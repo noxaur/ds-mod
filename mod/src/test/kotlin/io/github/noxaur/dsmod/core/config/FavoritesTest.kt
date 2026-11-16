@@ -57,6 +57,25 @@ class FavoritesTest {
     }
 
     @Test
+    fun `Favorites lists each starred row under its group, a heading's switch as a row, and not a row under another`() {
+        val tree = SettingsTree.sections(DsModConfig())
+        val hits = Favorites.hits(tree, listOf("slotLockKey", "etherwarpOutline", "etherwarpWidth", "slotLock", "lootAlerts", "gone"))
+        assertEquals(
+            listOf("Etherwarp" to listOf("etherwarpOutline", "etherwarpWidth"), "Protection" to listOf("slotLock"), "Loot" to listOf("lootAlerts")),
+            hits.map { it.group.name to it.rows.map(Setting::id) },
+        )
+        assertEquals(listOf("General", "Inventory", "Combat"), hits.map { tree[it.section].name })
+    }
+
+    @Test
+    fun `a favorite saved by MoulConfig's path becomes its row's id`() {
+        assertEquals(
+            listOf("fullbright", "hudScale", "binds", "moveHud", "beamSections", "theme"),
+            SettingsTree.favorites(listOf("general.fullbright", "hud.scale", "general.editBinds", "hud.edit", "end.editBeam", "theme", "general.gone", "hud.scale")),
+        )
+    }
+
+    @Test
     fun `a setting unstarred in its own category leaves Favorites at once`() {
         val view = FavoritesView()
         val after = view.toggle(listOf("general.fullbright", "loot.lootAlerts"), "general.fullbright", here = false)

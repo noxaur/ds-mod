@@ -1,9 +1,8 @@
 package io.github.noxaur.dsmod.rules
 
-import io.github.notenoughupdates.moulconfig.annotations.Category
-import io.github.notenoughupdates.moulconfig.annotations.ConfigOption
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Setting
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.Area
 import java.nio.file.FileSystems
@@ -66,18 +65,8 @@ class RulesTest {
 
     @Test
     fun `every setting's description fits the settings screen at full size`() {
-        // MoulConfig shrinks the font of a description that runs past its box. `SettingsTreeTest` holds the tree's rows to the same limit.
-        val categories = DsModConfig::class.java.declaredFields.mapNotNull { it.getAnnotation(Category::class.java) }
-        val options = DsModConfig::class.java.declaredClasses.flatMap { it.declaredFields.toList() }
-            .mapNotNull { it.getAnnotation(ConfigOption::class.java) }
-        val long = categories.filter { it.desc.length > 45 }.map { "${it.name}: ${it.desc}" } +
-            options.filter { it.desc.length > Setting.DESCRIPTION_MAX }.map { "${it.name}: ${it.desc}" }
-        assertEquals(
-            emptyList(),
-            long,
-            "Cut each description to one short sentence, at most 45 characters for a category and ${Setting.DESCRIPTION_MAX} for a setting. " +
-                "The player docs hold the rest: $long\n",
-        )
+        val long = SettingsTree.sections(DsModConfig()).flatMap { it.walk() }.filter { it.description.length > Setting.DESCRIPTION_MAX }.map { "${it.name}: ${it.description}" }
+        assertEquals(emptyList(), long, "Cut each description in SettingsTree to one short sentence of at most ${Setting.DESCRIPTION_MAX} characters. The player docs hold the rest: $long\n")
     }
 
     @Test

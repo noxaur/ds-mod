@@ -98,7 +98,7 @@ class AnimationsPoseTest : FabricClientGameTest {
         settings.noSwing = true
         settings.noBowSwing = true
         settings.noEquipReset = true
-        settings.resetAnimations.run()
+        settings.resetAnimations()
         check(changed(vanilla, shot("animations-reset")) == 0) { "Reset left the sword moved" }
         check(changed(vanillaSwing, midSwing("animations-reset-swing")) == 0) { "Reset left the swing changed" }
     }

@@ -1,13 +1,18 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.Favorites
+import io.github.noxaur.dsmod.core.config.FavoritesView
 import io.github.noxaur.dsmod.core.config.Setting
+import io.github.noxaur.dsmod.core.config.SettingSection
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.config.Switch
+import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.NavTree
 import io.github.noxaur.dsmod.core.ui.Place
 import io.github.noxaur.dsmod.core.ui.Scroll
+import io.github.noxaur.dsmod.core.ui.SettingHit
 import io.github.noxaur.dsmod.core.ui.SettingsSearch
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.edge.ui.Editor
@@ -23,6 +28,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.narration.ScreenNarrationCollector
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.CharacterEvent
+import net.minecraft.client.input.InputWithModifiers
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.util.Util
@@ -57,16 +63,19 @@ private const val MOUSE_FORWARD = 4
  * named subsection has a heading, with the subsection's switch when the subsection is one feature, and its rows sit
  * in a well, each with the control of its kind from [SettingRows]. Typing searches every section from the selected
  * tab, and the pane lists what matched under "Section › Subsection" headings, with the rows that hold a match open.
+ * Favorites, the first section, lists the rows the player starred under the same headings, in the tree's order.
  *
- * A change applies to [config] at once, and [save] writes it when the screen goes, as MoulConfig's screen does.
+ * A change applies to [config] at once, and [save] writes it when the screen goes.
  */
 class SettingsScreen(
     private val parent: Screen?,
-    private val tabs: SettingsTabs = session,
+    private val tabs: SettingsTabs = session(),
     private val config: DsModConfig = DsModClient.settings,
     private val save: () -> Unit = DsModClient::saveSettings,
-    /** A row to open at, as a button elsewhere does that names the setting it edits. */
+    /** A row to open at, as a link elsewhere does that names the setting it edits. */
     private var reveal: String? = null,
+    /** Words to search for on open, as `/dsmod <words>` does. */
+    private var query: String? = null,
 ) : Screen(text { body("ds-mod") }.toComponent()) {
     private sealed class Item(val y: Int, val height: Int)
     private class Heading(
@@ -75,10 +84,12 @@ class SettingsScreen(
     private class Group(y: Int, height: Int) : Item(y, height)
     private class Empty(y: Int, val line: String, val x: Int, val ink: Kit.Ink) : Item(y, 8)
 
-    private val sections = SettingsTree.sections(config)
+    private val sections = sections(config)
+    private val every = sections.flatMap { it.walk() }
+    private val icons = List(sections.size) { if (it == FAVORITES) Icon.STAR else null }
     private val tree = NavTree(sections.map { it.named.size })
     private val pane = Scroll()
-    private val rows = SettingRows(opened, ::build, ::scrollTo)
+    private val rows = SettingRows(opened, ::build, ::scrollTo, stars = SettingRows.Stars({ it in config.favorites }, ::star, { config.general.favoriteKey }))
 
     private lateinit var search: KitTextField
     private lateinit var nav: KitNavTree
@@ -106,6 +117,11 @@ class SettingsScreen(
     /** The plus focuses the search field, which the press's own focus on the bar would take back. */
     private var focusSearch = false
 
+    /** A press of the Favorite Key is followed by its character, which would start a search. */
+    private var eatChar = false
+    private var mouseX = 0.0
+    private var mouseY = 0.0
+
     private val barX get() = width - Kit.SCROLLBAR_WIDTH - 2
     private val track get() = height - BAR - 4
 
@@ -121,7 +137,7 @@ class SettingsScreen(
             KitNavTree(
                 Kit.GAP, navY, inner, footY - Kit.GAP - navY, tree,
                 sections.map { it.name }, sections.map { it.icon.argb() }, sections.map { s -> s.named.map { it.name!! } },
-                ::select, ::jump, ::folded, ::openTab,
+                ::select, ::jump, ::folded, ::openTab, icons,
             ),
         )
         // Vanilla narrates the first focused entry it did not narrate last, so two entries that both claim focus take
@@ -129,7 +145,7 @@ class SettingsScreen(
         nav.hasKeys = { !rows.keys && !rows.capturing && (focused == null || focused === nav) }
         addWidget(rows.narration)
         bar = addRenderableWidget(
-            KitTabBar(side, 0, width - side, tabs, sections.map { it.name }, sections.map { it.icon.argb() }, ::pick, ::close, { newTab().also { focusSearch = true } }, ::move),
+            KitTabBar(side, 0, width - side, tabs, sections.map { it.name }, sections.map { it.icon.argb() }, ::pick, ::close, { newTab().also { focusSearch = true } }, ::move, icons),
         )
         addRenderableWidget(KitButton(Kit.GAP, footY, "Done", ::onClose, inner - Kit.GAP - Kit.BUTTON_HEIGHT))
         fold = addRenderableWidget(KitButton(Kit.GAP + inner - Kit.BUTTON_HEIGHT, footY, Icon.DOWN, "Expand All", ::foldAll))
@@ -137,6 +153,11 @@ class SettingsScreen(
         contentWidth = (width - side - SIDES * 2).coerceAtMost(MAX_WIDTH)
         pane.view = height - BAR
         clear = null
+        query?.let {
+            keep()
+            tabs.current.search(it)
+        }
+        query = null
         reveal?.let(::goTo)
         show()
         reveal?.let(rows::reveal)
@@ -169,6 +190,7 @@ class SettingsScreen(
     private fun show() {
         val tab = tabs.current
         val place = tab.place
+        if (place.section != FAVORITES || place.searching) view.left()
         if (search.value != place.query) search.value = place.query
         tree.searching = place.searching
         // Selecting a section again would reopen it after the player closed it with its arrow.
@@ -306,16 +328,25 @@ class SettingsScreen(
                 clear = addRenderableWidget(button)
                 y += Kit.BUTTON_HEIGHT
             }
-            for (hit in hits) {
-                y += above
-                above = ABOVE
-                val section = sections[hit.section].name
-                val group = hit.group.name
-                items += heading(y, if (group == null) null else section, group ?: section, hit.group.switch)
-                y += HEADING + BELOW
-                items += group(y, hit.rows)
-                y += items.last().height
+            y = list(items, hits, y, switches = true)
+        } else if (place.section == FAVORITES) {
+            foundFor = null
+            rows.found = HashSet()
+            nav.counts(null)
+            val hits = Favorites.hits(sections, view.rows(every, config.favorites) { it.id }.map { it.id })
+            if (hits.isEmpty()) {
+                y += EMPTY_TOP
+                val key = config.general.favoriteKey.takeIf { it >= 0 }?.let(Keys::name)
+                for ((line, ink) in listOf(
+                    "No favorites yet." to Kit.Ink.NORMAL,
+                    (if (key == null) "Click a setting's star to keep it here." else "Click a setting's star, or press $key over it, to keep it here.") to Kit.Ink.MUTED,
+                )) {
+                    val fitted = fit(line, contentWidth)
+                    items += Empty(y, fitted, contentX + (contentWidth - font.width(fitted)) / 2, ink)
+                    y += 8 + GAP
+                }
             }
+            y = list(items, hits, y, switches = false)
         } else if (place.section < 0) {
             foundFor = null
             rows.found = HashSet()
@@ -351,12 +382,40 @@ class SettingsScreen(
         spiedAt = -1
     }
 
+    /**
+     * Lays [hits] out from [y] under "Section › Subsection" headings, the group's switch beside each when [switches],
+     * and returns the content y under them.
+     */
+    private fun list(items: MutableList<Item>, hits: List<SettingHit>, top: Int, switches: Boolean): Int {
+        var y = top
+        var above = FIRST_ABOVE
+        for (hit in hits) {
+            y += above
+            above = ABOVE
+            val section = sections[hit.section].name
+            val group = hit.group.name
+            items += heading(y, if (group == null) null else section, group ?: section, if (switches) hit.group.switch else null)
+            y += HEADING + BELOW
+            items += group(y, hit.rows)
+            y += items.last().height
+        }
+        return y
+    }
+
+    /** Stars or unstars the row [id]. One unstarred in Favorites stays there until the player leaves. */
+    private fun star(id: String) {
+        config.favorites = view.toggle(config.favorites, id, here = tabs.current.place.let { it.section == FAVORITES && !it.searching })
+    }
+
+    /** Whether the Favorite Key may act: not while the search has the keys, nor with Ctrl or Alt held, so typing and Ctrl+F work. */
+    private fun favoriteFree(event: InputWithModifiers) = focused !== search && !Keys.control(event) && !Keys.alt(event)
+
     private fun heading(y: Int, prefix: String?, name: String, switch: Switch?): Heading {
         val separatorX = contentX + if (prefix == null) 0 else font.width(prefix)
         val nameX = if (prefix == null) contentX else separatorX + font.width(SEPARATOR)
         val end = nameX + font.width(name) + GAP
         if (switch != null) rows.heading(switch, end, y, contentX)
-        val lineX = if (switch == null) end else end + Kit.SWITCH_WIDTH + GAP
+        val lineX = if (switch == null) end else end + Kit.SWITCH_WIDTH + SettingRows.HEADING_STAR + GAP
         // A heading's words find its rows, so a search paints them there too.
         return Heading(y, prefix, separatorX, name, Kit.Marked.of(name, rows.words), nameX, switch, lineX)
     }
@@ -379,6 +438,9 @@ class SettingsScreen(
         sync()
         return rows.spot(id, entry)
     }
+
+    /** The ids of the rows the pane lists now, in order, so a test can read a page. */
+    fun shown() = rows.ids()
 
     /** The editor of the row [id], told where the pane is, so a test can find its controls. */
     fun editor(id: String): Editor? {
@@ -403,8 +465,11 @@ class SettingsScreen(
 
     override fun keyPressed(event: KeyEvent): Boolean {
         val key = event.key()
+        eatChar = false
         // An open menu, a number's field or a key button being set takes every key, Escape included.
         if (rows.capturing) return rows.keyPressed(event)
+        val favorite = config.general.favoriteKey
+        if (key == favorite && !Keys.isMouse(favorite) && favoriteFree(event) && rows.starAt(mouseX, mouseY, keyboard = true)) return true.also { eatChar = true }
         // The tabs' keys are a browser's, and work in the search field too.
         if (Keys.control(event) && controlKey(event)) return true
         if (Keys.alt(event) && (event.isLeft || event.isRight)) return true.also { history(event.isLeft) }
@@ -455,8 +520,9 @@ class SettingsScreen(
         return true
     }
 
-    /** Typing anywhere searches, as MoulConfig's screen does, unless it goes into a number's field or an open menu. */
+    /** Typing anywhere searches, unless it goes into a number's field or an open menu. */
     override fun charTyped(event: CharacterEvent): Boolean {
+        if (eatChar) return true.also { eatChar = false }
         if ((rows.capturing || focused !== search) && rows.charTyped(event)) return true
         if (focused !== search && event.isAllowedChatCharacter && !Character.isWhitespace(event.codepoint())) {
             rows.keys = false
@@ -470,6 +536,10 @@ class SettingsScreen(
         sync()
         // The mouse's back and forward buttons walk the selected tab's history, wherever the mouse is, unless a key is being recorded.
         if (!rows.recordingKeys && (event.button() == MOUSE_BACK || event.button() == MOUSE_FORWARD)) return true.also { history(event.button() == MOUSE_BACK) }
+        // A mouse button bound as the Favorite Key stars the row under the mouse.
+        val favorite = config.general.favoriteKey
+        val inPane = event.x >= side && event.y >= BAR
+        if (!rows.capturing && Keys.isMouse(favorite) && event.button() == favorite && favoriteFree(event) && inPane && rows.starAt(event.x, event.y, keyboard = false)) return true
         if ((rows.capturing || event.x >= side && event.y >= BAR) && rows.mouseClicked(event, doubleClick)) {
             setFocused(null)
             return true
@@ -527,9 +597,10 @@ class SettingsScreen(
     override fun onClose() = minecraft.gui.setScreen(parent)
 
     // The tabs outlive the screen, so reopening it brings back where each pane was. A change is written as the
-    // screen goes, which is also when it opens an editor, as MoulConfig's screen writes on close.
+    // screen goes, which is also when it opens an editor.
     override fun removed() {
         keep()
+        view.left()
         rows.dispose()
         save()
     }
@@ -537,6 +608,9 @@ class SettingsScreen(
     override fun extractBackground(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) = Unit
 
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+        // The Favorite Key acts on the row under the mouse, and a key event carries no mouse.
+        this.mouseX = mouseX.toDouble()
+        this.mouseY = mouseY.toDouble()
         val now = Util.getMillis()
         pane.step(now - lastFrame)
         lastFrame = now
@@ -582,10 +656,25 @@ class SettingsScreen(
     companion object {
         private const val SEPARATOR = " › "
 
-        /** The tabs, kept until the game closes, as a browser keeps its session. The first open has one, on the first section. */
-        val session = SettingsTabs(Place(0))
+        /** Favorites' place among the sections. */
+        const val FAVORITES = 0
+
+        /** The sections the screen lists: Favorites, which holds no groups of its own, and then the tree bound to [config]. */
+        fun sections(config: DsModConfig) = listOf(SettingSection("Favorites", Role.ACTION, emptyList())) + SettingsTree.sections(config)
+
+        private var tabs: SettingsTabs? = null
+
+        /**
+         * The tabs, kept until the game closes, as a browser keeps its session. The first open has one, on Favorites, or
+         * on the first section of the tree while nothing is starred, so it does not open on an empty page.
+         */
+        fun session(): SettingsTabs =
+            tabs ?: SettingsTabs(Place(if (DsModClient.settings.favorites.isEmpty()) FAVORITES + 1 else FAVORITES)).also { tabs = it }
 
         /** The rows the player opened, kept with the tabs. */
         private val opened = HashSet<String>()
+
+        /** Favorites as the player looks at it, kept with the tabs. */
+        private val view = FavoritesView()
     }
 }

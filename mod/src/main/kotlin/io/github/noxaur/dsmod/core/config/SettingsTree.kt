@@ -49,9 +49,10 @@ class Groups {
 }
 
 /**
- * Every setting of ds-mod, in the order the settings screen shows them, bound to a config. The tree is the schema
- * of the settings: to add one, add its field to `DsModConfig` and one line here with an existing kind.
- * `SettingsTreeTest` fails on a saved field that no row reaches and that [STORED] does not name.
+ * Every setting of ds-mod, in the order the settings screen shows them, bound to a config. The tree is the only
+ * schema of the settings, and the one place their names and descriptions live: to add one, add its field to
+ * `DsModConfig` and one line here with an existing kind. `SettingsTreeTest` fails on a saved field that no row
+ * reaches and that [STORED] does not name.
  */
 object SettingsTree {
     /** Saved fields that no row edits, each with the reason. Every saved field has a row now. */
@@ -67,6 +68,28 @@ object SettingsTree {
         return sections
     }
 
+    /**
+     * [saved] favorites as row ids. Versions up to 0.1.0 starred MoulConfig's options by path, as `general.fullbright`,
+     * so a path becomes the id of the row that edits its field, or of the row that took over its button's job.
+     */
+    fun favorites(saved: List<String>): List<String> {
+        val rows = fresh.flatMap { it.walk() }
+        val ids = rows.mapTo(HashSet()) { it.id }
+        val byPath = rows.filterIsInstance<Valued<*>>().associate { it.field.replaceFirstChar(Char::lowercase) to it.id }
+        return saved.mapNotNull { if (it in ids) it else byPath[it] ?: BUTTONS[it] }.distinct()
+    }
+
+    /** MoulConfig's buttons, by path, to the row that does their job now. */
+    private val BUTTONS = mapOf(
+        "general.editBinds" to "binds",
+        "general.resetAnimations" to "resetAnimations",
+        "end.editBeam" to "beamSections",
+        "betterUi.editTabs" to "tabs",
+        "inventory.editRarityStyle" to "customLook",
+        "hud.edit" to "moveHud",
+        "contribute.open" to "requests",
+    )
+
     /** Sets each row's [Setting.gate]: the switch it sits under. */
     fun link(rows: List<Setting>, gate: Switch?) {
         for (row in rows) {
@@ -77,7 +100,7 @@ object SettingsTree {
 
     private fun declare(c: DsModConfig): List<SettingSection> {
         val sections = Sections().apply {
-            // What applies everywhere comes first, then each area of the game, and Contribute last, as in DsModConfig.
+            // What applies everywhere comes first, then each area of the game, and Contribute last.
             section("General", Role.VALUE) {
                 val g = c.general
                 group("Server") {
@@ -117,7 +140,7 @@ object SettingsTree {
                         switch(g::ignoreHaste, "Ignore Haste", "Swing at the same pace under Haste or Mining Fatigue.")
                         switch(g::noEquipReset, "No Equip Reset", "Keep your held item up instead of dipping after a swing or use.")
                     }
-                    action(g::resetAnimations, "Reset Animations", "Put every Animations setting back to the game's own.", button = "Reset")
+                    action("resetAnimations", "Reset Animations", "Put every Animations setting back to the game's own.", button = "Reset", run = g::resetAnimations)
                 }
                 group("Profile Viewer", switch = toggle(g::profileViewer, "Profile Viewer", "Look up any player's profile with /pv and their name.")) {
                     switch(g::profileNames, "Click Names", "Click a player's name in chat to open their profile.")
@@ -171,7 +194,7 @@ object SettingsTree {
                     panel(positions, "Layout", "Drag a block to move it, and scroll over it to resize it.", Canvas.HUD_LAYOUT, id = "hudLayout") {
                         if (it.isEmpty()) "Stacked" else if (it.size == 1) "1 block moved" else "${it.size} blocks moved"
                     }
-                    action(hud::edit, "Move HUD", "Move your HUD over the game, with the world behind it.", button = "Move", id = "moveHud")
+                    action(Opens.HUD_EDITOR, "Move HUD", "Move your HUD over the game, with the world behind it.", button = "Move", id = "moveHud")
                     switch(hud::dragInChat, "Drag In Chat", "Drag HUD blocks with chat open, and scroll over one to resize it.")
                 }
                 group("Equipment Display", switch = toggle(g::equipmentDisplay, "Equipment Display", "Show your armor and pet on the HUD.")) {
@@ -301,7 +324,7 @@ object SettingsTree {
             }
             section("Contribute", Role.RARE) {
                 group(null) {
-                    action(c.contribute::open, "Requests", "See what ds-mod's developers ask players to record.", id = "requests")
+                    action(Opens.REQUESTS, "Requests", "See what ds-mod's developers ask players to record.", id = "requests")
                     switch(c.contribute::reportGameData, "Report Game Data", "Send game data new to ds-mod to its developers, names removed.")
                 }
             }

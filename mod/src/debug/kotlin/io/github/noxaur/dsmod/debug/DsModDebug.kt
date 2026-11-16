@@ -2,7 +2,6 @@ package io.github.noxaur.dsmod.debug
 
 import io.github.noxaur.dsmod.core.brief.Brief
 import io.github.noxaur.dsmod.edge.DsModClient
-import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.edge.capture.CaptureSession
 import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
@@ -15,8 +14,7 @@ import java.nio.file.Path
 
 /**
  * The developer's tools: `/dscapture` records without a brief, `/dskit` shows the kit and `/dskit rows` its settings
- * rows, `/dssettings` opens the settings screen being built, `-Pbrief` starts a brief at launch, and the title screen
- * has a button that joins DragSim.
+ * rows, `-Pbrief` starts a brief at launch, and the title screen has a button that joins DragSim.
  */
 object DsModDebug : ClientModInitializer {
     /** The capture `/dscapture` started, while it runs. */
@@ -75,13 +73,6 @@ object DsModDebug : ClientModInitializer {
                             )
                         }
                     },
-            )
-            dispatcher.register(
-                ClientCommands.literal("dssettings").executes { context ->
-                    // ds-mod's own settings screen, which replaces MoulConfig's once its rows have controls.
-                    context.source.client.schedule { context.source.client.setScreenAndShow(SettingsScreen(null)) }
-                    1
-                },
             )
         }
     }

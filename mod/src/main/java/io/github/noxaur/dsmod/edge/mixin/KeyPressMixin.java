@@ -2,7 +2,7 @@ package io.github.noxaur.dsmod.edge.mixin;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.noxaur.dsmod.edge.Cameras;
-import io.github.noxaur.dsmod.edge.Settings;
+import io.github.noxaur.dsmod.edge.DsModClient;
 import net.minecraft.client.KeyMapping;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,6 +15,6 @@ abstract class KeyPressMixin {
     @Inject(method = "click", at = @At("HEAD"))
     private static void dsmod$pressed(InputConstants.Key key, CallbackInfo ci) {
         Cameras.INSTANCE.pressed(key);
-        Settings.INSTANCE.pressed(key);
+        DsModClient.INSTANCE.pressed(key);
     }
 }

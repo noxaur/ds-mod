@@ -28,16 +28,16 @@ class OwnSettingsTest : FabricClientGameTest {
 
     private fun SettingsDriver.screen() {
         val window = setUp(context)
-        open(context, SettingsTabs(Place(0)))
+        open(context, SettingsTabs(at("General")))
         context.takeScreenshot("own-settings-charcoal")
         theme(context, Theme.VANILLA)
         context.takeScreenshot("own-settings-vanilla")
         theme(context, Theme.CHARCOAL)
 
-        // The sidebar's list starts 24 down, with sections 16 tall and subsections 13.
+        // The sidebar's list starts 24 down, with sections 16 tall and subsections 13, and Favorites first.
 
         // Inventory is under General's four subsections, Camera, Binds, Interface and Chat. Its first row, under the mouse, lifts.
-        click(30, 24 + 16 + 4 * 13 + 4 * 16 + 8)
+        click(30, 24 + 16 + 16 + 4 * 13 + 4 * 16 + 8)
         move(160, 18 + 8 + 2 + 12 + 4 + 10)
         context.waitTicks(10)
         context.takeScreenshot("own-settings-hover")
@@ -49,8 +49,8 @@ class OwnSettingsTest : FabricClientGameTest {
         context.takeScreenshot("own-settings-expanded")
         click(116 - 1 - 4 - 8, 360 - 4 - 8)
 
-        // From the top: Down past General's four subsections and seven sections to Combat, Right opens it, Down onto Loot, and Enter jumps there.
-        open(context, SettingsTabs(Place(0)))
+        // From General: Down past General's four subsections and seven sections to Combat, Right opens it, Down onto Loot, and Enter jumps there.
+        open(context, SettingsTabs(at("General")))
         for (k in List(12) { GLFW.GLFW_KEY_DOWN } + listOf(GLFW.GLFW_KEY_RIGHT, GLFW.GLFW_KEY_DOWN, GLFW.GLFW_KEY_DOWN, GLFW.GLFW_KEY_ENTER)) {
             context.input.pressKey(k)
             context.waitTick()
@@ -74,14 +74,14 @@ class OwnSettingsTest : FabricClientGameTest {
         context.waitTicks(2)
         context.takeScreenshot("own-settings-empty")
 
-        // Tabs. With The End open, the sidebar's rows are seven sections from 24, The End 136, Dragon 152, Protector 165, Drops 178, then Combat 191.
+        // Tabs. With The End open, the sidebar's rows are Favorites and seven sections from 24, The End 152, Dragon 168, Protector 181, Drops 194, then Combat 207.
         val tabs = SettingsTabs(at("The End"))
         open(context, tabs)
         context.input.holdControl()
-        click(30, 191 + 8)
+        click(30, 207 + 8)
         context.input.releaseControl()
         expect(context, tabs, "[The End] Combat", "A Ctrl press on a section opens it after the selected tab, in the background")
-        click(40, 165 + 6, GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
+        click(40, 181 + 6, GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
         expect(context, tabs, "[The End] The End Combat", "A middle press on a subsection opens its section")
         // The bar's tabs start 4 in from the sidebar's 116, each 92 wide and 1 apart, and the plus comes after them.
         click(120 + 3 * 93 + 7, 9)
@@ -129,7 +129,7 @@ class OwnSettingsTest : FabricClientGameTest {
         expect(context, tabs, "[The End] eyes Combat New Tab The End", "Ctrl+1 selects the first tab")
 
         // A press in the sidebar takes the tab there, and the history walks back and forward.
-        click(30, 191 + 8)
+        click(30, 207 + 8)
         expect(context, tabs, "[Combat] eyes Combat New Tab The End", "A press on a section goes there in the same tab")
         key(GLFW.GLFW_KEY_LEFT, alt = true)
         expect(context, tabs, "[The End] eyes Combat New Tab The End", "Alt+Left goes back")
@@ -159,7 +159,7 @@ class OwnSettingsTest : FabricClientGameTest {
         context.takeScreenshot("own-settings-tab-overflow-wheel")
 
         // The tabs outlive the screen, as a browser's session does.
-        val before = context.computeOnClient<Int, Nothing> { SettingsScreen.session.size }
+        val before = context.computeOnClient<Int, Nothing> { SettingsScreen.session().size }
         context.setScreen { SettingsScreen(TitleScreen()) }
         context.waitTicks(2)
         key(GLFW.GLFW_KEY_T, control = true)
@@ -168,7 +168,7 @@ class OwnSettingsTest : FabricClientGameTest {
         context.waitTicks(2)
         context.setScreen { SettingsScreen(TitleScreen()) }
         context.waitTicks(2)
-        val after = context.computeOnClient<Int, Nothing> { SettingsScreen.session.size }
+        val after = context.computeOnClient<Int, Nothing> { SettingsScreen.session().size }
         check(after == before + 1) { "The settings opened again with $after tabs, not the ${before + 1} they closed with" }
 
         // The smallest window the game allows at GUI scale 2.
