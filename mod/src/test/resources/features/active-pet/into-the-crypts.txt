@@ -1,0 +1,20 @@
++   0.0s > (sidebar) Name: Player1; Purse: 527,099,929; Pet: [Lvl 100] Ender Dragon; Booster: Magic Find Boost; ⏣ Dragon's Den; Quest: Market Trader; Use the Auction House 0/1; dragsim.co
+               [Lvl 100] Ender Dragon
+               Open your Pets menu to read its XP.
++   4.8s > (sidebar) 
++   5.1s > (the world changed)
++   5.3s > (sidebar) 
++   5.7s > (sidebar) Name: Player1; Booster: Magic Find Boost; ⏣ Village; Pet: [Lvl 100] Ender Dragon; Purse: 527,099,929; Quest: Market Trader; Use the Auction House 0/1; dragsim.co
++  21.0s > (sidebar) 
++  21.3s > (the world changed)
++  21.5s > (sidebar) 
++  21.7s > (sidebar) Name: Player1; Purse: 527,099,929; Booster: Magic Find Boost; ⏣ Crypts; Slayer: Not started; Talk to the Slayer Guide; dragsim.co
++  52.7s > (sidebar) Name: Player1; Purse: 527,099,929; Gems: 0; Booster: Magic Find Boost; ⏣ Crypts; Slayer: Not started; Talk to the Slayer Guide; dragsim.co
++  54.9s > (the world changed)
++  55.0s > (sidebar) Name: Player1; Purse: 527,099,929; Gems: 0; Booster: Magic Find Boost; ⏣ Crypts; Slayer: Not started; Talk to the Slayer Guide; dragsim.co
++  55.2s > (sidebar) Name: Player1; Purse: 527,099,929; Booster: Magic Find Boost; ⏣ Crypts; Slayer: Not started; Talk to the Slayer Guide; dragsim.co
++  57.8s > (sidebar) 
++  58.0s > (the world changed)
++  58.0s > (sidebar) 
++  58.5s > (sidebar) Name: Player1; Purse: 527,099,929; Pet: [Lvl 100] Ender Dragon; Booster: Magic Find Boost; ⏣ Dragon's Den; Quest: Market Trader; Use the Auction House 0/1; dragsim.co
+saved active-pet.json = {"pets":{"Ender Dragon":{"icon":null,"held":null,"rarity":"EPIC","maxLevel":null}}}

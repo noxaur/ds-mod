@@ -53,6 +53,19 @@ Shows the armor you wear and your pet as a row of icons on the HUD, with each he
 | Equipment Look | Shows the pieces on the HUD's plate, on nothing, or in slots like your hotbar's, which follow your resource pack |
 | Equipment Placement | Keeps the pieces where you put them in the HUD editor, or puts them beside your hotbar, at its size and past your offhand slot. Dragging the pieces out of that spot or into it sets this for you |
 
+### Active Pet
+
+Shows the pet you have out on the HUD: its head, its name and level in the color of its rarity, the pet item it holds, and how far it is to its next level, or MAX LEVEL. It is off until you turn it on. The name and level follow the sidebar, so they change the moment you summon another pet or it levels up, and the block goes when the sidebar says Pet: None. A dungeon's sidebar names no pet, so the last one stays there.
+
+Open the Pets menu once to fill in the rest: the head and the held item are kept for each pet after that, even across restarts, and change when chat says you gave your pet another item. The XP is read each time you open the menu, and goes after a level up until you open it again. Until then the head is that of your pet floating beside you. Open the chat and point at the head to read its tooltip.
+
+| Setting | Does |
+| --- | --- |
+| Icon | Shows your pet's head beside its name |
+| Held Item | Shows the pet item your pet holds |
+| XP | Shows how far your pet is to its next level, as a bar |
+| Mark In Menu | Marks your active pet in the Pets menu |
+
 ### Inventory Preview
 
 Shows the items in your inventory as a grid on the HUD, nine to a row as your inventory holds them, with each stack's count, durability bar and cooldown. Rarity Marks colors each slot as it does in your inventory, and with your hotbar in the grid the slot you hold is ringed. The grid steps aside while a menu or your inventory is open, since they show your items already. Open the chat and point at an item to read its tooltip, and move or resize the grid in the HUD editor. Turn it on in General.

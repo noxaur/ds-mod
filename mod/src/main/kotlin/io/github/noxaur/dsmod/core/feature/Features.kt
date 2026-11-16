@@ -10,6 +10,7 @@ import io.github.noxaur.dsmod.core.feature.end.FireballAlert
 import io.github.noxaur.dsmod.core.feature.end.GolemStatus
 import io.github.noxaur.dsmod.core.feature.end.ProtectPlacedEyes
 import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
+import io.github.noxaur.dsmod.core.feature.general.ActivePet
 import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
@@ -56,6 +57,13 @@ fun features(config: DsModConfig): List<Feature> = listOf(
         config.general::petPosition,
         config.general::equipmentLook,
         config.general::equipmentPlacement,
+    ),
+    ActivePet(
+        config.general::activePet,
+        config.general::activePetIcon,
+        config.general::activePetItem,
+        config.general::activePetXp,
+        config.general::markActivePet,
     ),
     EtherwarpOutline(config.general::etherwarpOutline),
     ExplosionParticleHider(config.general::explosionParticleHider),

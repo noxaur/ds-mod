@@ -207,6 +207,21 @@ class DsModConfig {
         var equipmentPlacement = HudDock.FREE
 
         @JvmField
+        var activePet = false
+
+        @JvmField
+        var activePetIcon = true
+
+        @JvmField
+        var activePetItem = true
+
+        @JvmField
+        var activePetXp = true
+
+        @JvmField
+        var markActivePet = true
+
+        @JvmField
         var inventoryPreview = false
 
         @JvmField

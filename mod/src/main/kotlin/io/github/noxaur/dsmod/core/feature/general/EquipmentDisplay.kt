@@ -4,6 +4,8 @@ import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.Pet
+import io.github.noxaur.dsmod.core.game.PetCard
 import io.github.noxaur.dsmod.core.game.PetNear
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SlotChanged
@@ -11,7 +13,6 @@ import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudLook
-import io.github.noxaur.dsmod.core.text.Role
 import kotlin.reflect.KMutableProperty0
 
 /** A piece the display can show: a piece of armor and the slot of the player's inventory that holds it, or the pet. */
@@ -83,8 +84,6 @@ class EquipmentDisplay(
     private val look: KMutableProperty0<EquipmentLook>,
     override val placement: KMutableProperty0<HudDock>,
 ) : Feature("equipment-display", toggle, Area.ANYWHERE) {
-    private class Pet(val name: String, val level: Long, val rarity: Role)
-
     /** The settings the block was built with, so a refresh rebuilds it only when one changed. */
     private data class Shown(
         val layout: EquipmentLayout,
@@ -115,11 +114,10 @@ class EquipmentDisplay(
         on<ContainerOpened> { event, _ -> if (event.id == INVENTORY) stale = true }
         on<SlotChanged> { event, _ ->
             if (container.id == INVENTORY && ARMOR.any { it.slot == event.slot }) stale = true
-            val item = event.item ?: return@on
-            if (container.title?.plain != PETS || item.lore.none { it.plain == ACTIVE }) return@on
-            val name = item.name?.plain?.let(PET_LINE::matchEntire)?.groupValues?.get(2) ?: return@on
-            menuPet = name to item
-            held = item.lore.zipWithNext().firstOrNull { (label, _) -> label.plain.startsWith(HELD) }?.second?.plain?.trim()
+            if (container.title?.plain != PetCard.MENU) return@on
+            val card = event.item?.let(PetCard::of) ?: return@on
+            menuPet = card.pet.name to card.icon
+            held = card.held?.name
             block = build()
         }
         // Also run when the feature is switched off, so it reads the armor again when it comes back.
@@ -129,17 +127,12 @@ class EquipmentDisplay(
             if (event.lines.all { it.plain.isBlank() }) return@on
             val line = event.lines.firstOrNull { it.plain.trimStart().startsWith(PREFIX) }
             val value = line?.plain?.trim()?.removePrefix(PREFIX)?.trim()
-            val match = value?.let(PET_LINE::matchEntire)
-            if (value != null && match == null && value != NONE) unparsed(line.plain)
-            pet = match?.let {
-                val (level, name) = it.destructured
-                // The name's span carries the rarity, so the last span with text is the one to read.
-                Pet(name, level.toLong(), Role.rarity(line.spans.lastOrNull { span -> span.text.isNotBlank() }?.color) ?: Role.COMMON)
-            }
+            pet = value?.let { Pet.of(line, it) }
+            if (value != null && pet == null && value != NONE) unparsed(line.plain)
             block = build()
         }
         on<PetNear> { event, _ ->
-            val name = PET_LINE.matchEntire(event.name.plain.trim())?.groupValues?.get(2) ?: return@on
+            val name = Pet.nameOf(event.name.plain) ?: return@on
             heads[name] = event.head
             block = build()
         }
@@ -214,13 +207,5 @@ class EquipmentDisplay(
 
         const val PREFIX = "Pet:"
         const val NONE = "None"
-        const val PETS = "Pets"
-
-        /** The line under the active pet in the Pets menu, which no other pet has. */
-        const val ACTIVE = "Click to deactivate!"
-
-        /** The line over the held item's name in a pet's lore. Icons follow it. */
-        const val HELD = "Held Item"
-        val PET_LINE = Regex("""\[Lvl (\d+)] (.+)""")
     }
 }
