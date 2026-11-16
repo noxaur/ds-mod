@@ -11,6 +11,7 @@ import io.github.noxaur.dsmod.core.input.Where
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.ui.Icon
+import io.github.noxaur.dsmod.edge.ui.EditorScreen
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitButton
 import io.github.noxaur.dsmod.edge.ui.KitCheckbox
@@ -36,7 +37,6 @@ private const val DETAIL_WIDTH = 232
 private const val SPLIT = 7
 private const val WIDTH = LIST_WIDTH + SPLIT + DETAIL_WIDTH
 private const val LABEL_WIDTH = 48
-private const val LABEL_HEIGHT = 8
 private const val LINE = 10
 private const val READOUT_LINES = 2
 private const val ROW = 22
@@ -65,8 +65,8 @@ private val AREAS: List<Area?> = listOf(null) + (Area.entries - Area.ANYWHERE)
  * rows: the wheel, the scrollbar's thumb, Page Up and Page Down, and Home and End. The line under the details
  * says what stops the pick, or what the last action did, and is empty when all is well. Closing saves.
  */
-class CommandBindsScreen(private val settings: DsModConfig.General, private val parent: Screen?, private val onSave: () -> Unit) :
-    Screen(text { body(TITLE) }.toComponent()) {
+class CommandBindsScreen(private val settings: DsModConfig.General, parent: Screen?, onSave: () -> Unit) :
+    EditorScreen(TITLE, parent, onSave) {
     /** The bind or the group picked on the left, by its place in the binds or its name. */
     private var picked: Any? = null
     private var first = 0
@@ -184,7 +184,7 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
         val controlX = detailX + LABEL_WIDTH
         val controlWidth = DETAIL_WIDTH - LABEL_WIDTH
         fun label(text: String, y: Int) {
-            labels += Triple(text, detailX, y + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
+            labels += Triple(text, detailX, y + (Kit.BUTTON_HEIGHT - Kit.LABEL_HEIGHT) / 2)
         }
 
         var y = contentY
@@ -240,7 +240,7 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
     /** The picked group: its name, which General keeps, and Delete. */
     private fun groupDetails(group: String, labels: MutableList<Triple<String, Int, Int>>, bottom: Int) {
         val controlX = detailX + LABEL_WIDTH
-        labels += Triple("Group", detailX, contentY + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
+        labels += Triple("Group", detailX, contentY + (Kit.BUTTON_HEIGHT - Kit.LABEL_HEIGHT) / 2)
         groupField = addRenderableWidget(KitTextField(controlX, contentY, DETAIL_WIDTH - LABEL_WIDTH, "Group Name", groupName(group), BindShare.GROUP_LENGTH, ::rename))
             .also { it.setEditable(group.isNotEmpty()) }
         readoutY = contentY + FIELD_STEP + Kit.GAP
@@ -744,13 +744,9 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
         if (keys != null) refresh()
     }
 
-    override fun onClose() = minecraft.gui.setScreen(parent)
-
-    override fun removed() = onSave()
-
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         Kit.panel(graphics, panelX, panelY, WIDTH + Kit.INSET * 2, panelHeight)
-        Kit.label(graphics, TITLE, left, top + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
+        Kit.label(graphics, TITLE, left, top + (Kit.BUTTON_HEIGHT - Kit.LABEL_HEIGHT) / 2)
         // The list sits in a sunk container, as the game's own lists do, with the scrollbar inside its edge.
         Kit.well(graphics, left, contentY, LIST_WIDTH, containerHeight)
         val clashing = live.filter { CommandBinds.clashes(it, live).isNotEmpty() }
@@ -772,7 +768,7 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
                     Kit.icon(graphics, arrow, rowsX + ARROW_X + (5 - arrow.width) / 2, y + (ROW - arrow.height) / 2, Role.MUTED.argb())
                     val count = settings.binds.count { it.group == entry.group || entry.group.isEmpty() && it.group !in groups }.toString()
                     val name = fit(groupName(entry.group), room - font.width(count) - Kit.GAP)
-                    val textY = y + (ROW - LABEL_HEIGHT) / 2
+                    val textY = y + (ROW - Kit.LABEL_HEIGHT) / 2
                     graphics.text(font, text { if (off) muted(name) else body(name) }.toComponent(), textX, textY, -1, true)
                     graphics.text(font, text { muted(count) }.toComponent(), rowsX + rowWidth - 3 - font.width(count), textY, -1, true)
                 }
@@ -806,7 +802,7 @@ class CommandBindsScreen(private val settings: DsModConfig.General, private val 
                     }
                     graphics.text(font, line.toComponent(), textX, y + 12, -1, true)
                 }
-                is Entry.Empty -> graphics.text(font, text { muted(fit("Drag binds here", room)) }.toComponent(), textX, y + (ROW - LABEL_HEIGHT) / 2, -1, true)
+                is Entry.Empty -> graphics.text(font, text { muted(fit("Drag binds here", room)) }.toComponent(), textX, y + (ROW - Kit.LABEL_HEIGHT) / 2, -1, true)
             }
         }
         val dragging = dragged != null

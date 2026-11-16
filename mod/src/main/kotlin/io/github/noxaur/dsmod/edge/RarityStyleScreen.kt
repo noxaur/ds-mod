@@ -9,6 +9,7 @@ import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.container.step
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.edge.ui.EditorScreen
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitButton
 import io.github.noxaur.dsmod.edge.ui.KitCheckbox
@@ -20,7 +21,6 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 
 private const val TITLE = "Rarity Style"
-private const val LABEL_HEIGHT = 8
 private const val ROW_LABEL_GAP = 2
 private const val MATCH = "Match Inventory"
 private const val HOTBAR_HALF = 91
@@ -38,9 +38,9 @@ private const val ENTITY_OFFSET = 0.0625f
  */
 class RarityStyleScreen(
     private val settings: DsModConfig.Inventory,
-    private val parent: Screen?,
-    private val onSave: () -> Unit,
-) : Screen(text { body(TITLE) }.toComponent()) {
+    parent: Screen?,
+    onSave: () -> Unit,
+) : EditorScreen(TITLE, parent, onSave) {
     private class Label(val text: String, val x: Int, val y: Int)
     private class Panel(val x: Int, val y: Int, val width: Int, val height: Int) {
         fun overlaps(other: Panel) = x < other.x + other.width && other.x < x + width && y < other.y + other.height && other.y < y + height
@@ -70,7 +70,7 @@ class RarityStyleScreen(
             Kit.CHECKBOX_SIZE + Kit.GAP + font.width(MATCH),
         )
         val panelWidth = content + Kit.INSET * 2
-        val styleHeight = (LABEL_HEIGHT + ROW_LABEL_GAP + Kit.BUTTON_HEIGHT + Kit.GAP) * 3 + Kit.CHECKBOX_SIZE
+        val styleHeight = (Kit.LABEL_HEIGHT + ROW_LABEL_GAP + Kit.BUTTON_HEIGHT + Kit.GAP) * 3 + Kit.CHECKBOX_SIZE
         val headHeight = Kit.INSET + Kit.BUTTON_HEIGHT + Kit.GAP
 
         leftPos = (width - Kit.INVENTORY_WIDTH) / 2
@@ -80,7 +80,7 @@ class RarityStyleScreen(
         val inventory = Panel(leftPos - Kit.GAP - panelWidth, topPos, panelWidth, headHeight + styleHeight + Kit.GAP + Kit.CHECKBOX_SIZE + Kit.INSET)
         panels += inventory
         val ix = inventory.x + Kit.INSET
-        labels += Label("Inventory", ix, inventory.y + Kit.INSET + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
+        labels += Label("Inventory", ix, inventory.y + Kit.INSET + (Kit.BUTTON_HEIGHT - Kit.LABEL_HEIGHT) / 2)
         addRenderableWidget(KitButton(inventory.x + inventory.width - Kit.INSET - doneWidth, inventory.y + Kit.INSET, "Done", ::onClose, doneWidth))
         // Editing the inventory makes the player's own style the one shown, starting from the preset they had.
         var y = styleControls(ix, inventory.y + headHeight, settings::containerStyle) {
@@ -90,7 +90,7 @@ class RarityStyleScreen(
         addRenderableWidget(KitCheckbox(ix, y + Kit.GAP, "Mark Common", settings.markCommon) { settings.markCommon = it })
 
         // The hotbar's panel, right of the hotbar, or left of it, or above it on the right where neither side has room.
-        val hotbarHeight = Kit.INSET * 2 + LABEL_HEIGHT + (Kit.GAP + Kit.CHECKBOX_SIZE) * 2 + if (settings.hotbarMatches) 0 else Kit.GAP + styleHeight
+        val hotbarHeight = Kit.INSET * 2 + Kit.LABEL_HEIGHT + (Kit.GAP + Kit.CHECKBOX_SIZE) * 2 + if (settings.hotbarMatches) 0 else Kit.GAP + styleHeight
         val right = width / 2 + HOTBAR_HALF + Kit.GAP
         val left = width / 2 - HOTBAR_HALF - Kit.GAP - panelWidth
         val hotbar = when {
@@ -101,7 +101,7 @@ class RarityStyleScreen(
         panels += hotbar
         val hx = hotbar.x + Kit.INSET
         labels += Label("Hotbar", hx, hotbar.y + Kit.INSET)
-        y = hotbar.y + Kit.INSET + LABEL_HEIGHT + Kit.GAP
+        y = hotbar.y + Kit.INSET + Kit.LABEL_HEIGHT + Kit.GAP
         addRenderableWidget(KitCheckbox(hx, y, "Show Marks", settings.hotbarMarks) { settings.hotbarMarks = it })
         y += Kit.CHECKBOX_SIZE + Kit.GAP
         addRenderableWidget(
@@ -119,7 +119,7 @@ class RarityStyleScreen(
         // The preview, right of the inventory, where it has room.
         val previewSize = Kit.SLOT_SIZE * PREVIEW_SCALE
         val previewWidth = Kit.INSET * 2 + previewSize * PREVIEW_SLOTS + Kit.GAP * (PREVIEW_SLOTS - 1)
-        val previewHeight = Kit.INSET * 2 + LABEL_HEIGHT + Kit.GAP + previewSize + if (settings.rarityMarks) 0 else Kit.GAP + LABEL_HEIGHT
+        val previewHeight = Kit.INSET * 2 + Kit.LABEL_HEIGHT + Kit.GAP + previewSize + if (settings.rarityMarks) 0 else Kit.GAP + Kit.LABEL_HEIGHT
         preview = Panel(leftPos + Kit.INVENTORY_WIDTH + Kit.GAP, topPos, previewWidth, previewHeight)
             .takeIf { it.x + it.width <= width - Kit.GAP && !it.overlaps(hotbar) }
             ?.also {
@@ -139,7 +139,7 @@ class RarityStyleScreen(
         var y = top
         fun row(name: String, valueOf: (SlotStyle) -> String, onStep: (Int) -> Unit) {
             labels += Label(name, x, y)
-            y += LABEL_HEIGHT + ROW_LABEL_GAP
+            y += Kit.LABEL_HEIGHT + ROW_LABEL_GAP
             val stepper = addRenderableWidget(KitStepper(x, y, name, valueWidth, onStep))
             refreshers += { stepper.value = valueOf(get()) }
             y += Kit.BUTTON_HEIGHT + Kit.GAP
@@ -161,10 +161,6 @@ class RarityStyleScreen(
             .sortedByDescending { it.rarity.ordinal }.distinctBy { it.rarity }.take(PREVIEW_SLOTS)
         return own + STAND_INS.filter { stand -> own.none { it.rarity == stand.rarity } }.take(PREVIEW_SLOTS - own.size)
     }
-
-    override fun onClose() = minecraft.gui.setScreen(parent)
-
-    override fun removed() = onSave()
 
     // The hotbar under this screen is what the player is editing, so nothing dims or blurs it.
     override fun extractBackground(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) = Unit
@@ -200,7 +196,7 @@ class RarityStyleScreen(
     private fun previewSlots(graphics: GuiGraphicsExtractor, panel: Panel) {
         val atlas = SlotArts.atlas(settings, Surface.CONTAINER)
         val gem = settings.containerStyle().gem
-        val top = panel.y + Kit.INSET + LABEL_HEIGHT + Kit.GAP
+        val top = panel.y + Kit.INSET + Kit.LABEL_HEIGHT + Kit.GAP
         samples.forEachIndexed { i, sample ->
             val pose = graphics.pose()
             pose.pushMatrix()

@@ -8,6 +8,7 @@ import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.edge.ui.Icon
+import io.github.noxaur.dsmod.edge.ui.EditorScreen
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitButton
 import io.github.noxaur.dsmod.edge.ui.KitTextField
@@ -23,7 +24,6 @@ private const val TITLE = "Menu Tabs"
 private const val MENU_WIDTH = 176
 private const val MENU_HEIGHT = 166
 private const val FORM_WIDTH = 160
-private const val LABEL_HEIGHT = 8
 private const val DRAG_START = 3
 private const val COMMAND_LENGTH = 256
 
@@ -33,8 +33,8 @@ private const val COMMAND_LENGTH = 256
  * Click an empty place to add a tab there. The form on the right changes the tab last clicked, and with no field
  * focused the arrow keys move that tab and Delete removes it. Closing saves through [onSave] and goes back to [parent].
  */
-class TabEditorScreen(private val settings: DsModConfig.BetterUi, private val parent: Screen?, private val onSave: () -> Unit) :
-    Screen(text { body(TITLE) }.toComponent()) {
+class TabEditorScreen(private val settings: DsModConfig.BetterUi, parent: Screen?, onSave: () -> Unit) :
+    EditorScreen(TITLE, parent, onSave) {
     private var menuX = 0
     private var menuY = 0
     private var formX = 0
@@ -75,18 +75,18 @@ class TabEditorScreen(private val settings: DsModConfig.BetterUi, private val pa
         menuX = (width - total) / 2
         menuY = (height - MENU_HEIGHT) / 2
         formX = menuX + MENU_WIDTH + Kit.GAP * 4
-        val rowHeight = LABEL_HEIGHT + 2 + Kit.BUTTON_HEIGHT + Kit.GAP
-        formHeight = Kit.INSET * 2 + Kit.BUTTON_HEIGHT + Kit.GAP + rowHeight * 3 + (Kit.BUTTON_HEIGHT + Kit.GAP) * 2 + LABEL_HEIGHT
+        val rowHeight = Kit.LABEL_HEIGHT + 2 + Kit.BUTTON_HEIGHT + Kit.GAP
+        formHeight = Kit.INSET * 2 + Kit.BUTTON_HEIGHT + Kit.GAP + rowHeight * 3 + (Kit.BUTTON_HEIGHT + Kit.GAP) * 2 + Kit.LABEL_HEIGHT
         formY = (height - formHeight) / 2
         val left = formX + Kit.INSET
         var y = formY + Kit.INSET
         val doneWidth = font.width("Done") + 16
         addRenderableWidget(KitButton(left + fieldWidth - doneWidth, y, "Done", ::onClose, doneWidth))
-        y += Kit.BUTTON_HEIGHT + Kit.GAP + LABEL_HEIGHT + 2
-        labels[0] = y - LABEL_HEIGHT - 2
+        y += Kit.BUTTON_HEIGHT + Kit.GAP + Kit.LABEL_HEIGHT + 2
+        labels[0] = y - Kit.LABEL_HEIGHT - 2
         command = addRenderableWidget(KitTextField(left, y, fieldWidth, "Command", "", COMMAND_LENGTH) { typed -> change { it.copy(command = TabLayout.command(typed)) } }.hint("warp end"))
         y += rowHeight
-        labels[1] = y - LABEL_HEIGHT - 2
+        labels[1] = y - Kit.LABEL_HEIGHT - 2
         item = addRenderableWidget(KitTextField(left, y, fieldWidth, "Item", "", COMMAND_LENGTH) { typed ->
             val id = TabLayout.itemId(typed)
             val known = Identifier.tryParse(id)?.let(BuiltInRegistries.ITEM::containsKey) == true
@@ -94,7 +94,7 @@ class TabEditorScreen(private val settings: DsModConfig.BetterUi, private val pa
             if (known) change { it.copy(item = id) }
         }.hint("chest"))
         y += rowHeight
-        labels[2] = y - LABEL_HEIGHT - 2
+        labels[2] = y - Kit.LABEL_HEIGHT - 2
         name = addRenderableWidget(KitTextField(left, y, fieldWidth, "Name", "", COMMAND_LENGTH) { typed -> change { it.copy(tooltip = typed.trim()) } }.hint("Shown when you point at it"))
         y += rowHeight
         val half = (fieldWidth - Kit.GAP) / 2
@@ -109,10 +109,6 @@ class TabEditorScreen(private val settings: DsModConfig.BetterUi, private val pa
         readoutY = y + Kit.BUTTON_HEIGHT + Kit.GAP
         select(selected.coerceAtMost(tabs.size - 1))
     }
-
-    override fun onClose() = minecraft.gui.setScreen(parent)
-
-    override fun removed() = onSave()
 
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         this.mouseX = mouseX.toDouble()
@@ -147,7 +143,7 @@ class TabEditorScreen(private val settings: DsModConfig.BetterUi, private val pa
 
         Kit.panel(graphics, formX, formY, FORM_WIDTH, formHeight)
         val left = formX + Kit.INSET
-        Kit.label(graphics, TITLE, left, formY + Kit.INSET + (Kit.BUTTON_HEIGHT - LABEL_HEIGHT) / 2)
+        Kit.label(graphics, TITLE, left, formY + Kit.INSET + (Kit.BUTTON_HEIGHT - Kit.LABEL_HEIGHT) / 2)
         for ((i, pair) in listOf(command to "Command", item to "Item", name to "Name").withIndex()) {
             Kit.label(graphics, pair.second, left, labels[i], if (pair.first.active) Kit.Ink.NORMAL else Kit.Ink.OFF)
         }
