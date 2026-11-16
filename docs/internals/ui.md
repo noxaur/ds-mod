@@ -4,7 +4,7 @@ How the mod draws what features hand it. How to pick a surface and build on it i
 
 ## A feature states a role, the text layer owns the color
 
-Minecraft mods usually write color codes inline, and their colors drift from feature to feature. In ds-mod a feature says what a piece of text means, such as body, value or muted, and `core.text` maps that role to a color. The palette then lives in one file, and `text-by-role` in `Rules.kt` fails the build on a color code or a raw color anywhere else in the release code.
+Minecraft mods usually write color codes inline, and their colors drift from feature to feature. In ds-mod a feature says what a piece of text means, such as body, value or muted, and `core.text` maps that role to a color. The palette then lives in one file, and `TextLayerTest` fails the build on a color code or a color call anywhere else in the release code. It reads the compiled classes, because a regex over lines misses a call split across them.
 
 Text the server sent is a separate type, `ServerText`, which carries whatever color the server chose. A feature reads one and builds the other, so the server's colors cannot leak into what the mod shows.
 
@@ -14,7 +14,7 @@ Each surface (chat, HUD, alerts, container slots, world marks) has one object in
 
 ## Chrome is drawn in code, from a theme
 
-Panels, buttons, slots and bars are a few filled rectangles each, drawn by `Kit` in the colors of a `Theme`. Minecraft's own screens stretch nine-slice textures instead, and ds-mod does not: a second look would need a second set of textures drawn by hand, and a new shape would need an image editor. In code a theme is one list of colors and a shape is a function, and `draw-with-kit` in `Rules.kt` keeps every other file from drawing its own. Only the icons are textures, white so that one sprite takes any color.
+Panels, buttons, slots and bars are a few filled rectangles each, drawn by `Kit` in the colors of a `Theme`. Minecraft's own screens stretch nine-slice textures instead, and ds-mod does not: a second look would need a second set of textures drawn by hand, and a new shape would need an image editor. In code a theme is one list of colors and a shape is a function, and `KitTest` keeps every other file from drawing its own, by reading the compiled classes. Only the icons are textures, white so that one sprite takes any color.
 
 The one exception is the Hotbar look of a HUD block, which cuts its slots from the game's own hotbar sprite. The point of it is to match the player's hotbar, and only the sprite follows their resource pack.
 
