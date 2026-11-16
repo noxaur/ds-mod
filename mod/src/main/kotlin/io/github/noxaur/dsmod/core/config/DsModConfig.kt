@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.camera.ThirdPerson
 import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
+import io.github.noxaur.dsmod.core.feature.general.DamageShown
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLook
 import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
@@ -120,6 +121,18 @@ class DsModConfig {
 
         @JvmField
         var explosionParticleHider = false
+
+        @JvmField
+        var damageNumbers = false
+
+        @JvmField
+        var damageShown = DamageShown.ALL
+
+        @JvmField
+        var damageShort = true
+
+        @JvmField
+        var damageDecimals = 1f
 
         @JvmField
         var animations = true

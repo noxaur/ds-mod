@@ -8,6 +8,7 @@ import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.EntityDied
+import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.Hit
@@ -134,6 +135,7 @@ class FeatureReplayTest {
         is ActionBar -> "(action bar) ${event.text.plain}"
         is EntityDied -> "(died) ${event.name.plain}"
         is PetNear -> "(pet near) ${event.name.plain}"
+        is FloatingText -> "(floating) ${event.text.plain.replace("\n", " / ")}"
         is Hit -> "(you hit) ${event.entity}"
         is SlotChanged -> "(slot ${event.slot}) " + (event.item?.let { "${it.count} x ${name(it)}" } ?: "emptied")
     }
@@ -196,7 +198,8 @@ class FeatureReplayTest {
                     }
                     play(game, events, posted = { time, event, kept ->
                         appendLine("+%6.1fs > %s".format(Locale.ROOT, (time - start) / 1000.0, describe(event, infoRows)))
-                        if (!kept) appendLine("             (hidden from chat)")
+                        if (!kept) appendLine(if (event is FloatingText) "             (hidden)" else "             (hidden from chat)")
+                        game.replaced?.let { appendLine("             (shown as) ${it.plain}") }
                         for (message in game.messages) {
                             when (message) {
                                 is Notice -> appendLine("             (chat) ${message.feature} | ${message.detail.plain}")
@@ -243,6 +246,7 @@ class FeatureReplayTest {
                     play(game, outside, posted = { time, event, kept ->
                         val where = "outside ${feature.area}, replaying $fixture, after $event at $time"
                         assertTrue(kept, "${feature.id} hid a line $where")
+                        assertEquals(null, game.replaced, "${feature.id} replaced a text $where")
                         assertEquals(emptyList(), game.messages, "${feature.id} spoke $where")
                     }, ticked = {
                         val where = "outside ${feature.area}, replaying $fixture"

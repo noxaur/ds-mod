@@ -30,7 +30,7 @@ A surface is a place the mod can put information. Choose it by how long the info
 
 Each surface has one shared layer: a plain model in `core` and one object in `edge` that draws it. The layers keep what they are given and redraw it themselves, so they are called when something changes, never every frame.
 
-A feature lives in `core` and cannot call a layer. It returns its HUD block from `hud(now)` and its slot marks from `slots(now)`, and says something once with `notice(detail)` or `alert(title, detail)`. `Readouts` hands all of it to the layers. A handler keeps a server line out of chat with `hide()`. A surface with no layer yet, such as tooltips, gets one in `edge`, a route through `Feature`, `Game` and `Readouts`, and its part of the transcript in `FeatureReplayTest`, built by the first feature that needs it.
+A feature lives in `core` and cannot call a layer. It returns its HUD block from `hud(now)` and its slot marks from `slots(now)`, and says something once with `notice(detail)` or `alert(title, detail)`. `Readouts` hands all of it to the layers. A handler keeps a server line out of chat with `hide()`, and hides a `FloatingText` the same way or shows another in its place with `replace(text { server(..) })`. A surface with no layer yet, such as tooltips, gets one in `edge`, a route through `Feature`, `Game` and `Readouts`, and its part of the transcript in `FeatureReplayTest`, built by the first feature that needs it.
 
 | Surface | Model in `core` | Hand it to |
 | --- | --- | --- |
@@ -39,6 +39,7 @@ A feature lives in `core` and cannot call a layer. It returns its HUD block from
 | Alert | `text { }` | `Alerts.title`, `Alerts.actionBar`, `Alerts.sound` |
 | Container overlay | `SlotMark` | `Slots.mark`, `Slots.clear` |
 | World | `Waypoint`, `BlockBox`, `Path`, `Ring` | `World.show`, `World.hide` |
+| The server's floating text | A `FloatingText` handler's `hide()` or `replace(..)` | `FloatingTexts`, through `FloatingTextMixin` |
 | Own screen | `Theme` | The kit in `edge/ui` |
 
 A type in `surfaces.md` that no layer draws yet is added to that surface's layer, with its case in `SurfacesTest`. Tooltips and edits to the server's HUD have no layer yet, so the first feature there builds it the same way.

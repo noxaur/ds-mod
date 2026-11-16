@@ -15,6 +15,7 @@ import io.github.noxaur.dsmod.core.feature.general.ActivePet
 import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
+import io.github.noxaur.dsmod.core.feature.general.DamageNumbers
 import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
 import io.github.noxaur.dsmod.core.feature.general.EtherwarpOutline
 import io.github.noxaur.dsmod.core.feature.general.ExplosionParticleHider
@@ -58,6 +59,7 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     Animations(config.general::animations),
     Camera(config.general::camera),
     CommandBinds(config.general::commandBinds),
+    DamageNumbers(config.general::damageNumbers, config.general::damageShown, config.general::damageShort, config.general::damageDecimals),
     EquipmentDisplay(
         config.general::equipmentDisplay,
         config.general::equipmentLayout,
