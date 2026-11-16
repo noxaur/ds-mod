@@ -1,0 +1,100 @@
+package io.github.noxaur.dsmod.gametest
+
+import io.github.noxaur.dsmod.core.hud.HudDock
+import io.github.noxaur.dsmod.core.hud.HudScale
+import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.Hud
+import io.github.noxaur.dsmod.edge.HudEditorScreen
+import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
+import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import org.lwjgl.glfw.GLFW
+import kotlin.math.abs
+
+private const val ID = "equipment-display"
+
+/**
+ * A block docked beside the hotbar, Equipment Display's, drags out of its dock at the size it had there and its
+ * Placement turns Free. Dropped near either dock spot it docks there again. Escape puts it back in its dock, the wheel
+ * resizes it out of the dock, and a right press undocks it into the stack. The HUD editor docks it the same way.
+ * Read the screenshots for the block lifted out of its dock and back in it.
+ */
+class HudDockTest : FabricClientGameTest {
+    override fun runTest(context: ClientGameTestContext) {
+        val general = DsModClient.settings.general
+        context.worldBuilder().create().use { world ->
+            world.server.runCommand("item replace entity @a armor.chest with minecraft:iron_chestplate")
+            world.server.runCommand("item replace entity @a armor.feet with minecraft:iron_boots")
+            DsModClient.settings.hud.positions.remove(ID)
+            general.equipmentPlacement = HudDock.LEFT_OF_HOTBAR
+            try {
+                context.waitFor { Hud.find(ID)?.dock == HudDock.LEFT_OF_HOTBAR }
+                val chat = InChat(context)
+                chat.open()
+                val docked = chat.block(ID)
+                val spot = { dock: HudDock -> context.computeOnClient<Pair<Float, Float>, Nothing> { client -> Hud.dockSpot(ID, dock, HudScale.snap(1f, client.window.guiScale))!!.let { it.x to it.y } } }
+
+                // Out of the dock, at the size it had there.
+                chat.drag(ID, docked.x, docked.y - 60) { context.takeScreenshot("hud-dock-lifted") }
+                val lifted = chat.block(ID)
+                check(general.equipmentPlacement == HudDock.FREE) { "The drag left the placement at ${general.equipmentPlacement}" }
+                check(lifted.dock == HudDock.FREE && abs(lifted.y - (docked.y - 60)) < 0.6) { "The block is at ${lifted.x}, ${lifted.y}, ${lifted.dock}" }
+                check(abs(lifted.width * lifted.scale - docked.width * docked.scale) < 0.01f) { "The block changed size leaving the dock: ${lifted.scale} from ${docked.scale}" }
+
+                // Dropped a few pixels off the right dock spot, it docks there.
+                val right = spot(HudDock.RIGHT_OF_HOTBAR)
+                chat.drag(ID, right.first + 4, right.second - 3)
+                check(general.equipmentPlacement == HudDock.RIGHT_OF_HOTBAR) { "Dropped by the right spot, the placement is ${general.equipmentPlacement}" }
+                chat.block(ID).let { check(it.x == right.first && it.y == right.second) { "The docked block is at ${it.x}, ${it.y}, not $right" } }
+                context.takeScreenshot("hud-dock-right")
+
+                // Escape during a drag out of the dock puts it back in the dock.
+                chat.drag(ID, right.first - 80, right.second - 80) { context.input.pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitTick() }
+                check(general.equipmentPlacement == HudDock.RIGHT_OF_HOTBAR) { "Escape left the placement at ${general.equipmentPlacement}" }
+
+                // Under a HUD scale of 3 the dock draws below the smallest size, so a notch down leaves it docked as it was.
+                val hudScale = DsModClient.settings.hud.scale
+                DsModClient.settings.hud.scale = 3f
+                try {
+                    context.waitTick()
+                    val big = chat.block(ID)
+                    chat.move(big.x + 5.0, big.y + 5.0)
+                    context.input.scroll(-1.0)
+                    context.waitTick()
+                    val after = chat.block(ID)
+                    check(general.equipmentPlacement == HudDock.RIGHT_OF_HOTBAR && after.scale == big.scale) { "A notch down at HUD scale 3 left ${general.equipmentPlacement} at ${after.scale}, from ${big.scale}" }
+                } finally {
+                    DsModClient.settings.hud.scale = hudScale
+                }
+                context.waitTick()
+
+                // The wheel resizes it out of the dock, where it can take another size.
+                val before = chat.block(ID)
+                chat.move(before.x + 5.0, before.y + 5.0)
+                context.input.scroll(1.0)
+                context.waitTick()
+                check(general.equipmentPlacement == HudDock.FREE && chat.block(ID).scale > before.scale) { "The wheel left the block ${general.equipmentPlacement} at ${chat.block(ID).scale}" }
+
+                // A right press undocks it into the stack.
+                general.equipmentPlacement = HudDock.LEFT_OF_HOTBAR
+                context.waitFor { Hud.find(ID)?.dock == HudDock.LEFT_OF_HOTBAR }
+                val again = chat.block(ID)
+                chat.move(again.x + 5.0, again.y + 5.0)
+                context.input.pressMouse(1)
+                context.waitTick()
+                check(general.equipmentPlacement == HudDock.FREE && ID !in DsModClient.settings.hud.positions) { "The right press left ${general.equipmentPlacement}" }
+                context.setScreen { null }
+
+                // The editor docks it the same way: dropped by the left spot.
+                context.runOnClient<Nothing> { DsModClient.openHudEditor() }
+                context.waitForScreen(HudEditorScreen::class.java)
+                val left = spot(HudDock.LEFT_OF_HOTBAR)
+                chat.drag(ID, left.first - 3, left.second + 2)
+                check(general.equipmentPlacement == HudDock.LEFT_OF_HOTBAR) { "The editor left the placement at ${general.equipmentPlacement}" }
+                context.setScreen { null }
+            } finally {
+                general.equipmentPlacement = HudDock.FREE
+                DsModClient.settings.hud.positions.remove(ID)
+            }
+        }
+    }
+}

@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.hud.BarRow
 import io.github.noxaur.dsmod.core.hud.HudBlock
+import io.github.noxaur.dsmod.core.hud.HudBox
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.HudLook
@@ -49,7 +50,7 @@ private const val DOCK_GAP = 7
 object Hud {
     /** A line of text, with a bar under it when [bar] is set, or a row of item icons when [stacks] is. [y] is from the block's top. */
     private class Row(val text: Component, val bar: BarRow?, val barColor: Int, val stacks: List<ItemStack?>?, val y: Int)
-    private class Block(val header: Component?, val rows: List<Row>, val look: HudLook, val width: Int, val height: Int, val placeable: Boolean)
+    private class Block(val header: Component?, val rows: List<Row>, val look: HudLook, val width: Int, val height: Int, val placeable: Boolean, val order: Int)
 
     /** An item icon as it sits on the screen, in GUI pixels. */
     private class Cell(val x: Float, val y: Float, val size: Float, val stack: ItemStack)
@@ -69,10 +70,14 @@ object Hud {
 
     /**
      * A block as it sits on the screen. [x] and [y], in GUI pixels, are where its plate's corner would be if it
-     * stood alone, and [width] and [height] are that plate's size in HUD pixels, before [scale].
+     * stood alone, and [width] and [height] are that plate's size in HUD pixels, before [scale]. [dock] is where it
+     * sits beside the hotbar, or [HudDock.FREE].
      */
-    class Placed(val id: String, val x: Float, val y: Float, val width: Int, val height: Int, val scale: Float) {
+    class Placed(val id: String, val x: Float, val y: Float, val width: Int, val height: Int, val scale: Float, val dock: HudDock) {
         fun contains(px: Double, py: Double) = px >= x && px < x + width * scale && py >= y && py < y + height * scale
+
+        /** Its box as drawn, at its scale. */
+        fun box() = HudBox(id, x, y, width * scale, height * scale)
     }
 
     private val groups = LinkedHashMap<String, Group>()
@@ -87,9 +92,10 @@ object Hud {
 
     /**
      * Puts [block] in [group], replacing what [id] showed before. The group's corner is its plate's corner.
-     * A block that is not [placeable] is one no feature owns, so the HUD editor cannot grab it.
+     * A block that is not [placeable] is one no feature owns, so the HUD editor cannot grab it. A group stacks its
+     * blocks by [order], so a block that leaves the stack and comes back takes its old place in it.
      */
-    fun show(id: String, group: HudGroup, block: HudBlock, placeable: Boolean = true) {
+    fun show(id: String, group: HudGroup, block: HudBlock, placeable: Boolean = true, order: Int = 0) {
         val font = Minecraft.getInstance().font
         val line = font.lineHeight + 1
         val hotbar = block.look == HudLook.HOTBAR
@@ -128,7 +134,14 @@ object Hud {
         groups.values.forEach { if (it.place.id != group.id) it.blocks.remove(id) }
         val target = groups.getOrPut(group.id) { Group(group) }
         target.place = group
-        target.blocks[id] = Block(header, rows, block.look, width, height, placeable && group.dock == HudDock.FREE)
+        // A block that joins, or whose place in the order changed, as when a live block turns into a stand-in, is sorted in.
+        val moved = target.blocks[id]?.order != order
+        target.blocks[id] = Block(header, rows, block.look, width, height, placeable, order)
+        if (moved) {
+            val sorted = target.blocks.entries.sortedBy { it.value.order }
+            target.blocks.clear()
+            for ((key, value) in sorted) target.blocks[key] = value
+        }
         layout()
     }
 
@@ -161,6 +174,15 @@ object Hud {
         return null
     }
 
+    /** The box block [id] would fill docked at [dock] beside the hotbar, drawn at [scale], in GUI pixels. */
+    fun dockSpot(id: String, dock: HudDock, scale: Float): HudBox? {
+        val group = groups.values.firstOrNull { id in it.blocks } ?: return null
+        val block = group.blocks.getValue(id)
+        val plated = group.place.background && block.look == HudLook.PLATE
+        val (x, y) = corner(dock, block.width, block.height, plated, scale)
+        return HudBox(id, x.toFloat(), y.toFloat(), plate(block.width) * scale, plate(block.height) * scale)
+    }
+
     private fun layout() {
         groups.values.removeIf { it.blocks.isEmpty() }
         val all = ArrayList<Placed>()
@@ -174,7 +196,7 @@ object Hud {
             val scale = group.place.scale
             var y = 0
             for ((id, block) in group.blocks) {
-                if (block.placeable) all += Placed(id, group.x.toFloat(), group.y + y * scale, plate(block.width), plate(block.height), scale)
+                if (block.placeable) all += Placed(id, group.x.toFloat(), group.y + y * scale, plate(block.width), plate(block.height), scale, group.place.dock)
                 val across = across(block.look)
                 val down = down(block.look)
                 val pitch = pitch(block.look)
@@ -227,26 +249,31 @@ object Hud {
             group.y = group.place.y
             return
         }
+        val (x, y) = corner(dock, group.width, group.height, group.plates.isNotEmpty(), group.place.scale)
+        group.x = x
+        group.y = y
+    }
+
+    /** The corner of contents [width] by [height] HUD pixels, drawn at [scale], docked at [dock], with a plate when [plated]. */
+    private fun corner(dock: HudDock, width: Int, height: Int, plated: Boolean, scale: Float): Pair<Int, Int> {
         val client = Minecraft.getInstance()
         val middle = client.window.guiScaledWidth / 2
         val offhandLeft = client.options.mainHand().get() == HumanoidArm.RIGHT
         val indicator = client.options.attackIndicator().get() == AttackIndicatorStatus.HOTBAR
         // The box that lines up with the hotbar: the plate, or with none the contents, which start PADDING in.
-        val scale = group.place.scale
-        val plated = group.plates.isNotEmpty()
         val inset = if (plated) 0f else PADDING * scale
-        val width = (if (plated) plate(group.width) else group.width) * scale
-        val height = (if (plated) plate(group.height) else group.height) * scale
-        group.x = if (dock == HudDock.LEFT_OF_HOTBAR) {
+        val drawnWidth = (if (plated) plate(width) else width) * scale
+        val drawnHeight = (if (plated) plate(height) else height) * scale
+        var x = if (dock == HudDock.LEFT_OF_HOTBAR) {
             val beside = if (offhandLeft) OFFHAND else if (indicator) INDICATOR_LEFT else 0
-            (middle - HOTBAR_HALF - beside - DOCK_GAP - width - inset).toInt()
+            (middle - HOTBAR_HALF - beside - DOCK_GAP - drawnWidth - inset).toInt()
         } else {
             val beside = if (!offhandLeft) OFFHAND else if (indicator) INDICATOR_RIGHT else 0
             (middle + HOTBAR_HALF + beside + DOCK_GAP - inset).toInt()
         }
         // On a narrow screen there may be no room beside the hotbar, and a block cut off by the edge reads worse than one over the offhand slot.
-        group.x = group.x.coerceIn(-inset.toInt(), (client.window.guiScaledWidth - width - inset).toInt().coerceAtLeast(0))
-        group.y = (client.window.guiScaledHeight - height - inset).toInt()
+        x = x.coerceIn(-inset.toInt(), (client.window.guiScaledWidth - drawnWidth - inset).toInt().coerceAtLeast(0))
+        return x to (client.window.guiScaledHeight - drawnHeight - inset).toInt()
     }
 
     /** How far into a row of [look] its first item sits, across and down, and how far apart its items are. */

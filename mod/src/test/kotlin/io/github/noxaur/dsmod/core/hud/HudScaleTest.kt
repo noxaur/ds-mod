@@ -34,4 +34,11 @@ class HudScaleTest {
         // At GUI scale 1 a scale of 0.5 already draws one pixel, so a smaller step leaves it alone.
         assertEquals(0.5f, HudScale.step(0.5f, -1, 1f, 1, 0.5f, 3f))
     }
+
+    @Test
+    fun `a scale past a bound never steps the wrong way`() {
+        // A docked block under a HUD scale of 3 has its own scale at 1/3, below the 0.5 floor: a step down leaves it.
+        assertEquals(1f / 3, HudScale.step(1f / 3, -1, 3f, 2, 0.5f, 4f))
+        assertEquals(0.5f, HudScale.step(1f / 3, 1, 3f, 2, 0.5f, 4f))
+    }
 }

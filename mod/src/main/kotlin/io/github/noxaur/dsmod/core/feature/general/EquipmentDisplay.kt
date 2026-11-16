@@ -81,7 +81,7 @@ class EquipmentDisplay(
     private val petLook: KMutableProperty0<PetLook>,
     private val petPosition: KMutableProperty0<PetPosition>,
     private val look: KMutableProperty0<EquipmentLook>,
-    private val placement: KMutableProperty0<HudDock>,
+    override val placement: KMutableProperty0<HudDock>,
 ) : Feature("equipment-display", toggle, Area.ANYWHERE) {
     private class Pet(val name: String, val level: Long, val rarity: Role)
 

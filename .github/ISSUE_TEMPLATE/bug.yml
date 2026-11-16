@@ -1,0 +1,20 @@
+name: Bug report
+description: Something in ds-mod doesn't work
+labels: [bug]
+body:
+  - type: textarea
+    attributes:
+      label: What you did
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What happened instead
+      description: Add a screenshot, a video or the log if you have one.
+    validations:
+      required: true
