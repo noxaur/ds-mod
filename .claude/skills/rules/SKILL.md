@@ -36,7 +36,7 @@ All of them run in `mise run check`, except the game tests and the CI rules.
 | The mod's code is not copied with a value or two changed | `ClonesTest` in `mod/…/rules/` finds a repeated block and a near-identical line |
 | Release code cannot use debug tools | The `main` and `debug` source sets |
 | Raw captures stay out of git | They are written to `mod/run/`, which is git-ignored |
-| A fixture holds no player name from a capture on this machine, and an alias wherever a player's name stands | `FixtureLeakTest` |
+| A fixture holds no player name from a capture on this machine, and an alias wherever a player's name stands | `FixtureLeakTest`, and `cutFixture` refuses such a fixture while the captures are still there |
 | Every feature shows what its transcript says | `FeatureReplayTest` replays each feature's fixtures |
 | A feature that reads nothing from the server has a game test | `FeatureReplayTest` |
 | Every feature class is listed in `features()` | `FeaturesListedTest` reads the compiled classes |
