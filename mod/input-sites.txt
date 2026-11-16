@@ -41,10 +41,9 @@ gate edge.ChatDrags f6bd1b276e60  DragInChat
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
     can refuse the player's input through ScreenMouseEvents.allowMouseScroll
     approved by github.com/noxaur 2026-11-16T08:42:00Z
-gate edge.CommandKeys 6beafabd10f8  CommandBinds
+gate edge.CommandKeys 24edfabcaa05  CommandBinds
     sends through ClientPacketListener.sendChat
     sends through ClientPacketListener.sendCommand
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate edge.CopyChats 19952a107159  CopyChat
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick

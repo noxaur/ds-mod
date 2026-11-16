@@ -29,7 +29,9 @@ object CommandKeys {
         this.settings = settings
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             matcher.forget { Keys.held(client, it) }
-            if (on) matcher.idle(System.currentTimeMillis(), settings.sequenceGap.toLong(), live(), DsModClient.game::isIn)?.let(::send)
+            // Off, or a place that does not cover where the sequence was typed, is no place: idle drops it.
+            val here = if (on) where(client) else null
+            matcher.idle(System.currentTimeMillis(), settings.sequenceGap.toLong(), live(), here, DsModClient.game::isIn)?.let(::send)
         }
     }
 

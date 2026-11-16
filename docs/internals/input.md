@@ -20,7 +20,7 @@ The item is moved as the hand's pose is pushed, before any branch of the rendere
 
 ## A command bind sees every key, and fires only in the world or a menu
 
-A bind of keys held together needs every press and release, wherever they happen, or a Shift held before a menu opened would be missed. So `KeyInputMixin` and `MouseInputMixin` hand each one to `CommandKeys` before the game acts, and `BindMatcher` in `core` holds the keys that are down. Whether a press may fire is a separate question, asked at the press: in the world, or in a container menu with no text field focused, and never with F3 held. `KeyMapping.click` would not do, because the game calls it only with no screen open.
+A bind of keys held together needs every press and release, wherever they happen, or a Shift held before a menu opened would be missed. So `KeyInputMixin` and `MouseInputMixin` hand each one to `CommandKeys` before the game acts, and `BindMatcher` in `core` holds the keys that are down. Whether a press may fire is a separate question, asked at the press and again on the tick that would finish a sequence still waiting out its gap: in the world, or in a container menu with no text field focused, and never with F3 held. A waiting sequence is dropped when Command Binds is off or that place no longer covers where the keys were typed, because the gap would otherwise send from the last press after the player had left it. `KeyMapping.click` would not do, because the game calls it only with no screen open.
 
 GLFW repeats a held key as its own action, and a repeat is not a press. A release can go unseen, as when the window loses focus, so each tick forgets keys that are no longer down.
 

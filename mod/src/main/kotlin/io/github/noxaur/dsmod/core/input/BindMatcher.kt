@@ -50,8 +50,16 @@ class BindMatcher {
         held.retainAll(down)
     }
 
-    /** Once [gap] has passed since the last press, fires the sequence it ended, if any. */
-    fun idle(now: Long, gap: Long, binds: List<CommandBind>, inArea: (Area) -> Boolean): CommandBind? {
+    /**
+     * Once [gap] has passed since the last press, fires the sequence it ended, if any.
+     * [at] is where the player is on this tick. Chat, a focused field, F3, or Command Binds being off
+     * pass null, and a menu does not cover a sequence typed in the world. Any of those drops it.
+     */
+    fun idle(now: Long, gap: Long, binds: List<CommandBind>, at: Where?, inArea: (Area) -> Boolean): CommandBind? {
+        if (typed.isNotEmpty() && (at == null || !at.covers(typedWhere))) {
+            typed.clear()
+            return null
+        }
         if (typed.isEmpty() || now - typedAt < gap) return null
         return finish(binds.filter { it.enabled && it.inOrder && it.where.covers(typedWhere) && (it.area == null || inArea(it.area)) })
     }
