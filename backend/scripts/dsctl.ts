@@ -22,7 +22,7 @@ const USAGE = `dsctl asks players for captures and reads them back.
       path. A run that cannot be read is named on stderr, and dsctl exits 1 after writing the others.
   dsctl unknowns [--json]    What the mod saw and had no handling for, most seen first.
 
-DSMOD_BACKEND is the backend's address (http://127.0.0.1:8787 by default) and DSMOD_ADMIN_TOKEN its admin token.
+DSMOD_BACKEND is the backend's address (http://127.0.0.1:16385 by default) and DSMOD_ADMIN_TOKEN its admin token.
 Without --json, each line is one item. A failure goes to stderr with exit code 1.`;
 
 /** A capture is a few hundred megabytes at most once unpacked, so a file that unpacks past this is not one. */
@@ -189,7 +189,7 @@ export const dsctl = (args: readonly string[], target: Target) =>
 
 if (import.meta.main) {
   const target = {
-    backend: process.env["DSMOD_BACKEND"] ?? "http://127.0.0.1:8787",
+    backend: process.env["DSMOD_BACKEND"] ?? "http://127.0.0.1:16385",
     token: process.env["DSMOD_ADMIN_TOKEN"] ?? "",
     fetch: globalThis.fetch,
   };
