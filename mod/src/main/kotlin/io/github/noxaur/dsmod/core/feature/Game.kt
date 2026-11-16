@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.game.GameEvent
+import io.github.noxaur.dsmod.core.game.InfoRows
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SidebarState
@@ -73,8 +74,9 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     init {
         features.forEach {
             it.metrics = metrics
-            it.tab = tab
-            it.sidebar = sidebar
+            it.tab = InfoRows(tab::info)
+            it.sidebar = InfoRows(sidebar::info)
+            it.inArea = { it.area.holds(tab, sidebar) }
             it.container = container
             it.messages = messages
             it.gate = active

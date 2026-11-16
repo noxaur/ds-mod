@@ -45,7 +45,7 @@ A type in `surfaces.md` that no layer draws yet is added to that surface's layer
 
 ## Draw chrome with the kit
 
-Chrome is everything that is not text: panels, buttons, slots, bars, marks. It is pixel art drawn in code by `Kit` in `edge/ui`, in the colors of the player's `Theme`. The `draw-with-kit` rule fails the build on a shape drawn anywhere else.
+Chrome is everything that is not text: panels, buttons, slots, bars, marks. It is pixel art drawn in code by `Kit` in `edge/ui`, in the colors of the player's `Theme`. `KitTest` fails the build on a shape drawn anywhere else.
 
 - **Grid:** one kit pixel is one GUI pixel, so chrome grows with Minecraft's GUI scale as vanilla's does. Every size and position is a whole number. The HUD alone has its own scale, which the player sets and `Readouts` snaps to whole screen pixels, so a 1px edge stays one pixel wide.
 - **Frame:** a 1px outline with its four corner pixels left out, and inside it a 1px bevel, light on the top and left and shade on the bottom and right. That is a raised thing: a panel, a button, a tab, a scrollbar thumb. A sunk thing swaps the two edges and has no outline: a slot, a well, a bar's track, a checkbox.
@@ -73,7 +73,7 @@ A kind that `controls.md` lacks gets its section there once the survey is done. 
 
 ## Color by role
 
-Text is built with `text { }` from `core.text`, where each piece states what it means and the role owns the color. The `text-by-role` rule fails the build on a raw color or a `§` code.
+Text is built with `text { }` from `core.text`, where each piece states what it means and the role owns the color. `TextLayerTest` and the `text-by-role` rule fail the build on a raw color or a `§` code.
 
 | Role | Use it for |
 | --- | --- |

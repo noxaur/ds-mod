@@ -5,8 +5,7 @@ import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Metrics
-import io.github.noxaur.dsmod.core.game.SidebarState
-import io.github.noxaur.dsmod.core.game.TabState
+import io.github.noxaur.dsmod.core.game.InfoRows
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudBuilder
 import io.github.noxaur.dsmod.core.hud.HudDock
@@ -43,14 +42,15 @@ abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boo
 
     internal val handlers = HashMap<Class<out GameEvent>, (GameEvent, Long) -> Unit>()
     internal lateinit var metrics: Metrics
-    internal lateinit var tab: TabState
-    internal lateinit var sidebar: SidebarState
+    internal lateinit var tab: InfoRows
+    internal lateinit var sidebar: InfoRows
+    internal lateinit var inArea: () -> Boolean
     internal lateinit var container: ContainerState
     internal lateinit var messages: MutableList<Message>
     internal var hides = false
 
     /** Whether the player is in [area], for a tab-list or sidebar handler that follows them arriving and leaving. */
-    protected val here: Boolean get() = area.holds(tab, sidebar)
+    protected val here: Boolean get() = inArea()
 
     /** What this feature keeps between sessions, or null when it keeps nothing. The edge loads and writes it. */
     var state: Saved<*>? = null
@@ -118,8 +118,16 @@ abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boo
     val hasHud = javaClass.getMethod("hud", Long::class.javaPrimitiveType).declaringClass != Feature::class.java
 
     /** A HUD block headed by [title], or with no header when [headed] is false, for rows that speak for themselves. */
-    protected fun block(headed: Boolean = true, look: HudLook = HudLook.PLATE, dock: HudDock = HudDock.FREE, rows: HudBuilder.() -> Unit) =
-        HudBlock(if (headed) header else text {}, HudBuilder().apply(rows).rows, look, dock)
+    protected fun block(
+        headed: Boolean = true,
+        look: HudLook = HudLook.PLATE,
+        dock: HudDock = HudDock.FREE,
+        overMenus: Boolean = true,
+        columns: Boolean = false,
+        opacity: Float = 1f,
+        pops: Boolean = false,
+        rows: HudBuilder.() -> Unit,
+    ) = HudBlock(if (headed) header else text {}, HudBuilder().apply(rows).rows, look, dock, overMenus, columns, opacity, pops)
 
     /**
      * The marks on the open container, by slot index, or none. Called when [hud] is, so return the same

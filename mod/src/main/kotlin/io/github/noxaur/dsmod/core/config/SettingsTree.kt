@@ -196,6 +196,8 @@ object SettingsTree {
                     }
                     action(Opens.HUD_EDITOR, "Move HUD", "Move your HUD over the game, with the world behind it.", button = "Move", id = "moveHud")
                     switch(hud::dragInChat, "Drag In Chat", "Drag HUD blocks with chat open, and scroll over one to resize it.")
+                    keys(hud::editKey, "HUD Editor Key", "Pick a key that opens the HUD editor, or none.", id = "hudEditKey")
+                    switch(hud::hideInF3, "Hide In F3", "Hide ds-mod's HUD while the F3 debug screen is open.")
                 }
                 group("Equipment Display", switch = toggle(g::equipmentDisplay, "Equipment Display", "Show your armor and pet on the HUD.")) {
                     order(g::equipmentPieces, "Pieces", "Pick the pieces to show, and drag them into order.")
@@ -208,6 +210,12 @@ object SettingsTree {
                 group("Inventory Preview", switch = toggle(g::inventoryPreview, "Inventory Preview", "Show a grid of the items in your inventory on the HUD.")) {
                     order(g::inventoryRows, "Rows", "Pick the rows to show, and drag them into order.")
                     choice(g::inventoryLook, "Look", "Show the items on the plate, on nothing, or as your inventory.")
+                    choice(g::inventoryLayout, "Layout", "Lay each row out across, as in the inventory, or down.")
+                    choice(g::inventoryPlacement, "Placement", "Keep the grid where you put it, or beside your hotbar.")
+                    number(g::inventoryOpacity, "Opacity", "Set how solid the Inventory look's panel is.", 0f..100f, step = 5f, unit = "%")
+                    keys(g::inventoryKey, "Key", "Pick a key that shows or hides the grid, or none to always show it.")
+                    choice(g::inventoryKeyMode, "Key Mode", "Pick Hold to show the grid while the key is down, or Toggle.")
+                    switch(g::inventoryPickup, "Pickup Animation", "Bob an item in the grid as it lands, as the hotbar does.")
                 }
             }
             section("Chat", Role.WARNING) {

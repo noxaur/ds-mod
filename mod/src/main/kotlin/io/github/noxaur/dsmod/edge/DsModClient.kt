@@ -102,6 +102,7 @@ object DsModClient : ClientModInitializer {
      */
     fun pressed(key: InputConstants.Key) {
         if (Keys.matches(key, settings.general.settingsKey)) Minecraft.getInstance().schedule { openSettings() }
+        if (Keys.matches(key, settings.hud.editKey)) Minecraft.getInstance().schedule { openHudEditor() }
     }
 
     /** Each of the mod's own screens goes back to the screen it was opened over, so a button in the settings returns there. */
@@ -192,6 +193,7 @@ object DsModClient : ClientModInitializer {
             Packets.tick(it)
             game.tick(System.currentTimeMillis())
             readouts.push()
+            InventoryKey.tick(it)
             Contribute.tick(game, settings.contribute.reportGameData, System.currentTimeMillis())
             if (++ticks % FLUSH_TICKS == 0) {
                 saved.flush()

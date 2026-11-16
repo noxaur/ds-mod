@@ -44,6 +44,14 @@ export class Store extends Context.Service<
   }
 >()("dsmod/contrib/Store") {}
 
+/** Whether a new sighting may still be kept, given how many rows there are. */
+export const roomForUnknown = (rows: number, maxRows: number): boolean => rows < maxRows;
+
+const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+
+/** The order `submissions` promises, so a run's letter never moves: by time, and by id when the time is the same. */
+const oldestFirst = (a: SubmissionRow, b: SubmissionRow) => compare(a.createdAt, b.createdAt) || compare(a.id, b.id);
+
 /** A store that forgets everything when the process ends, for the tests. */
 export const memoryStore = (): Store["Service"] => {
   const requests: RecordingRequest[] = [];
@@ -61,7 +69,7 @@ export const memoryStore = (): Store["Service"] => {
     });
   return {
     insertRequest: (request) => Effect.sync(() => void requests.push(request)),
-    requests: Effect.sync(() => [...requests]),
+    requests: Effect.sync(() => requests.toSorted((a, b) => compare(a.createdAt, b.createdAt))),
     request: (id) => Effect.sync(() => requests.find((request) => request.id === id) ?? null),
     fill: (id) => setStatus(id, "filled", "open"),
     close: (id) => setStatus(id, "closed"),
@@ -83,8 +91,9 @@ export const memoryStore = (): Store["Service"] => {
         captures.set(row.id, capture);
         return true;
       }),
-    submissions: Effect.sync(() => [...submissions]),
-    submissionsOf: (requestId) => Effect.sync(() => submissions.filter((row) => row.requestId === requestId)),
+    submissions: Effect.sync(() => submissions.toSorted(oldestFirst)),
+    submissionsOf: (requestId) =>
+      Effect.sync(() => submissions.filter((row) => row.requestId === requestId).toSorted(oldestFirst)),
     capture: (id) => Effect.sync(() => captures.get(id) ?? null),
     countUnknown: (unknown, maxRows) =>
       Effect.sync(() => {
@@ -92,7 +101,7 @@ export const memoryStore = (): Store["Service"] => {
         const known = unknowns.get(key);
         if (known !== undefined) {
           unknowns.set(key, { ...known, count: known.count + 1 });
-        } else if (unknowns.size < maxRows) {
+        } else if (roomForUnknown(unknowns.size, maxRows)) {
           unknowns.set(key, { ...unknown, count: 1 });
         }
       }),

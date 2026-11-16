@@ -11,10 +11,11 @@ import io.github.noxaur.dsmod.edge.ui.KitStepper
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.KeyEvent
+import org.lwjgl.glfw.GLFW
 import net.minecraft.client.input.MouseButtonEvent
 
 private const val TITLE = "HUD Editor"
-private const val HINT = "Drag or nudge with arrows, scroll to resize, right-click to reset."
+private const val HINT = "Drag or nudge with arrows, scroll or +/- to resize, right-click to reset."
 private const val SCALE = "Scale"
 private const val HUD_SCALE = "HUD Scale"
 private const val VALUE_WIDTH = 30
@@ -124,14 +125,21 @@ class HudEditorScreen(
     }
 
     // Escape during a drag puts the block back, and otherwise closes the editor. The arrows nudge the block held, or
-    // else the one picked last, and move between the panel's controls when there is none.
+    // else the one picked last, and + and - resize it, and the arrows move between the panel's controls when there is
+    // none. The chat leaves + and - out, since they type there.
     override fun keyPressed(event: KeyEvent): Boolean {
         if (event.isEscape && mover.cancel()) {
             refresh()
             return true
         }
         val block = (mover.held ?: selected)?.let(Hud::find)
-        if (block != null && mover.nudge(block, event)) {
+        val grow = when (event.key()) {
+            GLFW.GLFW_KEY_EQUAL, GLFW.GLFW_KEY_KP_ADD -> 1.0
+            GLFW.GLFW_KEY_MINUS, GLFW.GLFW_KEY_KP_SUBTRACT -> -1.0
+            else -> 0.0
+        }
+        if (block != null && (grow != 0.0 || mover.nudge(block, event))) {
+            mover.scroll(block, grow)
             refresh()
             return true
         }

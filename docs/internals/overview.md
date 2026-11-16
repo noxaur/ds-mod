@@ -10,7 +10,7 @@ The server does have a public player API with no key. Only the backend calls it,
 
 ## core is pure, edge touches Minecraft
 
-The `edge` package holds the Fabric callbacks and is the only release code that touches Minecraft. The `core` package holds the logic and imports nothing from Minecraft or Fabric. A test of `core` then runs on a plain JVM, with no game to start. `core-is-pure` in [`Rules.kt`](../../mod/src/test/kotlin/io/github/noxaur/dsmod/rules/Rules.kt) keeps the import out.
+The `edge` package holds the Fabric callbacks and is the only release code that touches Minecraft. The `core` package holds the logic and imports nothing from Minecraft or Fabric. A test of `core` then runs on a plain JVM, with no game to start. `PurityTest` in [`rules/`](../../mod/src/test/kotlin/io/github/noxaur/dsmod/rules/PurityTest.kt) reads the compiled classes of `core`, so a fully qualified name in code is caught as an import is.
 
 A feature that only changes how the game draws, such as Fullbright, handles no event, so its code is a mixin in the edge that asks its setting. It still has an empty class in `core`, because the one list of features is what the settings, the docs check and the tests walk. A second list for these would be one more place to forget.
 

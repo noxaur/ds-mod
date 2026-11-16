@@ -188,8 +188,12 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
     /** Whether the player moved [id] out of the stack, to a place or a dock, so a reset would change something. */
     fun isPlaced(id: String) = id in settings.positions || dockOf(id) != HudDock.FREE
 
-    /** The block's own scale, before the HUD's. A docked block's is the one that draws it at the hotbar's size. */
-    fun scale(id: String) = if (dockOf(id) != HudDock.FREE) 1f / settings.scale else settings.positions[id]?.scale ?: 1f
+    /**
+     * The block's own scale, before the HUD's. A docked block's is the one it is drawn at there: the hotbar's size, or
+     * smaller where the room beside the hotbar is narrower, so it leaves the dock and resizes from the size it shows.
+     */
+    fun scale(id: String) =
+        if (dockOf(id) != HudDock.FREE) (Hud.find(id)?.scale ?: 1f) / settings.scale else settings.positions[id]?.scale ?: 1f
 
     fun title(id: String) = feature(id).title
 

@@ -12,7 +12,9 @@ The split keeps the way out open. The API takes its store and its caller as argu
 
 Void provisions a binding only for a file in `routes/` or `src/` that imports it, and `src/` must stay free of Void. So `routes/_store.ts` is the one file that reads and writes the database and the file store, and its `_` keeps it from being a route. Each domain in `src/` keeps its rules behind a `Store` interface and is tested with an in-memory store.
 
-The trap is that `_store.ts` itself runs in no test. A rule that lands there, such as a cap that must be one SQL statement to stay atomic, is checked by nothing, which is why `backend/AGENTS.md` asks to keep it to plain reads and writes.
+The trap was that `_store.ts` ran in no test, so a wrong cap, conflict rule or ordering in its SQL went unseen. `backend/test/contract.ts` is now one suite of what every store must do, and it runs against the memory stores and against `_store.ts`, so the two cannot disagree without a test failing. A rule that two stores both need, such as how many samples an entry may keep, is one function in `src/`, so only what must be atomic stays in SQL.
+
+D1 runs in the tests as Node's built-in SQLite with the real migrations from `db/migrations/`, behind a small stand-in for the D1 binding (`backend/test/cloudflare.ts`), and Void's own `withRuntimeEnv` hands it to `void/db`. We rejected Miniflare and `@cloudflare/vitest-pool-workers`: Void depends on Miniflare only transitively, so using it would add a direct dependency, and a workerd process per run would cost seconds of the 30-second test budget. The stand-in keeps D1's batch (all or none) and its 100-bound-value limit, and it does not model Cloudflare's network or read replicas.
 
 ## A caller is decided in one place
 

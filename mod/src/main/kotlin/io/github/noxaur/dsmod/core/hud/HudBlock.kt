@@ -22,9 +22,21 @@ class HudGroup(
 
 /**
  * One block on the HUD: a header and the rows under it. A block whose header is empty shows only its rows. [look]
- * and [dock] are the player's, for a feature that lets them choose.
+ * and [dock] are the player's, for a feature that lets them choose. A block not [overMenus] hides while a menu is open,
+ * for one that would repeat what the menu shows. With [columns] each row of icons stands as a column, left to right.
+ * [opacity], from 0 to 1, is how solid the Inventory look's panel and slots are. A block that [pops] bobs an icon of
+ * the player's inventory as an item lands in its slot, as the hotbar does.
  */
-data class HudBlock(val header: Text, val rows: List<HudRow>, val look: HudLook = HudLook.PLATE, val dock: HudDock = HudDock.FREE)
+data class HudBlock(
+    val header: Text,
+    val rows: List<HudRow>,
+    val look: HudLook = HudLook.PLATE,
+    val dock: HudDock = HudDock.FREE,
+    val overMenus: Boolean = true,
+    val columns: Boolean = false,
+    val opacity: Float = 1f,
+    val pops: Boolean = false,
+)
 
 /** What a block sits on. */
 enum class HudLook(private val label: String) {
@@ -68,9 +80,11 @@ data class BarRow(override val text: Text, val fraction: Float, val role: Role) 
 
 /**
  * A row of item icons, left to right, with an empty cell for each null. A row [apart] from the one above it leaves the
- * gap the inventory leaves above the hotbar. [text] names them, for the replay's transcript.
+ * gap the inventory leaves above the hotbar. A row that shows the player's own inventory from its [slot] on, numbered as
+ * the inventory menu numbers them, carries what the inventory's slots carry: the marks of Rarity Marks, and on the
+ * hotbar the slot the player holds. [text] names them, for the replay's transcript.
  */
-data class ItemsRow(val items: List<Item?>, val apart: Boolean = false) : HudRow {
+data class ItemsRow(val items: List<Item?>, val apart: Boolean = false, val slot: Int = -1) : HudRow {
     override val text: Text get() = text { muted(items.joinToString(", ") { it?.name?.plain ?: it?.id ?: "-" }) }
 }
 
@@ -90,8 +104,8 @@ class HudBuilder {
         rows += TextRow(text(content))
     }
 
-    fun items(items: List<Item?>, apart: Boolean = false) {
-        rows += ItemsRow(items, apart)
+    fun items(items: List<Item?>, apart: Boolean = false, slot: Int = -1) {
+        rows += ItemsRow(items, apart, slot)
     }
 }
 

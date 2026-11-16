@@ -8,6 +8,7 @@ import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLook
 import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
+import io.github.noxaur.dsmod.core.feature.general.InventoryLayout
 import io.github.noxaur.dsmod.core.feature.general.InventoryLook
 import io.github.noxaur.dsmod.core.feature.general.InventoryRow
 import io.github.noxaur.dsmod.core.feature.general.PetLook
@@ -212,7 +213,25 @@ class DsModConfig {
         var inventoryRows: MutableList<InventoryRow> = mutableListOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM)
 
         @JvmField
-        var inventoryLook = InventoryLook.PLATE
+        var inventoryLook = InventoryLook.INVENTORY
+
+        @JvmField
+        var inventoryPlacement = HudDock.FREE
+
+        @JvmField
+        var inventoryKey = NO_KEY
+
+        @JvmField
+        var inventoryKeyMode = KeyMode.TOGGLE
+
+        @JvmField
+        var inventoryLayout = InventoryLayout.ROWS
+
+        @JvmField
+        var inventoryOpacity = 100f
+
+        @JvmField
+        var inventoryPickup = false
 
         @JvmField
         var etherwarpOutline = true
@@ -287,12 +306,6 @@ class DsModConfig {
         private companion object {
             /** GLFW's code for the left Alt key. */
             const val LEFT_ALT = 342
-
-            /**
-             * No key. DragSim Utils and Odin open on Right Shift, and a player who runs either would open two
-             * screens with one press, so the player picks a key of their own.
-             */
-            const val NO_KEY = -1
 
             /** GLFW's code for F, NotEnoughUpdates' key for a favorite. */
             const val KEY_F = 70
@@ -428,10 +441,16 @@ class DsModConfig {
         var dragInChat = true
 
         @JvmField
+        var editKey = NO_KEY
+
+        @JvmField
         var scale = 1f
 
         @JvmField
         var background = true
+
+        @JvmField
+        var hideInF3 = false
     }
 
     @Serializable
@@ -441,3 +460,9 @@ class DsModConfig {
         var reportGameData = false
     }
 }
+
+/**
+ * No key, which the settings screen shows as None. DragSim Utils and Odin open their settings on Right Shift, and a
+ * player who runs either would open two screens with one press, so the Settings Key leaves the player to pick one.
+ */
+private const val NO_KEY = -1
