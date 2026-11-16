@@ -36,13 +36,12 @@ gate edge.ArmorSwapGuards b388417355d2  ArmorSwapGuard
 gate edge.Chat 7c62093eb80b
     builds text that runs a command when the player clicks it
     approved by github.com/noxaur 2026-11-16T01:17:00Z
-gate edge.ChatDrags 94018c0842b0  ChatHudEditor
+gate edge.ChatDrags ff0895d0a3c1  ChatHudEditor
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseDrag
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
     can refuse the player's input through ScreenMouseEvents.allowMouseScroll
-    approved by github.com/noxaur 2026-11-16T18:38:00Z
 gate edge.CommandKeys a70f3d9a023f  CommandBinds
     sends through ClientPacketListener.sendChat
     sends through ClientPacketListener.sendCommand
@@ -64,7 +63,7 @@ gate edge.Pings 8ceec14ef3b5  PerformanceStats
     builds the packet ServerboundPingRequestPacket
     sends through ClientPacketListener.send
     approved by github.com/noxaur 2026-11-16T19:47:00Z
-gate edge.SlotGuards c1bdd514ed54  SlotLock
+gate edge.SlotGuards 9b2f8476cab4  SlotLock
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick

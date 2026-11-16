@@ -23,7 +23,7 @@ import net.minecraft.network.chat.Component
  */
 object ChatDrags {
     private lateinit var mover: HudMover
-    private lateinit var readouts: Readouts
+    private val readouts get() = DsModClient.readouts
     private lateinit var settings: DsModConfig.Hud
 
     /** Whether a block moved since the chat opened, so closing it saves. */
@@ -34,13 +34,12 @@ object ChatDrags {
     private var tipPlaced = false
     private var tip = emptyList<Component>()
 
-    fun register(readouts: Readouts, settings: DsModConfig.Hud, save: () -> Unit) {
-        this.readouts = readouts
+    fun register(settings: DsModConfig.Hud, save: () -> Unit) {
         this.settings = settings
-        mover = HudMover(readouts)
         // Fabric drops a screen's listeners on every init, so they are added again here.
         ScreenEvents.AFTER_INIT.register { client, screen, _, _ ->
             if (screen !is ChatScreen) return@register
+            mover = HudMover(readouts)
             readouts.placeholders = on(client)
             ScreenEvents.remove(screen).register {
                 mover.release()
