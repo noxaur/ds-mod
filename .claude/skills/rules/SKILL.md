@@ -26,7 +26,7 @@ All of them run in `mise run check`, except the game tests and the CI rules.
 | Rule | Enforced by |
 | --- | --- |
 | `core` names nothing from Minecraft, Fabric, Mojang or `edge`, even by full name | `PurityTest` reads the compiled classes |
-| Each place the release build sends or refuses input for the player is one the user audited | `InputSitesTest` against `mod/input-sites.txt`, which only the user edits |
+| Each place the release build sends or refuses input for the player is approved | `InputSitesTest` against `mod/input-sites.txt`, and the agent asks the user before it keeps a site that sends, refuses or triggers anything new |
 | The release build runs only on dragsim.co, unless the player turns DragSim Only off | `Game` gates every feature in `core`, `SwitchesTest` makes the edge ask `Feature.runs`, and `GameTest`, `DragSimTest` and the game test `OnlyOnDragSimTest` |
 | A feature fires only in the area it names | `Feature` takes an `Area` and `Game` gates on it. `FeatureReplayTest` replays each fixture outside the area |
 | A feature reads no area for itself, from the tab list or the sidebar, and sits in its area's folder | `InfoRows` hands a feature no place and refuses an area row, `area-by-declaration` in `mod/…/Rules.kt` for a place named in a feature, and `RulesTest` |

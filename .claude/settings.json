@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "deny": [
-      "Edit(**/input-sites.txt)",
-      "Write(**/input-sites.txt)",
-      "Bash(*input-sites.txt*)"
-    ]
-  }
-}

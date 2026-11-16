@@ -266,6 +266,9 @@ tasks.test {
     // RulesTest reads the sources, so a source change must rerun it.
     inputs.dir("src")
     inputs.file("input-sites.txt")
+    // The user's yes to an input site, which InputSitesTest records with their GitHub login.
+    systemProperty("inputSites.approve", providers.gradleProperty("approve").getOrElse(""))
+    systemProperty("inputSites.approvedBy", providers.gradleProperty("approvedBy").getOrElse(""))
     // Print the whole failure, so a broken rule shows its fix in the terminal.
     testLogging {
         events("failed")
