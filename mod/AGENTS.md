@@ -6,7 +6,7 @@ The Fabric mod, written in Kotlin. Read the root `AGENTS.md` first.
 
 The server is someone else's, closed and custom, so everything ds-mod knows about the game arrives in packets. The `edge` package holds the Fabric callbacks and is the only release code that touches Minecraft. It turns what the server sends into a `GameEvent` and posts it to `Game`. The `core` package holds the features and imports nothing from Minecraft or Fabric, so it runs in plain JVM tests.
 
-Settings use MoulConfig, the settings screen SkyHanni uses. A setting is an annotated field in `DsModConfig`, and `/dsmod` opens the screen.
+Settings use MoulConfig. A setting is an annotated field in `DsModConfig`, and `/dsmod` opens the screen.
 
 Load the `ui` skill before you add or change anything the player sees, hears or operates. It is at `mod/.claude/skills/ui/SKILL.md`.
 
@@ -45,7 +45,7 @@ A feature is one class in `core/feature/<area>/`, listed in `Features.kt`, with 
 - Every feature has a fixture, `src/test/resources/features/<id>/<name>.jsonl`, cut from a real capture. `FeatureReplayTest` replays it and writes the transcript `<name>.txt`: each event, whether the feature hid it, what the feature said, and the HUD block and slot marks each time they changed. The run that writes a transcript fails once, so that you read it before you keep it. To accept a changed readout, delete the transcript and run the test again.
 - A feature that only reads events and returns a HUD block or slot marks needs no game test, because the replay covers it and `SurfacesTest` covers the layers. Write a game test when you add to `edge`.
 - Cut a fixture with `./gradlew cutFixture`, never by hand. The window is in seconds from the capture's first line, and `--types system` keeps only the chat lines. Keep the lines your feature must ignore, since they prove it ignores them. Keep the tab list for a feature locked to an area, and the sidebar with `--types ..,sidebar` when the sidebar tells its area, because a fixture without them replays as if the player never left it. It replaces each name `PlayerNames` learns from the capture, each typed chat message and each skin, and `FixtureLeakTest` looks for those names in every fixture, so run the check before you delete the capture. Read the fixture before you keep it, because a name the server writes in a line no rule knows is not redacted, a word a rule takes for a name is, and the test sees neither. `PlayerNames` is the one place that knows where names sit, so teach it there, from a capture that shows the line.
-- DragSim Utils is all rights reserved, and its source is published to be read. Read it to learn what the server sends and how a feature should behave, then write ds-mod's own code and prove it with a capture. Copy no code and no data file from it. When a feature needs a table the game can't show, tell the user.
+- Read another mod's source only to learn what the server sends and how a feature should behave, then write ds-mod's own code and prove it with a capture. Copy no code and no data file from it. When a feature needs a table the game can't show, tell the user.
 
 ## Release and debug
 

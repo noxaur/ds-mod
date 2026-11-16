@@ -9,7 +9,7 @@ import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
 /**
- * A group of binds as text a player can paste to another, as SkyOcean shares its hotkeys: JSON, gzipped and in
+ * A group of binds as text a player can paste to another: JSON, gzipped and in
  * Base64, after a prefix that tells it apart from anything else on the clipboard.
  */
 object BindShare {

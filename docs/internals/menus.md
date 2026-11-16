@@ -38,6 +38,6 @@ The button covers Go Back's slot only while that slot holds filler. The server f
 
 Better UI's switch covers only the controls the mod adds to menus, not how the menus look, because a player who wants the vanilla controls back may still want dark, steady menus.
 
-Menu Tabs are places along a menu's top and bottom edges, as creative tabs and the Skyblocker and SkyOcean tabs players know, so a tab dropped on another trades places with it instead of pushing a row along. The search bar hides the tabs it covers, so a click never lands on a tab under it. While the bar has focus it takes every key, because the menu's own keys would act on a typed letter.
+Menu Tabs are places along a menu's top and bottom edges, as the creative tabs players know are, so a tab dropped on another trades places with it instead of pushing a row along. The search bar hides the tabs it covers, so a click never lands on a tab under it. While the bar has focus it takes every key, because the menu's own keys would act on a typed letter.
 
 The selected tab is the one whose command opened the menu shown now, which `MenuTrail` knows without matching the menu's title. Opening the recipe book moves the inventory and the crafting table sideways without laying the screen out again, so the tabs follow the menu's left edge on every frame instead of keeping where `init` put them.

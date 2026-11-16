@@ -44,7 +44,7 @@ class ProfileViewerTest : FabricClientGameTest {
     }
     private val asked = CopyOnWriteArrayList<String>()
 
-    /** The `item_id` of each stack whose tooltip another mod's hook saw, as DragSim Utils' hooks read it. */
+    /** The `item_id` of each stack whose tooltip another mod's hook saw. */
     private val hooked = CopyOnWriteArrayList<String>()
 
     private val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {

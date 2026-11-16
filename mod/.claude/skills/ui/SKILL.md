@@ -3,7 +3,7 @@ name: ui
 description: Use when adding or changing anything the player sees or hears from ds-mod - chat lines, HUD, alerts, container overlays, tooltips, world rendering, edits to the server's HUD, settings text, the mod's own screens and their controls, and any click, drag or key the player operates.
 ---
 
-ds-mod looks and reads like SkyHanni and SkyOcean, the mods its players already know. Minecraft mods have their own conventions, so follow those two over web or app design habits. Their wording is the model for ours, and SkyOcean's named colors are the model for the text layer.
+ds-mod looks and reads like the Minecraft mods its players already know. Minecraft mods have their own conventions, so follow those over web or app design habits. Their wording is the model for ours, and their named colors are the model for the text layer.
 
 Minecraft looks Swiss and 16-bit: flat color, hard pixel edges, one font, a grid. Draw in that language, with text by role and chrome from the kit. Cards, rounded corners, soft shadows, gradients and slide-in panels belong to apps, and Minecraft's own toast box is one of them, so ds-mod has no toast.
 
@@ -88,7 +88,7 @@ One line has one `value`. A line where everything is highlighted has no highligh
 ## Wording
 
 - **Chat:** one short sentence that says what happened, then what to do, ending in a period. "Sold 1,204 scales."
-- **Notices:** a low-urgency update is a chat line through `Chat.notice`, which SkyOcean uses in place of a toast. "Scale Tracker | Dragon Scale x12".
+- **Notices:** a low-urgency update is a chat line through `Chat.notice`, in place of a toast. "Scale Tracker | Dragon Scale x12".
 - **Errors:** all `bad`, and they name the fix. "Open the storage menu to load your items."
 - **Exclamation marks:** alerts only, so an alert stands out.
 - **Click hints:** "Click to <verb>." in `action`.

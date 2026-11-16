@@ -2,7 +2,7 @@
 
 What a player expects of each kind of control, from the desktop and from the mods they already use. A control ships with every line of its kind that applies. When the kind is not here, survey it first, then add its section in the same change.
 
-Peers to survey: SkyHanni, SkyOcean, Chat Patches, Chatting and Firmament. Their source shows which conventions Minecraft players already know, and a subagent can read it for you.
+Peers to survey: the popular open-source Fabric mods for Minecraft servers, and the chat mods players pair with them. Their source shows which conventions Minecraft players already know, and a subagent can read it for you.
 
 ## List selection
 
@@ -33,8 +33,8 @@ A key that works in the world, such as Free Look's.
 - A key that works on a screen comes from that screen's key and mouse events, as `SlotGuards` takes it. It is left alone while a text field has focus, and it acts on the thing under the mouse.
 - A press and release in one place is the plain action, and a press held to another place joins the two. A line follows the mouse while it is held. Afterwards the join shows only under the mouse, over what it crosses, so it clutters nothing at rest.
 - A key that marks one thing and joins nothing marks each thing the mouse sweeps over while it is held, the way the first one went, as a paint stroke does. Things it cannot mark are passed over, and only the first one says why.
-- A key button on a screen records after a press, or Enter or Space, as SkyOcean's does: each key and each middle or side mouse button adds itself. Keys held together are done once all are let go, and keys in order once Escape is pressed. Escape, a left or right press elsewhere, or focus leaving ends it, and with nothing recorded the keys stay as they were. A cross beside it clears them. It shows `> keys <` while it records, as vanilla's controls do. `KitKeysButton` has all of this.
-- Keys held together are named with ` + `, and keys in order with ` » `, as SkyOcean names them.
+- A key button on a screen records after a press, or Enter or Space: each key and each middle or side mouse button adds itself. Keys held together are done once all are let go, and keys in order once Escape is pressed. Escape, a left or right press elsewhere, or focus leaving ends it, and with nothing recorded the keys stay as they were. A cross beside it clears them. It shows `> keys <` while it records, as vanilla's controls do. `KitKeysButton` has all of this.
+- Keys held together are named with ` + `, and keys in order with ` » `.
 - A key that also does something else is ringed, as vanilla reddens a clash: `bad` when it does another of the mod's actions, `warning` when the game uses it. A line on the screen names the other use.
 - Hold ends at the release, also when a screen has opened since. A new world or the feature's switch ends it too.
 - Releasing puts back what the press changed.
@@ -44,7 +44,7 @@ A key that works in the world, such as Free Look's.
 A star that keeps a thing in a list of favorites, such as a setting in the settings' Favorites.
 
 - A star sits on every thing that can be starred, beside its name, where it covers nothing at any length. A left press stars or unstars it, and the press does nothing else to the thing.
-- A key stars the thing under the mouse, F by default as in NotEnoughUpdates, and the player can bind another key or a mouse button. It is left alone while a text field has focus and with Ctrl or Alt held, and its character never reaches a search.
+- A key stars the thing under the mouse, F by default, and the player can bind another key or a mouse button. It is left alone while a text field has focus and with Ctrl or Alt held, and its character never reaches a search.
 - An unstarred star is faint and lights up under the mouse, and a starred one is in `action`. A tooltip names both ways: "Click or press F to star.".
 - Favorites is the first entry of the list it belongs to, and holds the starred things in the order the full list has them, not the order they were starred. A short line at its top says how to add to it.
 - A search looks through everything, so Favorites hides while it runs and each match shows once.
@@ -61,7 +61,7 @@ A button that steps through a few values, such as where a bind works.
 
 ## Delete
 
-- A delete that cannot be undone asks for a second press on the same button, as SkyOcean's does. The first rings the button in `bad` and the screen's line says what the second will delete. A press anywhere else calls it off.
+- A delete that cannot be undone asks for a second press on the same button. The first rings the button in `bad` and the screen's line says what the second will delete. A press anywhere else calls it off.
 
 ## List of things to edit
 
@@ -106,7 +106,7 @@ A list of things the player made, such as command binds.
 
 ## Turntable
 
-A model the player turns to look at, such as the player in the profile viewer. NEU's and Skyblocker's viewers only follow the mouse, so this is the mod's own; `Turntable` in `core/ui` holds its rules.
+A model the player turns to look at, such as the player in the profile viewer. Other mods' viewers only follow the mouse, so this is the mod's own; `Turntable` in `core/ui` holds its rules.
 
 - It turns slowly on its own, so the viewer sees all of it without a press.
 - A drag turns it: sideways around, and up and down within a limit, so it never turns over. On release it turns on from where it was let go.

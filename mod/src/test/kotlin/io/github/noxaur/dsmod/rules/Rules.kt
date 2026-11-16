@@ -39,8 +39,8 @@ val rules = listOf(
                 """continueDestroyBlock|destroyBlock|useItemOn|useItem|interact|attack|piercingAttack|releaseUsingItem|handleInventoryButtonClick)\(|""" +
                 """KeyMapping\.(click|set)\(|\.setDown\(|\bconnection\??\.send\(""",
         ),
-        fix = "ds-mod shows information and the player makes every move. Only a feature that DragSim Utils has may " +
-            "send for the player. End its line with `rule:no-automation <the feature>`, and ask the user about anything else.",
+        fix = "ds-mod shows information and the player makes every move. A feature may send for the player only when the " +
+            "user agreed to it, so ask them first. With their yes, end its line with `rule:no-automation <the feature>`.",
         example = "client.connection?.sendCommand(\"warp end\")",
     ),
     Rule(

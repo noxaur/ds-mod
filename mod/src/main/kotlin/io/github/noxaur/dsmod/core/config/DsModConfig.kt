@@ -536,12 +536,12 @@ class DsModConfig : Config() {
             const val LEFT_ALT = 342
 
             /**
-             * No key. DragSim Utils and Odin open on Right Shift, and a player who runs either would open two
-             * screens with one press, so the player picks a key of their own.
+             * No key. Other mods open on Right Shift, and a player who runs one would open two screens with one
+             * press, so the player picks a key of their own.
              */
             const val NO_KEY = -1
 
-            /** GLFW's code for F, NotEnoughUpdates' key for a favorite. */
+            /** GLFW's code for F, the key players know for a favorite. */
             const val KEY_F = 70
 
             /** The folds in General that hold Animations' finer settings. */

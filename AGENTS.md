@@ -1,6 +1,6 @@
 # ds-mod
 
-ds-mod is a client-side quality-of-life mod for the Dragon Simulator server (dragsim.co), in the spirit of SkyHanni. This repo holds the mod, a backend it talks to over REST, and a website.
+ds-mod is a client-side quality-of-life mod for the Dragon Simulator server (dragsim.co). This repo holds the mod, a backend it talks to over REST, and a website.
 
 ## What makes ds-mod special
 
@@ -18,7 +18,7 @@ We can't compromise on these.
 - Before adding complexity for a speculative or vanishingly unlikely race or edge case, explain the concrete failure mode, likelihood and complexity cost to the user and get their buy-in.
 - If a short request has two possible meanings, ask one question before you start.
 - Call a bug fixed only when a test, log or capture shows it.
-- Follow the server's rules: no macros, scripts or other automated actions. Auto-clicking is allowed under 10 CPS, and only while the player is actively moving. The server's owner supports DragSim Utils, so a feature that mod has may send or block input for the player, and no other feature may.
+- Follow the server's rules: no macros, scripts or other automated actions. Auto-clicking is allowed under 10 CPS, and only while the player is actively moving. No feature may send or block input for the player unless the user agreed to it, so an agent asks the user who prompted it before it adds one.
 - A rule in prose gets skipped, so turn a repeated mistake into a check. See Rules.
 
 
@@ -63,7 +63,7 @@ Each rule is paired with what enforces it. All of them run in `mise run check`, 
 | Rule | Enforced by |
 | --- | --- |
 | `core` imports nothing from Minecraft, Fabric or `edge` | `core-is-pure` in `mod/…/Rules.kt` |
-| The release build sends for the player only in a feature DragSim Utils has | `no-automation` in `mod/…/Rules.kt` |
+| The release build sends for the player only in a feature the user agreed to | `no-automation` in `mod/…/Rules.kt` |
 | The release build runs only on dragsim.co, unless the player turns DragSim Only off | `Game` gates every feature, `GameTest`, `DragSimTest` and the game test `OnlyOnDragSimTest` |
 | A feature fires only in the area it names | `Feature` takes an `Area` and `Game` gates on it. `FeatureReplayTest` replays each fixture outside the area |
 | A feature reads no area for itself, from the tab list or the sidebar, and sits in its area's folder | `area-by-declaration` in `mod/…/Rules.kt`, and `RulesTest` |

@@ -173,7 +173,7 @@ object DsModClient : ClientModInitializer {
             Contribute.quit()
             saved.close()
         }
-        // `/dsm` is the short name, as `/sh` is SkyHanni's. `/du` is DragSim Utils', and a player may run both mods.
+        // `/dsm` is the short name. `/du` belongs to another mod, and a player may run both.
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
             for (name in listOf("dsmod", "dsm")) dispatcher.register(
                 ClientCommands.literal(name)
