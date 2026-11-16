@@ -165,7 +165,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         hidden.value = Hidden(hidden.value.told + feature.id)
         val (section, switch) = SettingsTree.home(feature.toggle)
         if (!switch.default) return
-        messages += Notice(feature.title, text { body("Hid a message from the server. Turn off "); value(switch.name); body(" under "); value(section.name); body(" in /dsmod to see them.") })
+        messages += Notice(feature.title, text { body("Hid a message from the server. Turn off "); value(switch.name); body(" under ${section.name} in /dsmod to see them.") })
     }
 
     fun tick(time: Long) {
