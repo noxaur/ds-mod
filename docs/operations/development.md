@@ -9,7 +9,7 @@ mise trust
 mise install
 ```
 
-This gives you the pinned JDK, Node and pnpm. Gradle comes from `mod/gradlew`, which fetches the rest.
+This gives the pinned JDK, Node and pnpm. Gradle comes from `mod/gradlew`, which fetches the rest.
 
 ## Run each part
 
@@ -32,56 +32,7 @@ In T3 Code, `t3.json` has an action for each command.
 - `dsmod-<version>.jar` is the release jar that players install.
 - `dsmod-<version>-debug.jar` is the release jar plus the developer tools, such as `/dscapture` and `/dskit`.
 
-## Record a capture
-
-With the debug build, type `/dscapture` in game to start a capture, and type it again to save it. The file lands in `dsmod/captures/` in the game folder, which is `mod/run/` for `runClient`. `mod/run/` is ignored by git.
-
-The live server has real players on it, so the user does all the playing there.
-
-### Record from a brief
-
-A brief tells the user what to play, in order, and names the window, so that the user can tell one agent's client from another's. Write it as JSON outside the worktree:
-
-```json
-{
-  "name": "Golem tiers",
-  "steps": [
-    { "do": "Warp to the End" },
-    { "do": "Stand still next to the Protector until it spawns", "note": "Do not hit it.", "seconds": 90 },
-    { "do": "Kill it" }
-  ]
-}
-```
-
-`note` is shown under the step while it is the current one. A step with `seconds` counts down and moves on by itself, and any other step waits for the user. A key the brief does not know fails the launch.
-
-Once the user has agreed, start the client with the absolute path of the brief:
-
-```sh
-cd mod && ./gradlew runClient -Pbrief=/tmp/golem-tiers.json
-```
-
-The window's title starts with the brief's name, and the steps sit in the top right corner of the screen. The user presses the key the HUD names to start, which starts the capture, and again after each step. A brief launched this way has no time limit, and its capture stays in the game folder. It is `]` on a US layout, and Next Recording Step in the game's controls. After the last step the capture is saved and the HUD names its file, so the user closes the game and the command returns. The capture is the newest file in `mod/run/dsmod/captures/`, and a `step` line marks where each step began. To abandon a run, the user types `/dsmod cancel`, which deletes the capture the brief started.
-
-### Ask players for a capture
-
-When the user's account cannot reach what a brief needs, publish the brief and players who can reach it record it from the mod's Contribute button. One player's run proves little, so a request collects runs from several players.
-
-`dsctl` is how an agent does it. Locally its admin token is `ADMIN_TOKEN` in `backend/.env`, which git ignores, and `dsctl` reads it from `DSMOD_ADMIN_TOKEN`. For the deployed backend, see [Deployment](deployment.md#secrets).
-
-```sh
-cd backend
-export DSMOD_ADMIN_TOKEN=$(sed -n 's/^ADMIN_TOKEN=//p' .env)
-pnpm -s dsctl create /tmp/golem-tiers.json --area "The End" --wanted 3 --timeout 600
-pnpm -s dsctl list
-pnpm -s dsctl pull <request id> ../mod/run/dsmod/captures
-```
-
-`pull` writes one `.jsonl` per run, and `cutFixture` takes them like any capture. `pnpm -s dsctl` with no command lists every command and option.
-
-The mod offers a request in its Contribute screen, and redacts, gzips and uploads the player's run. A run that outlasts the request's `--timeout` is discarded. To try the flow against a local backend, run `pnpm dev` and `dsctl create`, then `runClient`: signing in needs the user's own Minecraft account.
-
-### Change the backend's tables
+## Change the backend's tables
 
 Edit `backend/db/schema.ts`, then in `backend/`:
 
@@ -90,46 +41,25 @@ pnpm exec void db generate
 pnpm exec void db migrate
 ```
 
-Commit the SQL that `generate` writes. When `migrate` says the local database does not match, `pnpm exec void db reset` rebuilds it from the migrations.
+Commit the SQL that `generate` writes. When `migrate` says the local database does not match, `pnpm exec void db reset` rebuilds it from the migrations. A deploy applies the migrations, as [deployment](deployment.md#deploy-the-backend) describes.
 
 ## Add a feature
 
-Follow [mod/AGENTS.md](../../mod/AGENTS.md#features). A feature needs a fixture cut from a capture, so record the capture first. Then cut it, with the window in seconds from the capture's start:
-
-```sh
-cd mod
-./gradlew cutFixture --args="run/dsmod/captures/<capture>.jsonl golem-status live-cycle 140-200 --info Area,Protector"
-```
-
-`--types` picks the events to keep (`system,tablist` by default, and `container` brings its slots), `--info` names the tab list's info rows the feature reads so that only a change to one keeps a tab list, and `--system` keeps only the system lines that match a regex. The command redacts player names, typed chat and skins.
+Follow [mod/AGENTS.md](../../mod/AGENTS.md#features). A feature needs a fixture cut from a capture, so record the capture first, as [captures](captures.md) describes, and cut the fixture from it.
 
 ## Checks
 
-`mise run check` must pass. It runs `check:mod`, `check:backend`, `check:web` and `check:docs`, and you can run each one alone.
+`mise run check` must pass. It runs `check:mod`, `check:backend`, `check:web` and `check:docs`, and each one runs alone too.
 
-When you change `edge` or a screen, also run the game tests that cover it. A run names its tests, and one that names none fails:
+When a change touches `edge` or a screen, also run the game tests that cover it. A run names its tests, and one that names none fails:
 
 ```sh
 cd mod
 ./gradlew runClientGameTest -Pgametests=ChatTest,KitTest
 ```
 
-When you change the build, run `./gradlew runProdClientGameTest -Pgametests=SettingsScreenTest`, which loads the built jars the way a player does. Both run behind the user, taking no keyboard focus and writing the game's sound to `audio.wav` in the run folder instead of the speakers. [Issue 19](https://github.com/noxaur/ds-mod/issues/19) lists the platforms where that is incomplete.
+When a change touches the build, run `./gradlew runProdClientGameTest -Pgametests=SettingsScreenTest`, which loads the built jars the way a player does. Both run behind the user, taking no keyboard focus and writing the game's sound to `audio.wav` in the run folder instead of the speakers. [Issue 19](https://github.com/noxaur/ds-mod/issues/19) lists the platforms where that is incomplete.
 
 One test takes about 30 seconds, most of it booting the game. The whole suite takes minutes, so the beta pipeline runs it, and `-Pgametests=all` runs it here. Each test's time is in the log as `TestClock:`, and a test over 20 seconds fails the run. `PerfTest` writes its table to `build/run/prodClientGameTest/perf.md`.
 
-## CI
-
-`.github/workflows/ci.yml` runs on every pull request and on `main`. It runs each `check:` task in its own job, and a `perf` job that boots the built jars and runs `PerfTest`. That job posts the table as a comment on the pull request, and fails when a row is over its cap in `mod/src/gametest/resources/perf-budgets.json`.
-
-Each job fails when it takes over 3 minutes. A run that had to download its dependencies, after a version bump in `gradle.properties`, `mise.toml` or a lockfile, is let through and says so.
-
-## Beta releases
-
-`.github/workflows/beta.yml` runs every second day at 03:00 UTC. When `main` has a commit since the last release, and CI passed on that commit, it runs the mod's checks and every game test, and then publishes the release jar as the prerelease `v<version>-beta.<run number>`. When anything fails, nothing is published, and the run's summary shows the perf table.
-
-To release a beta now, run it by hand:
-
-```sh
-gh workflow run beta
-```
+To see a screen, write a game test that opens it and calls `takeScreenshot`. The image lands in `mod/build/run/clientGameTest/screenshots/`.
