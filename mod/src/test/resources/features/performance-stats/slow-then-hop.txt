@@ -1,0 +1,79 @@
++   0.0s > (frame rate) 33 fps
+               FPS: 33   Ping: -   TPS: -
++   0.0s > (server time) tick 19
++   0.2s > (ping) 1 ms
+               FPS: 33   Ping: 1 ms   TPS: -
++   1.0s > (frame rate) 99 fps
+               FPS: 99   Ping: 1 ms   TPS: -
++   1.0s > (server time) tick 39
++   1.2s > (ping) 0 ms
+               FPS: 99   Ping: 0 ms   TPS: -
++   2.0s > (frame rate) 120 fps
+               FPS: 120   Ping: 0 ms   TPS: -
++   2.0s > (server time) tick 59
+               FPS: 120   Ping: 0 ms   TPS: 20.0
++   2.3s > (ping) 0 ms
++   3.3s > (ping) 1 ms
++   4.5s > (ping) 1 ms
++   5.5s > (frame rate) 119 fps
+               FPS: 119   Ping: 0 ms   TPS: 7.3
++   5.5s > (the world changed)
++   5.5s > (ping) 6 ms
++   5.5s > (server time) tick 79
++   5.5s > (server time) tick 79
++   7.1s > (ping) 1 ms
+               FPS: 119   Ping: 1 ms   TPS: -
++   8.0s > (frame rate) 19 fps
+               FPS: 19   Ping: 1 ms   TPS: -
++   8.0s > (server time) tick 99
+               FPS: 19   Ping: 1 ms   TPS: 8.0
++   8.1s > (ping) 0 ms
++   9.0s > (frame rate) 117 fps
+               FPS: 117   Ping: 1 ms   TPS: 8.0
++   9.0s > (server time) tick 119
+               FPS: 117   Ping: 1 ms   TPS: 11.5
++   9.1s > (ping) 0 ms
++  10.0s > (frame rate) 120 fps
+               FPS: 120   Ping: 1 ms   TPS: 11.5
++  10.0s > (server time) tick 139
+               FPS: 120   Ping: 1 ms   TPS: 13.4
++  10.1s > (ping) 0 ms
++  11.0s > (frame rate) 119 fps
+               FPS: 119   Ping: 1 ms   TPS: 13.4
++  11.0s > (server time) tick 159
+               FPS: 119   Ping: 1 ms   TPS: 14.6
++  11.2s > (ping) 0 ms
+               FPS: 119   Ping: 0 ms   TPS: 14.6
++  12.0s > (frame rate) 120 fps
+               FPS: 120   Ping: 0 ms   TPS: 14.6
++  12.0s > (server time) tick 179
+               FPS: 120   Ping: 0 ms   TPS: 15.4
++  12.2s > (ping) 1 ms
++  13.0s > (frame rate) 120 fps
++  13.0s > (server time) tick 199
+               FPS: 120   Ping: 0 ms   TPS: 16.0
++  13.2s > (ping) 0 ms
++  14.0s > (frame rate) 117 fps
+               FPS: 117   Ping: 0 ms   TPS: 16.0
++  14.0s > (server time) tick 219
+               FPS: 117   Ping: 0 ms   TPS: 16.5
++  14.2s > (ping) 0 ms
++  15.0s > (frame rate) 120 fps
+               FPS: 120   Ping: 0 ms   TPS: 16.5
++  15.0s > (server time) tick 239
+               FPS: 120   Ping: 0 ms   TPS: 16.9
++  15.3s > (ping) 0 ms
++  16.0s > (frame rate) 120 fps
++  16.0s > (server time) tick 259
+               FPS: 120   Ping: 0 ms   TPS: 17.2
++  16.3s > (ping) 0 ms
++  17.0s > (frame rate) 120 fps
++  17.0s > (server time) tick 279
+               FPS: 120   Ping: 0 ms   TPS: 17.4
++  17.3s > (ping) 0 ms
++  18.0s > (frame rate) 120 fps
++  18.0s > (server time) tick 299
+               FPS: 120   Ping: 0 ms   TPS: 20.0
++  18.3s > (ping) 1 ms
++  19.0s > (frame rate) 120 fps
++  19.0s > (server time) tick 319

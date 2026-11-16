@@ -145,7 +145,9 @@ class PerformanceStats(
         const val PING_WARNING = 150L
         const val PING_BAD = 300L
         const val TPS_WINDOW_MILLIS = 10_000L
-        const val MIN_SPAN_MILLIS = 2_000L
+
+        // Three of the server's once-a-second clocks, two seconds apart give or take the network's jitter.
+        const val MIN_SPAN_MILLIS = 1_500L
 
         // The server sends its clock once a second, so three seconds without it is a server that stopped.
         const val STALL_MILLIS = 3_000L

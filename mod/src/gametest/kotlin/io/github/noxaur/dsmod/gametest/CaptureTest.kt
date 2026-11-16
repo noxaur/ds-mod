@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.core.capture.RawRecord
 import io.github.noxaur.dsmod.core.capture.eventTypes
 import io.github.noxaur.dsmod.debug.DsModDebug
+import io.github.noxaur.dsmod.edge.DsModClient
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -61,6 +62,10 @@ class CaptureTest : FabricClientGameTest {
         "entities" to "\"glowing\":true",
         "entities" to "minecraft:filled_map",
         "map" to "\"colors\"",
+        "time" to "gameTime",
+        // A ping is asked for only while Performance Stats shows it, which the test turns on.
+        "ping" to "millis",
+        "fps" to "\"fps\"",
     )
 
     override fun runTest(context: ClientGameTestContext) {
@@ -78,6 +83,7 @@ class CaptureTest : FabricClientGameTest {
                 "execute at @a run setblock ~3 ~ ~3 minecraft:stone_button[face=floor]",
             ).forEach(world.server::runCommand)
             context.waitTicks(40)
+            context.runOnClient<Nothing> { DsModClient.settings.general.performanceStats = true }
             val file = context.computeOnClient<Path, Nothing> { DsModDebug.toggleCapture(it)!! }
             context.enterTheEnd()
             listOf(
@@ -130,6 +136,7 @@ class CaptureTest : FabricClientGameTest {
             var said: String? = null
             context.runOnClient<Nothing> { client -> DsModDebug.toggleCapture(client) { said = it } }
             context.waitFor { said != null }
+            context.runOnClient<Nothing> { DsModClient.settings.general.performanceStats = false }
             check(said == "Capture saved: $file") { "The capture ended with '$said'" }
 
             val events = file.readLines().map { Json.parseToJsonElement(it).jsonObject }

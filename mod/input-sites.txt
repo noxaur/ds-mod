@@ -13,6 +13,7 @@ call edge.DsModClient.onInitializeClient -> edge.CommandKeys.register
     approved by github.com/noxaur 2026-11-16T01:17:00Z
 call edge.DsModClient.onInitializeClient -> edge.MenuBack.register
     approved by github.com/noxaur 2026-11-16T01:17:00Z
+call edge.DsModClient.onInitializeClient -> edge.Pings.register
 call edge.DsModClient.onInitializeClient -> edge.SlotGuards.register
     approved by github.com/noxaur 2026-11-16T08:42:00Z
 call edge.profile.ProfileScreen.dress -> edge.profile.ProfileModel.<init>
@@ -58,6 +59,9 @@ gate edge.MenuBack ff8ff383383c  BackButtons
     can refuse or change sent chat through ClientSendMessageEvents.COMMAND
     sends through ClientPacketListener.sendCommand
     approved by github.com/noxaur 2026-11-16T08:42:00Z
+gate edge.Pings a31c307f0c00  PerformanceStats
+    builds the packet ServerboundPingRequestPacket
+    sends through ClientPacketListener.send
 gate edge.SlotGuards 8e92c6e06e5f  SlotLock
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
@@ -150,12 +154,13 @@ gate edge.mixin.PerspectiveKeyMixin fef175750217
 gate edge.mixin.RecipeButtonMixin draws
     hooks ImageButton.extractContents
     approved by github.com/noxaur 2026-11-16T01:17:00Z
-gate edge.mixin.ServerPacketsMixin b124a2319630
+gate edge.mixin.ServerPacketsMixin 7b36e8a1121b
     hooks ClientPacketListener.handleBlockUpdate
     hooks ClientPacketListener.handleChunkBlocksUpdate
     hooks ClientPacketListener.handleEntityEvent
+    hooks ClientPacketListener.handlePongResponse
+    hooks ClientPacketListener.handleSetTime
     hooks ClientPacketListener.setActionBarText
-    approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.SlotClickMixin 4a2f8fda01b4
     hooks AbstractContainerScreen.slotClicked
     approved by github.com/noxaur 2026-11-16T01:17:00Z
