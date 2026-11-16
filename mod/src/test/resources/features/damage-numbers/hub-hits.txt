@@ -1,0 +1,64 @@
++   0.0s > (floating) ✧4,876,445✧
+             (shown as) ✧4.9M✧
++   0.0s > (floating) ✧4,876,445✧
+             (shown as) ✧4.9M✧
++   0.0s > (floating) 4,540,375
+             (shown as) 4.5M
++   0.0s > (floating) ✧4,876,445✧
+             (shown as) ✧4.9M✧
++   0.0s > (floating) 98,438
+             (shown as) 98.4k
++   0.0s > (floating) ✧4,876,445✧
+             (shown as) ✧4.9M✧
++   0.0s > (floating) ✧4,876,445✧
+             (shown as) ✧4.9M✧
++   0.3s > (floating) ✧4,876,445✧
+             (shown as) ✧4.9M✧
++   0.3s > (floating) 4,540,375
+             (shown as) 4.5M
++   0.7s > (floating) Mine Merchant
++   0.7s > (floating) Pickaxes & fuel
++   0.7s > (floating) Draconic Altar / Right-click with an item to make a sacrifice
++   0.7s > (floating) Tyzzo
++   0.7s > (floating) Dragon Ritualist
++   0.7s > (floating) End Portal
++   0.7s > (floating) Left-click for the quietest den
++   0.7s > (floating) Right-click to pick one
++   1.0s > (floating) 98,438
+             (shown as) 98.4k
++   1.0s > (floating) 98,438
+             (shown as) 98.4k
++   1.0s > (floating) 98,438
+             (shown as) 98.4k
++   1.3s > (floating) 98,438
+             (shown as) 98.4k
++   1.3s > (floating) 98,438
+             (shown as) 98.4k
++   1.3s > (floating) 98,438
+             (shown as) 98.4k
++   1.7s > (floating) ✧4,876,445✧
+             (shown as) ✧4.9M✧
++   1.7s > (floating) ✧4,876,445✧
+             (shown as) ✧4.9M✧
++   1.7s > (floating) ✧4,876,445✧
+             (shown as) ✧4.9M✧
++   1.7s > (floating) ✧4,876,445✧
+             (shown as) ✧4.9M✧
++   2.0s > (floating) 4,540,375
+             (shown as) 4.5M
++   2.2s > (floating) 4,540,375
+             (shown as) 4.5M
++   2.2s > (floating) 4,540,375
+             (shown as) 4.5M
++   3.0s > (floating) 4,540,375
+             (shown as) 4.5M
++   3.0s > (floating) 4,540,375
+             (shown as) 4.5M
++   3.8s > (floating) Eye Dealer
++   3.8s > (floating) Upgrades Shop
++   4.3s > (floating) ✧19,914✧
+             (shown as) ✧19.9k✧
++   5.0s > (floating) ⏣ Dragon's Den / Step on the pad
++   5.0s > (floating) ⏣ Void Sepulture / Step on the pad
++   5.3s > (floating) 4,540,375
+             (shown as) 4.5M
