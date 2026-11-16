@@ -16,7 +16,7 @@ A feature that only changes how the game draws, such as Fullbright, handles no e
 
 ## The mod runs only on dragsim.co
 
-Every feature reads lines in dragsim.co's own words, so on another server it can only misread one, and a wrong count is saved for good. The gate lives in `Game`, which treats every feature as switched off while it is closed, so a feature can't forget it, and opening it replays the tab list and sidebar the same way switching one feature back on does. Code in the edge has no `Game` between it and Minecraft, so it asks whether the feature `runs`, which is its switch and the gate together. Asking the switch alone ran Copy Chat and `/dsmod pv` on every server, so `SwitchesTest` reads the release classes and fails on any read of a switch outside `core`.
+Every feature reads lines in dragsim.co's own words, so on another server it can only misread one, and a wrong count is saved for good. The gate lives in `Game`, which treats every feature as switched off while it is closed, so a feature can't forget it, and opening it replays the tab list and sidebar the same way switching one feature back on does. Code in the edge has no `Game` between it and Minecraft, so it asks whether the feature `runs`, which is its switch, the gate and its area together. Asking the switch alone ran Copy Chat and `/dsmod pv` on every server, so `SwitchesTest` reads the release classes and fails on any read of a switch outside `core`.
 
 The edge decides once per connection, because Fullbright asks the gate every frame. A player may join by the IP or by a name of their own, so besides the name they typed, the edge compares the machine the connection reached with dragsim.co's addresses. It looks those up at start and again after each join, off the client thread, because a lookup can stall for seconds and the join can't wait for it. A hardcoded IP would stop matching the day the server moves, and nothing would say so. A player who wants the mod elsewhere turns the setting off.
 
@@ -26,11 +26,11 @@ The debug build lifts the gate instead, because `runClient` and the game tests r
 
 `src/main` is the jar players install, and `src/debug` holds the developer tools: `/dscapture`, `/dskit`, `cutFixture`, the window title that names a `-Pbrief` and the title screen's Join DragSim button. `src/main` can't see `src/debug`, so the compiler keeps the tools out of the release jar, which a review could miss. The debug jar holds the release jar inside it, so the release code runs the same in both. The recorder is the exception that ships, for the reason in [captures](captures.md#the-recorder-is-in-the-release-jar-and-runs-only-for-a-contribution).
 
-## The release jar carries its own MoulConfig
+## The release jar carries no library
 
-Settings use MoulConfig, the settings screen SkyHanni uses. MoulConfig ships inside the release jar, relocated under `io.github.noxaur.dsmod.deps`, so ds-mod can't clash with another mod that carries a different MoulConfig. A MoulConfig type in a public signature therefore breaks any code compiled outside the jar, such as the game tests, which is why `DsModClient` exposes `DsModConfig` and not the `ManagedConfig` that holds it.
+The release jar holds only ds-mod's own code. Gson comes with Minecraft and kotlinx.serialization with Fabric Language Kotlin, which every player installs beside it. A library carried inside the jar would have to be relocated under `io.github.noxaur.dsmod.deps`, so ds-mod can't clash with another mod that carries a different version of it, and then none of its types could appear in a public signature, because code compiled outside the jar, such as the game tests, would not link. The settings screen was MoulConfig until [ds-mod's own replaced it](settings.md#the-tree-is-the-only-schema-and-moulconfig-went).
 
-A mod declares one access widener, and the recorder needs one to read private fields. So the jar's file is ours followed by MoulConfig's lines, merged by the build. `runProdClientGameTest` loads the built jars the way a player does, because a packaging mistake such as a missing access widener passes every unit test.
+`runProdClientGameTest` loads the built jars the way a player does, with Mod Menu beside them, because a packaging mistake such as a missing access widener or an entrypoint that does not link passes every unit test.
 
 ## The backend and the website keep each other's boundaries
 

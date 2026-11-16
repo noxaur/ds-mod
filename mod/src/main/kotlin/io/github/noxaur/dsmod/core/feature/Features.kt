@@ -34,7 +34,7 @@ import io.github.noxaur.dsmod.core.feature.loot.LootAlerts
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerBossAlert
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerTracker
 
-/** Every feature the mod has. A feature missing here never runs, and `FeatureReplayTest` replays each one. */
+/** Every feature the mod has. `FeaturesListedTest` fails on a feature missing here, and `FeatureReplayTest` replays each one. */
 fun features(config: DsModConfig): List<Feature> = listOf(
     AbilitySpam(config.chat::abilitySpam),
     CopyChat(config.chat::copyChat),

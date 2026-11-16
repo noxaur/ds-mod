@@ -1,12 +1,12 @@
 package io.github.noxaur.dsmod.edge.ui
 
-import io.github.notenoughupdates.moulconfig.common.MyResourceLocation
-import io.github.notenoughupdates.moulconfig.common.RenderContext
-import io.github.notenoughupdates.moulconfig.common.TextureFilter
 import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.core.ui.Piece
+import io.github.noxaur.dsmod.core.ui.SettingsSearch
 import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.core.ui.TabLayout
+import io.github.noxaur.dsmod.core.ui.TabStrip
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -15,6 +15,7 @@ import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.renderer.texture.DynamicTexture
+import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.util.ARGB
 import kotlin.math.abs
@@ -51,7 +52,33 @@ class Atlas(val id: Identifier, val width: Int, val height: Int)
 object Kit {
     enum class State { IDLE, HOVER, DOWN, OFF }
 
-    enum class Ink { NORMAL, MUTED, OFF }
+    /** Ink by job: a label, a secondary one, a disabled one, and the words a search matched. */
+    enum class Ink { NORMAL, MUTED, OFF, MATCH }
+
+    /**
+     * A label with the stretches a search matched, cut and measured once when the query or the label changes, so a
+     * frame only draws it. [label] draws the matches in [Ink.MATCH] and the rest in the ink it is given.
+     */
+    class Marked(pieces: List<Piece>) {
+        val text = pieces.joinToString("") { it.text }
+        internal val parts = Array(pieces.size) { pieces[it].text }
+        internal val matches = BooleanArray(pieces.size) { pieces[it].match }
+        internal val offsets = IntArray(pieces.size)
+
+        init {
+            var x = 0
+            for (i in parts.indices) {
+                offsets[i] = x
+                x += font.width(parts[i])
+            }
+        }
+
+        companion object {
+            /** [text] marked where it holds one of [words], or null when it holds none, so it draws as a plain label. */
+            fun of(text: String, words: List<String>): Marked? =
+                if (words.isEmpty()) null else SettingsSearch.pieces(text, words).takeIf { p -> p.any { it.match } }?.let(::Marked)
+        }
+    }
 
     const val BUTTON_HEIGHT = 16
     const val SLOT_SIZE = 18
@@ -69,6 +96,22 @@ object Kit {
     const val INSET = 7
     const val INVENTORY_WIDTH = 176
     const val INVENTORY_HEIGHT = 166
+    const val TAB_BAR_HEIGHT = 18
+    const val NEW_TAB_WIDTH = TabStrip.NEW
+    const val SWITCH_WIDTH = 22
+    const val GRIP_WIDTH = 3
+    const val GRIP_HEIGHT = 7
+    const val SWITCH_HEIGHT = 12
+    const val SWATCH_WIDTH = 22
+    const val SWATCH_HEIGHT = 13
+    private const val DROPDOWN_PAD = 4
+    private const val DIM_WASH = 150
+    private const val PAGE_TAB_PAD = 5
+
+    /** A page tab's swatch or icon, and its ×, each in a square this wide, the × mirroring the swatch at the other end. */
+    const val PAGE_TAB_LEAD = 9
+    private const val PAGE_TAB_LEAD_UP = 12
+    private const val PAGE_TAB_TEXT_UP = 11
 
     val theme: Theme get() = DsModClient.settings.hud.theme
     val font: Font get() = Minecraft.getInstance().font
@@ -298,12 +341,178 @@ object Kit {
         return y + 2
     }
 
+    /** A row of browser tabs across the top of a pane: a strip in `side` with a 1px outline along its bottom, which the tabs sit on. */
+    fun tabBar(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int) {
+        val t = theme
+        rect(g, x, y, width, TAB_BAR_HEIGHT - 1, t.side)
+        rect(g, x, y + TAB_BAR_HEIGHT - 1, width, 1, t.outline)
+    }
+
+    /**
+     * A browser tab on a [tabBar] whose bottom line is at [lineY]: 15 tall in `tabOff`, or `hover` under the mouse,
+     * with a muted [label]. The [selected] one is 17 tall in the panel's color and covers the line, so it joins the
+     * pane below, and DOWN is that tab while it is dragged, outlined as hover is. Before the label sits a [swatch]
+     * color, or an [icon], or nothing when both are left out. [close] shows the × in its state, or hides it when null.
+     * The label is cut to [pageTabLabel] beforehand.
+     */
+    fun pageTab(
+        g: GuiGraphicsExtractor, x: Int, lineY: Int, width: Int, state: State, selected: Boolean, label: String,
+        swatch: Int = 0, icon: Icon? = null, close: State? = null,
+    ) {
+        val t = theme
+        val lifted = selected || state == State.DOWN
+        tabFace(g, x, lineY, width, state, lifted)
+        val ink = if (lifted || state == State.HOVER) Ink.NORMAL else Ink.MUTED
+        var textX = x + PAGE_TAB_PAD
+        val leadY = lineY - PAGE_TAB_LEAD_UP
+        if (swatch != 0) {
+            swatch(g, textX, leadY, PAGE_TAB_LEAD, swatch)
+            textX += PAGE_TAB_LEAD + GAP
+        } else if (icon != null) {
+            icon(g, icon, textX + (PAGE_TAB_LEAD - icon.width) / 2, leadY + (PAGE_TAB_LEAD - icon.height) / 2, if (ink == Ink.NORMAL) t.ink else t.inkMuted, t.inkShadow)
+            textX += PAGE_TAB_LEAD + GAP
+        }
+        label(g, label, textX, lineY - PAGE_TAB_TEXT_UP, ink)
+        if (close == null) return
+        val cx = pageTabCloseX(x, width)
+        val cy = pageTabCloseY(lineY)
+        if (close == State.HOVER) {
+            button(g, cx, cy, PAGE_TAB_LEAD, PAGE_TAB_LEAD, State.HOVER, Icon.CROSS)
+        } else {
+            icon(g, Icon.CROSS, cx + (PAGE_TAB_LEAD - Icon.CROSS.width) / 2, cy + (PAGE_TAB_LEAD - Icon.CROSS.height) / 2, t.inkMuted, t.inkShadow)
+        }
+    }
+
+    /** The room a [pageTab] [width] wide leaves its label, with a swatch or icon before it when [lead], and a × after it when [close]. */
+    fun pageTabLabel(width: Int, lead: Boolean, close: Boolean) =
+        width - PAGE_TAB_PAD - (if (lead) PAGE_TAB_LEAD + GAP else 0) - (if (close) GAP + PAGE_TAB_LEAD else 0) - PAGE_TAB_PAD
+
+    /** Where the [PAGE_TAB_LEAD] square × of a [pageTab] at [x], [width] wide, starts: as far in from the right as the swatch is from the left. */
+    fun pageTabCloseX(x: Int, width: Int) = x + width - PAGE_TAB_PAD - PAGE_TAB_LEAD
+
+    fun pageTabCloseY(lineY: Int) = lineY - PAGE_TAB_LEAD_UP
+
+    /** Role text on a [tabBar], on the line its tabs' titles sit on, such as the brand at its end. It has a text shadow in both themes. */
+    fun tag(g: GuiGraphicsExtractor, x: Int, lineY: Int, text: Component) {
+        g.text(font, text, x, lineY - PAGE_TAB_TEXT_UP, -1, true)
+    }
+
+    /** The New Tab button after the tabs of a [tabBar]: a 15 wide tab holding a plus. */
+    fun newTab(g: GuiGraphicsExtractor, x: Int, lineY: Int, state: State) {
+        tabFace(g, x, lineY, NEW_TAB_WIDTH, state, false)
+        label(g, "+", x + (NEW_TAB_WIDTH - font.width("+")) / 2 + 1, lineY - PAGE_TAB_TEXT_UP, if (state == State.HOVER) Ink.NORMAL else Ink.MUTED)
+    }
+
+    private fun tabFace(g: GuiGraphicsExtractor, x: Int, lineY: Int, width: Int, state: State, lifted: Boolean) {
+        val t = theme
+        if (lifted) {
+            val y = lineY - 16
+            val edge = if (state == State.DOWN) t.hoverOutline else t.outline
+            rect(g, x + 1, y, width - 2, 1, edge)
+            rect(g, x, y + 1, 1, 16, edge)
+            rect(g, x + width - 1, y + 1, 1, 16, edge)
+            // Down to the line and over it, so the tab and the pane are one surface.
+            rect(g, x + 1, y + 1, width - 2, 16, t.panel)
+            rect(g, x + 1, y + 1, width - 3, 1, t.panelLight)
+            rect(g, x + 1, y + 1, 1, 15, t.panelLight)
+            rect(g, x + width - 2, y + 2, 1, 14, t.panelShade)
+            return
+        }
+        val y = lineY - 15
+        rect(g, x + 1, y, width - 2, 1, t.outline)
+        rect(g, x, y + 1, 1, 14, t.outline)
+        rect(g, x + width - 1, y + 1, 1, 14, t.outline)
+        rect(g, x + 1, y + 1, width - 2, 14, if (state == State.HOVER) t.hover else t.tabOff)
+        rect(g, x + 1, y + 1, width - 3, 1, t.panelShade)
+        rect(g, x + 1, y + 1, 1, 13, t.panelShade)
+        rect(g, x + width - 2, y + 2, 1, 13, t.wellShade)
+    }
+
     /** A 10x10 well holding the check when [checked]. Hover and focus ring it. */
     fun checkbox(g: GuiGraphicsExtractor, x: Int, y: Int, checked: Boolean, state: State) {
         val t = theme
         well(g, x, y, CHECKBOX_SIZE, CHECKBOX_SIZE)
         if (state == State.HOVER || state == State.DOWN) ring(g, x - 1, y - 1, CHECKBOX_SIZE + 2, CHECKBOX_SIZE + 2, t.hoverOutline)
         if (checked) icon(g, Icon.CHECK, x + 2, y + 2, if (state == State.OFF) t.inkOff else GOOD, state != State.OFF)
+    }
+
+    /**
+     * A switch: a 22x12 sunk track with a raised 10x10 knob, which sits on the right in the good role when [on].
+     * Hover and focus outline the knob. Off, as for a switch the player cannot turn now, its knob is the panel's.
+     */
+    fun switch(g: GuiGraphicsExtractor, x: Int, y: Int, on: Boolean, state: State) {
+        val t = theme
+        val lit = state == State.HOVER || state == State.DOWN
+        if (state == State.OFF) {
+            // The track keeps a trace of the good role, so an on switch that cannot turn still reads as on.
+            if (on) bevel(g, x, y, SWITCH_WIDTH, SWITCH_HEIGHT, mix(t.well, GOOD, 0.15f), mix(t.wellShade, GOOD, 0.08f), mix(t.wellLight, GOOD, 0.2f)) else well(g, x, y, SWITCH_WIDTH, SWITCH_HEIGHT)
+            frame(g, if (on) x + SWITCH_WIDTH - 11 else x + 1, y + 1, 10, 10, t.outline, t.panel, t.panel, t.panel)
+            return
+        }
+        if (on) {
+            bevel(g, x, y, SWITCH_WIDTH, SWITCH_HEIGHT, mix(t.well, GOOD, 0.3f), mix(t.wellShade, GOOD, 0.15f), mix(t.wellLight, GOOD, 0.45f))
+            frame(g, x + SWITCH_WIDTH - 11, y + 1, 10, 10, if (lit) t.hoverOutline else t.outline, GOOD, mix(GOOD, ARGB.white(1f), 0.5f), mix(GOOD, ARGB.black(1f), 0.45f))
+        } else {
+            well(g, x, y, SWITCH_WIDTH, SWITCH_HEIGHT)
+            if (lit) frame(g, x + 1, y + 1, 10, 10, t.hoverOutline, t.hover, t.hoverLight, t.raisedShade) else frame(g, x + 1, y + 1, 10, 10, t.outline, t.raised, t.raisedLight, t.raisedShade)
+        }
+    }
+
+    /** A setting's changed marker: a 3x3 dot in the accent color, ringed under the mouse because a press resets it. */
+    fun marker(g: GuiGraphicsExtractor, x: Int, y: Int, state: State) {
+        val t = theme
+        rect(g, x, y, 3, 3, t.accent)
+        if (state == State.HOVER || state == State.DOWN) ring(g, x - 1, y - 1, 5, 5, t.hoverOutline)
+    }
+
+    /**
+     * A dropdown's raised face: [label] after a [lead] wide preview, if any, and the down arrow at the end, in a square
+     * that mirrors the label's start. It is lit while its menu is open.
+     */
+    fun dropdown(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, label: String, lead: Int = 0, marked: Marked? = null) {
+        val t = theme
+        face(g, x, y, width, height, state)
+        val dy = if (state == State.DOWN) 1 else 0
+        val textX = x + DROPDOWN_PAD + if (lead > 0) lead + GAP - 1 else 0
+        val ink = if (state == State.OFF) Ink.OFF else Ink.NORMAL
+        if (marked != null) label(g, marked, textX, y + (height - 8) / 2 + dy, ink) else label(g, label, textX, y + (height - 8) / 2 + dy, ink)
+        val arrow = Icon.DOWN
+        icon(g, arrow, x + width - DROPDOWN_PAD - arrow.width, y + (height - arrow.height) / 2 + dy, if (state == State.OFF) t.inkOff else t.inkMuted, t.inkShadow)
+    }
+
+    /** The room a [dropdown] [width] wide leaves its label after a [lead] wide preview. */
+    fun dropdownLabel(width: Int, lead: Int = 0) = width - DROPDOWN_PAD * 2 - Icon.DOWN.width - GAP - if (lead > 0) lead + GAP - 1 else 0
+
+    /** How wide a [dropdown] must be to hold a [label] wide label after a [lead] wide preview. */
+    fun dropdownWidth(label: Int, lead: Int = 0) = label + DROPDOWN_PAD * 2 + Icon.DOWN.width + GAP + if (lead > 0) lead + GAP - 1 else 0
+
+    /** A lift of a well under the mouse or the keyboard, behind a row of a settings group. */
+    fun wellRow(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) = rect(g, x, y, width, height, mix(theme.well, BODY, 0.05f))
+
+    /** A wash in the well's color over something dimmed, such as a setting under a switch that is off. It stays editable. */
+    fun dim(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) = rect(g, x, y, width, height, ARGB.color(DIM_WASH, theme.well))
+
+    /** Two columns of four dots on a well, which say the line they start can be dragged. [lit] brightens them under the mouse or the keys. */
+    fun grip(g: GuiGraphicsExtractor, x: Int, y: Int, lit: Boolean) {
+        val color = mix(theme.well, BODY, if (lit) 0.8f else 0.4f)
+        for (row in 0 until 4) for (column in 0 until 2) rect(g, x + column * 2, y + row * 2, 1, 1, color)
+    }
+
+    /** A 1px line down the left of rows that open under another, joining them to it. */
+    fun guide(g: GuiGraphicsExtractor, x: Int, y: Int, height: Int) = rect(g, x, y, 1, height, mix(theme.well, BODY, 0.18f))
+
+    /** A small panel in [look]'s colors with a well in it, as a preview of that theme. */
+    fun themeSwatch(g: GuiGraphicsExtractor, x: Int, y: Int, look: Theme) {
+        frame(g, x, y, SWATCH_WIDTH, SWATCH_HEIGHT, look.outline, look.panel, look.panelLight, look.panelShade)
+        bevel(g, x + 3, y + 3, 9, SWATCH_HEIGHT - 6, look.well, look.wellShade, look.wellLight)
+        frame(g, x + 13, y + 3, 6, SWATCH_HEIGHT - 6, look.outline, look.raised, look.raisedLight, look.raisedShade)
+    }
+
+    /** A tile of a menu of previews, ringed in the accent when [selected] and in the hover outline when lit. */
+    fun tile(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, lit: Boolean, selected: Boolean) {
+        val t = theme
+        if (lit) rect(g, x + 1, y + 1, width - 2, height - 2, t.hover)
+        if (selected || lit) ring(g, x, y, width, height, if (selected) t.accent else t.hoverOutline)
     }
 
     /**
@@ -337,6 +546,44 @@ object Kit {
         rect(g, x, y + 1, width, 1, t.panelLight)
     }
 
+    /** A 1px line across a panel, or across a well between its rows when [onWell], faint enough to sit under text. */
+    fun rule(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, onWell: Boolean = false) {
+        val t = theme
+        rect(g, x, y, width, 1, if (onWell) mix(t.well, BODY, 0.07f) else mix(t.panel, t.ink, 0.12f))
+    }
+
+    /** A panel's face with no frame, for a screen that fills the window and has no outer panel. */
+    fun backdrop(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) = rect(g, x, y, width, height, theme.panel)
+
+    /** A screen's side strip, such as a settings sidebar: a step back from the panel, with an outline down its right edge. */
+    fun side(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
+        val t = theme
+        rect(g, x, y, width - 1, height, t.side)
+        rect(g, x + width - 1, y, 1, height, t.outline)
+    }
+
+    /**
+     * A line of a navigation tree on a [side]. Under the mouse or the keyboard its face lifts a little. The
+     * [selected] one lifts further and has a 2px bar in ink down its left edge, so it is told by two signals.
+     */
+    fun navRow(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, selected: Boolean) {
+        val t = theme
+        when {
+            selected -> {
+                rect(g, x, y, width, height, mix(t.side, t.panelLight, 0.8f))
+                rect(g, x, y + 2, 2, height - 4, t.ink)
+            }
+            state == State.HOVER || state == State.DOWN -> rect(g, x, y, width, height, mix(t.side, t.panelLight, 0.4f))
+            else -> Unit
+        }
+    }
+
+    /** A square of [color] in a 1px outline, such as a section's placeholder icon or a color to pick. */
+    fun swatch(g: GuiGraphicsExtractor, x: Int, y: Int, size: Int, color: Int) {
+        rect(g, x, y, size, size, theme.outline)
+        rect(g, x + 1, y + 1, size - 2, size - 2, color)
+    }
+
     /** A 1px line around a box, with its corners left out. */
     fun ring(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, color: Int) {
         rect(g, x + 1, y, width - 2, 1, color)
@@ -348,14 +595,6 @@ object Kit {
     fun icon(g: GuiGraphicsExtractor, icon: Icon, x: Int, y: Int, color: Int, shadow: Boolean = true) {
         if (shadow) g.blitSprite(RenderPipelines.GUI_TEXTURED, icon.sprite, x + 1, y + 1, icon.width, icon.height, ARGB.scaleRGB(color, 0.25f))
         g.blitSprite(RenderPipelines.GUI_TEXTURED, icon.sprite, x, y, icon.width, icon.height, color)
-    }
-
-    /** [icon] on MoulConfig's settings screen, which draws through its own context and not the game's. */
-    fun icon(context: RenderContext, icon: Icon, x: Int, y: Int, color: Int) {
-        val texture = MyResourceLocation(icon.sprite.namespace, "textures/gui/sprites/${icon.sprite.path}.png")
-        for ((at, tint) in listOf(1 to ARGB.scaleRGB(color, 0.25f), 0 to color)) {
-            context.drawTexturedTintedRect(texture, (x + at).toFloat(), (y + at).toFloat(), icon.width.toFloat(), icon.height.toFloat(), 0f, 0f, 1f, 1f, tint, TextureFilter.NEAREST)
-        }
     }
 
     /** A 1px line of whole pixels from one point to another, with a dark line beside it so it reads over anything. */
@@ -386,13 +625,19 @@ object Kit {
 
     /** A plain string in the theme's ink, which is chrome. Text that means something is built with `text { }`. */
     fun label(g: GuiGraphicsExtractor, text: String, x: Int, y: Int, ink: Ink = Ink.NORMAL) {
-        val t = theme
-        val color = when (ink) {
-            Ink.NORMAL -> t.ink
-            Ink.MUTED -> t.inkMuted
-            Ink.OFF -> t.inkOff
-        }
-        g.text(font, text, x, y, color, ink != Ink.OFF && t.inkShadow)
+        g.text(font, text, x, y, color(ink), ink != Ink.OFF && theme.inkShadow)
+    }
+
+    /** A [Marked] label: what a search matched in [Ink.MATCH], and the rest in [ink]. */
+    fun label(g: GuiGraphicsExtractor, text: Marked, x: Int, y: Int, ink: Ink = Ink.NORMAL) {
+        for (i in text.parts.indices) label(g, text.parts[i], x + text.offsets[i], y, if (text.matches[i]) Ink.MATCH else ink)
+    }
+
+    private fun color(ink: Ink) = when (ink) {
+        Ink.NORMAL -> theme.ink
+        Ink.MUTED -> theme.inkMuted
+        Ink.OFF -> theme.inkOff
+        Ink.MATCH -> theme.inkMatch
     }
 
     /** Fills the 16x16 item area at [x], [y] behind the item. */
@@ -413,13 +658,15 @@ object Kit {
     fun held(g: GuiGraphicsExtractor, x: Int, y: Int, vanilla: Boolean) =
         slotBorder(g, x, y, if (vanilla) Theme.VANILLA.accent else theme.accent)
 
-    /** Draws cell [cell] of a rarity atlas behind the 16x16 item area at [x], [y], covering the slot's whole 18x18. */
-    fun slotArt(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int) =
-        g.blit(RenderPipelines.GUI_TEXTURED, atlas.id, x - 1, y - 1, (cell * SlotArt.SIZE).toFloat(), 0f, SlotArt.SIZE, SlotArt.SIZE, atlas.width, atlas.height)
+    /** Draws cell [cell] of row [row] of a rarity atlas behind the 16x16 item area at [x], [y], covering the slot's whole 18x18. */
+    fun slotArt(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int, row: Int = 0) = g.blit(
+        RenderPipelines.GUI_TEXTURED, atlas.id, x - 1, y - 1, (cell * SlotArt.SIZE).toFloat(), (row * SlotArt.SIZE).toFloat(), SlotArt.SIZE, SlotArt.SIZE,
+        atlas.width, atlas.height,
+    )
 
-    /** Draws cell [cell]'s gem over the item at [x], [y], from the item's top-left pixel. */
-    fun slotGem(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int) = g.blit(
-        RenderPipelines.GUI_TEXTURED, atlas.id, x, y, (cell * SlotArt.SIZE).toFloat(), SlotArt.SIZE.toFloat(), SlotArt.GEM, SlotArt.GEM,
+    /** Draws cell [cell]'s gem over the item at [x], [y], from the item's top-left pixel, in an atlas whose gems are [rows] slots down. */
+    fun slotGem(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int, rows: Int = 1) = g.blit(
+        RenderPipelines.GUI_TEXTURED, atlas.id, x, y, (cell * SlotArt.SIZE).toFloat(), (rows * SlotArt.SIZE).toFloat(), SlotArt.GEM, SlotArt.GEM,
         atlas.width, atlas.height,
     )
 
@@ -574,4 +821,5 @@ object Kit {
     private const val EMPTY_SLOT_U = 151f
     private const val EMPTY_SLOT_V = 119f
     private val GOOD = Role.GOOD.argb()
+    private val BODY = Role.BODY.argb()
 }

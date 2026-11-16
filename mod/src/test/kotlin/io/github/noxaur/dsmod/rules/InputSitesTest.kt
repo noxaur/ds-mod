@@ -366,7 +366,7 @@ class InputSitesTest {
             Files.walk(dir).asSequence().filter { it.extension == "class" }.map { it.readBytes() }.toList()
         }
         assertTrue(classes.size > 100, "InputSitesTest found ${classes.size} release classes. Build the main source set first.")
-        val found = inputSites(classes, root.resolve("src/main/aw/dsmod.accesswidener").readLines())
+        val found = inputSites(classes, root.resolve("src/main/resources/dsmod.accesswidener").readLines())
         val file = root.resolve("input-sites.txt")
         val text = file.takeIf { it.exists() }?.readText().orEmpty()
         val approved = approved(text)

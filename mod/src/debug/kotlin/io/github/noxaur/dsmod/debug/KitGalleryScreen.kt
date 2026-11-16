@@ -16,9 +16,11 @@ import io.github.noxaur.dsmod.edge.ui.KitCheckbox
 import io.github.noxaur.dsmod.edge.ui.KitCycleButton
 import io.github.noxaur.dsmod.edge.ui.KitKeysButton
 import io.github.noxaur.dsmod.edge.ui.KitMenu
+import io.github.noxaur.dsmod.edge.ui.KitNavTree
 import io.github.noxaur.dsmod.edge.ui.KitRangeSlider
 import io.github.noxaur.dsmod.edge.ui.KitStepper
 import io.github.noxaur.dsmod.edge.ui.KitTextField
+import io.github.noxaur.dsmod.edge.ui.fit
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.KeyEvent
@@ -29,7 +31,10 @@ import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 
 private const val WIDTH = 575
-private const val HEIGHT = 255
+private const val HEIGHT = 335
+
+/** The glass strip under the panel: its gap, the strip, and its bottom tabs. */
+private const val GLASS_BELOW = 2 + 26 + 19
 private const val MIDDLE = 271
 private const val RIGHT = 396
 
@@ -61,6 +66,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         mark(Items.BLAZE_ROD, 1, Role.LEGENDARY, 'b'), mark(Items.SLIME_BALL, 7, Role.UNCOMMON, ' '), mark(Items.PRISMARINE_SHARD, 1, Role.DIVINE, 'b'),
         mark(Items.PAPER, 20, Role.COMMON, 'd'), mark(Items.ENDER_EYE, 1, Role.EPIC, 'd'), mark(Items.QUARTZ, 9, Role.RARE, ' '), mark(Items.FEATHER, 4, Role.COMMON, 'h'),
     )
+    private val wellRows = listOf(text { body("Dragon Timer") }, text { body("Fireball Alert") }).map { it.toComponent() }
     private val tabs = listOf(Items.GOLDEN_SWORD, Items.DIAMOND, Items.ENDER_PEARL, Items.EMERALD).map(::ItemStack)
     private val hud = listOf(
         text { brand("Zealot Tracker") },
@@ -75,7 +81,8 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
 
     override fun init() {
         ox = (width - WIDTH) / 2
-        oy = (height - HEIGHT) / 2
+        // The glass strip hangs below the panel over the world, so the two are centered together.
+        oy = (height - HEIGHT - GLASS_BELOW) / 2
         val y = oy + 51
         val done = addRenderableWidget(KitButton(ox + Kit.INSET, y, "Done", ::onClose))
         val stepper = addRenderableWidget(KitStepper(done.right + Kit.GAP, y, "Scale", 30) {})
@@ -84,7 +91,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         val rate = addRenderableWidget(KitCheckbox(icon.right + Kit.GAP, y + 3, "Rate", true) {})
         addRenderableWidget(KitCheckbox(rate.right + Kit.GAP * 2, y + 3, "Bar", false) {})
         // The storage window's search field, below its slot grid.
-        addRenderableWidget(KitTextField(ox + MIDDLE + 7, oy + 133, 99, "Search", "", 64) {}.hint("Search..."))
+        addRenderableWidget(KitTextField(ox + MIDDLE + 7, oy + 133, 99, "Search", "", 64) {}.hint("Search...").icon(Icon.SEARCH))
         addRenderableWidget(KitRangeSlider(ox + Kit.INSET, oy + 192, 252, "Range", 200, listOf(50, 100, 150), listOf(Section(20, 70), Section(175, 200))) {})
         val field = addRenderableWidget(KitTextField(ox + Kit.INSET, oy + 226, 96, "Command", "/warp end", 256) {})
         var keyX = field.x + field.width + 4 + Kit.GAP
@@ -151,6 +158,9 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         caption(g, "Text field, keys: held together, clashing, game's key, recording, a cycle button and a menu", x, oy + 214)
         for (i in states.indices) Kit.span(g, ox + MIDDLE + i * 30, oy + 193, 26, 14, states[i])
 
+        nav(g, x, oy + 250)
+        tabBar(g, ox + 290, oy + 250)
+
         window(g, ox + MIDDLE, oy + 40)
         list(g, ox + RIGHT, oy + 7)
         plate(g, ox + RIGHT, oy + 159)
@@ -163,7 +173,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
 
     /** Tabs, a slot grid with every mark and a scrollbar, as a storage screen would have them. Its search field is a widget. */
     private fun window(g: GuiGraphicsExtractor, x: Int, y: Int) {
-        caption(g, "Tabs on both edges, slots, marks", x, y - 33)
+        caption(g, "Tabs, slots, marks", x, y - 33)
         for (i in 1 until tabs.size) g.item(tabs[i], x + 4 + i * 23 + 3, Kit.tab(g, x + 4 + i * 23, y, false))
         // Tabs on the bottom edge too: one under the mouse, then the selected one after the panel.
         g.item(tabs[2], x + 31, Kit.tab(g, x + 28, y + 118, false, TabEdge.BOTTOM, hovered = true))
@@ -190,6 +200,74 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
             }
         }
         Kit.scrollbar(g, gx + 93, gy, 72, 6, 30)
+    }
+
+    /** A settings sidebar's rows on its side strip, color swatches, and the rules on a panel and between a well's rows. */
+    private fun nav(g: GuiGraphicsExtractor, x: Int, y: Int) {
+        caption(g, "Nav rows: idle, hover, selected", x, y)
+        // Laid out as the settings screen's sidebar is: rows a gap in from the strip's edges, each arrow mirroring its swatch.
+        val rowX = x + Kit.GAP
+        val rowWidth = 128 - 1 - Kit.GAP * 2
+        val arrowX = rowX + rowWidth - KitNavTree.PAD - KitNavTree.ICON
+        val swatchY = (KitNavTree.SECTION - KitNavTree.ICON) / 2
+        Kit.side(g, x, y + 12, 128, Kit.GAP * 2 + 3 * KitNavTree.SECTION + KitNavTree.SUB)
+        val names = listOf("Combat", "Menus", "The End")
+        val states = listOf(Kit.State.IDLE, Kit.State.HOVER, Kit.State.IDLE)
+        for (i in names.indices) {
+            val top = y + 12 + Kit.GAP + i * KitNavTree.SECTION
+            Kit.navRow(g, rowX, top, rowWidth, KitNavTree.SECTION, states[i], selected = i == 2)
+            Kit.swatch(g, rowX + KitNavTree.PAD, top + swatchY, KitNavTree.ICON, SWATCHES[i].argb())
+            Kit.label(g, names[i], rowX + KitNavTree.TEXT_X, top + 4)
+        }
+        val arrows = listOf(Icon.RIGHT, Icon.RIGHT, Icon.DOWN)
+        for (i in arrows.indices) {
+            val top = y + 12 + Kit.GAP + i * KitNavTree.SECTION + swatchY
+            val icon = arrows[i]
+            if (i == 1) {
+                Kit.button(g, arrowX, top, KitNavTree.ICON, KitNavTree.ICON, Kit.State.HOVER, icon)
+            } else {
+                Kit.icon(g, icon, arrowX + (KitNavTree.ICON - icon.width) / 2, top + (KitNavTree.ICON - icon.height) / 2, Kit.theme.inkMuted, Kit.theme.inkShadow)
+            }
+        }
+        Kit.label(g, "Dragon", rowX + KitNavTree.TEXT_X, y + 12 + Kit.GAP + 3 * KitNavTree.SECTION + 3, Kit.Ink.MUTED)
+
+        val rx = x + 166
+        caption(g, "Swatches and rules", rx, y)
+        for (i in SWATCHES.indices) Kit.swatch(g, rx + i * 13, y + 14, 9, SWATCHES[i].argb())
+        Kit.rule(g, rx, y + 30, 100)
+        Kit.well(g, rx, y + 36, 100, 2 + 2 * 20 + 1)
+        g.text(font, wellRows[0], rx + 7, y + 43, -1, true)
+        Kit.rule(g, rx + 1, y + 57, 98, onWell = true)
+        g.text(font, wellRows[1], rx + 7, y + 64, -1, true)
+    }
+
+    /**
+     * Browser tabs on their bar: idle, hover with its ×, the × under the mouse, selected, a search, and the plus idle.
+     * Then a lone tab, which has no ×, the plus under the mouse and the brand, and last a tab dragged over its neighbor.
+     */
+    private fun tabBar(g: GuiGraphicsExtractor, x: Int, y: Int) {
+        caption(g, "Tab bar: idle, hover, ×, selected, search", x, y)
+        val w = 52
+        var line = y + 12 + Kit.TAB_BAR_HEIGHT - 1
+        Kit.tabBar(g, x, y + 12, 278)
+        Kit.pageTab(g, x + 4, line, w, Kit.State.IDLE, false, fit("Combat", Kit.pageTabLabel(w, true, true)), Role.BAD.argb())
+        Kit.pageTab(g, x + 57, line, w, Kit.State.HOVER, false, fit("Menus", Kit.pageTabLabel(w, true, true)), Role.LEGENDARY.argb(), close = Kit.State.IDLE)
+        Kit.pageTab(g, x + 110, line, w, Kit.State.HOVER, false, fit("Inventory", Kit.pageTabLabel(w, true, true)), Role.GOOD.argb(), close = Kit.State.HOVER)
+        Kit.pageTab(g, x + 163, line, w, Kit.State.IDLE, true, fit("The End", Kit.pageTabLabel(w, true, true)), Role.EPIC.argb(), close = Kit.State.IDLE)
+        Kit.pageTab(g, x + 216, line, 44, Kit.State.IDLE, false, fit("eyes", Kit.pageTabLabel(44, true, true)), icon = Icon.SEARCH)
+        Kit.newTab(g, x + 261, line, Kit.State.IDLE)
+
+        line += 24
+        Kit.tabBar(g, x, line - Kit.TAB_BAR_HEIGHT + 1, 278)
+        Kit.pageTab(g, x + 4, line, 92, Kit.State.IDLE, true, fit("New Tab", Kit.pageTabLabel(92, false, false)))
+        Kit.newTab(g, x + 97, line, Kit.State.HOVER)
+        Kit.tag(g, x + 278 - Kit.GAP - font.width(BRAND), line, BRAND)
+
+        line += 24
+        Kit.tabBar(g, x, line - Kit.TAB_BAR_HEIGHT + 1, 278)
+        Kit.pageTab(g, x + 4, line, 92, Kit.State.IDLE, false, "Combat", Role.BAD.argb())
+        Kit.pageTab(g, x + 4 + 93 + 93, line, 92, Kit.State.IDLE, false, "Camera", Role.ACTION.argb())
+        Kit.pageTab(g, x + 4 + 93 + 30, line, 92, Kit.State.DOWN, true, "The End", Role.EPIC.argb(), close = Kit.State.IDLE)
     }
 
     /** A strip of glass below the gallery, over the world as a glass menu is: slots, a well, buttons and tabs in each state. */
@@ -249,7 +327,9 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
 
     private companion object {
         val ROLES = listOf(Role.GOOD, Role.BAD, Role.WARNING, Role.VALUE, Role.ACTION, Role.MUTED, Role.LEGENDARY)
+        val SWATCHES = listOf(Role.BAD, Role.LEGENDARY, Role.EPIC, Role.GOOD, Role.ACTION, Role.DIVINE)
         val RESULT = ItemStack(Items.CRAFTING_TABLE)
+        val BRAND = text { brand("[ ds-mod ]") }.toComponent()
 
         fun name(state: Kit.State) = state.name.lowercase().replaceFirstChar(Char::uppercase)
 

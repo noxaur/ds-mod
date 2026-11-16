@@ -49,7 +49,7 @@ Every type of interface ds-mod can show, grouped by surface. A feature uses the 
 - Held-key detail: more lines while Shift is held.
 
 **Own screens**
-- Settings: the MoulConfig screen.
+- Settings: ds-mod's own settings screen, drawn from `SettingsTree`.
 - HUD editor: drag to position and scale.
 - Feature screen: a full screen the mod owns, such as tracker history.
 - Vanilla screen addition: a button on the pause menu or inventory.

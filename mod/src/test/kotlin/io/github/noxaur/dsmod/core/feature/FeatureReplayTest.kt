@@ -166,6 +166,7 @@ class FeatureReplayTest {
                     assertEquals(emptyMap(), metrics.failures, "${feature.id} threw while replaying $fixture")
                     metrics.counters.toSortedMap().forEach { (name, count) -> appendLine("$name = $count") }
                     game.readouts.single().feature.state?.let { appendLine("saved ${feature.id}.json = ${it.encode()}") }
+                    if (game.hidden.value.told.isNotEmpty()) appendLine("saved hidden.json = ${game.hidden.encode()}")
                 }
 
                 val expected = fixture.resolveSibling(fixture.nameWithoutExtension + ".txt")

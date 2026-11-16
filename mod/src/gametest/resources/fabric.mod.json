@@ -45,6 +45,22 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.OwnSettingsTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.SettingRowsTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.SettingOrderTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.SettingsNarrationTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.CaptureTest"
       },
       {
@@ -181,11 +197,15 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.BeaconScreenTest"
+        "value": "io.github.noxaur.dsmod.gametest.BeamTimingTest"
       },
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.CommandBindsTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.CommandBindGroupsTest"
       },
       {
         "adapter": "kotlin",
@@ -237,7 +257,11 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.TabEditorTest"
+        "value": "io.github.noxaur.dsmod.gametest.TabPlacesTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.HudLayoutTest"
       },
       {
         "adapter": "kotlin",
