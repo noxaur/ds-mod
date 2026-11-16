@@ -51,7 +51,7 @@ class HudDrag(block: HudBox, mouseX: Float, mouseY: Float) {
                 REACH,
             )
         }
-        return HudDrop(x.coerceIn(0f, maxOf(0f, width - block.width)), y.coerceIn(0f, maxOf(0f, height - block.height)))
+        return HudDrop(onScreen(x, block.width, width), onScreen(y, block.height, height))
     }
 
     /** Moves the block [dx], [dy] off the mouse, so it stays that far from where the mouse would put it. */
@@ -76,8 +76,10 @@ class HudDrag(block: HudBox, mouseX: Float, mouseY: Float) {
 
         /** Where an arrow nudges [block] by [dx], [dy], kept on a screen [width] by [height]. */
         fun nudged(block: HudBox, dx: Float, dy: Float, width: Float, height: Float) = HudDrop(
-            (block.x + dx).coerceIn(0f, maxOf(0f, width - block.width)),
-            (block.y + dy).coerceIn(0f, maxOf(0f, height - block.height)),
+            onScreen(block.x + dx, block.width, width),
+            onScreen(block.y + dy, block.height, height),
         )
+
+        private fun onScreen(at: Float, size: Float, screen: Float) = at.coerceIn(0f, maxOf(0f, screen - size))
     }
 }

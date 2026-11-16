@@ -46,8 +46,7 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
     var editing = false
         set(value) {
             field = value
-            handed.fill(-1)
-            push()
+            repaint()
         }
 
     /**
@@ -143,8 +142,7 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
     /** Docks the block of feature [id] at [dock] beside the hotbar, as its placement setting does. */
     fun dock(id: String, dock: HudDock) {
         feature(id).placement?.set(dock)
-        handed.fill(-1)
-        push()
+        repaint()
     }
 
     /** Where the block of feature [id] is docked, or [HudDock.FREE]. */
@@ -175,15 +173,11 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
     fun restore(id: String, position: Position?, dock: HudDock) {
         if (position == null) settings.positions.remove(id) else settings.positions[id] = position
         feature(id).placement?.set(dock)
-        handed.fill(-1)
-        push()
+        repaint()
     }
 
     /** Places every block again, after the saved places changed from outside, such as the layout's reset in the settings. */
-    fun replace() {
-        handed.fill(-1)
-        push()
-    }
+    fun replace() = repaint()
 
     /** Whether the player moved [id] out of the stack, to a place or a dock, so a reset would change something. */
     fun isPlaced(id: String) = id in settings.positions || dockOf(id) != HudDock.FREE
@@ -202,6 +196,10 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
     private fun save(id: String, x: Float, y: Float, scale: Float) {
         settings.positions[id] = Position(x.coerceIn(0f, width.toFloat()) / width, y.coerceIn(0f, height.toFloat()) / height, scale)
         feature(id).placement?.set(HudDock.FREE)
+        repaint()
+    }
+
+    private fun repaint() {
         handed.fill(-1)
         push()
     }

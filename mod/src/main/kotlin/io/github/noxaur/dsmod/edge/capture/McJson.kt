@@ -10,6 +10,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -23,6 +24,13 @@ import net.minecraft.world.item.component.ResolvableProfile
 fun Component.toCaptureJson(): JsonObject = buildJsonObject {
     put("text", string)
     put("component", encode(ComponentSerialization.CODEC, this@toCaptureJson))
+}
+
+/** The `x`, `y` and `z` that every positioned record carries. */
+fun JsonObjectBuilder.position(x: Number, y: Number, z: Number) {
+    put("x", x)
+    put("y", y)
+    put("z", z)
 }
 
 /** The item with all its data components, as the server sent it. */

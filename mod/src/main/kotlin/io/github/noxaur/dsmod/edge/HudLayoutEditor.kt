@@ -46,7 +46,7 @@ class HudLayoutEditor(
     private var mapX = 0
     private var footY = 0
     private var height = 0
-    private val buttons = IntArray(BUTTONS.size * 2)
+    private val buttons = EditorButtons(BUTTONS)
 
     private val mover = HudMover(readouts)
     private var selected: String? = null
@@ -76,8 +76,7 @@ class HudLayoutEditor(
         for (i in BUTTONS.indices.reversed()) {
             val w = if (i == RESET) Kit.font.width(BUTTONS[i]) + 16 else Kit.BUTTON_HEIGHT
             bx -= w
-            buttons[i * 2] = bx
-            buttons[i * 2 + 1] = w
+            buttons.place(i, bx, w)
             bx -= Kit.GAP
         }
         height = footY - y + Kit.BUTTON_HEIGHT + Kit.GAP + HINT_LINES * 9 + 2
@@ -95,7 +94,7 @@ class HudLayoutEditor(
         if (selected != null && Hud.find(selected!!) == null) selected = null
         val id = selected
         name = id?.let { "${readouts.title(it)} · ${HudScale.label(readouts.scale(it))}" } ?: ""
-        nameText = text { body(fit(name, buttons[0] - x - Kit.GAP)) }.toComponent()
+        nameText = text { body(fit(name, buttons.x(0) - x - Kit.GAP)) }.toComponent()
         hint = when {
             grabbed != null -> "Shift drags it without lining up. Escape puts it back."
             Hud.placed().isEmpty() -> ""
@@ -136,7 +135,7 @@ class HudLayoutEditor(
     /** The middle of the button named [name] under the map. */
     fun buttonAt(name: String): Pair<Int, Int> {
         val i = BUTTONS.indexOf(name)
-        return buttons[i * 2] + buttons[i * 2 + 1] / 2 to origin + footY + Kit.BUTTON_HEIGHT / 2
+        return buttons.middle(i) to origin + footY + Kit.BUTTON_HEIGHT / 2
     }
 
     override fun draw(g: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, keys: Boolean): SettingRows.Tip? {
@@ -175,12 +174,7 @@ class HudLayoutEditor(
         val fy = origin + footY
         g.text(font, nameText, x, fy + (Kit.BUTTON_HEIGHT - 8) / 2, -1, true)
         for (i in BUTTONS.indices) {
-            val bx = buttons[i * 2]
-            val bw = buttons[i * 2 + 1]
-            val active = buttonActive(i)
-            val over = mouseX >= bx && mouseX < bx + bw && mouseY >= fy && mouseY < fy + Kit.BUTTON_HEIGHT
-            Kit.button(g, bx, fy, bw, Kit.BUTTON_HEIGHT, if (!active) Kit.State.OFF else if (over) Kit.State.HOVER else Kit.State.IDLE, BUTTONS[i], font.width(BUTTONS[i]))
-            if (over && active) g.requestCursor(CursorTypes.POINTING_HAND)
+            buttons.draw(g, i, fy, mouseX.toDouble(), mouseY.toDouble(), buttonActive(i))
         }
         for (i in hintText.indices) g.text(font, hintText[i], x, fy + Kit.BUTTON_HEIGHT + Kit.GAP + i * 9, -1, true)
         if (grabbed != null || hovered != null) g.requestCursor(CursorTypes.RESIZE_ALL)
@@ -206,8 +200,7 @@ class HudLayoutEditor(
         entered = true
         val fy = origin + footY
         for (i in BUTTONS.indices) {
-            val bx = buttons[i * 2]
-            if (px >= bx && px < bx + buttons[i * 2 + 1] && py >= fy && py < fy + Kit.BUTTON_HEIGHT) {
+            if (buttons.at(i, fy, px, py)) {
                 if (buttonActive(i)) press(i)
                 return true
             }
@@ -289,6 +282,7 @@ class HudLayoutEditor(
         }
         val key = event.key()
         val block = selected?.let(Hud::find)
+        val step = Keys.resizeStep(event)
         when {
             event.isEscape -> leave()
             key == GLFW.GLFW_KEY_TAB -> {
@@ -299,8 +293,7 @@ class HudLayoutEditor(
                 }
             }
             block != null && mover.nudge(block, event) -> changed()
-            block != null && (key == GLFW.GLFW_KEY_EQUAL || key == GLFW.GLFW_KEY_KP_ADD) -> resize(1)
-            block != null && (key == GLFW.GLFW_KEY_MINUS || key == GLFW.GLFW_KEY_KP_SUBTRACT) -> resize(-1)
+            block != null && step != 0 -> resize(step)
             block != null && (key == GLFW.GLFW_KEY_BACKSPACE || key == GLFW.GLFW_KEY_DELETE) -> press(RESET)
             else -> return true
         }

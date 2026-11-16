@@ -28,6 +28,7 @@ import java.net.http.HttpResponse.BodyHandlers
 import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
 import java.util.concurrent.Executors
 
 /**
@@ -37,6 +38,9 @@ import java.util.concurrent.Executors
  * had none, as when a proxy answered.
  */
 class BackendException(val status: Int?, message: String, cause: Throwable? = null, val tag: String? = null) : Exception(message, cause)
+
+/** The error a future's stage failed with, without the [CompletionException] that wraps it. */
+fun Throwable.unwrapped(): Throwable = (this as? CompletionException)?.cause ?: this
 
 /** The Minecraft session the game already holds, which is the only proof of who the player is. */
 interface Identity {
@@ -180,59 +184,57 @@ class Backend(private val url: String, private val identity: Identity, private v
         }
     }
 
-    fun unknowns(sightings: List<Sighting>) {
-        val body = buildJsonObject {
-            put("modVersion", modVersion)
-            putJsonArray("sightings") {
-                sightings.forEach {
-                    add(buildJsonObject { put("kind", it.kind); put("signature", it.signature); put("sample", it.sample) })
-                }
-            }
-        }
-        send { post("/v1/contrib/unknowns", BodyPublishers.ofString(body.toString()), "application/json", it) }
-    }
+    fun unknowns(sightings: List<Sighting>) = report(
+        "/v1/contrib/unknowns",
+        "sightings",
+        sightings.map { buildJsonObject { put("kind", it.kind); put("signature", it.signature); put("sample", it.sample) } },
+    )
 
-    fun items(items: List<ItemSighting>) {
+    fun items(items: List<ItemSighting>) = report(
+        "/v1/contrib/items",
+        "items",
+        items.map { item ->
+            buildJsonObject {
+                put("entry", item.entry)
+                put("material", item.material)
+                item.itemModel?.let { put("itemModel", it) }
+                item.skinId?.let { put("skinId", it) }
+                put("name", item.name.toJson())
+                put("lore", buildJsonArray { item.lore.forEach { add(it.toJson()) } })
+                put("glint", item.glint)
+                item.skullTexture?.let { put("skullTexture", it) }
+                item.color?.let { put("color", it) }
+                put("data", item.data)
+            }
+        },
+    )
+
+    /** Posts [entries] under [key] with the mod's version, the shape of every report the backend takes. */
+    private fun report(path: String, key: String, entries: List<JsonObject>) {
         val body = buildJsonObject {
             put("modVersion", modVersion)
-            putJsonArray("items") {
-                items.forEach { item ->
-                    add(
-                        buildJsonObject {
-                            put("entry", item.entry)
-                            put("material", item.material)
-                            item.itemModel?.let { put("itemModel", it) }
-                            item.skinId?.let { put("skinId", it) }
-                            put("name", item.name.toJson())
-                            put("lore", buildJsonArray { item.lore.forEach { add(it.toJson()) } })
-                            put("glint", item.glint)
-                            item.skullTexture?.let { put("skullTexture", it) }
-                            item.color?.let { put("color", it) }
-                            put("data", item.data)
-                        },
-                    )
-                }
-            }
+            putJsonArray(key) { entries.forEach { add(it) } }
         }
-        send { post("/v1/contrib/items", BodyPublishers.ofString(body.toString()), "application/json", it) }
+        send { post(path, BodyPublishers.ofString(body.toString()), "application/json", it) }
     }
 
     /** A code that the website trades for a session once, within a minute. */
-    fun oneTimeToken(): String =
-        json.parseToJsonElement(send { get("/api/auth/one-time-token/generate", it) }.body()).jsonObject.getValue("token").jsonPrimitive.content
+    fun oneTimeToken(): String = field(send { get("/api/auth/one-time-token/generate", it) }.body(), "token")
 
-    private fun get(path: String, token: String) = http.send(builder(path, token).GET().build(), BodyHandlers.ofString())
+    private fun get(path: String, token: String) = exchange(builder(path, token).GET().build())
 
     private fun post(path: String, body: BodyPublisher, type: String?, token: String, timeout: Duration = TIMEOUT) =
-        http.send(
-            builder(path, token, timeout).apply { if (type != null) header("Content-Type", type) }.POST(body).build(),
-            BodyHandlers.ofString(),
-        )
+        exchange(builder(path, token, timeout).apply { if (type != null) header("Content-Type", type) }.POST(body).build())
 
-    private fun builder(path: String, token: String, timeout: Duration = TIMEOUT) = HttpRequest.newBuilder(URI.create(url + path))
+    private fun exchange(request: HttpRequest): HttpResponse<String> = http.send(request, BodyHandlers.ofString())
+
+    private fun field(body: String, key: String) = json.parseToJsonElement(body).jsonObject.getValue(key).jsonPrimitive.content
+
+    private fun request(path: String, timeout: Duration = TIMEOUT) = HttpRequest.newBuilder(URI.create(url + path))
         .timeout(timeout)
         .header("Origin", origin)
-        .header("Authorization", "Bearer $token")
+
+    private fun builder(path: String, token: String, timeout: Duration = TIMEOUT) = request(path, timeout).header("Authorization", "Bearer $token")
 
     /**
      * Sends with the session, signs in first when there is none, and signs in again once when the backend says it
@@ -257,27 +259,29 @@ class Backend(private val url: String, private val identity: Identity, private v
     private fun segment(value: String) = value.also { require(it.matches(Regex("[A-Za-z0-9_:-]{1,64}"))) { "Not an id: $it" } }
 
     private fun signIn(): String {
-        val challenge = reach { http.send(auth("/api/auth/minecraft/challenge", "{}"), BodyHandlers.ofString()) }
+        val challenge = reach { exchange(auth("/api/auth/minecraft/challenge", "{}")) }
         // Every ds-mod backend has this route, so a 404 means something else holds the address, such as another
         // project's dev server on the port. Read as a status, it would blame a request the player never made.
         if (challenge.statusCode() == 404) throw BackendException(null, "Nothing at $origin answers as the ds-mod backend.")
-        if (challenge.statusCode() != 200) throw BackendException(challenge.statusCode(), "The backend answered ${challenge.statusCode()} to a sign-in.")
-        val serverId = json.parseToJsonElement(challenge.body()).jsonObject.getValue("serverId").jsonPrimitive.content
+        challenge.requireOk("a sign-in")
+        val serverId = field(challenge.body(), "serverId")
         try {
             identity.join(serverId)
         } catch (e: Exception) {
             throw BackendException(null, "Mojang would not confirm this account.", e)
         }
         val verify = reach {
-            http.send(auth("/api/auth/minecraft/verify", buildJsonObject { put("name", identity.name); put("serverId", serverId) }.toString()), BodyHandlers.ofString())
+            exchange(auth("/api/auth/minecraft/verify", buildJsonObject { put("name", identity.name); put("serverId", serverId) }.toString()))
         }
-        if (verify.statusCode() != 200) throw BackendException(verify.statusCode(), "The backend answered ${verify.statusCode()} to the account's proof.")
-        return json.parseToJsonElement(verify.body()).jsonObject.getValue("token").jsonPrimitive.content.also { token = it }
+        verify.requireOk("the account's proof")
+        return field(verify.body(), "token").also { token = it }
     }
 
-    private fun auth(path: String, body: String) = HttpRequest.newBuilder(URI.create(url + path))
-        .timeout(TIMEOUT)
-        .header("Origin", origin)
+    private fun HttpResponse<String>.requireOk(of: String) {
+        if (statusCode() != 200) throw BackendException(statusCode(), "The backend answered ${statusCode()} to $of.")
+    }
+
+    private fun auth(path: String, body: String) = request(path)
         .header("Content-Type", "application/json")
         .POST(BodyPublishers.ofString(body))
         .build()

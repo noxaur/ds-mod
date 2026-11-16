@@ -11,7 +11,6 @@ import io.github.noxaur.dsmod.edge.ui.KitStepper
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.KeyEvent
-import org.lwjgl.glfw.GLFW
 import net.minecraft.client.input.MouseButtonEvent
 
 private const val TITLE = "HUD Editor"
@@ -133,13 +132,9 @@ class HudEditorScreen(
             return true
         }
         val block = (mover.held ?: selected)?.let(Hud::find)
-        val grow = when (event.key()) {
-            GLFW.GLFW_KEY_EQUAL, GLFW.GLFW_KEY_KP_ADD -> 1.0
-            GLFW.GLFW_KEY_MINUS, GLFW.GLFW_KEY_KP_SUBTRACT -> -1.0
-            else -> 0.0
-        }
-        if (block != null && (grow != 0.0 || mover.nudge(block, event))) {
-            mover.scroll(block, grow)
+        val grow = Keys.resizeStep(event)
+        if (block != null && (grow != 0 || mover.nudge(block, event))) {
+            mover.scroll(block, grow.toDouble())
             refresh()
             return true
         }

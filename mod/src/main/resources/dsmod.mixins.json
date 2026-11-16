@@ -29,6 +29,8 @@
     "MouseInputMixin",
     "MouseTurnMixin",
     "PerspectiveKeyMixin",
+    "PlayerPoseMixin",
+    "PlayerShapeMixin",
     "ServerPacketsMixin",
     "SlotClickMixin",
     "SuggestionsListAccessor",

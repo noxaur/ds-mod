@@ -115,15 +115,17 @@ object PlayerNames {
         }
     }
 
+    private fun Regex.nameIn(line: String) = find(line)?.groups?.get(1)?.range?.takeIf { isName(line.substring(it)) }
+
     private val sidebarName = Regex("""^Name: (\w+)""")
 
     /** Where a [line] of the sidebar shows a name, in its `Name: ` line. */
-    fun inSidebar(line: String): IntRange? = sidebarName.find(line)?.groups?.get(1)?.range?.takeIf { isName(line.substring(it)) }
+    fun inSidebar(line: String): IntRange? = sidebarName.nameIn(line)
 
     private val seller = Regex("""^Seller: $RANK(\w+)""")
 
     /** Where a [line] of an auction item's lore names its seller. */
-    fun inLore(line: String): IntRange? = seller.find(line)?.groups?.get(1)?.range?.takeIf { isName(line.substring(it)) }
+    fun inLore(line: String): IntRange? = seller.nameIn(line)
 
     /** The name in a [profile], which a skull, a head item or a player entity's head carries. */
     fun inProfile(profile: JsonObject): String? = (profile["name"] as? JsonPrimitive)?.takeIf { it.isString }?.content?.takeIf(::isName)

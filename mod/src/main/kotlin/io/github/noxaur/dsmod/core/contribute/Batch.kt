@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.core.contribute
 
 import io.github.noxaur.dsmod.core.backend.BackendException
-import java.util.concurrent.CompletionException
+import io.github.noxaur.dsmod.core.backend.unwrapped
 
 /**
  * What a player agreed to send, collected until it is time to send it: a batch of at most [MAX_BATCH] things, each
@@ -96,6 +96,6 @@ open class Batch<T : Any>(private val key: (T) -> Any) {
         private val REFUSED = setOf(400, 404, 409, 413, 422)
 
         private fun refusedForGood(error: Throwable): Boolean =
-            ((error as? CompletionException)?.cause ?: error).let { it is BackendException && it.status in REFUSED }
+            error.unwrapped().let { it is BackendException && it.status in REFUSED }
     }
 }

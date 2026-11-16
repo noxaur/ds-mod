@@ -12,6 +12,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - **Fullbright** – Lights caves and nights as brightly as day.
 - **Hide Explosions** – Hides the clouds that explosions throw up.
 - **Animations** – Restyle your swing as 1.7, Exhibition, Spin or Stab, and move or resize your held item.
+- **Player Model** – Resize, tilt, spin and pose your player, or everyone's, with a live preview in the settings.
 - **Camera** – Set the third-person distance, height and tilt, and which views F5 cycles through.
 - **Free Look** – Hold Left Alt to look around in third person without turning.
 - **Etherwarp Outline** – Boxes the block your Etherwarp will land on, or says why it would fail.

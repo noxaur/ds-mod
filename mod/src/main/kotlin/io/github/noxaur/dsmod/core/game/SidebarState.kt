@@ -35,10 +35,7 @@ class SidebarState {
                 if (place == null) place = line.substring(PLACE_MARK.length).trim().ifEmpty { null }
                 continue
             }
-            val colon = line.indexOf(':')
-            if (colon <= 0) continue
-            val value = line.substring(colon + 1).trim()
-            if (value.isNotEmpty()) info.putIfAbsent(line.substring(0, colon).trim(), value)
+            info.putInfo(line)
         }
     }
 

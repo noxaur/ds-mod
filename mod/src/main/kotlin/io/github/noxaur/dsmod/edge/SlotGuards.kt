@@ -231,8 +231,8 @@ object SlotGuards {
         val described = into.map { described(stack, it) }
         val yields = !slot.mayPlace(stack)
         val moving = stack.count
-        val vanilla = shiftPlaces(moving, described, skipLocked = false, stackable = stack.isStackable)
-        val opened = shiftPlaces(moving, described, stackable = stack.isStackable)
+        val vanilla = places(stack, described, skipLocked = false)
+        val opened = places(stack, described)
         val lockedTakes = vanilla.any { (index, _) -> described.first { it.index == index }.locked }
         val lockedCould = described.any { it.locked && (it.acceptsEmpty || it.same && it.count < it.limit) }
         if (opened.isEmpty()) {
@@ -266,7 +266,7 @@ object SlotGuards {
         if (park != null) click(park.index)
         click(slot.index)
         // A left click inserts min(cursor, room), which is the amount this slot was planned to take.
-        for ((index, _) in shiftPlaces(screen.menu.carried.count, into.map { described(screen.menu.carried, it) }, stackable = screen.menu.carried.isStackable)) {
+        for ((index, _) in places(screen.menu.carried, into.map { described(screen.menu.carried, it) })) {
             click(index)
         }
         if (!screen.menu.carried.isEmpty && slot.mayPlace(screen.menu.carried)) click(slot.index)
@@ -285,6 +285,9 @@ object SlotGuards {
             it.isActive && !it.hasItem() && it.index !in reserved && !locked(it) && it.mayPlace(carried) &&
                 (own in SlotLocks.HOTBAR || own in SlotLocks.ABOVE)
         }
+
+    private fun places(stack: ItemStack, slots: List<ShiftSlot>, skipLocked: Boolean = true) =
+        shiftPlaces(stack.count, slots, skipLocked = skipLocked, stackable = stack.isStackable)
 
     private fun described(stack: ItemStack, slot: Slot): ShiftSlot {
         val item = slot.item

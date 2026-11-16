@@ -226,7 +226,8 @@ private fun shape(node: ClassNode, mixin: AnnotationNode, sinks: Sinks): Shape {
             injector != null -> {
                 hooked = true
                 readOnly = false
-                val hooks = injector.strings("method").map { it.substringAfter(';').substringBefore('(').substringBefore(':') }
+                // A method is named alone, as `name(desc)`, or as `Lowner;name(desc)`, and only the owner ends in a `;` before the `(`.
+                val hooks = injector.strings("method").map { it.substringBefore('(').substringAfter(';').substringBefore(':') }
                 val at = (injector.value("at") as? List<*>).orEmpty().filterIsInstance<AnnotationNode>().mapNotNull { it.value("target") as? String }
                 // An `at` names a call as `Lowner;name(desc)` or a field as `Lowner;name:type`.
                 val atInput = at.any { target ->

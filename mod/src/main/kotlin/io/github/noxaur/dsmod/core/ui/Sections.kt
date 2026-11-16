@@ -68,15 +68,17 @@ object Sections {
             Edge.START -> section.copy(from = value.coerceIn(0, section.to - MIN_WIDTH))
             Edge.END -> section.copy(to = value.coerceIn(section.from + MIN_WIDTH, max))
         }
-        return merged(sections.toMutableList().also { it[index] = changed })
+        return replaced(sections, index, changed)
     }
 
     /** [sections] with the section at [index] slid to start at [from], kept on the scale. */
     fun move(sections: List<Section>, index: Int, from: Int, max: Int): List<Section> {
         val size = sections[index].to - sections[index].from
         val start = from.coerceIn(0, max - size)
-        return merged(sections.toMutableList().also { it[index] = Section(start, start + size) })
+        return replaced(sections, index, Section(start, start + size))
     }
+
+    private fun replaced(sections: List<Section>, index: Int, section: Section) = merged(sections.toMutableList().also { it[index] = section })
 
     fun remove(sections: List<Section>, index: Int) = sections.filterIndexed { i, _ -> i != index }
 }

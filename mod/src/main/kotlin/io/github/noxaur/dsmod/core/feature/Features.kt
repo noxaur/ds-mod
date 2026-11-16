@@ -23,6 +23,7 @@ import io.github.noxaur.dsmod.core.feature.general.FreeLook
 import io.github.noxaur.dsmod.core.feature.general.InventoryHud
 import io.github.noxaur.dsmod.core.feature.general.PerformanceStats
 import io.github.noxaur.dsmod.core.feature.general.Fullbright
+import io.github.noxaur.dsmod.core.feature.general.PlayerModel
 import io.github.noxaur.dsmod.core.feature.general.ProfileViewer
 import io.github.noxaur.dsmod.core.feature.hud.ChatHudEditor
 import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
@@ -99,6 +100,7 @@ fun features(config: DsModConfig): List<Feature> = listOf(
     ),
     FreeLook(config.general::freeLook),
     Fullbright(config.general::fullbright),
+    PlayerModel(config.general::playerModel),
     ProfileViewer(config.general::profileViewer),
     ChatHudEditor(config.hud::chatHudEditor),
     ArmorSwapGuard(config.inventory::armorSwapGuard),

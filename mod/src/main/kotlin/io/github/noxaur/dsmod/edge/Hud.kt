@@ -349,10 +349,8 @@ object Hud {
             // The saved place is still the fraction of the screen. A smaller GUI uses that fraction, then pulls the
             // corner back so the plate that is about to be drawn stays on the screen.
             val window = Minecraft.getInstance().window
-            val drawnW = plate(group.width) * group.scale
-            val drawnH = plate(group.height) * group.scale
-            group.x = group.place.x.coerceIn(0, (window.guiScaledWidth - drawnW).roundToInt().coerceAtLeast(0))
-            group.y = group.place.y.coerceIn(0, (window.guiScaledHeight - drawnH).roundToInt().coerceAtLeast(0))
+            group.x = onScreen(group.place.x, window.guiScaledWidth, group.width, group.scale)
+            group.y = onScreen(group.place.y, window.guiScaledHeight, group.height, group.scale)
             return
         }
         val spot = corner(dock, group.width, group.height, group.plates.isNotEmpty(), group.place.scale)
@@ -418,6 +416,9 @@ object Hud {
     }
 
     // Each line ends in a pixel of spacing, which the plate's air already gives.
+    /** [saved] pulled back so a plate around [size] drawn at [scale] ends on the screen's [room]. */
+    private fun onScreen(saved: Int, room: Int, size: Int, scale: Float) = saved.coerceIn(0, (room - plate(size) * scale).roundToInt().coerceAtLeast(0))
+
     private fun plate(size: Int) = size + PADDING * 2 - 1
 
     fun register() {

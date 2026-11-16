@@ -94,12 +94,14 @@ class HudBuilder {
     val rows = mutableListOf<HudRow>()
 
     fun row(label: String, content: TextBuilder.() -> Unit) {
-        rows += TextRow(text { muted("$label: "); content() })
+        rows += TextRow(labeled(label, content))
     }
 
     fun bar(label: String, fraction: Float, role: Role = Role.VALUE, content: TextBuilder.() -> Unit = {}) {
-        rows += BarRow(text { muted("$label: "); content() }, fraction.coerceIn(0f, 1f), role)
+        rows += BarRow(labeled(label, content), fraction.coerceIn(0f, 1f), role)
     }
+
+    private fun labeled(label: String, content: TextBuilder.() -> Unit) = text { muted("$label: "); content() }
 
     /** A row with no label, for a line that names itself, such as a pet as the server writes it. */
     fun line(content: TextBuilder.() -> Unit) {

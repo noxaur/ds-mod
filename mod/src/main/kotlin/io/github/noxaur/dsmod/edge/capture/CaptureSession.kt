@@ -66,9 +66,7 @@ private fun JsonObjectBuilder.entityFields(entity: Entity) {
     put("id", entity.id)
     put("entity", BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString())
     put("name", entity.name.string)
-    put("x", entity.x.round2())
-    put("y", entity.y.round2())
-    put("z", entity.z.round2())
+    position(entity.x.round2(), entity.y.round2(), entity.z.round2())
 }
 
 /**
@@ -97,6 +95,12 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
     val file: Path get() = writer.file
 
     fun record(type: RawRecord, data: () -> JsonObject) = writer.record(type, data)
+
+    /** Builds the record now, on the calling thread, and hands the writer the finished object. */
+    private inline fun recordNow(type: RawRecord, build: JsonObjectBuilder.() -> Unit) {
+        val data = buildJsonObject(build)
+        writer.record(type) { data }
+    }
 
     /** The client tick finished. See [io.github.noxaur.dsmod.core.capture.CaptureWriter.endTick]. */
     fun endedClientTick() = writer.endTick()
@@ -191,9 +195,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
         changes.offer(
             RawRecord.STATUS,
             buildJsonObject {
-                put("x", player.blockX)
-                put("y", player.blockY)
-                put("z", player.blockZ)
+                position(player.blockX, player.blockY, player.blockZ)
                 put("health", player.health)
                 put("maxHealth", player.maxHealth)
                 put("absorption", player.absorptionAmount)
@@ -208,27 +210,21 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
     fun packet(packet: Packet<*>) {
         when (packet) {
             is ClientboundSoundPacket -> {
-                val data = buildJsonObject {
+                recordNow(RawRecord.SOUND) {
                     put("sound", packet.sound.value().location().toString())
                     put("source", packet.source.getName())
-                    put("x", packet.x)
-                    put("y", packet.y)
-                    put("z", packet.z)
+                    position(packet.x, packet.y, packet.z)
                     put("volume", packet.volume)
                     put("pitch", packet.pitch)
                 }
-                writer.record(RawRecord.SOUND) { data }
             }
             is ClientboundLevelParticlesPacket -> {
-                val data = buildJsonObject {
+                recordNow(RawRecord.PARTICLES) {
                     put("particle", BuiltInRegistries.PARTICLE_TYPE.getKey(packet.particle.type).toString())
-                    put("x", packet.x)
-                    put("y", packet.y)
-                    put("z", packet.z)
+                    position(packet.x, packet.y, packet.z)
                     put("count", packet.count)
                     put("speed", packet.maxSpeed)
                 }
-                writer.record(RawRecord.PARTICLES) { data }
             }
             is ClientboundBlockUpdatePacket -> block(packet.pos, packet.blockState)
             is ClientboundSectionBlocksUpdatePacket -> packet.runUpdates(::block)
@@ -243,10 +239,8 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
         val player = client.player ?: return
         val held = player.mainHandItem
         val hit = client.hitResult
-        val data = buildJsonObject {
-            put("x", player.x.round2())
-            put("y", player.y.round2())
-            put("z", player.z.round2())
+        recordNow(type) {
+            position(player.x.round2(), player.y.round2(), player.z.round2())
             put("yaw", player.yRot.toDouble().round2())
             put("pitch", player.xRot.toDouble().round2())
             put("item", BuiltInRegistries.ITEM.getKey(held.item).toString())
@@ -256,32 +250,27 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
             when {
                 hit is EntityHitResult -> put("target", buildJsonObject { entityFields(hit.entity) })
                 hit is BlockHitResult && hit.type == HitResult.Type.BLOCK ->
-                    put("block", buildJsonObject { put("x", hit.blockPos.x); put("y", hit.blockPos.y); put("z", hit.blockPos.z) })
+                    put("block", buildJsonObject { position(hit.blockPos.x, hit.blockPos.y, hit.blockPos.z) })
             }
         }
-        writer.record(type) { data }
     }
 
     /** A living entity the client dropped. The [Entity.getRemovalReason] says whether it died here, or the server removed it. */
     fun unload(entity: Entity) {
         if (entity !is LivingEntity || entity is Player) return
-        val data = buildJsonObject {
+        recordNow(RawRecord.UNLOAD) {
             entityFields(entity)
             put("health", entity.health)
             put("reason", entity.removalReason?.name)
         }
-        writer.record(RawRecord.UNLOAD) { data }
     }
 
     private fun block(pos: BlockPos, state: BlockState) {
         // The section packet reuses one mutable position, so read it now.
-        val data = buildJsonObject {
-            put("x", pos.x)
-            put("y", pos.y)
-            put("z", pos.z)
+        recordNow(RawRecord.BLOCK) {
+            position(pos.x, pos.y, pos.z)
             put("state", BlockStateParser.serialize(state))
         }
-        writer.record(RawRecord.BLOCK) { data }
     }
 
     /** Stops recording what the game posts and measures. Call it on the client thread, where [Game] runs. */

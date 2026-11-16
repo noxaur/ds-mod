@@ -36,6 +36,12 @@ The rows are drawn by one painter, `SettingRows`, not a vanilla widget each. A w
 
 A pick of a rarity style shows previews of styles the player has not chosen, and a texture per style can't be made while a frame is drawn. `Looks` paints one atlas at the end of a tick, with each border, fill and floor alone, and draws a style as three blits. `SlotArt` paints a style back to front with straight alpha, so the layers blitted in that order give the pixels of the style painted whole.
 
+## A preview is a row that holds no value
+
+Player Model's Preview shows the player with the settings around it applied, and edits nothing. A Panel was the nearest kind, but a Panel has a value, a changed marker and a reset, and `SettingsTreeTest` holds every value to exactly one saved field, which the rows beside it already reach. So `Preview` is a kind of its own with no value, drawn by an `Editor` the edge registers for its `Canvas`, as a Panel's is, and it gets the row's name, dimming, search, star and keys like any row.
+
+The preview's turntable holds still where the profile viewer's turns on its own, because Spin is one of the settings it shows, and a turn of its own would hide whether the model spins.
+
 ## Every setting is edited where it sits
 
 The command binds, the menu tabs, the HUD layout, the hotbar's own look and Beam Timing each had a screen of their own, which a player reached through an Edit button and left again to see the rest. They are rows now, so a search finds them and the changed marker, dimming and the keyboard work on them as on any row. An editor that takes many values in place is an `Editor` that `SettingRows` hosts under the row's header: it lays out on change, takes the input only while the player is inside it, and gives Escape back. A list of things the player made is one generic Items row over an `ItemKind` in `core`, so the next list gets every convention of the binds without a line of drawing code. Only Move HUD still opens a screen, because placing a block needs the world behind it.

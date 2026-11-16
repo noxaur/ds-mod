@@ -12,6 +12,18 @@ import net.minecraft.world.inventory.InventoryMenu
 import net.minecraft.world.item.ItemStack
 
 /**
+ * Stores [stack] as the last read of slot [i] in [stacks] and [counts], and says whether it equals what it replaced.
+ * The server often resends the whole inventory, which swaps every stack for an equal one.
+ */
+internal fun remember(stacks: Array<ItemStack?>, counts: IntArray, i: Int, stack: ItemStack): Boolean {
+    val previous = stacks[i]
+    val equal = previous != null && stack.count == counts[i] && ItemStack.isSameItemSameComponents(previous, stack)
+    stacks[i] = stack
+    counts[i] = stack.count
+    return equal
+}
+
+/**
  * Reads the client's open menu once a tick and posts what changed to [game]. A slot is looked at again only
  * when its stack is a different object or has a different count, so a quiet tick compares references.
  * A stack that the client edits in place and leaves at the same count goes unnoticed.
@@ -55,14 +67,9 @@ class ContainerPoller(private val game: Game) {
         val deadline = System.nanoTime() + BUDGET_NANOS
         for (i in stacks.indices) {
             val stack = slots[i].item
-            val previous = stacks[i]
-            if (stack === previous && stack.count == counts[i]) continue
+            if (stack === stacks[i] && stack.count == counts[i]) continue
             if (System.nanoTime() > deadline) break
-            // The server often resends the whole inventory, which swaps every stack for an equal one.
-            val equal = previous != null && stack.count == counts[i] && ItemStack.isSameItemSameComponents(previous, stack)
-            stacks[i] = stack
-            counts[i] = stack.count
-            if (equal) continue
+            if (remember(stacks, counts, i, stack)) continue
             val item = if (stack.isEmpty) null else stack.toItem()
             if (item == items[i]) continue
             items[i] = item

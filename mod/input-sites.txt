@@ -47,7 +47,7 @@ gate edge.CommandKeys a70f3d9a023f  CommandBinds
     sends through ClientPacketListener.sendChat
     sends through ClientPacketListener.sendCommand
     approved by github.com/noxaur 2026-11-16T14:34:00Z
-gate edge.CopyChats 2b7ca6b197f8  CopyChat
+gate edge.CopyChats dd5ac57aa914  CopyChat
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
@@ -64,12 +64,11 @@ gate edge.Pings 8ceec14ef3b5  PerformanceStats
     builds the packet ServerboundPingRequestPacket
     sends through ClientPacketListener.send
     approved by github.com/noxaur 2026-11-16T19:47:00Z
-gate edge.SlotGuards 1fa99b75f2d2  SlotLock
+gate edge.SlotGuards c1bdd514ed54  SlotLock
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-    approved by github.com/noxaur 2026-11-16T15:48:00Z
 gate edge.TabBar f780b9df59bd  MenuTabs
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
@@ -118,13 +117,12 @@ gate edge.mixin.FloatingTextMixin 1178eba96f0a
 gate edge.mixin.FullbrightMixin 4c8ba0a85eab  Fullbright
     hooks LightmapRenderStateExtractor.extract
     approved by github.com/noxaur 2026-11-16T08:42:00Z
-gate edge.mixin.HeldItemMixin 58c78f6ea473
+gate edge.mixin.HeldItemMixin e4628f3e6681
     hooks ItemInHandRenderer.itemUsed
     hooks ItemInHandRenderer.shouldInstantlyReplaceVisibleItem
     hooks ItemInHandRenderer.submitArmWithItem
     hooks ItemInHandRenderer.swingArm
     hooks ItemInHandRenderer.tick
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate edge.mixin.HiddenTextMixin a90e72dc5f00
     hooks EntityRenderer.shouldRender
 gate edge.mixin.HudHotbarMixin draws
@@ -159,6 +157,10 @@ gate edge.mixin.MouseTurnMixin 3be6f5bde644
 gate edge.mixin.PerspectiveKeyMixin fef175750217
     hooks Minecraft.handleKeybinds
     approved by github.com/noxaur 2026-11-16T01:17:00Z
+gate edge.mixin.PlayerPoseMixin 2dacd2ed0a3a
+    hooks HumanoidModel.setupAnim
+gate edge.mixin.PlayerShapeMixin b04e55336509
+    hooks AvatarRenderer.setupRotations
 gate edge.mixin.RecipeButtonMixin draws
     hooks ImageButton.extractContents
     approved by github.com/noxaur 2026-11-16T01:17:00Z
