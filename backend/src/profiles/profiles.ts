@@ -1,5 +1,6 @@
 import { Effect, Option, Schema } from "effect";
 
+import { numberEntries } from "../items/render/read.ts";
 import { decodeCatalog, entriesOf, makeRenderer } from "../items/render.ts";
 import { ItemStore } from "../items/store.ts";
 import { parseLegacy } from "../items/legacy.ts";
@@ -127,8 +128,8 @@ export const profile = Effect.fn(function* (name: string, profileId: string | un
     profileId: current.id,
     profileName: parseLegacy(current.profile_name),
     profileMode: current.profile_mode,
-    skills: Object.entries(current.skills ?? {}).map(([skill, xp]) => skillProgress(progression, skill, xp)),
-    slayers: slayerProgress(current.slayer ?? {}),
+    skills: Object.entries(numberEntries(current.skills)).map(([skill, xp]) => skillProgress(progression, skill, xp)),
+    slayers: slayerProgress(numberEntries(current.slayer)),
     stats: statsOf(current),
     topKills: bestiary.filter(({ kills }) => kills > 0).slice(0, TOP_KILLS),
     savedAt:
