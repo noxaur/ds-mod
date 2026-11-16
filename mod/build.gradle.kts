@@ -263,9 +263,10 @@ tasks.test {
     useJUnitPlatform()
     // The unit tests are the fast loop. One that needs longer belongs in a game test.
     timeout = Duration.ofSeconds(30)
-    // RulesTest reads the sources, so a source change must rerun it.
+    // RulesTest reads the sources and the docs that list features, so a change to either must rerun it.
     inputs.dir("src")
     inputs.file("input-sites.txt")
+    inputs.files("../README.md", "../docs/user/features.md")
     // The user's yes to an input site, which InputSitesTest records with their GitHub login.
     systemProperty("inputSites.approve", providers.gradleProperty("approve").getOrElse(""))
     systemProperty("inputSites.approvedBy", providers.gradleProperty("approvedBy").getOrElse(""))

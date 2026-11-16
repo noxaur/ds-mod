@@ -51,7 +51,7 @@ enum class HudLook(private val label: String) {
 
     /**
      * A panel with its icons in 18px slots, as the player's inventory screen draws them: by the kit in the player's theme,
-     * solid or as glass as their Menu Look says, while Themed Menus is on, and from the inventory's own texture while it is off.
+     * solid or as glass as their Menu Look says, while Menu Theme is on, and from the inventory's own texture while it is off.
      */
     INVENTORY("Inventory"),
     ;
@@ -81,7 +81,7 @@ data class BarRow(override val text: Text, val fraction: Float, val role: Role) 
 /**
  * A row of item icons, left to right, with an empty cell for each null. A row [apart] from the one above it leaves the
  * gap the inventory leaves above the hotbar. A row that shows the player's own inventory from its [slot] on, numbered as
- * the inventory menu numbers them, carries what the inventory's slots carry: the marks of Rarity Marks, and on the
+ * the inventory menu numbers them, carries what the inventory's slots carry: the marks of Item Rarity, and on the
  * hotbar the slot the player holds. [text] names them, for the replay's transcript.
  */
 data class ItemsRow(val items: List<Item?>, val apart: Boolean = false, val slot: Int = -1) : HudRow {

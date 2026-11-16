@@ -100,7 +100,7 @@ class SettingsSearchTest {
     @Test
     fun `the settings tree finds a feature by its own name, and an option inside a fold`() {
         val tree = SettingsTree.sections(DsModConfig())
-        assertTrue(SettingsSearch.hits(tree, "rarity").any { hit -> hit.group.name == "Rarity Marks" })
+        assertTrue(SettingsSearch.hits(tree, "rarity").any { hit -> hit.group.name == "Item Rarity" })
         val halo = SettingsSearch.hits(tree, "halo").single()
         assertEquals(setOf("customLook", "hotbarMarks"), halo.open, "both the inventory's own look and the hotbar's have the fill")
     }

@@ -42,16 +42,16 @@ class GameTest {
     fun `a feature that is switched back on hears the tab list again`() {
         game.post(0, TabList(listOf("Area: The End", "Protector: Rising (Tier 4/5, 20)").map { ServerText(ServerSpan(it)) }))
         game.tick(0)
-        val before = assertNotNull(hud("golem-status"))
+        val before = assertNotNull(hud("protector-status"))
 
-        config.end.golemStatus = false
+        config.end.protectorStatus = false
         game.tick(1_000)
-        assertNull(hud("golem-status"))
+        assertNull(hud("protector-status"))
 
         // No row changed meanwhile, so no new tab list is coming.
-        config.end.golemStatus = true
+        config.end.protectorStatus = true
         game.tick(2_000)
-        assertEquals(before, hud("golem-status"))
+        assertEquals(before, hud("protector-status"))
     }
 
     @Test
@@ -63,7 +63,7 @@ class GameTest {
 
     @Test
     fun `an edge feature locked to an area runs only there, and stays on for the HUD`() {
-        val eyes = game.readouts.single { it.feature.id == "protect-placed-eyes" }.feature
+        val eyes = game.readouts.single { it.feature.id == "eye-guard" }.feature
         assertEquals(false to true, eyes.runs to eyes.on)
         game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
         assertEquals(true, eyes.runs)
@@ -112,7 +112,7 @@ class GameTest {
         // Turning the setting off mid-session brings the features back with the tab list they missed.
         active = true
         game.tick(1_000)
-        assertNotNull(game.readouts.single { it.feature.id == "golem-status" }.hud)
+        assertNotNull(game.readouts.single { it.feature.id == "protector-status" }.hud)
         assertEquals(false, game.post(1_000, refusal))
     }
 
@@ -120,8 +120,8 @@ class GameTest {
     fun `a feature on by default tells the player once where its switch is`() {
         say(0, "This ability is on cooldown for 4.35s")
         say(1, "This ability is on cooldown for 4.30s")
-        assertEquals(listOf("Hid a message from the server. Turn off Ability Spam under Chat in /dsmod to see them."), game.messages.map { it.detail.plain })
-        assertEquals(setOf("ability-spam"), game.hidden.value.told)
+        assertEquals(listOf("Hid a message from the server. Turn off Hide Cooldown Messages under Chat in /dsmod to see them."), game.messages.map { it.detail.plain })
+        assertEquals(setOf("hide-cooldown-messages"), game.hidden.value.told)
     }
 
     @Test

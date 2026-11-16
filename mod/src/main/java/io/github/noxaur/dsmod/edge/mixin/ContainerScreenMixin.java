@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Stable Menus places a chest menu by its bottom edge, Hide Filler leaves a hidden slot looking empty, and Themed Menus
+ * Fixed Menu Layout places a chest menu by its bottom edge, Hide Glass Panes leaves a hidden slot looking empty, and Menu Theme
  * draws the server's buttons with the kit. A click on any of these slots still reaches the server, because only the
  * drawing changes.
  */

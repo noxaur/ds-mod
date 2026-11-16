@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
@@ -72,12 +74,12 @@ class SettingsNarrationTest : FabricClientGameTest {
 
         open(context, SettingsTabs(at("The End")))
         if (context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).spot("beamSections") == null }) {
-            val beacon = spot("bossBeacon")
+            val beacon = spot("protectorSpawnBeam")
             move(beacon.extraX + 7, beacon.controlY + 6)
             context.input.pressMouse(0)
             context.waitTicks(2)
         }
-        over("bossBeacon", "Boss Beacon, switch, on, expanded")
+        over("protectorSpawnBeam", "Protector Spawn Beam, switch, on, expanded")
         over("beamSections", "Beam Timing, span, 175 to 200")
 
         open(context, SettingsTabs(at("Interface")))
@@ -91,8 +93,11 @@ class SettingsNarrationTest : FabricClientGameTest {
         over("equipmentPieces", "Pieces, list, Helmet, Chestplate, Leggings, Boots, Pet, 5 of 5 shown, expanded")
         open(context, SettingsTabs(at("General")))
         over("fullbright", "Fullbright, switch, off")
-        // The sidebar's lines start 24 down, and The End comes after Favorites, General's seven subsections and six sections. The bar's first tab is 4 in from the sidebar's 116.
-        move(30, 24 + 16 + 16 + 7 * 13 + 6 * 16 + 8)
+        // The sidebar's lines start 24 down, and The End comes after Favorites, General and its subsections, and the
+        // sections between. The bar's first tab is 4 in from the sidebar's 116.
+        val tree = SettingsTree.sections(DsModConfig())
+        val between = tree.indexOfFirst { it.name == "The End" } - 1
+        move(30, 24 + 16 + 16 + tree.first().named.size * 13 + between * 16 + 8)
         hear(context, "The End, section, collapsed", "Over The End in the sidebar")
         move(120 + 30, 9)
         hear(context, "General, tab, selected", "Over the tab")
