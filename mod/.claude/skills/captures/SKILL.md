@@ -3,7 +3,7 @@ name: captures
 description: Use when reading a capture, when a task needs game data no capture shows, or when changing the recorder or a capture type.
 ---
 
-A capture is a JSONL file of what the server showed the client, and the only way an agent sees the game. Every line type and its fields are in [format.md](format.md). Why the recorder and the redactor work as they do is in [internals/captures.md](../../../../docs/internals/captures.md).
+A capture is a JSONL file of what the server showed the client, and the only way an agent sees the game. Each line has a time `t`, a `type` and `data`, and the KDoc on each `GameEvent` in `core/game/GameEvent.kt` and each `RawRecord` in `core/capture/RawRecord.kt` says what its line carries. An event's text is `plain` plus `spans`, with `§` codes already resolved into the spans. `actionbar`, `death` and `sidebar` were raw records until 2026-11-14, with another shape, so an older capture cannot be cut for them. Why the recorder and the redactor work as they do is in [internals/captures.md](../../../../docs/internals/captures.md).
 
 ## When no capture shows it
 
@@ -17,4 +17,3 @@ When the user's account cannot reach what the brief needs, [ask players](../../.
 ## Changing the recorder
 
 - Nothing the recorder does runs before `Recorder.start`. While it is off, each hook is one null check, and that is how it ships in the release jar at no cost.
-- A new capture type goes in `CaptureTest`, which makes a real server send each type and checks the file, and in [format.md](format.md).

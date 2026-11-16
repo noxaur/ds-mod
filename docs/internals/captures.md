@@ -1,12 +1,12 @@
 # Captures
 
-How the mod records what the server showed, and how a recording becomes a test that holds no one's name. The capture format is in the `captures` skill's [format.md](../../mod/.claude/skills/captures/format.md), and recording one is in [operations/captures.md](../operations/captures.md).
+How the mod records what the server showed, and how a recording becomes a test that holds no one's name. Each capture type's line is in the KDoc on its `GameEvent` or `RawRecord`, and recording one is in [operations/captures.md](../operations/captures.md).
 
 ## A capture is a recording of what the features saw
 
 The edge turns what the server sends into a `GameEvent`, and the capture records the events as they were posted. A test replays the recording through the same `Game` the player runs, so nothing stands between a capture and a test that could drift from the real input.
 
-A type of data is either an event or a raw record, and never both. Raw records exist because nobody can design an event for data they have not seen: the recorder writes everything else the server sent, with full fidelity, so the first capture of a screen shows what its event must carry. A feature that needs that data promotes it to an event. Two producers for one type would let a test pass on data the player's game never builds, so `CaptureWriter` rejects a raw record with an event's type.
+A type of data is either an event or a raw record, and never both. Raw records exist because nobody can design an event for data they have not seen: the recorder writes everything else the server sent, with full fidelity, so the first capture of a screen shows what its event must carry. A feature that needs that data promotes it to an event. Two producers for one type would let a test pass on data the player's game never builds, so raw types are a closed list, `RawRecord`, and `CaptureWriterTest` fails on one that shares an event's type.
 
 Only an excerpt of a capture goes in git, as a feature's fixture, with the player names and their chat replaced. The transcript beside it is the expected result, written as a player would describe it, so a reviewer who knows the game can judge it without reading the code.
 
