@@ -14,6 +14,7 @@ call edge.DsModClient.onInitializeClient -> edge.CommandKeys.register
 call edge.DsModClient.onInitializeClient -> edge.MenuBack.register
     approved by github.com/noxaur 2026-11-16T01:17:00Z
 call edge.DsModClient.onInitializeClient -> edge.Pings.register
+    approved by github.com/noxaur 2026-11-16T19:00:00Z
 call edge.DsModClient.onInitializeClient -> edge.SlotGuards.register
     approved by github.com/noxaur 2026-11-16T08:42:00Z
 call edge.profile.ProfileScreen.dress -> edge.profile.ProfileModel.<init>
@@ -62,6 +63,7 @@ gate edge.MenuBack ff8ff383383c  BackButtons
 gate edge.Pings a31c307f0c00  PerformanceStats
     builds the packet ServerboundPingRequestPacket
     sends through ClientPacketListener.send
+    approved by github.com/noxaur 2026-11-16T19:00:00Z
 gate edge.SlotGuards 8e92c6e06e5f  SlotLock
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
