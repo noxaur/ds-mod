@@ -62,6 +62,18 @@ Shows the items in your inventory as a grid on the HUD, nine to a row as your in
 | Inventory Rows | Picks which rows show, and their order. The three rows of your inventory show by default, and your hotbar can join them, set a little apart as it is in your inventory |
 | Inventory Look | Shows the items on the HUD's plate, on nothing, or in a panel of slots like your inventory's: in your theme, solid or as glass as Menu Look says, while Themed Menus is on, and as your resource pack draws the inventory while it is off |
 
+### Etherwarp Outline
+
+While you sneak with an Aspect of the End or Aspect of the Void that has Etherwarp, a green box sits on the block a sneak right click would warp you to. It reads the range from the item's lore, so a blade with a longer reach gets its own. A red box means the warp would fail there, and says why: Too Far for a block past the range, or No Room when the two blocks above it are not clear. No box means nothing on your look line can be warped to. Water, lava, grass, flowers and torches don't stop the line, so you warp through them, and a slab is boxed as the half block it is. It only shows you where you'd land, and never warps for you.
+
+| Setting | Does |
+| --- | --- |
+| Etherwarp Style | Draws the box as its edges, as a tinted fill, or both |
+| Etherwarp Width | Sets how thick the edges are |
+| Failed Warps | Shows the red box with its reason. Turn it off to see a box only where the warp works |
+| Box Through Walls | Shows the whole box, even behind the blocks in front of it. Turn it off to let blocks hide it |
+| Box Without Sneak | Shows the box while you stand too, from where your eye will be once you sneak. Off by default |
+
 ### Camera
 
 Shapes the third-person view you get with F5. Each setting starts at the game's own, so nothing changes until you move one.

@@ -110,6 +110,7 @@ object DsModClient : ClientModInitializer {
         TabBar.register()
         Tooltips.register()
         World.register()
+        Etherwarps.register()
         ArmorSwapGuards.register()
         EyeGuards.register()
         CopyChats.register()
