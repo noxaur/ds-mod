@@ -51,6 +51,38 @@ class EndTrackerEdgeTest : FabricClientGameTest {
                 check(posted.size == 1) { "A skinned head was posted ${posted.size} times" }
                 DsModClient.game.tap = null
             }
+
+            // The profile packet can land two or more ticks after the block update, with no second block() call.
+            context.runOnClient<Nothing> { client ->
+                posted.clear()
+                DsModClient.game.tap = { _, event -> if (event is HeadPlaced) posted += event }
+                val level = checkNotNull(client.level)
+                val pos = checkNotNull(client.player).blockPosition().above(2)
+                level.setBlock(pos, Blocks.PLAYER_HEAD.defaultBlockState(), 3)
+                Packets.block(pos, level.getBlockState(pos))
+                Packets.tick(client)
+                Packets.tick(client)
+                check(posted.isEmpty()) { "A head was posted before its skin arrived: $posted" }
+                val skull = level.getBlockEntity(pos) as SkullBlockEntity
+                SkullBlockEntity::class.java.getDeclaredField("owner").apply { isAccessible = true }
+                    .set(skull, ResolvableProfile.createUnresolved("DsHead"))
+                Packets.tick(client)
+                check(posted.size == 1) { "A skin that arrived after two ticks was posted ${posted.size} times" }
+                DsModClient.game.tap = null
+            }
+
+            // A decorative head never grows a profile, so it is never posted, including after the grace has run out.
+            context.runOnClient<Nothing> { client ->
+                posted.clear()
+                DsModClient.game.tap = { _, event -> if (event is HeadPlaced) posted += event }
+                val level = checkNotNull(client.level)
+                val pos = checkNotNull(client.player).blockPosition().above(3)
+                level.setBlock(pos, Blocks.PLAYER_HEAD.defaultBlockState(), 3)
+                Packets.block(pos, level.getBlockState(pos))
+                repeat(40) { Packets.tick(client) }
+                check(posted.isEmpty()) { "A decorative head was posted: $posted" }
+                DsModClient.game.tap = null
+            }
         }
     }
 }

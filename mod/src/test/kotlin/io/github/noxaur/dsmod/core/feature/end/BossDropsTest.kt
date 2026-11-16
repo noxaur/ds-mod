@@ -8,6 +8,7 @@ import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
+import io.github.noxaur.dsmod.core.game.WorldChanged
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -42,5 +43,33 @@ class BossDropsTest {
 
         assertEquals(mapOf("Unstable Dragon Fragment" to 10), bosses()["Unstable Dragon"]?.loot)
         assertEquals(emptyMap(), bosses()["Chaotic Dragon"]?.loot)
+    }
+
+    @Test
+    fun `a header with no earlier one goes to the dragon still inside the loot window`() {
+        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+        down(0, "UNSTABLE DRAGON")
+        // The loot header never arrives. A later dragon's header must not be recorded on this one.
+        down(60_000, "CHAOTIC DRAGON")
+        say(70_000, "Here is your loot from the last dragon:")
+        say(70_000, " - 8x Chaotic Dragon Fragment")
+
+        assertEquals(emptyMap(), bosses()["Unstable Dragon"]?.loot)
+        assertEquals(mapOf("Chaotic Dragon Fragment" to 8), bosses()["Chaotic Dragon"]?.loot)
+    }
+
+    @Test
+    fun `a world change drops a dragon still waiting for its loot`() {
+        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+        down(0, "UNSTABLE DRAGON")
+        game.post(1_000, WorldChanged)
+        // The new world's tab list is what puts the player back in the End.
+        game.post(1_500, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+        down(2_000, "CHAOTIC DRAGON")
+        say(12_000, "Here is your loot from the last dragon:")
+        say(12_000, " - 8x Chaotic Dragon Fragment")
+
+        assertEquals(emptyMap(), bosses()["Unstable Dragon"]?.loot)
+        assertEquals(mapOf("Chaotic Dragon Fragment" to 8), bosses()["Chaotic Dragon"]?.loot)
     }
 }

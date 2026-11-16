@@ -27,7 +27,11 @@ object Packets {
 
     // Heads seen before any feature could be handed them. A head arrives with its chunk or as a block update in the
     // first moments of a world, when the tab list has not yet said which area this is.
-    private val waiting = LinkedHashSet<BlockPos>()
+    /** Positions still waiting for a skin, and how many ticks each has waited. */
+    private val waiting = LinkedHashMap<BlockPos, Int>()
+
+    /** Ticks a bare skull is kept. The profile packet follows the block update by more than one tick, and a second is enough. */
+    private const val BARE_SKULL_TICKS = 20
 
     fun worldChanged() = waiting.clear()
 
@@ -37,16 +41,18 @@ object Packets {
 
     /**
      * The block update is handled before the skull's profile packet, so a head with no profile yet is held for [tick].
-     * [tick] posts it once the profile is there and drops it if the skull is still bare, the same rule [chunk] keeps.
+     * [tick] posts it on the tick the profile arrives. A skull that stays bare past [BARE_SKULL_TICKS] is decorative
+     * and is dropped, the same rule [chunk] keeps for a head that never had a skin.
      */
     private fun hold(pos: BlockPos) {
         val entity = Minecraft.getInstance().level?.getBlockEntity(pos) as? SkullBlockEntity
         if (entity?.ownerProfile != null) {
+            waiting.remove(pos)
             head(pos)
             return
         }
         val game = DsModClient.game
-        if (game.reaches(HeadPlaced::class.java) || game.tap != null || game.wants(HeadPlaced::class.java)) waiting += pos
+        if (game.reaches(HeadPlaced::class.java) || game.tap != null || game.wants(HeadPlaced::class.java)) waiting.putIfAbsent(pos, 0)
     }
 
     /**
@@ -66,7 +72,7 @@ object Packets {
         val reaches = game.reaches(HeadPlaced::class.java)
         // A capture records the head when it is seen, whether or not a feature is there to take it.
         if (reaches || game.tap != null) game.post(System.currentTimeMillis(), HeadPlaced(pos.x, pos.y, pos.z))
-        if (!reaches && game.wants(HeadPlaced::class.java)) waiting += pos
+        if (!reaches && game.wants(HeadPlaced::class.java)) waiting[pos] = 0
     }
 
     /** Posts the heads that were held back, once a feature can be handed them and the skull has a skin. */
@@ -74,16 +80,16 @@ object Packets {
         if (waiting.isEmpty()) return
         val game = DsModClient.game
         val level = client.level
-        val still = LinkedHashSet<BlockPos>()
-        for (pos in waiting) {
+        val still = LinkedHashMap<BlockPos, Int>()
+        for ((pos, age) in waiting) {
             if (level?.getBlockState(pos)?.block !== Blocks.PLAYER_HEAD) continue
             val entity = level.getBlockEntity(pos) as? SkullBlockEntity
             when {
-                entity == null -> still += pos
-                entity.ownerProfile == null -> {}
+                entity == null -> still[pos] = age
+                entity.ownerProfile == null -> if (age + 1 < BARE_SKULL_TICKS) still[pos] = age + 1
                 game.reaches(HeadPlaced::class.java) || game.tap != null ->
                     game.post(System.currentTimeMillis(), HeadPlaced(pos.x, pos.y, pos.z))
-                game.wants(HeadPlaced::class.java) -> still += pos
+                game.wants(HeadPlaced::class.java) -> still[pos] = age
             }
         }
         waiting.clear()
