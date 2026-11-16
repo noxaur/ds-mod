@@ -131,6 +131,7 @@ object DsModClient : ClientModInitializer {
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
         Kit.register()
         Looks.register()
+        SlotArts.register()
         Hud.register()
         Slots.register(settings.inventory)
         MenuSkin.register()
@@ -177,6 +178,8 @@ object DsModClient : ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> onDragSim = false }
         ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ ->
             Packets.worldChanged()
+            // The end-of-tick draw runs before readouts replace the marks, so the old world must already be clear.
+            World.worldChanged()
             game.post(System.currentTimeMillis(), WorldChanged)
             tabs.forget()
             sidebars.forget()

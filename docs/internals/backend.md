@@ -28,6 +28,8 @@ Void deploys no Next.js app, so the website runs on Vercel and calls the backend
 
 The cost is that the backend sees the website's few server addresses, not each player's, so Better Auth's per-address rate limit counts every player who logs in on the website together. When website logins fail with 429 under load, give the website a trusted key, as Void's auth guide describes. Reading the player's address from a header would trust a value any client can send.
 
-## The dev server binds IPv4
+## The dev server binds IPv4, on a port of its own
 
 `pnpm dev` binds `127.0.0.1` on purpose. Vite alone listens on IPv6 `localhost` only, and Minecraft runs Java with IPv4 preferred, so the mod could not reach it.
+
+It listens on 16385, not 8787. 8787 is Wrangler's default, so another Worker project's dev server often holds it. `--strictPort` then stops ours from starting, and the dev jar signs in to the other server, which answers 404. The mod reads a 404 from the challenge as "nothing here is the ds-mod backend" and does not report it as a refused request.

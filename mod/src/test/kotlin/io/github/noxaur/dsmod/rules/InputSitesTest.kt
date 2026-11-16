@@ -305,7 +305,9 @@ fun inputSites(classes: List<ByteArray>, widener: List<String> = emptyList()): L
                     // A call through a subclass reaches the method where it is declared.
                     val declaring = sinks.declaring(ref.owner, ref.name, ref.desc) ?: return@mapNotNull null
                     val target = nodes.getValue(declaring).first.methods.first { it.name == ref.name && it.desc == ref.desc }
-                    if (declaring.substringBefore('$') !in acting || target.access and Opcodes.ACC_PRIVATE != 0) return@mapNotNull null
+                    // Kotlin `private` is file-private and compiles to a nestmate call, so a class in the same file can
+                    // reach a private member. The caller is already outside the gate, so the member is listed either way.
+                    if (declaring.substringBefore('$') !in acting) return@mapNotNull null
                     InputSite.Call(from, "${display(declaring)}.${ref.name}")
                 }.toList()
                 // A field of an acting gate can hold a callback that sends, so reading one is a call too. An object's
@@ -313,7 +315,7 @@ fun inputSites(classes: List<ByteArray>, widener: List<String> = emptyList()): L
                 val read = method.instructions.filterIsInstance<FieldInsnNode>().mapNotNull { insn ->
                     val gate = insn.owner.substringBefore('$')
                     val field = nodes[insn.owner]?.first?.fields?.firstOrNull { it.name == insn.name }
-                    if (gate !in acting || field == null || field.access and Opcodes.ACC_PRIVATE != 0) return@mapNotNull null
+                    if (gate !in acting || field == null) return@mapNotNull null
                     if (insn.name == "INSTANCE" && called.any { it.to.startsWith(display(gate) + ".") }) return@mapNotNull null
                     InputSite.Call(from, "${display(insn.owner)}.${insn.name}")
                 }
@@ -426,14 +428,18 @@ class InputSitesTest {
             val access: Int = Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, val marks: List<AnnotationNode> = emptyList(),
         )
         fun annotation(desc: String, vararg values: Any) = AnnotationNode(desc).apply { this.values = values.toMutableList() }
-        fun example(name: String, vararg methods: M, mixin: String? = null, superName: String = "java/lang/Object", fields: List<String> = emptyList()): ByteArray {
+        fun example(
+            name: String, vararg methods: M, mixin: String? = null, superName: String = "java/lang/Object",
+            fields: List<String> = emptyList(), privateFields: List<String> = emptyList(),
+        ): ByteArray {
             val node = ClassNode().apply {
                 version = Opcodes.V21
                 access = Opcodes.ACC_PUBLIC
                 this.name = "${MOD}example/$name"
                 this.superName = superName
                 if (mixin != null) invisibleAnnotations = mutableListOf(annotation(MIXIN, "value", listOf(Type.getObjectType(mixin))))
-                fields.forEach { visitField(Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, it, "Ljava/lang/Runnable;", null, null) }
+                (fields.map { it to (Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC) } + privateFields.map { it to (Opcodes.ACC_PRIVATE or Opcodes.ACC_STATIC) })
+                    .forEach { (it, access) -> visitField(access, it, "Ljava/lang/Runnable;", null, null) }
                 methods.forEach { m ->
                     this.methods.add(MethodNode(m.access, m.name, m.desc, null, null).apply {
                         visibleAnnotations = m.marks.toMutableList()
@@ -483,6 +489,11 @@ class InputSitesTest {
                     M("send", access = Opcodes.ACC_PRIVATE or Opcodes.ACC_STATIC),
                 ),
                 example("OverloadCaller", run(InsnNode(Opcodes.ACONST_NULL), call("${MOD}example/Overload", "send", "(Ljava/lang/String;)V"))),
+                // A private member of an acting gate, called from another class in the same file, is still a call site.
+                example("Sender", M("send", call("net/minecraft/client/multiplayer/ClientPacketListener", "sendCommand"), access = Opcodes.ACC_PRIVATE or Opcodes.ACC_STATIC)),
+                example("Trigger", M("go", call("${MOD}example/Sender", "send"), access = Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC)),
+                example("Held", run(call("net/minecraft/client/multiplayer/ClientPacketListener", "sendCommand")), privateFields = listOf("TASK")),
+                example("HeldReader", run(FieldInsnNode(Opcodes.GETSTATIC, "${MOD}example/Held", "TASK", "Ljava/lang/Runnable;"), InsnNode(Opcodes.POP))),
                 // A method that hands a callback of the gate's own to a scheduler sends when the callback does.
                 example("Later", M("schedule", *new("${MOD}example/Later\$1"))),
                 example("Later\$1", M("run", call("net/minecraft/client/multiplayer/ClientPacketListener", "sendCommand"), access = Opcodes.ACC_PUBLIC)),
@@ -524,12 +535,14 @@ class InputSitesTest {
                 "call example.CloseCaller.run -> example.Closing.onClose",
                 "call example.DerivedCaller.run -> example.Command.run",
                 "call example.Draws.hand -> example.Command.run",
+                "call example.HeldReader.run -> example.Held.TASK",
                 "call example.LaterCaller.run -> example.Later.schedule",
                 "call example.OverloadCaller.run -> example.Overload.send",
+                "call example.Trigger.go -> example.Sender.send",
                 "gate example.Aim", "gate example.Asks", "gate example.Callbacks", "gate example.Click", "gate example.Closing", "gate example.Command", "gate example.Consume",
-                "gate example.Draws", "gate example.DrawsAtSend", "gate example.Handle", "gate example.Hook", "gate example.HooksKeys", "gate example.HooksPlayer",
+                "gate example.Draws", "gate example.DrawsAtSend", "gate example.Handle", "gate example.Held", "gate example.Hook", "gate example.HooksKeys", "gate example.HooksPlayer",
                 "gate example.Inventory", "gate example.Later", "gate example.Link", "gate example.LinkReference", "gate example.MenuClicker",
-                "gate example.Overload", "gate example.Packet", "gate example.Reflect", "gate example.Refuse", "gate example.Replaces", "gate example.Toggle",
+                "gate example.Overload", "gate example.Packet", "gate example.Reflect", "gate example.Refuse", "gate example.Replaces", "gate example.Sender", "gate example.Toggle",
                 "gate example.Use", "gate example.Writes",
             ),
             sites.map { it.key },
