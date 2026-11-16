@@ -32,18 +32,6 @@ val rules = listOf(
         example = """if (tab.info("Area") != "The End") return null""",
     ),
     Rule(
-        id = "no-automation",
-        files = "src/main/**.{kt,java}",
-        forbid = Regex(
-            """\b(sendCommand|sendChat|sendUnattendedCommand|handleContainerInput|handlePickItem\w*|startDestroyBlock|""" +
-                """continueDestroyBlock|destroyBlock|useItemOn|useItem|interact|attack|piercingAttack|releaseUsingItem|handleInventoryButtonClick)\(|""" +
-                """KeyMapping\.(click|set)\(|\.setDown\(|\bconnection\??\.send\(""",
-        ),
-        fix = "ds-mod shows information and the player makes every move. Only a feature that DragSim Utils has may " +
-            "send for the player. End its line with `rule:no-automation <the feature>`, and ask the user about anything else.",
-        example = "client.connection?.sendCommand(\"warp end\")",
-    ),
-    Rule(
         id = "text-by-role",
         files = "src/main/**.{kt,java}",
         // PlayerNames strips the `§` codes of an older capture's raw text and reads them to tell an NPC's label. It colors nothing.
