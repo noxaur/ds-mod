@@ -107,6 +107,22 @@ Shows the items in your inventory as a grid on the HUD, nine to a row as your in
 | Inventory Opacity | Sets how solid the Inventory look's panel and slots are, so the world shows through as much as you like |
 | Pickup Animation | Bobs an item in the grid as it lands in your inventory, as your hotbar does |
 
+### Performance Stats
+
+Shows your frames per second, your ping and the server's ticks per second on the HUD. Turn it on under Interface in `/dsmod`, and place it in the HUD editor or by dragging it with the chat open, like any other block.
+
+- **FPS** is the game's own count of the frames it drew in the last second.
+- **Ping** is how long the server takes to answer, there and back, as the mean of its last five answers. The tab list always says 0 on Dragon Simulator, so the mod asks the server once a second while Ping is shown, the same way the F3 network chart does. Take Ping out of the values and the mod stops asking.
+- **TPS** is how many ticks the server ran each second over the last ten seconds, read from the clock it sends. 20 is full speed. If the server stops sending its clock for a few seconds, the value falls for as long as it stays quiet.
+
+Each value shows `-` until it has something to show: TPS needs about two seconds, and starts again when you change lobbies. Ping turns yellow above 150 ms and red above 300 ms. TPS turns yellow below 18 and red below 12.
+
+| Setting | Does |
+| --- | --- |
+| Values | Picks which of FPS, Ping and TPS show, and their order |
+| Layout | Lines the values up in a row or a column |
+| Look | Shows the values on the HUD's plate, or on nothing |
+
 ### Etherwarp Outline
 
 While you sneak with an Aspect of the End or Aspect of the Void that has Etherwarp, a green box sits on the block a sneak right click would warp you to. It reads the range from the item's lore, so a blade with a longer reach gets its own. A red box means the warp would fail there, and says why: Too Far for a block past the range, or No Room when the two blocks above it are not clear. No box means nothing on your look line can be warped to. Water, lava, grass, flowers and torches don't stop the line, so you warp through them, and a slab is boxed as the half block it is. It only shows you where you'd land, and never warps for you.

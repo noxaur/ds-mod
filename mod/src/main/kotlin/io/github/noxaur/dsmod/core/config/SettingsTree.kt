@@ -220,6 +220,11 @@ object SettingsTree {
                     choice(g::petLook, "Pet Look", "Show your pet as its head, or as its name and level.")
                     choice(g::petPosition, "Pet Position", "Put your pet among the armor, or on a row above or below it.")
                 }
+                group("Performance Stats", switch = toggle(g::performanceStats, "Performance Stats", "Show your FPS, your ping and the server's TPS on the HUD.")) {
+                    order(g::performanceValues, "Values", "Pick the values to show, and drag them into order.")
+                    choice(g::performanceLayout, "Layout", "Line the values up in a row or a column.")
+                    choice(g::performanceLook, "Look", "Show the values on the plate, or on nothing.")
+                }
                 group("Active Pet", switch = toggle(g::activePet, "Active Pet", "Show your pet, its level, held item and XP on the HUD.")) {
                     switch(g::activePetIcon, "Icon", "Show your pet's head beside its name.")
                     switch(g::activePetItem, "Held Item", "Show the pet item your pet holds.")

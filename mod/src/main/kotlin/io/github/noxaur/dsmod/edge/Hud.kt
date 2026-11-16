@@ -237,6 +237,9 @@ object Hud {
         layout()
     }
 
+    /** Whether the player can see the HUD now: the game's own HUD is up, and Hide In F3 has not taken it off. */
+    val visible: Boolean get() = !Minecraft.getInstance().gui.hud.isHidden && !hiddenInF3()
+
     /** Whether Hide In F3 takes the HUD off now. A HUD the player cannot see can't be pointed at either. */
     private fun hiddenInF3() = DsModClient.settings.hud.hideInF3 && Minecraft.getInstance().debugOverlay.showDebugScreen()
 

@@ -13,6 +13,9 @@ import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.Hit
 import io.github.noxaur.dsmod.core.game.PetNear
+import io.github.noxaur.dsmod.core.game.FrameRate
+import io.github.noxaur.dsmod.core.game.PingMeasured
+import io.github.noxaur.dsmod.core.game.ServerTime
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
@@ -137,6 +140,9 @@ class FeatureReplayTest {
         is PetNear -> "(pet near) ${event.name.plain}"
         is FloatingText -> "(floating) ${event.text.plain.replace("\n", " / ")}"
         is Hit -> "(you hit) ${event.entity}"
+        is ServerTime -> "(server time) tick ${event.gameTime}"
+        is PingMeasured -> "(ping) ${event.millis} ms"
+        is FrameRate -> "(frame rate) ${event.fps} fps"
         is SlotChanged -> "(slot ${event.slot}) " + (event.item?.let { "${it.count} x ${name(it)}" } ?: "emptied")
     }
 
