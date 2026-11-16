@@ -10,7 +10,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.isRegularFile
-import kotlin.io.path.readLines
 import kotlin.io.path.readText
 import kotlin.io.path.relativeTo
 import kotlin.streams.asSequence
@@ -18,9 +17,25 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+private fun exception(rule: Rule) = Regex("""rule:${Regex.escape(rule.id)} \S""")
+
+/** [text] breaks [rule] unless an exception comment covers the match. A [Span.FILE] rule may match across lines. */
+fun violations(rule: Rule, text: String): List<Int> {
+    val lines = text.lines()
+    if (rule.span == Span.LINE) {
+        return lines.withIndex().filter { (_, line) ->
+            rule.forbid.containsMatchIn(line) && !exception(rule).containsMatchIn(line)
+        }.map { it.index + 1 }
+    }
+    return rule.forbid.findAll(text).mapNotNull { match ->
+        val start = text.substring(0, match.range.first).count { it == '\n' }
+        val end = start + match.value.count { it == '\n' }
+        if (lines.subList(start, end + 1).any { exception(rule).containsMatchIn(it) }) null else start + 1
+    }.distinct().toList()
+}
+
 /** A line breaks [rule] unless it carries `rule:<id> <reason>`. */
-fun breaks(rule: Rule, line: String) =
-    rule.forbid.containsMatchIn(line) && !Regex("""rule:${Regex.escape(rule.id)} \S""").containsMatchIn(line)
+fun breaks(rule: Rule, line: String) = violations(rule, line).isNotEmpty()
 
 class RulesTest {
     @Test
@@ -30,8 +45,8 @@ class RulesTest {
             val path = file.relativeTo(root)
             fun matches(glob: String) = FileSystems.getDefault().getPathMatcher("glob:$glob").matches(path)
             rules.filter { matches(it.files) && it.except?.let(::matches) != true }.flatMap { rule ->
-                file.readLines().withIndex().filter { breaks(rule, it.value) }.map {
-                    "${path.invariantSeparatorsPathString}:${it.index + 1}: [${rule.id}] ${rule.fix}"
+                violations(rule, file.readText()).map {
+                    "${path.invariantSeparatorsPathString}:$it: [${rule.id}] ${rule.fix}"
                 }
             }
         }.toList()
@@ -46,7 +61,11 @@ class RulesTest {
 
     @Test
     fun `every rule catches its own example`() {
-        rules.forEach { assertTrue(breaks(it, it.example), "${it.id} does not catch: ${it.example}") }
+        rules.forEach { rule ->
+            (listOf(rule.example) + rule.examples).forEach { sample ->
+                assertTrue(breaks(rule, sample), "${rule.id} does not catch: $sample")
+            }
+        }
     }
 
     @Test
@@ -83,8 +102,24 @@ class RulesTest {
         )
     }
 
+    /** Names each id that appears twice, and says to give the new rule its own id. Null when every id is unique. */
+    fun ruleIdFailure(ids: List<String>): String? {
+        val repeated = ids.groupingBy { it }.eachCount().filter { it.value > 1 }.keys
+        if (repeated.isEmpty()) return null
+        return "Rule id ${repeated.joinToString()} is already used. Give the new rule its own id."
+    }
+
     @Test
     fun `rule ids are unique`() {
-        assertEquals(rules.map { it.id }.distinct(), rules.map { it.id })
+        val failure = ruleIdFailure(rules.map { it.id })
+        assertEquals(null, failure, failure)
+    }
+
+    @Test
+    fun `a repeated rule id names itself and says to give the new rule its own id`() {
+        assertEquals(
+            "Rule id chat-by-line is already used. Give the new rule its own id.",
+            ruleIdFailure(listOf("chat-by-line", "text-by-role", "chat-by-line")),
+        )
     }
 }

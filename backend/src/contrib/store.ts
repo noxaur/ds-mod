@@ -29,8 +29,11 @@ export class Store extends Context.Service<
     readonly skips: Effect.Effect<readonly { readonly requestId: string; readonly userId: string }[]>;
     /** The ids of the requests a player skipped or recorded. */
     readonly doneBy: (userId: string) => Effect.Effect<readonly string[]>;
-    /** False, and nothing is kept, when this player already has a run for the request. */
-    readonly insertSubmission: (row: SubmissionRow, capture: Uint8Array) => Effect.Effect<boolean>;
+    /**
+     * False, and nothing is kept, when this player already has a run or the request already has `maxRuns`.
+     * The cap is decided in the same step as the insert, so two players at once cannot both pass it.
+     */
+    readonly insertSubmission: (row: SubmissionRow, capture: Uint8Array, maxRuns: number) => Effect.Effect<boolean>;
     /** Oldest first, in the same order every time, because a run's letter is its place in this list. */
     readonly submissions: Effect.Effect<readonly SubmissionRow[]>;
     readonly submissionsOf: (requestId: string) => Effect.Effect<readonly SubmissionRow[]>;
@@ -82,9 +85,10 @@ export const memoryStore = (): Store["Service"] => {
     skips: Effect.sync(() => [...skips]),
     doneBy: (userId) =>
       Effect.sync(() => [...skips, ...submissions].filter((row) => row.userId === userId).map((row) => row.requestId)),
-    insertSubmission: (row, capture) =>
+    insertSubmission: (row, capture, maxRuns) =>
       Effect.sync(() => {
-        if (submissions.some((other) => other.requestId === row.requestId && other.userId === row.userId)) {
+        const runs = submissions.filter((other) => other.requestId === row.requestId);
+        if (runs.length >= maxRuns || runs.some((other) => other.userId === row.userId)) {
           return false;
         }
         submissions.push(row);
