@@ -16,7 +16,6 @@ import io.github.noxaur.dsmod.edge.Chat
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.edge.Slots
-import io.github.noxaur.dsmod.edge.Tooltips
 import io.github.noxaur.dsmod.edge.World
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -62,7 +61,6 @@ class SurfacesTest : FabricClientGameTest {
             context.waitTicks(30)
             context.takeScreenshot("surfaces")
 
-            Tooltips.add { stack -> if (stack.item == Items.DIAMOND) listOf(text { muted("Sells for: "); value(1500) }) else emptyList() }
             context.setScreen { InventoryScreen(context.computeOnClient<net.minecraft.world.entity.player.Player, Nothing> { it.player!! }) }
             val cursor = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
                 val screen = client.gui.screen() as InventoryScreen
