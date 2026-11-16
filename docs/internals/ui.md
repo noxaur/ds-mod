@@ -10,7 +10,7 @@ Text the server sent is a separate type, `ServerText`, which carries whatever co
 
 ## UI layers keep what they are given
 
-Each surface (chat, HUD, alerts, container slots, world marks) has one object in `edge` that draws a plain model from `core`. A model is handed over when something changes, and the layer converts it to Minecraft's types once and redraws it from then on. A feature that built its text every frame would allocate in the render loop, where a dropped frame is a bug, so the layers offer no per-frame hook.
+Each surface (chat, HUD, alerts, container slots, world marks) has one object in `edge` that draws a plain model from `core`. A model is handed over when something changes, and the layer converts it to Minecraft's types once and redraws it from then on. A feature that built its text every frame would allocate in the render loop, where a dropped frame is a bug, so the layers offer no per-frame hook. The exception is a world box that follows the view, below.
 
 ## Chrome is drawn in code, from a theme
 
@@ -46,7 +46,9 @@ A block's saved place is the corner of its plate, so a block stays where the pla
 
 ## World marks reach Minecraft once per tick
 
-`World` draws through Minecraft's gizmos, the shapes its own debug views use. It submits them at the end of each client tick, and Minecraft replays the tick's gizmos on every frame until the next one. Submitting from Fabric's per-frame gizmo event drew nothing in the game tests, and would do the work every frame instead of twenty times a second.
+`World` draws through Minecraft's gizmos, the shapes its own debug views use. It submits them at the end of each client tick, and Minecraft replays the tick's gizmos on every frame until the next one, so a mark costs nothing in the frame loop.
+
+Etherwarp Outline's box is the one mark drawn per frame, because it follows the crosshair and a box from the last tick trails a turning view by up to 50 ms. It is drawn from Fabric's `AFTER_BLOCK_OUTLINE_EXTRACTION`, which runs on the client thread while the frame's gizmo collector is open and before Minecraft hands that collector's shapes to the renderer. The line is followed again only when the view or the tick changed, and `PerfTest` caps it. A gizmo made outside that window goes to a collector that drops it without a word. Fabric's `takeScreenshot` draws a frame of its own outside the game's frame loop, so no collector is open there, and a game test that screenshots a per-frame shape opens the frame's collector itself. That is why a per-frame shape once looked as if it drew nothing.
 
 ## Rarity marks are baked from one color
 
