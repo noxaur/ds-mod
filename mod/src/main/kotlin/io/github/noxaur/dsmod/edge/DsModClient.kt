@@ -13,6 +13,7 @@ import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.game.DragSim
+import io.github.noxaur.dsmod.core.game.FrameRate
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.text.text
@@ -43,6 +44,7 @@ object DsModClient : ClientModInitializer {
     private const val FLUSH_TICKS = 20 * 60
     private const val TAB_POLL_TICKS = 5
     private const val PET_POLL_TICKS = 20
+    private const val FPS_POLL_TICKS = 20
 
     private val log = LoggerFactory.getLogger("dsmod")
     private lateinit var file: ConfigFile
@@ -144,6 +146,7 @@ object DsModClient : ClientModInitializer {
         CopyChats.register()
         SlotGuards.register(all.filterIsInstance<SlotLock>().single(), settings.inventory)
         CommandKeys.register(settings.general)
+        Pings.register(settings.general)
         readouts = Readouts(game, settings.hud).also { it.register() }
         ChatDrags.register(readouts, settings.hud, ::saveSettings)
         tabs = TabListPoller(game)
@@ -193,6 +196,8 @@ object DsModClient : ClientModInitializer {
             game.metrics.time("container-poll") { containers.poll(it) }
             // A pet changes when the player swaps it, so once a second is soon enough.
             if (ticks % PET_POLL_TICKS == 0) game.metrics.time("pet-poll") { pets.poll(it) }
+            // The game counts its frames once a second, so a tick's worth of lag behind its count is all this costs.
+            if (ticks % FPS_POLL_TICKS == 0 && game.wants(FrameRate::class.java)) game.post(System.currentTimeMillis(), FrameRate(it.fps))
             Packets.tick(it)
             game.tick(System.currentTimeMillis())
             readouts.push()

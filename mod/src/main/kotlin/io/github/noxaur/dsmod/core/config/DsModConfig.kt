@@ -13,6 +13,9 @@ import io.github.noxaur.dsmod.core.feature.general.InventoryLook
 import io.github.noxaur.dsmod.core.feature.general.InventoryRow
 import io.github.noxaur.dsmod.core.feature.general.PetLook
 import io.github.noxaur.dsmod.core.feature.general.PetPosition
+import io.github.noxaur.dsmod.core.feature.general.Stat
+import io.github.noxaur.dsmod.core.feature.general.StatsLayout
+import io.github.noxaur.dsmod.core.feature.general.StatsLook
 import io.github.noxaur.dsmod.core.hand.SwingStyle
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.input.CommandBind
@@ -232,6 +235,18 @@ class DsModConfig {
 
         @JvmField
         var inventoryPickup = false
+
+        @JvmField
+        var performanceStats = false
+
+        @JvmField
+        var performanceValues: MutableList<Stat> = Stat.entries.toMutableList()
+
+        @JvmField
+        var performanceLayout = StatsLayout.ROW
+
+        @JvmField
+        var performanceLook = StatsLook.PLATE
 
         @JvmField
         var etherwarpOutline = true

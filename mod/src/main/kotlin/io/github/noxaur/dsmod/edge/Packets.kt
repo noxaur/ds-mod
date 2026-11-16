@@ -3,11 +3,14 @@ package io.github.noxaur.dsmod.edge
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.HeadPlaced
+import io.github.noxaur.dsmod.core.game.PingMeasured
+import io.github.noxaur.dsmod.core.game.ServerTime
 import net.minecraft.client.Minecraft
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket
+import net.minecraft.util.Util
 import net.minecraft.world.entity.EntityEvent
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.block.Blocks
@@ -23,6 +26,20 @@ object Packets {
     fun actionBar(text: Component) {
         val game = DsModClient.game
         if (game.wants(ActionBar::class.java)) game.post(System.currentTimeMillis(), ActionBar(text.toText()))
+    }
+
+    fun time(gameTime: Long) {
+        val game = DsModClient.game
+        if (game.wants(ServerTime::class.java)) game.post(System.currentTimeMillis(), ServerTime(gameTime))
+    }
+
+    /**
+     * The answer to a ping request, which carries the time on the game's own clock that the request left with. The
+     * F3 network chart's requests are answered the same way, and count as well.
+     */
+    fun pong(sent: Long) {
+        val game = DsModClient.game
+        if (game.wants(PingMeasured::class.java)) game.post(System.currentTimeMillis(), PingMeasured(Util.getMillis() - sent))
     }
 
     // Heads seen before any feature could be handed them. A head arrives with its chunk or as a block update in the

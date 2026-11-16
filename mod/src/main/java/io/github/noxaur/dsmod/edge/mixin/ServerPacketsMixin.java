@@ -6,6 +6,8 @@ import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
+import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -35,5 +37,15 @@ abstract class ServerPacketsMixin {
     @Inject(method = "handleEntityEvent", at = @At("TAIL"))
     private void dsmod$entityEvent(ClientboundEntityEventPacket packet, CallbackInfo ci) {
         Packets.INSTANCE.entityEvent(packet);
+    }
+
+    @Inject(method = "handleSetTime", at = @At("TAIL"))
+    private void dsmod$time(ClientboundSetTimePacket packet, CallbackInfo ci) {
+        Packets.INSTANCE.time(packet.gameTime());
+    }
+
+    @Inject(method = "handlePongResponse", at = @At("TAIL"))
+    private void dsmod$pong(ClientboundPongResponsePacket packet, CallbackInfo ci) {
+        Packets.INSTANCE.pong(packet.time());
     }
 }

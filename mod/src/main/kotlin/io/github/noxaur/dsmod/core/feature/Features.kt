@@ -18,6 +18,7 @@ import io.github.noxaur.dsmod.core.feature.general.EtherwarpOutline
 import io.github.noxaur.dsmod.core.feature.general.ExplosionParticleHider
 import io.github.noxaur.dsmod.core.feature.general.FreeLook
 import io.github.noxaur.dsmod.core.feature.general.InventoryPreview
+import io.github.noxaur.dsmod.core.feature.general.PerformanceStats
 import io.github.noxaur.dsmod.core.feature.general.Fullbright
 import io.github.noxaur.dsmod.core.feature.general.ProfileViewer
 import io.github.noxaur.dsmod.core.feature.hud.DragInChat
@@ -67,6 +68,12 @@ fun features(config: DsModConfig): List<Feature> = listOf(
         config.general::inventoryLayout,
         config.general::inventoryOpacity,
         config.general::inventoryPickup,
+    ),
+    PerformanceStats(
+        config.general::performanceStats,
+        config.general::performanceValues,
+        config.general::performanceLayout,
+        config.general::performanceLook,
     ),
     FreeLook(config.general::freeLook),
     Fullbright(config.general::fullbright),

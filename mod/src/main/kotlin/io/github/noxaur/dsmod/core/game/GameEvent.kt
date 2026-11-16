@@ -91,3 +91,24 @@ data class SlotChanged(val slot: Int, val item: Item? = null) : GameEvent
 @Serializable
 @SerialName("pet")
 data class PetNear(val name: ServerText, val head: Item) : GameEvent
+
+/**
+ * The server's clock: [gameTime] is how many ticks its world has run. The server sends it about once a second, so the
+ * ticks between two of them over the time between them are its ticks per second. Posted only while a feature reads it.
+ */
+@Serializable
+@SerialName("time")
+data class ServerTime(val gameTime: Long) : GameEvent
+
+/** The server answered a ping request after [millis], there and back. Posted only while a feature reads it. */
+@Serializable
+@SerialName("ping")
+data class PingMeasured(val millis: Long) : GameEvent
+
+/**
+ * The frames the client drew in the last second, as the game counts them itself once a second. It comes from the
+ * client rather than the server, and is posted when it changes, only while a feature reads it.
+ */
+@Serializable
+@SerialName("fps")
+data class FrameRate(val fps: Int) : GameEvent
