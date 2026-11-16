@@ -46,10 +46,11 @@ gate edge.CommandKeys 24edfabcaa05  CommandBinds
     sends through ClientPacketListener.sendCommand
     approved by github.com/noxaur 2026-11-16T14:34:00Z
 gate edge.CopyChats 19952a107159  CopyChat
+    approved by github.com/noxaur 2026-11-16T08:42:00Z
+gate edge.CopyChats f21712999623  CopyChat
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate edge.EyeGuards b42b9f42c41e  ProtectPlacedEyes
     can refuse the player's actions through UseBlockCallback.EVENT
     approved by github.com/noxaur 2026-11-16T08:42:00Z
@@ -67,9 +68,9 @@ gate edge.TabBar 75f014239d9d  MenuTabs
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     approved by github.com/noxaur 2026-11-16T08:42:00Z
-gate edge.capture.Recording 9b3a6a17e0f5
+gate edge.capture.Recording 5e0cc2278294
     takes the player's key presses through KeyMapping.consumeClick
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
+    approved by github.com/noxaur 2026-11-16T14:32:00Z
 gate edge.mixin.CameraMixin 38be690c7e6d
     hooks Camera.alignWithEntity
     hooks Camera.getMaxZoom

@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.feature
 
+import io.github.noxaur.dsmod.core.capture.Captured
 import io.github.noxaur.dsmod.core.capture.readCapture
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.container.SlotMark
@@ -22,6 +23,7 @@ import io.github.noxaur.dsmod.core.world.Mark
 import io.github.noxaur.dsmod.core.world.Waypoint
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import java.nio.file.Path
 import java.util.Locale
@@ -45,6 +47,40 @@ class FeatureReplayTest {
 
     /** A handler or a readout that averages more than this is too slow for the client thread. */
     private val budgetNanos = 20_000L
+
+    /**
+     * Posts every event as it arrives. When the capture recorded client ticks, ticks once after each tick's events,
+     * at the time of the last of them. A capture with no tick on any event ticks after every event, which is how
+     * those transcripts were written. [posted] runs after each post, [ticked] after each tick.
+     */
+    private fun play(
+        game: Game,
+        events: List<Captured>,
+        posted: (time: Long, event: GameEvent, kept: Boolean) -> Unit = { _, _, _ -> },
+        ticked: (time: Long) -> Unit = {},
+    ) {
+        if (events.none { it.tick != null }) {
+            for ((time, event) in events) {
+                posted(time, event, game.post(time, event))
+                game.tick(time)
+                ticked(time)
+            }
+            return
+        }
+        var index = 0
+        while (index < events.size) {
+            val tick = events[index].tick
+            var time = events[index].time
+            while (index < events.size && events[index].tick == tick) {
+                val captured = events[index]
+                posted(captured.time, captured.event, game.post(captured.time, captured.event))
+                time = captured.time
+                index++
+            }
+            game.tick(time)
+            ticked(time)
+        }
+    }
 
     private fun fresh(id: String) = Game(listOf(features(DsModConfig()).single { it.id == id }.also { it.enabled = true }))
 
@@ -70,12 +106,12 @@ class FeatureReplayTest {
      * A fixture's events. One cut without the tab list or the sidebar says nothing of where the player was, so it
      * replays inside the feature's own area.
      */
-    private fun events(feature: Feature, fixture: Path): List<Pair<Long, GameEvent>> {
+    private fun events(feature: Feature, fixture: Path): List<Captured> {
         val events = readCapture(fixture)
-        val start = events.first().first
-        val row = feature.area.row?.takeIf { events.none { (_, event) -> event is TabList } }
-        val line = feature.area.line?.takeIf { events.none { (_, event) -> event is Sidebar } }
-        return listOfNotNull(row?.let { start to tabList(it) }, line?.let { start to sidebar(it) }) + events
+        val start = events.first().time
+        val row = feature.area.row?.takeIf { events.none { it.event is TabList } }
+        val line = feature.area.line?.takeIf { events.none { it.event is Sidebar } }
+        return listOfNotNull(row?.let { Captured(start, tabList(it)) }, line?.let { Captured(start, sidebar(it)) }) + events
     }
 
     private fun name(item: Item) = item.name?.plain?.ifBlank { null } ?: item.id
@@ -107,24 +143,13 @@ class FeatureReplayTest {
             for (fixture in fixtures(feature)) {
                 val game = fresh(feature.id)
                 val events = events(feature, fixture)
-                val start = events.first().first
+                val start = events.first().time
                 var shown = emptyList<String>()
                 var marked = emptyMap<Int, SlotMark>()
                 var drawn = emptyList<Mark>()
                 val infoRows = HashSet<String>()
                 val transcript = buildString {
-                    for ((time, event) in events) {
-                        val kept = game.post(time, event)
-                        game.tick(time)
-                        appendLine("+%6.1fs > %s".format(Locale.ROOT, (time - start) / 1000.0, describe(event, infoRows)))
-                        if (!kept) appendLine("             (hidden from chat)")
-                        for (message in game.messages) {
-                            when (message) {
-                                is Notice -> appendLine("             (chat) ${message.feature} | ${message.detail.plain}")
-                                is Alert -> appendLine("             (title) ${message.title.plain}, (chat) ${message.feature} | ${message.detail.plain}")
-                            }
-                        }
-                        game.messages.clear()
+                    fun readout() {
                         val lines = game.readouts.single().hud?.let { block -> listOfNotNull(block.header.plain.ifEmpty { null }) + block.rows.map { "  " + it.text.plain } }
                             ?: emptyList()
                         if (lines != shown) {
@@ -162,6 +187,17 @@ class FeatureReplayTest {
                             }
                         }
                     }
+                    play(game, events, posted = { time, event, kept ->
+                        appendLine("+%6.1fs > %s".format(Locale.ROOT, (time - start) / 1000.0, describe(event, infoRows)))
+                        if (!kept) appendLine("             (hidden from chat)")
+                        for (message in game.messages) {
+                            when (message) {
+                                is Notice -> appendLine("             (chat) ${message.feature} | ${message.detail.plain}")
+                                is Alert -> appendLine("             (title) ${message.title.plain}, (chat) ${message.feature} | ${message.detail.plain}")
+                            }
+                        }
+                        game.messages.clear()
+                    }, ticked = { readout() })
                     val metrics = game.metrics.snapshot()
                     assertEquals(emptyMap(), metrics.failures, "${feature.id} threw while replaying $fixture")
                     metrics.counters.toSortedMap().forEach { (name, count) -> appendLine("$name = $count") }
@@ -196,19 +232,48 @@ class FeatureReplayTest {
                     val state = game.readouts.single().feature.state
                     game.post(0, tabList("Area: Somewhere Else"))
                     game.post(0, sidebar("⏣ Somewhere Else"))
-                    for ((time, event) in readCapture(fixture)) {
-                        if (event is TabList || event is Sidebar) continue
-                        assertTrue(game.post(time, event), "${feature.id} hid a line outside ${feature.area}: $event")
-                        game.tick(time)
-                        val where = "outside ${feature.area}, replaying $fixture, after $event"
+                    val outside = readCapture(fixture).filter { it.event !is TabList && it.event !is Sidebar }
+                    play(game, outside, posted = { time, event, kept ->
+                        val where = "outside ${feature.area}, replaying $fixture, after $event at $time"
+                        assertTrue(kept, "${feature.id} hid a line $where")
+                        assertEquals(emptyList(), game.messages, "${feature.id} spoke $where")
+                    }, ticked = {
+                        val where = "outside ${feature.area}, replaying $fixture"
                         assertEquals(null, game.readouts.single().hud, "${feature.id} showed its HUD $where")
                         assertEquals(emptyMap(), game.readouts.single().slots, "${feature.id} marked slots $where")
-                        assertEquals(emptyList(), game.messages, "${feature.id} spoke $where")
                         assertEquals(untouched, state?.encode(), "${feature.id} saved something $where")
-                    }
+                    })
                 }
             }
         }
+
+    @Test
+    fun `play ticks once for the events of one recorded client tick`() {
+        val game = fresh(features(DsModConfig()).first().id)
+        val death = SystemMessage(ServerText(ServerSpan("Zealot was slain")))
+        val bar = ActionBar(ServerText(ServerSpan("Kills: 4")))
+        val ticks = ArrayList<Long>()
+        play(
+            game,
+            listOf(
+                Captured(1794683683200, death, tick = 4),
+                Captured(1794683683200, bar, tick = 4),
+                Captured(1794683683201, death, tick = 5),
+            ),
+            ticked = { ticks += it },
+        )
+        assertEquals(listOf(1794683683200, 1794683683201), ticks)
+    }
+
+    @Test
+    fun `play ticks after every event when the capture recorded no client tick`() {
+        val game = fresh(features(DsModConfig()).first().id)
+        val line = SystemMessage(ServerText(ServerSpan("hello")))
+        val ticks = ArrayList<Long>()
+        val events = listOf(Captured(100, line), Captured(101, line), Captured(149, line))
+        play(game, events, ticked = { ticks += it })
+        assertEquals(events.map { it.time }, ticks)
+    }
 
     @TestFactory
     fun `every feature stays inside the time budget`(): List<DynamicTest> = features(DsModConfig()).map { feature ->
@@ -217,10 +282,7 @@ class FeatureReplayTest {
                 val game = fresh(feature.id)
                 val events = events(feature, fixture)
                 fun replay(times: Int) = repeat(times) {
-                    for ((time, event) in events) {
-                        game.post(time, event)
-                        game.tick(time)
-                    }
+                    play(game, events)
                     game.messages.clear()
                 }
                 // The first runs are interpreted, so they are not what a player gets.

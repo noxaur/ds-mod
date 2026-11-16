@@ -442,6 +442,9 @@ class SettingsScreen(
     /** The ids of the rows the pane lists now, in order, so a test can read a page. */
     fun shown() = rows.ids()
 
+    /** Whether the row [id] paints its changed marker. */
+    fun marked(id: String) = rows.marked(id)
+
     /** The editor of the row [id], told where the pane is, so a test can find its controls. */
     fun editor(id: String): Editor? {
         sync()
