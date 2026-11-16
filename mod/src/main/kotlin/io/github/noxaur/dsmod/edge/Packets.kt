@@ -80,20 +80,24 @@ object Packets {
         if (waiting.isEmpty()) return
         val game = DsModClient.game
         val level = client.level
-        val still = LinkedHashMap<BlockPos, Int>()
-        for ((pos, age) in waiting) {
-            if (level?.getBlockState(pos)?.block !== Blocks.PLAYER_HEAD) continue
-            val entity = level.getBlockEntity(pos) as? SkullBlockEntity
-            when {
-                entity == null -> still[pos] = age
-                entity.ownerProfile == null -> if (age + 1 < BARE_SKULL_TICKS) still[pos] = age + 1
-                game.reaches(HeadPlaced::class.java) || game.tap != null ->
-                    game.post(System.currentTimeMillis(), HeadPlaced(pos.x, pos.y, pos.z))
-                game.wants(HeadPlaced::class.java) -> still[pos] = age
+        val each = waiting.entries.iterator()
+        while (each.hasNext()) {
+            val held = each.next()
+            val pos = held.key
+            val keep = if (level?.getBlockState(pos)?.block !== Blocks.PLAYER_HEAD) false else {
+                val entity = level.getBlockEntity(pos) as? SkullBlockEntity
+                when {
+                    entity == null -> true
+                    entity.ownerProfile == null -> (held.value + 1 < BARE_SKULL_TICKS).also { held.setValue(held.value + 1) }
+                    game.reaches(HeadPlaced::class.java) || game.tap != null -> {
+                        game.post(System.currentTimeMillis(), HeadPlaced(pos.x, pos.y, pos.z))
+                        false
+                    }
+                    else -> game.wants(HeadPlaced::class.java)
+                }
             }
+            if (!keep) each.remove()
         }
-        waiting.clear()
-        waiting += still
     }
 
     fun entityEvent(packet: ClientboundEntityEventPacket) {
