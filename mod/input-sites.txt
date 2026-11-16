@@ -57,12 +57,11 @@ gate edge.MenuBack ff8ff383383c  BackButtons
     can refuse or change sent chat through ClientSendMessageEvents.COMMAND
     sends through ClientPacketListener.sendCommand
     approved by github.com/noxaur 2026-11-16T08:42:00Z
-gate edge.SlotGuards f47bde8c5d14  SlotLock
+gate edge.SlotGuards 42b7fba30a5a  SlotLock
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate edge.TabBar 75f014239d9d  MenuTabs
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick

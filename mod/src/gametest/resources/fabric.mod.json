@@ -233,6 +233,10 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.SlotLockShiftTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.SurfacesTest"
       },
       {

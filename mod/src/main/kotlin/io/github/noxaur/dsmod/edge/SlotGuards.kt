@@ -3,12 +3,15 @@ package io.github.noxaur.dsmod.edge
 import com.google.common.collect.MapMaker
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
+import io.github.noxaur.dsmod.core.inventory.ShiftSlot
 import io.github.noxaur.dsmod.core.inventory.SlotLocks
+import io.github.noxaur.dsmod.core.inventory.shiftPlaces
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
@@ -33,6 +36,10 @@ import net.minecraft.world.item.component.CustomData
 object SlotGuards {
     private const val FLASH_MILLIS = 300L
     private const val WORN_FIRST = 36
+    /** A result can craft once per item in the grid. Past this the click is not making progress. */
+    private const val GUARD = 256
+    /** Ticks to wait for the server to put the next crafting result back, before giving up. */
+    private const val RESULT_WAIT = 5
 
     private lateinit var feature: SlotLock
     private lateinit var settings: DsModConfig.Inventory
@@ -69,9 +76,28 @@ object SlotGuards {
 
     private fun find(screen: AbstractContainerScreen<*>, own: Int): Slot? = screen.menu.slots.firstOrNull { own(it) == own && it.isActive }
 
+    /** The result slot still being emptied, and how many ticks it has been empty since the last craft. */
+    private var pending: Pair<AbstractContainerScreen<*>, Int>? = null
+    private var pendingWaits = 0
+
     fun register(feature: SlotLock, settings: DsModConfig.Inventory) {
         this.feature = feature
         this.settings = settings
+        // The server refills a crafting result after the click, so the next craft waits for that packet.
+        ClientTickEvents.END_CLIENT_TICK.register { client ->
+            val (screen, index) = pending ?: return@register
+            if (!on || client.gui.screen() !== screen) {
+                pending = null
+                return@register
+            }
+            val slot = screen.menu.getSlot(index)
+            if (!slot.hasItem()) {
+                if (++pendingWaits > RESULT_WAIT) pending = null
+                return@register
+            }
+            pendingWaits = 0
+            if (!steered(client, screen, slot)) pending = null
+        }
         // Fabric drops a screen's listeners on every init, so they are added again here.
         ScreenEvents.AFTER_INIT.register { client, screen, _, _ ->
             if (screen !is AbstractContainerScreen<*>) return@register
@@ -121,6 +147,7 @@ object SlotGuards {
                 pressing = false
                 itemKeyDown = false
                 refused = null
+                if (pending?.first === screen) pending = null
             }
         }
     }
@@ -195,34 +222,99 @@ object SlotGuards {
 
     /**
      * A Shift click moves an item to wherever the menu has room, which may be a locked slot that is empty or holds
-     * more of the same. When it may, the item is carried to a slot that is not locked instead, with the two clicks
-     * the player would make by hand, or stays where it is when there is none. Returns whether it took the click over.
+     * more of the same. The stack then goes to every unlocked slot in that order, as much as each one holds, with
+     * the clicks a player would make. A result keeps crafting until it is empty or those slots are full. Returns
+     * whether it took the click over. It refuses, and sends nothing, only when every slot that could take any is locked.
      */
     private fun steered(client: Minecraft, screen: AbstractContainerScreen<*>, slot: Slot): Boolean {
         val stack = slot.item
+        val into = destinations(client, screen, slot) ?: return false
+        val described = into.map { described(stack, it) }
+        val yields = !slot.mayPlace(stack)
+        val moving = stack.count
+        val vanilla = shiftPlaces(moving, described, skipLocked = false, stackable = stack.isStackable)
+        val opened = shiftPlaces(moving, described, stackable = stack.isStackable)
+        val lockedTakes = vanilla.any { (index, _) -> described.first { it.index == index }.locked }
+        val lockedCould = described.any { it.locked && (it.acceptsEmpty || it.same && it.count < it.limit) }
+        if (opened.isEmpty()) return lockedTakes || yields && lockedCould
+        if (!yields && !lockedTakes || yields && !lockedCould) return false
+        // A Shift click leaves the cursor alone. Set a held stack down outside this move, and pick it back up after.
+        val carried = screen.menu.carried
+        val park = if (carried.isEmpty) null else park(screen, carried, described.map { it.index }.toSet() + slot.index) ?: return false
+        val mode = client.gameMode ?: return false
+        val player = client.player ?: return false
+        fun click(index: Int, button: Int) {
+            mode.handleContainerInput(screen.menu.containerId, index, button, ContainerInput.PICKUP, player)
+        }
+        if (park != null) click(park.index, 0)
+        var guard = 0
+        var blocked = false
+        while (slot.hasItem() && guard++ < GUARD) {
+            val count = slot.item.count
+            val room = shiftPlaces(count, into.map { described(slot.item, it) }, stackable = slot.item.isStackable).sumOf { it.second }
+            if (room <= 0) {
+                blocked = true
+                break
+            }
+            // A normal slot can take the whole stack onto the cursor and put back what did not fit.
+            // A result slot cannot take anything back, so take only a whole stack or a right-click half that fits.
+            val take = when {
+                !yields || room >= count -> count
+                room >= (count + 1) / 2 -> (count + 1) / 2
+                else -> break
+            }
+            click(slot.index, if (take == count) 0 else 1)
+            var left = screen.menu.carried.count
+            for ((index, amount) in shiftPlaces(left, into.map { described(screen.menu.carried, it) }, stackable = screen.menu.carried.isStackable)) {
+                if (amount == left) click(index, 0) else repeat(amount) { click(index, 1) }
+                left -= amount
+            }
+            if (!screen.menu.carried.isEmpty) {
+                if (!slot.mayPlace(screen.menu.carried)) break
+                click(slot.index, 0)
+            }
+            if (!yields) break
+        }
+        if (park != null && screen.menu.carried.isEmpty) click(park.index, 0)
+        // The client does not refill a result slot; the server sends it. Keep going on later ticks while the grid has ingredients.
+        val gridLeft = yields && !blocked && screen.menu.slots.any { it !== slot && own(it) == null && it.hasItem() }
+        pending = if (gridLeft) screen to slot.index else null
+        if (gridLeft) pendingWaits = 0
+        return true
+    }
+
+    /** A free slot outside [reserved] that can hold [carried] while the Shift click runs. */
+    private fun park(screen: AbstractContainerScreen<*>, carried: ItemStack, reserved: Set<Int>): Slot? =
+        screen.menu.slots.firstOrNull { it.isActive && !it.hasItem() && it.index !in reserved && !locked(it) && it.mayPlace(carried) }
+
+    private fun described(stack: ItemStack, slot: Slot): ShiftSlot {
+        val item = slot.item
+        val empty = !slot.hasItem()
+        return ShiftSlot(
+            slot.index,
+            if (empty) 0 else item.count,
+            slot.getMaxStackSize(if (empty) stack else item),
+            !empty && ItemStack.isSameItemSameComponents(stack, item),
+            empty && slot.mayPlace(stack),
+            locked(slot),
+        )
+    }
+
+    /** The slots a Shift click fills, in the menu's rough order, or null when the click leaves the player's inventory for a menu. */
+    private fun destinations(client: Minecraft, screen: AbstractContainerScreen<*>, slot: Slot): List<Slot>? {
         val own = own(slot)
         val main = screen.menu.slots.filter { own(it) in 0..SlotLocks.ABOVE.last && it.isActive }
-        val into = when {
+        return when {
             // Out of a menu the game fills the inventory from its last slot back.
             own == null -> main.reversed()
             // Out of the inventory into another menu, which has no locks.
-            screen.menu !is InventoryMenu -> return false
+            screen.menu !is InventoryMenu -> null
             else -> {
                 // Armor goes on when its slot is free, then the hotbar and the rows above trade with each other.
-                val worn = client.player!!.getEquipmentSlotForItem(stack).takeIf { it.isArmor }?.let { find(screen, WORN_FIRST + it.index) }
+                val worn = client.player?.getEquipmentSlotForItem(slot.item)?.takeIf { it.isArmor }?.let { find(screen, WORN_FIRST + it.index) }
                 listOfNotNull(worn?.takeIf { own in 0..SlotLocks.ABOVE.last }) + main.filter { own > SlotLocks.ABOVE.last || (own(it) in SlotLocks.HOTBAR) != (own in SlotLocks.HOTBAR) }
             }
         }
-        fun fits(to: Slot) = if (to.hasItem()) ItemStack.isSameItemSameComponents(stack, to.item) && to.item.count < to.getMaxStackSize(stack) else to.mayPlace(stack)
-        if (into.none { locked(it) && fits(it) }) return false
-        val free = into.filterNot(::locked)
-        val to = free.firstOrNull { it.hasItem() && fits(it) && it.item.count + stack.count <= it.getMaxStackSize(stack) } ?: free.firstOrNull { !it.hasItem() && fits(it) }
-        if (to != null && screen.menu.carried.isEmpty) {
-            val player = client.player!!
-            client.gameMode?.handleContainerInput(screen.menu.containerId, slot.index, 0, ContainerInput.PICKUP, player)
-            client.gameMode?.handleContainerInput(screen.menu.containerId, to.index, 0, ContainerInput.PICKUP, player)
-        }
-        return true
     }
 
     /** Whether the drop key outside a menu must not drop the held item. */
