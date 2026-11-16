@@ -11,7 +11,7 @@ import kotlin.math.roundToInt
 
 /**
  * The HUD Editor Key opens the editor, where + and - resize the block picked last, and Hide In F3 takes the whole HUD
- * off while the debug screen is open. The Inventory Preview's grid is the block, since it shows anywhere.
+ * off while the debug screen is open. The Inventory HUD's grid is the block, since it shows anywhere.
  */
 class HudKeysTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = InventoryGrid.with(context) {

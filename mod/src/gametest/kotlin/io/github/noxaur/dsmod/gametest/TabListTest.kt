@@ -80,26 +80,26 @@ class TabListTest : FabricClientGameTest {
             val count = posted.size
             context.waitTicks(20)
             check(posted.size == count) { "The tab list did not change, but ${posted.size - count} more were posted" }
-            check(readout(context, "golem-status") == listOf("Stage: Rising 3/5", "Kills Left: 97")) { "Got ${readout(context, "golem-status")}" }
-            context.takeScreenshot("golem-status")
+            check(readout(context, "protector-status") == listOf("Stage: Rising 3/5", "Kills Left: 97")) { "Got ${readout(context, "protector-status")}" }
+            context.takeScreenshot("protector-status")
 
             protector.display = " Protector: Spawned"
             world.server.runOnServer<Nothing> { it.playerList.broadcastAll(ClientboundPlayerInfoUpdatePacket(Action.UPDATE_DISPLAY_NAME, protector)) }
             world.server.runCommand("""tellraw @a "§5✦ §dThe Egg has Spawned!"""")
             world.server.runCommand("""tellraw @a "☠ The Endstone Protector has emerged from the ground! (Tier 5/5)"""")
             context.waitTicks(20)
-            check(readout(context, "golem-status").let { it.first() == "Stage: Spawned" && it.last().startsWith("Alive: 0:") }) { "Got ${readout(context, "golem-status")}" }
+            check(readout(context, "protector-status").let { it.first() == "Stage: Spawned" && it.last().startsWith("Alive: 0:") }) { "Got ${readout(context, "protector-status")}" }
             check(readout(context, "dragon-timer") == listOf("Eyes: 0/8")) { "Got ${readout(context, "dragon-timer")}" }
 
             world.server.runCommand("""tellraw @a "The Endstone Protector has been defeated!"""")
             context.waitTicks(5)
-            check(readout(context, "golem-status").let { it.first() == "Stage: Defeated" && it.last().startsWith("Fight: 0:") }) { "Got ${readout(context, "golem-status")}" }
+            check(readout(context, "protector-status").let { it.first() == "Stage: Defeated" && it.last().startsWith("Fight: 0:") }) { "Got ${readout(context, "protector-status")}" }
 
             // Outside the End neither feature shows anything, even with the Protector row still listed.
             area.display = "Area: Village"
             world.server.runOnServer<Nothing> { it.playerList.broadcastAll(ClientboundPlayerInfoUpdatePacket(Action.UPDATE_DISPLAY_NAME, area)) }
             context.waitTicks(20)
-            check(readout(context, "golem-status").isEmpty()) { "Got ${readout(context, "golem-status")}" }
+            check(readout(context, "protector-status").isEmpty()) { "Got ${readout(context, "protector-status")}" }
             check(readout(context, "dragon-timer").isEmpty()) { "Got ${readout(context, "dragon-timer")}" }
             context.runOnClient<Nothing> { DsModClient.game.tap = null }
         }

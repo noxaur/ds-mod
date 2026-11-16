@@ -34,13 +34,13 @@ gate edge.ArmorSwapGuards b9c4dd2640b0  ArmorSwapGuard
 gate edge.Chat 7c62093eb80b
     builds text that runs a command when the player clicks it
     approved by github.com/noxaur 2026-11-16T01:17:00Z
-gate edge.ChatDrags f6bd1b276e60  DragInChat
+gate edge.ChatDrags 660fb1819b5d  ChatHudEditor
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseDrag
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
     can refuse the player's input through ScreenMouseEvents.allowMouseScroll
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
+    approved by github.com/noxaur 2026-11-16T18:38:00Z
 gate edge.CommandKeys 24edfabcaa05  CommandBinds
     sends through ClientPacketListener.sendChat
     sends through ClientPacketListener.sendCommand
@@ -49,9 +49,9 @@ gate edge.CopyChats f21712999623  CopyChat
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-gate edge.EyeGuards c98f4ca5c7eb  ProtectPlacedEyes
+gate edge.EyeGuards ad3b1fc07090  EyeGuard
     can refuse the player's actions through UseBlockCallback.EVENT
-    approved by github.com/noxaur 2026-11-16T15:39:00Z
+    approved by github.com/noxaur 2026-11-16T18:38:00Z
 gate edge.Hits af5b845f21bf
     can refuse the player's actions through AttackEntityCallback.EVENT
 gate edge.MenuBack ff8ff383383c  BackButtons
@@ -102,12 +102,13 @@ gate edge.mixin.CursorMixin ec46fb6ba006
 gate edge.mixin.DropKeyMixin 1b430b670807
     hooks LocalPlayer.drop
     approved by github.com/noxaur 2026-11-16T01:17:00Z
-gate edge.mixin.ExplosionParticleMixin ad9f4482623d  ExplosionParticleHider
+gate edge.mixin.ExplosionParticleMixin 816e0ac1bb3c  HideExplosions
     hooks ParticleEngine.createParticle
     approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate edge.mixin.FloatingTextMixin 1178eba96f0a
     hooks Display.TextDisplay.getText
     hooks Display.TextDisplay.onSyncedDataUpdated
+    approved by github.com/noxaur 2026-11-16T18:38:00Z
 gate edge.mixin.FullbrightMixin 4c8ba0a85eab  Fullbright
     hooks LightmapRenderStateExtractor.extract
     approved by github.com/noxaur 2026-11-16T08:42:00Z

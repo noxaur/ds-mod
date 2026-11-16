@@ -3,7 +3,7 @@ package io.github.noxaur.dsmod.edge
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.container.SlotCooldown
 import io.github.noxaur.dsmod.core.container.SlotMark
-import io.github.noxaur.dsmod.core.feature.inventory.RarityMarks
+import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
@@ -161,10 +161,10 @@ object Slots {
     }
 
     /**
-     * Whether a slot the mod draws itself, such as the profile viewer's, marks [rarity] as Rarity Marks marks a menu's,
+     * Whether a slot the mod draws itself, such as the profile viewer's, marks [rarity] as Item Rarity marks a menu's,
      * by the same switches.
      */
-    fun marks(rarity: Role?) = rarity != null && DsModClient.runs<RarityMarks>() && (rarity != Role.COMMON || settings.markCommon)
+    fun marks(rarity: Role?) = rarity != null && DsModClient.runs<ItemRarity>() && (rarity != Role.COMMON || settings.markCommon)
 
     /** Draws [rarity]'s mark behind an item at [x], [y] that the mod draws itself, in the player's style for menus. */
     fun rarityBack(graphics: GuiGraphicsExtractor, rarity: Role, x: Int, y: Int) {

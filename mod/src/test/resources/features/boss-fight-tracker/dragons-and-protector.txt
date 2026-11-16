@@ -1,0 +1,233 @@
++   0.0s > (tab list) Area: The End; Lobby: #1; Egg: Respawning; Protector: Spawned; Purse: 531,754,694
++   0.0s > Player21: hello
++   0.2s > Player22: hello
++   3.9s > The Endstone Protector has been defeated!
++   3.9s >                                                                                 
+                       ENDSTONE PROTECTOR DOWN!
+
+                Player23 dealt the final blow.
+
+                1st Damager [VIP] Player24 - 80.8M
+                2nd Damager [MVP+] Player25 - 33.8M
+               3rd Damager Player23 - 22.1M
+
+                   Your Damage: 33.8M (Position #2)
+                                                                                
+             Boss Fight Tracker
+               Endstone Protector: #2 with 33.8M
+               Fights: 1 (1 all-time on this boss)
++   5.9s > Player21: hello
++   6.8s > [MVP+] Player26: hello
++  13.3s > [DRAGON] Player27: hello
++  15.1s > Player21: hello
++  18.3s > ☠ The Wise Dragon has spawned!
++  19.2s > [MVP+] Player26: hello
++  20.9s > [VIP+] Player28: hello
++  26.6s > [DRAGON] Player29: hello
++  27.0s > [DRAGON] Player27: hello
++  27.4s > [DRAGON] Player29: hello
++  28.2s > [VIP+] Player28: hello
++  28.3s > [BOSS] Wise Dragon: You will never catch me!
++  37.8s > Player30: hello
++  46.8s > [DRAGON] Player27: hello
++  47.8s > [VIP] Player31: hello
++  49.2s > [VIP] Player31: hello
++  54.1s > [BOSS] Wise Dragon: You will never catch me!
++  55.0s > Player22: hello
++  58.5s > [VIP+] Player32: hello
++  59.1s > [MVP+] Player26: hello
++  63.2s > [DRAGON] Player27: hello
++  67.1s > [DRAGON] Player27: hello
++  72.9s > [VIP+] Player33: hello
++  75.3s > [VIP+] Player33: hello
++  82.5s > [BOSS] Wise Dragon: I call upon the god of thunder.. Kill them all!
++  96.6s > Player34: hello
++ 100.5s > [BOSS] Wise Dragon: I call upon the god of thunder.. Kill them all!
++ 102.1s > ☠ The Wise Dragon has de-spawned.
++ 102.1s > ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+                            WISE DRAGON DOWN!
+
+                [VIP] Player24 dealt the final blow.
+
+             1st Damager [VIP] Player24 - 57,504,434
+              2nd Damager [MVP+] Player35 - 38,457,798
+             3rd Damager [MVP+] Player25 - 2,376,120
+
+                 Your Damage: 2,376,120 (Position #3)
+
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+             Boss Fight Tracker
+               Wise Dragon: #3 with 2,376,120
+               Fights: 2 (1 all-time on this boss)
++ 112.1s > Here is your loot from the last dragon:
++ 112.1s >  - 13x Wise Dragon Fragment
+             Boss Fight Tracker
+               Wise Dragon: #3 with 2,376,120
+               Loot: 13x Wise Dragon Fragment
+               Fights: 2 (1 all-time on this boss)
++ 117.6s > RARE DROP! (Summoning Eye) (✯ 90%)
++ 126.1s > RARE DROP! (Summoning Eye) (✯ 90%)
++ 137.8s > RARE DROP! (Summoning Eye) (✯ 90%)
++ 143.0s > [VIP+] Player28: hello
++ 147.6s > RARE DROP! (Summoning Eye) (✯ 90%)
++ 155.2s > ☠ The Young Dragon has spawned!
++ 161.0s > RARE DROP! (Summoning Eye) (✯ 90%)
++ 161.8s > ☠ The Endstone Protector has emerged from the ground! (Tier 5/5)
++ 161.8s > Endstone Protector has spawned.
++ 161.8s > EPIC DROP! Golden Eye
++ 165.2s > [BOSS] Young Dragon: You are weak young padowan, you will never kill me. FIREBALL!!
++ 165.4s > Player36: hello
++ 171.3s > Player37: hello
++ 172.6s > [DRAGON] Player3: hello
++ 173.6s > [MVP+] Player38: hello
++ 178.9s > The Endstone Protector has been defeated!
++ 178.9s >                                                                                 
+                       ENDSTONE PROTECTOR DOWN!
+
+                [VIP] Player24 dealt the final blow.
+
+               1st Damager [MVP+] Player25 - 113.5M
+                2nd Damager [VIP] Player24 - 81.0M
+               3rd Damager Player23 - 29.7M
+
+                  Your Damage: 113.5M (Position #1)
+                                                                                
+             Boss Fight Tracker
+               Endstone Protector: #1 with 113.5M
+               Fights: 3 (2 all-time on this boss)
++ 186.7s > RARE DROP! (Summoning Eye) (✯ 90%)
++ 189.2s > [DRAGON] Player14: hello
++ 193.8s > [BOSS] Young Dragon: I call upon the god of thunder.. Kill them all!
++ 196.8s > [VIP+] Player28: hello
++ 197.8s > RARE DROP! (Summoning Eye) (✯ 90%)
++ 198.9s > [MVP+] Player16: hello
++ 200.6s > Player37: hello
++ 200.7s > [MVP+] Player16: hello
++ 206.8s > RARE DROP! (Summoning Eye) (✯ 90%)
++ 207.6s > [MVP+] Player16: hello
++ 211.9s > [BOSS] Young Dragon: I call upon the god of thunder.. Kill them all!
++ 216.1s > [MVP+] Player16: hello
++ 221.1s > [DRAGON] Player39: hello
++ 221.1s > [VIP+] Player32: hello
++ 222.1s > RARE DROP! (Summoning Eye) (✯ 90%)
++ 223.9s > [VIP+] Player32: hello
++ 227.8s > Player40: hello
++ 231.0s > [BOSS] Young Dragon: You are weak young padowan, you will never kill me. FIREBALL!!
++ 233.0s > Player40: hello
++ 235.2s > [MVP+] Player16: hello
++ 238.0s > Player41: hello
++ 238.7s > ☠ The Young Dragon has de-spawned.
++ 238.7s > RARE DROP! (Summoning Eye) (✯ 90%)
++ 239.3s > [DRAGON] Player13: hello
++ 251.1s > [MVP+] Player16: hello
++ 266.1s > RARE DROP! (Summoning Eye) (✯ 90%)
++ 266.4s > [DRAGON] Player12: hello
++ 268.5s > Player40: hello
++ 273.0s > Player40: hello
++ 273.8s > ☠ The Endstone Protector has emerged from the ground! (Tier 5/5)
++ 273.8s > Endstone Protector has spawned.
++ 274.7s > ☠ The Chaotic Dragon has spawned!
++ 278.3s > [MVP+] Player16: hello
++ 280.8s > [DRAGON] Player27: hello
++ 281.8s > [MVP+] Player16: hello
++ 284.8s > [BOSS] Chaotic Dragon: You are weak young padowan, you will never kill me. FIREBALL!!
++ 285.0s > The Endstone Protector has been defeated!
++ 285.0s >                                                                                 
+                       ENDSTONE PROTECTOR DOWN!
+
+                Player23 dealt the final blow.
+
+               1st Damager [MVP+] Player25 - 127.4M
+                 2nd Damager [MVP+] Player35 - 68.3M
+               3rd Damager Player23 - 20.8M
+
+                  Your Damage: 127.4M (Position #1)
+                                                                                
+             Boss Fight Tracker
+               Endstone Protector: #1 with 127.4M
+               Fights: 4 (3 all-time on this boss)
++ 285.0s > RARE DROP! (Summoning Eye) (✯ 90%)
++ 286.3s > [DRAGON] Player3: hello
++ 296.6s > [DRAGON] Player12: hello
++ 298.6s > [DRAGON] Player3: hello
++ 305.1s > [DRAGON] Player42: hello
++ 305.6s > Player40: hello
++ 309.5s > [DRAGON] Player20: hello
++ 310.5s > [DRAGON] Player20: hello
++ 310.5s > Player40: hello
++ 310.6s > [BOSS] Chaotic Dragon: You are weak young padowan, you will never kill me. FIREBALL!!
++ 312.0s > [MVP+] Player16: hello
++ 313.2s > [DRAGON] Player3: hello
++ 314.9s > [MVP+] Player16: hello
++ 315.5s > [DRAGON] Player3: hello
++ 318.7s > [DRAGON] Player3: hello
++ 320.3s > [VIP] Player31: hello
++ 321.5s > [MVP+] Player16: hello
++ 325.8s > [BOSS] Unstable Dragon: You are weak young padowan, you will never kill me. FIREBALL!!
++ 330.5s > ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+                         UNSTABLE DRAGON DOWN!
+
+                [VIP] Player24 dealt the final blow.
+
+             1st Damager [VIP] Player24 - 47,509,542
+              2nd Damager [MVP+] Player35 - 44,867,431
+             3rd Damager Player23 - 9,612,844
+
+                 Your Damage: 5,552,752 (Position #4)
+
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+             Boss Fight Tracker
+               Unstable Dragon: #4 with 5,552,752
+               Fights: 5 (1 all-time on this boss)
++ 340.5s > Here is your loot from the last dragon:
++ 340.5s >  - 10x Unstable Dragon Fragment
+             Boss Fight Tracker
+               Unstable Dragon: #4 with 5,552,752
+               Loot: 10x Unstable Dragon Fragment
+               Fights: 5 (1 all-time on this boss)
++ 340.5s > [BOSS] Chaotic Dragon: You will never catch me!
++ 341.4s > Player40: hello
++ 342.9s > [VIP+] Player43: hello
++ 344.5s > [MVP+] Player16: hello
++ 346.1s > Player40: hello
++ 346.4s > [MVP+] Player44: hello
++ 346.8s > [DRAGON] Player45: hello
++ 357.0s > [DRAGON] Player27: hello
++ 362.2s > [DRAGON] Player27: hello
++ 362.9s > [MVP+] Player16: hello
++ 364.6s > [MVP+] Player26: hello
++ 365.5s > [BOSS] Chaotic Dragon: I call upon the god of thunder.. Kill them all!
++ 369.7s > [DRAGON] Player27: hello
++ 370.6s > [VIP+] Player32: hello
++ 374.0s > [MVP+] Player26: hello
++ 374.7s > [VIP+] Player32: hello
++ 377.4s > ☠ The Chaotic Dragon has de-spawned.
++ 377.4s > ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+                          CHAOTIC DRAGON DOWN!
+
+                [VIP] Player24 dealt the final blow.
+
+             1st Damager [MVP+] Player35 - 191,583,473
+            2nd Damager [VIP] Player24 - 89,941,381
+             3rd Damager [MVP+] Player25 - 44,321,068
+
+                Your Damage: 44,321,068 (Position #3)
+
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+             Boss Fight Tracker
+               Chaotic Dragon: #3 with 44,321,068
+               Fights: 6 (1 all-time on this boss)
++ 378.4s > Player40: hello
++ 380.1s > [VIP+] Player32: hello
++ 381.5s > [MVP+] Player16: hello
++ 382.9s > RARE DROP! (Summoning Eye) (✯ 90%)
++ 385.1s > Player40: hello
++ 385.5s > [DRAGON] Player27: hello
++ 387.4s > Here is your loot from the last dragon:
++ 387.4s >  - 13x Chaotic Dragon Fragment
+             Boss Fight Tracker
+               Chaotic Dragon: #3 with 44,321,068
+               Loot: 13x Chaotic Dragon Fragment
+               Fights: 6 (1 all-time on this boss)
++ 389.9s > [DRAGON] Player46: hello
+saved boss-fight-tracker.json = {"bosses":{"Endstone Protector":{"fights":3,"first":2,"loot":{}},"Wise Dragon":{"fights":1,"first":0,"loot":{"Wise Dragon Fragment":13}},"Unstable Dragon":{"fights":1,"first":0,"loot":{"Unstable Dragon Fragment":10}},"Chaotic Dragon":{"fights":1,"first":0,"loot":{"Chaotic Dragon Fragment":13}}}}

@@ -13,19 +13,19 @@ class UnknownsTest {
 
     @Test
     fun `lines of one shape are one sighting with one example`() {
-        unknowns.see("golem-status", "Rising (Tier 3/5, 97) extra")
-        unknowns.see("golem-status", "Rising (Tier 4/5, 12) extra")
+        unknowns.see("protector-status", "Rising (Tier 3/5, 97) extra")
+        unknowns.see("protector-status", "Rising (Tier 4/5, 12) extra")
 
         assertEquals(
-            listOf(Sighting("golem-status", "Rising (Tier #/#, #) extra", "Rising (Tier 3/5, 97) extra")),
+            listOf(Sighting("protector-status", "Rising (Tier #/#, #) extra", "Rising (Tier 3/5, 97) extra")),
             unknowns.take(),
         )
     }
 
     @Test
     fun `names are removed from the sample and the signature`() {
-        unknowns.see("boss-drops", "1st Damager [MVP+] Dave - 113.5M")
-        unknowns.see("boss-drops", "Steve got a thing")
+        unknowns.see("boss-fight-tracker", "1st Damager [MVP+] Dave - 113.5M")
+        unknowns.see("boss-fight-tracker", "Steve got a thing")
 
         val sightings = unknowns.take()
         assertFalse(sightings.any { "Dave" in it.sample || "Dave" in it.signature || "Steve" in it.sample || "Steve" in it.signature }, sightings.toString())
@@ -100,11 +100,11 @@ class UnknownsTest {
         var asked = 0
         val unknowns = Unknowns { asked++; setOf("Steve") }
 
-        repeat(500) { unknowns.see("rarity-marks", "MYTHIC-ISH SWORD") }
+        repeat(500) { unknowns.see("item-rarity", "MYTHIC-ISH SWORD") }
         assertEquals(1, asked, "only the first sight of a line is redacted")
 
         unknowns.take()
-        repeat(500) { unknowns.see("rarity-marks", "MYTHIC-ISH SWORD") }
+        repeat(500) { unknowns.see("item-rarity", "MYTHIC-ISH SWORD") }
         assertEquals(1, asked)
         assertFalse(unknowns.waiting)
     }
@@ -136,7 +136,7 @@ class UnknownsTest {
     @Test
     fun `a name the player's tab list shows is removed from a sample`() {
         val unknowns = Unknowns { setOf("Steve", "Zed") }
-        unknowns.see("boss-drops", "Zed got a thing")
+        unknowns.see("boss-fight-tracker", "Zed got a thing")
         assertEquals("Player1 got a thing", unknowns.take().single().sample)
     }
 

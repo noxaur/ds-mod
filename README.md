@@ -8,32 +8,55 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 
 ## Features
 
-- Command Binds send a command such as `/warp end` with a key, a few keys held together or keys pressed in turn. Keep them in groups you can fold, switch off and share.
-- Camera and Free Look set the third-person distance, height and tilt, and let you look around without turning.
-- Equipment Display shows your armor and pet as icons, on the HUD or beside your hotbar in slots like its own.
-- Copy Chat copies the messages you select as text, format codes or JSON.
-- Rarity Marks color each slot by its item's rarity. Pick Showcase, Gilded or Minimal, or build your own look beside your inventory.
-- Slot Lock keeps a misclick from moving or dropping the slots and items you lock.
-- Menu Tabs add your own command tabs and a search to every menu.
-- Loot Alerts go off for drops at or above the rarity you set.
-- Zealot Tracker counts your eyes, eyes per hour and kills per eye, for the session and all-time.
-- Dragon Timer and Golem Status show the egg countdown, the eyes placed and the Protector's stage.
-- Boss Beacon puts a beam where the next Endstone Protector will emerge, as soon as the last one dies.
-- Boss Drops keeps your placement, damage and loot from every dragon and Protector fight.
-- Slayer Tracker shows your quest progress, the XP to your next level and your average kill time.
+### Camera & Visuals
+- **Fullbright** – Lights caves and nights as brightly as day.
+- **Hide Explosions** – Hides the clouds that explosions throw up.
+- **Animations** – Restyle your swing as 1.7, Exhibition, Spin or Stab, and move or resize your held item.
+- **Camera** – Set the third-person distance, height and tilt, and which views F5 cycles through.
+- **Free Look** – Hold Left Alt to look around in third person without turning.
+- **Etherwarp Outline** – Boxes the block your Etherwarp will land on, or says why it would fail.
 
-<p>
-  <img src="docs/images/rarity-chest.png" width="49%" alt="A chest in the Minimal look: each rare item stands on a shelf in its rarity's color, with a small gem in its corner">
-  <img src="docs/images/rarity-settings.png" width="49%" alt="Rarity Marks in the settings: the Gilded style, and the hotbar's border, fill, floor and gem, each with a preview of its slot">
-</p>
+### HUD
+- **Ability Cooldowns** – Times every item ability, in a list and on the item's slot.
+- **Equipment Display** – Shows your armor and pet as icons, on the HUD or beside your hotbar.
+- **Inventory HUD** – Shows your inventory as a grid on the HUD.
+- **Chat HUD Editor** – Move any HUD block with the chat open, or open the full editor with `/dsmod hud`.
 
-<p>
-  <img src="docs/images/command-binds.png" alt="Command Binds in the settings: each bind a line with its switch, name, command, keys and where it works, under its group, with a second group folded">
-</p>
+### Chat & Commands
+- **Command Binds** – Send a command with a key, a combo or a sequence. Group, fold and share them.
+- **Profile Viewer** – Type `/pv` and a name to see their skills, slayers, dungeons, pets and items.
+- **Copy Chat** – Select messages and copy them as text, format codes or JSON.
+- **Hide Cooldown Messages** – Hides the "ability is on cooldown" messages.
 
-It also has a HUD editor, Fullbright, tidier menus, and guards against taking a placed eye back out of the altar or swapping armor with a right click.
+### Inventory & Menus
+- **Item Rarity** – Colors each slot by its item's rarity, in a look you pick or build.
+- **Slot Lock** – Lock slots and items so a misclick can't move or drop them.
+- **Armor Swap Guard** – Stops a right click from swapping the armor you wear.
+- **Menu Tabs** – Your own command tabs and an item search in every menu.
+- **Back Buttons** – Adds Go Back to menus that have none.
+- **Menu Theme** – Dark or glass menus, inventory and tooltips.
+- **Fixed Menu Layout** – Go Back, Close and your inventory sit in the same place in every menu.
+- **Hide Glass Panes** – Hides the blank glass panes that pad out menus.
+- **Keep Cursor** – The cursor stays put when one menu opens another.
 
-Toggle any feature in `/dsmod`. The [feature guide](docs/user/features.md) has the full list.
+### The End
+- **Zealot Tracker** – Eyes, eyes per hour and kills per eye, for the session and all-time.
+- **Dragon Timer** – The egg countdown, the eyes placed and how long the dragon has been alive.
+- **Fireball Alert** – Warns you before a dragon throws fireballs.
+- **Protector Status** – The Endstone Protector's stage and the kills left until it emerges.
+- **Protector Spawn Beam** – A beam where the next Protector will emerge, as soon as the last one dies.
+- **Boss Fight Tracker** – Your placement, damage and loot from every dragon and Protector fight.
+- **Eye Guard** – Stops a second click from taking back the eye you just placed.
+
+### Combat
+- **Damage Numbers** – Shortens damage numbers to 74.5M, shows only crits, or hides them.
+
+### Slayers & Loot
+- **Slayer Tracker** – Quest progress, the XP to your next level and your average kill time.
+- **Slayer Boss Alert** – A title and a sound when your slayer boss spawns.
+- **Rare Drop Alert** – A title and a sound for drops at or above the rarity you set.
+
+Toggle any feature in `/dsmod`. The [feature guide](docs/user/features.md) has screenshots and every setting.
 
 ## Install
 

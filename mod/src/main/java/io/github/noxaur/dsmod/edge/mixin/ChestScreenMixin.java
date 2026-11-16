@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.At;
 
 /**
  * A chest menu draws its texture in two parts, the rows and then the inventory, at the screen's middle rather than at
- * its own top. Themed Menus draws the whole menu with the kit in place of the first part and skips the second.
- * Otherwise both parts move by what Stable Menus moved the menu.
+ * its own top. Menu Theme draws the whole menu with the kit in place of the first part and skips the second.
+ * Otherwise both parts move by what Fixed Menu Layout moved the menu.
  */
 @Mixin(ContainerScreen.class)
 abstract class ChestScreenMixin {

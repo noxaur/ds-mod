@@ -101,15 +101,15 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.DragInChatTest"
+        "value": "io.github.noxaur.dsmod.gametest.ChatHudEditorTest"
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.DragInChatPriorityTest"
+        "value": "io.github.noxaur.dsmod.gametest.ChatHudEditorPriorityTest"
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.DragInChatStandInTest"
+        "value": "io.github.noxaur.dsmod.gametest.ChatHudEditorStandInTest"
       },
       {
         "adapter": "kotlin",
@@ -121,7 +121,7 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.RarityMarksTest"
+        "value": "io.github.noxaur.dsmod.gametest.ItemRarityTest"
       },
       {
         "adapter": "kotlin",
@@ -133,7 +133,7 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.LootAlertsTest"
+        "value": "io.github.noxaur.dsmod.gametest.RareDropAlertTest"
       },
       {
         "adapter": "kotlin",
@@ -141,7 +141,7 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.AbilitySpamTest"
+        "value": "io.github.noxaur.dsmod.gametest.HideCooldownMessagesTest"
       },
       {
         "adapter": "kotlin",
@@ -165,7 +165,7 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.ExplosionParticleHiderTest"
+        "value": "io.github.noxaur.dsmod.gametest.HideExplosionsTest"
       },
       {
         "adapter": "kotlin",
@@ -185,7 +185,7 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.InventoryPreviewTest"
+        "value": "io.github.noxaur.dsmod.gametest.InventoryHudTest"
       },
       {
         "adapter": "kotlin",
@@ -205,11 +205,11 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.ProtectPlacedEyesTest"
+        "value": "io.github.noxaur.dsmod.gametest.EyeGuardTest"
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.BossBeaconTest"
+        "value": "io.github.noxaur.dsmod.gametest.ProtectorSpawnBeamTest"
       },
       {
         "adapter": "kotlin",
@@ -257,11 +257,11 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.StableMenusTest"
+        "value": "io.github.noxaur.dsmod.gametest.FixedMenuLayoutTest"
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.ThemedMenusTest"
+        "value": "io.github.noxaur.dsmod.gametest.MenuThemeTest"
       },
       {
         "adapter": "kotlin",

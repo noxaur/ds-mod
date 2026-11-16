@@ -12,7 +12,7 @@ Lights caves and nights as brightly as day.
 
 <sub>Off by default.</sub>
 
-### Explosion Particle Hider
+### Hide Explosions
 
 Hides the clouds that explosions throw up.
 
@@ -92,14 +92,14 @@ The XP is read each time you open the Pets menu. Open it again a little later, a
 | Mark In Menu | Marks your active pet in the Pets menu |
 | Hide Autopet | Hides the chat line Autopet sends when it swaps your pet. Off until you turn it on |
 
-### Inventory Preview
+### Inventory HUD
 
-Shows the items in your inventory as a grid on the HUD, nine to a row as your inventory holds them, with each stack's count, durability bar and cooldown. Rarity Marks colors each slot as it does in your inventory, and with your hotbar in the grid the slot you hold is ringed. The grid steps aside while a menu or your inventory is open, since they show your items already. Open the chat and point at an item to read its tooltip, and move or resize the grid in the HUD editor. Turn it on in General.
+Shows the items in your inventory as a grid on the HUD, nine to a row as your inventory holds them, with each stack's count, durability bar and cooldown. Item Rarity colors each slot as it does in your inventory, and with your hotbar in the grid the slot you hold is ringed. The grid steps aside while a menu or your inventory is open, since they show your items already. Open the chat and point at an item to read its tooltip, and move or resize the grid in the HUD editor. Turn it on in General.
 
 | Setting | Does |
 | --- | --- |
 | Inventory Rows | Picks which rows show, and their order. The three rows of your inventory show by default, and your hotbar, your armor and your offhand can join them, each set a little apart as your hotbar is in your inventory |
-| Inventory Look | Draws the grid in a panel of slots like your inventory's: in your theme, solid or as glass as Menu Look says, while Themed Menus is on, and as your resource pack draws the inventory while it is off. Plate and Clear show the items alone, on the HUD's plate or on nothing |
+| Inventory Look | Draws the grid in a panel of slots like your inventory's: in your theme, solid or as glass as Menu Look says, while Menu Theme is on, and as your resource pack draws the inventory while it is off. Plate and Clear show the items alone, on the HUD's plate or on nothing |
 | Inventory Placement | Keeps the grid where you put it in the HUD editor, or puts it beside your hotbar, past your offhand slot, at your GUI's size or smaller where the room there is narrower |
 | Inventory Key | Binds a key that shows and hides the grid. With none, the grid always shows |
 | Inventory Key Mode | Shows the grid only while you hold the key, or switches it with each press |
@@ -145,6 +145,8 @@ F5 back to first person also ends it. The Camera settings shape this view too.
 ### Command Binds
 
 Sends a command with a key, with keys held together such as Shift + F6, or with keys pressed in turn such as F7 then F8. Set your binds up under Binds in the settings.
+
+<img src="../images/command-binds.png" alt="Command Binds in the settings: each bind a line with its switch, name, command, keys and where it works, under its group, with a second group folded">
 
 Each bind is a line with its switch, name, command, keys and where it works, under its group's heading. A change takes effect as you make it.
 
@@ -197,7 +199,7 @@ The player stands on the left in what they wear, turning slowly. The overview sh
 | Hover a stat on Player Stats | Read what each of its groups gives it |
 | Scroll, drag the scrollbar, or press Page Up, Page Down, Home or End | See the rest of a tab |
 
-Beside each grid are how many slots it fills and how many items of each rarity it holds, and on the inventory, what the player wears. Items carry your Rarity Marks, as in a menu. A player who hides their inventory has their items hidden here too. The profile comes from ds-mod's service, which signs in with your Minecraft account the first time you look someone up. "Out of date" under the name means dragsim.co did not answer, and the profile is the last copy, from up to a day before. Tooltips are rebuilt from the server's data, so a few lines can differ from the game's own. They wear the server's frame for each rarity, and another mod that adds to item tooltips adds to these too.
+Beside each grid are how many slots it fills and how many items of each rarity it holds, and on the inventory, what the player wears. Item Rarity colors the slots, as in a menu. A player who hides their inventory has their items hidden here too. The profile comes from ds-mod's service, which signs in with your Minecraft account the first time you look someone up. "Out of date" under the name means dragsim.co did not answer, and the profile is the last copy, from up to a day before. Tooltips are rebuilt from the server's data, so a few lines can differ from the game's own. They wear the server's frame for each rarity, and another mod that adds to item tooltips adds to these too.
 
 ## Interface
 
@@ -213,7 +215,7 @@ Layout, under HUD, is a small copy of your screen with your HUD on it. **Move HU
 | Right-click a block, or press Backspace or Reset with it picked | Put it back in the stack at its own size, undocked |
 | Drop a block near the spot beside the hotbar | Dock it there, as Equipment Display's Placement does. Drag it away to undock it at the same size |
 
-### Drag In Chat
+### Chat HUD Editor
 
 Open the chat and move the HUD as it is, without the editor. Point at a block to see its name. A feature that is on but has nothing to show right now, such as the Dragon Timer away from The End, stands in as its outlined name, so you can place it too.
 
@@ -258,15 +260,20 @@ Left and Right move between the three and Enter takes one. Escape or a click any
 
 A message is copied whole, also when it wraps over several rows. A block the server sends, such as the list of active boosters, is selected a line at a time, so drag over the lines you want. The spaces that center such a line are left out, and so is an empty line at the start or end of what you selected. What you copied flashes with `Copied` beside your mouse.
 
-### Ability Spam
+### Hide Cooldown Messages
 
 <sub>Hides `This ability is on cooldown for 4.35s`.</sub>
 
 ## Inventory
 
-### Rarity Marks
+### Item Rarity
 
 Each item's slot is marked in the color of its rarity, in every menu and on your hotbar.
+
+<p>
+  <img src="../images/rarity-chest.png" width="49%" alt="A chest in the Minimal look: each rare item stands on a shelf in its rarity's color, with a small gem in its corner">
+  <img src="../images/rarity-settings.png" width="49%" alt="Item Rarity in the settings: the Gilded style, and the hotbar's border, fill, floor and gem, each with a preview of its slot">
+</p>
 
 Rarity Style picks the look: Showcase, Gilded or Minimal, from loudest to quietest, or Custom for your own. Custom Look, under it, picks each part with a preview of it. A change there starts from the look you had and switches Rarity Style to Custom.
 
@@ -281,7 +288,7 @@ The hotbar uses your inventory's look until you turn off Match Inventory under H
 
 <sub>Common items are not marked unless you tick Mark Common. With a resource pack that makes menus dark, the colors change to read well on it.</sub>
 
-### Themed Menus
+### Menu Theme
 
 Menus, your inventory and plain tooltips take the colors of the Theme under Interface, so Charcoal makes them dark.
 
@@ -291,11 +298,11 @@ Set Menu Look to Glass to see the world and your HUD through them instead, and G
 
 <sub>Chests, crafting tables, hoppers, dispensers and shulker boxes follow it, and so does the recipe book's button. A furnace or an anvil keeps its own look, and item tooltips keep the server's rarity frames.</sub>
 
-### Stable Menus
+### Fixed Menu Layout
 
 Go Back and Close sit in the same place in every menu, and so does your inventory. A shorter menu starts lower instead of moving its bottom row.
 
-### Hide Filler
+### Hide Glass Panes
 
 Hides the blank glass panes that pad out a menu, along with their tooltip and hover.
 
@@ -376,7 +383,7 @@ Shortens the damage numbers that pop up when a mob is hit, so 74,540,375 reads 7
 
 ## Loot
 
-### Loot Alerts
+### Rare Drop Alert
 
 A title and a sound when you get a drop of the tier you pick, or better.
 
@@ -397,7 +404,7 @@ Kills per Eye: 14.9
 
 <sub>Eyes per Hour counts only time in The End. Kills are an estimate from your Combat XP, and can be a few off in a crowd. Zealot Bruisers are not counted.</sub>
 
-### Protect Placed Eyes
+### Eye Guard
 
 Ignores a second click on the altar frame you just put an eye in.
 
@@ -417,22 +424,22 @@ Young Dragon: 1:42
 
 A title and a sound when a dragon is about to throw fireballs, so you have time to move.
 
-### Golem Status
+### Protector Status
 
 ```
 Stage: Rising 3/5
 Kills Left: 97
 ```
 
-### Boss Beacon
+### Protector Spawn Beam
 
 A beam where the next Endstone Protector will emerge, from the moment the last one falls.
 
-It shows for the last 25 kills of the 200-kill cycle. Beam Timing, under Boss Beacon in the settings, is a bar of the cycle, and the beam shows inside the blue sections.
+It shows for the last 25 kills of the 200-kill cycle. Beam Timing, under Protector Spawn Beam in the settings, is a bar of the cycle, and the beam shows inside the blue sections.
 
 <sub>Drag to draw, move or resize a section. Right-click removes one. During the Fight keeps the beam on after the Protector emerges.</sub>
 
-### Boss Drops
+### Boss Fight Tracker
 
 ```
 Wise Dragon: #3 with 2,376,120

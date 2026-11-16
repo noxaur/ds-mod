@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.feature.end.ProtectPlacedEyes
+import io.github.noxaur.dsmod.core.feature.end.EyeGuard
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionHand
@@ -9,7 +9,7 @@ import net.minecraft.world.InteractionResult
 private const val GUARD_MILLIS = 900L
 
 /**
- * Protect Placed Eyes. A click on an altar frame that holds the player's eye takes the eye back out, and the
+ * Eye Guard. A click on an altar frame that holds the player's eye takes the eye back out, and the
  * server says nothing about it. In a capture the frame's new state reached the client 130 ms after the click,
  * so a double click cannot be told from the block. Instead, a click made holding an eye guards the block it
  * landed on, and further clicks on that block are dropped until the guard runs out. Each dropped click starts
@@ -22,7 +22,7 @@ object EyeGuards {
 
     fun register() {
         UseBlockCallback.EVENT.register { player, level, hand, hit ->
-            if (!level.isClientSide || !DsModClient.runs<ProtectPlacedEyes>()) return@register InteractionResult.PASS
+            if (!level.isClientSide || !DsModClient.runs<EyeGuard>()) return@register InteractionResult.PASS
             val now = System.currentTimeMillis()
             val again = now < until && hit.blockPos == guarded
             // The name carries the server's color code in front, so match its end.

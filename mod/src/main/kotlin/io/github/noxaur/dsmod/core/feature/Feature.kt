@@ -28,24 +28,24 @@ import kotlin.reflect.KMutableProperty0
  *
  * A feature is listed in [features], or it never runs. Start from the feature closest to yours:
  * - Follow lines in chat: `DragonTimer`.
- * - Read the tab list's info rows, or the sidebar's the same way: `GolemStatus`.
- * - Read items and mark slots: `RarityMarks`.
+ * - Read the tab list's info rows, or the sidebar's the same way: `ProtectorStatus`.
+ * - Read items and mark slots: `ItemRarity`.
  * - Show items on the HUD, from the player's own inventory or an entity near them: `EquipmentDisplay`.
  * - Change how the game draws, reading nothing from the server: `Fullbright`.
  * - Count something and keep the total: `SlayerTracker`.
- * - Hide a line the server sends: `AbilitySpam`.
+ * - Hide a line the server sends: `HideCooldownMessages`.
  * - Shorten or hide text the server floats in the world, such as damage numbers: `DamageNumbers`.
- * - Tell the player something once, and read a setting besides the switch: `LootAlerts`.
+ * - Tell the player something once, and read a setting besides the switch: `RareDropAlert`.
  * - Track a rate, and follow the player into and out of its area: `ZealotTracker`.
- * - Mark a place in the world: `BossBeacon`.
+ * - Mark a place in the world: `ProtectorSpawnBeam`.
  * - Act on a key the player binds, or change the camera: `FreeLook` and `Camera`, with `Cameras` in `edge` and the
  *   rules in `core/camera`.
  * - Handle the player's own input on a vanilla screen, reading nothing from the server: `CopyChat`, with `CopyChats`
  *   in `edge`.
  */
 abstract class Feature(val id: String, internal val toggle: KMutableProperty0<Boolean>, val area: Area) {
-    /** The name the player knows the feature by: [id] in Title Case. */
-    val title = id.split('-').joinToString(" ") { it.replaceFirstChar(Char::uppercase) }
+    /** The name the player knows the feature by: [id] in Title Case, with `hud` as HUD. */
+    val title = id.split('-').joinToString(" ") { if (it == "hud") "HUD" else it.replaceFirstChar(Char::uppercase) }
     private val header = text { brand(title) }
 
     var enabled: Boolean

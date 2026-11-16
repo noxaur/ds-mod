@@ -38,7 +38,7 @@ Some places exist only in the sidebar: the Dungeon Hub's tab list has no info ro
 
 Reading an item out of Minecraft is the costly part of a menu: a chest of 54 items with long lore took 5.5 ms in one tick. So the poll reads for at most a millisecond a tick, and a big menu arrives over a few ticks. A slot that is still null just after the menu opened may only be unread.
 
-The player's own inventory is the exception, because the HUD shows it after every menu the player closes. Read again from nothing, an inventory of long-lored items took three ticks, and the Inventory Preview emptied and refilled for them. So the poller and `ContainerState` both keep the inventory while another menu is open, and its `ContainerOpened` says `kept`, followed by only the slots whose stack changed. A new world brings a new inventory menu, which is read from nothing.
+The player's own inventory is the exception, because the HUD shows it after every menu the player closes. Read again from nothing, an inventory of long-lored items took three ticks, and the Inventory HUD emptied and refilled for them. So the poller and `ContainerState` both keep the inventory while another menu is open, and its `ContainerOpened` says `kept`, followed by only the slots whose stack changed. A new world brings a new inventory menu, which is read from nothing.
 
 ## Packets that leave no state are posted as they arrive
 
