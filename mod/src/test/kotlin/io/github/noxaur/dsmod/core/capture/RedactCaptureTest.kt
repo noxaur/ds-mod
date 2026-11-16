@@ -151,6 +151,8 @@ class RedactCaptureTest {
 
         assertEquals(setOf("DragSim", "Frank"), PlayerNames.of(withSeller))
         assertEquals(setOf("Frank"), PlayerNames.of(withTitle, withSeller))
+        // A fixture is checked against every name where it stands, so a staff account named after the server still counts.
+        assertEquals(setOf("DragSim", "Frank"), PlayerNames.found(withTitle, withSeller))
     }
 
     @Test
