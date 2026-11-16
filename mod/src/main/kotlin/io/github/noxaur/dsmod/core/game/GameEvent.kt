@@ -91,3 +91,12 @@ data class SlotChanged(val slot: Int, val item: Item? = null) : GameEvent
 @Serializable
 @SerialName("pet")
 data class PetNear(val name: ServerText, val head: Item) : GameEvent
+
+/**
+ * The server put up text that floats in the world: a text display, the moment its [text] arrives or changes. Damage
+ * numbers, NPC names and holograms are all these. A handler may `hide()` it or `replace()` its text, on this client
+ * only, until the server changes the text again. Posted only while a feature reads it.
+ */
+@Serializable
+@SerialName("floating")
+data class FloatingText(val text: ServerText) : GameEvent

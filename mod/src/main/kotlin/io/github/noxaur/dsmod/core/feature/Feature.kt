@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.core.feature
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerState
+import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.game.InfoRows
@@ -146,12 +147,19 @@ abstract class Feature(val id: String, internal val toggle: KMutableProperty0<Bo
     }
 
     /**
-     * Keeps the chat line this handler is reading out of the player's chat. Every feature still sees the line. The
-     * first time a feature that is on by default hides one, [Game] tells the player where its switch is.
+     * Keeps the chat line or the [FloatingText] this handler is reading out of the player's sight. Every feature still
+     * sees it. The first time a feature that is on by default hides one, [Game] tells the player where its switch is.
      */
     protected fun hide() {
         hides = true
     }
+
+    /** Shows [text] in place of the [FloatingText] this handler is reading, on this client only. */
+    protected fun replace(text: Text) {
+        replacement = text
+    }
+
+    internal var replacement: Text? = null
 
     /** Prints a line to chat that needs no action: this feature's name, then [detail]. Call it from a handler. */
     protected fun notice(detail: Text) {

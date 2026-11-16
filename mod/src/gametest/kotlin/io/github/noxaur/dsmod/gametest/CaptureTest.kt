@@ -56,6 +56,7 @@ class CaptureTest : FabricClientGameTest {
         "blockstates" to "minecraft:obsidian",
         "blockstates" to "minecraft:stone_button",
         "entities" to "Quiz Label",
+        "floating" to "Quiz Label",
         "entities" to "minecraft:silverfish",
         "entities" to "\"glowing\":true",
         "entities" to "minecraft:filled_map",
