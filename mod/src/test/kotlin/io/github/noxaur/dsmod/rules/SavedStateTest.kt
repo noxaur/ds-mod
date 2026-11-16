@@ -25,7 +25,7 @@ private val readOnly = setOf(List::class, Set::class, Map::class, Collection::cl
  * state stands for all of them.
  */
 fun savedProblems(default: Any, path: String): List<String> =
-    default::class.let { problems((it.superclasses.firstOrNull(KClass<*>::isSealed) ?: it).starProjectedType, path, mutableSetOf()) }
+    problems(generateSequence(default::class) { it.superclasses.firstOrNull(KClass<*>::isSealed) }.last().starProjectedType, path, mutableSetOf())
 
 private fun problems(type: KType, path: String, seen: MutableSet<KClass<*>>): List<String> {
     val kind = type.classifier as? KClass<*> ?: return listOf("$path is a type parameter")
@@ -52,8 +52,10 @@ private data class Bad(val list: MutableList<Int> = mutableListOf(), val inner: 
 
 internal sealed interface Kept
 
+internal sealed interface Unset : Kept
+
 @Serializable
-internal data object Empty : Kept
+internal data object Empty : Unset
 
 @Serializable
 internal data class Full(val count: Int) : Kept
