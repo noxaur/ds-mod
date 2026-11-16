@@ -178,6 +178,8 @@ object DsModClient : ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> onDragSim = false }
         ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ ->
             Packets.worldChanged()
+            // The end-of-tick draw runs before readouts replace the marks, so the old world must already be clear.
+            World.worldChanged()
             game.post(System.currentTimeMillis(), WorldChanged)
             tabs.forget()
             sidebars.forget()
@@ -200,6 +202,8 @@ object DsModClient : ClientModInitializer {
                 saved.flush()
                 game.metrics.flush()
             }
+            // After every listener registered before this one, so the capture's tick covers what this tick posted.
+            Recorder.endedClientTick()
         }
         // In this order: a request's run cut short is deleted, the recorder finishes what it holds, then an upload gets its moment.
         ClientLifecycleEvents.CLIENT_STOPPING.register {

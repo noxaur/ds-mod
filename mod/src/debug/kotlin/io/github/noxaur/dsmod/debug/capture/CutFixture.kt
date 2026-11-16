@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.debug.capture
 
+import io.github.noxaur.dsmod.core.capture.Captured
 import io.github.noxaur.dsmod.core.capture.PlayerNames
 import io.github.noxaur.dsmod.core.capture.Redactor
 import io.github.noxaur.dsmod.core.capture.captureLine
@@ -63,13 +64,15 @@ fun cutFixture(
     var inventory = emptyMap<Int, Item>()
     var container: ContainerOpened? = null
     var start: Map<Int, Item>? = null
-    val events = ArrayList<Pair<Long, GameEvent>>()
+    val events = ArrayList<Captured>()
     capture.useLines { lines ->
         for (line in lines.filter(String::isNotBlank)) {
             val time = line.substringAfter("\"t\":").takeWhile(Char::isDigit).toLong()
             if (origin < 0) origin = time
             if (line.substringAfter("\"type\":\"").substringBefore('"') !in kept) continue
-            val event = readCaptureLine(line)!!.second
+            val captured = readCaptureLine(line)!!
+            val event = captured.event
+            val tick = captured.tick
             val second = (time - origin) / 1000.0
             if (second > seconds.endInclusive) break
             val before = second < seconds.start
@@ -97,20 +100,20 @@ fun cutFixture(
                 event is TabList -> {
                     val state = TabState().apply { update(event.rows) }
                     val values = rows.map(state::info)
-                    if (before) tab = event else if (everyTab || values != shown) events += time to event
+                    if (before) tab = event else if (everyTab || values != shown) events += Captured(time, event, tick)
                     shown = values
                 }
                 event is Sidebar -> {
                     val now = SidebarState().apply { update(event) }.place
-                    if (before) sidebar = event else if ("sidebar" in types || now != place) events += time to event
+                    if (before) sidebar = event else if ("sidebar" in types || now != place) events += Captured(time, event, tick)
                     place = now
                 }
                 event is ContainerOpened && !before -> {
-                    events += time to event.copy(kept = false)
-                    if (event.kept) slots.forEach { (slot, item) -> events += time to SlotChanged(slot, item) }
+                    events += Captured(time, event.copy(kept = false), tick)
+                    if (event.kept) slots.forEach { (slot, item) -> events += Captured(time, SlotChanged(slot, item), tick) }
                 }
                 before -> Unit
-                event !is SystemMessage || system == null || system.containsMatchIn(event.text.plain) -> events += time to event
+                event !is SystemMessage || system == null || system.containsMatchIn(event.text.plain) -> events += Captured(time, event, tick)
             }
         }
     }
@@ -119,7 +122,9 @@ fun cutFixture(
         start = slots.toMap()
     }
     val state = listOfNotNull(tab, sidebar, container) + start!!.map { (slot, item) -> SlotChanged(slot, item) }
-    val lines = (state.map { origin + (seconds.start * 1000).toLong() to it } + events).map { (time, event) -> captureLine(time, redactor.redact(event)) }
+    // The carried state was posted on earlier ticks the window does not keep, so it has no tick of its own.
+    val lines = (state.map { Captured(origin + (seconds.start * 1000).toLong(), it) } + events)
+        .map { captureLine(it.time, redactor.redact(it.event), it.tick) }
     Files.createDirectories(fixture.parent)
     Files.write(fixture, lines)
     return lines.size to redactor.count

@@ -43,8 +43,16 @@ class BlockScan(private val changes: ChangeLog) {
     private val skulls = HashMap<String, JsonElement>()
     private val serialized = HashMap<BlockState, JsonPrimitive>()
     private var idle = 0
+    private var world: ClientLevel? = null
+
+    /** True once the maps hold a finished pass. A queued pass is another world's blocks and must not be published. */
+    private var complete = false
 
     fun tick(level: ClientLevel, player: Player) {
+        if (world !== level) {
+            if (world != null) drop()
+            world = level
+        }
         if (queue.isEmpty()) {
             if (++idle < PERIOD_TICKS) return
             idle = 0
@@ -55,13 +63,33 @@ class BlockScan(private val changes: ChangeLog) {
                 .map { (dx, dz) -> ChunkPos(center.x() + dx, center.z() + dz) }
             states.clear()
             skulls.clear()
+            complete = false
         }
         val deadline = System.nanoTime() + BUDGET_NANOS
         do scan(level, queue.removeFirst()) while (queue.isNotEmpty() && System.nanoTime() < deadline)
         if (queue.isEmpty()) {
-            changes.offerEntries(RawRecord.BLOCKSTATES, JsonObject(emptyMap()), states)
-            changes.offerEntries(RawRecord.SKULLS, JsonObject(emptyMap()), skulls)
+            complete = true
+            offer()
         }
+    }
+
+    /** Publishes a finished pass. A pass still queued is dropped, so a warp's blocks are not mixed in. */
+    fun detach() {
+        if (complete && queue.isEmpty()) offer()
+        drop()
+        world = null
+    }
+
+    private fun drop() {
+        queue.clear()
+        states.clear()
+        skulls.clear()
+        complete = false
+    }
+
+    private fun offer() {
+        changes.offerEntries(RawRecord.BLOCKSTATES, JsonObject(emptyMap()), states)
+        changes.offerEntries(RawRecord.SKULLS, JsonObject(emptyMap()), skulls)
     }
 
     private fun scan(level: ClientLevel, pos: ChunkPos) {

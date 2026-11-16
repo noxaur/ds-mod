@@ -144,29 +144,49 @@ object Contribute {
     }
 
     /**
+     * Deletes [gz] after the backend's final answer and says whether the claim may be released. A sent run is told
+     * before the delete, so a delete that throws cannot hide that it went out. A delete that throws keeps the claim,
+     * so this start does not upload the file again.
+     */
+    internal fun settle(answer: Upload, gz: Path, tell: (Upload) -> Unit): Boolean {
+        if (answer == Upload.SENT) tell(answer)
+        val deleted = try {
+            Files.deleteIfExists(gz)
+            true
+        } catch (e: Exception) {
+            log.error("Could not delete the recording {} after the backend answered {}", gz, answer, e)
+            false
+        }
+        if (answer != Upload.SENT) tell(answer)
+        return deleted
+    }
+
+    /**
      * Sends a claimed [gz] and says how it went. A recording the backend refuses for good is deleted, and any other
      * failure keeps it. The answer is handled on the backend's thread, as the upload is, so a resend queued behind it
      * sees the file and its claim as this upload left them.
      */
     private fun upload(requestId: String, gz: Path) {
         val upload = Account.backend.async {
+            var release = true
             try {
                 val answer = try {
                     submit(requestId, gz)
                 } catch (e: Exception) {
                     return@async tell { bad("Not sent. " + Account.why(e) + " Your recording is kept. "); action("/dsmod submit"); bad(" tries again.") }
                 }
-                Files.deleteIfExists(gz)
-                when (answer) {
-                    Upload.SENT -> tell { good("Sent. Thank you!") }
-                    Upload.UNKNOWN -> tell { bad("Not sent, and deleted. The backend no longer has that request.") }
-                    Upload.CLOSED -> tell { bad("Not sent, and deleted. That request is closed, has enough recordings, or already has yours.") }
-                    Upload.TOO_BIG -> tell { bad("Not sent, and deleted. The recording is too big for the backend.") }
+                release = settle(answer, gz) { told ->
+                    when (told) {
+                        Upload.SENT -> tell { good("Sent. Thank you!") }
+                        Upload.UNKNOWN -> tell { bad("Not sent, and deleted. The backend no longer has that request.") }
+                        Upload.CLOSED -> tell { bad("Not sent, and deleted. That request is closed, has enough recordings, or already has yours.") }
+                        Upload.TOO_BIG -> tell { bad("Not sent, and deleted. The recording is too big for the backend.") }
+                    }
                 }
             } catch (e: Exception) {
                 log.error("Could not delete the recording {} after its upload", gz, e)
             } finally {
-                claimed.remove(gz)
+                if (release) claimed.remove(gz)
             }
         }
         uploads.add(upload)

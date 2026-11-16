@@ -53,6 +53,10 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.SettingsScreenFixesTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.SettingOrderTest"
       },
       {
@@ -270,6 +274,14 @@
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.JoinDragSimTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.EndTrackerEdgeTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.HudUiFixesTest"
       }
     ]
   }

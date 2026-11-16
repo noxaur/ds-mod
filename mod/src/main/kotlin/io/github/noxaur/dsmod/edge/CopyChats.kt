@@ -394,12 +394,21 @@ object CopyChats {
             val message = line.parent()
             val row = rowsOf.getValue(message) - 1 - (seen.merge(message, 1, Int::plus)!! - 1)
             var layout = layout(client, message)
-            // Rows that are not the ones the replay gave: the message is one part from here on, everywhere.
-            if (layout.parts.size > 1 && layout.partOfRow.size != rowsOf[message]) {
-                layout = Layout(layout.width, listOf(Part(message, 0, layout.parts.flatMap { it.pieces }, true)), emptyList())
-                layouts[message] = layout
+            val shown = rowsOf.getValue(message)
+            val full = layout.partOfRow.size
+            // The chat drops the oldest rows once a message no longer fits in its 100. Those missing rows are a
+            // prefix of the replay. A count the replay never produced is another mod's layout, and stays one part.
+            if (layout.parts.size > 1 && full != shown) {
+                if (full > shown) {
+                    layout.parts[layout.partOfRow[full - shown + row]]
+                } else {
+                    layout = Layout(layout.width, listOf(Part(message, 0, layout.parts.flatMap { it.pieces }, true)), emptyList())
+                    layouts[message] = layout
+                    layout.parts[0]
+                }
+            } else {
+                layout.parts[if (layout.parts.size == 1) 0 else layout.partOfRow[row]]
             }
-            layout.parts[if (layout.parts.size == 1) 0 else layout.partOfRow[row]]
         }
         val rows = ArrayList<Row>()
         visible(client) { line, pose, top, bottom -> rows += Row(partOf[line], Matrix3x2f(pose), top, bottom) }

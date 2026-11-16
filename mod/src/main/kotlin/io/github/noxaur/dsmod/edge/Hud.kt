@@ -237,7 +237,7 @@ object Hud {
     /** The item drawn under a point in GUI pixels, or null. */
     fun itemAt(px: Double, py: Double): ItemStack? {
         if (hiddenInF3()) return null
-        for (i in cells.indices) {
+        for (i in cells.indices.reversed()) {
             val cell = cells[i]
             if (px >= cell.x && px < cell.x + cell.size && py >= cell.y && py < cell.y + cell.size) return cell.stack
         }
@@ -329,8 +329,13 @@ object Hud {
         val dock = group.place.dock
         group.scale = group.place.scale
         if (dock == HudDock.FREE) {
-            group.x = group.place.x
-            group.y = group.place.y
+            // The saved place is still the fraction of the screen. A smaller GUI uses that fraction, then pulls the
+            // corner back so the plate that is about to be drawn stays on the screen.
+            val window = Minecraft.getInstance().window
+            val drawnW = plate(group.width) * group.scale
+            val drawnH = plate(group.height) * group.scale
+            group.x = group.place.x.coerceIn(0, (window.guiScaledWidth - drawnW).roundToInt().coerceAtLeast(0))
+            group.y = group.place.y.coerceIn(0, (window.guiScaledHeight - drawnH).roundToInt().coerceAtLeast(0))
             return
         }
         val spot = corner(dock, group.width, group.height, group.plates.isNotEmpty(), group.place.scale)

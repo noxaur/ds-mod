@@ -19,8 +19,18 @@ class Bind<T>(val field: String, val get: () -> T, val set: (T) -> Unit) {
     var also: List<String> = emptyList()
         private set
 
+    /**
+     * The default while the row shows a look rather than the fresh config's value, such as a preset's border.
+     * Null keeps the default taken from a fresh config.
+     */
+    var follows: (() -> T?)? = null
+        private set
+
     /** Names the other saved [fields] this one value spans. */
     fun spanning(vararg fields: String) = apply { also = fields.toList() }
+
+    /** The changed marker and a reset use [read] while it has a value, and the fresh config's otherwise. */
+    fun follows(read: () -> T?) = apply { follows = read }
 
     companion object {
         fun <T> of(property: KMutableProperty0<T>) = Bind(field(property), property::get, property::set)
@@ -127,8 +137,13 @@ sealed class Valued<T>(id: String, name: String, description: String, kind: Kind
         get() = bind.get()
         set(next) = bind.set(normalize(next))
 
+    /**
+     * The value a reset returns to. A row that [Bind.follows] a look on screen uses that while it has one, and
+     * otherwise the value from a fresh config, which [adopt] stores.
+     */
     var default: T = bind.get()
         private set
+        get() = bind.follows?.invoke() ?: field
 
     /** Takes the default from the same row of a tree built on a fresh config. */
     @Suppress("UNCHECKED_CAST")
