@@ -32,17 +32,21 @@ An earlier version asked the poller for the very stack an item was read from, bu
 
 The skin is kept as the last part of its `textures.minecraft.net` address, without the server's signature or the uploader's name the property holds. The game draws an unsigned skin on a head, as it does for a head a command gives, and the redactor drops the skin as it drops every other.
 
+A rebuilt stack never carries the count-down vanilla bobs a landed stack by. So Pickup Animation reads that count from the player's live inventory, by the slot each icon stands for, and a row with no slot cannot bob.
+
 ## The chat keeps what it draws over the HUD
 
 Drag In Chat moves the live HUD on the chat screen, where Minecraft draws the chat's rows, its input, the list of command suggestions and a command's usage over the HUD. So a press or a turn of the wheel there is the chat's, even over a block, and a block is the mouse's only where the player sees it. The suggestions' bounds are private, so accessors read them. A press the chat would leave unused is not enough: a plain line takes no left press but scrolls with the wheel, and a block that took one and not the other would show a hint the wheel then breaks. Copy Chat's rows tell where the chat is drawn, so both read the same rows. Escape puts a block back where it was, and one that came from the stack takes its old place there, because a group stacks its blocks in the features' order. The input has focus the whole time the chat is open, and its arrow keys move the cursor and recall sent lines, so the arrows nudge a block only while the mouse holds one: a player pressing a button on the HUD is not editing text. A feature with nothing to show stands in while the chat is open, after the blocks with something to show, so opening the chat moves no live block. A drag event carries the keys held at its press, so Shift is asked of the keyboard, and pressing it mid-drag frees the block, in the editor too.
 
-A docked block is dragged like any other, and the drag writes the feature's own Placement setting, so the setting stays the one place the dock is kept and the settings screen never disagrees with the HUD. Leaving the dock saves a scale that draws the block at the size the dock gave it, since a block that jumped in size under the mouse would land somewhere the player did not aim. The wheel takes a docked block out of the dock, because the dock draws at the hotbar's size and has no other.
+A docked block is dragged like any other, and the drag writes the feature's own Placement setting, so the setting stays the one place the dock is kept and the settings screen never disagrees with the HUD. Leaving the dock saves a scale that draws the block at the size the dock gave it, since a block that jumped in size under the mouse would land somewhere the player did not aim. The wheel takes a docked block out of the dock, because the dock draws at the hotbar's size, or the fit below, and has no other. The step starts from the size the block is drawn at, so a shrunk block grows rather than jumping to the hotbar's size first.
 
 ## The HUD's scale snaps to screen pixels
 
 The kit's edges are one pixel wide, and the HUD is the one place a player scales freely. At a scale of 1.3 a one-pixel edge covers 2.6 screen pixels at GUI scale 2, so some edges come out two pixels wide and others three, and the frame looks broken. `Readouts` therefore rounds a block's scale, times the HUD's, to a whole number of screen pixels per HUD pixel. The editor steps by one screen pixel for the same reason: a smaller step would change the saved number and draw nothing new.
 
 A block's saved place is the corner of its plate, so a block stays where the player dropped it whether the plate is shown or not.
+
+A block docked beside the hotbar shrinks to the room there instead of keeping the GUI's scale, by the same whole screen pixels. Minecraft's Auto GUI scale on a 1080p screen leaves about 140px beside the hotbar, and the inventory's grid is 176px wide, so at full size the clamp to the screen's edge put it over the hotbar itself. The spot a drag previews comes from the same fit, so a block lands at the size it showed.
 
 ## World marks reach Minecraft once per tick
 
