@@ -87,7 +87,7 @@ The XP is read each time you open the Pets menu. Open it again a little later, a
 | Icon | Shows your pet's head beside its name |
 | Held Item | Shows the pet item your pet holds |
 | XP | Shows how far your pet is to its next level, as a bar |
-| XP per Hour | Shows how much XP your pet gains an hour, from two reads of the Pets menu |
+| XP Rate | Shows how much XP your pet gains an hour, from two reads of the Pets menu |
 | Next Level | Shows how long until your pet reaches its next level at that rate |
 | Mark In Menu | Marks your active pet in the Pets menu |
 | Hide Autopet | Hides the chat line Autopet sends when it swaps your pet. Off until you turn it on |

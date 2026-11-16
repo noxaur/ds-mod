@@ -224,7 +224,7 @@ object SettingsTree {
                     switch(g::activePetIcon, "Icon", "Show your pet's head beside its name.")
                     switch(g::activePetItem, "Held Item", "Show the pet item your pet holds.")
                     switch(g::activePetXp, "XP", "Show how far your pet is to its next level.")
-                    switch(g::activePetRate, "XP per Hour", "Show how fast your pet gains XP.")
+                    switch(g::activePetRate, "XP Rate", "Show how fast your pet gains XP.")
                     switch(g::activePetNext, "Next Level", "Show how long until your pet reaches its next level.")
                     switch(g::markActivePet, "Mark In Menu", "Mark your active pet in the Pets menu.")
                     switch(g::hideAutopet, "Hide Autopet", "Hide the chat line Autopet sends when it swaps your pet.")
