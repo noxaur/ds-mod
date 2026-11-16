@@ -65,7 +65,9 @@ test("an agent publishes a brief, players record it, and pull writes one file pe
   const stem = `golem-tiers-${id.slice(0, 8)}`;
   expect(await lines("pull", id, out)).toEqual([join(out, `${stem}-a.jsonl`), join(out, `${stem}-b.jsonl`)]);
   expect(readdirSync(out).toSorted()).toEqual([`${stem}-a.jsonl`, `${stem}-b.jsonl`]);
-  expect(readFileSync(join(out, `${stem}-a.jsonl`), "utf8")).toBe('{"type":"step"}\n');
+  // Two uploads in the same millisecond are ordered by id, so either player's run can be A.
+  const runs = readdirSync(out).map((file) => readFileSync(join(out, file), "utf8"));
+  expect(runs.toSorted()).toEqual(['{"type":"chat"}\n', '{"type":"step"}\n']);
 });
 
 test("two briefs with the same name pulled into one directory keep every run", async () => {
@@ -120,13 +122,15 @@ test("unknowns lists the most seen first, one line each", async () => {
 test("a run that cannot be read is named as a problem, and the others are still written", async () => {
   const { run, lines, upload } = backend();
   const [id = ""] = await lines("create", briefFile(golem));
-  await upload("ann", id, new Uint8Array([0x1f, 0x8b, 1, 2]));
+  const broken: unknown = await (await upload("ann", id, new Uint8Array([0x1f, 0x8b, 1, 2]))).json();
   await upload("bob", id, gzipSync("{}\n"));
   const out = directory();
-  expect(await run("pull", id, out)).toEqual({
-    out: [join(out, `golem-tiers-${id.slice(0, 8)}-b.jsonl`)],
-    problems: [expect.stringMatching(/^Run A .* is not a gzipped capture\.$/)],
-  });
+  // Two uploads in the same millisecond are ordered by id, so either run can be A.
+  const result = await run("pull", id, out);
+  expect(result.problems).toEqual([expect.stringMatching(/^Run [AB] .* is not a gzipped capture\.$/)]);
+  expect(result.problems[0]).toContain(`(${String(Reflect.get(Object(broken), "id"))})`);
+  const letter = result.problems[0]?.charAt(4) === "A" ? "b" : "a";
+  expect(result.out).toEqual([join(out, `golem-tiers-${id.slice(0, 8)}-${letter}.jsonl`)]);
 });
 
 test("a brief that cannot be read or published says which, naming the problem", async () => {
