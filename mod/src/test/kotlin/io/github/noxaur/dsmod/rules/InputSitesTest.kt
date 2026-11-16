@@ -83,8 +83,9 @@ private fun calledOn(owner: String, name: String, opcode: Int): Sink? {
         owner == "net/minecraft/client/gui/screens/Screen" && opcode != Opcodes.INVOKESPECIAL &&
             name in setOf("handleComponentClicked", "handleClickEvent", "mouseClicked", "keyPressed") ->
             Sink("plays a click or key on a screen through $what")
-        // A container screen's close tells the server, and a plain screen's does not.
-        owner == "net/minecraft/client/gui/screens/inventory/AbstractContainerScreen" && opcode != Opcodes.INVOKESPECIAL &&
+        // A container screen's close tells the server, and a plain screen's does not. A super call counts here, because
+        // only a subclass of a container screen makes one, and forwarding to it is how that subclass would act.
+        owner == "net/minecraft/client/gui/screens/inventory/AbstractContainerScreen" &&
             name in setOf("slotClicked", "onClose", "mouseClicked", "keyPressed") ->
             Sink("plays a click or key on a screen through $what")
         owner == "net/minecraft/client/gui/screens/ChatScreen" && name == "handleChatInput" -> Sink("sends chat through $what")
@@ -212,13 +213,24 @@ fun inputSites(classes: List<ByteArray>, widener: List<String> = emptyList()): L
     val calls = groups.filterKeys { display(it) !in gated }.flatMap { (group, members) ->
         members.flatMap { (node, _) ->
             node.methods.flatMap { method ->
-                targets(method).mapNotNull { ref ->
+                val from = "${display(group)}.${enclosing(method.name)}"
+                val called = targets(method).mapNotNull { ref ->
                     // A call through a subclass reaches the method where it is declared.
                     val declaring = sinks.declaring(ref.owner, ref.name, ref.desc) ?: return@mapNotNull null
                     val target = nodes.getValue(declaring).first.methods.first { it.name == ref.name && it.desc == ref.desc }
                     if (declaring.substringBefore('$') !in acting || target.access and Opcodes.ACC_PRIVATE != 0) return@mapNotNull null
-                    InputSite.Call("${display(group)}.${enclosing(method.name)}", "${display(declaring)}.${ref.name}")
+                    InputSite.Call(from, "${display(declaring)}.${ref.name}")
                 }.toList()
+                // A field of an acting gate can hold a callback that sends, so reading one is a call too. An object's
+                // `INSTANCE` counts only when the method calls nothing on it, as when it hands the object on.
+                val read = method.instructions.filterIsInstance<FieldInsnNode>().mapNotNull { insn ->
+                    val gate = insn.owner.substringBefore('$')
+                    val field = nodes[insn.owner]?.first?.fields?.firstOrNull { it.name == insn.name }
+                    if (gate !in acting || field == null || field.access and Opcodes.ACC_PRIVATE != 0) return@mapNotNull null
+                    if (insn.name == "INSTANCE" && called.any { it.to.startsWith(display(gate) + ".") }) return@mapNotNull null
+                    InputSite.Call(from, "${display(insn.owner)}.${insn.name}")
+                }
+                called + read
             }
         }
     }
@@ -269,13 +281,14 @@ class InputSitesTest {
     @Test
     fun `the scan catches each kind of input site`() {
         class M(val name: String, vararg val insns: AbstractInsnNode, val desc: String = "()V", val access: Int = Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC)
-        fun example(name: String, vararg methods: M, mixin: Boolean = false, superName: String = "java/lang/Object"): ByteArray {
+        fun example(name: String, vararg methods: M, mixin: Boolean = false, superName: String = "java/lang/Object", fields: List<String> = emptyList()): ByteArray {
             val node = ClassNode().apply {
                 version = Opcodes.V21
                 access = Opcodes.ACC_PUBLIC
                 this.name = "${MOD}example/$name"
                 this.superName = superName
                 if (mixin) visitAnnotation(MIXIN, false)
+                fields.forEach { visitField(Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, it, "Ljava/lang/Runnable;", null, null) }
                 methods.forEach { m ->
                     this.methods.add(MethodNode(m.access, m.name, m.desc, null, null).apply {
                         m.insns.forEach(instructions::add)
@@ -329,15 +342,28 @@ class InputSitesTest {
                 example("DerivedCaller", run(call("${MOD}example/Derived", "run"))),
                 example("Menu", M("unused", access = Opcodes.ACC_PUBLIC), superName = "net/minecraft/client/gui/screens/inventory/InventoryScreen"),
                 example("MenuClicker", run(MethodInsnNode(Opcodes.INVOKEVIRTUAL, "${MOD}example/Menu", "mouseClicked", "(Lnet/minecraft/client/input/MouseButtonEvent;Z)Z"))),
+                // A container screen of the mod's own that forwards its close to Minecraft's.
+                example(
+                    "Closing",
+                    M("onClose", org.objectweb.asm.tree.VarInsnNode(Opcodes.ALOAD, 0),
+                        MethodInsnNode(Opcodes.INVOKESPECIAL, "net/minecraft/client/gui/screens/inventory/InventoryScreen", "onClose", "()V"), access = Opcodes.ACC_PUBLIC),
+                    superName = "net/minecraft/client/gui/screens/inventory/InventoryScreen",
+                ),
+                example("CloseCaller", run(InsnNode(Opcodes.ACONST_NULL), MethodInsnNode(Opcodes.INVOKEVIRTUAL, "${MOD}example/Closing", "onClose", "()V"))),
+                // A callback kept in a gate's field, run by a class outside the gates.
+                example("Callbacks", run(call("net/minecraft/client/multiplayer/ClientPacketListener", "sendCommand")), fields = listOf("COMMAND")),
+                example("CallbackCaller", run(FieldInsnNode(Opcodes.GETSTATIC, "${MOD}example/Callbacks", "COMMAND", "Ljava/lang/Runnable;"), InsnNode(Opcodes.POP))),
             ),
         )
         assertEquals(
             listOf(
+                "call example.CallbackCaller.run -> example.Callbacks.COMMAND",
                 "call example.Caller.run -> example.Command.run",
+                "call example.CloseCaller.run -> example.Closing.onClose",
                 "call example.DerivedCaller.run -> example.Command.run",
                 "call example.LaterCaller.run -> example.Later.schedule",
                 "call example.OverloadCaller.run -> example.Overload.send",
-                "gate example.Aim", "gate example.Click", "gate example.Command", "gate example.Consume", "gate example.Handle",
+                "gate example.Aim", "gate example.Callbacks", "gate example.Click", "gate example.Closing", "gate example.Command", "gate example.Consume", "gate example.Handle",
                 "gate example.Hook", "gate example.Inventory", "gate example.Later", "gate example.Link", "gate example.LinkReference", "gate example.MenuClicker",
                 "gate example.Overload", "gate example.Packet", "gate example.Reflect", "gate example.Refuse", "gate example.Toggle",
                 "gate example.Use",
