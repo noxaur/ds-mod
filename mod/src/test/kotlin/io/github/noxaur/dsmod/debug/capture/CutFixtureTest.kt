@@ -196,6 +196,9 @@ class CutFixtureTest {
         )
         val out = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 0.0..4.5, setOf("system", "world"), area = Area.END) })
         assertEquals(listOf(TabList::class, WorldChanged::class, TabList::class, SystemMessage::class), out.map { it.second::class })
+        // A hop inside the window keeps the tab list the window started with.
+        val hop = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 3.5..6.0, setOf("system", "world"), area = Area.END) })
+        assertEquals(listOf(TabList::class, SystemMessage::class, WorldChanged::class), hop.map { it.second::class })
         // A cut that starts after the hop and before the new tab list starts nowhere.
         val late = readCapture(dir.resolve("fixture.jsonl").also { cut(capture, 6.0..9.0, setOf("system", "world"), area = Area.END) })
         assertEquals(listOf(TabList::class), late.map { it.second::class })
