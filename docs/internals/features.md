@@ -59,3 +59,7 @@ A feature declares one immutable state object and replaces it to change it. The 
 `Metrics` adds up timings, counts and failures in memory, and a flush hands one snapshot to each sink. Recording costs the client thread no I/O, and a new receiver is one more sink. Today the release build logs failures, and a running capture writes each snapshot into the file.
 
 The `unparsed` counter matters most. The server is closed and changes without notice, so a feature that stops matching looks the same as a quiet game. A line that reached a feature and failed to parse is the only signal. A feature reports it with `unparsed(text)`, which counts it and, while the player has opted in, hands the text on to the report of unread lines. One call is the only route, so a feature cannot count a failure the report never sees.
+
+## A chat line is read by its head
+
+A player's chat line starts with their name, and they can type anything after it, so only a line's start tells the server's lines from theirs. A feature reads chat through `line(head, pattern)`, which matches the head at the start and calls `unparsed` itself when the head matches and the pattern does not. Each feature used to read `plain` in its own handler, with `startsWith`, `in` or a regex, and nothing stopped an unanchored match or a branch that forgot `unparsed`. A dragon's loot rows count only within a second of their header, because a head handler sees no line but its own and so cannot end the rows at the first other line.

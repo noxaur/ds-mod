@@ -9,8 +9,7 @@ Load the `ui` skill too when the feature shows the player anything.
 
 ## Server lines
 
-- Match `ServerText.plain` anchored at the start of the line, because a player can type anything after their name.
-- A line that reaches the feature's branch and then fails to parse goes to `unparsed(text)` as the server sent it. That is how a format change on the server shows up.
+- Text other than a chat line, such as a tab row or lore, that reaches the feature's branch and then fails to parse goes to `unparsed(text)` as the server sent it. That is how a format change on the server shows up. A chat line's handler, `line`, counts its own.
 - Two features that read the same line share its parser in `core/game`, as drops share `Drop.parse`.
 
 ## State

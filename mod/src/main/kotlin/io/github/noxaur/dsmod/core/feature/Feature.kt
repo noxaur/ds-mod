@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.game.InfoRows
+import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudBuilder
 import io.github.noxaur.dsmod.core.hud.HudDock
@@ -99,10 +100,45 @@ abstract class Feature(val id: String, internal val toggle: KMutableProperty0<Bo
         check(handlers.put(type, handler as (GameEvent, Long) -> Unit) == null) { "$id already handles ${type.simpleName}" }
     }
 
+    private class Line(val head: (String) -> Boolean, val read: (String, Long) -> Boolean)
+
+    private val lines = ArrayList<Line>()
+
+    /**
+     * Handles each chat line that starts with [head]. A player's chat line starts with their name, so a server line
+     * is told by its start, and a player can type anything after it. The first handler whose head matches takes the line.
+     */
+    protected fun line(head: String, handler: (now: Long) -> Unit) = line({ it.startsWith(head) }, { it }) { _, now -> handler(now) }
+
+    /**
+     * Handles each chat line that starts with [head] and parses it with [pattern], which matches the whole line. A
+     * line whose head matches and whose pattern does not counts as [unparsed], which is how a format change shows up.
+     */
+    protected fun line(head: String, pattern: Regex, handler: (groups: MatchResult.Destructured, now: Long) -> Unit) =
+        line({ it.startsWith(head) }, { pattern.matchEntire(it)?.destructured }, handler)
+
+    /** As the [line] with a [String] head, for a server line whose start varies, such as a boss's name. [head] matches at the start. */
+    protected fun line(head: Regex, pattern: Regex, handler: (groups: MatchResult.Destructured, now: Long) -> Unit) =
+        line({ head.matchesAt(it, 0) }, { pattern.matchEntire(it)?.destructured }, handler)
+
+    /** Handles each chat line that starts with [head], read by [parse], for a line a shared parser such as `Drop.parse` reads. Null is [unparsed]. */
+    protected fun <T : Any> line(head: Regex, parse: (String) -> T?, handler: (T, now: Long) -> Unit) =
+        line({ head.matchesAt(it, 0) }, parse, handler)
+
+    private fun <T : Any> line(head: (String) -> Boolean, parse: (String) -> T?, handler: (T, Long) -> Unit) {
+        if (lines.isEmpty()) {
+            on<SystemMessage> { message, now ->
+                val text = message.text.plain
+                lines.firstOrNull { it.head(text) }?.let { if (!it.read(text, now)) unparsed(text) }
+            }
+        }
+        lines += Line(head) { text, now -> parse(text)?.also { handler(it, now) } != null }
+    }
+
     /**
      * Records that [sample], text that reached this feature's branch, failed to parse. The counter `<id>.unparsed`
      * is how a format change on the server shows up, and the sample goes to the player's report when they sent
-     * one. Pass the server's text as it is, because the report redacts it.
+     * one. Pass the server's text as it is, because the report redacts it. [line] does this for a chat line.
      */
     protected fun unparsed(sample: String) {
         metrics.count("$id.unparsed")

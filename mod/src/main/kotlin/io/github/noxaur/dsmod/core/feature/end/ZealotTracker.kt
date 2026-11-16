@@ -5,7 +5,6 @@ import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.Drop
 import io.github.noxaur.dsmod.core.game.EntityDied
-import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
@@ -68,8 +67,8 @@ class ZealotTracker(toggle: KMutableProperty0<Boolean>) : Feature("zealot-tracke
             kills += confirmed
             allTime.value = allTime.value.copy(kills = allTime.value.kills + confirmed)
         }
-        on<SystemMessage> { message, _ ->
-            val name = Drop.parse(message.text.plain)?.item ?: return@on
+        line(Drop.head, Drop::parse) { drop, _ ->
+            val name = drop.item
             session += name to (session[name] ?: 0) + 1
             allTime.value = allTime.value.copy(drops = allTime.value.drops.let { it + (name to (it[name] ?: 0) + 1) })
         }

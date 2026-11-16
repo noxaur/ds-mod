@@ -31,6 +31,7 @@ All of them run in `mise run check`, except the game tests and the CI rules.
 | A feature fires only in the area it names | `Feature` takes an `Area` and `Game` gates on it. `FeatureReplayTest` replays each fixture outside the area |
 | A feature reads no area for itself, from the tab list or the sidebar, and sits in its area's folder | `InfoRows` hands a feature no place and refuses an area row, `area-by-declaration` in `mod/…/Rules.kt` for a place named in a feature, and `RulesTest` |
 | The mod's text and colors come from its text layer | `TextLayerTest` reads the compiled classes, and `text-by-role` in `mod/…/Rules.kt` for a hex color or a `§` |
+| A feature reads a chat line by its start, and a line that starts right and fails to parse is counted | `line` in `Feature`, and `chat-by-line` in `mod/…/Rules.kt` for a chat handler written by hand |
 | The mod's shapes are drawn by its kit, in the player's theme | `KitTest` reads the compiled classes |
 | Release code cannot use debug tools | The `main` and `debug` source sets |
 | Raw captures stay out of git | They are written to `mod/run/`, which is git-ignored |

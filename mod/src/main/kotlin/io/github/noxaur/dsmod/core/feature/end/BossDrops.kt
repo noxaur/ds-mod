@@ -2,7 +2,6 @@ package io.github.noxaur.dsmod.core.feature.end
 
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
-import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KMutableProperty0
@@ -29,42 +28,36 @@ class BossDrops(toggle: KMutableProperty0<Boolean>) : Feature("boss-drops", togg
     private var damage = ""
     private var fights = 0
     private var loot = emptyList<Pair<Int, String>>()
-    private var readingLoot = false
+    private var lootAt: Long? = null
 
     // A player's chat line is one line with their name first, so only the server's summary has these on lines of their own.
     private val down = Regex("""^\s+([A-Z][A-Z ]*[A-Z]) DOWN!$""", RegexOption.MULTILINE)
     private val mine = Regex("""^\s+Your Damage: (\S+) \(Position #(\d+)\)$""", RegexOption.MULTILINE)
-    private val lootRow = Regex("""^ - (\d+)x (.+)$""")
 
     init {
-        on<SystemMessage> { message, _ ->
-            val line = message.text.plain
-            when {
-                '\n' in line && " DOWN!\n" in line -> {
-                    readingLoot = false
-                    val boss = down.find(line)?.groupValues?.get(1) ?: return@on unparsed(line)
-                    // The summary reaches everyone nearby, and one without this line is for a fight the player did no damage in.
-                    val (dealt, place) = mine.find(line)?.destructured ?: return@on
-                    val name = boss.lowercase().split(' ').joinToString(" ") { it.replaceFirstChar(Char::uppercase) }
-                    last = name
-                    if (name.endsWith(" Dragon")) lastDragon = name
-                    damage = dealt
-                    position = place.toInt()
-                    fights++
-                    loot = emptyList()
-                    record(name) { it.copy(fights = it.fights + 1, first = it.first + if (position == 1) 1 else 0) }
-                }
-                line == "Here is your loot from the last dragon:" -> {
-                    readingLoot = true
-                    if (last == lastDragon) loot = emptyList()
-                }
-                readingLoot -> {
-                    val (amount, item) = lootRow.find(line)?.destructured ?: return@on run { readingLoot = false }
-                    val dragon = lastDragon ?: return@on
-                    if (last == dragon) loot = loot + (amount.toInt() to item)
-                    record(dragon) { it.copy(loot = it.loot + (item to (it.loot[item] ?: 0) + amount.toInt())) }
-                }
-            }
+        line(Regex("""[^\n]*\n[^\n]* DOWN!\n"""), { text -> down.find(text)?.let { it.groupValues[1] to mine.find(text) } }) { (boss, yours), _ ->
+            lootAt = null
+            // The summary reaches everyone nearby, and one without this line is for a fight the player did no damage in.
+            val (dealt, place) = yours?.destructured ?: return@line
+            val name = boss.lowercase().split(' ').joinToString(" ") { it.replaceFirstChar(Char::uppercase) }
+            last = name
+            if (name.endsWith(" Dragon")) lastDragon = name
+            damage = dealt
+            position = place.toInt()
+            fights++
+            loot = emptyList()
+            record(name) { it.copy(fights = it.fights + 1, first = it.first + if (position == 1) 1 else 0) }
+        }
+        line("Here is your loot from the last dragon:") { now ->
+            lootAt = now
+            if (last == lastDragon) loot = emptyList()
+        }
+        line(Regex(""" - \d+x """), Regex(""" - (\d+)x (.+)""")) { (amount, item), now ->
+            // The rows arrive in the same tick as their header, so a row long after it belongs to some other list.
+            if (now - (lootAt ?: return@line) > LOOT_MILLIS) return@line
+            val dragon = lastDragon ?: return@line
+            if (last == dragon) loot = loot + (amount.toInt() to item)
+            record(dragon) { it.copy(loot = it.loot + (item to (it.loot[item] ?: 0) + amount.toInt())) }
         }
     }
 
@@ -81,5 +74,9 @@ class BossDrops(toggle: KMutableProperty0<Boolean>) : Feature("boss-drops", togg
             for ((amount, item) in loot) row("Loot") { value("${amount}x $item") }
             row("Fights") { value(fights.toLong()); muted(" (${record.fights} all-time on this boss)") }
         }
+    }
+
+    private companion object {
+        const val LOOT_MILLIS = 1_000L
     }
 }
