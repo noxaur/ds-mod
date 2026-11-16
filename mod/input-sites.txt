@@ -8,28 +8,40 @@
 
 call edge.DsModClient.onInitializeClient -> edge.CommandKeys.register
 call edge.DsModClient.onInitializeClient -> edge.MenuBack.register
+call edge.DsModClient.onInitializeClient -> edge.SlotGuards.register
+call edge.profile.ProfileScreen.dress -> edge.profile.ProfileModel.<init>
+call edge.profile.ProfileScreen.dress -> edge.profile.ProfileModel.dress
+call edge.profile.ProfileScreen.dress -> edge.profile.ProfileModel.getUuid
+call edge.profile.ProfileScreen.extractRenderState -> edge.profile.ProfileModel.draw
+call edge.profile.ProfileScreen.ghost_delegate -> edge.profile.ProfileModel.<init>
 gate aw/dsmod.accesswidener 4f33ddcbbdf7
+gate edge.ArmorSwapGuards b9c4dd2640b0
 gate edge.Chat 7c62093eb80b  the [ds-mod] prefix opens settings
-gate edge.CommandKeys cd38c2e12592  Command Binds
-gate edge.CopyChats fb0d05613b59  Copy Chat
-gate edge.MenuBack b923fde446e1  Back Buttons and Menu Tabs
-gate edge.SlotGuards b39380c1e913  Slot Lock and Armor Swap Guard
-gate edge.TabBar d66d925151ca  Menu Tabs
+gate edge.ChatDrags f6bd1b276e60
+gate edge.CommandKeys 6beafabd10f8  Command Binds
+gate edge.CopyChats 6905f3eeadfe  Copy Chat
+gate edge.EyeGuards b42b9f42c41e
+gate edge.MenuBack ff8ff383383c  Back Buttons and Menu Tabs
+gate edge.SlotGuards f47bde8c5d14  Slot Lock and Armor Swap Guard
+gate edge.TabBar 75f014239d9d  Menu Tabs
+gate edge.capture.Recording 9b3a6a17e0f5
 gate edge.mixin.CameraMixin 38be690c7e6d
 gate edge.mixin.CaptureInputMixin b980f3b71960
 gate edge.mixin.CapturePacketsMixin df3c170949d4
 gate edge.mixin.ChatComponentAccessor 0de2ee54ddad
+gate edge.mixin.ChatScreenAccessor 8d71ec80e335
 gate edge.mixin.ChestScreenMixin 402124e5a624
+gate edge.mixin.CommandSuggestionsAccessor a1a28e33457f
 gate edge.mixin.ContainerScreenAccessor 41a15991e191
 gate edge.mixin.ContainerScreenMixin 5147eddf96ea
 gate edge.mixin.CursorMixin ec46fb6ba006
 gate edge.mixin.DropKeyMixin 1b430b670807
-gate edge.mixin.ExplosionParticleMixin 22967fbbbdf8
-gate edge.mixin.FullbrightMixin 118bcf07aa5c
-gate edge.mixin.HeldItemMixin 99d0eef2a197
+gate edge.mixin.ExplosionParticleMixin ad9f4482623d
+gate edge.mixin.FullbrightMixin 4c8ba0a85eab
+gate edge.mixin.HeldItemMixin 58c78f6ea473
 gate edge.mixin.HudHotbarMixin 2f5e0a35a25f
 gate edge.mixin.KeyInputMixin 5ebcb38f55be
-gate edge.mixin.KeyPressMixin aea73a446c97
+gate edge.mixin.KeyPressMixin 24020b1c12dc
 gate edge.mixin.MenuBackdropMixin 26956081c86e
 gate edge.mixin.MenuBackgroundMixin e2dedafa684d
 gate edge.mixin.MenuLabelMixin 908778adba07
@@ -39,6 +51,8 @@ gate edge.mixin.PerspectiveKeyMixin fef175750217
 gate edge.mixin.RecipeButtonMixin 58afff2ab543
 gate edge.mixin.ServerPacketsMixin b124a2319630
 gate edge.mixin.SlotClickMixin 4a2f8fda01b4
+gate edge.mixin.SuggestionsListAccessor 2ccdd93488e1
 gate edge.mixin.SwingSpeedMixin ced2e765eeaf
 gate edge.mixin.TooltipMixin e44c92fc34b0
-gate edge.profile.Profiles 01c2950dc627  a name in chat opens /dsmod pv
+gate edge.profile.ProfileModel 9754f8aaeae5
+gate edge.profile.Profiles cd73cfa78ec9  a name in chat opens /dsmod pv
