@@ -31,6 +31,13 @@ jobs:
             echo "beta: skipped, no commit since $last." >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
+          # The backend, web and docs checks run in CI and not here, so a commit ships only when CI passed on it.
+          ci=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci --commit "$GITHUB_SHA" --limit 1 \
+            --json status,conclusion --jq '.[0] | if . then "\(.status) \(.conclusion)" else "missing" end')
+          if [ "$ci" != "completed success" ]; then
+            echo "beta: not released. CI on $GITHUB_SHA is $ci, and a beta ships only when it passed." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
           echo "release=true" >> "$GITHUB_OUTPUT"
       - if: steps.gate.outputs.release
         uses: actions/checkout@v7
@@ -39,7 +46,7 @@ jobs:
       - id: version
         if: steps.gate.outputs.release
         run: echo "version=$(sed -n 's/^version=//p' mod/gradle.properties)-beta.$GITHUB_RUN_NUMBER" >> "$GITHUB_OUTPUT"
-      # Every check and every game test, PerfTest among them, against the jars about to be released.
+      # The mod's checks and every game test, PerfTest among them, against the jars about to be released.
       - if: steps.gate.outputs.release
         working-directory: mod
         run: >-
