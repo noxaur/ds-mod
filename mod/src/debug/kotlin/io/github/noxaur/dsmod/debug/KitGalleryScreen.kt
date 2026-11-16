@@ -59,7 +59,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         mark(Items.DIAMOND, 1, Role.RARE, 'f'), mark(Items.EMERALD, 3, Role.UNCOMMON, 'f'), mark(Items.IRON_INGOT, 1, Role.COMMON, 'f'),
         mark(Items.NETHER_STAR, 1, Role.MYTHIC, ' '), mark(Items.LAPIS_LAZULI, 38, Role.RARE, ' '),
         mark(Items.BLAZE_ROD, 1, Role.LEGENDARY, 'b'), mark(Items.SLIME_BALL, 7, Role.UNCOMMON, ' '), mark(Items.PRISMARINE_SHARD, 1, Role.DIVINE, 'b'),
-        mark(Items.PAPER, 20, Role.COMMON, 'd'), mark(Items.ENDER_EYE, 1, Role.EPIC, 'd'), mark(Items.QUARTZ, 9, Role.RARE, ' '),
+        mark(Items.PAPER, 20, Role.COMMON, 'd'), mark(Items.ENDER_EYE, 1, Role.EPIC, 'd'), mark(Items.QUARTZ, 9, Role.RARE, ' '), mark(Items.FEATHER, 4, Role.COMMON, 'h'),
     )
     private val tabs = listOf(Items.GOLDEN_SWORD, Items.DIAMOND, Items.ENDER_PEARL, Items.EMERALD).map(::ItemStack)
     private val hud = listOf(
@@ -131,13 +131,13 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         Kit.bar(g, x + 128, oy + 111, 60, 0.62f, Role.WARNING.argb())
         Kit.bar(g, x + 192, oy + 111, 60, 1f, Role.VALUE.argb())
 
-        caption(g, "Icons: ink, muted, roles on a well", x, oy + 121)
+        caption(g, "Icons: ink, and roles on a well", x, oy + 121)
         val icons = Icon.entries
-        Kit.well(g, x + 164, oy + 132, 88, 14)
+        val well = x + icons.size * 8 + 4
+        Kit.well(g, well, oy + 132, icons.size * 8 + 4, 14)
         for (i in icons.indices) {
             Kit.icon(g, icons[i], x + i * 8, oy + 136, t.ink, t.inkShadow)
-            Kit.icon(g, icons[i], x + 82 + i * 8, oy + 136, t.inkMuted, t.inkShadow)
-            Kit.icon(g, icons[i], x + 167 + i * 8, oy + 136, ROLES[i % ROLES.size].argb())
+            Kit.icon(g, icons[i], well + 3 + i * 8, oy + 136, ROLES[i % ROLES.size].argb())
         }
 
         caption(g, "Divider, rings and a line", x, oy + 150)
@@ -154,6 +154,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         window(g, ox + MIDDLE, oy + 40)
         list(g, ox + RIGHT, oy + 7)
         plate(g, ox + RIGHT, oy + 159)
+        skeleton(g, ox + RIGHT + 128, oy + 159)
         tooltip(g, ox + MIDDLE + 30, oy + 84)
         glass(g, ox, oy + HEIGHT + 2)
 
@@ -183,6 +184,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
             g.item(mark.item, sx + 1, sy + 1)
             g.itemDecorations(font, mark.item, sx + 1, sy + 1)
             if (mark.style == 'd') Kit.slotDim(g, sx + 1, sy + 1)
+            if (mark.style == 'h') Kit.slotHover(g, sx + 1, sy + 1)
             if (mark.style == 'b' && DsModClient.settings.inventory.inventoryStyle.gem) {
                 Kit.slotGem(g, sx + 1, sy + 1, SlotArts.atlas(DsModClient.settings.inventory, Surface.CONTAINER), mark.role.ordinal)
             }
@@ -230,6 +232,17 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         Kit.plate(g, x, y, 120, 54)
         for (i in hud.indices) g.text(font, hud[i], x + 4, y + 4 + i * 10, -1, true)
         Kit.bar(g, x + 4, y + 44, 80, 0.8f, Role.WARNING.argb())
+    }
+
+    /** Bones where a loading screen's words will be, and the veil a notice sits on, over the lower half. */
+    private fun skeleton(g: GuiGraphicsExtractor, x: Int, y: Int) {
+        caption(g, "Veil", x, y - 12)
+        Kit.bone(g, x, y, 16, 16)
+        Kit.bone(g, x + 20, y + 2, 24, 7)
+        Kit.bar(g, x, y + 20, 44, 0f, Role.VALUE.argb())
+        Kit.bone(g, x, y + 32, 16, 16)
+        Kit.bone(g, x + 20, y + 34, 18, 7)
+        Kit.veil(g, x - 2, y + 28, 48, 26)
     }
 
     private fun caption(g: GuiGraphicsExtractor, text: String, x: Int, y: Int) = Kit.label(g, text, x, y, Kit.Ink.MUTED)

@@ -140,6 +140,12 @@ export const DrawnItem = Schema.Struct({
   color: Schema.optionalKey(Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 0xffffff }))),
   /** The data behind the tooltip. Left out when the item has none, and by a backend older than this field. */
   facts: Schema.optionalKey(ItemFacts),
+  /**
+   * The item's data as a real item of the game carries it in its `custom_data`, with the same keys, so a client can
+   * set it on the stack and a mod that reads a real item's data reads this one too. Left out by a backend older than
+   * this field.
+   */
+  customData: Schema.optionalKey(Schema.Record(Schema.String, Schema.Unknown)),
 });
 export type DrawnItem = typeof DrawnItem.Type;
 

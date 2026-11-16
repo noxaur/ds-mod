@@ -1,0 +1,1048 @@
+{
+ "snapshot": "dd35e75e-460c-46b3-a217-72f9f17dabc4",
+ "fetchedAt": "2026-11-15T17:15:20.000Z",
+ "stale": false,
+ "player": {
+  "uuid": "11111111-2222-4333-8444-555555555555",
+  "name": "Testwyrm",
+  "rank": {
+   "id": "MVP_PLUS",
+   "prefix": [
+    {
+     "text": "[MVP",
+     "color": "#55FFFF"
+    },
+    {
+     "text": "+",
+     "color": "#FF5555"
+    },
+    {
+     "text": "]",
+     "color": "#55FFFF"
+    }
+   ]
+  }
+ },
+ "profiles": [
+  {
+   "id": "aaaaaaaa-0000-4000-8000-000000000001",
+   "name": [
+    {
+     "text": "Arcane",
+     "color": "#AA00AA"
+    }
+   ],
+   "mode": "NORMAL",
+   "selected": false
+  },
+  {
+   "id": "bbbbbbbb-0000-4000-8000-000000000002",
+   "name": [
+    {
+     "text": "Superior",
+     "color": "#AA00AA"
+    }
+   ],
+   "mode": "IRONMAN",
+   "selected": true
+  }
+ ],
+ "profileId": "bbbbbbbb-0000-4000-8000-000000000002",
+ "profileName": [
+  {
+   "text": "Superior",
+   "color": "#AA00AA"
+  }
+ ],
+ "profileMode": "IRONMAN",
+ "skills": [
+  {
+   "id": "combat",
+   "name": "Combat",
+   "level": 2,
+   "maxLevel": 100,
+   "totalXp": 175,
+   "xpIntoLevel": 0,
+   "xpForNextLevel": 200
+  },
+  {
+   "id": "mining",
+   "name": "Mining",
+   "level": 0,
+   "maxLevel": 100,
+   "totalXp": 49,
+   "xpIntoLevel": 49,
+   "xpForNextLevel": 50
+  },
+  {
+   "id": "taming",
+   "name": "Taming",
+   "level": 100,
+   "maxLevel": 100,
+   "totalXp": 2500000000,
+   "xpIntoLevel": 73970157,
+   "xpForNextLevel": null
+  },
+  {
+   "id": "catacombs",
+   "name": "Catacombs",
+   "level": 50,
+   "maxLevel": 50,
+   "totalXp": 600000000,
+   "xpIntoLevel": 30190360,
+   "xpForNextLevel": null
+  },
+  {
+   "id": "dragon_slaying",
+   "name": "Dragon Slaying",
+   "level": 1,
+   "maxLevel": 100,
+   "totalXp": 125,
+   "xpIntoLevel": 75,
+   "xpForNextLevel": 125
+  }
+ ],
+ "slayers": [
+  {
+   "id": "zombie",
+   "name": "Revenant Horror",
+   "level": 9,
+   "maxLevel": 9,
+   "totalXp": 17642500,
+   "xpIntoLevel": 0,
+   "xpForNextLevel": null
+  },
+  {
+   "id": "enderman",
+   "name": "Voidgloom Seraph",
+   "level": 9,
+   "maxLevel": 9,
+   "totalXp": 60444500,
+   "xpIntoLevel": 0,
+   "xpForNextLevel": null
+  },
+  {
+   "id": "spider",
+   "name": "Spider",
+   "level": 0,
+   "maxLevel": 9,
+   "totalXp": 15,
+   "xpIntoLevel": 0,
+   "xpForNextLevel": null
+  }
+ ],
+ "stats": [
+  {
+   "id": "coins",
+   "name": "Coins",
+   "value": [
+    {
+     "text": "35,124,030,742",
+     "color": "#FFAA00"
+    }
+   ]
+  },
+  {
+   "id": "bits",
+   "name": "Bits",
+   "value": [
+    {
+     "text": "94,254",
+     "color": "#55FFFF"
+    }
+   ]
+  },
+  {
+   "id": "motes",
+   "name": "Motes",
+   "value": [
+    {
+     "text": "0",
+     "color": "#FF55FF"
+    }
+   ]
+  },
+  {
+   "id": "dragon_essence",
+   "name": "Dragon Essence",
+   "value": [
+    {
+     "text": "831,916",
+     "color": "#AA00AA"
+    }
+   ]
+  },
+  {
+   "id": "accessory_power",
+   "name": "Accessory Power",
+   "value": [
+    {
+     "text": "Sighted",
+     "color": "#55FF55"
+    }
+   ]
+  },
+  {
+   "id": "haunted_candy_earned",
+   "name": "Haunted Candy Earned",
+   "value": [
+    {
+     "text": "8,396",
+     "color": "#FFAA00"
+    }
+   ]
+  },
+  {
+   "id": "draconic_experience",
+   "name": "Draconic Experience",
+   "value": [
+    {
+     "text": "370",
+     "color": "#FF5555"
+    }
+   ]
+  }
+ ],
+ "topKills": [
+  {
+   "id": "NEST_ZEALOT",
+   "name": "Nest Zealot",
+   "kills": 368742
+  },
+  {
+   "id": "NEST_ZEALOT_BRUISER",
+   "name": "Nest Zealot Bruiser",
+   "kills": 210934
+  },
+  {
+   "id": "NEST_WATCHER",
+   "name": "Nest Watcher",
+   "kills": 98554
+  },
+  {
+   "id": "CRYPT_GHOUL",
+   "name": "Crypt Ghoul",
+   "kills": 74385
+  },
+  {
+   "id": "NEST_DEFENDER",
+   "name": "Nest Defender",
+   "kills": 66967
+  },
+  {
+   "id": "VOIDLING_DEVOTEE",
+   "name": "Voidling Devotee",
+   "kills": 4142
+  },
+  {
+   "id": "SPECIAL_ZEALOT",
+   "name": "Special Zealot",
+   "kills": 2226
+  },
+  {
+   "id": "WARDEN",
+   "name": "Warden",
+   "kills": 1962
+  },
+  {
+   "id": "THE_DISTURBED",
+   "name": "The Disturbed",
+   "kills": 1542
+  },
+  {
+   "id": "REVENANT_HORROR_MOB",
+   "name": "Revenant Horror",
+   "kills": 1149
+  }
+ ],
+ "savedAt": "2026-11-15T17:15:18.524Z",
+ "equippedWardrobeSlot": 2,
+ "playerStats": {
+  "base": [
+   {
+    "id": "intelligence",
+    "name": "Intelligence",
+    "color": "#55FFFF",
+    "value": 300
+   },
+   {
+    "id": "health",
+    "name": "Health",
+    "color": "#FF5555",
+    "value": 600
+   },
+   {
+    "id": "mystery",
+    "name": "Mystery",
+    "color": "#AAAAAA",
+    "value": 1
+   }
+  ],
+  "additive": [
+   {
+    "id": "health",
+    "name": "Health",
+    "color": "#FF5555",
+    "value": 15
+   }
+  ],
+  "multiplicative": [],
+  "increaseMax": [
+   {
+    "id": "health",
+    "name": "Health",
+    "color": "#FF5555",
+    "value": 5
+   }
+  ]
+ },
+ "bestiary": [
+  {
+   "id": "NEST_ZEALOT",
+   "name": "Nest Zealot",
+   "kills": 368742
+  },
+  {
+   "id": "NEST_ZEALOT_BRUISER",
+   "name": "Nest Zealot Bruiser",
+   "kills": 210934
+  },
+  {
+   "id": "NEST_WATCHER",
+   "name": "Nest Watcher",
+   "kills": 98554
+  },
+  {
+   "id": "CRYPT_GHOUL",
+   "name": "Crypt Ghoul",
+   "kills": 74385
+  },
+  {
+   "id": "NEST_DEFENDER",
+   "name": "Nest Defender",
+   "kills": 66967
+  },
+  {
+   "id": "VOIDLING_DEVOTEE",
+   "name": "Voidling Devotee",
+   "kills": 4142
+  },
+  {
+   "id": "SPECIAL_ZEALOT",
+   "name": "Special Zealot",
+   "kills": 2226
+  },
+  {
+   "id": "WARDEN",
+   "name": "Warden",
+   "kills": 1962
+  },
+  {
+   "id": "THE_DISTURBED",
+   "name": "The Disturbed",
+   "kills": 1542
+  },
+  {
+   "id": "REVENANT_HORROR_MOB",
+   "name": "Revenant Horror",
+   "kills": 1149
+  },
+  {
+   "id": "GOOP",
+   "name": "Goop",
+   "kills": 370
+  },
+  {
+   "id": "VOIDGLOOM_SERAPH_MOB",
+   "name": "Voidgloom Seraph",
+   "kills": 0
+  },
+  {
+   "id": "NEST_ENDERMITE",
+   "name": "Nest Endermite",
+   "kills": 0
+  }
+ ],
+ "collections": [
+  {
+   "id": "obsidian",
+   "name": "Obsidian",
+   "amount": 2747774
+  },
+  {
+   "id": "mystery_ore",
+   "name": "Mystery Ore",
+   "amount": 3
+  }
+ ],
+ "rngMeters": [
+  {
+   "id": "revenant",
+   "name": "Revenant",
+   "progress": 2495
+  },
+  {
+   "id": "mine_node",
+   "name": "Mine Node",
+   "progress": 962
+  }
+ ],
+ "dungeons": {
+  "selectedClass": {
+   "id": "TANK",
+   "name": "Tank"
+  },
+  "secrets": 12,
+  "zombieKills": 31,
+  "skeletorKills": 15,
+  "classes": [
+   {
+    "id": "MAGE",
+    "name": "Mage",
+    "level": 14,
+    "maxLevel": 50,
+    "totalXp": 18932.5,
+    "xpIntoLevel": 972.5,
+    "xpForNextLevel": 7380
+   },
+   {
+    "id": "TANK",
+    "name": "Tank",
+    "level": 18,
+    "maxLevel": 50,
+    "totalXp": 75730.5,
+    "xpIntoLevel": 5690.5,
+    "xpForNextLevel": 27600
+   }
+  ],
+  "floors": [
+   {
+    "id": "F7",
+    "name": "Floor 7",
+    "completions": 467,
+    "bestScore": 353
+   },
+   {
+    "id": "M1",
+    "name": "Master Mode 1",
+    "completions": 2,
+    "bestScore": null
+   }
+  ],
+  "essence": [
+   {
+    "id": "wither_essence",
+    "name": "Wither Essence",
+    "amount": 8608
+   }
+  ]
+ },
+ "hotd": {
+  "tier": 10,
+  "exp": 85183989,
+  "core": 10,
+  "ender": 11932047,
+  "void": 43761698,
+  "resets": 20,
+  "ability": {
+   "id": "void_infusion",
+   "name": "Void Infusion"
+  },
+  "tokens": 0,
+  "nodes": [
+   {
+    "id": "MINING_FORTUNE",
+    "name": "Mining Fortune",
+    "level": 50
+   },
+   {
+    "id": "DRAGONS_FAVOR",
+    "name": "Dragons Favor",
+    "level": 1
+   }
+  ]
+ },
+ "pets": [
+  {
+   "type": "GOLDEN_DRAGON",
+   "name": "Golden Dragon",
+   "rarity": "LEGENDARY",
+   "totalXp": 1798563928,
+   "xpCurve": 2,
+   "candiesUsed": 3,
+   "active": true,
+   "heldItem": {
+    "id": "pet_item_lucky_clover",
+    "name": "Lucky Clover"
+   },
+   "skinOverride": {
+    "id": "pet_skin_golden_dragon_ancient",
+    "name": "Ancient Golden Dragon Skin"
+   },
+   "level": null,
+   "maxLevel": 200,
+   "category": "Combat",
+   "perks": [
+    {
+     "id": "strength",
+     "name": "Strength",
+     "color": "#FF5555",
+     "value": 0.5
+    }
+   ],
+   "description": [
+    [
+     {
+      "text": "Combat Pet",
+      "color": "#555555"
+     }
+    ],
+    [
+     {
+      "text": "Gold's Power",
+      "color": "#FFAA00"
+     }
+    ]
+   ],
+   "item": {
+    "entry": null,
+    "material": "minecraft:player_head",
+    "count": 1,
+    "name": [
+     {
+      "text": "Golden Dragon",
+      "color": "#FFAA00"
+     }
+    ],
+    "lore": [
+     [
+      {
+       "text": "Combat Pet",
+       "color": "#AAAAAA"
+      }
+     ],
+     [],
+     [
+      {
+       "text": "Total XP: ",
+       "color": "#AAAAAA"
+      },
+      {
+       "text": "1,798,563,928",
+       "color": "#FFFFFF"
+      }
+     ],
+     [
+      {
+       "text": "Held Item: ",
+       "color": "#AAAAAA"
+      },
+      {
+       "text": "Lucky Clover",
+       "color": "#AA00AA"
+      }
+     ],
+     [
+      {
+       "text": "Skin: ",
+       "color": "#AAAAAA"
+      },
+      {
+       "text": "Ancient Golden Dragon Skin",
+       "color": "#FFFFFF"
+      }
+     ],
+     [
+      {
+       "text": "Candies Used: ",
+       "color": "#AAAAAA"
+      },
+      {
+       "text": "3",
+       "color": "#FFFFFF"
+      }
+     ],
+     [
+      {
+       "text": "Active",
+       "color": "#55FF55"
+      }
+     ],
+     [],
+     [
+      {
+       "text": "LEGENDARY",
+       "color": "#FFAA00",
+       "bold": true
+      }
+     ]
+    ],
+    "rarity": "LEGENDARY",
+    "glint": false,
+    "skullTexture": "eyJ0ZXh0dXJlcyI6IHsiU0tJTiI6IHsidXJsIjogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWJjMTIzIn19fQ=="
+   }
+  },
+  {
+   "type": "BLACK_CAT",
+   "name": "Black Cat",
+   "rarity": "EPIC",
+   "totalXp": 0,
+   "xpCurve": 2,
+   "candiesUsed": 0,
+   "active": false,
+   "heldItem": null,
+   "skinOverride": null,
+   "level": null,
+   "maxLevel": null,
+   "category": null,
+   "perks": [],
+   "description": [],
+   "item": {
+    "entry": null,
+    "material": "minecraft:player_head",
+    "count": 1,
+    "name": [
+     {
+      "text": "Black Cat",
+      "color": "#AA00AA"
+     }
+    ],
+    "lore": [
+     [],
+     [
+      {
+       "text": "Total XP: ",
+       "color": "#AAAAAA"
+      },
+      {
+       "text": "0",
+       "color": "#FFFFFF"
+      }
+     ],
+     [],
+     [
+      {
+       "text": "EPIC",
+       "color": "#AA00AA",
+       "bold": true
+      }
+     ]
+    ],
+    "rarity": "EPIC",
+    "glint": false
+   }
+  }
+ ],
+ "forge": [
+  {
+   "slot": 1,
+   "recipe": "obsidian",
+   "name": "Obsidian",
+   "startedAt": 1792679895946,
+   "durationMs": 1800000,
+   "finishesAt": 1792681695946,
+   "stage": "RUNNING"
+  },
+  {
+   "slot": 0,
+   "recipe": "refined_end_stone",
+   "name": "Refined End Stone",
+   "startedAt": 1792679893796,
+   "durationMs": 1800000,
+   "finishesAt": 1792681693796,
+   "stage": "READY"
+  }
+ ],
+ "equipment": {
+  "helmet": {
+   "entry": "maxor_helmet",
+   "material": "minecraft:player_head",
+   "count": 1,
+   "name": [
+    {
+     "text": "Storm Helmet",
+     "color": "#FF55FF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "MYTHIC",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "HELMET",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "MYTHIC",
+   "glint": false,
+   "facts": {
+    "itemType": "HELMET"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Storm Helmet",
+     "item_type": "HELMET",
+     "rarity": "MYTHIC",
+     "item_id": "maxor_helmet"
+    }
+   }
+  },
+  "chestplate": {
+   "entry": "maxor_chestplate",
+   "material": "minecraft:leather_chestplate",
+   "count": 1,
+   "name": [
+    {
+     "text": "Storm Chestplate",
+     "color": "#FF55FF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "MYTHIC",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "CHESTPLATE",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "MYTHIC",
+   "glint": false,
+   "facts": {
+    "itemType": "CHESTPLATE"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Storm Chestplate",
+     "item_type": "CHESTPLATE",
+     "rarity": "MYTHIC",
+     "item_id": "maxor_chestplate"
+    }
+   }
+  },
+  "leggings": {
+   "entry": "maxor_leggings",
+   "material": "minecraft:leather_leggings",
+   "count": 1,
+   "name": [
+    {
+     "text": "Storm Leggings",
+     "color": "#FF55FF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "MYTHIC",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "LEGGINGS",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "MYTHIC",
+   "glint": false,
+   "facts": {
+    "itemType": "LEGGINGS"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Storm Leggings",
+     "item_type": "LEGGINGS",
+     "rarity": "MYTHIC",
+     "item_id": "maxor_leggings"
+    }
+   }
+  },
+  "boots": {
+   "entry": "maxor_boots",
+   "material": "minecraft:leather_boots",
+   "count": 1,
+   "name": [
+    {
+     "text": "Storm Boots",
+     "color": "#FF55FF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "MYTHIC",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "BOOTS",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "MYTHIC",
+   "glint": false,
+   "facts": {
+    "itemType": "BOOTS"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Storm Boots",
+     "item_type": "BOOTS",
+     "rarity": "MYTHIC",
+     "item_id": "maxor_boots"
+    }
+   }
+  },
+  "held": {
+   "entry": "scylla",
+   "material": "minecraft:iron_sword",
+   "count": 1,
+   "name": [
+    {
+     "text": "Scylla",
+     "color": "#FF55FF"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "MYTHIC",
+      "color": "#FF55FF"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "SWORD",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "MYTHIC",
+   "glint": false,
+   "facts": {
+    "itemType": "SWORD"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Scylla",
+     "item_type": "SWORD",
+     "rarity": "MYTHIC",
+     "item_id": "scylla"
+    }
+   }
+  }
+ },
+ "containers": [
+  {
+   "id": "inventory",
+   "title": [
+    {
+     "text": "Inventory"
+    }
+   ],
+   "columns": 9,
+   "slots": 36,
+   "hidden": false
+  },
+  {
+   "id": "ender_chest",
+   "title": [
+    {
+     "text": "Ender Chest"
+    }
+   ],
+   "columns": 9,
+   "slots": 27,
+   "hidden": false
+  },
+  {
+   "id": "storage:0",
+   "title": [
+    {
+     "text": "Storage 1"
+    }
+   ],
+   "columns": 9,
+   "slots": 45,
+   "hidden": false
+  },
+  {
+   "id": "storage:1",
+   "title": [
+    {
+     "text": "Storage 2"
+    }
+   ],
+   "columns": 9,
+   "slots": 45,
+   "hidden": false
+  },
+  {
+   "id": "storage:2",
+   "title": [
+    {
+     "text": "Storage 3"
+    }
+   ],
+   "columns": 9,
+   "slots": 45,
+   "hidden": false
+  },
+  {
+   "id": "wardrobe:0",
+   "title": [
+    {
+     "text": "Wardrobe 1"
+    }
+   ],
+   "columns": 9,
+   "slots": 36,
+   "hidden": false
+  },
+  {
+   "id": "accessories",
+   "title": [
+    {
+     "text": "Accessory Bag"
+    }
+   ],
+   "columns": 9,
+   "slots": 18,
+   "hidden": false
+  },
+  {
+   "id": "pets",
+   "title": [
+    {
+     "text": "Pets"
+    }
+   ],
+   "columns": 9,
+   "slots": 9,
+   "hidden": false
+  }
+ ]
+}

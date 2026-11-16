@@ -91,7 +91,7 @@ class InventoryMarksTest : FabricClientGameTest {
 
         // Docked, the grid sits right of the hotbar past the hotbar's own gap, scaled down to the room there.
         general.inventoryPlacement = HudDock.RIGHT_OF_HOTBAR
-        context.waitFor { Hud.find(ID) == null }
+        context.waitFor { Hud.find(ID)?.dock == HudDock.RIGHT_OF_HOTBAR }
         val (width, height) = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.guiScaledWidth to it.window.guiScaledHeight }
         context.waitFor { dockedRow(width, height) != null }
         val (first, last) = checkNotNull(context.computeOnClient<Pair<Pair<Int, Int>, Pair<Int, Int>>?, Nothing> { dockedRow(width, height) }) {

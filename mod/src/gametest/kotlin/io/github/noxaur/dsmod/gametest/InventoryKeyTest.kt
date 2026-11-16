@@ -12,7 +12,7 @@ import org.lwjgl.glfw.GLFW
 
 /**
  * A key the player binds shows and hides the grid, by a press under Toggle and while it is held under Hold, and with
- * none the grid always shows. Hide In F3 takes the whole HUD off while the debug screen is open.
+ * none the grid always shows.
  */
 class InventoryKeyTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = InventoryGrid.with(context) {
@@ -53,26 +53,5 @@ class InventoryKeyTest : FabricClientGameTest {
         context.waitTicks(2)
         check(shown()) { "With no key the grid does not always show" }
 
-        // Hide In F3 skips the HUD's whole draw while the debug screen is open, and only then.
-        val hud = DsModClient.settings.hud
-        fun draws(): Long {
-            context.runOnClient<Nothing> { DsModClient.game.metrics.flush() }
-            context.waitTicks(3)
-            return context.computeOnClient<Long, Nothing> { DsModClient.game.metrics.snapshot().timers["hud.draw"]?.count ?: 0L }
-        }
-        try {
-            context.input.pressKey(GLFW.GLFW_KEY_F3)
-            context.waitFor { it.debugOverlay.showDebugScreen() }
-            check(draws() > 0) { "The HUD hid under F3 with Hide In F3 off" }
-            hud.hideInF3 = true
-            check(draws() == 0L) { "The HUD drew under F3 with Hide In F3 on" }
-            context.takeScreenshot("inventory-preview-hidden-in-f3")
-            context.input.pressKey(GLFW.GLFW_KEY_F3)
-            context.waitFor { !it.debugOverlay.showDebugScreen() }
-            check(draws() > 0) { "The HUD stayed hidden after F3 closed" }
-        } finally {
-            hud.hideInF3 = false
-            context.runOnClient<Nothing> { it.debugEntries.setOverlayVisible(false) }
-        }
     }
 }

@@ -1,5 +1,8 @@
 package io.github.noxaur.dsmod.edge.ui
 
+import io.github.notenoughupdates.moulconfig.common.MyResourceLocation
+import io.github.notenoughupdates.moulconfig.common.RenderContext
+import io.github.notenoughupdates.moulconfig.common.TextureFilter
 import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.TabEdge
@@ -31,6 +34,7 @@ enum class Icon(val width: Int, val height: Int) {
     RIGHT(3, 5),
     BACK(7, 7),
     BOOK(7, 7),
+    STAR(7, 7),
     ;
 
     val sprite: Identifier = Identifier.fromNamespaceAndPath("dsmod", name.lowercase())
@@ -343,6 +347,14 @@ object Kit {
         g.blitSprite(RenderPipelines.GUI_TEXTURED, icon.sprite, x, y, icon.width, icon.height, color)
     }
 
+    /** [icon] on MoulConfig's settings screen, which draws through its own context and not the game's. */
+    fun icon(context: RenderContext, icon: Icon, x: Int, y: Int, color: Int) {
+        val texture = MyResourceLocation(icon.sprite.namespace, "textures/gui/sprites/${icon.sprite.path}.png")
+        for ((at, tint) in listOf(1 to ARGB.scaleRGB(color, 0.25f), 0 to color)) {
+            context.drawTexturedTintedRect(texture, (x + at).toFloat(), (y + at).toFloat(), icon.width.toFloat(), icon.height.toFloat(), 0f, 0f, 1f, 1f, tint, TextureFilter.NEAREST)
+        }
+    }
+
     /** A 1px line of whole pixels from one point to another, with a dark line beside it so it reads over anything. */
     fun line(g: GuiGraphicsExtractor, fromX: Int, fromY: Int, toX: Int, toY: Int, color: Int) {
         val shadow = ARGB.scaleRGB(color, 0.25f)
@@ -449,6 +461,15 @@ object Kit {
     /** Darkens the item at [x], [y], drawn over it. */
     fun slotDim(g: GuiGraphicsExtractor, x: Int, y: Int) = rect(g, x, y, 16, 16, ARGB.color(DIM_ALPHA, theme.well))
 
+    /** A wash in the panel's color over a part of a screen that is waiting or has nothing to show, so a notice reads over it. */
+    fun veil(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) = rect(g, x, y, width, height, ARGB.color(VEIL_ALPHA, theme.panel))
+
+    /** A block that stands in for text or an icon in a layout still loading, so the screen keeps its shape. */
+    fun bone(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) = rect(g, x, y, width, height, ARGB.color(BONE_ALPHA, theme.inkMuted))
+
+    /** The wash over the slot under the mouse in a grid the mod draws, as a menu lights its own: white, half through. */
+    fun slotHover(g: GuiGraphicsExtractor, x: Int, y: Int) = rect(g, x, y, 16, 16, ARGB.white(HOVER_STRENGTH))
+
     private fun face(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
         val t = theme
         when (state) {
@@ -516,6 +537,9 @@ object Kit {
 
     private const val DIM_ALPHA = 184
     const val OPAQUE = 255
+    private const val HOVER_STRENGTH = 0.5f
+    private const val VEIL_ALPHA = 190
+    private const val BONE_ALPHA = 90
     private val SLOT_TEXTURE: Identifier = Identifier.fromNamespaceAndPath("dsmod", "kit/slot")
     private val GLASS_SLOT_TEXTURE: Identifier = Identifier.fromNamespaceAndPath("dsmod", "kit/glass_slot")
     private const val GLASS_FACE_ALPHA = 80

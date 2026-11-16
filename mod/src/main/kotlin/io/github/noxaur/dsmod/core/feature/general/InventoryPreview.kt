@@ -57,7 +57,7 @@ class InventoryPreview(
     toggle: KMutableProperty0<Boolean>,
     private val rows: KMutableProperty0<MutableList<InventoryRow>>,
     private val look: KMutableProperty0<InventoryLook>,
-    private val placement: KMutableProperty0<HudDock>,
+    override val placement: KMutableProperty0<HudDock>,
     private val layout: KMutableProperty0<InventoryLayout>,
     private val opacity: KMutableProperty0<Float>,
     private val pickup: KMutableProperty0<Boolean>,

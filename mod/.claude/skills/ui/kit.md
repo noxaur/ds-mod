@@ -52,11 +52,14 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `flash` | Any | A white wash over something the player just acted on, which fades out. The same in both themes, because it lies on the game and not on a panel |
 | `divider` | 2 tall | A shade line over a light line, cut into the panel |
 | `ring` | Any | A notched 1px line in `accent` or a role, around the selected thing |
-| `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, left, right, search, arrow, lock, back, book |
+| `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, left, right, search, arrow, lock, back, book, star. MoulConfig's settings screen draws one through its own context |
 | `line` | Any | A 1px stepped line between two points, with a dark line beside it, for joining two things that belong together |
 | `field` | Any, 16 tall in a text field | A well that a text field holds, ringed in `hoverOutline` under the mouse or with focus |
 | `label` | One line | A string in ink |
 | `slotFill`, `slotBorder`, `slotDim` | 16x16 inside, 18x18 border | Plain marks on a container's slots, colored by role: a fill behind the item, a frame around the slot, a dimming over the item |
+| `veil` | Any | A wash in the panel's color over a part that is loading or has nothing to show, with a notice centered on it |
+| `bone` | Any | A block standing in for text or an icon while a layout loads, so the screen keeps its shape under its veil |
+| `slotHover` | 16x16 inside | The white wash over the slot under the mouse, in a grid the mod draws itself, as a menu lights its own |
 | `slotArt`, `slotGem` | 18x18, 7x7 | A rarity mark's back behind the item and its gem over it, cut from an `Atlas` that `SlotArts` bakes from the player's style |
 | `inventory`, `slotAt` | 176x166, 18x18 | The player's inventory, and one empty slot of it, from the resource pack's own texture, for a preview that must match the real screen |
 

@@ -100,6 +100,12 @@ abstract class Feature(val id: String, private val toggle: KMutableProperty0<Boo
      */
     open fun hud(now: Long): HudBlock? = null
 
+    /**
+     * The player's choice of where this feature's block docks beside the hotbar, for a feature that offers one. Dragging
+     * the block sets it: into a dock spot, or out of one to [HudDock.FREE].
+     */
+    open val placement: KMutableProperty0<HudDock>? get() = null
+
     /** Whether this feature ever shows a HUD block, which is whether it overrides [hud]. */
     val hasHud = javaClass.getMethod("hud", Long::class.javaPrimitiveType).declaringClass != Feature::class.java
 

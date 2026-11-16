@@ -156,15 +156,39 @@ The same holds for the lines the mod reports when a feature could not read them:
 
 ## The mod signs in when it first needs to, and keeps the session in memory
 
-Nothing contacts the backend until the player opens Contribute, uses `/dsmod login`, or has turned on the report of unread lines. The session token is held in memory and never written, logged, shown or recorded: the jar is public, and a token on disk or in a stream is a stolen account for the day it lives. For the same reason `/dsmod login` opens the browser directly, and the login token never appears in chat, where a viewer could use it first. Minecraft's own opener logs the address when it fails, so the mod uses the system's opener and reports a failure without the address.
+Nothing contacts the backend until the player opens Contribute, uses `/dsmod login`, looks a player up with `/pv`, or has turned on the report of unread lines. The session token is held in memory and never written, logged, shown or recorded: the jar is public, and a token on disk or in a stream is a stolen account for the day it lives. For the same reason `/dsmod login` opens the browser directly, and the login token never appears in chat, where a viewer could use it first. Minecraft's own opener logs the address when it fails, so the mod uses the system's opener and reports a failure without the address.
 
 A session ends after 24 hours, so a 401 signs in again and repeats the call once. A second 401 is an error, not a loop.
 
 The backend's address and the website's are set when the jar is built, in `gradle.properties`, and written into the jar's metadata. They are not a player's setting, because a player who pointed the mod somewhere else would be sending their captures there.
 
+## The profile viewer leaves the server its own `/pv`
+
+dragsim.co has `/pv <vault>`, and players type it by habit, so the viewer's `/pv` must never swallow it. Fabric runs a client command only when the line parses, and sends the line to the server as typed when the parse fails with an unknown command. So the name argument refuses a number of one or two digits with that very error, and off dragsim.co, or with the setting off, the `pv` node's requirement hides it. The mod never sends the line itself, so `no-automation` has nothing to allow. A player's name in chat links to their profile through `/dsmod pv`, not `/pv`: `/dsmod` is always the mod's, so a click with Profile Viewer off says so here instead of reaching the server as its vault command.
+
+The viewer's items carry the server's `custom_data`, rebuilt by the backend in the shape a real item has, and its tooltip frame for their rarity. Other mods, DragSim Utils among them, read a tooltip's item through Fabric's tooltip hook and its `custom_data`, so an item without them would show a bare tooltip where a menu shows theirs.
+
+The player on the screen is a `RemotePlayer` that is not in the world. The game finds a player's skin through the tab list, which a player who is not online is missing from, so the model asks the skin cache by UUID as a head does. The renderer reads the entity's id, which the world assigns only to entities it holds, so the model takes a negative id no server entity has.
+
 ## The release jar carries its own MoulConfig
 
 Settings use MoulConfig, the settings screen SkyHanni uses. MoulConfig ships inside the release jar, relocated under `io.github.noxaur.dsmod.deps`, so ds-mod can't clash with another mod that carries a different MoulConfig. A MoulConfig type in a public signature therefore breaks any code compiled outside the jar, such as the game tests, which is why `DsModClient` exposes `DsModConfig` and not the `ManagedConfig` that holds it. `runProdClientGameTest` loads the built jars the way a player does, because a packaging mistake such as a missing access widener passes every unit test.
+
+## Favorites wrap MoulConfig's categories and options
+
+What a favorite is lives in `Favorites` and `FavoritesView` in `core`: which settings are starred, kept with the config by path, their order, that a search hides them, and that a row unstarred inside Favorites stays until the player leaves it. The settings screen only shows it, because ds-mod's own screen is to replace MoulConfig's, and `Settings.open` is the one way into whichever is the release screen. The star and the wrapping below are MoulConfig's half, which goes with it.
+
+MoulConfig has no favorites, and its editor takes any categories and options it is handed. So `Settings` hands it the player's categories with each option wrapped, the wrapper's editor drawing a star over the real one, and a Favorites category in front whose options are the same wrapped ones. A wrapped option names its own category as its home, not Favorites, which is how a search shows each setting once: MoulConfig lists during a search only the categories its matches name. An option's category must be the wrapped one, because MoulConfig compares categories by identity. An accordion keeps its own editor, since MoulConfig finds one by its class.
+
+MoulConfig shows only the options it was handed when the editor was built, so the row an empty Favorites shows is handed over then too, even when the player has stars, or unstarring the last one later would bring back MoulConfig's own empty text, which blames a search.
+
+The star sits in the gap between the name and the description. MoulConfig fits a name within 5 of the left third's edges and starts the description 5 past it, so the star covers neither however long either runs. A press is hit-tested against the position MoulConfig passes with it, because an option scrolled out of view keeps the place it was last drawn.
+
+MoulConfig gives a setting no focus, so the Favorite Key acts on the setting under the mouse. MoulConfig hands a key to every setting before its search field, and a typed character moves focus to the search, so the key is left alone while the shared `GuiContext` has a focused element, and the character that follows a press is swallowed. The setting under the mouse is the one drawn there this frame with the mouse inside the scissor MoulConfig draws the settings in, because MoulConfig hands mouse events to every setting, and one scrolled partly under the header would otherwise take the key and a press on its hidden star.
+
+One editor lasts the session, as SkyHanni keeps one, so the settings open on the category, search and scroll the player left. MoulConfig 4.8 tells only a component that the screen closed, and the editor sits inside one that does not pass it on, so `Settings.open` opens it in a context that does. Without it, a change made in the settings is written only when another screen saves.
+
+The Settings Key has no default. DragSim Utils and Odin open on Right Shift, and a player who runs either would open two screens with one press. `/dsm` is the short name and `/du` is left alone for the same reason.
 
 ## Specs for interleavings
 
@@ -216,6 +240,12 @@ The art depends on the slot under it: a faint tint vanishes on Minecraft's gray 
 
 Fabric attaches HUD elements before or after the whole hotbar, so the art behind the hotbar's items comes from `HudHotbarMixin`, which runs as vanilla is about to draw each item, and the gems come after it as a HUD element.
 
+## The chat keeps what it draws over the HUD
+
+Drag In Chat moves the live HUD on the chat screen, where Minecraft draws the chat's rows, its input, the list of command suggestions and a command's usage over the HUD. So a press or a turn of the wheel there is the chat's, even over a block, and a block is the mouse's only where the player sees it. The suggestions' bounds are private, so accessors read them. A press the chat would leave unused is not enough: a plain line takes no left press but scrolls with the wheel, and a block that took one and not the other would show a hint the wheel then breaks. Copy Chat's rows tell where the chat is drawn, so both read the same rows. Escape puts a block back where it was, and one that came from the stack takes its old place there, because a group stacks its blocks in the features' order. The input has focus the whole time the chat is open, and its arrow keys move the cursor and recall sent lines, so the arrows nudge a block only while the mouse holds one: a player pressing a button on the HUD is not editing text. A feature with nothing to show stands in while the chat is open, after the blocks with something to show, so opening the chat moves no live block. A drag event carries the keys held at its press, so Shift is asked of the keyboard, and pressing it mid-drag frees the block, in the editor too.
+
+A docked block is dragged like any other, and the drag writes the feature's own Placement setting, so the setting stays the one place the dock is kept and the settings screen never disagrees with the HUD. Leaving the dock saves a scale that draws the block at the size the dock gave it, since a block that jumped in size under the mouse would land somewhere the player did not aim. The wheel takes a docked block out of the dock, because the dock draws at the hotbar's size and has no other.
+
 ## The HUD's scale snaps to screen pixels
 
 The kit's edges are one pixel wide, and the HUD is the one place a player scales freely. At a scale of 1.3 a one-pixel edge covers 2.6 screen pixels at GUI scale 2, so some edges come out two pixels wide and others three, and the frame looks broken. `Readouts` therefore rounds a block's scale, times the HUD's, to a whole number of screen pixels per HUD pixel. The editor steps by one screen pixel for the same reason: a smaller step would change the saved number and draw nothing new.
@@ -225,8 +255,6 @@ A block's saved place is the corner of its plate, so a block stays where the pla
 A block docked beside the hotbar shrinks to the room there instead of keeping the GUI's scale, by the same whole screen pixels. Minecraft's Auto GUI scale on a 1080p screen leaves about 140px beside the hotbar, and the inventory's grid is 176px wide, so at full size the clamp to the screen's edge put it over the hotbar itself.
 
 The HUD draws stacks it rebuilt from `Item` records, which never carry the count-down vanilla bobs a landed stack by. So Pickup Animation reads that count from the player's live inventory, by the slot each icon stands for, and a row with no slot cannot bob.
-
-With the chat open, a press on a block still reaches the chat, so a click on a line under the block works. Only a press that moves 3px picks the block up, and from then on the drag is the HUD editor's own `HudDrag`.
 
 
 ## World marks reach Minecraft once per tick
@@ -271,7 +299,7 @@ The swap-hands key is not guarded. On dragsim.co it opens the server's menu and 
 
 ## Private fields are read through accessor mixins
 
-Minecraft keeps an open container's position and size on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the four fields, and the slot under the mouse. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on.
+Minecraft keeps an open container's position and size on screen in protected fields, and Fabric's screen events fire outside the transform that places the slots. `ContainerScreenAccessor` reads the four fields, and the slot under the mouse. `ChatComponentAccessor` does the same for the chat's messages and wrapped lines, which Copy Chat needs to tell what a press landed on. `ChatScreenAccessor`, `CommandSuggestionsAccessor` and `SuggestionsListAccessor` read where the command suggestions and a command's usage are drawn, which Drag In Chat leaves the mouse to.
 
 ## CI measures the mod in a real game
 

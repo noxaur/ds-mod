@@ -1,0 +1,117 @@
+{
+ "id": "storage:2",
+ "title": [
+  {
+   "text": "Storage 3"
+  }
+ ],
+ "columns": 9,
+ "slots": 45,
+ "hidden": false,
+ "items": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  {
+   "entry": "witching_wand",
+   "material": "minecraft:blaze_rod",
+   "count": 1,
+   "name": [
+    {
+     "text": "Witching Wand",
+     "color": "#AA00AA"
+    }
+   ],
+   "lore": [
+    [
+     {
+      "text": "",
+      "color": "#AA00AA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "EPIC",
+      "color": "#AA00AA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     },
+     {
+      "text": "WAND",
+      "color": "#AAAAAA"
+     },
+     {
+      "text": "",
+      "color": "#FFFFFF"
+     }
+    ]
+   ],
+   "rarity": "EPIC",
+   "glint": false,
+   "facts": {
+    "itemType": "WAND"
+   },
+   "customData": {
+    "item_data": {
+     "item_name": "Witching Wand",
+     "item_type": "WAND",
+     "rarity": "EPIC",
+     "item_id": "witching_wand"
+    }
+   }
+  }
+ ]
+}

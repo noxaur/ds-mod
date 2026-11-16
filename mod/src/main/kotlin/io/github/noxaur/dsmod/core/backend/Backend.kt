@@ -2,6 +2,8 @@ package io.github.noxaur.dsmod.core.backend
 
 import io.github.noxaur.dsmod.core.brief.Brief
 import io.github.noxaur.dsmod.core.game.ServerText
+import io.github.noxaur.dsmod.core.profile.Container
+import io.github.noxaur.dsmod.core.profile.Profile
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encoding.Decoder
@@ -28,8 +30,12 @@ import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 
-/** What a call to the backend failed on. [status] is the HTTP status, or null when the backend could not be reached. */
-class BackendException(val status: Int?, message: String, cause: Throwable? = null) : Exception(message, cause)
+/**
+ * What a call to the backend failed on. [status] is the HTTP status, or null when the backend could not be reached.
+ * [tag] is the `_tag` of the error's body, which tells apart failures that share a status, and is null when the body
+ * had none, as when a proxy answered.
+ */
+class BackendException(val status: Int?, message: String, cause: Throwable? = null, val tag: String? = null) : Exception(message, cause)
 
 /** The Minecraft session the game already holds, which is the only proof of who the player is. */
 interface Identity {
@@ -142,6 +148,17 @@ class Backend(private val url: String, private val identity: Identity, private v
         }
     }
 
+    /** [name]'s profile, the one they play now unless [profile] names another of theirs. */
+    fun profile(name: String, profile: String?): Profile {
+        require(Profile.validName(name)) { "Not a Minecraft name: $name" }
+        val query = profile?.let { "?profile=" + URLEncoder.encode(it, Charsets.UTF_8) }.orEmpty()
+        return Profile.parse(send { get("/v1/players/$name/profile$query", it) }.body())
+    }
+
+    /** One of a profile's containers, as it was when [snapshot] was taken. */
+    fun container(snapshot: String, id: String): Container =
+        Profile.parseContainer(send { get("/v1/snapshots/${segment(snapshot)}/containers/${segment(id)}", it) }.body())
+
     fun skip(id: String) {
         send { post("/v1/contrib/requests/$id/skip", BodyPublishers.noBody(), null, it) }
     }
@@ -226,9 +243,17 @@ class Backend(private val url: String, private val identity: Identity, private v
             token = null
             response = reach { call(signIn()) }
         }
-        if (response.statusCode() !in 200..299 && response.statusCode() !in answers) throw BackendException(response.statusCode(), "The backend answered ${response.statusCode()}.")
+        val status = response.statusCode()
+        if (status !in 200..299 && status !in answers) throw BackendException(status, "The backend answered $status.", tag = tag(response.body()))
         return response
     }
+
+    private fun tag(body: String?): String? = runCatching {
+        (json.parseToJsonElement(body.orEmpty()) as? JsonObject)?.get("_tag")?.jsonPrimitive?.content
+    }.getOrNull()
+
+    // A path segment the backend reads back whole: its ids are letters, digits, dashes, underscores and colons.
+    private fun segment(value: String) = value.also { require(it.matches(Regex("[A-Za-z0-9_:-]{1,64}"))) { "Not an id: $it" } }
 
     private fun signIn(): String {
         val challenge = reach { http.send(auth("/api/auth/minecraft/challenge", "{}"), BodyHandlers.ofString()) }
