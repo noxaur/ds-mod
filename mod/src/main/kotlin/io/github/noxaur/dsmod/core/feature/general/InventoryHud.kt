@@ -1,11 +1,8 @@
 package io.github.noxaur.dsmod.core.feature.general
 
-import io.github.noxaur.dsmod.core.feature.Feature
-import io.github.noxaur.dsmod.core.game.Area
-import io.github.noxaur.dsmod.core.game.ContainerOpened
+import io.github.noxaur.dsmod.core.game.ContainerState.Companion.INVENTORY
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.SlotChanged
-import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudLook
@@ -61,7 +58,7 @@ class InventoryHud(
     private val layout: KMutableProperty0<InventoryLayout>,
     private val opacity: KMutableProperty0<Float>,
     private val pickup: KMutableProperty0<Boolean>,
-) : Feature("inventory-hud", toggle, Area.ANYWHERE) {
+) : InventoryReader("inventory-hud", toggle) {
     /** The settings the block was built with, so a refresh rebuilds it only when one changed. */
     private data class Shown(
         val rows: List<InventoryRow>,
@@ -78,14 +75,8 @@ class InventoryHud(
     private var shown = settings()
     private var block: HudBlock? = null
 
-    // Whether the inventory may have changed since it was last read. A refresh with nothing new then costs a few compares.
-    private var stale = true
-
     init {
-        on<ContainerOpened> { event, _ -> if (event.id == INVENTORY) stale = true }
         on<SlotChanged> { event, _ -> if (container.id == INVENTORY && event.slot in FIRST..LAST) stale = true }
-        // Also run when the feature is switched off, so it reads the inventory again when it comes back.
-        on<WorldChanged> { _, _ -> stale = true }
     }
 
     override fun hud(now: Long): HudBlock? {
@@ -133,8 +124,6 @@ class InventoryHud(
     }
 
     private companion object {
-        /** The player's own inventory, which the client always numbers 0. */
-        const val INVENTORY = 0
         val FIRST = InventoryRow.entries.minOf { it.first }
         val LAST = InventoryRow.entries.maxOf { it.first + it.width - 1 }
     }

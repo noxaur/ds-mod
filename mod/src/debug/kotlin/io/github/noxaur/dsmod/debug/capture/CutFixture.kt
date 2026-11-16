@@ -9,6 +9,7 @@ import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
+import io.github.noxaur.dsmod.core.game.ContainerState.Companion.INVENTORY
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.HeadPlaced
@@ -73,6 +74,10 @@ fun cutFixture(
     var inventory = emptyMap<Int, Item>()
     var container: ContainerOpened? = null
     var start: Map<Int, Item>? = null
+    fun begin() {
+        container = open?.copy(kept = false)
+        start = slots.toMap()
+    }
     val events = ArrayList<Captured>()
     // A capture from before `floating` was an event has its text displays only in `entities`.
     val legacy = if ("floating" in types && capture.useLines { lines -> lines.none { "\"type\":\"floating\"" in it } }) HashMap<String, String>() else null
@@ -92,10 +97,7 @@ fun cutFixture(
                 val event = captured.event
                 val tick = captured.tick
                 val before = second < seconds.start
-                if (!before && start == null) {
-                    container = open?.copy(kept = false)
-                    start = slots.toMap()
-                }
+                if (!before && start == null) begin()
                 if (event is ContainerOpened) {
                     if (open?.id == INVENTORY) inventory = slots.toMap()
                     open = event
@@ -134,10 +136,7 @@ fun cutFixture(
             }
         }
     }
-    if (start == null) {
-        container = open?.copy(kept = false)
-        start = slots.toMap()
-    }
+    if (start == null) begin()
     val state = listOfNotNull(tab, sidebar, container) + start!!.map { (slot, item) -> SlotChanged(slot, item) }
     // The carried state was posted on earlier ticks the window does not keep, so it has no tick of its own.
     val lines = (state.map { Captured(origin + (seconds.start * 1000).toLong(), it) } + events)
@@ -185,6 +184,3 @@ private fun floating(line: String, shown: MutableMap<String, String>): List<Capt
         Captured(time, FloatingText(Component.literal(text).toText()), tick)
     }
 }
-
-/** The player's own inventory, which the client always numbers 0. */
-private const val INVENTORY = 0

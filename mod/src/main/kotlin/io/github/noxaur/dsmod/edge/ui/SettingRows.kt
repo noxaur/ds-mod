@@ -15,6 +15,7 @@ import io.github.noxaur.dsmod.core.config.Setting
 import io.github.noxaur.dsmod.core.config.Span
 import io.github.noxaur.dsmod.core.config.Switch
 import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.core.text.TextBuilder
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Look
 import io.github.noxaur.dsmod.core.ui.Narration
@@ -136,6 +137,8 @@ class SettingRows(
         var starTip: Tip? = null
 
         val bottom get() = y + height
+
+        val arrow get() = if (open) Icon.DOWN else Icon.RIGHT
 
         /** What names this line across layouts: the row's id, and an entry's place after it. */
         val key get() = if (entry < 0) setting.id else "${setting.id}#$entry"
@@ -452,15 +455,7 @@ class SettingRows(
     }
 
     /** [text] in body or muted text, with what the search matched in the match role. */
-    private fun marked(text: String, muted: Boolean) = text {
-        for (piece in SettingsSearch.pieces(text, words)) {
-            when {
-                piece.match -> match(piece.text)
-                muted -> muted(piece.text)
-                else -> body(piece.text)
-            }
-        }
-    }.toComponent()
+    private fun marked(text: String, muted: Boolean) = marked(text, words, muted)
 
     /** Reads each row's value again into what its face shows. Call it after a change, never per frame. */
     fun refresh() {
@@ -480,8 +475,7 @@ class SettingRows(
             }
             when (s) {
                 is Switch -> {
-                    line.muted = if (line.ew > 0 && !line.open) fit(s.closed(Keys::name), SUMMARY) else ""
-                    line.mutedX = line.cx - Kit.GAP - font.width(line.muted)
+                    summarize(line, if (line.ew > 0 && !line.open) fit(s.closed(Keys::name), SUMMARY) else "")
                 }
                 is Number -> {
                     val label = s.format() + s.unit
@@ -503,7 +497,7 @@ class SettingRows(
                 }
                 is KeyBind -> line.label = fit(Keys.name(s.value), KEYS - 8)
                 is Span -> {
-                    val summary = s.summary(Keys::name)
+                    val summary = s.summary(Keys::name).orEmpty()
                     line.value = text { value(summary) }.toComponent()
                     line.valueX = line.cx + line.cw - font.width(summary)
                     line.slider?.let { if (dragging !== line && it.sections != s.value) it.sections = s.value }
@@ -516,11 +510,15 @@ class SettingRows(
                 is Action -> line.label = s.button
                 is Items<*>, is Panel<*> -> line.editor?.refresh()
                 is Order<*> -> {
-                    line.muted = if (line.open) "" else fit(s.summary(Keys::name), line.room)
-                    line.mutedX = line.cx - Kit.GAP - font.width(line.muted)
+                    summarize(line, if (line.open) "" else fit(s.summary(Keys::name).orEmpty(), line.room))
                 }
             }
         }
+    }
+
+    private fun summarize(line: Line, summary: String) {
+        line.muted = summary
+        line.mutedX = line.cx - Kit.GAP - font.width(summary)
     }
 
     private fun changed() {
@@ -587,8 +585,10 @@ class SettingRows(
 
     /** Scrolls the row [id] into view. */
     fun reveal(id: String) {
-        lines.firstOrNull { it.setting.id == id }?.let { scrollTo(it.y - FOCUS_MARGIN, it.bottom + FOCUS_MARGIN) }
+        lines.firstOrNull { it.setting.id == id }?.let { reveal(it) }
     }
+
+    private fun reveal(line: Line) = scrollTo(line.y - FOCUS_MARGIN, line.bottom + FOCUS_MARGIN)
 
     /** Draws the rows that show, and returns the tooltip of what is under the mouse, if any. */
     fun draw(g: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float): Tip? {
@@ -663,7 +663,7 @@ class SettingRows(
         if (s is Fold) {
             val state = if (lit) Kit.State.HOVER else Kit.State.IDLE
             Kit.button(g, line.x + 2, top + 2, line.width - 4, FOLD_HEIGHT, state, "", 0)
-            val icon = if (line.open) Icon.DOWN else Icon.RIGHT
+            val icon = line.arrow
             Kit.icon(g, icon, line.x + 2 + FOLD_PAD + (Icon.RIGHT.width - icon.width) / 2, top + 2 + (FOLD_HEIGHT - icon.height) / 2, Kit.theme.ink, Kit.theme.inkShadow)
             val marked = line.marked
             if (marked != null) Kit.label(g, marked, line.nameX, top + 2 + (FOLD_HEIGHT - 8) / 2) else Kit.label(g, s.name, line.nameX, top + 2 + (FOLD_HEIGHT - 8) / 2)
@@ -682,8 +682,7 @@ class SettingRows(
                 Kit.switch(g, line.cx, cy, s.value, if (lit && !(hovered && overExtra(line, mx, my))) Kit.State.HOVER else Kit.State.IDLE)
                 if (line.ew > 0) {
                     val overButton = hovered && overExtra(line, mx, my)
-                    Kit.button(g, line.ex, origin + line.y + (line.height - SETTINGS) / 2, SETTINGS, SETTINGS, if (overButton) Kit.State.HOVER else Kit.State.IDLE, if (line.open) Icon.DOWN else Icon.RIGHT)
-                    if (line.muted.isNotEmpty()) g.text(font, line.muted, line.mutedX, top + (line.height - 8) / 2, Role.MUTED.argb(), true)
+                    openButton(g, line, line.ex, origin + line.y + (line.height - SETTINGS) / 2, if (overButton) Kit.State.HOVER else Kit.State.IDLE, top)
                 }
                 if (hovered) g.requestCursor(CursorTypes.POINTING_HAND)
             }
@@ -708,13 +707,10 @@ class SettingRows(
                 }
                 if (overControl || dragging === line) g.requestCursor(CursorTypes.RESIZE_EW)
             }
-            is Pick<*> -> {
-                Kit.dropdown(g, line.cx, cy, line.cw, line.ch, if (menuOpen) Kit.State.HOVER else controlState, line.label, Looks.width(line.look!!), line.marked)
-                Looks.draw(g, line.look!!, line.cx + 4, cy + (line.ch - Looks.HEIGHT) / 2)
-                if (overControl) g.requestCursor(CursorTypes.POINTING_HAND)
-            }
-            is Choice<*> -> {
-                Kit.dropdown(g, line.cx, cy, line.cw, line.ch, if (menuOpen) Kit.State.HOVER else controlState, line.label, marked = line.marked)
+            is Pick<*>, is Choice<*> -> {
+                val look = line.look
+                Kit.dropdown(g, line.cx, cy, line.cw, line.ch, if (menuOpen) Kit.State.HOVER else controlState, line.label, if (look != null) Looks.width(look) else 0, line.marked)
+                if (look != null) Looks.draw(g, look, line.cx + 4, cy + (line.ch - Looks.HEIGHT) / 2)
                 if (overControl) g.requestCursor(CursorTypes.POINTING_HAND)
             }
             is KeyBind -> {
@@ -722,7 +718,7 @@ class SettingRows(
                 if (recorder != null && recording === line) {
                     recorder.extractRenderState(g, mx.toInt(), my.toInt(), 0f)
                 } else {
-                    Kit.button(g, line.cx, cy, line.cw, line.ch, controlState, line.label, font.width(line.label))
+                    labelButton(g, line, cy, controlState)
                 }
                 if (overControl) g.requestCursor(CursorTypes.POINTING_HAND)
             }
@@ -731,17 +727,27 @@ class SettingRows(
                 line.slider?.extractRenderState(g, mx.toInt(), my.toInt(), 0f)
             }
             is Action -> {
-                Kit.button(g, line.cx, cy, line.cw, line.ch, controlState, line.label, font.width(line.label))
+                labelButton(g, line, cy, controlState)
                 if (overControl) g.requestCursor(CursorTypes.POINTING_HAND)
             }
             is Order<*> -> {
-                Kit.button(g, line.cx, cy, SETTINGS, SETTINGS, controlState, if (line.open) Icon.DOWN else Icon.RIGHT)
-                if (line.muted.isNotEmpty()) g.text(font, line.muted, line.mutedX, top + (line.height - 8) / 2, Role.MUTED.argb(), true)
+                openButton(g, line, line.cx, cy, controlState, top)
                 if (hovered) g.requestCursor(CursorTypes.POINTING_HAND)
             }
             is Items<*>, is Panel<*>, is Fold -> Unit
         }
     }
+
+    private fun labelButton(g: GuiGraphicsExtractor, line: Line, cy: Int, state: Kit.State) =
+        Kit.button(g, line.cx, cy, line.cw, line.ch, state, line.label, font.width(line.label))
+
+    /** The arrow button of a row that opens, and the muted summary beside it. */
+    private fun openButton(g: GuiGraphicsExtractor, line: Line, bx: Int, by: Int, state: Kit.State, top: Int) {
+        Kit.button(g, bx, by, SETTINGS, SETTINGS, state, line.arrow)
+        if (line.muted.isNotEmpty()) g.text(font, line.muted, line.mutedX, top + (line.height - 8) / 2, Role.MUTED.argb(), true)
+    }
+
+    private fun tipLines(build: TextBuilder.() -> Unit) = font.split(text(build).toComponent(), TIP_WIDTH)
 
     private fun tip(line: Line, mx: Double, my: Double): Tip? {
         val s = line.setting
@@ -749,22 +755,21 @@ class SettingRows(
             return line.starTip ?: run {
                 val verb = if (line.starred) "unstar" else "star"
                 val key = stars?.key?.invoke()?.takeIf { it >= 0 }?.let(Keys::name)
-                Tip(font.split(text { action(if (key == null) "Click to $verb." else "Click or press $key to $verb.") }.toComponent(), TIP_WIDTH))
+                Tip(tipLines { action(if (key == null) "Click to $verb." else "Click or press $key to $verb.") })
             }.also { line.starTip = it }
         }
         if (overMarker(line, mx, my)) {
             return line.resetTip ?: Tip(
-                font.split(text { body("Default: "); value(s.default(Keys::name) ?: "Each part's own") }.toComponent(), TIP_WIDTH) +
-                    font.split(text { action("Click to reset.") }.toComponent(), TIP_WIDTH),
+                tipLines { body("Default: "); value(s.default(Keys::name) ?: "Each part's own") } + tipLines { action("Click to reset.") },
             ).also { line.resetTip = it }
         }
         if (line.entry >= 0) {
             if (!line.locked) return null
-            return line.tip ?: Tip(font.split(text { body(line.label); muted(" stays, since one must show.") }.toComponent(), TIP_WIDTH)).also { line.tip = it }
+            return line.tip ?: Tip(tipLines { body(line.label); muted(" stays, since one must show.") }).also { line.tip = it }
         }
         if (!line.cut && !line.heading) return null
         return line.tip ?: Tip(
-            font.split(text { body(s.name) }.toComponent(), TIP_WIDTH) + font.split(text { muted(s.description) }.toComponent(), TIP_WIDTH),
+            tipLines { body(s.name) } + tipLines { muted(s.description) },
         ).also { line.tip = it }
     }
 
@@ -772,19 +777,15 @@ class SettingRows(
     fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
         val mx = event.x
         val my = event.y
-        menu?.let { open ->
-            if (open.isMouseOver(mx, my)) return true.also { open.mouseClicked(event, doubleClick) }
+        menu?.let {
+            if (it.takesPress(event, doubleClick)) return true
             menu = null
         }
-        editor?.let { field ->
-            if (field.isMouseOver(mx, my)) return true.also { field.mouseClicked(event, doubleClick) }
+        editor?.let {
+            if (it.takesPress(event, doubleClick)) return true
             commit()
         }
-        recorder?.let { keys ->
-            val took = keys.capture(event.button(), mouse = true)
-            if (!keys.recording) finishRecording()
-            if (took || keys.isMouseOver(mx, my)) return true
-        }
+        if (recorder?.pressed(event) { finishRecording() } == true) return true
         // An editor holding a field, a menu or the keys takes the press first, and lets one elsewhere do its own job.
         capturer()?.let { if (it.mouseClicked(event, doubleClick)) return true.also { _ -> pressed = it } }
         val i = lineAt(mx, my)
@@ -996,7 +997,7 @@ class SettingRows(
                 }
                 spoken = focus
                 shownFocus = true
-                lines[focus].let { scrollTo(it.y - FOCUS_MARGIN, it.bottom + FOCUS_MARGIN) }
+                reveal(lines[focus])
                 return true
             }
             event.isEscape -> {
@@ -1092,7 +1093,7 @@ class SettingRows(
             spoken = target
         }
         changed()
-        lines[target].let { scrollTo(it.y - FOCUS_MARGIN, it.bottom + FOCUS_MARGIN) }
+        reveal(lines[target])
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -1252,4 +1253,29 @@ class SettingRows(
 
         private const val ENTRY_HINT = "Drag it by its grip, or press Alt with Up or Down, to move it."
     }
+}
+
+/** [text] in body or muted text, with what the search for [words] matched in the match role. */
+internal fun marked(text: String, words: List<String>, muted: Boolean) = text {
+    for (piece in SettingsSearch.pieces(text, words)) {
+        when {
+            piece.match -> match(piece.text)
+            muted -> muted(piece.text)
+            else -> body(piece.text)
+        }
+    }
+}.toComponent()
+
+/** Hands a press on this open widget to it, and says whether it was on it. */
+internal fun AbstractWidget.takesPress(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
+    val over = isMouseOver(event.x, event.y)
+    if (over) mouseClicked(event, doubleClick)
+    return over
+}
+
+/** Gives a press to the key recorder, calls [finish] when it ended the recording, and says whether the press was its. */
+internal inline fun KitKeysButton.pressed(event: MouseButtonEvent, finish: () -> Unit): Boolean {
+    val took = capture(event.button(), mouse = true)
+    if (!recording) finish()
+    return took || isMouseOver(event.x, event.y)
 }

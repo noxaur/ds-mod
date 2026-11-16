@@ -9,6 +9,7 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
 import java.nio.file.Path
 
@@ -41,6 +42,12 @@ object DsModDebug : ClientModInitializer {
         return Recorder.start(client.gameDirectory.toPath().resolve("dsmod/captures")).also { capture = it }.file.also { say("Capture started: $it") }
     }
 
+    // The chat screen closes after the command returns, so open on the next tick.
+    private fun open(client: Minecraft, screen: () -> Screen): Int {
+        client.schedule { client.setScreenAndShow(screen()) }
+        return 1
+    }
+
     override fun onInitializeClient() {
         // A developer tests in singleplayer and on servers of their own, so the debug build runs everywhere.
         DsModClient.anyServer = true
@@ -58,17 +65,14 @@ object DsModDebug : ClientModInitializer {
             dispatcher.register(
                 ClientCommands.literal("dskit")
                     .executes { context ->
-                        // The chat screen closes after the command returns, so open on the next tick.
-                        context.source.client.schedule { context.source.client.setScreenAndShow(KitGalleryScreen()) }
-                        1
+                        open(context.source.client) { KitGalleryScreen() }
                     }
                     .apply {
                         // A page of settings rows, lists or panels.
                         for (page in SettingsGalleryScreen.Page.entries) {
                             then(
                                 ClientCommands.literal(page.name.lowercase()).executes { context ->
-                                    context.source.client.schedule { context.source.client.setScreenAndShow(SettingsGalleryScreen(page)) }
-                                    1
+                                    open(context.source.client) { SettingsGalleryScreen(page) }
                                 },
                             )
                         }

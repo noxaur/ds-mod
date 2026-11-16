@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge.contribute
 
 import io.github.noxaur.dsmod.core.contribute.ItemSightings
+import io.github.noxaur.dsmod.edge.remember
 import io.github.noxaur.dsmod.edge.skullTexture
 import io.github.noxaur.dsmod.edge.toItem
 import net.minecraft.client.Minecraft
@@ -29,14 +30,10 @@ class InventorySights(private val sightings: ItemSightings) {
         val deadline = System.nanoTime() + BUDGET_NANOS
         for (i in stacks.indices) {
             val stack = inventory.getItem(i)
-            val previous = stacks[i]
-            if (stack === previous && stack.count == counts[i]) continue
+            if (stack === stacks[i] && stack.count == counts[i]) continue
             // A slot skipped for want of room is not cached, so it is read again once the batch has some.
             if (sightings.full || System.nanoTime() > deadline) break
-            val equal = previous != null && stack.count == counts[i] && ItemStack.isSameItemSameComponents(previous, stack)
-            stacks[i] = stack
-            counts[i] = stack.count
-            if (equal || stack.isEmpty) continue
+            if (remember(stacks, counts, i, stack) || stack.isEmpty) continue
             look(stack)
         }
     }

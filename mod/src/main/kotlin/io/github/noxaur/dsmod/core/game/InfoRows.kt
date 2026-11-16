@@ -15,3 +15,11 @@ class InfoRows(private val read: (String) -> String?) {
         val AREA_KEYS: Set<String> = Area.entries.mapNotNullTo(hashSetOf("Dungeon")) { it.key }
     }
 }
+
+/** Keeps the first non-empty `key: value` in [line], as the tab list and the sidebar write their info rows. */
+internal fun MutableMap<String, String>.putInfo(line: String) {
+    val colon = line.indexOf(':')
+    if (colon <= 0) return
+    val value = line.substring(colon + 1).trim()
+    if (value.isNotEmpty()) putIfAbsent(line.substring(0, colon).trim(), value)
+}

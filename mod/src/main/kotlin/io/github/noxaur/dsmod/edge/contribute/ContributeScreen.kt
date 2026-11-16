@@ -91,9 +91,10 @@ class ContributeScreen(private val signingIn: Boolean, private val parent: Scree
             wrap("Only your play is recorded, with player names removed.", inner, Kit.Ink.MUTED)
         val steps = request.brief.steps.mapIndexed { i, step ->
             val number = "${i + 1}. "
-            wrap(step.action, inner - font.width(number), Kit.Ink.NORMAL).mapIndexed { l, line ->
+            val textWidth = inner - font.width(number)
+            wrap(step.action, textWidth, Kit.Ink.NORMAL).mapIndexed { l, line ->
                 Line((if (l == 0) number else " ".repeat(number.length)) + line.text, line.ink)
-            } + step.note?.let { note -> wrap(note, inner - font.width(number), Kit.Ink.MUTED).map { Line("   " + it.text, it.ink) } }.orEmpty()
+            } + step.note?.let { note -> wrap(note, textWidth, Kit.Ink.MUTED).map { Line("   " + it.text, it.ink) } }.orEmpty()
         }
         val forSteps = room - head.size - tail.size
         var fits = steps.size

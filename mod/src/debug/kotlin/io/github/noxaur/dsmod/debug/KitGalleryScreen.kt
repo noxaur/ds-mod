@@ -253,25 +253,30 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         val w = 52
         var line = y + 12 + Kit.TAB_BAR_HEIGHT - 1
         Kit.tabBar(g, x, y + 12, 278)
-        Kit.pageTab(g, x + 4, line, w, Kit.State.IDLE, false, fit("Combat", Kit.pageTabLabel(w, true, true)), Role.BAD.argb())
-        Kit.pageTab(g, x + 57, line, w, Kit.State.HOVER, false, fit("Menus", Kit.pageTabLabel(w, true, true)), Role.LEGENDARY.argb(), close = Kit.State.IDLE)
-        Kit.pageTab(g, x + 110, line, w, Kit.State.HOVER, false, fit("Inventory", Kit.pageTabLabel(w, true, true)), Role.GOOD.argb(), close = Kit.State.HOVER)
-        Kit.pageTab(g, x + 163, line, w, Kit.State.IDLE, true, fit("The End", Kit.pageTabLabel(w, true, true)), Role.EPIC.argb(), close = Kit.State.IDLE)
+        val tabTop = line
+        fun tab(at: Int, state: Kit.State, selected: Boolean, name: String, swatch: Int, close: Kit.State?) =
+            Kit.pageTab(g, x + at, tabTop, w, state, selected, fit(name, Kit.pageTabLabel(w, true, true)), swatch, close = close)
+        tab(4, Kit.State.IDLE, false, "Combat", Role.BAD.argb(), null)
+        tab(57, Kit.State.HOVER, false, "Menus", Role.LEGENDARY.argb(), Kit.State.IDLE)
+        tab(110, Kit.State.HOVER, false, "Inventory", Role.GOOD.argb(), Kit.State.HOVER)
+        tab(163, Kit.State.IDLE, true, "The End", Role.EPIC.argb(), Kit.State.IDLE)
         Kit.pageTab(g, x + 216, line, 44, Kit.State.IDLE, false, fit("eyes", Kit.pageTabLabel(44, true, true)), icon = Icon.SEARCH)
         Kit.newTab(g, x + 261, line, Kit.State.IDLE)
 
         line += 24
-        Kit.tabBar(g, x, line - Kit.TAB_BAR_HEIGHT + 1, 278)
+        barAt(g, x, line)
         Kit.pageTab(g, x + 4, line, 92, Kit.State.IDLE, true, fit("New Tab", Kit.pageTabLabel(92, false, false)))
         Kit.newTab(g, x + 97, line, Kit.State.HOVER)
         Kit.tag(g, x + 278 - Kit.GAP - font.width(BRAND), line, BRAND)
 
         line += 24
-        Kit.tabBar(g, x, line - Kit.TAB_BAR_HEIGHT + 1, 278)
+        barAt(g, x, line)
         Kit.pageTab(g, x + 4, line, 92, Kit.State.IDLE, false, "Combat", Role.BAD.argb())
         Kit.pageTab(g, x + 4 + 93 + 93, line, 92, Kit.State.IDLE, false, "Camera", Role.ACTION.argb())
         Kit.pageTab(g, x + 4 + 93 + 30, line, 92, Kit.State.DOWN, true, "The End", Role.EPIC.argb(), close = Kit.State.IDLE)
     }
+
+    private fun barAt(g: GuiGraphicsExtractor, x: Int, line: Int) = Kit.tabBar(g, x, line - Kit.TAB_BAR_HEIGHT + 1, 278)
 
     /** A strip of glass below the gallery, over the world as a glass menu is: slots, a well, buttons and tabs in each state. */
     private fun glass(g: GuiGraphicsExtractor, x: Int, y: Int) {
@@ -282,9 +287,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         g.item(tabs[3], x + 41, y + 5)
         Kit.glassWell(g, x + 98, y + 4, 54, 18)
         for (i in states.indices) Kit.button(g, x + 156 + i * 20, y + 5, Kit.BUTTON_HEIGHT, Kit.BUTTON_HEIGHT, states[i], Icon.BACK, glass = true)
-        g.item(tabs[0], x + 4, Kit.glassTab(g, x + 1, y + 26, true, alpha, TabEdge.BOTTOM))
-        g.item(tabs[1], x + 27, Kit.glassTab(g, x + 24, y + 26, false, alpha, TabEdge.BOTTOM))
-        g.item(tabs[2], x + 50, Kit.glassTab(g, x + 47, y + 26, false, alpha, TabEdge.BOTTOM, hovered = true))
+        for (i in 0 until 3) g.item(tabs[i], x + 4 + i * 23, Kit.glassTab(g, x + 1 + i * 23, y + 26, i == 0, alpha, TabEdge.BOTTOM, hovered = i == 2))
     }
 
     /** A plain tooltip over the slot grid, drawn last as the game draws one. */

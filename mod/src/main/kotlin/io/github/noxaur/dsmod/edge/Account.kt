@@ -3,10 +3,10 @@ package io.github.noxaur.dsmod.edge
 import io.github.noxaur.dsmod.core.backend.Backend
 import io.github.noxaur.dsmod.core.backend.BackendException
 import io.github.noxaur.dsmod.core.backend.Identity
+import io.github.noxaur.dsmod.core.backend.unwrapped
 import io.github.noxaur.dsmod.core.text.text
 import net.minecraft.client.Minecraft
 import java.net.URLEncoder
-import java.util.concurrent.CompletionException
 
 /**
  * The player's ds-mod account, which is their Minecraft account. [backend] is the one client every feature that talks
@@ -54,7 +54,7 @@ object Account {
 
     /** What went wrong with a call to the backend, said to the player. */
     fun why(error: Throwable): String {
-        val e = (error as? CompletionException)?.cause ?: error
+        val e = error.unwrapped()
         if (e !is BackendException) return "Something went wrong."
         return when (e.status) {
             null -> e.message.orEmpty()

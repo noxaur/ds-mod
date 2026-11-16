@@ -109,9 +109,7 @@ object World {
                         if (meters != mark.meters) {
                             mark.meters = meters
                             mark.label = "${mark.name} ${meters}m"
-                            // Text is sized in blocks, so it grows with distance to stay the same size on screen.
-                            val scale = (meters * 0.5f).coerceAtLeast(1.5f)
-                            mark.style = TextGizmo.Style.forColorAndCentered(mark.color).withScale(TextGizmo.Style.DEFAULT_SCALE * scale)
+                            mark.style = labelStyle(mark.color, meters * 0.5f, 1.5f)
                             mark.labelAt = mark.at.add(0.0, 1.5 + meters / 12.0, 0.0)
                         }
                         Gizmos.cuboid(mark.box.box, mark.box.style).setAlwaysOnTop()
@@ -134,13 +132,15 @@ object World {
         val meters = Minecraft.getInstance().gameRenderer.mainCamera().position().distanceTo(mark.top).toInt()
         if (meters != mark.meters) {
             mark.meters = meters
-            // Text is sized in blocks, so it grows with distance to stay the same size on screen, and rises to stay clear of the box.
-            val scale = (meters * 0.25f).coerceAtLeast(1f)
-            mark.labelStyle = TextGizmo.Style.forColorAndCentered(mark.color).withScale(TextGizmo.Style.DEFAULT_SCALE * scale)
+            mark.labelStyle = labelStyle(mark.color, meters * 0.25f, 1f)
             mark.labelAt = mark.top.add(0.0, 0.5 + meters / 16.0, 0.0)
         }
         Gizmos.billboardText(label, mark.labelAt, mark.labelStyle).setAlwaysOnTop()
     }
+
+    /** Text is sized in blocks, so it grows with distance, [grown] at least [least], to stay the same size on screen. */
+    private fun labelStyle(color: Int, grown: Float, least: Float) =
+        TextGizmo.Style.forColorAndCentered(color).withScale(TextGizmo.Style.DEFAULT_SCALE * grown.coerceAtLeast(least))
 
     private fun box(x: Double, y: Double, z: Double, mark: Mark) =
         ShownBox(AABB(x, y, z, x + 1, y + 1, z + 1), GizmoStyle.strokeAndFill(mark.role.argb(), LINE_WIDTH, mark.role.argb(FILL_ALPHA)))

@@ -1,10 +1,10 @@
 package io.github.noxaur.dsmod.core.profile
 
 import io.github.noxaur.dsmod.core.backend.BackendException
+import io.github.noxaur.dsmod.core.backend.unwrapped
 import io.github.noxaur.dsmod.core.text.Text
 import io.github.noxaur.dsmod.core.text.text
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletionException
 
 /** Where a lookup gets its answers: the backend, or a stub in a test. Each call runs off the client thread. */
 interface ProfileSource {
@@ -78,51 +78,38 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
         val request = ++request
         state = Load.Loading
         containers.clear()
-        source.profile(name, profile).whenComplete { answer, error ->
-            main {
-                if (request == this.request) state = if (error == null) Load.Loaded(answer) else Load.Failed(failure(error))
-            }
-        }
+        source.profile(name, profile).whenCurrent(request, { state = Load.Loaded(it) }) { state = Load.Failed(failure(it)) }
     }
 
     private fun fetch(profile: Profile, id: String, retried: Boolean) {
-        val request = request
-        source.container(profile.snapshot, id).whenComplete { answer, error ->
-            main {
-                if (request != this.request) return@main
-                val e = unwrap(error)
-                when {
-                    e == null -> containers[id] = Load.Loaded(answer)
-                    // A snapshot lasts 10 minutes. A new one shows another moment, so the other tabs fetch theirs again.
-                    e is BackendException && e.tag == "SnapshotExpired" && !retried -> renew(id)
-                    else -> containers[id] = Load.Failed(failure(error))
-                }
-            }
+        source.container(profile.snapshot, id).whenCurrent(request, { containers[id] = Load.Loaded(it) }) { error ->
+            val e = error.unwrapped()
+            // A snapshot lasts 10 minutes. A new one shows another moment, so the other tabs fetch theirs again.
+            if (e is BackendException && e.tag == "SnapshotExpired" && !retried) renew(id) else containers[id] = Load.Failed(failure(e))
         }
     }
 
     private fun renew(id: String) {
-        val request = request
-        source.profile(name, (state as? Load.Loaded)?.value?.profileId ?: asked).whenComplete { answer, error ->
-            main {
-                if (request != this.request) return@main
-                if (error != null) {
-                    containers[id] = Load.Failed(failure(error))
-                    return@main
-                }
-                // The new snapshot replaces the old, so what is still on its way from the old one, or from a second
-                // renewal another tab started, is dropped.
-                this.request++
-                state = Load.Loaded(answer)
-                containers.clear()
-                containers[id] = Load.Loading
-                fetch(answer, id, retried = true)
-            }
+        source.profile(name, (state as? Load.Loaded)?.value?.profileId ?: asked).whenCurrent(request, { answer ->
+            // The new snapshot replaces the old, so what is still on its way from the old one, or from a second
+            // renewal another tab started, is dropped.
+            request++
+            state = Load.Loaded(answer)
+            containers.clear()
+            containers[id] = Load.Loading
+            fetch(answer, id, retried = true)
+        }) { containers[id] = Load.Failed(failure(it)) }
+    }
+
+    /** Hands the answer or the error to [answered] or [failed] on the client thread, unless a later request has replaced [request]. */
+    private fun <T> CompletableFuture<T>.whenCurrent(request: Int, answered: (T) -> Unit, failed: (Throwable) -> Unit) {
+        whenComplete { answer, error ->
+            main { if (request == this@ProfileLookup.request) if (error == null) answered(answer) else failed(error) }
         }
     }
 
     private fun failure(error: Throwable): Failure {
-        val e = unwrap(error)
+        val e = error.unwrapped()
         if (e !is BackendException) return Failure(text { bad("Something went wrong loading this profile.") }, retry = true, bug = true, cause = e)
         return when {
             e.tag == "PlayerNotFound" -> Failure(text { bad("No player called $name.") }, retry = false)
@@ -135,6 +122,4 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
             else -> Failure(text { bad("Something went wrong loading this profile.") }, retry = true, bug = true, cause = e)
         }
     }
-
-    private fun unwrap(error: Throwable?) = (error as? CompletionException)?.cause ?: error
 }

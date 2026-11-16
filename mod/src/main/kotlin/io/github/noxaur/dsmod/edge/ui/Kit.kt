@@ -136,7 +136,7 @@ object Kit {
      * pane of glass raised off it instead, with its label in [GLASS_INK].
      */
     fun button(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, label: String, labelWidth: Int, glass: Boolean = false) {
-        if (glass) glassFace(g, x, y, width, height, state) else face(g, x, y, width, height, state)
+        buttonFace(g, x, y, width, height, state, glass)
         val dy = if (state == State.DOWN) 1 else 0
         val lx = x + (width - labelWidth) / 2
         val ly = y + (height - 8) / 2 + dy
@@ -145,7 +145,7 @@ object Kit {
     }
 
     fun button(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, icon: Icon, glass: Boolean = false) {
-        if (glass) glassFace(g, x, y, width, height, state) else face(g, x, y, width, height, state)
+        buttonFace(g, x, y, width, height, state, glass)
         val t = theme
         val off = state == State.OFF
         val dy = if (state == State.DOWN) 1 else 0
@@ -164,7 +164,7 @@ object Kit {
     /** A text field's well, ringed in the hover outline under the mouse or with focus, as a checkbox is. */
     fun field(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
         well(g, x, y, width, height)
-        if (state == State.HOVER || state == State.DOWN) ring(g, x - 1, y - 1, width + 2, height + 2, theme.hoverOutline)
+        focusRing(g, x, y, width, height, state)
     }
 
     /**
@@ -176,7 +176,7 @@ object Kit {
         if (alpha <= 0) return
         val t = theme
         if (size != SLOT_SIZE || t !== slotTheme) return bevel(g, x, y, size, size, fade(t.slot, alpha), fade(t.slotShade, alpha), fade(t.slotLight, alpha))
-        g.blit(RenderPipelines.GUI_TEXTURED, SLOT_TEXTURE, x, y, 0f, 0f, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, ARGB.white(alpha))
+        slotBlit(g, SLOT_TEXTURE, x, y, alpha)
     }
 
     // A texture made or uploaded while a frame is being built broke every frame after it in the game tests, so the
@@ -220,7 +220,7 @@ object Kit {
     fun glassSlot(g: GuiGraphicsExtractor, x: Int, y: Int, size: Int = SLOT_SIZE, alpha: Int = OPAQUE) {
         if (alpha <= 0) return
         if (size != SLOT_SIZE || theme !== slotTheme) return glassWell(g, x, y, size, size)
-        g.blit(RenderPipelines.GUI_TEXTURED, GLASS_SLOT_TEXTURE, x, y, 0f, 0f, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, ARGB.white(alpha))
+        slotBlit(g, GLASS_SLOT_TEXTURE, x, y, alpha)
     }
 
     /**
@@ -247,10 +247,15 @@ object Kit {
         }
         val top = panelY - out
         if (alpha > 0) rect(g, x + 1, top + 1, inner, out - 1, fill)
-        rect(g, x + 1, top, inner, 1, color)
-        rect(g, x, top + 1, 1, out - 1, color)
-        rect(g, x + width - 1, top + 1, 1, out - 1, color)
+        tabOutline(g, x, top, width, out - 1, color)
         return panelY - TAB_HEIGHT + if (selected) 4 else 5
+    }
+
+    /** The top and the two sides of a tab at [x], [top], [width] wide, the sides [side] tall below the top. */
+    private fun tabOutline(g: GuiGraphicsExtractor, x: Int, top: Int, width: Int, side: Int, color: Int) {
+        rect(g, x + 1, top, width - 2, 1, color)
+        rect(g, x, top + 1, 1, side, color)
+        rect(g, x + width - 1, top + 1, 1, side, color)
     }
 
     // Glass's sunk parts, from the plate's tokens so they follow the theme: a light lower edge and a dark upper one.
@@ -291,8 +296,8 @@ object Kit {
         well(g, x, y, width, BAR_HEIGHT)
         val filled = ((width - 2) * fraction).roundToInt()
         rect(g, x + 1, y + 1, filled, 4, color)
-        rect(g, x + 1, y + 1, filled, 1, mix(color, ARGB.white(1f), 0.45f))
-        rect(g, x + 1, y + 4, filled, 1, mix(color, ARGB.black(1f), 0.35f))
+        stripe(g, x + 1, y + 1, filled, color, ARGB.white(1f), 0.45f)
+        stripe(g, x + 1, y + 4, filled, color, ARGB.black(1f), 0.35f)
     }
 
     /** A 6 wide well with its thumb [thumbY] pixels below the top of the track. */
@@ -313,11 +318,13 @@ object Kit {
         val w = width
         val h = TAB_HEIGHT
         val face = if (hovered) t.hover else t.tabOff
+        val y = panelY - h + 2
+        if (!selected) {
+            val bottom = edge == TabEdge.BOTTOM
+            frame(g, x, if (bottom) panelY - 1 else y + 2, w, h - 3, t.outline, face, t.panelShade, t.wellShade)
+            return if (bottom) panelY else y + 3
+        }
         if (edge == TabEdge.BOTTOM) {
-            if (!selected) {
-                frame(g, x, panelY - 1, w, h - 3, t.outline, face, t.panelShade, t.wellShade)
-                return panelY
-            }
             rect(g, x, panelY, 1, h - 3, t.outline)
             rect(g, x + w - 1, panelY, 1, h - 3, t.outline)
             rect(g, x + 1, panelY + h - 3, w - 2, 1, t.outline)
@@ -327,14 +334,7 @@ object Kit {
             rect(g, x + 2, panelY + h - 4, w - 3, 1, t.panelShade)
             return panelY + 1
         }
-        val y = panelY - h + 2
-        if (!selected) {
-            frame(g, x, y + 2, w, h - 3, t.outline, face, t.panelShade, t.wellShade)
-            return y + 3
-        }
-        rect(g, x + 1, y, w - 2, 1, t.outline)
-        rect(g, x, y + 1, 1, h - 3, t.outline)
-        rect(g, x + w - 1, y + 1, 1, h - 3, t.outline)
+        tabOutline(g, x, y, w, h - 3, t.outline)
         rect(g, x + 1, y + 1, w - 2, h - 1, t.panel)
         rect(g, x + 1, y + 1, w - 3, 1, t.panelLight)
         rect(g, x + 1, y + 1, 1, h - 2, t.panelLight)
@@ -370,7 +370,7 @@ object Kit {
             swatch(g, textX, leadY, PAGE_TAB_LEAD, swatch)
             textX += PAGE_TAB_LEAD + GAP
         } else if (icon != null) {
-            icon(g, icon, textX + (PAGE_TAB_LEAD - icon.width) / 2, leadY + (PAGE_TAB_LEAD - icon.height) / 2, if (ink == Ink.NORMAL) t.ink else t.inkMuted, t.inkShadow)
+            leadIcon(g, icon, textX, leadY, if (ink == Ink.NORMAL) t.ink else t.inkMuted)
             textX += PAGE_TAB_LEAD + GAP
         }
         label(g, label, textX, lineY - PAGE_TAB_TEXT_UP, ink)
@@ -380,9 +380,12 @@ object Kit {
         if (close == State.HOVER) {
             button(g, cx, cy, PAGE_TAB_LEAD, PAGE_TAB_LEAD, State.HOVER, Icon.CROSS)
         } else {
-            icon(g, Icon.CROSS, cx + (PAGE_TAB_LEAD - Icon.CROSS.width) / 2, cy + (PAGE_TAB_LEAD - Icon.CROSS.height) / 2, t.inkMuted, t.inkShadow)
+            leadIcon(g, Icon.CROSS, cx, cy, t.inkMuted)
         }
     }
+
+    private fun leadIcon(g: GuiGraphicsExtractor, icon: Icon, x: Int, y: Int, color: Int) =
+        icon(g, icon, x + (PAGE_TAB_LEAD - icon.width) / 2, y + (PAGE_TAB_LEAD - icon.height) / 2, color, theme.inkShadow)
 
     /** The room a [pageTab] [width] wide leaves its label, with a swatch or icon before it when [lead], and a × after it when [close]. */
     fun pageTabLabel(width: Int, lead: Boolean, close: Boolean) =
@@ -409,9 +412,7 @@ object Kit {
         if (lifted) {
             val y = lineY - 16
             val edge = if (state == State.DOWN) t.hoverOutline else t.outline
-            rect(g, x + 1, y, width - 2, 1, edge)
-            rect(g, x, y + 1, 1, 16, edge)
-            rect(g, x + width - 1, y + 1, 1, 16, edge)
+            tabOutline(g, x, y, width, 16, edge)
             // Down to the line and over it, so the tab and the pane are one surface.
             rect(g, x + 1, y + 1, width - 2, 16, t.panel)
             rect(g, x + 1, y + 1, width - 3, 1, t.panelLight)
@@ -420,9 +421,7 @@ object Kit {
             return
         }
         val y = lineY - 15
-        rect(g, x + 1, y, width - 2, 1, t.outline)
-        rect(g, x, y + 1, 1, 14, t.outline)
-        rect(g, x + width - 1, y + 1, 1, 14, t.outline)
+        tabOutline(g, x, y, width, 14, t.outline)
         rect(g, x + 1, y + 1, width - 2, 14, if (state == State.HOVER) t.hover else t.tabOff)
         rect(g, x + 1, y + 1, width - 3, 1, t.panelShade)
         rect(g, x + 1, y + 1, 1, 13, t.panelShade)
@@ -433,7 +432,7 @@ object Kit {
     fun checkbox(g: GuiGraphicsExtractor, x: Int, y: Int, checked: Boolean, state: State) {
         val t = theme
         well(g, x, y, CHECKBOX_SIZE, CHECKBOX_SIZE)
-        if (state == State.HOVER || state == State.DOWN) ring(g, x - 1, y - 1, CHECKBOX_SIZE + 2, CHECKBOX_SIZE + 2, t.hoverOutline)
+        focusRing(g, x, y, CHECKBOX_SIZE, CHECKBOX_SIZE, state)
         if (checked) icon(g, Icon.CHECK, x + 2, y + 2, if (state == State.OFF) t.inkOff else GOOD, state != State.OFF)
     }
 
@@ -463,7 +462,7 @@ object Kit {
     fun marker(g: GuiGraphicsExtractor, x: Int, y: Int, state: State) {
         val t = theme
         rect(g, x, y, 3, 3, t.accent)
-        if (state == State.HOVER || state == State.DOWN) ring(g, x - 1, y - 1, 5, 5, t.hoverOutline)
+        focusRing(g, x, y, 3, 3, state)
     }
 
     /**
@@ -474,18 +473,20 @@ object Kit {
         val t = theme
         face(g, x, y, width, height, state)
         val dy = if (state == State.DOWN) 1 else 0
-        val textX = x + DROPDOWN_PAD + if (lead > 0) lead + GAP - 1 else 0
+        val textX = x + DROPDOWN_PAD + leadRoom(lead)
         val ink = if (state == State.OFF) Ink.OFF else Ink.NORMAL
         if (marked != null) label(g, marked, textX, y + (height - 8) / 2 + dy, ink) else label(g, label, textX, y + (height - 8) / 2 + dy, ink)
         val arrow = Icon.DOWN
         icon(g, arrow, x + width - DROPDOWN_PAD - arrow.width, y + (height - arrow.height) / 2 + dy, if (state == State.OFF) t.inkOff else t.inkMuted, t.inkShadow)
     }
 
+    private fun leadRoom(lead: Int) = if (lead > 0) lead + GAP - 1 else 0
+
     /** The room a [dropdown] [width] wide leaves its label after a [lead] wide preview. */
-    fun dropdownLabel(width: Int, lead: Int = 0) = width - DROPDOWN_PAD * 2 - Icon.DOWN.width - GAP - if (lead > 0) lead + GAP - 1 else 0
+    fun dropdownLabel(width: Int, lead: Int = 0) = width - DROPDOWN_PAD * 2 - Icon.DOWN.width - GAP - leadRoom(lead)
 
     /** How wide a [dropdown] must be to hold a [label] wide label after a [lead] wide preview. */
-    fun dropdownWidth(label: Int, lead: Int = 0) = label + DROPDOWN_PAD * 2 + Icon.DOWN.width + GAP + if (lead > 0) lead + GAP - 1 else 0
+    fun dropdownWidth(label: Int, lead: Int = 0) = label + DROPDOWN_PAD * 2 + Icon.DOWN.width + GAP + leadRoom(lead)
 
     /** A lift of a well under the mouse or the keyboard, behind a row of a settings group. */
     fun wellRow(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) = rect(g, x, y, width, height, mix(theme.well, BODY, 0.05f))
@@ -634,6 +635,10 @@ object Kit {
         for (i in text.parts.indices) label(g, text.parts[i], x + text.offsets[i], y, if (text.matches[i]) Ink.MATCH else ink)
     }
 
+    fun markedLabel(g: GuiGraphicsExtractor, marked: Marked?, text: String, x: Int, y: Int) {
+        if (marked != null) label(g, marked, x, y) else label(g, text, x, y)
+    }
+
     private fun color(ink: Ink) = when (ink) {
         Ink.NORMAL -> theme.ink
         Ink.MUTED -> theme.inkMuted
@@ -670,15 +675,13 @@ object Kit {
         slotBorder(g, x, y, if (vanilla) Theme.VANILLA.accent else theme.accent)
 
     /** Draws cell [cell] of row [row] of a rarity atlas behind the 16x16 item area at [x], [y], covering the slot's whole 18x18. */
-    fun slotArt(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int, row: Int = 0) = g.blit(
-        RenderPipelines.GUI_TEXTURED, atlas.id, x - 1, y - 1, (cell * SlotArt.SIZE).toFloat(), (row * SlotArt.SIZE).toFloat(), SlotArt.SIZE, SlotArt.SIZE,
-        atlas.width, atlas.height,
-    )
+    fun slotArt(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int, row: Int = 0) = cellBlit(g, atlas, x - 1, y - 1, cell, row, SlotArt.SIZE)
 
     /** Draws cell [cell]'s gem over the item at [x], [y], from the item's top-left pixel, in an atlas whose gems are [rows] slots down. */
-    fun slotGem(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int, rows: Int = 1) = g.blit(
-        RenderPipelines.GUI_TEXTURED, atlas.id, x, y, (cell * SlotArt.SIZE).toFloat(), (rows * SlotArt.SIZE).toFloat(), SlotArt.GEM, SlotArt.GEM,
-        atlas.width, atlas.height,
+    fun slotGem(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int, rows: Int = 1) = cellBlit(g, atlas, x, y, cell, rows, SlotArt.GEM)
+
+    private fun cellBlit(g: GuiGraphicsExtractor, atlas: Atlas, x: Int, y: Int, cell: Int, row: Int, size: Int) = g.blit(
+        RenderPipelines.GUI_TEXTURED, atlas.id, x, y, (cell * SlotArt.SIZE).toFloat(), (row * SlotArt.SIZE).toFloat(), size, size, atlas.width, atlas.height,
     )
 
     /**
@@ -734,12 +737,26 @@ object Kit {
     private fun face(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
         val t = theme
         when (state) {
-            State.IDLE -> frame(g, x, y, width, height, t.outline, t.raised, t.raisedLight, t.raisedShade)
-            State.HOVER -> frame(g, x, y, width, height, t.hoverOutline, t.hover, t.hoverLight, t.raisedShade)
-            State.DOWN -> frame(g, x, y, width, height, t.outline, t.down, t.wellShade, t.down)
-            State.OFF -> frame(g, x, y, width, height, t.outline, t.panel, t.panel, t.panel)
+            State.IDLE -> frame(g, x, y, width, height, t.outline, t.raised, t.raisedLight, t.raisedShade) // rule:clone a table of each state's colors
+            State.HOVER -> frame(g, x, y, width, height, t.hoverOutline, t.hover, t.hoverLight, t.raisedShade) // rule:clone a table of each state's colors
+            State.DOWN -> frame(g, x, y, width, height, t.outline, t.down, t.wellShade, t.down) // rule:clone a table of each state's colors
+            State.OFF -> frame(g, x, y, width, height, t.outline, t.panel, t.panel, t.panel) // rule:clone a table of each state's colors
         }
     }
+
+    private fun buttonFace(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, glass: Boolean) {
+        if (glass) glassFace(g, x, y, width, height, state) else face(g, x, y, width, height, state)
+    }
+
+    private fun focusRing(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
+        if (state == State.HOVER || state == State.DOWN) ring(g, x - 1, y - 1, width + 2, height + 2, theme.hoverOutline)
+    }
+
+    private fun slotBlit(g: GuiGraphicsExtractor, id: Identifier, x: Int, y: Int, alpha: Int) {
+        g.blit(RenderPipelines.GUI_TEXTURED, id, x, y, 0f, 0f, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, ARGB.white(alpha))
+    }
+
+    private fun stripe(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, color: Int, tint: Int, amount: Float) = rect(g, x, y, width, 1, mix(color, tint, amount))
 
     /**
      * A button's face on glass: a lighter pane in the plate's ring with a lit top and left, which the mouse lightens and
@@ -749,8 +766,10 @@ object Kit {
     private fun glassFace(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
         val t = theme
         when (state) {
-            State.IDLE -> frame(g, x, y, width, height, t.plateEdge, ARGB.white(GLASS_BUTTON), glassLight(t), glassShade(t))
-            State.HOVER -> frame(g, x, y, width, height, t.hoverOutline, ARGB.white(GLASS_BUTTON_HOVER), glassLight(t), glassShade(t))
+            State.IDLE, State.HOVER -> {
+                val hover = state == State.HOVER
+                frame(g, x, y, width, height, if (hover) t.hoverOutline else t.plateEdge, ARGB.white(if (hover) GLASS_BUTTON_HOVER else GLASS_BUTTON), glassLight(t), glassShade(t))
+            }
             State.DOWN -> {
                 ring(g, x, y, width, height, t.plateEdge)
                 glassWell(g, x + 1, y + 1, width - 2, height - 2)

@@ -8,7 +8,6 @@ import io.github.noxaur.dsmod.core.config.Items.Entry
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Narration
-import io.github.noxaur.dsmod.core.ui.SettingsSearch
 import io.github.noxaur.dsmod.edge.Keys
 import io.github.noxaur.dsmod.edge.toComponent
 import net.minecraft.client.Minecraft
@@ -156,7 +155,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         val line = Line(Kind.HEADING, entry, y, LINE)
         line.hits += Hit(line, x + ARROW_X - 2, 0, ARROW_ROOM, LINE, Does.FOLD, caption = "Fold")
         line.hits += Hit(line, x + HEADING_SWITCH, (LINE - Kit.SWITCH_HEIGHT) / 2, Kit.SWITCH_WIDTH, Kit.SWITCH_HEIGHT, Does.GROUP, caption = "Group")
-        line.hits += Hit(line, right() - SETTINGS, (LINE - SETTINGS) / 2, SETTINGS, SETTINGS, Does.DETAILS, caption = "Settings")
+        line.hits += settingsHit(line)
         return line
     }
 
@@ -179,9 +178,11 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
             line.hits += Hit(line, cx, 1, w, Kit.BUTTON_HEIGHT, Does.CELL, i, cell.name)
             cx += w + Kit.GAP
         }
-        line.hits += Hit(line, right() - SETTINGS, (LINE - SETTINGS) / 2, SETTINGS, SETTINGS, Does.DETAILS, caption = "Settings")
+        line.hits += settingsHit(line)
         return line
     }
+
+    private fun settingsHit(line: Line) = Hit(line, right() - SETTINGS, (LINE - SETTINGS) / 2, SETTINGS, SETTINGS, Does.DETAILS, caption = "Settings")
 
     private fun widthOf(cell: Cell<T>) = when (cell) {
         is Cell.Text -> cell.width
@@ -209,14 +210,12 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         if (entry is Entry.Item) {
             for ((i, cell) in type.details.withIndex()) {
                 val label = font.width(cell.name) + Kit.GAP
-                when (cell) {
-                    is Cell.Pick<T, *> -> put(label + cell.width) { l, hx, dy -> Hit(l, hx + label, dy + 1, cell.width, Kit.BUTTON_HEIGHT, Does.CELL, i + DETAIL, cell.name) }
-                    is Cell.Count -> put(label + COUNT) { l, hx, dy -> Hit(l, hx + label, dy + 1, COUNT, Kit.BUTTON_HEIGHT, Does.CELL, i + DETAIL, cell.name) }
-                    is Cell.Check -> put(Kit.SWITCH_WIDTH + label) { l, hx, dy ->
-                        Hit(l, hx, dy + (LINE - Kit.SWITCH_HEIGHT) / 2, Kit.SWITCH_WIDTH + label, Kit.SWITCH_HEIGHT, Does.CELL, i + DETAIL, cell.name)
-                    }
-                    is Cell.Text -> put(label + cell.width) { l, hx, dy -> Hit(l, hx + label, dy + 1, cell.width, Kit.BUTTON_HEIGHT, Does.CELL, i + DETAIL, cell.name) }
-                    is Cell.Keys -> put(label + cell.width) { l, hx, dy -> Hit(l, hx + label, dy + 1, cell.width, Kit.BUTTON_HEIGHT, Does.CELL, i + DETAIL, cell.name) }
+                if (cell is Cell.Check) {
+                    val w = Kit.SWITCH_WIDTH + label
+                    put(w) { l, hx, dy -> Hit(l, hx, dy + (LINE - Kit.SWITCH_HEIGHT) / 2, w, Kit.SWITCH_HEIGHT, Does.CELL, i + DETAIL, cell.name) }
+                } else {
+                    val w = widthOf(cell)
+                    put(label + w) { l, hx, dy -> Hit(l, hx + label, dy + 1, w, Kit.BUTTON_HEIGHT, Does.CELL, i + DETAIL, cell.name) }
                 }
             }
         } else if (entry is Entry.Heading && entry.group.isNotEmpty()) {
@@ -235,7 +234,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
             if (entry is Entry.Heading) add(Does.EXPORT to "Export")
             if (named) add(Does.DELETE to "Delete")
         }
-        val widths = actions.map { (does, label) -> if (does == Does.UP || does == Does.DOWN) Kit.BUTTON_HEIGHT else font.width(label) + 16 }
+        val widths = actions.map { (does, label) -> if (does == Does.UP || does == Does.DOWN) Kit.BUTTON_HEIGHT else buttonWidth(label) }
         val all = widths.sum() + Kit.GAP * (actions.size - 1)
         if (cx + all > end) {
             cx = start
@@ -259,7 +258,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         var cx = x
         val noun = type.noun.replaceFirstChar { it.uppercase() }
         for ((does, label) in listOf(Does.ADD to "Add $noun", Does.ADD_GROUP to "Add Group", Does.IMPORT to "Import", Does.EXPORT to "Export")) {
-            val w = font.width(label) + 16
+            val w = buttonWidth(label)
             line.hits += Hit(line, cx, 0, w, Kit.BUTTON_HEIGHT, does, caption = label)
             cx += w + Kit.GAP
         }
@@ -267,6 +266,8 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     }
 
     private fun right() = x + width
+
+    private fun buttonWidth(label: String) = font.width(label) + 16
 
     /** Reads the list again into what each line shows. Call it after a change, never per frame. */
     override fun refresh() {
@@ -347,16 +348,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         is Entry.Item -> list.items.getOrNull(entry.index)?.let { items.home(it) } ?: ""
         null -> ""
     }
-
-    private fun marked(text: String, words: List<String>, muted: Boolean) = text {
-        for (piece in SettingsSearch.pieces(text, words)) {
-            when {
-                piece.match -> match(piece.text)
-                muted -> muted(piece.text)
-                else -> body(piece.text)
-            }
-        }
-    }.toComponent()
 
     /** What the line under the list says, and whether it is bad: what the last action did, what stops the picked line, or nothing. */
     private fun statusText(value: Grouped<T>, clashing: BooleanArray): Pair<String, Boolean> {
@@ -446,10 +437,14 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     val size get() = lines.size
 
     /** The line of item [index], or of its details when [details], or -1 when it does not show. */
-    fun lineOf(index: Int, details: Boolean = false) = lines.indexOfFirst { it.entry == Entry.Item(index) && (it.kind == Kind.DETAILS) == details }
+    fun lineOf(index: Int, details: Boolean = false) = indexOf(Entry.Item(index), details)
 
     /** The line of [group]'s heading, or of its details when [details]. */
-    fun headingOf(group: String, details: Boolean = false) = lines.indexOfFirst { it.entry == Entry.Heading(group) && (it.kind == Kind.DETAILS) == details }
+    fun headingOf(group: String, details: Boolean = false) = indexOf(Entry.Heading(group), details)
+
+    private fun indexOf(entry: Entry, details: Boolean) = lines.indexOfFirst { it.entry == entry && (it.kind == Kind.DETAILS) == details }
+
+    private fun linesOf(vararg kinds: Kind) = lines.filter { it.kind in kinds }
 
     private fun pickedLine(): Line? {
         for (i in lines.indices) if (lines[i].kind == pickedKind && lines[i].entry == picked) return lines[i]
@@ -539,22 +534,34 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         when (hit.does) {
             Does.FOLD -> Unit
             Does.GROUP -> Kit.switch(g, hit.x, y, hit.on, state)
-            Does.DETAILS -> Kit.button(g, hit.x, y, hit.width, hit.height, state, if (hit.on) Icon.DOWN else Icon.RIGHT)
-            Does.UP -> Kit.button(g, hit.x, y, hit.width, hit.height, state, Icon.UP)
-            Does.DOWN -> Kit.button(g, hit.x, y, hit.width, hit.height, state, Icon.DOWN)
-            Does.NAME -> if (fieldHit === hit && field != null) {
-                field!!.extractRenderState(g, mx.toInt(), my.toInt(), 0f)
-            } else {
-                Kit.field(g, hit.x, y, hit.width, hit.height, state)
-                g.text(font, hit.text, hit.x + 4, y + (hit.height - 8) / 2, -1, true)
-            }
+            Does.DETAILS, Does.UP, Does.DOWN -> Kit.button(g, hit.x, y, hit.width, hit.height, state, when (hit.does) {
+                Does.UP -> Icon.UP
+                Does.DOWN -> Icon.DOWN
+                else -> if (hit.on) Icon.DOWN else Icon.RIGHT
+            })
+            Does.NAME -> drawField(g, hit, y, state, mx, my)
             Does.CELL -> drawCell(g, hit, y, state, mx, my)
             else -> {
-                Kit.button(g, hit.x, y, hit.width, hit.height, state, hit.caption, font.width(hit.caption))
-                if (hit.does == Does.DELETE && armed == hit.line.entry) Kit.ring(g, hit.x - 1, y - 1, hit.width + 2, hit.height + 2, Role.BAD.argb())
+                labelButton(g, hit, y, state, hit.caption)
+                if (hit.does == Does.DELETE && armed == hit.line.entry) ringHit(g, hit, y, Role.BAD.argb())
             }
         }
         if (hovered && hit.active) g.requestCursor(if (hit.does == Does.NAME || hit.does == Does.CELL && cellAt(hit.cell) is Cell.Text) CursorTypes.IBEAM else CursorTypes.POINTING_HAND)
+    }
+
+    private fun labelButton(g: GuiGraphicsExtractor, hit: Hit, y: Int, state: Kit.State, label: String) =
+        Kit.button(g, hit.x, y, hit.width, hit.height, state, label, font.width(label))
+
+    private fun ringHit(g: GuiGraphicsExtractor, hit: Hit, y: Int, argb: Int) = Kit.ring(g, hit.x - 1, y - 1, hit.width + 2, hit.height + 2, argb)
+
+    private fun drawField(g: GuiGraphicsExtractor, hit: Hit, y: Int, state: Kit.State, mx: Double, my: Double) {
+        val open = field
+        if (fieldHit === hit && open != null) {
+            open.extractRenderState(g, mx.toInt(), my.toInt(), 0f)
+        } else {
+            Kit.field(g, hit.x, y, hit.width, hit.height, state)
+            g.text(font, hit.text, hit.x + 4, y + (hit.height - 8) / 2, -1, true)
+        }
     }
 
     private fun drawCell(g: GuiGraphicsExtractor, hit: Hit, y: Int, state: Kit.State, mx: Double, my: Double) {
@@ -563,19 +570,14 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
                 Kit.switch(g, hit.x, y, hit.on, state)
                 hit.name?.takeIf { hit.width > Kit.SWITCH_WIDTH }?.let { g.text(font, it, hit.x + Kit.SWITCH_WIDTH + Kit.GAP, y + (hit.height - 8) / 2, -1, true) }
             }
-            is Cell.Text -> if (fieldHit === hit && field != null) {
-                field!!.extractRenderState(g, mx.toInt(), my.toInt(), 0f)
-            } else {
-                Kit.field(g, hit.x, y, hit.width, hit.height, state)
-                g.text(font, hit.text, hit.x + 4, y + (hit.height - 8) / 2, -1, true)
-            }
+            is Cell.Text -> drawField(g, hit, y, state, mx, my)
             is Cell.Keys -> if (recordHit === hit && recorder != null) {
                 recorder!!.extractRenderState(g, mx.toInt(), my.toInt(), 0f)
             } else {
-                Kit.button(g, hit.x, y, hit.width, hit.height, state, hit.label, font.width(hit.label))
-                hit.clash?.let { Kit.ring(g, hit.x - 1, y - 1, hit.width + 2, hit.height + 2, it.argb()) }
+                labelButton(g, hit, y, state, hit.label)
+                hit.clash?.let { ringHit(g, hit, y, it.argb()) }
             }
-            is Cell.Pick<T, *> -> Kit.button(g, hit.x, y, hit.width, hit.height, state, hit.label, font.width(hit.label))
+            is Cell.Pick<T, *> -> labelButton(g, hit, y, state, hit.label)
             is Cell.Count -> {
                 val lit = state == Kit.State.HOVER
                 val side = if (!lit) 0 else if (mx < hit.x + Kit.BUTTON_HEIGHT) -1 else if (mx >= hit.x + hit.width - Kit.BUTTON_HEIGHT) 1 else 0
@@ -593,21 +595,17 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
         val mx = event.x
         val my = event.y
-        menu?.let { open ->
-            if (open.isMouseOver(mx, my)) return true.also { open.mouseClicked(event, doubleClick) }
+        menu?.let {
+            if (it.takesPress(event, doubleClick)) return true
             // A press outside closes the menu and still does its own job.
             menu = null
         }
-        field?.let { open ->
+        field?.let {
             // A field scrolled out of the pane, such as under the tab bar, takes no press.
-            if (isOver(mx, my) && open.isMouseOver(mx, my)) return true.also { open.mouseClicked(event, doubleClick) }
+            if (isOver(mx, my) && it.takesPress(event, doubleClick)) return true
             closeField()
         }
-        recorder?.let { keys ->
-            val took = keys.capture(event.button(), mouse = true)
-            if (!keys.recording) finishRecording()
-            if (took || keys.isMouseOver(mx, my)) return true
-        }
+        if (recorder?.pressed(event) { finishRecording() } == true) return true
         val line = lineAt(mx, my) ?: return false.also { disarm() }
         val hit = hitAt(line, mx, my)
         if (armed != null && !(hit?.does == Does.DELETE && hit.line.entry == armed)) armed = null
@@ -667,7 +665,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
                 host.relayout()
             }
         }
-        val listed = lines.filter { it.kind == Kind.HEADING || it.kind == Kind.ITEM || it.kind == Kind.EMPTY }
+        val listed = linesOf(Kind.HEADING, Kind.ITEM, Kind.EMPTY)
         val first = listed.firstOrNull() ?: return true
         // Past the pane's edge the line stays at the end of the list, and the pane follows it.
         val to = Math.floorDiv((event.y - (origin + first.y)).toInt(), LINE).coerceIn(0, listed.lastIndex)
@@ -719,7 +717,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         when (hit.does) {
             Does.CELL -> when (val cell = cellAt(hit.cell)) {
                 is Cell.Check -> change { set(hit, cell.set(itemOf(hit)!!, !cell.get(itemOf(hit)!!))) }
-                is Cell.Text -> openField(hit, cell.get(itemOf(hit)!!), cell.max, cell.name, cell.hint)
+                is Cell.Text -> openText(hit, cell)
                 is Cell.Keys -> record(hit, cell)
                 is Cell.Pick<T, *> -> stepPick(hit, if (shift) -1 else 1)
                 is Cell.Count -> stepCount(hit, if (mouseX == null) (if (shift) -1 else 1) else if (mouseX < hit.x + Kit.BUTTON_HEIGHT) -1 else if (mouseX >= hit.x + hit.width - Kit.BUTTON_HEIGHT) 1 else 0)
@@ -737,6 +735,8 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
             Does.IMPORT -> import()
         }
     }
+
+    private fun reveal(line: Line) = host.scrollTo(line.y - Kit.GAP, line.bottom + Kit.GAP)
 
     private fun itemOf(hit: Hit): T? = (hit.line.entry as? Entry.Item)?.let { list.items.getOrNull(it.index) }
 
@@ -767,7 +767,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         block()
         host.relayout()
         host.changed()
-        pickedLine()?.let { host.scrollTo(it.y - Kit.GAP, it.bottom + Kit.GAP) }
+        pickedLine()?.let(::reveal)
     }
 
     private fun pick(line: Line?, keepCursor: Boolean) {
@@ -873,7 +873,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         val command = line.hits.lastOrNull { it.does == Does.CELL && cellAt(it.cell) is Cell.Text } ?: return
         cursor = line.hits.indexOf(command)
         val cell = cellAt(command.cell) as Cell.Text<T>
-        openField(command, "", cell.max, cell.name, cell.hint)
+        openText(command, cell, "")
     }
 
     private fun addGroup() {
@@ -957,6 +957,8 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         if (items.canNudge(entry, -1)) menuItems += "Move Up" to { nudge(entry, -1) }
         if (items.canNudge(entry, 1)) menuItems += "Move Down" to { nudge(entry, 1) }
     }
+
+    private fun openText(hit: Hit, cell: Cell.Text<T>, value: String = cell.get(itemOf(hit)!!)) = openField(hit, value, cell.max, cell.name, cell.hint)
 
     private fun openField(hit: Hit, value: String, max: Int, name: String, hint: String) {
         closeField()
@@ -1103,7 +1105,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
 
     /** Moves the keys a line, past the lines that hold nothing to press, and out of the list at either end. */
     private fun step(by: Int): Boolean {
-        val stops = lines.filter { it.kind == Kind.HEADING || it.kind == Kind.ITEM || it.kind == Kind.DETAILS || it.kind == Kind.FOOT }
+        val stops = linesOf(Kind.HEADING, Kind.ITEM, Kind.DETAILS, Kind.FOOT)
         val at = stops.indexOfFirst { it.entry == picked && it.kind == pickedKind }
         val next = at + by
         if (at < 0 || next !in stops.indices) {
@@ -1117,7 +1119,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         pick(line, keepCursor = true)
         // The keys keep to the control nearest the one they were on, as a grid's do.
         cursor = if (column == null || line.hits.isEmpty()) 0 else line.hits.indices.minBy { Math.abs(line.hits[it].x - column) }
-        host.scrollTo(line.y - Kit.GAP, line.bottom + Kit.GAP)
+        reveal(line)
         refresh()
         return true
     }
@@ -1125,10 +1127,10 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     private fun enterAt(first: Boolean) {
         inside = true
         shownFocus = true
-        val stops = lines.filter { it.kind == Kind.HEADING || it.kind == Kind.ITEM || it.kind == Kind.FOOT }
+        val stops = linesOf(Kind.HEADING, Kind.ITEM, Kind.FOOT)
         val line = if (first) stops.firstOrNull() else stops.lastOrNull()
         pick(line, keepCursor = false)
-        line?.let { host.scrollTo(it.y - Kit.GAP, it.bottom + Kit.GAP) }
+        line?.let(::reveal)
         refresh()
     }
 
@@ -1141,7 +1143,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         if (next == null) return
         cursor = hit.line.hits.indexOf(next)
         val cell = cellAt(next.cell) as Cell.Text<T>
-        openField(next, cell.get(itemOf(next)!!), cell.max, cell.name, cell.hint)
+        openText(next, cell)
     }
 
     override fun keyReleased(event: KeyEvent): Boolean {
