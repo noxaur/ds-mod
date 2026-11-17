@@ -58,17 +58,11 @@
       "unit": "µs",
       "cap": 15
     },
-    "pet-poll": {
+    "entities": {
       "group": "Tick",
-      "label": "Pet poll, armor stands within 6 blocks",
+      "label": "Entity tracker, 40 mobs hit each tick and 3 bosses",
       "unit": "µs",
-      "cap": 50
-    },
-    "boss-poll": {
-      "group": "Tick",
-      "label": "Boss poll, 43 named mobs",
-      "unit": "µs",
-      "cap": 50
+      "cap": 30
     },
     "features": {
       "group": "Tick",

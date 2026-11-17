@@ -19,8 +19,8 @@ import javax.imageio.ImageIO
 /**
  * An iron golem named as dragsim.co names the Endstone Protector stands 12 blocks north, and a zombie named as a
  * slayer boss 12 blocks east. The zombie comes right after `☠ SLAYER BOSS SPAWNING!`, so it is the player's own. The
- * `BossPoller` reports both, and the golem's death. Boss Beacon puts a beam on both, which follow them, and Boss Tracer
- * a line to each, which still shows with the player turned away. Read the screenshots: two labeled beams with their distances, two lines from the crosshair, one off
+ * `EntityTracker` reports both, and the golem's death, as the client holds them. Boss Beacon puts a beam on both,
+ * which follow them, and Boss Tracer a line to each, which still shows with the player turned away. Read the screenshots: two labeled beams with their distances, two lines from the crosshair, one off
  * each edge of the screen, and the settings with the bosses each feature marks.
  */
 class BossMarksTest : FabricClientGameTest {

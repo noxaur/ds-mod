@@ -92,26 +92,24 @@ data class HeadPlaced(val x: Int, val y: Int, val z: Int) : GameEvent
 data class SlotChanged(val slot: Int, val item: Item? = null) : GameEvent
 
 /**
- * The pet nearest the player: an armor stand within a few blocks, named like `[Lvl 100] Ender Dragon`, wearing the
- * pet's [head]. dragsim.co floats each player's pet beside them, so a pet of a player standing close may be the
- * nearer one. Posted when the nearest pet changes, and only while a feature reads it.
+ * The client holds an entity a feature reads, as its `readEntities` filter chose it: its [id] on this client, its
+ * [entity] type such as `minecraft:zombie`, the [name] over it, empty when it has none, and what it wears on its
+ * [head]. Posted again with the same [id] when the head changes or the client's reason to report it does, which a
+ * reader takes as the entity now being this. Posted only while a feature reads entities like it.
  */
 @Serializable
-@SerialName("pet")
-data class PetNear(val name: ServerText, val head: Item) : GameEvent
+@SerialName("seen")
+data class EntitySeen(val id: Int, val entity: String, val name: ServerText, val head: Item? = null) : GameEvent
 
-/** An entity the client holds that may be a boss: its [id] on this client, its [entity] type and the [name] over it. */
+/** The server gave the entity [id] a new [name], as it does a mob on each hit to show its health. */
 @Serializable
-data class NearBoss(val id: Int, val entity: String, val name: ServerText)
+@SerialName("renamed")
+data class EntityRenamed(val id: Int, val name: ServerText) : GameEvent
 
-/**
- * Every entity the client holds that may be a boss: each ender dragon, and each named iron golem or mob whose name
- * starts with `☠`, which is how dragsim.co names the Endstone Protector and a slayer boss. Posted when one comes
- * into the client's view or leaves it, with each one's name as it was when it came, and only while a feature reads it.
- */
+/** The entity [id] left the client's view, died, or no longer matches what a feature reads. */
 @Serializable
-@SerialName("bosses")
-data class BossesNear(val bosses: List<NearBoss>) : GameEvent
+@SerialName("gone")
+data class EntityGone(val id: Int) : GameEvent
 
 /**
  * The player's own attack landed on a living [entity] that is not an armor stand, such as `minecraft:enderman`, as the

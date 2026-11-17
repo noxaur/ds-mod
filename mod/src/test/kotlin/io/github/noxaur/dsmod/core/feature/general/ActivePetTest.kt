@@ -9,7 +9,7 @@ import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.LeftServer
-import io.github.noxaur.dsmod.core.game.PetNear
+import io.github.noxaur.dsmod.core.game.EntitySeen
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.Sidebar
@@ -220,7 +220,7 @@ class ActivePetTest {
     @Test
     fun `the head of a pet of that name near the player is the icon until the menu shows one`() {
         val head = Item("minecraft:player_head", 1, skin = "floating")
-        post(pet(), PetNear(ServerText(ServerSpan("[Lvl 100] Black Cat")), head))
+        post(pet(), EntitySeen(7, "minecraft:armor_stand", ServerText(ServerSpan("[Lvl 100] Black Cat")), head))
         assertEquals(head, hud()?.icon)
         post(*menu(13 to card()))
         assertEquals("blackcat", hud()?.icon?.skin)

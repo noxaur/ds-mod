@@ -43,7 +43,6 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 object DsModClient : ClientModInitializer {
     private const val FLUSH_TICKS = 20 * 60
     private const val TAB_POLL_TICKS = 5
-    private const val PET_POLL_TICKS = 20
 
     private val log = LoggerFactory.getLogger("dsmod")
     private lateinit var file: ConfigFile
@@ -59,8 +58,7 @@ object DsModClient : ClientModInitializer {
     private lateinit var tabs: TabListPoller
     private lateinit var sidebars: SidebarPoller
     private lateinit var containers: ContainerPoller
-    private lateinit var pets: PetPoller
-    private lateinit var bosses: BossPoller
+    private lateinit var entities: EntityTracker
     private var ticks = 0
     private var onDragSim = false
 
@@ -143,8 +141,7 @@ object DsModClient : ClientModInitializer {
         tabs = TabListPoller(game)
         sidebars = SidebarPoller(game)
         containers = ContainerPoller(game)
-        pets = PetPoller(game)
-        bosses = BossPoller(game)
+        entities = EntityTracker(game)
         game.metrics.sinks += { snapshot ->
             snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }
         }
@@ -216,7 +213,7 @@ object DsModClient : ClientModInitializer {
             World.worldChanged()
             game.post(System.currentTimeMillis(), WorldChanged)
             tabs.forget()
-            bosses.forget()
+            entities.forget()
             sidebars.forget()
         }
         ClientChunkEvents.CHUNK_LOAD.register { _, chunk -> Packets.chunk(chunk) }
@@ -232,9 +229,7 @@ object DsModClient : ClientModInitializer {
                 game.metrics.time("sidebar-poll") { sidebars.poll(it) }
             }
             game.metrics.time("container-poll") { containers.poll(it) }
-            // A pet changes when the player swaps it, so once a second is soon enough.
-            if (ticks % PET_POLL_TICKS == 0) game.metrics.time("pet-poll") { pets.poll(it) }
-            game.metrics.time("boss-poll") { bosses.poll(it) }
+            game.metrics.time("entities") { entities.track(it) }
             Frames.tick(it)
             Packets.tick(it)
             game.tick(System.currentTimeMillis())

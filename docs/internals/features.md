@@ -70,7 +70,15 @@ Riftwalker's blink is the one cooldown the server shows nothing of, so it starts
 
 dragsim.co names no slayer boss's owner, on the mob or anywhere near it, so Boss Beacon and Boss Tracer tell the player's own from another's by time: the server tells only the owner `☠ SLAYER BOSS SPAWNING!`, and the first slayer boss to come into view within five seconds after it is theirs. In the capture the boss came 1.5 s after the line. Another player's boss that comes into view in those seconds would be taken for theirs, which the rule accepts, since nothing the client sees says otherwise.
 
-`BossesNear` carries each boss with its name as it came into view and is posted only when one comes or goes, so the features parse the name once. A boss's name changes with its health on each hit, and an event per hit would run every handler for nothing. Every zealot is named too, so `BossPoller` reads an entity's name again only when the server gave it a new one.
+## Entities reach a feature through one tracker and a table in `core`
+
+A poller per feature walked the client's entities once each, and each added its own event, its own branch in the redactor, the replay test and `cutFixture`, and its own rule for what it looked for, which no unit test could reach. So `EntityTracker` in `edge` is the one walk. It reports what the client holds as `EntitySeen`, `EntityRenamed` and `EntityGone`, `Game` keeps them in an `EntityTable`, and a feature reads its part of the table with a pure parser, as `Boss.parse` decides what a boss is. The capture writer records the three events once for every feature, and `cutFixture` keeps the entities a feature reads by applying that feature's filters to the same table.
+
+Walking every entity and converting every name would cost each tick whether a feature read them or not. So a feature declares an `EntityFilter` of types and a name prefix, and the tracker tests the type by identity before it reads a name, reads a name again only when the server sent a new one, and converts nothing an enabled feature does not match. While a capture records, every feature's filters apply, so that a fixture can be cut for any of them. With no reader on, the tracker returns at once. `PerfTest` caps it with 40 mobs renamed each tick, as hits rename them.
+
+Each feature hears only the entities its own filters match, and a rename that moves an entity across its filters reaches it as seen or gone. Live play then gives a feature exactly what its cut fixture gives it, though another feature with wider filters fills the shared table. A feature that comes on hears the entities already held, as it hears the tab list again.
+
+Positions stay out of `core`. They change every tick, and an event for each move would run the handlers for nothing, so a mark names its entity by id and `World` places it each frame.
 
 ## A pet's XP is read from the menu and moved by Combat XP
 

@@ -53,8 +53,10 @@ class CaptureTest : FabricClientGameTest {
         "use" to "Aspect of the Test",
         "death" to "Victim",
         "head" to "\"y\":",
-        "pet" to "Test Pet",
-        "bosses" to "☠ Test Horror I 3M/3M❤",
+        "seen" to "Test Pet",
+        "seen" to "☠ Test Horror I 3M/3M❤",
+        "renamed" to "☠ Test Horror I 2M/3M❤",
+        "gone" to "\"id\":",
         "hit" to "minecraft:husk",
         "unload" to "Leaver",
         "unload" to "Victim",
@@ -126,11 +128,15 @@ class CaptureTest : FabricClientGameTest {
                 """tellraw @a "§5✦ §dThe Egg has Spawned!"""",
             ).forEach(world.server::runCommand)
             context.waitTicks(20)
-            // One mob dies and one is carried far away, which the server reports as a removal without a death.
+            // One mob dies and one is carried far away, which the server reports as a removal without a death. The
+            // slayer boss is hit, which renames it.
             listOf(
                 "kill @e[name=Victim]",
                 "execute as @e[name=Leaver] run tp @s ~ ~ ~5000",
+                """execute as @e[type=zombie] run data modify entity @s CustomName set value "☠ Test Horror I 2M/3M❤"""",
             ).forEach(world.server::runCommand)
+            context.waitTicks(5)
+            world.server.runCommand("kill @e[type=zombie]")
             // A mob just ahead of the crosshair, for the left press to hit.
             world.server.runCommand("execute as @a at @s anchored eyes positioned ^ ^ ^2 run summon husk ~ ~-1 ~ {NoAI:1b,Silent:1b}")
             context.waitTicks(5)

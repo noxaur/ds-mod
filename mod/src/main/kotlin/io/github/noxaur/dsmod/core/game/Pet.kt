@@ -23,6 +23,19 @@ data class Pet(val name: String, val level: Int, val rarity: Role) {
 
         /** The name of the pet [plain] names, without its level, which goes up in play. */
         fun nameOf(plain: String) = LINE.matchEntire(plain.trim())?.groupValues?.get(2)
+
+        /** The pets that float beside players, for a feature's `readEntities`. [worn] reads each one. */
+        val STANDS = EntityFilter(setOf("minecraft:armor_stand"), "[Lvl ")
+
+        /**
+         * The name of the pet [seen] is and the head it wears, or null when it is none. dragsim.co floats each player's
+         * pet beside them as an armor stand named like `[Lvl 100] Black Cat` that wears the pet's head, so a pet of
+         * another player's may show one of the same name.
+         */
+        fun worn(seen: EntitySeen): Pair<String, Item>? {
+            val head = seen.head?.takeIf { it.id == "minecraft:player_head" } ?: return null
+            return nameOf(seen.name.plain)?.let { it to head }
+        }
     }
 }
 

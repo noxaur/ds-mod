@@ -2,11 +2,11 @@ package io.github.noxaur.dsmod.core.feature.general
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.game.ContainerState.Companion.INVENTORY
+import io.github.noxaur.dsmod.core.game.EntitySeen
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.Pet
 import io.github.noxaur.dsmod.core.game.PetCard
-import io.github.noxaur.dsmod.core.game.PetNear
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
@@ -69,7 +69,7 @@ enum class PetLook(private val label: String) {
  *
  * The armor comes from the player's own inventory, and the last seen is kept while another menu is open, since that
  * menu does not hold the armor. The pet comes from the sidebar's line `Pet: [Lvl 100] Ender Dragon`. Its icon is the
- * active pet's item in the Pets menu, whose tooltip names its held item, or else the head of the nearest pet whose
+ * active pet's item in the Pets menu, whose tooltip names its held item, or else the head of the last pet seen whose
  * name is the sidebar's: dragsim.co floats each pet beside its owner. Until one of those is seen, or with [petLook]
  * on Name, the pet is a line under the icons, as the sidebar writes it, with its held item once the menu showed it.
  */
@@ -129,9 +129,10 @@ class EquipmentDisplay(config: DsModConfig) : InventoryReader(config, "equipment
             if (value != null && pet == null && value != NONE) unparsed(line.plain)
             block = build()
         }
-        on<PetNear> { event, _ ->
-            val name = Pet.nameOf(event.name.plain) ?: return@on
-            heads[name] = event.head
+        readEntities(Pet.STANDS)
+        on<EntitySeen> { seen, _ ->
+            val (name, head) = Pet.worn(seen) ?: return@on
+            heads[name] = head
             block = build()
         }
     }

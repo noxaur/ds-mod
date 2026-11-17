@@ -18,6 +18,8 @@ import io.github.noxaur.dsmod.core.config.Switch
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerState
+import io.github.noxaur.dsmod.core.game.EntityFilter
+import io.github.noxaur.dsmod.core.game.EntitySeen
 import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Metrics
@@ -61,6 +63,7 @@ import kotlinx.serialization.serializer
  * - Tell the player something once, and read a setting besides the switch: `RareDropAlert`.
  * - Track a rate, and follow the player into and out of its area: `ZealotTracker`.
  * - Mark a place in the world, and read settings of a few kinds: `ProtectorSpawnBeam`.
+ * - Read the entities the client holds, and mark them in the world: `BossMarks`.
  * - Act on a key the player binds, or change the camera: `FreeLook` and `Camera`, with `Cameras` in `edge` and the
  *   rules in `core/camera`.
  * - Handle the player's own input on a vanilla screen, reading nothing from the server: `CopyChat`, with `CopyChats`
@@ -208,6 +211,28 @@ abstract class Feature(
 
     /** Declares rows with the kit's own `Rows` calls, for a row over a [Bind] of its own, such as one that spans several slots. */
     protected fun rows(declare: Rows.() -> Unit) = settings.declare()
+
+    /** The entities this feature reads, as [readEntities] declared them. */
+    var entityFilters: List<EntityFilter> = emptyList()
+        private set
+
+    internal val heldEntities = LinkedHashMap<Int, EntitySeen>()
+
+    /**
+     * The entities the client holds now that match this feature's [entityFilters], oldest first, each as its
+     * [EntitySeen] with its latest name. A handler of an entity event sees them as they were before that event.
+     */
+    protected val entities: Collection<EntitySeen> get() = heldEntities.values
+
+    /**
+     * Reads the entities that match any of [filters], into [entities]. The edge's tracker walks the client's
+     * entities only while a feature that reads them is on, and applies these before it reads a name, so keep each
+     * one narrow. A handler of `EntitySeen`, `EntityRenamed` or `EntityGone` hears only the entities they match.
+     */
+    protected fun readEntities(vararg filters: EntityFilter) {
+        check(entityFilters.isEmpty()) { "$id already reads entities" }
+        entityFilters = filters.toList()
+    }
 
     /** Handles every [E] the server sends. `now` is when it arrived, in epoch milliseconds. */
     protected inline fun <reified E : GameEvent> on(noinline handler: (event: E, now: Long) -> Unit) = on(E::class.java, handler)

@@ -1,23 +1,23 @@
 +   0.0s > ☠ The Endstone Protector has emerged from the ground! (Tier 5/5)
 +   0.0s > Endstone Protector has spawned.
-+   0.2s > (bosses near) 36339 minecraft:iron_golem [Lv100] Endstone Protector 10M/10M
++   0.2s > (seen) 36339 minecraft:iron_golem [Lv100] Endstone Protector 10M/10M
              (in the world) BAD beam "Endstone Protector" on entity 36339
 +   4.8s > ☠ The Young Dragon has spawned!
-+   5.0s > (bosses near) 36339 minecraft:iron_golem [Lv100] Endstone Protector 10M/10M; 36652 minecraft:ender_dragon [Lv100]  9M/9M
++   5.0s > (seen) 36652 minecraft:ender_dragon [Lv100]  9M/9M
              (in the world) BAD beam "Endstone Protector" on entity 36339
              (in the world) BAD beam "Dragon" on entity 36652
 +   9.0s > The Endstone Protector has been defeated!
-+   9.0s > (bosses near) 36652 minecraft:ender_dragon [Lv100]  9M/9M
++   9.0s > (gone) 36339
              (in the world) BAD beam "Dragon" on entity 36652
-+  12.7s > (bosses near) 36652 minecraft:ender_dragon [Lv100]  9M/9M; 37189 minecraft:enderman ☠ Voidgloom Seraph IV 2.5B/2.5B❤ 100 Hits
++  12.7s > (seen) 37189 minecraft:enderman ☠ Voidgloom Seraph IV 2.5B/2.5B❤ 100 Hits
 +  14.8s > [BOSS] Young Dragon: You are weak young padowan, you will never kill me. FIREBALL!!
-+  28.3s > (bosses near) 37189 minecraft:enderman ☠ Voidgloom Seraph IV 2.5B/2.5B❤ 100 Hits
-+  28.3s > (bosses near) none
++  28.3s > (gone) 36652
++  28.3s > (gone) 37189
              (no marks in the world)
 +  28.7s > (the world changed)
 +  40.3s > ☠ SLAYER BOSS SPAWNING!
-+  41.9s > (bosses near) 3471 minecraft:zombie ☠ Revenant Horror I 1.5M/3.8M❤
++  41.9s > (seen) 3471 minecraft:zombie ☠ Revenant Horror I 1.5M/3.8M❤
              (in the world) BAD beam "Revenant Horror I" on entity 3471
 +  42.1s > ☠ NICE! SLAYER BOSS SLAIN!
-+  42.1s > (bosses near) none
++  42.1s > (gone) 3471
              (no marks in the world)

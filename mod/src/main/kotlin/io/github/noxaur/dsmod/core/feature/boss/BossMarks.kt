@@ -6,12 +6,12 @@ import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.Boss
 import io.github.noxaur.dsmod.core.game.BossKind
-import io.github.noxaur.dsmod.core.game.BossesNear
+import io.github.noxaur.dsmod.core.game.EntitySeen
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.world.Mark
 
 /**
- * A mark on each boss the client holds that the player picks, in red, as the server writes a boss's name. The server
+ * A mark on each boss the client holds that the player picks, in red, as `Boss.parse` reads each entity. The server
  * names no slayer boss's owner, and tells only the owner `☠ SLAYER BOSS SPAWNING!`, so the first slayer boss to come
  * into view within [OWN_MILLIS] of that line is the player's. In `slayer-boss` it came 1.5s after the line.
  *
@@ -23,32 +23,26 @@ abstract class BossMarks(config: DsModConfig, id: String, description: String, k
     val protector = switch("${key}Protector", "Endstone Protector", "$verb the Endstone Protector.", default = true)
     val yourSlayer = switch("${key}YourSlayer", "Your Slayer Boss", "$verb the slayer boss you spawned.", default = true)
     val otherSlayers = switch("${key}OtherSlayers", "Other Slayer Bosses", "$verb slayer bosses other players spawned.", default = false)
-    private var bosses = emptyList<Boss>()
     private var spawnedAt: Long? = null
     private var own: Int? = null
 
     init {
-        on<WorldChanged> { _, _ ->
-            bosses = emptyList()
-            own = null
-        }
+        readEntities(*Boss.FILTERS.toTypedArray())
+        on<WorldChanged> { _, _ -> own = null }
         line("☠ SLAYER BOSS SPAWNING!") { now -> spawnedAt = now }
-        on<BossesNear> { event, now ->
-            val before = bosses.mapTo(HashSet()) { it.id }
-            bosses = event.bosses.mapNotNull { near -> Boss.parse(near) ?: null.also { unparsed(near.name.plain) } }
-            val spawned = spawnedAt?.takeIf { now - it <= OWN_MILLIS }
-            val mine = spawned?.let { bosses.firstOrNull { it.kind == BossKind.SLAYER && it.id !in before } }
-            if (mine != null) {
-                own = mine.id
-                spawnedAt = null
-            }
+        on<EntitySeen> { seen, now ->
+            if (entities.any { it.id == seen.id }) return@on
+            val boss = Boss.parse(seen) ?: return@on unparsed(seen.name.plain)
+            if (boss.kind != BossKind.SLAYER || spawnedAt?.let { now - it <= OWN_MILLIS } != true) return@on
+            own = boss.id
+            spawnedAt = null
         }
     }
 
     /** The mark this feature draws on [boss]. */
     protected abstract fun mark(boss: Boss): Mark
 
-    override fun marks(now: Long) = bosses.filter { boss ->
+    override fun marks(now: Long) = entities.mapNotNull(Boss::parse).filter { boss ->
         when (boss.kind) {
             BossKind.DRAGON -> dragons.value
             BossKind.PROTECTOR -> protector.value

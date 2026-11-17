@@ -7,14 +7,14 @@ import io.github.noxaur.dsmod.core.capture.captureLine
 import io.github.noxaur.dsmod.core.capture.readCaptureLine
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.game.Area
-import io.github.noxaur.dsmod.core.game.BossesNear
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState.Companion.INVENTORY
+import io.github.noxaur.dsmod.core.game.EntityFilter
+import io.github.noxaur.dsmod.core.game.EntityTable
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.Item
-import io.github.noxaur.dsmod.core.game.NearBoss
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SidebarState
 import io.github.noxaur.dsmod.core.game.SlotChanged
@@ -22,6 +22,7 @@ import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.TabState
 import io.github.noxaur.dsmod.core.game.WorldChanged
+import io.github.noxaur.dsmod.core.game.view
 import io.github.noxaur.dsmod.edge.toText
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -44,6 +45,8 @@ import kotlin.io.path.useLines
  * inside the window is kept only when one of the [info] rows or the area's row changed, and every one is kept when
  * `tablist` is a type and there are no [info] rows. A sidebar inside the window is kept when `sidebar` is a type, and
  * otherwise only when its place changed. A system line is kept when it matches [system], or always without one.
+ * With [entities], the feature's filters, the entity events are kept as the feature hears them, starting with each
+ * entity it reads that the client held at the window's start, so the fixture holds only the entities it reads.
  * Returns the number of lines written and of players renamed.
  */
 fun cutFixture(
@@ -54,12 +57,14 @@ fun cutFixture(
     area: Area,
     info: List<String> = emptyList(),
     system: Regex? = null,
+    entities: List<EntityFilter> = emptyList(),
 ): Pair<Int, Int> {
     val kept = types + buildSet {
         if ("container" in types) add("slot")
         if (area != Area.ANYWHERE) add("world")
         if (area.key != null) add("tablist")
         if (area.place != null) add("sidebar")
+        if (entities.isNotEmpty()) addAll(listOf("seen", "renamed", "gone", "world"))
     }
     val rows = if ("tablist" in types) info + listOfNotNull(area.key) else listOfNotNull(area.key)
     val everyTab = "tablist" in types && info.isEmpty()
@@ -76,24 +81,23 @@ fun cutFixture(
     var inventory = emptyMap<Int, Item>()
     var container: ContainerOpened? = null
     var start: Map<Int, Item>? = null
+    val held = EntityTable()
+    var heldAtStart = emptyList<GameEvent>()
     fun begin() {
         container = open?.copy(kept = false)
         start = slots.toMap()
+        heldAtStart = held.values.filter { seen -> entities.any { it.matches(seen) } }
     }
     val events = ArrayList<Captured>()
     // A capture from before `floating` was an event has its text displays only in `entities`.
     val legacy = if ("floating" in types && capture.useLines { lines -> lines.none { "\"type\":\"floating\"" in it } }) HashMap<String, String>() else null
-    // A capture from before `bosses` was an event has its bosses only in `entities` and `unload`.
-    val held = if ("bosses" in types && capture.useLines { lines -> lines.none { "\"type\":\"bosses\"" in it } }) LinkedHashMap<Int, NearBoss>() else null
     capture.useLines { lines ->
         for (line in lines.filter(String::isNotBlank)) {
             val time = line.substringAfter("\"t\":").takeWhile(Char::isDigit).toLong()
             if (origin < 0) origin = time
             val type = line.substringAfter("\"type\":\"").substringBefore('"')
             val read = when {
-                type == "entities" && (legacy != null || held != null) ->
-                    legacy?.let { floating(line, it) }.orEmpty() + held?.let { bosses(line, it) }.orEmpty()
-                type == "unload" && held != null -> bosses(line, held)
+                type == "entities" && legacy != null -> floating(line, legacy)
                 type in kept -> listOf(readCaptureLine(line)!!)
                 else -> continue
             }
@@ -111,8 +115,13 @@ fun cutFixture(
                     if (event.kept) slots.putAll(inventory)
                 }
                 if (event is SlotChanged) if (event.item == null) slots.remove(event.slot) else slots[event.slot] = event.item!!
+                if (held.apply(event)) {
+                    if (!before) entities.view(held.before, held.after, event)?.let { events += Captured(time, it, tick) }
+                    continue
+                }
                 // `Game` forgets the tab list and the sidebar with the world, so the next world's rows must be written again.
                 if (event == WorldChanged) {
+                    held.clear()
                     if (before) {
                         tab = null
                         sidebar = null
@@ -143,7 +152,7 @@ fun cutFixture(
         }
     }
     if (start == null) begin()
-    val state = listOfNotNull(tab, sidebar, container) + start!!.map { (slot, item) -> SlotChanged(slot, item) }
+    val state = listOfNotNull(tab, sidebar, container) + start!!.map { (slot, item) -> SlotChanged(slot, item) } + heldAtStart
     // The carried state was posted on earlier ticks the window does not keep, so it has no tick of its own.
     val lines = (state.map { Captured(origin + (seconds.start * 1000).toLong(), it) } + events)
         .map { captureLine(it.time, redactor.redact(it.event), it.tick) }
@@ -161,21 +170,24 @@ fun cutFixture(
 
 /**
  * `cutFixture <capture> <feature id> <name> <from>-<to> [--types a,b] [--info Key,Key] [--system regex]`
- * writes `src/test/resources/features/<feature id>/<name>.jsonl`, keeping the rows that tell the feature's area. The
- * window is in seconds from the capture's first line, and `--types` defaults to `system,tablist`.
+ * writes `src/test/resources/features/<feature id>/<name>.jsonl`, keeping the rows that tell the feature's area and
+ * the entities it reads. The window is in seconds from the capture's first line, and `--types` defaults to
+ * `system,tablist`.
  */
 fun main(args: Array<String>) {
     val (capture, feature, name, window) = args
     val options = args.drop(4).chunked(2).associate { (flag, value) -> flag to value }
     val (from, to) = window.split('-').map(String::toDouble)
+    val found = SettingsTree().features.singleOrNull { it.id == feature } ?: error("No feature has the id $feature.")
     val (written, players) = cutFixture(
         Path.of(capture),
         Path.of("src/test/resources/features/$feature/$name.jsonl"),
         from..to,
         (options["--types"] ?: "system,tablist").split(',').toSet(),
-        SettingsTree().features.singleOrNull { it.id == feature }?.area ?: error("No feature has the id $feature."),
+        found.area,
         options["--info"]?.split(',').orEmpty(),
         options["--system"]?.let(::Regex),
+        found.entityFilters,
     )
     println("Wrote $written lines for $feature/$name, with $players players renamed.")
 }
@@ -196,37 +208,4 @@ private fun floating(line: String, shown: MutableMap<String, String>): List<Capt
         if (text.isEmpty() || shown.put(id, text) == text) return@mapNotNull null
         Captured(time, FloatingText(Component.literal(text).toText()), tick)
     }
-}
-
-/**
- * A [BossesNear] each time an older capture's `entities` or `unload` line changes which bosses the client holds, by
- * the rule `BossPoller` follows, and [held] is each one's entity as it came. The line is the recorder's sample, so a
- * boss comes up to a few ticks after the client had it.
- */
-private fun bosses(line: String, held: MutableMap<Int, NearBoss>): List<Captured> {
-    val json = Json.parseToJsonElement(line).jsonObject
-    val data = json.getValue("data").jsonObject
-    val before = held.keys.toList()
-    if (json.getValue("type").jsonPrimitive.content == "unload") {
-        held.remove(data.getValue("id").jsonPrimitive.int)
-    } else {
-        val entries = data.getValue("entries").jsonObject
-        if (data["full"]?.jsonPrimitive?.content == "true") held.keys.retainAll(entries.keys.map(String::toInt).toSet())
-        for ((key, entry) in entries) {
-            val id = key.toInt()
-            if (entry !is JsonObject) {
-                held.remove(id)
-                continue
-            }
-            if (id in held) continue
-            val entity = entry["entity"]?.jsonPrimitive?.content ?: continue
-            val name = Component.literal(entry["name"]?.jsonObject?.get("text")?.jsonPrimitive?.content.orEmpty()).toText()
-            val named = name.plain.isNotEmpty()
-            if (entity == "minecraft:ender_dragon" || named && (entity == "minecraft:iron_golem" || name.plain.startsWith("☠"))) {
-                held[id] = NearBoss(id, entity, name)
-            }
-        }
-    }
-    if (held.keys.toList() == before) return emptyList()
-    return listOf(Captured(json.getValue("t").jsonPrimitive.long, BossesNear(held.values.toList()), json["tick"]?.jsonPrimitive?.int))
 }

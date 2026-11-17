@@ -9,12 +9,12 @@ import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.CombatXp
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.EntityDied
+import io.github.noxaur.dsmod.core.game.EntitySeen
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.Pet
 import io.github.noxaur.dsmod.core.game.PetCard
 import io.github.noxaur.dsmod.core.game.PetItem
-import io.github.noxaur.dsmod.core.game.PetNear
 import io.github.noxaur.dsmod.core.game.PetProgress
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
@@ -102,7 +102,7 @@ class ActivePet(config: DsModConfig) :
     }
 
     // This session only: the XP each pet had at the level it was read at, its item in the Pets menu, whose tooltip the
-    // HUD's icon shows, the head of each pet seen near the player, the open Pets menu's slot of the active pet, the
+    // HUD's icon shows, the head of each pet the client held, the open Pets menu's slot of the active pet, the
     // current pet's pace, and when the last mob died.
     private val progress = HashMap<String, Pair<Int, PetProgress>>()
     private val cards = HashMap<String, Item>()
@@ -141,9 +141,10 @@ class ActivePet(config: DsModConfig) :
             }
             if (card != null) read(card, event.slot, now)
         }
-        on<PetNear> { event, _ ->
-            val name = Pet.nameOf(event.name.plain) ?: return@on
-            if (heads.put(name, event.head) != event.head && name == pet?.name) block = null
+        readEntities(Pet.STANDS)
+        on<EntitySeen> { seen, _ ->
+            val (name, head) = Pet.worn(seen) ?: return@on
+            if (heads.put(name, head) != head && name == pet?.name) block = null
         }
         on<EntityDied> { _, now -> died = now }
         on<ActionBar> { bar, now ->

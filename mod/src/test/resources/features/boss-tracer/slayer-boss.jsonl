@@ -1,6 +1,6 @@
 {"t":1794906250163,"tick":1524,"type":"system","data":{"text":{"plain":"  SLAYER QUEST STARTED!","spans":[{"text":"  "},{"text":"SLAYER QUEST STARTED!","color":"#AA00AA","bold":true}]}}}
 {"t":1794906256399,"tick":1649,"type":"system","data":{"text":{"plain":"☠ SLAYER BOSS SPAWNING!","spans":[{"text":"☠ ","color":"#AA0000"},{"text":"SLAYER BOSS SPAWNING!","color":"#AA0000","bold":true}]}}}
-{"t":1794906257928,"tick":1679,"type":"bosses","data":{"bosses":[{"id":3471,"entity":"minecraft:zombie","name":{"plain":"☠ Revenant Horror I 1.5M/3.8M❤","spans":[{"text":"☠ ","color":"#FF5555"},{"text":"Revenant Horror I 1.5M","color":"#55FF55"},{"text":"/","color":"#FFFFFF"},{"text":"3.8M","color":"#55FF55"},{"text":"❤","color":"#FF5555"}]}}]}}
+{"t":1794906257928,"tick":1679,"type":"seen","data":{"id":3471,"entity":"minecraft:zombie","name":{"plain":"☠ Revenant Horror I 1.5M/3.8M❤","spans":[{"text":"☠ ","color":"#FF5555"},{"text":"Revenant Horror I 1.5M","color":"#55FF55"},{"text":"/","color":"#FFFFFF"},{"text":"3.8M","color":"#55FF55"},{"text":"❤","color":"#FF5555"}]}}}
 {"t":1794906258111,"tick":1683,"type":"system","data":{"text":{"plain":"☠ NICE! SLAYER BOSS SLAIN!","spans":[{"text":"☠ ","color":"#FFAA00"},{"text":"NICE! SLAYER BOSS SLAIN!","color":"#FFAA00","bold":true}]}}}
 {"t":1794906258112,"tick":1683,"type":"system","data":{"text":{"plain":"  SLAYER QUEST COMPLETE!","spans":[{"text":"  "},{"text":"SLAYER QUEST COMPLETE!","color":"#55FF55","bold":true}]}}}
-{"t":1794906258112,"tick":1683,"type":"bosses","data":{"bosses":[]}}
+{"t":1794906258112,"tick":1683,"type":"gone","data":{"id":3471}}

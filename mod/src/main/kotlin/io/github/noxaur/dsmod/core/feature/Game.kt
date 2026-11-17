@@ -6,6 +6,11 @@ import io.github.noxaur.dsmod.core.contribute.Places
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState
+import io.github.noxaur.dsmod.core.game.EntityFilter
+import io.github.noxaur.dsmod.core.game.EntityTable
+import io.github.noxaur.dsmod.core.game.EntityGone
+import io.github.noxaur.dsmod.core.game.EntityRenamed
+import io.github.noxaur.dsmod.core.game.EntitySeen
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.InfoRows
 import io.github.noxaur.dsmod.core.game.Metrics
@@ -16,6 +21,7 @@ import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.TabState
 import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.WorldChanged
+import io.github.noxaur.dsmod.core.game.view
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.Text
 import io.github.noxaur.dsmod.core.text.text
@@ -31,6 +37,8 @@ data class Hidden(val told: Set<String> = emptySet())
  * changed [Readout] to the shared layers, so a feature's own code never runs inside the render loop. A
  * readout is rebuilt after an event its feature could see, and otherwise a few times a second for its clocks.
  * A feature locked to an [io.github.noxaur.dsmod.core.game.Area] gets its events and shows its readout only there.
+ * The entity events keep a table of what the client holds, and each feature hears and holds only the entities its
+ * filters match.
  * While [active] is false every feature is treated as switched off, which is how the edge keeps the mod to dragsim.co.
  */
 class Game(private val features: List<Feature>, val metrics: Metrics = Metrics(), private val active: () -> Boolean = { true }) {
@@ -86,6 +94,11 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     /** The open container, as of the last event the edge posted. */
     val container = ContainerState()
 
+    private val held = EntityTable()
+    private val readers = features.filter { it.entityFilters.isNotEmpty() }.also { check(it.size <= Long.SIZE_BITS) }
+    private var reading = 0L
+    private var filters = emptyList<EntityFilter>()
+
     init {
         features.forEach {
             it.metrics = metrics
@@ -113,6 +126,23 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
      */
     fun reaches(type: Class<out GameEvent>) = active() && features.any { it.enabled && type in it.handlers && it.area.holds(tab, sidebar) }
 
+    /**
+     * The filters of the entities a feature reads now, for the edge's tracker: each one's that is on, and every one's
+     * while [tap] records, so that a capture can be cut for any of them. The same list until one of them changes, and
+     * empty while nothing reads entities.
+     */
+    fun entityFilters(): List<EntityFilter> {
+        val all = tap != null
+        val on = all || active()
+        var mask = 0L
+        for (i in readers.indices) if (all || on && readers[i].enabled) mask = mask or (1L shl i)
+        if (mask != reading) {
+            reading = mask
+            filters = readers.filterIndexed { i, _ -> mask and (1L shl i) != 0L }.flatMap { it.entityFilters }.distinct()
+        }
+        return filters
+    }
+
     /** The text a feature put in place of the [io.github.noxaur.dsmod.core.game.FloatingText] just posted, or null to keep the server's. */
     var replaced: Text? = null
         private set
@@ -122,6 +152,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         tap?.invoke(time, event)
         var shown = true
         replaced = null
+        val entity = held.apply(event)
         // Any feature may read the shared state, so a change to it makes every readout stale.
         val shared = when (event) {
             is TabList -> true.also {
@@ -147,6 +178,9 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
                 lastSidebar = null
                 tab.update(emptyList())
                 sidebar.update(Sidebar())
+                // A new world numbers its entities again.
+                held.clear()
+                for (feature in readers) feature.heldEntities.clear()
             }
             else -> false
         }
@@ -159,9 +193,16 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             }
             // Outside its area a feature still follows the tab list, the sidebar, the world and the server, which is how it knows it left.
             val reaches = event is TabList || event is Sidebar || event is WorldChanged || event is LeftServer || feature.area.holds(tab, sidebar)
-            val handler = if (reaches) feature.handlers[event.javaClass] else null
-            if (handler != null) metrics.time(feature.id) { handler(event, time) }
-            if (handler != null || shared) readouts[i].stale = true
+            val heard = if (entity) feature.entityFilters.view(held.before, held.after, event) ?: continue else event
+            val handler = if (reaches) feature.handlers[heard.javaClass] else null
+            if (handler != null) metrics.time(feature.id) { handler(heard, time) }
+            when (heard) {
+                is EntitySeen -> feature.heldEntities[heard.id] = heard
+                is EntityRenamed -> feature.heldEntities[heard.id] = held.after!!
+                is EntityGone -> feature.heldEntities.remove(heard.id)
+                else -> Unit
+            }
+            if (handler != null || shared || entity) readouts[i].stale = true
             feature.replacement?.let {
                 feature.replacement = null
                 replaced = it
@@ -199,6 +240,12 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
                 val missed = if (readout.on) listOfNotNull(LeftServer.takeIf { readout.missedLeave }, lastTab, lastSidebar) else listOf(WorldChanged)
                 if (readout.on) readout.missedLeave = false
                 for (event in missed) feature.handlers[event.javaClass]?.let { metrics.time(feature.id) { it(event, time) } }
+                // It hears the entities it reads that the client already holds, as it would have when they came.
+                if (!readout.on) feature.heldEntities.clear() else if (feature.entityFilters.isNotEmpty()) for (seen in held.values) {
+                    if (feature.entityFilters.none { it.matches(seen) }) continue
+                    feature.handlers[EntitySeen::class.java]?.let { metrics.time(feature.id) { it(seen, time) } }
+                    feature.heldEntities[seen.id] = seen
+                }
             }
             if (!readout.stale && enabled && time - readout.refreshedAt in 0 until REFRESH_MILLIS) continue
             readout.stale = !enabled

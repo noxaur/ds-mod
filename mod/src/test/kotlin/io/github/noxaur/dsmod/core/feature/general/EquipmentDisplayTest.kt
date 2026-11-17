@@ -6,7 +6,7 @@ import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.LeftServer
-import io.github.noxaur.dsmod.core.game.PetNear
+import io.github.noxaur.dsmod.core.game.EntitySeen
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.Sidebar
@@ -46,7 +46,7 @@ class EquipmentDisplayTest {
     private fun pet(name: String = "Ender Dragon", rgb: Int? = Role.EPIC.rgb) =
         sidebar(ServerText(ServerSpan("Pet: ", 0xFFFFFF), ServerSpan("[Lvl 100] ", 0xAAAAAA), ServerSpan(name, rgb)))
 
-    private fun near(name: String) = PetNear(ServerText(ServerSpan(name)), head)
+    private fun near(name: String, id: Int = 7, head: Item = this.head) = EntitySeen(id, "minecraft:armor_stand", ServerText(ServerSpan(name)), head)
 
     /** The Pets menu with [active] marked as dragsim.co marks the pet that is out, holding [held]. */
     private fun petsMenu(active: String, held: String) = arrayOf<GameEvent>(
@@ -144,7 +144,7 @@ class EquipmentDisplayTest {
     @Test
     fun `a new pet's head seen before the sidebar names it still joins the row`() {
         val tiger = Item("minecraft:player_head", 1, skin = "tiger")
-        post(pet(), near("[Lvl 100] Ender Dragon"), PetNear(ServerText(ServerSpan("[Lvl 100] Tiger")), tiger))
+        post(pet(), near("[Lvl 100] Ender Dragon"), near("[Lvl 100] Tiger", 8, tiger))
         post(pet(name = "Tiger"))
         assertEquals(listOf(listOf(tiger)), rows().orEmpty().map { (it as List<*>).filterNotNull() })
     }
