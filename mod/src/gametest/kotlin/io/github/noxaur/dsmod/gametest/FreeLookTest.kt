@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.camera.KeyMode
+import io.github.noxaur.dsmod.core.feature.general.FreeLook
 import io.github.noxaur.dsmod.edge.Cameras
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
@@ -16,7 +17,7 @@ import org.lwjgl.glfw.GLFW
  */
 class FreeLookTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
-        val settings = DsModClient.settings.general
+        val freeLook = DsModClient.feature<FreeLook>()
         val key = GLFW.GLFW_KEY_LEFT_ALT
 
         fun head() = context.computeOnClient<Pair<Float, Float>, Nothing> { it.player!!.yRot to it.player!!.xRot }
@@ -68,7 +69,7 @@ class FreeLookTest : FabricClientGameTest {
                 context.input.releaseKey(key)
                 context.waitTicks(3)
 
-                settings.freeLookMode = KeyMode.TOGGLE
+                freeLook.mode.value = KeyMode.TOGGLE
                 context.input.pressKey(key)
                 context.waitTicks(5)
                 check(Cameras.looking) { "A press in toggle mode did not start Free Look" }
@@ -77,7 +78,7 @@ class FreeLookTest : FabricClientGameTest {
                 context.input.pressKey(key)
                 context.waitTicks(5)
                 check(!Cameras.looking && view() == CameraType.FIRST_PERSON) { "A second press left looking ${Cameras.looking} in ${view()}" }
-                settings.freeLookMode = KeyMode.HOLD
+                freeLook.mode.value = KeyMode.HOLD
 
                 // A key typed into a screen is not a press.
                 context.runOnClient<Nothing> { it.gui.setScreen(ChatScreen("", false)) }
@@ -89,7 +90,7 @@ class FreeLookTest : FabricClientGameTest {
                 context.runOnClient<Nothing> { it.gui.setScreen(null) }
                 context.waitTicks(3)
 
-                settings.freeLook = false
+                freeLook.enabled = false
                 context.input.holdKey(key)
                 context.waitTicks(3)
                 check(!Cameras.looking && view() == CameraType.FIRST_PERSON) { "The key works with Free Look off" }
@@ -97,8 +98,8 @@ class FreeLookTest : FabricClientGameTest {
                 context.waitTicks(3)
             } finally {
                 context.input.releaseKey(key)
-                settings.freeLook = true
-                settings.freeLookMode = KeyMode.HOLD
+                freeLook.enabled = true
+                freeLook.mode.value = KeyMode.HOLD
                 context.runOnClient<Nothing> { it.options.cameraType = CameraType.FIRST_PERSON }
             }
         }

@@ -1,8 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.general
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Item
@@ -18,8 +17,9 @@ import kotlin.test.assertNull
 import kotlin.test.assertSame
 
 class InventoryHudTest {
-    private val config = DsModConfig().apply { general.inventoryHud = true }
-    private val game = Game(features(config))
+    private val tree = SettingsTree()
+    private val feature = tree.feature<InventoryHud>().also { it.enabled = true }
+    private val game = Game(tree.features)
     private var time = 0L
 
     private val sword = Item("minecraft:golden_sword", 1)
@@ -53,7 +53,7 @@ class InventoryHudTest {
 
     @Test
     fun `the hotbar sits apart from the rows beside it, in the order the player dragged them`() {
-        config.general.inventoryRows = mutableListOf(InventoryRow.HOTBAR, InventoryRow.TOP, InventoryRow.BOTTOM)
+        feature.shownRows.value = listOf(InventoryRow.HOTBAR, InventoryRow.TOP, InventoryRow.BOTTOM)
         post(*inventory(9 to eyes, 36 to sword))
         assertEquals(listOf(row(0 to sword), row(0 to eyes), row()), rows()?.map { it.items })
         assertEquals(listOf(false, true, false), rows()?.map { it.apart })
@@ -73,7 +73,7 @@ class InventoryHudTest {
     fun `the armor and the offhand show their own slots, each apart from the rows beside it`() {
         val helmet = Item("minecraft:leather_helmet", 1)
         val shield = Item("minecraft:shield", 1)
-        config.general.inventoryRows = mutableListOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.ARMOR, InventoryRow.OFFHAND)
+        feature.shownRows.value = listOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.ARMOR, InventoryRow.OFFHAND)
         post(*inventory(5 to helmet, 9 to eyes, 45 to shield))
         assertEquals(listOf(row(0 to eyes), row(), listOf(helmet, null, null, null), listOf(shield)), rows()?.map { it.items })
         assertEquals(listOf(false, false, true, true), rows()?.map { it.apart })
@@ -86,9 +86,9 @@ class InventoryHudTest {
         assertEquals(false, hud()?.columns)
         assertEquals(1f, hud()?.opacity)
         assertEquals(false, hud()?.pops)
-        config.general.inventoryLayout = InventoryLayout.COLUMNS
-        config.general.inventoryOpacity = 40f
-        config.general.inventoryPickup = true
+        feature.layout.value = InventoryLayout.COLUMNS
+        feature.opacity.value = 40f
+        feature.pickup.value = true
         post()
         assertEquals(true, hud()?.columns)
         assertEquals(0.4f, hud()?.opacity)
@@ -99,7 +99,7 @@ class InventoryHudTest {
     fun `nothing shows while every slot picked is empty`() {
         post(*inventory(36 to sword))
         assertNull(hud())
-        config.general.inventoryRows = mutableListOf(InventoryRow.HOTBAR)
+        feature.shownRows.value = listOf(InventoryRow.HOTBAR)
         post()
         assertEquals(listOf(row(0 to sword)), rows()?.map { it.items })
     }
@@ -117,8 +117,8 @@ class InventoryHudTest {
         post(*inventory(9 to eyes))
         assertEquals(HudLook.INVENTORY, hud()?.look)
         assertEquals(HudDock.FREE, hud()?.dock)
-        config.general.inventoryLook = InventoryLook.PLATE
-        config.general.inventoryPlacement = HudDock.RIGHT_OF_HOTBAR
+        feature.look.value = InventoryLook.PLATE
+        feature.placement.value = HudDock.RIGHT_OF_HOTBAR
         post()
         assertEquals(HudLook.PLATE, hud()?.look)
         assertEquals(HudDock.RIGHT_OF_HOTBAR, hud()?.dock)
@@ -126,7 +126,7 @@ class InventoryHudTest {
 
     @Test
     fun `each row names its first inventory slot, so the HUD can mark it, and the grid steps aside for menus`() {
-        config.general.inventoryRows = mutableListOf(InventoryRow.BOTTOM, InventoryRow.HOTBAR)
+        feature.shownRows.value = listOf(InventoryRow.BOTTOM, InventoryRow.HOTBAR)
         post(*inventory(27 to arrow, 36 to sword))
         assertEquals(listOf(27, 36), rows()?.map { it.slot })
         assertEquals(false, hud()?.overMenus)

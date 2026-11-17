@@ -111,7 +111,7 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
             if (readout.hud == null && block != null) standIns += id else standIns -= id
             // A block that stands in follows the ones with something to show, so those stay where they were.
             val order = if (readout.hud == null) handed.size + i else i
-            if (block == null) Hud.hide(id) else Hud.show(id, group(id, feature.placement?.get() ?: block.dock), block, order = order)
+            if (block == null) Hud.hide(id) else Hud.show(id, group(id, feature.placement?.value ?: block.dock), block, order = order)
             if (readout.slots.isEmpty()) Slots.clear(id) else Slots.mark(id, readout.slots)
             if (readout.marks.isEmpty()) World.hide(id) else World.show(id, readout.marks)
         }
@@ -139,12 +139,12 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
 
     /** Docks the block of feature [id] at [dock] beside the hotbar, as its placement setting does. */
     fun dock(id: String, dock: HudDock) {
-        feature(id).placement?.set(dock)
+        feature(id).placement?.value = dock
         repaint()
     }
 
     /** Where the block of feature [id] is docked, or [HudDock.FREE]. */
-    fun dockOf(id: String): HudDock = feature(id).placement?.get() ?: HudDock.FREE
+    fun dockOf(id: String): HudDock = feature(id).placement?.value ?: HudDock.FREE
 
     /** The boxes the block of feature [id] would fill in each dock spot, or none for a feature that does not dock. */
     fun dockSpots(id: String): Map<HudDock, HudBox> {
@@ -170,7 +170,7 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
     /** Puts [id] back at a [position] it had, or in the stack for null, and in the [dock] it had. */
     fun restore(id: String, position: Position?, dock: HudDock) {
         if (position == null) settings.positions.remove(id) else settings.positions[id] = position
-        feature(id).placement?.set(dock)
+        feature(id).placement?.value = dock
         repaint()
     }
 
@@ -193,7 +193,7 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
 
     private fun save(id: String, x: Float, y: Float, scale: Float) {
         settings.positions[id] = Position(x.coerceIn(0f, width.toFloat()) / width, y.coerceIn(0f, height.toFloat()) / height, scale)
-        feature(id).placement?.set(HudDock.FREE)
+        feature(id).placement?.value = HudDock.FREE
         repaint()
     }
 

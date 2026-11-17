@@ -1,6 +1,8 @@
 package io.github.noxaur.dsmod.core.feature.general
 
 import io.github.noxaur.dsmod.core.container.SlotMark
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Abilities
 import io.github.noxaur.dsmod.core.game.ActionBar
@@ -18,7 +20,6 @@ import java.util.IdentityHashMap
 import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.ceil
-import kotlin.reflect.KMutableProperty0
 
 /**
  * Times every item ability the player uses, and Riftwalker's charging hit, as a HUD list and a wash over the item.
@@ -33,14 +34,14 @@ import kotlin.reflect.KMutableProperty0
  * A charging set bonus, `(4) Every 8s your next hit blinks you`, starts on the player's own hit while the set is worn, and
  * a hit while it charges does not restart it, so the server sends nothing for it.
  */
-class AbilityCooldowns(
-    toggle: KMutableProperty0<Boolean>,
-    private val list: KMutableProperty0<Boolean>,
-    private val onItems: KMutableProperty0<Boolean>,
-    private val shortest: KMutableProperty0<Float>,
-    private val readyAlert: KMutableProperty0<Boolean>,
-    private val alertFrom: KMutableProperty0<Float>,
-) : Feature("ability-cooldowns", toggle, Area.ANYWHERE) {
+class AbilityCooldowns(config: DsModConfig) :
+    Feature(config, "ability-cooldowns", Area.ANYWHERE, Store.GENERAL, "Time your item abilities and Riftwalker's charged hit.") {
+    val list = switch("cooldownList", "List", "List the abilities you are waiting on, on the HUD.", default = true)
+    val onItems = switch("cooldownOnItems", "On Items", "Drain a wash over the item and count down its seconds.", default = true)
+    val shortest = number("cooldownShortest", "Shortest Listed", "List only cooldowns at least this many seconds long.", 2f, 0f..20f, step = 0.5f, unit = "s")
+    val readyAlert = switch("cooldownReadyAlert", "Ready Alert", "Alert you when a long cooldown is over.", default = false)
+    val alertFrom = number("cooldownAlertFrom", "Alert From", "Alert only for cooldowns at least this many seconds long.", 20f, 1f..120f, step = 1f, unit = "s")
+
     /** An ability the lore gave a length, by its name in lower case. */
     private class Known(val name: String, val millis: Long)
 
@@ -144,8 +145,8 @@ class AbilityCooldowns(
     }
 
     private fun ready(now: Long) {
-        if (!readyAlert.get()) return
-        val from = (alertFrom.get() * 1000).toLong()
+        if (!readyAlert.value) return
+        val from = (alertFrom.value * 1000).toLong()
         for (timer in timers.values) {
             if (timer.alerted || now < timer.end || timer.lore < from) continue
             timer.alerted = true
@@ -206,8 +207,8 @@ class AbilityCooldowns(
 
     override fun hud(now: Long): HudBlock? {
         read()
-        if (!list.get()) return null
-        val from = (shortest.get() * 1000).toLong()
+        if (!list.value) return null
+        val from = (shortest.value * 1000).toLong()
         val shown = timers.values.filter { it.lore >= from && now - it.end < READY_MILLIS }.sortedBy { it.end }
         if (shown.isEmpty()) return null
         return block {
@@ -224,7 +225,7 @@ class AbilityCooldowns(
 
     override fun slots(now: Long): Map<Int, SlotMark> {
         read()
-        if (!onItems.get()) return emptyMap()
+        if (!onItems.value) return emptyMap()
         if (!marked && now < marksUntil) return marks
         marked = false
         val next = HashMap<Int, SlotMark>()

@@ -1,8 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
@@ -21,7 +20,7 @@ class SavedFilesTest {
     private val dir = Files.createTempDirectory("dsmod-saved")
     private val file = dir.resolve("zealot-tracker.json")
 
-    private fun game() = Game(features(DsModConfig())).also { game ->
+    private fun game() = Game(SettingsTree().features).also { game ->
         game.readouts.forEach { it.feature.enabled = true }
         game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
     }
@@ -114,7 +113,7 @@ class SavedFilesTest {
         SavedFiles(dir, first).close()
         assertEquals("""{"names":["The End","Hub"]}""", dir.resolve("places.json").readText())
 
-        val second = Game(features(DsModConfig()))
+        val second = Game(SettingsTree().features)
         SavedFiles(dir, second).load()
         assertEquals(setOf("The End", "Hub"), second.places.value.names)
     }

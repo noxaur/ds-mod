@@ -1,12 +1,13 @@
 package io.github.noxaur.dsmod.core.feature.slayer
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.clock
 import kotlinx.serialization.Serializable
-import kotlin.reflect.KMutableProperty0
 
 /** Every slayer boss the player has slain. */
 @Serializable
@@ -18,7 +19,8 @@ data class SlayerKills(val slain: Int = 0)
  * indented, which a player's chat line never is, and give the quest's goal and the XP left to the next level. The
  * readout stays hidden until the first quest or boss, so it never shows for a player who does no slayers.
  */
-class SlayerTracker(toggle: KMutableProperty0<Boolean>) : Feature("slayer-tracker", toggle, Area.ANYWHERE) {
+class SlayerTracker(config: DsModConfig) :
+    Feature(config, "slayer-tracker", Area.ANYWHERE, Store.SLAYER, "Count the slayer bosses you slay and time each from spawn to slain.") {
     private val allTime = saved(SlayerKills())
     private var slain = 0
     private var timed = 0

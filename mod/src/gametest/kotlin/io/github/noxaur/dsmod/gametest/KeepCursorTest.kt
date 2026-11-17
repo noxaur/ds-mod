@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -23,7 +24,7 @@ class KeepCursorTest : FabricClientGameTest {
             try {
                 check(cursorAfterNext(context, world) == 40.0 to 50.0) { "Keep Cursor let the cursor move" }
 
-                context.runOnClient<Nothing> { DsModClient.settings.inventory.keepCursor = false }
+                context.runOnClient<Nothing> { DsModClient.feature<KeepCursor>().enabled = false }
                 val centered = cursorAfterNext(context, world)
                 val middle = context.computeOnClient<Pair<Double, Double>, Nothing> {
                     (it.window.screenWidth / 2).toDouble() to (it.window.screenHeight / 2).toDouble()
@@ -31,7 +32,7 @@ class KeepCursorTest : FabricClientGameTest {
                 check(centered == middle) { "With Keep Cursor off the game should center the cursor at $middle, as vanilla does, and put it at $centered" }
             } finally {
                 context.runOnClient<Nothing> {
-                    DsModClient.settings.inventory.keepCursor = true
+                    DsModClient.feature<KeepCursor>().enabled = true
                     it.player!!.closeContainer()
                 }
             }

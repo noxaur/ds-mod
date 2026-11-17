@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
+import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.container.Border
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.edge.ui.Atlas
@@ -17,7 +18,7 @@ class SlotArtsTest {
 
     @Test
     fun `asking for an atlas does not create or upload it`() {
-        assertNull(SlotArts.atlas(DsModConfig().inventory, Surface.HOTBAR))
+        assertNull(SlotArts.atlas(SettingsTree().feature<ItemRarity>(), Surface.HOTBAR))
     }
 
     @Test
@@ -27,8 +28,8 @@ class SlotArtsTest {
             uploads++
             Atlas(Identifier.fromNamespaceAndPath("dsmod", "rarity/test-$uploads"), 1, 1)
         }
-        val inventory = DsModConfig().inventory
-        inventory.hotbarMatches = false
+        val inventory = SettingsTree().feature<ItemRarity>()
+        inventory.hotbarMatches.value = false
         assertNull(SlotArts.atlas(inventory, Surface.HOTBAR))
         assertEquals(0, uploads)
 
@@ -37,7 +38,7 @@ class SlotArtsTest {
         val first = SlotArts.atlas(inventory, Surface.HOTBAR)
         checkNotNull(first)
 
-        inventory.hotbarStyle = SlotStyle(border = Border.FLAT)
+        inventory.hotbarStyle.value = SlotStyle(border = Border.FLAT)
         val during = SlotArts.atlas(inventory, Surface.HOTBAR)
         assertEquals(first.id, during?.id)
         assertEquals(1, uploads)

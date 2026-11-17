@@ -1,6 +1,8 @@
 package io.github.noxaur.dsmod.gametest
 
 import com.google.gson.JsonParser
+import io.github.noxaur.dsmod.core.feature.general.Fullbright
+import io.github.noxaur.dsmod.core.feature.loot.RareDropAlert
 import io.github.noxaur.dsmod.core.ui.Place
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.Theme
@@ -61,17 +63,17 @@ class FavoritesTest : FabricClientGameTest {
             hear(context, "Fullbright, switch, off, starred", "Over a starred row")
 
             // F over a row stars it, and types nothing into the search.
-            over("hideExplosions")
+            over("hide-explosions")
             driver.key(GLFW.GLFW_KEY_F)
-            check("hideExplosions" in starred()) { "F over Hide Explosions left ${starred()}" }
+            check("hide-explosions" in starred()) { "F over Hide Explosions left ${starred()}" }
             check(!tabs.current.place.searching) { "F over a row started a search for \"${tabs.current.place.query}\"" }
 
             // Ctrl+F focuses the search, and F then types there and stars nothing.
             driver.key(GLFW.GLFW_KEY_F, control = true)
-            check("hideExplosions" in starred()) { "Ctrl+F unstarred the row" }
+            check("hide-explosions" in starred()) { "Ctrl+F unstarred the row" }
             context.input.typeChars("ful")
             context.waitTicks(2)
-            check(starred() == listOf("fullbright", "hideExplosions")) { "Typing in the search changed the stars: ${starred()}" }
+            check(starred() == listOf("fullbright", "hide-explosions")) { "Typing in the search changed the stars: ${starred()}" }
             // A search finds Fullbright once, in its own section, and nothing in Favorites.
             check(shown() == listOf("fullbright")) { "Searching \"ful\" lists ${shown()}" }
             context.takeScreenshot("settings-favorites-search")
@@ -86,12 +88,12 @@ class FavoritesTest : FabricClientGameTest {
             driver.key(GLFW.GLFW_KEY_DOWN)
             driver.move(2, 2)
             driver.key(GLFW.GLFW_KEY_F)
-            check("hideExplosions" !in starred()) { "F on the keys' row left ${starred()}" }
+            check("hide-explosions" !in starred()) { "F on the keys' row left ${starred()}" }
             driver.key(GLFW.GLFW_KEY_F)
-            check("hideExplosions" in starred()) { "F on the keys' row again left ${starred()}" }
+            check("hide-explosions" in starred()) { "F on the keys' row again left ${starred()}" }
             driver.key(GLFW.GLFW_KEY_ESCAPE)
             // That press on the row toggled Fullbright itself, so it goes back.
-            context.runOnClient<Nothing> { settings.general.fullbright = false }
+            context.runOnClient<Nothing> { DsModClient.feature<Fullbright>().enabled = false }
 
             // A mouse button bound as the Favorite Key stars the row under the mouse, and not with Ctrl held.
             context.runOnClient<Nothing> {
@@ -99,24 +101,24 @@ class FavoritesTest : FabricClientGameTest {
                 tabs.current.go(at("Combat").section)
             }
             open(context, tabs)
-            over("rareDropAlert")
+            over("rare-drop-alert")
             context.input.holdControl()
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
             context.input.releaseControl()
             context.waitTicks(2)
-            check("rareDropAlert" !in starred()) { "Ctrl and the middle button starred Rare Drop Alert" }
+            check("rare-drop-alert" !in starred()) { "Ctrl and the middle button starred Rare Drop Alert" }
             // A middle press with Ctrl is the row's own, which toggles the switch, so it goes back.
-            context.runOnClient<Nothing> { settings.loot.rareDropAlert = true }
-            over("rareDropAlert")
+            context.runOnClient<Nothing> { DsModClient.feature<RareDropAlert>().enabled = true }
+            over("rare-drop-alert")
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
             context.waitTicks(2)
-            check("rareDropAlert" in starred()) { "The middle button left ${starred()}" }
+            check("rare-drop-alert" in starred()) { "The middle button left ${starred()}" }
             context.runOnClient<Nothing> { settings.general.favoriteKey = GLFW.GLFW_KEY_F }
 
             // Favorites lists them in the tree's order, under their sections and groups.
             context.runOnClient<Nothing> { tabs.current.go(SettingsScreen.FAVORITES) }
             open(context, tabs)
-            check(shown() == listOf("fullbright", "hideExplosions", "rareDropAlert")) { "Favorites lists ${shown()}" }
+            check(shown() == listOf("fullbright", "hide-explosions", "rare-drop-alert")) { "Favorites lists ${shown()}" }
             context.takeScreenshot("settings-favorites")
             theme(context, Theme.VANILLA)
             context.takeScreenshot("settings-favorites-vanilla")
@@ -135,12 +137,12 @@ class FavoritesTest : FabricClientGameTest {
             open(context, tabs)
             context.runOnClient<Nothing> { tabs.current.go(SettingsScreen.FAVORITES) }
             open(context, tabs)
-            check(shown() == listOf("hideExplosions", "rareDropAlert")) { "After leaving, Favorites lists ${shown()}" }
+            check(shown() == listOf("hide-explosions", "rare-drop-alert")) { "After leaving, Favorites lists ${shown()}" }
 
             // Closing saves the stars.
             context.setScreen { TitleScreen() }
             val saved = JsonParser.parseString(FabricLoader.getInstance().configDir.resolve("dsmod/config.json").readText()).asJsonObject
-            check(saved["favorites"].asJsonArray.map { it.asString } == listOf("hideExplosions", "rareDropAlert")) { "The file holds ${saved["favorites"]}" }
+            check(saved["favorites"].asJsonArray.map { it.asString } == listOf("hide-explosions", "rare-drop-alert")) { "The file holds ${saved["favorites"]}" }
         } finally {
             context.runOnClient<Nothing> {
                 settings.favorites = emptyList()

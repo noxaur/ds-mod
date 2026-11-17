@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.PerformanceStats
 import io.github.noxaur.dsmod.core.feature.general.Stat
 import io.github.noxaur.dsmod.core.feature.general.StatsLayout
 import io.github.noxaur.dsmod.core.feature.general.StatsLook
@@ -17,8 +18,8 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
  */
 class PerformanceStatsTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
-        val general = DsModClient.settings.general
-        context.runOnClient<Nothing> { general.performanceStats = true }
+        val performanceStats = DsModClient.feature<PerformanceStats>()
+        context.runOnClient<Nothing> { performanceStats.enabled = true }
         try {
             context.worldBuilder().create().use { world ->
                 fun shown() = context.computeOnClient<List<Text>, Nothing> {
@@ -29,7 +30,7 @@ class PerformanceStatsTest : FabricClientGameTest {
                 context.waitFor { FULL_SPEED.matches(line()) }
                 context.takeScreenshot("performance-stats")
 
-                context.runOnClient<Nothing> { general.performanceLayout = StatsLayout.COLUMN }
+                context.runOnClient<Nothing> { performanceStats.layout.value = StatsLayout.COLUMN }
                 world.server.runCommand("tick rate 5")
                 context.waitFor { shown().lastOrNull()?.spans?.any { it.rgb == Role.WARNING.rgb || it.rgb == Role.BAD.rgb } == true }
                 check(shown().map { it.plain.substringBefore(':') } == Stat.entries.map { it.toString() }) { "The column does not list FPS, Ping and TPS: ${line()}" }
@@ -37,7 +38,7 @@ class PerformanceStatsTest : FabricClientGameTest {
                 world.server.runCommand("tick rate 20")
 
                 // A hop starts the count again, and the new world's rate shows once two seconds of it have passed.
-                context.runOnClient<Nothing> { general.performanceLook = StatsLook.CLEAR }
+                context.runOnClient<Nothing> { performanceStats.look.value = StatsLook.CLEAR }
                 world.server.runCommand("execute in minecraft:the_nether run tp @a 0 100 0")
                 context.waitFor { shown().lastOrNull()?.plain == "TPS: -" }
                 context.waitFor { RATE.matches(shown().lastOrNull()?.plain.orEmpty()) }
@@ -46,7 +47,7 @@ class PerformanceStatsTest : FabricClientGameTest {
 
                 // Vanilla logs every answer to a ping request, so an empty log means none was asked.
                 context.runOnClient<Nothing> {
-                    general.performanceValues = mutableListOf(Stat.FPS, Stat.TPS)
+                    performanceStats.values.value = listOf(Stat.FPS, Stat.TPS)
                     it.debugOverlay.pingLogger.reset()
                 }
                 // Long enough for one more request, which the mod asks once a second.
@@ -56,10 +57,10 @@ class PerformanceStatsTest : FabricClientGameTest {
             }
         } finally {
             context.runOnClient<Nothing> {
-                general.performanceStats = false
-                general.performanceLayout = StatsLayout.ROW
-                general.performanceLook = StatsLook.PLATE
-                general.performanceValues = Stat.entries.toMutableList()
+                performanceStats.enabled = false
+                performanceStats.layout.value = StatsLayout.ROW
+                performanceStats.look.value = StatsLook.PLATE
+                performanceStats.values.value = Stat.entries
             }
         }
     }

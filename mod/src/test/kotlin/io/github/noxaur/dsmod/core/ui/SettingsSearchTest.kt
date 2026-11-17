@@ -99,7 +99,7 @@ class SettingsSearchTest {
 
     @Test
     fun `the settings tree finds a feature by its own name, and an option inside a fold`() {
-        val tree = SettingsTree.sections(DsModConfig())
+        val tree = SettingsTree().sections
         assertTrue(SettingsSearch.hits(tree, "rarity").any { hit -> hit.group.name == "Item Rarity" })
         val halo = SettingsSearch.hits(tree, "halo").single()
         assertEquals(setOf("customLook", "hotbarMarks"), halo.open, "both the inventory's own look and the hotbar's have the fill")
@@ -124,7 +124,7 @@ class SettingsSearchTest {
 
     @Test
     fun `a word that names an entry of an ordered list opens the list, and its name alone does not`() {
-        val tree = SettingsTree.sections(DsModConfig())
+        val tree = SettingsTree().sections
         val open = SettingsSearch.hits(tree, "boots").flatMap { it.open }
         assertTrue("equipmentPieces" in open, "$open")
         assertTrue(SettingsSearch.hits(tree, "equipment pieces").none { "equipmentPieces" in it.open })

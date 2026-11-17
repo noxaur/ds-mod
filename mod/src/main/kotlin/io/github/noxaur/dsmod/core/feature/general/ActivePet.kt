@@ -1,6 +1,8 @@
 package io.github.noxaur.dsmod.core.feature.general
 
 import io.github.noxaur.dsmod.core.container.SlotMark
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.Area
@@ -26,7 +28,6 @@ import io.github.noxaur.dsmod.core.text.duration
 import kotlinx.serialization.Serializable
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
-import kotlin.reflect.KMutableProperty0
 
 /** How a pet's head looks, to draw it again in a later session: its item, a head's skin, and its model. */
 @Serializable
@@ -66,16 +67,16 @@ data class KnownPets(val pets: Map<String, KnownPet> = emptyMap(), val latest: M
  * from the second read on the Combat XP since the last read moves the XP live, at the rate of pet XP per Combat XP the
  * reads showed, and each read sets it right again. A switch of pet and a level up start over.
  */
-class ActivePet(
-    toggle: KMutableProperty0<Boolean>,
-    private val showIcon: KMutableProperty0<Boolean>,
-    private val showItem: KMutableProperty0<Boolean>,
-    private val showXp: KMutableProperty0<Boolean>,
-    private val showRate: KMutableProperty0<Boolean>,
-    private val showNext: KMutableProperty0<Boolean>,
-    private val markInMenu: KMutableProperty0<Boolean>,
-    private val hideAutopet: KMutableProperty0<Boolean>,
-) : Feature("active-pet", toggle, Area.ANYWHERE) {
+class ActivePet(config: DsModConfig) :
+    Feature(config, "active-pet", Area.ANYWHERE, Store.GENERAL, "Show your pet, its level, held item and XP on the HUD.", default = false) {
+    val showIcon = switch("activePetIcon", "Icon", "Show your pet's head beside its name.", default = true)
+    val showItem = switch("activePetItem", "Held Item", "Show the pet item your pet holds.", default = true)
+    val showXp = switch("activePetXp", "XP", "Show how far your pet is to its next level.", default = true)
+    val showRate = switch("activePetRate", "XP Rate", "Show how fast your pet gains XP.", default = true)
+    val showNext = switch("activePetNext", "Next Level", "Show how long until your pet reaches its next level.", default = true)
+    val markInMenu = switch("markActivePet", "Mark In Menu", "Mark your active pet in the Pets menu.", default = true)
+    val hideAutopet = switch("hideAutopet", "Hide Autopet", "Hide the chat line Autopet sends when it swaps your pet.", default = false)
+
     private val known = saved(KnownPets())
 
     private var pet: Pet? = null
@@ -159,7 +160,7 @@ class ActivePet(
         line(Regex(AUTOPET), { it }) { text, _ ->
             val match = AUTOPET_LINE.matchEntire(text)
             if (match == null) unparsed(text) else match.destructured.let { (level, name) -> summoned(name, level.toInt()) }
-            if (hideAutopet.get()) hide()
+            if (hideAutopet.value) hide()
         }
         line("Equipped ", EQUIPPED) { (item, _, name), _ ->
             remember(keyOf(name)) { it.copy(held = PetItem(item)) }
@@ -243,7 +244,7 @@ class ActivePet(
     }
 
     override fun slots(now: Long): Map<Int, SlotMark> =
-        if (markInMenu.get() && menuSlot >= 0 && container.title?.plain == PetCard.MENU) mapOf(menuSlot to MARK) else emptyMap()
+        if (markInMenu.value && menuSlot >= 0 && container.title?.plain == PetCard.MENU) mapOf(menuSlot to MARK) else emptyMap()
 
     /** The current pet's pace, when one was read at the level it is now. */
     private fun pace(pet: Pet, key: String) = pace?.takeIf { it.key == key && it.level == pet.level }
@@ -256,7 +257,7 @@ class ActivePet(
     }
 
     override fun hud(now: Long): HudBlock? {
-        val settings = Shown(showIcon.get(), showItem.get(), showXp.get(), showRate.get(), showNext.get(), known.value)
+        val settings = Shown(showIcon.value, showItem.value, showXp.value, showRate.value, showNext.value, known.value)
         if (settings != shown) {
             shown = settings
             block = null

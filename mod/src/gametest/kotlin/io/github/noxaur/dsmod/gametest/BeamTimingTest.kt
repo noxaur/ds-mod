@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
 import com.google.gson.JsonParser
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.Theme
@@ -28,13 +28,13 @@ class BeamTimingTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = setUp(context)
         val driver = SettingsDriver(context)
-        val end = DsModClient.settings.end
+        val protectorSpawnBeam = DsModClient.feature<ProtectorSpawnBeam>()
         try {
             open(context, SettingsTabs(at("The End")))
             // Protector Spawn Beam's button opens its settings, unless an earlier test left them open.
-            val beacon = driver.spot("protectorSpawnBeam")
+            val beacon = driver.spot("protector-spawn-beam")
             if (context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).spot("beamSections") == null }) driver.click(beacon.extraX + 7, beacon.controlY + 6)
-            check(end.beamSections == listOf(Section(175, 200))) { "The settings start with ${end.beamSections}" }
+            check(protectorSpawnBeam.sections.value == listOf(Section(175, 200))) { "The settings start with ${protectorSpawnBeam.sections.value}" }
             val span = driver.spot("beamSections")
             context.takeScreenshot("beam-timing-default")
 
@@ -44,7 +44,7 @@ class BeamTimingTest : FabricClientGameTest {
                 context.waitTick()
             }
             fun sections(vararg expected: Section, step: String) =
-                check(end.beamSections == expected.toList()) { "$step gave ${end.beamSections}, not ${expected.toList()}" }
+                check(protectorSpawnBeam.sections.value == expected.toList()) { "$step gave ${protectorSpawnBeam.sections.value}, not ${expected.toList()}" }
 
             move(60)
             context.input.pressMouse(0)
@@ -93,7 +93,7 @@ class BeamTimingTest : FabricClientGameTest {
 
             val fight = driver.spot("beamInFight")
             driver.click(fight.x + 20, fight.y + fight.height / 2)
-            check(end.beamInFight) { "A press on During the Fight did not turn it on" }
+            check(protectorSpawnBeam.inFight.value) { "A press on During the Fight did not turn it on" }
 
             context.setScreen { TitleScreen() }
             val saved = JsonParser.parseString(FabricLoader.getInstance().configDir.resolve("dsmod/config.json").readText()).asJsonObject["end"].asJsonObject
@@ -102,11 +102,11 @@ class BeamTimingTest : FabricClientGameTest {
             // The changed marker puts each back to its default.
             open(context, SettingsTabs(at("The End")))
             for (id in listOf("beamSections", "beamInFight")) driver.spot(id).let { driver.click(it.markerX + 2, it.markerY) }
-            check(end.beamSections == DsModConfig().end.beamSections && !end.beamInFight) { "The markers left ${end.beamSections}, fight ${end.beamInFight}" }
+            check(protectorSpawnBeam.sections.value == protectorSpawnBeam.sections.default && !protectorSpawnBeam.inFight.value) { "The markers left ${protectorSpawnBeam.sections.value}, fight ${protectorSpawnBeam.inFight.value}" }
         } finally {
             context.runOnClient<Nothing> {
-                end.beamSections = DsModConfig().end.beamSections
-                end.beamInFight = false
+                protectorSpawnBeam.sections.reset()
+                protectorSpawnBeam.inFight.value = false
                 DsModClient.saveSettings()
             }
             context.setScreen { TitleScreen() }

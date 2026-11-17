@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.CommandBinds
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.Where
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
@@ -27,11 +28,11 @@ class CommandBindGroupsTest : FabricClientGameTest {
         BindsDriver(context).groups()
         BindsDriver(context).guide()
         context.runOnClient<Nothing> {
-            val general = DsModClient.settings.general
-            general.binds = emptyList()
-            general.bindGroups = emptyList()
-            general.collapsedGroups = emptyList()
-            general.offGroups = emptyList()
+            val commandBinds = DsModClient.feature<CommandBinds>()
+            commandBinds.binds.value = emptyList()
+            commandBinds.groups.value = emptyList()
+            commandBinds.collapsedGroups.value = emptyList()
+            commandBinds.offGroups.value = emptyList()
             DsModClient.saveSettings()
         }
         context.setScreen { TitleScreen() }
@@ -39,13 +40,13 @@ class CommandBindGroupsTest : FabricClientGameTest {
     }
 
     private fun BindsDriver.groups() {
-        val general = DsModClient.settings.general
-        val commands = { context.computeOnClient<List<String>, Nothing> { general.binds.map { it.command } } }
+        val commandBinds = DsModClient.feature<CommandBinds>()
+        val commands = { context.computeOnClient<List<String>, Nothing> { commandBinds.binds.value.map { it.command } } }
         context.runOnClient<Nothing> {
-            general.binds = listOf("other", "/me bound", "/me seq", "/me end").map { CommandBind(command = it) }
-            general.bindGroups = emptyList()
-            general.collapsedGroups = emptyList()
-            general.offGroups = emptyList()
+            commandBinds.binds.value = listOf("other", "/me bound", "/me seq", "/me end").map { CommandBind(command = it) }
+            commandBinds.groups.value = emptyList()
+            commandBinds.collapsedGroups.value = emptyList()
+            commandBinds.offGroups.value = emptyList()
         }
         open(context, SettingsTabs(at("Binds")))
         list()
@@ -54,7 +55,7 @@ class CommandBindGroupsTest : FabricClientGameTest {
         press(foot(), "Add Group")
         context.input.typeChars("Dungeons")
         key(GLFW.GLFW_KEY_ENTER)
-        check(general.bindGroups == listOf("Dungeons")) { "Typing a group's name left ${general.bindGroups}" }
+        check(commandBinds.groups.value == listOf("Dungeons")) { "Typing a group's name left ${commandBinds.groups.value}" }
         press(headingOf("Dungeons"), "Settings")
 
         // A bind dragged by its grip under the Dungeons heading joins it, and the lines make room as it passes.
@@ -70,7 +71,7 @@ class CommandBindGroupsTest : FabricClientGameTest {
         theme(context, Theme.CHARCOAL)
         context.input.releaseMouse(0)
         context.waitTicks(2)
-        check(general.binds.single { it.command == "/me end" }.group == "Dungeons") { "Dragging under Dungeons left ${general.binds}" }
+        check(commandBinds.binds.value.single { it.command == "/me end" }.group == "Dungeons") { "Dragging under Dungeons left ${commandBinds.binds.value}" }
 
         // Escape during a drag puts the list back.
         val first = at(lineOf(0))
@@ -94,25 +95,25 @@ class CommandBindGroupsTest : FabricClientGameTest {
         // Alt with Down moves the picked bind on, and past the last of General it joins Dungeons.
         key(GLFW.GLFW_KEY_DOWN, alt = true)
         key(GLFW.GLFW_KEY_DOWN, alt = true)
-        check(general.binds.single { it.command == "other" }.group == "Dungeons") { "Alt + Down left ${general.binds}" }
+        check(commandBinds.binds.value.single { it.command == "other" }.group == "Dungeons") { "Alt + Down left ${commandBinds.binds.value}" }
         context.takeScreenshot("command-binds-moved")
 
         // The heading's arrow folds the group away, and Right and Left unfold and fold the picked heading.
         press(headingOf("Dungeons"), "Fold")
-        check(general.collapsedGroups == listOf("Dungeons")) { "The arrow left ${general.collapsedGroups}" }
+        check(commandBinds.collapsedGroups.value == listOf("Dungeons")) { "The arrow left ${commandBinds.collapsedGroups.value}" }
         context.takeScreenshot("command-binds-collapsed")
         key(GLFW.GLFW_KEY_RIGHT)
-        check(general.collapsedGroups.isEmpty()) { "Right left ${general.collapsedGroups}" }
+        check(commandBinds.collapsedGroups.value.isEmpty()) { "Right left ${commandBinds.collapsedGroups.value}" }
         key(GLFW.GLFW_KEY_LEFT)
-        check(general.collapsedGroups == listOf("Dungeons")) { "Left left ${general.collapsedGroups}" }
+        check(commandBinds.collapsedGroups.value == listOf("Dungeons")) { "Left left ${commandBinds.collapsedGroups.value}" }
         key(GLFW.GLFW_KEY_RIGHT)
 
         // The heading's switch turns the whole group off, and Space on the heading back on.
         press(headingOf("Dungeons"), "Group")
-        check(general.offGroups == listOf("Dungeons")) { "The heading's switch left ${general.offGroups}" }
+        check(commandBinds.offGroups.value == listOf("Dungeons")) { "The heading's switch left ${commandBinds.offGroups.value}" }
         context.takeScreenshot("command-binds-group-off")
         key(GLFW.GLFW_KEY_SPACE)
-        check(general.offGroups.isEmpty()) { "Space on the heading left ${general.offGroups}" }
+        check(commandBinds.offGroups.value.isEmpty()) { "Space on the heading left ${commandBinds.offGroups.value}" }
 
         // Dungeons is exported from its details and taken back in as a new group, its binds off.
         press(headingOf("Dungeons"), "Settings")
@@ -120,21 +121,21 @@ class CommandBindGroupsTest : FabricClientGameTest {
         val shared = context.computeOnClient<String, Nothing> { it.keyboardHandler.clipboard }
         check(shared.startsWith("dsmod-binds:")) { "Export put $shared on the clipboard" }
         press(foot(), "Import")
-        check(general.bindGroups == listOf("Dungeons", "Dungeons 2") && general.binds.count { it.group == "Dungeons 2" && !it.enabled } == 2) {
-            "Import left ${general.bindGroups} with ${general.binds}"
+        check(commandBinds.groups.value == listOf("Dungeons", "Dungeons 2") && commandBinds.binds.value.count { it.group == "Dungeons 2" && !it.enabled } == 2) {
+            "Import left ${commandBinds.groups.value} with ${commandBinds.binds.value}"
         }
         context.takeScreenshot("command-binds-imported")
 
         // Alt with Up moves the picked group above the one before it.
         press(headingOf("Dungeons 2"), dx = 60)
         key(GLFW.GLFW_KEY_UP, alt = true)
-        check(general.bindGroups == listOf("Dungeons 2", "Dungeons")) { "Alt + Up left ${general.bindGroups}" }
+        check(commandBinds.groups.value == listOf("Dungeons 2", "Dungeons")) { "Alt + Up left ${commandBinds.groups.value}" }
         // Delete asks twice, and takes the group's binds with it.
         key(GLFW.GLFW_KEY_DELETE)
-        check(general.bindGroups.size == 2) { "One press on Delete deleted the group" }
+        check(commandBinds.groups.value.size == 2) { "One press on Delete deleted the group" }
         context.takeScreenshot("command-binds-delete-group")
         key(GLFW.GLFW_KEY_DELETE)
-        check(general.bindGroups == listOf("Dungeons") && general.binds.size == 4) { "Deleting Dungeons 2 left ${general.bindGroups}, ${general.binds.size} binds" }
+        check(commandBinds.groups.value == listOf("Dungeons") && commandBinds.binds.value.size == 4) { "Deleting Dungeons 2 left ${commandBinds.groups.value}, ${commandBinds.binds.value.size} binds" }
 
         // A double press on a heading folds it too. The game takes two presses within 250 ms as one.
         val heading = at(headingOf("Dungeons"))
@@ -143,22 +144,22 @@ class CommandBindGroupsTest : FabricClientGameTest {
         context.waitTick()
         context.input.pressMouse(0)
         context.waitTicks(2)
-        check(general.collapsedGroups == listOf("Dungeons")) { "A double press left ${general.collapsedGroups}" }
+        check(commandBinds.collapsedGroups.value == listOf("Dungeons")) { "A double press left ${commandBinds.collapsedGroups.value}" }
     }
 
     /** The feature guide's picture: a few binds with the server's own commands, one group folded, the mouse away. */
     private fun BindsDriver.guide() {
-        val general = DsModClient.settings.general
+        val commandBinds = DsModClient.feature<CommandBinds>()
         context.runOnClient<Nothing> {
-            general.binds = listOf(
+            commandBinds.binds.value = listOf(
                 CommandBind("Warp End", "/warp end", listOf(GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_F6)),
                 CommandBind("Stash", "/viewstash", listOf(GLFW.GLFW_KEY_F7), where = Where.BOTH),
                 CommandBind("", "/sbmenu on", listOf(GLFW.GLFW_KEY_F8, GLFW.GLFW_KEY_F9), inOrder = true),
                 CommandBind("Shared", "/warp end", listOf(GLFW.GLFW_KEY_KP_1), group = "From a Friend", enabled = false),
             )
-            general.bindGroups = listOf("From a Friend")
-            general.collapsedGroups = listOf("From a Friend")
-            general.offGroups = emptyList()
+            commandBinds.groups.value = listOf("From a Friend")
+            commandBinds.collapsedGroups.value = listOf("From a Friend")
+            commandBinds.offGroups.value = emptyList()
         }
         open(context, SettingsTabs(at("Binds")))
         list()

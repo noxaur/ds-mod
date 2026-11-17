@@ -1,5 +1,9 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.Animations
+import io.github.noxaur.dsmod.core.feature.general.Camera
+import io.github.noxaur.dsmod.core.feature.general.CommandBinds
+import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.TabEdge
@@ -33,9 +37,9 @@ class SettingsScreenFixesTest : FabricClientGameTest {
     }
 
     private fun SettingsDriver.rows() {
-        val distance = { DsModClient.settings.general.cameraDistance }
+        val distance = { DsModClient.feature<Camera>().distance.value }
         val distanceBefore = distance()
-        val itemSizeBefore = DsModClient.settings.general.itemSize
+        val itemSizeBefore = DsModClient.feature<Animations>().itemSize.value
         val tabs = SettingsTabs(at("Camera"))
         open(context, tabs)
         val d = spot("cameraDistance")
@@ -66,7 +70,7 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         key(GLFW.GLFW_KEY_ENTER)
         check(distance() == 7f) { "The digit never opened the field, leaving ${distance()}" }
 
-        context.runOnClient<Nothing> { DsModClient.settings.general.itemSize = 2f }
+        context.runOnClient<Nothing> { DsModClient.feature<Animations>().itemSize.value = 2f }
         open(context, SettingsTabs(at("General")))
         val animations = spot("animations")
         click(animations.x + 8, animations.y + 8)
@@ -74,22 +78,23 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         check(context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).marked("itemSize") }) { "Item Size showed no changed marker" }
         val reset = spot("resetAnimations")
         click(reset.controlX + reset.controlWidth / 2, reset.controlY + reset.controlHeight / 2)
-        check(DsModClient.settings.general.itemSize == 1f) { "Reset Animations left Item Size at ${DsModClient.settings.general.itemSize}" }
+        check(DsModClient.feature<Animations>().itemSize.value == 1f) { "Reset Animations left Item Size at ${DsModClient.feature<Animations>().itemSize.value}" }
         check(context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).marked("itemSize") }.not()) {
             "Reset Animations left Item Size's changed marker up"
         }
         // The next game test reads these settings, so leave them as this one found them.
         context.runOnClient<Nothing> {
-            DsModClient.settings.general.cameraDistance = distanceBefore
-            DsModClient.settings.general.itemSize = itemSizeBefore
+            DsModClient.feature<Camera>().distance.value = distanceBefore
+            DsModClient.feature<Animations>().itemSize.value = itemSizeBefore
             DsModClient.saveSettings()
         }
     }
 
     private fun BindsDriver.lists() {
-        val general = DsModClient.settings.general
-        general.binds = listOf(CommandBind(command = "/a"), CommandBind(command = "/b"))
-        general.bindGroups = emptyList()
+        val commandBinds = DsModClient.feature<CommandBinds>()
+        val menuTabs = DsModClient.feature<MenuTabs>()
+        commandBinds.binds.value = listOf(CommandBind(command = "/a"), CommandBind(command = "/b"))
+        commandBinds.groups.value = emptyList()
         open(context, SettingsTabs(at("Binds")))
         list()
         val from = at(lineOf(0))
@@ -103,13 +108,13 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         key(GLFW.GLFW_KEY_ESCAPE)
         context.input.releaseMouse(0)
         context.waitTicks(2)
-        check(general.binds.map { it.command } == listOf("/a", "/b")) { "Escape during the drag left ${general.binds}" }
+        check(commandBinds.binds.value.map { it.command } == listOf("/a", "/b")) { "Escape during the drag left ${commandBinds.binds.value}" }
         key(GLFW.GLFW_KEY_DELETE)
         key(GLFW.GLFW_KEY_DELETE)
-        check(general.binds.map { it.command } == listOf("/b")) { "Delete after a cancelled drag removed ${general.binds}" }
+        check(commandBinds.binds.value.map { it.command } == listOf("/b")) { "Delete after a cancelled drag removed ${commandBinds.binds.value}" }
 
-        general.binds = listOf(CommandBind(command = "/c", group = "Dungeons"))
-        general.bindGroups = listOf("Dungeons")
+        commandBinds.binds.value = listOf(CommandBind(command = "/c", group = "Dungeons"))
+        commandBinds.groups.value = listOf("Dungeons")
         open(context, SettingsTabs(at("Binds")))
         list()
         press(headingOf("Dungeons"))
@@ -128,13 +133,14 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         val again = context.computeOnClient<String, Nothing> { Minecraft.getInstance().keyboardHandler.clipboard }
         check(again.startsWith("dsmod-binds:")) { "After a relayout Export copied \"$again\" instead of the Dungeons bind" }
 
-        general.binds = emptyList()
-        general.bindGroups = emptyList()
+        commandBinds.binds.value = emptyList()
+        commandBinds.groups.value = emptyList()
         DsModClient.saveSettings()
     }
 
     private fun TabsDriver.item() {
-        context.runOnClient<Nothing> { DsModClient.settings.betterUi.tabs = TabLayout.DEFAULT }
+        val menuTabs = DsModClient.feature<MenuTabs>()
+        context.runOnClient<Nothing> { menuTabs.tabs.value = TabLayout.DEFAULT }
         context.setScreen { SettingsScreen(null, SettingsTabs(at("Menus")), reveal = "tabs") }
         context.waitTicks(2)
         val storage = place(TabEdge.BOTTOM, 0)
@@ -148,10 +154,10 @@ class SettingsScreenFixesTest : FabricClientGameTest {
             screen.resize(screen.width, screen.height)
         }
         context.waitTicks(2)
-        val item = context.computeOnClient<String, Nothing> { DsModClient.settings.betterUi.tabs.first { it.command == "storage" }.item }
+        val item = context.computeOnClient<String, Nothing> { menuTabs.tabs.value.first { it.command == "storage" }.item }
         check(item.isEmpty()) { "Clearing the item left \"$item\"" }
         context.runOnClient<Nothing> {
-            DsModClient.settings.betterUi.tabs = TabLayout.DEFAULT
+            menuTabs.tabs.value = TabLayout.DEFAULT
             DsModClient.saveSettings()
         }
     }

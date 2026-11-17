@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLook
 import io.github.noxaur.dsmod.core.feature.general.PetPosition
@@ -54,12 +55,12 @@ class EquipmentDisplayTest : FabricClientGameTest {
             context.runOnClient<Nothing> { it.gui.setScreen(null) }
 
             try {
-                DsModClient.settings.general.equipmentLayout = EquipmentLayout.COLUMN
+                DsModClient.feature<EquipmentDisplay>().layout.value = EquipmentLayout.COLUMN
                 context.waitTicks(10)
                 check(stackAt(piece(3, column = true))?.item == Items.LEATHER_BOOTS) { "The boots are not at the foot of the column" }
                 context.takeScreenshot("equipment-display-column")
             } finally {
-                DsModClient.settings.general.equipmentLayout = EquipmentLayout.ROW
+                DsModClient.feature<EquipmentDisplay>().layout.value = EquipmentLayout.ROW
             }
 
             // The sidebar's pet line, here an Epic pet as dragsim.co writes it. With no head seen yet, the name shows under the row.
@@ -86,19 +87,19 @@ class EquipmentDisplayTest : FabricClientGameTest {
             check(skin(icon)) { "The pet's icon lost the skin of the head it wears: $icon" }
             context.takeScreenshot("equipment-display-pet")
 
-            val general = DsModClient.settings.general
+            val equipmentDisplay = DsModClient.feature<EquipmentDisplay>()
             try {
-                general.equipmentLook = EquipmentLook.CLEAR
+                equipmentDisplay.look.value = EquipmentLook.CLEAR
                 context.waitTicks(10)
                 context.takeScreenshot("equipment-display-clear")
 
-                general.equipmentLook = EquipmentLook.HOTBAR
+                equipmentDisplay.look.value = EquipmentLook.HOTBAR
                 context.waitTicks(10)
                 check(skin(stackAt(piece(0, hotbar = true)))) { "The hotbar look moved the helmet off its slot" }
                 context.takeScreenshot("equipment-display-hotbar")
 
                 // Docked, a slot lines up with the hotbar's: its item 3px into a strip 7px past the hotbar's right end.
-                general.equipmentPlacement = HudDock.RIGHT_OF_HOTBAR
+                equipmentDisplay.placement.value = HudDock.RIGHT_OF_HOTBAR
                 context.waitTicks(10)
                 val (width, height) = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.guiScaledWidth to it.window.guiScaledHeight }
                 val first = width / 2 + 91 + 7 + 3 + 8.0 to height - 22 + 3 + 8.0
@@ -107,17 +108,17 @@ class EquipmentDisplayTest : FabricClientGameTest {
                 context.takeScreenshot("equipment-display-docked-right")
 
                 // Left of the hotbar it leaves the offhand slot's 29px, and the pet sits on a row of its own above the armor.
-                general.equipmentPlacement = HudDock.LEFT_OF_HOTBAR
-                general.petPosition = PetPosition.ABOVE
+                equipmentDisplay.placement.value = HudDock.LEFT_OF_HOTBAR
+                equipmentDisplay.petPosition.value = PetPosition.ABOVE
                 context.waitTicks(10)
                 val boots = width / 2 - 91 - 29 - 7 - 1 - 20 + 3 + 8.0 to height - 22 + 3 + 8.0
                 check(stackAt(boots)?.item == Items.LEATHER_BOOTS) { "The boots are not in the last slot left of the offhand slot" }
                 check(skin(stackAt(boots.first - 3 * 20 to boots.second - 22))) { "The pet is not above the helmet" }
                 context.takeScreenshot("equipment-display-docked-left")
             } finally {
-                general.equipmentLook = EquipmentLook.PLATE
-                general.equipmentPlacement = HudDock.FREE
-                general.petPosition = PetPosition.WITH_ARMOR
+                equipmentDisplay.look.value = EquipmentLook.PLATE
+                equipmentDisplay.placement.value = HudDock.FREE
+                equipmentDisplay.petPosition.value = PetPosition.WITH_ARMOR
             }
             context.waitTicks(10)
 

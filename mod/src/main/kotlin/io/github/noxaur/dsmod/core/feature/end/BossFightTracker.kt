@@ -1,11 +1,12 @@
 package io.github.noxaur.dsmod.core.feature.end
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import kotlinx.serialization.Serializable
-import kotlin.reflect.KMutableProperty0
 
 /** One boss's history: the fights the player did damage in, how many they topped, and the loot they were given. */
 @Serializable
@@ -23,7 +24,8 @@ data class BossLog(val bosses: Map<String, BossRecord> = emptyMap())
  * dragon can fall during that wait, so each summary waits its turn and the header takes the oldest one
  * still inside [LOOT_WINDOW_MILLIS].
  */
-class BossFightTracker(toggle: KMutableProperty0<Boolean>) : Feature("boss-fight-tracker", toggle, Area.END) {
+class BossFightTracker(config: DsModConfig) :
+    Feature(config, "boss-fight-tracker", Area.END, Store.END, "Show your rank, damage and loot from the last boss fight.", formerly = listOf("bossDrops")) {
     private val log = saved(BossLog())
     private var last: String? = null
     private var lastDragon: String? = null

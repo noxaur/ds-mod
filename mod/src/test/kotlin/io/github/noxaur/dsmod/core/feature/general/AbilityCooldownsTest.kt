@@ -1,10 +1,9 @@
 package io.github.noxaur.dsmod.core.feature.general
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.container.SlotCooldown
 import io.github.noxaur.dsmod.core.feature.Alert
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.Abilities
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.ContainerOpened
@@ -26,8 +25,8 @@ import kotlin.test.assertTrue
  * drill's `You used`, and Riftwalker's charged hit. The action bar and the refusal are proven by the replay.
  */
 class AbilityCooldownsTest {
-    private val config = DsModConfig()
-    private val game = Game(listOf(features(config).single { it.id == "ability-cooldowns" }))
+    private val feature = SettingsTree().feature<AbilityCooldowns>()
+    private val game = Game(listOf(feature))
     private var time = 1_000_000L
 
     private fun post(vararg events: GameEvent) {
@@ -198,11 +197,11 @@ class AbilityCooldownsTest {
         post(Hit("minecraft:enderman"))
         // Past the charge and the two seconds its Ready stays on the list.
         at(11_000)
-        config.general.abilityCooldowns = false
+        feature.enabled = false
         at(1)
         // The container state follows the slots while the feature is off, and the feature sees none of it.
         post(SlotChanged(5, null), SlotChanged(6, null), SlotChanged(7, null), SlotChanged(8, null))
-        config.general.abilityCooldowns = true
+        feature.enabled = true
         at(1)
         post(Hit("minecraft:enderman"))
         assertNull(readout.hud)
@@ -217,7 +216,7 @@ class AbilityCooldownsTest {
 
     @Test
     fun `a long cooldown alerts once when it is over, when the player asked`() {
-        config.general.cooldownReadyAlert = true
+        feature.readyAlert.value = true
         post(*inventory(36 to weapon("Weird Tuba", "Howl", "20s"), 37 to weapon("Giant's Sword", "Giant's Slam", "5s")))
         post(ActionBar(line("-150 Mana (Howl)")))
         post(ActionBar(line("-100 Mana (Giant's Slam)")))

@@ -43,8 +43,6 @@ import net.minecraft.world.item.ItemStack
  * in the middle of the menu as a stray mark.
  */
 object MenuSkin {
-    private val settings get() = DsModClient.settings.inventory
-
     val cursor = CursorMemory()
 
     val themed: Boolean get() = DsModClient.runs<MenuTheme>()
@@ -107,7 +105,12 @@ object MenuSkin {
         )
 
     /** The alpha of the glass themed menus are drawn as, from 0 for clear to 255, or -1 when they are solid or not themed. */
-    val glassAlpha: Int get() = if (themed && settings.menuLook == MenuLook.GLASS) Menus.glassAlpha(settings.glassOpacity) else -1
+    val glassAlpha: Int
+        get() {
+            if (!themed) return -1
+            val theme = DsModClient.feature<MenuTheme>()
+            return if (theme.menuLook.value == MenuLook.GLASS) Menus.glassAlpha(theme.glassOpacity.value) else -1
+        }
 
     /** The alpha of [screen]'s glass, from 0 for clear to 255, or -1 when the kit does not draw it as glass. */
     fun glass(screen: AbstractContainerScreen<*>): Int = if (skins(screen)) glassAlpha else -1

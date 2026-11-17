@@ -1,11 +1,44 @@
 package io.github.noxaur.dsmod.core.config
 
-import io.github.noxaur.dsmod.core.container.Border
-import io.github.noxaur.dsmod.core.container.Fill
-import io.github.noxaur.dsmod.core.container.Floor
-import io.github.noxaur.dsmod.core.container.RarityPreset
-import io.github.noxaur.dsmod.core.container.SlotStyle
-import io.github.noxaur.dsmod.core.input.CommandBinds
+import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.chat.CopyChat
+import io.github.noxaur.dsmod.core.feature.chat.HideCooldownMessages
+import io.github.noxaur.dsmod.core.feature.end.BossFightTracker
+import io.github.noxaur.dsmod.core.feature.end.DragonTimer
+import io.github.noxaur.dsmod.core.feature.end.EyeGuard
+import io.github.noxaur.dsmod.core.feature.end.FireballAlert
+import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
+import io.github.noxaur.dsmod.core.feature.end.ProtectorStatus
+import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
+import io.github.noxaur.dsmod.core.feature.general.AbilityCooldowns
+import io.github.noxaur.dsmod.core.feature.general.ActivePet
+import io.github.noxaur.dsmod.core.feature.general.Animations
+import io.github.noxaur.dsmod.core.feature.general.Camera
+import io.github.noxaur.dsmod.core.feature.general.CommandBinds
+import io.github.noxaur.dsmod.core.feature.general.DamageNumbers
+import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
+import io.github.noxaur.dsmod.core.feature.general.EtherwarpOutline
+import io.github.noxaur.dsmod.core.feature.general.FreeLook
+import io.github.noxaur.dsmod.core.feature.general.Fullbright
+import io.github.noxaur.dsmod.core.feature.general.HideExplosions
+import io.github.noxaur.dsmod.core.feature.general.InventoryHud
+import io.github.noxaur.dsmod.core.feature.general.PerformanceStats
+import io.github.noxaur.dsmod.core.feature.general.PlayerModel
+import io.github.noxaur.dsmod.core.feature.general.ProfileViewer
+import io.github.noxaur.dsmod.core.feature.hud.ChatHudEditor
+import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
+import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
+import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
+import io.github.noxaur.dsmod.core.feature.inventory.HideGlassPanes
+import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
+import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
+import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
+import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
+import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
+import io.github.noxaur.dsmod.core.feature.loot.RareDropAlert
+import io.github.noxaur.dsmod.core.feature.slayer.SlayerBossAlert
+import io.github.noxaur.dsmod.core.feature.slayer.SlayerTracker
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Look
 import kotlin.reflect.KMutableProperty0
@@ -43,371 +76,207 @@ class Groups {
         groups += SettingGroup(name, Rows().apply(rows).rows, switch)
     }
 
+    /** A group that is one feature: its switch beside the heading, [name] by default its title, and its rows under it. */
+    fun group(feature: Feature, name: String = feature.title) {
+        groups += SettingGroup(name, feature.rows, feature.switch)
+    }
+
     /** The switch beside a group's heading. */
     fun toggle(property: KMutableProperty0<Boolean>, name: String, description: String, id: String = property.name) =
         Switch(id, name, description, Bind.of(property))
 }
 
 /**
- * Every setting of ds-mod, in the order the settings screen shows them, bound to a config. The tree is the only
- * schema of the settings, and the one place their names and descriptions live: to add one, add its field to
- * `DsModConfig` and one line here with an existing kind. `SettingsTreeTest` fails on a saved field that no row
- * reaches and that [STORED] does not name.
+ * Every setting of ds-mod, in the order the settings screen shows them, bound to a [config]. The tree is the only
+ * schema of the settings. A feature declares its own rows, and the tree places it once, as a group of its own or a
+ * row among others, which is also what lists it in [features]: a feature placed nowhere never runs. A setting that
+ * belongs to no feature is a field of `DsModConfig` and one line here with an existing kind. `SettingsTreeTest` fails
+ * on a saved field that no row reaches and that [STORED] does not name.
  */
-object SettingsTree {
-    /** Saved fields that no row edits, each with the reason. Every saved field has a row now. */
-    val STORED = emptyMap<String, String>()
-
-    private val fresh by lazy { declare(DsModConfig()) }
-
-    /** The tree bound to [config], each row's default taken from the same row of a fresh config. */
-    fun sections(config: DsModConfig): List<SettingSection> {
-        val sections = declare(config)
-        val defaults = fresh.asSequence().flatMap { it.walk() }.associateBy { it.id }
-        for (setting in sections.asSequence().flatMap { it.walk() }) if (setting is Valued<*>) setting.adopt(defaults.getValue(setting.id))
-        return sections
-    }
-
-    /** The section and the switch of a fresh config that [toggle] binds to, such as `config.chat::hideCooldownMessages`. */
-    fun home(toggle: KMutableProperty0<Boolean>): Pair<SettingSection, Switch> {
-        val field = Bind.field(toggle)
-        return fresh.firstNotNullOf { section -> section.walk().filterIsInstance<Switch>().firstOrNull { it.field == field }?.let { section to it } }
-    }
+class SettingsTree(val config: DsModConfig = DsModConfig()) {
+    /** The sections, with each row's default taken from the same row of a tree on a fresh config. */
+    val sections: List<SettingSection> = declare(config)
 
     /**
-     * [saved] favorites as row ids. Versions up to 0.1.0 starred MoulConfig's options by path, as `general.fullbright`,
-     * so a path becomes the id of the row that edits its field, or of the row that took over its button's job.
+     * Every feature, which is also the order the HUD stacks their blocks in: the features of one area first, since
+     * their blocks are what the player is there for, then the ones that show everywhere, each in the tree's order.
      */
-    fun favorites(saved: List<String>): List<String> {
-        val rows = fresh.flatMap { it.walk() }
-        val ids = rows.mapTo(HashSet()) { it.id }
-        val byPath = rows.filterIsInstance<Valued<*>>().associate { it.field.replaceFirstChar(Char::lowercase) to it.id }
-        return saved.mapNotNull { if (it in ids) it else byPath[it] ?: BUTTONS[it] }.distinct()
+    val features: List<Feature> = sections.asSequence().flatMap { it.walk() }.filterIsInstance<Switch>().mapNotNull { it.feature }
+        .sortedBy { it.area == Area.ANYWHERE }.toList()
+
+    init {
+        val defaults = fresh.asSequence().flatMap { it.walk() }.associateBy { it.id }
+        for (setting in sections.asSequence().flatMap { it.walk() }) if (setting is Valued<*>) setting.adopt(defaults.getValue(setting.id))
+        val repeated = features.groupBy { it.id }.filterValues { it.size > 1 }.keys
+        check(repeated.isEmpty()) { "A feature is placed twice in SettingsTree, or two features share an id: $repeated" }
     }
 
-    /** MoulConfig's buttons, by path, to the row that does their job now. */
-    private val BUTTONS = mapOf(
-        "general.editBinds" to "binds",
-        "general.resetAnimations" to "resetAnimations",
-        "end.editBeam" to "beamSections",
-        "betterUi.editTabs" to "tabs",
-        "inventory.editRarityStyle" to "customLook",
-        "hud.edit" to "moveHud",
-        "contribute.open" to "requests",
-    )
+    /** The feature of [type]. */
+    fun <F : Feature> feature(type: Class<F>): F = type.cast(features.first { it.javaClass == type })
 
-    /** Sets each row's [Setting.gate]: the switch it sits under. */
-    fun link(rows: List<Setting>, gate: Switch?) {
-        for (row in rows) {
-            row.gate = gate
-            link(row.children, if (row is Switch) row else gate)
+    inline fun <reified F : Feature> feature(): F = feature(F::class.java)
+
+    companion object {
+        /** Saved fields that no row edits, each with the reason. Every saved field has a row now. */
+        val STORED = emptyMap<String, String>()
+
+        private val fresh by lazy { declare(DsModConfig()) }
+
+        /** The section that holds [switch], such as a feature's, or null for one the tree does not place, as a test's feature. */
+        fun home(switch: Switch): SettingSection? = fresh.firstOrNull { section -> section.walk().any { it is Switch && it.field == switch.field } }
+
+        /**
+         * [saved] favorites as row ids. A feature's switch was starred under its field's name, as `fullbright`, before
+         * the row took the feature's id, and versions up to 0.1.0 starred MoulConfig's options by path, as
+         * `general.fullbright`. Either becomes the id of the row that edits that field, by its current or a former
+         * key, or of the row that took over a button's job.
+         */
+        fun favorites(saved: List<String>): List<String> {
+            val rows = fresh.flatMap { it.walk() }
+            val ids = rows.mapTo(HashSet()) { it.id }
+            val byField = HashMap<String, String>()
+            for (row in rows.filterIsInstance<Valued<*>>()) {
+                val section = row.field.substringBefore('.').replaceFirstChar(Char::lowercase)
+                for (key in listOf(row.field.substringAfter('.')) + row.formerly) {
+                    byField.putIfAbsent(key, row.id)
+                    byField.putIfAbsent("$section.$key", row.id)
+                }
+            }
+            return saved.mapNotNull { if (it in ids) it else byField[it] ?: BUTTONS[it] }.distinct()
+        }
+
+        /** MoulConfig's buttons, by path, to the row that does their job now. */
+        private val BUTTONS = mapOf(
+            "general.editBinds" to "binds",
+            "general.resetAnimations" to "resetAnimations",
+            "end.editBeam" to "beamSections",
+            "betterUi.editTabs" to "tabs",
+            "inventory.editRarityStyle" to "customLook",
+            "hud.edit" to "moveHud",
+            "contribute.open" to "requests",
+        )
+
+        /** Sets each row's [Setting.gate]: the switch it sits under. */
+        fun link(rows: List<Setting>, gate: Switch?) {
+            for (row in rows) {
+                row.gate = gate
+                link(row.children, if (row is Switch) row else gate)
+            }
+        }
+
+        private fun declare(c: DsModConfig): List<SettingSection> {
+            val g = c.general
+            val sections = Sections().apply {
+                // What applies everywhere comes first, then each area of the game, and Contribute last.
+                section("General", Role.VALUE) {
+                    group("Server") {
+                        switch(g::onlyOnDragSim, "DragSim Only", "Run ds-mod only on dragsim.co.")
+                    }
+                    group("Settings") {
+                        keys(g::settingsKey, "Settings Key", "Pick a key that opens these settings, as /dsmod does.")
+                        keys(g::favoriteKey, "Favorite Key", "Pick a key that stars the setting under your mouse.")
+                    }
+                    group("World") {
+                        feature(Fullbright(c))
+                        feature(HideExplosions(c))
+                    }
+                    group(EtherwarpOutline(c), "Etherwarp")
+                    group(AbilityCooldowns(c))
+                    group(Animations(c))
+                    group(PlayerModel(c))
+                    group(ProfileViewer(c))
+                }
+                section("Camera", Role.ACTION) {
+                    group(Camera(c), "Third Person")
+                    group(FreeLook(c))
+                }
+                section("Binds", Role.DIVINE) {
+                    group(CommandBinds(c))
+                }
+                section("Interface", Role.MUTED) {
+                    val hud = c.hud
+                    group("Theme") {
+                        pick(hud::theme, "Theme", "Pick the colors of ds-mod's screens and controls.") { Look.Swatch(it) }
+                    }
+                    group("HUD") {
+                        number(hud::scale, "Scale", "Make every HUD block bigger or smaller.", 0.5f..3f, step = 0.25f, unit = "x", id = "hudScale")
+                        switch(hud::background, "Background", "Show a dark plate behind the HUD, so it reads over a bright world.", id = "hudBackground")
+                        val positions = Bind("Hud.positions", { HashMap(hud.positions) }, {
+                            hud.positions.clear()
+                            hud.positions.putAll(it)
+                        })
+                        panel(positions, "Layout", "Drag a block to move it, and scroll over it to resize it.", Canvas.HUD_LAYOUT, id = "hudLayout") {
+                            if (it.isEmpty()) "Stacked" else if (it.size == 1) "1 block moved" else "${it.size} blocks moved"
+                        }
+                        action(Opens.HUD_EDITOR, "Move HUD", "Move your HUD over the game, with the world behind it.", button = "Move", id = "moveHud")
+                        feature(ChatHudEditor(c))
+                        keys(hud::editKey, "HUD Editor Key", "Pick a key that opens the HUD editor, or none.", id = "hudEditKey")
+                        switch(hud::hideInF3, "Hide In F3", "Hide ds-mod's HUD while the F3 debug screen is open.")
+                    }
+                    group(EquipmentDisplay(c))
+                    group(PerformanceStats(c))
+                    group(ActivePet(c))
+                    group(InventoryHud(c))
+                }
+                section("Chat", Role.WARNING) {
+                    group(null) {
+                        feature(HideCooldownMessages(c))
+                        feature(CopyChat(c))
+                    }
+                }
+                section("Inventory", Role.GOOD) {
+                    group(ItemRarity(c))
+                    group("Protection") {
+                        feature(SlotLock(c))
+                        feature(ArmorSwapGuard(c))
+                    }
+                }
+                section("Menus", Role.LEGENDARY) {
+                    group("Look") {
+                        feature(MenuTheme(c))
+                        feature(FixedMenuLayout(c))
+                        feature(HideGlassPanes(c))
+                        feature(KeepCursor(c))
+                    }
+                    group("Better UI", switch = toggle(c.betterUi::enabled, "Better UI", "Turn everything below on or off at once.", id = "betterUi")) {
+                        feature(BackButtons(c))
+                        feature(MenuTabs(c))
+                    }
+                }
+                section("The End", Role.EPIC) {
+                    group("Dragon") {
+                        feature(DragonTimer(c))
+                        feature(FireballAlert(c))
+                        feature(EyeGuard(c))
+                    }
+                    group("Protector") {
+                        feature(ProtectorStatus(c))
+                        feature(ProtectorSpawnBeam(c))
+                    }
+                    group("Drops") {
+                        feature(BossFightTracker(c))
+                        feature(ZealotTracker(c))
+                    }
+                }
+                section("Combat", Role.BAD) {
+                    group(DamageNumbers(c))
+                    group("Slayers") {
+                        feature(SlayerTracker(c))
+                        feature(SlayerBossAlert(c))
+                    }
+                    group("Loot") {
+                        feature(RareDropAlert(c))
+                    }
+                }
+                section("Contribute", Role.RARE) {
+                    group(null) {
+                        action(Opens.REQUESTS, "Requests", "See what ds-mod's developers ask players to record.", id = "requests")
+                        switch(c.contribute::reportGameData, "Report Game Data", "Send game data new to ds-mod to its developers, names removed.")
+                    }
+                }
+            }.sections
+            for (section in sections) for (group in section.groups) link(group.rows, group.switch)
+            return sections
         }
     }
-
-    private fun declare(c: DsModConfig): List<SettingSection> {
-        val g = c.general
-        val inv = c.inventory
-        val sections = Sections().apply {
-            // What applies everywhere comes first, then each area of the game, and Contribute last.
-            section("General", Role.VALUE) {
-                group("Server") {
-                    switch(g::onlyOnDragSim, "DragSim Only", "Run ds-mod only on dragsim.co.")
-                }
-                group("Settings") {
-                    keys(g::settingsKey, "Settings Key", "Pick a key that opens these settings, as /dsmod does.")
-                    keys(g::favoriteKey, "Favorite Key", "Pick a key that stars the setting under your mouse.")
-                }
-                group("World") {
-                    switch(g::fullbright, "Fullbright", "Light caves and nights as brightly as day.")
-                    switch(g::hideExplosions, "Hide Explosions", "Hide the clouds that explosions throw up.")
-                }
-                group("Etherwarp", switch = toggle(g::etherwarpOutline, "Etherwarp Outline", "Box the block Etherwarp will take you to while you sneak.")) {
-                    choice(g::etherwarpStyle, "Style", "Draw the box as edges, a tinted fill, or both.", id = "etherwarpStyle")
-                    number(g::etherwarpWidth, "Width", "Set how thick the box's edges are.", 1f..5f, step = 0.5f, id = "etherwarpWidth")
-                    switch(g::etherwarpFailed, "Failed Warps", "Box a block you can't warp to as well, and say why.")
-                    switch(g::etherwarpThroughWalls, "Through Walls", "Show the whole box, even behind the blocks in front of it.")
-                    switch(g::etherwarpWithoutSneak, "Without Sneak", "Show the box before you sneak, too.")
-                }
-                group("Ability Cooldowns", switch = toggle(g::abilityCooldowns, "Ability Cooldowns", "Time your item abilities and Riftwalker's charged hit.")) {
-                    switch(g::cooldownList, "List", "List the abilities you are waiting on, on the HUD.", id = "cooldownList")
-                    switch(g::cooldownOnItems, "On Items", "Drain a wash over the item and count down its seconds.", id = "cooldownOnItems")
-                    number(g::cooldownShortest, "Shortest Listed", "List only cooldowns at least this many seconds long.", 0f..20f, step = 0.5f, unit = "s")
-                    switch(g::cooldownReadyAlert, "Ready Alert", "Alert you when a long cooldown is over.")
-                    number(g::cooldownAlertFrom, "Alert From", "Alert only for cooldowns at least this many seconds long.", 1f..120f, step = 1f, unit = "s")
-                }
-                group("Animations", switch = toggle(g::animations, "Animations", "Shape how your held item swings and sits with the settings below.")) {
-                    choice(g::swingStyle, "Swing Style", "Pick how your held item moves when you swing.")
-                    number(g::swingSpeed, "Swing Speed", "Speed your swing up, or slow it down below 1.", 0.1f..3f, step = 0.1f, unit = "x")
-                    number(g::itemSize, "Item Size", "Grow or shrink your held item.", 0.1f..2f, step = 0.05f, unit = "x")
-                    fold("itemPosition", "Item Position", "Move and turn your held item.") {
-                        offset(g::itemX, "Item X", "Move your held item out to the side, or in below zero.")
-                        offset(g::itemY, "Item Y", "Raise your held item, or lower it below zero.")
-                        offset(g::itemZ, "Item Z", "Push your held item away, or bring it nearer below zero.")
-                        angle(g::itemYaw, "Item Yaw", "Turn your held item left or right about its grip, in degrees.")
-                        angle(g::itemPitch, "Item Pitch", "Tip your held item forward or back about its grip, in degrees.")
-                        angle(g::itemRoll, "Item Roll", "Tilt your held item sideways about its grip, in degrees.")
-                    }
-                    fold("swingOptions", "Swing Options", "Fine-tune how your held item swings and dips.") {
-                        switch(g::scaleSwing, "Scale Swing", "Make the swing reach as far as Item Size makes the item big.")
-                        switch(g::noSwing, "No Swing", "Keep your held item still when you swing.")
-                        switch(g::noBowSwing, "No Bow Swing", "Keep a bow still when you swing it, as when it shoots on a click.")
-                        switch(g::ignoreHaste, "Ignore Haste", "Swing at the same pace under Haste or Mining Fatigue.")
-                        switch(g::noEquipReset, "No Equip Reset", "Keep your held item up instead of dipping after a swing or use.")
-                    }
-                    action("resetAnimations", "Reset Animations", "Put every Animations setting back to the game's own.", button = "Reset", run = g::resetAnimations)
-                }
-                group("Player Model", switch = toggle(g::playerModel, "Player Model", "Resize, tilt, spin and pose players, as only you see them.")) {
-                    preview("modelPreview", "Preview", "Drag your model to turn it, and see the settings below on it.", Canvas.PLAYER_MODEL)
-                    choice(g::modelTarget, "Players", "Change only your own model, or every player's.")
-                    number(g::modelSize, "Size", "Grow or shrink the model.", 0.1f..3f, step = 0.05f, unit = "x")
-                    fold("modelStretch", "Stretch", "Make the model wider, taller or deeper than its size.") {
-                        number(g::modelWidth, "Width", "Make the model wider, or thinner below 1.", 0.1f..3f, step = 0.05f, unit = "x")
-                        number(g::modelHeight, "Height", "Make the model taller, or shorter below 1.", 0.1f..3f, step = 0.05f, unit = "x")
-                        number(g::modelDepth, "Depth", "Make the model deeper, or flatter below 1.", 0.1f..3f, step = 0.05f, unit = "x")
-                    }
-                    number(g::modelTiltForward, "Tilt Forward", "Lean the model forward, or back below zero, in degrees.", -180f..180f, step = 1f, unit = "°")
-                    number(g::modelTiltSideways, "Tilt Sideways", "Lean the model to its right, or left below zero, in degrees.", -180f..180f, step = 1f, unit = "°")
-                    switch(g::modelUpsideDown, "Upside Down", "Stand the model on its head.")
-                    number(g::modelSpin, "Spin", "Spin the model this many turns a second, the other way below zero.", -5f..5f, step = 0.1f, unit = "/s")
-                    choice(g::modelPose, "Pose", "Hold the model's arms and legs still in a pose.")
-                    action("resetPlayerModel", "Reset Model", "Put every Player Model setting back to the game's own.", button = "Reset", run = g::resetPlayerModel)
-                }
-                group("Profile Viewer", switch = toggle(g::profileViewer, "Profile Viewer", "Look up any player's profile with /pv and their name.")) {
-                    switch(g::profileNames, "Click Names", "Click a player's name in chat to open their profile.")
-                }
-            }
-            section("Camera", Role.ACTION) {
-                group("Third Person", switch = toggle(g::camera, "Camera", "Shape the third-person view with the settings below.")) {
-                    number(g::cameraDistance, "Distance", "Set how many blocks the third-person camera sits from you.", 1f..50f, step = 0.5f)
-                    number(g::cameraHeight, "Height", "Raise the third-person camera, or lower it below zero.", -2f..3f, step = 0.1f)
-                    number(g::cameraTilt, "Tilt", "Angle the third-person camera down, or up below zero.", -45f..45f, step = 1f, unit = "°")
-                    choice(g::cameraViews, "F5 Views", "Pick which views F5 goes through.")
-                    number(g::cameraSmoothing, "Smoothing", "Slide the camera out when you leave first person.", 0f..100f, step = 5f)
-                }
-                group("Free Look", switch = toggle(g::freeLook, "Free Look", "Look around in third person while you keep facing ahead.")) {
-                    keys(g::freeLookKey, "Key", "Pick the key or mouse button for Free Look.")
-                    choice(g::freeLookMode, "Mode", "Pick Hold to look while the key is down, or Toggle.")
-                }
-            }
-            section("Binds", Role.DIVINE) {
-                group(null) {
-                    val binds = switch(g::commandBinds, "Command Binds", "Send a command, such as /warp end, with a key or a few keys.")
-                    number(g::sequenceGap, "Sequence Gap", "Set how many milliseconds a key sequence waits for its next key.", 50f..1000f, step = 50f, unit = " ms", dependsOn = binds)
-                    val list = Bind(
-                        "General.binds",
-                        { Grouped(g.binds, g.bindGroups, g.collapsedGroups, g.offGroups) },
-                        {
-                            g.binds = it.items
-                            g.bindGroups = it.groups
-                            g.collapsedGroups = it.folded
-                            g.offGroups = it.off
-                        },
-                    ).spanning("General.bindGroups", "General.collapsedGroups", "General.offGroups")
-                    items(list, "Binds", "Name each bind, pick its keys and choose where it works.", CommandBinds, dependsOn = binds)
-                }
-            }
-            section("Interface", Role.MUTED) {
-                val hud = c.hud
-                group("Theme") {
-                    pick(hud::theme, "Theme", "Pick the colors of ds-mod's screens and controls.") { Look.Swatch(it) }
-                }
-                group("HUD") {
-                    number(hud::scale, "Scale", "Make every HUD block bigger or smaller.", 0.5f..3f, step = 0.25f, unit = "x", id = "hudScale")
-                    switch(hud::background, "Background", "Show a dark plate behind the HUD, so it reads over a bright world.", id = "hudBackground")
-                    val positions = Bind("Hud.positions", { HashMap(hud.positions) }, {
-                        hud.positions.clear()
-                        hud.positions.putAll(it)
-                    })
-                    panel(positions, "Layout", "Drag a block to move it, and scroll over it to resize it.", Canvas.HUD_LAYOUT, id = "hudLayout") {
-                        if (it.isEmpty()) "Stacked" else if (it.size == 1) "1 block moved" else "${it.size} blocks moved"
-                    }
-                    action(Opens.HUD_EDITOR, "Move HUD", "Move your HUD over the game, with the world behind it.", button = "Move", id = "moveHud")
-                    switch(hud::chatHudEditor, "Chat HUD Editor", "Drag HUD blocks with chat open, and scroll over one to resize it.")
-                    keys(hud::editKey, "HUD Editor Key", "Pick a key that opens the HUD editor, or none.", id = "hudEditKey")
-                    switch(hud::hideInF3, "Hide In F3", "Hide ds-mod's HUD while the F3 debug screen is open.")
-                }
-                group("Equipment Display", switch = toggle(g::equipmentDisplay, "Equipment Display", "Show your armor and pet on the HUD.")) {
-                    order(g::equipmentPieces, "Pieces", "Pick the pieces to show, and drag them into order.")
-                    choice(g::equipmentLayout, "Layout", "Line the pieces up in a row or a column.")
-                    choice(g::equipmentLook, "Look", "Show the pieces on the plate, on nothing, or in hotbar slots.")
-                    choice(g::equipmentPlacement, "Placement", "Keep the pieces where you put them, or beside your hotbar.")
-                    choice(g::petLook, "Pet Look", "Show your pet as its head, or as its name and level.")
-                    choice(g::petPosition, "Pet Position", "Put your pet among the armor, or on a row above or below it.")
-                }
-                group("Performance Stats", switch = toggle(g::performanceStats, "Performance Stats", "Show your FPS, your ping and the server's TPS on the HUD.")) {
-                    order(g::performanceValues, "Values", "Pick the values to show, and drag them into order.")
-                    choice(g::performanceLayout, "Layout", "Line the values up in a row or a column.")
-                    choice(g::performanceLook, "Look", "Show the values on the plate, or on nothing.")
-                }
-                group("Active Pet", switch = toggle(g::activePet, "Active Pet", "Show your pet, its level, held item and XP on the HUD.")) {
-                    switch(g::activePetIcon, "Icon", "Show your pet's head beside its name.")
-                    switch(g::activePetItem, "Held Item", "Show the pet item your pet holds.")
-                    switch(g::activePetXp, "XP", "Show how far your pet is to its next level.")
-                    switch(g::activePetRate, "XP Rate", "Show how fast your pet gains XP.")
-                    switch(g::activePetNext, "Next Level", "Show how long until your pet reaches its next level.")
-                    switch(g::markActivePet, "Mark In Menu", "Mark your active pet in the Pets menu.")
-                    switch(g::hideAutopet, "Hide Autopet", "Hide the chat line Autopet sends when it swaps your pet.")
-                }
-                group("Inventory HUD", switch = toggle(g::inventoryHud, "Inventory HUD", "Show a grid of the items in your inventory on the HUD.")) {
-                    order(g::inventoryRows, "Rows", "Pick the rows to show, and drag them into order.")
-                    choice(g::inventoryLook, "Look", "Show the items on the plate, on nothing, or as your inventory.")
-                    choice(g::inventoryLayout, "Layout", "Lay each row out across, as in the inventory, or down.")
-                    choice(g::inventoryPlacement, "Placement", "Keep the grid where you put it, or beside your hotbar.")
-                    number(g::inventoryOpacity, "Opacity", "Set how solid the Inventory look's panel is.", 0f..100f, step = 5f, unit = "%")
-                    keys(g::inventoryKey, "Key", "Pick a key that shows or hides the grid, or none to always show it.")
-                    choice(g::inventoryKeyMode, "Key Mode", "Pick Hold to show the grid while the key is down, or Toggle.")
-                    switch(g::inventoryPickup, "Pickup Animation", "Bob an item in the grid as it lands, as the hotbar does.")
-                }
-            }
-            section("Chat", Role.WARNING) {
-                group(null) {
-                    switch(c.chat::hideCooldownMessages, "Hide Cooldown Messages", "Hide the message that an ability is on cooldown.")
-                    switch(c.chat::copyChat, "Copy Chat", "Right-click messages to copy them as text, format codes or JSON.")
-                }
-            }
-            section("Inventory", Role.GOOD) {
-                group("Item Rarity", switch = toggle(inv::itemRarity, "Item Rarity", "Mark each item's slot in the color of its rarity.")) {
-                    pick(inv::rarityPreset, "Style", "Pick a look for the marks, or Custom for your own.") { Look.Slots(it.style ?: inv.inventoryStyle) }
-                    fold("customLook", "Custom Look", "Build your own look from its parts, which switches Style to Custom.") {
-                        // A part shows the look on screen. Writing a different one makes that look the player's own.
-                        // While a preset is active the part's default is that preset, so a reset leaves it in place.
-                        slotParts(
-                            field = "Inventory.inventoryStyle",
-                            idPrefix = "",
-                            look = inv::containerStyle,
-                            preset = { inv.rarityPreset.style },
-                            write = {
-                                inv.inventoryStyle = it
-                                inv.rarityPreset = RarityPreset.CUSTOM
-                            },
-                            border = "Pick the ring around the slot.",
-                            fill = "Pick the color inside the slot, behind the item.",
-                            floor = "Pick what the item stands on.",
-                            gem = "Put a small gem over the item's top-left corner.",
-                        )
-                    }
-                    switch(inv::markCommon, "Common Items", "Mark common items too.")
-                    switch(inv::hotbarMarks, "Hotbar", "Mark your hotbar as well.") {
-                        // Unmatching starts the hotbar's own look from what it showed, so nothing jumps.
-                        val match = Bind("Inventory.hotbarMatches", { inv.hotbarMatches }) {
-                            if (!it && inv.hotbarMatches) inv.hotbarStyle = inv.containerStyle()
-                            inv.hotbarMatches = it
-                        }
-                        switch(match, "Match Inventory", "Mark the hotbar in the same look as your inventory.")
-                        // A part shows the hotbar's look as it is, and a change makes it the hotbar's own, as Custom Look does
-                        // for Style. While the hotbar matches, the part's default is the look on screen, so a reset
-                        // writes that part back and leaves Match Inventory on.
-                        slotParts(
-                            field = "Inventory.hotbarStyle",
-                            idPrefix = "hotbar",
-                            look = inv::hotbarLook,
-                            preset = { if (inv.hotbarMatches) inv.hotbarLook() else null },
-                            write = {
-                                inv.hotbarStyle = it
-                                inv.hotbarMatches = false
-                            },
-                            border = "Pick the ring around each hotbar slot.",
-                            fill = "Pick the color inside each hotbar slot.",
-                            floor = "Pick what each hotbar item stands on.",
-                            gem = "Put a small gem over each hotbar item's corner.",
-                        )
-                    }
-                }
-                group("Protection") {
-                    switch(inv::slotLock, "Slot Lock", "Lock inventory slots and items so a misclick cannot move them.") {
-                        keys(inv::slotLockKey, "Slot Key", "Pick the key or mouse button that locks the slot under the mouse.")
-                        keys(inv::itemLockKey, "Item Key", "Pick the key that locks an item that does not stack.")
-                    }
-                    switch(inv::armorSwapGuard, "Armor Swap Guard", "Stop a right click from swapping on armor, unless you sneak.")
-                }
-            }
-            section("Menus", Role.LEGENDARY) {
-                group("Look") {
-                    switch(inv::menuTheme, "Menu Theme", "Draw menus and plain tooltips in the Theme under Interface.") {
-                        choice(inv::menuLook, "Menu Look", "Draw themed menus solid, or as glass that shows the world.")
-                        number(inv::glassOpacity, "Glass Opacity", "Set how dark the glass is, from clear at 0 to solid at 100.", 0f..100f, step = 5f)
-                    }
-                    switch(inv::fixedMenuLayout, "Fixed Menu Layout", "Keep Go Back, Close and your inventory in place in every menu.")
-                    switch(inv::hideGlassPanes, "Hide Glass Panes", "Hide the blank glass panes that pad out menus.")
-                    switch(inv::keepCursor, "Keep Cursor", "Leave the cursor where it was when one menu opens another.")
-                }
-                group("Better UI", switch = toggle(c.betterUi::enabled, "Better UI", "Turn everything below on or off at once.", id = "betterUi")) {
-                    switch(c.betterUi::backButtons, "Back Buttons", "Add Go Back to menus without one, by resending your last command.")
-                    switch(c.betterUi::menuTabs, "Menu Tabs", "Add tabs that send your commands, and a search, to every menu.") {
-                        val ui = c.betterUi
-                        panel(Bind.of(ui::tabs), "Tabs", "Press a place to add a tab there, and drag a tab to move it.", Canvas.MENU_TABS, id = "tabs") {
-                            if (it.size == 1) "1 tab" else "${it.size} tabs"
-                        }
-                    }
-                }
-            }
-            section("The End", Role.EPIC) {
-                group("Dragon") {
-                    switch(c.end::dragonTimer, "Dragon Timer", "Show the egg timer, the eyes placed and the dragon's time alive.")
-                    switch(c.end::fireballAlert, "Fireball Alert", "Alert you when a dragon is about to throw fireballs.")
-                    switch(c.end::eyeGuard, "Eye Guard", "Ignore a quick second click that would take a placed eye back.")
-                }
-                group("Protector") {
-                    switch(c.end::protectorStatus, "Protector Status", "Show the Protector's stage and the kills left until it emerges.")
-                    switch(c.end::protectorSpawnBeam, "Protector Spawn Beam", "Show a beam where the Endstone Protector will emerge.") {
-                        span(c.end::beamSections, "Beam Timing", "Pick when the beam shows, in zealots killed out of 200.", max = 200, ticks = listOf(50, 100, 150))
-                        switch(c.end::beamInFight, "During the Fight", "Keep the beam while the Protector is up.")
-                    }
-                }
-                group("Drops") {
-                    switch(c.end::bossFightTracker, "Boss Fight Tracker", "Show your rank, damage and loot from the last boss fight.")
-                    switch(c.end::zealotTracker, "Zealot Tracker", "Count your Summoning Eyes and zealot kills, per hour and all-time.")
-                }
-            }
-            section("Combat", Role.BAD) {
-                group("Damage Numbers", switch = toggle(c.general::damageNumbers, "Damage Numbers", "Shorten or hide the damage numbers that pop up on a hit.")) {
-                    choice(g::damageShown, "Show", "Pick which damage numbers you see: all, only crits, or none.", id = "damageShown")
-                    val short = switch(g::damageShort, "Short Numbers", "Shorten big numbers, so 1,234,567 reads 1.2M.")
-                    number(g::damageDecimals, "Decimals", "Set how many decimals a short number keeps.", 0f..3f, step = 1f, id = "damageDecimals", dependsOn = short)
-                }
-                group("Slayers") {
-                    switch(c.slayer::slayerTracker, "Slayer Tracker", "Count the slayer bosses you slay and time each from spawn to slain.")
-                    switch(c.slayer::slayerBossAlert, "Slayer Boss Alert", "Alert you when your slayer boss spawns.")
-                }
-                group("Loot") {
-                    switch(c.loot::rareDropAlert, "Rare Drop Alert", "Alert you to drops of the chosen tier or better.") {
-                        choice(c.loot::lootAlertTier, "Alert Tier", "Pick the lowest drop tier that alerts you.")
-                    }
-                }
-            }
-            section("Contribute", Role.RARE) {
-                group(null) {
-                    action(Opens.REQUESTS, "Requests", "See what ds-mod's developers ask players to record.", id = "requests")
-                    switch(c.contribute::reportGameData, "Report Game Data", "Send game data new to ds-mod to its developers, names removed.")
-                }
-            }
-        }.sections
-        for (section in sections) for (group in section.groups) link(group.rows, group.switch)
-        return sections
-    }
 }
-
-/**
- * The Border, Fill, Floor and Gem rows of a slot look, saved under [field]. Each shows [look] as it is, a change goes
- * to [write], and a reset leaves the [preset] look in place while there is one. A row's id is its part, after [idPrefix].
- */
-private fun Rows.slotParts(
-    field: String, idPrefix: String, look: () -> SlotStyle, preset: () -> SlotStyle?, write: (SlotStyle) -> Unit,
-    border: String, fill: String, floor: String, gem: String,
-) {
-    fun id(part: String) = if (idPrefix.isEmpty()) part else idPrefix + part.replaceFirstChar { it.uppercase() }
-    fun <T> part(part: String, get: (SlotStyle) -> T, with: SlotStyle.(T) -> SlotStyle) =
-        Bind("$field.$part", { get(look()) }) {
-            if (it != get(look())) write(look().with(it))
-        }.follows { preset()?.let(get) }
-    fun <T> choose(part: String, name: String, description: String, values: List<T>, label: (T) -> String, get: (SlotStyle) -> T, with: SlotStyle.(T) -> SlotStyle) =
-        pick(part(part, get, with), name, description, values, id(part), label = label) { Look.Slots(look().with(it), 1) }
-    choose("border", "Border", border, Border.entries, { it.label }, { it.border }) { copy(border = it) }
-    choose("fill", "Fill", fill, Fill.entries, { it.label }, { it.fill }) { copy(fill = it) }
-    choose("floor", "Floor", floor, Floor.entries, { it.label }, { it.floor }) { copy(floor = it) }
-    switch(part("gem", { it.gem }) { copy(gem = it) }, "Gem", gem, id("gem"))
-}
-
-private fun Rows.offset(property: KMutableProperty0<Float>, name: String, description: String) = number(property, name, description, -1f..1f, step = 0.05f)
-
-private fun Rows.angle(property: KMutableProperty0<Float>, name: String, description: String) = number(property, name, description, -180f..180f, step = 1f, unit = "°")

@@ -56,7 +56,7 @@ The server sends its world's tick count about once a second, and a server that l
 
 ## Game says that a line was hidden, not the feature
 
-A player did not ask for a server line to go missing, so the first time a feature that is on by default hides one, the player is told where its switch is. Each feature used to write this notice itself, and only prose asked for it, which a new feature could skip. `Game` now sends it from `hide()`, reading the switch's name, section and default from `SettingsTree`, and keeps who has told in `hidden.json`. A feature the player turned on hides what they asked it to, so it says nothing.
+A player did not ask for a server line to go missing, so the first time a feature that is on by default hides one, the player is told where its switch is. Each feature used to write this notice itself, and only prose asked for it, which a new feature could skip. `Game` now sends it from `hide()`, with the switch's name and default from the feature and its section from `SettingsTree.home`, and keeps who has told in `hidden.json`. A feature the player turned on hides what they asked it to, so it says nothing.
 
 ## An ability's use comes from the server, its length from the lore
 

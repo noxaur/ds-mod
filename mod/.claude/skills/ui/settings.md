@@ -1,35 +1,36 @@
 # Settings
 
-ds-mod's settings screen draws every setting from one tree, `SettingsTree` in `core/config`. The tree is the only schema of the settings, and the one place a setting's name and description live: each line binds a field of `DsModConfig` to a kind of row, and the screen gets its control, search, reset and keyboard from the kind. Every setting is edited in the screen itself, and only an editor that needs the game behind it, such as Move HUD, opens a screen of its own. `/dsmod` opens the screen, and `/dskit rows`, `/dskit lists` and `/dskit panels` show every kind in the gallery.
+ds-mod's settings screen draws every setting from one tree, `SettingsTree` in `core/config`. A feature declares its own settings in its class, and the tree places the feature once, in its section and group. A setting that belongs to no feature, such as the theme, is a field of `DsModConfig` bound by one line in the tree. Either way a setting is one line with a kind of row, and the screen gets its control, search, reset and keyboard from the kind. Every setting is edited in the screen itself, and only an editor that needs the game behind it, such as Move HUD, opens a screen of its own. `/dsmod` opens the screen, and `/dskit rows`, `/dskit lists` and `/dskit panels` show every kind in the gallery.
 
 ## Add a setting
 
-1. Add the field to its class in `DsModConfig` with a default, and nothing else: no annotation, no name. The default is what the changed marker and reset use, read from a fresh `DsModConfig()`, so write it nowhere else. The field's name is its key in the player's config file, so never rename one that shipped. A new class of values needs `@Serializable`.
-2. Add one line to `SettingsTree` in its section and group, with a kind from the table below. Write no drawing or input code.
+A feature's setting is one line in the feature's class, as `val inFight = switch("beamInFight", "During the Fight", "Keep the beam while the Protector is up.", default = false)`, with a kind from the table below. Its first argument is its key in the player's config file, under the feature's `Store`, so never rename one that shipped: a key that has to change names the old one as `formerly`. Its default is written there and nowhere else. The feature reads it as `inFight.value`, and the edge as `DsModClient.feature<ProtectorSpawnBeam>().inFight.value`. Write no drawing or input code. A new class of values needs `@Serializable`.
 
-A field that no row should edit goes on `SettingsTree.STORED` with the reason. It is empty, because every field the player sets has a row: a list of things the player made is an Items row, and a canvas is a Panel row. A row that edits several fields at once names the rest with `Bind.spanning`.
+A setting of no feature is a field in its class of `DsModConfig` with a default, and one line in `SettingsTree` in its section and group. The field's name is its key, and its default is read from a fresh `DsModConfig()`, so write it nowhere else.
+
+A saved value that no row should edit is `stored("inventoryStyle", SlotStyle())` in its feature, for a row that reads and writes several, or goes on `SettingsTree.STORED` with the reason when it is a field. `STORED` is empty, because every field the player sets has a row: a list of things the player made is an Items row, and a canvas is a Panel row. A row that edits several slots at once names the rest with `Bind.spanning`.
 
 | Kind | Declare it with | For |
 | --- | --- | --- |
-| Switch | `switch(c.end::dragonTimer, "Dragon Timer", "Show when the egg returns.")` | On or off |
-| Switch with settings | `switch(..) { keys(..); number(..) }` | A feature with settings of its own, which open under it and dim while it is off |
-| Number | `number(g::cameraDistance, "Distance", "Set how far the camera sits.", 1f..50f, step = 0.5f, unit = "°")` | A number in a range, stepped from its minimum |
-| Choice | `choice(c.loot::lootAlertTier, "Alert Tier", "Pick the lowest tier that alerts you.")` | One value of an enum, labeled by its `toString` |
-| Pick | `pick(hud::theme, "Theme", "Pick the colors of the screens.") { Look.Swatch(it) }` | A value chosen by how it looks |
-| Keys | `keys(g::freeLookKey, "Key", "Pick the key for Free Look.")` | One key or mouse button, as a GLFW code or -1 |
-| Span | `span(c.end::beamSections, "Beam Timing", "Pick when the beam shows.", max = 200)` | Stretches of a scale, by `Sections`' rules |
-| Fold | `fold("customLook", "Custom Look", "Build your own look.") { .. }` | Rows the player rarely needs, under a bar |
-| Action | `action("resetAnimations", "Reset Animations", "Put every Animations setting back.", button = "Reset", run = g::resetAnimations)`, or `action(Opens.HUD_EDITOR, "Move HUD", "..", button = "Move", id = "moveHud")` | A button: a reset of a group, or a screen of the edge's that `DsModClient` registers for its `Opens`, only for an editor that needs the game behind it or a screen that is not a setting, such as Contribute's requests |
-| Items | `items(binds, "Binds", "Name each bind, pick its keys and choose where it works.", CommandBinds)` | A list of things the player made, in groups, each a line of cells with details under it, by an `ItemKind` in `core`. Its value is a `Grouped`, bound across the list's fields with `Bind.spanning` |
-| Panel | `panel(Bind.of(ui::tabs), "Tabs", "Press a place to add a tab there, and drag a tab to move it.", Canvas.MENU_TABS)` | A canvas the player edits by pointing, such as the HUD layout or the menu tabs, drawn by the `Editor` that `DsModClient` registers for its `Canvas` |
-| Order | `order(g::equipmentPieces, "Pieces", "Pick the pieces to show, and drag them into order.")` | Which values of an enum show and in what order, as a `MutableList` field |
+| Switch | `switch("beamInFight", "During the Fight", "Keep the beam while the Protector is up.", default = false)` | On or off |
+| Switch with settings | `switch("hotbarMarks", "Hotbar", "Mark your hotbar as well.", default = true) { switch(..); pick(..) }` | Rows of the feature's that open under one of its switches, declared with `Rows` calls over `Bind`s, and dim while it is off |
+| Number | `number("cameraDistance", "Distance", "Set how far the camera sits.", 4f, 1f..50f, step = 0.5f, unit = "°")` | A number in a range, stepped from its minimum |
+| Choice | `choice("lootAlertTier", "Alert Tier", "Pick the lowest tier that alerts you.", LootTier.EPIC)` | One value of an enum, labeled by its `toString` |
+| Pick | `pick("rarityPreset", "Style", "Pick a look for the marks.", RarityPreset.GILDED) { Look.Slots(it.style) }`, or `pick(hud::theme, ..) { Look.Swatch(it) }` in the tree | A value chosen by how it looks |
+| Keys | `keys("freeLookKey", "Key", "Pick the key for Free Look.", 342)`, or `keys(g::settingsKey, ..)` in the tree | One key or mouse button, as a GLFW code or `KeyBind.NONE` |
+| Span | `span("beamSections", "Beam Timing", "Pick when the beam shows.", listOf(Section(175, 200)), max = 200)` | Stretches of a scale, by `Sections`' rules |
+| Fold | `fold("customLook", "Custom Look", "Build your own look.", border, fill, floor)` | Rows the player rarely needs, under a bar. The rows are declared before it, and the fold takes them from their place to its own |
+| Action | `action("resetAnimations", "Reset Animations", "Put every Animations setting back.", button = "Reset") { .. }`, or `action(Opens.HUD_EDITOR, "Move HUD", "..", button = "Move", id = "moveHud")` in the tree | A button: a reset of the rows around it, or a screen of the edge's that `DsModClient` registers for its `Opens`, only for an editor that needs the game behind it or a screen that is not a setting, such as Contribute's requests |
+| Items | `rows { items(binds, "Binds", "Name each bind, pick its keys and choose where it works.", CommandBinds) }` | A list of things the player made, in groups, each a line of cells with details under it, by an `ItemKind` in `core`. Its value is a `Grouped`, bound across `stored(..)` slots with `Bind.spanning` |
+| Panel | `rows { panel(tabs.bind, "Tabs", "Press a place to add a tab there, and drag a tab to move it.", Canvas.MENU_TABS, id = "tabs") { .. } }` | A canvas the player edits by pointing, such as the HUD layout or the menu tabs, over a `stored(..)` slot, drawn by the `Editor` that `DsModClient` registers for its `Canvas` |
+| Order | `order("equipmentPieces", "Pieces", "Pick the pieces to show, and drag them into order.", EquipmentPiece.entries)` | Which values of an enum show and in what order, as a `List` |
 | Preview | `preview("modelPreview", "Preview", "Drag your model to turn it, and see the settings below on it.", Canvas.PLAYER_MODEL)` | A picture of what the rows around it do, which holds no value, drawn by the `Editor` that `DsModClient` registers for its `Canvas` |
 
-A group whose rows are one feature takes its switch beside the heading: `group("Free Look", switch = toggle(g::freeLook, "Free Look", "Look around in third person.")) { .. }`. A row that needs a switch elsewhere names it with `dependsOn`. Either one dims the row while the switch is off.
+The tree places a feature as a group of its own, `group(FreeLook(c))` or `group(EtherwarpOutline(c), "Etherwarp")` when the heading is not the title, with its switch beside the heading and its rows under it. A feature among others in a group is a row, `feature(DragonTimer(c))`, whose rows open under its switch. A row that needs a switch elsewhere names it with `dependsOn`. Either one dims the row while the switch is off.
 
-The id defaults to the field's name. Pass `id` when that would repeat one, and never change an id once it ships, because a link to the setting names it.
+A feature's switch row has the feature's id, and every other row's id is its key, or the id a fold, action or preview is given. Never change an id once it ships, because a link to the setting and a favorite name it.
 
-A row bound to part of a value, such as one part of a rarity style, takes a `Bind` with a `get` and a `set` and names the part it reaches, as `Inventory.inventoryStyle.border`. Its `set` does what the existing editor does to the whole, such as switching the style to Custom.
+A row bound to part of a value, such as one part of a rarity style, takes a `Bind` with a `get` and a `set` and names the part it reaches, as `Inventory.inventoryStyle.border`. Its `set` does what the existing editor does to the whole, such as switching the style to Custom. `ItemRarity` is the example.
 
 ## Wording
 

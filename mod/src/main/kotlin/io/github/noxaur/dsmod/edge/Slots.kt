@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.container.SlotCooldown
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
@@ -50,7 +49,7 @@ object Slots {
     /** The seconds a cooldown shows, built once each. */
     private val counts = HashMap<String, Component>()
     private var covered = -1
-    private lateinit var settings: DsModConfig.Inventory
+    private val settings get() = DsModClient.feature<ItemRarity>()
 
     /** Marks slots by their index in the open container's menu, replacing what [id] marked before. */
     fun mark(id: String, slots: Map<Int, SlotMark>) {
@@ -82,11 +81,10 @@ object Slots {
     /** The rarity that marks slot [index] of the open menu, if one does. */
     fun rarity(index: Int): Role? = marks.values.firstNotNullOfOrNull { it[index]?.rarity }
 
-    fun register(settings: DsModConfig.Inventory) {
-        this.settings = settings
+    fun register() {
         // The backs go under the items from `HudHotbarMixin`. This draws the gems and the cooldowns, after vanilla drew the items.
         HudElementRegistry.attachElementAfter(VanillaHudElements.HOTBAR, Identifier.fromNamespaceAndPath("dsmod", "hotbar")) { graphics, _ ->
-            if (!onHotbar() || !cooldowns && !(settings.hotbarMarks && SlotArts.style(settings, Surface.HOTBAR).gem)) return@attachElementAfter
+            if (!onHotbar() || !cooldowns && !(settings.hotbarMarks.value && SlotArts.style(settings, Surface.HOTBAR).gem)) return@attachElementAfter
             DsModClient.game.metrics.time("slots.draw") {
                 val left = graphics.guiWidth() / 2 - 88
                 val top = graphics.guiHeight() - 19
@@ -120,7 +118,7 @@ object Slots {
     /** Called by `HudHotbarMixin` as vanilla is about to draw the hotbar item at [x], [y]. */
     @JvmStatic
     fun hotbarSlot(graphics: GuiGraphicsExtractor, x: Int, y: Int) {
-        if (!onHotbar() || !settings.hotbarMarks) return
+        if (!onHotbar() || !settings.hotbarMarks.value) return
         val from = x - (graphics.guiWidth() / 2 - 88)
         val i = from / HOTBAR_PITCH
         // The offhand slot comes through here too, left of the first slot.
@@ -140,7 +138,7 @@ object Slots {
     fun drawFront(graphics: GuiGraphicsExtractor, surface: Surface, index: Int, x: Int, y: Int) {
         for (slots in marks.values) {
             val shown = slots[index]?.takeUnless { it.hide } ?: continue
-            if (surface != Surface.HOTBAR || settings.hotbarMarks) front(graphics, surface, shown, x, y)
+            if (surface != Surface.HOTBAR || settings.hotbarMarks.value) front(graphics, surface, shown, x, y)
             shown.cooldown?.let { cooldown(graphics, it, x, y) }
         }
     }
@@ -163,7 +161,7 @@ object Slots {
      * Whether a slot the mod draws itself, such as the profile viewer's, marks [rarity] as Item Rarity marks a menu's,
      * by the same switches.
      */
-    fun marks(rarity: Role?) = rarity != null && DsModClient.runs<ItemRarity>() && (rarity != Role.COMMON || settings.markCommon)
+    fun marks(rarity: Role?) = rarity != null && DsModClient.runs<ItemRarity>() && (rarity != Role.COMMON || settings.markCommon.value)
 
     /** Draws [rarity]'s mark behind an item at [x], [y] that the mod draws itself, in the player's style for menus. */
     fun rarityBack(graphics: GuiGraphicsExtractor, rarity: Role, x: Int, y: Int) {
@@ -196,7 +194,7 @@ object Slots {
     }
 
     private fun onHotbar(): Boolean {
-        if (marks.isEmpty() || !settings.hotbarMarks && !cooldowns) return false
+        if (marks.isEmpty() || !settings.hotbarMarks.value && !cooldowns) return false
         val player = Minecraft.getInstance().player ?: return false
         // A mark's slot is an index in the open menu, which is the inventory's only while no other menu is open.
         return player.containerMenu === player.inventoryMenu && !player.isSpectator

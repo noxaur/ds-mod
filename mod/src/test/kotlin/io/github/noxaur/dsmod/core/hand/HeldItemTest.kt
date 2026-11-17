@@ -1,7 +1,8 @@
 package io.github.noxaur.dsmod.core.hand
 
 import com.google.gson.Gson
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
+import io.github.noxaur.dsmod.core.feature.general.Animations
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -45,31 +46,27 @@ class HeldItemTest {
 
     @Test
     fun `Reset puts every Animations setting back to its default and leaves the switch alone`() {
-        val settings = DsModConfig.General()
-        settings.animations = false
-        settings.swingStyle = SwingStyle.EXHIBITION
-        settings.swingSpeed = 2f
-        settings.itemSize = 0.5f
-        settings.itemX = 0.3f
-        settings.itemY = -0.2f
-        settings.itemZ = 0.1f
-        settings.itemYaw = 20f
-        settings.itemPitch = -30f
-        settings.itemRoll = 45f
-        settings.scaleSwing = false
-        settings.noSwing = true
-        settings.noBowSwing = true
-        settings.ignoreHaste = true
-        settings.noEquipReset = true
-        settings.resetAnimations()
-        val fresh = DsModConfig.General()
-        assertEquals(false, settings.animations)
-        assertEquals(
-            listOf(fresh.swingStyle, fresh.swingSpeed, fresh.itemSize, fresh.itemX, fresh.itemY, fresh.itemZ, fresh.itemYaw, fresh.itemPitch,
-                fresh.itemRoll, fresh.scaleSwing, fresh.noSwing, fresh.noBowSwing, fresh.ignoreHaste, fresh.noEquipReset),
-            listOf(settings.swingStyle, settings.swingSpeed, settings.itemSize, settings.itemX, settings.itemY, settings.itemZ, settings.itemYaw,
-                settings.itemPitch, settings.itemRoll, settings.scaleSwing, settings.noSwing, settings.noBowSwing, settings.ignoreHaste, settings.noEquipReset),
-        )
+        val settings = SettingsTree().feature<Animations>()
+        settings.enabled = false
+        settings.swingStyle.value = SwingStyle.EXHIBITION
+        settings.swingSpeed.value = 2f
+        settings.itemSize.value = 0.5f
+        settings.itemX.value = 0.3f
+        settings.itemY.value = -0.2f
+        settings.itemZ.value = 0.1f
+        settings.itemYaw.value = 20f
+        settings.itemPitch.value = -30f
+        settings.itemRoll.value = 45f
+        settings.scaleSwing.value = false
+        settings.noSwing.value = true
+        settings.noBowSwing.value = true
+        settings.ignoreHaste.value = true
+        settings.noEquipReset.value = true
+        settings.reset()
+        val fresh = SettingsTree().feature<Animations>()
+        assertEquals(false, settings.enabled)
+        fun Animations.values() = listOf(swingStyle, swingSpeed, itemSize, itemX, itemY, itemZ, itemYaw, itemPitch, itemRoll, scaleSwing, noSwing, noBowSwing, ignoreHaste, noEquipReset).map { it.value }
+        assertEquals(fresh.values(), settings.values())
     }
 
     @Test

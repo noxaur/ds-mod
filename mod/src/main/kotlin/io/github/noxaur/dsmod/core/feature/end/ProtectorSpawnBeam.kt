@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.end
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.HeadPlaced
@@ -10,8 +12,6 @@ import io.github.noxaur.dsmod.core.ui.Sections
 import io.github.noxaur.dsmod.core.world.Mark
 import io.github.noxaur.dsmod.core.world.Point
 import io.github.noxaur.dsmod.core.world.Waypoint
-import kotlin.reflect.KMutableProperty0
-import kotlin.reflect.KProperty0
 
 /**
  * A beam where the Endstone Protector will emerge. The server marks the spot with a head: it appears the moment
@@ -23,11 +23,11 @@ import kotlin.reflect.KProperty0
  * The tab list's `Protector` row says how far the cycle is. Without that row the beam shows, because a beam the
  * player did not ask for is a smaller fault than a missing one.
  */
-class ProtectorSpawnBeam(
-    toggle: KMutableProperty0<Boolean>,
-    private val sections: KProperty0<List<Section>>,
-    private val inFight: KProperty0<Boolean>,
-) : Feature("protector-spawn-beam", toggle, Area.END) {
+class ProtectorSpawnBeam(config: DsModConfig) :
+    Feature(config, "protector-spawn-beam", Area.END, Store.END, "Show a beam where the Endstone Protector will emerge.", formerly = listOf("bossBeacon")) {
+    /** The parts of the Protector's cycle that show the beam, in zealots killed since the last defeat, out of 200. */
+    val sections = span("beamSections", "Beam Timing", "Pick when the beam shows, in zealots killed out of 200.", listOf(Section(175, 200)), max = 200, ticks = listOf(50, 100, 150))
+    val inFight = switch("beamInFight", "During the Fight", "Keep the beam while the Protector is up.", default = false)
     private var beam = emptyList<Mark>()
     private var x = 0
     private var y = 0
@@ -47,9 +47,9 @@ class ProtectorSpawnBeam(
     override fun marks(now: Long): List<Mark> {
         val row = tab.info("Protector")?.let(ProtectorRow::parse) ?: return beam
         val shows = when {
-            row.stage == "Spawned" -> inFight.get()
+            row.stage == "Spawned" -> inFight.value
             row.killsLeft == null -> true
-            else -> Sections.contains(sections.get(), (ProtectorRow.CYCLE_KILLS - row.killsLeft).coerceIn(0, ProtectorRow.CYCLE_KILLS))
+            else -> Sections.contains(sections.value, (ProtectorRow.CYCLE_KILLS - row.killsLeft).coerceIn(0, ProtectorRow.CYCLE_KILLS))
         }
         return if (shows) beam else emptyList()
     }

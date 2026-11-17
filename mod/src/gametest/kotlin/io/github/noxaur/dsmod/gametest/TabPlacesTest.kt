@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
 import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.TabEdge
@@ -25,18 +26,18 @@ import org.lwjgl.glfw.GLFW
 class TabPlacesTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = setUp(context)
-        context.runOnClient<Nothing> { DsModClient.settings.betterUi.tabs = TabLayout.DEFAULT }
+        context.runOnClient<Nothing> { DsModClient.feature<MenuTabs>().tabs.value = TabLayout.DEFAULT }
         // A tab shows an item, and items need a world's registries.
         context.worldBuilder().create().use { SettingsDriver(context).places() }
         context.runOnClient<Nothing> {
-            DsModClient.settings.betterUi.tabs = TabLayout.DEFAULT
+            DsModClient.feature<MenuTabs>().tabs.value = TabLayout.DEFAULT
             DsModClient.saveSettings()
         }
         restore(context, window)
     }
 
     private fun SettingsDriver.places() {
-        val tabs = { context.computeOnClient<List<MenuTab>, Nothing> { DsModClient.settings.betterUi.tabs } }
+        val tabs = { context.computeOnClient<List<MenuTab>, Nothing> { DsModClient.feature<MenuTabs>().tabs.value } }
         fun editor() = context.computeOnClient<TabPlacesEditor, Nothing> { (it.gui.screen() as SettingsScreen).editor("tabs") as TabPlacesEditor }
         fun place(edge: TabEdge, slot: Int) = context.computeOnClient<Pair<Int, Int>, Nothing> { editor().placeAt(edge, slot) }
 

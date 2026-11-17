@@ -1,9 +1,7 @@
 package io.github.noxaur.dsmod.rules
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Setting
 import io.github.noxaur.dsmod.core.config.SettingsTree
-import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.Area
 import java.nio.file.FileSystems
 import java.nio.file.Files
@@ -78,26 +76,26 @@ class RulesTest {
     @Test
     fun `every feature has a section in the player docs`() {
         val docs = Path.of("../docs/user/features.md").readText()
-        val missing = features(DsModConfig()).map { it.title }.filter { "### $it\n" !in docs }
+        val missing = SettingsTree().features.map { it.title }.filter { "### $it\n" !in docs }
         assertEquals(emptyList(), missing, "docs/user/features.md needs a `### <Name>` section that tells the player what each of these shows: $missing\n")
     }
 
     @Test
     fun `every feature has a line in the README`() {
         val readme = Path.of("../README.md").readText()
-        val missing = features(DsModConfig()).map { it.title }.filter { "- **$it** – " !in readme }
+        val missing = SettingsTree().features.map { it.title }.filter { "- **$it** – " !in readme }
         assertEquals(emptyList(), missing, "README.md needs a line `- **<Name>** – <one short sentence>` under a group in Features for each of these. Screenshots go in docs/user/features.md: $missing\n")
     }
 
     @Test
     fun `every setting's description fits the settings screen at full size`() {
-        val long = SettingsTree.sections(DsModConfig()).flatMap { it.walk() }.filter { it.description.length > Setting.DESCRIPTION_MAX }.map { "${it.name}: ${it.description}" }
+        val long = SettingsTree().sections.flatMap { it.walk() }.filter { it.description.length > Setting.DESCRIPTION_MAX }.map { "${it.name}: ${it.description}" }
         assertEquals(emptyList(), long, "Cut each description in SettingsTree to one short sentence of at most ${Setting.DESCRIPTION_MAX} characters. The player docs hold the rest: $long\n")
     }
 
     @Test
     fun `a feature in an area's folder is locked to that area`() {
-        val wrong = features(DsModConfig()).filter { feature ->
+        val wrong = SettingsTree().features.filter { feature ->
             val folder = feature.javaClass.packageName.substringAfterLast('.')
             feature.area != (Area.entries.firstOrNull { it.folder == folder } ?: Area.ANYWHERE)
         }.map { "${it.javaClass.simpleName} is ${it.area}" }

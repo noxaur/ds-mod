@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.PlayerModel
 import io.github.noxaur.dsmod.core.player.ModelPose
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.Theme
@@ -22,7 +23,7 @@ import kotlin.math.abs
  */
 class PlayerPreviewTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
-        val settings = DsModClient.settings.general
+        val playerModel = DsModClient.feature<PlayerModel>()
         val window = SettingsSteps.setUp(context)
         val driver = SettingsDriver(context)
         fun preview() = context.computeOnClient<PlayerPreview, Nothing> { (it.gui.screen() as SettingsScreen).editor("modelPreview") as PlayerPreview }
@@ -42,9 +43,9 @@ class PlayerPreviewTest : FabricClientGameTest {
             context.setScreen { TitleScreen() }
 
             context.worldBuilder().create().use {
-                settings.playerModel = true
-                settings.modelPose = ModelPose.T_POSE
-                settings.modelTiltSideways = 15f
+                playerModel.enabled = true
+                playerModel.pose.value = ModelPose.T_POSE
+                playerModel.tiltSideways.value = 15f
                 context.waitTicks(20)
                 open()
                 val spot = driver.spot("modelPreview")
@@ -52,10 +53,10 @@ class PlayerPreviewTest : FabricClientGameTest {
                 theme(context, Theme.VANILLA)
                 context.takeScreenshot("player-preview-vanilla")
                 theme(context, Theme.CHARCOAL)
-                settings.modelSize = 2.5f
+                playerModel.size.value = 2.5f
                 context.waitTicks(2)
                 context.takeScreenshot("player-preview-big")
-                settings.modelSize = 1f
+                playerModel.size.value = 1f
 
                 // A drag turns the model around and tips it, and on release it stays where it was let go.
                 val cx = spot.controlX + spot.controlWidth / 2
@@ -94,14 +95,14 @@ class PlayerPreviewTest : FabricClientGameTest {
                 driver.key(GLFW.GLFW_KEY_LEFT)
                 near(preview().yaw, dropped - Turntable.KEY_YAW, "The yaw after Down took the keys to the next row")
 
-                settings.playerModel = false
+                playerModel.enabled = false
                 context.waitTicks(2)
                 context.takeScreenshot("player-preview-off")
                 context.setScreen { null }
             }
         } finally {
-            settings.playerModel = false
-            settings.resetPlayerModel()
+            playerModel.enabled = false
+            playerModel.reset()
             SettingsSteps.restore(context, window)
         }
     }

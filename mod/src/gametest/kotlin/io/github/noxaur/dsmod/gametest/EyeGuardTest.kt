@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.end.EyeGuard
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -28,12 +29,12 @@ class EyeGuardTest : FabricClientGameTest {
             context.input.lookAt(lever)
             context.waitTicks(5)
             try {
-                DsModClient.settings.end.eyeGuard = false
+                DsModClient.feature<EyeGuard>().enabled = false
                 click()
                 click()
                 check(!on()) { "Two clicks did not flip the lever twice with the feature off" }
 
-                DsModClient.settings.end.eyeGuard = true
+                DsModClient.feature<EyeGuard>().enabled = true
                 click()
                 click()
                 check(!on()) { "Outside The End the second click was dropped" }
@@ -70,7 +71,7 @@ class EyeGuardTest : FabricClientGameTest {
                 context.waitTicks(3)
                 check(on() != stayed) { "A click after the guard lapsed was dropped" }
             } finally {
-                DsModClient.settings.end.eyeGuard = true
+                DsModClient.feature<EyeGuard>().enabled = true
             }
         }
     }

@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.end
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.Area
@@ -11,7 +13,6 @@ import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import kotlinx.serialization.Serializable
 import java.util.Locale
-import kotlin.reflect.KMutableProperty0
 
 /** Every drop the player has had, by the name the server gives it, and the zealots they have killed. */
 @Serializable
@@ -26,7 +27,8 @@ data class ZealotDrops(val drops: Map<String, Int> = emptyMap(), val kills: Int 
  * A Zealot Bruiser is another mob and is left out. Eyes per hour divide by the time the player has spent in The End, which a stretch
  * in the hub does not dilute, and show only after a minute there, when one eye would give an absurd rate.
  */
-class ZealotTracker(toggle: KMutableProperty0<Boolean>) : Feature("zealot-tracker", toggle, Area.END) {
+class ZealotTracker(config: DsModConfig) :
+    Feature(config, "zealot-tracker", Area.END, Store.END, "Count your Summoning Eyes and zealot kills, per hour and all-time.") {
     private val allTime = saved(ZealotDrops())
     private var session = emptyMap<String, Int>()
     private var endMillis = 0L

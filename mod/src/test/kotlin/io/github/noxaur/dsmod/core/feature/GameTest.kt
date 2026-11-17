@@ -1,6 +1,10 @@
 package io.github.noxaur.dsmod.core.feature
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
+import io.github.noxaur.dsmod.core.config.Store
+import io.github.noxaur.dsmod.core.feature.end.DragonTimer
+import io.github.noxaur.dsmod.core.feature.end.ProtectorStatus
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.ServerSpan
@@ -16,7 +20,8 @@ import kotlin.test.assertNull
 
 class GameTest {
     private val config = DsModConfig()
-    private val game = Game(features(config))
+    private val tree = SettingsTree(config)
+    private val game = Game(tree.features)
 
     private fun say(time: Long, line: String) = game.post(time, SystemMessage(ServerText(ServerSpan(line))))
 
@@ -29,12 +34,12 @@ class GameTest {
         game.tick(0)
         assertNotNull(hud("dragon-timer"))
 
-        config.end.dragonTimer = false
+        tree.feature<DragonTimer>().enabled = false
         game.tick(1_000)
         assertNull(hud("dragon-timer"))
 
         // The dragon died while the feature saw nothing, so the timer must not pick it up again.
-        config.end.dragonTimer = true
+        tree.feature<DragonTimer>().enabled = true
         game.tick(2_000)
         assertNull(hud("dragon-timer"))
     }
@@ -45,12 +50,12 @@ class GameTest {
         game.tick(0)
         val before = assertNotNull(hud("protector-status"))
 
-        config.end.protectorStatus = false
+        tree.feature<ProtectorStatus>().enabled = false
         game.tick(1_000)
         assertNull(hud("protector-status"))
 
         // No row changed meanwhile, so no new tab list is coming.
-        config.end.protectorStatus = true
+        tree.feature<ProtectorStatus>().enabled = true
         game.tick(2_000)
         assertEquals(before, hud("protector-status"))
     }
@@ -75,16 +80,16 @@ class GameTest {
     @Test
     fun `a feature that is switched back on hears the sidebar again`() {
         var heard = 0
-        val listener = object : Feature("listener", config.end::dragonTimer, Area.ANYWHERE) {
+        val listener = object : Feature(config, "listener", Area.ANYWHERE, Store.END, "Hears the sidebar in a test.") {
             init {
                 on<Sidebar> { _, _ -> heard++ }
             }
         }
         val game = Game(listOf(listener))
         game.post(0, Sidebar(lines = listOf(ServerText(ServerSpan("⏣ Village")))))
-        config.end.dragonTimer = false
+        listener.enabled = false
         game.tick(1_000)
-        config.end.dragonTimer = true
+        listener.enabled = true
         game.tick(2_000)
         assertEquals(2, heard)
     }
@@ -92,7 +97,7 @@ class GameTest {
     @Test
     fun `a feature locked to an area hears the player leave the server from anywhere`() {
         var heard = 0
-        val listener = object : Feature("listener", config.end::dragonTimer, Area.END) {
+        val listener = object : Feature(config, "listener", Area.END, Store.END, "Hears the player leave in a test.") {
             init {
                 on<LeftServer> { _, _ -> heard++ }
             }
@@ -104,17 +109,17 @@ class GameTest {
     @Test
     fun `a feature switched on after the player left the server hears none of its sidebar`() {
         var heard = 0
-        val listener = object : Feature("listener", config.end::dragonTimer, Area.ANYWHERE) {
+        val listener = object : Feature(config, "listener", Area.ANYWHERE, Store.END, "Hears the sidebar in a test.") {
             init {
                 on<Sidebar> { _, _ -> heard++ }
             }
         }
         val game = Game(listOf(listener))
-        config.end.dragonTimer = false
+        listener.enabled = false
         game.tick(0)
         game.post(1, Sidebar(lines = listOf(ServerText(ServerSpan("⏣ Village")))))
         game.post(2, LeftServer)
-        config.end.dragonTimer = true
+        listener.enabled = true
         game.tick(3)
         assertEquals(0, heard)
     }
@@ -131,7 +136,7 @@ class GameTest {
     @Test
     fun `off dragsim co no feature hears a line, hides it or shows a readout`() {
         var active = false
-        val game = Game(features(config)) { active }
+        val game = Game(SettingsTree(config).features) { active }
         val tab = TabList(listOf("Area: The End", "Protector: Rising (Tier 4/5, 20)").map { ServerText(ServerSpan(it)) })
         val refusal = SystemMessage(ServerText(ServerSpan("This ability is on cooldown for 4.35s")))
         game.post(0, tab)
@@ -157,12 +162,12 @@ class GameTest {
 
     @Test
     fun `a feature the player turned on hides without telling them`() {
-        val hider = object : Feature("hider", config.general::fullbright, Area.ANYWHERE) {
+        val hider = object : Feature(config, "hider", Area.ANYWHERE, Store.GENERAL, "Hides every line in a test.", default = false) {
             init {
                 on<SystemMessage> { _, _ -> hide() }
             }
         }
-        config.general.fullbright = true
+        hider.enabled = true
         val game = Game(listOf(hider))
         assertEquals(false, game.post(0, SystemMessage(ServerText(ServerSpan("Anything")))))
         assertEquals(emptyList(), game.messages)

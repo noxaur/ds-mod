@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.chat.CopyChat
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.CopyChats
 import io.github.noxaur.dsmod.edge.CopyChats.Format
@@ -308,14 +309,14 @@ class CopyChatTest : FabricClientGameTest {
                 press(Format.TEXT)
                 copied("Expires in 1h", "The bottom row of the chat scrolled up by four")
 
-                DsModClient.settings.chat.copyChat = false
+                DsModClient.feature<CopyChat>().enabled = false
                 row(0)
                 context.input.pressMouse(1)
                 context.waitTick()
                 check(CopyChats.menu == null) { "A right click with Copy Chat off opened the menu" }
             }
         } finally {
-            DsModClient.settings.chat.copyChat = true
+            DsModClient.feature<CopyChat>().enabled = true
             DsModClient.settings.hud.theme = Theme.CHARCOAL
             CopyChats.clipboard = clipboard
         }

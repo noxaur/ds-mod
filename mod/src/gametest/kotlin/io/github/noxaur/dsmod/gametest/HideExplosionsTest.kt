@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.HideExplosions
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -27,12 +28,12 @@ class HideExplosionsTest : FabricClientGameTest {
             check(made(context, explosion = true)) { "The client made no explosion with the hider off" }
             explode("explosion-shown")
             try {
-                DsModClient.settings.general.hideExplosions = true
+                DsModClient.feature<HideExplosions>().enabled = true
                 check(!made(context, explosion = true)) { "The client still made an explosion" }
                 check(made(context, explosion = false)) { "The hider stopped a flame too" }
                 explode("explosion-hidden")
             } finally {
-                DsModClient.settings.general.hideExplosions = false
+                DsModClient.feature<HideExplosions>().enabled = false
             }
         }
     }

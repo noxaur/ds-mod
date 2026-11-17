@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.EtherwarpOutline
 import io.github.noxaur.dsmod.core.hand.Etherwarp
 import io.github.noxaur.dsmod.core.hand.Etherwarp.Miss
 import io.github.noxaur.dsmod.edge.DsModClient
@@ -102,10 +103,10 @@ class EtherwarpOutlineTest : FabricClientGameTest {
                 check(target(context) == Etherwarp.Target(10, 101, 0, Miss.NO_ROOM)) { "A block above the wall is not No Room: ${target(context)}" }
                 val noRoom = screenshot(context, "etherwarp-no-room")
                 check(near(noRoom, 0xFF5555) > 50) { "The screenshot shows no red box" }
-                DsModClient.settings.general.etherwarpFailed = false
+                DsModClient.feature<EtherwarpOutline>().failed.value = false
                 context.waitTicks(2)
                 check(target(context) == null) { "A failed warp is boxed with Failed Warps off: ${target(context)}" }
-                DsModClient.settings.general.etherwarpFailed = true
+                DsModClient.feature<EtherwarpOutline>().failed.value = true
 
                 // The eye is half a block into its own, so x 58's near side is 57.5 blocks out, past the range.
                 set(context, world, "fill 10 101 0 10 102 0 air", "setblock 58 101 0 stone")
@@ -117,11 +118,11 @@ class EtherwarpOutlineTest : FabricClientGameTest {
                 set(context, world, "setblock 57 101 0 air", "setblock 58 101 0 air", "setblock 12 101 0 stone_slab")
                 check(target(context) == Etherwarp.Target(12, 101, 0, null)) { "A slab is not boxed: ${target(context)}" }
                 check(bounds(context)?.maxY == 101.5) { "A slab is boxed as ${bounds(context)}" }
-                DsModClient.settings.general.etherwarpThroughWalls = false
+                DsModClient.feature<EtherwarpOutline>().throughWalls.value = false
                 context.waitTicks(2)
                 // A box the blocks may hide stands just off the slab's faces, so the two do not flicker.
                 check(bounds(context)!!.maxY > 101.5) { "A box behind walls lies on the slab: ${bounds(context)}" }
-                DsModClient.settings.general.etherwarpThroughWalls = true
+                DsModClient.feature<EtherwarpOutline>().throughWalls.value = true
 
                 // Fluids, plants and torches have no collision box, so the line passes through them.
                 set(context, world, "setblock 4 101 0 water", "setblock 6 100 0 grass_block", "setblock 6 101 0 short_grass",
@@ -131,19 +132,19 @@ class EtherwarpOutlineTest : FabricClientGameTest {
                 context.input.releaseKey { it.keyShift }
                 context.waitTicks(3)
                 check(target(context) == null) { "The box shows without a sneak: ${target(context)}" }
-                DsModClient.settings.general.etherwarpWithoutSneak = true
+                DsModClient.feature<EtherwarpOutline>().withoutSneak.value = true
                 context.waitTicks(2)
                 check(target(context) == Etherwarp.Target(12, 101, 0, null)) { "Box Without Sneak shows no box: ${target(context)}" }
 
-                context.runOnClient<Nothing> { DsModClient.openSettings("etherwarpOutline") }
+                context.runOnClient<Nothing> { DsModClient.openSettings("etherwarp-outline") }
                 context.waitTicks(20)
                 context.takeScreenshot("etherwarp-settings")
                 context.setScreen { null }
             } finally {
                 context.input.releaseKey { it.keyShift }
-                DsModClient.settings.general.etherwarpFailed = true
-                DsModClient.settings.general.etherwarpThroughWalls = true
-                DsModClient.settings.general.etherwarpWithoutSneak = false
+                DsModClient.feature<EtherwarpOutline>().failed.value = true
+                DsModClient.feature<EtherwarpOutline>().throughWalls.value = true
+                DsModClient.feature<EtherwarpOutline>().withoutSneak.value = false
             }
         }
     }

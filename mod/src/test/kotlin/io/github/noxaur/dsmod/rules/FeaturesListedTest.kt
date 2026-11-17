@@ -1,8 +1,7 @@
 package io.github.noxaur.dsmod.rules
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.Feature
-import io.github.noxaur.dsmod.core.feature.features
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
@@ -19,14 +18,14 @@ fun unlisted(classes: List<ClassNode>, listed: Set<String>): List<String> {
 
 class FeaturesListedTest {
     @Test
-    fun `every feature class is listed in features()`() {
-        val listed = features(DsModConfig()).map { Type.getInternalName(it.javaClass) }.toSet()
+    fun `every feature class is placed in SettingsTree`() {
+        val listed = SettingsTree().features.map { Type.getInternalName(it.javaClass) }.toSet()
         val missing = unlisted(releaseClasses(), listed)
         assertEquals(
             emptyList(),
             missing,
-            "A feature missing from `features()` in core/feature/Features.kt never runs. List each one there:\n" +
-                missing.joinToString("\n") + "\n",
+            "A feature that SettingsTree places nowhere never runs. In core/config/SettingsTree.kt, give each one a group of its " +
+                "own with `group(Feature(c))`, or a row among others with `feature(Feature(c))`:\n" + missing.joinToString("\n") + "\n",
         )
     }
 

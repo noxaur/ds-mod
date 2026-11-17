@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.DamageNumbers
 import io.github.noxaur.dsmod.core.feature.general.DamageShown
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.EditedText
@@ -34,24 +35,24 @@ class DamageNumbersTest : FabricClientGameTest {
     }
 
     override fun runTest(context: ClientGameTestContext) {
-        val general = DsModClient.settings.general
+        val damageNumbers = DsModClient.feature<DamageNumbers>()
         context.worldBuilder().create().use { world ->
             context.waitTicks(20)
             try {
                 val off = float(context, world, "damage-numbers-off")
                 check(off == mapOf("74,540,375" to null, "✧1,461,845✧" to null)) { "The switch was off, yet the numbers changed: $off" }
-                general.damageNumbers = true
+                damageNumbers.enabled = true
                 val short = float(context, world, "damage-numbers-short")
                 check(short == mapOf("74,540,375" to "74.5M", "✧1,461,845✧" to "✧1.5M✧")) { "The numbers did not shorten: $short" }
-                general.damageShown = DamageShown.CRITS
+                damageNumbers.shown.value = DamageShown.CRITS
                 val crits = float(context, world, "damage-numbers-crits")
                 check(crits == mapOf("74,540,375" to HIDDEN, "✧1,461,845✧" to "✧1.5M✧")) { "Crits Only did not keep only the crit: $crits" }
-                general.damageShown = DamageShown.NONE
+                damageNumbers.shown.value = DamageShown.NONE
                 val none = float(context, world, "damage-numbers-none")
                 check(none == mapOf("74,540,375" to HIDDEN, "✧1,461,845✧" to HIDDEN)) { "None left a number: $none" }
             } finally {
-                general.damageNumbers = false
-                general.damageShown = DamageShown.ALL
+                damageNumbers.enabled = false
+                damageNumbers.shown.value = DamageShown.ALL
             }
         }
     }

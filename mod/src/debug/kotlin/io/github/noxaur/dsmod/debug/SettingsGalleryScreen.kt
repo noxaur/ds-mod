@@ -148,14 +148,14 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
                 keys(v::none, "None", "Pick the key.", id = "galleryNone")
             },
             "Dimmed too" to rows {
-                span(v::dimSpans, "Timing", "Pick it.", max = 200, dependsOn = gate)
+                span(Bind.of(v::dimSpans), "Timing", "Pick it.", max = 200, dependsOn = gate)
                 pick(Bind.of(v::dimPreset), "Style", "Pick it.", RarityPreset.entries, dependsOn = gate) { slotLook(it) }
                 action("noop", "Edit Binds", "Edit them.", button = "Edit", dependsOn = gate) {}
             },
         ),
         listOf(
             "Span, fold, action, order" to rows {
-                span(v::spans, "Beam Timing", "Pick when it shows.", max = 200, ticks = listOf(50, 100, 150))
+                span(Bind.of(v::spans), "Beam Timing", "Pick when it shows.", max = 200, ticks = listOf(50, 100, 150))
                 fold("openFold", "Open Fold", "Build your own.") {
                     pick(Bind.of(v::border), "Border", "Pick the ring.", Border.entries, label = { it.label }) {
                         Look.Slots(SlotStyle(border = it), 1)

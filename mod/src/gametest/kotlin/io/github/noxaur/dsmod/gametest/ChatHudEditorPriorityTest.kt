@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.hud.ChatHudEditor
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.edge.mixin.ChatComponentAccessor
@@ -86,12 +87,12 @@ class ChatHudEditorPriorityTest : FabricClientGameTest {
             chat.drag(TIMER, still.x + 60, still.y - 60)
             context.runOnClient<Nothing> { it.gui.hud.toggle() }
             chat.block(TIMER).let { check(it.x == still.x && it.y == still.y) { "A drag with F1 moved the block" } }
-            DsModClient.settings.hud.chatHudEditor = false
+            DsModClient.feature<ChatHudEditor>().enabled = false
             try {
                 chat.drag(TIMER, still.x + 60, still.y - 60)
                 chat.block(TIMER).let { check(it.x == still.x && it.y == still.y) { "A drag with the switch off moved the block" } }
             } finally {
-                DsModClient.settings.hud.chatHudEditor = true
+                DsModClient.feature<ChatHudEditor>().enabled = true
             }
             context.setScreen { null }
             DsModClient.settings.hud.positions.remove(TIMER)

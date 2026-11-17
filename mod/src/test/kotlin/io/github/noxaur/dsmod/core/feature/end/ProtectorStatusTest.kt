@@ -1,8 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.end
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.SystemMessage
@@ -11,7 +10,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ProtectorStatusTest {
-    private val game = Game(features(DsModConfig()))
+    private val game = Game(SettingsTree().features)
 
     private fun tab(value: String) =
         game.post(0, TabList(listOf("Area: The End", "Protector: $value").map { ServerText(ServerSpan(it)) }))

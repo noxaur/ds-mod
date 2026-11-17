@@ -1,51 +1,39 @@
 package io.github.noxaur.dsmod.rules
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.Feature
-import io.github.noxaur.dsmod.core.feature.features
 import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AbstractInsnNode
 import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.FieldInsnNode
 import org.objectweb.asm.tree.InsnNode
 import org.objectweb.asm.tree.InvokeDynamicInsnNode
 import org.objectweb.asm.tree.LineNumberNode
 import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.MethodNode
-import kotlin.jvm.internal.CallableReference
-import kotlin.reflect.KMutableProperty0
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 private val FEATURE = Type.getInternalName(Feature::class.java)
 
-// The rarity editor shows the player how their switch is set, which is the same on any server.
-private val except = setOf("io/github/noxaur/dsmod/edge/RarityStyleScreen")
-
-/** Each feature's switch, as the config class that holds it and the field's name. */
-private fun switches() = features(DsModConfig()).map { feature ->
-    val toggle = Feature::class.java.getDeclaredField("toggle").apply { isAccessible = true }.get(feature) as KMutableProperty0<*>
-    Type.getInternalName((toggle as CallableReference).boundReceiver.javaClass) to toggle.name
-}.toSet()
+/** The getters that read a feature's switch: its value, and the switch row itself, whose value the edge could then read. */
+private val SWITCH_GETTERS = setOf("getEnabled", "getSwitch")
 
 /**
  * Every place in [classes] outside `core` that reads a feature's switch itself, as `file:line`. `Game` keeps the mod to
  * dragsim.co for code in `core`, and nothing does for the edge, so the edge asks the feature whether it [Feature.runs].
  */
-fun switchReads(classes: List<ClassNode>, switches: Set<Pair<String, String>>, subclasses: Set<String>): List<String> =
-    classes.filter { "/core/" !in it.name && it.name.substringBefore('$') !in except }.flatMap { node ->
+fun switchReads(classes: List<ClassNode>, subclasses: Set<String>): List<String> =
+    classes.filter { "/core/" !in it.name }.flatMap { node ->
         node.methods.flatMap { method ->
             var line = 0
             method.instructions.mapNotNull { insn ->
                 if (insn is LineNumberNode) line = insn.line
-                fun getter(owner: String, name: String) = name == "getEnabled" && (owner == FEATURE || owner in subclasses)
+                fun getter(owner: String, name: String) = name in SWITCH_GETTERS && (owner == FEATURE || owner in subclasses)
                 // A method reference such as Java's `feature::getEnabled` is a handle among the bootstrap arguments.
                 val handles = (insn as? InvokeDynamicInsnNode)?.bsmArgs.orEmpty().filterIsInstance<Handle>()
-                val reads = insn is FieldInsnNode && insn.opcode == Opcodes.GETFIELD && (insn.owner to insn.name) in switches ||
-                    insn is MethodInsnNode && getter(insn.owner, insn.name) ||
-                    handles.any { it.tag == Opcodes.H_GETFIELD && (it.owner to it.name) in switches || getter(it.owner, it.name) }
+                val reads = insn is MethodInsnNode && getter(insn.owner, insn.name) || handles.any { getter(it.owner, it.name) }
                 if (reads) "${node.name.substringBeforeLast('/')}/${node.sourceFile}:$line" else null
             }
         }
@@ -55,8 +43,8 @@ class SwitchesTest {
     @Test
     fun `outside core a feature's switch is read only through the feature`() {
         val classes = releaseClasses()
-        val subclasses = features(DsModConfig()).map { Type.getInternalName(it.javaClass) }.toSet()
-        val reads = switchReads(classes, switches(), subclasses)
+        val subclasses = SettingsTree().features.map { Type.getInternalName(it.javaClass) }.toSet()
+        val reads = switchReads(classes, subclasses)
         assertEquals(
             emptyList(),
             reads,
@@ -67,7 +55,7 @@ class SwitchesTest {
     }
 
     @Test
-    fun `the scan catches a switch read, a read of enabled and a reference to it`() {
+    fun `the scan catches a read of enabled, of the switch row and a reference to either`() {
         fun reading(name: String, insn: AbstractInsnNode) = ClassNode().apply {
             this.name = "io/github/noxaur/dsmod/edge/$name"
             sourceFile = "$name.kt"
@@ -96,13 +84,12 @@ class SwitchesTest {
         )
         val reads = switchReads(
             listOf(
-                reading("Switch", FieldInsnNode(Opcodes.GETFIELD, "io/github/noxaur/dsmod/core/config/DsModConfig\$Chat", "copyChat", "Z")),
+                reading("Switch", MethodInsnNode(Opcodes.INVOKEVIRTUAL, FEATURE, "getSwitch", "()Lio/github/noxaur/dsmod/core/config/Switch;")),
                 reading("Enabled", MethodInsnNode(Opcodes.INVOKEVIRTUAL, FEATURE, "getEnabled", "()Z")),
                 reading("Runs", MethodInsnNode(Opcodes.INVOKEVIRTUAL, FEATURE, "getRuns", "()Z")),
                 reading("Reference", reference(Handle(Opcodes.H_INVOKEVIRTUAL, FEATURE, "getEnabled", "()Z", false))),
                 reading("RunsReference", reference(Handle(Opcodes.H_INVOKEVIRTUAL, FEATURE, "getRuns", "()Z", false))),
             ),
-            switches(),
             emptySet(),
         )
         assertEquals(

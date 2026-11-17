@@ -39,10 +39,10 @@ All of them run in `mise run check`, except the game tests and the CI rules.
 | A fixture holds no player name from a capture on this machine, and an alias wherever a player's name stands | `FixtureLeakTest`, and `cutFixture` refuses such a fixture while the captures are still there |
 | Every feature shows what its transcript says | `FeatureReplayTest` replays each feature's fixtures |
 | A feature that reads nothing from the server has a game test | `FeatureReplayTest` |
-| Every feature class is listed in `features()` | `FeaturesListedTest` reads the compiled classes |
+| Every feature class is placed in `SettingsTree` | `FeaturesListedTest` reads the compiled classes |
 | Every feature has a section in the player docs | `RulesTest` |
 | Every feature has a one-line entry in the README | `RulesTest` |
-| Every saved setting has exactly one row in `SettingsTree`, or is listed as stored only with a reason, and every row has its own id, a Title Case name of three words or fewer and a one-sentence description | `SettingsTreeTest` |
+| Every saved setting, a feature's saved key included, has exactly one row in the settings tree, or is listed as stored only with a reason, and every row has its own id, a Title Case name of three words or fewer and a one-sentence description | `SettingsTreeTest` |
 | The kit gallery shows every kind of settings row and every look a pick draws | `KitTest` |
 | A setting's description in `SettingsTree` is short enough that the settings screen shows it at full size | `RulesTest` |
 | A saved setting keeps its key in the config file, so a player who updates keeps what they set | `ConfigFileTest` loads a file 0.1.0 wrote and checks every value |

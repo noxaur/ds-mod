@@ -1,9 +1,8 @@
 package io.github.noxaur.dsmod.core.feature.general
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.EntityDied
@@ -27,8 +26,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class ActivePetTest {
-    private val config = DsModConfig().apply { general.activePet = true }
-    private val game = Game(features(config))
+    private val tree = SettingsTree()
+    private val feature = tree.feature<ActivePet>().also { it.enabled = true }
+    private val game = Game(tree.features)
     private var time = 0L
 
     private fun feature() = readout().feature
@@ -36,7 +36,7 @@ class ActivePetTest {
     @BeforeTest
     fun quiet() {
         // Equipment Display reads the same lines, so it is off to keep the readouts to this feature's.
-        config.general.equipmentDisplay = false
+        tree.feature<EquipmentDisplay>().enabled = false
     }
 
     private fun post(vararg events: GameEvent) {
@@ -195,9 +195,9 @@ class ActivePetTest {
     @Test
     fun `leaving the server while the feature is off forgets the pet once it is back on`() {
         post(pet())
-        config.general.activePet = false
+        feature.enabled = false
         post(LeftServer)
-        config.general.activePet = true
+        feature.enabled = true
         post()
         assertNull(hud())
     }
@@ -229,9 +229,9 @@ class ActivePetTest {
     @Test
     fun `each part can be turned off`() {
         post(pet(), *menu(13 to card()))
-        config.general.activePetIcon = false
-        config.general.activePetItem = false
-        config.general.activePetXp = false
+        feature.showIcon.value = false
+        feature.showItem.value = false
+        feature.showXp.value = false
         post()
         assertNull(hud()?.icon)
         assertEquals(listOf("[Lvl 100] Black Cat"), rows())
@@ -244,7 +244,7 @@ class ActivePetTest {
         post(SlotChanged(13, other("Black Cat")))
         assertEquals(emptyMap(), readout().slots)
         post(SlotChanged(13, card()))
-        config.general.markActivePet = false
+        feature.markInMenu.value = false
         post()
         assertEquals(emptyMap(), readout().slots)
     }
@@ -253,7 +253,7 @@ class ActivePetTest {
     fun `what the menu showed is kept by pet name for the next session`() {
         post(pet(), *menu(13 to card()))
         val saved = feature().state!!.encode()
-        val next = Game(features(DsModConfig().apply { general.activePet = true; general.equipmentDisplay = false }))
+        val next = Game(SettingsTree().also { it.feature<ActivePet>().enabled = true; it.feature<EquipmentDisplay>().enabled = false }.features)
         next.readouts.single { it.feature.id == "active-pet" }.feature.state!!.load(saved)
         next.post(1, pet())
         next.tick(300)
@@ -342,8 +342,8 @@ class ActivePetTest {
     @Test
     fun `the rate rows can be turned off`() {
         post(pet(level = 37), *menu(13 to card(level = 37, progress = xp(1000))))
-        config.general.activePetRate = false
-        config.general.activePetNext = false
+        feature.showRate.value = false
+        feature.showNext.value = false
         post()
         assertEquals(listOf("[Lvl 37] Black Cat", "Item: Gold Claws", "XP: 1,000 / 10,000 (10%)"), rows())
     }
@@ -354,7 +354,7 @@ class ActivePetTest {
         assertEquals(true, game.post(++time, chat("Autopet equipped your [Lvl 100] Black Cat! VIEW RULE")))
         game.tick(time)
         assertEquals("[Lvl 100] Black Cat", rows()?.first())
-        config.general.hideAutopet = true
+        feature.hideAutopet.value = true
         assertEquals(false, game.post(++time, chat("Autopet equipped your [Lvl 100] Wolf! VIEW RULE")))
         game.tick(time)
         assertEquals("[Lvl 100] Wolf", rows()?.first())

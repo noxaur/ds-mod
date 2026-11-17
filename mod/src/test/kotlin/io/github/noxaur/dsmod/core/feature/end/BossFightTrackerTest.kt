@@ -1,9 +1,8 @@
 package io.github.noxaur.dsmod.core.feature.end
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.Saved
-import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.SystemMessage
@@ -13,7 +12,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BossFightTrackerTest {
-    private val game = Game(features(DsModConfig()))
+    private val game = Game(SettingsTree().features)
 
     private fun say(time: Long, line: String) = game.post(time, SystemMessage(ServerText(ServerSpan(line))))
 

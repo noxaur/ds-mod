@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.general.PerformanceStats
 import io.github.noxaur.dsmod.core.feature.general.Stat
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -19,12 +18,12 @@ object Pings {
     private const val EVERY_MILLIS = 1_000L
     private var sent = 0L
 
-    fun register(general: DsModConfig.General) {
+    fun register() {
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             val connection = client.connection ?: return@register
             val now = Util.getMillis()
             if (now - sent < EVERY_MILLIS || client.debugOverlay.showNetworkCharts()) return@register
-            if (!DsModClient.runs<PerformanceStats>() || Stat.PING !in general.performanceValues || !Hud.visible) return@register
+            if (!DsModClient.runs<PerformanceStats>() || Stat.PING !in DsModClient.feature<PerformanceStats>().values.value || !Hud.visible) return@register
             sent = now
             connection.send(ServerboundPingRequestPacket(now))
         }

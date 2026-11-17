@@ -1,8 +1,10 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.InventoryHud
 import io.github.noxaur.dsmod.core.feature.general.InventoryLayout
 import io.github.noxaur.dsmod.core.feature.general.InventoryLook
 import io.github.noxaur.dsmod.core.feature.general.InventoryRow
+import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
 import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
@@ -21,18 +23,18 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
  */
 class InventoryLookTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = InventoryGrid.with(context) {
-        val general = DsModClient.settings.general
-        val inventory = DsModClient.settings.inventory
+        val inventoryHud = DsModClient.feature<InventoryHud>()
+        val menuTheme = DsModClient.feature<MenuTheme>()
         val hud = DsModClient.settings.hud
-        val themedBefore = inventory.menuTheme
+        val themedBefore = menuTheme.enabled
         val themeBefore = hud.theme
-        val menuLookBefore = inventory.menuLook
+        val menuLookBefore = menuTheme.menuLook.value
         fun opacity(percent: Float) {
-            general.inventoryOpacity = percent
+            inventoryHud.opacity.value = percent
             context.waitFor { DsModClient.game.readouts.first { it.feature.id == InventoryGrid.ID }.hud?.opacity == percent / 100f }
             context.waitTick()
         }
-        general.inventoryRows = mutableListOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM, InventoryRow.HOTBAR)
+        inventoryHud.shownRows.value = listOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM, InventoryRow.HOTBAR)
         waitForItem(context, "Item 0") { cell(context, 3, 0, gaps = 1) }
         try {
             val states = listOf(
@@ -42,8 +44,8 @@ class InventoryLookTest : FabricClientGameTest {
                 Triple(false, Theme.CHARCOAL, MenuLook.SOLID),
             )
             for ((themed, theme, menuLook) in states) {
-                inventory.menuTheme = themed
-                inventory.menuLook = menuLook
+                menuTheme.enabled = themed
+                menuTheme.menuLook.value = menuLook
                 hud.theme = theme
                 context.waitTicks(2)
                 val name = when {
@@ -69,24 +71,24 @@ class InventoryLookTest : FabricClientGameTest {
                 println("InventoryLookTest: the HUD drew the Inventory look in ${drawMicros(context)}µs a frame, Menu Theme $themed, $theme, $menuLook")
             }
         } finally {
-            inventory.menuTheme = themedBefore
-            inventory.menuLook = menuLookBefore
+            menuTheme.enabled = themedBefore
+            menuTheme.menuLook.value = menuLookBefore
             hud.theme = themeBefore
         }
 
         // In columns each row runs down, the hotbar apart to the right.
-        general.inventoryLayout = InventoryLayout.COLUMNS
+        inventoryHud.layout.value = InventoryLayout.COLUMNS
         waitForItem(context, "Item 35") { cell(context, 2, 8, columns = true) }
         check(InventoryGrid.stackAt(context, cell(context, 3, 0, gaps = 1, columns = true))?.hoverName?.string == "Item 0") { "The hotbar column is not apart to the right" }
         context.takeScreenshot("inventory-hud-columns")
 
         // The icon looks, for a player who wants the grid lighter than the inventory, in columns and in rows.
         for (look in listOf(InventoryLook.PLATE, InventoryLook.CLEAR)) {
-            general.inventoryLayout = InventoryLayout.COLUMNS
-            general.inventoryLook = look
+            inventoryHud.layout.value = InventoryLayout.COLUMNS
+            inventoryHud.look.value = look
             waitForItem(context, "Item 35") { cell(context, 2, 8, inventory = false, columns = true) }
             context.takeScreenshot("inventory-hud-${look.name.lowercase()}-columns")
-            general.inventoryLayout = InventoryLayout.ROWS
+            inventoryHud.layout.value = InventoryLayout.ROWS
             waitForItem(context, "Item 35") { cell(context, 2, 8, inventory = false) }
             context.takeScreenshot("inventory-hud-${look.name.lowercase()}")
             println("InventoryLookTest: the HUD drew the ${look.name} look in ${drawMicros(context)}µs a frame")

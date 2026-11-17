@@ -1,8 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.general
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
@@ -11,8 +10,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class DamageNumbersTest {
-    private val config = DsModConfig().apply { general.damageNumbers = true }
-    private val game = Game(features(config).filter { it is DamageNumbers })
+    private val feature = SettingsTree().feature<DamageNumbers>().also { it.enabled = true }
+    private val game = Game(listOf(feature))
 
     private val hit = ServerText(ServerSpan("74,540,375", GRAY))
     private val crit = ServerText(ServerSpan("✧1,", WHITE), ServerSpan("461", YELLOW), ServerSpan(",8", RED), ServerSpan("45✧", WHITE))
@@ -29,9 +28,9 @@ class DamageNumbersTest {
 
     @Test
     fun `the decimals follow the setting`() {
-        config.general.damageDecimals = 0f
+        feature.decimals.value = 0f
         assertEquals("75M", seen(hit))
-        config.general.damageDecimals = 3f
+        feature.decimals.value = 3f
         assertEquals("74.54M", seen(hit))
     }
 
@@ -44,28 +43,28 @@ class DamageNumbersTest {
 
     @Test
     fun `with short numbers off the server's number shows unchanged`() {
-        config.general.damageShort = false
+        feature.shorten.value = false
         assertEquals("74,540,375", seen(hit))
         assertNull(game.replaced)
     }
 
     @Test
     fun `crits only hides the hits and keeps the crits`() {
-        config.general.damageShown = DamageShown.CRITS
+        feature.shown.value = DamageShown.CRITS
         assertNull(seen(hit))
         assertEquals("✧1.5M✧", seen(crit))
     }
 
     @Test
     fun `none hides every damage number`() {
-        config.general.damageShown = DamageShown.NONE
+        feature.shown.value = DamageShown.NONE
         assertNull(seen(hit))
         assertNull(seen(crit))
     }
 
     @Test
     fun `text with a letter or a slash is not a damage number`() {
-        config.general.damageShown = DamageShown.NONE
+        feature.shown.value = DamageShown.NONE
         for (other in listOf("[Lv55] Zealot 13000/13000", "Opens in 5s", "2x Protector Dragon Fragment", "13000/13000", "Healing Fel 1M❤", "⏣ Void Sepulture\nStep on the pad")) {
             assertEquals(other, seen(ServerText(ServerSpan(other))), other)
         }

@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.gametest
 
 import com.mojang.blaze3d.platform.InputConstants
 import io.github.noxaur.dsmod.core.camera.KeyMode
+import io.github.noxaur.dsmod.core.feature.general.InventoryHud
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.edge.InventoryKey
@@ -16,11 +17,11 @@ import org.lwjgl.glfw.GLFW
  */
 class InventoryKeyTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = InventoryGrid.with(context) {
-        val general = DsModClient.settings.general
+        val inventoryHud = DsModClient.feature<InventoryHud>()
         val key = GLFW.GLFW_KEY_K
         fun shown() = context.computeOnClient<Boolean, Nothing> { Hud.find(ID) != null }
 
-        general.inventoryKey = key
+        inventoryHud.key.value = key
         context.waitTick()
         check(shown()) { "Binding a key hid the grid before its first press" }
         context.input.pressKey(key)
@@ -40,7 +41,7 @@ class InventoryKeyTest : FabricClientGameTest {
         context.waitTicks(2)
         check(shown()) { "Toggle's second press did not show the grid" }
 
-        general.inventoryKeyMode = KeyMode.HOLD
+        inventoryHud.keyMode.value = KeyMode.HOLD
         context.waitTicks(2)
         check(!shown()) { "Under Hold the grid shows with the key up" }
         context.input.holdKey(key)
@@ -49,7 +50,7 @@ class InventoryKeyTest : FabricClientGameTest {
         context.input.releaseKey(key)
         context.waitTicks(2)
         check(!shown()) { "Under Hold the grid stays after the release" }
-        general.inventoryKey = -1
+        inventoryHud.key.value = -1
         context.waitTicks(2)
         check(shown()) { "With no key the grid does not always show" }
 

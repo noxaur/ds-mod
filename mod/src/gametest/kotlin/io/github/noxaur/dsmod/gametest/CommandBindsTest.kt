@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.CommandBinds
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.Where
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
@@ -37,7 +38,7 @@ class CommandBindsTest : FabricClientGameTest {
     }
 
     private fun BindsDriver.binds() {
-        val general = DsModClient.settings.general
+        val commandBinds = DsModClient.feature<CommandBinds>()
         open(context, SettingsTabs(at("Binds")))
         list()
         context.takeScreenshot("command-binds-empty")
@@ -45,15 +46,15 @@ class CommandBindsTest : FabricClientGameTest {
 
         // Add Bind opens the new bind's command to type into.
         press(line(foot()), "Add Bind")
-        check(general.binds == listOf(CommandBind())) { "Add Bind left ${general.binds}" }
+        check(commandBinds.binds.value == listOf(CommandBind())) { "Add Bind left ${commandBinds.binds.value}" }
         context.input.typeChars("/me bound")
         context.waitTicks(2)
-        check(general.binds.single().command == "/me bound") { "Typing into the command left ${general.binds}" }
+        check(commandBinds.binds.value.single().command == "/me bound") { "Typing into the command left ${commandBinds.binds.value}" }
         // Tab goes back to the name, Shift with it, and Enter leaves the field.
         key(GLFW.GLFW_KEY_TAB, shift = true)
         context.input.typeChars("Warp End")
         key(GLFW.GLFW_KEY_ENTER)
-        check(general.binds.single().name == "Warp End") { "Typing into the name left ${general.binds}" }
+        check(commandBinds.binds.value.single().name == "Warp End") { "Typing into the name left ${commandBinds.binds.value}" }
 
         // Shift + F6, recorded by holding Shift and pressing F6.
         press(lineOf(0), "Keys")
@@ -64,14 +65,14 @@ class CommandBindsTest : FabricClientGameTest {
         context.takeScreenshot("command-binds-recording")
         context.input.releaseShift()
         context.waitTicks(2)
-        check(general.binds.single().keys == listOf(GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_F6)) { "Recording left ${general.binds}" }
+        check(commandBinds.binds.value.single().keys == listOf(GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_F6)) { "Recording left ${commandBinds.binds.value}" }
 
         // Where cycles forward on a press and back on a right press.
         press(lineOf(0), "Where")
         press(lineOf(0), "Where")
-        check(general.binds.single().where == Where.BOTH) { "Two presses on Where left ${general.binds.single().where}" }
+        check(commandBinds.binds.value.single().where == Where.BOTH) { "Two presses on Where left ${commandBinds.binds.value.single().where}" }
         press(lineOf(0), "Where", button = 1)
-        check(general.binds.single().where == Where.MENUS) { "A right press on Where left ${general.binds.single().where}" }
+        check(commandBinds.binds.value.single().where == Where.MENUS) { "A right press on Where left ${commandBinds.binds.value.single().where}" }
         context.takeScreenshot("command-binds-one")
 
         // Its details open under it, with the area, the priority and how keys are read.
@@ -82,18 +83,18 @@ class CommandBindsTest : FabricClientGameTest {
         theme(context, Theme.CHARCOAL)
         val details = lineOf(0, details = true)
         press(details, "Area")
-        check(general.binds.single().area != null) { "Area did not step" }
+        check(commandBinds.binds.value.single().area != null) { "Area did not step" }
         press(details, "Priority", dx = at(details, "Priority")[2] - 4)
-        check(general.binds.single().priority == 1) { "The priority's plus left ${general.binds.single().priority}" }
+        check(commandBinds.binds.value.single().priority == 1) { "The priority's plus left ${commandBinds.binds.value.single().priority}" }
         press(details, "Keys in Order")
-        check(general.binds.single().inOrder) { "Keys in Order did not turn on" }
+        check(commandBinds.binds.value.single().inOrder) { "Keys in Order did not turn on" }
         press(details, "Keys in Order")
 
         // Duplicate adds a copy that starts off, after the original. Once on, it clashes, and both keys are ringed.
         press(details, "Duplicate")
-        check(general.binds.size == 2 && !general.binds[1].enabled) { "The copy is ${general.binds.getOrNull(1)}" }
+        check(commandBinds.binds.value.size == 2 && !commandBinds.binds.value[1].enabled) { "The copy is ${commandBinds.binds.value.getOrNull(1)}" }
         press(lineOf(1), "On")
-        check(general.binds[1].enabled) { "The copy's switch did not turn it on" }
+        check(commandBinds.binds.value[1].enabled) { "The copy's switch did not turn it on" }
         context.takeScreenshot("command-binds-clash")
         theme(context, Theme.VANILLA)
         context.takeScreenshot("command-binds-clash-vanilla")
@@ -102,28 +103,28 @@ class CommandBindsTest : FabricClientGameTest {
         // Delete asks twice, and a press elsewhere calls it off.
         press(lineOf(1), "Settings")
         press(lineOf(1, details = true), "Delete")
-        check(general.binds.size == 2) { "One press on Delete deleted the bind" }
+        check(commandBinds.binds.value.size == 2) { "One press on Delete deleted the bind" }
         context.takeScreenshot("command-binds-delete")
         press(lineOf(0), "Name", dx = 2)
         key(GLFW.GLFW_KEY_ESCAPE)
         press(lineOf(1, details = true), "Delete")
-        check(general.binds.size == 2) { "A press elsewhere did not call the delete off" }
+        check(commandBinds.binds.value.size == 2) { "A press elsewhere did not call the delete off" }
         press(lineOf(1, details = true), "Delete")
-        check(general.binds.size == 1) { "Two presses on Delete left ${general.binds}" }
+        check(commandBinds.binds.value.size == 1) { "Two presses on Delete left ${commandBinds.binds.value}" }
 
         // While keys are recorded, the mouse's back button is a key, not a step back through the settings.
         press(lineOf(0), "Keys")
         context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_4)
         context.waitTicks(2)
-        check(general.binds.single().keys == listOf(GLFW.GLFW_MOUSE_BUTTON_4)) { "Recording the back button left ${general.binds.single().keys}" }
+        check(commandBinds.binds.value.single().keys == listOf(GLFW.GLFW_MOUSE_BUTTON_4)) { "Recording the back button left ${commandBinds.binds.value.single().keys}" }
     }
 
     private fun clear() {
-        val general = DsModClient.settings.general
-        general.binds = emptyList()
-        general.bindGroups = emptyList()
-        general.collapsedGroups = emptyList()
-        general.offGroups = emptyList()
+        val commandBinds = DsModClient.feature<CommandBinds>()
+        commandBinds.binds.value = emptyList()
+        commandBinds.groups.value = emptyList()
+        commandBinds.collapsedGroups.value = emptyList()
+        commandBinds.offGroups.value = emptyList()
     }
 }
 

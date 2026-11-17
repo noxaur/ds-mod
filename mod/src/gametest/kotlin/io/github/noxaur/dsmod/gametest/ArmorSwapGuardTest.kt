@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -29,7 +30,7 @@ class ArmorSwapGuardTest : FabricClientGameTest {
             check(worn()) { "A right click did not put the chestplate on with the guard off" }
 
             try {
-                DsModClient.settings.inventory.armorSwapGuard = true
+                DsModClient.feature<ArmorSwapGuard>().enabled = true
                 hold()
                 context.input.pressMouse(1)
                 context.waitTicks(10)
@@ -43,7 +44,7 @@ class ArmorSwapGuardTest : FabricClientGameTest {
                 context.input.releaseKey { it.keyShift }
                 check(worn()) { "Sneaking did not let the swap through" }
             } finally {
-                DsModClient.settings.inventory.armorSwapGuard = false
+                DsModClient.feature<ArmorSwapGuard>().enabled = false
             }
         }
     }

@@ -43,7 +43,7 @@ class SettingsTest {
         number(v::height, "Height", "Set it.", -2f..3f, step = 0.1f)
         number(v::gap, "Gap", "Set it.", 50f..1000f, step = 50f, unit = " ms")
         choice(v::tier, "Tier", "Pick it.")
-        span(v::spans, "Timing", "Pick it.", max = 200)
+        span(Bind.of(v::spans), "Timing", "Pick it.", max = 200)
         order(v::pieces, "Pieces", "Pick them.")
         pick(Bind("Values.other", v::other::get, v::other::set), "Look", "Pick it.", listOf(false, true)) { Look.Slots(io.github.noxaur.dsmod.core.container.SlotStyle(), if (it) 3 else 1) }
     }.rows.also { SettingsTree.link(it, null) }

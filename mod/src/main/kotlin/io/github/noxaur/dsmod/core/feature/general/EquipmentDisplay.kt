@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.feature.general
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.game.ContainerState.Companion.INVENTORY
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.LeftServer
@@ -11,7 +12,6 @@ import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudLook
-import kotlin.reflect.KMutableProperty0
 
 /** A piece the display can show: a piece of armor and the slot of the player's inventory that holds it, or the pet. */
 enum class EquipmentPiece(private val label: String, val slot: Int) {
@@ -73,15 +73,14 @@ enum class PetLook(private val label: String) {
  * name is the sidebar's: dragsim.co floats each pet beside its owner. Until one of those is seen, or with [petLook]
  * on Name, the pet is a line under the icons, as the sidebar writes it, with its held item once the menu showed it.
  */
-class EquipmentDisplay(
-    toggle: KMutableProperty0<Boolean>,
-    private val layout: KMutableProperty0<EquipmentLayout>,
-    private val pieces: KMutableProperty0<MutableList<EquipmentPiece>>,
-    private val petLook: KMutableProperty0<PetLook>,
-    private val petPosition: KMutableProperty0<PetPosition>,
-    private val look: KMutableProperty0<EquipmentLook>,
-    override val placement: KMutableProperty0<HudDock>,
-) : InventoryReader("equipment-display", toggle) {
+class EquipmentDisplay(config: DsModConfig) : InventoryReader(config, "equipment-display", "Show your armor and pet on the HUD.") {
+    val pieces = order("equipmentPieces", "Pieces", "Pick the pieces to show, and drag them into order.", EquipmentPiece.entries)
+    val layout = choice("equipmentLayout", "Layout", "Line the pieces up in a row or a column.", EquipmentLayout.ROW)
+    val look = choice("equipmentLook", "Look", "Show the pieces on the plate, on nothing, or in hotbar slots.", EquipmentLook.PLATE)
+    override val placement = choice("equipmentPlacement", "Placement", "Keep the pieces where you put them, or beside your hotbar.", HudDock.FREE)
+    val petLook = choice("petLook", "Pet Look", "Show your pet as its head, or as its name and level.", PetLook.ICON)
+    val petPosition = choice("petPosition", "Pet Position", "Put your pet among the armor, or on a row above or below it.", PetPosition.WITH_ARMOR)
+
     /** The settings the block was built with, so a refresh rebuilds it only when one changed. */
     private data class Shown(
         val layout: EquipmentLayout,
@@ -148,8 +147,8 @@ class EquipmentDisplay(
             }
         }
         // Compared field by field, so a refresh with nothing new allocates nothing.
-        if (shown.layout != layout.get() || shown.pieces != pieces.get() || shown.petLook != petLook.get() ||
-            shown.petPosition != petPosition.get() || shown.look != look.get() || shown.placement != placement.get()
+        if (shown.layout != layout.value || shown.pieces != pieces.value || shown.petLook != petLook.value ||
+            shown.petPosition != petPosition.value || shown.look != look.value || shown.placement != placement.value
         ) {
             shown = settings()
             block = build()
@@ -157,7 +156,7 @@ class EquipmentDisplay(
         return block
     }
 
-    private fun settings() = Shown(layout.get(), pieces.get().toList(), petLook.get(), petPosition.get(), look.get(), placement.get())
+    private fun settings() = Shown(layout.value, pieces.value, petLook.value, petPosition.value, look.value, placement.value)
 
     private fun build(): HudBlock? {
         val pet = pet.takeIf { EquipmentPiece.PET in shown.pieces }
