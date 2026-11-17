@@ -1,8 +1,8 @@
 +   0.0s >   SLAYER QUEST STARTED!
 +   6.2s > ☠ SLAYER BOSS SPAWNING!
-+   7.8s > (bosses near) 3471 minecraft:zombie ☠ Revenant Horror I 1.5M/3.8M❤
++   7.8s > (seen) 3471 minecraft:zombie ☠ Revenant Horror I 1.5M/3.8M❤
              (in the world) BAD tracer to entity 3471
 +   7.9s > ☠ NICE! SLAYER BOSS SLAIN!
 +   7.9s >   SLAYER QUEST COMPLETE!
-+   7.9s > (bosses near) none
++   7.9s > (gone) 3471
              (no marks in the world)

@@ -3,6 +3,11 @@ package io.github.noxaur.dsmod.debug.capture
 import io.github.noxaur.dsmod.core.capture.captureLine
 import io.github.noxaur.dsmod.core.capture.readCapture
 import io.github.noxaur.dsmod.core.game.Area
+import io.github.noxaur.dsmod.core.game.Boss
+import io.github.noxaur.dsmod.core.game.EntityFilter
+import io.github.noxaur.dsmod.core.game.EntityRenamed
+import io.github.noxaur.dsmod.core.game.EntitySeen
+import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.GameEvent
@@ -47,11 +52,34 @@ class CutFixtureTest {
         types: Set<String>,
         info: List<String> = emptyList(),
         area: Area = Area.ANYWHERE,
+        entities: List<EntityFilter> = emptyList(),
     ): String {
         val fixture = dir.resolve("fixture.jsonl")
-        cutFixture(capture, fixture, seconds, types, area, info)
+        cutFixture(capture, fixture, seconds, types, area, info, entities = entities)
         readCapture(fixture)
         return fixture.readText()
+    }
+
+    private val protector = EntitySeen(7, "minecraft:iron_golem", text("[Lv100] Endstone Protector 10M/10M"))
+
+    private fun bossCut(capture: Path, seconds: ClosedFloatingPointRange<Double>) =
+        readCapture(dir.resolve("fixture.jsonl").also { cut(capture, seconds, emptySet(), entities = Boss.FILTERS) }).map { it.event }
+
+    @Test
+    fun `an entity cut keeps only the entities the feature reads, from those held at the start to the player leaving`() {
+        val capture = capture(
+            1 to EntitySeen(5, "minecraft:armor_stand", text("[Lvl 100] Black Cat")),
+            2 to protector,
+            4 to EntityRenamed(7, text("[Lv100] Endstone Protector 9M/10M")),
+            5 to LeftServer,
+        )
+        assertEquals(listOf(protector, EntityRenamed(7, text("[Lv100] Endstone Protector 9M/10M")), LeftServer), bossCut(capture, 3.0..10.0))
+    }
+
+    @Test
+    fun `a window after the player left starts with no entity`() {
+        val capture = capture(1 to protector, 2 to LeftServer, 4 to say("Back again"))
+        assertEquals(emptyList(), bossCut(capture, 3.0..10.0))
     }
 
     @Test

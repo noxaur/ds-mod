@@ -50,7 +50,8 @@ private const val RECORDING_WARM_UP_TICKS = 100
  * blocks, the open inventory has [MARKED_SLOTS] marked slots and the sidebar has [SIDEBAR_LINES] lines. Then it
  * records, with a full inventory of named items with long lore and [ARMORED_MOBS] named, armored mobs in view, and
  * reads the recorder's own timers for a pass over the items and over the entities. Last, with three bosses among those
- * mobs, it reads Boss Beacon's and Boss Tracer's poll and their marks' frame.
+ * mobs and the mobs hit on every tick, it reads the entity tracker's tick and the frame of Boss Beacon's and Boss
+ * Tracer's marks.
  *
  * The caps are for the device in the budgets file. A fixed loop measures how fast this machine is next to
  * that device, and each time is scaled to it before the check, so a slower runner needs no caps of its own.
@@ -210,7 +211,7 @@ class PerfTest : FabricClientGameTest {
         }
         repeat(ARMORED_MOBS) { i ->
             world.server.runCommand(
-                "execute at @a run summon zombie ~${i % 8 - 4} ~ ~${3 + i / 8} {NoAI:1b,Silent:1b,PersistenceRequired:1b,CustomName:\"Mob $i\"," +
+                "execute at @a run summon zombie ~${i % 8 - 4} ~ ~${3 + i / 8} {NoAI:1b,Silent:1b,PersistenceRequired:1b,Tags:[\"perf\"],CustomName:\"Mob $i\"," +
                     "equipment:{head:{id:\"minecraft:diamond_helmet\"},chest:{id:\"minecraft:diamond_chestplate\"}," +
                     "legs:{id:\"minecraft:diamond_leggings\"},feet:{id:\"minecraft:diamond_boots\"},mainhand:{id:\"minecraft:diamond_sword\"}}}",
             )
@@ -230,8 +231,10 @@ class PerfTest : FabricClientGameTest {
     }
 
     /**
-     * Adds a sample of the boss poll per tick and of the boss marks per frame, with the Protector and two slayer bosses
-     * among the named mobs [recording] left, while the player turns so that the marks are followed on each frame.
+     * Adds a sample of the entity tracker per tick and of the boss marks per frame, with the Protector and two slayer
+     * bosses among the named mobs [recording] left. Each tick renames those mobs, as the server does a mob on each hit
+     * to show its health, so the tracker reads every name again, and the player turns so that the marks are followed
+     * on each frame.
      */
     private fun bosses(context: ClientGameTestContext, world: TestSingleplayerContext, samples: HashMap<String, MutableList<Double>>) {
         world.server.runCommand("""execute at @a run summon iron_golem ~ ~ ~-12 {NoAI:1b,CustomName:"[Lv100] Endstone Protector 10M/10M"}""")
@@ -243,15 +246,24 @@ class PerfTest : FabricClientGameTest {
                 marks.otherSlayers.value = true
             }
         }
-        context.waitTicks(20)
+        val fight = { at: Int ->
+            world.server.runCommand("""execute as @e[tag=perf] run data modify entity @s CustomName set value "[Lv70] Zealot ${13_000 - at}/13k❤"""")
+            context.input.lookAt(at * 3f, 0f)
+        }
+        // A player who fights hits mobs for minutes, so the code for a new name is compiled before it is timed. Meanwhile
+        // the features find the bosses.
+        repeat(RECORDING_WARM_UP_TICKS) { at ->
+            fight(-at)
+            context.waitTick()
+        }
         repeat(WINDOWS) { window ->
             context.runOnClient<Nothing> { DsModClient.game.metrics.flush() }
             repeat(WINDOW_TICKS) { tick ->
-                context.input.lookAt((window * WINDOW_TICKS + tick) * 3f, 0f)
+                fight(window * WINDOW_TICKS + tick)
                 context.waitTick()
             }
             val timers = context.computeOnClient<Map<String, Metrics.Timer>, Nothing> { DsModClient.game.metrics.snapshot().timers }
-            for (name in listOf("boss-poll", "world.follow")) {
+            for (name in listOf("entities", "world.follow")) {
                 val timer = checkNotNull(timers[name]) { "No $name timer ran" }
                 samples.getOrPut(name, ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
             }

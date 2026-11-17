@@ -12,8 +12,9 @@ import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.Hit
-import io.github.noxaur.dsmod.core.game.BossesNear
-import io.github.noxaur.dsmod.core.game.PetNear
+import io.github.noxaur.dsmod.core.game.EntityGone
+import io.github.noxaur.dsmod.core.game.EntityRenamed
+import io.github.noxaur.dsmod.core.game.EntitySeen
 import io.github.noxaur.dsmod.core.game.FrameRate
 import io.github.noxaur.dsmod.core.game.PingMeasured
 import io.github.noxaur.dsmod.core.game.ServerTime
@@ -142,8 +143,9 @@ class FeatureReplayTest {
         is HeadPlaced -> "(head placed) at ${event.x}, ${event.y}, ${event.z}"
         is ActionBar -> "(action bar) ${event.text.plain}"
         is EntityDied -> "(died) ${event.name.plain}"
-        is PetNear -> "(pet near) ${event.name.plain}"
-        is BossesNear -> "(bosses near) " + event.bosses.joinToString("; ") { "${it.id} ${it.entity} ${it.name.plain}" }.ifEmpty { "none" }
+        is EntitySeen -> "(seen) ${event.id} ${event.entity} ${event.name.plain}" + (event.head?.let { " wearing ${name(it)}" } ?: "")
+        is EntityRenamed -> "(renamed) ${event.id} ${event.name.plain}"
+        is EntityGone -> "(gone) ${event.id}"
         is FloatingText -> "(floating) ${event.text.plain.replace("\n", " / ")}"
         is Hit -> "(you hit) ${event.entity}"
         is ServerTime -> "(server time) tick ${event.gameTime}"

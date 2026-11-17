@@ -3,9 +3,15 @@ package io.github.noxaur.dsmod.core.feature
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.config.Store
+import io.github.noxaur.dsmod.core.feature.boss.BossBeacon
+import io.github.noxaur.dsmod.core.feature.boss.BossTracer
 import io.github.noxaur.dsmod.core.feature.end.DragonTimer
 import io.github.noxaur.dsmod.core.feature.end.ProtectorStatus
 import io.github.noxaur.dsmod.core.game.Area
+import io.github.noxaur.dsmod.core.game.Boss
+import io.github.noxaur.dsmod.core.game.EntityGone
+import io.github.noxaur.dsmod.core.game.EntitySeen
+import io.github.noxaur.dsmod.core.game.Pet
 import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
@@ -13,10 +19,14 @@ import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.WorldChanged
+import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.core.world.EntityBeam
+import io.github.noxaur.dsmod.core.world.Tracer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 
 class GameTest {
     private val config = DsModConfig()
@@ -26,6 +36,58 @@ class GameTest {
     private fun say(time: Long, line: String) = game.post(time, SystemMessage(ServerText(ServerSpan(line))))
 
     private fun hud(id: String) = game.readouts.single { it.feature.id == id }.hud
+
+    private fun marks(id: String) = game.readouts.single { it.feature.id == id }.marks
+
+    private val protector = EntitySeen(36339, "minecraft:iron_golem", ServerText(ServerSpan("[Lv100] Endstone Protector 10M/10M")))
+    private val pet = EntitySeen(12, "minecraft:armor_stand", ServerText(ServerSpan("[Lvl 100] Black Cat")))
+
+    @Test
+    fun `the tracker reads only what a feature that is on reads, and every feature's while a capture records`() {
+        tree.feature<BossBeacon>().enabled = false
+        assertEquals(listOf(Pet.STANDS), game.entityFilters())
+        tree.feature<BossBeacon>().enabled = true
+        assertEquals(listOf(Pet.STANDS) + Boss.FILTERS, game.entityFilters())
+        assertSame(game.entityFilters(), game.entityFilters())
+        tree.features.forEach { it.enabled = false }
+        assertEquals(emptyList(), game.entityFilters())
+        game.tap = { _, _ -> }
+        assertEquals(listOf(Pet.STANDS) + Boss.FILTERS, game.entityFilters())
+    }
+
+    @Test
+    fun `a feature marks the entities it reads until they are gone`() {
+        tree.feature<BossBeacon>().enabled = true
+        game.post(0, pet)
+        game.post(0, protector)
+        game.tick(0)
+        assertEquals(listOf(EntityBeam(36339, "Endstone Protector", Role.BAD)), marks("boss-beacon"))
+        game.post(50, EntityGone(36339))
+        game.tick(50)
+        assertEquals(emptyList(), marks("boss-beacon"))
+    }
+
+    @Test
+    fun `a feature switched on hears the entities the client already holds`() {
+        tree.feature<BossBeacon>().enabled = true
+        game.post(0, protector)
+        game.tick(0)
+        tree.feature<BossTracer>().enabled = true
+        game.tick(50)
+        assertEquals(listOf(Tracer(36339, Role.BAD)), marks("boss-tracer"))
+    }
+
+    @Test
+    fun `a new world forgets every entity, since it numbers them again`() {
+        tree.feature<BossBeacon>().enabled = true
+        game.post(0, protector)
+        game.post(0, WorldChanged)
+        game.tick(0)
+        assertEquals(emptyList(), marks("boss-beacon"))
+        tree.feature<BossTracer>().enabled = true
+        game.tick(50)
+        assertEquals(emptyList(), marks("boss-tracer"))
+    }
 
     @Test
     fun `a feature that was switched off comes back knowing nothing of the world it left`() {

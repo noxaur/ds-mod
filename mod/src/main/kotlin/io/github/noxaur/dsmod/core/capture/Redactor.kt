@@ -8,8 +8,9 @@ import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.Hit
-import io.github.noxaur.dsmod.core.game.BossesNear
-import io.github.noxaur.dsmod.core.game.PetNear
+import io.github.noxaur.dsmod.core.game.EntityGone
+import io.github.noxaur.dsmod.core.game.EntityRenamed
+import io.github.noxaur.dsmod.core.game.EntitySeen
 import io.github.noxaur.dsmod.core.game.PingMeasured
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.ServerText
@@ -160,11 +161,11 @@ class Redactor(private val names: Set<String>) {
         is SlotChanged -> event.copy(item = event.item?.let(::item))
         WorldChanged -> event
         LeftServer -> event
-        is HeadPlaced, is Hit, is ServerTime, is PingMeasured, is FrameRate -> event
+        is HeadPlaced, is Hit, is ServerTime, is PingMeasured, is FrameRate, is EntityGone -> event
         is ActionBar -> ActionBar(event.text.named())
         is EntityDied -> event.copy(name = event.name.named())
-        is PetNear -> PetNear(event.name.named(), item(event.head))
-        is BossesNear -> BossesNear(event.bosses.map { it.copy(name = it.name.named()) })
+        is EntitySeen -> event.copy(name = event.name.named(), head = event.head?.let(::item))
+        is EntityRenamed -> event.copy(name = event.name.named())
         is FloatingText -> FloatingText(event.text.named())
     }
 
