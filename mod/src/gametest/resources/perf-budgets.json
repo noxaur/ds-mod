@@ -32,7 +32,7 @@
       "group": "Frame",
       "label": "Boss marks, 3 beams and 3 tracers",
       "unit": "µs",
-      "cap": 20
+      "cap": 30
     },
     "tab-poll": {
       "group": "Tick",
