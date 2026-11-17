@@ -40,35 +40,27 @@ object World {
     private class ShownBox(val box: AABB, val style: GizmoStyle) : Shown
     private class ShownPath(val points: List<Vec3>, val color: Int) : Shown
     private class ShownRing(val center: Vec3, val radius: Float, val style: GizmoStyle) : Shown
-    /**
-     * A mark on the entity with id [entity], which [find] looks up once a tick so a frame only places it. What [follow]
-     * reads is a `@JvmField`: it runs too seldom on a slow machine to be compiled, and there each getter is a call.
-     */
+    /** A mark on the entity with id [entity], which [find] looks up once a tick so a frame only places it. */
     private abstract class Follow(val entity: Int) {
-        @JvmField var found: Entity? = null
+        var found: Entity? = null
     }
-    private class ShownBeam(entity: Int, @JvmField val label: BeamLabel) : Follow(entity)
-    private class ShownTracer(entity: Int, @JvmField val color: Int) : Follow(entity)
+    private class ShownBeam(entity: Int, val label: BeamLabel) : Follow(entity)
+    private class ShownTracer(entity: Int, val color: Int) : Follow(entity)
     private class ShownWaypoint(val at: Vec3, val top: Vec3, val label: BeamLabel, val box: ShownBox) : Shown {
         var labelAt = at
     }
 
-    /**
-     * A beam's [name] and the distance to it, built again only when the whole meters change, and how far over the beam's
-     * base it floats: higher the farther it is, so the growing text clears what it names.
-     */
-    private class BeamLabel(val name: String, @JvmField val color: Int) {
-        @JvmField var meters = -1
-        @JvmField var text = name
-        @JvmField var lift = 1.5
-        @JvmField var style: TextGizmo.Style = TextGizmo.Style.forColorAndCentered(color)
+    /** A beam's [name] and the distance to it, built again only when the whole meters change. */
+    private class BeamLabel(val name: String, val color: Int) {
+        var meters = -1
+        var text = name
+        var style: TextGizmo.Style = TextGizmo.Style.forColorAndCentered(color)
 
         /** Builds the label for [meters] away, and returns whether it changed. */
         fun at(meters: Int): Boolean {
             if (meters == this.meters) return false
             this.meters = meters
             text = "$name ${meters}m"
-            lift = 1.5 + meters / 12.0
             style = labelStyle(color, meters * 0.5f, 1.5f)
             return true
         }
@@ -163,11 +155,9 @@ object World {
                         Gizmos.line(mark.points[j - 1], mark.points[j], mark.color, LINE_WIDTH)
                     }
                     is ShownWaypoint -> {
-                        val label = mark.label
-                        if (label.at(camera.distanceTo(mark.at).toInt())) mark.labelAt = mark.at.add(0.0, label.lift, 0.0)
+                        if (mark.label.at(camera.distanceTo(mark.at).toInt())) mark.labelAt = labelAt(mark.at, mark.label)
                         Gizmos.cuboid(mark.box.box, mark.box.style).setAlwaysOnTop()
-                        Gizmos.line(mark.at, mark.top, label.color, LINE_WIDTH * 2).setAlwaysOnTop()
-                        Gizmos.billboardText(label.text, mark.labelAt, label.style).setAlwaysOnTop()
+                        beam(mark.at, mark.top, mark.label, mark.labelAt)
                     }
                 }
             }
@@ -180,40 +170,28 @@ object World {
         for (i in tracersShown.indices) tracersShown[i].let { it.found = level.getEntity(it.entity) }
     }
 
-    /**
-     * Draws the marks that follow an entity where this frame shows it, between the last tick's place and the next. It
-     * is one method: a slow machine draws a frame or two a tick, so this runs interpreted, on caches the frame before
-     * emptied, and each method it enters costs a few misses.
-     */
+    /** Draws the marks that follow an entity where this frame shows it, between the last tick's place and the next. */
     private fun follow(context: LevelExtractionContext) {
         val camera = context.camera()
         val eye = camera.position()
         val partial = context.deltaTracker().getGameTimeDeltaPartialTick(false)
-        val beams = beamsShown
-        for (i in beams.indices) {
-            val mark = beams[i]
+        for (i in beamsShown.indices) {
+            val mark = beamsShown[i]
             val entity = mark.found ?: continue
             if (entity.isRemoved) continue
             val at = entity.getPosition(partial)
-            val label = mark.label
-            val meters = eye.distanceTo(at).toInt()
-            if (meters != label.meters) label.at(meters)
-            val x = at.x
-            val y = at.y + entity.bbHeight
-            val z = at.z
-            Gizmos.line(Vec3(x, y, z), Vec3(x, y + BEAM_HEIGHT, z), label.color, LINE_WIDTH * 2).setAlwaysOnTop()
-            Gizmos.billboardText(label.text, Vec3(x, y + label.lift, z), label.style).setAlwaysOnTop()
+            val top = at.add(0.0, entity.bbHeight.toDouble(), 0.0)
+            mark.label.at(eye.distanceTo(at).toInt())
+            beam(top, top.add(0.0, BEAM_HEIGHT, 0.0), mark.label, labelAt(top, mark.label))
         }
-        val tracers = tracersShown
-        if (tracers.isEmpty()) return
+        if (tracersShown.isEmpty()) return
         val forward = camera.forwardVector()
-        val start = Vec3(eye.x + forward.x() * TRACER_AHEAD, eye.y + forward.y() * TRACER_AHEAD, eye.z + forward.z() * TRACER_AHEAD)
-        for (i in tracers.indices) {
-            val mark = tracers[i]
+        val start = eye.add(forward.x() * TRACER_AHEAD, forward.y() * TRACER_AHEAD, forward.z() * TRACER_AHEAD)
+        for (i in tracersShown.indices) {
+            val mark = tracersShown[i]
             val entity = mark.found ?: continue
             if (entity.isRemoved) continue
-            val at = entity.getPosition(partial)
-            Gizmos.line(start, Vec3(at.x, at.y + entity.bbHeight / 2.0, at.z), mark.color, LINE_WIDTH).setAlwaysOnTop()
+            Gizmos.line(start, entity.getPosition(partial).add(0.0, entity.bbHeight / 2.0, 0.0), mark.color, LINE_WIDTH).setAlwaysOnTop()
         }
     }
 
@@ -233,6 +211,15 @@ object World {
         }
         Gizmos.billboardText(label, mark.labelAt, mark.labelStyle).setAlwaysOnTop()
     }
+
+    /** A beam from [from] up to [to], seen through walls, with its [label] at [labelAt]. */
+    private fun beam(from: Vec3, to: Vec3, label: BeamLabel, labelAt: Vec3) {
+        Gizmos.line(from, to, label.color, LINE_WIDTH * 2).setAlwaysOnTop()
+        Gizmos.billboardText(label.text, labelAt, label.style).setAlwaysOnTop()
+    }
+
+    /** Where a beam's [label] floats over [base]: higher the farther it is, so the growing text clears what it names. */
+    private fun labelAt(base: Vec3, label: BeamLabel) = base.add(0.0, 1.5 + label.meters / 12.0, 0.0)
 
     /** Text is sized in blocks, so it grows with distance, [grown] at least [least], to stay the same size on screen. */
     private fun labelStyle(color: Int, grown: Float, least: Float) =
