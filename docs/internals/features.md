@@ -66,6 +66,12 @@ The refusal `This ability is on cooldown for 3.35s` names no ability, so it goes
 
 Riftwalker's blink is the one cooldown the server shows nothing of, so it starts on `Hit`, the player's own attack as the client sends it. `Hit` carries only the entity's type, because the charge needs nothing more, and a hit while the bonus charges does not restart it.
 
+## A slayer boss is the player's when it comes after their spawn line
+
+dragsim.co names no slayer boss's owner, on the mob or anywhere near it, so Boss Beacon and Boss Tracer tell the player's own from another's by time: the server tells only the owner `☠ SLAYER BOSS SPAWNING!`, and the first slayer boss to come into view within five seconds after it is theirs. In the capture the boss came 1.5 s after the line. Another player's boss that comes into view in those seconds would be taken for theirs, which the rule accepts, since nothing the client sees says otherwise.
+
+`BossesNear` carries each boss with its name as it came into view and is posted only when one comes or goes, so the features parse the name once. A boss's name changes with its health on each hit, and an event per hit would run every handler for nothing. Every zealot is named too, so `BossPoller` reads an entity's name again only when the server gave it a new one.
+
 ## A pet's XP is read from the menu and moved by Combat XP
 
 dragsim.co shows a pet's XP only on its item in the Pets menu, so Active Pet takes each read as an exact point in time, and two reads at one level give the rate. Between reads the only thing that moves is the Combat XP the action bar shows behind each kill, and how much of it reaches the pet is the server's rule, which no capture shows. So the rule is not written down: the reads learn the pet XP per Combat XP, and each read puts the live estimate back on the server's number. Only a pet whose footer says `COMBAT PET` is moved this way, since another kind gains from another skill. A Combat XP line counts only right behind a death, as in Zealot Tracker, because the server repeats the last one for about a second.

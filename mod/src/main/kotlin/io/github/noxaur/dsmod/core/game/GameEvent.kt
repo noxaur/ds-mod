@@ -100,6 +100,19 @@ data class SlotChanged(val slot: Int, val item: Item? = null) : GameEvent
 @SerialName("pet")
 data class PetNear(val name: ServerText, val head: Item) : GameEvent
 
+/** An entity the client holds that may be a boss: its [id] on this client, its [entity] type and the [name] over it. */
+@Serializable
+data class NearBoss(val id: Int, val entity: String, val name: ServerText)
+
+/**
+ * Every entity the client holds that may be a boss: each ender dragon, and each named iron golem or mob whose name
+ * starts with `☠`, which is how dragsim.co names the Endstone Protector and a slayer boss. Posted when one comes
+ * into the client's view or leaves it, with each one's name as it was when it came, and only while a feature reads it.
+ */
+@Serializable
+@SerialName("bosses")
+data class BossesNear(val bosses: List<NearBoss>) : GameEvent
+
 /**
  * The player's own attack landed on a living [entity] that is not an armor stand, such as `minecraft:enderman`, as the
  * client sends it. The server says nothing of a hit, so this event comes from the player rather than the server.

@@ -12,10 +12,16 @@ sealed interface Mark {
 /** A beam with a label and the distance to it, seen through walls. */
 data class Waypoint(val at: Point, val label: String, override val role: Role = Role.VALUE) : Mark
 
+/** A beam over the [entity] with this id on the client, with a label and the distance to it, seen through walls. It follows the entity. */
+data class EntityBeam(val entity: Int, val label: String, override val role: Role = Role.VALUE) : Mark
+
+/** A line from the middle of the screen to the [entity] with this id on the client, seen through walls. */
+data class Tracer(val entity: Int, override val role: Role = Role.VALUE) : Mark
+
 /** An outlined, tinted block. */
 data class BlockBox(val x: Int, val y: Int, val z: Int, override val role: Role = Role.VALUE) : Mark
 
-/** A line through the points in order: a tracer, a connector, a trail or a route. */
+/** A line through the points in order: a connector, a trail or a route. A line to an entity is a [Tracer]. */
 data class Path(val points: List<Point>, override val role: Role = Role.VALUE) : Mark
 
 /** A flat circle around a point. */

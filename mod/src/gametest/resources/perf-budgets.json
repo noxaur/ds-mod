@@ -28,6 +28,12 @@
       "unit": "µs",
       "cap": 25
     },
+    "world.follow": {
+      "group": "Frame",
+      "label": "Boss marks, 3 beams and 3 tracers",
+      "unit": "µs",
+      "cap": 30
+    },
     "tab-poll": {
       "group": "Tick",
       "label": "Tab list poll",
@@ -55,6 +61,12 @@
     "pet-poll": {
       "group": "Tick",
       "label": "Pet poll, armor stands within 6 blocks",
+      "unit": "µs",
+      "cap": 50
+    },
+    "boss-poll": {
+      "group": "Tick",
+      "label": "Boss poll, 43 named mobs",
       "unit": "µs",
       "cap": 50
     },

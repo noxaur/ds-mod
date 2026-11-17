@@ -58,7 +58,7 @@ Every type of interface ds-mod can show, grouped by surface. A feature uses the 
 ## In the world
 
 **Markers**
-- Waypoint: a beam with a label and distance.
+- Waypoint: a beam with a label and distance, at a place or on an entity it follows.
 - Floating text: a label anchored to a position or an entity.
 - Block highlight: an outline or filled box on a block.
 - Entity highlight: a glow outline, hitbox or tint.

@@ -60,6 +60,7 @@ object DsModClient : ClientModInitializer {
     private lateinit var sidebars: SidebarPoller
     private lateinit var containers: ContainerPoller
     private lateinit var pets: PetPoller
+    private lateinit var bosses: BossPoller
     private var ticks = 0
     private var onDragSim = false
 
@@ -143,6 +144,7 @@ object DsModClient : ClientModInitializer {
         sidebars = SidebarPoller(game)
         containers = ContainerPoller(game)
         pets = PetPoller(game)
+        bosses = BossPoller(game)
         game.metrics.sinks += { snapshot ->
             snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }
         }
@@ -214,6 +216,7 @@ object DsModClient : ClientModInitializer {
             World.worldChanged()
             game.post(System.currentTimeMillis(), WorldChanged)
             tabs.forget()
+            bosses.forget()
             sidebars.forget()
         }
         ClientChunkEvents.CHUNK_LOAD.register { _, chunk -> Packets.chunk(chunk) }
@@ -231,6 +234,7 @@ object DsModClient : ClientModInitializer {
             game.metrics.time("container-poll") { containers.poll(it) }
             // A pet changes when the player swaps it, so once a second is soon enough.
             if (ticks % PET_POLL_TICKS == 0) game.metrics.time("pet-poll") { pets.poll(it) }
+            game.metrics.time("boss-poll") { bosses.poll(it) }
             Frames.tick(it)
             Packets.tick(it)
             game.tick(System.currentTimeMillis())

@@ -12,6 +12,7 @@ import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.Hit
+import io.github.noxaur.dsmod.core.game.BossesNear
 import io.github.noxaur.dsmod.core.game.PetNear
 import io.github.noxaur.dsmod.core.game.FrameRate
 import io.github.noxaur.dsmod.core.game.PingMeasured
@@ -26,6 +27,8 @@ import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.world.Mark
+import io.github.noxaur.dsmod.core.world.EntityBeam
+import io.github.noxaur.dsmod.core.world.Tracer
 import io.github.noxaur.dsmod.core.world.Waypoint
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
@@ -140,6 +143,7 @@ class FeatureReplayTest {
         is ActionBar -> "(action bar) ${event.text.plain}"
         is EntityDied -> "(died) ${event.name.plain}"
         is PetNear -> "(pet near) ${event.name.plain}"
+        is BossesNear -> "(bosses near) " + event.bosses.joinToString("; ") { "${it.id} ${it.entity} ${it.name.plain}" }.ifEmpty { "none" }
         is FloatingText -> "(floating) ${event.text.plain.replace("\n", " / ")}"
         is Hit -> "(you hit) ${event.entity}"
         is ServerTime -> "(server time) tick ${event.gameTime}"
@@ -198,6 +202,8 @@ class FeatureReplayTest {
                                 appendLine(
                                     "             (in the world) " + when (mark) {
                                         is Waypoint -> "${mark.role} beam \"${mark.label}\" at ${mark.at.x}, ${mark.at.y}, ${mark.at.z}"
+                                        is EntityBeam -> "${mark.role} beam \"${mark.label}\" on entity ${mark.entity}"
+                                        is Tracer -> "${mark.role} tracer to entity ${mark.entity}"
                                         else -> mark.toString()
                                     },
                                 )

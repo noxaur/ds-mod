@@ -7,12 +7,14 @@ import io.github.noxaur.dsmod.core.capture.captureLine
 import io.github.noxaur.dsmod.core.capture.readCaptureLine
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.game.Area
+import io.github.noxaur.dsmod.core.game.BossesNear
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState.Companion.INVENTORY
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.NearBoss
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SidebarState
 import io.github.noxaur.dsmod.core.game.SlotChanged
@@ -81,13 +83,17 @@ fun cutFixture(
     val events = ArrayList<Captured>()
     // A capture from before `floating` was an event has its text displays only in `entities`.
     val legacy = if ("floating" in types && capture.useLines { lines -> lines.none { "\"type\":\"floating\"" in it } }) HashMap<String, String>() else null
+    // A capture from before `bosses` was an event has its bosses only in `entities` and `unload`.
+    val held = if ("bosses" in types && capture.useLines { lines -> lines.none { "\"type\":\"bosses\"" in it } }) LinkedHashMap<Int, NearBoss>() else null
     capture.useLines { lines ->
         for (line in lines.filter(String::isNotBlank)) {
             val time = line.substringAfter("\"t\":").takeWhile(Char::isDigit).toLong()
             if (origin < 0) origin = time
             val type = line.substringAfter("\"type\":\"").substringBefore('"')
             val read = when {
-                type == "entities" && legacy != null -> floating(line, legacy)
+                type == "entities" && (legacy != null || held != null) ->
+                    legacy?.let { floating(line, it) }.orEmpty() + held?.let { bosses(line, it) }.orEmpty()
+                type == "unload" && held != null -> bosses(line, held)
                 type in kept -> listOf(readCaptureLine(line)!!)
                 else -> continue
             }
@@ -190,4 +196,37 @@ private fun floating(line: String, shown: MutableMap<String, String>): List<Capt
         if (text.isEmpty() || shown.put(id, text) == text) return@mapNotNull null
         Captured(time, FloatingText(Component.literal(text).toText()), tick)
     }
+}
+
+/**
+ * A [BossesNear] each time an older capture's `entities` or `unload` line changes which bosses the client holds, by
+ * the rule `BossPoller` follows, and [held] is each one's entity as it came. The line is the recorder's sample, so a
+ * boss comes up to a few ticks after the client had it.
+ */
+private fun bosses(line: String, held: MutableMap<Int, NearBoss>): List<Captured> {
+    val json = Json.parseToJsonElement(line).jsonObject
+    val data = json.getValue("data").jsonObject
+    val before = held.keys.toList()
+    if (json.getValue("type").jsonPrimitive.content == "unload") {
+        held.remove(data.getValue("id").jsonPrimitive.int)
+    } else {
+        val entries = data.getValue("entries").jsonObject
+        if (data["full"]?.jsonPrimitive?.content == "true") held.keys.retainAll(entries.keys.map(String::toInt).toSet())
+        for ((key, entry) in entries) {
+            val id = key.toInt()
+            if (entry !is JsonObject) {
+                held.remove(id)
+                continue
+            }
+            if (id in held) continue
+            val entity = entry["entity"]?.jsonPrimitive?.content ?: continue
+            val name = Component.literal(entry["name"]?.jsonObject?.get("text")?.jsonPrimitive?.content.orEmpty()).toText()
+            val named = name.plain.isNotEmpty()
+            if (entity == "minecraft:ender_dragon" || named && (entity == "minecraft:iron_golem" || name.plain.startsWith("☠"))) {
+                held[id] = NearBoss(id, entity, name)
+            }
+        }
+    }
+    if (held.keys.toList() == before) return emptyList()
+    return listOf(Captured(json.getValue("t").jsonPrimitive.long, BossesNear(held.values.toList()), json["tick"]?.jsonPrimitive?.int))
 }
