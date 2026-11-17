@@ -141,12 +141,7 @@ object World {
 
     fun register() {
         LevelExtractionEvents.AFTER_BLOCK_OUTLINE_EXTRACTION.register { context, _ ->
-            if (beamsShown.isNotEmpty() || tracersShown.isNotEmpty()) {
-                // DIAG, to be reverted: the timer alone, then the same frame's marks again with a warm cache.
-                DsModClient.game.metrics.time("diag.empty") {}
-                DsModClient.game.metrics.time("world.follow") { follow(context) }
-                DsModClient.game.metrics.time("diag.again") { follow(context) }
-            }
+            if (beamsShown.isNotEmpty() || tracersShown.isNotEmpty()) DsModClient.game.metrics.time("world.follow") { follow(context) }
         }
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             val level = client.level ?: return@register
