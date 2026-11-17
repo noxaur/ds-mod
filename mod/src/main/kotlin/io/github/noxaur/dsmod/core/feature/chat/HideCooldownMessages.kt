@@ -11,7 +11,7 @@ import io.github.noxaur.dsmod.core.game.Area
  * while the player holds the button.
  */
 class HideCooldownMessages(config: DsModConfig) :
-    Feature(config, "hide-cooldown-messages", Area.ANYWHERE, Store.CHAT, "Hide the message that an ability is on cooldown.", formerly = "abilitySpam") {
+    Feature(config, "hide-cooldown-messages", Area.ANYWHERE, Store.CHAT, "Hide the message that an ability is on cooldown.", formerly = listOf("abilitySpam")) {
     init {
         line(Abilities.REFUSAL) { hide() }
     }

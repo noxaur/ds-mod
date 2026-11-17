@@ -24,7 +24,7 @@ import io.github.noxaur.dsmod.core.world.Waypoint
  * player did not ask for is a smaller fault than a missing one.
  */
 class ProtectorSpawnBeam(config: DsModConfig) :
-    Feature(config, "protector-spawn-beam", Area.END, Store.END, "Show a beam where the Endstone Protector will emerge.", formerly = "bossBeacon") {
+    Feature(config, "protector-spawn-beam", Area.END, Store.END, "Show a beam where the Endstone Protector will emerge.", formerly = listOf("bossBeacon")) {
     /** The parts of the Protector's cycle that show the beam, in zealots killed since the last defeat, out of 200. */
     val sections = span("beamSections", "Beam Timing", "Pick when the beam shows, in zealots killed out of 200.", listOf(Section(175, 200)), max = 200, ticks = listOf(50, 100, 150))
     val inFight = switch("beamInFight", "During the Fight", "Keep the beam while the Protector is up.", default = false)

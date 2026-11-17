@@ -25,7 +25,7 @@ data class BossLog(val bosses: Map<String, BossRecord> = emptyMap())
  * still inside [LOOT_WINDOW_MILLIS].
  */
 class BossFightTracker(config: DsModConfig) :
-    Feature(config, "boss-fight-tracker", Area.END, Store.END, "Show your rank, damage and loot from the last boss fight.", formerly = "bossDrops") {
+    Feature(config, "boss-fight-tracker", Area.END, Store.END, "Show your rank, damage and loot from the last boss fight.", formerly = listOf("bossDrops")) {
     private val log = saved(BossLog())
     private var last: String? = null
     private var lastDragon: String? = null

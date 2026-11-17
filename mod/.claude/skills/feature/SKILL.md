@@ -9,7 +9,7 @@ Load the `ui` skill too when the feature shows the player anything.
 
 ## Settings
 
-- The switch's description and default go in the `Feature(..)` super call, with the key an older version saved it under as `formerly`. Every other setting is one line in the class, as `val inFight = switch("beamInFight", "During the Fight", "Keep the beam while the Protector is up.", default = false)`, read as `inFight.value`. The first argument is the key in the config file, under the feature's `Store`. The kinds are in [`settings.md`](../ui/settings.md) beside the `ui` skill.
+- The switch's description and default go in the `Feature(..)` super call, with the keys older versions saved it under as `formerly`. Every other setting is one line in the class, as `val inFight = switch("beamInFight", "During the Fight", "Keep the beam while the Protector is up.", default = false)`, read as `inFight.value`. The first argument is the key in the config file, under the feature's `Store`. The kinds are in [`settings.md`](../ui/settings.md) beside the `ui` skill.
 - Place the feature once in `SettingsTree`: `group(Feature(c))` for a group of its own, or `feature(Feature(c))` among others. That is also what lists it.
 - The edge reads a setting as `DsModClient.feature<F>().row.value`, and asks `DsModClient.runs<F>()` for the switch, never `enabled` or `switch`. `SwitchesTest` fails on a read.
 

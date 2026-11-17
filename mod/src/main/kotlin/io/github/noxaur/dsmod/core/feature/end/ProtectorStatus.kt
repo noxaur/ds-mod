@@ -16,7 +16,7 @@ import io.github.noxaur.dsmod.core.text.clock
  * second or two, so the messages add when it emerged and when it fell.
  */
 class ProtectorStatus(config: DsModConfig) :
-    Feature(config, "protector-status", Area.END, Store.END, "Show the Protector's stage and the kills left until it emerges.", formerly = "golemStatus") {
+    Feature(config, "protector-status", Area.END, Store.END, "Show the Protector's stage and the kills left until it emerges.", formerly = listOf("golemStatus")) {
     private var row: String? = null
     private var stage: String? = null
     private var tier = ""

@@ -11,4 +11,4 @@ import io.github.noxaur.dsmod.core.game.Area
  * rules it shares with the HUD editor.
  */
 class ChatHudEditor(config: DsModConfig) :
-    Feature(config, "chat-hud-editor", Area.ANYWHERE, Store.HUD, "Drag HUD blocks with chat open, and scroll over one to resize it.", formerly = "dragInChat")
+    Feature(config, "chat-hud-editor", Area.ANYWHERE, Store.HUD, "Drag HUD blocks with chat open, and scroll over one to resize it.", formerly = listOf("dragInChat"))

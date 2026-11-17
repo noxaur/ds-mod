@@ -12,7 +12,7 @@ import io.github.noxaur.dsmod.core.ui.MenuLook
  * puts it in the list that the settings, the docs check and the tests go through.
  */
 class MenuTheme(config: DsModConfig) :
-    Feature(config, "menu-theme", Area.ANYWHERE, Store.INVENTORY, "Draw menus and plain tooltips in the Theme under Interface.", formerly = "themedMenus") {
+    Feature(config, "menu-theme", Area.ANYWHERE, Store.INVENTORY, "Draw menus and plain tooltips in the Theme under Interface.", formerly = listOf("themedMenus")) {
     val menuLook = choice("menuLook", "Menu Look", "Draw themed menus solid, or as glass that shows the world.", MenuLook.SOLID)
     val glassOpacity = number("glassOpacity", "Glass Opacity", "Set how dark the glass is, from clear at 0 to solid at 100.", 60f, 0f..100f, step = 5f)
 }

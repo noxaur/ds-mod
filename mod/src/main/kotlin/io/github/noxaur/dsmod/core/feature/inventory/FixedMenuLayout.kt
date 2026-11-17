@@ -11,4 +11,4 @@ import io.github.noxaur.dsmod.core.game.Area
  * edge. This class puts it in the list that the settings, the docs check and the tests go through.
  */
 class FixedMenuLayout(config: DsModConfig) :
-    Feature(config, "fixed-menu-layout", Area.ANYWHERE, Store.INVENTORY, "Keep Go Back, Close and your inventory in place in every menu.", formerly = "stableMenus")
+    Feature(config, "fixed-menu-layout", Area.ANYWHERE, Store.INVENTORY, "Keep Go Back, Close and your inventory in place in every menu.", formerly = listOf("stableMenus"))

@@ -53,7 +53,7 @@ enum class InventoryLayout(private val label: String) {
  * every slot picked is empty.
  */
 class InventoryHud(config: DsModConfig) :
-    InventoryReader(config, "inventory-hud", "Show a grid of the items in your inventory on the HUD.", default = false, formerly = "inventoryPreview") {
+    InventoryReader(config, "inventory-hud", "Show a grid of the items in your inventory on the HUD.", default = false, formerly = listOf("inventoryPreview")) {
     val shownRows = order("inventoryRows", "Rows", "Pick the rows to show, and drag them into order.", listOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM))
     val look = choice("inventoryLook", "Look", "Show the items on the plate, on nothing, or as your inventory.", InventoryLook.INVENTORY)
     val layout = choice("inventoryLayout", "Layout", "Lay each row out across, as in the inventory, or down.", InventoryLayout.ROWS)

@@ -75,8 +75,8 @@ abstract class Feature(
     val store: Store,
     description: String,
     default: Boolean = true,
-    /** The key an older version saved the switch under, so a player who updates keeps it. */
-    formerly: String? = null,
+    /** The keys older versions saved the switch under, so a player who updates keeps it. */
+    formerly: List<String> = emptyList(),
 ) {
     /** The name the player knows the feature by: [id] in Title Case, with `hud` as HUD. */
     val title = id.split('-').joinToString(" ") { if (it == "hud") "HUD" else it.replaceFirstChar(Char::uppercase) }
@@ -92,7 +92,7 @@ abstract class Feature(
      * The switch in the settings that turns this feature on and off. Its row's id is [id], which a favorite and a link
      * to it use, and it is saved under [id] in camel case, as `protectorSpawnBeam`, the key its field always had.
      */
-    val switch: Switch = Switch(id, title, description, slot(camel(id), default, serializer(), listOfNotNull(formerly)).bind).also { it.feature = this }
+    val switch: Switch = Switch(id, title, description, slot(camel(id), default, serializer(), formerly).bind).also { it.feature = this }
 
     /** The feature's own rows in order, which `SettingsTree` lists under its [switch]. */
     val rows: List<Setting> get() = settings.rows

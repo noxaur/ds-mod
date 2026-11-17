@@ -10,4 +10,4 @@ import io.github.noxaur.dsmod.core.game.Area
  * all of it is `EyeGuards` in the edge.
  */
 class EyeGuard(config: DsModConfig) :
-    Feature(config, "eye-guard", Area.END, Store.END, "Ignore a quick second click that would take a placed eye back.", formerly = "protectPlacedEyes")
+    Feature(config, "eye-guard", Area.END, Store.END, "Ignore a quick second click that would take a placed eye back.", formerly = listOf("protectPlacedEyes"))

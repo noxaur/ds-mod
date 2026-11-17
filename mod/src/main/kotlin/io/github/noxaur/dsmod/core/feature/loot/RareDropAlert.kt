@@ -12,7 +12,7 @@ import io.github.noxaur.dsmod.core.text.text
  * counts as `unparsed` and alerts nobody, so add it to [LootTier] when the counter shows one.
  */
 class RareDropAlert(config: DsModConfig) :
-    Feature(config, "rare-drop-alert", Area.ANYWHERE, Store.LOOT, "Alert you to drops of the chosen tier or better.", formerly = "lootAlerts") {
+    Feature(config, "rare-drop-alert", Area.ANYWHERE, Store.LOOT, "Alert you to drops of the chosen tier or better.", formerly = listOf("lootAlerts")) {
     /** A drop's tier, lowest first. [word] is what the server writes before `DROP!`. */
     enum class LootTier(private val label: String, val word: String) {
         RARE("Rare", "RARE"),

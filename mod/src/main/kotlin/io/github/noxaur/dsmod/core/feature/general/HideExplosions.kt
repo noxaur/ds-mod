@@ -10,4 +10,4 @@ import io.github.noxaur.dsmod.core.game.Area
  * server, so all of it is `ExplosionParticleMixin` in the edge.
  */
 class HideExplosions(config: DsModConfig) :
-    Feature(config, "hide-explosions", Area.ANYWHERE, Store.GENERAL, "Hide the clouds that explosions throw up.", default = false, formerly = "explosionParticleHider")
+    Feature(config, "hide-explosions", Area.ANYWHERE, Store.GENERAL, "Hide the clouds that explosions throw up.", default = false, formerly = listOf("explosionParticleHider"))

@@ -22,7 +22,7 @@ import io.github.noxaur.dsmod.core.ui.Look
  * The look of a mark is the edge's: `Slots` draws [containerStyle] in containers and [hotbarLook] on the hotbar.
  */
 class ItemRarity(config: DsModConfig) :
-    Feature(config, "item-rarity", Area.ANYWHERE, Store.INVENTORY, "Mark each item's slot in the color of its rarity.", formerly = "rarityMarks") {
+    Feature(config, "item-rarity", Area.ANYWHERE, Store.INVENTORY, "Mark each item's slot in the color of its rarity.", formerly = listOf("rarityMarks")) {
     /** The player's own style for every container, their inventory included, shown while [preset] is Custom. */
     val inventoryStyle = stored("inventoryStyle", SlotStyle())
     val hotbarStyle = stored("hotbarStyle", SlotStyle())

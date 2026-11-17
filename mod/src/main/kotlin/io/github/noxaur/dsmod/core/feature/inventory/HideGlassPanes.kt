@@ -18,7 +18,7 @@ data class HideGlassPanesTold(val told: Boolean = false)
 
 /** Hides the [Filler] panes in a menu, so the items that do something stand out. */
 class HideGlassPanes(config: DsModConfig) :
-    Feature(config, "hide-glass-panes", Area.ANYWHERE, Store.INVENTORY, "Hide the blank glass panes that pad out menus.", formerly = "hideFiller") {
+    Feature(config, "hide-glass-panes", Area.ANYWHERE, Store.INVENTORY, "Hide the blank glass panes that pad out menus.", formerly = listOf("hideFiller")) {
     private val told = saved(HideGlassPanesTold())
     private var marks = emptyMap<Int, SlotMark>()
     private var changed = false
