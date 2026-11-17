@@ -1,6 +1,8 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.container.SlotMark
+import io.github.noxaur.dsmod.core.feature.boss.BossBeacon
+import io.github.noxaur.dsmod.core.feature.boss.BossTracer
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.hud
@@ -47,7 +49,8 @@ private const val RECORDING_WARM_UP_TICKS = 100
  * own [Metrics] timers, read over [WINDOWS] windows of [WINDOW_TICKS] ticks while the HUD shows [HUD_BLOCKS]
  * blocks, the open inventory has [MARKED_SLOTS] marked slots and the sidebar has [SIDEBAR_LINES] lines. Then it
  * records, with a full inventory of named items with long lore and [ARMORED_MOBS] named, armored mobs in view, and
- * reads the recorder's own timers for a pass over the items and over the entities.
+ * reads the recorder's own timers for a pass over the items and over the entities. Last, with three bosses among those
+ * mobs, it reads Boss Beacon's and Boss Tracer's poll and their marks' frame.
  *
  * The caps are for the device in the budgets file. A fixed loop measures how fast this machine is next to
  * that device, and each time is scaled to it before the check, so a slower runner needs no caps of its own.
@@ -118,6 +121,7 @@ class PerfTest : FabricClientGameTest {
             }
             etherwarp(context, world, samples)
             recording(context, world, samples)
+            bosses(context, world, samples)
             val calibrate = context.computeOnClient<Double, Nothing> {
                 repeat(3) { spin() }
                 List(7) { spin() }.sorted()[3]
@@ -223,6 +227,35 @@ class PerfTest : FabricClientGameTest {
             for ((name, timer) in timers) if (name.startsWith("capture-")) samples.getOrPut(name, ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
         }
         context.runOnClient<Nothing> { Recorder.stop(session) }
+    }
+
+    /**
+     * Adds a sample of the boss poll per tick and of the boss marks per frame, with the Protector and two slayer bosses
+     * among the named mobs [recording] left, while the player turns so that the marks are followed on each frame.
+     */
+    private fun bosses(context: ClientGameTestContext, world: TestSingleplayerContext, samples: HashMap<String, MutableList<Double>>) {
+        world.server.runCommand("""execute at @a run summon iron_golem ~ ~ ~-12 {NoAI:1b,CustomName:"[Lv100] Endstone Protector 10M/10M"}""")
+        world.server.runCommand("""execute at @a run summon zombie ~12 ~ ~ {NoAI:1b,CustomName:"☠ Revenant Horror I 3.8M/3.8M❤"}""")
+        world.server.runCommand("""execute at @a run summon zombie ~-12 ~ ~ {NoAI:1b,CustomName:"☠ Atoned Horror V 50M/50M❤"}""")
+        context.runOnClient<Nothing> {
+            for (marks in listOf(DsModClient.feature<BossBeacon>(), DsModClient.feature<BossTracer>())) {
+                marks.enabled = true
+                marks.otherSlayers.value = true
+            }
+        }
+        context.waitTicks(20)
+        repeat(WINDOWS) { window ->
+            context.runOnClient<Nothing> { DsModClient.game.metrics.flush() }
+            repeat(WINDOW_TICKS) { tick ->
+                context.input.lookAt((window * WINDOW_TICKS + tick) * 3f, 0f)
+                context.waitTick()
+            }
+            val timers = context.computeOnClient<Map<String, Metrics.Timer>, Nothing> { DsModClient.game.metrics.snapshot().timers }
+            for (name in listOf("boss-poll", "world.follow")) {
+                val timer = checkNotNull(timers[name]) { "No $name timer ran" }
+                samples.getOrPut(name, ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
+            }
+        }
     }
 
     /** A fixed amount of work for one core, in ms. */

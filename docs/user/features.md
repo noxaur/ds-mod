@@ -501,6 +501,18 @@ All-Time: 12
 
 A title and a sound when your slayer boss spawns.
 
+## Bosses
+
+### Boss Beacon
+
+A red beam over each boss, with its name and how far away it is, seen through walls. It moves with the boss.
+
+### Boss Tracer
+
+A red line from your crosshair to each boss, seen through walls. Look away and the line still points the way, so follow it back to the boss.
+
+<sub>Under each, pick the bosses it marks: Dragons, Endstone Protector, Your Slayer Boss and Other Slayer Bosses. Both are off at first, and Other Slayer Bosses is off in each. Your slayer boss is the first one to appear within five seconds of "SLAYER BOSS SPAWNING!".</sub>
+
 ## Contribute
 
 ds-mod's developers cannot reach all of the server, so they ask players to record the parts they can't. Contribute is the last entry in the settings. It does nothing until you open it.

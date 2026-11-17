@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.core.config
 
+import io.github.noxaur.dsmod.core.feature.boss.BossBeacon
+import io.github.noxaur.dsmod.core.feature.boss.BossTracer
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.chat.CopyChat
 import io.github.noxaur.dsmod.core.feature.chat.HideCooldownMessages
@@ -263,6 +265,10 @@ class SettingsTree(val config: DsModConfig = DsModConfig()) {
                     group("Slayers") {
                         feature(SlayerTracker(c))
                         feature(SlayerBossAlert(c))
+                    }
+                    group("Bosses") {
+                        feature(BossBeacon(c))
+                        feature(BossTracer(c))
                     }
                     group("Loot") {
                         feature(RareDropAlert(c))

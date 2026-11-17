@@ -8,6 +8,7 @@ import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.Hit
+import io.github.noxaur.dsmod.core.game.BossesNear
 import io.github.noxaur.dsmod.core.game.PetNear
 import io.github.noxaur.dsmod.core.game.PingMeasured
 import io.github.noxaur.dsmod.core.game.Item
@@ -163,6 +164,7 @@ class Redactor(private val names: Set<String>) {
         is ActionBar -> ActionBar(event.text.named())
         is EntityDied -> event.copy(name = event.name.named())
         is PetNear -> PetNear(event.name.named(), item(event.head))
+        is BossesNear -> BossesNear(event.bosses.map { it.copy(name = it.name.named()) })
         is FloatingText -> FloatingText(event.text.named())
     }
 

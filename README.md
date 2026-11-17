@@ -53,6 +53,8 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 
 ### Combat
 - **Damage Numbers** – Shortens damage numbers to 74.5M, shows only crits, or hides them.
+- **Boss Beacon** – A beam over each boss you pick, with its name and distance.
+- **Boss Tracer** – A line from your crosshair to each boss you pick, to follow when you look away.
 
 ### Slayers & Loot
 - **Slayer Tracker** – Quest progress, the XP to your next level and your average kill time.
