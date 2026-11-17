@@ -231,10 +231,10 @@ class PerfTest : FabricClientGameTest {
     }
 
     /**
-     * Adds a sample of the entity tracker per tick and of the boss marks per frame, with the Protector and two slayer
-     * bosses among the named mobs [recording] left. Each tick renames those mobs, as the server does a mob on each hit
-     * to show its health, so the tracker reads every name again, and the player turns so that the marks are followed
-     * on each frame.
+     * Adds a sample of the boss marks per frame and of the entity tracker per tick, with the Protector and two slayer
+     * bosses among the named mobs [recording] left. For the marks the player turns, so that they are followed on each
+     * frame. For the tracker each tick renames those mobs, as the server does a mob on each hit to show its health, so
+     * the tracker reads every name again.
      */
     private fun bosses(context: ClientGameTestContext, world: TestSingleplayerContext, samples: HashMap<String, MutableList<Double>>) {
         world.server.runCommand("""execute at @a run summon iron_golem ~ ~ ~-12 {NoAI:1b,CustomName:"[Lv100] Endstone Protector 10M/10M"}""")
@@ -247,19 +247,29 @@ class PerfTest : FabricClientGameTest {
             }
         }
         context.waitTicks(20)
+        // The marks are timed apart from the hits, because renaming 40 mobs each tick loads the game's own server,
+        // which shares the cores and would slow the frame.
+        sample(context, samples, "world.follow") { at -> context.input.lookAt(at * 3f, 0f) }
+        val hit = { at: Int -> world.server.runCommand("""execute as @e[tag=perf] run data modify entity @s CustomName set value "[Lv70] Zealot ${13_000 - at}/13k❤"""") }
+        // A player who fights hits mobs for minutes, so the tracker's path for a new name is compiled before it is timed.
+        repeat(RECORDING_WARM_UP_TICKS) { at ->
+            hit(-at)
+            context.waitTick()
+        }
+        sample(context, samples, "entities", hit)
+    }
+
+    /** Adds a sample of the timer [name] per window, running [each] before each tick of it with the tick's number. */
+    private fun sample(context: ClientGameTestContext, samples: HashMap<String, MutableList<Double>>, name: String, each: (Int) -> Unit) {
         repeat(WINDOWS) { window ->
             context.runOnClient<Nothing> { DsModClient.game.metrics.flush() }
             repeat(WINDOW_TICKS) { tick ->
-                val at = window * WINDOW_TICKS + tick
-                world.server.runCommand("""execute as @e[tag=perf] run data modify entity @s CustomName set value "[Lv70] Zealot ${13_000 - at}/13k❤"""")
-                context.input.lookAt(at * 3f, 0f)
+                each(window * WINDOW_TICKS + tick)
                 context.waitTick()
             }
-            val timers = context.computeOnClient<Map<String, Metrics.Timer>, Nothing> { DsModClient.game.metrics.snapshot().timers }
-            for (name in listOf("entities", "world.follow")) {
-                val timer = checkNotNull(timers[name]) { "No $name timer ran" }
-                samples.getOrPut(name, ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
-            }
+            val timer = context.computeOnClient<Metrics.Timer?, Nothing> { DsModClient.game.metrics.snapshot().timers[name] }
+            checkNotNull(timer) { "No $name timer ran" }
+            samples.getOrPut(name, ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
         }
     }
 

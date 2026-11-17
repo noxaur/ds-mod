@@ -37,6 +37,9 @@ class EntityTracker(private val game: Game) {
     private var types = emptySet<EntityType<*>>()
     private var anyType = false
     private var pass = 0
+
+    /** How many entities this pass kept, so the sweep runs only when some entity it kept before is missing. */
+    private var held = 0
     private var tapped = game.tap
 
     fun track(client: Minecraft) {
@@ -55,8 +58,9 @@ class EntityTracker(private val game: Game) {
         val level = client.level ?: return
         val time = System.currentTimeMillis()
         pass++
+        held = 0
         if (filters.isNotEmpty()) for (entity in level.entitiesForRendering()) see(entity, retest, tap, time)
-        known.values.removeIf { gone ->
+        if (held != known.size) known.values.removeIf { gone ->
             if (gone.pass == pass) return@removeIf false
             if (gone.matched) game.post(time, EntityGone(gone.id))
             true
@@ -72,6 +76,7 @@ class EntityTracker(private val game: Game) {
         // An unnamed entity of a type no filter names matches nothing, and a dying mob is gone, so neither is kept.
         if (!entity.isAlive || name == null && entity.type !in types || !anyType && entity.type !in types) return
         var known = known.get(entity.id)
+        held++
         if (known == null) {
             known = Known(entity.id, null, null, false, pass)
             this.known.put(entity.id, known)
@@ -83,7 +88,7 @@ class EntityTracker(private val game: Game) {
         val plain = name?.string.orEmpty()
         val matched = tests.any { (it.types.isEmpty() || entity.type in it.types) && (it.prefix == null || plain.startsWith(it.prefix)) }
         val was = known.matched
-        val renamed = known.name != name
+        val named = known.name
         known.matched = matched
         known.name = name
         if (!matched) {
@@ -101,7 +106,7 @@ class EntityTracker(private val game: Game) {
                 time,
                 EntitySeen(entity.id, BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString(), (name ?: Component.empty()).toText(), head?.takeUnless { it.isEmpty }?.toItem()),
             )
-            renamed -> game.post(time, EntityRenamed(entity.id, (name ?: Component.empty()).toText()))
+            named != name -> game.post(time, EntityRenamed(entity.id, (name ?: Component.empty()).toText()))
         }
     }
 
