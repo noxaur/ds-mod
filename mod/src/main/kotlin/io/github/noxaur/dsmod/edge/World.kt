@@ -112,7 +112,7 @@ object World {
             }
         }
         flatten()
-        Minecraft.getInstance().let { client -> client.level?.let { find(it, client.gameRenderer.mainCamera().position()) } }
+        Minecraft.getInstance().level?.let(::find)
     }
 
     fun hide(id: String) {
@@ -146,7 +146,7 @@ object World {
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             val level = client.level ?: return@register
             val camera = client.gameRenderer.mainCamera().position()
-            find(level, camera)
+            find(level)
             for (i in shown.indices) {
                 when (val mark = shown[i]) {
                     is ShownBox -> Gizmos.cuboid(mark.box, mark.style)
@@ -164,33 +164,27 @@ object World {
         }
     }
 
-    /**
-     * Finds the entity each followed mark is on, and sizes each beam's label for how far it is from [eye]. It runs once a
-     * tick, and when the marks change, so that a frame does no more than place what the tick found.
-     */
-    private fun find(level: ClientLevel, eye: Vec3) {
-        for (i in beamsShown.indices) {
-            val mark = beamsShown[i]
-            val entity = level.getEntity(mark.entity)
-            mark.found = entity
-            if (entity != null) mark.label.at(eye.distanceTo(entity.position()).toInt())
-        }
+    /** Finds the entity each followed mark is on. It runs once a tick, and when the marks change, so a frame need not. */
+    private fun find(level: ClientLevel) {
+        for (i in beamsShown.indices) beamsShown[i].let { it.found = level.getEntity(it.entity) }
         for (i in tracersShown.indices) tracersShown[i].let { it.found = level.getEntity(it.entity) }
     }
 
     /** Draws the marks that follow an entity where this frame shows it, between the last tick's place and the next. */
     private fun follow(context: LevelExtractionContext) {
         val camera = context.camera()
+        val eye = camera.position()
         val partial = context.deltaTracker().getGameTimeDeltaPartialTick(false)
         for (i in beamsShown.indices) {
             val mark = beamsShown[i]
             val entity = mark.found ?: continue
             if (entity.isRemoved) continue
-            val top = entity.getPosition(partial).add(0.0, entity.bbHeight.toDouble(), 0.0)
+            val at = entity.getPosition(partial)
+            val top = at.add(0.0, entity.bbHeight.toDouble(), 0.0)
+            mark.label.at(eye.distanceTo(at).toInt())
             beam(top, top.add(0.0, BEAM_HEIGHT, 0.0), mark.label, labelAt(top, mark.label))
         }
         if (tracersShown.isEmpty()) return
-        val eye = camera.position()
         val forward = camera.forwardVector()
         val start = eye.add(forward.x() * TRACER_AHEAD, forward.y() * TRACER_AHEAD, forward.z() * TRACER_AHEAD)
         for (i in tracersShown.indices) {
