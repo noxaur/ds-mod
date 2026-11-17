@@ -15,6 +15,7 @@ import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SidebarState
 import io.github.noxaur.dsmod.core.game.SlotChanged
@@ -64,7 +65,7 @@ fun cutFixture(
         if (area != Area.ANYWHERE) add("world")
         if (area.key != null) add("tablist")
         if (area.place != null) add("sidebar")
-        if (entities.isNotEmpty()) addAll(listOf("seen", "renamed", "gone", "world"))
+        if (entities.isNotEmpty()) addAll(listOf("seen", "renamed", "gone", "world", "left"))
     }
     val rows = if ("tablist" in types) info + listOfNotNull(area.key) else listOfNotNull(area.key)
     val everyTab = "tablist" in types && info.isEmpty()
@@ -119,9 +120,10 @@ fun cutFixture(
                     if (!before) entities.view(held.before, held.after, event)?.let { events += Captured(time, it, tick) }
                     continue
                 }
+                // `Game` forgets the entities with the world and the server, since the next one numbers them again.
+                if (event == WorldChanged || event == LeftServer) held.clear()
                 // `Game` forgets the tab list and the sidebar with the world, so the next world's rows must be written again.
                 if (event == WorldChanged) {
-                    held.clear()
                     if (before) {
                         tab = null
                         sidebar = null
