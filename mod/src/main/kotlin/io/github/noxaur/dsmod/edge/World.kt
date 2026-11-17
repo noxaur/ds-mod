@@ -14,9 +14,11 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionContext
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionEvents
 import net.minecraft.client.Minecraft
+import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.gizmos.GizmoStyle
 import net.minecraft.gizmos.Gizmos
 import net.minecraft.gizmos.TextGizmo
+import net.minecraft.world.entity.Entity
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 
@@ -38,8 +40,12 @@ object World {
     private class ShownBox(val box: AABB, val style: GizmoStyle) : Shown
     private class ShownPath(val points: List<Vec3>, val color: Int) : Shown
     private class ShownRing(val center: Vec3, val radius: Float, val style: GizmoStyle) : Shown
-    private class ShownBeam(val entity: Int, val label: BeamLabel)
-    private class ShownTracer(val entity: Int, val color: Int)
+    /** A mark on the entity with id [entity], which [find] looks up once a tick so a frame only places it. */
+    private abstract class Follow(val entity: Int) {
+        var found: Entity? = null
+    }
+    private class ShownBeam(entity: Int, val label: BeamLabel) : Follow(entity)
+    private class ShownTracer(entity: Int, val color: Int) : Follow(entity)
     private class ShownWaypoint(val at: Vec3, val top: Vec3, val label: BeamLabel, val box: ShownBox) : Shown {
         var labelAt = at
     }
@@ -106,6 +112,7 @@ object World {
             }
         }
         flatten()
+        Minecraft.getInstance().let { client -> client.level?.let { find(it, client.gameRenderer.mainCamera().position()) } }
     }
 
     fun hide(id: String) {
@@ -137,8 +144,9 @@ object World {
             if (beamsShown.isNotEmpty() || tracersShown.isNotEmpty()) DsModClient.game.metrics.time("world.follow") { follow(context) }
         }
         ClientTickEvents.END_CLIENT_TICK.register { client ->
-            if (shown.isEmpty() || client.level == null) return@register
+            val level = client.level ?: return@register
             val camera = client.gameRenderer.mainCamera().position()
+            find(level, camera)
             for (i in shown.indices) {
                 when (val mark = shown[i]) {
                     is ShownBox -> Gizmos.cuboid(mark.box, mark.style)
@@ -156,26 +164,39 @@ object World {
         }
     }
 
+    /**
+     * Finds the entity each followed mark is on, and sizes each beam's label for how far it is from [eye]. It runs once a
+     * tick, and when the marks change, so that a frame does no more than place what the tick found.
+     */
+    private fun find(level: ClientLevel, eye: Vec3) {
+        for (i in beamsShown.indices) {
+            val mark = beamsShown[i]
+            val entity = level.getEntity(mark.entity)
+            mark.found = entity
+            if (entity != null) mark.label.at(eye.distanceTo(entity.position()).toInt())
+        }
+        for (i in tracersShown.indices) tracersShown[i].let { it.found = level.getEntity(it.entity) }
+    }
+
     /** Draws the marks that follow an entity where this frame shows it, between the last tick's place and the next. */
     private fun follow(context: LevelExtractionContext) {
-        val level = context.level()
         val camera = context.camera()
-        val eye = camera.position()
         val partial = context.deltaTracker().getGameTimeDeltaPartialTick(false)
         for (i in beamsShown.indices) {
             val mark = beamsShown[i]
-            val entity = level.getEntity(mark.entity) ?: continue
-            val at = entity.getPosition(partial)
-            val top = at.add(0.0, entity.bbHeight.toDouble(), 0.0)
-            mark.label.at(eye.distanceTo(at).toInt())
+            val entity = mark.found ?: continue
+            if (entity.isRemoved) continue
+            val top = entity.getPosition(partial).add(0.0, entity.bbHeight.toDouble(), 0.0)
             beam(top, top.add(0.0, BEAM_HEIGHT, 0.0), mark.label, labelAt(top, mark.label))
         }
         if (tracersShown.isEmpty()) return
+        val eye = camera.position()
         val forward = camera.forwardVector()
         val start = eye.add(forward.x() * TRACER_AHEAD, forward.y() * TRACER_AHEAD, forward.z() * TRACER_AHEAD)
         for (i in tracersShown.indices) {
             val mark = tracersShown[i]
-            val entity = level.getEntity(mark.entity) ?: continue
+            val entity = mark.found ?: continue
+            if (entity.isRemoved) continue
             Gizmos.line(start, entity.getPosition(partial).add(0.0, entity.bbHeight / 2.0, 0.0), mark.color, LINE_WIDTH).setAlwaysOnTop()
         }
     }
