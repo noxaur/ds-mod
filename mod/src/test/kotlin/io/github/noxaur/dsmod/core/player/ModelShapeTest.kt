@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.player
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
+import io.github.noxaur.dsmod.core.feature.general.PlayerModel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -34,33 +35,31 @@ class ModelShapeTest {
     @Test
     fun `the default pose leaves the game's own, and every other holds all four limbs`() {
         assertNull(ModelPose.GAME.limbs)
-        assertEquals(ModelPose.GAME, DsModConfig().general.modelPose)
+        assertEquals(ModelPose.GAME, SettingsTree().feature<PlayerModel>().pose.value)
         for (pose in ModelPose.entries - ModelPose.GAME) checkNotNull(pose.limbs) { "$pose holds no limbs" }
     }
 
     @Test
     fun `reset puts the shape back and keeps the switch and whose model`() {
-        val g = DsModConfig().general
-        g.playerModel = true
-        g.modelTarget = ModelTarget.EVERYONE
-        g.modelSize = 2f
-        g.modelWidth = 0.5f
-        g.modelHeight = 1.5f
-        g.modelDepth = 0.2f
-        g.modelTiltForward = 30f
-        g.modelTiltSideways = -10f
-        g.modelUpsideDown = true
-        g.modelSpin = 1f
-        g.modelPose = ModelPose.T_POSE
-        g.resetPlayerModel()
-        val fresh = DsModConfig().general
-        assertEquals(true, g.playerModel)
-        assertEquals(ModelTarget.EVERYONE, g.modelTarget)
-        assertEquals(
-            listOf(fresh.modelSize, fresh.modelWidth, fresh.modelHeight, fresh.modelDepth, fresh.modelTiltForward, fresh.modelTiltSideways, fresh.modelSpin),
-            listOf(g.modelSize, g.modelWidth, g.modelHeight, g.modelDepth, g.modelTiltForward, g.modelTiltSideways, g.modelSpin),
-        )
-        assertEquals(false, g.modelUpsideDown)
-        assertEquals(ModelPose.GAME, g.modelPose)
+        val g = SettingsTree().feature<PlayerModel>()
+        g.enabled = true
+        g.target.value = ModelTarget.EVERYONE
+        g.size.value = 2f
+        g.width.value = 0.5f
+        g.height.value = 1.5f
+        g.depth.value = 0.2f
+        g.tiltForward.value = 30f
+        g.tiltSideways.value = -10f
+        g.upsideDown.value = true
+        g.spin.value = 1f
+        g.pose.value = ModelPose.T_POSE
+        g.reset()
+        val fresh = SettingsTree().feature<PlayerModel>()
+        assertEquals(true, g.enabled)
+        assertEquals(ModelTarget.EVERYONE, g.target.value)
+        fun PlayerModel.shape() = listOf(size, width, height, depth, tiltForward, tiltSideways, spin).map { it.value }
+        assertEquals(fresh.shape(), g.shape())
+        assertEquals(false, g.upsideDown.value)
+        assertEquals(ModelPose.GAME, g.pose.value)
     }
 }

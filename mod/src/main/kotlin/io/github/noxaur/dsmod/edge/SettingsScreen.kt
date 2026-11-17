@@ -671,7 +671,7 @@ class SettingsScreen(
         const val FAVORITES = 0
 
         /** The sections the screen lists: Favorites, which holds no groups of its own, and then the tree bound to [config]. */
-        fun sections(config: DsModConfig) = listOf(SettingSection("Favorites", Role.ACTION, emptyList())) + SettingsTree.sections(config)
+        fun sections(config: DsModConfig) = listOf(SettingSection("Favorites", Role.ACTION, emptyList())) + SettingsTree(config).sections
 
         private var tabs: SettingsTabs? = null
 

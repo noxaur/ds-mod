@@ -1,6 +1,8 @@
 package io.github.noxaur.dsmod.core.feature
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
+import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
@@ -10,7 +12,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class UnparsedTest {
-    private val game = Game(listOf(features(DsModConfig()).single { it.id == "protector-status" }.also { it.enabled = true }))
+    private val game = Game(listOf(SettingsTree().features.single { it.id == "protector-status" }.also { it.enabled = true }))
 
     private fun tab(vararg rows: String) = TabList(rows.map { ServerText(listOf(ServerSpan(it))) })
 
@@ -35,7 +37,7 @@ class UnparsedTest {
     @Test
     fun `a chat line whose head matches and whose pattern does not is counted for the feature`() {
         val eggs = ArrayList<String>()
-        val egg = object : Feature("egg", ::on, Area.ANYWHERE) {
+        val egg = object : Feature(DsModConfig(), "egg", Area.ANYWHERE, Store.END, "Reads the egg line in a test.") {
             init {
                 line("The Dragon Egg is respawning", Regex("""The Dragon Egg is respawning in (\d+) seconds\.""")) { (seconds), _ -> eggs += seconds }
             }
@@ -51,6 +53,4 @@ class UnparsedTest {
         assertEquals(listOf("30"), eggs)
         assertEquals(listOf("The Dragon Egg is respawning soon!"), heard)
     }
-
-    private var on = true
 }

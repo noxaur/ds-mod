@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
@@ -50,12 +51,12 @@ class SettingsNarrationTest : FabricClientGameTest {
         context.input.scroll(1.0)
         context.waitTicks(2)
         hear(context, "Distance, number, 4.5, changed from 4.0", "After the wheel")
-        context.runOnClient<Nothing> { DsModClient.settings.general.camera = false }
+        context.runOnClient<Nothing> { DsModClient.feature<Camera>().enabled = false }
         open(context, SettingsTabs(at("Camera")))
         over("cameraDistance", "Distance, number, 4.5, changed from 4.0, dimmed, Camera is off")
         context.runOnClient<Nothing> {
-            DsModClient.settings.general.camera = true
-            DsModClient.settings.general.cameraDistance = 4f
+            DsModClient.feature<Camera>().enabled = true
+            DsModClient.feature<Camera>().distance.value = 4f
         }
 
         open(context, SettingsTabs(at("Inventory")))
@@ -68,16 +69,16 @@ class SettingsNarrationTest : FabricClientGameTest {
             context.waitTicks(2)
         }
         over("customLook", "Custom Look, fold, expanded")
-        over("slotLock", "Slot Lock, switch, on, collapsed")
+        over("slot-lock", "Slot Lock, switch, on, collapsed")
 
         open(context, SettingsTabs(at("The End")))
         if (context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).spot("beamSections") == null }) {
-            val beacon = spot("protectorSpawnBeam")
+            val beacon = spot("protector-spawn-beam")
             move(beacon.extraX + 7, beacon.controlY + 6)
             context.input.pressMouse(0)
             context.waitTicks(2)
         }
-        over("protectorSpawnBeam", "Protector Spawn Beam, switch, on, expanded")
+        over("protector-spawn-beam", "Protector Spawn Beam, switch, on, expanded")
         over("beamSections", "Beam Timing, span, 175 to 200")
 
         open(context, SettingsTabs(at("Interface")))

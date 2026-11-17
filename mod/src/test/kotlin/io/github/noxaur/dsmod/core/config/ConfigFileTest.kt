@@ -4,13 +4,45 @@ import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
+import io.github.noxaur.dsmod.core.feature.chat.CopyChat
+import io.github.noxaur.dsmod.core.feature.chat.HideCooldownMessages
+import io.github.noxaur.dsmod.core.feature.end.BossFightTracker
+import io.github.noxaur.dsmod.core.feature.end.DragonTimer
+import io.github.noxaur.dsmod.core.feature.end.EyeGuard
+import io.github.noxaur.dsmod.core.feature.end.FireballAlert
+import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
+import io.github.noxaur.dsmod.core.feature.end.ProtectorStatus
+import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
+import io.github.noxaur.dsmod.core.feature.general.Animations
+import io.github.noxaur.dsmod.core.feature.general.Camera
+import io.github.noxaur.dsmod.core.feature.general.CommandBinds
+import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLook
 import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
+import io.github.noxaur.dsmod.core.feature.general.EtherwarpOutline
+import io.github.noxaur.dsmod.core.feature.general.FreeLook
+import io.github.noxaur.dsmod.core.feature.general.Fullbright
+import io.github.noxaur.dsmod.core.feature.general.HideExplosions
+import io.github.noxaur.dsmod.core.feature.general.InventoryHud
 import io.github.noxaur.dsmod.core.feature.general.InventoryLook
 import io.github.noxaur.dsmod.core.feature.general.InventoryRow
 import io.github.noxaur.dsmod.core.feature.general.PetLook
 import io.github.noxaur.dsmod.core.feature.general.PetPosition
+import io.github.noxaur.dsmod.core.feature.general.ProfileViewer
+import io.github.noxaur.dsmod.core.feature.hud.ChatHudEditor
+import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
+import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
+import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
+import io.github.noxaur.dsmod.core.feature.inventory.HideGlassPanes
+import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
+import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
+import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
+import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
+import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
+import io.github.noxaur.dsmod.core.feature.loot.RareDropAlert
+import io.github.noxaur.dsmod.core.feature.slayer.SlayerBossAlert
+import io.github.noxaur.dsmod.core.feature.slayer.SlayerTracker
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.hand.SwingStyle
 import io.github.noxaur.dsmod.core.hud.HudDock
@@ -22,6 +54,8 @@ import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.core.world.BoxStyle
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -40,99 +74,131 @@ class ConfigFileTest {
 
     /**
      * `config/moulconfig.json` was written by version 0.1.0, which saved through MoulConfig's Gson, with every setting
-     * set away from its default. Each value comes back, and a favorite saved by MoulConfig's path becomes its row's id.
+     * set away from its default. Each value comes back, through the feature that owns it now, and a favorite saved by
+     * MoulConfig's path becomes its row's id.
      */
     @Test
     fun `a file the MoulConfig build wrote loads every value`() {
         Files.copy(Path.of(javaClass.getResource("/config/moulconfig.json")!!.toURI()), path)
         val c = ConfigFile(path).load()
+        val tree = SettingsTree(c)
         assertEquals(listOf("general.fullbright", "loot.lootAlerts", "hud.scale", "end.editBeam", "general.resetAnimations"), c.favorites)
-        // Loot Alerts became Rare Drop Alert, and its star went with the old name.
-        assertEquals(listOf("fullbright", "hudScale", "beamSections", "resetAnimations"), SettingsTree.favorites(c.favorites))
+        // Loot Alerts became Rare Drop Alert, and its star followed its former key to the feature's row.
+        assertEquals(listOf("fullbright", "rare-drop-alert", "hudScale", "beamSections", "resetAnimations"), SettingsTree.favorites(c.favorites))
 
-        assertFalse(c.chat.hideCooldownMessages)
-        assertFalse(c.chat.copyChat)
+        assertFalse(tree.feature<HideCooldownMessages>().enabled)
+        assertFalse(tree.feature<CopyChat>().enabled)
 
-        c.end.run {
-            assertFalse(zealotTracker || eyeGuard || dragonTimer || fireballAlert || protectorStatus || protectorSpawnBeam || bossFightTracker)
-            assertEquals(listOf(Section(20, 60), Section(150, 200)), beamSections)
-            assertTrue(beamInFight)
+        assertFalse(
+            tree.feature<ZealotTracker>().enabled || tree.feature<EyeGuard>().enabled || tree.feature<DragonTimer>().enabled ||
+                tree.feature<FireballAlert>().enabled || tree.feature<ProtectorStatus>().enabled || tree.feature<BossFightTracker>().enabled,
+        )
+        tree.feature<ProtectorSpawnBeam>().run {
+            assertFalse(enabled)
+            assertEquals(listOf(Section(20, 60), Section(150, 200)), sections.value)
+            assertTrue(inFight.value)
         }
 
         c.general.run {
             assertFalse(onlyOnDragSim)
             assertEquals(344, settingsKey)
             assertEquals(71, favoriteKey)
-            assertTrue(fullbright && hideExplosions)
-            assertFalse(animations)
-            assertEquals(SwingStyle.EXHIBITION, swingStyle)
-            assertEquals(listOf(1.5f, 0.75f, 0.25f, -0.5f, 0.1f, 45f, -30f, 12f), listOf(swingSpeed, itemSize, itemX, itemY, itemZ, itemYaw, itemPitch, itemRoll))
-            assertFalse(scaleSwing)
-            assertTrue(noSwing && noBowSwing && ignoreHaste && noEquipReset)
-            assertFalse(equipmentDisplay)
-            assertEquals(listOf(EquipmentPiece.PET, EquipmentPiece.HELMET, EquipmentPiece.BOOTS), equipmentPieces)
-            assertEquals(EquipmentLayout.COLUMN, equipmentLayout)
-            assertEquals(PetLook.NAME, petLook)
-            assertEquals(PetPosition.BELOW, petPosition)
-            assertEquals(EquipmentLook.HOTBAR, equipmentLook)
-            assertEquals(HudDock.RIGHT_OF_HOTBAR, equipmentPlacement)
-            assertTrue(inventoryHud)
-            assertEquals(listOf(InventoryRow.HOTBAR, InventoryRow.TOP), inventoryRows)
-            assertEquals(InventoryLook.INVENTORY, inventoryLook)
-            assertFalse(etherwarpOutline || etherwarpFailed || etherwarpThroughWalls)
-            assertEquals(BoxStyle.FILLED, etherwarpStyle)
-            assertEquals(3.5f, etherwarpWidth)
-            assertTrue(etherwarpWithoutSneak)
-            assertFalse(camera)
-            assertEquals(listOf(12.5f, 1.2f, -10f, 40f), listOf(cameraDistance, cameraHeight, cameraTilt, cameraSmoothing))
-            assertEquals(Views.SKIP_FRONT, cameraViews)
-            assertFalse(freeLook)
-            assertEquals(4, freeLookKey)
-            assertEquals(KeyMode.TOGGLE, freeLookMode)
-            assertFalse(commandBinds)
+        }
+        assertTrue(tree.feature<Fullbright>().enabled && tree.feature<HideExplosions>().enabled)
+        tree.feature<Animations>().run {
+            assertFalse(enabled)
+            assertEquals(SwingStyle.EXHIBITION, swingStyle.value)
+            assertEquals(listOf(1.5f, 0.75f, 0.25f, -0.5f, 0.1f, 45f, -30f, 12f), listOf(swingSpeed, itemSize, itemX, itemY, itemZ, itemYaw, itemPitch, itemRoll).map { it.value })
+            assertFalse(scaleSwing.value)
+            assertTrue(noSwing.value && noBowSwing.value && ignoreHaste.value && noEquipReset.value)
+        }
+        tree.feature<EquipmentDisplay>().run {
+            assertFalse(enabled)
+            assertEquals(listOf(EquipmentPiece.PET, EquipmentPiece.HELMET, EquipmentPiece.BOOTS), pieces.value)
+            assertEquals(EquipmentLayout.COLUMN, layout.value)
+            assertEquals(PetLook.NAME, petLook.value)
+            assertEquals(PetPosition.BELOW, petPosition.value)
+            assertEquals(EquipmentLook.HOTBAR, look.value)
+            assertEquals(HudDock.RIGHT_OF_HOTBAR, placement.value)
+        }
+        tree.feature<InventoryHud>().run {
+            assertTrue(enabled)
+            assertEquals(listOf(InventoryRow.HOTBAR, InventoryRow.TOP), shownRows.value)
+            assertEquals(InventoryLook.INVENTORY, look.value)
+        }
+        tree.feature<EtherwarpOutline>().run {
+            assertFalse(enabled || failed.value || throughWalls.value)
+            assertEquals(BoxStyle.FILLED, style.value)
+            assertEquals(3.5f, width.value)
+            assertTrue(withoutSneak.value)
+        }
+        tree.feature<Camera>().run {
+            assertFalse(enabled)
+            assertEquals(listOf(12.5f, 1.2f, -10f, 40f), listOf(distance, height, tilt, smoothing).map { it.value })
+            assertEquals(Views.SKIP_FRONT, views.value)
+        }
+        tree.feature<FreeLook>().run {
+            assertFalse(enabled)
+            assertEquals(4, key.value)
+            assertEquals(KeyMode.TOGGLE, mode.value)
+        }
+        tree.feature<CommandBinds>().run {
+            assertFalse(enabled)
             assertEquals(
                 listOf(
                     CommandBind("Warp End", "/warp end", listOf(341, 69), false, Where.MENUS, Area.END, 2, false, true, "Travel"),
                     CommandBind(command = "/pets", keys = listOf(80)),
                 ),
-                binds,
+                binds.value,
             )
-            assertEquals(listOf("Travel"), bindGroups)
-            assertEquals(listOf("Travel"), collapsedGroups)
-            assertEquals(listOf("Travel"), offGroups)
-            assertEquals(400f, sequenceGap)
-            assertFalse(profileViewer || profileNames)
+            assertEquals(listOf("Travel"), groups.value)
+            assertEquals(listOf("Travel"), collapsedGroups.value)
+            assertEquals(listOf("Travel"), offGroups.value)
+            assertEquals(400f, sequenceGap.value)
         }
+        tree.feature<ProfileViewer>().run { assertFalse(enabled || clickNames.value) }
 
-        c.inventory.run {
-            assertFalse(itemRarity)
-            assertEquals(RarityPreset.CUSTOM, rarityPreset)
+        tree.feature<ItemRarity>().run {
+            assertFalse(enabled)
+            assertEquals(RarityPreset.CUSTOM, preset.value)
             // MoulConfig's Gson wrote a style as {}, since its fields had no @Expose, so the old file holds no custom look.
-            assertEquals(SlotStyle(), inventoryStyle)
-            assertEquals(SlotStyle(), hotbarStyle)
-            assertFalse(hotbarMatches || hotbarMarks || menuTheme || fixedMenuLayout || hideGlassPanes || keepCursor || slotLock)
-            assertTrue(markCommon && armorSwapGuard)
-            assertEquals(MenuLook.GLASS, menuLook)
-            assertEquals(35f, glassOpacity)
-            assertEquals(74, slotLockKey)
-            assertEquals(3, itemLockKey)
+            assertEquals(SlotStyle(), inventoryStyle.value)
+            assertEquals(SlotStyle(), hotbarStyle.value)
+            assertFalse(hotbarMatches.value || hotbarMarks.value)
+            assertTrue(markCommon.value)
         }
-
-        c.betterUi.run {
-            assertFalse(enabled || backButtons || menuTabs)
-            assertEquals(listOf(MenuTab(TabEdge.TOP, 2, "bazaar", "minecraft:gold_ingot", "Bazaar"), MenuTab(TabEdge.BOTTOM, 6, item = "", tooltip = "Search", search = true)), tabs)
+        tree.feature<MenuTheme>().run {
+            assertFalse(enabled)
+            assertEquals(MenuLook.GLASS, menuLook.value)
+            assertEquals(35f, glassOpacity.value)
         }
+        assertFalse(tree.feature<FixedMenuLayout>().enabled || tree.feature<HideGlassPanes>().enabled || tree.feature<KeepCursor>().enabled)
+        tree.feature<SlotLock>().run {
+            assertFalse(enabled)
+            assertEquals(74, slotLockKey.value)
+            assertEquals(3, itemLockKey.value)
+        }
+        assertTrue(tree.feature<ArmorSwapGuard>().enabled)
 
-        assertFalse(c.loot.rareDropAlert)
-        assertEquals(DsModConfig.LootTier.RNGESUS, c.loot.lootAlertTier)
-        assertFalse(c.slayer.slayerTracker || c.slayer.slayerBossAlert)
+        assertFalse(c.betterUi.enabled || tree.feature<BackButtons>().enabled || tree.feature<MenuTabs>().enabled)
+        assertEquals(
+            listOf(MenuTab(TabEdge.TOP, 2, "bazaar", "minecraft:gold_ingot", "Bazaar"), MenuTab(TabEdge.BOTTOM, 6, item = "", tooltip = "Search", search = true)),
+            tree.feature<MenuTabs>().tabs.value,
+        )
+
+        tree.feature<RareDropAlert>().run {
+            assertFalse(enabled)
+            assertEquals(RareDropAlert.LootTier.RNGESUS, least.value)
+        }
+        assertFalse(tree.feature<SlayerTracker>().enabled || tree.feature<SlayerBossAlert>().enabled)
 
         c.hud.run {
             assertEquals(mapOf("zealot-tracker" to DsModConfig.Position(0.25f, 0.5f, 1.5f), "dragon-timer" to DsModConfig.Position(0.75f, 0.125f, 0.75f)), positions)
             assertEquals(Theme.VANILLA, theme)
-            assertFalse(chatHudEditor || background)
+            assertFalse(background)
             assertEquals(1.75f, scale)
         }
+        assertFalse(tree.feature<ChatHudEditor>().enabled)
 
         assertTrue(c.contribute.reportGameData)
     }
@@ -140,13 +206,17 @@ class ConfigFileTest {
     @Test
     fun `what is saved loads again, the custom look too`() {
         val c = DsModConfig()
-        c.general.cameraDistance = 9f
-        c.inventory.inventoryStyle = SlotStyle(gem = true)
+        val tree = SettingsTree(c)
+        tree.feature<Camera>().distance.value = 9f
+        tree.feature<ItemRarity>().inventoryStyle.value = SlotStyle(gem = true)
         c.hud.positions["boss-fight-tracker"] = DsModConfig.Position(0.5f, 0.5f, 2f)
         ConfigFile(path).save(c)
         val back = ConfigFile(path).load()
+        // A slot is written once its feature is built, so both sides are read through a tree.
+        val loaded = SettingsTree(back)
         assertEquals(ConfigFile.encode(c), ConfigFile.encode(back))
-        assertEquals(SlotStyle(gem = true), back.inventory.inventoryStyle)
+        assertEquals(9f, loaded.feature<Camera>().distance.value)
+        assertEquals(SlotStyle(gem = true), loaded.feature<ItemRarity>().inventoryStyle.value)
         assertFalse(dir.resolve("config.json.tmp").exists(), "the temporary file is renamed over the old one")
     }
 
@@ -155,11 +225,28 @@ class ConfigFileTest {
         assertEquals(ConfigFile.encode(DsModConfig()), ConfigFile.encode(ConfigFile(path).load()))
         path.writeText("""{"general":{"fullbright":true,"swingStyle":"GONE","removedSetting":3},"gone":{}}""")
         val file = ConfigFile(path)
-        val c = file.load()
-        assertTrue(c.general.fullbright)
-        assertEquals(SwingStyle.VANILLA, c.general.swingStyle)
-        assertEquals(DsModConfig().end.beamSections, c.end.beamSections)
+        val tree = SettingsTree(file.load())
+        assertTrue(tree.feature<Fullbright>().enabled)
+        assertEquals(SwingStyle.VANILLA, tree.feature<Animations>().swingStyle.value)
+        assertEquals(SettingsTree().feature<ProtectorSpawnBeam>().sections.value, tree.feature<ProtectorSpawnBeam>().sections.value)
         assertNull(file.unreadable)
+    }
+
+    /** The file keeps MoulConfig's keys: each feature's settings sit in its section, and its switch under its field's old name. */
+    @Test
+    fun `a saved file holds every feature's keys in its section, and a switch under the camel case of its id`() {
+        val tree = SettingsTree()
+        val saved = Json.parseToJsonElement(ConfigFile.encode(tree.config)).jsonObject
+        for (feature in tree.features) {
+            val camel = feature.id.split('-').withIndex().joinToString("") { (i, word) -> if (i == 0) word else word.replaceFirstChar(Char::uppercase) }
+            assertEquals(camel, feature.switch.field.substringAfter('.'), feature.id)
+        }
+        for (store in Store.entries) {
+            val section = saved[store.key]?.jsonObject.orEmpty()
+            for (slot in tree.config.stored(store).all) assertTrue(slot.key in section, "${slot.key} is not under ${store.key}")
+        }
+        assertTrue("fullbright" in saved.getValue("general").jsonObject)
+        assertTrue("beamSections" in saved.getValue("end").jsonObject)
     }
 
     @Test

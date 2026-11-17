@@ -2,11 +2,9 @@ package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.capture.RawRecord
 import io.github.noxaur.dsmod.core.capture.eventTypes
+import io.github.noxaur.dsmod.core.feature.general.PerformanceStats
 import io.github.noxaur.dsmod.debug.DsModDebug
 import io.github.noxaur.dsmod.edge.DsModClient
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.core.component.DataComponents
@@ -16,6 +14,9 @@ import net.minecraft.world.item.MapItem
 import org.lwjgl.glfw.GLFW
 import java.nio.file.Path
 import kotlin.io.path.readLines
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * Makes a real server send each kind of interface, and checks that the capture file holds it. Covers
@@ -89,7 +90,7 @@ class CaptureTest : FabricClientGameTest {
                 "execute at @a run setblock ~3 ~ ~3 minecraft:stone_button[face=floor]",
             ).forEach(world.server::runCommand)
             context.waitTicks(40)
-            context.runOnClient<Nothing> { DsModClient.settings.general.performanceStats = true }
+            context.runOnClient<Nothing> { DsModClient.feature<PerformanceStats>().enabled = true }
             file = context.computeOnClient<Path, Nothing> { DsModDebug.toggleCapture(it)!! }
             context.enterTheEnd()
             listOf(
@@ -146,7 +147,7 @@ class CaptureTest : FabricClientGameTest {
         var said: String? = null
         context.runOnClient<Nothing> { client -> DsModDebug.toggleCapture(client) { said = it } }
         context.waitFor { said != null }
-        context.runOnClient<Nothing> { DsModClient.settings.general.performanceStats = false }
+        context.runOnClient<Nothing> { DsModClient.feature<PerformanceStats>().enabled = false }
         check(said == "Capture saved: $file") { "The capture ended with '$said'" }
 
         val events = file.readLines().map { Json.parseToJsonElement(it).jsonObject }

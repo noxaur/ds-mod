@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.ProfileViewer
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.profile.ProfileScreen
@@ -112,11 +113,11 @@ class ProfileViewerTest : FabricClientGameTest {
                 }
 
                 context.setScreen { null }
-                context.runOnClient<Nothing> { DsModClient.settings.general.profileViewer = false }
+                context.runOnClient<Nothing> { DsModClient.feature<ProfileViewer>().enabled = false }
                 profiles.command("pv Testwyrm")
                 context.waitTicks(5)
                 check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() !is ProfileScreen }) { "/pv opened with Profile Viewer off" }
-                context.runOnClient<Nothing> { DsModClient.settings.general.profileViewer = true }
+                context.runOnClient<Nothing> { DsModClient.feature<ProfileViewer>().enabled = true }
             }
         }
     }

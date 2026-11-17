@@ -1,12 +1,14 @@
 package io.github.noxaur.dsmod.core.feature.general
 
+import io.github.noxaur.dsmod.core.camera.KeyMode
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.KeyBind
 import io.github.noxaur.dsmod.core.game.ContainerState.Companion.INVENTORY
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudLook
-import kotlin.reflect.KMutableProperty0
 
 /**
  * A row the grid can show: its first slot in the inventory menu and how many slots it has. The three rows of the
@@ -44,21 +46,25 @@ enum class InventoryLayout(private val label: String) {
 }
 
 /**
- * Shows the [rows] of the player's inventory they picked, in their order, as a grid of icons with no header, nine to a
+ * Shows the [shownRows] of the player's inventory they picked, in their order, as a grid of icons with no header, nine to a
  * row as the inventory holds them. An empty cell stands for an empty slot, and the hotbar, armor and offhand sit apart
  * from the rows beside them, as the hotbar does in the inventory. Each row carries its slots' rarity marks, and the
  * hotbar the slot the player holds. The grid hides while a menu is open, which shows the inventory itself, and while
  * every slot picked is empty.
  */
-class InventoryHud(
-    toggle: KMutableProperty0<Boolean>,
-    private val rows: KMutableProperty0<MutableList<InventoryRow>>,
-    private val look: KMutableProperty0<InventoryLook>,
-    override val placement: KMutableProperty0<HudDock>,
-    private val layout: KMutableProperty0<InventoryLayout>,
-    private val opacity: KMutableProperty0<Float>,
-    private val pickup: KMutableProperty0<Boolean>,
-) : InventoryReader("inventory-hud", toggle) {
+class InventoryHud(config: DsModConfig) :
+    InventoryReader(config, "inventory-hud", "Show a grid of the items in your inventory on the HUD.", default = false, formerly = "inventoryPreview") {
+    val shownRows = order("inventoryRows", "Rows", "Pick the rows to show, and drag them into order.", listOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM))
+    val look = choice("inventoryLook", "Look", "Show the items on the plate, on nothing, or as your inventory.", InventoryLook.INVENTORY)
+    val layout = choice("inventoryLayout", "Layout", "Lay each row out across, as in the inventory, or down.", InventoryLayout.ROWS)
+    override val placement = choice("inventoryPlacement", "Placement", "Keep the grid where you put it, or beside your hotbar.", HudDock.FREE)
+    val opacity = number("inventoryOpacity", "Opacity", "Set how solid the Inventory look's panel is.", 100f, 0f..100f, step = 5f, unit = "%")
+
+    /** The key that shows or hides the grid, and how, which `InventoryKey` in the edge reads. None always shows it. */
+    val key = keys("inventoryKey", "Key", "Pick a key that shows or hides the grid, or none to always show it.", KeyBind.NONE)
+    val keyMode = choice("inventoryKeyMode", "Key Mode", "Pick Hold to show the grid while the key is down, or Toggle.", KeyMode.TOGGLE)
+    val pickup = switch("inventoryPickup", "Pickup Animation", "Bob an item in the grid as it lands, as the hotbar does.", default = false)
+
     /** The settings the block was built with, so a refresh rebuilds it only when one changed. */
     private data class Shown(
         val rows: List<InventoryRow>,
@@ -100,7 +106,7 @@ class InventoryHud(
 
     private fun picked() = shown.rows.distinct()
 
-    private fun settings() = Shown(rows.get().toList(), look.get(), placement.get(), layout.get(), opacity.get(), pickup.get())
+    private fun settings() = Shown(shownRows.value, look.value, placement.value, layout.value, opacity.value, pickup.value)
 
     private fun build(): HudBlock? {
         if (items.isEmpty()) return null

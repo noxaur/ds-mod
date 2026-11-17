@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.TabList
@@ -52,10 +53,10 @@ class ProtectorSpawnBeamTest : FabricClientGameTest {
             check(marks(context).single() == first) { "The beam does not show with 25 kills left" }
             tab(context, "Area: The End", "Protector: Spawned")
             check(marks(context).isEmpty()) { "The beam shows during the fight" }
-            DsModClient.settings.end.beamInFight = true
+            DsModClient.feature<ProtectorSpawnBeam>().inFight.value = true
             context.waitTicks(10)
             check(marks(context).single() == first) { "The beam does not show during the fight when asked to" }
-            DsModClient.settings.end.beamInFight = false
+            DsModClient.feature<ProtectorSpawnBeam>().inFight.value = false
 
             // The server keeps one head, so the lower one goes. A plain head, as the ones that decorate the End, stays behind too.
             world.server.runCommand("execute at @a run setblock ~ ~ ~12 minecraft:air")

@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.camera.ThirdPerson
 import io.github.noxaur.dsmod.core.camera.Views
+import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -17,7 +18,7 @@ class CameraTest : FabricClientGameTest {
     private class Shot(val distance: Double, val rise: Double, val pitch: Float, val head: Float)
 
     override fun runTest(context: ClientGameTestContext) {
-        val settings = DsModClient.settings.general
+        val camera = DsModClient.feature<Camera>()
 
         fun shot() = context.computeOnClient<Shot, Nothing> { client ->
             val camera = client.gameRenderer.mainCamera()
@@ -43,31 +44,31 @@ class CameraTest : FabricClientGameTest {
                 view(CameraType.THIRD_PERSON_BACK)
                 near(shot().distance, 4.0, "The game's own distance")
 
-                settings.cameraDistance = 10f
+                camera.distance.value = 10f
                 context.waitTicks(5)
                 near(shot().distance, 10.0, "The distance set to 10")
                 context.takeScreenshot("camera-distance")
 
-                settings.camera = false
+                camera.enabled = false
                 context.waitTicks(5)
                 near(shot().distance, 4.0, "The distance with Camera off")
-                settings.camera = true
+                camera.enabled = true
 
-                settings.cameraHeight = 2f
+                camera.height.value = 2f
                 context.waitTicks(5)
                 near(shot().rise, 2.0, "The rise set to 2")
                 context.takeScreenshot("camera-height")
 
                 // A block three above the feet: the camera stops under it instead of starting inside it.
-                settings.cameraHeight = 3f
+                camera.height.value = 3f
                 world.server.runCommand("execute at @a run setblock ~ ~3 ~ stone")
                 context.waitTicks(10)
                 val under = shot().rise
                 check(under > 0.5 && under < 1.3) { "Under a block the camera rose $under" }
                 world.server.runCommand("execute at @a run setblock ~ ~3 ~ air")
-                settings.cameraHeight = 0f
+                camera.height.value = 0f
 
-                settings.cameraTilt = 20f
+                camera.tilt.value = 20f
                 context.waitTicks(5)
                 shot().let {
                     near(it.pitch.toDouble(), 20.0, "The camera's pitch tilted by 20")
@@ -77,17 +78,17 @@ class CameraTest : FabricClientGameTest {
                 context.takeScreenshot("camera-tilt")
                 view(CameraType.FIRST_PERSON)
                 near(shot().pitch.toDouble(), 0.0, "The first-person pitch under a tilt")
-                settings.cameraTilt = 0f
+                camera.tilt.value = 0f
 
-                settings.cameraViews = Views.SKIP_FRONT
+                camera.views.value = Views.SKIP_FRONT
                 check(f5() == CameraType.THIRD_PERSON_BACK) { "F5 from first person went to ${view()}" }
                 check(f5() == CameraType.FIRST_PERSON) { "F5 did not skip the front view, and went to ${view()}" }
-                settings.cameraViews = Views.SKIP_BACK
+                camera.views.value = Views.SKIP_BACK
                 check(f5() == CameraType.THIRD_PERSON_FRONT) { "F5 did not skip the back view, and went to ${view()}" }
                 check(f5() == CameraType.FIRST_PERSON) { "F5 from the front view went to ${view()}" }
-                settings.cameraViews = Views.ALL
+                camera.views.value = Views.ALL
 
-                settings.cameraSmoothing = 100f
+                camera.smoothing.value = 100f
                 context.input.pressKey { it.keyTogglePerspective }
                 context.waitTicks(2)
                 val sliding = shot().distance
@@ -95,12 +96,12 @@ class CameraTest : FabricClientGameTest {
                 context.waitTicks(40)
                 near(shot().distance, 10.0, "The distance after the slide")
             } finally {
-                settings.cameraDistance = ThirdPerson.DISTANCE
-                settings.cameraHeight = 0f
-                settings.cameraTilt = 0f
-                settings.cameraSmoothing = 0f
-                settings.cameraViews = Views.ALL
-                settings.camera = true
+                camera.distance.value = ThirdPerson.DISTANCE
+                camera.height.value = 0f
+                camera.tilt.value = 0f
+                camera.smoothing.value = 0f
+                camera.views.value = Views.ALL
+                camera.enabled = true
                 context.runOnClient<Nothing> { it.options.cameraType = CameraType.FIRST_PERSON }
             }
         }

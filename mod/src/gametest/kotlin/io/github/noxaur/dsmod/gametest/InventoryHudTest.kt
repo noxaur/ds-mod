@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.InventoryHud
 import io.github.noxaur.dsmod.core.feature.general.InventoryRow
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.GameEvent
@@ -30,7 +31,7 @@ import net.minecraft.world.item.Items
  */
 class InventoryHudTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = InventoryGrid.with(context) { world ->
-        val general = DsModClient.settings.general
+        val inventoryHud = DsModClient.feature<InventoryHud>()
         check(skin(stackAt(context, cell(context, 0, 0)))) { "The first item's icon lost its skin" }
         check(stackAt(context, cell(context, 0, 1))?.get(DataComponents.DYED_COLOR)?.rgb() == InventoryGrid.DYE) { "The leather lost its dye" }
         check(stackAt(context, cell(context, 1, 4))?.count == 13) { "The middle row's fifth stack is not 13 strong" }
@@ -53,7 +54,7 @@ class InventoryHudTest : FabricClientGameTest {
             player.setItemSlot(EquipmentSlot.HEAD, ServerMenus.named(Items.LEATHER_HELMET, "Helmet"))
             player.setItemSlot(EquipmentSlot.OFFHAND, ServerMenus.named(Items.SHIELD, "Shield"))
         }
-        general.inventoryRows = InventoryRow.entries.toMutableList()
+        inventoryHud.shownRows.value = InventoryRow.entries
         waitForItem(context, "Shield") { cell(context, 5, 0, gaps = 3) }
         check(stackAt(context, cell(context, 3, 0, gaps = 1))?.hoverName?.string == "Item 0") { "The hotbar's first item is not under the gap" }
         check(stackAt(context, cell(context, 4, 0, gaps = 2))?.hoverName?.string == "Helmet") { "The armor row does not start with the helmet" }

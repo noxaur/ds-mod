@@ -10,7 +10,6 @@ import io.github.noxaur.dsmod.core.config.Panel
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.LeftServer
@@ -90,8 +89,10 @@ object DsModClient : ClientModInitializer {
 
     inline fun <reified F : Feature> runs() = runs(F::class.java)
 
-    /** The feature of [type] that runs now. */
+    /** The feature of [type], whose settings the edge reads. It is built anew by [restart], so look it up where it is read. */
     fun <F : Feature> feature(type: Class<F>): F = type.cast(byType.getValue(type))
+
+    inline fun <reified F : Feature> feature(): F = feature(F::class.java)
 
     /**
      * Opens the settings over the screen shown now, which Done goes back to, where the player left them: at the row
@@ -133,7 +134,7 @@ object DsModClient : ClientModInitializer {
 
     /** Builds what a launch starts from: every feature, the game's state, what the player saved, and what reads and shows them. */
     private fun start() {
-        val all = features(settings)
+        val all = SettingsTree(settings).features
         game = Game(all) { active }
         byType = all.associateBy { it.javaClass }
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
@@ -167,7 +168,7 @@ object DsModClient : ClientModInitializer {
         Looks.register()
         SlotArts.register()
         Hud.register()
-        Slots.register(settings.inventory)
+        Slots.register()
         MenuSkin.register()
         MenuBack.register()
         TabBar.register()
@@ -177,9 +178,9 @@ object DsModClient : ClientModInitializer {
         ArmorSwapGuards.register()
         EyeGuards.register()
         CopyChats.register()
-        SlotGuards.register(settings.inventory)
-        CommandKeys.register(settings.general)
-        Pings.register(settings.general)
+        SlotGuards.register()
+        CommandKeys.register()
+        Pings.register()
         ScreenEvents.AFTER_INIT.register { _, screen, _, _ -> if (screen is AbstractContainerScreen<*>) readouts.opened(screen) }
         ChatDrags.register(settings.hud, ::saveSettings)
         Editors.register(Canvas.HUD_LAYOUT) { panel, host -> @Suppress("UNCHECKED_CAST") HudLayoutEditor(panel as Panel<Map<String, DsModConfig.Position>>, readouts, host) }

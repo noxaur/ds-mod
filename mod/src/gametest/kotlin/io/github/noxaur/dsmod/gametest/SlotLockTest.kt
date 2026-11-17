@@ -23,8 +23,7 @@ import org.lwjgl.glfw.GLFW
  */
 class SlotLockTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
-        val settings = DsModClient.settings.inventory
-        val feature = DsModClient.game.readouts.single { it.feature.id == "slot-lock" }.feature as SlotLock
+        val slotLock = DsModClient.feature<SlotLock>()
         val key = GLFW.GLFW_KEY_L
         val itemKey = GLFW.GLFW_KEY_K
 
@@ -94,7 +93,7 @@ class SlotLockTest : FabricClientGameTest {
                 click(0)
 
                 tap(0)
-                check(feature.locks == SlotLocks(setOf(0))) { "The key over the first hotbar slot left ${feature.locks}" }
+                check(slotLock.locks == SlotLocks(setOf(0))) { "The key over the first hotbar slot left ${slotLock.locks}" }
                 click(0)
                 check(carried() == 0 && item(0).first == Items.DIAMOND_SWORD) { "A click took the locked sword" }
                 click(0, 1)
@@ -109,10 +108,10 @@ class SlotLockTest : FabricClientGameTest {
                 check(item(0).first == Items.DIAMOND_SWORD) { "The drop key over the locked slot dropped the sword" }
 
                 // The key is a mouse button too.
-                settings.slotLockKey = 2
+                slotLock.slotLockKey.value = 2
                 click(10, 2)
-                check(10 in feature.locks.locked) { "The middle button did not lock the slot, and left ${feature.locks}" }
-                settings.slotLockKey = key
+                check(10 in slotLock.locks.locked) { "The middle button did not lock the slot, and left ${slotLock.locks}" }
+                slotLock.slotLockKey.value = key
                 click(1)
                 doubleClick(12)
                 check(carried() == 5 && item(10).second == 5) { "A double click gathered from the locked stack: carrying ${carried()}, and ${item(10)} is left" }
@@ -124,7 +123,7 @@ class SlotLockTest : FabricClientGameTest {
                 hover(1)
                 context.input.releaseKey(key)
                 context.waitTicks(3)
-                check(feature.locks.links.isEmpty() && feature.locks.locked == setOf(0, 10)) { "A drag between two hotbar slots left ${feature.locks}" }
+                check(slotLock.locks.links.isEmpty() && slotLock.locks.locked == setOf(0, 10)) { "A drag between two hotbar slots left ${slotLock.locks}" }
 
                 hover(0)
                 context.input.holdKey(key)
@@ -132,7 +131,7 @@ class SlotLockTest : FabricClientGameTest {
                 context.takeScreenshot("slot-lock-linking")
                 context.input.releaseKey(key)
                 context.waitTicks(3)
-                check(feature.locks == SlotLocks(setOf(0, 10, 9), mapOf(0 to 9))) { "Holding the key from the hotbar to the slot above left ${feature.locks}" }
+                check(slotLock.locks == SlotLocks(setOf(0, 10, 9), mapOf(0 to 9))) { "Holding the key from the hotbar to the slot above left ${slotLock.locks}" }
                 click(9)
                 check(carried() == 0) { "A click took the linked pickaxe" }
                 context.takeScreenshot("slot-lock")
@@ -143,16 +142,16 @@ class SlotLockTest : FabricClientGameTest {
                 check(item(0).first == Items.DIAMOND_PICKAXE && item(9).first == Items.DIAMOND_SWORD) { "A Shift click did not trade the pair: ${item(0)} and ${item(9)}" }
 
                 tap(9)
-                check(feature.locks == SlotLocks(setOf(0, 10))) { "Unlocking one end of the link left ${feature.locks}" }
+                check(slotLock.locks == SlotLocks(setOf(0, 10))) { "Unlocking one end of the link left ${slotLock.locks}" }
                 tap(0)
                 tap(10)
-                check(feature.locks == SlotLocks()) { "Unlocking every slot left ${feature.locks}" }
+                check(slotLock.locks == SlotLocks()) { "Unlocking every slot left ${slotLock.locks}" }
 
                 // An item lock follows the item. Slot 11 holds the axe with an ID, and stone has none.
                 hover(11)
                 context.input.pressKey(itemKey)
                 context.waitTicks(3)
-                check(feature.locks == SlotLocks(items = setOf("an-axe"))) { "The item key over the axe left ${feature.locks}" }
+                check(slotLock.locks == SlotLocks(items = setOf("an-axe"))) { "The item key over the axe left ${slotLock.locks}" }
                 click(11)
                 check(carried() == 0) { "A click took the locked axe" }
                 context.takeScreenshot("slot-lock-item")
@@ -172,7 +171,7 @@ class SlotLockTest : FabricClientGameTest {
                 hover(1)
                 context.input.pressKey(itemKey)
                 context.waitTicks(3)
-                check(feature.locks == SlotLocks()) { "The item key over stone, which stacks, left ${feature.locks}" }
+                check(slotLock.locks == SlotLocks()) { "The item key over stone, which stacks, left ${slotLock.locks}" }
 
                 // A held item key locks every item it sweeps over, past the stone, and unlocks them as the first was locked.
                 fun sweep(vararg slots: Int) {
@@ -183,9 +182,9 @@ class SlotLockTest : FabricClientGameTest {
                     context.waitTicks(3)
                 }
                 sweep(13, 1, 23)
-                check(feature.locks == SlotLocks(items = setOf("an-axe", "a-hoe"))) { "Sweeping the item key over the axe and the hoe left ${feature.locks}" }
+                check(slotLock.locks == SlotLocks(items = setOf("an-axe", "a-hoe"))) { "Sweeping the item key over the axe and the hoe left ${slotLock.locks}" }
                 sweep(23, 13)
-                check(feature.locks == SlotLocks()) { "Sweeping the item key back from a locked item left ${feature.locks}" }
+                check(slotLock.locks == SlotLocks()) { "Sweeping the item key back from a locked item left ${slotLock.locks}" }
 
                 // A Shift click on the axe would land in the first empty hotbar slot, which is locked, so it goes to the next.
                 tap(2)
@@ -210,14 +209,14 @@ class SlotLockTest : FabricClientGameTest {
                 context.input.pressKey { it.keyDrop }
                 context.waitTicks(5)
                 check(item(1).second == 10) { "The drop key dropped from the locked slot in hand, leaving ${item(1)}" }
-                settings.slotLock = false
+                slotLock.enabled = false
                 context.input.pressKey { it.keyDrop }
                 context.waitTicks(5)
                 check(item(1).second == 9) { "With Slot Lock off the drop key left ${item(1)}" }
             } finally {
-                settings.slotLock = true
-                settings.slotLockKey = key
-                feature.locks = SlotLocks()
+                slotLock.enabled = true
+                slotLock.slotLockKey.value = key
+                slotLock.locks = SlotLocks()
                 context.runOnClient<Nothing> { it.gui.setScreen(null) }
             }
         }

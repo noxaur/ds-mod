@@ -2,7 +2,6 @@ package io.github.noxaur.dsmod.edge
 
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
-import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.core.hand.Ease
 import io.github.noxaur.dsmod.core.hand.HeldItem
@@ -32,9 +31,9 @@ private const val BLOCK_LIFT = 0.12f
  * is drawn: the game sends the swing on every click whatever the swing looks like.
  */
 object HeldItems {
-    private val settings: DsModConfig.General get() = DsModClient.settings.general
+    private val settings: Animations get() = DsModClient.feature(Animations::class.java)
     private val on: Boolean get() = DsModClient.runs<Animations>()
-    private val steady: Boolean get() = on && settings.noEquipReset
+    private val steady: Boolean get() = on && settings.noEquipReset.value
 
     /** How far into the block-hit pose the main hand is. */
     private val block = Ease()
@@ -54,7 +53,10 @@ object HeldItems {
     fun place(pose: PoseStack, arm: HumanoidArm, stack: ItemStack) {
         if (!on || stack.isEmpty || stack.has(DataComponents.MAP_ID)) return
         val s = settings
-        if (s.itemX != 0f || s.itemY != 0f || s.itemZ != 0f) pose.translate(side(arm) * s.itemX, s.itemY, -s.itemZ)
+        val x = s.itemX.value
+        val y = s.itemY.value
+        val z = s.itemZ.value
+        if (x != 0f || y != 0f || z != 0f) pose.translate(side(arm) * x, y, -z)
     }
 
     /**
@@ -65,10 +67,14 @@ object HeldItems {
         if (!on) return
         val s = settings
         val side = side(arm)
-        if (s.itemYaw != 0f) pose.mulPose(Axis.YP.rotationDegrees(side * s.itemYaw))
-        if (s.itemPitch != 0f) pose.mulPose(Axis.XP.rotationDegrees(s.itemPitch))
-        if (s.itemRoll != 0f) pose.mulPose(Axis.ZP.rotationDegrees(side * s.itemRoll))
-        if (s.itemSize != 1f) pose.scale(s.itemSize, s.itemSize, s.itemSize)
+        val yaw = s.itemYaw.value
+        val pitch = s.itemPitch.value
+        val roll = s.itemRoll.value
+        val size = s.itemSize.value
+        if (yaw != 0f) pose.mulPose(Axis.YP.rotationDegrees(side * yaw))
+        if (pitch != 0f) pose.mulPose(Axis.XP.rotationDegrees(pitch))
+        if (roll != 0f) pose.mulPose(Axis.ZP.rotationDegrees(side * roll))
+        if (size != 1f) pose.scale(size, size, size)
     }
 
     /**
@@ -78,10 +84,11 @@ object HeldItems {
     fun swing(pose: PoseStack, arm: HumanoidArm, attack: Float, spear: Boolean): Boolean {
         if (!on) return false
         val s = settings
-        if (s.noSwing || s.noBowSwing && held(arm).item is ProjectileWeaponItem) return true
+        if (s.noSwing.value || s.noBowSwing.value && held(arm).item is ProjectileWeaponItem) return true
         val side = side(arm)
-        val reach = if (s.scaleSwing) s.itemSize else 1f
-        when (s.swingStyle) {
+        val reach = if (s.scaleSwing.value) s.itemSize.value else 1f
+        val style = s.swingStyle.value
+        when (style) {
             SwingStyle.VANILLA -> {
                 if (reach == 1f) return false
                 if (spear) {
@@ -100,7 +107,7 @@ object HeldItems {
                 if (k == 0f && reach == 1f) return false
                 // The game's swing fades out as the pose comes in.
                 push(pose, side, attack, reach * (1 - k))
-                if (s.swingStyle == SwingStyle.BLOCK_HIT) {
+                if (style == SwingStyle.BLOCK_HIT) {
                     // A short punch: at full strength the game's arc would tip the sword below the screen.
                     arc(pose, side, attack, 1 - k * (1 - BLOCK_ARC))
                 } else {
@@ -150,8 +157,9 @@ object HeldItems {
     /** How many ticks the player's own swing lasts, from the game's [ticks]. Everyone else swings at their own pace. */
     fun swingTicks(entity: LivingEntity, ticks: Int): Int {
         if (entity !== Minecraft.getInstance().player || !on) return ticks
-        val base = if (settings.ignoreHaste) entity.getItemInHand(entity.swingingArm ?: InteractionHand.MAIN_HAND).swingAnimation.duration() else ticks
-        return HeldItem.swingTicks(base, settings.swingSpeed)
+        val s = settings
+        val base = if (s.ignoreHaste.value) entity.getItemInHand(entity.swingingArm ?: InteractionHand.MAIN_HAND).swingAnimation.duration() else ticks
+        return HeldItem.swingTicks(base, s.swingSpeed.value)
     }
 
     /** The game lowers the item after a swing by this cooldown scale, from 0 to 1. No Equip Reset keeps it up. */

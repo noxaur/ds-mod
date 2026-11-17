@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.container
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
+import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.text.Role
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -107,10 +108,10 @@ class SlotArtTest {
 
     @Test
     fun `containers show the preset, and the player's own style only under Custom`() {
-        val settings = DsModConfig.Inventory()
-        settings.inventoryStyle = SlotStyle(Border.SQUARE, Fill.WASH)
+        val settings = SettingsTree().feature<ItemRarity>()
+        settings.inventoryStyle.value = SlotStyle(Border.SQUARE, Fill.WASH)
         assertEquals(RarityPreset.GILDED.style, settings.containerStyle())
-        settings.rarityPreset = RarityPreset.CUSTOM
+        settings.preset.value = RarityPreset.CUSTOM
         assertEquals(SlotStyle(Border.SQUARE, Fill.WASH), settings.containerStyle())
     }
 }

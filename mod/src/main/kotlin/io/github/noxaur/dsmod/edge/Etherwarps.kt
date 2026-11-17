@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.general.EtherwarpOutline
 import io.github.noxaur.dsmod.core.hand.Etherwarp
 import io.github.noxaur.dsmod.core.text.Role
@@ -19,7 +18,7 @@ import net.minecraft.world.phys.AABB
  * tick has changed since, which picks up a block that changed under a still view. It only draws, and sends nothing.
  */
 object Etherwarps {
-    private val settings: DsModConfig.General get() = DsModClient.settings.general
+    private val settings: EtherwarpOutline get() = DsModClient.feature(EtherwarpOutline::class.java)
 
     private val at = BlockPos.MutableBlockPos()
 
@@ -61,7 +60,7 @@ object Etherwarps {
         val player = client.player
         val s = settings
         if (!DsModClient.runs<EtherwarpOutline>() || player == null || client.gui.screen() != null || client.gui.hud.isHidden ||
-            !player.isShiftKeyDown && !s.etherwarpWithoutSneak
+            !player.isShiftKeyDown && !s.withoutSneak.value
         ) {
             return clear()
         }
@@ -92,17 +91,17 @@ object Etherwarps {
                 val look = player.getViewVector(1f)
                 this.level = level
                 val found = try {
-                    Etherwarp.target(x, y, z, look.x, look.y, look.z, range, if (s.etherwarpFailed) Etherwarp.BEYOND else 0, blocks)
+                    Etherwarp.target(x, y, z, look.x, look.y, look.z, range, if (s.failed.value) Etherwarp.BEYOND else 0, blocks)
                 } finally {
                     this.level = null
                 }
-                target = found?.takeIf { it.miss == null || s.etherwarpFailed }
+                target = found?.takeIf { it.miss == null || s.failed.value }
                 box = target?.let { target ->
                     val pos = BlockPos(target.x, target.y, target.z)
                     val shape = level.getBlockState(pos).getShape(level, pos)
                     val bounds = if (shape.isEmpty) AABB(pos) else shape.bounds().move(pos)
                     val role = if (target.miss == null) Role.GOOD else Role.BAD
-                    World.FrameBox(bounds, role, s.etherwarpStyle, s.etherwarpWidth, s.etherwarpThroughWalls, target.miss?.label)
+                    World.FrameBox(bounds, role, s.style.value, s.width.value, s.throughWalls.value, target.miss?.label)
                 }
             }
             box?.let(World::draw)

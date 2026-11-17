@@ -42,10 +42,9 @@ gate edge.ChatDrags ff0895d0a3c1  ChatHudEditor
     can refuse the player's input through ScreenMouseEvents.allowMouseDrag
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
     can refuse the player's input through ScreenMouseEvents.allowMouseScroll
-gate edge.CommandKeys a70f3d9a023f  CommandBinds
+gate edge.CommandKeys 13a47d79ec69  CommandBinds
     sends through ClientPacketListener.sendChat
     sends through ClientPacketListener.sendCommand
-    approved by github.com/noxaur 2026-11-16T14:34:00Z
 gate edge.CopyChats dd5ac57aa914  CopyChat
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
@@ -59,19 +58,17 @@ gate edge.MenuBack aec320813e8e  BackButtons
     can refuse or change sent chat through ClientSendMessageEvents.COMMAND
     sends through ClientPacketListener.sendCommand
     approved by github.com/noxaur 2026-11-16T08:42:00Z
-gate edge.Pings 8ceec14ef3b5  PerformanceStats
+gate edge.Pings e68db6d571db  PerformanceStats
     builds the packet ServerboundPingRequestPacket
     sends through ClientPacketListener.send
-    approved by github.com/noxaur 2026-11-16T19:47:00Z
-gate edge.SlotGuards 9b2f8476cab4  SlotLock
+gate edge.SlotGuards 007b713e72c9  SlotLock
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-gate edge.TabBar f780b9df59bd  MenuTabs
+gate edge.TabBar ad2ca0a317d3  MenuTabs
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate edge.capture.Recording 9b61a81ecbc8
     takes the player's key presses through KeyMapping.consumeClick
     approved by github.com/noxaur 2026-11-16T14:32:00Z
@@ -182,6 +179,5 @@ gate edge.mixin.TooltipMixin draws
 gate edge.profile.ProfileModel b326cc5227a6
     changes the player through AbstractClientPlayer.setId
     changes the player through AbstractClientPlayer.setItemSlot
-gate edge.profile.Profiles 7e089e4c1e06  ProfileViewer
+gate edge.profile.Profiles 2d6577f9109a  ProfileViewer
     builds text that runs a command when the player clicks it
-    approved by github.com/noxaur 2026-11-16T08:42:00Z

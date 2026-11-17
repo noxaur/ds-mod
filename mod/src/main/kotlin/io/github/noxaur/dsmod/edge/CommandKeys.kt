@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
 import io.github.noxaur.dsmod.core.input.BindMatcher
 import io.github.noxaur.dsmod.core.input.CommandBind
@@ -20,35 +19,33 @@ object CommandKeys {
     private const val PRESS = 1
     private const val RELEASE = 0
 
-    private lateinit var settings: DsModConfig.General
     private val matcher = BindMatcher()
 
+    private val settings: CommandBinds get() = DsModClient.feature(CommandBinds::class.java)
     private val on: Boolean get() = DsModClient.runs<CommandBinds>()
+    private var registered = false
 
-    fun register(settings: DsModConfig.General) {
-        this.settings = settings
+    fun register() {
+        registered = true
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             matcher.forget { Keys.held(client, it) }
             // Off is no place. idle drops a sequence no live bind covers in both places.
             val here = if (on) where(client) else null
-            matcher.idle(System.currentTimeMillis(), settings.sequenceGap.toLong(), live(), here, DsModClient.game::isIn)?.let(::send)
+            matcher.idle(System.currentTimeMillis(), settings.sequenceGap.value.toLong(), settings.live(), here, DsModClient.game::isIn)?.let(::send)
         }
     }
 
     /** A key's GLFW code or a mouse button, and GLFW's action: press, release or repeat. A repeat is not a press. */
     fun input(key: Int, action: Int) {
-        if (!::settings.isInitialized) return
+        if (!registered) return
         when (action) {
             RELEASE -> matcher.release(key)
             PRESS -> {
                 val at = if (on) where(Minecraft.getInstance()) else null
-                matcher.press(key, System.currentTimeMillis(), live(), at, DsModClient.game::isIn)?.let(::send)
+                matcher.press(key, System.currentTimeMillis(), settings.live(), at, DsModClient.game::isIn)?.let(::send)
             }
         }
     }
-
-    /** The binds whose group is on. */
-    private fun live() = if (settings.offGroups.isEmpty()) settings.binds else settings.binds.filter { it.group !in settings.offGroups }
 
     private fun where(client: Minecraft): Where? {
         if (client.player == null || client.options.keyDebugModifier.isDown) return null

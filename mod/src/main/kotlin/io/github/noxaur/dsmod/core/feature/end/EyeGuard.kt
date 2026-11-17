@@ -1,11 +1,13 @@
 package io.github.noxaur.dsmod.core.feature.end
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
-import kotlin.reflect.KMutableProperty0
 
 /**
  * Keeps a second click from taking back the eye the player just placed. It reads nothing from the server, so
  * all of it is `EyeGuards` in the edge.
  */
-class EyeGuard(toggle: KMutableProperty0<Boolean>) : Feature("eye-guard", toggle, Area.END)
+class EyeGuard(config: DsModConfig) :
+    Feature(config, "eye-guard", Area.END, Store.END, "Ignore a quick second click that would take a placed eye back.", formerly = "protectPlacedEyes")

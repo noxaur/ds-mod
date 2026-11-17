@@ -1,8 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.general
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.PingMeasured
 import io.github.noxaur.dsmod.core.game.ServerTime
@@ -15,8 +14,8 @@ import kotlin.test.assertNull
 
 /** What the replay of a local server cannot show: a lagging dragsim.co's colors, a clock that goes back, and the settings. */
 class PerformanceStatsTest {
-    private val config = DsModConfig().apply { general.performanceStats = true }
-    private val game = Game(listOf(features(config).single { it.id == "performance-stats" }))
+    private val feature = SettingsTree().feature<PerformanceStats>().also { it.enabled = true }
+    private val game = Game(listOf(feature))
     private var time = 1_000_000L
 
     private fun post(vararg events: GameEvent) {
@@ -50,7 +49,7 @@ class PerformanceStatsTest {
 
     @Test
     fun `ping is the mean of the last five answers, and warns past 150 and 300 ms`() {
-        config.general.performanceValues = mutableListOf(Stat.PING)
+        feature.values.value = listOf(Stat.PING)
         post(PingMeasured(1_000))
         listOf(40L, 50, 60, 70, 80).forEach { post(PingMeasured(it)) }
         assertEquals("Ping: 60 ms", shown())
@@ -64,7 +63,7 @@ class PerformanceStatsTest {
 
     @Test
     fun `a slow server warns below 18 and is bad below 12`() {
-        config.general.performanceValues = mutableListOf(Stat.TPS)
+        feature.values.value = listOf(Stat.TPS)
         clock(5, 20)
         assertEquals("TPS: 20.0", shown())
         assertEquals(Role.VALUE, role("TPS"))
@@ -79,7 +78,7 @@ class PerformanceStatsTest {
 
     @Test
     fun `a server that stops sending its clock falls, and catching up never shows more than 20`() {
-        config.general.performanceValues = mutableListOf(Stat.TPS)
+        feature.values.value = listOf(Stat.TPS)
         clock(4, 20)
         at(2_000)
         assertEquals("TPS: 20.0", shown())
@@ -91,7 +90,7 @@ class PerformanceStatsTest {
 
     @Test
     fun `the window keeps the last ten seconds`() {
-        config.general.performanceValues = mutableListOf(Stat.TPS)
+        feature.values.value = listOf(Stat.TPS)
         clock(10, 10)
         clock(10, 20, from = 100)
         assertEquals("TPS: 20.0", shown())
@@ -99,7 +98,7 @@ class PerformanceStatsTest {
 
     @Test
     fun `a clock that goes back starts the count again`() {
-        config.general.performanceValues = mutableListOf(Stat.TPS)
+        feature.values.value = listOf(Stat.TPS)
         clock(3, 20, from = 50_000)
         post(ServerTime(10))
         assertEquals("TPS: -", shown())
@@ -109,11 +108,11 @@ class PerformanceStatsTest {
     fun `nothing shows until there is something to show, and no values means no block`() {
         at(0)
         assertEquals("FPS: -   Ping: -   TPS: -", shown())
-        config.general.performanceValues = mutableListOf(Stat.TPS, Stat.FPS)
-        config.general.performanceLayout = StatsLayout.COLUMN
+        feature.values.value = listOf(Stat.TPS, Stat.FPS)
+        feature.layout.value = StatsLayout.COLUMN
         at(1_000)
         assertEquals("TPS: - / FPS: -", shown())
-        config.general.performanceValues = mutableListOf()
+        feature.values.value = listOf()
         at(1_000)
         assertNull(game.readouts.single().hud)
     }

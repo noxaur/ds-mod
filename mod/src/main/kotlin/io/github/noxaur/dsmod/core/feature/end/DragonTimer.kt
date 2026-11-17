@@ -1,14 +1,16 @@
 package io.github.noxaur.dsmod.core.feature.end
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.clock
-import kotlin.reflect.KMutableProperty0
 
 /** Follows the dragon fight in the End: the egg's return, the eyes placed and the dragon's time alive. */
-class DragonTimer(toggle: KMutableProperty0<Boolean>) : Feature("dragon-timer", toggle, Area.END) {
+class DragonTimer(config: DsModConfig) :
+    Feature(config, "dragon-timer", Area.END, Store.END, "Show the egg timer, the eyes placed and the dragon's time alive.") {
     private var dragon: String? = null
     private var spawnedAt = 0L
     private var eggAt: Long? = null

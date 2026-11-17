@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.ActivePet
+import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
@@ -19,9 +21,10 @@ import java.util.Base64
  */
 class ActivePetTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
-        val general = DsModClient.settings.general
-        general.activePet = true
-        general.equipmentDisplay = false
+        val activePet = DsModClient.feature<ActivePet>()
+        val equipmentDisplay = DsModClient.feature<EquipmentDisplay>()
+        activePet.enabled = true
+        equipmentDisplay.enabled = false
         try {
             context.worldBuilder().create().use { world ->
                 fun pet(level: Int) =
@@ -90,8 +93,8 @@ class ActivePetTest : FabricClientGameTest {
                 context.takeScreenshot("active-pet-level-up")
             }
         } finally {
-            general.activePet = false
-            general.equipmentDisplay = true
+            activePet.enabled = false
+            equipmentDisplay.enabled = true
         }
     }
 

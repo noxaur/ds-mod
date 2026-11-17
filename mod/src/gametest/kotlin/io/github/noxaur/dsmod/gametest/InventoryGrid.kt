@@ -5,6 +5,7 @@ import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
 import com.mojang.authlib.properties.PropertyMap
 import io.github.noxaur.dsmod.core.camera.KeyMode
+import io.github.noxaur.dsmod.core.feature.general.InventoryHud
 import io.github.noxaur.dsmod.core.feature.general.InventoryLayout
 import io.github.noxaur.dsmod.core.feature.general.InventoryLook
 import io.github.noxaur.dsmod.core.feature.general.InventoryRow
@@ -51,7 +52,7 @@ object InventoryGrid {
 
     /** Fills the inventory, turns the grid on and runs [test] with it showing, then puts every setting back. */
     fun with(context: ClientGameTestContext, test: (TestSingleplayerContext) -> Unit) {
-        val general = DsModClient.settings.general
+        val inventoryHud = DsModClient.feature<InventoryHud>()
         context.worldBuilder().create().use { world ->
             world.server.runOnServer<Nothing> { server ->
                 val inventory = server.playerList.players.first().inventory
@@ -60,20 +61,20 @@ object InventoryGrid {
             }
             // The poller reads long-lored items over a few ticks, so the test starts once every one has arrived.
             context.waitFor { DsModClient.game.container.slots.let { slots -> slots.size > 44 && slots.subList(9, 45).count { it != null } == FILLED } }
-            general.inventoryHud = true
+            inventoryHud.enabled = true
             try {
                 context.waitFor { Hud.find(ID) != null }
                 test(world)
             } finally {
-                general.inventoryHud = false
-                general.inventoryRows = mutableListOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM)
-                general.inventoryLook = InventoryLook.INVENTORY
-                general.inventoryPlacement = HudDock.FREE
-                general.inventoryKey = -1
-                general.inventoryKeyMode = KeyMode.TOGGLE
-                general.inventoryLayout = InventoryLayout.ROWS
-                general.inventoryOpacity = 100f
-                general.inventoryPickup = false
+                inventoryHud.enabled = false
+                inventoryHud.shownRows.value = listOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM)
+                inventoryHud.look.value = InventoryLook.INVENTORY
+                inventoryHud.placement.value = HudDock.FREE
+                inventoryHud.key.value = -1
+                inventoryHud.keyMode.value = KeyMode.TOGGLE
+                inventoryHud.layout.value = InventoryLayout.ROWS
+                inventoryHud.opacity.value = 100f
+                inventoryHud.pickup.value = false
                 context.runOnClient<Nothing> { it.player?.inventory?.selectedSlot = 0 }
             }
         }

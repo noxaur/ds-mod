@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.ui.KitButton
@@ -63,12 +64,12 @@ class BackButtonsTest : FabricClientGameTest {
             context.takeScreenshot("back-button-vanilla")
             context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
 
-            context.runOnClient<Nothing> { DsModClient.settings.betterUi.backButtons = false }
+            context.runOnClient<Nothing> { DsModClient.feature<BackButtons>().enabled = false }
             try {
                 context.waitTicks(2)
                 check(button(context) == null) { "The Back button stayed with Back Buttons off" }
             } finally {
-                context.runOnClient<Nothing> { DsModClient.settings.betterUi.backButtons = true }
+                context.runOnClient<Nothing> { DsModClient.feature<BackButtons>().enabled = true }
             }
             context.waitTicks(2)
 

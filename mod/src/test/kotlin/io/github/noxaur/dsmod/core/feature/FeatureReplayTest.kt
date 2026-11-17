@@ -2,7 +2,7 @@ package io.github.noxaur.dsmod.core.feature
 
 import io.github.noxaur.dsmod.core.capture.Captured
 import io.github.noxaur.dsmod.core.capture.readCapture
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.Area
@@ -88,7 +88,7 @@ class FeatureReplayTest {
         }
     }
 
-    private fun fresh(id: String) = Game(listOf(features(DsModConfig()).single { it.id == id }.also { it.enabled = true }))
+    private fun fresh(id: String) = Game(listOf(SettingsTree().features.single { it.id == id }.also { it.enabled = true }))
 
     /** A feature that reads nothing from the server has nothing to replay, so a game test must show it instead. */
     private fun fixtures(feature: Feature): List<Path> {
@@ -149,7 +149,7 @@ class FeatureReplayTest {
     }
 
     @TestFactory
-    fun `every feature shows what its transcript says`(): List<DynamicTest> = features(DsModConfig()).map { feature ->
+    fun `every feature shows what its transcript says`(): List<DynamicTest> = SettingsTree().features.map { feature ->
         dynamicTest(feature.id) {
             val written = ArrayList<Path>()
             for (fixture in fixtures(feature)) {
@@ -242,7 +242,7 @@ class FeatureReplayTest {
     /** The tab list and the sidebar name another place, and then the feature's own fixtures play: every line that would fire it at home. */
     @TestFactory
     fun `a feature locked to an area does nothing outside it`(): List<DynamicTest> =
-        features(DsModConfig()).filter { it.area != Area.ANYWHERE }.map { feature ->
+        SettingsTree().features.filter { it.area != Area.ANYWHERE }.map { feature ->
             dynamicTest(feature.id) {
                 val untouched = feature.state?.encode()
                 for (fixture in fixtures(feature)) {
@@ -268,7 +268,7 @@ class FeatureReplayTest {
 
     @Test
     fun `play ticks once for the events of one recorded client tick`() {
-        val game = fresh(features(DsModConfig()).first().id)
+        val game = fresh(SettingsTree().features.first().id)
         val death = SystemMessage(ServerText(ServerSpan("Zealot was slain")))
         val bar = ActionBar(ServerText(ServerSpan("Kills: 4")))
         val ticks = ArrayList<Long>()
@@ -286,7 +286,7 @@ class FeatureReplayTest {
 
     @Test
     fun `play ticks after every event when the capture recorded no client tick`() {
-        val game = fresh(features(DsModConfig()).first().id)
+        val game = fresh(SettingsTree().features.first().id)
         val line = SystemMessage(ServerText(ServerSpan("hello")))
         val ticks = ArrayList<Long>()
         val events = listOf(Captured(100, line), Captured(101, line), Captured(149, line))
@@ -295,7 +295,7 @@ class FeatureReplayTest {
     }
 
     @TestFactory
-    fun `every feature stays inside the time budget`(): List<DynamicTest> = features(DsModConfig()).map { feature ->
+    fun `every feature stays inside the time budget`(): List<DynamicTest> = SettingsTree().features.map { feature ->
         dynamicTest(feature.id) {
             for (fixture in fixtures(feature)) {
                 val game = fresh(feature.id)

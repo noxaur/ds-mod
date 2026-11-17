@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
 import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
@@ -53,8 +54,8 @@ class MenuThemeTest : FabricClientGameTest {
 
     private fun look(context: ClientGameTestContext, look: MenuLook, opacity: Float = 60f) {
         context.runOnClient<Nothing> {
-            DsModClient.settings.inventory.menuLook = look
-            DsModClient.settings.inventory.glassOpacity = opacity
+            DsModClient.feature<MenuTheme>().menuLook.value = look
+            DsModClient.feature<MenuTheme>().glassOpacity.value = opacity
         }
         context.waitTicks(2)
     }
@@ -100,14 +101,14 @@ class MenuThemeTest : FabricClientGameTest {
             context.takeScreenshot("themed-chest-filler-hovered")
             ServerMenus.hover(context, 6 * 9 - 5)
             context.takeScreenshot("themed-chest-button-hovered")
-            context.runOnClient<Nothing> { DsModClient.settings.inventory.menuTheme = false }
+            context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().enabled = false }
             try {
                 context.waitTicks(2)
                 val (bx, by) = ServerMenus.corner(context, 6 * 9 - 6)
                 val face = pixel(context, context.takeScreenshot("themed-chest-off"), bx + 3, by + 3)
                 check(face != Theme.CHARCOAL.raised and 0xFFFFFF) { "The server's Go Back stayed a kit button with Menu Theme off" }
             } finally {
-                context.runOnClient<Nothing> { DsModClient.settings.inventory.menuTheme = true }
+                context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().enabled = true }
             }
             context.waitTicks(2)
 
@@ -133,11 +134,11 @@ class MenuThemeTest : FabricClientGameTest {
                 context.takeScreenshot("glass-chest-clear")
                 look(context, MenuLook.GLASS)
                 // Glass is a look of Menu Theme, so with them off the chest is vanilla's, dimmed as vanilla's is.
-                context.runOnClient<Nothing> { DsModClient.settings.inventory.menuTheme = false }
+                context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().enabled = false }
                 context.waitTicks(2)
                 checkUndimmed(context, glass, context.takeScreenshot("glass-chest-themed-off"))
             } finally {
-                context.runOnClient<Nothing> { DsModClient.settings.inventory.menuTheme = true }
+                context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().enabled = true }
                 look(context, MenuLook.SOLID)
             }
             theme(context, Theme.CHARCOAL)
@@ -183,14 +184,14 @@ class MenuThemeTest : FabricClientGameTest {
             context.waitTicks(5)
             checkPanel(context, context.takeScreenshot("themed-hopper"), Theme.CHARCOAL)
 
-            context.runOnClient<Nothing> { DsModClient.settings.inventory.menuTheme = false }
+            context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().enabled = false }
             try {
                 context.waitTicks(2)
                 val (left, top) = corner(context)
                 val plain = context.takeScreenshot("themed-hopper-off")
                 check(pixel(context, plain, left + 3, top + 3) != Theme.CHARCOAL.panel and 0xFFFFFF) { "The hopper stayed themed with Menu Theme off" }
             } finally {
-                context.runOnClient<Nothing> { DsModClient.settings.inventory.menuTheme = true }
+                context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().enabled = true }
             }
             check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() is AbstractContainerScreen<*> })
             context.runOnClient<Nothing> { it.player!!.closeContainer() }

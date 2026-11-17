@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.gametest.mixin.HandAccessor
 import io.github.noxaur.dsmod.gametest.mixin.HudAccessor
@@ -88,7 +89,7 @@ class HeldItemScene private constructor(private val context: ClientGameTestConte
 
         /** Opens a world with a sword in the hand, runs [test], and puts every Animations setting back after it. */
         fun run(context: ClientGameTestContext, test: HeldItemScene.() -> Unit) {
-            val settings = DsModClient.settings.general
+            val animations = DsModClient.feature<Animations>()
             context.worldBuilder().create().use { world ->
                 val scene = HeldItemScene(context, world)
                 listOf("gamerule advance_time false", "gamerule advance_weather false", "clear @a").forEach(scene::command)
@@ -109,8 +110,8 @@ class HeldItemScene private constructor(private val context: ClientGameTestConte
                         it.options.vignette().set(vignette)
                         it.options.attackIndicator().set(indicator)
                     }
-                    settings.animations = true
-                    settings.resetAnimations()
+                    animations.enabled = true
+                    animations.reset()
                 }
             }
         }

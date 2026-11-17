@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.CommandBinds
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.Where
@@ -20,14 +21,14 @@ import org.lwjgl.glfw.GLFW
  */
 class CommandKeysTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
-        val general = DsModClient.settings.general
-        general.binds = listOf(
+        val commandBinds = DsModClient.feature<CommandBinds>()
+        commandBinds.binds.value = listOf(
             CommandBind("", "other", listOf(GLFW.GLFW_MOUSE_BUTTON_MIDDLE), where = Where.BOTH),
             CommandBind("Warp End", "/me bound", listOf(GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_F6), group = "Dungeons"),
             CommandBind("", "/me seq", listOf(GLFW.GLFW_KEY_F7, GLFW.GLFW_KEY_F8), inOrder = true),
             CommandBind("", "/me end", listOf(GLFW.GLFW_KEY_F9), area = Area.END, group = "Dungeons"),
         )
-        general.bindGroups = listOf("Dungeons")
+        commandBinds.groups.value = listOf("Dungeons")
         context.worldBuilder().create().use { _ ->
             fun count(client: Minecraft, word: String) =
                 (client.gui.hud.chat as ChatComponentAccessor).allMessages.count { it.content().string.endsWith(word) }
@@ -89,22 +90,22 @@ class CommandKeysTest : FabricClientGameTest {
                 check(said("bound") == 2) { "Shift + F6 in the chat box sent /me bound" }
 
                 // Shift + F6 is in Dungeons now, so turning the group off quiets it.
-                general.offGroups = listOf("Dungeons")
+                commandBinds.offGroups.value = listOf("Dungeons")
                 shiftF6()
                 echo("bound", 3)
                 check(said("bound") == 2) { "With Dungeons off Shift + F6 sent /me bound" }
-                general.offGroups = emptyList()
+                commandBinds.offGroups.value = emptyList()
 
-                general.commandBinds = false
+                commandBinds.enabled = false
                 shiftF6()
                 echo("bound", 3)
                 check(said("bound") == 2) { "With Command Binds off Shift + F6 sent /me bound" }
             } finally {
-                general.commandBinds = true
-                general.binds = emptyList()
-                general.bindGroups = emptyList()
-                general.offGroups = emptyList()
-                general.collapsedGroups = emptyList()
+                commandBinds.enabled = true
+                commandBinds.binds.value = emptyList()
+                commandBinds.groups.value = emptyList()
+                commandBinds.offGroups.value = emptyList()
+                commandBinds.collapsedGroups.value = emptyList()
                 context.setScreen { null }
             }
         }

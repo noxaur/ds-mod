@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
 import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.core.ui.Theme
@@ -67,7 +68,7 @@ class MenuTabsTest : FabricClientGameTest {
 
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
-            context.runOnClient<Nothing> { DsModClient.settings.betterUi.tabs = TabLayout.DEFAULT }
+            context.runOnClient<Nothing> { DsModClient.feature<MenuTabs>().tabs.value = TabLayout.DEFAULT }
             world.server.runOnServer<Nothing> { server ->
                 server.commands.dispatcher.register(
                     Commands.literal("storage").executes {
@@ -130,13 +131,13 @@ class MenuTabsTest : FabricClientGameTest {
                 check(field(context) == null) { "Escape on an empty bar left it open" }
 
                 // On the bottom, right of the middle, the bar opens left over the command tabs.
-                context.runOnClient<Nothing> { DsModClient.settings.betterUi.tabs = TabLayout.DEFAULT.map { if (it.search) it.copy(edge = TabEdge.BOTTOM, slot = 5) else it } }
+                context.runOnClient<Nothing> { DsModClient.feature<MenuTabs>().tabs.value = TabLayout.DEFAULT.map { if (it.search) it.copy(edge = TabEdge.BOTTOM, slot = 5) else it } }
                 ServerMenus.open(context, world, 4, "Storage Page 3")
                 click(context, "Search")
                 check(tabs(context).none { it.name in listOf("Ender Chest", "Crafting Table", "Forge") }) { "The bar did not cover the tabs beside it" }
                 context.takeScreenshot("menu-tabs-search-bottom")
                 context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
-                context.runOnClient<Nothing> { DsModClient.settings.betterUi.tabs = TabLayout.DEFAULT }
+                context.runOnClient<Nothing> { DsModClient.feature<MenuTabs>().tabs.value = TabLayout.DEFAULT }
 
                 context.runOnClient<Nothing> { it.player!!.closeContainer() }
                 context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }
@@ -164,15 +165,15 @@ class MenuTabsTest : FabricClientGameTest {
                 check(tabs(context).isEmpty()) { "The tabs stayed with Better UI off" }
                 context.runOnClient<Nothing> {
                     DsModClient.settings.betterUi.enabled = true
-                    DsModClient.settings.betterUi.menuTabs = false
+                    DsModClient.feature<MenuTabs>().enabled = false
                 }
                 context.waitTicks(2)
                 check(tabs(context).isEmpty()) { "The tabs stayed with Menu Tabs off" }
             } finally {
                 context.runOnClient<Nothing> {
                     DsModClient.settings.betterUi.enabled = true
-                    DsModClient.settings.betterUi.menuTabs = true
-                    DsModClient.settings.betterUi.tabs = TabLayout.DEFAULT
+                    DsModClient.feature<MenuTabs>().enabled = true
+                    DsModClient.feature<MenuTabs>().tabs.value = TabLayout.DEFAULT
                 }
             }
             context.setScreen { null }

@@ -1,8 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.general
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.feature.features
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Item
@@ -23,8 +22,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class EquipmentDisplayTest {
-    private val config = DsModConfig()
-    private val game = Game(features(config))
+    private val tree = SettingsTree()
+    private val feature = tree.feature<EquipmentDisplay>()
+    private val game = Game(tree.features)
     private var time = 0L
 
     private val helmet = Item("minecraft:player_head", 1)
@@ -86,7 +86,7 @@ class EquipmentDisplayTest {
 
     @Test
     fun `the Name look puts the pet on a line in its rarity's color`() {
-        config.general.petLook = PetLook.NAME
+        feature.petLook.value = PetLook.NAME
         post(*inventory(helmet, null), pet(), near("[Lvl 100] Ender Dragon"))
         assertEquals(listOf(listOf(helmet, null, null, null), "[Lvl 100] Ender Dragon"), rows())
         assertEquals(Role.EPIC.rgb, hud()!!.rows.last().text.spans.last().rgb)
@@ -102,7 +102,7 @@ class EquipmentDisplayTest {
 
     @Test
     fun `the Name look shows the held item the Pets menu named`() {
-        config.general.petLook = PetLook.NAME
+        feature.petLook.value = PetLook.NAME
         post(pet(), *petsMenu("Ender Dragon", "Iron Claws"))
         assertEquals(listOf("[Lvl 100] Ender Dragon · Iron Claws"), rows())
 
@@ -112,24 +112,24 @@ class EquipmentDisplayTest {
 
     @Test
     fun `the pet can sit on a row of its own above or below the armor`() {
-        config.general.petPosition = PetPosition.ABOVE
+        feature.petPosition.value = PetPosition.ABOVE
         post(*inventory(helmet, boots), pet(), near("[Lvl 100] Ender Dragon"))
         assertEquals(listOf(listOf(head), listOf(helmet, null, null, boots)), rows())
 
-        config.general.petPosition = PetPosition.BELOW
+        feature.petPosition.value = PetPosition.BELOW
         post()
         assertEquals(listOf(listOf(helmet, null, null, boots), listOf(head)), rows())
 
-        config.general.petLook = PetLook.NAME
-        config.general.petPosition = PetPosition.ABOVE
+        feature.petLook.value = PetLook.NAME
+        feature.petPosition.value = PetPosition.ABOVE
         post()
         assertEquals(listOf("[Lvl 100] Ender Dragon", listOf(helmet, null, null, boots)), rows(), "The name goes above too")
     }
 
     @Test
     fun `the block carries the look and the place the player picked`() {
-        config.general.equipmentLook = EquipmentLook.HOTBAR
-        config.general.equipmentPlacement = HudDock.RIGHT_OF_HOTBAR
+        feature.look.value = EquipmentLook.HOTBAR
+        feature.placement.value = HudDock.RIGHT_OF_HOTBAR
         post(*inventory(helmet, boots))
         assertEquals(HudLook.HOTBAR, hud()?.look)
         assertEquals(HudDock.RIGHT_OF_HOTBAR, hud()?.dock)
@@ -157,18 +157,18 @@ class EquipmentDisplayTest {
 
     @Test
     fun `only the picked pieces show, in the order picked`() {
-        config.general.equipmentPieces = mutableListOf(EquipmentPiece.PET, EquipmentPiece.BOOTS, EquipmentPiece.HELMET)
+        feature.pieces.value = listOf(EquipmentPiece.PET, EquipmentPiece.BOOTS, EquipmentPiece.HELMET)
         post(*inventory(helmet, boots), pet(), near("[Lvl 100] Ender Dragon"))
         assertEquals(listOf(listOf(head, boots, helmet)), rows())
 
-        config.general.equipmentPieces = mutableListOf(EquipmentPiece.CHESTPLATE)
+        feature.pieces.value = listOf(EquipmentPiece.CHESTPLATE)
         post()
         assertNull(rows(), "A chestplate not worn is all there is to show")
     }
 
     @Test
     fun `the column layout gives each piece its own row`() {
-        config.general.equipmentLayout = EquipmentLayout.COLUMN
+        feature.layout.value = EquipmentLayout.COLUMN
         post(*inventory(helmet, boots))
         assertEquals(listOf(listOf(helmet), listOf(null), listOf(null), listOf(boots)), rows())
     }
@@ -186,9 +186,9 @@ class EquipmentDisplayTest {
     @Test
     fun `armor changed while the feature was off shows when it comes back`() {
         post(*inventory(helmet, null))
-        config.general.equipmentDisplay = false
+        feature.enabled = false
         post(SlotChanged(8, boots))
-        config.general.equipmentDisplay = true
+        feature.enabled = true
         post()
         assertEquals(listOf(listOf(helmet, null, null, boots)), rows())
     }
@@ -211,9 +211,9 @@ class EquipmentDisplayTest {
     @Test
     fun `leaving the server while the feature is off forgets the pet once it is back on`() {
         post(pet())
-        config.general.equipmentDisplay = false
+        feature.enabled = false
         post(LeftServer)
-        config.general.equipmentDisplay = true
+        feature.enabled = true
         post()
         assertNull(rows())
     }

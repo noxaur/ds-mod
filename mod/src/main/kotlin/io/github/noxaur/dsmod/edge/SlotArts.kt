@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import com.mojang.blaze3d.platform.NativeImage
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.text.Role
@@ -42,14 +42,14 @@ object SlotArts {
     var containerDark = false
         private set
 
-    fun style(settings: DsModConfig.Inventory, surface: Surface): SlotStyle =
+    fun style(settings: ItemRarity, surface: Surface): SlotStyle =
         if (surface == Surface.HOTBAR) settings.hotbarLook() else settings.containerStyle()
 
     /**
      * The atlas to draw for [surface], or null when none has been uploaded yet. Records what the next tick should
      * paint. A restyle keeps returning the previous atlas until that paint has been uploaded.
      */
-    fun atlas(settings: DsModConfig.Inventory, surface: Surface): Atlas? {
+    fun atlas(settings: ItemRarity, surface: Surface): Atlas? {
         val style = style(settings, surface)
         val dark = surface == Surface.HOTBAR || containerDark
         wantedStyle[surface.ordinal] = style

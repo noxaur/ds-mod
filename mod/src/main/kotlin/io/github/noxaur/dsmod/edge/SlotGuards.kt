@@ -1,7 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
 import com.google.common.collect.MapMaker
-import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.inventory.ShiftSlot
 import io.github.noxaur.dsmod.core.inventory.SlotLocks
@@ -39,8 +38,9 @@ object SlotGuards {
     /** Ticks to wait for the server to put the next crafting result back, before giving up. */
     private const val RESULT_WAIT = 5
 
-    private val feature get() = DsModClient.feature(SlotLock::class.java)
-    private lateinit var settings: DsModConfig.Inventory
+    private val feature get() = DsModClient.feature<SlotLock>()
+    private val slotKey: Int get() = feature.slotLockKey.value
+    private val itemKey: Int get() = feature.itemLockKey.value
 
     private val on: Boolean get() = DsModClient.runs<SlotLock>()
     private val locks: SlotLocks get() = feature.locks
@@ -78,8 +78,7 @@ object SlotGuards {
     private var pending: Pair<AbstractContainerScreen<*>, Int>? = null
     private var pendingWaits = 0
 
-    fun register(settings: DsModConfig.Inventory) {
-        this.settings = settings
+    fun register() {
         // The server refills a crafting result after the click, so the next craft waits for that packet.
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             val (screen, index) = pending ?: return@register
@@ -105,29 +104,29 @@ object SlotGuards {
                 if (!on || screen.focused is EditBox) return@register true
                 // A held key repeats, and a repeat is not a press.
                 when (event.key()) {
-                    settings.slotLockKey.takeUnless(Keys::isMouse) -> if (!pressing) press(screen)
-                    settings.itemLockKey.takeUnless(Keys::isMouse) -> if (!itemKeyDown) pressItem(screen)
+                    slotKey.takeUnless(Keys::isMouse) -> if (!pressing) press(screen)
+                    itemKey.takeUnless(Keys::isMouse) -> if (!itemKeyDown) pressItem(screen)
                     else -> return@register true
                 }
                 false
             }
             ScreenKeyboardEvents.afterKeyRelease(screen).register { _, event ->
-                if (event.key() == settings.slotLockKey) release(client, screen)
-                if (event.key() == settings.itemLockKey) itemKeyDown = false
+                if (event.key() == slotKey) release(client, screen)
+                if (event.key() == itemKey) itemKeyDown = false
             }
             ScreenMouseEvents.allowMouseClick(screen).register { _, event ->
                 if (!on) return@register true
                 when (event.button()) {
-                    settings.slotLockKey.takeIf(Keys::isMouse) -> press(screen)
-                    settings.itemLockKey.takeIf(Keys::isMouse) -> pressItem(screen)
+                    slotKey.takeIf(Keys::isMouse) -> press(screen)
+                    itemKey.takeIf(Keys::isMouse) -> pressItem(screen)
                     else -> return@register true
                 }
                 false
             }
             ScreenMouseEvents.allowMouseRelease(screen).register { _, event ->
                 when {
-                    pressing && Keys.isMouse(settings.slotLockKey) && event.button() == settings.slotLockKey -> release(client, screen)
-                    itemKeyDown && Keys.isMouse(settings.itemLockKey) && event.button() == settings.itemLockKey -> itemKeyDown = false
+                    pressing && Keys.isMouse(slotKey) && event.button() == slotKey -> release(client, screen)
+                    itemKeyDown && Keys.isMouse(itemKey) && event.button() == itemKey -> itemKeyDown = false
                     else -> return@register true
                 }
                 false

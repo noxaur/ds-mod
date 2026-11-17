@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
+import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -25,17 +27,17 @@ class FixedMenuLayoutTest : FabricClientGameTest {
             check(stable.distinct().size == 1) { "Go Back and the inventory moved between menus: $stable" }
 
             try {
-                context.runOnClient<Nothing> { DsModClient.settings.inventory.menuTheme = false }
+                context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().enabled = false }
                 val vanilla = walk(context, world, "stable-vanilla")
                 check(vanilla.distinct().size == 1) { "Without Menu Theme, Go Back and the inventory moved between menus: $vanilla" }
 
-                context.runOnClient<Nothing> { DsModClient.settings.inventory.fixedMenuLayout = false }
+                context.runOnClient<Nothing> { DsModClient.feature<FixedMenuLayout>().enabled = false }
                 val centered = walk(context, world, "centered")
                 check(centered.distinct().size == 3) { "With Fixed Menu Layout off the menus should move as vanilla's do: $centered" }
             } finally {
                 context.runOnClient<Nothing> {
-                    DsModClient.settings.inventory.fixedMenuLayout = true
-                    DsModClient.settings.inventory.menuTheme = true
+                    DsModClient.feature<FixedMenuLayout>().enabled = true
+                    DsModClient.feature<MenuTheme>().enabled = true
                 }
             }
             context.runOnClient<Nothing> { it.player!!.closeContainer() }

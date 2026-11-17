@@ -58,10 +58,10 @@ class FavoritesTest {
 
     @Test
     fun `Favorites lists each starred row under its group, a heading's switch as a row, and not a row under another`() {
-        val tree = SettingsTree.sections(DsModConfig())
-        val hits = Favorites.hits(tree, listOf("slotLockKey", "etherwarpOutline", "etherwarpWidth", "slotLock", "rareDropAlert", "gone"))
+        val tree = SettingsTree().sections
+        val hits = Favorites.hits(tree, listOf("slotLockKey", "etherwarp-outline", "etherwarpWidth", "slot-lock", "rare-drop-alert", "gone"))
         assertEquals(
-            listOf("Etherwarp" to listOf("etherwarpOutline", "etherwarpWidth"), "Protection" to listOf("slotLock"), "Loot" to listOf("rareDropAlert")),
+            listOf("Etherwarp" to listOf("etherwarp-outline", "etherwarpWidth"), "Protection" to listOf("slot-lock"), "Loot" to listOf("rare-drop-alert")),
             hits.map { it.group.name to it.rows.map(Setting::id) },
         )
         assertEquals(listOf("General", "Inventory", "Combat"), hits.map { tree[it.section].name })
@@ -72,6 +72,14 @@ class FavoritesTest {
         assertEquals(
             listOf("fullbright", "hudScale", "binds", "moveHud", "beamSections", "theme"),
             SettingsTree.favorites(listOf("general.fullbright", "hud.scale", "general.editBinds", "hud.edit", "end.editBeam", "theme", "general.gone", "hud.scale")),
+        )
+    }
+
+    @Test
+    fun `a feature's switch starred under its key, or a former key, becomes the feature's id`() {
+        assertEquals(
+            listOf("rare-drop-alert", "protector-spawn-beam", "hide-cooldown-messages", "fullbright"),
+            SettingsTree.favorites(listOf("rareDropAlert", "bossBeacon", "chat.abilitySpam", "fullbright")),
         )
     }
 

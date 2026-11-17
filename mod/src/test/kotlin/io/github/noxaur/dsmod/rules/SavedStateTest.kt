@@ -1,7 +1,6 @@
 package io.github.noxaur.dsmod.rules
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
-import io.github.noxaur.dsmod.core.feature.features
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.serializer
@@ -63,7 +62,7 @@ internal data class Full(val count: Int) : Kept
 class SavedStateTest {
     @Test
     fun `every saved state is immutable and has a default for every field`() {
-        val problems = features(DsModConfig()).flatMap { feature ->
+        val problems = SettingsTree().features.flatMap { feature ->
             feature.state?.value?.let { savedProblems(it, feature.id) }.orEmpty()
         }
         assertEquals(

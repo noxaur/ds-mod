@@ -12,7 +12,7 @@ import net.minecraft.client.Minecraft
 object InventoryKey {
     private const val ID = "inventory-hud"
 
-    private val settings get() = DsModClient.settings.general
+    private val settings get() = DsModClient.feature<InventoryHud>()
 
     /** A press since the last tick. A tap can start and end inside one tick, so the press comes from the game's key event. */
     private var tapped = false
@@ -24,13 +24,14 @@ object InventoryKey {
 
     /** The game's own key event, which it sends only with no screen open, so a key typed into chat is not a press. */
     fun pressed(key: InputConstants.Key) {
-        if (Keys.matches(key, settings.inventoryKey)) tapped = true
+        if (Keys.matches(key, settings.key.value)) tapped = true
     }
 
     /** Call once a tick. */
     fun tick(client: Minecraft) {
         val on = DsModClient.runs<InventoryHud>()
-        val key = settings.inventoryKey
+        val settings = settings
+        val key = settings.key.value
         val down = Keys.held(client, key)
         val pressed = tapped && !wasDown
         tapped = false
@@ -38,7 +39,7 @@ object InventoryKey {
         // Hold lasts from the press to the release, also when a screen opened between them.
         holding = on && (pressed || holding && down)
         if (!on) toggled = true else if (pressed) toggled = !toggled
-        val shown = key < 0 || client.gui.screen() is HudEditorScreen || if (settings.inventoryKeyMode == KeyMode.HOLD) holding else toggled
+        val shown = key < 0 || client.gui.screen() is HudEditorScreen || if (settings.keyMode.value == KeyMode.HOLD) holding else toggled
         Hud.conceal(ID, !shown)
     }
 }

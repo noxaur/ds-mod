@@ -1,14 +1,16 @@
 package io.github.noxaur.dsmod.core.feature.general
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState.Companion.INVENTORY
 import io.github.noxaur.dsmod.core.game.WorldChanged
-import kotlin.reflect.KMutableProperty0
 
 /** A HUD feature that reads the player's own inventory, and sets [stale] when it may have changed since it was last read. */
-abstract class InventoryReader(id: String, toggle: KMutableProperty0<Boolean>) : Feature(id, toggle, Area.ANYWHERE) {
+abstract class InventoryReader(config: DsModConfig, id: String, description: String, default: Boolean = true, formerly: String? = null) :
+    Feature(config, id, Area.ANYWHERE, Store.GENERAL, description, default, formerly) {
     /** A refresh with nothing new then costs a few compares. */
     protected var stale = true
 

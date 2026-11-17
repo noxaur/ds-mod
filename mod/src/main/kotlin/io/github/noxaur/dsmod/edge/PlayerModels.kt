@@ -2,7 +2,6 @@ package io.github.noxaur.dsmod.edge
 
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
-import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.general.PlayerModel
 import io.github.noxaur.dsmod.core.player.ModelShape
 import io.github.noxaur.dsmod.core.player.ModelTarget
@@ -20,34 +19,34 @@ private const val RADIANS = (Math.PI / 180).toFloat()
  * model, and its hand is drawn apart from it, so nothing here reaches first person.
  */
 object PlayerModels {
-    private val settings: DsModConfig.General get() = DsModClient.settings.general
+    private val settings: PlayerModel get() = DsModClient.feature(PlayerModel::class.java)
 
     /**
      * Whether the feature changes [state]'s model: the player's own, or every player's in the world. A model a screen
      * draws for itself, such as the profile viewer's, has an id below 1, which the world never gives, and is left alone.
      */
     private fun applies(state: AvatarRenderState): Boolean = DsModClient.runs<PlayerModel>() &&
-        (state.id == Minecraft.getInstance().player?.id || settings.modelTarget == ModelTarget.EVERYONE && state.id > 0)
+        (state.id == Minecraft.getInstance().player?.id || settings.target.value == ModelTarget.EVERYONE && state.id > 0)
 
     /**
      * The way the model faces: while it spins, where the spin has got to and nowhere else, so walking, looking around
      * and the inventory's following of the mouse neither speed it up nor hold it back. Otherwise the game's [bodyRot].
      */
     fun facing(state: AvatarRenderState, bodyRot: Float): Float =
-        if (spinning && applies(state)) ModelShape.spin(System.nanoTime(), settings.modelSpin) else bodyRot
+        if (spinning && applies(state)) ModelShape.spin(System.nanoTime(), settings.spin.value) else bodyRot
 
     /** Whether the player's own model spins, so its facing is the spin's. */
-    val spinning: Boolean get() = settings.modelSpin != 0f && DsModClient.runs<PlayerModel>()
+    val spinning: Boolean get() = DsModClient.runs<PlayerModel>() && settings.spin.value != 0f
 
     /** How many times its own height the player's own model is drawn across its longest side, or 1 while the feature is off. */
     val reach: Float get() {
         if (!DsModClient.runs<PlayerModel>()) return 1f
         val s = settings
-        return s.modelSize * maxOf(s.modelWidth, s.modelHeight, s.modelDepth)
+        return s.size.value * maxOf(s.width.value, s.height.value, s.depth.value)
     }
 
     /** How many times its own height the player's own model is drawn tall, or 1 while the feature is off. */
-    val tall: Float get() = if (DsModClient.runs<PlayerModel>()) settings.modelSize * settings.modelHeight else 1f
+    val tall: Float get() = if (DsModClient.runs<PlayerModel>()) settings.let { it.size.value * it.height.value } else 1f
 
     /**
      * Runs after the game has turned the model to face where the player faces, with the feet at the origin and the
@@ -58,16 +57,19 @@ object PlayerModels {
     fun shape(state: AvatarRenderState, pose: PoseStack) {
         if (!applies(state)) return
         val s = settings
-        if (s.modelTiltForward != 0f) pose.mulPose(Axis.XP.rotationDegrees(-s.modelTiltForward))
-        if (s.modelTiltSideways != 0f) pose.mulPose(Axis.ZP.rotationDegrees(-s.modelTiltSideways))
-        val height = s.modelSize * s.modelHeight
-        if (s.modelUpsideDown) {
+        val forward = s.tiltForward.value
+        val sideways = s.tiltSideways.value
+        if (forward != 0f) pose.mulPose(Axis.XP.rotationDegrees(-forward))
+        if (sideways != 0f) pose.mulPose(Axis.ZP.rotationDegrees(-sideways))
+        val size = s.size.value
+        val height = size * s.height.value
+        if (s.upsideDown.value) {
             // The pose is already scaled by the entity's own scale, which the bounding box includes.
             pose.translate(0f, state.boundingBoxHeight / state.scale * height, 0f)
             pose.mulPose(Axis.ZP.rotationDegrees(180f))
         }
-        val width = s.modelSize * s.modelWidth
-        val depth = s.modelSize * s.modelDepth
+        val width = size * s.width.value
+        val depth = size * s.depth.value
         if (width != 1f || height != 1f || depth != 1f) pose.scale(width, height, depth)
     }
 
@@ -77,7 +79,7 @@ object PlayerModels {
      * armor and the held items follow.
      */
     fun pose(model: HumanoidModel<*>, state: AvatarRenderState) {
-        val limbs = settings.modelPose.limbs
+        val limbs = settings.pose.value.limbs
         if (limbs == null && !spinning || !applies(state)) return
         if (spinning) model.head.yRot = 0f
         if (limbs == null) return

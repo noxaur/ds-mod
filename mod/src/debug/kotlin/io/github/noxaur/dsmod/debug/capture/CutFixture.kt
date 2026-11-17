@@ -5,8 +5,7 @@ import io.github.noxaur.dsmod.core.capture.PlayerNames
 import io.github.noxaur.dsmod.core.capture.Redactor
 import io.github.noxaur.dsmod.core.capture.captureLine
 import io.github.noxaur.dsmod.core.capture.readCaptureLine
-import io.github.noxaur.dsmod.core.config.DsModConfig
-import io.github.noxaur.dsmod.core.feature.features
+import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState.Companion.INVENTORY
@@ -168,7 +167,7 @@ fun main(args: Array<String>) {
         Path.of("src/test/resources/features/$feature/$name.jsonl"),
         from..to,
         (options["--types"] ?: "system,tablist").split(',').toSet(),
-        features(DsModConfig()).singleOrNull { it.id == feature }?.area ?: error("No feature has the id $feature."),
+        SettingsTree().features.singleOrNull { it.id == feature }?.area ?: error("No feature has the id $feature."),
         options["--info"]?.split(',').orEmpty(),
         options["--system"]?.let(::Regex),
     )

@@ -82,7 +82,7 @@ object TabBar {
             fun edgeY(edge: TabEdge) = if (edge == TabEdge.TOP) screen.topPos else screen.topPos + screen.imageHeight
 
             val widgets = Screens.getWidgets(screen)
-            val tabs = settings.tabs.filter { it.slot in 0 until TabLayout.PER_EDGE }
+            val tabs = DsModClient.feature<MenuTabs>().tabs.value.filter { it.slot in 0 until TabLayout.PER_EDGE }
             val selected = TabLayout.selected(tabs, MenuBack.opener(screen))
             val made = ArrayList<Pair<MenuTab, KitTab>>()
             val glass = { MenuSkin.glass(screen) }

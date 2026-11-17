@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.container.SlotStyle
+import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
@@ -12,8 +13,6 @@ import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.Minecraft
@@ -30,6 +29,8 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.CustomData
 import org.lwjgl.glfw.GLFW
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 /**
  * Gives the player items the way dragsim.co builds them, checks the `Item` the edge reads from them, then opens
@@ -67,7 +68,7 @@ class ItemRarityTest : FabricClientGameTest {
      * rows in each theme, and the hotbar with a floor the inventory lacks.
      */
     private fun hotbarLook(context: ClientGameTestContext) {
-        val settings = DsModClient.settings.inventory
+        val itemRarity = DsModClient.feature<ItemRarity>()
         val window = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.screenWidth to it.window.screenHeight }
         val scale = context.computeOnClient<Int, Nothing> { it.options.guiScale().get() }
         context.input.resizeWindow(1280, 720)
@@ -78,14 +79,14 @@ class ItemRarityTest : FabricClientGameTest {
         val match = driver.spot("hotbarMatches")
         context.takeScreenshot("rarity-hotbar-look")
         driver.click(match.x + 20, match.y + match.height / 2)
-        check(!settings.hotbarMatches && settings.hotbarStyle == settings.containerStyle()) { "Match Inventory off left the hotbar ${settings.hotbarStyle}" }
+        check(!itemRarity.hotbarMatches.value && itemRarity.hotbarStyle.value == itemRarity.containerStyle()) { "Match Inventory off left the hotbar ${itemRarity.hotbarStyle.value}" }
         // The wheel over a pick steps it, here to the floor after None.
         val floor = driver.spot("hotbarFloor")
         driver.move(floor.controlX + 8, floor.controlY + 8)
         context.input.scroll(-1.0)
         context.waitTicks(2)
-        check(settings.hotbarStyle.floor != settings.containerStyle().floor) {
-            "The hotbar's Floor set ${settings.hotbarStyle.floor}, and the inventory's is ${settings.containerStyle().floor}"
+        check(itemRarity.hotbarStyle.value.floor != itemRarity.containerStyle().floor) {
+            "The hotbar's Floor set ${itemRarity.hotbarStyle.value.floor}, and the inventory's is ${itemRarity.containerStyle().floor}"
         }
         context.takeScreenshot("rarity-hotbar-own")
         SettingsSteps.theme(context, Theme.VANILLA)
@@ -95,14 +96,14 @@ class ItemRarityTest : FabricClientGameTest {
         context.waitTicks(5)
         context.takeScreenshot("rarity-hotbar-in-game")
         // Match Inventory on again draws the hotbar in the inventory's look, and keeps the hotbar's own for later.
-        context.runOnClient<Nothing> { settings.hotbarMatches = true }
-        check(settings.hotbarLook() == settings.containerStyle()) { "Matching left the hotbar in ${settings.hotbarLook()}" }
+        context.runOnClient<Nothing> { itemRarity.hotbarMatches.value = true }
+        check(itemRarity.hotbarLook() == itemRarity.containerStyle()) { "Matching left the hotbar in ${itemRarity.hotbarLook()}" }
         context.runOnClient<Nothing> {
-            settings.rarityPreset = RarityPreset.GILDED
-            settings.inventoryStyle = SlotStyle()
-            settings.hotbarStyle = SlotStyle()
-            settings.hotbarMatches = true
-            settings.markCommon = false
+            itemRarity.preset.value = RarityPreset.GILDED
+            itemRarity.inventoryStyle.value = SlotStyle()
+            itemRarity.hotbarStyle.value = SlotStyle()
+            itemRarity.hotbarMatches.value = true
+            itemRarity.markCommon.value = false
         }
         context.input.resizeWindow(window.first, window.second)
         SettingsSteps.guiScale(context, scale)
@@ -178,13 +179,13 @@ class ItemRarityTest : FabricClientGameTest {
 
             // The feature guide's picture: the Minimal preset in a chest, with no tooltip or toast over it.
             context.runOnClient<Nothing> {
-                DsModClient.settings.inventory.rarityPreset = RarityPreset.MINIMAL
+                DsModClient.feature<ItemRarity>().preset.value = RarityPreset.MINIMAL
                 it.gui.toastManager().clear()
             }
             context.input.setCursorPos(0.0, 0.0)
             context.waitTicks(5)
             context.takeScreenshot("rarity-chest-minimal")
-            context.runOnClient<Nothing> { DsModClient.settings.inventory.rarityPreset = RarityPreset.GILDED }
+            context.runOnClient<Nothing> { DsModClient.feature<ItemRarity>().preset.value = RarityPreset.GILDED }
 
             context.runOnClient<Nothing> { it.player!!.closeContainer() }
             context.waitTicks(5)
@@ -192,7 +193,7 @@ class ItemRarityTest : FabricClientGameTest {
             check(back == 0 && marks(context) == expected) { "Back in the inventory, container $back is marked ${marks(context)}" }
 
             // With no menu open the hotbar carries the marks. Read the screenshot: white, blue and gold behind the first three items.
-            context.runOnClient<Nothing> { DsModClient.settings.inventory.markCommon = true }
+            context.runOnClient<Nothing> { DsModClient.feature<ItemRarity>().markCommon.value = true }
             world.server.runCommand("""item replace entity @a container.1 with bow[custom_data={item_data:{rarity:"RARE"}}]""")
             world.server.runCommand("""item replace entity @a container.2 with diamond_sword[custom_data={item_data:{rarity:"LEGENDARY"}}]""")
             context.waitTicks(10)

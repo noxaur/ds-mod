@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
 import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.Theme
@@ -27,7 +28,7 @@ class SettingOrderTest : FabricClientGameTest {
         val window = setUp(context)
         SettingsDriver(context).order()
         context.runOnClient<Nothing> {
-            DsModClient.settings.general.equipmentPieces = EquipmentPiece.entries.toMutableList()
+            DsModClient.feature<EquipmentDisplay>().pieces.value = EquipmentPiece.entries
             DsModClient.saveSettings()
         }
         context.setScreen { TitleScreen() }
@@ -36,7 +37,7 @@ class SettingOrderTest : FabricClientGameTest {
 
     private fun SettingsDriver.order() {
         open(context, SettingsTabs(at("Interface")))
-        val pieces = { context.computeOnClient<List<EquipmentPiece>, Nothing> { DsModClient.settings.general.equipmentPieces.toList() } }
+        val pieces = { context.computeOnClient<List<EquipmentPiece>, Nothing> { DsModClient.feature<EquipmentDisplay>().pieces.value.toList() } }
         fun entry(i: Int) = spot("equipmentPieces", i)
         val list = spot("equipmentPieces")
         context.takeScreenshot("own-settings-order-closed")

@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.Fullbright
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -25,12 +26,12 @@ class FullbrightTest : FabricClientGameTest {
             context.waitTicks(40)
             val dark = ground(context.takeScreenshot("fullbright-off"))
             try {
-                DsModClient.settings.general.fullbright = true
+                DsModClient.feature<Fullbright>().enabled = true
                 context.waitTicks(10)
                 val lit = ground(context.takeScreenshot("fullbright-on"))
                 check(lit > dark * 2) { "The ground went from $dark to $lit, which is not fully lit" }
             } finally {
-                DsModClient.settings.general.fullbright = false
+                DsModClient.feature<Fullbright>().enabled = false
             }
         }
     }

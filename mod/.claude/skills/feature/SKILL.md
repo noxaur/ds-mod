@@ -7,6 +7,12 @@ A feature is one class in `core/feature/<area>/`. `Feature`'s KDoc names the fea
 
 Load the `ui` skill too when the feature shows the player anything.
 
+## Settings
+
+- The switch's description and default go in the `Feature(..)` super call, with the key an older version saved it under as `formerly`. Every other setting is one line in the class, as `val inFight = switch("beamInFight", "During the Fight", "Keep the beam while the Protector is up.", default = false)`, read as `inFight.value`. The first argument is the key in the config file, under the feature's `Store`. The kinds are in [`settings.md`](../ui/settings.md) beside the `ui` skill.
+- Place the feature once in `SettingsTree`: `group(Feature(c))` for a group of its own, or `feature(Feature(c))` among others. That is also what lists it.
+- The edge reads a setting as `DsModClient.feature<F>().row.value`, and asks `DsModClient.runs<F>()` for the switch, never `enabled` or `switch`. `SwitchesTest` fails on a read.
+
 ## Server lines
 
 - Text other than a chat line, such as a tab row or lore, that reaches the feature's branch and then fails to parse goes to `unparsed(text)` as the server sent it. That is how a format change on the server shows up. A chat line's handler, `line`, counts its own.

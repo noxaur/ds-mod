@@ -60,7 +60,7 @@ object Profiles {
 
     fun registerNames() {
         ClientReceiveMessageEvents.MODIFY_GAME.register { message, overlay ->
-            if (overlay || !on || !DsModClient.settings.general.profileNames) message else names(message)
+            if (overlay || !on || !DsModClient.feature(ProfileViewer::class.java).clickNames.value) message else names(message)
         }
     }
 

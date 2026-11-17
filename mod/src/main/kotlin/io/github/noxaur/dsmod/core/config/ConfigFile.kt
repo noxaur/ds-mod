@@ -1,6 +1,9 @@
 package io.github.noxaur.dsmod.core.config
 
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption.ATOMIC_MOVE
@@ -11,9 +14,11 @@ import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 /**
- * The settings on disk, as JSON keyed by the fields of [DsModConfig]. Versions up to 0.1.0 wrote the same file with
- * MoulConfig's Gson, and this reads it as it is: a key the file lacks keeps its default, a key no field has any
- * longer is passed over, and a value that is not one of its enum's any longer takes its default.
+ * The settings on disk, as JSON keyed by the fields of [DsModConfig] and, in the same sections, by the keys of the
+ * features' [Slot]s. Versions up to 0.1.0 wrote the same file with MoulConfig's Gson, and this reads it as it is: a
+ * key the file lacks keeps its default, a key no field or slot has any longer is passed over, and a value that is not
+ * one of its enum's any longer takes its default. A slot is read when its feature is built, so a config that is
+ * loaded and then given to `SettingsTree` holds what the file said.
  */
 class ConfigFile(private val file: Path) {
     /**
@@ -50,8 +55,41 @@ class ConfigFile(private val file: Path) {
             coerceInputValues = true
         }
 
-        fun encode(config: DsModConfig): String = json.encodeToString(DsModConfig.serializer(), config)
+        /** The fields, then each store's slots in their section, a section the fields lack included. */
+        fun encode(config: DsModConfig): String {
+            val fields = json.encodeToJsonElement(DsModConfig.serializer(), config).jsonObject
+            val sections = LinkedHashMap<String, JsonElement>(fields)
+            for (store in Store.entries) {
+                val slots = config.stored(store).all
+                if (slots.isEmpty()) continue
+                val section = LinkedHashMap<String, JsonElement>((fields[store.key] as? JsonObject).orEmpty())
+                for (slot in slots) section[slot.key] = write(slot)
+                sections[store.key] = JsonObject(section)
+            }
+            return json.encodeToString(JsonObject.serializer(), JsonObject(sections))
+        }
 
-        fun decode(text: String): DsModConfig = json.decodeFromString(DsModConfig.serializer(), text)
+        /** The fields now, and each slot as its feature is built. */
+        fun decode(text: String): DsModConfig {
+            val tree = json.parseToJsonElement(text).jsonObject
+            val config = json.decodeFromJsonElement(DsModConfig.serializer(), tree)
+            for (store in Store.entries) {
+                val section = tree[store.key] as? JsonObject ?: continue
+                config.stored(store).pending = { slot -> read(slot, section) }
+            }
+            return config
+        }
+
+        private fun <T> write(slot: Slot<T>) = json.encodeToJsonElement(slot.serializer, slot.value)
+
+        /** Sets [slot] from [section] under its key, or a key it was formerly saved under. A value its type no longer has keeps the default. */
+        private fun <T> read(slot: Slot<T>, section: JsonObject) {
+            val element = (listOf(slot.key) + slot.formerly).firstNotNullOfOrNull(section::get) ?: return
+            slot.value = try {
+                json.decodeFromJsonElement(slot.serializer, element)
+            } catch (e: IllegalArgumentException) {
+                slot.default
+            }
+        }
     }
 }

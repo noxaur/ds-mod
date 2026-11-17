@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.end
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ProtectorRow
@@ -7,14 +9,14 @@ import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.clock
-import kotlin.reflect.KMutableProperty0
 
 /**
  * Follows the Endstone Protector. The tab list's `Protector` row has its stage and the zealot kills the
  * lobby still needs before it emerges. The tab list never says the golem was defeated, and lags the chat by a
  * second or two, so the messages add when it emerged and when it fell.
  */
-class ProtectorStatus(toggle: KMutableProperty0<Boolean>) : Feature("protector-status", toggle, Area.END) {
+class ProtectorStatus(config: DsModConfig) :
+    Feature(config, "protector-status", Area.END, Store.END, "Show the Protector's stage and the kills left until it emerges.", formerly = "golemStatus") {
     private var row: String? = null
     private var stage: String? = null
     private var tier = ""

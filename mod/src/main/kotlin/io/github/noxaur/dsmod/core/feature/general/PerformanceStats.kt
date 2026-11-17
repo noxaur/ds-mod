@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.general
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.FrameRate
@@ -11,7 +13,6 @@ import io.github.noxaur.dsmod.core.hud.HudLook
 import io.github.noxaur.dsmod.core.text.TextBuilder
 import io.github.noxaur.dsmod.core.text.grouped
 import java.util.Locale
-import kotlin.reflect.KMutableProperty0
 
 /** A value Performance Stats can show. */
 enum class Stat(private val label: String) {
@@ -53,12 +54,12 @@ enum class StatsLook(private val label: String, val hud: HudLook) {
  * as time with no ticks, and the rate falls for as long as the server stands still. Each world has its own clock, so a
  * change of world starts the window again.
  */
-class PerformanceStats(
-    toggle: KMutableProperty0<Boolean>,
-    private val values: KMutableProperty0<MutableList<Stat>>,
-    private val layout: KMutableProperty0<StatsLayout>,
-    private val look: KMutableProperty0<StatsLook>,
-) : Feature("performance-stats", toggle, Area.ANYWHERE) {
+class PerformanceStats(config: DsModConfig) :
+    Feature(config, "performance-stats", Area.ANYWHERE, Store.GENERAL, "Show your FPS, your ping and the server's TPS on the HUD.", default = false) {
+    val values = order("performanceValues", "Values", "Pick the values to show, and drag them into order.", Stat.entries)
+    val layout = choice("performanceLayout", "Layout", "Line the values up in a row or a column.", StatsLayout.ROW)
+    val look = choice("performanceLook", "Look", "Show the values on the plate, or on nothing.", StatsLook.PLATE)
+
     private var fps = -1
     private val pings = LongArray(PINGS)
     private var pingCount = 0
@@ -92,7 +93,7 @@ class PerformanceStats(
     }
 
     override fun hud(now: Long): HudBlock? {
-        val shown = values.get()
+        val shown = values.value
         if (shown.isEmpty()) return null
         val ping = if (pingCount == 0) null else (0 until minOf(pingCount, PINGS)).sumOf { pings[it] } / minOf(pingCount, PINGS)
         val tps = tps(now)
@@ -116,8 +117,8 @@ class PerformanceStats(
                 }
             }
         }
-        return block(headed = false, look = look.get().hud) {
-            if (layout.get() == StatsLayout.COLUMN) {
+        return block(headed = false, look = look.value.hud) {
+            if (layout.value == StatsLayout.COLUMN) {
                 for (stat in shown) row(stat.toString()) { show(stat) }
             } else {
                 line {

@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.config
 
+import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.ui.Look
 import io.github.noxaur.dsmod.core.ui.Narration
 import io.github.noxaur.dsmod.core.ui.Section
@@ -26,8 +27,15 @@ class Bind<T>(val field: String, val get: () -> T, val set: (T) -> Unit) {
     var follows: (() -> T?)? = null
         private set
 
+    /** The keys older versions saved [field] under, which a favorite saved by one of them still finds. */
+    var formerly: List<String> = emptyList()
+        private set
+
     /** Names the other saved [fields] this one value spans. */
     fun spanning(vararg fields: String) = apply { also = fields.toList() }
+
+    /** Names the [keys] older versions saved this field under. */
+    fun formerly(vararg keys: String) = apply { formerly = keys.toList() }
 
     /** The changed marker and a reset use [read] while it has a value, and the fresh config's otherwise. */
     fun follows(read: () -> T?) = apply { follows = read }
@@ -131,6 +139,9 @@ sealed class Setting(val id: String, val name: String, val description: String, 
 sealed class Valued<T>(id: String, name: String, description: String, kind: Kind, private val bind: Bind<T>) : Setting(id, name, description, kind) {
     val field get() = bind.field
 
+    /** The keys older versions saved the field under. */
+    val formerly get() = bind.formerly
+
     /** Every field the row reaches: its own, and the others its value spans. */
     val fields get() = listOf(bind.field) + bind.also
 
@@ -168,9 +179,19 @@ sealed class Valued<T>(id: String, name: String, description: String, kind: Kind
     }
 }
 
-/** On or off. Its [children] are its own settings, which open under it and dim while it is off. */
-class Switch(id: String, name: String, description: String, bind: Bind<Boolean>, override val children: List<Setting> = emptyList()) :
+/**
+ * On or off. Its [children] are its own settings, which open under it and dim while it is off. A feature's switch
+ * takes the feature's rows as its children where the tree lists it among other features, see `Rows.feature`.
+ */
+class Switch(id: String, name: String, description: String, bind: Bind<Boolean>, children: List<Setting> = emptyList()) :
     Valued<Boolean>(id, name, description, Kind.SWITCH, bind) {
+    override var children: List<Setting> = children
+        internal set
+
+    /** The feature this is the switch of, or null for a switch that is a setting of its own. */
+    var feature: Feature? = null
+        internal set
+
     fun toggle() {
         value = !value
     }
@@ -411,6 +432,17 @@ class Rows {
 
     private fun nested(block: (Rows.() -> Unit)?) = if (block == null) emptyList() else Rows().apply(block).rows
 
+    /** Adds [setting], declared elsewhere, as the next row. */
+    fun row(setting: Setting) = add(setting, null)
+
+    /** Takes [rows] declared here out of this list, for a fold that gathers rows declared before it. */
+    internal fun take(rows: List<Setting>) {
+        for (row in rows) check(added.remove(row)) { "${row.id} is not a row here" }
+    }
+
+    /** [feature]'s switch, with the feature's own rows under it, among other rows. A feature with a group of its own is `group(feature)`. */
+    fun feature(feature: Feature): Switch = add(feature.switch.also { it.children = feature.rows }, null)
+
     fun switch(
         property: KMutableProperty0<Boolean>, name: String, description: String, id: String = property.name, dependsOn: Switch? = null,
         settings: (Rows.() -> Unit)? = null,
@@ -424,7 +456,12 @@ class Rows {
     fun number(
         property: KMutableProperty0<Float>, name: String, description: String, range: ClosedFloatingPointRange<Float>, step: Float,
         unit: String = "", id: String = property.name, dependsOn: Switch? = null,
-    ) = add(Number(id, name, description, Bind.of(property), range.start, range.endInclusive, step, unit), dependsOn)
+    ) = number(Bind.of(property), name, description, range, step, unit, id, dependsOn)
+
+    fun number(
+        bind: Bind<Float>, name: String, description: String, range: ClosedFloatingPointRange<Float>, step: Float,
+        unit: String = "", id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null,
+    ) = add(Number(id, name, description, bind, range.start, range.endInclusive, step, unit), dependsOn)
 
     inline fun <reified E : Enum<E>> choice(
         property: KMutableProperty0<E>, name: String, description: String, id: String = property.name, dependsOn: Switch? = null,
@@ -443,12 +480,15 @@ class Rows {
     ) = add(Pick(id, name, description, bind, values, look, label), dependsOn)
 
     fun keys(property: KMutableProperty0<Int>, name: String, description: String, id: String = property.name, dependsOn: Switch? = null) =
-        add(KeyBind(id, name, description, Bind.of(property)), dependsOn)
+        keys(Bind.of(property), name, description, id, dependsOn)
+
+    fun keys(bind: Bind<Int>, name: String, description: String, id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null) =
+        add(KeyBind(id, name, description, bind), dependsOn)
 
     fun span(
-        property: KMutableProperty0<List<Section>>, name: String, description: String, max: Int, ticks: List<Int> = emptyList(),
-        id: String = property.name, dependsOn: Switch? = null,
-    ) = add(Span(id, name, description, Bind.of(property), max, ticks), dependsOn)
+        bind: Bind<List<Section>>, name: String, description: String, max: Int, ticks: List<Int> = emptyList(),
+        id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null,
+    ) = add(Span(id, name, description, bind, max, ticks), dependsOn)
 
     /** An ordered list of [E]'s values that the player shows, hides and drags into order. */
     inline fun <reified E : Enum<E>> order(
