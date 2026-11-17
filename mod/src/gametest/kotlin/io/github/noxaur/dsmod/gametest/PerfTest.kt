@@ -190,6 +190,7 @@ class PerfTest : FabricClientGameTest {
                 }
                 val timer = context.computeOnClient<Metrics.Timer?, Nothing> { DsModClient.game.metrics.snapshot().timers["etherwarp.frame"] }
                 checkNotNull(timer) { "Etherwarp Outline drew no frame" }
+                println("DIAG etherwarp.frame window=$window count=${timer.count} mean=${"%.2f".format(timer.totalNanos / 1000.0 / timer.count)}")
                 samples.getOrPut("etherwarp.frame", ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
             }
         } finally {
@@ -253,6 +254,9 @@ class PerfTest : FabricClientGameTest {
             val timers = context.computeOnClient<Map<String, Metrics.Timer>, Nothing> { DsModClient.game.metrics.snapshot().timers }
             for (name in listOf("boss-poll", "world.follow")) {
                 val timer = checkNotNull(timers[name]) { "No $name timer ran" }
+                if (name == "world.follow") for ((diag, t) in timers) if (diag.startsWith("diag.") || diag == name) {
+                    println("DIAG $diag window=$window count=${t.count} mean=${"%.2f".format(t.totalNanos / 1000.0 / t.count)} max=${t.maxNanos / 1000}")
+                }
                 samples.getOrPut(name, ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
             }
         }
