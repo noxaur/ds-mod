@@ -61,17 +61,11 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - **Slayer Boss Alert** – A title and a sound when your slayer boss spawns.
 - **Rare Drop Alert** – A title and a sound for drops at or above the rarity you set.
 
-Toggle any feature in `/dsmod`. The [feature guide](docs/user/features.md) has screenshots and every setting.
+Type `/dsmod` to access the settings menu. [feature guide](docs/user/features.md).
 
 ## Install
 
 Download the jar from [Releases](https://github.com/noxaur/ds-mod/releases) and put it in your `mods` folder with [Fabric API](https://modrinth.com/mod/fabric-api) and [Fabric Language Kotlin](https://modrinth.com/mod/fabric-language-kotlin). The [install guide](docs/user/install.md) lists the versions.
-
-## Goals
-
-- A beta goes out every second day when there is something new, so a server update or a suggestion from the Discord doesn't wait months.
-- The mod draws its own settings screen and HUD. You can pick a dark theme or one that matches vanilla menus.
-- It has no macros and nothing that plays for you, because the server bans them. Besides showing information, it only sends a command when you press that command's keys.
 
 ## Contributing
 
