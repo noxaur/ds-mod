@@ -1,7 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
 import com.google.gson.JsonArray
-import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.serialization.JsonOps
 import io.github.noxaur.dsmod.core.feature.chat.CopyChat
 import io.github.noxaur.dsmod.core.text.FormatCodes
@@ -24,7 +23,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.TextAlignment
 import net.minecraft.client.gui.components.ChatComponent
 import net.minecraft.client.gui.screens.ChatScreen
-import net.minecraft.client.input.InputQuirks
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.multiplayer.chat.GuiMessage
@@ -172,9 +170,9 @@ object CopyChats {
                 return true
             }
         }
-        // Asked of the keyboard, as the chat screen asks for Shift on a link.
+        // Asked of the keyboard, as the chat screen asks for Shift on a link. Ctrl adds on macOS too, as `Keys.control` does.
         val extend = client.hasShiftDown()
-        val toggle = command(client)
+        val toggle = Keys.command(client) || client.hasControlDown()
         val hit = if (event.button() == 1) under(client, rows(client), event.x(), event.y()) else null
         // An empty line is nothing to copy, so a plain press on it selects nothing. A range may still end on it.
         if (hit == null || (hit.blank && !extend && !toggle)) {
@@ -188,22 +186,16 @@ object CopyChats {
         return true
     }
 
-    /** Whether the key for shortcuts is held: Ctrl, or Cmd on macOS. */
-    private fun command(client: Minecraft): Boolean {
-        val keys = if (InputQuirks.REPLACE_CTRL_KEY_WITH_CMD_KEY) listOf(GLFW.GLFW_KEY_LEFT_SUPER, GLFW.GLFW_KEY_RIGHT_SUPER) else listOf(GLFW.GLFW_KEY_LEFT_CONTROL, GLFW.GLFW_KEY_RIGHT_CONTROL)
-        return keys.any { InputConstants.isKeyDown(client.window, it) }
-    }
-
     /** A key went down. True when it was Copy Chat's. Only an open menu takes keys, so typing is never in the way. */
     private fun key(client: Minecraft, event: KeyEvent): Boolean {
         if (menu == null) return false
         when {
             event.isEscape -> dismiss()
-            command(client) && event.key() == GLFW.GLFW_KEY_C -> copy(client, Format.TEXT)
+            Keys.command(client) && event.key() == GLFW.GLFW_KEY_C -> copy(client, Format.TEXT)
             event.isConfirmation -> copy(client, chosen)
             event.isLeft -> chosen = Format.entries[maxOf(chosen.ordinal - 1, 0)]
             event.isRight -> chosen = Format.entries[minOf(chosen.ordinal + 1, Format.entries.lastIndex)]
-            command(client) && event.key() == GLFW.GLFW_KEY_A -> {
+            Keys.command(client) && event.key() == GLFW.GLFW_KEY_A -> {
                 selection = selection.all(all(client))
                 open(client, menuX, menuY)
             }

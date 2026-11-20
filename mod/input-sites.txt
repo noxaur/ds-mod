@@ -45,7 +45,7 @@ gate edge.ChatDrags ff0895d0a3c1  ChatHudEditor
 gate edge.CommandKeys 13a47d79ec69  CommandBinds
     sends through ClientPacketListener.sendChat
     sends through ClientPacketListener.sendCommand
-gate edge.CopyChats dd5ac57aa914  CopyChat
+gate edge.CopyChats 60e707afcd60  CopyChat
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
@@ -95,6 +95,9 @@ gate edge.mixin.ContainerScreenMixin 5147eddf96ea
     hooks AbstractContainerScreen.extractTooltip
     hooks AbstractContainerScreen.init
     approved by github.com/noxaur 2026-11-16T01:17:00Z
+gate edge.mixin.CtrlClickMixin 0e450adf84b0
+    hooks MouseHandler.simulateRightClick
+    approved by github.com/noxaur 2026-11-20T12:01:00Z
 gate edge.mixin.CursorMixin ec46fb6ba006
     hooks MouseHandler.grabMouse
     hooks MouseHandler.releaseMouse

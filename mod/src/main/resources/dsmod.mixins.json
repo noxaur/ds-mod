@@ -12,6 +12,7 @@
     "ChestScreenMixin",
     "ContainerScreenAccessor",
     "ContainerScreenMixin",
+    "CtrlClickMixin",
     "CursorMixin",
     "DropKeyMixin",
     "ExplosionParticleMixin",
