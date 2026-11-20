@@ -166,6 +166,18 @@ class GameTest {
     }
 
     @Test
+    fun `a slayer boss already in view when Boss Tracer comes on is not taken for the player's`() {
+        tree.feature<BossBeacon>().feature.enabled = true
+        game.post(0, EntitySeen(9, "minecraft:zombie", ServerText(ServerSpan("☠ Atoned Horror V 50M/50M❤"))))
+        say(1_000, "☠ SLAYER BOSS SPAWNING!")
+        tree.feature<BossTracer>().feature.enabled = true
+        game.tick(2_000)
+        game.post(2_500, revenant)
+        game.tick(2_500)
+        assertEquals(listOf(7) to listOf(7), ownMarks())
+    }
+
+    @Test
     fun `a dragon that leaves leaves no egg timer behind`() {
         game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
         say(0, "The Dragon Egg is respawning in 30 seconds.")

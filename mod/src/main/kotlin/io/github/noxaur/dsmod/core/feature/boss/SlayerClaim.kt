@@ -19,6 +19,12 @@ class SlayerClaim {
     private var spawnedAt: Long? = null
     private var own: Int? = null
 
+    /**
+     * The slayer bosses already looked at in this world. A feature that comes on hears the bosses the client already
+     * holds as if they came then, and one that was in view before the spawn line is not the player's.
+     */
+    private val considered = HashSet<Int>()
+
     /** Whether [boss], which [feature] reads, is the player's own slayer boss. */
     fun owns(feature: Feature, boss: Boss) = boss.id == current(feature).own
 
@@ -28,7 +34,8 @@ class SlayerClaim {
         feature.on<EntitySeen> { seen, now ->
             if (feature.entities.any { it.id == seen.id }) return@on
             val boss = Boss.parse(seen) ?: return@on feature.unparsed(seen.name.plain)
-            if (boss.kind != BossKind.SLAYER || current(feature).spawnedAt?.let { now - it <= OWN_MILLIS } != true) return@on
+            if (boss.kind != BossKind.SLAYER || !current(feature).considered.add(boss.id)) return@on
+            if (spawnedAt?.let { now - it <= OWN_MILLIS } != true) return@on
             own = boss.id
             spawnedAt = null
         }
@@ -44,6 +51,7 @@ class SlayerClaim {
             world = feature.worldNumber
             spawnedAt = null
             own = null
+            considered.clear()
         }
         return this
     }
