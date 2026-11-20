@@ -51,11 +51,11 @@ class SettingsNarrationTest : FabricClientGameTest {
         context.input.scroll(1.0)
         context.waitTicks(2)
         hear(context, "Distance, number, 4.5, changed from 4.0", "After the wheel")
-        context.runOnClient<Nothing> { DsModClient.feature<Camera>().enabled = false }
+        context.runOnClient<Nothing> { DsModClient.feature<Camera>().feature.enabled = false }
         open(context, SettingsTabs(at("Camera")))
         over("cameraDistance", "Distance, number, 4.5, changed from 4.0, dimmed, Camera is off")
         context.runOnClient<Nothing> {
-            DsModClient.feature<Camera>().enabled = true
+            DsModClient.feature<Camera>().feature.enabled = true
             DsModClient.feature<Camera>().distance.value = 4f
         }
 

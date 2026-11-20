@@ -14,8 +14,8 @@ import kotlin.test.assertNull
 
 /** What the replay of a local server cannot show: a lagging dragsim.co's colors, a clock that goes back, and the settings. */
 class PerformanceStatsTest {
-    private val feature = SettingsTree().feature<PerformanceStats>().also { it.enabled = true }
-    private val game = Game(listOf(feature))
+    private val feature = SettingsTree().feature<PerformanceStats>().also { it.feature.enabled = true }
+    private val game = Game(listOf(feature.feature))
     private var time = 1_000_000L
 
     private fun post(vararg events: GameEvent) {

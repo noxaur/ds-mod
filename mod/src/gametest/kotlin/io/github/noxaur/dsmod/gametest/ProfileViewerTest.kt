@@ -113,11 +113,11 @@ class ProfileViewerTest : FabricClientGameTest {
                 }
 
                 context.setScreen { null }
-                context.runOnClient<Nothing> { DsModClient.feature<ProfileViewer>().enabled = false }
+                context.runOnClient<Nothing> { DsModClient.feature<ProfileViewer>().feature.enabled = false }
                 profiles.command("pv Testwyrm")
                 context.waitTicks(5)
                 check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() !is ProfileScreen }) { "/pv opened with Profile Viewer off" }
-                context.runOnClient<Nothing> { DsModClient.feature<ProfileViewer>().enabled = true }
+                context.runOnClient<Nothing> { DsModClient.feature<ProfileViewer>().feature.enabled = true }
             }
         }
     }

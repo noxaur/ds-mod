@@ -26,7 +26,7 @@ import kotlin.test.assertTrue
  */
 class AbilityCooldownsTest {
     private val feature = SettingsTree().feature<AbilityCooldowns>()
-    private val game = Game(listOf(feature))
+    private val game = Game(listOf(feature.feature))
     private var time = 1_000_000L
 
     private fun post(vararg events: GameEvent) {
@@ -197,11 +197,11 @@ class AbilityCooldownsTest {
         post(Hit("minecraft:enderman"))
         // Past the charge and the two seconds its Ready stays on the list.
         at(11_000)
-        feature.enabled = false
+        feature.feature.enabled = false
         at(1)
         // The container state follows the slots while the feature is off, and the feature sees none of it.
         post(SlotChanged(5, null), SlotChanged(6, null), SlotChanged(7, null), SlotChanged(8, null))
-        feature.enabled = true
+        feature.feature.enabled = true
         at(1)
         post(Hit("minecraft:enderman"))
         assertNull(readout.hud)

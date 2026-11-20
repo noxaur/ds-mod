@@ -29,12 +29,12 @@ class EyeGuardTest : FabricClientGameTest {
             context.input.lookAt(lever)
             context.waitTicks(5)
             try {
-                DsModClient.feature<EyeGuard>().enabled = false
+                DsModClient.feature<EyeGuard>().feature.enabled = false
                 click()
                 click()
                 check(!on()) { "Two clicks did not flip the lever twice with the feature off" }
 
-                DsModClient.feature<EyeGuard>().enabled = true
+                DsModClient.feature<EyeGuard>().feature.enabled = true
                 click()
                 click()
                 check(!on()) { "Outside The End the second click was dropped" }
@@ -71,7 +71,7 @@ class EyeGuardTest : FabricClientGameTest {
                 context.waitTicks(3)
                 check(on() != stayed) { "A click after the guard lapsed was dropped" }
             } finally {
-                DsModClient.feature<EyeGuard>().enabled = true
+                DsModClient.feature<EyeGuard>().feature.enabled = true
             }
         }
     }

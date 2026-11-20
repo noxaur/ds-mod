@@ -26,12 +26,12 @@ class FullbrightTest : FabricClientGameTest {
             context.waitTicks(40)
             val dark = ground(context.takeScreenshot("fullbright-off"))
             try {
-                DsModClient.feature<Fullbright>().enabled = true
+                DsModClient.feature<Fullbright>().feature.enabled = true
                 context.waitTicks(10)
                 val lit = ground(context.takeScreenshot("fullbright-on"))
                 check(lit > dark * 2) { "The ground went from $dark to $lit, which is not fully lit" }
             } finally {
-                DsModClient.feature<Fullbright>().enabled = false
+                DsModClient.feature<Fullbright>().feature.enabled = false
             }
         }
     }

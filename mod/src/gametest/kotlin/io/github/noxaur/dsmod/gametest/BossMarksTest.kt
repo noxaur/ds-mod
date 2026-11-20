@@ -57,8 +57,8 @@ class BossMarksTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
             context.runOnClient<Nothing> {
-                DsModClient.feature<BossBeacon>().enabled = true
-                DsModClient.feature<BossTracer>().enabled = true
+                DsModClient.feature<BossBeacon>().feature.enabled = true
+                DsModClient.feature<BossTracer>().feature.enabled = true
             }
             world.server.runCommand("time set noon")
             world.server.runCommand("""execute at @a run summon iron_golem ~ ~ ~-12 {NoAI:1b,CustomName:"[Lv100] Endstone Protector 10M/10M"}""")
@@ -77,7 +77,7 @@ class BossMarksTest : FabricClientGameTest {
             context.waitTicks(5)
             screenshot(context, "boss-beacon")
 
-            context.runOnClient<Nothing> { DsModClient.feature<BossBeacon>().enabled = false }
+            context.runOnClient<Nothing> { DsModClient.feature<BossBeacon>().feature.enabled = false }
             context.input.lookAt(45f, 0f)
             context.waitTicks(5)
             val away = screenshot(context, "boss-tracer")
@@ -88,7 +88,7 @@ class BossMarksTest : FabricClientGameTest {
             world.server.runCommand("""execute at @a run summon zombie ~-12 ~ ~ {NoAI:1b,CustomName:"☠ Atoned Horror V 50M/50M❤"}""")
             context.waitTicks(10)
             check(marks(context, "boss-tracer").size == 2) { "Another player's slayer boss is traced: ${marks(context, "boss-tracer")}" }
-            context.runOnClient<Nothing> { DsModClient.feature<BossTracer>().otherSlayers.value = true }
+            context.runOnClient<Nothing> { DsModClient.feature<BossTracer>().bosses.otherSlayers.value = true }
             context.waitTicks(10)
             check(marks(context, "boss-tracer").size == 3) { "Other Slayer Bosses traces no third boss: ${marks(context, "boss-tracer")}" }
 

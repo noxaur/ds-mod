@@ -19,7 +19,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 class PerformanceStatsTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val performanceStats = DsModClient.feature<PerformanceStats>()
-        context.runOnClient<Nothing> { performanceStats.enabled = true }
+        context.runOnClient<Nothing> { performanceStats.feature.enabled = true }
         try {
             context.worldBuilder().create().use { world ->
                 fun shown() = context.computeOnClient<List<Text>, Nothing> {
@@ -57,7 +57,7 @@ class PerformanceStatsTest : FabricClientGameTest {
             }
         } finally {
             context.runOnClient<Nothing> {
-                performanceStats.enabled = false
+                performanceStats.feature.enabled = false
                 performanceStats.layout.value = StatsLayout.ROW
                 performanceStats.look.value = StatsLook.PLATE
                 performanceStats.values.value = Stat.entries

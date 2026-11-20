@@ -5,7 +5,7 @@ The words below mean one thing each, in code, docs and conversation. Use them as
 - **Server**: dragsim.co, the Minecraft server ds-mod is for. It is someone else's.
 - **Backend**: our own REST service in `backend/`. Never "the server".
 - **Area**: a place on the server that a feature can be locked to, told by the tab list's `Area` row or the sidebar's `⏣` place. `Area` in `core/game`.
-- **Feature**: one class in `core/feature/<area>/` that declares its own settings, placed once in `SettingsTree`, with one switch in the settings. It reads events and returns readouts.
+- **Feature**: one class in `core/feature/<area>/` that holds a `Feature` part, declares its own settings on it, and is placed once in `SettingsTree`, with one switch in the settings. It reads events and returns readouts.
 - **Event**: a `GameEvent` the edge posts to `Game`, such as a chat line, a tab list or a slot. Features see events and nothing else from the server.
 - **Raw record**: a type of data the recorder writes that no feature sees yet. A feature that needs it promotes it to an event.
 - **Readout**: what a feature shows: its HUD block, its slot marks, its world marks, and the notices and alerts it says once.

@@ -165,14 +165,14 @@ class MenuTabsTest : FabricClientGameTest {
                 check(tabs(context).isEmpty()) { "The tabs stayed with Better UI off" }
                 context.runOnClient<Nothing> {
                     DsModClient.settings.betterUi.enabled = true
-                    DsModClient.feature<MenuTabs>().enabled = false
+                    DsModClient.feature<MenuTabs>().feature.enabled = false
                 }
                 context.waitTicks(2)
                 check(tabs(context).isEmpty()) { "The tabs stayed with Menu Tabs off" }
             } finally {
                 context.runOnClient<Nothing> {
                     DsModClient.settings.betterUi.enabled = true
-                    DsModClient.feature<MenuTabs>().enabled = true
+                    DsModClient.feature<MenuTabs>().feature.enabled = true
                     DsModClient.feature<MenuTabs>().tabs.value = TabLayout.DEFAULT
                 }
             }

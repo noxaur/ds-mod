@@ -37,10 +37,8 @@ class UnparsedTest {
     @Test
     fun `a chat line whose head matches and whose pattern does not is counted for the feature`() {
         val eggs = ArrayList<String>()
-        val egg = object : Feature(DsModConfig(), "egg", Area.ANYWHERE, Store.END, "Reads the egg line in a test.") {
-            init {
-                line("The Dragon Egg is respawning", Regex("""The Dragon Egg is respawning in (\d+) seconds\.""")) { (seconds), _ -> eggs += seconds }
-            }
+        val egg = Feature(DsModConfig(), "egg", Area.ANYWHERE, Store.END, "Reads the egg line in a test.").apply {
+            line("The Dragon Egg is respawning", Regex("""The Dragon Egg is respawning in (\d+) seconds\.""")) { (seconds), _ -> eggs += seconds }
         }
         val game = Game(listOf(egg))
         val heard = ArrayList<String>()

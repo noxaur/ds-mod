@@ -93,7 +93,7 @@ class CaptureTest : FabricClientGameTest {
                 "execute at @a run setblock ~3 ~ ~3 minecraft:stone_button[face=floor]",
             ).forEach(world.server::runCommand)
             context.waitTicks(40)
-            context.runOnClient<Nothing> { DsModClient.feature<PerformanceStats>().enabled = true }
+            context.runOnClient<Nothing> { DsModClient.feature<PerformanceStats>().feature.enabled = true }
             file = context.computeOnClient<Path, Nothing> { DsModDebug.toggleCapture(it)!! }
             context.enterTheEnd()
             listOf(
@@ -155,7 +155,7 @@ class CaptureTest : FabricClientGameTest {
         var said: String? = null
         context.runOnClient<Nothing> { client -> DsModDebug.toggleCapture(client) { said = it } }
         context.waitFor { said != null }
-        context.runOnClient<Nothing> { DsModClient.feature<PerformanceStats>().enabled = false }
+        context.runOnClient<Nothing> { DsModClient.feature<PerformanceStats>().feature.enabled = false }
         check(said == "Capture saved: $file") { "The capture ended with '$said'" }
 
         val events = file.readLines().map { Json.parseToJsonElement(it).jsonObject }

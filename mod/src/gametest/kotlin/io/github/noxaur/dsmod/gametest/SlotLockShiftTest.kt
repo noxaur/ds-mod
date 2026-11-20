@@ -22,7 +22,7 @@ import net.minecraft.world.item.Items
  */
 class SlotLockShiftTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
-        val feature = DsModClient.game.readouts.single { it.feature.id == "slot-lock" }.feature as SlotLock
+        val feature = DsModClient.feature<SlotLock>()
 
         fun item(slot: Int) = context.computeOnClient<Pair<Any, Int>, Nothing> { it.player!!.inventory.getItem(slot).let { stack -> stack.item to stack.count } }
         fun carried() = context.computeOnClient<Int, Nothing> { it.player!!.containerMenu.carried.count }
@@ -63,7 +63,7 @@ class SlotLockShiftTest : FabricClientGameTest {
         }
         fun shiftOwn(slot: Int, settle: Int = 2) = shift(menuIndex(slot), settle)
         fun lock(slots: Set<Int>) = context.runOnClient<Nothing> {
-            feature.enabled = true
+            feature.feature.enabled = true
             feature.locks = SlotLocks(slots)
         }
         fun left(clicks: List<Click>) {
@@ -209,7 +209,7 @@ class SlotLockShiftTest : FabricClientGameTest {
                 check(item(9).second == 32 && item(0).second == 0) { "A missing mode moved the stack to ${item(0)} and left ${item(9)}" }
             } finally {
                 context.runOnClient<Nothing> {
-                    feature.enabled = true
+                    feature.feature.enabled = true
                     feature.locks = SlotLocks()
                     it.gui.setScreen(null)
                 }
@@ -239,7 +239,7 @@ class SlotLockShiftTest : FabricClientGameTest {
             client.player!!.containerMenu.carried = ItemStack.EMPTY
         }
         context.runOnClient<Nothing> {
-            val feature = DsModClient.game.readouts.single { it.feature.id == "slot-lock" }.feature as SlotLock
+            val feature = DsModClient.feature<SlotLock>()
             feature.locks = SlotLocks(setOf(1))
         }
         val source = context.computeOnClient<Int, Nothing> { client ->

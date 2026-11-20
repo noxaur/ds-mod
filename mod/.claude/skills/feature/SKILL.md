@@ -3,13 +3,13 @@ name: feature
 description: Use when adding or changing a ds-mod feature in `core/feature/`, its fixture or its transcript.
 ---
 
-A feature is one class in `core/feature/<area>/`. `Feature`'s KDoc names the feature to start from, and why it is built this way is in [internals/features.md](../../../../docs/internals/features.md).
+A feature is one class in `core/feature/<area>/` that implements `HasFeature` and holds the `Feature` it builds, as `override val feature = Feature(...)`, declared first. Behaviour two features share is a part each one holds, as `BossMarks`, never a base class. `Feature`'s KDoc names the feature to start from, and why it is built this way is in [internals/features.md](../../../../docs/internals/features.md).
 
 Load the `ui` skill too when the feature shows the player anything.
 
 ## Settings
 
-- The switch's description and default go in the `Feature(..)` super call, with the keys older versions saved it under as `formerly`. Every other setting is one line in the class, as `val inFight = switch("beamInFight", "During the Fight", "Keep the beam while the Protector is up.", default = false)`, read as `inFight.value`. The first argument is the key in the config file, under the feature's `Store`. The kinds are in [`settings.md`](../ui/settings.md) beside the `ui` skill.
+- The switch's description and default go in the `Feature(..)` call, with the keys older versions saved it under as `formerly`, and so do the `hud`, `slots` and `marks` it shows, as `hud = ::hud`. Every other setting is one line in the class, as `val inFight = feature.switch("beamInFight", "During the Fight", "Keep the beam while the Protector is up.", default = false)`, read as `inFight.value`. The first argument is the key in the config file, under the feature's `Store`. The kinds are in [`settings.md`](../ui/settings.md) beside the `ui` skill.
 - Place the feature once in `SettingsTree`: `group(Feature(c))` for a group of its own, or `feature(Feature(c))` among others. That is also what lists it.
 - The edge reads a setting as `DsModClient.feature<F>().row.value`, and asks `DsModClient.runs<F>()` for the switch, never `enabled` or `switch`. `SwitchesTest` fails on a read.
 
@@ -21,7 +21,7 @@ Load the `ui` skill too when the feature shows the player anything.
 ## State
 
 - State that outlives the session is one `@Serializable` class given to `saved()`. Replace its `value` to change it.
-- State that holds for one world is declared as `private var phase by world { Phase.Unknown }`, and for one session on the server with `session { }`. `Game` resets it, so never reset it in a `WorldChanged` or `LeftServer` handler. Values that exclude each other, such as a dragon alive and an egg returning, are one sealed type, as in `DragonTimer`.
+- State that holds for one world is declared as `private var phase by feature.world { Phase.Unknown }`, and for one session on the server with `feature.session { }`. `Game` resets it, so never reset it in a `WorldChanged` or `LeftServer` handler. Values that exclude each other, such as a dragon alive and an egg returning, are one sealed type, as in `DragonTimer`.
 
 ## Fixtures
 

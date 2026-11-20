@@ -1,12 +1,18 @@
 package io.github.noxaur.dsmod.core.feature.boss
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
-import io.github.noxaur.dsmod.core.game.Boss
+import io.github.noxaur.dsmod.core.config.Store
+import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.HasFeature
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.world.EntityBeam
 
 /** A beam over each boss the player picks, named and with the distance to it, which follows the boss. */
-class BossBeacon(config: DsModConfig) :
-    BossMarks(config, "boss-beacon", "Show a beam over each boss you pick, with its distance.", "beacon", "Mark") {
-    override fun mark(boss: Boss) = EntityBeam(boss.id, boss.label, Role.BAD)
+class BossBeacon(config: DsModConfig, claim: SlayerClaim) : HasFeature {
+    override val feature: Feature = Feature(
+        config, "boss-beacon", Area.ANYWHERE, Store.SLAYER, "Show a beam over each boss you pick, with its distance.", default = false,
+        marks = { bosses.marks() },
+    )
+    val bosses = BossMarks(feature, claim, "beacon", "Mark") { EntityBeam(it.id, it.label, Role.BAD) }
 }

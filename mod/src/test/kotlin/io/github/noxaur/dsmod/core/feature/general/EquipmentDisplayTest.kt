@@ -186,9 +186,9 @@ class EquipmentDisplayTest {
     @Test
     fun `armor changed while the feature was off shows when it comes back`() {
         post(*inventory(helmet, null))
-        feature.enabled = false
+        feature.feature.enabled = false
         post(SlotChanged(8, boots))
-        feature.enabled = true
+        feature.feature.enabled = true
         post()
         assertEquals(listOf(listOf(helmet, null, null, boots)), rows())
     }
@@ -211,9 +211,9 @@ class EquipmentDisplayTest {
     @Test
     fun `leaving the server while the feature is off forgets the pet once it is back on`() {
         post(pet())
-        feature.enabled = false
+        feature.feature.enabled = false
         post(LeftServer)
-        feature.enabled = true
+        feature.feature.enabled = true
         post()
         assertNull(rows())
     }

@@ -309,14 +309,14 @@ class CopyChatTest : FabricClientGameTest {
                 press(Format.TEXT)
                 copied("Expires in 1h", "The bottom row of the chat scrolled up by four")
 
-                DsModClient.feature<CopyChat>().enabled = false
+                DsModClient.feature<CopyChat>().feature.enabled = false
                 row(0)
                 context.input.pressMouse(1)
                 context.waitTick()
                 check(CopyChats.menu == null) { "A right click with Copy Chat off opened the menu" }
             }
         } finally {
-            DsModClient.feature<CopyChat>().enabled = true
+            DsModClient.feature<CopyChat>().feature.enabled = true
             DsModClient.settings.hud.theme = Theme.CHARCOAL
             CopyChats.clipboard = clipboard
         }

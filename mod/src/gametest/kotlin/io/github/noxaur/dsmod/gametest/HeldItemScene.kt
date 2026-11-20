@@ -110,7 +110,7 @@ class HeldItemScene private constructor(private val context: ClientGameTestConte
                         it.options.vignette().set(vignette)
                         it.options.attackIndicator().set(indicator)
                     }
-                    animations.enabled = true
+                    animations.feature.enabled = true
                     animations.reset()
                 }
             }

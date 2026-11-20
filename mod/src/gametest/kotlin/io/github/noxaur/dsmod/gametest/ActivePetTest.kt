@@ -23,8 +23,8 @@ class ActivePetTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val activePet = DsModClient.feature<ActivePet>()
         val equipmentDisplay = DsModClient.feature<EquipmentDisplay>()
-        activePet.enabled = true
-        equipmentDisplay.enabled = false
+        activePet.feature.enabled = true
+        equipmentDisplay.feature.enabled = false
         try {
             context.worldBuilder().create().use { world ->
                 fun pet(level: Int) =
@@ -93,8 +93,8 @@ class ActivePetTest : FabricClientGameTest {
                 context.takeScreenshot("active-pet-level-up")
             }
         } finally {
-            activePet.enabled = false
-            equipmentDisplay.enabled = true
+            activePet.feature.enabled = false
+            equipmentDisplay.feature.enabled = true
         }
     }
 

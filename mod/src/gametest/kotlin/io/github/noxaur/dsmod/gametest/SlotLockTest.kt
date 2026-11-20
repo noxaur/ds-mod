@@ -209,12 +209,12 @@ class SlotLockTest : FabricClientGameTest {
                 context.input.pressKey { it.keyDrop }
                 context.waitTicks(5)
                 check(item(1).second == 10) { "The drop key dropped from the locked slot in hand, leaving ${item(1)}" }
-                slotLock.enabled = false
+                slotLock.feature.enabled = false
                 context.input.pressKey { it.keyDrop }
                 context.waitTicks(5)
                 check(item(1).second == 9) { "With Slot Lock off the drop key left ${item(1)}" }
             } finally {
-                slotLock.enabled = true
+                slotLock.feature.enabled = true
                 slotLock.slotLockKey.value = key
                 slotLock.locks = SlotLocks()
                 context.runOnClient<Nothing> { it.gui.setScreen(null) }
