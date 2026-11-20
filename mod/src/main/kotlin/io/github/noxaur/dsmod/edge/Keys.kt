@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
+import net.minecraft.client.input.InputQuirks
 import net.minecraft.client.input.InputWithModifiers
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.resources.language.I18n
@@ -24,7 +25,13 @@ object Keys {
     // A modifier held with a key or a press. The keyboard is asked too, since a game test's input carries no modifiers.
 
     /** Ctrl, or Cmd on macOS. */
-    fun control(input: InputWithModifiers) = input.hasControlDownWithQuirk() || Minecraft.getInstance().hasControlDown()
+    fun control(input: InputWithModifiers) = input.hasControlDownWithQuirk() || command(Minecraft.getInstance()) || Minecraft.getInstance().hasControlDown()
+
+    /** Whether the key for shortcuts is held: Ctrl, or Cmd on macOS. */
+    fun command(client: Minecraft): Boolean {
+        val keys = if (InputQuirks.REPLACE_CTRL_KEY_WITH_CMD_KEY) listOf(GLFW.GLFW_KEY_LEFT_SUPER, GLFW.GLFW_KEY_RIGHT_SUPER) else listOf(GLFW.GLFW_KEY_LEFT_CONTROL, GLFW.GLFW_KEY_RIGHT_CONTROL)
+        return keys.any { InputConstants.isKeyDown(client.window, it) }
+    }
 
     fun shift(input: InputWithModifiers) = input.hasShiftDown() || Minecraft.getInstance().hasShiftDown()
 
