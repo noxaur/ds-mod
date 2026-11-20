@@ -69,9 +69,8 @@ gate edge.SlotGuards 007b713e72c9  SlotLock
 gate edge.TabBar ad2ca0a317d3  MenuTabs
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
-gate edge.capture.Recording 9b61a81ecbc8
+gate edge.capture.Recording f41ba61e1903
     takes the player's key presses through KeyMapping.consumeClick
-    approved by github.com/noxaur 2026-11-16T14:32:00Z
 gate edge.mixin.CameraMixin 38be690c7e6d
     hooks Camera.alignWithEntity
     hooks Camera.getMaxZoom

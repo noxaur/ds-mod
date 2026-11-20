@@ -62,9 +62,22 @@ object DsModClient : ClientModInitializer {
     private var ticks = 0
     private var onDragSim = false
 
-    /** Set on the network thread when the client leaves a server, for the next client tick to tell the features. */
+    /** Set on the network thread when the client leaves a server, for [leave] to pass on on the client thread. */
     @Volatile
     private var left = false
+
+    /**
+     * Tells the features and a request's run that the player left the server, once, at the next tick or before the
+     * next join, whichever comes first, so a new server never hears the last one's leave. The features hear it while
+     * the game still counts as on dragsim.co.
+     */
+    private fun leave() {
+        if (!left) return
+        left = false
+        game.post(System.currentTimeMillis(), LeftServer)
+        onDragSim = false
+        Recording.left()
+    }
 
     /** dragsim.co's addresses, so a player who joins by IP is on it too. Looked up off the client thread, and empty until then. */
     @Volatile
@@ -200,6 +213,7 @@ object DsModClient : ClientModInitializer {
         // Read once per connection, because the Fullbright mixin asks [active] every frame.
         lookUpDragSim()
         ClientPlayConnectionEvents.JOIN.register { handler, _, _ ->
+            leave()
             val reached = (handler.connection.remoteAddress as? InetSocketAddress)?.address
             onDragSim = DragSim.serves(handler.serverData?.ip, reached, dragSimAt)
             log.info("Joined {} at {}, which is {}dragsim.co", handler.serverData?.ip ?: "singleplayer", reached, if (onDragSim) "" else "not ")
@@ -218,12 +232,7 @@ object DsModClient : ClientModInitializer {
         }
         ClientChunkEvents.CHUNK_LOAD.register { _, chunk -> Packets.chunk(chunk) }
         ClientTickEvents.END_CLIENT_TICK.register {
-            // The features hear it while the game still counts as on dragsim.co.
-            if (left) {
-                left = false
-                game.post(System.currentTimeMillis(), LeftServer)
-                onDragSim = false
-            }
+            leave()
             if (ticks % TAB_POLL_TICKS == 0) {
                 game.metrics.time("tab-poll") { tabs.poll(it) }
                 game.metrics.time("sidebar-poll") { sidebars.poll(it) }
