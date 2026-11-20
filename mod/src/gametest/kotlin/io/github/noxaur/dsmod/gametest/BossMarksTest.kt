@@ -12,7 +12,6 @@ import io.github.noxaur.dsmod.core.world.Tracer
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
-import net.minecraft.gizmos.Gizmos
 import java.nio.file.Path
 import javax.imageio.ImageIO
 
@@ -26,19 +25,6 @@ import javax.imageio.ImageIO
 class BossMarksTest : FabricClientGameTest {
     private fun marks(context: ClientGameTestContext, id: String) = context.computeOnClient<List<Mark>, Nothing> {
         DsModClient.game.readouts.single { it.feature.id == id }.marks
-    }
-
-    /**
-     * Takes a screenshot with the marks drawn on each frame in it. Fabric's screenshot draws a frame outside the game's
-     * frame loop, where no collector for the frame's gizmos is open, so one is opened around it.
-     */
-    private fun screenshot(context: ClientGameTestContext, name: String): Path {
-        val frame = context.computeOnClient<Gizmos.TemporaryCollection, Nothing> { it.levelExtractor.collectPerFrameMainThreadGizmos() }
-        try {
-            return context.takeScreenshot(name)
-        } finally {
-            context.runOnClient<Nothing> { frame.close() }
-        }
     }
 
     /** How many pixels of [screenshot] are near [rgb]. */
@@ -75,12 +61,12 @@ class BossMarksTest : FabricClientGameTest {
             // Halfway between the two, so both beams are in view.
             context.input.lookAt(-135f, 0f)
             context.waitTicks(5)
-            screenshot(context, "boss-beacon")
+            context.screenshot("boss-beacon")
 
             context.runOnClient<Nothing> { DsModClient.feature<BossBeacon>().feature.enabled = false }
             context.input.lookAt(45f, 0f)
             context.waitTicks(5)
-            val away = screenshot(context, "boss-tracer")
+            val away = context.screenshot("boss-tracer")
             val color = Role.BAD.rgb
             check(near(away, color) > 200) { "Looking away, the screenshot shows no tracer" }
 
