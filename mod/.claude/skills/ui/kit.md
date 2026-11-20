@@ -52,7 +52,12 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `tooltip` | Text plus 4 on each side | A plain tooltip's backing: the plate's colors, nearly opaque. A tooltip with a style of its own keeps it |
 | `bar` | 6 tall | A well with a 4px fill that has a lit top row and a shaded bottom row |
 | `scrollbar` | 6 wide | A well with a raised thumb |
-| `tab` | 22x21, or wider to hold a field | Sits on a panel's top or bottom edge. The selected one joins the panel, and the rest sit 2px further out in `tabOff`, or in `hover` under the mouse. Draw the rest before the panel and the selected one after it |
+| `thumb` | Any | A scrollbar's thumb alone, idle, hover or off, for a track the screen draws itself |
+| `barFill` | Any | A bar's fill alone, with its lit top row and shaded bottom row |
+| `arrow` | Any, 24x16 in a furnace | A flat sunk arrow, right or down, filled along its length to a fraction in a role, for progress |
+| `flame` | 14x14 | A sunk flame filled from the bottom to a fraction, for fuel burning |
+| `bubbles` | 12x29 | A column of sunk dots lit from the bottom to a fraction, for brewing |
+| `tab` | 22x21, or wider to hold a field, or taller to hold the creative inventory's item | Sits on a panel's top or bottom edge. The selected one joins the panel, and the rest sit 2px further out in `tabOff`, or in `hover` under the mouse. Draw the rest before the panel and the selected one after it |
 | `tabBar` | 18 tall | A strip in `side` across the top of a pane, with a 1px outline along its bottom for browser tabs to sit on |
 | `pageTab` | 15 tall, 44 to 92 wide | A browser tab on a `tabBar`: a swatch or an icon, a label in muted ink, and a × that shows under the mouse and on the selected one, in a 9x9 square that mirrors the swatch's. Hover lifts it to `hover`, the selected one is 17 tall in `panel` and covers the line to join the pane, and DOWN is the selected one while dragged, outlined in `hoverOutline` |
 | `newTab` | 15x15 | The plus after the last `pageTab`, which opens a new one |
