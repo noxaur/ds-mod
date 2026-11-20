@@ -13,6 +13,12 @@ const val SMOKE_TEST = "SettingsScreenTest"
 /** More game tests than this reaching a file make it a hub, which a walk does not cross. */
 private const val HUB = 12
 
+/**
+ * The most game tests a pick runs. A test takes 8 seconds on a CI runner, and the boot leaves the job about 70 of its
+ * 180, so a change that reaches more runs [SMOKE_TEST], as a hub does.
+ */
+const val MOST_PICKED = 8
+
 private val BUILD = listOf("build.gradle.kts", "settings.gradle.kts", "gradle.properties", "gradle/", "src/main/resources/", "src/debug/resources/", "src/gametest/resources/")
 private val SOURCE_ROOTS = listOf("src/main/", "src/debug/", "src/gametest/")
 private val DECLARED = Regex(
@@ -82,7 +88,7 @@ fun pickGameTests(sources: Map<String, String>, tests: Set<String>, changed: Col
         picked += if (reached.size > HUB) setOf(SMOKE_TEST) else reached
         if (reached.isEmpty() && SOURCE_ROOTS.any(path::startsWith) && !path.startsWith("src/gametest/")) unreached += path
     }
-    return Picked(picked, unreached)
+    return Picked(if (picked.size > MOST_PICKED) setOf(SMOKE_TEST) else picked, unreached)
 }
 
 private fun stem(path: String) = path.substringAfterLast('/').substringBeforeLast('.')
