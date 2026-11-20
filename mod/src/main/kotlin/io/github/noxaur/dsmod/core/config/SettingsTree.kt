@@ -93,11 +93,12 @@ class Groups {
  * schema of the settings. A feature declares its own rows, and the tree places it once, as a group of its own or a
  * row among others, which is also what lists it in [features]: a feature placed nowhere never runs. A setting that
  * belongs to no feature is a field of `DsModConfig` and one line here with an existing kind. `SettingsTreeTest` fails
- * on a saved field that no row reaches and that [STORED] does not name.
+ * on a saved field that no row reaches and that [STORED] does not name. A row for macOS alone is in the tree only
+ * when [mac] is true.
  */
-class SettingsTree(val config: DsModConfig = DsModConfig()) {
+class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) {
     /** The sections, with each row's default taken from the same row of a tree on a fresh config. */
-    val sections: List<SettingSection> = declare(config)
+    val sections: List<SettingSection> = declare(config, mac)
 
     /**
      * Every feature, which is also the order the HUD stacks their blocks in: the features of one area first, since
@@ -122,7 +123,11 @@ class SettingsTree(val config: DsModConfig = DsModConfig()) {
         /** Saved fields that no row edits, each with the reason. Every saved field has a row now. */
         val STORED = emptyMap<String, String>()
 
-        private val fresh by lazy { declare(DsModConfig()) }
+        /** Whether the game runs on macOS, as Minecraft's own check reads it. */
+        val MAC = "mac" in System.getProperty("os.name").lowercase()
+
+        /** Every row of every system, so a row for one system finds its default, its home and its favorite. */
+        private val fresh by lazy { declare(DsModConfig(), mac = true) }
 
         /** The section that holds [switch], such as a feature's, or null for one the tree does not place, as a test's feature. */
         fun home(switch: Switch): SettingSection? = fresh.firstOrNull { section -> section.walk().any { it is Switch && it.field == switch.field } }
@@ -166,7 +171,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig()) {
             }
         }
 
-        private fun declare(c: DsModConfig): List<SettingSection> {
+        private fun declare(c: DsModConfig, mac: Boolean): List<SettingSection> {
             val g = c.general
             val sections = Sections().apply {
                 // What applies everywhere comes first, then each area of the game, and Contribute last.
@@ -177,6 +182,9 @@ class SettingsTree(val config: DsModConfig = DsModConfig()) {
                     group("Settings") {
                         keys(g::settingsKey, "Settings Key", "Pick a key that opens these settings, as /dsmod does.")
                         keys(g::favoriteKey, "Favorite Key", "Pick a key that stars the setting under your mouse.")
+                    }
+                    if (mac) group("Mouse") {
+                        switch(g::ctrlClick, "Ctrl Click", "Keep Ctrl and a left click a Ctrl click, not a right click.")
                     }
                     group("World") {
                         feature(Fullbright(c))
