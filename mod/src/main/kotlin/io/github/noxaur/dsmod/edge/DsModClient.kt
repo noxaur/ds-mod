@@ -67,11 +67,12 @@ object DsModClient : ClientModInitializer {
     private var left = false
 
     /**
-     * Tells the features and a request's run that the player left the server, once, at the next tick or before the
-     * next join, whichever comes first, so a new server never hears the last one's leave. The features hear it while
-     * the game still counts as on dragsim.co.
+     * Tells the features and a request's run that the player left the server, once, at the start of the next tick or
+     * before the next join, whichever comes first, so a new server never hears the last one's leave. A run asks again
+     * just before it moves on, since the network thread may say so during the tick. The features hear it while the
+     * game still counts as on dragsim.co.
      */
-    private fun leave() {
+    fun leave() {
         if (!left) return
         left = false
         game.post(System.currentTimeMillis(), LeftServer)
@@ -231,8 +232,8 @@ object DsModClient : ClientModInitializer {
             sidebars.forget()
         }
         ClientChunkEvents.CHUNK_LOAD.register { _, chunk -> Packets.chunk(chunk) }
+        ClientTickEvents.START_CLIENT_TICK.register { leave() }
         ClientTickEvents.END_CLIENT_TICK.register {
-            leave()
             if (ticks % TAB_POLL_TICKS == 0) {
                 game.metrics.time("tab-poll") { tabs.poll(it) }
                 game.metrics.time("sidebar-poll") { sidebars.poll(it) }

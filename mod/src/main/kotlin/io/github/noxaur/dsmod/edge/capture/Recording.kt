@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.brief.BriefRun
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.Chat
+import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.edge.contribute.Contribute
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -137,6 +138,8 @@ object Recording {
     }
 
     private fun tick(client: Minecraft) {
+        // A run that lost its connection during this tick must not finish and send now.
+        DsModClient.leave()
         val now = System.currentTimeMillis()
         if (ended(run, now)) {
             drainNextStep()
