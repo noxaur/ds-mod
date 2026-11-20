@@ -50,13 +50,18 @@ class KitTabBar(
         Vector2i((mouseX + TIP_X).coerceAtMost(screenWidth - tipWidth - TIP_X), y + height + TIP_Y)
     }
 
-    /** The tab being dragged, and where the press was. The drag starts once the mouse has moved a few pixels. */
-    private var dragged = -1
-    private var origin = -1
-    private var grab = 0
-    private var pressX = 0.0
-    private var dragX = 0
-    private var live = false
+    /** A tab held down, [grab] pixels from its left edge. It is [Moving] once the mouse has moved a few pixels. */
+    private sealed interface Held {
+        val tab: Int
+        val grab: Int
+    }
+
+    private data class Pressed(override val tab: Int, override val grab: Int, val pressX: Double) : Held
+
+    /** A tab dragged to [tab] from [origin], with the mouse at [x] in the strip. */
+    private data class Moving(override val tab: Int, override val grab: Int, val origin: Int, val x: Int) : Held
+
+    private var held: Held? = null
 
     /** What is under the mouse, kept from the last frame for narration: a tab, its ×, or the New Tab button. */
     private var overTab = -1
@@ -78,10 +83,9 @@ class KitTabBar(
 
     /** Puts a dragged tab back where the drag started. Returns whether a drag was on. */
     fun cancelDrag(): Boolean {
-        if (!live) return false
-        if (dragged != origin) onMove(dragged, origin)
-        dragged = -1
-        live = false
+        val moving = held as? Moving ?: return false
+        if (moving.tab != moving.origin) onMove(moving.tab, moving.origin)
+        held = null
         return true
     }
 
@@ -100,6 +104,8 @@ class KitTabBar(
     override fun isValidClickButton(button: MouseButtonInfo) = button.button() == 0 || button.button() == MIDDLE
 
     override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
+        // A middle click while a tab is held would close a tab under it and leave the held index on another tab.
+        if (event.button() != 0 && held != null) return
         if (onNew(event.x)) {
             if (event.button() == 0) onNew()
             return
@@ -107,26 +113,23 @@ class KitTabBar(
         val i = tabAt(event.x).takeIf { it >= 0 } ?: return
         if (event.button() == MIDDLE || onClose(i, event.x, event.y)) return onClose(i)
         onSelect(i)
-        dragged = i
-        origin = i
-        grab = event.x.toInt() - stripX - strip.x(i)
-        pressX = event.x
-        live = false
+        held = Pressed(i, event.x.toInt() - stripX - strip.x(i), event.x)
     }
 
     override fun onDrag(event: MouseButtonEvent, dx: Double, dy: Double) {
-        if (dragged < 0 || !live && abs(event.x - pressX) < DRAG_START) return
-        live = true
-        dragX = event.x.toInt() - stripX
-        val to = strip.drop(dragX, dragged)
-        if (to == dragged) return
-        onMove(dragged, to)
-        dragged = to
+        val x = event.x.toInt() - stripX
+        val moving = when (val now = held) {
+            null -> return
+            is Pressed -> if (abs(event.x - now.pressX) < DRAG_START) return else Moving(now.tab, now.grab, now.tab, x)
+            is Moving -> now.copy(x = x)
+        }
+        val to = strip.drop(x, moving.tab)
+        if (to != moving.tab) onMove(moving.tab, to)
+        held = moving.copy(tab = to)
     }
 
     override fun onRelease(event: MouseButtonEvent) {
-        dragged = -1
-        live = false
+        held = null
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, scrollX: Double, scrollY: Double): Boolean {
@@ -141,16 +144,17 @@ class KitTabBar(
         Kit.tabBar(graphics, x, y, width)
         val mx = mouseX.toDouble()
         val my = mouseY.toDouble()
-        val over = if (isHovered && !live) tabAt(mx) else -1
+        val moving = held as? Moving
+        val over = if (isHovered && moving == null) tabAt(mx) else -1
         val all = tabs.tabs
         graphics.enableScissor(stripX, y, stripX + strip.view, y + height)
         for (i in all.indices) {
-            if (live && i == dragged) continue
+            if (i == moving?.tab) continue
             tab(graphics, i, stripX + strip.x(i), if (i == over) Kit.State.HOVER else Kit.State.IDLE, i == over && onClose(i, mx, my))
         }
-        if (live) tab(graphics, dragged, stripX + strip.dragX(dragX, grab), Kit.State.DOWN, false)
+        if (moving != null) tab(graphics, moving.tab, stripX + strip.dragX(moving.x, moving.grab), Kit.State.DOWN, false)
         graphics.disableScissor()
-        val overNew = isHovered && !live && onNew(mx)
+        val overNew = isHovered && moving == null && onNew(mx)
         overTab = over
         overClose = over >= 0 && onClose(over, mx, my)
         overNewTab = overNew
