@@ -219,10 +219,10 @@ object MenuSkin {
         return true
     }
 
-    fun sprite(g: GuiGraphicsExtractor, sprite: Identifier, x: Int, y: Int, width: Int, height: Int, partX: Int, partY: Int, partWidth: Int, partHeight: Int): Boolean {
-        val screen = painting ?: return false
-        val part = parts[sprite] ?: return false
-        if (sprite.path.startsWith(WIDGETS) && screen !is MerchantScreen) return false
+    fun sprite(g: GuiGraphicsExtractor, sprite: Identifier, x: Int, y: Int, width: Int, height: Int, partX: Int, partY: Int, partWidth: Int, partHeight: Int): Identifier {
+        val screen = painting ?: return sprite
+        val part = parts[sprite] ?: return sprite
+        if (sprite.path.startsWith(WIDGETS) && screen !is MerchantScreen) return sprite
         val b = box
         b.x = x
         b.y = y
@@ -233,7 +233,7 @@ object MenuSkin {
         b.partWidth = partWidth
         b.partHeight = partHeight
         part.draw(g, b)
-        return true
+        return DRAWN
     }
 
     private fun background(g: GuiGraphicsExtractor, screen: AbstractContainerScreen<*>, texture: Identifier) = DsModClient.game.metrics.time("menus.draw") {
@@ -410,6 +410,7 @@ object MenuSkin {
         return true
     }
 
+    private val DRAWN: Identifier = Identifier.fromNamespaceAndPath("dsmod", "drawn")
     private const val VANILLA_SCREENS = "net.minecraft.client.gui.screens.inventory"
     private const val CONTAINER_TEXTURES = "textures/gui/container/"
     private const val CREATIVE_INVENTORY = "tab_inventory.png"
