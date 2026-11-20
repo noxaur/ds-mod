@@ -2232,7 +2232,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: /** Whether the 
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: /** Whether the mod runs on the server the player is on. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: /** Writes the settings to disk. The settings screen does it when it closes, and every editor that changes them. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: /** dragsim.co's addresses, so a player who joins by IP is on it too. Looked up off the client thread, and empty until then. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: // A server may send the action bar as a chat line marked as an overlay, or as its own packet, which `Packets` sees.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: // After every listener registered before this one, so the capture's tick covers what this tick posted.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: // Fabric says so on the network thread, and the game drops the tasks queued for its thread as it disconnects.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: // In this order: a request's run cut short is deleted, the recorder finishes what it holds, then an upload gets its moment.

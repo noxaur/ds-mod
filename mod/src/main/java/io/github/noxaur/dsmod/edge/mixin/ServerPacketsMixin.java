@@ -7,6 +7,7 @@ import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,6 +20,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(ClientPacketListener.class)
 abstract class ServerPacketsMixin {
+    @Inject(
+        method = "handleSystemChat",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/network/PacketProcessor;)V",
+            shift = At.Shift.AFTER
+        )
+    )
+    private void dsmod$systemChat(ClientboundSystemChatPacket packet, CallbackInfo ci) {
+        Packets.INSTANCE.systemChat(packet.content(), packet.overlay());
+    }
+
+    @Inject(method = "handleSystemChat", at = @At("TAIL"))
+    private void dsmod$systemChatHandled(ClientboundSystemChatPacket packet, CallbackInfo ci) {
+        Packets.INSTANCE.systemChatHandled();
+    }
+
     @Inject(method = "setActionBarText", at = @At("TAIL"))
     private void dsmod$actionBar(ClientboundSetActionBarTextPacket packet, CallbackInfo ci) {
         Packets.INSTANCE.actionBar(packet.text());

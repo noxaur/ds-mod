@@ -11,7 +11,6 @@ import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.game.DragSim
-import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.text.text
@@ -206,11 +205,7 @@ object DsModClient : ClientModInitializer {
         Contribute.register()
         Profiles.registerNames()
 
-        ClientReceiveMessageEvents.ALLOW_GAME.register { message, overlay ->
-            // A server may send the action bar as a chat line marked as an overlay, or as its own packet, which `Packets` sees.
-            if (overlay) Packets.actionBar(message)
-            overlay || !game.wants(SystemMessage::class.java) || game.post(System.currentTimeMillis(), SystemMessage(message.toText()))
-        }
+        ClientReceiveMessageEvents.ALLOW_GAME.register { _, _ -> Packets.shows() }
         // Read once per connection, because the Fullbright mixin asks [active] every frame.
         lookUpDragSim()
         ClientPlayConnectionEvents.JOIN.register { handler, _, _ ->
