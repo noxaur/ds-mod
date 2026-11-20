@@ -11,9 +11,11 @@ import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
 import io.github.noxaur.dsmod.gametest.SettingsSteps.theme
+import io.github.noxaur.dsmod.gametest.mixin.MouseButtonInvoker
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.TitleScreen
+import net.minecraft.client.input.MouseButtonInfo
 import org.lwjgl.glfw.GLFW
 
 /**
@@ -75,6 +77,17 @@ class OwnSettingsTest : FabricClientGameTest {
         context.takeScreenshot("own-settings-empty")
 
         // Tabs. With The End open, the sidebar's rows are Favorites and seven sections from 24, The End 152, Dragon 168, Protector 181, Drops 194, then Combat 207.
+        // A left press with the Ctrl key, as the system sends it. On macOS the game makes it a right press, and Ctrl Click keeps it.
+        val ctrlTabs = SettingsTabs(at("The End"))
+        open(context, ctrlTabs)
+        move(30, 207 + 8)
+        context.input.holdKey(GLFW.GLFW_KEY_LEFT_CONTROL)
+        for (action in listOf(GLFW.GLFW_PRESS, GLFW.GLFW_RELEASE)) context.runOnClient<Nothing> {
+            (it.mouseHandler as MouseButtonInvoker).invokeOnButton(it.window.handle(), MouseButtonInfo(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_MOD_CONTROL), action)
+        }
+        context.input.releaseKey(GLFW.GLFW_KEY_LEFT_CONTROL)
+        context.waitTicks(2)
+        expect(context, ctrlTabs, "[The End] Combat", "A press with the Ctrl key opens a tab in the background, on macOS too")
         val tabs = SettingsTabs(at("The End"))
         open(context, tabs)
         context.input.holdControl()

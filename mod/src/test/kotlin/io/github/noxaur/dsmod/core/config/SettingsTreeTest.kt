@@ -19,7 +19,7 @@ import kotlin.test.assertTrue
 /** The tree is the schema of the settings, so these keep it one system: every saved field has one row, worded alike. */
 class SettingsTreeTest {
     private val config = DsModConfig()
-    private val settings = SettingsTree(config)
+    private val settings = SettingsTree(config, mac = true)
     private val tree = settings.sections
     private val rows = tree.flatMap { it.walk() }
     private val rarity = settings.feature<ItemRarity>()

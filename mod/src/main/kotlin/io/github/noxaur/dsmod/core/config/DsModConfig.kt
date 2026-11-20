@@ -51,6 +51,10 @@ class DsModConfig {
         @JvmField
         var favoriteKey = KEY_F
 
+        /** Whether Ctrl and a left press stay a left press on macOS, where the game makes them a right press. */
+        @JvmField
+        var ctrlClick = true
+
         private companion object {
             /** GLFW's code for F, NotEnoughUpdates' key for a favorite. */
             const val KEY_F = 70
