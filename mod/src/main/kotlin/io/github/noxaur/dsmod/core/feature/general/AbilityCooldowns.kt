@@ -64,10 +64,10 @@ class AbilityCooldowns(config: DsModConfig) :
     private val loreNamed = HashSet<String>()
 
     /** The charging bonus the worn set has now, or null. */
-    private var charge: SetCharge? = null
+    private var charge: SetCharge? by world { null }
 
     /** The ability in the last action bar's mana part, lower case, so a part that stays up counts once. */
-    private var lastCast: String? = null
+    private var lastCast: String? by world { null }
 
     // Whether the container changed since its items were read, and whether a timer changed since the marks were built.
     private var stale = true
@@ -79,11 +79,7 @@ class AbilityCooldowns(config: DsModConfig) :
         on<ContainerOpened> { _, _ -> stale = true }
         on<SlotChanged> { _, _ -> stale = true }
         // Also run when the feature is switched off, which stops the container events, so it reads the items again.
-        on<WorldChanged> { _, _ ->
-            lastCast = null
-            charge = null
-            stale = true
-        }
+        on<WorldChanged> { _, _ -> stale = true }
         on<ActionBar> { bar, now ->
             val plain = bar.text.plain
             val cast = Abilities.cast(plain)

@@ -7,7 +7,6 @@ import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.Boss
 import io.github.noxaur.dsmod.core.game.BossKind
 import io.github.noxaur.dsmod.core.game.EntitySeen
-import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.world.Mark
 
 /**
@@ -23,12 +22,11 @@ abstract class BossMarks(config: DsModConfig, id: String, description: String, k
     val protector = switch("${key}Protector", "Endstone Protector", "$verb the Endstone Protector.", default = true)
     val yourSlayer = switch("${key}YourSlayer", "Your Slayer Boss", "$verb the slayer boss you spawned.", default = true)
     val otherSlayers = switch("${key}OtherSlayers", "Other Slayer Bosses", "$verb slayer bosses other players spawned.", default = false)
-    private var spawnedAt: Long? = null
-    private var own: Int? = null
+    private var spawnedAt: Long? by world { null }
+    private var own: Int? by world { null }
 
     init {
         readEntities(*Boss.FILTERS.toTypedArray())
-        on<WorldChanged> { _, _ -> own = null }
         line("☠ SLAYER BOSS SPAWNING!") { now -> spawnedAt = now }
         on<EntitySeen> { seen, now ->
             if (entities.any { it.id == seen.id }) return@on

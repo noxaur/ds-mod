@@ -57,7 +57,8 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         var version = 0
             internal set
         internal var stale = true
-        internal var on = feature.enabled
+        /** Whether the feature hears events, which [sync] alone changes. */
+        internal var on = false
         internal var refreshedAt = 0L
 
         /** Whether the player left the server while the feature was off, so it must forget that session when it comes back. */
@@ -150,6 +151,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     /** Returns false when a feature hid [event], which the edge honors for a chat line and a floating text. */
     fun post(time: Long, event: GameEvent): Boolean {
         tap?.invoke(time, event)
+        sync(time)
         var shown = true
         replaced = null
         val entity = held.apply(event)
@@ -184,10 +186,9 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             }
             else -> false
         }
-        val active = active()
         for (i in features.indices) {
             val feature = features[i]
-            if (!active || !feature.enabled) {
+            if (!readouts[i].on) {
                 if (event == LeftServer) readouts[i].missedLeave = true
                 continue
             }
@@ -195,6 +196,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             val reaches = event is TabList || event is Sidebar || event is WorldChanged || event is LeftServer || feature.area.holds(tab, sidebar)
             val heard = if (entity) feature.entityFilters.view(held.before, held.after, event) ?: continue else event
             val handler = if (reaches) feature.handlers[heard.javaClass] else null
+            feature.forget(heard)
             if (handler != null) metrics.time(feature.id) { handler(heard, time) }
             when (heard) {
                 is EntitySeen -> feature.heldEntities[heard.id] = heard
@@ -227,26 +229,40 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         messages += Notice(feature.title, text { body("Hid a message from the server. Turn off "); value(feature.title); body(" under ${section.name} in /dsmod to see them.") })
     }
 
-    fun tick(time: Long) {
+    /**
+     * Turns each feature on or off as its switch and [active] say. [post] does this before an event reaches any
+     * feature, so a feature switched on between two ticks never hears an event twice, once as it comes and again
+     * as what it missed. A feature that is off sees no events. It forgets its world when it goes off, and hears the
+     * tab list and the sidebar again when it comes back, because the next ones arrive only when a row changes. A
+     * server it left meanwhile comes first, so it forgets that session before it hears the new one.
+     */
+    private fun sync(time: Long) {
         val active = active()
         for (readout in readouts) {
             val feature = readout.feature
-            val enabled = active && feature.enabled
-            if (readout.on != enabled) {
-                readout.on = enabled
-                // A feature that is off sees no events. It forgets its world when it goes off, and hears the tab
-                // list and the sidebar again when it comes back, because the next ones arrive only when a row changes.
-                // A server it left meanwhile comes first, so it forgets that session before it hears the new one.
-                val missed = if (readout.on) listOfNotNull(LeftServer.takeIf { readout.missedLeave }, lastTab, lastSidebar) else listOf(WorldChanged)
-                if (readout.on) readout.missedLeave = false
-                for (event in missed) feature.handlers[event.javaClass]?.let { metrics.time(feature.id) { it(event, time) } }
-                // It hears the entities it reads that the client already holds, as it would have when they came.
-                if (!readout.on) feature.heldEntities.clear() else if (feature.entityFilters.isNotEmpty()) for (seen in held.values) {
-                    if (feature.entityFilters.none { it.matches(seen) }) continue
-                    feature.handlers[EntitySeen::class.java]?.let { metrics.time(feature.id) { it(seen, time) } }
-                    feature.heldEntities[seen.id] = seen
-                }
+            val on = active && feature.enabled
+            if (readout.on == on) continue
+            readout.on = on
+            val missed = if (on) listOfNotNull(LeftServer.takeIf { readout.missedLeave }, lastTab, lastSidebar) else listOf(WorldChanged)
+            readout.missedLeave = false
+            for (event in missed) {
+                feature.forget(event)
+                feature.handlers[event.javaClass]?.let { metrics.time(feature.id) { it(event, time) } }
             }
+            // It hears the entities it reads that the client already holds, as it would have when they came.
+            if (!on) feature.heldEntities.clear() else if (feature.entityFilters.isNotEmpty()) for (seen in held.values) {
+                if (feature.entityFilters.none { it.matches(seen) }) continue
+                feature.handlers[EntitySeen::class.java]?.let { metrics.time(feature.id) { it(seen, time) } }
+                feature.heldEntities[seen.id] = seen
+            }
+        }
+    }
+
+    fun tick(time: Long) {
+        sync(time)
+        for (readout in readouts) {
+            val feature = readout.feature
+            val enabled = readout.on
             if (!readout.stale && enabled && time - readout.refreshedAt in 0 until REFRESH_MILLIS) continue
             readout.stale = !enabled
             readout.refreshedAt = time

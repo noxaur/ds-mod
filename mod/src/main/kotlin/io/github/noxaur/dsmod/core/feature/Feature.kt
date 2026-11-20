@@ -25,7 +25,9 @@ import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.game.InfoRows
 import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.SystemMessage
+import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudBuilder
 import io.github.noxaur.dsmod.core.hud.HudDock
@@ -146,6 +148,26 @@ abstract class Feature(
     internal fun <S : Any> saved(serializer: KSerializer<S>, default: S): Saved<S> {
         check(state == null) { "$id already saves state" }
         return Saved(serializer, default).also { state = it }
+    }
+
+    private val inWorld = ArrayList<Scoped<*>>()
+    private val inSession = ArrayList<Scoped<*>>()
+
+    /**
+     * State that holds for one world, as `private var phase by world { Phase.Unknown }`. `Game` builds it again from
+     * [initial] when the world changes, the player leaves the server or the feature goes off, before the feature hears
+     * why, so no handler has to remember each value.
+     */
+    protected fun <S> world(initial: () -> S) = Scoped(initial).also { inWorld += it }
+
+    /** State that holds for one session on the server, which a change of world keeps, built again as [world] is when the player leaves. */
+    protected fun <S> session(initial: () -> S) = Scoped(initial).also { inSession += it }
+
+    /** Forgets the world or the session that [event] ends. */
+    internal fun forget(event: GameEvent) {
+        if (event != WorldChanged && event != LeftServer) return
+        for (scoped in inWorld) scoped.reset()
+        if (event == LeftServer) for (scoped in inSession) scoped.reset()
     }
 
     /**

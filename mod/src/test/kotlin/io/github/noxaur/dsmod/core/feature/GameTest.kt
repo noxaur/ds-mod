@@ -78,6 +78,76 @@ class GameTest {
     }
 
     @Test
+    fun `a feature switched on between two ticks hears an entity that comes then once`() {
+        var heard = 0
+        val listener = object : Feature(config, "listener", Area.ANYWHERE, Store.END, "Hears entities in a test.") {
+            init {
+                readEntities(*Boss.FILTERS.toTypedArray())
+                on<EntitySeen> { _, _ -> heard++ }
+            }
+        }
+        val game = Game(listOf(listener))
+        listener.enabled = false
+        game.tick(0)
+        listener.enabled = true
+        game.post(1, protector)
+        game.tick(50)
+        assertEquals(1, heard)
+    }
+
+    @Test
+    fun `a feature's world state starts over on a hop and its session state when the player leaves`() {
+        val listener = object : Feature(config, "listener", Area.ANYWHERE, Store.END, "Keeps state in a test.") {
+            var inWorld by world { 0 }
+            var inSession by session { 0 }
+
+            init {
+                on<SystemMessage> { _, _ ->
+                    inWorld++
+                    inSession++
+                }
+            }
+        }
+        val game = Game(listOf(listener))
+        val line = SystemMessage(ServerText(ServerSpan("Anything")))
+        game.post(0, line)
+        game.post(1, WorldChanged)
+        assertEquals(0 to 1, listener.inWorld to listener.inSession)
+
+        game.post(2, line)
+        listener.enabled = false
+        game.tick(3)
+        assertEquals(0 to 2, listener.inWorld to listener.inSession)
+
+        // The player left while it was off, so it comes back without that session.
+        game.post(4, LeftServer)
+        listener.enabled = true
+        game.tick(5)
+        assertEquals(0 to 0, listener.inWorld to listener.inSession)
+    }
+
+    @Test
+    fun `a slayer spawn line in the world the player left claims no boss in the next`() {
+        tree.feature<BossBeacon>().enabled = true
+        say(0, "☠ SLAYER BOSS SPAWNING!")
+        game.post(1, WorldChanged)
+        game.post(2, EntitySeen(7, "minecraft:zombie", ServerText(ServerSpan("☠ Revenant Horror I 1.5M/3.8M❤"))))
+        game.tick(2)
+        assertEquals(emptyList(), marks("boss-beacon"))
+    }
+
+    @Test
+    fun `a dragon that leaves leaves no egg timer behind`() {
+        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+        say(0, "The Dragon Egg is respawning in 30 seconds.")
+        // The egg's return and the eyes went by unread, as they do while the player is elsewhere.
+        say(60_000, "☠ The Young Dragon has spawned!")
+        say(61_000, "☠ The Young Dragon has de-spawned.")
+        game.tick(61_000)
+        assertNull(hud("dragon-timer"))
+    }
+
+    @Test
     fun `a new world forgets every entity, since it numbers them again`() {
         tree.feature<BossBeacon>().enabled = true
         game.post(0, protector)
