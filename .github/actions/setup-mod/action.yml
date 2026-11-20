@@ -18,6 +18,9 @@ runs:
     # every file that decides what gets downloaded, so a hit means the build needs no network. Every version,
     # the plugins' included, lives in gradle.properties, so an edit to the build scripts keeps the cache and
     # stays under the time limit.
+    - id: key
+      shell: bash
+      run: echo "key=${{ inputs.cache }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('mise.toml', 'mod/gradle.properties', 'mod/gradle/wrapper/gradle-wrapper.properties') }}" >> "$GITHUB_OUTPUT"
     - id: cache
       uses: actions/cache@v6
       with:
@@ -25,4 +28,13 @@ runs:
           ~/.gradle/caches
           ~/.gradle/wrapper
           mod/.gradle/loom-cache
-        key: ${{ inputs.cache }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('mise.toml', 'mod/gradle.properties', 'mod/gradle/wrapper/gradle-wrapper.properties') }}
+        key: ${{ steps.key.outputs.key }}
+    # The configuration cache spares the 15 to 40 seconds Loom takes to configure the project on a runner.
+    # Gradle checks every build script and every file the configuration read, and configures again on any
+    # change, so the newest entry is safe to restore. It is saved on every run, and its key starts with the
+    # cache's, because Gradle encrypts it with a key that lives in ~/.gradle/caches.
+    - uses: actions/cache@v6
+      with:
+        path: mod/.gradle/configuration-cache
+        key: ${{ steps.key.outputs.key }}-configuration-${{ github.run_id }}-${{ github.run_attempt }}
+        restore-keys: ${{ steps.key.outputs.key }}-configuration-
