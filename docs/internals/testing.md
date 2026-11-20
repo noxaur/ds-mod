@@ -14,13 +14,13 @@ The same test replays each fixture outside the feature's area, to prove the area
 
 Runners differ in speed, and one runner differs from run to run. `PerfTest` times a fixed loop on the machine it runs on and scales every time to the device named in `perf-budgets.json`, so a cap means the same on a laptop and on a runner. Each cap gates the median of twelve windows, because one window on a shared runner can be several times slower than the rest.
 
-The game takes about 40 seconds to boot on a runner, where it renders in software. So CI runs `PerfTest` alone, and the other game tests run before a beta release. A broken screen can therefore reach `main`, and it is caught within two days, before any player gets it.
+The game takes about 40 seconds to boot on a runner, where it renders in software. So CI runs `PerfTest` and the game tests a pull request's change reaches, and every game test runs before a beta release. A screen broken by a change the pick misses can therefore reach `main`, and it is caught within two days, before any player gets it.
 
-A beta ships only when CI passed on its commit. The backend, web and docs checks run only in CI, and a beta that ran them again would spend its time installing Node packages for a release that holds none of them.
+A beta ships only when CI passed on its commit. The backend, web and docs checks run in CI and not in a beta, because a beta that ran them again would spend its time installing Node packages for a release that holds none of them.
 
 ## A game test runs behind the developer
 
-Agents run the game tests while a person works on the same machine, often with their own game open. So the test game opens without the keyboard, under the window class `dsmod-gametest`, and writes its sound to a file. All of it lives in the `gametest` source set, so `runClient` and the release jar are untouched.
+A developer runs the game tests on the machine they work on, often with their own game open. So the test game opens without the keyboard, under the window class `dsmod-gametest`, and writes its sound to a file. All of it lives in the `gametest` source set, so `runClient` and the release jar are untouched.
 
 The window class is what lets a window manager tell the test from the game the developer plays, which has the same title. On Hyprland the test installs its own named window rule through `hyprctl` and needs nothing in the developer's config. A rule in a dotfile would be one more setup step, and the core works with no setup.
 
@@ -28,13 +28,13 @@ Both settings must be made from inside the game, just before it creates its wind
 
 The window has no keyboard focus, yet the game believes it has. Fabric marks it focused as the run starts and drops the window's own focus events, and it cancels the cursor grab, so a focused test game never takes the developer's mouse. The game hands a screen its mouse moves only while focused, so a drag in a test needs that focus, and the harness gives it back before each test in case one took it away.
 
-## A commit runs the game tests its change reaches
+## A pull request runs the game tests its change reaches
 
-Agents run game tests while they work, often several agents at once on the user's machine, and each one waits for its run to end. A run boots the game, which takes about 25 seconds, and each test then makes a fresh world, because Fabric ends every test on the title screen. The whole suite takes minutes, so the beta pipeline runs it, and a commit runs only the tests its change reaches. An agent once had to choose and name them, and an instruction to do so was skipped or answered with the wrong tests.
+A run boots the game, which takes about 25 seconds, and each test then makes a fresh world, because Fabric ends every test on the title screen. The whole suite takes minutes, so the beta pipeline runs it, and a pull request runs only the tests its change reaches. An agent once had to choose and name them, and an instruction to do so was skipped or answered with the wrong tests. A commit once ran them, and agents waited minutes on each commit, often several at once on the user's machine, for tests the pull request runs again. So a commit runs only the checks of `mise run check`.
 
-The pick walks names in the source: a changed file reaches the tests that name it, or that name a file that names it. Recording which classes each test runs was rejected, because the mod runs in the tick and render loops, so its central classes run in every test, and a mixin's code is merged into Minecraft's classes, out of a recorder's sight. A file most tests reach is a hub that a walk does not cross, and a change to it runs one smoke test. The pick diffs against the last green run, so a failed run is retried by the next commit, and with none it diffs against `main`.
+The pick walks names in the source: a changed file reaches the tests that name it, or that name a file that names it. Recording which classes each test runs was rejected, because the mod runs in the tick and render loops, so its central classes run in every test, and a mixin's code is merged into Minecraft's classes, out of a recorder's sight. A file most tests reach is a hub that a walk does not cross, and a change to it runs one smoke test. A change that reaches more tests than a CI job has time for after its boot runs the smoke test too, and leaves the rest to the beta pipeline. The pick diffs against where the branch left `main`, so each push runs every test the whole change reaches.
 
-`TestClock` fails a run when one test passes its cap, because a test that waits a fixed number of ticks costs every agent that runs it. The cap has room for a machine busy with other runs. `PerfTest` is exempt, because it measures over a fixed number of windows.
+`TestClock` fails a run when one test passes its cap, because a test that waits a fixed number of ticks costs every pull request that runs it. The cap has room for a busy machine. `PerfTest` is exempt, because it measures over a fixed number of windows.
 
 ## Each game test starts the mod afresh
 

@@ -48,17 +48,10 @@ jobs:
         uses: ./.github/actions/setup-mod
         with:
           cache: perf
-      # The built jars in a real game, for PerfTest alone. The other game tests run in the beta pipeline,
-      # because together they take minutes.
-      # The game's first window waits while Mesa and LLVM page in from the runner's cold disk, 0 to 20 seconds a
-      # run, so they are read into the page cache while Gradle compiles.
+      - uses: ./.github/actions/preload-gl
+      # The built jars in a real game, for PerfTest alone.
       - working-directory: mod
-        run: |
-          {
-            gl=$(ls /usr/lib/*-linux-gnu/libGLX_mesa.so.0 /usr/lib/*-linux-gnu/libgallium-*.so)
-            cat $gl $(ldd $gl | awk '$3 ~ /^\// { print $3 }' | sort -u) > /dev/null
-          } 2>/dev/null &
-          ./gradlew ${{ steps.setup.outputs.gradle-args }} runProdClientGameTest -Pgametests=PerfTest
+        run: ./gradlew ${{ steps.setup.outputs.gradle-args }} runProdClientGameTest -Pgametests=PerfTest
       - if: always()
         run: cat mod/build/run/prodClientGameTest/perf.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
       - if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && hashFiles('mod/build/run/prodClientGameTest/perf.md') != ''
@@ -81,6 +74,37 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: perf
+          path: |
+            mod/build/run/prodClientGameTest/logs
+            mod/build/run/prodClientGameTest/screenshots
+          if-no-files-found: ignore
+      - uses: ./.github/actions/time-limit
+        with:
+          warm: ${{ steps.setup.outputs.warm }}
+
+  # The game tests the change reaches, as GameTestPick.kt picks them, against the built jars. The beta pipeline runs
+  # every one, because together they take minutes. On main the change is empty, and the run keeps the job's caches warm
+  # for pull requests, which cannot read a cache another pull request saved.
+  gametests:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 10
+    steps:
+      # The pick diffs against main.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: setup
+        uses: ./.github/actions/setup-mod
+        with:
+          cache: gametests
+      - uses: ./.github/actions/preload-gl
+      - working-directory: mod
+        run: ./gradlew ${{ steps.setup.outputs.gradle-args }} runProdClientGameTest
+      # Always, so a pull request that changes a screen has its screenshots to look at.
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: gametests
           path: |
             mod/build/run/prodClientGameTest/logs
             mod/build/run/prodClientGameTest/screenshots

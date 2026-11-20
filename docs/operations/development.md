@@ -49,12 +49,8 @@ Follow the [`feature` skill](../../mod/.claude/skills/feature/SKILL.md). A featu
 
 ## Checks
 
-`mise run check` must pass. It runs `check:mod`, `check:backend`, `check:web` and `check:docs`, and each one runs alone too.
+A commit runs `mise run check`, which runs `check:mod`, `check:backend`, `check:web` and `check:docs`. `mise install` points git at `.githooks/`, whose `pre-commit` runs it, and a failure prints the log and commits nothing.
 
-A commit also runs the game tests that the mod's change since their last green run reaches, against the jars a player installs. `mise install` points git at `.githooks/`, whose `pre-commit` starts them, and `GameTestPick.kt` in `mod/src/debug/` says how a change reaches a test. The tests run behind the user, taking no keyboard focus and writing the game's sound to `audio.wav` in the run folder instead of the speakers. [Issue 19](https://github.com/noxaur/ds-mod/issues/19) lists the platforms where that is incomplete.
+A pull request's `gametests` job runs the game tests that its change reaches, against the jars a player installs, and `GameTestPick.kt` in `mod/src/debug/` says how a change reaches a test. Each test's time is in the log as `TestClock:`, and a test over 20 seconds fails the run. The beta pipeline runs every game test.
 
-To run them by hand, `./gradlew runProdClientGameTest` picks them the same way, `-Pgametests=ChatTest,KitTest` names them, and `runClientGameTest` runs them on the debug build without building the jars.
-
-One test takes about 30 seconds, most of it booting the game. The whole suite takes minutes, so the beta pipeline runs it, and `-Pgametests=all` runs it here. Each test's time is in the log as `TestClock:`, and a test over 20 seconds fails the run. `PerfTest` writes its table to `build/run/prodClientGameTest/perf.md`.
-
-To see a screen, write a game test that opens it and calls `takeScreenshot`. The image lands in `mod/build/run/clientGameTest/screenshots/`.
+To see a screen, write a game test that opens it and calls `takeScreenshot`. The job uploads its log and screenshots as the `gametests` artifact, which `gh run download <run id> -n gametests` fetches.

@@ -4,7 +4,7 @@ What runs on a pull request, on `main`, and before a beta reaches players. Why C
 
 ## CI
 
-`.github/workflows/ci.yml` runs on every pull request and on `main`. It runs each `check:` task in its own job, and a `perf` job that boots the built jars and runs `PerfTest`. That job posts the table as a comment on the pull request, and fails when a row is over its cap in `mod/src/gametest/resources/perf-budgets.json`. Raise a cap only when the user agrees.
+`.github/workflows/ci.yml` runs on every pull request and on `main`. It runs each `check:` task in its own job, a `gametests` job that runs the game tests the change reaches, and a `perf` job that boots the built jars and runs `PerfTest`. That job posts the table as a comment on the pull request, and fails when a row is over its cap in `mod/src/gametest/resources/perf-budgets.json`. Raise a cap only when the user agrees.
 
 Each job fails when it takes over 3 minutes. A run that had to download its dependencies, after a version bump in `gradle.properties` or `mise.toml`, or a new Gradle wrapper, is let through and says so. When a job nears its 3 minutes, make it faster or move the slow part to the beta pipeline.
 

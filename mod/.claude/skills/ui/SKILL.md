@@ -106,4 +106,4 @@ One line has one `value`. A line where everything is highlighted has no highligh
 
 ## Done when
 
-A client game test shows the surface in a screenshot, as `SurfacesTest` does, and you have looked at the image. A screen or a kit component is shown in both themes. A feature that only fills a layer `SurfacesTest` already shows is done when its replay transcript reads right. A control is done when each convention of its kind is built or named in the PR as left out, and a test drives each press, drag and key.
+A client game test shows the surface in a screenshot, as `SurfacesTest` does, and you have looked at the image in the pull request's `gametests` artifact. A screen or a kit component is shown in both themes. A feature that only fills a layer `SurfacesTest` already shows is done when its replay transcript reads right. A control is done when each convention of its kind is built or named in the PR as left out, and a test drives each press, drag and key.

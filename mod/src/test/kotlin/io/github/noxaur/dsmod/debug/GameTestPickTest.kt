@@ -55,6 +55,15 @@ class GameTestPickTest {
     }
 
     @Test
+    fun `a change that reaches more tests than a pick runs runs the smoke test`() {
+        val wide = (1..MOST_PICKED + 1).flatMap { listOf("$edge/F$it.kt" to "object F$it", "$gametest/F${it}Test.kt" to "class F${it}Test { val x = F$it }") }.toMap()
+        val names = wide.keys.filter { it.endsWith("Test.kt") }.map { it.substringAfterLast('/').removeSuffix(".kt") }.toSet()
+        val edges = wide.keys.filterNot { it.endsWith("Test.kt") }
+        assertEquals(setOf(SMOKE_TEST), pickGameTests(sources + wide, tests + names, edges).tests)
+        assertEquals(MOST_PICKED, pickGameTests(sources + wide, tests + names, edges.take(MOST_PICKED)).tests.size)
+    }
+
+    @Test
     fun `every file of edge and debug reaches a game test`() {
         val mod = File(".")
         val sources = gameTestSources(mod)
