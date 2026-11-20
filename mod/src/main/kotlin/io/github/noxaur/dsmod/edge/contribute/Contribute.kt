@@ -219,8 +219,8 @@ object Contribute {
     fun tick(game: Game, report: Boolean, now: Long) {
         if ((game.metrics.onUnparsed != null) != report) game.metrics.onUnparsed = if (report) hear else null
         if (report && DsModClient.active) game.metrics.time("item-sights") { sights.poll(Minecraft.getInstance()) } else sights.reset()
-        flush(game, unknowns, report, now, "contribute.unknowns") { unknowns(it) }
-        flush(game, items, report, now, "contribute.items") { items(it) }
+        flush(game, unknowns.batch, report, now, "contribute.unknowns") { unknowns(it) }
+        flush(game, items.batch, report, now, "contribute.items") { items(it) }
     }
 
     private fun <T : Any> flush(game: Game, batch: Batch<T>, report: Boolean, now: Long, name: String, send: Backend.(List<T>) -> Unit) {

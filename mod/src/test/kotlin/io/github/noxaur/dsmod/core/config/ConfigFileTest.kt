@@ -86,15 +86,15 @@ class ConfigFileTest {
         // Loot Alerts became Rare Drop Alert, and its star followed its former key to the feature's row.
         assertEquals(listOf("fullbright", "rare-drop-alert", "hudScale", "beamSections", "resetAnimations"), SettingsTree.favorites(c.favorites))
 
-        assertFalse(tree.feature<HideCooldownMessages>().enabled)
-        assertFalse(tree.feature<CopyChat>().enabled)
+        assertFalse(tree.feature<HideCooldownMessages>().feature.enabled)
+        assertFalse(tree.feature<CopyChat>().feature.enabled)
 
         assertFalse(
-            tree.feature<ZealotTracker>().enabled || tree.feature<EyeGuard>().enabled || tree.feature<DragonTimer>().enabled ||
-                tree.feature<FireballAlert>().enabled || tree.feature<ProtectorStatus>().enabled || tree.feature<BossFightTracker>().enabled,
+            tree.feature<ZealotTracker>().feature.enabled || tree.feature<EyeGuard>().feature.enabled || tree.feature<DragonTimer>().feature.enabled ||
+                tree.feature<FireballAlert>().feature.enabled || tree.feature<ProtectorStatus>().feature.enabled || tree.feature<BossFightTracker>().feature.enabled,
         )
         tree.feature<ProtectorSpawnBeam>().run {
-            assertFalse(enabled)
+            assertFalse(feature.enabled)
             assertEquals(listOf(Section(20, 60), Section(150, 200)), sections.value)
             assertTrue(inFight.value)
         }
@@ -104,16 +104,16 @@ class ConfigFileTest {
             assertEquals(344, settingsKey)
             assertEquals(71, favoriteKey)
         }
-        assertTrue(tree.feature<Fullbright>().enabled && tree.feature<HideExplosions>().enabled)
+        assertTrue(tree.feature<Fullbright>().feature.enabled && tree.feature<HideExplosions>().feature.enabled)
         tree.feature<Animations>().run {
-            assertFalse(enabled)
+            assertFalse(feature.enabled)
             assertEquals(SwingStyle.EXHIBITION, swingStyle.value)
             assertEquals(listOf(1.5f, 0.75f, 0.25f, -0.5f, 0.1f, 45f, -30f, 12f), listOf(swingSpeed, itemSize, itemX, itemY, itemZ, itemYaw, itemPitch, itemRoll).map { it.value })
             assertFalse(scaleSwing.value)
             assertTrue(noSwing.value && noBowSwing.value && ignoreHaste.value && noEquipReset.value)
         }
         tree.feature<EquipmentDisplay>().run {
-            assertFalse(enabled)
+            assertFalse(feature.enabled)
             assertEquals(listOf(EquipmentPiece.PET, EquipmentPiece.HELMET, EquipmentPiece.BOOTS), pieces.value)
             assertEquals(EquipmentLayout.COLUMN, layout.value)
             assertEquals(PetLook.NAME, petLook.value)
@@ -122,28 +122,28 @@ class ConfigFileTest {
             assertEquals(HudDock.RIGHT_OF_HOTBAR, placement.value)
         }
         tree.feature<InventoryHud>().run {
-            assertTrue(enabled)
+            assertTrue(feature.enabled)
             assertEquals(listOf(InventoryRow.HOTBAR, InventoryRow.TOP), shownRows.value)
             assertEquals(InventoryLook.INVENTORY, look.value)
         }
         tree.feature<EtherwarpOutline>().run {
-            assertFalse(enabled || failed.value || throughWalls.value)
+            assertFalse(feature.enabled || failed.value || throughWalls.value)
             assertEquals(BoxStyle.FILLED, style.value)
             assertEquals(3.5f, width.value)
             assertTrue(withoutSneak.value)
         }
         tree.feature<Camera>().run {
-            assertFalse(enabled)
+            assertFalse(feature.enabled)
             assertEquals(listOf(12.5f, 1.2f, -10f, 40f), listOf(distance, height, tilt, smoothing).map { it.value })
             assertEquals(Views.SKIP_FRONT, views.value)
         }
         tree.feature<FreeLook>().run {
-            assertFalse(enabled)
+            assertFalse(feature.enabled)
             assertEquals(4, key.value)
             assertEquals(KeyMode.TOGGLE, mode.value)
         }
         tree.feature<CommandBinds>().run {
-            assertFalse(enabled)
+            assertFalse(feature.enabled)
             assertEquals(
                 listOf(
                     CommandBind("Warp End", "/warp end", listOf(341, 69), false, Where.MENUS, Area.END, 2, false, true, "Travel"),
@@ -156,10 +156,10 @@ class ConfigFileTest {
             assertEquals(listOf("Travel"), offGroups.value)
             assertEquals(400f, sequenceGap.value)
         }
-        tree.feature<ProfileViewer>().run { assertFalse(enabled || clickNames.value) }
+        tree.feature<ProfileViewer>().run { assertFalse(feature.enabled || clickNames.value) }
 
         tree.feature<ItemRarity>().run {
-            assertFalse(enabled)
+            assertFalse(feature.enabled)
             assertEquals(RarityPreset.CUSTOM, preset.value)
             // MoulConfig's Gson wrote a style as {}, since its fields had no @Expose, so the old file holds no custom look.
             assertEquals(SlotStyle(), inventoryStyle.value)
@@ -168,29 +168,29 @@ class ConfigFileTest {
             assertTrue(markCommon.value)
         }
         tree.feature<MenuTheme>().run {
-            assertFalse(enabled)
+            assertFalse(feature.enabled)
             assertEquals(MenuLook.GLASS, menuLook.value)
             assertEquals(35f, glassOpacity.value)
         }
-        assertFalse(tree.feature<FixedMenuLayout>().enabled || tree.feature<HideGlassPanes>().enabled || tree.feature<KeepCursor>().enabled)
+        assertFalse(tree.feature<FixedMenuLayout>().feature.enabled || tree.feature<HideGlassPanes>().feature.enabled || tree.feature<KeepCursor>().feature.enabled)
         tree.feature<SlotLock>().run {
-            assertFalse(enabled)
+            assertFalse(feature.enabled)
             assertEquals(74, slotLockKey.value)
             assertEquals(3, itemLockKey.value)
         }
-        assertTrue(tree.feature<ArmorSwapGuard>().enabled)
+        assertTrue(tree.feature<ArmorSwapGuard>().feature.enabled)
 
-        assertFalse(c.betterUi.enabled || tree.feature<BackButtons>().enabled || tree.feature<MenuTabs>().enabled)
+        assertFalse(c.betterUi.enabled || tree.feature<BackButtons>().feature.enabled || tree.feature<MenuTabs>().feature.enabled)
         assertEquals(
             listOf(MenuTab(TabEdge.TOP, 2, "bazaar", "minecraft:gold_ingot", "Bazaar"), MenuTab(TabEdge.BOTTOM, 6, item = "", tooltip = "Search", search = true)),
             tree.feature<MenuTabs>().tabs.value,
         )
 
         tree.feature<RareDropAlert>().run {
-            assertFalse(enabled)
+            assertFalse(feature.enabled)
             assertEquals(RareDropAlert.LootTier.RNGESUS, least.value)
         }
-        assertFalse(tree.feature<SlayerTracker>().enabled || tree.feature<SlayerBossAlert>().enabled)
+        assertFalse(tree.feature<SlayerTracker>().feature.enabled || tree.feature<SlayerBossAlert>().feature.enabled)
 
         c.hud.run {
             assertEquals(mapOf("zealot-tracker" to DsModConfig.Position(0.25f, 0.5f, 1.5f), "dragon-timer" to DsModConfig.Position(0.75f, 0.125f, 0.75f)), positions)
@@ -198,7 +198,7 @@ class ConfigFileTest {
             assertFalse(background)
             assertEquals(1.75f, scale)
         }
-        assertFalse(tree.feature<ChatHudEditor>().enabled)
+        assertFalse(tree.feature<ChatHudEditor>().feature.enabled)
 
         assertTrue(c.contribute.reportGameData)
     }
@@ -226,7 +226,7 @@ class ConfigFileTest {
         path.writeText("""{"general":{"fullbright":true,"swingStyle":"GONE","removedSetting":3},"gone":{}}""")
         val file = ConfigFile(path)
         val tree = SettingsTree(file.load())
-        assertTrue(tree.feature<Fullbright>().enabled)
+        assertTrue(tree.feature<Fullbright>().feature.enabled)
         assertEquals(SwingStyle.VANILLA, tree.feature<Animations>().swingStyle.value)
         assertEquals(SettingsTree().feature<ProtectorSpawnBeam>().sections.value, tree.feature<ProtectorSpawnBeam>().sections.value)
         assertNull(file.unreadable)

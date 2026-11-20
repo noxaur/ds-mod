@@ -4,6 +4,7 @@ import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Abilities
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.Area
@@ -34,13 +35,14 @@ import kotlin.math.ceil
  * A charging set bonus, `(4) Every 8s your next hit blinks you`, starts on the player's own hit while the set is worn, and
  * a hit while it charges does not restart it, so the server sends nothing for it.
  */
-class AbilityCooldowns(config: DsModConfig) :
-    Feature(config, "ability-cooldowns", Area.ANYWHERE, Store.GENERAL, "Time your item abilities and Riftwalker's charged hit.") {
-    val list = switch("cooldownList", "List", "List the abilities you are waiting on, on the HUD.", default = true)
-    val onItems = switch("cooldownOnItems", "On Items", "Drain a wash over the item and count down its seconds.", default = true)
-    val shortest = number("cooldownShortest", "Shortest Listed", "List only cooldowns at least this many seconds long.", 2f, 0f..20f, step = 0.5f, unit = "s")
-    val readyAlert = switch("cooldownReadyAlert", "Ready Alert", "Alert you when a long cooldown is over.", default = false)
-    val alertFrom = number("cooldownAlertFrom", "Alert From", "Alert only for cooldowns at least this many seconds long.", 20f, 1f..120f, step = 1f, unit = "s")
+class AbilityCooldowns(config: DsModConfig) : HasFeature {
+    override val feature = Feature(config, "ability-cooldowns", Area.ANYWHERE, Store.GENERAL, "Time your item abilities and Riftwalker's charged hit.", hud = ::hud, slots = ::slots)
+
+    val list = feature.switch("cooldownList", "List", "List the abilities you are waiting on, on the HUD.", default = true)
+    val onItems = feature.switch("cooldownOnItems", "On Items", "Drain a wash over the item and count down its seconds.", default = true)
+    val shortest = feature.number("cooldownShortest", "Shortest Listed", "List only cooldowns at least this many seconds long.", 2f, 0f..20f, step = 0.5f, unit = "s")
+    val readyAlert = feature.switch("cooldownReadyAlert", "Ready Alert", "Alert you when a long cooldown is over.", default = false)
+    val alertFrom = feature.number("cooldownAlertFrom", "Alert From", "Alert only for cooldowns at least this many seconds long.", 20f, 1f..120f, step = 1f, unit = "s")
 
     /** An ability the lore gave a length, by its name in lower case. */
     private class Known(val name: String, val millis: Long)
@@ -64,10 +66,10 @@ class AbilityCooldowns(config: DsModConfig) :
     private val loreNamed = HashSet<String>()
 
     /** The charging bonus the worn set has now, or null. */
-    private var charge: SetCharge? by world { null }
+    private var charge: SetCharge? by feature.world { null }
 
     /** The ability in the last action bar's mana part, lower case, so a part that stays up counts once. */
-    private var lastCast: String? by world { null }
+    private var lastCast: String? by feature.world { null }
 
     // Whether the container changed since its items were read, and whether a timer changed since the marks were built.
     private var stale = true
@@ -76,24 +78,24 @@ class AbilityCooldowns(config: DsModConfig) :
     private var marksUntil = Long.MAX_VALUE
 
     init {
-        on<ContainerOpened> { _, _ -> stale = true }
-        on<SlotChanged> { _, _ -> stale = true }
+        feature.on<ContainerOpened> { _, _ -> stale = true }
+        feature.on<SlotChanged> { _, _ -> stale = true }
         // Also run when the feature is switched off, which stops the container events, so it reads the items again.
-        on<WorldChanged> { _, _ -> stale = true }
-        on<ActionBar> { bar, now ->
+        feature.on<WorldChanged> { _, _ -> stale = true }
+        feature.on<ActionBar> { bar, now ->
             val plain = bar.text.plain
             val cast = Abilities.cast(plain)
-            if (cast == null && Abilities.castUnread(plain)) unparsed(plain)
+            if (cast == null && Abilities.castUnread(plain)) feature.unparsed(plain)
             if (cast != null && cast != lastCast) start(cast, now)
             lastCast = cast
             ready(now)
         }
-        line(Regex.fromLiteral(Abilities.REFUSAL), Abilities::refusalMillis) { left, now -> refused(left, now) }
-        line("HOWL!") { now -> start("Howl", now) }
+        feature.line(Regex.fromLiteral(Abilities.REFUSAL), Abilities::refusalMillis) { left, now -> refused(left, now) }
+        feature.line("HOWL!") { now -> start("Howl", now) }
         // `☠ Soulcry! +250 ⫽ Ferocity against Endermen for 4s.`
-        line(SOULCRY, SOULCRY) { _, now -> start("Soulcry", now) }
-        line(USED, USED_LINE) { (ability), now -> start(ability, now) }
-        on<Hit> { _, now ->
+        feature.line(SOULCRY, SOULCRY) { _, now -> start("Soulcry", now) }
+        feature.line(USED, USED_LINE) { (ability), now -> start(ability, now) }
+        feature.on<Hit> { _, now ->
             read()
             val bonus = charge ?: return@on
             val key = bonus.name.lowercase()
@@ -148,7 +150,7 @@ class AbilityCooldowns(config: DsModConfig) :
             timer.alerted = true
             // Only a cooldown that ended just now is news.
             if (now - timer.end > READY_MILLIS) continue
-            alert(text { good("${timer.name} Ready!") }, text { value(timer.name); body(" is ready.") })
+            feature.alert(text { good("${timer.name} Ready!") }, text { value(timer.name); body(" is ready.") })
         }
     }
 
@@ -157,7 +159,7 @@ class AbilityCooldowns(config: DsModConfig) :
      * that names it anywhere in its lore. A drill's ability is the one picked in its menu, so it may be written so.
      */
     private fun unheaded(name: String): Known? {
-        val slots = container.slots
+        val slots = feature.container.slots
         for (i in own() until slots.size) {
             val item = slots[i] ?: continue
             if (item.lore.none { it.plain.contains(name, ignoreCase = true) }) continue
@@ -173,12 +175,12 @@ class AbilityCooldowns(config: DsModConfig) :
         if (!stale) return
         stale = false
         marked = true
-        val slots = container.slots
+        val slots = feature.container.slots
         for (i in own() until slots.size) {
             val item = slots[i] ?: continue
             for (ability in read(item).abilities) known[ability.name.lowercase()] = ability
         }
-        if (container.id != INVENTORY || slots.size <= BOOTS) return
+        if (feature.container.id != INVENTORY || slots.size <= BOOTS) return
         val worn = ARMOR.map { slots[it]?.let(::read) }
         val bonus = worn.firstNotNullOfOrNull { it?.charge }
         // The server's count of worn pieces is the lore's, and a helmet that counts as any set's stands in for the set's own.
@@ -192,7 +194,7 @@ class AbilityCooldowns(config: DsModConfig) :
      * The first slot of the player's own items in the open container: all of their inventory, and the last four rows of
      * a menu, so another player's items in their profile neither set a length nor take a mark.
      */
-    private fun own() = if (container.id == INVENTORY) 0 else maxOf(0, container.slots.size - PLAYER_SLOTS)
+    private fun own() = if (feature.container.id == INVENTORY) 0 else maxOf(0, feature.container.slots.size - PLAYER_SLOTS)
 
     private fun read(item: Item): Read = reads.getOrPut(item) {
         if (reads.size > MAX_READS) reads.clear()
@@ -201,13 +203,13 @@ class AbilityCooldowns(config: DsModConfig) :
         Read(abilities.map { it.name.lowercase() } + listOfNotNull(charge?.name?.lowercase()), abilities, charge, Abilities.anySetHelmet(item))
     }
 
-    override fun hud(now: Long): HudBlock? {
+    fun hud(now: Long): HudBlock? {
         read()
         if (!list.value) return null
         val from = (shortest.value * 1000).toLong()
         val shown = timers.values.filter { it.lore >= from && now - it.end < READY_MILLIS }.sortedBy { it.end }
         if (shown.isEmpty()) return null
-        return block {
+        return feature.block {
             for (timer in shown) {
                 val left = timer.end - now
                 if (left > 0) {
@@ -219,14 +221,14 @@ class AbilityCooldowns(config: DsModConfig) :
         }
     }
 
-    override fun slots(now: Long): Map<Int, SlotMark> {
+    fun slots(now: Long): Map<Int, SlotMark> {
         read()
         if (!onItems.value) return emptyMap()
         if (!marked && now < marksUntil) return marks
         marked = false
         val next = HashMap<Int, SlotMark>()
         var until = Long.MAX_VALUE
-        val slots = container.slots
+        val slots = feature.container.slots
         for (slot in own() until slots.size) {
             val item = slots[slot] ?: continue
             var timer: Timer? = null

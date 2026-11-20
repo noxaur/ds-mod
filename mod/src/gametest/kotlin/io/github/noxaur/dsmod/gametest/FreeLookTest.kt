@@ -90,7 +90,7 @@ class FreeLookTest : FabricClientGameTest {
                 context.runOnClient<Nothing> { it.gui.setScreen(null) }
                 context.waitTicks(3)
 
-                freeLook.enabled = false
+                freeLook.feature.enabled = false
                 context.input.holdKey(key)
                 context.waitTicks(3)
                 check(!Cameras.looking && view() == CameraType.FIRST_PERSON) { "The key works with Free Look off" }
@@ -98,7 +98,7 @@ class FreeLookTest : FabricClientGameTest {
                 context.waitTicks(3)
             } finally {
                 context.input.releaseKey(key)
-                freeLook.enabled = true
+                freeLook.feature.enabled = true
                 freeLook.mode.value = KeyMode.HOLD
                 context.runOnClient<Nothing> { it.options.cameraType = CameraType.FIRST_PERSON }
             }

@@ -1,5 +1,9 @@
 package io.github.noxaur.dsmod.core.feature.general
 
+import io.github.noxaur.dsmod.core.config.Store
+import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.HasFeature
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.game.ContainerState.Companion.INVENTORY
 import io.github.noxaur.dsmod.core.game.EntitySeen
@@ -73,13 +77,16 @@ enum class PetLook(private val label: String) {
  * name is the sidebar's: dragsim.co floats each pet beside its owner. Until one of those is seen, or with [petLook]
  * on Name, the pet is a line under the icons, as the sidebar writes it, with its held item once the menu showed it.
  */
-class EquipmentDisplay(config: DsModConfig) : InventoryReader(config, "equipment-display", "Show your armor and pet on the HUD.") {
-    val pieces = order("equipmentPieces", "Pieces", "Pick the pieces to show, and drag them into order.", EquipmentPiece.entries)
-    val layout = choice("equipmentLayout", "Layout", "Line the pieces up in a row or a column.", EquipmentLayout.ROW)
-    val look = choice("equipmentLook", "Look", "Show the pieces on the plate, on nothing, or in hotbar slots.", EquipmentLook.PLATE)
-    override val placement = choice("equipmentPlacement", "Placement", "Keep the pieces where you put them, or beside your hotbar.", HudDock.FREE)
-    val petLook = choice("petLook", "Pet Look", "Show your pet as its head, or as its name and level.", PetLook.ICON)
-    val petPosition = choice("petPosition", "Pet Position", "Put your pet among the armor, or on a row above or below it.", PetPosition.WITH_ARMOR)
+class EquipmentDisplay(config: DsModConfig) : HasFeature {
+    override val feature = Feature(config, "equipment-display", Area.ANYWHERE, Store.GENERAL, "Show your armor and pet on the HUD.", hud = ::hud)
+    private val inventory = InventoryReader(feature)
+
+    val pieces = feature.order("equipmentPieces", "Pieces", "Pick the pieces to show, and drag them into order.", EquipmentPiece.entries)
+    val layout = feature.choice("equipmentLayout", "Layout", "Line the pieces up in a row or a column.", EquipmentLayout.ROW)
+    val look = feature.choice("equipmentLook", "Look", "Show the pieces on the plate, on nothing, or in hotbar slots.", EquipmentLook.PLATE)
+    val placement = feature.placement("equipmentPlacement", "Keep the pieces where you put them, or beside your hotbar.")
+    val petLook = feature.choice("petLook", "Pet Look", "Show your pet as its head, or as its name and level.", PetLook.ICON)
+    val petPosition = feature.choice("petPosition", "Pet Position", "Put your pet among the armor, or on a row above or below it.", PetPosition.WITH_ARMOR)
 
     /** The settings the block was built with, so a refresh rebuilds it only when one changed. */
     private data class Shown(
@@ -92,51 +99,51 @@ class EquipmentDisplay(config: DsModConfig) : InventoryReader(config, "equipment
     )
 
     private var worn = emptyMap<EquipmentPiece, Item>()
-    private var pet: Pet? by session { null }
+    private var pet: Pet? by feature.session { null }
 
     // Each by the pet's name without its level, which goes up in play: the active pet's item in the Pets menu, the
     // item it holds, and the head of each pet seen near the player. A pet's head is the same whoever owns it, and
     // another player's pet can float nearer than the player's own, so the sidebar's pet picks its head from all of them.
-    private var menuPet: Pair<String, Item>? by session { null }
-    private var held: String? by session { null }
+    private var menuPet: Pair<String, Item>? by feature.session { null }
+    private var held: String? by feature.session { null }
     private val heads = HashMap<String, Item>()
 
     private var shown = settings()
     private var block: HudBlock? = null
 
     init {
-        on<SlotChanged> { event, _ ->
-            if (container.id == INVENTORY && ARMOR.any { it.slot == event.slot }) stale = true
-            if (container.title?.plain != PetCard.MENU) return@on
+        feature.on<SlotChanged> { event, _ ->
+            inventory.changed(event) { slot -> ARMOR.any { it.slot == slot } }
+            if (feature.container.title?.plain != PetCard.MENU) return@on
             val card = event.item?.let(PetCard::of) ?: return@on
             menuPet = card.pet.name to card.icon
             held = card.held?.name
             block = build()
         }
         // The next session may bring another pet, and the sidebar names it only when it arrives. A head stays its pet's.
-        on<LeftServer> { _, _ -> block = build() }
-        on<Sidebar> { event, _ ->
+        feature.on<LeftServer> { _, _ -> block = build() }
+        feature.on<Sidebar> { event, _ ->
             // Between worlds the sidebar is empty until the new one arrives, and the pet is still out.
             if (event.lines.all { it.plain.isBlank() }) return@on
             val line = event.lines.firstOrNull { it.plain.trimStart().startsWith(PREFIX) }
             val value = line?.plain?.trim()?.removePrefix(PREFIX)?.trim()
             pet = value?.let { Pet.of(line, it) }
-            if (value != null && pet == null && value != NONE) unparsed(line.plain)
+            if (value != null && pet == null && value != NONE) feature.unparsed(line.plain)
             block = build()
         }
-        readEntities(Pet.STANDS)
-        on<EntitySeen> { seen, _ ->
+        feature.readEntities(Pet.STANDS)
+        feature.on<EntitySeen> { seen, _ ->
             val (name, head) = Pet.worn(seen) ?: return@on
             heads[name] = head
             block = build()
         }
     }
 
-    override fun hud(now: Long): HudBlock? {
-        if (stale && container.id == INVENTORY && container.slots.size > LAST_SLOT) {
-            stale = false
+    fun hud(now: Long): HudBlock? {
+        if (inventory.stale && feature.container.id == INVENTORY && feature.container.slots.size > LAST_SLOT) {
+            inventory.stale = false
             val next = HashMap<EquipmentPiece, Item>()
-            for (piece in ARMOR) container.slots[piece.slot]?.let { next[piece] = it }
+            for (piece in ARMOR) feature.container.slots[piece.slot]?.let { next[piece] = it }
             if (next != worn) {
                 worn = next
                 block = build()
@@ -164,7 +171,7 @@ class EquipmentDisplay(config: DsModConfig) : InventoryReader(config, "equipment
         val apart = icon.takeIf { !inline }
         val named = pet.takeIf { icon == null }
         if (armor.all { it == null } && apart == null && named == null) return null
-        return block(headed = false, look = shown.look.hud, dock = shown.placement) {
+        return feature.block(headed = false, look = shown.look.hud, dock = shown.placement) {
             val armorRows = {
                 if (armor.any { it != null }) {
                     if (shown.layout == EquipmentLayout.ROW) items(armor) else armor.forEach { items(listOf(it)) }

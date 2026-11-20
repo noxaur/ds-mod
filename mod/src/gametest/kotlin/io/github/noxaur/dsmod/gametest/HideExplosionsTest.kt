@@ -28,12 +28,12 @@ class HideExplosionsTest : FabricClientGameTest {
             check(made(context, explosion = true)) { "The client made no explosion with the hider off" }
             explode("explosion-shown")
             try {
-                DsModClient.feature<HideExplosions>().enabled = true
+                DsModClient.feature<HideExplosions>().feature.enabled = true
                 check(!made(context, explosion = true)) { "The client still made an explosion" }
                 check(made(context, explosion = false)) { "The hider stopped a flame too" }
                 explode("explosion-hidden")
             } finally {
-                DsModClient.feature<HideExplosions>().enabled = false
+                DsModClient.feature<HideExplosions>().feature.enabled = false
             }
         }
     }

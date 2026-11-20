@@ -18,16 +18,17 @@ import kotlinx.serialization.json.contentOrNull
  * `entry`, so two items that look the same go once. [own] gives the names the player surely sees, their own and the tab
  * list's, which the [Redactor] removes from every name and lore line. Call it on the client thread.
  */
-class ItemSightings(private val own: () -> Set<String>) :
-    Batch<ItemSighting>({ listOf(it.entry, it.glint, it.skinId, it.skullTexture, it.lore) }) {
+class ItemSightings(private val own: () -> Set<String>) {
+    /** What waits to be sent. */
+    val batch = Batch<ItemSighting> { listOf(it.entry, it.glint, it.skinId, it.skullTexture, it.lore) }
 
     /** Collects what [item] looks like, unless it is not an item of the server's, or the backend would refuse it. */
     fun see(item: Item) {
-        if (full) return
+        if (batch.full) return
         val redacted = (Redactor(own()).redact(SlotChanged(0, item)) as SlotChanged).item ?: return
         // The redactor drops a skin, as a capture must, but a head's texture is what a sighting is for. The skin is only
         // its address, with no name or id beside it, and the backend draws it only once a second player saw it.
-        add(sighting(redacted.copy(skin = item.skin)) ?: return)
+        batch.add(sighting(redacted.copy(skin = item.skin)) ?: return)
     }
 
     private fun sighting(item: Item): ItemSighting? {

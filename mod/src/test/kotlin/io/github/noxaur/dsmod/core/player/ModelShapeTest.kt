@@ -42,7 +42,7 @@ class ModelShapeTest {
     @Test
     fun `reset puts the shape back and keeps the switch and whose model`() {
         val g = SettingsTree().feature<PlayerModel>()
-        g.enabled = true
+        g.feature.enabled = true
         g.target.value = ModelTarget.EVERYONE
         g.size.value = 2f
         g.width.value = 0.5f
@@ -55,7 +55,7 @@ class ModelShapeTest {
         g.pose.value = ModelPose.T_POSE
         g.reset()
         val fresh = SettingsTree().feature<PlayerModel>()
-        assertEquals(true, g.enabled)
+        assertEquals(true, g.feature.enabled)
         assertEquals(ModelTarget.EVERYONE, g.target.value)
         fun PlayerModel.shape() = listOf(size, width, height, depth, tiltForward, tiltSideways, spin).map { it.value }
         assertEquals(fresh.shape(), g.shape())

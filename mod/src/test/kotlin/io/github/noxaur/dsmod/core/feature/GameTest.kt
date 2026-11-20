@@ -44,9 +44,9 @@ class GameTest {
 
     @Test
     fun `the tracker reads only what a feature that is on reads, and every feature's while a capture records`() {
-        tree.feature<BossBeacon>().enabled = false
+        tree.feature<BossBeacon>().feature.enabled = false
         assertEquals(listOf(Pet.STANDS), game.entityFilters())
-        tree.feature<BossBeacon>().enabled = true
+        tree.feature<BossBeacon>().feature.enabled = true
         assertEquals(listOf(Pet.STANDS) + Boss.FILTERS, game.entityFilters())
         assertSame(game.entityFilters(), game.entityFilters())
         tree.features.forEach { it.enabled = false }
@@ -57,7 +57,7 @@ class GameTest {
 
     @Test
     fun `a feature marks the entities it reads until they are gone`() {
-        tree.feature<BossBeacon>().enabled = true
+        tree.feature<BossBeacon>().feature.enabled = true
         game.post(0, pet)
         game.post(0, protector)
         game.tick(0)
@@ -69,10 +69,10 @@ class GameTest {
 
     @Test
     fun `a feature switched on hears the entities the client already holds`() {
-        tree.feature<BossBeacon>().enabled = true
+        tree.feature<BossBeacon>().feature.enabled = true
         game.post(0, protector)
         game.tick(0)
-        tree.feature<BossTracer>().enabled = true
+        tree.feature<BossTracer>().feature.enabled = true
         game.tick(50)
         assertEquals(listOf(Tracer(36339, Role.BAD)), marks("boss-tracer"))
     }
@@ -80,11 +80,9 @@ class GameTest {
     @Test
     fun `a feature switched on between two ticks hears an entity that comes then once`() {
         var heard = 0
-        val listener = object : Feature(config, "listener", Area.ANYWHERE, Store.END, "Hears entities in a test.") {
-            init {
-                readEntities(*Boss.FILTERS.toTypedArray())
-                on<EntitySeen> { _, _ -> heard++ }
-            }
+        val listener = Feature(config, "listener", Area.ANYWHERE, Store.END, "Hears entities in a test.").apply {
+            readEntities(*Boss.FILTERS.toTypedArray())
+            on<EntitySeen> { _, _ -> heard++ }
         }
         val game = Game(listOf(listener))
         listener.enabled = false
@@ -97,43 +95,86 @@ class GameTest {
 
     @Test
     fun `a feature's world state starts over on a hop and its session state when the player leaves`() {
-        val listener = object : Feature(config, "listener", Area.ANYWHERE, Store.END, "Keeps state in a test.") {
-            var inWorld by world { 0 }
-            var inSession by session { 0 }
+        val listener = object : HasFeature {
+            override val feature = Feature(config, "listener", Area.ANYWHERE, Store.END, "Keeps state in a test.")
+            var inWorld by feature.world { 0 }
+            var inSession by feature.session { 0 }
 
             init {
-                on<SystemMessage> { _, _ ->
+                feature.on<SystemMessage> { _, _ ->
                     inWorld++
                     inSession++
                 }
             }
         }
-        val game = Game(listOf(listener))
+        val game = Game(listOf(listener.feature))
         val line = SystemMessage(ServerText(ServerSpan("Anything")))
         game.post(0, line)
         game.post(1, WorldChanged)
         assertEquals(0 to 1, listener.inWorld to listener.inSession)
 
         game.post(2, line)
-        listener.enabled = false
+        listener.feature.enabled = false
         game.tick(3)
         assertEquals(0 to 2, listener.inWorld to listener.inSession)
 
         // The player left while it was off, so it comes back without that session.
         game.post(4, LeftServer)
-        listener.enabled = true
+        listener.feature.enabled = true
         game.tick(5)
         assertEquals(0 to 0, listener.inWorld to listener.inSession)
     }
 
     @Test
     fun `a slayer spawn line in the world the player left claims no boss in the next`() {
-        tree.feature<BossBeacon>().enabled = true
+        tree.feature<BossBeacon>().feature.enabled = true
         say(0, "☠ SLAYER BOSS SPAWNING!")
         game.post(1, WorldChanged)
         game.post(2, EntitySeen(7, "minecraft:zombie", ServerText(ServerSpan("☠ Revenant Horror I 1.5M/3.8M❤"))))
         game.tick(2)
         assertEquals(emptyList(), marks("boss-beacon"))
+    }
+
+    private val revenant = EntitySeen(7, "minecraft:zombie", ServerText(ServerSpan("☠ Revenant Horror I 1.5M/3.8M❤")))
+
+    /** The marks Boss Beacon and Boss Tracer put on the boss of id 7, so a test can see whether both took it for the player's. */
+    private fun ownMarks() = marks("boss-beacon").map { (it as EntityBeam).entity } to marks("boss-tracer").map { (it as Tracer).entity }
+
+    @Test
+    fun `Boss Beacon switched on after the spawn line marks the boss Boss Tracer took for the player's`() {
+        tree.feature<BossTracer>().feature.enabled = true
+        say(0, "☠ SLAYER BOSS SPAWNING!")
+        game.post(1, revenant)
+        tree.feature<BossBeacon>().feature.enabled = true
+        game.tick(2)
+        assertEquals(listOf(7) to listOf(7), ownMarks())
+    }
+
+    @Test
+    fun `switching Boss Beacon off or back on after the player left keeps Boss Tracer's claim`() {
+        tree.feature<BossTracer>().feature.enabled = true
+        game.post(0, LeftServer)
+        say(1, "☠ SLAYER BOSS SPAWNING!")
+        game.post(2, revenant)
+        // Boss Beacon was off when the player left, so it hears that leave only now, after the new session's claim.
+        tree.feature<BossBeacon>().feature.enabled = true
+        game.tick(3)
+        assertEquals(listOf(7) to listOf(7), ownMarks())
+        tree.feature<BossBeacon>().feature.enabled = false
+        game.tick(4)
+        assertEquals(emptyList<Int>() to listOf(7), ownMarks())
+    }
+
+    @Test
+    fun `a slayer boss already in view when Boss Tracer comes on is not taken for the player's`() {
+        tree.feature<BossBeacon>().feature.enabled = true
+        game.post(0, EntitySeen(9, "minecraft:zombie", ServerText(ServerSpan("☠ Atoned Horror V 50M/50M❤"))))
+        say(1_000, "☠ SLAYER BOSS SPAWNING!")
+        tree.feature<BossTracer>().feature.enabled = true
+        game.tick(2_000)
+        game.post(2_500, revenant)
+        game.tick(2_500)
+        assertEquals(listOf(7) to listOf(7), ownMarks())
     }
 
     @Test
@@ -149,12 +190,12 @@ class GameTest {
 
     @Test
     fun `a new world forgets every entity, since it numbers them again`() {
-        tree.feature<BossBeacon>().enabled = true
+        tree.feature<BossBeacon>().feature.enabled = true
         game.post(0, protector)
         game.post(0, WorldChanged)
         game.tick(0)
         assertEquals(emptyList(), marks("boss-beacon"))
-        tree.feature<BossTracer>().enabled = true
+        tree.feature<BossTracer>().feature.enabled = true
         game.tick(50)
         assertEquals(emptyList(), marks("boss-tracer"))
     }
@@ -166,12 +207,12 @@ class GameTest {
         game.tick(0)
         assertNotNull(hud("dragon-timer"))
 
-        tree.feature<DragonTimer>().enabled = false
+        tree.feature<DragonTimer>().feature.enabled = false
         game.tick(1_000)
         assertNull(hud("dragon-timer"))
 
         // The dragon died while the feature saw nothing, so the timer must not pick it up again.
-        tree.feature<DragonTimer>().enabled = true
+        tree.feature<DragonTimer>().feature.enabled = true
         game.tick(2_000)
         assertNull(hud("dragon-timer"))
     }
@@ -182,12 +223,12 @@ class GameTest {
         game.tick(0)
         val before = assertNotNull(hud("protector-status"))
 
-        tree.feature<ProtectorStatus>().enabled = false
+        tree.feature<ProtectorStatus>().feature.enabled = false
         game.tick(1_000)
         assertNull(hud("protector-status"))
 
         // No row changed meanwhile, so no new tab list is coming.
-        tree.feature<ProtectorStatus>().enabled = true
+        tree.feature<ProtectorStatus>().feature.enabled = true
         game.tick(2_000)
         assertEquals(before, hud("protector-status"))
     }
@@ -212,10 +253,8 @@ class GameTest {
     @Test
     fun `a feature that is switched back on hears the sidebar again`() {
         var heard = 0
-        val listener = object : Feature(config, "listener", Area.ANYWHERE, Store.END, "Hears the sidebar in a test.") {
-            init {
-                on<Sidebar> { _, _ -> heard++ }
-            }
+        val listener = Feature(config, "listener", Area.ANYWHERE, Store.END, "Hears the sidebar in a test.").apply {
+            on<Sidebar> { _, _ -> heard++ }
         }
         val game = Game(listOf(listener))
         game.post(0, Sidebar(lines = listOf(ServerText(ServerSpan("⏣ Village")))))
@@ -229,10 +268,8 @@ class GameTest {
     @Test
     fun `a feature locked to an area hears the player leave the server from anywhere`() {
         var heard = 0
-        val listener = object : Feature(config, "listener", Area.END, Store.END, "Hears the player leave in a test.") {
-            init {
-                on<LeftServer> { _, _ -> heard++ }
-            }
+        val listener = Feature(config, "listener", Area.END, Store.END, "Hears the player leave in a test.").apply {
+            on<LeftServer> { _, _ -> heard++ }
         }
         Game(listOf(listener)).post(0, LeftServer)
         assertEquals(1, heard)
@@ -241,10 +278,8 @@ class GameTest {
     @Test
     fun `a feature switched on after the player left the server hears none of its sidebar`() {
         var heard = 0
-        val listener = object : Feature(config, "listener", Area.ANYWHERE, Store.END, "Hears the sidebar in a test.") {
-            init {
-                on<Sidebar> { _, _ -> heard++ }
-            }
+        val listener = Feature(config, "listener", Area.ANYWHERE, Store.END, "Hears the sidebar in a test.").apply {
+            on<Sidebar> { _, _ -> heard++ }
         }
         val game = Game(listOf(listener))
         listener.enabled = false
@@ -294,10 +329,8 @@ class GameTest {
 
     @Test
     fun `a feature the player turned on hides without telling them`() {
-        val hider = object : Feature(config, "hider", Area.ANYWHERE, Store.GENERAL, "Hides every line in a test.", default = false) {
-            init {
-                on<SystemMessage> { _, _ -> hide() }
-            }
+        val hider = Feature(config, "hider", Area.ANYWHERE, Store.GENERAL, "Hides every line in a test.", default = false).apply {
+            on<SystemMessage> { _, _ -> hide() }
         }
         hider.enabled = true
         val game = Game(listOf(hider))

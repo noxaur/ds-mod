@@ -103,7 +103,8 @@ class FeatureReplayTest {
             feature.handlers.isEmpty() && !feature.hasHud,
             "${feature.id} has no fixture. Put an excerpt of a capture at $dir/<name>.jsonl.",
         )
-        val gameTest = Path.of("src/gametest/kotlin/io/github/noxaur/dsmod/gametest/${feature.javaClass.simpleName}Test.kt")
+        val owner = SettingsTree().owners.single { it.feature.id == feature.id }
+        val gameTest = Path.of("src/gametest/kotlin/io/github/noxaur/dsmod/gametest/${owner.javaClass.simpleName}Test.kt")
         assertTrue(gameTest.exists(), "${feature.id} reads nothing from the server, so it needs a game test at $gameTest.")
         return fixtures
     }

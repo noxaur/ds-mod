@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.core.config
 
-import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.ui.Look
 import io.github.noxaur.dsmod.core.ui.Narration
 import io.github.noxaur.dsmod.core.ui.Section
@@ -189,7 +189,7 @@ class Switch(id: String, name: String, description: String, bind: Bind<Boolean>,
         internal set
 
     /** The feature this is the switch of, or null for a switch that is a setting of its own. */
-    var feature: Feature? = null
+    var feature: HasFeature? = null
         internal set
 
     fun toggle() {
@@ -441,7 +441,7 @@ class Rows {
     }
 
     /** [feature]'s switch, with the feature's own rows under it, among other rows. A feature with a group of its own is `group(feature)`. */
-    fun feature(feature: Feature): Switch = add(feature.switch.also { it.children = feature.rows }, null)
+    fun feature(feature: HasFeature): Switch = add(feature.feature.switch.also { it.feature = feature; it.children = feature.feature.rows }, null)
 
     fun switch(
         property: KMutableProperty0<Boolean>, name: String, description: String, id: String = property.name, dependsOn: Switch? = null,

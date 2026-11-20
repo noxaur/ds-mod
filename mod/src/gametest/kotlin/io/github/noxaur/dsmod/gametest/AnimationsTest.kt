@@ -16,13 +16,13 @@ import net.minecraft.world.effect.MobEffects
 class AnimationsTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = HeldItemScene.run(context) {
         val animations = DsModClient.feature<Animations>()
-        animations.enabled = false
+        animations.feature.enabled = false
         val vanilla = shot("animations-vanilla")
         val vanillaSwing = midSwing("animations-vanilla-swing")
         val vanillaDip = midSwing("animations-vanilla-dip", ::swingAtAir)
         check(changed(vanilla, vanillaSwing) > 1000) { "The swing did not move the sword" }
 
-        animations.enabled = true
+        animations.feature.enabled = true
         context.waitTicks(2)
         check(changed(vanilla, shot("animations-default")) == 0) { "At its defaults the sword at rest is not the game's own" }
         check(changed(vanillaSwing, midSwing("animations-default-swing")) == 0) { "At its defaults the swing is not the game's own" }

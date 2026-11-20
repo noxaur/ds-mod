@@ -241,10 +241,10 @@ class PerfTest : FabricClientGameTest {
         world.server.runCommand("""execute at @a run summon zombie ~12 ~ ~ {NoAI:1b,CustomName:"☠ Revenant Horror I 3.8M/3.8M❤"}""")
         world.server.runCommand("""execute at @a run summon zombie ~-12 ~ ~ {NoAI:1b,CustomName:"☠ Atoned Horror V 50M/50M❤"}""")
         context.runOnClient<Nothing> {
-            for (marks in listOf(DsModClient.feature<BossBeacon>(), DsModClient.feature<BossTracer>())) {
-                marks.enabled = true
-                marks.otherSlayers.value = true
-            }
+            val beacon = DsModClient.feature<BossBeacon>()
+            val tracer = DsModClient.feature<BossTracer>()
+            for (feature in listOf(beacon.feature, tracer.feature)) feature.enabled = true
+            for (bosses in listOf(beacon.bosses, tracer.bosses)) bosses.otherSlayers.value = true
         }
         val fight = { at: Int ->
             world.server.runCommand("""execute as @e[tag=perf] run data modify entity @s CustomName set value "[Lv70] Zealot ${13_000 - at}/13k❤"""")

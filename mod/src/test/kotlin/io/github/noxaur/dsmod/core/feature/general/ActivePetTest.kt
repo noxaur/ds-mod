@@ -27,7 +27,7 @@ import kotlin.test.assertNull
 
 class ActivePetTest {
     private val tree = SettingsTree()
-    private val feature = tree.feature<ActivePet>().also { it.enabled = true }
+    private val feature = tree.feature<ActivePet>().also { it.feature.enabled = true }
     private val game = Game(tree.features)
     private var time = 0L
 
@@ -36,7 +36,7 @@ class ActivePetTest {
     @BeforeTest
     fun quiet() {
         // Equipment Display reads the same lines, so it is off to keep the readouts to this feature's.
-        tree.feature<EquipmentDisplay>().enabled = false
+        tree.feature<EquipmentDisplay>().feature.enabled = false
     }
 
     private fun post(vararg events: GameEvent) {
@@ -195,9 +195,9 @@ class ActivePetTest {
     @Test
     fun `leaving the server while the feature is off forgets the pet once it is back on`() {
         post(pet())
-        feature.enabled = false
+        feature.feature.enabled = false
         post(LeftServer)
-        feature.enabled = true
+        feature.feature.enabled = true
         post()
         assertNull(hud())
     }
@@ -253,7 +253,7 @@ class ActivePetTest {
     fun `what the menu showed is kept by pet name for the next session`() {
         post(pet(), *menu(13 to card()))
         val saved = feature().state!!.encode()
-        val next = Game(SettingsTree().also { it.feature<ActivePet>().enabled = true; it.feature<EquipmentDisplay>().enabled = false }.features)
+        val next = Game(SettingsTree().also { it.feature<ActivePet>().feature.enabled = true; it.feature<EquipmentDisplay>().feature.enabled = false }.features)
         next.readouts.single { it.feature.id == "active-pet" }.feature.state!!.load(saved)
         next.post(1, pet())
         next.tick(300)

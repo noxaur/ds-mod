@@ -296,7 +296,7 @@ fun inputSites(classes: List<ByteArray>, widener: List<String> = emptyList()): L
         val does = (shape.flatMap { it.does } + sunk).distinct().sorted()
         val features = classNodes.flatMap { node ->
             node.methods.flatMap { m -> m.instructions.filterIsInstance<LdcInsnNode>().mapNotNull { (it.cst as? Type)?.internalName } }
-        }.filter { "${MOD}core/feature/Feature" in sinks.lineage(it) && it != "${MOD}core/feature/Feature" }.map { it.substringAfterLast('/') }.distinct().sorted()
+        }.filter { "${MOD}core/feature/HasFeature" in sinks.lineage(it) && it != "${MOD}core/feature/HasFeature" }.map { it.substringAfterLast('/') }.distinct().sorted()
         val digest = MessageDigest.getInstance("SHA-256")
         members.sortedBy { it.first.name }.forEach { (_, bytes) -> digest.update(behavior(bytes)) }
         gates += InputSite.Gate(display(group), if (draws) DRAWS else hash(digest), does, features)

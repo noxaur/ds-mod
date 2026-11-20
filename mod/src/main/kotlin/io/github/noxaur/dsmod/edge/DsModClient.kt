@@ -8,7 +8,7 @@ import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Opens
 import io.github.noxaur.dsmod.core.config.Panel
 import io.github.noxaur.dsmod.core.config.SettingsTree
-import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.SystemMessage
@@ -95,17 +95,17 @@ object DsModClient : ClientModInitializer {
     /** Whether the mod runs on the server the player is on. */
     val active: Boolean get() = anyServer || onDragSim || !settings.general.onlyOnDragSim
 
-    private var byType = emptyMap<Class<out Feature>, Feature>()
+    private var byType = emptyMap<Class<out HasFeature>, HasFeature>()
 
     /** Whether the feature of [type] runs now, which is false off dragsim.co whatever its switch says, and outside its area. */
-    fun runs(type: Class<out Feature>): Boolean = byType[type]?.runs == true
+    fun runs(type: Class<out HasFeature>): Boolean = byType[type]?.feature?.runs == true
 
-    inline fun <reified F : Feature> runs() = runs(F::class.java)
+    inline fun <reified F : HasFeature> runs() = runs(F::class.java)
 
     /** The feature of [type], whose settings the edge reads. It is built anew by [restart], so look it up where it is read. */
-    fun <F : Feature> feature(type: Class<F>): F = type.cast(byType.getValue(type))
+    fun <F : HasFeature> feature(type: Class<F>): F = type.cast(byType.getValue(type))
 
-    inline fun <reified F : Feature> feature(): F = feature(F::class.java)
+    inline fun <reified F : HasFeature> feature(): F = feature(F::class.java)
 
     /**
      * Opens the settings over the screen shown now, which Done goes back to, where the player left them: at the row
@@ -147,9 +147,9 @@ object DsModClient : ClientModInitializer {
 
     /** Builds what a launch starts from: every feature, the game's state, what the player saved, and what reads and shows them. */
     private fun start() {
-        val all = SettingsTree(settings).features
-        game = Game(all) { active }
-        byType = all.associateBy { it.javaClass }
+        val tree = SettingsTree(settings)
+        game = Game(tree.features) { active }
+        byType = tree.owners.associateBy { it.javaClass }
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
         readouts = Readouts(game, settings.hud)
         tabs = TabListPoller(game)

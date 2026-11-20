@@ -7,7 +7,7 @@ import io.github.noxaur.dsmod.core.hud.HudMap
 import io.github.noxaur.dsmod.core.hud.HudScale
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Narration
-import io.github.noxaur.dsmod.edge.ui.BoxEditor
+import io.github.noxaur.dsmod.edge.ui.Box
 import io.github.noxaur.dsmod.edge.ui.Editor
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.SettingRows
@@ -36,7 +36,9 @@ class HudLayoutEditor(
     private val panel: Panel<Map<String, DsModConfig.Position>>,
     private val readouts: Readouts,
     private val host: Editor.Host,
-) : BoxEditor() {
+) : Editor {
+    private val box = Box()
+
     private var map = HudMap(1, 1, 1, 1)
     private var mapX = 0
     private var footY = 0
@@ -55,10 +57,14 @@ class HudLayoutEditor(
 
     override val capturing get() = entered || grabbed != null
 
+    override fun view(origin: Int, clipTop: Int, clipBottom: Int, screenWidth: Int, screenHeight: Int) = box.view(origin, clipTop, clipBottom)
+
+    override fun isOver(mouseX: Double, mouseY: Double) = box.isOver(mouseX, mouseY)
+
     override fun layout(x: Int, y: Int, width: Int): Int {
         // While the layout shows, a block with nothing to show still shows its header, so it can be placed.
         if (!readouts.editing) readouts.editing = true
-        place(x, y, width)
+        box.place(x, y, width)
         val window = Minecraft.getInstance().window
         map = HudMap(window.guiScaledWidth, window.guiScaledHeight, width, MAP_TALL)
         mapX = x + (width - map.width) / 2
@@ -71,9 +77,9 @@ class HudLayoutEditor(
             buttons.place(i, bx, w)
             bx -= Kit.GAP
         }
-        height = footY - y + Kit.BUTTON_HEIGHT + Kit.GAP + HINT_LINES * 9 + 2
+        box.height = footY - y + Kit.BUTTON_HEIGHT + Kit.GAP + HINT_LINES * 9 + 2
         refresh()
-        return height
+        return box.height
     }
 
     override fun refresh() {
@@ -86,7 +92,7 @@ class HudLayoutEditor(
         if (selected != null && Hud.find(selected!!) == null) selected = null
         val id = selected
         name = id?.let { "${readouts.title(it)} · ${HudScale.label(readouts.scale(it))}" } ?: ""
-        nameText = text { body(fit(name, buttons.x(0) - x - Kit.GAP)) }.toComponent()
+        nameText = text { body(fit(name, buttons.x(0) - box.x - Kit.GAP)) }.toComponent()
         hint = when {
             grabbed != null -> "Shift drags it without lining up. Escape puts it back."
             Hud.placed().isEmpty() -> ""
@@ -94,21 +100,21 @@ class HudLayoutEditor(
             readouts.isPlaced(id) -> "Arrows nudge it, + and - resize it, Backspace stacks it again."
             else -> "It stacks with the others until you drag it."
         }
-        hintText = wrap(hint, width, HINT_LINES).map { text { muted(it) }.toComponent() }
+        hintText = wrap(hint, box.width, HINT_LINES).map { text { muted(it) }.toComponent() }
     }
 
-    private fun overMap(mouseX: Double, mouseY: Double) = isOver(mouseX, mouseY, mapX, map.width, map.height)
+    private fun overMap(mouseX: Double, mouseY: Double) = box.isOver(mouseX, mouseY, mapX, map.width, map.height)
 
     /** The block under a point of the screen showing the settings, by the point of the game's screen it stands for. */
     private fun blockAt(mouseX: Double, mouseY: Double): Hud.Placed? {
         if (!overMap(mouseX, mouseY)) return null
-        return Hud.at(map.screen(mouseX - mapX).toDouble(), map.screen(mouseY - (origin + top)).toDouble())
+        return Hud.at(map.screen(mouseX - mapX).toDouble(), map.screen(mouseY - (box.origin + box.top)).toDouble())
     }
 
     /** Where the middle of [id]'s block is drawn on the map, on the screen, so a test can grab it. */
     fun pointOf(id: String): Pair<Int, Int>? {
         val block = Hud.find(id) ?: return null
-        return (mapX + (block.x + block.width * block.scale / 2) * map.scale).toInt() to (origin + top + (block.y + block.height * block.scale / 2) * map.scale).toInt()
+        return (mapX + (block.x + block.width * block.scale / 2) * map.scale).toInt() to (box.origin + box.top + (block.y + block.height * block.scale / 2) * map.scale).toInt()
     }
 
     /** How many screen pixels of the game one pixel of the map stands for. */
@@ -117,16 +123,16 @@ class HudLayoutEditor(
     /** The middle of the button named [name] under the map. */
     fun buttonAt(name: String): Pair<Int, Int> {
         val i = BUTTONS.indexOf(name)
-        return buttons.middle(i) to origin + footY + Kit.BUTTON_HEIGHT / 2
+        return buttons.middle(i) to box.origin + footY + Kit.BUTTON_HEIGHT / 2
     }
 
     override fun draw(g: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, keys: Boolean): SettingRows.Tip? {
-        val my = origin + top
+        val my = box.origin + box.top
         val mx = mapX
         val font = Kit.font
         Kit.well(g, mx, my, map.width, map.height)
         val hovered = if (grabbed == null) blockAt(mouseX.toDouble(), mouseY.toDouble()) else null
-        g.enableScissor(mx + 1, maxOf(my + 1, clipTop), mx + map.width - 1, minOf(my + map.height - 1, clipBottom))
+        g.enableScissor(mx + 1, maxOf(my + 1, box.clipTop), mx + map.width - 1, minOf(my + map.height - 1, box.clipBottom))
         val pose = g.pose()
         pose.pushMatrix()
         pose.translate(mx.toFloat(), my.toFloat())
@@ -153,12 +159,12 @@ class HudLayoutEditor(
         }
         if (entered && keys) Kit.ring(g, mx - 1, my - 1, map.width + 2, map.height + 2, Kit.theme.hoverOutline)
 
-        val fy = origin + footY
-        g.text(font, nameText, x, fy + (Kit.BUTTON_HEIGHT - 8) / 2, -1, true)
+        val fy = box.origin + footY
+        g.text(font, nameText, box.x, fy + (Kit.BUTTON_HEIGHT - 8) / 2, -1, true)
         for (i in BUTTONS.indices) {
             buttons.draw(g, i, fy, mouseX.toDouble(), mouseY.toDouble(), buttonActive(i))
         }
-        for (i in hintText.indices) g.text(font, hintText[i], x, fy + Kit.BUTTON_HEIGHT + Kit.GAP + i * 9, -1, true)
+        for (i in hintText.indices) g.text(font, hintText[i], box.x, fy + Kit.BUTTON_HEIGHT + Kit.GAP + i * 9, -1, true)
         if (grabbed != null || hovered != null) g.requestCursor(CursorTypes.RESIZE_ALL)
         return null
     }
@@ -174,13 +180,13 @@ class HudLayoutEditor(
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
         val px = event.x
         val py = event.y
-        if (!isOver(px, py)) {
+        if (!box.isOver(px, py)) {
             // A press elsewhere takes the keys back and still does its own job.
             leave()
             return false
         }
         entered = true
-        val fy = origin + footY
+        val fy = box.origin + footY
         for (i in BUTTONS.indices) {
             if (buttons.at(i, fy, px, py)) {
                 if (buttonActive(i)) press(i)
@@ -195,7 +201,7 @@ class HudLayoutEditor(
         }
         select(block.id)
         when (event.button()) {
-            0 -> mover.grab(block, map.screen(px - mapX).toDouble(), map.screen(py - (origin + top)).toDouble())
+            0 -> mover.grab(block, map.screen(px - mapX).toDouble(), map.screen(py - (box.origin + box.top)).toDouble())
             1 -> press(RESET)
         }
         refresh()
@@ -203,7 +209,7 @@ class HudLayoutEditor(
     }
 
     override fun mouseDragged(event: MouseButtonEvent, dx: Double, dy: Double): Boolean {
-        if (!mover.drag(map.screen(event.x - mapX).toDouble(), map.screen(event.y - (origin + top)).toDouble())) return false
+        if (!mover.drag(map.screen(event.x - mapX).toDouble(), map.screen(event.y - (box.origin + box.top)).toDouble())) return false
         changed()
         return true
     }

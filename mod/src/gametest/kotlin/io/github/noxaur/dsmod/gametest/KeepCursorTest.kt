@@ -24,7 +24,7 @@ class KeepCursorTest : FabricClientGameTest {
             try {
                 check(cursorAfterNext(context, world) == 40.0 to 50.0) { "Keep Cursor let the cursor move" }
 
-                context.runOnClient<Nothing> { DsModClient.feature<KeepCursor>().enabled = false }
+                context.runOnClient<Nothing> { DsModClient.feature<KeepCursor>().feature.enabled = false }
                 val centered = cursorAfterNext(context, world)
                 val middle = context.computeOnClient<Pair<Double, Double>, Nothing> {
                     (it.window.screenWidth / 2).toDouble() to (it.window.screenHeight / 2).toDouble()
@@ -32,7 +32,7 @@ class KeepCursorTest : FabricClientGameTest {
                 check(centered == middle) { "With Keep Cursor off the game should center the cursor at $middle, as vanilla does, and put it at $centered" }
             } finally {
                 context.runOnClient<Nothing> {
-                    DsModClient.feature<KeepCursor>().enabled = true
+                    DsModClient.feature<KeepCursor>().feature.enabled = true
                     it.player!!.closeContainer()
                 }
             }

@@ -8,7 +8,7 @@ import io.github.noxaur.dsmod.core.backend.unwrapped
  * told apart by [key]. A thing is not collected again while it waits, is on its way, or was delivered, and a report
  * goes out rarely, so a player who agreed to it is asked for little. Call it on the client thread.
  */
-open class Batch<T : Any>(private val key: (T) -> Any) {
+class Batch<T : Any>(private val key: (T) -> Any) {
     private val pending = LinkedHashMap<Any, T>()
     private val sending = HashSet<Any>()
     private val sent = HashSet<Any>()

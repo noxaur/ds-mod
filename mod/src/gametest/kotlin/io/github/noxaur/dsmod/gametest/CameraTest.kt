@@ -49,10 +49,10 @@ class CameraTest : FabricClientGameTest {
                 near(shot().distance, 10.0, "The distance set to 10")
                 context.takeScreenshot("camera-distance")
 
-                camera.enabled = false
+                camera.feature.enabled = false
                 context.waitTicks(5)
                 near(shot().distance, 4.0, "The distance with Camera off")
-                camera.enabled = true
+                camera.feature.enabled = true
 
                 camera.height.value = 2f
                 context.waitTicks(5)
@@ -101,7 +101,7 @@ class CameraTest : FabricClientGameTest {
                 camera.tilt.value = 0f
                 camera.smoothing.value = 0f
                 camera.views.value = Views.ALL
-                camera.enabled = true
+                camera.feature.enabled = true
                 context.runOnClient<Nothing> { it.options.cameraType = CameraType.FIRST_PERSON }
             }
         }

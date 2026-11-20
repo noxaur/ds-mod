@@ -18,7 +18,7 @@ import kotlin.test.assertSame
 
 class InventoryHudTest {
     private val tree = SettingsTree()
-    private val feature = tree.feature<InventoryHud>().also { it.enabled = true }
+    private val feature = tree.feature<InventoryHud>().also { it.feature.enabled = true }
     private val game = Game(tree.features)
     private var time = 0L
 

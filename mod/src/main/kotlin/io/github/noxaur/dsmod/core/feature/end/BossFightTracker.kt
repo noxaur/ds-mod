@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.core.feature.end
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import kotlinx.serialization.Serializable
@@ -23,28 +24,29 @@ data class BossLog(val bosses: Map<String, BossRecord> = emptyMap())
  * dragon can fall during that wait, so each summary waits its turn and the header takes the oldest one
  * still inside [LOOT_WINDOW_MILLIS].
  */
-class BossFightTracker(config: DsModConfig) :
-    Feature(config, "boss-fight-tracker", Area.END, Store.END, "Show your rank, damage and loot from the last boss fight.", formerly = listOf("bossDrops")) {
-    private val log = saved(BossLog())
+class BossFightTracker(config: DsModConfig) : HasFeature {
+    override val feature = Feature(config, "boss-fight-tracker", Area.END, Store.END, "Show your rank, damage and loot from the last boss fight.", formerly = listOf("bossDrops"), hud = ::hud)
+
+    private val log = feature.saved(BossLog())
     private var last: String? = null
 
     // A hop leaves the old world's summaries behind. The next world's header is not their loot.
-    private var lastDragon: String? by world { null }
-    private var lastDragonAt by world { Long.MIN_VALUE }
+    private var lastDragon: String? by feature.world { null }
+    private var lastDragonAt by feature.world { Long.MIN_VALUE }
     private var position = 0
     private var damage = ""
     private var fights = 0
     private var loot = emptyList<Pair<Int, String>>()
-    private var lootAt: Long? by world { null }
-    private var lootDragon: String? by world { null }
-    private val awaitingLoot by world { ArrayDeque<Pair<String, Long>>() }
+    private var lootAt: Long? by feature.world { null }
+    private var lootDragon: String? by feature.world { null }
+    private val awaitingLoot by feature.world { ArrayDeque<Pair<String, Long>>() }
 
     // A player's chat line is one line with their name first, so only the server's summary has these on lines of their own.
     private val down = Regex("""^\s+([A-Z][A-Z ]*[A-Z]) DOWN!$""", RegexOption.MULTILINE)
     private val mine = Regex("""^\s+Your Damage: (\S+) \(Position #(\d+)\)$""", RegexOption.MULTILINE)
 
     init {
-        line(Regex("""[^\n]*\n[^\n]* DOWN!\n"""), { text -> down.find(text)?.let { it.groupValues[1] to mine.find(text) } }) { (boss, yours), now ->
+        feature.line(Regex("""[^\n]*\n[^\n]* DOWN!\n"""), { text -> down.find(text)?.let { it.groupValues[1] to mine.find(text) } }) { (boss, yours), now ->
             lootAt = null
             // The summary reaches everyone nearby, and one without this line is for a fight the player did no damage in.
             val (dealt, place) = yours?.destructured ?: return@line
@@ -62,14 +64,14 @@ class BossFightTracker(config: DsModConfig) :
             loot = emptyList()
             record(name) { it.copy(fights = it.fights + 1, first = it.first + if (position == 1) 1 else 0) }
         }
-        line("Here is your loot from the last dragon:") { now ->
+        feature.line("Here is your loot from the last dragon:") { now ->
             lootAt = now
             // The header names no dragon. It belongs to the oldest summary still inside the loot window.
             dropStale(now)
             lootDragon = awaitingLoot.removeFirstOrNull()?.first ?: lastDragon?.takeIf { now - lastDragonAt <= LOOT_WINDOW_MILLIS }
             if (last == lastDragon) loot = emptyList()
         }
-        line(Regex(""" - \d+x """), Regex(""" - (\d+)x (.+)""")) { (amount, item), now ->
+        feature.line(Regex(""" - \d+x """), Regex(""" - (\d+)x (.+)""")) { (amount, item), now ->
             // The rows arrive in the same tick as their header, so a row long after it belongs to some other list.
             if (now - (lootAt ?: return@line) > LOOT_MILLIS) return@line
             val dragon = lootDragon ?: return@line
@@ -88,10 +90,10 @@ class BossFightTracker(config: DsModConfig) :
         log.value = BossLog(bosses + (boss to change(bosses[boss] ?: BossRecord())))
     }
 
-    override fun hud(now: Long): HudBlock? {
+    fun hud(now: Long): HudBlock? {
         val boss = last ?: return null
         val record = log.value.bosses[boss] ?: return null
-        return block {
+        return feature.block {
             row(boss) { value("#$position"); muted(" with $damage") }
             for ((amount, item) in loot) row("Loot") { value("${amount}x $item") }
             row("Fights") { value(fights.toLong()); muted(" (${record.fights} all-time on this boss)") }

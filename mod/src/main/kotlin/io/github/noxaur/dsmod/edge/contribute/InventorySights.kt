@@ -32,7 +32,7 @@ class InventorySights(private val sightings: ItemSightings) {
             val stack = inventory.getItem(i)
             if (stack === stacks[i] && stack.count == counts[i]) continue
             // A slot skipped for want of room is not cached, so it is read again once the batch has some.
-            if (sightings.full || System.nanoTime() > deadline) break
+            if (sightings.batch.full || System.nanoTime() > deadline) break
             if (remember(stacks, counts, i, stack) || stack.isEmpty) continue
             look(stack)
         }
@@ -49,7 +49,7 @@ class InventorySights(private val sightings: ItemSightings) {
         val data = stack.get(DataComponents.CUSTOM_DATA)?.copyTag() ?: return
         val entry = data.getCompoundOrEmpty("item_data").getString("item_id").orElse(null) ?: return
         val skin = data.getCompoundOrEmpty("extra").getCompoundOrEmpty("item_skin").getString("skinId").orElse(null)
-        if (!sightings.fresh(Look(entry, stack.item, stack.hasFoil(), skin, stack.skullTexture(), stack.get(DataComponents.LORE)))) return
+        if (!sightings.batch.fresh(Look(entry, stack.item, stack.hasFoil(), skin, stack.skullTexture(), stack.get(DataComponents.LORE)))) return
         sightings.see(stack.toItem())
     }
 

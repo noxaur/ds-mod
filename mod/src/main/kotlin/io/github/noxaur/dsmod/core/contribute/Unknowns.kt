@@ -14,17 +14,20 @@ import io.github.noxaur.dsmod.core.game.SystemMessage
  * own and the tab list's.
  * Call it on the client thread.
  */
-class Unknowns(private val own: () -> Set<String>) : Batch<Sighting>({ it.kind to it.signature }) {
+class Unknowns(private val own: () -> Set<String>) {
+    /** What waits to be sent. */
+    val batch = Batch<Sighting> { it.kind to it.signature }
+
     /** Records [line] as something [kind] could not read, unless this shape is already waiting or went out. */
     fun see(kind: String, line: String) {
-        if (full || !fresh(kind to line)) return
+        if (batch.full || !batch.fresh(kind to line)) return
         // Redacted as a chat line, so that what a player typed is replaced as well as their name.
         val names = PlayerNames.inText(line).mapTo(HashSet(own()), line::substring)
         val redacted = (Redactor(names).redact(SystemMessage(ServerText(listOf(ServerSpan(line))))) as SystemMessage).text.plain
         val sample = redacted.take(MAX_SAMPLE)
         val signature = SPACES.replace(SIGNATURE_DIGITS.replace(NAME_ALIAS.replace(redacted, "<player>"), "#"), " ")
             .trim().take(MAX_SIGNATURE)
-        add(Sighting(kind.take(MAX_KIND), signature, sample))
+        batch.add(Sighting(kind.take(MAX_KIND), signature, sample))
     }
 
     private companion object {

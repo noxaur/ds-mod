@@ -95,10 +95,10 @@ class RulesTest {
 
     @Test
     fun `a feature in an area's folder is locked to that area`() {
-        val wrong = SettingsTree().features.filter { feature ->
-            val folder = feature.javaClass.packageName.substringAfterLast('.')
-            feature.area != (Area.entries.firstOrNull { it.folder == folder } ?: Area.ANYWHERE)
-        }.map { "${it.javaClass.simpleName} is ${it.area}" }
+        val wrong = SettingsTree().owners.filter { owner ->
+            val folder = owner.javaClass.packageName.substringAfterLast('.')
+            owner.feature.area != (Area.entries.firstOrNull { it.folder == folder } ?: Area.ANYWHERE)
+        }.map { "${it.javaClass.simpleName} is ${it.feature.area}" }
         assertEquals(
             emptyList(),
             wrong,

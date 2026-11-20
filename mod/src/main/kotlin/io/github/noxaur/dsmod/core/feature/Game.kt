@@ -95,6 +95,9 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     /** The open container, as of the last event the edge posted. */
     val container = ContainerState()
 
+    /** Each change of world and each leave of the server, as [Feature.worldNumber] reads it. */
+    private var worlds = 0
+
     private val held = EntityTable()
     private val readers = features.filter { it.entityFilters.isNotEmpty() }.also { check(it.size <= Long.SIZE_BITS) }
     private var reading = 0L
@@ -109,6 +112,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             it.container = container
             it.messages = messages
             it.gate = active
+            it.worlds = { worlds }
         }
     }
 
@@ -176,6 +180,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             // The new world's tab list and sidebar have not arrived, so the old one's area must not outlive the hop. A
             // disconnect changes no world, and a feature switched on after it must not hear the old server's sidebar.
             WorldChanged, LeftServer -> true.also {
+                worlds++
                 lastTab = null
                 lastSidebar = null
                 tab.update(emptyList())
@@ -270,9 +275,9 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             var slots = emptyMap<Int, SlotMark>()
             var marks = emptyList<Mark>()
             if (enabled && feature.area.holds(tab, sidebar)) {
-                metrics.time(readout.metric) { hud = feature.hud(time) }
-                metrics.time(readout.slotsMetric) { slots = feature.slots(time) }
-                metrics.time(readout.marksMetric) { marks = feature.marks(time) }
+                metrics.time(readout.metric) { hud = feature.hud?.invoke(time) }
+                metrics.time(readout.slotsMetric) { slots = feature.slots?.invoke(time) ?: emptyMap() }
+                metrics.time(readout.marksMetric) { marks = feature.marks?.invoke(time) ?: emptyList() }
             }
             if (hud == readout.hud && slots == readout.slots && marks == readout.marks) continue
             readout.hud = hud

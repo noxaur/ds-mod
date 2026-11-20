@@ -87,12 +87,12 @@ class ChatHudEditorPriorityTest : FabricClientGameTest {
             chat.drag(TIMER, still.x + 60, still.y - 60)
             context.runOnClient<Nothing> { it.gui.hud.toggle() }
             chat.block(TIMER).let { check(it.x == still.x && it.y == still.y) { "A drag with F1 moved the block" } }
-            DsModClient.feature<ChatHudEditor>().enabled = false
+            DsModClient.feature<ChatHudEditor>().feature.enabled = false
             try {
                 chat.drag(TIMER, still.x + 60, still.y - 60)
                 chat.block(TIMER).let { check(it.x == still.x && it.y == still.y) { "A drag with the switch off moved the block" } }
             } finally {
-                DsModClient.feature<ChatHudEditor>().enabled = true
+                DsModClient.feature<ChatHudEditor>().feature.enabled = true
             }
             context.setScreen { null }
             DsModClient.settings.hud.positions.remove(TIMER)

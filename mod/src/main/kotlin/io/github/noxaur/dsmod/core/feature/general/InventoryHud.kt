@@ -1,5 +1,9 @@
 package io.github.noxaur.dsmod.core.feature.general
 
+import io.github.noxaur.dsmod.core.config.Store
+import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.HasFeature
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.KeyBind
@@ -52,18 +56,20 @@ enum class InventoryLayout(private val label: String) {
  * hotbar the slot the player holds. The grid hides while a menu is open, which shows the inventory itself, and while
  * every slot picked is empty.
  */
-class InventoryHud(config: DsModConfig) :
-    InventoryReader(config, "inventory-hud", "Show a grid of the items in your inventory on the HUD.", default = false, formerly = listOf("inventoryPreview")) {
-    val shownRows = order("inventoryRows", "Rows", "Pick the rows to show, and drag them into order.", listOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM))
-    val look = choice("inventoryLook", "Look", "Show the items on the plate, on nothing, or as your inventory.", InventoryLook.INVENTORY)
-    val layout = choice("inventoryLayout", "Layout", "Lay each row out across, as in the inventory, or down.", InventoryLayout.ROWS)
-    override val placement = choice("inventoryPlacement", "Placement", "Keep the grid where you put it, or beside your hotbar.", HudDock.FREE)
-    val opacity = number("inventoryOpacity", "Opacity", "Set how solid the Inventory look's panel is.", 100f, 0f..100f, step = 5f, unit = "%")
+class InventoryHud(config: DsModConfig) : HasFeature {
+    override val feature = Feature(config, "inventory-hud", Area.ANYWHERE, Store.GENERAL, "Show a grid of the items in your inventory on the HUD.", default = false, formerly = listOf("inventoryPreview"), hud = ::hud)
+    private val inventory = InventoryReader(feature)
+
+    val shownRows = feature.order("inventoryRows", "Rows", "Pick the rows to show, and drag them into order.", listOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM))
+    val look = feature.choice("inventoryLook", "Look", "Show the items on the plate, on nothing, or as your inventory.", InventoryLook.INVENTORY)
+    val layout = feature.choice("inventoryLayout", "Layout", "Lay each row out across, as in the inventory, or down.", InventoryLayout.ROWS)
+    val placement = feature.placement("inventoryPlacement", "Keep the grid where you put it, or beside your hotbar.")
+    val opacity = feature.number("inventoryOpacity", "Opacity", "Set how solid the Inventory look's panel is.", 100f, 0f..100f, step = 5f, unit = "%")
 
     /** The key that shows or hides the grid, and how, which `InventoryKey` in the edge reads. None always shows it. */
-    val key = keys("inventoryKey", "Key", "Pick a key that shows or hides the grid, or none to always show it.", KeyBind.NONE)
-    val keyMode = choice("inventoryKeyMode", "Key Mode", "Pick Hold to show the grid while the key is down, or Toggle.", KeyMode.TOGGLE)
-    val pickup = switch("inventoryPickup", "Pickup Animation", "Bob an item in the grid as it lands, as the hotbar does.", default = false)
+    val key = feature.keys("inventoryKey", "Key", "Pick a key that shows or hides the grid, or none to always show it.", KeyBind.NONE)
+    val keyMode = feature.choice("inventoryKeyMode", "Key Mode", "Pick Hold to show the grid while the key is down, or Toggle.", KeyMode.TOGGLE)
+    val pickup = feature.switch("inventoryPickup", "Pickup Animation", "Bob an item in the grid as it lands, as the hotbar does.", default = false)
 
     /** The settings the block was built with, so a refresh rebuilds it only when one changed. */
     private data class Shown(
@@ -82,14 +88,14 @@ class InventoryHud(config: DsModConfig) :
     private var block: HudBlock? = null
 
     init {
-        on<SlotChanged> { event, _ -> if (container.id == INVENTORY && event.slot in FIRST..LAST) stale = true }
+        feature.on<SlotChanged> { event, _ -> inventory.changed(event) { it in FIRST..LAST } }
     }
 
-    override fun hud(now: Long): HudBlock? {
-        val read = stale && container.id == INVENTORY && container.slots.size > LAST
+    fun hud(now: Long): HudBlock? {
+        val read = inventory.stale && feature.container.id == INVENTORY && feature.container.slots.size > LAST
         if (read) {
-            stale = false
-            items = container.slots.subList(FIRST, LAST + 1).toList()
+            inventory.stale = false
+            items = feature.container.slots.subList(FIRST, LAST + 1).toList()
         }
         val changed = shown != settings()
         if (changed) shown = settings()
@@ -112,7 +118,7 @@ class InventoryHud(config: DsModConfig) :
         if (items.isEmpty()) return null
         val picked = picked()
         if (slots.all { row -> row.all { it == null } }) return null
-        return block(
+        return feature.block(
             headed = false,
             look = shown.look.hud,
             dock = shown.placement,

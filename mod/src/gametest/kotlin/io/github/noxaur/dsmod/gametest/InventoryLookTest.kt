@@ -26,7 +26,7 @@ class InventoryLookTest : FabricClientGameTest {
         val inventoryHud = DsModClient.feature<InventoryHud>()
         val menuTheme = DsModClient.feature<MenuTheme>()
         val hud = DsModClient.settings.hud
-        val themedBefore = menuTheme.enabled
+        val themedBefore = menuTheme.feature.enabled
         val themeBefore = hud.theme
         val menuLookBefore = menuTheme.menuLook.value
         fun opacity(percent: Float) {
@@ -44,7 +44,7 @@ class InventoryLookTest : FabricClientGameTest {
                 Triple(false, Theme.CHARCOAL, MenuLook.SOLID),
             )
             for ((themed, theme, menuLook) in states) {
-                menuTheme.enabled = themed
+                menuTheme.feature.enabled = themed
                 menuTheme.menuLook.value = menuLook
                 hud.theme = theme
                 context.waitTicks(2)
@@ -71,7 +71,7 @@ class InventoryLookTest : FabricClientGameTest {
                 println("InventoryLookTest: the HUD drew the Inventory look in ${drawMicros(context)}µs a frame, Menu Theme $themed, $theme, $menuLook")
             }
         } finally {
-            menuTheme.enabled = themedBefore
+            menuTheme.feature.enabled = themedBefore
             menuTheme.menuLook.value = menuLookBefore
             hud.theme = themeBefore
         }

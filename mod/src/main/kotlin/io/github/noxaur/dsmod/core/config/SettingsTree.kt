@@ -3,6 +3,8 @@ package io.github.noxaur.dsmod.core.config
 import io.github.noxaur.dsmod.core.feature.boss.BossBeacon
 import io.github.noxaur.dsmod.core.feature.boss.BossTracer
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.HasFeature
+import io.github.noxaur.dsmod.core.feature.boss.SlayerClaim
 import io.github.noxaur.dsmod.core.feature.chat.CopyChat
 import io.github.noxaur.dsmod.core.feature.chat.HideCooldownMessages
 import io.github.noxaur.dsmod.core.feature.end.BossFightTracker
@@ -79,8 +81,8 @@ class Groups {
     }
 
     /** A group that is one feature: its switch beside the heading, [name] by default its title, and its rows under it. */
-    fun group(feature: Feature, name: String = feature.title) {
-        groups += SettingGroup(name, feature.rows, feature.switch)
+    fun group(feature: HasFeature, name: String = feature.feature.title) {
+        groups += SettingGroup(name, feature.feature.rows, feature.feature.switch.also { it.feature = feature })
     }
 
     /** The switch beside a group's heading. */
@@ -101,11 +103,14 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
     val sections: List<SettingSection> = declare(config, mac)
 
     /**
-     * Every feature, which is also the order the HUD stacks their blocks in: the features of one area first, since
+     * Every feature, the class that holds its [Feature], in the order the HUD stacks their blocks in: the features of one area first, since
      * their blocks are what the player is there for, then the ones that show everywhere, each in the tree's order.
      */
-    val features: List<Feature> = sections.asSequence().flatMap { it.walk() }.filterIsInstance<Switch>().mapNotNull { it.feature }
-        .sortedBy { it.area == Area.ANYWHERE }.toList()
+    val owners: List<HasFeature> = sections.asSequence().flatMap { it.walk() }.filterIsInstance<Switch>().mapNotNull { it.feature }
+        .sortedBy { it.feature.area == Area.ANYWHERE }.toList()
+
+    /** The [Feature] each of [owners] holds, in the same order, which `Game` runs. */
+    val features: List<Feature> = owners.map { it.feature }
 
     init {
         val defaults = fresh.asSequence().flatMap { it.walk() }.associateBy { it.id }
@@ -115,9 +120,9 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
     }
 
     /** The feature of [type]. */
-    fun <F : Feature> feature(type: Class<F>): F = type.cast(features.first { it.javaClass == type })
+    fun <F : HasFeature> feature(type: Class<F>): F = type.cast(owners.first { it.javaClass == type })
 
-    inline fun <reified F : Feature> feature(): F = feature(F::class.java)
+    inline fun <reified F : HasFeature> feature(): F = feature(F::class.java)
 
     companion object {
         /** Saved fields that no row edits, each with the reason. Every saved field has a row now. */
@@ -173,6 +178,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
 
         private fun declare(c: DsModConfig, mac: Boolean): List<SettingSection> {
             val g = c.general
+            val claim = SlayerClaim()
             val sections = Sections().apply {
                 // What applies everywhere comes first, then each area of the game, and Contribute last.
                 section("General", Role.VALUE) {
@@ -275,8 +281,8 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                         feature(SlayerBossAlert(c))
                     }
                     group("Bosses") {
-                        feature(BossBeacon(c))
-                        feature(BossTracer(c))
+                        feature(BossBeacon(c, claim))
+                        feature(BossTracer(c, claim))
                     }
                     group("Loot") {
                         feature(RareDropAlert(c))

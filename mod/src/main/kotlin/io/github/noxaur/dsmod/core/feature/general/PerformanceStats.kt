@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.core.feature.general
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.FrameRate
 import io.github.noxaur.dsmod.core.game.PingMeasured
@@ -54,11 +55,12 @@ enum class StatsLook(private val label: String, val hud: HudLook) {
  * as time with no ticks, and the rate falls for as long as the server stands still. Each world has its own clock, so a
  * change of world starts the window again.
  */
-class PerformanceStats(config: DsModConfig) :
-    Feature(config, "performance-stats", Area.ANYWHERE, Store.GENERAL, "Show your FPS, your ping and the server's TPS on the HUD.", default = false) {
-    val values = order("performanceValues", "Values", "Pick the values to show, and drag them into order.", Stat.entries)
-    val layout = choice("performanceLayout", "Layout", "Line the values up in a row or a column.", StatsLayout.ROW)
-    val look = choice("performanceLook", "Look", "Show the values on the plate, or on nothing.", StatsLook.PLATE)
+class PerformanceStats(config: DsModConfig) : HasFeature {
+    override val feature = Feature(config, "performance-stats", Area.ANYWHERE, Store.GENERAL, "Show your FPS, your ping and the server's TPS on the HUD.", default = false, hud = ::hud)
+
+    val values = feature.order("performanceValues", "Values", "Pick the values to show, and drag them into order.", Stat.entries)
+    val layout = feature.choice("performanceLayout", "Layout", "Line the values up in a row or a column.", StatsLayout.ROW)
+    val look = feature.choice("performanceLook", "Look", "Show the values on the plate, or on nothing.", StatsLook.PLATE)
 
     private var fps = -1
     private val pings = LongArray(PINGS)
@@ -69,12 +71,12 @@ class PerformanceStats(config: DsModConfig) :
     private val ticks = ArrayDeque<Long>()
 
     init {
-        on<FrameRate> { frames, _ -> fps = frames.fps }
-        on<PingMeasured> { ping, _ ->
+        feature.on<FrameRate> { frames, _ -> fps = frames.fps }
+        feature.on<PingMeasured> { ping, _ ->
             pings[pingCount % PINGS] = ping.millis
             pingCount++
         }
-        on<ServerTime> { time, now ->
+        feature.on<ServerTime> { time, now ->
             // A clock that went back is another world's, as after a hop the client saw no change of world for.
             if (ticks.isNotEmpty() && time.gameTime < ticks.last()) clearTicks()
             arrived.addLast(now)
@@ -84,7 +86,7 @@ class PerformanceStats(config: DsModConfig) :
                 ticks.removeFirst()
             }
         }
-        on<WorldChanged> { _, _ -> clearTicks() }
+        feature.on<WorldChanged> { _, _ -> clearTicks() }
     }
 
     private fun clearTicks() {
@@ -92,7 +94,7 @@ class PerformanceStats(config: DsModConfig) :
         ticks.clear()
     }
 
-    override fun hud(now: Long): HudBlock? {
+    fun hud(now: Long): HudBlock? {
         val shown = values.value
         if (shown.isEmpty()) return null
         val ping = if (pingCount == 0) null else (0 until minOf(pingCount, PINGS)).sumOf { pings[it] } / minOf(pingCount, PINGS)
@@ -117,7 +119,7 @@ class PerformanceStats(config: DsModConfig) :
                 }
             }
         }
-        return block(headed = false, look = look.value.hud) {
+        return feature.block(headed = false, look = look.value.hud) {
             if (layout.value == StatsLayout.COLUMN) {
                 for (stat in shown) row(stat.toString()) { show(stat) }
             } else {

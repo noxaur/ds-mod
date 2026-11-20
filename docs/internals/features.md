@@ -2,6 +2,10 @@
 
 How a feature gets its input and hands back what it shows. The contract an agent writes against is in the [`feature` skill](../../mod/.claude/skills/feature/SKILL.md).
 
+## A feature holds its Feature instead of extending one
+
+Every feature used to extend an abstract `Feature`, and Boss Beacon, Boss Tracer and the inventory HUDs extended a middle class on top of it. A change to a base reached every class under it, and two siblings could not share state: each of Boss Beacon and Boss Tracer kept its own claim on the player's slayer boss, so they disagreed when one was switched on after the spawn line. So a feature now builds a `Feature` and holds it, passing the readouts it shows to it, and shared behaviour is a part it holds too, such as `BossMarks`, `InventoryReader` or the one `SlayerClaim` that `SettingsTree` hands both boss features. The edge still finds a feature by its class through the one-member `HasFeature`. Delegating `HasFeature by Feature(...)` was rejected, since it forwards the whole part through the class as inheritance did.
+
 ## Features run on events and ticks, never in a frame
 
 A feature handles events, and `Game` rebuilds its HUD block and slot marks after an event the feature could see, and four times a second for its clocks. The frame only draws what the last rebuild left. A feature's code then can't cost a frame, however it is written, and its cost is measured in one place.
@@ -75,6 +79,8 @@ Riftwalker's blink is the one cooldown the server shows nothing of, so it starts
 ## A slayer boss is the player's when it comes after their spawn line
 
 dragsim.co names no slayer boss's owner, on the mob or anywhere near it, so Boss Beacon and Boss Tracer tell the player's own from another's by time: the server tells only the owner `☠ SLAYER BOSS SPAWNING!`, and the first slayer boss to come into view within five seconds after it is theirs. In the capture the boss came 1.5 s after the line. Another player's boss that comes into view in those seconds would be taken for theirs, which the rule accepts, since nothing the client sees says otherwise.
+
+The two features share one claim, fed by whichever is on. It forgets a world by `Game`'s count of worlds, not by hearing the world end through a feature, because `Game` also tells a feature that goes off, or comes back on after the player left, that its world ended while the other feature may have claimed the new world's boss.
 
 ## Entities reach a feature through one tracker and a table in `core`
 

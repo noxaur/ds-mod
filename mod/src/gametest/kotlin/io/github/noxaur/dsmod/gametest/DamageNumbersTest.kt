@@ -41,7 +41,7 @@ class DamageNumbersTest : FabricClientGameTest {
             try {
                 val off = float(context, world, "damage-numbers-off")
                 check(off == mapOf("74,540,375" to null, "✧1,461,845✧" to null)) { "The switch was off, yet the numbers changed: $off" }
-                damageNumbers.enabled = true
+                damageNumbers.feature.enabled = true
                 val short = float(context, world, "damage-numbers-short")
                 check(short == mapOf("74,540,375" to "74.5M", "✧1,461,845✧" to "✧1.5M✧")) { "The numbers did not shorten: $short" }
                 damageNumbers.shown.value = DamageShown.CRITS
@@ -51,7 +51,7 @@ class DamageNumbersTest : FabricClientGameTest {
                 val none = float(context, world, "damage-numbers-none")
                 check(none == mapOf("74,540,375" to HIDDEN, "✧1,461,845✧" to HIDDEN)) { "None left a number: $none" }
             } finally {
-                damageNumbers.enabled = false
+                damageNumbers.feature.enabled = false
                 damageNumbers.shown.value = DamageShown.ALL
             }
         }

@@ -169,7 +169,7 @@ object SlotGuards {
         val id = id(slot.item)
         if (id == null) {
             // Only where the key went down, since a sweep crosses stacks on its way.
-            if (first) Chat.notice(feature.title, text { bad("An item that stacks cannot be locked. Lock its slot instead.") })
+            if (first) Chat.notice(feature.feature.title, text { bad("An item that stacks cannot be locked. Lock its slot instead.") })
             return
         }
         val lock = lockingItems ?: (id !in locks.items).also { lockingItems = it }
@@ -188,7 +188,7 @@ object SlotGuards {
             return
         }
         val linked = locks.link(from, to)
-        if (linked == null) Chat.notice(feature.title, text { bad("Link a hotbar slot with a slot in the rows above it.") }) else feature.locks = linked
+        if (linked == null) Chat.notice(feature.feature.title, text { bad("Link a hotbar slot with a slot in the rows above it.") }) else feature.locks = linked
     }
 
     /** Whether the menu must not act on this click. A Shift click on a linked slot trades the pair's places instead. */
