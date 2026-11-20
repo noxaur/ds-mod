@@ -8,6 +8,9 @@ outputs:
   warm:
     description: "'true' when the cache held everything, so the job has nothing to download."
     value: ${{ steps.cache.outputs.cache-hit }}
+  gradle-args:
+    description: "`--offline` when the cache is warm, for the reason in docs/internals/testing.md."
+    value: ${{ steps.cache.outputs.cache-hit == 'true' && '--offline' || '' }}
 runs:
   using: composite
   steps:
