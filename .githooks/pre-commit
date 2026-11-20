@@ -1,7 +1,4 @@
 #!/bin/sh
-# Runs `mise run check`, every project's checks, and mise install points git here. The checks log hundreds of lines,
-# so they go to a file, and only a failure prints it.
-# The checks build the working copy, so it must be what the commit holds.
 if ! git diff --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
   echo "The working copy has changes that are not staged, and the checks would run on them instead of on the commit. Stage them, or move them out of the working copy, and commit again."
   exit 1

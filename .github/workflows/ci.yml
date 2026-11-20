@@ -165,3 +165,20 @@ jobs:
         env:
           MISE_TASK_RUN_AUTO_INSTALL: "false"
       - uses: ./.github/actions/time-limit
+
+  comments:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - run: git fetch --depth=1 origin main
+      - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
+        id: mise
+        with:
+          install_args: node ast-grep
+      - run: mise run check:comments
+        env:
+          COMMENTS_BASE: FETCH_HEAD
+      - uses: ./.github/actions/time-limit
+        with:
+          warm: ${{ steps.mise.outputs.cache-hit }}

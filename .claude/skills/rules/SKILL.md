@@ -17,7 +17,7 @@ Then add a row to the table below. If a row has nothing enforcing it, enforce it
 
 ## Exceptions
 
-Only for an exception the user agreed to, end the line with a comment: `rule:<id> <reason>` in `mod/`, or `eslint-disable-next-line <rule> -- <reason>` in `web/`.
+Only for an exception the user agreed to, end the line with a comment: `rule:<id> <reason>` in `mod/`, or `eslint-disable-next-line <rule> -- <reason>` in `web/`. A comment the user agreed to keep starts with `@keep `.
 
 ## The rules
 
@@ -25,6 +25,8 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 
 | Rule | Enforced by |
 | --- | --- |
+| No code, config or spec holds a comment, but an exception the user agreed to | `scripts/comments.ts` against `comments.txt`, in `check:comments` |
+| `docs/internals/` names no code, and holds one short paragraph per decision | `check:docs` in `mise.toml` |
 | `core` names nothing from Minecraft, Fabric, Mojang or `edge`, even by full name | `PurityTest` reads the compiled classes |
 | Each place the release build sends or refuses input for the player is approved | `InputSitesTest` against `mod/input-sites.txt`, and the agent asks the user before it keeps a site that sends, refuses or triggers anything new |
 | The release build runs only on dragsim.co, unless the player turns DragSim Only off | `Game` gates every feature in `core`, `SwitchesTest` makes the edge ask `Feature.runs`, and `GameTest`, `DragSimTest` and the game test `OnlyOnDragSimTest` |
