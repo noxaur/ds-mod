@@ -27,7 +27,7 @@ jobs:
         uses: ./.github/actions/setup-mod
       # The unit tests, the rules and the specs.
       - working-directory: mod
-        run: ./gradlew check
+        run: ./gradlew ${{ steps.setup.outputs.gradle-args }} check
       - if: failure()
         uses: actions/upload-artifact@v7
         with:
@@ -50,8 +50,15 @@ jobs:
           cache: perf
       # The built jars in a real game, for PerfTest alone. The other game tests run in the beta pipeline,
       # because together they take minutes.
+      # The game's first window waits while Mesa and LLVM page in from the runner's cold disk, 0 to 20 seconds a
+      # run, so they are read into the page cache while Gradle compiles.
       - working-directory: mod
-        run: ./gradlew runProdClientGameTest -Pgametests=PerfTest
+        run: |
+          {
+            gl=$(ls /usr/lib/*-linux-gnu/libGLX_mesa.so.0 /usr/lib/*-linux-gnu/libgallium-*.so)
+            cat $gl $(ldd $gl | awk '$3 ~ /^\// { print $3 }' | sort -u) > /dev/null
+          } 2>/dev/null &
+          ./gradlew ${{ steps.setup.outputs.gradle-args }} runProdClientGameTest -Pgametests=PerfTest
       - if: always()
         run: cat mod/build/run/prodClientGameTest/perf.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
       - if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && hashFiles('mod/build/run/prodClientGameTest/perf.md') != ''
