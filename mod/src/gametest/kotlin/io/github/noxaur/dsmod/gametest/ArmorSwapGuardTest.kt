@@ -30,7 +30,7 @@ class ArmorSwapGuardTest : FabricClientGameTest {
             check(worn()) { "A right click did not put the chestplate on with the guard off" }
 
             try {
-                DsModClient.feature<ArmorSwapGuard>().enabled = true
+                DsModClient.feature<ArmorSwapGuard>().feature.enabled = true
                 hold()
                 context.input.pressMouse(1)
                 context.waitTicks(10)
@@ -44,7 +44,7 @@ class ArmorSwapGuardTest : FabricClientGameTest {
                 context.input.releaseKey { it.keyShift }
                 check(worn()) { "Sneaking did not let the swap through" }
             } finally {
-                DsModClient.feature<ArmorSwapGuard>().enabled = false
+                DsModClient.feature<ArmorSwapGuard>().feature.enabled = false
             }
         }
     }

@@ -1,25 +1,21 @@
 package io.github.noxaur.dsmod.rules
 
 import io.github.noxaur.dsmod.core.config.SettingsTree
-import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.HasFeature
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/** Each concrete class in [classes] that extends [Feature], directly or not, and is not in [listed]. */
-fun unlisted(classes: List<ClassNode>, listed: Set<String>): List<String> {
-    val supers = classes.associate { it.name to it.superName }
-    fun isFeature(name: String?): Boolean = name != null && (name == Type.getInternalName(Feature::class.java) || isFeature(supers[name]))
-    return classes.filter { it.access and Opcodes.ACC_ABSTRACT == 0 && isFeature(it.superName) && it.name !in listed }
-        .map { it.name.replace('/', '.') }
-}
+/** Each class in [classes] that is a feature, one that implements [HasFeature], and is not in [listed]. */
+fun unlisted(classes: List<ClassNode>, listed: Set<String>): List<String> =
+    classes.filter { Type.getInternalName(HasFeature::class.java) in it.interfaces && it.name !in listed }.map { it.name.replace('/', '.') }
 
 class FeaturesListedTest {
     @Test
     fun `every feature class is placed in SettingsTree`() {
-        val listed = SettingsTree().features.map { Type.getInternalName(it.javaClass) }.toSet()
+        val listed = SettingsTree().owners.map { Type.getInternalName(it.javaClass) }.toSet()
         val missing = unlisted(releaseClasses(), listed)
         assertEquals(
             emptyList(),
@@ -30,22 +26,22 @@ class FeaturesListedTest {
     }
 
     @Test
-    fun `the scan catches a feature through an abstract parent and skips the parent`() {
-        fun node(name: String, superName: String, access: Int = Opcodes.ACC_PUBLIC) = ClassNode().apply {
+    fun `the scan catches each class that holds a feature and skips the rest`() {
+        fun node(name: String, vararg interfaces: String) = ClassNode().apply {
             this.name = "io/github/noxaur/dsmod/core/feature/$name"
-            this.superName = superName
-            this.access = access
+            superName = "java/lang/Object"
+            access = Opcodes.ACC_PUBLIC
+            this.interfaces = interfaces.toMutableList()
         }
-        val feature = Type.getInternalName(Feature::class.java)
+        val feature = Type.getInternalName(HasFeature::class.java)
         val classes = listOf(
             node("Listed", feature),
-            node("Direct", feature),
-            node("Base", feature, Opcodes.ACC_PUBLIC or Opcodes.ACC_ABSTRACT),
-            node("Indirect", "io/github/noxaur/dsmod/core/feature/Base"),
-            node("Other", "java/lang/Object"),
+            node("Unlisted", feature),
+            node("Other"),
+            node("Elsewise", "java/lang/Runnable"),
         )
         assertEquals(
-            listOf("Direct", "Indirect").map { "io.github.noxaur.dsmod.core.feature.$it" },
+            listOf("io.github.noxaur.dsmod.core.feature.Unlisted"),
             unlisted(classes, setOf("io/github/noxaur/dsmod/core/feature/Listed")),
         )
     }

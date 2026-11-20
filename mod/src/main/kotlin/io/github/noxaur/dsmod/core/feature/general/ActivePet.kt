@@ -4,6 +4,7 @@ import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.CombatXp
@@ -67,17 +68,18 @@ data class KnownPets(val pets: Map<String, KnownPet> = emptyMap(), val latest: M
  * from the second read on the Combat XP since the last read moves the XP live, at the rate of pet XP per Combat XP the
  * reads showed, and each read sets it right again. A switch of pet and a level up start over.
  */
-class ActivePet(config: DsModConfig) :
-    Feature(config, "active-pet", Area.ANYWHERE, Store.GENERAL, "Show your pet, its level, held item and XP on the HUD.", default = false) {
-    val showIcon = switch("activePetIcon", "Icon", "Show your pet's head beside its name.", default = true)
-    val showItem = switch("activePetItem", "Held Item", "Show the pet item your pet holds.", default = true)
-    val showXp = switch("activePetXp", "XP", "Show how far your pet is to its next level.", default = true)
-    val showRate = switch("activePetRate", "XP Rate", "Show how fast your pet gains XP.", default = true)
-    val showNext = switch("activePetNext", "Next Level", "Show how long until your pet reaches its next level.", default = true)
-    val markInMenu = switch("markActivePet", "Mark In Menu", "Mark your active pet in the Pets menu.", default = true)
-    val hideAutopet = switch("hideAutopet", "Hide Autopet", "Hide the chat line Autopet sends when it swaps your pet.", default = false)
+class ActivePet(config: DsModConfig) : HasFeature {
+    override val feature = Feature(config, "active-pet", Area.ANYWHERE, Store.GENERAL, "Show your pet, its level, held item and XP on the HUD.", default = false, hud = ::hud, slots = ::slots)
 
-    private val known = saved(KnownPets())
+    val showIcon = feature.switch("activePetIcon", "Icon", "Show your pet's head beside its name.", default = true)
+    val showItem = feature.switch("activePetItem", "Held Item", "Show the pet item your pet holds.", default = true)
+    val showXp = feature.switch("activePetXp", "XP", "Show how far your pet is to its next level.", default = true)
+    val showRate = feature.switch("activePetRate", "XP Rate", "Show how fast your pet gains XP.", default = true)
+    val showNext = feature.switch("activePetNext", "Next Level", "Show how long until your pet reaches its next level.", default = true)
+    val markInMenu = feature.switch("markActivePet", "Mark In Menu", "Mark your active pet in the Pets menu.", default = true)
+    val hideAutopet = feature.switch("hideAutopet", "Hide Autopet", "Hide the chat line Autopet sends when it swaps your pet.", default = false)
+
+    private val known = feature.saved(KnownPets())
 
     private var pet: Pet? = null
 
@@ -120,18 +122,18 @@ class ActivePet(config: DsModConfig) :
     private var nextShown = -1L
 
     init {
-        on<Sidebar> { event, _ ->
+        feature.on<Sidebar> { event, _ ->
             // Between worlds the sidebar is empty until the new one arrives, and the pet is still out.
             if (event.lines.all { it.plain.isBlank() }) return@on
             event.lines.firstOrNull { it.plain.trimStart().startsWith(SIDEBAR) }?.let { read(it, SIDEBAR) }
         }
-        on<ContainerOpened> { _, _ -> menuSlot = -1 }
+        feature.on<ContainerOpened> { _, _ -> menuSlot = -1 }
         // The next session may bring another pet, and the sidebar names it only when it arrives.
-        on<LeftServer> { _, _ -> set(null) }
-        on<SlotChanged> { event, now ->
+        feature.on<LeftServer> { _, _ -> set(null) }
+        feature.on<SlotChanged> { event, now ->
             val item = event.item
             if (item?.name?.plain == PetCard.MENU) item.lore.firstOrNull { it.plain.startsWith(SELECTED) }?.let { read(it, SELECTED) }
-            if (container.title?.plain != PetCard.MENU) return@on
+            if (feature.container.title?.plain != PetCard.MENU) return@on
             val card = item?.let(PetCard::of)
             if (event.slot == menuSlot && card == null) {
                 menuSlot = -1
@@ -141,29 +143,29 @@ class ActivePet(config: DsModConfig) :
             }
             if (card != null) read(card, event.slot, now)
         }
-        readEntities(Pet.STANDS)
-        on<EntitySeen> { seen, _ ->
+        feature.readEntities(Pet.STANDS)
+        feature.on<EntitySeen> { seen, _ ->
             val (name, head) = Pet.worn(seen) ?: return@on
             if (heads.put(name, head) != head && name == pet?.name) block = null
         }
-        on<EntityDied> { _, now -> died = now }
-        on<ActionBar> { bar, now ->
+        feature.on<EntityDied> { _, now -> died = now }
+        feature.on<ActionBar> { bar, now ->
             val text = bar.text.plain
             if (CombatXp.MARK !in text || died < 0 || now - died !in 0..CombatXp.KILL_WINDOW_MILLIS) return@on
             died = -1
             val pace = pace?.takeIf { known.value.pets[it.key]?.category == COMBAT } ?: return@on
-            val gain = CombatXp.gained(text) ?: return@on unparsed(text)
+            val gain = CombatXp.gained(text) ?: return@on feature.unparsed(text)
             pace.combat += gain
             pace.gainAt = now
             if (pace.ratio != null) block = null
         }
-        line("Activated ", ACTIVATED) { (level, name), _ -> summoned(name, level.toInt()) }
-        line(Regex(AUTOPET), { it }) { text, _ ->
+        feature.line("Activated ", ACTIVATED) { (level, name), _ -> summoned(name, level.toInt()) }
+        feature.line(Regex(AUTOPET), { it }) { text, _ ->
             val match = AUTOPET_LINE.matchEntire(text)
-            if (match == null) unparsed(text) else match.destructured.let { (level, name) -> summoned(name, level.toInt()) }
-            if (hideAutopet.value) hide()
+            if (match == null) feature.unparsed(text) else match.destructured.let { (level, name) -> summoned(name, level.toInt()) }
+            if (hideAutopet.value) feature.hide()
         }
-        line("Equipped ", EQUIPPED) { (item, _, name), _ ->
+        feature.line("Equipped ", EQUIPPED) { (item, _, name), _ ->
             remember(keyOf(name)) { it.copy(held = PetItem(item)) }
         }
     }
@@ -176,12 +178,12 @@ class ActivePet(config: DsModConfig) :
         val value = line.plain.trim().removePrefix(prefix).trim()
         if (value == NONE) return set(null)
         val read = Pet.of(line, value)
-        if (read == null) unparsed(line.plain) else set(read)
+        if (read == null) feature.unparsed(line.plain) else set(read)
     }
 
     private fun read(card: PetCard, slot: Int, now: Long) {
         menuSlot = slot
-        card.unread?.let(::unparsed)
+        card.unread?.let(feature::unparsed)
         val key = card.key
         val name = card.pet.name
         if (known.value.latest[name] != key) known.value = known.value.copy(latest = known.value.latest + (name to key))
@@ -244,8 +246,8 @@ class ActivePet(config: DsModConfig) :
         if (pet?.let { keyOf(it.name) } == key) block = null
     }
 
-    override fun slots(now: Long): Map<Int, SlotMark> =
-        if (markInMenu.value && menuSlot >= 0 && container.title?.plain == PetCard.MENU) mapOf(menuSlot to MARK) else emptyMap()
+    fun slots(now: Long): Map<Int, SlotMark> =
+        if (markInMenu.value && menuSlot >= 0 && feature.container.title?.plain == PetCard.MENU) mapOf(menuSlot to MARK) else emptyMap()
 
     /** The current pet's pace, when one was read at the level it is now. */
     private fun pace(pet: Pet, key: String) = pace?.takeIf { it.key == key && it.level == pet.level }
@@ -257,7 +259,7 @@ class ActivePet(config: DsModConfig) :
         return (left.coerceAtLeast(0.0) / MILLIS_PER_MINUTE).roundToLong()
     }
 
-    override fun hud(now: Long): HudBlock? {
+    fun hud(now: Long): HudBlock? {
         val settings = Shown(showIcon.value, showItem.value, showXp.value, showRate.value, showNext.value, known.value)
         if (settings != shown) {
             shown = settings
@@ -277,7 +279,7 @@ class ActivePet(config: DsModConfig) :
         }
         val read = progress[key]?.takeIf { it.first == pet.level }?.second ?: PetProgress.MAX.takeIf { about?.maxLevel == pet.level }
         nextShown = minutesToNext(pace, now)
-        return block(headed = false, icon = icon) {
+        return feature.block(headed = false, icon = icon) {
             line {
                 muted("[Lvl ${pet.level}] ")
                 rarity(pet.name, pet.rarity)

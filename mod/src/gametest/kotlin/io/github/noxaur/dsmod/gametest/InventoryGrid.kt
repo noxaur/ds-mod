@@ -61,12 +61,12 @@ object InventoryGrid {
             }
             // The poller reads long-lored items over a few ticks, so the test starts once every one has arrived.
             context.waitFor { DsModClient.game.container.slots.let { slots -> slots.size > 44 && slots.subList(9, 45).count { it != null } == FILLED } }
-            inventoryHud.enabled = true
+            inventoryHud.feature.enabled = true
             try {
                 context.waitFor { Hud.find(ID) != null }
                 test(world)
             } finally {
-                inventoryHud.enabled = false
+                inventoryHud.feature.enabled = false
                 inventoryHud.shownRows.value = listOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM)
                 inventoryHud.look.value = InventoryLook.INVENTORY
                 inventoryHud.placement.value = HudDock.FREE

@@ -10,8 +10,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class DamageNumbersTest {
-    private val feature = SettingsTree().feature<DamageNumbers>().also { it.enabled = true }
-    private val game = Game(listOf(feature))
+    private val feature = SettingsTree().feature<DamageNumbers>().also { it.feature.enabled = true }
+    private val game = Game(listOf(feature.feature))
 
     private val hit = ServerText(ServerSpan("74,540,375", GRAY))
     private val crit = ServerText(ServerSpan("✧1,", WHITE), ServerSpan("461", YELLOW), ServerSpan(",8", RED), ServerSpan("45✧", WHITE))

@@ -93,7 +93,7 @@ class FavoritesTest : FabricClientGameTest {
             check("hide-explosions" in starred()) { "F on the keys' row again left ${starred()}" }
             driver.key(GLFW.GLFW_KEY_ESCAPE)
             // That press on the row toggled Fullbright itself, so it goes back.
-            context.runOnClient<Nothing> { DsModClient.feature<Fullbright>().enabled = false }
+            context.runOnClient<Nothing> { DsModClient.feature<Fullbright>().feature.enabled = false }
 
             // A mouse button bound as the Favorite Key stars the row under the mouse, and not with Ctrl held.
             context.runOnClient<Nothing> {
@@ -108,7 +108,7 @@ class FavoritesTest : FabricClientGameTest {
             context.waitTicks(2)
             check("rare-drop-alert" !in starred()) { "Ctrl and the middle button starred Rare Drop Alert" }
             // A middle press with Ctrl is the row's own, which toggles the switch, so it goes back.
-            context.runOnClient<Nothing> { DsModClient.feature<RareDropAlert>().enabled = true }
+            context.runOnClient<Nothing> { DsModClient.feature<RareDropAlert>().feature.enabled = true }
             over("rare-drop-alert")
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
             context.waitTicks(2)

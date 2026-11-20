@@ -33,7 +33,7 @@ class ItemSightingsTest {
         sightings.see(item())
         sightings.see(item(data = """{"other":1}"""))
 
-        val sighting = sightings.take().single()
+        val sighting = sightings.batch.take().single()
         assertEquals("scylla", sighting.entry)
         assertEquals("minecraft:iron_sword", sighting.material)
         assertTrue(sighting.glint)
@@ -46,7 +46,7 @@ class ItemSightingsTest {
             "abilities":["rage"],"private":{"note":"Steve"},"auction":{"seller":"Zed"}}"""
         sightings.see(item(data = data))
 
-        val sent = sightings.take().single()
+        val sent = sightings.batch.take().single()
         assertEquals("gold", sent.skinId)
         assertEquals(
             json("""{"item_data":{"item_id":"scylla","rarity":"EPIC"},"item_stats":{"damage":300},"item_modifiers":{"reforge":"fierce"},"extra":{"item_skin":{"skinId":"gold"}},"abilities":["rage"]}"""),
@@ -60,7 +60,7 @@ class ItemSightingsTest {
             "extra":{"item_dye":{"id":"red"},"crafted_by":"Alexander","item_skin":{"skinId":"gold","buyer":"Alexander"}}}"""
         sightings.see(item(data = data))
 
-        val sent = sightings.take().single()
+        val sent = sightings.batch.take().single()
         assertEquals(
             json("""{"item_data":{"item_id":"scylla","rarity":"EPIC"},"extra":{"item_dye":{"id":"red"},"item_skin":{"skinId":"gold"}}}"""),
             sent.data,
@@ -73,7 +73,7 @@ class ItemSightingsTest {
         val data = """{"item_data":{"item_id":"scylla","uuid":"$uuid"},"extra":{"item_uuid":"$uuid","crafted":"Zed made $uuid"}}"""
         sightings.see(item(data = data, lore = listOf(text("Crafted by Steve"), text("Owner: Zed"), text("Id: $uuid"))))
 
-        val sent = sightings.take().single()
+        val sent = sightings.batch.take().single()
         val everything = sent.toString() + sent.lore.joinToString { it.plain } + sent.data
         assertFalse("Steve" in everything || "Zed" in everything, everything)
         assertFalse(uuid in everything, everything)
@@ -83,7 +83,7 @@ class ItemSightingsTest {
     @Test
     fun `a head goes as its skin url alone, with no player beside it`() {
         sightings.see(item().copy(id = "minecraft:player_head", skin = "abc"))
-        val texture = assertNotNull(sightings.take().single().skullTexture)
+        val texture = assertNotNull(sightings.batch.take().single().skullTexture)
 
         assertEquals("""{"textures":{"SKIN":{"url":"http://textures.minecraft.net/texture/abc"}}}""", String(Base64.getDecoder().decode(texture)))
         assertEquals(texture, Skulls.property("abc"))
@@ -96,21 +96,21 @@ class ItemSightingsTest {
         sightings.see(item(glint = false))
         sightings.see(item(lore = listOf(text("Damage: +310"))))
         sightings.see(item(data = """{"item_data":{"item_id":"scylla"},"extra":{"item_skin":{"skinId":"gold"}}}"""))
-        assertEquals(4, sightings.take().size)
+        assertEquals(4, sightings.batch.take().size)
 
         sightings.see(item())
-        assertFalse(sightings.waiting, "a look that went is not collected again")
+        assertFalse(sightings.batch.waiting, "a look that went is not collected again")
     }
 
     @Test
     fun `a batch is capped at fifty and a look that does not fit the backend is left out`() {
         repeat(80) { sightings.see(item(lore = listOf(text("Damage: +$it")))) }
-        assertEquals(50, sightings.take().size)
+        assertEquals(50, sightings.batch.take().size)
 
         val long = ItemSightings { emptySet() }
         long.see(item(data = """{"item_data":{"item_id":"${"x".repeat(129)}"}}"""))
         long.see(item().copy(skin = "x".repeat(4097)))
         long.see(item(lore = List(120) { text("line $it") }))
-        assertEquals(80, long.take().single().lore.size)
+        assertEquals(80, long.batch.take().single().lore.size)
     }
 }

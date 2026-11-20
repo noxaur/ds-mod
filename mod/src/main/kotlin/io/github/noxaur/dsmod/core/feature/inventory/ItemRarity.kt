@@ -11,6 +11,7 @@ import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.SlotChanged
@@ -21,19 +22,20 @@ import io.github.noxaur.dsmod.core.ui.Look
  * Marks each item's slot in the color the server gives that rarity's item names, unless [markCommon] is off for Common.
  * The look of a mark is the edge's: `Slots` draws [containerStyle] in containers and [hotbarLook] on the hotbar.
  */
-class ItemRarity(config: DsModConfig) :
-    Feature(config, "item-rarity", Area.ANYWHERE, Store.INVENTORY, "Mark each item's slot in the color of its rarity.", formerly = listOf("rarityMarks")) {
+class ItemRarity(config: DsModConfig) : HasFeature {
+    override val feature = Feature(config, "item-rarity", Area.ANYWHERE, Store.INVENTORY, "Mark each item's slot in the color of its rarity.", formerly = listOf("rarityMarks"), slots = ::slots)
+
     /** The player's own style for every container, their inventory included, shown while [preset] is Custom. */
-    val inventoryStyle = stored("inventoryStyle", SlotStyle())
-    val hotbarStyle = stored("hotbarStyle", SlotStyle())
+    val inventoryStyle = feature.stored("inventoryStyle", SlotStyle())
+    val hotbarStyle = feature.stored("hotbarStyle", SlotStyle())
 
     /** While true the hotbar is drawn in [inventoryStyle], and [hotbarStyle] waits for the player to unlink them. */
-    val hotbarMatches = stored("hotbarMatches", true)
+    val hotbarMatches = feature.stored("hotbarMatches", true)
 
-    val preset = pick("rarityPreset", "Style", "Pick a look for the marks, or Custom for your own.", RarityPreset.GILDED) { Look.Slots(it.style ?: inventoryStyle.value) }
+    val preset = feature.pick("rarityPreset", "Style", "Pick a look for the marks, or Custom for your own.", RarityPreset.GILDED) { Look.Slots(it.style ?: inventoryStyle.value) }
 
     init {
-        rows {
+        feature.rows {
             fold("customLook", "Custom Look", "Build your own look from its parts, which switches Style to Custom.") {
                 // A part shows the look on screen. Writing a different one makes that look the player's own.
                 // While a preset is active the part's default is that preset, so a reset leaves it in place.
@@ -55,9 +57,9 @@ class ItemRarity(config: DsModConfig) :
         }
     }
 
-    val markCommon = switch("markCommon", "Common Items", "Mark common items too.", default = false)
+    val markCommon = feature.switch("markCommon", "Common Items", "Mark common items too.", default = false)
 
-    val hotbarMarks = switch("hotbarMarks", "Hotbar", "Mark your hotbar as well.", default = true) {
+    val hotbarMarks = feature.switch("hotbarMarks", "Hotbar", "Mark your hotbar as well.", default = true) {
         // Unmatching starts the hotbar's own look from what it showed, so nothing jumps.
         val match = Bind(hotbarMatches.bind.field, { hotbarMatches.value }) {
             if (!it && hotbarMatches.value) hotbarStyle.value = containerStyle()
@@ -96,11 +98,11 @@ class ItemRarity(config: DsModConfig) :
     private val byRarity = Role.RARITIES.associate { it.name to SlotMark(it, rarity = true) }
 
     init {
-        on<ContainerOpened> { _, _ -> changed = true }
-        on<SlotChanged> { _, _ -> changed = true }
+        feature.on<ContainerOpened> { _, _ -> changed = true }
+        feature.on<SlotChanged> { _, _ -> changed = true }
     }
 
-    override fun slots(now: Long): Map<Int, SlotMark> {
+    fun slots(now: Long): Map<Int, SlotMark> {
         if (common != markCommon.value) {
             common = !common
             changed = true
@@ -108,11 +110,11 @@ class ItemRarity(config: DsModConfig) :
         if (!changed) return marks
         changed = false
         val next = HashMap<Int, SlotMark>()
-        container.slots.forEachIndexed { slot, item ->
+        feature.container.slots.forEachIndexed { slot, item ->
             val rarity = item?.rarity ?: return@forEachIndexed
             val mark = byRarity[rarity]
             when {
-                mark == null -> unparsed(rarity)
+                mark == null -> feature.unparsed(rarity)
                 mark.role != Role.COMMON || common -> next[slot] = mark
             }
         }

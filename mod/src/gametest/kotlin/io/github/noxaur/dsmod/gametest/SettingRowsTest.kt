@@ -157,7 +157,7 @@ class SettingRowsTest : FabricClientGameTest {
         // A group's heading switch turns the group off, and its rows dim and stay editable.
         val camera = spot("camera")
         click(camera.controlX + 11, camera.controlY + 6)
-        expect("The heading switch", false) { DsModClient.feature<Camera>().enabled }
+        expect("The heading switch", false) { DsModClient.feature<Camera>().feature.enabled }
         context.takeScreenshot("own-settings-dimmed")
         theme(context, Theme.VANILLA)
         context.takeScreenshot("own-settings-dimmed-vanilla")
@@ -166,7 +166,7 @@ class SettingRowsTest : FabricClientGameTest {
         click(d.controlX + 71, d.controlY + 6)
         expect("A dimmed row stays editable", 50f) { DsModClient.feature<Camera>().distance.value }
         click(camera.controlX + 11, camera.controlY + 6)
-        expect("The heading switch again", true) { DsModClient.feature<Camera>().enabled }
+        expect("The heading switch again", true) { DsModClient.feature<Camera>().feature.enabled }
 
         // Inventory: the Style pick's menu of looks, and the Custom Look fold.
         open(context, SettingsTabs(at("Inventory")))
@@ -266,12 +266,12 @@ class SettingRowsTest : FabricClientGameTest {
         open(context, SettingsTabs(at("General")))
         val bright = spot("fullbright")
         click(bright.x + 20, bright.y + bright.height / 2)
-        expect("A press on a switch's row", true) { DsModClient.feature<Fullbright>().enabled }
+        expect("A press on a switch's row", true) { DsModClient.feature<Fullbright>().feature.enabled }
         // The press gave the rows the keys: Space and Enter press the row the keyboard is on.
         key(GLFW.GLFW_KEY_SPACE)
-        expect("Space on a switch", false) { DsModClient.feature<Fullbright>().enabled }
+        expect("Space on a switch", false) { DsModClient.feature<Fullbright>().feature.enabled }
         key(GLFW.GLFW_KEY_ENTER)
-        expect("Enter on a switch", true) { DsModClient.feature<Fullbright>().enabled }
+        expect("Enter on a switch", true) { DsModClient.feature<Fullbright>().feature.enabled }
         // The press gave the rows the keys, so the first Escape takes them back and the second closes.
         context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
         context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
@@ -281,7 +281,7 @@ class SettingRowsTest : FabricClientGameTest {
         check(saved["general"].asJsonObject["fullbright"].asBoolean) { "Fullbright was not written to the config file" }
         open(context, SettingsTabs(at("General")))
         context.takeScreenshot("own-settings-reopened")
-        check(DsModClient.feature<Fullbright>().enabled) { "Fullbright is off after reopening" }
+        check(DsModClient.feature<Fullbright>().feature.enabled) { "Fullbright is off after reopening" }
 
         // The rows put back what they changed, for the tests after this one.
         context.runOnClient<Nothing> {

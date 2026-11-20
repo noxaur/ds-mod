@@ -8,7 +8,7 @@ import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.Narration
 import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.core.ui.TabLayout
-import io.github.noxaur.dsmod.edge.ui.BoxEditor
+import io.github.noxaur.dsmod.edge.ui.Box
 import io.github.noxaur.dsmod.edge.ui.Editor
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
@@ -35,7 +35,9 @@ import org.lwjgl.glfw.GLFW
  * press on the menu gives it the keys: the arrows move the picked tab, Tab picks the next, Delete asks for a second
  * press, and Escape gives the keys back. Each change applies at once.
  */
-class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host: Editor.Host) : BoxEditor() {
+class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host: Editor.Host) : Editor {
+    private val box = Box()
+
 
     // The menu, from the content's top, and the form beside or under it.
     private var menuY = 0
@@ -92,8 +94,10 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
 
     override val capturing get() = entered || dragging || grabbed >= 0
 
+    override fun isOver(mouseX: Double, mouseY: Double) = box.isOver(mouseX, mouseY)
+
     override fun layout(x: Int, y: Int, width: Int): Int {
-        place(x, y, width)
+        box.place(x, y, width)
         menuY = y + Kit.TAB_HEIGHT - 2
         val menuBottom = menuY + MENU_HEIGHT + Kit.TAB_HEIGHT - 2
         labelWidth = LABELS.maxOf(font::width) + Kit.GAP
@@ -113,9 +117,9 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
             buttons.place(i, formX + (i % 2) * (half + Kit.GAP), half)
         }
         readoutY = buttonsY + FIELD_STEP * 2
-        height = maxOf(menuBottom, readoutY + 9) - y + 2
+        box.height = maxOf(menuBottom, readoutY + 9) - y + 2
         select(selected.coerceAtMost(tabs.size - 1))
-        return height
+        return box.height
     }
 
     override fun refresh() {
@@ -127,20 +131,20 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
     private fun say(at: Int) {
         readFor = at
         readout = readout(at)
-        readoutText = text { muted(fit(readout, width - (formX - x))) }.toComponent()
+        readoutText = text { muted(fit(readout, box.width - (formX - box.x))) }.toComponent()
     }
 
     override fun view(origin: Int, clipTop: Int, clipBottom: Int, screenWidth: Int, screenHeight: Int) {
-        super.view(origin, clipTop, clipBottom, screenWidth, screenHeight)
+        box.view(origin, clipTop, clipBottom)
         val left = formX + labelWidth
         for ((i, field) in fields.withIndex()) {
             val itemRoom = if (field === item) Kit.SLOT_SIZE + Kit.GAP else 0
             field.setWidth(formWidth - labelWidth - itemRoom - 8)
-            field.place(left + itemRoom, origin + formY + i * FIELD_STEP)
+            field.place(left + itemRoom, box.origin + formY + i * FIELD_STEP)
         }
     }
 
-    private fun menuTop() = origin + menuY
+    private fun menuTop() = box.origin + menuY
 
     override fun draw(g: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, keys: Boolean): SettingRows.Tip? {
         this.mouseX = mouseX.toDouble()
@@ -154,7 +158,7 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         for (edge in TabEdge.entries) {
             for (slot in 0 until TabLayout.PER_EDGE) {
                 val index = TabLayout.at(tabs, edge, slot)
-                val tx = x + TabLayout.x(slot)
+                val tx = box.x + TabLayout.x(slot)
                 if (index < 0 || index == grabbed && dragging) {
                     val ty = tabY(edge) + 2
                     Kit.ring(g, tx, ty, Kit.TAB_WIDTH, Kit.TAB_HEIGHT - 4, if (place == code(edge, slot)) t.hoverOutline else t.inkOff)
@@ -163,32 +167,32 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
                 drawTab(g, tabs[index], tx, edgeY(edge), index == hoveredTab || index == selected)
             }
         }
-        Kit.panel(g, x, menuY, MENU_WIDTH, MENU_HEIGHT)
-        Kit.label(g, "Any menu", x + Kit.INSET + 1, menuY + 6, Kit.Ink.MUTED)
-        for (column in 0 until 9) Kit.slot(g, x + 7 + column * Kit.SLOT_SIZE, menuY + 17)
+        Kit.panel(g, box.x, menuY, MENU_WIDTH, MENU_HEIGHT)
+        Kit.label(g, "Any menu", box.x + Kit.INSET + 1, menuY + 6, Kit.Ink.MUTED)
+        for (column in 0 until 9) Kit.slot(g, box.x + 7 + column * Kit.SLOT_SIZE, menuY + 17)
         if (selected >= 0 && !dragging) {
             val tab = tabs[selected]
             val ty = tabY(tab.edge)
-            Kit.ring(g, x + TabLayout.x(tab.slot) - 1, ty - 1, Kit.TAB_WIDTH + 2, Kit.TAB_HEIGHT + 1, t.accent)
+            Kit.ring(g, box.x + TabLayout.x(tab.slot) - 1, ty - 1, Kit.TAB_WIDTH + 2, Kit.TAB_HEIGHT + 1, t.accent)
         }
-        if (entered && keys) Kit.ring(g, x - 2, menuY - 2, MENU_WIDTH + 4, MENU_HEIGHT + 4, t.hoverOutline)
+        if (entered && keys) Kit.ring(g, box.x - 2, menuY - 2, MENU_WIDTH + 4, MENU_HEIGHT + 4, t.hoverOutline)
 
         val tab = tabs.getOrNull(selected)
         // The form sits on the row's well, so its names are role text, which reads there in both themes.
         for ((i, label) in LABEL_TEXT.withIndex()) {
-            g.text(font, label, formX, origin + formY + i * FIELD_STEP + (Kit.BUTTON_HEIGHT - 8) / 2, -1, true)
+            g.text(font, label, formX, box.origin + formY + i * FIELD_STEP + (Kit.BUTTON_HEIGHT - 8) / 2, -1, true)
             fields[i].extractRenderState(g, mouseX, mouseY, 0f)
         }
         val slotX = formX + labelWidth
-        val slotY = origin + formY + FIELD_STEP - 1
+        val slotY = box.origin + formY + FIELD_STEP - 1
         Kit.slot(g, slotX, slotY)
         if (tab != null && !tab.search) icon(tab.item)?.let { g.item(it, slotX + 1, slotY + 1) }
         for (i in BUTTONS.indices) {
-            val by = origin + buttonY(i)
+            val by = box.origin + buttonY(i)
             buttons.draw(g, i, by, this.mouseX, this.mouseY, buttonActive(i))
             if (i == DELETE && armed) Kit.ring(g, buttons.x(i) - 1, by - 1, buttons.width(i) + 2, Kit.BUTTON_HEIGHT + 2, Role.BAD.argb())
         }
-        g.text(font, readoutText, formX, origin + readoutY, -1, true)
+        g.text(font, readoutText, formX, box.origin + readoutY, -1, true)
 
         if (dragging && grabbed >= 0) {
             val held = tabs[grabbed]
@@ -211,7 +215,7 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
 
     fun placeAt(edge: TabEdge, slot: Int): Pair<Int, Int> {
         val y = tabY(edge)
-        return x + TabLayout.x(slot) + Kit.TAB_WIDTH / 2 to y + Kit.TAB_HEIGHT / 2
+        return box.x + TabLayout.x(slot) + Kit.TAB_WIDTH / 2 to y + Kit.TAB_HEIGHT / 2
     }
 
     /** The middle of the field or button named [name] on the screen. */
@@ -219,7 +223,7 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         val field = fields.getOrNull(LABELS.indexOf(name))
         if (field != null) return field.x + field.width / 2 to field.y + 4
         val i = BUTTONS.indexOf(name)
-        return buttons.middle(i) to origin + buttonY(i) + Kit.BUTTON_HEIGHT / 2
+        return buttons.middle(i) to box.origin + buttonY(i) + Kit.BUTTON_HEIGHT / 2
     }
 
     private fun buttonY(i: Int) = buttonsY + (i / 2) * FIELD_STEP
@@ -256,20 +260,20 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
 
     /** The place under the mouse, along either edge, or [NONE]. */
     private fun place(px: Double, py: Double): Int {
-        if (py < clipTop || py >= clipBottom) return NONE
+        if (py < box.clipTop || py >= box.clipBottom) return NONE
         val menuY = menuTop()
         val edge = when (py.toInt()) {
             in menuY - Kit.TAB_HEIGHT + 2 until menuY + 2 -> TabEdge.TOP
             in menuY + MENU_HEIGHT - 2 until menuY + MENU_HEIGHT + Kit.TAB_HEIGHT - 2 -> TabEdge.BOTTOM
             else -> return NONE
         }
-        val slot = TabLayout.slotAt(px.toInt() - x)
+        val slot = TabLayout.slotAt(px.toInt() - box.x)
         return if (slot < 0) NONE else code(edge, slot)
     }
 
     /** Where a dragged tab lands: the place along the edge nearer the mouse, or null past the ends of the edges. */
     private fun dropAt(px: Double, py: Double): Pair<TabEdge, Int>? {
-        val slot = TabLayout.slotAt(px.toInt() - x)
+        val slot = TabLayout.slotAt(px.toInt() - box.x)
         if (slot < 0) return null
         return (if (py < menuTop() + MENU_HEIGHT / 2) TabEdge.TOP else TabEdge.BOTTOM) to slot
     }
@@ -297,7 +301,7 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         val px = event.x()
         val py = event.y()
         // A press elsewhere, a field scrolled under the tab bar included, takes the keys back and still does its own job.
-        if (!isOver(px, py)) {
+        if (!box.isOver(px, py)) {
             leave()
             return false
         }
@@ -311,7 +315,7 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         focus(null)
         entered = true
         for (i in BUTTONS.indices) {
-            if (buttons.at(i, origin + buttonY(i), px, py)) {
+            if (buttons.at(i, box.origin + buttonY(i), px, py)) {
                 if (buttonActive(i)) press(i)
                 return true
             }
@@ -328,7 +332,7 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         }
         select(index)
         grabbed = index
-        grabX = px - (x + TabLayout.x(slot))
+        grabX = px - (box.x + TabLayout.x(slot))
         grabY = py - tabY(edge)
         pressX = px
         pressY = py

@@ -47,7 +47,7 @@ class HeldItemTest {
     @Test
     fun `Reset puts every Animations setting back to its default and leaves the switch alone`() {
         val settings = SettingsTree().feature<Animations>()
-        settings.enabled = false
+        settings.feature.enabled = false
         settings.swingStyle.value = SwingStyle.EXHIBITION
         settings.swingSpeed.value = 2f
         settings.itemSize.value = 0.5f
@@ -64,7 +64,7 @@ class HeldItemTest {
         settings.noEquipReset.value = true
         settings.reset()
         val fresh = SettingsTree().feature<Animations>()
-        assertEquals(false, settings.enabled)
+        assertEquals(false, settings.feature.enabled)
         fun Animations.values() = listOf(swingStyle, swingSpeed, itemSize, itemX, itemY, itemZ, itemYaw, itemPitch, itemRoll, scaleSwing, noSwing, noBowSwing, ignoreHaste, noEquipReset).map { it.value }
         assertEquals(fresh.values(), settings.values())
     }

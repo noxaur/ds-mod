@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.rules
 
-import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.Feature
 import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
@@ -24,13 +23,13 @@ private val SWITCH_GETTERS = setOf("getEnabled", "getSwitch")
  * Every place in [classes] outside `core` that reads a feature's switch itself, as `file:line`. `Game` keeps the mod to
  * dragsim.co for code in `core`, and nothing does for the edge, so the edge asks the feature whether it [Feature.runs].
  */
-fun switchReads(classes: List<ClassNode>, subclasses: Set<String>): List<String> =
+fun switchReads(classes: List<ClassNode>): List<String> =
     classes.filter { "/core/" !in it.name }.flatMap { node ->
         node.methods.flatMap { method ->
             var line = 0
             method.instructions.mapNotNull { insn ->
                 if (insn is LineNumberNode) line = insn.line
-                fun getter(owner: String, name: String) = name in SWITCH_GETTERS && (owner == FEATURE || owner in subclasses)
+                fun getter(owner: String, name: String) = name in SWITCH_GETTERS && owner == FEATURE
                 // A method reference such as Java's `feature::getEnabled` is a handle among the bootstrap arguments.
                 val handles = (insn as? InvokeDynamicInsnNode)?.bsmArgs.orEmpty().filterIsInstance<Handle>()
                 val reads = insn is MethodInsnNode && getter(insn.owner, insn.name) || handles.any { getter(it.owner, it.name) }
@@ -42,9 +41,7 @@ fun switchReads(classes: List<ClassNode>, subclasses: Set<String>): List<String>
 class SwitchesTest {
     @Test
     fun `outside core a feature's switch is read only through the feature`() {
-        val classes = releaseClasses()
-        val subclasses = SettingsTree().features.map { Type.getInternalName(it.javaClass) }.toSet()
-        val reads = switchReads(classes, subclasses)
+        val reads = switchReads(releaseClasses())
         assertEquals(
             emptyList(),
             reads,
@@ -90,7 +87,6 @@ class SwitchesTest {
                 reading("Reference", reference(Handle(Opcodes.H_INVOKEVIRTUAL, FEATURE, "getEnabled", "()Z", false))),
                 reading("RunsReference", reference(Handle(Opcodes.H_INVOKEVIRTUAL, FEATURE, "getRuns", "()Z", false))),
             ),
-            emptySet(),
         )
         assertEquals(
             listOf("Switch", "Enabled", "Reference").map { "io/github/noxaur/dsmod/edge/$it.kt:7" },

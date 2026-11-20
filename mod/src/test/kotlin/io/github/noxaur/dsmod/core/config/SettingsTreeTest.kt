@@ -151,15 +151,15 @@ class SettingsTreeTest {
     @Test
     fun `rows dim under their switch, the group's switch, and what they depend on`() {
         val byId = rows.associateBy { it.id }
-        settings.feature<ProtectorSpawnBeam>().enabled = false
+        settings.feature<ProtectorSpawnBeam>().feature.enabled = false
         assertTrue(byId.getValue("beamSections").dimmed)
-        settings.feature<ProtectorSpawnBeam>().enabled = true
+        settings.feature<ProtectorSpawnBeam>().feature.enabled = true
         assertFalse(byId.getValue("beamSections").dimmed)
-        settings.feature<Camera>().enabled = false
+        settings.feature<Camera>().feature.enabled = false
         assertTrue(byId.getValue("cameraTilt").dimmed)
-        rarity.enabled = false
+        rarity.feature.enabled = false
         assertTrue(byId.getValue("border").dimmed, "a fold's rows dim with the group around it")
-        settings.feature<CommandBinds>().enabled = false
+        settings.feature<CommandBinds>().feature.enabled = false
         assertTrue(byId.getValue("sequenceGap").dimmed)
         assertFalse(byId.getValue("command-binds").dimmed)
     }

@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.core.feature.end
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.CombatXp
@@ -27,9 +28,10 @@ data class ZealotDrops(val drops: Map<String, Int> = emptyMap(), val kills: Int 
  * A Zealot Bruiser is another mob and is left out. Eyes per hour divide by the time the player has spent in The End, which a stretch
  * in the hub does not dilute, and show only after a minute there, when one eye would give an absurd rate.
  */
-class ZealotTracker(config: DsModConfig) :
-    Feature(config, "zealot-tracker", Area.END, Store.END, "Count your Summoning Eyes and zealot kills, per hour and all-time.") {
-    private val allTime = saved(ZealotDrops())
+class ZealotTracker(config: DsModConfig) : HasFeature {
+    override val feature = Feature(config, "zealot-tracker", Area.END, Store.END, "Count your Summoning Eyes and zealot kills, per hour and all-time.", hud = ::hud)
+
+    private val allTime = feature.saved(ZealotDrops())
     private var session = emptyMap<String, Int>()
     private var endMillis = 0L
     private var endSince: Long? = null
@@ -40,18 +42,18 @@ class ZealotTracker(config: DsModConfig) :
     private var diedNext = 0
 
     init {
-        on<TabList> { _, now ->
-            if (here && endSince == null) endSince = now
-            if (!here) leaveEnd(now)
+        feature.on<TabList> { _, now ->
+            if (feature.here && endSince == null) endSince = now
+            if (!feature.here) leaveEnd(now)
         }
-        on<WorldChanged> { _, now -> leaveEnd(now) }
-        on<EntityDied> { death, now ->
+        feature.on<WorldChanged> { _, now -> leaveEnd(now) }
+        feature.on<EntityDied> { death, now ->
             val name = death.name.plain
             if ("Zealot" !in name || "Bruiser" in name) return@on
             died[diedNext] = now
             diedNext = (diedNext + 1) % died.size
         }
-        on<ActionBar> { bar, now ->
+        feature.on<ActionBar> { bar, now ->
             if (CombatXp.MARK !in bar.text.plain) return@on
             var confirmed = 0
             for (i in died.indices) {
@@ -63,7 +65,7 @@ class ZealotTracker(config: DsModConfig) :
             kills += confirmed
             allTime.value = allTime.value.copy(kills = allTime.value.kills + confirmed)
         }
-        line(Drop.head, Drop::parse) { drop, _ ->
+        feature.line(Drop.head, Drop::parse) { drop, _ ->
             val name = drop.item
             session += name to (session[name] ?: 0) + 1
             allTime.value = allTime.value.copy(drops = allTime.value.drops.let { it + (name to (it[name] ?: 0) + 1) })
@@ -75,10 +77,10 @@ class ZealotTracker(config: DsModConfig) :
         endSince = null
     }
 
-    override fun hud(now: Long): HudBlock? {
+    fun hud(now: Long): HudBlock? {
         val eyes = session[EYE] ?: 0
         val inEnd = endMillis + (endSince?.let { now - it } ?: 0)
-        return block {
+        return feature.block {
             row("Eyes") { value(eyes.toLong()) }
             row("Eyes per Hour") { value(if (inEnd >= MIN_RATE_MILLIS) "%.1f".format(Locale.US, eyes * MILLIS_PER_HOUR / inEnd) else "-") }
             row("All-Time Eyes") { value((allTime.value.drops[EYE] ?: 0).toLong()) }

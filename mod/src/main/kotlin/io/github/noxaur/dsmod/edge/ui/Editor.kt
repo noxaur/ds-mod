@@ -83,35 +83,45 @@ interface Editor {
 }
 
 /**
- * An editor that is one box across its row, from content [x], [top] for [width] by [height]: it keeps where the pane
- * shows it, and takes the mouse over the box where the pane shows it.
+ * Where an editor that is one box across its row sits: from content [x], [top] for [width] by [height]. It keeps
+ * where the pane shows it, and tells whether the mouse is over the box where the pane shows it. An editor holds one,
+ * sets it from its `layout` and `view`, and answers `isOver` with it.
  */
-abstract class BoxEditor : Editor {
-    protected var x = 0
-    protected var top = 0
-    protected var width = 0
-    protected var height = 0
-    protected var origin = 0
-    protected var clipTop = 0
-    protected var clipBottom = 0
+class Box {
+    var x = 0
+        private set
+    var top = 0
+        private set
+    var width = 0
+        private set
 
-    /** Takes the box's place and width from [layout]; the editor sets its [height]. */
-    protected fun place(x: Int, y: Int, width: Int) {
+    /** Set by the editor in its `layout`. */
+    var height = 0
+    var origin = 0
+        private set
+    var clipTop = 0
+        private set
+    var clipBottom = 0
+        private set
+
+    /** Takes the box's place and width from `layout`; the editor sets its [height]. */
+    fun place(x: Int, y: Int, width: Int) {
         this.x = x
         top = y
         this.width = width
     }
 
-    override fun view(origin: Int, clipTop: Int, clipBottom: Int, screenWidth: Int, screenHeight: Int) {
+    /** Takes where the pane shows the content, from `view`. */
+    fun view(origin: Int, clipTop: Int, clipBottom: Int) {
         this.origin = origin
         this.clipTop = clipTop
         this.clipBottom = clipBottom
     }
 
-    override fun isOver(mouseX: Double, mouseY: Double) = isOver(mouseX, mouseY, x, width, height)
+    fun isOver(mouseX: Double, mouseY: Double) = isOver(mouseX, mouseY, x, width, height)
 
     /** Whether the mouse is over [wide] by [tall] from [left] and the box's top, where the pane shows it. */
-    protected fun isOver(mouseX: Double, mouseY: Double, left: Int, wide: Int, tall: Int) =
+    fun isOver(mouseX: Double, mouseY: Double, left: Int, wide: Int, tall: Int) =
         mouseY >= clipTop && mouseY < clipBottom && mouseX >= left && mouseX < left + wide && mouseY >= origin + top && mouseY < origin + top + tall
 }
 

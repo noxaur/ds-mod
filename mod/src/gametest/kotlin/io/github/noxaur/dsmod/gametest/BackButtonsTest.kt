@@ -64,12 +64,12 @@ class BackButtonsTest : FabricClientGameTest {
             context.takeScreenshot("back-button-vanilla")
             context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
 
-            context.runOnClient<Nothing> { DsModClient.feature<BackButtons>().enabled = false }
+            context.runOnClient<Nothing> { DsModClient.feature<BackButtons>().feature.enabled = false }
             try {
                 context.waitTicks(2)
                 check(button(context) == null) { "The Back button stayed with Back Buttons off" }
             } finally {
-                context.runOnClient<Nothing> { DsModClient.feature<BackButtons>().enabled = true }
+                context.runOnClient<Nothing> { DsModClient.feature<BackButtons>().feature.enabled = true }
             }
             context.waitTicks(2)
 

@@ -96,12 +96,12 @@ class CommandKeysTest : FabricClientGameTest {
                 check(said("bound") == 2) { "With Dungeons off Shift + F6 sent /me bound" }
                 commandBinds.offGroups.value = emptyList()
 
-                commandBinds.enabled = false
+                commandBinds.feature.enabled = false
                 shiftF6()
                 echo("bound", 3)
                 check(said("bound") == 2) { "With Command Binds off Shift + F6 sent /me bound" }
             } finally {
-                commandBinds.enabled = true
+                commandBinds.feature.enabled = true
                 commandBinds.binds.value = emptyList()
                 commandBinds.groups.value = emptyList()
                 commandBinds.offGroups.value = emptyList()

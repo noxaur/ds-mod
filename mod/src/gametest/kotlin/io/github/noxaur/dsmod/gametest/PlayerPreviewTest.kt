@@ -43,7 +43,7 @@ class PlayerPreviewTest : FabricClientGameTest {
             context.setScreen { TitleScreen() }
 
             context.worldBuilder().create().use {
-                playerModel.enabled = true
+                playerModel.feature.enabled = true
                 playerModel.pose.value = ModelPose.T_POSE
                 playerModel.tiltSideways.value = 15f
                 context.waitTicks(20)
@@ -95,13 +95,13 @@ class PlayerPreviewTest : FabricClientGameTest {
                 driver.key(GLFW.GLFW_KEY_LEFT)
                 near(preview().yaw, dropped - Turntable.KEY_YAW, "The yaw after Down took the keys to the next row")
 
-                playerModel.enabled = false
+                playerModel.feature.enabled = false
                 context.waitTicks(2)
                 context.takeScreenshot("player-preview-off")
                 context.setScreen { null }
             }
         } finally {
-            playerModel.enabled = false
+            playerModel.feature.enabled = false
             playerModel.reset()
             SettingsSteps.restore(context, window)
         }

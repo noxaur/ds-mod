@@ -16,10 +16,10 @@ import net.minecraft.world.item.Items
 class AnimationsPoseTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = HeldItemScene.run(context) {
         val animations = DsModClient.feature<Animations>()
-        animations.enabled = false
+        animations.feature.enabled = false
         val vanilla = shot("animations-vanilla")
         val vanillaSwing = midSwing("animations-vanilla-swing")
-        animations.enabled = true
+        animations.feature.enabled = true
 
         animations.itemSize.value = 1.5f
         check(changed(vanilla, shot("animations-size")) > 1000) { "Item Size did not change the sword" }

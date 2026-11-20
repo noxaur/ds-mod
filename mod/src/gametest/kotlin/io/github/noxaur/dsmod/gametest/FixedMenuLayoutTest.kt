@@ -27,17 +27,17 @@ class FixedMenuLayoutTest : FabricClientGameTest {
             check(stable.distinct().size == 1) { "Go Back and the inventory moved between menus: $stable" }
 
             try {
-                context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().enabled = false }
+                context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().feature.enabled = false }
                 val vanilla = walk(context, world, "stable-vanilla")
                 check(vanilla.distinct().size == 1) { "Without Menu Theme, Go Back and the inventory moved between menus: $vanilla" }
 
-                context.runOnClient<Nothing> { DsModClient.feature<FixedMenuLayout>().enabled = false }
+                context.runOnClient<Nothing> { DsModClient.feature<FixedMenuLayout>().feature.enabled = false }
                 val centered = walk(context, world, "centered")
                 check(centered.distinct().size == 3) { "With Fixed Menu Layout off the menus should move as vanilla's do: $centered" }
             } finally {
                 context.runOnClient<Nothing> {
-                    DsModClient.feature<FixedMenuLayout>().enabled = true
-                    DsModClient.feature<MenuTheme>().enabled = true
+                    DsModClient.feature<FixedMenuLayout>().feature.enabled = true
+                    DsModClient.feature<MenuTheme>().feature.enabled = true
                 }
             }
             context.runOnClient<Nothing> { it.player!!.closeContainer() }

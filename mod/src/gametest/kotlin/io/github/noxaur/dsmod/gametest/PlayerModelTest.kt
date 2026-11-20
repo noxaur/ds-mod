@@ -66,9 +66,9 @@ class PlayerModelTest : FabricClientGameTest {
                 val still = 1000
                 fun against(what: String, region: (BufferedImage) -> BufferedImage = { it }): Int {
                     val name = "player-model-${what.lowercase().replace(' ', '-')}"
-                    playerModel.enabled = false
+                    playerModel.feature.enabled = false
                     val vanilla = region(shot("$name-off"))
-                    playerModel.enabled = true
+                    playerModel.feature.enabled = true
                     return moved(vanilla, region(shot(name)))
                 }
                 fun differs(what: String) = against(what).let { check(it > still) { "$what changed only $it pixels" } }
@@ -108,10 +108,10 @@ class PlayerModelTest : FabricClientGameTest {
                     val p = client.player!!
                     listOf(p.yRot, p.xRot, p.yHeadRot, p.yBodyRot).map(Float::toDouble) + listOf(p.x, p.y, p.z)
                 }
-                playerModel.enabled = false
+                playerModel.feature.enabled = false
                 context.waitTicks(5)
                 val alone = body()
-                playerModel.enabled = true
+                playerModel.feature.enabled = true
                 playerModel.target.value = ModelTarget.EVERYONE
                 playerModel.size.value = 3f
                 playerModel.tiltForward.value = 90f
@@ -200,11 +200,11 @@ class PlayerModelTest : FabricClientGameTest {
                 // First person draws no model, and its hand is drawn apart from the model, so nothing changes there.
                 context.runOnClient<Nothing> { it.options.cameraType = CameraType.FIRST_PERSON }
                 context.input.lookAt(0f, 90f)
-                playerModel.enabled = false
+                playerModel.feature.enabled = false
                 // The arm trails a turn of the camera for a while.
                 context.waitFor { val p = it.player!!; p.xBob == p.xRot && p.xBobO == p.xRot && p.yBob == p.yRot && p.yBobO == p.yRot }
                 val first = shot("player-model-first-person")
-                playerModel.enabled = true
+                playerModel.feature.enabled = true
                 playerModel.size.value = 3f
                 playerModel.tiltForward.value = 60f
                 playerModel.upsideDown.value = true
@@ -226,7 +226,7 @@ class PlayerModelTest : FabricClientGameTest {
                 playerModel.reset()
                 check(playerModel.size.value == 1f && playerModel.pose.value == ModelPose.GAME) { "Reset left the model changed" }
             } finally {
-                playerModel.enabled = false
+                playerModel.feature.enabled = false
                 playerModel.target.value = ModelTarget.SELF
                 playerModel.reset()
                 context.runOnClient<Nothing> {

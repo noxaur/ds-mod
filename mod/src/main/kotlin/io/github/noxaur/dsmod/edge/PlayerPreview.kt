@@ -3,7 +3,8 @@ package io.github.noxaur.dsmod.edge
 import com.mojang.blaze3d.platform.cursor.CursorTypes
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Turntable
-import io.github.noxaur.dsmod.edge.ui.BoxEditor
+import io.github.noxaur.dsmod.edge.ui.Box
+import io.github.noxaur.dsmod.edge.ui.Editor
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.SettingRows
 import net.minecraft.client.Minecraft
@@ -22,7 +23,9 @@ import kotlin.math.sqrt
  * tilt either way reads. A drag turns it around and tips it, Escape during the drag puts it back, and Left and Right
  * turn it a step while the keys are on the row. Outside a world there is no player to draw, and it says so.
  */
-class PlayerPreview : BoxEditor() {
+class PlayerPreview : Editor {
+    private val box = Box()
+
     private val turntable = Turntable(speed = 0f).apply { turn(START_YAW, 0f, 0L) }
 
     override val capturing get() = turntable.dragging
@@ -31,22 +34,26 @@ class PlayerPreview : BoxEditor() {
     val yaw get() = turntable.yaw(0L)
     val pitch get() = turntable.pitch
 
+    override fun view(origin: Int, clipTop: Int, clipBottom: Int, screenWidth: Int, screenHeight: Int) = box.view(origin, clipTop, clipBottom)
+
+    override fun isOver(mouseX: Double, mouseY: Double) = box.isOver(mouseX, mouseY)
+
     override fun layout(x: Int, y: Int, width: Int): Int {
-        place(x, y, width)
-        height = HEIGHT
+        box.place(x, y, width)
+        box.height = HEIGHT
         return HEIGHT
     }
 
     override fun refresh() = Unit
 
     override fun draw(g: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, keys: Boolean): SettingRows.Tip? {
-        val y = origin + top
-        if (y + HEIGHT <= clipTop || y >= clipBottom) return null
-        Kit.well(g, x, y, width, HEIGHT)
+        val y = box.origin + box.top
+        if (y + HEIGHT <= box.clipTop || y >= box.clipBottom) return null
+        Kit.well(g, box.x, y, box.width, HEIGHT)
         val player = Minecraft.getInstance().player
         if (player == null) {
             val line = text { muted(OUTSIDE) }.toComponent()
-            g.text(Kit.font, line, x + (width - Kit.font.width(line)) / 2, y + (HEIGHT - 8) / 2, -1, false)
+            g.text(Kit.font, line, box.x + (box.width - Kit.font.width(line)) / 2, y + (HEIGHT - 8) / 2, -1, false)
             return null
         }
         // Facing the viewer. A spin turns it from there as it is drawn.
@@ -59,15 +66,15 @@ class PlayerPreview : BoxEditor() {
         val tip = Quaternionf().rotateX(turntable.pitch * DEGREES)
         val rotation = Quaternionf().rotateZ(PI.toFloat()).mul(tip).rotateY(-turntable.yaw(0L) * DEGREES)
         val middle = Vector3f(0f, state.boundingBoxHeight * PlayerModels.tall / 2f + InventoryModel.Y_OFFSET, 0f)
-        g.enableScissor(x + 1, maxOf(y + 1, clipTop), x + width - 1, minOf(y + HEIGHT - 1, clipBottom))
-        g.entity(state, scale, middle, rotation, tip, x + 1, y + 1, x + width - 1, y + HEIGHT - 1)
+        g.enableScissor(box.x + 1, maxOf(y + 1, box.clipTop), box.x + box.width - 1, minOf(y + HEIGHT - 1, box.clipBottom))
+        g.entity(state, scale, middle, rotation, tip, box.x + 1, y + 1, box.x + box.width - 1, y + HEIGHT - 1)
         g.disableScissor()
-        if (turntable.dragging || isOver(mouseX.toDouble(), mouseY.toDouble())) g.requestCursor(CursorTypes.RESIZE_ALL)
+        if (turntable.dragging || box.isOver(mouseX.toDouble(), mouseY.toDouble())) g.requestCursor(CursorTypes.RESIZE_ALL)
         return null
     }
 
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
-        if (!isOver(event.x, event.y) || Minecraft.getInstance().player == null) return false
+        if (!box.isOver(event.x, event.y) || Minecraft.getInstance().player == null) return false
         turntable.press(event.x, event.y, 0L)
         return true
     }
