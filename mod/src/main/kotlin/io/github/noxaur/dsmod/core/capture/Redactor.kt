@@ -96,8 +96,9 @@ class Redactor(private val names: Set<String>) {
 
     /** [text] with each name replaced and what a player typed in it replaced by `hello`. */
     private fun typed(text: ServerText): ServerText {
-        val at = PlayerNames.inText(text.plain)
-        val typed = PlayerNames.typed(text.plain, names + at.map(text.plain::substring)).map { it to "hello" }
+        val chat = PlayerNames.typed(text.plain)
+        val at = PlayerNames.inText(text.plain) + chat.flatMap { it.names }
+        val typed = chat.map { it.words to "hello" }
         val named = hits(text.plain, at = at).filter { (range) -> typed.none { range.first in it.first } }
         return text.replacing((typed + named).sortedBy { it.first.first })
     }
