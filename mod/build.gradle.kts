@@ -202,14 +202,14 @@ dependencies {
     productionRuntimeMods("maven.modrinth:modmenu:${property("modmenu_version")}") { isTransitive = false }
     "gametestImplementation"("maven.modrinth:modmenu:${property("modmenu_version")}") { isTransitive = false }
 }
-// A run with no `-Pgametests` runs the tests that the change since its last green run reaches, as GameTestPick.kt
-// picks them, and the pre-commit hook starts one. `-Pgametests=PerfTest,ChatTest` names them, and `-Pgametests=all`
+// A run with no `-Pgametests` runs the tests that the change since the branch left `main` reaches, as GameTestPick.kt
+// picks them, and CI's gametests job runs one. `-Pgametests=PerfTest,ChatTest` names them, and `-Pgametests=all`
 // runs every one, which takes minutes, so it is for the beta pipeline.
 val gametests = providers.gradleProperty("gametests")
 val picked = layout.buildDirectory.file("gametests/picked")
 val pickGameTests = tasks.register<JavaExec>("pickGameTests") {
     group = "verification"
-    description = "Picks the game tests that the change since the last green run reaches. See GameTestPick.kt."
+    description = "Picks the game tests that the change since the branch left main reaches. See GameTestPick.kt."
     classpath = sourceSets["debug"].runtimeClasspath
     mainClass = "io.github.noxaur.dsmod.debug.GameTestPickKt"
     args(projectDir.path, picked.get().asFile.path)
@@ -261,16 +261,12 @@ tasks.register<net.fabricmc.loom.task.prod.ClientProductionRunTask>("runProdClie
     // A CI runner has no display.
     useXVFB = providers.environmentVariable("CI").isPresent
 }
-// A picked run is skipped when the change reaches no test. Only a green run on the jars a player installs keeps the
-// tree it ran on, so a debug run never lets a commit skip them.
+// A picked run is skipped when the change reaches no test.
 if (!gametests.isPresent) {
     val pick = picked.get().asFile
-    val tree = pick.resolveSibling("tree")
-    val passed = pick.resolveSibling("passed")
     tasks.matching { it.name == "runClientGameTest" || it.name == "runProdClientGameTest" }.configureEach {
         dependsOn(pickGameTests)
         onlyIf("the change reaches a game test") { pick.readLines().any(String::isNotBlank) }
-        if (name == "runProdClientGameTest") doLast { tree.copyTo(passed, overwrite = true) }
     }
 }
 

@@ -1,0 +1,13 @@
+name: Preload the GL driver
+description: Reads Mesa and LLVM into the page cache in the background, so the game's first window does not wait for them. Put it before the Gradle step that starts the game.
+runs:
+  using: composite
+  steps:
+    # The game's first window waits while Mesa and LLVM page in from the runner's cold disk, 0 to 20 seconds a
+    # run, so they are read while Gradle compiles.
+    - shell: bash
+      run: |
+        {
+          gl=$(ls /usr/lib/*-linux-gnu/libGLX_mesa.so.0 /usr/lib/*-linux-gnu/libgallium-*.so)
+          cat $gl $(ldd $gl | awk '$3 ~ /^\// { print $3 }' | sort -u) > /dev/null
+        } 2>/dev/null &

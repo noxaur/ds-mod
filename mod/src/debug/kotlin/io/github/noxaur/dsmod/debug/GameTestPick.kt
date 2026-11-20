@@ -100,8 +100,7 @@ fun gameTestNames(mod: File): Set<String> =
 
 /**
  * `./gradlew pickGameTests`, which a game test run with no `-Pgametests` runs first. Writes to [args]`[1]` the game
- * tests that the change since the last green run reaches, and the tree it read beside them, which the run keeps as
- * `passed` when it ends green. With no green run yet, the change is the one since the branch left `main`.
+ * tests that the change since the branch left `main` reaches, the working copy's included.
  */
 fun main(args: Array<String>) {
     val mod = File(args[0])
@@ -113,24 +112,16 @@ fun main(args: Array<String>) {
     val env = mapOf("GIT_INDEX_FILE" to index.path)
     git(top, "add", "-A", env = env)
     val tree = git(top, "write-tree", env = env)
-    val passed = out.resolveSibling("passed").takeIf { it.exists() }?.readText()?.trim()
-    val base = passed?.takeIf { runCatching { git(top, "cat-file", "-e", "$it^{tree}") }.isSuccess }
-        ?: listOf("origin/main", "main").firstNotNullOf { runCatching { git(top, "merge-base", "HEAD", it) }.getOrNull() }
+    val base = listOf("origin/main", "main").firstNotNullOf { runCatching { git(top, "merge-base", "HEAD", it) }.getOrNull() }
     val prefix = mod.canonicalFile.relativeTo(top.canonicalFile).invariantSeparatorsPath + "/"
     val changed = git(top, "diff", "--name-only", base, tree, "--", prefix).lines().filter(String::isNotBlank).map { it.removePrefix(prefix) }
     val picked = pickGameTests(gameTestSources(mod), gameTestNames(mod), changed).tests.sorted()
     out.writeText(picked.joinToString("\n"))
-    out.resolveSibling("tree").writeText(tree)
-    if (picked.isEmpty()) out.resolveSibling("passed").writeText(tree)
     println(if (picked.isEmpty()) "No game test reaches the change." else "Game tests the change reaches: ${picked.joinToString()}")
 }
 
 private fun git(dir: File, vararg args: String, env: Map<String, String> = emptyMap()): String {
-    val process = ProcessBuilder("git", *args).directory(dir).redirectErrorStream(true).apply {
-        // The pre-commit hook runs with git's own variables set, which would make the hook's directory the repository's top.
-        environment().keys.removeAll(listOf("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE"))
-        environment() += env
-    }.start()
+    val process = ProcessBuilder("git", *args).directory(dir).redirectErrorStream(true).apply { environment() += env }.start()
     val output = process.inputStream.bufferedReader().readText().trim()
     check(process.waitFor(1, TimeUnit.MINUTES) && process.exitValue() == 0) { "git ${args.joinToString(" ")} failed: $output" }
     return output

@@ -21,7 +21,7 @@ Only for an exception the user agreed to, end the line with a comment: `rule:<id
 
 ## The rules
 
-All of them run in `mise run check`, except the game tests and the CI rules.
+A commit runs all of them, except the game tests, which a pull request runs, and the CI rules.
 
 | Rule | Enforced by |
 | --- | --- |
@@ -53,7 +53,8 @@ All of them run in `mise run check`, except the game tests and the CI rules.
 | A unit test run takes at most 30 seconds | `timeout` on `tasks.test` in `mod/build.gradle.kts`, and `scripts/test-time-limit.ts` in `backend/` and in `web/`, the global setup of the tests in each `vite.config.ts` |
 | A game test passes whichever tests ran before it | `FreshStart` in `mod/src/gametest/` starts the mod afresh before each test |
 | A game test takes at most 20 seconds, its world included | `TestClock` in `mod/src/gametest/` |
-| A commit runs the game tests its change reaches | `.githooks/pre-commit`, which `mise install` installs, and `GameTestPick.kt` in `mod/src/debug/` |
+| A commit passes every project's checks | `.githooks/pre-commit`, which `mise install` installs |
+| A pull request runs the game tests its change reaches | CI's `gametests` job, and `GameTestPick.kt` in `mod/src/debug/` |
 | Every file of `edge` and `debug` reaches a game test | `GameTestPickTest` |
 | A CI job takes at most 3 minutes | `.github/actions/time-limit`, the last step of every job in `ci.yml` |
 | The mod stays inside its frame, tick and size caps | `PerfTest` against `mod/src/gametest/resources/perf-budgets.json`, in CI's `perf` job |

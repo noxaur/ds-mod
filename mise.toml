@@ -3,7 +3,7 @@ java = "temurin-25"
 node = "24"
 pnpm = "10.34.9"
 
-# A commit runs the game tests its change reaches. See .githooks/pre-commit.
+# A commit runs `mise run check`. See .githooks/pre-commit.
 [hooks]
 postinstall = "git config core.hooksPath .githooks"
 

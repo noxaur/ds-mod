@@ -39,7 +39,7 @@ We can't compromise on these.
 
 ## Formal specs
 
-- When you change a state machine that has a spec, change the spec first, then the code. `mise run check` runs TLC on it.
+- When you change a state machine that has a spec, change the spec first, then the code.
 - Write a spec for a new feature only when it has interleaving states that a unit test can't enumerate. A parser or an overlay needs a test.
 
 ## Docs
@@ -48,11 +48,11 @@ Before you change an area, read its page in `docs/internals/`. Most code changes
 
 ## Rules
 
-Every rule is enforced by a check in `mise run check`, and a failure prints the fix. When a mistake happens a second time, or before you add, change or remove a check or an exception, load the `rules` skill.
+Every rule is enforced by a check, and a failure prints the fix. When a mistake happens a second time, or before you add, change or remove a check or an exception, load the `rules` skill.
 
 ## Checks
 
-- `mise run check` must pass, and `mise install` gives the pinned tools it needs.
+- A commit runs every project's checks, and a pull request runs the game tests its change reaches.
 - Test the real implementation instead of copying its logic into the test.
 - When a CI job nears its 3 minutes, make it faster or move the slow part to the beta pipeline. Raise a limit or a perf cap only when the user agrees.
 
