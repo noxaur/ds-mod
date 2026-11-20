@@ -14,6 +14,10 @@ runs:
     - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
       with:
         install_args: java
+    # Gradle runs on mise's JDK, which is the toolchain the build asks for. Left on, auto-detection starts each
+    # of the runner's five other JDKs to read its version, which takes 10 seconds of every configuration.
+    - shell: bash
+      run: mkdir -p ~/.gradle && echo "org.gradle.java.installations.auto-detect=false" >> ~/.gradle/gradle.properties
     # One cache for the dependencies, the Gradle distribution, Minecraft and its remapped jars. The key is
     # every file that decides what gets downloaded, so a hit means the build needs no network. Every version,
     # the plugins' included, lives in gradle.properties, so an edit to the build scripts keeps the cache and
@@ -29,10 +33,8 @@ runs:
           ~/.gradle/wrapper
           mod/.gradle/loom-cache
         key: ${{ steps.key.outputs.key }}
-    # The configuration cache spares the 15 to 40 seconds Loom takes to configure the project on a runner.
-    # Gradle checks every build script and every file the configuration read, and configures again on any
-    # change, so the newest entry is safe to restore. It is saved on every run, and its key starts with the
-    # cache's, because Gradle encrypts it with a key that lives in ~/.gradle/caches.
+    # The newest configuration cache, for the reason in docs/internals/testing.md. It is saved on every run,
+    # and its key starts with the cache's, because Gradle encrypts it with a key that lives in ~/.gradle/caches.
     - uses: actions/cache@v6
       with:
         path: mod/.gradle/configuration-cache
