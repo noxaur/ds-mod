@@ -14,6 +14,14 @@ The mod's logic imports nothing from Minecraft or Fabric, and only the edge does
 
 Every feature reads lines in dragsim.co's own words, so on another server it can only misread them, and a wrong count is saved for good. So every feature is off away from dragsim.co, and the mod decides it once per connection by the address the player reached. A hardcoded IP was rejected, because it would stop matching the day the server moves. A player who wants the mod elsewhere turns the setting off.
 
+## The debug build runs everywhere
+
+The debug build lifts the dragsim.co gate, because the game tests and a local run play in singleplayer. Making each test turn the setting off first was rejected, because it is one more thing to forget. For the same reason the gate starts open in the logic, so a unit test or a replay never meets it.
+
+## A feature that only changes drawing is still a feature
+
+A feature such as Fullbright handles no event, and only the edge draws it, yet it is still a feature in the one list of features. The settings, the player docs check and the tests all walk that list. A plain setting or a second list for drawing features was rejected, because a feature there would skip all three.
+
 ## Release and debug are separate builds
 
 Developer tools live in a build that release code can't see, so the compiler keeps them out of the jar players install. A review could miss a stray tool, and the compiler can't. The recorder is the one tool that ships, for the reason in [captures](captures.md#the-recorder-ships-and-runs-only-for-a-contribution).
