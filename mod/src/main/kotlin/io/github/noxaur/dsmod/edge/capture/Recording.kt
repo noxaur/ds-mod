@@ -6,11 +6,11 @@ import io.github.noxaur.dsmod.core.brief.BriefRun
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.Chat
+import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.edge.contribute.Contribute
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
 import org.lwjgl.glfw.GLFW
@@ -34,9 +34,6 @@ object Recording {
     private var shown: Any? = null
     private var saved: String? = null
     private var leftServer = false
-
-    @Volatile
-    private var disconnected = false
     private lateinit var nextStep: KeyMapping
 
     /** The brief on screen, which the window title shows. */
@@ -92,11 +89,16 @@ object Recording {
         Minecraft.getInstance().updateTitle()
     }
 
+    /** The player left the server, so a request's run cannot go on, and is discarded. They are told once they are back in a world. */
+    fun left() {
+        if (request != null && cancel()) leftServer = true
+    }
+
     /** Ends a request's run before its last step and sends what it recorded, unless it just ended. False when no request's run has started. */
     fun submit(): Boolean {
         val run = run ?: return false
         if (request == null || run.current < 0 || run.done) return false
-        // A run that ended a moment ago is not sent, and the player has been told why.
+        // A run that ran out of time a moment ago is not sent, and the player has been told why.
         if (ended(run, System.currentTimeMillis())) return true
         run.finish(System.currentTimeMillis())
         Recorder.record("step") { run.record() }
@@ -125,17 +127,10 @@ object Recording {
     }
 
     /**
-     * Discards a request's run that lost its connection or ran out of time, and says whether it did. The tick asks
-     * first, and so does [submit], which may come between a disconnect or the time limit and the next tick.
+     * Discards a request's run that ran out of time, and says whether it did. The tick asks first, and so does
+     * [submit], which may come between the time limit and the next tick.
      */
     private fun ended(run: BriefRun?, now: Long): Boolean {
-        if (disconnected) {
-            disconnected = false
-            if (request != null && cancel()) {
-                leftServer = true
-                return true
-            }
-        }
         if (run == null || !run.timedOut(now)) return false
         cancel()
         Chat.send(text { bad("The recording ran out of time, so nothing was sent. Open Contribute in the settings to try again.") })
@@ -143,6 +138,8 @@ object Recording {
     }
 
     private fun tick(client: Minecraft) {
+        // A run that lost its connection during this tick must not finish and send now.
+        DsModClient.leave()
         val now = System.currentTimeMillis()
         if (ended(run, now)) {
             drainNextStep()
@@ -185,9 +182,6 @@ object Recording {
 
     fun register() {
         nextStep = KeyMappingHelper.registerKeyMapping(KeyMapping("key.dsmod.next_step", GLFW.GLFW_KEY_RIGHT_BRACKET, KeyMapping.Category.MISC))
-        // Fabric says so on the network thread, and the tick reads it on the client thread. A change of world on the
-        // same connection is no disconnect, and a brief's warps change the world.
-        ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> disconnected = true }
         ClientTickEvents.END_CLIENT_TICK.register(::tick)
     }
 }

@@ -4,7 +4,6 @@ import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
-import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.clock
 import kotlinx.serialization.Serializable
@@ -25,14 +24,13 @@ class SlayerTracker(config: DsModConfig) :
     private var slain = 0
     private var timed = 0
     private var timedMillis = 0L
-    private var spawnedAt: Long? = null
+    private var spawnedAt: Long? by world { null }
     private var seen = false
     private var quest: String? = null
     private var level: String? = null
     private var toNext = 0L
 
     init {
-        on<WorldChanged> { _, _ -> spawnedAt = null }
         line("   » Slay ", Regex("""   » Slay ([\d,]+) Combat XP worth of (.+)\.""")) { (xp, mobs), _ ->
             seen = true
             quest = "$xp XP of $mobs"

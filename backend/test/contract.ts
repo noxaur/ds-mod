@@ -185,6 +185,13 @@ const suites: { readonly [Name in keyof Stores]: Cases<Stores[Name]> } = {
         expect(await run(contrib.insertSubmission(submission("s3", "r2", "ann"), capture(3), 100))).toBe(true);
         expect(await run(contrib.insertSubmission(submission("s4", "r1", "bob"), capture(4), 100))).toBe(true);
       },
+      "a run for a closed request is refused and leaves nothing behind": async ({ contrib }) => {
+        await run(contrib.insertRequest(request("r1")));
+        await run(contrib.close("r1"));
+        expect(await run(contrib.insertSubmission(submission("s1", "r1", "ann"), capture(1), 100))).toBe(false);
+        expect(await run(contrib.submissionsOf("r1"))).toEqual([]);
+        expect(await run(contrib.capture("s1"))).toBeNull();
+      },
       "two uploads of one player at once keep one": async ({ contrib }) => {
         const results = await Promise.all([
           run(contrib.insertSubmission(submission("s1", "r1", "ann"), capture(1), 100)),

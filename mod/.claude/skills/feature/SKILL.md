@@ -21,6 +21,7 @@ Load the `ui` skill too when the feature shows the player anything.
 ## State
 
 - State that outlives the session is one `@Serializable` class given to `saved()`. Replace its `value` to change it.
+- State that holds for one world is declared as `private var phase by world { Phase.Unknown }`, and for one session on the server with `session { }`. `Game` resets it, so never reset it in a `WorldChanged` or `LeftServer` handler. Values that exclude each other, such as a dragon alive and an egg returning, are one sealed type, as in `DragonTimer`.
 
 ## Fixtures
 

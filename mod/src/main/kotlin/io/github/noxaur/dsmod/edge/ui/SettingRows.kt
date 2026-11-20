@@ -184,19 +184,40 @@ class SettingRows(
         spoken = focus
     }
 
-    private var dragging: Line? = null
+    /** What the mouse and the keys are on, one at a time: nothing, an open menu, field or key button, or a held press. */
+    private sealed interface Mode {
+        object Idle : Mode
 
-    /** An entry pressed and not yet dragged: where the press was, whether it toggles on release, and the list before it moved. */
-    private var pressY = 0.0
-    private var moved = false
-    private var toggleOnRelease = false
-    private var beforeDrag: Pair<List<Any?>, List<Any?>>? = null
-    private var menu: AbstractWidget? = null
-    private var menuOrigin = 0
-    private var editor: KitTextField? = null
-    private var editing: Line? = null
-    private var recorder: KitKeysButton? = null
-    private var recording: Line? = null
+        class Menu(val widget: AbstractWidget) : Mode
+
+        class Field(val field: KitTextField, val line: Line) : Mode
+
+        class Recording(val button: KitKeysButton, val line: Line) : Mode
+
+        /** A press the mouse still holds on [line]. */
+        sealed interface Drag : Mode {
+            val line: Line
+        }
+
+        /** A number's track or a span's slider. */
+        class Slide(override val line: Line) : Drag
+
+        /**
+         * An entry pressed and perhaps dragged: where the press was, whether it toggles on release if it never moved,
+         * and the list before it moved. [line] follows the entry as it moves.
+         */
+        class Reorder(override var line: Line, val pressY: Double, val toggleOnRelease: Boolean, val before: Pair<List<Any?>, List<Any?>>) : Drag {
+            var moved = false
+        }
+    }
+
+    private var mode: Mode = Mode.Idle
+
+    /** The line a held press is on. */
+    private val dragging get() = (mode as? Mode.Drag)?.line
+
+    /** The open menu, if any. */
+    private val menu get() = (mode as? Mode.Menu)?.widget
 
     /**
      * The rows a search opened to show a hit inside them. They belong to that query, so typing a longer one does not
@@ -205,10 +226,13 @@ class SettingRows(
     var found: MutableSet<String> = HashSet()
 
     /** Whether a menu, a field, a key button or an entry's drag has the keys, which the host then hands over before its own. */
-    val capturing get() = menu != null || editor != null || recorder != null || (dragging?.entry ?: -1) >= 0 || capturer() != null
+    val capturing get() = when (mode) {
+        Mode.Idle, is Mode.Slide -> capturer() != null
+        else -> true
+    }
 
     /** Whether a key button records, a row's or an editor's, so the mouse's back and forward buttons are keys to it. */
-    val recordingKeys get() = recorder != null || capturer()?.recording == true
+    val recordingKeys get() = mode is Mode.Recording || capturer()?.recording == true
 
     /** The editor that holds the keys and the mouse now, if any. */
     private fun capturer(): Editor? {
@@ -256,9 +280,12 @@ class SettingRows(
     fun view(originY: Int, top: Int, bottom: Int, width: Int, height: Int) {
         if (originY != origin) {
             // A menu or a field belongs where it was opened, so a scroll closes it.
-            if (menu != null && originY != menuOrigin) menu = null
-            editor?.let { commit() }
-            recorder?.let { finishRecording() }
+            when (mode) {
+                is Mode.Menu -> mode = Mode.Idle
+                is Mode.Field -> commit()
+                is Mode.Recording -> finishRecording()
+                else -> Unit
+            }
         }
         origin = originY
         clipTop = top
@@ -274,14 +301,11 @@ class SettingRows(
     fun begin() {
         // A resize rebuilds the rows without a click outside the field, so the typed number is taken first.
         // Escape closes the field without taking it, and that path does not come through here.
-        editor?.let { commit() }
+        if (mode is Mode.Field) commit()
         focusId = lines.getOrNull(focus)?.key
         spokenId = lines.getOrNull(spoken)?.key
         lines.clear()
-        dragging = null
-        menu = null
-        editor = null
-        recorder = null
+        mode = Mode.Idle
     }
 
     /** Lays [rows] out from [y] down, [width] wide, and returns the content y under them. */
@@ -697,9 +721,9 @@ class SettingRows(
                 }
                 if (line.fillTo > line.fillFrom) Kit.span(g, line.fillFrom, cy + 1, line.fillTo - line.fillFrom, Kit.SWITCH_HEIGHT - 2, trackState)
                 val fieldY = origin + line.y + (line.height - Kit.BUTTON_HEIGHT) / 2
-                val editor = editor
-                if (editor != null && editing === line) {
-                    editor.extractRenderState(g, mx.toInt(), my.toInt(), 0f)
+                val open = mode
+                if (open is Mode.Field && open.line === line) {
+                    open.field.extractRenderState(g, mx.toInt(), my.toInt(), 0f)
                 } else {
                     val overField = hovered && overExtra(line, mx, my)
                     Kit.field(g, line.ex, fieldY, line.ew, Kit.BUTTON_HEIGHT, if (overField) Kit.State.HOVER else Kit.State.IDLE)
@@ -715,9 +739,9 @@ class SettingRows(
                 if (overControl) g.requestCursor(CursorTypes.POINTING_HAND)
             }
             is KeyBind -> {
-                val recorder = recorder
-                if (recorder != null && recording === line) {
-                    recorder.extractRenderState(g, mx.toInt(), my.toInt(), 0f)
+                val open = mode
+                if (open is Mode.Recording && open.line === line) {
+                    open.button.extractRenderState(g, mx.toInt(), my.toInt(), 0f)
                 } else {
                     labelButton(g, line, cy, controlState)
                 }
@@ -778,15 +802,18 @@ class SettingRows(
     fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
         val mx = event.x
         val my = event.y
-        menu?.let {
-            if (it.takesPress(event, doubleClick)) return true
-            menu = null
+        when (val open = mode) {
+            is Mode.Menu -> {
+                if (open.widget.takesPress(event, doubleClick)) return true
+                mode = Mode.Idle
+            }
+            is Mode.Field -> {
+                if (open.field.takesPress(event, doubleClick)) return true
+                commit()
+            }
+            is Mode.Recording -> if (open.button.pressed(event) { finishRecording() }) return true
+            else -> Unit
         }
-        editor?.let {
-            if (it.takesPress(event, doubleClick)) return true
-            commit()
-        }
-        if (recorder?.pressed(event) { finishRecording() } == true) return true
         // An editor holding a field, a menu or the keys takes the press first, and lets one elsewhere do its own job.
         capturer()?.let { if (it.mouseClicked(event, doubleClick)) return true.also { _ -> pressed = it } }
         val i = lineAt(mx, my)
@@ -809,11 +836,7 @@ class SettingRows(
             if (right) return true
             if (overControl(line, mx, my)) return true.also { change { order.switch(line.entry) } }
             // A press on the grip or the name picks the entry up, and one that never moves toggles it, as a switch row's press does.
-            dragging = line
-            pressY = my
-            moved = false
-            toggleOnRelease = !overGrip(line, mx)
-            beforeDrag = order.entries.toList() to order.value.toList()
+            mode = Mode.Reorder(line, my, !overGrip(line, mx), order.entries.toList() to order.value.toList())
             return true
         }
         when (val s = line.setting) {
@@ -826,7 +849,7 @@ class SettingRows(
                 right -> Unit
                 overExtra(line, mx, my) -> edit(line, null)
                 overControl(line, mx, my) -> {
-                    dragging = line
+                    mode = Mode.Slide(line)
                     slide(line, mx)
                 }
             }
@@ -838,7 +861,7 @@ class SettingRows(
             }
             is Span -> line.slider?.let { slider ->
                 if (slider.isMouseOver(mx, my)) {
-                    dragging = line
+                    mode = Mode.Slide(line)
                     slider.mouseClicked(event, doubleClick)
                     take(line)
                 }
@@ -877,23 +900,28 @@ class SettingRows(
 
     fun mouseDragged(event: MouseButtonEvent, dx: Double, dy: Double): Boolean {
         pressed?.let { return it.mouseDragged(event, dx, dy) }
-        val line = dragging ?: return false
-        if (line.entry >= 0) {
-            if (!moved && Math.abs(event.y - pressY) < DRAG_START) return true
-            moved = true
-            // The entry moves to the line under the mouse, and stays at the list's ends past them.
-            val first = lines.indexOfFirst { it.setting === line.setting && it.entry == 0 }
-            val to = Math.floorDiv((event.y - top(lines[first])).toInt(), ENTRY_HEIGHT)
-            moveEntry(line, to)
-            return true
-        }
-        when (line.setting) {
-            is Number -> slide(line, event.x)
-            is Span -> {
-                line.slider?.mouseDragged(event, dx, dy)
-                take(line)
+        when (val drag = mode) {
+            is Mode.Reorder -> {
+                if (!drag.moved && Math.abs(event.y - drag.pressY) < DRAG_START) return true
+                drag.moved = true
+                // The entry moves to the line under the mouse, and stays at the list's ends past them.
+                val line = drag.line
+                val first = lines.indexOfFirst { it.setting === line.setting && it.entry == 0 }
+                val to = Math.floorDiv((event.y - top(lines[first])).toInt(), ENTRY_HEIGHT)
+                moveEntry(line, to)
             }
-            else -> Unit
+            is Mode.Slide -> {
+                val line = drag.line
+                when (line.setting) {
+                    is Number -> slide(line, event.x)
+                    is Span -> {
+                        line.slider?.mouseDragged(event, dx, dy)
+                        take(line)
+                    }
+                    else -> Unit
+                }
+            }
+            else -> return false
         }
         return true
     }
@@ -904,17 +932,21 @@ class SettingRows(
             return it.mouseReleased(event)
         }
         capturer()?.mouseReleased(event)
-        recorder?.release(event.button())
-        val line = dragging ?: return false
-        dragging = null
-        if (line.entry >= 0) {
-            beforeDrag = null
-            if (!moved && toggleOnRelease) change { (line.setting as Order<*>).switch(line.entry) }
-            return true
-        }
-        line.slider?.let {
-            it.mouseReleased(event)
-            take(line)
+        (mode as? Mode.Recording)?.button?.release(event.button())
+        when (val drag = mode) {
+            is Mode.Reorder -> {
+                mode = Mode.Idle
+                val line = drag.line
+                if (!drag.moved && drag.toggleOnRelease) change { (line.setting as Order<*>).switch(line.entry) }
+            }
+            is Mode.Slide -> {
+                mode = Mode.Idle
+                drag.line.slider?.let {
+                    it.mouseReleased(event)
+                    take(drag.line)
+                }
+            }
+            else -> return false
         }
         return true
     }
@@ -922,7 +954,7 @@ class SettingRows(
     /** The wheel over a number or a dropdown steps it, by ten with Shift. Elsewhere it is the host's, to scroll. */
     fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double, shift: Boolean): Boolean {
         // An open field keeps what was typed. Stepping it would leave the stepped value behind when Escape discards the text.
-        if (menu != null || editor != null || amount == 0.0) return false
+        if (mode is Mode.Menu || mode is Mode.Field || amount == 0.0) return false
         val i = lineAt(mouseX, mouseY).takeIf { it >= 0 } ?: return false
         val line = lines[i]
         line.editor?.let { return it.isOver(mouseX, mouseY) && it.mouseScrolled(mouseX, mouseY, amount, shift) }
@@ -938,33 +970,34 @@ class SettingRows(
     /** Takes a key while the rows have the keyboard, or while a menu, field or key button is open. Returns whether it took it. */
     fun keyPressed(event: KeyEvent): Boolean {
         swallow = false
-        menu?.let { open ->
-            open.keyPressed(event)
-            swallow = true
-            return true
-        }
-        val field = editor
-        if (field != null) {
-            when {
-                event.key() == GLFW.GLFW_KEY_ENTER || event.key() == GLFW.GLFW_KEY_KP_ENTER -> commit()
-                event.isEscape -> close()
-                else -> field.keyPressed(event)
+        when (val open = mode) {
+            is Mode.Menu -> {
+                open.widget.keyPressed(event)
+                swallow = true
+                return true
             }
-            return true
-        }
-        recorder?.let { keys ->
-            keys.capture(event.key())
-            if (!keys.recording) finishRecording()
-            swallow = true
-            return true
+            is Mode.Field -> {
+                when {
+                    event.key() == GLFW.GLFW_KEY_ENTER || event.key() == GLFW.GLFW_KEY_KP_ENTER -> commit()
+                    event.isEscape -> mode = Mode.Idle
+                    else -> open.field.keyPressed(event)
+                }
+                return true
+            }
+            is Mode.Recording -> {
+                open.button.capture(event.key())
+                if (!open.button.recording) finishRecording()
+                swallow = true
+                return true
+            }
+            else -> Unit
         }
         capturer()?.let { return it.keyPressed(event) }
-        dragging?.takeIf { it.entry >= 0 }?.let { line ->
+        (mode as? Mode.Reorder)?.let { drag ->
             // Escape during a drag puts the list back, and the drag keeps every other key until it ends.
             if (event.isEscape) {
-                beforeDrag?.let { (entries, shown) -> change { restore(line.setting as Order<*>, entries, shown) } }
-                dragging = null
-                beforeDrag = null
+                change { restore(drag.line.setting as Order<*>, drag.before.first, drag.before.second) }
+                mode = Mode.Idle
             }
             return true
         }
@@ -1035,7 +1068,7 @@ class SettingRows(
 
     fun keyReleased(event: KeyEvent): Boolean {
         (capturer() ?: lines.getOrNull(focus)?.editor)?.let { if (it.keyReleased(event)) return true }
-        val keys = recorder ?: return false
+        val keys = (mode as? Mode.Recording)?.button ?: return false
         keys.release(event.key())
         if (!keys.recording) finishRecording()
         return true
@@ -1046,7 +1079,7 @@ class SettingRows(
      * character of a key that a menu or a key button took goes nowhere, so recording K does not start a search.
      */
     fun charTyped(event: CharacterEvent): Boolean {
-        editor?.let { return it.charTyped(event) }
+        (mode as? Mode.Field)?.let { return it.field.charTyped(event) }
         (capturer() ?: lines.getOrNull(focus)?.takeIf { keys }?.editor)?.let { if (it.charTyped(event)) return true }
         menu?.let {
             it.charTyped(event)
@@ -1088,7 +1121,7 @@ class SettingRows(
         val at = order.move(line.entry, to)
         if (at == line.entry) return
         val target = lines.indexOfFirst { it.setting === order && it.entry == at }
-        if (dragging === line) dragging = lines[target]
+        (mode as? Mode.Reorder)?.let { if (it.line === line) it.line = lines[target] }
         if (focus == lines.indexOf(line)) {
             focus = target
             spoken = target
@@ -1133,14 +1166,14 @@ class SettingRows(
     private fun openMenu(line: Line) {
         val s = line.setting as Choice<*>
         val y = origin + line.cy
-        menuOrigin = origin
-        menu = if (s is Pick<*>) {
-            KitPickMenu(s.values.indices.map(s::lookAt), s.labels, s.index, screenWidth - Kit.GAP * 2, { change { s.choose(it) } }, { menu = null }, words)
+        val widget = if (s is Pick<*>) {
+            KitPickMenu(s.values.indices.map(s::lookAt), s.labels, s.index, screenWidth - Kit.GAP * 2, { change { s.choose(it) } }, { mode = Mode.Idle }, words)
                 .below(line.cx, y, line.cw, line.ch, screenWidth, screenHeight)
         } else {
-            KitMenu(0, 0, screenWidth, screenHeight, s.labels.mapIndexed { i, label -> label to { change { s.choose(i) } } }, { menu = null }, s.index, words)
+            KitMenu(0, 0, screenWidth, screenHeight, s.labels.mapIndexed { i, label -> label to { change { s.choose(i) } } }, { mode = Mode.Idle }, s.index, words)
                 .below(line.cx, y, line.cw, line.ch, screenWidth, screenHeight)
         }
+        mode = Mode.Menu(widget)
     }
 
     /** Opens the number's field to type in, holding [typed] or else its value, selected. */
@@ -1148,27 +1181,21 @@ class SettingRows(
         val s = line.setting as Number
         val y = origin + line.y + (line.height - Kit.BUTTON_HEIGHT) / 2
         val field = KitTextField(line.ex, y, line.ew, s.name, typed ?: s.format(), FIELD_LENGTH) { text ->
-            editor?.setTextColor(if (s.parse(text) == null) Role.BAD.argb() else Role.VALUE.argb())
+            (mode as? Mode.Field)?.field?.setTextColor(if (s.parse(text) == null) Role.BAD.argb() else Role.VALUE.argb())
         }
         field.setTextColor(Role.VALUE.argb())
         field.setFocused(true)
         field.moveCursorToEnd(false)
         if (typed == null) field.setHighlightPos(0)
-        editor = field
-        editing = line
+        mode = Mode.Field(field, line)
     }
 
     /** Takes what the field holds, if it is a number, and closes it. */
     private fun commit() {
-        val field = editor ?: return
-        val s = editing?.setting as? Number
-        close()
-        s?.parse(field.value)?.let { value -> change { s.value = value } }
-    }
-
-    private fun close() {
-        editor = null
-        editing = null
+        val open = mode as? Mode.Field ?: return
+        val s = open.line.setting as Number
+        mode = Mode.Idle
+        s.parse(open.field.value)?.let { value -> change { s.value = value } }
     }
 
     private fun record(line: Line) {
@@ -1177,14 +1204,13 @@ class SettingRows(
             change { s.value = keys.firstOrNull() ?: KeyBind.NONE }
         }
         keys.onPress(KeyEvent(GLFW.GLFW_KEY_ENTER, 0, 0))
-        recorder = keys
-        recording = line
+        mode = Mode.Recording(keys, line)
     }
 
     private fun finishRecording() {
-        recorder?.let { if (it.recording) it.setFocused(false) }
-        recorder = null
-        recording = null
+        val open = mode as? Mode.Recording ?: return
+        if (open.button.recording) open.button.setFocused(false)
+        mode = Mode.Idle
     }
 
     /**
@@ -1193,7 +1219,12 @@ class SettingRows(
      * is among the rows.
      */
     private fun narrate(output: NarrationElementOutput) {
-        (menu ?: editor ?: recorder)?.let { return it.updateNarration(output) }
+        when (val open = mode) {
+            is Mode.Menu -> return open.widget.updateNarration(output)
+            is Mode.Field -> return open.field.updateNarration(output)
+            is Mode.Recording -> return open.button.updateNarration(output)
+            else -> Unit
+        }
         capturer()?.let { if (it.narrate(output)) return }
         val at = if (spoken >= 0) spoken else focus
         val line = lines.getOrNull(at) ?: return

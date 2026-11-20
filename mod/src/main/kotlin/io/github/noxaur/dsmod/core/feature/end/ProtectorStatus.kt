@@ -6,7 +6,6 @@ import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ProtectorRow
 import io.github.noxaur.dsmod.core.game.TabList
-import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.clock
 
@@ -17,20 +16,14 @@ import io.github.noxaur.dsmod.core.text.clock
  */
 class ProtectorStatus(config: DsModConfig) :
     Feature(config, "protector-status", Area.END, Store.END, "Show the Protector's stage and the kills left until it emerges.", formerly = listOf("golemStatus")) {
-    private var row: String? = null
-    private var stage: String? = null
+    private var row: String? by world { null }
+    private var stage: String? by world { null }
     private var tier = ""
     private var toGo = ""
-    private var spawnedAt = 0L
-    private var defeatedAt = 0L
+    private var spawnedAt by world { 0L }
+    private var defeatedAt by world { 0L }
 
     init {
-        on<WorldChanged> { _, _ ->
-            row = null
-            stage = null
-            spawnedAt = 0
-            defeatedAt = 0
-        }
         on<TabList> { _, _ ->
             val value = tab.info("Protector")
             if (value == row) return@on
