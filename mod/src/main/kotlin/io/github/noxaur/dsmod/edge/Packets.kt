@@ -35,7 +35,7 @@ object Packets {
     fun systemChat(text: Component, overlay: Boolean) {
         if (overlay) return actionBar(text)
         val game = DsModClient.game
-        if (game.wants(SystemMessage::class.java)) shown = game.post(System.currentTimeMillis(), SystemMessage(text.toText()))
+        shown = !game.wants(SystemMessage::class.java) || game.post(System.currentTimeMillis(), SystemMessage(text.toText()))
     }
 
     fun shows() = shown
