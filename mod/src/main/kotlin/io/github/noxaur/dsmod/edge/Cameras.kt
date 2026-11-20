@@ -35,11 +35,14 @@ object Cameras {
     private val views: Views get() = if (shaping) camera.views.value else Views.ALL
 
     private val slide = Slide()
-    private var orbit: Orbit? = null
 
-    /** Whose head the orbit left alone. A new world gives a new player, and Free Look ends with the old one. */
-    private var looker: LocalPlayer? = null
-    private var before = CameraType.FIRST_PERSON
+    /**
+     * A look in progress: the [orbit] it turns, whose head it left alone, and the view to go back to. A new world gives
+     * a new player, and Free Look ends with the old one.
+     */
+    private class Look(val orbit: Orbit, val looker: LocalPlayer, val before: CameraType)
+
+    private var look: Look? = null
 
     /** A press since the last frame. A tap can start and end inside one frame, so the press comes from the game's key event. */
     private var tapped = false
@@ -54,7 +57,7 @@ object Cameras {
     private var wasDown = false
 
     /** Whether Free Look has the camera now. */
-    val looking: Boolean get() = orbit != null
+    val looking: Boolean get() = look != null
 
     private fun type(view: View) = CameraType.entries[view.ordinal]
 
@@ -82,7 +85,8 @@ object Cameras {
         tapped = false
         armed = false
         wasDown = down
-        if (orbit == null) {
+        val current = look
+        if (current == null) {
             if (!pressed) return
             begin(client, player)
             return
@@ -90,21 +94,18 @@ object Cameras {
         // F5 round to first person ends it and keeps that view, because there the camera is the aim.
         val left = client.options.cameraType.isFirstPerson
         val over = if (freeLook.mode.value == KeyMode.HOLD) !down && !pressed else pressed && !spent
-        if (!allowed || player !== looker || left || over) {
-            orbit = null
-            looker = null
-            if (!left) show(client, before)
+        if (!allowed || player !== current.looker || left || over) {
+            look = null
+            if (!left) show(client, current.before)
         }
     }
 
     /** Starts the orbit for a press that [frame] has not seen yet, and switches out of first person with it. */
     private fun begin(client: Minecraft, player: LocalPlayer): Orbit {
-        before = client.options.cameraType
-        val started = Orbit(player.yRot, player.xRot)
-        orbit = started
-        looker = player
-        if (before.isFirstPerson) show(client, type(views.third))
-        return started
+        val started = Look(Orbit(player.yRot, player.xRot), player, client.options.cameraType)
+        look = started
+        if (started.before.isFirstPerson) show(client, type(views.third))
+        return started.orbit
     }
 
     /**
@@ -112,7 +113,7 @@ object Cameras {
      * [frame], and a delta that misses it turns the head the server sees.
      */
     fun turn(x: Double, y: Double): Boolean {
-        val current = orbit ?: run {
+        val current = look?.orbit ?: run {
             if (!tapped || wasDown) return false
             val client = Minecraft.getInstance()
             val player = client.player
@@ -130,11 +131,11 @@ object Cameras {
     /** In first person the next slide starts at the head. */
     fun firstPerson() = slide.reset()
 
-    fun yaw(yaw: Float): Float = orbit?.yaw ?: yaw
+    fun yaw(yaw: Float): Float = look?.orbit?.yaw ?: yaw
 
     /** The pitch before the game mirrors it for the [front] view. */
     fun pitch(pitch: Float, front: Boolean): Float =
-        ThirdPerson.pitch(orbit?.pitch ?: pitch, if (shaping) camera.tilt.value else 0f, front)
+        ThirdPerson.pitch(look?.orbit?.pitch ?: pitch, if (shaping) camera.tilt.value else 0f, front)
 
     /** Where the camera starts from before it backs out: [eyes], raised or lowered as far as the way is clear. */
     fun lift(level: Level, entity: Entity, eyes: Vec3): Vec3 {
