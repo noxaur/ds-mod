@@ -29,6 +29,7 @@ We can't compromise on these.
 | `web/` | The website, in Next.js with Effect | `web/AGENTS.md` |
 | `api/` | `openapi.json`, the REST contract between the mod, the backend and the website | API |
 | `specs/` | TLA+ specs for any project | Formal specs |
+| `scripts/` | Checks that span every project | Rules |
 | `docs/` | Guides for players and contributors, and the reasons behind the code | The `docs` skill |
 
 "Server" means dragsim.co. Our own service is the backend. Skills sit in `.claude/skills/` beside the `AGENTS.md` that names them.
@@ -63,5 +64,4 @@ Every rule is enforced by a check, and a failure prints the fix. When a mistake 
 
 ## Code and residue
 
-- Agents read code well, so add comments only where the code can't speak for itself.
 - Keep plans, research notes and scratch files outside the worktree.
