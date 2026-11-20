@@ -65,11 +65,13 @@ export const contribStore: Store["Service"] = {
       // The file first, so a row always has one: a run that counts towards filling a request is a run an agent can
       // read. When the row is refused or never written, the file is deleted, which nothing reads.
       await storage.put(`captures/${row.id}`, capture);
-      // One statement: the cap and the one-run-per-player index both decide here, so two uploads cannot both pass.
+      // One statement: the cap, the request's status and the one-run-per-player index all decide here, so neither a
+      // second upload nor a close can slip in between the check in contrib.ts and this insert.
       const kept = await db.all<{ id: string }>(sql`
         INSERT INTO ${submissions} (id, request_id, user_id, mod_version, bytes, created_at)
         SELECT ${row.id}, ${row.requestId}, ${row.userId}, ${row.modVersion}, ${row.bytes}, ${row.createdAt}
         WHERE (SELECT count(*) FROM ${submissions} WHERE request_id = ${row.requestId}) < ${maxRuns}
+          AND NOT EXISTS (SELECT 1 FROM ${requests} WHERE id = ${row.requestId} AND status = 'closed')
         ON CONFLICT DO NOTHING
         RETURNING id
       `);

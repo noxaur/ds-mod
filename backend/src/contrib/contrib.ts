@@ -60,8 +60,9 @@ export const submit = Effect.fn(function* (requestId: string, userId: string, mo
   const store = yield* Store;
   const request = yield* requestOf(requestId);
   const runs = yield* store.submissionsOf(requestId);
-  // Closed, already recorded, or already at twice `wanted`: refuse before storing a file. Two uploads at once can
-  // both pass this read. The insert below is what keeps the table at that cap, and one run per player.
+  // Closed, already recorded, or already at twice `wanted`: refuse before storing a file. Two uploads at once, or an
+  // upload and a close, can both pass this read. The insert below is what keeps the table at that cap, one run per
+  // player, and a closed request without a new run.
   const maxRuns = request.wanted * 2;
   if (request.status === "closed" || runs.length >= maxRuns || runs.some((run) => run.userId === userId)) {
     return yield* new HttpApiError.Conflict();

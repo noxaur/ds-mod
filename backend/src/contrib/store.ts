@@ -88,7 +88,8 @@ export const memoryStore = (): Store["Service"] => {
     insertSubmission: (row, capture, maxRuns) =>
       Effect.sync(() => {
         const runs = submissions.filter((other) => other.requestId === row.requestId);
-        if (runs.length >= maxRuns || runs.some((other) => other.userId === row.userId)) {
+        const closed = requests.some((request) => request.id === row.requestId && request.status === "closed");
+        if (closed || runs.length >= maxRuns || runs.some((other) => other.userId === row.userId)) {
           return false;
         }
         submissions.push(row);
