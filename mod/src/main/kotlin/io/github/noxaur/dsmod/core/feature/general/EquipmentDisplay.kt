@@ -92,13 +92,13 @@ class EquipmentDisplay(config: DsModConfig) : InventoryReader(config, "equipment
     )
 
     private var worn = emptyMap<EquipmentPiece, Item>()
-    private var pet: Pet? = null
+    private var pet: Pet? by session { null }
 
     // Each by the pet's name without its level, which goes up in play: the active pet's item in the Pets menu, the
     // item it holds, and the head of each pet seen near the player. A pet's head is the same whoever owns it, and
     // another player's pet can float nearer than the player's own, so the sidebar's pet picks its head from all of them.
-    private var menuPet: Pair<String, Item>? = null
-    private var held: String? = null
+    private var menuPet: Pair<String, Item>? by session { null }
+    private var held: String? by session { null }
     private val heads = HashMap<String, Item>()
 
     private var shown = settings()
@@ -114,12 +114,7 @@ class EquipmentDisplay(config: DsModConfig) : InventoryReader(config, "equipment
             block = build()
         }
         // The next session may bring another pet, and the sidebar names it only when it arrives. A head stays its pet's.
-        on<LeftServer> { _, _ ->
-            pet = null
-            menuPet = null
-            held = null
-            block = build()
-        }
+        on<LeftServer> { _, _ -> block = build() }
         on<Sidebar> { event, _ ->
             // Between worlds the sidebar is empty until the new one arrives, and the pet is still out.
             if (event.lines.all { it.plain.isBlank() }) return@on

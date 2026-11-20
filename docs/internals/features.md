@@ -36,6 +36,12 @@ Leaving the server changes no world, since the game drops its world without ente
 
 Some places exist only in the sidebar: the Dungeon Hub's tab list has no info row, and the Void Sepulture is still `Area: The End` in the tab list. So an `Area` is told by a tab row, a sidebar place, or both.
 
+
+## Game forgets a feature's world and session for it
+
+A feature used to forget its world in its own `WorldChanged` handler, one variable at a time, and four of them missed one: Boss Beacon kept a slayer spawn line across a hop and could claim the next world's boss, Boss Fight Tracker gave the next world's loot to the old world's dragon, and Dragon Timer could show an egg timer under a dragon. So a feature declares what lasts one world with `world { }` and what lasts one session with `session { }`, and `Game` builds both again before the feature hears why they ended: a change of world or a feature going off ends its world, and leaving the server ends its session too. A generic state machine for every feature was rejected, because each event would pay for a lookup the handlers already do, and the bug was the forgotten reset, not the transitions.
+
+`Game` also switches a feature on or off before every event, not only on the tick. A feature switched on between two ticks heard an entity as it came and again in the replay of what it missed, and an event it heard in that gap was wiped by the replayed `LeftServer`.
 ## A big menu is read over several ticks
 
 Reading an item out of Minecraft is the costly part of a menu: a chest of 54 items with long lore took 5.5 ms in one tick. So the poll reads for at most a millisecond a tick, and a big menu arrives over a few ticks. A slot that is still null just after the menu opened may only be unread.

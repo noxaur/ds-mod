@@ -6,7 +6,6 @@ import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.ProtectorRow
-import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.Sections
 import io.github.noxaur.dsmod.core.world.Mark
@@ -28,13 +27,12 @@ class ProtectorSpawnBeam(config: DsModConfig) :
     /** The parts of the Protector's cycle that show the beam, in zealots killed since the last defeat, out of 200. */
     val sections = span("beamSections", "Beam Timing", "Pick when the beam shows, in zealots killed out of 200.", listOf(Section(175, 200)), max = 200, ticks = listOf(50, 100, 150))
     val inFight = switch("beamInFight", "During the Fight", "Keep the beam while the Protector is up.", default = false)
-    private var beam = emptyList<Mark>()
+    private var beam by world { emptyList<Mark>() }
     private var x = 0
     private var y = 0
     private var z = 0
 
     init {
-        on<WorldChanged> { _, _ -> beam = emptyList() }
         on<HeadPlaced> { head, _ ->
             val sameColumn = beam.isNotEmpty() && head.x == x && head.z == z
             y = if (sameColumn) minOf(y, head.y) else head.y
