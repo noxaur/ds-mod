@@ -19,8 +19,15 @@ runs:
         install_args: java
     # Gradle runs on mise's JDK, which is the toolchain the build asks for. Left on, auto-detection starts each
     # of the runner's five other JDKs to read its version, which takes 10 seconds of every configuration.
+    # A runner's Kotlin daemon compiles once and exits, so the optimising JIT only competes with it for the
+    # four cores. A developer's daemon lives long enough to gain from it, so this is CI's alone.
     - shell: bash
-      run: mkdir -p ~/.gradle && echo "org.gradle.java.installations.auto-detect=false" >> ~/.gradle/gradle.properties
+      run: |
+        mkdir -p ~/.gradle
+        cat >> ~/.gradle/gradle.properties <<'EOF'
+        org.gradle.java.installations.auto-detect=false
+        kotlin.daemon.jvmargs=-XX:TieredStopAtLevel=1
+        EOF
     # One cache for the dependencies, the Gradle distribution, Minecraft and its remapped jars. The key is
     # every file that decides what gets downloaded, so a hit means the build needs no network. Every version,
     # the plugins' included, lives in gradle.properties, so an edit to the build scripts keeps the cache and
