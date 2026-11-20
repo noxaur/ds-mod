@@ -208,7 +208,7 @@ private fun AnnotationNode.strings(name: String) = (value(name) as? List<*>).orE
  */
 private class Shape(val draws: Boolean, val readOnly: Boolean, val does: List<String>)
 
-private val DRAWING = Regex("^(render|extract|submit|draw)[A-Z]")
+private val DRAWING = Regex("^(render|extract|submit|draw)[A-Z]|^blit(Sprite)?$")
 
 private fun shape(node: ClassNode, mixin: AnnotationNode, sinks: Sinks): Shape {
     val targets = (mixin.value("value") as? List<*>).orEmpty().filterIsInstance<Type>().map { it.internalName } + mixin.strings("targets").map { it.replace('.', '/') }

@@ -6,6 +6,10 @@ How the mod redraws the server's menus and adds controls to them. What each sett
 
 Menu Theme draws a menu with the kit instead of recoloring its texture, because a theme is a list of colors, and a texture per theme would be art to keep by hand. Only the texture's draw is replaced, so the rest of the screen still runs. The server's own buttons are drawn as kit buttons in their slots, because a menu that mixes item buttons with the mod's reads as two systems, and the click still goes to the server's slot.
 
+## Every container screen of the game is themed
+
+Menu Theme draws every one of the game's own container screens, a furnace's flame and an anvil's field included, because a vanilla menu beside themed ones reads as two systems. The game names each part it draws, such as a progress arrow or a scrollbar, so the mod swaps each named part for the kit's shape, and one place decides which screens are themed. Leaving a screen whose texture holds more than a panel and slots alone was rejected, and so was a list of screens kept in two places. A screen another mod adds keeps its own art.
+
 ## The server's tooltip styles are kept
 
 A tooltip with its own style keeps it, because dragsim.co gives every item a frame per rarity from its resource pack. Backing every tooltip with the kit was rejected, because it would erase the rarity frames the server draws.
