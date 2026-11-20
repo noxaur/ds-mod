@@ -8,7 +8,7 @@ A feature builds the parts it needs and holds them, and two features that share 
 
 ## Features run on events and ticks, never in a frame
 
-A feature handles events and returns what it shows, and the mod rebuilds its readout after an event it could see and four times a second for clocks. The frame only draws what the last rebuild left. A feature's code then can't cost a frame however it is written, and a feature that is off shows nothing without remembering to hide. Calling a UI layer from the feature was rejected, because the replay test could not read it without Minecraft.
+A feature handles events and returns what it shows, and the mod rebuilds its readout after an event it could see and four times a second for clocks. The frame only draws what the last rebuild left, so feature code never runs inside a frame, and a feature that is off shows nothing without remembering to hide. It still runs on the client tick, on the thread that draws, so a slow handler delays the next frame and the perf caps hold each one. Calling a UI layer from the feature was rejected, because the replay test could not read it without Minecraft.
 
 ## What a feature says is delivered at the end of the tick
 
@@ -46,9 +46,9 @@ A player did not ask for a server line to go missing, so the first time a featur
 
 Ability Cooldowns keeps no list of abilities. The server names each use, and the item's lore gives the length, so a new weapon is timed with no change to the mod. A list of abilities was rejected, because the server adds weapons without notice. A refusal names no ability, so it goes to the timer nearest the server's count. Matching it by the held item was rejected, because the player may have scrolled since the press.
 
-## A slayer boss is the player's when it comes after their spawn line
+## A slayer boss is taken as the player's when it comes after their spawn line
 
-dragsim.co names no slayer boss's owner, so the mod tells the player's own by time: the server tells only the owner that a boss is spawning, and the first boss to come into view within five seconds is theirs. Both boss features share that one claim, so they can't disagree.
+dragsim.co names no slayer boss's owner, so the mod tells the player's own by time: the server tells only the owner that a boss is spawning, and the mod treats the first boss to come into view within five seconds as theirs, which another player's boss in that window can fool. Both boss features share that one claim, so they can't disagree.
 
 ## Entities reach a feature through one tracker
 

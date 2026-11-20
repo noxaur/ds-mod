@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -16,8 +16,9 @@ const sources: Record<string, string> = {
   "a.css": '.a { content: "/* no */"; } /* css */\n',
   "a.yml": 'a: "#x" # yml tail\n# yml full\n',
   "a.sh": '#!/bin/sh\necho "#x" # sh tail\n',
-  "a.tla": "x == 1 \\* tla line\n(* tla block *)\n",
-  "a.toml": 'a = "#x"\n# toml\n',
+  "a.tla": 'x == "\\* no" \\* tla line\n(* tla block *)\n(* tla (* nested *)\n  lines *)\n',
+  "a.toml": 'a = "#x"\n# toml\nb = """\n# no\n""" # toml tail\nc = \'\'\'\n# no\n\'\'\'\n',
+  ".githooks/pre-commit": "#!/bin/sh\n# hook\necho hi\n",
   "a.properties": "# properties\na=#x\n",
   "b.kt": "val x = 1 // rule:text-by-role the user agreed\n",
   "b.ts": "// eslint-disable-next-line no-console -- the one place that logs\nconsole.log(1);\n",
@@ -46,12 +47,16 @@ const expected = [
   "a.sh: # sh tail",
   "a.tla: \\* tla line",
   "a.tla: (* tla block *)",
+  "a.tla: (* tla (* nested *) lines *)",
   "a.toml: # toml",
+  "a.toml: # toml tail",
+  ".githooks/pre-commit: # hook",
   "a.properties: # properties",
 ];
 
 test("finds every kind of comment, and no string, shebang or approved exception", () => {
   const root = mkdtempSync(join(tmpdir(), "comments-"));
+  mkdirSync(join(root, ".githooks"));
   for (const [file, text] of Object.entries(sources)) writeFileSync(join(root, file), text);
   const found = scan(root, Object.keys(sources)).map(entry);
   assert.deepEqual(found.sort(), [...expected].sort());
@@ -59,7 +64,7 @@ test("finds every kind of comment, and no string, shebang or approved exception"
 
 test("a comment is new until comments.txt lists it once for each copy", () => {
   const comment = { file: "a.kt", line: 1, text: "// same" };
-  const { added, gone } = compare([comment, { ...comment, line: 2 }], ["a.kt: // same", "a.kt: // gone"]);
+  const { added, gone } = compare([comment, { ...comment, line: 2 }], ["a.kt: // same", "a.kt: // gone"], entry);
   assert.deepEqual(added, [{ ...comment, line: 2 }]);
   assert.deepEqual(gone, ["a.kt: // gone"]);
 });

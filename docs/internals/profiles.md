@@ -16,7 +16,7 @@ A profile is answered without its containers, and each answer keeps a snapshot o
 
 ## The backend drops nothing dragsim.co sends
 
-The viewer must be able to show every piece of data dragsim.co sends. So a field is added to the contract and never removed, and a key the backend does not map is logged by name, so a new section shows in the logs before a player misses it. Each section is read on its own, because a section that changes shape should cost only itself.
+The viewer must be able to show every piece of data dragsim.co sends, except a hidden inventory. So a field is added to the contract and never removed, and a key the backend does not map is logged by name, so a new section shows in the logs before a player misses it. Each section is read on its own, because a section that changes shape should cost only itself.
 
 ## The backend rebuilds item tooltips, because the server's API sends none
 

@@ -32,7 +32,7 @@ Player Model's Preview shows the settings around it applied and edits nothing. A
 
 ## Every setting is edited where it sits
 
-Lists, layouts and other editors that take many values are rows, not screens of their own reached through an Edit button. So a search finds them, and the changed marker, dimming and the keyboard work as on any row. A list of things the player made is one generic row, so the next list gets every convention without new drawing code. Only Move HUD opens a screen, because placing a block needs the world behind it.
+Lists, layouts and other editors that take many values are rows, not screens of their own reached through an Edit button. So a search finds them, and dimming and the keyboard work as on any row. A list of things the player made is one generic row, so the next list gets every convention without new drawing code. Only Move HUD opens a screen, because placing a block needs the world behind it.
 
 ## A list has no changed marker
 

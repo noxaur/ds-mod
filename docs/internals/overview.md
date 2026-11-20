@@ -12,7 +12,7 @@ The mod's logic imports nothing from Minecraft or Fabric, and only the edge does
 
 ## The mod runs only on dragsim.co
 
-Every feature reads lines in dragsim.co's own words, so on another server it can only misread them, and a wrong count is saved for good. So every feature is off away from dragsim.co, and the mod decides it once per connection by the address the player reached. A hardcoded IP was rejected, because it would stop matching the day the server moves. A player who wants the mod elsewhere turns the setting off.
+The features that read the server read lines in dragsim.co's own words, so on another server they can only misread them, and a wrong count is saved for good. So every feature is off away from dragsim.co, under one gate rather than one per kind of feature, and the mod decides it once per connection by the address the player reached. A hardcoded IP was rejected, because it would stop matching the day the server moves. A player who wants the mod elsewhere turns the setting off.
 
 ## The debug build runs everywhere
 
