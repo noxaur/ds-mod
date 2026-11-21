@@ -49,6 +49,7 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `button` on glass | 16 tall | `button` with `glass = true`: a lighter pane raised off the glass in the plate's ring, ringed in `hoverOutline` under the mouse and sunk into a `glassWell` while pressed, with its label in `GLASS_INK`. `KitButton.glass` asks for it each frame |
 | `glassTab` | 22x19, or 17 when not selected | A tab on glass. It stops at the panel's ring, since two see-through fills on each other show a darker band, so the selected one stands taller instead of joining |
 | `hotbar` | 20 per cell plus 2, by 22 | A strip of slots cut from the game's own hotbar sprite, for a HUD block in the Hotbar look. The one piece of chrome that is not the kit's, because it has to match the player's hotbar under their resource pack |
+| `gameScreen` | Any, with the size of one of the screen's GUI pixels | A template of the game's screen: sky over ground split at the horizon, the crosshair, and the hotbar at the screen's own size, for a preview of where something sits on screen. The same in both themes, because it pictures the game |
 | `tooltip` | Text plus 4 on each side | A plain tooltip's backing: the plate's colors, nearly opaque. A tooltip with a style of its own keeps it |
 | `bar` | 6 tall | A well with a 4px fill that has a lit top row and a shaded bottom row |
 | `scrollbar` | 6 wide | A well with a raised thumb |

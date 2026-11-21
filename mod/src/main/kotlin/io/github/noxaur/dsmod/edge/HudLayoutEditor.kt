@@ -8,6 +8,7 @@ import io.github.noxaur.dsmod.core.hud.HudScale
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Narration
 import io.github.noxaur.dsmod.edge.ui.Box
+import io.github.noxaur.dsmod.edge.ui.BoxEditor
 import io.github.noxaur.dsmod.edge.ui.Editor
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.SettingRows
@@ -36,8 +37,8 @@ class HudLayoutEditor(
     private val panel: Panel<Map<String, DsModConfig.Position>>,
     private val readouts: Readouts,
     private val host: Editor.Host,
-) : Editor {
-    private val box = Box()
+) : BoxEditor {
+    override val box = Box()
 
     private var map = HudMap(1, 1, 1, 1)
     private var mapX = 0
@@ -56,10 +57,6 @@ class HudLayoutEditor(
     private var seen: Map<String, DsModConfig.Position> = emptyMap()
 
     override val capturing get() = entered || grabbed != null
-
-    override fun view(origin: Int, clipTop: Int, clipBottom: Int, screenWidth: Int, screenHeight: Int) = box.view(origin, clipTop, clipBottom)
-
-    override fun isOver(mouseX: Double, mouseY: Double) = box.isOver(mouseX, mouseY)
 
     override fun layout(x: Int, y: Int, width: Int): Int {
         // While the layout shows, a block with nothing to show still shows its header, so it can be placed.

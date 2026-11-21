@@ -9,19 +9,17 @@ import io.github.noxaur.dsmod.edge.HeldItems;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Animations: the first-person held item's place, size, swing and dip. The place goes in as the hand's pose is
- * pushed, before any branch runs, because eating and drinking put the item in the hand twice and would move it twice.
- * The turn and the size go in just before the item is drawn, after every swing and use pose.
- */
 @Mixin(ItemInHandRenderer.class)
 abstract class HeldItemMixin {
     @Inject(method = "submitArmWithItem", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V", shift = At.Shift.AFTER))
@@ -30,10 +28,21 @@ abstract class HeldItemMixin {
         HeldItems.INSTANCE.place(pose, dsmod$armOf(player, hand), stack);
     }
 
-    @Inject(method = "submitArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;I)V"))
-    private void dsmod$turnAndSize(AbstractClientPlayer player, float frameInterp, float xRot, InteractionHand hand, float attack, ItemStack stack,
-                            float inverseArmHeight, PoseStack pose, SubmitNodeCollector collector, int light, CallbackInfo ci) {
-        HeldItems.INSTANCE.turnAndSize(pose, dsmod$armOf(player, hand));
+    @WrapOperation(method = "submitArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;I)V"))
+    private void dsmod$draw(ItemInHandRenderer self, LivingEntity mob, ItemStack stack, ItemDisplayContext context, PoseStack pose, SubmitNodeCollector collector,
+                            int light, Operation<Void> original) {
+        HeldItems.INSTANCE.turnAndSize(pose, context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND ? HumanoidArm.LEFT : HumanoidArm.RIGHT);
+        HeldItems.setDrawing(true);
+        try {
+            original.call(self, mob, stack, context, pose, collector, light);
+        } finally {
+            HeldItems.setDrawing(false);
+        }
+    }
+
+    @WrapOperation(method = "submitHandsWithItems", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/item/ItemModelResolver;swapAnimationScale(Lnet/minecraft/world/item/ItemStack;)F"))
+    private float dsmod$swapDepth(ItemModelResolver resolver, ItemStack stack, Operation<Float> original) {
+        return HeldItems.INSTANCE.swapDepth(stack, original.call(resolver, stack));
     }
 
     private static HumanoidArm dsmod$armOf(AbstractClientPlayer player, InteractionHand hand) {

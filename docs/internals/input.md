@@ -10,9 +10,9 @@ The player's rotation is what the game aims with and sends to the server, so Fre
 
 Camera's height and tilt are applied before the game backs the camera out from the eyes. The game's own wall check then runs from the lifted start along the tilted angle, so neither setting can push the view through a block.
 
-## Animations change the drawing and never the swing
+## Animations change the drawing and never the swing or the right click
 
-The swing packet is sent before the game asks how long a swing lasts, and nothing that decides an attack reads the swing's progress, so Swing Speed changes only how the swing looks. The attack cooldown itself is left alone.
+The swing packet is sent before the game asks how long a swing lasts, and nothing that decides an attack reads the swing's progress, so Swing Speed changes only how the swing looks. The attack cooldown itself is left alone. 1.7 Blocking reads whether right click is held and only draws the pose, because right click casts a sword's ability on the server, and the click must reach it as the game sends it.
 
 ## Player Model shapes the drawing, never the entity
 

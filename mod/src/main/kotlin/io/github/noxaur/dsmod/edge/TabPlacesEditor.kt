@@ -9,6 +9,7 @@ import io.github.noxaur.dsmod.core.ui.Narration
 import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.edge.ui.Box
+import io.github.noxaur.dsmod.edge.ui.BoxEditor
 import io.github.noxaur.dsmod.edge.ui.Editor
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
@@ -35,8 +36,8 @@ import org.lwjgl.glfw.GLFW
  * press on the menu gives it the keys: the arrows move the picked tab, Tab picks the next, Delete asks for a second
  * press, and Escape gives the keys back. Each change applies at once.
  */
-class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host: Editor.Host) : Editor {
-    private val box = Box()
+class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host: Editor.Host) : BoxEditor {
+    override val box = Box()
 
 
     // The menu, from the content's top, and the form beside or under it.
@@ -93,8 +94,6 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
     private val font get() = Kit.font
 
     override val capturing get() = entered || dragging || grabbed >= 0
-
-    override fun isOver(mouseX: Double, mouseY: Double) = box.isOver(mouseX, mouseY)
 
     override fun layout(x: Int, y: Int, width: Int): Int {
         box.place(x, y, width)

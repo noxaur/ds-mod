@@ -30,25 +30,43 @@ Hides the clouds that explosions throw up.
 
 ### Animations
 
-Changes how your held item swings and where it sits in first person. Each setting starts at the game's own, so nothing changes until you move one. Only you see it: your clicks and the swing other players see stay the same.
+Changes how your held item swings and where it sits in first person, and lets a sword block on right click as in 1.7. Each setting starts at the game's own, so nothing changes until you move one. Only you see it: your clicks and the swing other players see stay the same.
+
+**Preview** at the top shows your item with the settings below on it. **Held** shows it at rest, **Swinging** swings it in a loop, and **Screen view** shows where it sits on a template screen. The screen view shows as much of the screen as the item needs, and runs past the screen's edge when the item does, so you can see what goes off screen. Press a view, or use Left and Right. It shows the item in your main hand, or a sword while your hand is empty.
+
+**Style** makes your item act like a game version or an item, and the other settings tune it from there:
+
+| Style | Does |
+| --- | --- |
+| 1.7 | Holds flat items such as swords the 1.7 way, a little smaller and turned, with no dip after a hit, and swings while you block |
+| Modern | The game today. After each hit the item dips out of view while the attack recharges |
+| Stab | Holds, swings and lowers every item as a spear |
+
+Open **Swing** for:
 
 | Setting | Does |
 | --- | --- |
-| Swing Style | Vanilla, 1.7 to hold the sword across the screen while you swing, Exhibition for the same with the sword sliding down on each hit, Spin for a full turn, or Stab to thrust it at the crosshair like a spear |
-| Swing Speed | Speeds your swing up to 3 times, or slows it down to a tenth, in first person. In third person your arm swings at the game's own pace |
-| Item Size | Grows the item to twice its size, or shrinks it to a tenth |
-
-Open **Item Position** to move the item with Item X, Item Y and Item Z, or turn it about its grip with Item Yaw, Item Pitch and Item Roll. Your off hand mirrors them. Open **Swing Options** for:
-
-| Setting | Does |
-| --- | --- |
-| Scale Swing | Makes the swing reach as far as Item Size makes the item big. On by default |
+| Speed | Speeds your swing up to 3 times, or slows it down to a tenth, in first person. In third person your arm swings at the game's own pace |
+| Turn | How far the item pivots about its grip in a swing, from 0% to the game's 100% |
+| Reach | How far the item moves toward the middle of the screen in a swing. At 0% the grip stays put and the item only pivots |
+| Scale Swing | Makes the swing reach as far as Size makes the item big. On by default |
 | No Swing | Keeps the item still when you swing |
 | No Bow Swing | Keeps a bow or crossbow still when you swing it, for a bow that shoots on a click |
 | Ignore Haste | Keeps the swing at the same pace under Haste or Mining Fatigue |
-| No Equip Reset | Keeps the item up after a hit or a use, and when the server updates it, instead of lowering and raising it |
 
-**Reset** beside Reset Animations puts every setting back to the game's own. The 1.7 and Exhibition styles follow your swing and not right click, because right click casts the ability on many swords here. Your empty hand and maps keep the game's own pose.
+Open **Held Item** for:
+
+| Setting | Does |
+| --- | --- |
+| Size | Grows the item to twice its size, or shrinks it to a tenth |
+| X, Y, Z | Moves the item across, up and away, far enough to put it anywhere on the screen. Your off hand mirrors X |
+| Yaw, Pitch, Roll | Turns the item about its grip. Your off hand mirrors Yaw and Roll |
+| Flip | Mirrors the item in your hand, so it points the other way and stays where it is. Blocks flip too. To hold it on the left of the screen, use the game's own Main Hand setting |
+| No Equip Reset | Keeps the item up after a hit or a use, and when the server updates it, instead of lowering and raising it, under any style |
+
+Open **Right Click** for **1.7 Blocking**: hold right click with a sword to raise it across the screen, as 1.7 did. Only swords block, and a spear never did, so Stab doesn't. Under 1.7 your swings keep going while you block, and under Modern the sword holds still as in 1.8. Your arm comes up in third person too. It only changes what you see, so right click still does whatever the server gives it, such as a sword's ability.
+
+**Reset** beside Reset Animations puts every setting back to the game's own. Your empty hand and maps keep the game's own pose.
 
 ### Player Model
 

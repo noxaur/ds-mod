@@ -125,6 +125,14 @@ class Box {
         mouseY >= clipTop && mouseY < clipBottom && mouseX >= left && mouseX < left + wide && mouseY >= origin + top && mouseY < origin + top + tall
 }
 
+interface BoxEditor : Editor {
+    val box: Box
+
+    override fun view(origin: Int, clipTop: Int, clipBottom: Int, screenWidth: Int, screenHeight: Int) = box.view(origin, clipTop, clipBottom)
+
+    override fun isOver(mouseX: Double, mouseY: Double) = box.isOver(mouseX, mouseY)
+}
+
 /** Makes the editor of each row that has one: a list's own, and each panel's and preview's from the canvas the edge registered. */
 object Editors {
     private val canvases = HashMap<Canvas, (Setting, Editor.Host) -> Editor>()

@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.cursor.CursorTypes
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Turntable
 import io.github.noxaur.dsmod.edge.ui.Box
-import io.github.noxaur.dsmod.edge.ui.Editor
+import io.github.noxaur.dsmod.edge.ui.BoxEditor
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.SettingRows
 import net.minecraft.client.Minecraft
@@ -23,8 +23,8 @@ import kotlin.math.sqrt
  * tilt either way reads. A drag turns it around and tips it, Escape during the drag puts it back, and Left and Right
  * turn it a step while the keys are on the row. Outside a world there is no player to draw, and it says so.
  */
-class PlayerPreview : Editor {
-    private val box = Box()
+class PlayerPreview : BoxEditor {
+    override val box = Box()
 
     private val turntable = Turntable(speed = 0f).apply { turn(START_YAW, 0f, 0L) }
 
@@ -33,10 +33,6 @@ class PlayerPreview : Editor {
     /** Degrees around and tipped, so a test can see a drag or a key turn it. */
     val yaw get() = turntable.yaw(0L)
     val pitch get() = turntable.pitch
-
-    override fun view(origin: Int, clipTop: Int, clipBottom: Int, screenWidth: Int, screenHeight: Int) = box.view(origin, clipTop, clipBottom)
-
-    override fun isOver(mouseX: Double, mouseY: Double) = box.isOver(mouseX, mouseY)
 
     override fun layout(x: Int, y: Int, width: Int): Int {
         box.place(x, y, width)

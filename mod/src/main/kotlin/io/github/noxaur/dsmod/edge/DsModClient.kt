@@ -32,6 +32,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
+import net.fabricmc.fabric.api.client.rendering.v1.PictureInPictureRendererRegistry
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
 import org.slf4j.LoggerFactory
@@ -196,6 +197,8 @@ object DsModClient : ClientModInitializer {
         Editors.register(Canvas.HUD_LAYOUT) { panel, host -> @Suppress("UNCHECKED_CAST") HudLayoutEditor(panel as Panel<Map<String, DsModConfig.Position>>, readouts, host) }
         Editors.register(Canvas.MENU_TABS) { panel, host -> @Suppress("UNCHECKED_CAST") TabPlacesEditor(panel as Panel<List<MenuTab>>, host) }
         Editors.register(Canvas.PLAYER_MODEL) { _, _ -> PlayerPreview() }
+        Editors.register(Canvas.HELD_ITEM) { _, _ -> HeldItemPreview() }
+        PictureInPictureRendererRegistry.register { HeldItemPictureRenderer() }
         Opens.register(Opens.HUD_EDITOR, ::openHudEditor)
         Opens.register(Opens.REQUESTS, Contribute::open)
         Recorder.register()

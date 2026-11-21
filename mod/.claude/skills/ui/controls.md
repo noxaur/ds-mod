@@ -230,6 +230,16 @@ A model the player turns to look at, such as the player in the profile viewer. N
 - The cursor shows that it can be grabbed.
 - A settings Preview holds still instead, for the reason in [settings](../../../../docs/internals/settings.md#a-preview-is-a-row-that-holds-no-value), and starts turned a little so a tilt either way reads. Its arrows work while the keys are on its row, and only Left and Right, so Up and Down still move between rows.
 
+## View buttons
+
+A row of buttons that picks what a preview shows, such as Animations' Held, Swinging and Screen view. `HandPreview` in `core/hand` holds their rules.
+
+- The picked view's button is pressed in, and the one under the mouse lifts.
+- A press on a button shows its view.
+- While the keys are on the row, Left and Right step to the view beside, and stop at the first and last. Up and Down still move between rows.
+- The narrator says the view shown and that Left and Right change it.
+- The pick lasts until the game closes, as the settings' tabs do.
+
 ## Scrolling list
 
 - The wheel scrolls, the scrollbar's thumb drags, and Page Up, Page Down, Home and End jump.

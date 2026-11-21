@@ -7,6 +7,7 @@ import io.github.noxaur.dsmod.core.ui.SettingsSearch
 import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.core.ui.TabStrip
+import io.github.noxaur.dsmod.core.ui.GameScreenColors
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -283,6 +284,22 @@ object Kit {
     }
 
     fun hotbarWidth(cells: Int) = cells * HOTBAR_CELL + 2
+
+    fun gameScreen(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, guiPixel: Float) {
+        val horizon = y + height / 2
+        g.fillGradient(x, y, x + width, horizon, GameScreenColors.SKY_TOP, GameScreenColors.SKY_HORIZON)
+        g.fillGradient(x, horizon, x + width, y + height, GameScreenColors.GROUND_TOP, GameScreenColors.GROUND_BOTTOM)
+        val middle = x + width / 2
+        val reach = maxOf(1, (GAME_CROSSHAIR_REACH * guiPixel).roundToInt())
+        rect(g, middle - reach, horizon, reach * 2 + 1, 1, GameScreenColors.CROSSHAIR)
+        rect(g, middle, horizon - reach, 1, reach * 2 + 1, GameScreenColors.CROSSHAIR)
+        val bar = hotbarWidth(GAME_HOTBAR_CELLS)
+        g.pose().pushMatrix()
+        g.pose().translate(middle - bar * guiPixel / 2, y + height - HOTBAR_HEIGHT * guiPixel)
+        g.pose().scale(guiPixel, guiPixel)
+        hotbar(g, 0, 0, GAME_HOTBAR_CELLS)
+        g.pose().popMatrix()
+    }
 
     fun plate(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
         val t = theme
@@ -898,6 +915,8 @@ object Kit {
 
     /** The game's hotbar: a 1px rim around 9 cells. */
     private val HOTBAR: Identifier = Identifier.withDefaultNamespace("hud/hotbar")
+    private const val GAME_HOTBAR_CELLS = 9
+    private const val GAME_CROSSHAIR_REACH = 4
     private const val HOTBAR_WIDTH = 182
     const val HOTBAR_HEIGHT = 22
     const val HOTBAR_CELL = 20
