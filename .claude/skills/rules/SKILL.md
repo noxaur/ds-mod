@@ -87,6 +87,9 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | Website code is formatted | `vp fmt --check` in `web/package.json` |
 | Website code passes strict lint with no warnings | `typescript-eslint` strict-type-checked in `web/eslint.config.mjs` |
 | Website failures are modeled with Effect, not `try` | `no-restricted-syntax` in `web/eslint.config.mjs` |
+| The website logs through a named `console` call, never `console[level]` | `no-restricted-syntax` in `web/eslint.config.mjs` |
+| The website has no `any`, and reads JSON through a `Schema` outside its tests | `@typescript-eslint/no-explicit-any` from strict-type-checked, and `no-restricted-syntax` in `web/eslint.config.mjs` |
+| The website reads `process.env` in `web/app/env.ts` alone | `no-restricted-syntax` in `web/eslint.config.mjs` |
 | Every interactive control comes from ui-sdk | `react/forbid-elements` and `no-restricted-imports` in `web/eslint.config.mjs` |
 | Web dependencies are at least 14 days old | `minimumReleaseAge` in `web/pnpm-workspace.yaml` |
 | `docs/README.md` links every page in `docs/` | `check:docs` |
