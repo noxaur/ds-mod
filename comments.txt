@@ -2527,7 +2527,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** Called by `HudHotb
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** Draws [rarity]'s gem over that item, when the player's style has one. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** Draws [rarity]'s mark behind an item at [x], [y] that the mod draws itself, in the player's style for menus. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** Draws what goes behind the item in slot [index] of the open menu, whose 16x16 starts at [x], [y]. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** Hides the slot at [index] under a control the mod draws over it, or none at -1, until the menu closes. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** Marks slots by their index in the open container's menu, replacing what [id] marked before. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** The rarity that marks slot [index] of the open menu, if one does. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** The seconds a cooldown shows, built once each. */

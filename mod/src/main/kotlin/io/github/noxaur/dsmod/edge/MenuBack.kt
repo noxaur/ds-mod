@@ -60,12 +60,12 @@ object MenuBack {
             ScreenEvents.afterTick(screen).register {
                 // The server fills a menu's slots over a few ticks, and can put its own Go Back in later.
                 button.visible = enabled && filler(slot.item) && chest.none { named(it.item) }
-                Slots.cover(if (button.visible) slot.index else -1)
+                Slots.cover(slot.index, button.visible)
             }
         }
     }
 
-    private fun filler(stack: ItemStack) = Filler.of(BuiltInRegistries.ITEM.getKey(stack.item).toString(), stack.get(DataComponents.CUSTOM_NAME)?.string)
+    fun filler(stack: ItemStack) = Filler.of(BuiltInRegistries.ITEM.getKey(stack.item).toString(), stack.get(DataComponents.CUSTOM_NAME)?.string)
 
     private fun named(stack: ItemStack) = stack.get(DataComponents.CUSTOM_NAME)?.string == GO_BACK
 

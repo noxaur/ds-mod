@@ -87,6 +87,7 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `bone` | Any | A block standing in for text or an icon while a layout loads, so the screen keeps its shape under its veil |
 | `cooldown` | 16x16 inside | The game's own cooldown wash over an item: half-white over the part of the wait still to run, draining down. The same in both themes, because it lies on the item |
 | `slotHover` | 16x16 inside | The white wash over the slot under the mouse, in a grid the mod draws itself, as a menu lights its own |
+| `slotHighlightBack`, `slotHighlightFront` | 24x24 around the item | Vanilla's own slot highlight, behind the item and over it, for a slot the mod adds to a server menu, so it lights as the menu's items do |
 | `slotArt`, `slotGem` | 18x18, 7x7 | A rarity mark's back behind the item and its gem over it, cut from an `Atlas` that `SlotArts` bakes from the player's style, or from any row of a bigger atlas |
 | `inventory`, `slotAt` | 176x166, 18x18 | The player's inventory, and one empty slot of it, from the resource pack's own texture, for a preview that must match the real screen |
 
@@ -99,6 +100,7 @@ A widget is a vanilla widget with a kit face. It takes its label as a string and
 | `KitButton` | A button with a label or an icon. An icon button is 16x16, and `show` swaps its icon and its tooltip, as Collapse All and Expand All do |
 | `KitCheckbox` | A checkbox with its label 4px to the right. On a well its label is body text, since ink would not read there |
 | `KitTab` | A tab on a menu's top or bottom edge, with an item or an icon, that runs an action. Its `selected` state joins the panel |
+| `KitSlotButton` | A slot the mod adds to a menu, showing an item, that runs an action. It draws the slot's frame in the menu's theme, and vanilla's slot highlight under the mouse, as the menu's own items get |
 | `KitStepper` | A minus button, a value and a plus button, for a number with few useful steps |
 | `KitTextField` | Vanilla's `EditBox` on a 16 tall `field`, with its text 4 in, or after an `icon` such as search. A press anywhere on the well lands |
 | `KitTabBar` | Browser tabs across the top of a pane, as the tab bar section of `controls.md` says. `SettingsTabs` and `TabStrip` in `core/ui` hold its rules |
