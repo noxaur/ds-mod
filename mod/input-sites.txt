@@ -107,6 +107,7 @@ gate edge.mixin.DropKeyMixin 1b430b670807
     approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.EnchantmentOfferMixin draws
     hooks EnchantmentScreen.extractBackground
+    approved by github.com/noxaur 2026-11-21T00:09:00Z
 gate edge.mixin.ExplosionParticleMixin 816e0ac1bb3c  HideExplosions
     hooks ParticleEngine.createParticle
     approved by github.com/noxaur 2026-11-16T08:42:00Z
@@ -137,6 +138,7 @@ gate edge.mixin.KeyPressMixin f3167d4d9147
 gate edge.mixin.MenuArtMixin draws
     hooks GuiGraphicsExtractor.blit
     hooks GuiGraphicsExtractor.blitSprite
+    approved by github.com/noxaur 2026-11-21T00:09:00Z
 gate edge.mixin.MenuBackdropMixin draws
     hooks Screen.extractTransparentBackground
     approved by github.com/noxaur 2026-11-16T01:17:00Z
@@ -145,8 +147,10 @@ gate edge.mixin.MenuLabelMixin draws
     hooks CreativeModeInventoryScreen.extractLabels
     hooks InventoryScreen.extractLabels
     hooks MerchantScreen.extractLabels
+    approved by github.com/noxaur 2026-11-21T00:09:00Z
 gate edge.mixin.MenuPaintMixin draws
     hooks Screen.extractRenderStateWithTooltipAndSubtitles
+    approved by github.com/noxaur 2026-11-21T00:09:00Z
 gate edge.mixin.MouseInputMixin b812670e4219
     hooks MouseHandler.onButton
     approved by github.com/noxaur 2026-11-16T01:17:00Z
