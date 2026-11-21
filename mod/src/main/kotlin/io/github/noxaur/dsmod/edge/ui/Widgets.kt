@@ -118,6 +118,25 @@ class KitTab(
     }
 }
 
+class KitSlotButton(
+    x: Int,
+    y: Int,
+    name: String,
+    private val item: ItemStack,
+    private val frame: () -> Int?,
+    action: () -> Unit,
+) : Button(x, y, 16, 16, plain(name), { action() }, { it.get() }) {
+    override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+        when (frame()) {
+            null -> {}
+            -1 -> Kit.slot(graphics, x - 1, y - 1)
+            else -> Kit.glassSlot(graphics, x - 1, y - 1)
+        }
+        graphics.item(item, x, y)
+        if (isHoveredOrFocused) Kit.slotHover(graphics, x, y)
+    }
+}
+
 /**
  * A checkbox with its [label] 4px to the right. [onChange] gets the new value. [onWell] draws the label as body
  * text, which reads on a well in both themes, where ink would not.

@@ -42,6 +42,7 @@ import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
 import io.github.noxaur.dsmod.core.feature.inventory.HideGlassPanes
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
+import io.github.noxaur.dsmod.core.feature.inventory.HotdButton
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
@@ -259,6 +260,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                     group(BetterUi(c)) {
                         feature(BackButtons(c))
                         feature(MenuTabs(c))
+                        feature(HotdButton(c))
                     }
                 }
                 section("The End", Role.EPIC) {

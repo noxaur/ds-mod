@@ -99,6 +99,7 @@ A widget is a vanilla widget with a kit face. It takes its label as a string and
 | `KitButton` | A button with a label or an icon. An icon button is 16x16, and `show` swaps its icon and its tooltip, as Collapse All and Expand All do |
 | `KitCheckbox` | A checkbox with its label 4px to the right. On a well its label is body text, since ink would not read there |
 | `KitTab` | A tab on a menu's top or bottom edge, with an item or an icon, that runs an action. Its `selected` state joins the panel |
+| `KitSlotButton` | A slot the mod adds to a menu, showing an item, that runs an action. It draws the slot's frame in the menu's theme, and the slot hover under the mouse |
 | `KitStepper` | A minus button, a value and a plus button, for a number with few useful steps |
 | `KitTextField` | Vanilla's `EditBox` on a 16 tall `field`, with its text 4 in, or after an `icon` such as search. A press anywhere on the well lands |
 | `KitTabBar` | Browser tabs across the top of a pane, as the tab bar section of `controls.md` says. `SettingsTabs` and `TabStrip` in `core/ui` hold its rules |

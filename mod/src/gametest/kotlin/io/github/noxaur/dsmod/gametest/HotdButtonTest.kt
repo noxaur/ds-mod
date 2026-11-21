@@ -1,0 +1,61 @@
+package io.github.noxaur.dsmod.gametest
+
+import io.github.noxaur.dsmod.core.feature.inventory.HotdButton
+import io.github.noxaur.dsmod.core.ui.Theme
+import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.HotdShortcut
+import io.github.noxaur.dsmod.edge.ui.KitSlotButton
+import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
+import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.fabricmc.fabric.api.client.screen.v1.Screens
+import net.minecraft.client.gui.screens.inventory.ContainerScreen
+import net.minecraft.commands.Commands
+import net.minecraft.world.item.Items
+import org.lwjgl.glfw.GLFW
+
+class HotdButtonTest : FabricClientGameTest {
+    private fun egg(context: ClientGameTestContext) = context.computeOnClient<Pair<Int, Int>?, Nothing> { client ->
+        val screen = client.gui.screen() as? ContainerScreen ?: return@computeOnClient null
+        Screens.getWidgets(screen).filterIsInstance<KitSlotButton>().firstOrNull { it.visible }?.let { it.x to it.y }
+    }
+
+    override fun runTest(context: ClientGameTestContext) {
+        context.worldBuilder().create().use { world ->
+            world.server.runOnServer<Nothing> { server ->
+                server.commands.dispatcher.register(
+                    Commands.literal("hotd").executes { it.source.playerOrException.openMenu(ServerMenus.menu(6, "Heart of the Dragon")); 1 },
+                )
+            }
+            ServerMenus.open(context, world, 6, "Dragon Sim Menu") { it.setItem(HotdShortcut.SLOT, ServerMenus.named(Items.DIAMOND_SWORD, "Your Skills")) }
+            check(egg(context) == null) { "The egg covered an item" }
+
+            ServerMenus.open(context, world, 6, "Dragon Sim Menu") { it.setItem(13, ServerMenus.named(Items.PLAYER_HEAD, "Your Dragon Sim Profile")) }
+            val at = egg(context)
+            check(at == ServerMenus.corner(context, HotdShortcut.SLOT)) { "The egg is at $at, not in slot ${HotdShortcut.SLOT}" }
+            context.takeScreenshot("hotd-button-charcoal")
+            ServerMenus.hover(context, HotdShortcut.SLOT)
+            context.takeScreenshot("hotd-button-hovered")
+            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
+            context.waitTicks(2)
+            context.takeScreenshot("hotd-button-vanilla")
+            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
+
+            context.runOnClient<Nothing> { DsModClient.feature<HotdButton>().feature.enabled = false }
+            try {
+                context.waitTicks(2)
+                check(egg(context) == null) { "The egg stayed with HOTD Button off" }
+            } finally {
+                context.runOnClient<Nothing> { DsModClient.feature<HotdButton>().feature.enabled = true }
+            }
+            context.waitTicks(2)
+
+            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
+            ServerMenus.shows(context, "Heart of the Dragon")
+            val panes = world.server.computeOnServer<Int, Nothing> { server ->
+                server.playerList.players.first().inventory.count { it.`is`(Items.STAINED_GLASS_PANE.black()) }
+            }
+            check(panes == 0) { "The click on the egg reached the pane under it" }
+            context.runOnClient<Nothing> { it.player!!.closeContainer() }
+        }
+    }
+}
