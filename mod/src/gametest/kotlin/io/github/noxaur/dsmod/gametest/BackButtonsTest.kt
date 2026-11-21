@@ -7,9 +7,6 @@ import io.github.noxaur.dsmod.edge.ui.KitButton
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
-import net.fabricmc.fabric.api.client.screen.v1.Screens
-import net.minecraft.client.gui.screens.inventory.ContainerScreen
-import net.minecraft.commands.Commands
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
@@ -22,10 +19,7 @@ import org.lwjgl.glfw.GLFW
  */
 class BackButtonsTest : FabricClientGameTest {
     /** Where the open menu's visible Back button sits, or null when it has none. */
-    private fun button(context: ClientGameTestContext) = context.computeOnClient<Pair<Int, Int>?, Nothing> { client ->
-        val screen = client.gui.screen() as? ContainerScreen ?: return@computeOnClient null
-        Screens.getWidgets(screen).filterIsInstance<KitButton>().firstOrNull { it.visible && it.message.string == "Go Back" }?.let { it.x to it.y }
-    }
+    private fun button(context: ClientGameTestContext) = ServerMenus.widget<KitButton>(context) { it.message.string == "Go Back" }?.let { it.x to it.y }
 
     /** Opens the menu titled [title] from the open one, as a click in a server menu does. */
     private fun from(context: ClientGameTestContext, world: TestSingleplayerContext, title: String, goBack: Boolean, fill: (net.minecraft.world.SimpleContainer) -> Unit = {}) =
@@ -33,11 +27,7 @@ class BackButtonsTest : FabricClientGameTest {
 
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
-            world.server.runOnServer<Nothing> { server ->
-                server.commands.dispatcher.register(
-                    Commands.literal("storage").executes { it.source.playerOrException.openMenu(ServerMenus.menu(6, "Storage", goBack = false)); 1 },
-                )
-            }
+            ServerMenus.command(world, "storage", 6, "Storage", goBack = false)
             context.runOnClient<Nothing> { it.connection!!.sendCommand("storage") }
             ServerMenus.shows(context, "Storage")
             check(button(context) == null) { "The command's own menu got a Back button" }
@@ -75,10 +65,7 @@ class BackButtonsTest : FabricClientGameTest {
 
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
             ServerMenus.shows(context, "Storage")
-            val panes = world.server.computeOnServer<Int, Nothing> { server ->
-                server.playerList.players.first().inventory.count { it.`is`(Items.STAINED_GLASS_PANE.black()) }
-            }
-            check(panes == 0) { "The click on Back reached the pane under it" }
+            check(ServerMenus.panes(world) == 0) { "The click on Back reached the pane under it" }
 
             context.runOnClient<Nothing> { it.player!!.closeContainer() }
             context.waitTicks(20)
