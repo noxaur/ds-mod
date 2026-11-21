@@ -1,10 +1,8 @@
-import { betterAuth } from "better-auth";
-import { memoryAdapter } from "better-auth/adapters/memory";
 import { afterEach, expect, test, vi } from "vite-plus/test";
 import { Schema } from "effect";
 
+import { authRequest, testAuth } from "../../test/harness.ts";
 import { type HasJoined, mojangHasJoined } from "./minecraft.ts";
-import { signInOptions } from "./options.ts";
 
 const UUID = "069a79f4-44e9-4726-a5be-fca90e38aaf5";
 const Signed = Schema.decodeUnknownSync(Schema.Struct({ token: Schema.String, uuid: Schema.String }));
@@ -23,21 +21,9 @@ function backend(joins: string[]) {
     const join = joins.find((seen) => seen.toLowerCase() === `${name} ${serverId}`.toLowerCase());
     return Promise.resolve(join === undefined ? null : { uuid: UUID, name: join.split(" ")[0] ?? "" });
   };
-  const auth = betterAuth({
-    ...signInOptions(hasJoined),
-    baseURL: "http://backend",
-    secret: "a-test-secret-that-is-long-enough-for-better-auth",
-    database: memoryAdapter({ user: [], session: [], account: [], verification: [] }),
-    rateLimit: { enabled: false },
-  });
+  const auth = testAuth({ enabled: false }, hasJoined);
   const post = (path: string, body: unknown = {}, headers: Record<string, string> = {}) =>
-    auth.handler(
-      new Request(`http://backend/api/auth${path}`, {
-        method: "POST",
-        headers: { "content-type": "application/json", origin: "http://backend", ...headers },
-        body: JSON.stringify(body),
-      }),
-    );
+    auth.handler(authRequest(path, { body, headers }));
   const challenge = async () => Challenge(await (await post("/minecraft/challenge")).json()).serverId;
   const sessionOf = (token: string) =>
     auth.api.getSession({ headers: new Headers({ authorization: `Bearer ${token}` }) });

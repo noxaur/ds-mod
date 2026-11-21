@@ -72,6 +72,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | Backend code is formatted, type-safe and passes lint with no warnings | `vp check` in `check:backend` |
 | Backend failures are modeled with Effect, not `try` | `dsmod/no-try` in `backend/lint/dsmod.js` |
 | Backend code reads the time through Effect's `Clock` and makes ids with `src/ids.ts`, so a test sets the time with `TestClock` | `dsmod/time-through-effect` in `backend/lint/dsmod.js` |
+| Backend tests build the app and sign-in from one harness | `dsmod/test-harness` in `backend/lint/dsmod.js`, which sends a test to `backend/test/harness.ts` |
 | `vite` is the Vite+ core of `vite-plus`'s version, so Void and Vite+ share one Vite | `vite.test.ts` in `backend/test/` |
 | `backend/src/` imports nothing from Void | `no-restricted-imports` in `backend/vite.config.ts` |
 | The memory stores and `routes/_store.ts` pass one contract, which has a case for every `Store` method | `storeContract` in `backend/test/contract.ts`, keyed by each store's methods so a missing case fails `tsc` |

@@ -3,29 +3,19 @@ import { readFileSync } from "node:fs";
 import { expect, test, vi } from "vite-plus/test";
 
 import { openapi, openapiFile } from "../scripts/openapi.ts";
-import { advance, testClock } from "../test/harness.ts";
+import { advance, gzipped, spec, testApp, testClock } from "../test/harness.ts";
 import { Effect, Schema } from "effect";
 
 import { Api } from "./api.ts";
-import { MAX_BODY, makeApp } from "./app.ts";
+import { MAX_BODY, type Services } from "./app.ts";
 import { MAX_UNKNOWNS } from "./contrib/contrib.ts";
 import { memoryStore } from "./contrib/store.ts";
-import { memoryServices } from "./memory.ts";
-
-const spec = {
-  brief: { name: "Golem tiers", steps: [{ do: "Warp to the End" }, { do: "Stand still", seconds: 60 }] },
-  requirements: [{ kind: "area", value: "The End" }],
-  timeoutSeconds: 300,
-  wanted: 2,
-};
 
 const clock = await testClock("2026-11-15T12:00:00Z");
 
 const invented = (from: number) =>
   Array.from({ length: 100 }, (_, index) => ({ kind: "chat", signature: `s${String(from + index)}`, sample: "x" }));
 
-/** Bytes that start as gzip does, which is all the backend checks of a capture. */
-const gz = (...bytes: number[]) => new Uint8Array([0x1f, 0x8b, ...bytes]);
 const Created = Schema.decodeUnknownSync(Schema.Struct({ id: Schema.String }));
 const Listed = Schema.decodeUnknownSync(
   Schema.Array(
@@ -34,37 +24,16 @@ const Listed = Schema.decodeUnknownSync(
 );
 
 /** A backend with nothing in it, and a way to call it as an agent, as a player, or as nobody. */
-function backend() {
-  // Who is signed in is what Void would say: here, whoever the test's cookie names. The admin token is "secret".
-  const app = makeApp(memoryServices({ clock }), (request) => ({
-    userId: request.headers.get("cookie"),
-    adminToken: "secret",
-  }));
-  const call = async (who: string | null, method: string, path: string, body?: unknown, extra: HeadersInit = {}) => {
-    const headers = new Headers(extra);
-    if (who === "agent") {
-      headers.set("authorization", "Bearer secret");
-    } else if (who !== null) {
-      headers.set("cookie", who);
-    }
-    const init: RequestInit = { method, headers };
-    if (body instanceof Uint8Array) {
-      headers.set("content-type", "application/octet-stream");
-      init.body = body;
-    } else if (body !== undefined) {
-      headers.set("content-type", "application/json");
-      init.body = JSON.stringify(body);
-    }
+function backend(overrides: Partial<Services> = {}) {
+  const app = testApp({ clock, ...overrides });
+  const call: typeof app.call = async (...args) => {
     // The store orders runs by time and then by random id, so each request starts in a later millisecond than the
     // last, and a test's runs are lettered in the order it sends them.
     await advance(clock, 1);
-    const response = await app(new Request(`http://backend${path}`, init));
-    const type = response.headers.get("content-type") ?? "";
-    const value: unknown = type.includes("json") ? await response.json() : new Uint8Array(await response.arrayBuffer());
-    return { status: response.status, value };
+    return app.call(...args);
   };
   const create = async () => Created((await call("agent", "POST", "/v1/admin/requests", spec)).value).id;
-  const submit = (who: string, id: string, capture = gz(1, 2, 3)) =>
+  const submit = (who: string, id: string, capture = gzipped(1, 2, 3)) =>
     call(who, "POST", `/v1/contrib/requests/${id}/submissions?modVersion=1.0.0`, capture);
   return { call, create, submit };
 }
@@ -125,9 +94,10 @@ test("a brief the mod would refuse is refused", async () => {
 test("an agent reads every run back, with a letter in place of the player", async () => {
   const { call, create, submit } = backend();
   const id = await create();
-  await submit("ann", id, gz(7, 8));
+  const [first, second] = [gzipped(7, 8), gzipped(9)];
+  await submit("ann", id, first);
   await call("cat", "POST", `/v1/contrib/requests/${id}/skip`);
-  await submit("bob", id, gz(9));
+  await submit("bob", id, second);
 
   const { value } = await call("agent", "GET", "/v1/admin/requests");
   expect(JSON.stringify(value)).not.toMatch(/ann|bob|cat/);
@@ -137,13 +107,13 @@ test("an agent reads every run back, with a letter in place of the player", asyn
       status: "filled",
       skips: 1,
       submissions: [
-        { contributor: "A", bytes: 4, modVersion: "1.0.0" },
-        { contributor: "B", bytes: 3 },
+        { contributor: "A", bytes: first.byteLength, modVersion: "1.0.0" },
+        { contributor: "B", bytes: second.byteLength },
       ],
     },
   ]);
-  const first = Listed(value)[0]?.submissions[0]?.id ?? "";
-  expect((await call("agent", "GET", `/v1/admin/submissions/${first}/capture`)).value).toEqual(gz(7, 8));
+  const firstId = Listed(value)[0]?.submissions[0]?.id ?? "";
+  expect((await call("agent", "GET", `/v1/admin/submissions/${firstId}/capture`)).value).toEqual(first);
 });
 
 test("a closed request is offered to nobody", async () => {
@@ -170,7 +140,7 @@ test("a player cannot call any agent route, and nobody calls a player route with
     Object.values(Api.groups[group].endpoints).map((endpoint) => ({
       method: endpoint.method,
       path: endpoint.path.replace(":id", id),
-      body: endpoint.method === "GET" ? undefined : group === "admin" ? spec : gz(1),
+      body: endpoint.method === "GET" ? undefined : group === "admin" ? spec : gzipped(1),
     }));
   for (const { method, path, body } of routes("admin")) {
     expect((await call("ann", method, path, body)).status, `${method} ${path}`).toBe(401);
@@ -188,10 +158,9 @@ test("only the exact admin token makes a caller an agent", async () => {
 });
 
 test("with no admin token set, nobody is an agent", async () => {
-  const app = makeApp(memoryServices(), () => ({ userId: null, adminToken: undefined }));
+  const { call } = testApp({}, () => ({ userId: null, adminToken: undefined }));
   for (const authorization of ["Bearer ", "Bearer undefined", ""]) {
-    const response = await app(new Request("http://backend/v1/admin/requests", { headers: { authorization } }));
-    expect(response.status).toBe(401);
+    expect((await call(null, "GET", "/v1/admin/requests", undefined, { authorization })).status).toBe(401);
   }
 });
 
@@ -253,7 +222,7 @@ test("a request that does not decode says where and what was expected, and only 
   expect(await call("agent", "POST", "/v1/admin/requests", { ...spec, secs: "Notch" })).toEqual(
     refused(["payload", "secs"], "Expected no excess property"),
   );
-  expect(await call("ann", "POST", "/v1/contrib/requests/x/submissions", gz())).toEqual(
+  expect(await call("ann", "POST", "/v1/contrib/requests/x/submissions", gzipped())).toEqual(
     refused(["query", "modVersion"], "Missing key"),
   );
   expect(logged).not.toHaveBeenCalled();
@@ -267,15 +236,9 @@ test("a request that does not decode says where and what was expected, and only 
 
 test("invented sightings stop being kept at the cap, and known ones still count", async () => {
   const store = memoryStore();
-  const app = makeApp(memoryServices({ contrib: store }), () => ({ userId: "ann", adminToken: undefined }));
+  const { call } = backend({ contrib: store });
   const post = (sightings: unknown[]) =>
-    app(
-      new Request("http://backend/v1/contrib/unknowns", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ modVersion: "1.0.0", sightings }),
-      }),
-    );
+    call("ann", "POST", "/v1/contrib/unknowns", { modVersion: "1.0.0", sightings });
   for (let from = 0; from < MAX_UNKNOWNS + 200; from += 100) {
     expect((await post(invented(from))).status).toBe(204);
   }
@@ -308,10 +271,10 @@ test("a store that fails answers 500 with nothing in it, and only that reaches t
   expect((await call("ann", "POST", "/v1/contrib/requests/nothing/submissions?modVersion=1", huge)).status).toBe(413);
   expect(logged, "a refusal is the client's mistake, not the backend's").not.toHaveBeenCalled();
   const broken = { ...memoryStore(), requests: Effect.die(new Error("D1 is down")) };
-  const app = makeApp(memoryServices({ contrib: broken }), () => ({ userId: "ann", adminToken: undefined }));
-  const response = await app(new Request("http://backend/v1/contrib/requests"));
-  expect(response.status).toBe(500);
-  expect(await response.text()).not.toContain("D1");
+  expect(await backend({ contrib: broken }).call("ann", "GET", "/v1/contrib/requests")).toEqual({
+    status: 500,
+    value: new Uint8Array(),
+  });
   expect(String(logged.mock.calls[0]?.[0])).toContain("D1 is down");
   logged.mockRestore();
 });
@@ -326,20 +289,9 @@ test("a player who already has a run is refused before their file reaches the st
       return store.insertSubmission(...args);
     },
   };
-  const app = makeApp(memoryServices({ contrib: counting }), () => ({ userId: "ann", adminToken: "secret" }));
-  const post = (path: string, body: BodyInit, type: string) =>
-    app(
-      new Request(`http://backend${path}`, {
-        method: "POST",
-        headers: { authorization: "Bearer secret", "content-type": type },
-        body,
-      }),
-    );
-  const created = await post("/v1/admin/requests", JSON.stringify(spec), "application/json");
-  const { id } = Created(await created.json());
-  const upload = () =>
-    post(`/v1/contrib/requests/${id}/submissions?modVersion=1.0.0`, gz(1), "application/octet-stream");
-  expect((await upload()).status).toBe(200);
-  expect((await upload()).status).toBe(409);
+  const { create, submit } = backend({ contrib: counting });
+  const id = await create();
+  expect((await submit("ann", id)).status).toBe(200);
+  expect((await submit("ann", id)).status).toBe(409);
   expect(stored).toBe(1);
 });
