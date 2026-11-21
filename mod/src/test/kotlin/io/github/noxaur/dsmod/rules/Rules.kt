@@ -50,14 +50,14 @@ val rules = listOf(
     ),
     Rule(
         id = "container-by-reads",
-        files = "src/main/kotlin/**/edge/**.kt",
-        except = "src/main/kotlin/**/edge/ContainerScreens.kt",
+        files = "src/{main,debug}/**.{kt,java}",
+        except = "src/main/{kotlin/**/edge/ContainerScreens.kt,java/**/edge/mixin/ContainerScreenAccessor.java}",
         forbid = Regex("""\bContainerScreenAccessor\b"""),
         fix = "Read a container screen's place from `ContainerScreens.kt`: `containerLeft`, `containerTop`, `containerWidth`, " +
             "`containerHeight`, `slotUnderMouse`, `screenX(slot)` and `screenY(slot)`, and draw at a slot's own x and y inside " +
             "`screen.drawInContainer(graphics) { .. }`. If a read is missing, add it there.",
         example = "val left = (screen as ContainerScreenAccessor).leftPos",
-        examples = listOf("import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor"),
+        examples = listOf("import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor", "ContainerScreenAccessor at = (ContainerScreenAccessor) screen;"),
     ),
     Rule(
         id = "screen-by-hook",
@@ -68,7 +68,8 @@ val rules = listOf(
             "because Fabric drops a screen's listeners on each one, and `opened` is true only on the first, so state for one " +
             "menu survives a resize. For a container screen, `openedByServer` and `creative` in `ContainerScreens.kt` name which ones.",
         example = "ScreenEvents.AFTER_INIT.register { _, screen, _, _ -> }",
-        examples = listOf("ScreenEvents .AFTER_INIT"),
+        examples = listOf("ScreenEvents .AFTER_INIT", "ScreenEvents\n    .AFTER_INIT"),
+        span = Span.FILE,
     ),
     Rule(
         id = "text-by-role",
