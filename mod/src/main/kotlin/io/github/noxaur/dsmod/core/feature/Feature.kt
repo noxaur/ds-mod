@@ -395,7 +395,7 @@ class Feature(
     ) = HudBlock(if (headed) header else text {}, HudBuilder().apply(rows).rows, look, dock, overMenus, columns, opacity, pops, icon)
 
     private companion object {
-        val WORDS = mapOf("hud" to "HUD", "ui" to "UI", "dragsim" to "DragSim")
+        val WORDS = mapOf("hud" to "HUD", "ui" to "UI", "dragsim" to "DragSim", "skyblock" to "SkyBlock")
 
         /** `protector-spawn-beam` as `protectorSpawnBeam`, the key a switch's field always had. */
         fun camel(id: String) = id.split('-').withIndex().joinToString("") { (i, word) -> if (i == 0) word else word.replaceFirstChar(Char::uppercase) }

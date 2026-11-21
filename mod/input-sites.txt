@@ -17,6 +17,8 @@ call edge.DsModClient.onInitializeClient -> edge.Pings.register
     approved by github.com/noxaur 2026-11-16T19:47:00Z
 call edge.DsModClient.onInitializeClient -> edge.SlotGuards.register
     approved by github.com/noxaur 2026-11-16T08:42:00Z
+call edge.SkyBlockMenuClicks.opens -> edge.MenuBack.send
+    approved by github.com/noxaur 2026-11-21T18:08:00Z
 call edge.profile.ProfileScreen.dress -> edge.profile.ProfileModel.<init>
     approved by github.com/noxaur 2026-11-16T08:42:00Z
 call edge.profile.ProfileScreen.dress -> edge.profile.ProfileModel.dress
@@ -183,9 +185,9 @@ gate edge.mixin.ServerPacketsMixin 6b7a36388e18
     hooks ClientPacketListener.handleSystemChat
     hooks ClientPacketListener.setActionBarText
     approved by github.com/noxaur 2026-11-21T00:09:00Z
-gate edge.mixin.SlotClickMixin 4a2f8fda01b4
+gate edge.mixin.SlotClickMixin ec34bb415176
     hooks AbstractContainerScreen.slotClicked
-    approved by github.com/noxaur 2026-11-16T01:17:00Z
+    approved by github.com/noxaur 2026-11-21T18:08:00Z
 gate edge.mixin.SwingSpeedMixin ced2e765eeaf
     hooks LivingEntity.getCurrentSwingDuration
     approved by github.com/noxaur 2026-11-16T01:17:00Z

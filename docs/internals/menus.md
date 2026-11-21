@@ -30,6 +30,10 @@ The server closes a menu and opens the next in one tick, and in between the game
 
 Back Buttons resend the player's own command, unchanged, on the player's click, so the mod never acts in the player's place. A menu with no command earlier in its run gets no button, because a menu from an NPC needs a click on the NPC. The button covers Go Back's slot only while it holds filler, because an empty slot is one the player can put an item in.
 
+## SkyBlock Menu Click follows the ninth hotbar slot
+
+SkyBlock Menu Click opens the menu only for a click on the SkyBlock Menu item in the ninth hotbar slot, because the server keeps the item there, and a player who hides the item gets the slot back for their own. Matching the item in any slot was rejected, so that a click on any other slot always behaves as the game's own.
+
 ## Better UI covers the controls, not the look
 
 Better UI's switch covers only the controls the mod adds to menus, not how the menus look, because a player who wants the vanilla controls back may still want dark, steady menus.

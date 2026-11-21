@@ -411,7 +411,7 @@ Slot Lock Key and Item Lock Key take any key or mouse button. The server can sti
 
 ### Better UI
 
-Turns Back Buttons and Menu Tabs on or off at once. Each has its own switch too. It leaves how menus look alone, so Menu Theme and Fixed Menu Layout stay as you set them.
+Turns Back Buttons, Menu Tabs and SkyBlock Menu Click on or off at once. Each has its own switch too. It leaves how menus look alone, so Menu Theme and Fixed Menu Layout stay as you set them.
 
 ### Back Buttons
 
@@ -438,6 +438,12 @@ Set your tabs up under Tabs, below Menu Tabs in the settings. It shows a small m
 | The mark beside Tabs | Go back to the starting tabs |
 
 <sub>Each edge has seven places. On a short screen at a large GUI scale, the tabs can run off the top or bottom of the screen.</sub>
+
+### SkyBlock Menu Click
+
+Click the SkyBlock Menu item in the last hotbar slot, in your inventory or any menu, and the SkyBlock Menu opens, as if you'd typed `/sbmenu`. The item stays where it is.
+
+<sub>If you hid the item with `/sbmenu off`, the slot works as usual.</sub>
 
 ## Combat
 
