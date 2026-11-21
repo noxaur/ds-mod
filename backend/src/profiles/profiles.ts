@@ -4,6 +4,7 @@ import { numberEntries } from "../items/render/read.ts";
 import { decodeCatalog, entriesOf, makeRenderer } from "../items/render.ts";
 import { ItemStore } from "../items/store.ts";
 import { parseLegacy } from "../items/legacy.ts";
+import { newId } from "../ids.ts";
 import { catalog, lookup } from "./cache.ts";
 import { equipmentCells, layoutsOf, PETS_ID } from "./layout.ts";
 import type { Layout } from "./layout.ts";
@@ -98,7 +99,7 @@ export const profile = Effect.fn(function* (name: string, profileId: string | un
   const hidden = current.inventory_hidden === true;
   const sections = sectionsOf(current);
 
-  const id = crypto.randomUUID();
+  const id = yield* newId;
   // A snapshot's key is new each time, so a refusal is the store failing, which no client can fix.
   yield* Effect.orDie((yield* ProfileStore).put(snapshotKey(id), { hidden, sections }, SNAPSHOT_SECONDS));
 

@@ -36,6 +36,7 @@ export default defineConfig({
       {
         files: ["src/**"],
         rules: {
+          "dsmod/time-through-effect": "error",
           "no-restricted-imports": [
             "error",
             {
@@ -49,6 +50,10 @@ export default defineConfig({
             },
           ],
         },
+      },
+      {
+        files: ["src/**/*.test.ts", "src/ids.ts", "src/identity/minecraft.ts"],
+        rules: { "dsmod/time-through-effect": "off" },
       },
     ],
   },
