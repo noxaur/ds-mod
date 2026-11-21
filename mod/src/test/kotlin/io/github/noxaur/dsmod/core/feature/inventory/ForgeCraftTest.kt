@@ -75,6 +75,17 @@ class ForgeCraftTest {
     }
 
     @Test
+    fun `a craft that starts in a free forge slot is remembered too`() {
+        forge()
+        select()
+        refining()
+        confirm()
+        post(SystemMessage(text("Forging Refined Obsidian! Ready in 49m 12s.")))
+        assertEquals("Refined Obsidian", feature.recipe?.name)
+        assertEquals(1, feature.crafted)
+    }
+
+    @Test
     fun `missing materials make Confirm a red spot`() {
         feature.amount = 3
         craftByHand()
