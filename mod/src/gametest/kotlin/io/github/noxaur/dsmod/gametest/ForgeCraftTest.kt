@@ -135,6 +135,22 @@ class ForgeCraftTest : FabricClientGameTest {
             context.waitTicks(2)
             check(context.computeOnClient<Int, Nothing> { feature.amount } == 3) { "The wheel over the amount did not lower it" }
 
+            ServerMenus.hover(context, 6 * 9)
+            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
+            context.waitTicks(2)
+            val scale = context.computeOnClient<Double, Nothing> { it.window.guiScale.toDouble() }
+            val corner = widget<KitKeysButton>(context)!!
+            ClickSpy.clear()
+            context.input.setCursorPos((corner.x - 20) * scale, (corner.y + 48) * scale)
+            context.waitTicks(2)
+            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
+            context.waitTicks(2)
+            check(ClickSpy.snapshot().isEmpty()) { "A click on the panel reached the menu: ${ClickSpy.snapshot()}" }
+            check(context.computeOnClient<Boolean, Nothing> { !it.player!!.containerMenu.carried.isEmpty }) { "A click on the panel dropped the carried stack" }
+            ServerMenus.hover(context, 6 * 9)
+            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
+            context.waitTicks(2)
+
             context.runOnClient<Nothing> { feature.amount = 1 }
             forge(context, world, 3)
             queued(world)

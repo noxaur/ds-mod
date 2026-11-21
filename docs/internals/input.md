@@ -36,7 +36,7 @@ Whether the mod may send input for the player, or refuse the player's own, is th
 
 ## Forge Craft sends one click per key press
 
-Forge Craft repeats a forge craft from the keyboard, and each press sends one click, the next of the four the player made by hand, so the player still makes every step and sees each menu. One press that sent every click was rejected, because that is automation. A press waits for the menu it clicked to give way to the next, so a quick second press cannot land on the wrong button.
+Forge Craft repeats a forge craft from the keyboard, and each press sends one click, the next of the four the player made by hand, so the player still makes every step and sees each menu. One press that sent every click was rejected, because that is automation. A press waits up to a second for the menu it clicked to give way to the next, so a quick second press cannot land on the wrong button, and a menu the server never replaced takes a click again after that.
 
 ## Ctrl Click undoes the game's right click on macOS at the press alone
 

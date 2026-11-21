@@ -74,12 +74,13 @@ object ForgeCrafts {
             ScreenMouseEvents.allowMouseClick(screen).register { _, event ->
                 if (!panel.shown) return@register true
                 val button = event.button()
+                val background = panel.background(event.x(), event.y())
                 val allowed = when {
                     panel.keys.recording -> !(panel.keys.capture(button, mouse = true) || panel.keys.isMouseOver(event.x(), event.y()))
-                    panel.field.isFocused && !panel.field.isMouseOver(event.x(), event.y()) -> true.also { panel.commit() }
+                    panel.field.isFocused && !panel.field.isMouseOver(event.x(), event.y()) -> !background.also { panel.commit() }
                     panel.field.isMouseOver(event.x(), event.y()) -> true.also { panel.opening = !panel.field.isFocused }
                     Keys.isMouse(feature.key.value) && button == feature.key.value -> false.also { press(client, screen) }
-                    else -> true
+                    else -> !background
                 }
                 if (!allowed) swallowed += button
                 allowed
@@ -239,6 +240,10 @@ object ForgeCrafts {
             plus.y = minus.y
             field.place(plus.x - 2 - FIELD_WIDTH, minus.y)
         }
+
+        fun background(mouseX: Double, mouseY: Double) =
+            mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + HEIGHT &&
+                listOf(keys, minus, plus, field).none { it.isMouseOver(mouseX, mouseY) }
 
         fun overAmount(mouseX: Double, mouseY: Double) =
             mouseX >= x + Kit.INSET && mouseX < x + width - Kit.INSET && mouseY >= y + AMOUNT_ROW && mouseY < y + AMOUNT_ROW + Kit.BUTTON_HEIGHT
