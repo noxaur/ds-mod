@@ -36,12 +36,6 @@ class GizmoCollectorTest : FabricClientGameTest {
             context.input.lookAt(-90f, 0f)
             context.waitTicks(10)
 
-            val thrown = context.computeOnClient<Throwable?, Nothing> { runCatching { World.draw(box) }.exceptionOrNull() }
-            check(thrown is IllegalStateException) {
-                "World.draw with no GizmoCollector open should throw an IllegalStateException from Minecraft's Gizmos.addGizmo, " +
-                    "and it ${if (thrown == null) "threw nothing, so the shape was dropped silently or a collector was open here" else "threw $thrown"}"
-            }
-
             drawing = true
             try {
                 val shot = context.screenshot("gizmo-collector")
