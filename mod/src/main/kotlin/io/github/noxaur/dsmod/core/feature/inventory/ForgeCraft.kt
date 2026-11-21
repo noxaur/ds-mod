@@ -87,6 +87,7 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
             }
         }
         feature.line("Queued ", Regex("Queued (.+)! It starts automatically when a Forge slot finishes\\.")) { (name), _ -> queued(name) }
+        feature.line("Forging ", Regex("Forging (.+)! Ready in .+\\.")) { (name), _ -> queued(name) }
     }
 
     fun forge(title: String?): Boolean = title == FORGE || title == SELECT || title == CONFIRM || title in categories || title == recipe?.category
