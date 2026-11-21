@@ -43,10 +43,11 @@ class SlotLockTest : FabricClientGameTest {
                 hovered != null && hovered.container is Inventory && hovered.containerSlot == slot
             }
         }
+        val ticksPastDoubleClick = 6
         fun click(slot: Int, button: Int = 0) {
             hover(slot)
             context.input.pressMouse(button)
-            context.waitTicks(3)
+            context.waitTicks(ticksPastDoubleClick)
         }
         fun tap(slot: Int) {
             hover(slot)
