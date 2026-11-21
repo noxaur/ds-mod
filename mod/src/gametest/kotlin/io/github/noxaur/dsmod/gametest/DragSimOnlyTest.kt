@@ -1,16 +1,13 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.general.DragSimOnly
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import java.util.concurrent.CopyOnWriteArrayList
 
-/**
- * The release build stays out of a world that is not dragsim.co, here singleplayer, until the player turns
- * DragSim Only off. The debug build lifts the gate for the other tests, so this one puts it back.
- */
-class OnlyOnDragSimTest : FabricClientGameTest {
+class DragSimOnlyTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val hidden = CopyOnWriteArrayList<String>()
         ClientReceiveMessageEvents.GAME_CANCELED.register { message, _ -> hidden += message.string }
@@ -18,17 +15,17 @@ class OnlyOnDragSimTest : FabricClientGameTest {
         context.worldBuilder().create().use { world ->
             try {
                 DsModClient.anyServer = false
-                check(!DsModClient.active) { "The mod runs in singleplayer with DragSim Only on" }
+                check(!DsModClient.game.active) { "The mod runs in singleplayer with DragSim Only on" }
                 world.server.runCommand("""tellraw @a "$refusal"""")
                 context.waitTicks(10)
                 check(hidden.isEmpty()) { "Hide Cooldown Messages hid $hidden off dragsim.co" }
 
-                DsModClient.settings.general.onlyOnDragSim = false
+                DsModClient.feature<DragSimOnly>().feature.enabled = false
                 world.server.runCommand("""tellraw @a "$refusal"""")
                 context.waitTicks(10)
                 check(hidden == listOf(refusal)) { "With DragSim Only off, Hide Cooldown Messages hid $hidden" }
             } finally {
-                DsModClient.settings.general.onlyOnDragSim = true
+                DsModClient.feature<DragSimOnly>().feature.enabled = true
                 DsModClient.anyServer = true
             }
         }

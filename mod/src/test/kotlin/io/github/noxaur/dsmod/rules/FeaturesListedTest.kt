@@ -15,7 +15,7 @@ fun unlisted(classes: List<ClassNode>, listed: Set<String>): List<String> =
 class FeaturesListedTest {
     @Test
     fun `every feature class is placed in SettingsTree`() {
-        val listed = SettingsTree().owners.map { Type.getInternalName(it.javaClass) }.toSet()
+        val listed = SettingsTree(mac = true).owners.map { Type.getInternalName(it.javaClass) }.toSet()
         val missing = unlisted(releaseClasses(), listed)
         assertEquals(
             emptyList(),

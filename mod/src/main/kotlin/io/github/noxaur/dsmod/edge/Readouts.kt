@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.config.DsModConfig.Position
 import io.github.noxaur.dsmod.core.feature.Alert
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.Notice
+import io.github.noxaur.dsmod.core.feature.hud.HudBackground
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudBox
 import io.github.noxaur.dsmod.core.hud.HudDock
@@ -84,8 +85,9 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
         game.messages.clear()
         val client = Minecraft.getInstance()
         val window = client.window
+        val plated = DsModClient.runs<HudBackground>()
         if (window.guiScaledWidth != width || window.guiScaledHeight != height || window.guiScale != guiScale ||
-            settings.scale != hudScale || settings.background != background ||
+            settings.scale != hudScale || plated != background ||
             client.options.mainHand().get() !== mainHand || client.options.attackIndicator().get() !== indicator
         ) {
             mainHand = client.options.mainHand().get()
@@ -94,7 +96,7 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
             height = window.guiScaledHeight
             guiScale = window.guiScale
             hudScale = settings.scale
-            background = settings.background
+            background = plated
             handed.fill(-1)
         }
         for (i in handed.indices) {
@@ -204,9 +206,9 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
 
     /** Where [id] goes. A block docked beside the hotbar is drawn at the GUI's scale, so its slots match the hotbar's. */
     private fun group(id: String, dock: HudDock): HudGroup {
-        if (dock != HudDock.FREE) return HudGroup(id, 0, 0, settings.background, HudScale.snap(1f, guiScale), dock)
-        val saved = settings.positions[id] ?: return HudGroup("stack", MARGIN, MARGIN, settings.background, HudScale.snap(settings.scale, guiScale))
+        if (dock != HudDock.FREE) return HudGroup(id, 0, 0, background, HudScale.snap(1f, guiScale), dock)
+        val saved = settings.positions[id] ?: return HudGroup("stack", MARGIN, MARGIN, background, HudScale.snap(settings.scale, guiScale))
         val scale = HudScale.snap(saved.scale * settings.scale, guiScale)
-        return HudGroup(id, (saved.x * width).roundToInt(), (saved.y * height).roundToInt(), settings.background, scale)
+        return HudGroup(id, (saved.x * width).roundToInt(), (saved.y * height).roundToInt(), background, scale)
     }
 }

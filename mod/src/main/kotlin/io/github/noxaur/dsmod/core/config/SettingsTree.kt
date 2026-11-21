@@ -7,6 +7,7 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.feature.boss.SlayerClaim
 import io.github.noxaur.dsmod.core.feature.chat.CopyChat
 import io.github.noxaur.dsmod.core.feature.chat.HideCooldownMessages
+import io.github.noxaur.dsmod.core.feature.contribute.ReportGameData
 import io.github.noxaur.dsmod.core.feature.end.BossFightTracker
 import io.github.noxaur.dsmod.core.feature.end.DragonTimer
 import io.github.noxaur.dsmod.core.feature.end.EyeGuard
@@ -19,6 +20,8 @@ import io.github.noxaur.dsmod.core.feature.general.ActivePet
 import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
+import io.github.noxaur.dsmod.core.feature.general.CtrlClick
+import io.github.noxaur.dsmod.core.feature.general.DragSimOnly
 import io.github.noxaur.dsmod.core.feature.general.DamageNumbers
 import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
 import io.github.noxaur.dsmod.core.feature.general.EtherwarpOutline
@@ -30,8 +33,11 @@ import io.github.noxaur.dsmod.core.feature.general.PerformanceStats
 import io.github.noxaur.dsmod.core.feature.general.PlayerModel
 import io.github.noxaur.dsmod.core.feature.general.ProfileViewer
 import io.github.noxaur.dsmod.core.feature.hud.ChatHudEditor
+import io.github.noxaur.dsmod.core.feature.hud.HideInF3
+import io.github.noxaur.dsmod.core.feature.hud.HudBackground
 import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
 import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
+import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
 import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
 import io.github.noxaur.dsmod.core.feature.inventory.HideGlassPanes
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
@@ -45,7 +51,6 @@ import io.github.noxaur.dsmod.core.feature.slayer.SlayerTracker
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Look
-import kotlin.reflect.KMutableProperty0
 
 /**
  * A run of settings under one heading. A group with no [name] sits straight under the section's title. [switch] is
@@ -76,18 +81,14 @@ class Sections {
 class Groups {
     internal val groups = ArrayList<SettingGroup>()
 
-    fun group(name: String?, switch: Switch? = null, rows: Rows.() -> Unit) {
-        groups += SettingGroup(name, Rows().apply(rows).rows, switch)
+    fun group(name: String?, rows: Rows.() -> Unit) {
+        groups += SettingGroup(name, Rows().apply(rows).rows)
     }
 
-    /** A group that is one feature: its switch beside the heading, [name] by default its title, and its rows under it. */
-    fun group(feature: HasFeature, name: String = feature.feature.title) {
-        groups += SettingGroup(name, feature.feature.rows, feature.feature.switch.also { it.feature = feature })
+    fun group(feature: HasFeature, name: String = feature.feature.title, rows: (Rows.() -> Unit)? = null) {
+        val more = if (rows == null) emptyList() else Rows().apply(rows).rows
+        groups += SettingGroup(name, feature.feature.rows + more, feature.feature.switch.also { it.feature = feature })
     }
-
-    /** The switch beside a group's heading. */
-    fun toggle(property: KMutableProperty0<Boolean>, name: String, description: String, id: String = property.name) =
-        Switch(id, name, description, Bind.of(property))
 }
 
 /**
@@ -183,14 +184,14 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                 // What applies everywhere comes first, then each area of the game, and Contribute last.
                 section("General", Role.VALUE) {
                     group("Server") {
-                        switch(g::onlyOnDragSim, "DragSim Only", "Run ds-mod only on dragsim.co.")
+                        feature(DragSimOnly(c))
                     }
                     group("Settings") {
                         keys(g::settingsKey, "Settings Key", "Pick a key that opens these settings, as /dsmod does.")
                         keys(g::favoriteKey, "Favorite Key", "Pick a key that stars the setting under your mouse.")
                     }
                     if (mac) group("Mouse") {
-                        switch(g::ctrlClick, "Ctrl Click", "Keep Ctrl and a left click a Ctrl click, not a right click.")
+                        feature(CtrlClick(c))
                     }
                     group("World") {
                         feature(Fullbright(c))
@@ -216,7 +217,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                     }
                     group("HUD") {
                         number(hud::scale, "Scale", "Make every HUD block bigger or smaller.", 0.5f..3f, step = 0.25f, unit = "x", id = "hudScale")
-                        switch(hud::background, "Background", "Show a dark plate behind the HUD, so it reads over a bright world.", id = "hudBackground")
+                        feature(HudBackground(c))
                         val positions = Bind("Hud.positions", { HashMap(hud.positions) }, {
                             hud.positions.clear()
                             hud.positions.putAll(it)
@@ -227,7 +228,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                         action(Opens.HUD_EDITOR, "Move HUD", "Move your HUD over the game, with the world behind it.", button = "Move", id = "moveHud")
                         feature(ChatHudEditor(c))
                         keys(hud::editKey, "HUD Editor Key", "Pick a key that opens the HUD editor, or none.", id = "hudEditKey")
-                        switch(hud::hideInF3, "Hide In F3", "Hide ds-mod's HUD while the F3 debug screen is open.")
+                        feature(HideInF3(c))
                     }
                     group(EquipmentDisplay(c))
                     group(PerformanceStats(c))
@@ -254,7 +255,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                         feature(HideGlassPanes(c))
                         feature(KeepCursor(c))
                     }
-                    group("Better UI", switch = toggle(c.betterUi::enabled, "Better UI", "Turn everything below on or off at once.", id = "betterUi")) {
+                    group(BetterUi(c)) {
                         feature(BackButtons(c))
                         feature(MenuTabs(c))
                     }
@@ -291,7 +292,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                 section("Contribute", Role.RARE) {
                     group(null) {
                         action(Opens.REQUESTS, "Requests", "See what ds-mod's developers ask players to record.", id = "requests")
-                        switch(c.contribute::reportGameData, "Report Game Data", "Send game data new to ds-mod to its developers, names removed.")
+                        feature(ReportGameData(c))
                     }
                 }
             }.sections

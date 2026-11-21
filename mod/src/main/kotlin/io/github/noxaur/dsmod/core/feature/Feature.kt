@@ -105,8 +105,7 @@ class Feature(
     /** The marks this feature draws in the world, or none. Called when [hud] is, so return equal marks until they change. */
     internal val marks: ((now: Long) -> List<Mark>)? = null,
 ) {
-    /** The name the player knows the feature by: [id] in Title Case, with `hud` as HUD. */
-    val title = id.split('-').joinToString(" ") { if (it == "hud") "HUD" else it.replaceFirstChar(Char::uppercase) }
+    val title = id.split('-').joinToString(" ") { WORDS[it] ?: it.replaceFirstChar(Char::uppercase) }
     private val header = text { brand(title) }
 
     private val stored = config.stored(store)
@@ -396,6 +395,8 @@ class Feature(
     ) = HudBlock(if (headed) header else text {}, HudBuilder().apply(rows).rows, look, dock, overMenus, columns, opacity, pops, icon)
 
     private companion object {
+        val WORDS = mapOf("hud" to "HUD", "ui" to "UI", "dragsim" to "DragSim")
+
         /** `protector-spawn-beam` as `protectorSpawnBeam`, the key a switch's field always had. */
         fun camel(id: String) = id.split('-').withIndex().joinToString("") { (i, word) -> if (i == 0) word else word.replaceFirstChar(Char::uppercase) }
     }

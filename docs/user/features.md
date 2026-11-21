@@ -6,6 +6,16 @@
 
 ## General
 
+### DragSim Only
+
+ds-mod runs only while you play on dragsim.co, and stays out of the way in singleplayer and on other servers. Turn it off to use ds-mod anywhere. Features that read the server read dragsim.co's own lines, so elsewhere they can miss or miscount.
+
+### Ctrl Click
+
+On a Mac, Minecraft turns Ctrl and a left click into a right click. ds-mod keeps it a Ctrl click, as on Windows and Linux, so a Ctrl click opens a section in a new tab and works in menus the same way. Turn it off to get the Mac's right click back.
+
+<sub>Only a Mac shows it.</sub>
+
 ### Fullbright
 
 Lights caves and nights as brightly as day.
@@ -239,7 +249,7 @@ Beside each grid are how many slots it fills and how many items of each rarity i
 
 Theme picks the colors of ds-mod's screens: Charcoal is dark, and Vanilla matches the game's own menus.
 
-Layout, under HUD, is a small copy of your screen with your HUD on it. **Move HUD**, `/dsmod hud` or the HUD Editor Key opens the same editor over the game, so you see the world behind your HUD. Hide In F3 takes the HUD off while the F3 debug screen is open.
+Layout, under HUD, is a small copy of your screen with your HUD on it. **Move HUD**, `/dsmod hud` or the HUD Editor Key opens the same editor over the game, so you see the world behind your HUD.
 
 | Do this | To |
 | --- | --- |
@@ -248,6 +258,16 @@ Layout, under HUD, is a small copy of your screen with your HUD on it. **Move HU
 | Press the arrow keys with a block picked | Nudge it a pixel, or ten with Shift |
 | Right-click a block, or press Backspace or Reset with it picked | Put it back in the stack at its own size, undocked |
 | Drop a block near the spot beside the hotbar | Dock it there, as Equipment Display's Placement does. Drag it away to undock it at the same size |
+
+### HUD Background
+
+A dark plate behind ds-mod's HUD, so it reads over a bright world. The Background box in the HUD editor turns it on and off too.
+
+### Hide In F3
+
+Takes ds-mod's HUD off while the F3 debug screen is open, so the HUD doesn't cover the debug text.
+
+<sub>Off by default.</sub>
 
 ### Chat HUD Editor
 
@@ -371,9 +391,9 @@ Slot Lock Key and Item Lock Key take any key or mouse button. The server can sti
 
 <sub>Off by default. Sneak and right click to swap on purpose.</sub>
 
-## Better UI
+### Better UI
 
-Tabs, a search and buttons that ds-mod adds to the game's menus. The Better UI switch turns them all off at once, and each has its own switch too.
+Turns Back Buttons and Menu Tabs on or off at once. Each has its own switch too. It leaves how menus look alone, so Menu Theme and Fixed Menu Layout stay as you set them.
 
 ### Back Buttons
 

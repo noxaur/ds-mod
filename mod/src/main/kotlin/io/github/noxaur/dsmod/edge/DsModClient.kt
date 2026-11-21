@@ -10,6 +10,7 @@ import io.github.noxaur.dsmod.core.config.Panel
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.feature.Game
+import io.github.noxaur.dsmod.core.feature.contribute.ReportGameData
 import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.WorldChanged
@@ -91,9 +92,6 @@ object DsModClient : ClientModInitializer {
     /** Lets the mod run on any server whatever the setting says. The debug build sets it, so `runClient` and the game tests run anywhere. */
     var anyServer = false
 
-    /** Whether the mod runs on the server the player is on. */
-    val active: Boolean get() = anyServer || onDragSim || !settings.general.onlyOnDragSim
-
     private var byType = emptyMap<Class<out HasFeature>, HasFeature>()
 
     /** Whether the feature of [type] runs now, which is false off dragsim.co whatever its switch says, and outside its area. */
@@ -147,7 +145,7 @@ object DsModClient : ClientModInitializer {
     /** Builds what a launch starts from: every feature, the game's state, what the player saved, and what reads and shows them. */
     private fun start() {
         val tree = SettingsTree(settings)
-        game = Game(tree.features) { active }
+        game = Game(tree.features) { anyServer || onDragSim }
         byType = tree.owners.associateBy { it.javaClass }
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
         readouts = Readouts(game, settings.hud)
@@ -206,7 +204,6 @@ object DsModClient : ClientModInitializer {
         Profiles.registerNames()
 
         ClientReceiveMessageEvents.ALLOW_GAME.register { _, _ -> Packets.shows() }
-        // Read once per connection, because the Fullbright mixin asks [active] every frame.
         lookUpDragSim()
         ClientPlayConnectionEvents.JOIN.register { handler, _, _ ->
             leave()
@@ -240,7 +237,7 @@ object DsModClient : ClientModInitializer {
             game.tick(System.currentTimeMillis())
             readouts.push()
             InventoryKey.tick(it)
-            Contribute.tick(game, settings.contribute.reportGameData, System.currentTimeMillis())
+            Contribute.tick(game, runs<ReportGameData>(), System.currentTimeMillis())
             if (++ticks % FLUSH_TICKS == 0) {
                 saved.flush()
                 game.metrics.flush()

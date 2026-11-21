@@ -149,7 +149,11 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.OnlyOnDragSimTest"
+        "value": "io.github.noxaur.dsmod.gametest.DragSimOnlyTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.ReportGameDataTest"
       },
       {
         "adapter": "kotlin",
@@ -218,6 +222,14 @@
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.HudKeysTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.HideInF3Test"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.HudBackgroundTest"
       },
       {
         "adapter": "kotlin",
@@ -370,6 +382,10 @@
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.MenuTabsTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.BetterUiTest"
       },
       {
         "adapter": "kotlin",

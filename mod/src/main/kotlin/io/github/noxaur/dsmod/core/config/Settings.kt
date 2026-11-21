@@ -444,11 +444,6 @@ class Rows {
     fun feature(feature: HasFeature): Switch = add(feature.feature.switch.also { it.feature = feature; it.children = feature.feature.rows }, null)
 
     fun switch(
-        property: KMutableProperty0<Boolean>, name: String, description: String, id: String = property.name, dependsOn: Switch? = null,
-        settings: (Rows.() -> Unit)? = null,
-    ) = switch(Bind.of(property), name, description, id, dependsOn, settings)
-
-    fun switch(
         bind: Bind<Boolean>, name: String, description: String, id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null,
         settings: (Rows.() -> Unit)? = null,
     ) = add(Switch(id, name, description, bind, nested(settings)), dependsOn)

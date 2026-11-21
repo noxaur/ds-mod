@@ -218,7 +218,7 @@ object Contribute {
      */
     fun tick(game: Game, report: Boolean, now: Long) {
         if ((game.metrics.onUnparsed != null) != report) game.metrics.onUnparsed = if (report) hear else null
-        if (report && DsModClient.active) game.metrics.time("item-sights") { sights.poll(Minecraft.getInstance()) } else sights.reset()
+        if (report) game.metrics.time("item-sights") { sights.poll(Minecraft.getInstance()) } else sights.reset()
         flush(game, unknowns.batch, report, now, "contribute.unknowns") { unknowns(it) }
         flush(game, items.batch, report, now, "contribute.items") { items(it) }
     }

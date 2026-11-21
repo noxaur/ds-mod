@@ -36,7 +36,7 @@ class SettingsTest {
 
     private val v = Values()
     private val rows = Rows().apply {
-        switch(v::on, "Feature", "Turn it on.") {
+        switch(Bind.of(v::on), "Feature", "Turn it on.") {
             number(v::distance, "Distance", "Set it.", 1f..50f, step = 0.5f)
             keys(v::key, "Key", "Pick it.")
         }
@@ -167,7 +167,7 @@ class SettingsTest {
         assertEquals("Key, key bind, L", byName.getValue("Key").narration(keys))
         assertEquals("Timing, span, 175 to 200", byName.getValue("Timing").narration(keys))
         val more = Rows().apply {
-            fold("f", "Fold", "More.") { switch(v::other, "Other", "Turn it on.") }
+            fold("f", "Fold", "More.") { switch(Bind.of(v::other), "Other", "Turn it on.") }
             action("moveHud", "Move HUD", "Drag a block.", button = "Move") {}
         }.rows
         assertEquals("Fold, fold, collapsed", more[0].narration(keys))
