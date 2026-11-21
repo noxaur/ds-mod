@@ -675,7 +675,6 @@
              + slot 20: ACTION outline on Confirm
 +   3.9s > Queued Refined End Stone! It starts automatically when a Forge slot finishes.
 +   3.9s > (slot 50) 4 x Enchanted End Stone
-             - slot 20
 +   3.9s > (opened "The Forge", 90 slots)
 +   3.9s > (slot 0) 1 x minecraft:black_stained_glass_pane
 +   3.9s > (slot 1) 1 x minecraft:black_stained_glass_pane
@@ -762,6 +761,8 @@
 +   3.9s > (slot 87) 2 x Enchanted Obsidian
 +   3.9s > (slot 88) 4 x Obsidian
 +   3.9s > (slot 89) 1 x SkyBlock Menu (Right Click)
+             - slot 20
+             + slot 22: BAD outline on Forge Queue (10/10)
 +   4.4s > (slot 50) emptied
 +   4.6s > (opened "Select Process", 90 slots)
 +   4.6s > (slot 0) 1 x minecraft:black_stained_glass_pane
@@ -849,7 +850,10 @@
 +   4.6s > (slot 87) 2 x Enchanted Obsidian
 +   4.6s > (slot 88) 4 x Obsidian
 +   4.6s > (slot 89) 1 x SkyBlock Menu (Right Click)
+             - slot 22
+             + slot 11: ACTION outline on Refining
 +   4.9s > (slot 11) emptied
+             - slot 11
 +   5.0s > (opened "Refining", 90 slots)
 +   5.0s > (slot 0) 1 x minecraft:black_stained_glass_pane
 +   5.0s > (slot 1) 1 x minecraft:black_stained_glass_pane
@@ -935,8 +939,10 @@
 +   5.0s > (slot 86) 64 x Obsidian
 +   5.0s > (slot 87) 2 x Enchanted Obsidian
 +   5.0s > (slot 88) 4 x Obsidian
+             + slot 10: ACTION outline on Refined End Stone
 +   5.1s > (slot 89) 1 x SkyBlock Menu (Right Click)
 +   5.2s > (slot 10) emptied
+             - slot 10
 +   5.3s > (opened "Confirm Process", 72 slots)
 +   5.3s > (slot 0) 1 x minecraft:black_stained_glass_pane
 +   5.3s > (slot 1) 1 x minecraft:black_stained_glass_pane
@@ -1005,13 +1011,18 @@
 +   5.3s > (slot 69) 2 x Enchanted Obsidian
 +   5.3s > (slot 70) 4 x Obsidian
 +   5.3s > (slot 71) 1 x SkyBlock Menu (Right Click)
+             + slot 20: BAD outline on Confirm
 +   5.6s > (slot 11) emptied
 +   5.7s > (slot 11) 1 x minecraft:black_stained_glass_pane
 +   5.8s > (slot 20) emptied
+             - slot 20
 +   6.0s > Your Forge slots and queue are full.
 +   6.0s > (slot 20) 1 x Confirm
+             + slot 20: BAD outline on Confirm
 +   7.8s > (slot 20) emptied
+             - slot 20
 +   8.0s > (slot 20) 1 x Confirm
+             + slot 20: BAD outline on Confirm
 +   8.0s > Your Forge slots and queue are full.
 +   8.7s > (opened your inventory, 46 slots)
 +   8.7s > (slot 5) 1 x Enderite Helmet
@@ -1054,4 +1065,5 @@
 +   8.7s > (slot 12) emptied
 +   8.7s > (slot 21) emptied
 +   8.7s > (slot 23) 4 x Enchanted End Stone
-saved forge-craft.json = {"amount":1}
+             - slot 20
+saved forge-craft.json = {"amount":5}

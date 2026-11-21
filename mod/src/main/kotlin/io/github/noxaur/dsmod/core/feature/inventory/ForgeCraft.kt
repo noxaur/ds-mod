@@ -24,7 +24,7 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
     }
 
     @Serializable
-    data class Kept(val amount: Int = 1)
+    data class Kept(val amount: Int = 5)
 
     data class Step(val menu: Int, val slot: Int, val blocked: Boolean)
 
@@ -101,7 +101,7 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
         val from = category ?: return
         val materials = materials(item).map { (material, count) -> Material(material, count, seen[material]) }
         recipe = Recipe(from, item, materials)
-        crafted = 0
+        crafted = 1
     }
 
     private fun top() = (feature.container.slots.size - INVENTORY_SLOTS).coerceAtLeast(0)

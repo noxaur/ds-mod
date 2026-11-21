@@ -817,6 +817,7 @@
 +  17.0s > Queued Refined Obsidian! It starts automatically when a Forge slot finishes.
 +  17.0s > (slot 20) 1 x Confirm
 +  17.0s > (slot 69) 2 x Enchanted Obsidian
+             + slot 20: ACTION outline on Confirm
 +  17.1s > (opened "The Forge", 90 slots)
 +  17.1s > (slot 0) 1 x minecraft:black_stained_glass_pane
 +  17.1s > (slot 1) 1 x minecraft:black_stained_glass_pane
@@ -898,6 +899,8 @@
 +  17.1s > (slot 87) 2 x Enchanted Obsidian
 +  17.1s > (slot 88) 4 x Obsidian
 +  17.1s > (slot 89) 1 x SkyBlock Menu (Right Click)
+             - slot 20
+             + slot 22: ACTION outline on Forge Queue (2/10)
 +  17.9s > (opened your inventory, 46 slots)
 +  17.9s > (slot 5) 1 x Enderite Helmet
 +  17.9s > (slot 6) 1 x Enderite Chestplate
@@ -930,4 +933,5 @@
 +  17.9s > (slot 43) 4 x Obsidian
 +  17.9s > (slot 44) 1 x SkyBlock Menu (Right Click)
 +  17.9s > (slot 42) 2 x Enchanted Obsidian
-saved forge-craft.json = {"amount":1}
+             - slot 22
+saved forge-craft.json = {"amount":5}

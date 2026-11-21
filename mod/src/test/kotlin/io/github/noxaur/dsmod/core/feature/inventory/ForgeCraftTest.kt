@@ -94,8 +94,9 @@ class ForgeCraftTest {
 
     @Test
     fun `the amount reached stops the key, and raising it resumes`() {
-        feature.amount = 1
+        feature.amount = 2
         craftByHand()
+        assertEquals(1, feature.crafted)
         select()
         refining()
         confirm()
@@ -103,7 +104,7 @@ class ForgeCraftTest {
         forge(2)
         assertTrue(feature.done)
         assertNull(next())
-        feature.amount = 2
+        feature.amount = 3
         assertEquals(22 to false, next())
     }
 

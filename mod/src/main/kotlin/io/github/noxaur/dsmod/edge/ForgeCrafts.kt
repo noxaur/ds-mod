@@ -76,7 +76,10 @@ object ForgeCrafts {
                     panel.keys.recording -> !(panel.keys.capture(button, mouse = true) || panel.keys.isMouseOver(event.x(), event.y()))
                     panel.field.isFocused && !panel.field.isMouseOver(event.x(), event.y()) -> true.also { panel.commit() }
                     panel.field.isMouseOver(event.x(), event.y()) -> true.also { panel.opening = !panel.field.isFocused }
-                    Keys.isMouse(feature.key.value) && button == feature.key.value -> false.also { press(client, screen) }
+                    Keys.isMouse(feature.key.value) && button == feature.key.value -> false.also {
+                        held += button
+                        press(client, screen)
+                    }
                     else -> true
                 }
             }
@@ -87,7 +90,7 @@ object ForgeCrafts {
             }
             ScreenMouseEvents.allowMouseRelease(screen).register { _, event ->
                 panel.keys.release(event.button())
-                true
+                !(Keys.isMouse(event.button()) && held.remove(event.button()))
             }
             ScreenMouseEvents.allowMouseScroll(screen).register { _, x, y, _, vertical ->
                 if (!panel.shown || vertical == 0.0 || !panel.overAmount(x, y)) return@register true
@@ -100,7 +103,10 @@ object ForgeCrafts {
     private fun key(client: Minecraft, screen: ContainerScreen, panel: Panel, event: KeyEvent): Boolean {
         val key = event.key()
         return when {
-            panel.keys.recording -> true.also { panel.keys.capture(key) }
+            panel.keys.recording -> true.also {
+                held += key
+                panel.keys.capture(key)
+            }
             panel.field.isFocused -> true.also { panel.type(screen, event) }
             screen.focused is EditBox -> false
             Keys.isMouse(feature.key.value) || key != feature.key.value -> false
