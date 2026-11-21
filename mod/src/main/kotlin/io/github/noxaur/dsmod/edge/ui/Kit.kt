@@ -216,6 +216,14 @@ object Kit {
         bevel(g, x, y, width, height, glassFace(t), glassShade(t), glassLight(t))
     }
 
+    fun slotFrame(g: GuiGraphicsExtractor, x: Int, y: Int, glass: Boolean?, size: Int = SLOT_SIZE, alpha: Int = OPAQUE) {
+        when (glass) {
+            null -> {}
+            false -> slot(g, x, y, size, alpha)
+            true -> glassSlot(g, x, y, size, alpha)
+        }
+    }
+
     /** A [slot] on glass: a [glassWell] the size of a slot, painted once per theme as [slot] is. */
     fun glassSlot(g: GuiGraphicsExtractor, x: Int, y: Int, size: Int = SLOT_SIZE, alpha: Int = OPAQUE) {
         if (alpha <= 0) return

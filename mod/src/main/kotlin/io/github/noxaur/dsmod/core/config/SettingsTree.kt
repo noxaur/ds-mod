@@ -20,6 +20,9 @@ import io.github.noxaur.dsmod.core.feature.general.ActivePet
 import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
+import io.github.noxaur.dsmod.core.feature.general.AutoClick
+import io.github.noxaur.dsmod.core.feature.general.AutoLeftClick
+import io.github.noxaur.dsmod.core.feature.general.AutoRightClick
 import io.github.noxaur.dsmod.core.feature.general.CtrlClick
 import io.github.noxaur.dsmod.core.feature.general.DragSimOnly
 import io.github.noxaur.dsmod.core.feature.general.DamageNumbers
@@ -202,6 +205,13 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                         feature(HideExplosions(c))
                     }
                     group(EtherwarpOutline(c), "Etherwarp")
+                    group("Auto Clicker") {
+                        val left = AutoLeftClick(c)
+                        val right = AutoRightClick(c)
+                        AutoClick.pair(left.click, right.click)
+                        feature(left)
+                        feature(right)
+                    }
                     group(AbilityCooldowns(c))
                     group(Animations(c))
                     group(PlayerModel(c))

@@ -21,7 +21,7 @@ object HotdShortcut {
     fun register() {
         ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
             if (screen !is ContainerScreen || screen.menu.rowCount != ROWS || screen.title.string != MENU) return@register
-            val frame = { if (MenuSkin.skins(screen)) MenuSkin.glass(screen) else null }
+            val frame = { if (MenuSkin.skins(screen)) MenuSkin.glass(screen) >= 0 else null }
             SlotControls.add(screen, screen.menu.slots[SLOT], { shown }) { x, y ->
                 KitSlotButton(x, y, NAME, ItemStack(Items.DRAGON_EGG), frame) { PlayerCommands.send("hotd") }.apply {
                     setTooltip(Tooltip.create(text { body(NAME) }.toComponent()))

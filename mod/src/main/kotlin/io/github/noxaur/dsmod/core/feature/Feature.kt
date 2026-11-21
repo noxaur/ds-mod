@@ -233,8 +233,10 @@ class Feature(
     internal inline fun <reified E : Enum<E>> enumList(): List<E> = enumValues<E>().toList()
 
     /** A key or a mouse button, as `KeyBind` holds it. */
-    fun keys(key: String, name: String, description: String, default: Int, dependsOn: Switch? = null): KeyBind =
-        settings.keys(stored(key, default).bind, name, description, key, dependsOn)
+    fun keys(key: String, name: String, description: String, default: Int, dependsOn: Switch? = null, refuses: (Int) -> Boolean = { false }): KeyBind {
+        val bind = stored(key, default).bind
+        return settings.keys(Bind(bind.field, bind.get) { if (!refuses(it)) bind.set(it) }, name, description, key, dependsOn)
+    }
 
     /** Stretches of a scale from 0 to [max], with a tick at each of [ticks]. */
     fun span(key: String, name: String, description: String, default: List<Section>, max: Int, ticks: List<Int> = emptyList()): Span =
