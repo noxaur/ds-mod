@@ -48,7 +48,7 @@ object Slots {
 
     /** The seconds a cooldown shows, built once each. */
     private val counts = HashMap<String, Component>()
-    private var covered = -1
+    private val covered = BitSet()
     private val settings get() = DsModClient.feature<ItemRarity>()
 
     /** Marks slots by their index in the open container's menu, replacing what [id] marked before. */
@@ -65,11 +65,10 @@ object Slots {
     }
 
     /** Whether the slot at [index] in the open menu is hidden, asked for each slot each frame. */
-    fun hides(index: Int) = hidden[index] || index == covered
+    fun hides(index: Int) = hidden[index] || covered[index]
 
-    /** Hides the slot at [index] under a control the mod draws over it, or none at -1, until the menu closes. */
-    fun cover(index: Int) {
-        covered = index
+    fun cover(index: Int, on: Boolean) {
+        covered[index] = on
     }
 
     private fun recount() {
@@ -111,7 +110,7 @@ object Slots {
                 marks.clear()
                 cooldowns = false
                 hidden.clear()
-                covered = -1
+                covered.clear()
             }
         }
     }

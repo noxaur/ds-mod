@@ -38,12 +38,16 @@ class SlotLockTest : FabricClientGameTest {
                 (screen.leftPos + at.x + 8) * scale to (screen.topPos + at.y + 8) * scale
             }
             context.input.setCursorPos(x, y)
-            context.waitTicks(3)
+            context.waitFor { client ->
+                val hovered = ((client.gui.screen() as? ContainerScreenAccessor) ?: return@waitFor false).hoveredSlot
+                hovered != null && hovered.container is Inventory && hovered.containerSlot == slot
+            }
         }
+        val ticksPastDoubleClick = 6
         fun click(slot: Int, button: Int = 0) {
             hover(slot)
             context.input.pressMouse(button)
-            context.waitTicks(3)
+            context.waitTicks(ticksPastDoubleClick)
         }
         fun tap(slot: Int) {
             hover(slot)
@@ -85,7 +89,7 @@ class SlotLockTest : FabricClientGameTest {
                 )) {
                     world.server.runCommand("item replace entity @a $slot with $give")
                 }
-                context.waitTicks(20)
+                context.waitFor { it.player!!.inventory.getItem(23).`is`(Items.DIAMOND_HOE) }
                 open()
 
                 click(0)

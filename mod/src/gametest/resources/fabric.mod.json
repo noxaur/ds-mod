@@ -385,11 +385,15 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.SkyBlockMenuClickTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.MenuTabsTest"
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.ForgeCraftTest"
+        "value": "io.github.noxaur.dsmod.gametest.HotdButtonTest"
       },
       {
         "adapter": "kotlin",
@@ -418,6 +422,10 @@
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.RefusedChatTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.ForgeCraftTest"
       }
     ]
   }

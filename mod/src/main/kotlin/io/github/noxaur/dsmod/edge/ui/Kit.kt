@@ -821,6 +821,10 @@ object Kit {
     /** The wash over the slot under the mouse in a grid the mod draws, as a menu lights its own: white, half through. */
     fun slotHover(g: GuiGraphicsExtractor, x: Int, y: Int) = rect(g, x, y, 16, 16, ARGB.white(HOVER_STRENGTH))
 
+    fun slotHighlightBack(g: GuiGraphicsExtractor, x: Int, y: Int) = g.blitSprite(RenderPipelines.GUI_TEXTURED, HIGHLIGHT_BACK, x - 4, y - 4, 24, 24)
+
+    fun slotHighlightFront(g: GuiGraphicsExtractor, x: Int, y: Int) = g.blitSprite(RenderPipelines.GUI_TEXTURED, HIGHLIGHT_FRONT, x - 4, y - 4, 24, 24)
+
     private fun face(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
         val t = theme
         when (state) {
@@ -909,6 +913,8 @@ object Kit {
     private const val VEIL_ALPHA = 190
     private const val BONE_ALPHA = 90
     private val SLOT_TEXTURE: Identifier = Identifier.fromNamespaceAndPath("dsmod", "kit/slot")
+    private val HIGHLIGHT_BACK: Identifier = Identifier.withDefaultNamespace("container/slot_highlight_back")
+    private val HIGHLIGHT_FRONT: Identifier = Identifier.withDefaultNamespace("container/slot_highlight_front")
     private val GLASS_SLOT_TEXTURE: Identifier = Identifier.fromNamespaceAndPath("dsmod", "kit/glass_slot")
     private const val GLASS_FACE_ALPHA = 80
     private const val GLASS_SHADE_ALPHA = 170

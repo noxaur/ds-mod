@@ -12,13 +12,18 @@
 call edge.DsModClient.onInitializeClient -> edge.CommandKeys.register
     approved by github.com/noxaur 2026-11-16T01:17:00Z
 call edge.DsModClient.onInitializeClient -> edge.ForgeCrafts.register
-    approved by github.com/noxaur 2026-11-21T18:46:00Z
+    approved by github.com/noxaur 2026-11-21T20:37:00Z
 call edge.DsModClient.onInitializeClient -> edge.MenuBack.register
     approved by github.com/noxaur 2026-11-16T01:17:00Z
 call edge.DsModClient.onInitializeClient -> edge.Pings.register
     approved by github.com/noxaur 2026-11-16T19:47:00Z
 call edge.DsModClient.onInitializeClient -> edge.SlotGuards.register
     approved by github.com/noxaur 2026-11-16T08:42:00Z
+call edge.HotdShortcut.register -> edge.MenuBack.filler
+call edge.HotdShortcut.register -> edge.MenuBack.send
+    approved by github.com/noxaur 2026-11-21T18:26:00Z
+call edge.SkyBlockMenuClicks.opens -> edge.MenuBack.send
+    approved by github.com/noxaur 2026-11-21T18:08:00Z
 call edge.profile.ProfileScreen.dress -> edge.profile.ProfileModel.<init>
     approved by github.com/noxaur 2026-11-16T08:42:00Z
 call edge.profile.ProfileScreen.dress -> edge.profile.ProfileModel.dress
@@ -60,10 +65,10 @@ gate edge.ForgeCrafts f61993578eec  ForgeCraft
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
     can refuse the player's input through ScreenMouseEvents.allowMouseScroll
-    approved by github.com/noxaur 2026-11-21T20:17:00Z
+    approved by github.com/noxaur 2026-11-21T20:37:00Z
 gate edge.Hits af5b845f21bf
     can refuse the player's actions through AttackEntityCallback.EVENT
-gate edge.MenuBack e5d60e26f8b1  BackButtons, BetterUi
+gate edge.MenuBack fa3a0582c454  BackButtons, BetterUi
     can refuse or change sent chat through ClientSendMessageEvents.COMMAND
     sends through ClientPacketListener.sendCommand
 gate edge.Pings 374f3f901a23  PerformanceStats
@@ -147,7 +152,7 @@ gate edge.mixin.ItemLayerAccessor 44bd4cac718b
     opens ItemStackRenderState.LayerRenderState's private code
 gate edge.mixin.KeyInputMixin 5e38927bfe13
     hooks KeyboardHandler.keyPress
-    approved by github.com/noxaur 2026-11-21T20:17:00Z
+    approved by github.com/noxaur 2026-11-21T20:37:00Z
 gate edge.mixin.KeyPressMixin f3167d4d9147
     hooks KeyMapping.click
     approved by github.com/noxaur 2026-11-16T08:42:00Z
@@ -192,9 +197,9 @@ gate edge.mixin.ServerPacketsMixin 6b7a36388e18
     hooks ClientPacketListener.handleSystemChat
     hooks ClientPacketListener.setActionBarText
     approved by github.com/noxaur 2026-11-21T00:09:00Z
-gate edge.mixin.SlotClickMixin 4a2f8fda01b4
+gate edge.mixin.SlotClickMixin ec34bb415176
     hooks AbstractContainerScreen.slotClicked
-    approved by github.com/noxaur 2026-11-16T01:17:00Z
+    approved by github.com/noxaur 2026-11-21T18:08:00Z
 gate edge.mixin.SwingSpeedMixin ced2e765eeaf
     hooks LivingEntity.getCurrentSwingDuration
     approved by github.com/noxaur 2026-11-16T01:17:00Z

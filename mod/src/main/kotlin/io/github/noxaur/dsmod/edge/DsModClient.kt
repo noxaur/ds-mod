@@ -183,6 +183,7 @@ object DsModClient : ClientModInitializer {
         MenuSkin.register()
         MenuBack.register()
         TabBar.register()
+        HotdShortcut.register()
         World.register()
         Etherwarps.register()
         Hits.register()

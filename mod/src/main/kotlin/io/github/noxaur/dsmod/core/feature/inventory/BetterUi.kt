@@ -7,5 +7,5 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 
 class BetterUi(config: DsModConfig) : HasFeature {
-    override val feature = Feature(config, "better-ui", Area.ANYWHERE, Store.BETTER_UI, "Turn Back Buttons and Menu Tabs on or off at once.", formerly = listOf("enabled"))
+    override val feature = Feature(config, "better-ui", Area.ANYWHERE, Store.BETTER_UI, "Turn the controls the mod adds to menus on or off at once.", formerly = listOf("enabled"))
 }
