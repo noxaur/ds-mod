@@ -29,12 +29,14 @@ class AutoClicker(config: DsModConfig) : HasFeature {
         private var earned = 1.0
 
         fun tick(on: Boolean, walking: Boolean, pressed: Boolean, down: Boolean): Boolean {
+            val active = on && key.value != KeyBind.NONE
+            val hold = mode.value == KeyMode.HOLD
             val press = pressed && !wasDown
             wasDown = down
-            holding = on && (press || holding && down)
-            toggled = on && toggled != press
+            holding = active && hold && (press || holding && down)
+            toggled = active && !hold && toggled != press
             earned = min(earned + PER_TICK, 1 + PER_TICK)
-            if (!walking || earned < 1 || !(if (mode.value == KeyMode.HOLD) holding else toggled)) return false
+            if (!walking || earned < 1 || !(holding || toggled)) return false
             earned -= 1
             return true
         }

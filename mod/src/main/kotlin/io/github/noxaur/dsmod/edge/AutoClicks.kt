@@ -21,8 +21,7 @@ object AutoClicks {
     fun register() {
         ClientTickEvents.START_CLIENT_TICK.register { client ->
             val on = DsModClient.runs<AutoClicker>()
-            val input = client.player?.input?.keyPresses
-            val walking = on && input != null && client.gui.screen() == null && (input.forward() || input.backward() || input.left() || input.right())
+            val walking = on && client.player != null && client.gui.screen() == null && client.options.let { it.keyUp.isDown || it.keyDown.isDown || it.keyLeft.isDown || it.keyRight.isDown }
             val clicks = triggers(client).filter { (trigger, _) -> trigger.tick(on, walking, trigger in tapped, Keys.held(client, trigger.key.value)) }
             tapped.clear()
             clicking = true

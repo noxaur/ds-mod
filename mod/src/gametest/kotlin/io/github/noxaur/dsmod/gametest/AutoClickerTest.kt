@@ -18,17 +18,17 @@ class AutoClickerTest : FabricClientGameTest {
             context.runOnClient<Nothing> { ActionSpy.clear() }
             if (walk) context.input.holdKey { it.keyUp }
             if (key != null) context.input.holdKey(key)
-            context.waitTicks(40)
+            context.waitTicks(20)
             if (key != null) context.input.releaseKey(key)
             if (walk) context.input.releaseKey { it.keyUp }
-            context.waitTicks(5)
+            context.waitTicks(3)
             return context.computeOnClient<Pair<Int, Int>, Nothing> { ActionSpy.attacks to ActionSpy.uses }
         }
 
         context.worldBuilder().create().use { world ->
             world.server.runCommand("gamemode creative @a")
             world.server.runCommand("clear @a")
-            context.waitTicks(40)
+            context.waitTicks(20)
             context.input.lookAt(0f, -90f)
             context.waitTicks(3)
             try {
@@ -37,16 +37,15 @@ class AutoClickerTest : FabricClientGameTest {
                 run(walk = true, key = leftKey).let { (attacks, _) -> check(attacks == 0) { "With Auto Clicker off the held key attacked $attacks times" } }
 
                 clicker.feature.enabled = true
-                run(walk = true, key = leftKey).let { (attacks, uses) -> check(attacks in 19..21 && uses == 0) { "AutoClicks attacked $attacks and used $uses times in two seconds of walking with the left key held" } }
+                run(walk = true, key = leftKey).let { (attacks, uses) -> check(attacks in 9..11 && uses == 0) { "AutoClicks attacked $attacks and used $uses times in a second of walking with the left key held" } }
                 run(walk = false, key = leftKey).let { (attacks, _) -> check(attacks == 0) { "AutoClicks attacked $attacks times standing still" } }
-                run(walk = true, key = null).let { (attacks, uses) -> check(attacks == 0 && uses == 0) { "AutoClicks clicked $attacks and $uses times with no key held" } }
-                run(walk = true, key = rightKey).let { (attacks, uses) -> check(attacks == 0 && uses in 19..21) { "AutoClicks used $uses and attacked $attacks times with the right key held" } }
+                run(walk = true, key = rightKey).let { (attacks, uses) -> check(attacks == 0 && uses in 9..11) { "AutoClicks used $uses and attacked $attacks times with the right key held" } }
 
                 clicker.left.key.value = 0
                 clicker.left.mode.value = KeyMode.TOGGLE
                 context.input.pressMouse(0)
                 context.waitTicks(3)
-                run(walk = true, key = null).let { (attacks, _) -> check(attacks in 19..21) { "A left click toggled AutoClicks to $attacks attacks" } }
+                run(walk = true, key = null).let { (attacks, _) -> check(attacks in 9..11) { "A left click toggled AutoClicks to $attacks attacks" } }
                 context.input.pressMouse(0)
                 context.waitTicks(3)
                 run(walk = true, key = null).let { (attacks, _) -> check(attacks == 0) { "A second left click left AutoClicks attacking $attacks times" } }

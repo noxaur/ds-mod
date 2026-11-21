@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.general
 
 import io.github.noxaur.dsmod.core.camera.KeyMode
+import io.github.noxaur.dsmod.core.config.KeyBind
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -68,6 +69,21 @@ class AutoClickerTest {
         trigger.mode.value = KeyMode.TOGGLE
         val ticks = clicks(listOf(Tick(pressed = true, down = false), Tick(on = false, down = false)) + List(20) { Tick(down = false) })
         assertEquals(listOf(0), ticks)
+    }
+
+    @Test
+    fun `a press under Hold does not start Toggle`() {
+        clicks(listOf(Tick(pressed = true), Tick(down = false)))
+        trigger.mode.value = KeyMode.TOGGLE
+        assertEquals(emptyList(), clicks(List(20) { Tick(down = false) }))
+    }
+
+    @Test
+    fun `clearing the key ends a toggle`() {
+        trigger.mode.value = KeyMode.TOGGLE
+        clicks(listOf(Tick(pressed = true, down = false)))
+        trigger.key.value = KeyBind.NONE
+        assertEquals(emptyList(), clicks(List(20) { Tick(down = false) }))
     }
 
     @Test
