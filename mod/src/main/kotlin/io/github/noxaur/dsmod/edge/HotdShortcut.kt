@@ -31,7 +31,7 @@ object HotdShortcut {
             button.visible = false
             Screens.getWidgets(screen).add(button)
             ScreenEvents.afterTick(screen).register {
-                button.visible = shown && MenuBack.filler(slot.item)
+                button.visible = shown && MenuBack.filler(slot.item) && screen.menu.carried.isEmpty
                 Slots.cover(SLOT, button.visible)
             }
         }

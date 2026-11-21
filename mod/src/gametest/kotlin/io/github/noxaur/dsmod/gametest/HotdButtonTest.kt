@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.commands.Commands
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 
@@ -47,6 +48,10 @@ class HotdButtonTest : FabricClientGameTest {
             } finally {
                 context.runOnClient<Nothing> { DsModClient.feature<HotdButton>().feature.enabled = true }
             }
+            context.runOnClient<Nothing> { it.player!!.containerMenu.carried = ItemStack(Items.DIRT) }
+            context.waitTicks(2)
+            check(egg(context) == null) { "The egg stayed with an item on the cursor, whose release would land in the pane" }
+            context.runOnClient<Nothing> { it.player!!.containerMenu.carried = ItemStack.EMPTY }
             context.waitTicks(2)
 
             val (x, y) = ServerMenus.corner(context, HotdShortcut.SLOT)
