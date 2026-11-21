@@ -301,9 +301,9 @@ object MenuSkin {
             if (big(screen, slot)) {
                 val x = left + slot.x - 5
                 val y = top + slot.y - 5
-                if (solid) Kit.slot(g, x, y, Kit.RESULT_SLOT_SIZE) else Kit.glassSlot(g, x, y, Kit.RESULT_SLOT_SIZE)
+                Kit.slotFrame(g, x, y, !solid, Kit.RESULT_SLOT_SIZE)
             } else if (!Slots.hides(slot.index) && button(screen, slot.index) == null) {
-                if (solid) Kit.slot(g, left + slot.x - 1, top + slot.y - 1) else Kit.glassSlot(g, left + slot.x - 1, top + slot.y - 1)
+                Kit.slotFrame(g, left + slot.x - 1, top + slot.y - 1, !solid)
             }
         }
         result ?: return@time
