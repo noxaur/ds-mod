@@ -411,7 +411,7 @@ Slot Lock Key and Item Lock Key take any key or mouse button. The server can sti
 
 ### Better UI
 
-Turns Back Buttons, Menu Tabs and SkyBlock Menu Click on or off at once. Each has its own switch too. It leaves how menus look alone, so Menu Theme and Fixed Menu Layout stay as you set them.
+Turns the controls the mod adds to menus on or off at once: Back Buttons, Menu Tabs, SkyBlock Menu Click and HOTD Button. Each has its own switch too. It leaves how menus look alone, so Menu Theme and Fixed Menu Layout stay as you set them.
 
 ### Back Buttons
 
@@ -444,6 +444,10 @@ Set your tabs up under Tabs, below Menu Tabs in the settings. It shows a small m
 Click the SkyBlock Menu item in the last hotbar slot, in your inventory or any menu, and the SkyBlock Menu opens, as if you'd typed `/sbmenu`. The item stays where it is.
 
 <sub>If you hid the item with `/sbmenu off`, the slot works as usual.</sub>
+
+### HOTD Button
+
+A dragon egg in the empty slot at the top left of the Dragon Sim Menu. Clicking it sends `/hotd`, which opens the Heart of the Dragon.
 
 ## Combat
 

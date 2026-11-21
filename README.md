@@ -41,10 +41,11 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - **Item Rarity** – Colors each slot by its item's rarity, in a look you pick or build.
 - **Slot Lock** – Lock slots and items so a misclick can't move or drop them.
 - **Armor Swap Guard** – Stops a right click from swapping the armor you wear.
-- **Better UI** – Turns Back Buttons, Menu Tabs and SkyBlock Menu Click on or off at once.
+- **Better UI** – Turns the controls the mod adds to menus on or off at once.
 - **Menu Tabs** – Your own command tabs and an item search in every menu.
 - **Back Buttons** – Adds Go Back to menus that have none.
 - **SkyBlock Menu Click** – Clicking the SkyBlock Menu item opens the menu instead of picking it up.
+- **HOTD Button** – Opens the Heart of the Dragon from the Dragon Sim Menu.
 - **Menu Theme** – Dark or glass menus, inventory and tooltips.
 - **Fixed Menu Layout** – Go Back, Close and your inventory sit in the same place in every menu.
 - **Hide Glass Panes** – Hides the blank glass panes that pad out menus.
