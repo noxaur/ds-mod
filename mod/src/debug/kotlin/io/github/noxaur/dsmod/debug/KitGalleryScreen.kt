@@ -130,6 +130,12 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
             Kit.checkbox(g, x + 1 + i * 32, oy + 84, true, states[i])
             Kit.checkbox(g, x + 15 + i * 32, oy + 84, false, states[i])
         }
+        Kit.arrow(g, x + 134, oy + 82, 24, 16, 0.5f, Role.BODY.argb())
+        Kit.flame(g, x + 162, oy + 83, 0.6f, Role.WARNING.argb())
+        Kit.thumb(g, x + 162, oy + 99, 6, 10, Kit.State.HOVER)
+        Kit.thumb(g, x + 170, oy + 99, 6, 10, Kit.State.OFF)
+        Kit.bubbles(g, x + 180, oy + 81, 0.5f, Role.BODY.argb())
+        Kit.arrow(g, x + 196, oy + 82, 9, 28, 0.4f, Role.BODY.argb(), down = true)
         Kit.icon(g, Icon.ARROW, x + 214, oy + 81, t.ink, t.inkShadow)
         Kit.slot(g, x + 226, oy + 72, Kit.RESULT_SLOT_SIZE)
         g.item(RESULT, x + 231, oy + 77)
