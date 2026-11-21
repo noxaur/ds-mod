@@ -4,6 +4,7 @@ import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.Boss
 import io.github.noxaur.dsmod.core.game.BossKind
 import io.github.noxaur.dsmod.core.game.EntitySeen
+import io.github.noxaur.dsmod.core.game.SlayerLine
 
 /**
  * Which slayer boss is the player's, one claim that every feature marking bosses shares, so they always agree. The
@@ -30,7 +31,7 @@ class SlayerClaim {
 
     /** Feeds the claim from [feature]'s events. [feature] reads the slayer bosses' entities. */
     fun follow(feature: Feature) {
-        feature.line("☠ SLAYER BOSS SPAWNING!") { now -> current(feature).spawnedAt = now }
+        feature.line(SlayerLine.SPAWNED) { now -> current(feature).spawnedAt = now }
         feature.on<EntitySeen> { seen, now ->
             if (feature.entities.any { it.id == seen.id }) return@on
             val boss = Boss.parse(seen) ?: return@on feature.unparsed(seen.name.plain)

@@ -102,4 +102,20 @@ val rules = listOf(
         ),
         span = Span.FILE,
     ),
+    Rule(
+        id = "protector-by-stage",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        forbid = Regex(""""(Spawned|Resting|Rising)\b"""),
+        fix = "Read the Protector's stage with `ProtectorRow.parse` and compare its `ProtectorStage`. Show a stage by its `label`.",
+        example = """if (row.stage == "Spawned") return""",
+        examples = listOf("""killsLeft("Rising " + tier)"""),
+    ),
+    Rule(
+        id = "slayer-by-line",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        forbid = Regex(""""[^"\n]*SLAYER BOSS"""),
+        fix = "Read the player's own spawn line with `line(SlayerLine.SPAWNED) { .. }`, and every slayer boss line with " +
+            "`line(SlayerLine.head, SlayerLine::parse) { event, now -> .. }`. If the server sends a new one, add it to `SlayerLine` in core/game.",
+        example = """feature.line("☠ SLAYER BOSS SPAWNING!") { alert() }""",
+    ),
 )
