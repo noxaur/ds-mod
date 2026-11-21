@@ -18,6 +18,7 @@ import net.minecraft.tags.ItemTags
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.HumanoidArm
 import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.item.CrossbowItem
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.ProjectileWeaponItem
@@ -164,16 +165,21 @@ object HeldItems {
         pose.scale(-1f, 1f, 1f)
     }
 
-    private val mirrored = IdentityHashMap<List<BakedQuad>, List<BakedQuad>>()
+    private val mirrored = IdentityHashMap<BakedQuad, BakedQuad>()
 
     fun mirrored(quads: List<BakedQuad>): List<BakedQuad> {
-        mirrored[quads]?.let { return it }
-        if (mirrored.size >= MIRRORED_KEPT) mirrored.clear()
-        return quads.map { BakedQuad(it.position0(), it.position3(), it.position2(), it.position1(), it.packedUV0(), it.packedUV3(), it.packedUV2(), it.packedUV1(), it.direction(), it.materialInfo()) }
-            .also { mirrored[quads] = it }
+        if (mirrored.size > MIRRORED_KEPT) mirrored.clear()
+        return quads.map { quad ->
+            mirrored.getOrPut(quad) {
+                BakedQuad(
+                    quad.position0(), quad.position3(), quad.position2(), quad.position1(),
+                    quad.packedUV0(), quad.packedUV3(), quad.packedUV2(), quad.packedUV1(), quad.direction(), quad.materialInfo(),
+                )
+            }
+        }
     }
 
-    private const val MIRRORED_KEPT = 16
+    private const val MIRRORED_KEPT = 4096
 
     private fun isFlatSpriteInHand(t: ItemTransform): Boolean {
         val r = t.rotation()
@@ -239,6 +245,12 @@ object HeldItems {
                 arc(pose, side, attack, 1f)
             }
         }
+        if (attack < CHARGED_CROSSBOW_AT_REST && stack.`is`(Items.CROSSBOW) && CrossbowItem.isCharged(stack)) {
+            pose.translate(side * -0.641864f, 0f, 0f)
+            pose.mulPose(Axis.YP.rotationDegrees(side * 10f))
+        }
         turnAndSize(pose, arm)
     }
+
+    private const val CHARGED_CROSSBOW_AT_REST = 0.001f
 }
