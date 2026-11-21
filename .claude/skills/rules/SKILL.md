@@ -42,6 +42,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | Every feature shows what its transcript says | `FeatureReplayTest` replays each feature's fixtures |
 | A feature that reads nothing from the server has a game test | `FeatureReplayTest` |
 | Every feature class is placed in `SettingsTree` | `FeaturesListedTest` reads the compiled classes |
+| Every on/off setting is a feature | `SettingsTree` refuses a switch outside a feature when it is built |
 | Every feature has a section in the player docs | `RulesTest` |
 | Every feature has a one-line entry in the README | `RulesTest` |
 | Every saved setting, a feature's saved key included, has exactly one row in the settings tree, or is listed as stored only with a reason, and every row has its own id, a Title Case name of three words or fewer and a one-sentence description | `SettingsTreeTest` |

@@ -73,7 +73,7 @@ class HudEditorScreen(
             KitCheckbox(hudScale.right + Kit.GAP, hudScaleY + (Kit.BUTTON_HEIGHT - Kit.CHECKBOX_SIZE) / 2, "Background", DsModClient.runs<HudBackground>()) {
                 DsModClient.feature<HudBackground>().feature.enabled = it
             },
-        )
+        ).apply { active = DsModClient.game.active }
         refresh()
     }
 

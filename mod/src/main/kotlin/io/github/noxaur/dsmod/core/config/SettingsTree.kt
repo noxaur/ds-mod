@@ -298,7 +298,13 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                 }
             }.sections
             for (section in sections) for (group in section.groups) link(group.rows, group.switch)
+            val plain = sections.flatMap { it.groups }.filter { it.switch == null }.flatMap { loose(it.rows) }.filterIsInstance<Switch>()
+            check(plain.isEmpty()) {
+                "Every on/off setting is a feature, so place each of these in SettingsTree as feature(Feature(c)), with its own class in core/feature: ${plain.map { it.id }}"
+            }
             return sections
         }
+
+        private fun loose(rows: List<Setting>): List<Setting> = rows.flatMap { if (it is Switch && it.feature != null) emptyList() else listOf(it) + loose(it.children) }
     }
 }

@@ -12,7 +12,7 @@ The mod's logic imports nothing from Minecraft or Fabric, and only the edge does
 
 ## The mod runs only on dragsim.co
 
-The features that read the server read lines in dragsim.co's own words, so on another server they can only misread them, and a wrong count is saved for good. So the logic turns every feature off away from dragsim.co, in one place rather than once per kind of feature. The edge only reports whether the player reached dragsim.co's address, decided once per connection, and DragSim Only is the one feature that check never turns off. A hardcoded IP was rejected, because it would stop matching the day the server moves.
+The features that read the server read lines in dragsim.co's own words, so on another server they can only misread them, and a wrong count is saved for good. So until the player turns DragSim Only off, the logic turns every feature off away from dragsim.co, in one place rather than once per kind of feature. The edge only reports whether the player reached dragsim.co's address, decided once per connection, and DragSim Only is the one feature that check never turns off. A hardcoded IP was rejected, because it would stop matching the day the server moves.
 
 ## The debug build runs everywhere
 
