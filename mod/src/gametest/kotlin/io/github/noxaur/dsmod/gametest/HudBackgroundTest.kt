@@ -3,6 +3,8 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.core.feature.hud.HudBackground
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
+import io.github.noxaur.dsmod.edge.HudEditorScreen
+import io.github.noxaur.dsmod.edge.ui.KitCheckbox
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import javax.imageio.ImageIO
@@ -37,6 +39,26 @@ class HudBackgroundTest : FabricClientGameTest {
             context.waitTicks(2)
             val again = brightness(context, "hud-background-again")
             check(again < bare - DARKER) { "The plate did not come back with HUD Background on: the corner is $again bright, and $bare bare" }
+
+            try {
+                context.runOnClient<Nothing> {
+                    DsModClient.anyServer = false
+                    DsModClient.openHudEditor()
+                }
+                context.waitForScreen(HudEditorScreen::class.java)
+                val box = context.computeOnClient<KitCheckbox, Nothing> { it.gui.screen()!!.children().filterIsInstance<KitCheckbox>().single() }
+                check(context.computeOnClient<Boolean, Nothing> { !box.active }) { "The Background box can be clicked off dragsim.co, where the HUD draws no plate" }
+                val at = context.computeOnClient<Pair<Double, Double>, Nothing> { (box.x + 5.0) * it.window.guiScale to (box.y + 5.0) * it.window.guiScale }
+                context.input.setCursorPos(at.first, at.second)
+                context.input.pressMouse(0)
+                context.waitTick()
+                check(context.computeOnClient<Boolean, Nothing> { DsModClient.feature<HudBackground>().feature.enabled }) {
+                    "A click on the disabled Background box turned HUD Background off"
+                }
+            } finally {
+                context.runOnClient<Nothing> { DsModClient.anyServer = true }
+                context.setScreen { null }
+            }
         }
     }
 
