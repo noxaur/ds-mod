@@ -14,7 +14,7 @@ class AutoClickTest {
 
     private data class Tick(val walking: Boolean = true, val pressed: Boolean = false, val down: Boolean = true, val on: Boolean = true)
 
-    private fun clicks(ticks: List<Tick>) = ticks.indices.filter { ticks[it].let { t -> trigger.tick(t.on, t.walking, t.pressed, t.down) } }
+    private fun clicks(ticks: List<Tick>) = ticks.indices.filter { ticks[it].let { t -> trigger.tick(t.on, t.walking, t.pressed, t.down) && trigger.spend() } }
 
     private fun held(count: Int, walking: Boolean = true) = listOf(Tick(walking, pressed = true)) + List(count - 1) { Tick(walking) }
 
@@ -28,6 +28,17 @@ class AutoClickTest {
         val ticks = clicks(held(20 * 10))
         assertEquals(0, ticks.first())
         assertTrue(ticks.zipWithNext().all { (a, b) -> b - a in 2..3 })
+    }
+
+    @Test
+    fun `the player's own clicks spend the same 9 point 9 a second`() {
+        assertEquals(990, (0 until 20 * 100).count { trigger.tick(true, false, false, false); trigger.spend() })
+    }
+
+    @Test
+    fun `the player's own clicks on top of auto clicks stay at 9 point 9 a second`() {
+        val ticks = held(20 * 100)
+        assertEquals(990, ticks.sumOf { t -> listOf(trigger.tick(t.on, t.walking, t.pressed, t.down) && trigger.spend(), trigger.spend()).count { it } })
     }
 
     @Test

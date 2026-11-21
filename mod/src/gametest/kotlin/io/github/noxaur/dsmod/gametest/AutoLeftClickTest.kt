@@ -16,10 +16,12 @@ class AutoLeftClickTest : FabricClientGameTest {
             try {
                 left.click.key.value = key
                 context.autoClicks(walk = true, key = key).let { (attacks, _) -> check(attacks == 0) { "With Auto Left Click off the held key attacked $attacks times" } }
+                context.ownClicks(0).let { (attacks, _) -> check(attacks == 20) { "With Auto Left Click off ClickCapMixin let $attacks of 20 left clicks through" } }
 
                 left.feature.enabled = true
                 context.autoClicks(walk = true, key = key).let { (attacks, uses) -> check(attacks in 9..11 && uses == 0) { "AutoClicks attacked $attacks and used $uses times in a second of walking with the key held" } }
                 context.autoClicks(walk = false, key = key).let { (attacks, _) -> check(attacks == 0) { "AutoClicks attacked $attacks times standing still" } }
+                context.ownClicks(0).let { (attacks, _) -> check(attacks in 9..11) { "ClickCapMixin let $attacks of 20 left clicks in a second through" } }
 
                 left.click.key.value = 0
                 left.click.mode.value = KeyMode.TOGGLE

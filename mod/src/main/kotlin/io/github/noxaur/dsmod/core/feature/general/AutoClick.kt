@@ -24,7 +24,11 @@ class AutoClick(feature: Feature, id: String, button: String, other: String, def
         wasDown = down
         toggled = active && !hold && toggled != press
         earned = min(earned + PER_TICK, 1 + PER_TICK)
-        if (!walking || earned < 1 || !(if (hold) active && down else toggled)) return false
+        return walking && earned >= 1 && if (hold) active && down else toggled
+    }
+
+    fun spend(): Boolean {
+        if (earned < 1) return false
         earned -= 1
         return true
     }
