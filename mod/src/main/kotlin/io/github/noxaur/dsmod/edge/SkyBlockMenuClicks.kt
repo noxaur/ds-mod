@@ -17,7 +17,7 @@ object SkyBlockMenuClicks {
         if (!DsModClient.runs<BetterUi>() || !DsModClient.runs<SkyBlockMenuClick>()) return false
         val id = slot.item.get(DataComponents.CUSTOM_DATA)?.copyTag()?.getCompoundOrEmpty("item_data")?.getStringOr("item_id", "")
         if (id != ITEM_ID) return false
-        MenuBack.send(COMMAND)
+        PlayerCommands.send(COMMAND)
         return true
     }
 }
