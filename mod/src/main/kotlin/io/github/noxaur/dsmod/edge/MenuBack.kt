@@ -14,9 +14,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
-import net.minecraft.core.component.DataComponents
 import net.minecraft.world.inventory.AbstractContainerMenu
-import net.minecraft.world.item.ItemStack
 
 /**
  * Back Buttons, under Better UI. A chest menu the server gave no Go Back gets a button where Go Back sits in the server's menus, in the
@@ -46,7 +44,7 @@ object MenuBack {
             val command = back ?: return@register
             if (screen !is ContainerScreen) return@register
             val chest = screen.menu.slots.subList(0, screen.menu.rowCount * 9)
-            SlotControls.add(screen, chest[chest.size - 6], { enabled && chest.none { named(it.item) } }) { x, y ->
+            SlotControls.add(screen, chest[chest.size - 6], { enabled && chest.none { it.item.plainName == GO_BACK } }) { x, y ->
                 KitButton(x, y, Icon.BACK, GO_BACK) { send(command) }.apply {
                     setTooltip(Tooltip.create(text { body(GO_BACK); muted("\nSends /$command."); action("\nClick to go back.") }.toComponent()))
                     glass = { MenuSkin.glass(screen) >= 0 }
@@ -54,8 +52,6 @@ object MenuBack {
             }
         }
     }
-
-    private fun named(stack: ItemStack) = stack.get(DataComponents.CUSTOM_NAME)?.string == GO_BACK
 
     /** The command that opened the menu of [screen], or null when none did or it is not the menu open now. */
     fun opener(screen: AbstractContainerScreen<*>) = if (screen.menu === menu) trail.opener else null
