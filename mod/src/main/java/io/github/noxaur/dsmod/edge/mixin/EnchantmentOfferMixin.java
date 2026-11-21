@@ -23,7 +23,7 @@ abstract class EnchantmentOfferMixin {
         return MenuSkin.INSTANCE.offerShadow((AbstractContainerScreen<?>) (Object) this, shadow);
     }
 
-    @WrapOperation(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Ljava/lang/String;IIII)V"))
+    @WrapOperation(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)V"))
     private void dsmod$cost(GuiGraphicsExtractor graphics, Font font, String cost, int x, int y, int color, Operation<Void> original) {
         AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) (Object) this;
         if (MenuSkin.INSTANCE.skins(screen)) graphics.text(font, cost, x, y, MenuSkin.INSTANCE.offerInk(screen, color), MenuSkin.INSTANCE.offerShadow(screen, true));
