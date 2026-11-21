@@ -87,13 +87,53 @@ class RedactCaptureTest {
     }
 
     @Test
-    fun `a speaker on a later line of a message is typed text there, and the other lines stay`() {
+    fun `a speaker whom no other line names loses both their name and their words`() {
         val out = redact(
-            captureLine(1, TabList(listOf(text("The End"), text("Alice"), text("Info")))),
-            captureLine(2, SystemMessage(text("✦ ACTIVE BOOSTERS ✦\nEveryone: +40% dungeon drops.\nAlice says: psst\nActivator: +300%"))),
+            captureLine(1, SystemMessage(text("[DRAGON] Zed: meet me at spawn"))),
+            captureLine(2, SystemMessage(text("Quill: 3/2/2"))),
+            captureLine(3, SystemMessage(ServerText(ServerSpan("[VIP] Yara: ", 0x55FF55), ServerSpan("Void Upgrade Stone", 0xFFAA00), ServerSpan(" selling", 0xFFFFFF)))),
+            captureLine(4, SystemMessage(text("Party members (2)\nGuild > Wren [OFFICER]: on my way"))),
+        )
+        val all = out.joinToString("\n")
+
+        assertFalse(listOf("Zed", "Quill", "Yara", "Wren", "spawn", "3/2/2", "Void", "selling", "my way").any { it in all }, all)
+        assertEquals(
+            listOf("[DRAGON] Player1: hello", "Player2: hello", "[VIP] Player3: hello", "Party members (2)\nGuild > Player4 [OFFICER]: hello"),
+            plains(out).map { it.plain },
+        )
+    }
+
+    @Test
+    fun `a line of a shape no capture shows loses its words and every word before them`() {
+        val out = redact(
+            captureLine(1, SystemMessage(text("Alice whispers to you: secret123"))),
+            captureLine(2, SystemMessage(ServerText(ServerSpan("From "), ServerSpan("[MVP+] Bob", 0x55FFFF), ServerSpan(": "), ServerSpan("meet me at ", italic = true), ServerSpan("spawn")))),
+            captureLine(3, SystemMessage(text("Co-op > Carol: psst"))),
+            captureLine(4, SystemMessage(ServerText(ServerSpan("The run failed: Everyone died. Returning to the Dungeon Hub in 20s.", 0xFF5555)))),
+        )
+        val all = out.joinToString("\n")
+
+        assertFalse(listOf("Alice", "Bob", "Carol", "secret123", "meet me", "spawn", "psst").any { it in all }, all)
+        assertEquals(
+            listOf("Player1 Player2 to Player3: hello", "Player4 [MVP+] Player5: hello", "Co-op > Player6: hello", "Player7 Player8 Player9: hello"),
+            plains(out).map { it.plain },
+        )
+        assertEquals("hello", plains(out)[1].spans.last().text, "the typed text is gone from the spans too")
+    }
+
+    @Test
+    fun `the server's own lines keep their words, though a player is called what they start with`() {
+        val out = redact(
+            captureLine(1, TabList(listOf(text("The End"), text("[VIP] Everyone"), text("Info")))),
+            captureLine(2, SystemMessage(text("                    Everyone: +50% dungeon drops."))),
+            captureLine(3, SystemMessage(text("[BOSS] Old Dragon: I call upon the god of thunder.. Kill them all!"))),
+            captureLine(4, SystemMessage(text("Auto-Slayer disabled."))),
         )
 
-        assertEquals(listOf("✦ ACTIVE BOOSTERS ✦\nEveryone: +40% dungeon drops.\nPlayer1 says: hello\nActivator: +300%"), plains(out).map { it.plain })
+        assertEquals(
+            listOf("                    Player1: +50% dungeon drops.", "[BOSS] Old Dragon: I call upon the god of thunder.. Kill them all!", "Auto-Slayer disabled."),
+            plains(out).map { it.plain },
+        )
     }
 
     @Test
@@ -186,35 +226,6 @@ class RedactCaptureTest {
     }
 
     private fun plains(out: List<String>) = out.mapNotNull(::readCaptureLine).mapNotNull { (it.event as? SystemMessage)?.text }
-
-    @Test
-    fun `whatever follows a known name and a colon is typed text, in a line no rule knows`() {
-        val tab = captureLine(1, TabList(listOf(text("The End"), text("[MVP+] Alice [IRON]"), text("Bob"), text("Info"))))
-        val out = redact(
-            tab,
-            captureLine(2, SystemMessage(text("Alice whispers to you: secret123"))),
-            captureLine(3, SystemMessage(ServerText(ServerSpan("From "), ServerSpan("[MVP+] Alice", 0x55FFFF), ServerSpan(": "), ServerSpan("meet me at ", italic = true), ServerSpan("spawn")))),
-            captureLine(4, SystemMessage(text("You whisper to Bob: psst"))),
-            captureLine(5, SystemMessage(text("Party > Bob joined the party"))),
-            captureLine(6, SystemMessage(text("The Protector is rising: Tier 3/5"))),
-            own = setOf("Steve"),
-        )
-        val all = out.joinToString("\n")
-
-        assertFalse(listOf("Alice", "Bob", "secret123", "meet me", "spawn", "psst").any { it in all }, all)
-        assertEquals(
-            listOf(
-                "Player1 whispers to you: hello",
-                "From [MVP+] Player1: hello",
-                "You whisper to Player2: hello",
-                // A name with no typed message keeps its line, and a line that names nobody is not chat.
-                "Party > Player2 joined the party",
-                "The Protector is rising: Tier 3/5",
-            ),
-            plains(out).map { it.plain },
-        )
-        assertEquals("hello", plains(out)[1].spans.last().text, "the typed text is gone from the spans too")
-    }
 
     @Test
     fun `a name split across the pieces of a component is gone from the component too`() {

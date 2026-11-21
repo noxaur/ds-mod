@@ -57,6 +57,7 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     /** What an item's lore says, worked out once per stack: the keys of its abilities, its charge and whether it is any set's helmet. */
     private class Read(val keys: List<String>, val abilities: List<Known>, val charge: SetCharge?, val anySet: Boolean)
 
+    private val clock = ServerClock(feature)
     private val reads = IdentityHashMap<Item, Read>()
     private val known = HashMap<String, Known>()
     private val timers = HashMap<String, Timer>()
@@ -76,12 +77,16 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     private var marked = true
     private var marks = emptyMap<Int, SlotMark>()
     private var marksUntil = Long.MAX_VALUE
+    private var marksClock = -1
 
     init {
         feature.on<ContainerOpened> { _, _ -> stale = true }
         feature.on<SlotChanged> { _, _ -> stale = true }
         // Also run when the feature is switched off, which stops the container events, so it reads the items again.
-        feature.on<WorldChanged> { _, _ -> stale = true }
+        feature.on<WorldChanged> { _, now ->
+            stale = true
+            clock.clear(now)
+        }
         feature.on<ActionBar> { bar, now ->
             val plain = bar.text.plain
             val cast = Abilities.cast(plain)
@@ -100,8 +105,9 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
             val bonus = charge ?: return@on
             val key = bonus.name.lowercase()
             val running = timers[key]
-            if (running != null && now < running.end) return@on
-            timers[key] = Timer(key, bonus.name, bonus.millis, now, now + bonus.millis)
+            val at = clock.millis(now)
+            if (running != null && at < running.end) return@on
+            timers[key] = Timer(key, bonus.name, bonus.millis, at, at + bonus.millis)
             marked = true
         }
     }
@@ -113,10 +119,11 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
         // A heading's length is read again with the items, and a loose one only here, so look it up from the items now.
         val ability = (if (key in loreNamed) unheaded(name) else null) ?: known[key] ?: unheaded(name) ?: return
         val running = timers[key]
+        val at = clock.millis(now)
         // Soulcry's chat line and its action bar part tell of one use a tick or two apart.
-        if (running != null && now - running.start < SAME_USE_MILLIS && now < running.end) return
+        if (running != null && at - running.start < SAME_USE_MILLIS && at < running.end) return
         val length = learned[key]?.takeIf { it.lore == ability.millis }?.millis ?: ability.millis
-        timers[key] = Timer(key, ability.name, ability.millis, now, now + length)
+        timers[key] = Timer(key, ability.name, ability.millis, at, at + length)
         marked = true
     }
 
@@ -126,9 +133,10 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
      * Two that close together are left alone.
      */
     private fun refused(left: Long, now: Long) {
-        val end = now + left
+        val at = clock.millis(now)
+        val end = at + left
         val near = timers.values
-            .filter { left <= it.lore * 3 / 2 + SLACK_MILLIS && now - it.start <= it.lore * 2 + SLACK_MILLIS }
+            .filter { left <= it.lore * 3 / 2 + SLACK_MILLIS && at - it.start <= it.lore * 2 + SLACK_MILLIS }
             .sortedBy { abs(it.end - end) }
         val timer = near.firstOrNull() ?: return
         if (near.size > 1 && abs(near[1].end - end) - abs(timer.end - end) < SLACK_MILLIS / 2) return
@@ -138,18 +146,19 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
         if (ran in timer.lore / 2..timer.lore * 3 / 2 && abs(ran - timer.lore) >= maxOf(LEARN_MILLIS, timer.lore / 10)) {
             learned[timer.key] = Learned(timer.lore, ran)
         }
-        if (now < end) timer.alerted = false
+        if (at < end) timer.alerted = false
         marked = true
     }
 
     private fun ready(now: Long) {
         if (!readyAlert.value) return
+        val at = clock.millis(now)
         val from = (alertFrom.value * 1000).toLong()
         for (timer in timers.values) {
-            if (timer.alerted || now < timer.end || timer.lore < from) continue
+            if (timer.alerted || at < timer.end || timer.lore < from) continue
             timer.alerted = true
             // Only a cooldown that ended just now is news.
-            if (now - timer.end > READY_MILLIS) continue
+            if (at - timer.end > READY_MILLIS) continue
             feature.alert(text { good("${timer.name} Ready!") }, text { value(timer.name); body(" is ready.") })
         }
     }
@@ -207,13 +216,14 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
         read()
         if (!list.value) return null
         val from = (shortest.value * 1000).toLong()
-        val shown = timers.values.filter { it.lore >= from && now - it.end < READY_MILLIS }.sortedBy { it.end }
+        val at = clock.millis(now)
+        val shown = timers.values.filter { it.lore >= from && at - it.end < READY_MILLIS }.sortedBy { it.end }
         if (shown.isEmpty()) return null
         return feature.block {
             for (timer in shown) {
-                val left = timer.end - now
+                val left = timer.end - at
                 if (left > 0) {
-                    bar(timer.name, left.toFloat() / (timer.end - timer.start)) { value(seconds(left)) }
+                    bar(timer.name, left.toFloat() / (timer.end - timer.start)) { value(seconds(clock.wall(left))) }
                 } else {
                     row(timer.name) { good("Ready") }
                 }
@@ -224,8 +234,10 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     fun slots(now: Long): Map<Int, SlotMark> {
         read()
         if (!onItems.value) return emptyMap()
-        if (!marked && now < marksUntil) return marks
+        if (!marked && clock.updates == marksClock && now < marksUntil) return marks
         marked = false
+        marksClock = clock.updates
+        val at = clock.millis(now)
         val next = HashMap<Int, SlotMark>()
         var until = Long.MAX_VALUE
         val slots = feature.container.slots
@@ -234,16 +246,17 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
             var timer: Timer? = null
             for (key in read(item).keys) {
                 val t = timers[key] ?: continue
-                if (now < t.end && (timer == null || t.end > timer.end)) timer = t
+                if (at < t.end && (timer == null || t.end > timer.end)) timer = t
             }
             for (key in loreNamed) {
                 val t = timers[key] ?: continue
-                if (now >= t.end || timer != null && t.end <= timer.end || item.lore.none { it.plain.contains(t.name, ignoreCase = true) }) continue
+                if (at >= t.end || timer != null && t.end <= timer.end || item.lore.none { it.plain.contains(t.name, ignoreCase = true) }) continue
                 timer = t
             }
             timer ?: continue
-            next[slot] = SlotMark.cooldown(timer.start, timer.end)
-            until = minOf(until, timer.end)
+            val end = now + clock.wall(timer.end - at)
+            next[slot] = SlotMark.cooldown(end - clock.wall(timer.end - timer.start), end)
+            until = minOf(until, end)
         }
         marks = next
         marksUntil = until

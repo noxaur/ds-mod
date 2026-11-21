@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.gametest.HeldItemScene.Companion.changed
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.minecraft.client.CameraType
 import net.minecraft.world.effect.MobEffects
 
 /**
@@ -64,6 +65,15 @@ class AnimationsTest : FabricClientGameTest {
         animations.swingSpeed.value = 2f
         check(!lasts(4)) { "At twice the speed the swing lasted past 4 ticks" }
         animations.swingSpeed.value = 1f
+
+        fun view(type: CameraType) = context.runOnClient<Nothing> { it.options.cameraType = type }
+        view(CameraType.THIRD_PERSON_BACK)
+        animations.swingSpeed.value = 0.5f
+        check(!lasts(9)) { "Swing Speed slowed the player's own arm in third person" }
+        animations.swingSpeed.value = 2f
+        check(lasts(4)) { "Swing Speed sped up the player's own arm in third person" }
+        animations.swingSpeed.value = 1f
+        view(CameraType.FIRST_PERSON)
 
         command("effect give @a haste infinite 2")
         context.waitFor { it.player!!.hasEffect(MobEffects.HASTE) }

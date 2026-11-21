@@ -11,6 +11,7 @@ import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Hit
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.ServerSpan
+import io.github.noxaur.dsmod.core.game.ServerTime
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.SetCharge
 import io.github.noxaur.dsmod.core.game.SlotChanged
@@ -212,6 +213,57 @@ class AbilityCooldownsTest {
         post(*inventory(6 to riftwalker("chestplate", 3), 7 to riftwalker("leggings", 3), 8 to riftwalker("boots", 3)))
         post(Hit("minecraft:enderman"))
         assertNull(readout.hud)
+    }
+
+    private var tick = 0L
+    private var rate = 20L
+
+    private fun serverSecond(ticks: Long) {
+        at(1_000)
+        tick += ticks
+        post(ServerTime(tick))
+    }
+
+    private fun castGiantsSlam() {
+        post(*inventory(36 to weapon("Giant's Sword", "Giant's Slam", "10s")))
+        post(ServerTime(tick))
+        serverSecond(rate)
+        post(ActionBar(line("-100 Mana (Giant's Slam)")))
+    }
+
+    @Test
+    fun `a lagging server does not end the cooldown by the wall clock`() {
+        rate = 10
+        castGiantsSlam()
+        assertEquals(listOf("Giant's Slam: 20s"), rows)
+        repeat(10) { serverSecond(10) }
+        assertEquals(listOf("Giant's Slam: 10s"), rows)
+        assertEquals(SlotCooldown(time - 10_000, time + 10_000), readout.slots.getValue(36).cooldown)
+        repeat(9) { serverSecond(10) }
+        assertEquals(listOf("Giant's Slam: 1.0s"), rows)
+        serverSecond(10)
+        assertEquals(listOf("Giant's Slam: Ready"), rows)
+    }
+
+    @Test
+    fun `between the server's time updates the timer counts down smoothly`() {
+        rate = 20
+        castGiantsSlam()
+        assertEquals(listOf("Giant's Slam: 10s"), rows)
+        at(500)
+        assertEquals(listOf("Giant's Slam: 9.5s"), rows)
+        at(500)
+        post(ServerTime(tick + rate))
+        assertEquals(listOf("Giant's Slam: 9.0s"), rows)
+    }
+
+    @Test
+    fun `a refusal puts the timer on the server's count while it lags`() {
+        rate = 10
+        castGiantsSlam()
+        serverSecond(10)
+        post(SystemMessage(line("This ability is on cooldown for 7s")))
+        assertEquals(listOf("Giant's Slam: 14s"), rows)
     }
 
     @Test
