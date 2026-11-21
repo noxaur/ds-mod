@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.core.feature
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.contribute.Places
+import io.github.noxaur.dsmod.core.feature.general.DragSimOnly
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState
@@ -41,7 +42,11 @@ data class Hidden(val told: Set<String> = emptySet())
  * filters match.
  * While [active] is false every feature is treated as switched off, which is how the edge keeps the mod to dragsim.co.
  */
-class Game(private val features: List<Feature>, val metrics: Metrics = Metrics(), private val active: () -> Boolean = { true }) {
+class Game(private val features: List<Feature>, val metrics: Metrics = Metrics(), private val connected: () -> Boolean = { true }) {
+    private val dragSimOnly = features.firstOrNull { it.id == DragSimOnly.ID }
+
+    val active: Boolean get() = connected() || dragSimOnly?.enabled != true
+
     class Readout(val feature: Feature) {
         internal val metric = "${feature.id}.hud"
         internal val slotsMetric = "${feature.id}.slots"
@@ -111,7 +116,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             it.inArea = { it.area.holds(tab, sidebar) }
             it.container = container
             it.messages = messages
-            it.gate = active
+            if (it !== dragSimOnly) it.gate = { active }
             it.worlds = { worlds }
         }
     }
@@ -122,14 +127,14 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
      * feature is on. A container is wanted only while a feature that handles one is on.
      */
     fun wants(type: Class<out GameEvent>) =
-        tap != null || active() && features.any { it.enabled && (type == TabList::class.java || type == Sidebar::class.java || type in it.handlers) }
+        tap != null || active && features.any { it.enabled && (type == TabList::class.java || type == Sidebar::class.java || type in it.handlers) }
 
     /**
      * Whether a feature would be handed an event of [type] right now, which also takes the player being in the
      * feature's area. A source whose event comes once, such as a block that is already standing, holds it
      * back until this is true, because [post] gives a feature outside its area nothing.
      */
-    fun reaches(type: Class<out GameEvent>) = active() && features.any { it.enabled && type in it.handlers && it.area.holds(tab, sidebar) }
+    fun reaches(type: Class<out GameEvent>) = active && features.any { it.enabled && type in it.handlers && it.area.holds(tab, sidebar) }
 
     /**
      * The filters of the entities a feature reads now, for the edge's tracker: each one's that is on, and every one's
@@ -138,7 +143,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
      */
     fun entityFilters(): List<EntityFilter> {
         val all = tap != null
-        val on = all || active()
+        val on = all || active
         var mask = 0L
         for (i in readers.indices) if (all || on && readers[i].enabled) mask = mask or (1L shl i)
         if (mask != reading) {
@@ -242,10 +247,10 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
      * server it left meanwhile comes first, so it forgets that session before it hears the new one.
      */
     private fun sync(time: Long) {
-        val active = active()
+        val active = active
         for (readout in readouts) {
             val feature = readout.feature
-            val on = active && feature.enabled
+            val on = (active || feature === dragSimOnly) && feature.enabled
             if (readout.on == on) continue
             readout.on = on
             val missed = if (on) listOfNotNull(LeftServer.takeIf { readout.missedLeave }, lastTab, lastSidebar) else listOf(WorldChanged)

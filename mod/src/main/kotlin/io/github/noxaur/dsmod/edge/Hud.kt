@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.feature.hud.HideInF3
 import io.github.noxaur.dsmod.core.hud.BarRow
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudBox
@@ -241,7 +242,7 @@ object Hud {
     val visible: Boolean get() = !Minecraft.getInstance().gui.hud.isHidden && !hiddenInF3()
 
     /** Whether Hide In F3 takes the HUD off now. A HUD the player cannot see can't be pointed at either. */
-    private fun hiddenInF3() = DsModClient.settings.hud.hideInF3 && Minecraft.getInstance().debugOverlay.showDebugScreen()
+    private fun hiddenInF3() = DsModClient.runs<HideInF3>() && Minecraft.getInstance().debugOverlay.showDebugScreen()
 
     /** The block under a point in GUI pixels, topmost first. */
     fun at(px: Double, py: Double): Placed? {

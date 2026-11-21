@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.core.feature.hud.HudBackground
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
@@ -85,10 +86,10 @@ class HudEditorTest : FabricClientGameTest {
             context.input.setCursorPos(box.first, box.second)
             context.input.pressMouse(0)
             context.waitTick()
-            check(!DsModClient.settings.hud.background) { "The checkbox did not turn the background off" }
+            check(!DsModClient.runs<HudBackground>()) { "The checkbox did not turn the background off" }
             context.input.pressMouse(0)
             context.waitTick()
-            check(DsModClient.settings.hud.background) { "The checkbox did not turn the background on" }
+            check(DsModClient.runs<HudBackground>()) { "The checkbox did not turn the background on" }
             context.waitTicks(2)
             context.takeScreenshot("hud-editor-after")
             context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }

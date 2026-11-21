@@ -1,8 +1,13 @@
 package io.github.noxaur.dsmod.core.ui
 
+import io.github.noxaur.dsmod.core.config.Bind
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Sections
 import io.github.noxaur.dsmod.core.config.SettingsTree
+import io.github.noxaur.dsmod.core.config.Store
+import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.HasFeature
+import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.text.Role
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -13,7 +18,6 @@ class SettingsSearchTest {
         var a = true
         var b = true
         var c = true
-        var d = true
         var e = true
         var f = 0
         var mode = Mode.HOLD
@@ -28,23 +32,26 @@ class SettingsSearchTest {
     }
 
     private val v = Values()
+    private val look = object : HasFeature {
+        override val feature = Feature(DsModConfig(), "free-look", Area.ANYWHERE, Store.GENERAL, "Look around.")
+    }
     private val sections = Sections().apply {
         section("The End", Role.EPIC) {
             group("Dragon") {
-                switch(v::a, "Dragon Timer", "Show when the egg returns.", id = "timer")
-                switch(v::b, "Protect Eyes", "Ignore a second click.", id = "eyes")
+                switch(Bind.of(v::a), "Dragon Timer", "Show when the egg returns.", id = "timer")
+                switch(Bind.of(v::b), "Protect Eyes", "Ignore a second click.", id = "eyes")
             }
-            group("Drops") { switch(v::c, "Zealot Tracker", "Count your Summoning Eyes.", id = "zealot") }
+            group("Drops") { switch(Bind.of(v::c), "Zealot Tracker", "Count your Summoning Eyes.", id = "zealot") }
         }
         section("Camera", Role.ACTION) {
-            group("Free Look", switch = toggle(v::d, "Free Look", "Look around.")) {
+            group(look) {
                 keys(v::f, "Key", "The key.", id = "key")
                 choice(v::mode, "Mode", "Hold or press.", id = "mode")
             }
         }
         section("Chat", Role.WARNING) {
             group(null) {
-                switch(v::e, "Copy Chat", "Copy messages.", id = "copy") {
+                switch(Bind.of(v::e), "Copy Chat", "Copy messages.", id = "copy") {
                     choice(v::mode, "Copy Mode", "Pick what a copy takes.", id = "copyMode")
                 }
             }

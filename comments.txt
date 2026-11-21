@@ -853,10 +853,7 @@ mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/HudEditorTest.kt: // The
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/HudEditorTest.kt: // The block's drawn scale, in screen pixels per HUD pixel.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/HudEditorTest.kt: // The panel works on the block clicked last: one step up by real mouse, on the stepper's plus.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/HudEditorTest.kt: // edges is nearer the drop than the middle is. Those blocks come back when Done closes the editor.
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/HudKeysTest.kt: /** * The HUD Editor Key opens the editor, where + and - resize the block picked last, and Hide In F3 takes the whole HUD * off while the debug screen is open. The Inventory HUD's grid is the block, since it shows anywhere. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/HudKeysTest.kt: // A click picks the grid, and + and - resize it a screen pixel per HUD pixel at a time.
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/HudKeysTest.kt: // Hide In F3 skips the HUD's whole draw while the debug screen is open, and only then.
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/HudKeysTest.kt: // What the player can't see, the chat's mouse can't point at, drag or read a tooltip from.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/HudLayoutTest.kt: /** * Drives the HUD's layout in the settings over a live block: a drag moves it and keeps it on the screen, Escape * during a drag puts it back, the wheel and + resize it, the arrows nudge it, Backspace stacks it again, a right * press stacks it again, and Move HUD opens the full editor over the game, which returns to the settings. Read the * screenshots in both themes, mid-drag among them. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/HudLayoutTest.kt: // A drag moves the block, by the map's scale, and the place is kept.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/HudLayoutTest.kt: // A right press stacks it again, as in the HUD editor and the chat. An arrow places it once more, and Backspace stacks it.
@@ -950,7 +947,6 @@ mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/OnProfiles.kt: /** The b
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/OnProfiles.kt: /** Types [line] as a command, which is how Fabric decides whether it is the mod's or the server's. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/OnProfiles.kt: // A hidden inventory hides every container but the pets, as the backend hides them.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/OnProfiles.kt: // Each container as the backend answered it for the same player, by its id with the colon a dash.
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/OnlyOnDragSimTest.kt: /** * The release build stays out of a world that is not dragsim.co, here singleplayer, until the player turns * DragSim Only off. The debug build lifts the gate for the other tests, so this one puts it back. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/OwnSettingsTest.kt: /** * Screenshots ds-mod's own settings screen in both themes: a section with its subsections, a row's tooltip, every * section expanded, a search with hits and one with none, the narrow sidebar at GUI scale 3, and the tab bar with * several tabs, a blank one, a drag, an overflow and the 427x240 size. Each tab press, drag and key is checked * against the tabs, and the tabs outlive the screen. Escape goes back to the screen it was opened over. * `SettingRowsTest` drives the rows. Covers [io.github.noxaur.dsmod.edge.ui.KitTabBar]. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/OwnSettingsTest.kt: // A drag past a neighbor's middle moves the tab there, and the tab follows the mouse.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/OwnSettingsTest.kt: // A left press with the Ctrl key, as the system sends it. On macOS the game makes it a right press, and Ctrl Click keeps it.
@@ -1301,7 +1297,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/DsModConfig.kt: /** The f
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/DsModConfig.kt: /** The features' settings, by the section of the file each is saved in. `ConfigFile` reads and writes them beside the fields. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/DsModConfig.kt: /** The ids of the rows the player starred, which the settings' Favorites lists. See `SettingsTree.favorites`. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/DsModConfig.kt: /** Where a feature's HUD block has its plate's top-left corner, as fractions of the scaled screen, and how big it is. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/DsModConfig.kt: /** Whether Ctrl and a left press stay a left press on macOS, where the game makes them a right press. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/Favorites.kt: /** * Favorites while the player looks at it. A setting unstarred there stays listed, with its star empty, until the * player leaves, so the rows below do not move up under a second click, and a slip can be starred again where it is. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/Favorites.kt: /** * The rows of [sections] whose ids are in [shown], under the group each sits in, in the tree's order. A group's * heading switch is a row of its own here. A row under one that shows is left out, since it opens under it. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/Favorites.kt: /** * The settings the player starred, each by its row's id. The settings show them in the order of the tree, so a starred * setting sits where the player would look for it in its own section, and not in the order they were starred. * Nothing starts starred, because the player picks their favorites. */
@@ -1426,7 +1421,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/SettingsTree.kt: /** * A 
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/SettingsTree.kt: /** * Every feature, the class that holds its [Feature], in the order the HUD stacks their blocks in: the features of one area first, since * their blocks are what the player is there for, then the ones that show everywhere, each in the tree's order. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/SettingsTree.kt: /** * Every setting of ds-mod, in the order the settings screen shows them, bound to a [config]. The tree is the only * schema of the settings. A feature declares its own rows, and the tree places it once, as a group of its own or a * row among others, which is also what lists it in [features]: a feature placed nowhere never runs. A setting that * belongs to no feature is a field of `DsModConfig` and one line here with an existing kind. `SettingsTreeTest` fails * on a saved field that no row reaches and that [STORED] does not name. A row for macOS alone is in the tree only * when [mac] is true. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/SettingsTree.kt: /** * [saved] favorites as row ids. A feature's switch was starred under its field's name, as `fullbright`, before * the row took the feature's id, and versions up to 0.1.0 starred MoulConfig's options by path, as * `general.fullbright`. Either becomes the id of the row that edits that field, by its current or a former * key, or of the row that took over a button's job. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/SettingsTree.kt: /** A group that is one feature: its switch beside the heading, [name] by default its title, and its rows under it. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/SettingsTree.kt: /** A page of the settings screen. [icon] colors its placeholder icon until sections get icons of their own. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/SettingsTree.kt: /** Declares the sections of the tree, each with its groups. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/SettingsTree.kt: /** Every row of every system, so a row for one system finds its default, its home and its favorite. */
@@ -1439,7 +1433,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/SettingsTree.kt: /** The 
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/SettingsTree.kt: /** The groups the sidebar lists under the section, which are the ones with a heading. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/SettingsTree.kt: /** The section that holds [switch], such as a feature's, or null for one the tree does not place, as a test's feature. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/SettingsTree.kt: /** The sections, with each row's default taken from the same row of a tree on a fresh config. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/SettingsTree.kt: /** The switch beside a group's heading. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/SettingsTree.kt: /** Whether the game runs on macOS, as Minecraft's own check reads it. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/SettingsTree.kt: // What applies everywhere comes first, then each area of the game, and Contribute last.
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/Stored.kt: /** * One saved value of a feature's, under [key] in its [Store]. Its [default] is the value a fresh config holds, and * [formerly] the keys older versions wrote it under, read when the file lacks [key]. */
@@ -1540,7 +1533,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/Feature.kt: /** The enti
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/Feature.kt: /** The feature's own rows in order, which `SettingsTree` lists under its [switch]. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/Feature.kt: /** The keys older versions saved the switch under, so a player who updates keeps it. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/Feature.kt: /** The marks this feature draws in the world, or none. Called when [hud] is, so return equal marks until they change. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/Feature.kt: /** The name the player knows the feature by: [id] in Title Case, with `hud` as HUD. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/Feature.kt: /** The rows under the switch, declared in order. `SettingsTree` lists them under it, or beside it as a group. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/Feature.kt: /** The section of the config file this feature's settings are saved in. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/Feature.kt: /** The sidebar's `Key: value` rows, read and extended as [tab] is. */
@@ -2205,13 +2197,11 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: /** Set on the n
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: /** Tells the player once, in their first world, that their settings file could not be read and where it went. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: /** The feature of [type], whose settings the edge reads. It is built anew by [restart], so look it up where it is read. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: /** Whether the feature of [type] runs now, which is false off dragsim.co whatever its switch says, and outside its area. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: /** Whether the mod runs on the server the player is on. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: /** Writes the settings to disk. The settings screen does it when it closes, and every editor that changes them. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: /** dragsim.co's addresses, so a player who joins by IP is on it too. Looked up off the client thread, and empty until then. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: // After every listener registered before this one, so the capture's tick covers what this tick posted.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: // Fabric says so on the network thread, and the game drops the tasks queued for its thread as it disconnects.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: // In this order: a request's run cut short is deleted, the recorder finishes what it holds, then an upload gets its moment.
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: // Read once per connection, because the Fullbright mixin asks [active] every frame.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: // The chat screen closes after the command returns, so open on the next tick.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: // The end-of-tick draw runs before readouts replace the marks, so the old world must already be clear.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/DsModClient.kt: // `/dsm` is the short name, as `/sh` is SkyHanni's. `/du` is DragSim Utils', and a player may run both mods.
@@ -2552,7 +2542,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: // The offhand slot co
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/TabBar.kt: /** * Menu Tabs, under Better UI: the player's tabs along the top and bottom of every menu and of the inventory, as * the settings' `TabPlacesEditor` sets them up. A command tab sends its command, and the one whose command opened the menu shown * now joins the panel. The search tab opens a bar along its edge toward the middle of the menu, drawn over the tabs * it covers, which dims every item whose name and lore lack a word of the query. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/TabBar.kt: /** The item a tab shows: [id] from the game's items, or a barrier when there is no such item. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/TabBar.kt: /** What a tab's tooltip says: its name, the command it sends and the click hint. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/TabBar.kt: /** Whether Better UI is on, which every control it holds asks first. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/TabBar.kt: /** Whether the search dims the open menu's slot at [index], because its item does not match. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/TabBar.kt: /** Works out which slots to dim, looking again only at a slot whose stack changed since the last tick. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/TabBar.kt: // A focused field takes every key, so E, Q and the number keys type instead of closing or moving items.

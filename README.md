@@ -8,6 +8,10 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 
 ## Features
 
+### General
+- **DragSim Only** – Runs ds-mod only on dragsim.co, until you turn it off.
+- **Ctrl Click** – Keeps Ctrl and a left click a Ctrl click on a Mac.
+
 ### Camera & Visuals
 - **Fullbright** – Lights caves and nights as brightly as day.
 - **Hide Explosions** – Hides the clouds that explosions throw up.
@@ -23,6 +27,8 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - **Equipment Display** – Shows your armor and pet as icons, on the HUD or beside your hotbar.
 - **Inventory HUD** – Shows your inventory as a grid on the HUD.
 - **Performance Stats** – Shows your FPS, your ping and the server's TPS, with a warning color when they lag.
+- **HUD Background** – A dark plate behind the HUD, so it reads over a bright world.
+- **Hide In F3** – Hides the HUD while the F3 debug screen is open.
 - **Chat HUD Editor** – Move any HUD block with the chat open, or open the full editor with `/dsmod hud`.
 
 ### Chat & Commands
@@ -35,6 +41,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - **Item Rarity** – Colors each slot by its item's rarity, in a look you pick or build.
 - **Slot Lock** – Lock slots and items so a misclick can't move or drop them.
 - **Armor Swap Guard** – Stops a right click from swapping the armor you wear.
+- **Better UI** – Turns Back Buttons and Menu Tabs on or off at once.
 - **Menu Tabs** – Your own command tabs and an item search in every menu.
 - **Back Buttons** – Adds Go Back to menus that have none.
 - **Menu Theme** – Dark or glass menus, inventory and tooltips.
@@ -60,6 +67,9 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - **Slayer Tracker** – Quest progress, the XP to your next level and your average kill time.
 - **Slayer Boss Alert** – A title and a sound when your slayer boss spawns.
 - **Rare Drop Alert** – A title and a sound for drops at or above the rarity you set.
+
+### Contribute
+- **Report Game Data** – Sends game data new to ds-mod to its developers, names removed. Off until you turn it on.
 
 Type `/dsmod` to access the settings menu. [feature guide](docs/user/features.md).
 

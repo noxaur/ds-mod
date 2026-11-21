@@ -26,12 +26,6 @@ class DsModConfig {
     @JvmField
     val hud = Hud()
 
-    @JvmField
-    val betterUi = BetterUi()
-
-    @JvmField
-    val contribute = Contribute()
-
     /** The features' settings, by the section of the file each is saved in. `ConfigFile` reads and writes them beside the fields. */
     @Transient
     private val stores = Store.entries.associateWith(::Stored)
@@ -40,9 +34,6 @@ class DsModConfig {
 
     @Serializable
     class General {
-        @JvmField
-        var onlyOnDragSim = true
-
         /** A key's GLFW code, a mouse button from 0 to 9, or -1 for none, as `KeyBind` holds it. */
         @JvmField
         var settingsKey = NO_KEY
@@ -51,20 +42,10 @@ class DsModConfig {
         @JvmField
         var favoriteKey = KEY_F
 
-        /** Whether Ctrl and a left press stay a left press on macOS, where the game makes them a right press. */
-        @JvmField
-        var ctrlClick = true
-
         private companion object {
             /** GLFW's code for F, NotEnoughUpdates' key for a favorite. */
             const val KEY_F = 70
         }
-    }
-
-    @Serializable
-    class BetterUi {
-        @JvmField
-        var enabled = true
     }
 
     /** Where a feature's HUD block has its plate's top-left corner, as fractions of the scaled screen, and how big it is. */
@@ -84,19 +65,6 @@ class DsModConfig {
 
         @JvmField
         var scale = 1f
-
-        @JvmField
-        var background = true
-
-        @JvmField
-        var hideInF3 = false
-    }
-
-    @Serializable
-    class Contribute {
-
-        @JvmField
-        var reportGameData = false
     }
 }
 

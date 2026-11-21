@@ -160,18 +160,11 @@ class MenuTabsTest : FabricClientGameTest {
                 click(context, book.first + moved, book.second)
                 check(tabs(context).map { it.x } == before) { "The tabs did not come back when the recipe book closed" }
 
-                context.runOnClient<Nothing> { DsModClient.settings.betterUi.enabled = false }
-                context.waitTicks(2)
-                check(tabs(context).isEmpty()) { "The tabs stayed with Better UI off" }
-                context.runOnClient<Nothing> {
-                    DsModClient.settings.betterUi.enabled = true
-                    DsModClient.feature<MenuTabs>().feature.enabled = false
-                }
+                context.runOnClient<Nothing> { DsModClient.feature<MenuTabs>().feature.enabled = false }
                 context.waitTicks(2)
                 check(tabs(context).isEmpty()) { "The tabs stayed with Menu Tabs off" }
             } finally {
                 context.runOnClient<Nothing> {
-                    DsModClient.settings.betterUi.enabled = true
                     DsModClient.feature<MenuTabs>().feature.enabled = true
                     DsModClient.feature<MenuTabs>().tabs.value = TabLayout.DEFAULT
                 }

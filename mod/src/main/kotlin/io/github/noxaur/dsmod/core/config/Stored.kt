@@ -15,6 +15,7 @@ enum class Store(val key: String) {
     LOOT("loot"),
     END("end"),
     SLAYER("slayer"),
+    CONTRIBUTE("contribute"),
     ;
 
     /** The section as a [Bind.field] names it, such as `BetterUi`, which is how `DsModConfig`'s own classes are named. */
