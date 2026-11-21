@@ -182,7 +182,7 @@ object ForgeCrafts {
             val ix = x + Kit.INSET
             val inner = width - Kit.INSET * 2
             Kit.label(g, "Craft", ix, y + 7, Kit.Ink.NORMAL, glass >= 0)
-            fun slot(sx: Int, sy: Int) = if (glass < 0) Kit.slot(g, sx, sy) else Kit.glassSlot(g, sx, sy)
+            fun slot(sx: Int, sy: Int) = Kit.slotFrame(g, sx, sy, glass >= 0)
             fun line(text: String, tx: Int, ty: Int, rgb: Int, role: Role? = null) = g.text(font, text, tx, ty, ink(rgb, light, role), !light)
 
             val top = y + ITEM_ROW

@@ -123,17 +123,13 @@ class KitSlotButton(
     y: Int,
     name: String,
     private val item: ItemStack,
-    private val frame: () -> Int?,
+    private val frame: () -> Boolean?,
     action: () -> Unit,
 ) : Button(x - 1, y - 1, Kit.SLOT_SIZE, Kit.SLOT_SIZE, plain(name), { action() }, { it.get() }) {
     override fun isValidClickButton(button: MouseButtonInfo) = button.button() == 0 || button.button() == 1
 
     override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
-        when (frame()) {
-            null -> {}
-            -1 -> Kit.slot(graphics, x, y)
-            else -> Kit.glassSlot(graphics, x, y)
-        }
+        Kit.slotFrame(graphics, x, y, frame())
         if (isHoveredOrFocused) Kit.slotHighlightBack(graphics, x + 1, y + 1)
         graphics.item(item, x + 1, y + 1)
         if (isHoveredOrFocused) Kit.slotHighlightFront(graphics, x + 1, y + 1)
