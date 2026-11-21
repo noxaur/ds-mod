@@ -34,7 +34,6 @@ import net.minecraft.world.item.component.CustomData
  */
 object SlotGuards {
     private const val FLASH_MILLIS = 300L
-    private const val WORN_FIRST = 36
     /** Ticks to wait for the server to put the next crafting result back, before giving up. */
     private const val RESULT_WAIT = 5
 
@@ -311,7 +310,7 @@ object SlotGuards {
             screen.menu !is InventoryMenu -> null
             else -> {
                 // Armor goes on when its slot is free, then the hotbar and the rows above trade with each other.
-                val worn = client.player?.getEquipmentSlotForItem(slot.item)?.takeIf { it.isArmor }?.let { find(screen, WORN_FIRST + it.index) }
+                val worn = client.player?.getEquipmentSlotForItem(slot.item)?.takeIf { it.isArmor }?.let { find(screen, it.getIndex(Inventory.INVENTORY_SIZE)) }
                 listOfNotNull(worn?.takeIf { own in 0..SlotLocks.ABOVE.last }) + main.filter { own > SlotLocks.ABOVE.last || (own(it) in SlotLocks.HOTBAR) != (own in SlotLocks.HOTBAR) }
             }
         }
