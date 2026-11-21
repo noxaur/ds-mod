@@ -30,7 +30,6 @@ enum class Theme(
     val inkMuted: Int,
     val inkOff: Int,
     val inkMatch: Int,
-    val inkGood: Int,
     val inkBad: Int,
     val inkShadow: Boolean,
     val accent: Int,
@@ -64,7 +63,6 @@ enum class Theme(
         inkMuted = Role.MUTED.argb(),
         inkOff = 0xFF505050.toInt(),
         inkMatch = Role.MATCH.argb(),
-        inkGood = Role.GOOD.argb(),
         inkBad = Role.BAD.argb(),
         inkShadow = true,
         accent = Role.ACTION.argb(),
@@ -99,7 +97,6 @@ enum class Theme(
         inkOff = 0xFF8B8B8B.toInt(),
         // The match role's yellow is lost on a light face, so a dark amber reads as the same highlight.
         inkMatch = 0xFF7A4A00.toInt(),
-        inkGood = 0xFF1F7A1F.toInt(),
         inkBad = 0xFFB3261E.toInt(),
         inkShadow = false,
         accent = 0xFF2F5FC4.toInt(),
