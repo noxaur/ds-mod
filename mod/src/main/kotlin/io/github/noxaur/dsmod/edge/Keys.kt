@@ -12,6 +12,9 @@ import org.lwjgl.glfw.GLFW
 
 /** A bound key as `KeyBind` holds it: a GLFW key code, a mouse button from 0 to 9, or -1 for none. */
 object Keys {
+    @JvmStatic
+    var action = GLFW.GLFW_PRESS
+
     private const val MOUSE_BUTTONS = 9
 
     fun isMouse(bound: Int) = bound in 0..MOUSE_BUTTONS

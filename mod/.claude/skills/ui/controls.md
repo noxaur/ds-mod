@@ -89,6 +89,14 @@ A short sunk track with a raised accent fill, and a field beside it, as MoulConf
 - The wheel over the track or the field steps it, and with Shift it steps ten, as do Left and Right.
 - A press on the field opens it for typing with its value selected, and a digit typed on the row opens it holding that digit. Enter takes the number, clamped and kept to the steps, and the text turns `bad` while it is not a number, as Resourceful Config's does. Escape leaves it as it was, and a press elsewhere takes what was typed.
 
+## Quantity
+
+A count the player sets beside the thing it counts, such as Forge Craft's Amount: a − button, a 20 wide field and a + button, as a shop's quantity picker has. `ForgeCrafts` has it.
+
+- − and + step by one, and are off at the ends of the range.
+- The wheel over the row steps it, and with Shift it steps ten.
+- A press on the field opens it for typing with its value selected. Digits replace the selection, Backspace deletes, Enter or a press elsewhere keeps what was typed, clamped to the range, and Escape leaves it as it was. The menu takes none of these keys while the field is open.
+
 ## Dropdown
 
 A choice of one from a few named values: a raised button with the value and a down arrow, as MoulConfig's and Resourceful Config's dropdowns are.

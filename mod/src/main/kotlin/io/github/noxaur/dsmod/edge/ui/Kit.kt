@@ -747,6 +747,13 @@ object Kit {
         rect(g, x + 16, y, 1, 16, color)
     }
 
+    fun slotOutline(g: GuiGraphicsExtractor, x: Int, y: Int, color: Int) {
+        rect(g, x - 2, y - 2, 20, 1, color)
+        rect(g, x - 2, y + 17, 20, 1, color)
+        rect(g, x - 2, y - 1, 1, 18, color)
+        rect(g, x + 17, y - 1, 1, 18, color)
+    }
+
     /**
      * Rings the 16x16 item area at [x], [y] as the slot the player holds, in the theme's accent, which reads on a light
      * panel and a dark one where white is lost on light gray, or over the inventory's own texture in the Vanilla theme's.

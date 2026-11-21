@@ -181,6 +181,7 @@ object DsModClient : ClientModInitializer {
         Hud.register()
         Slots.register()
         MenuSkin.register()
+        ForgeCrafts.register()
         MenuBack.register()
         TabBar.register()
         HotdShortcut.register()

@@ -504,6 +504,10 @@ class KitKeysButton(
 
     var clash: Role? = null
 
+    var prompt: String? = null
+
+    var glass: () -> Boolean = { false }
+
     init {
         this.keys = keys
     }
@@ -556,10 +560,10 @@ class KitKeysButton(
     }
 
     override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
-        val prompt = if (max == 1) "Press a key" else "Press keys"
+        val prompt = prompt ?: if (max == 1) "Press a key" else "Press keys"
         val text = fit(if (recording) "> ${if (recorded.isEmpty()) prompt else names(recorded)} <" else label, width - 6)
         val state = if (recording) Kit.State.DOWN else Kit.state(active, isHoveredOrFocused, false)
-        Kit.button(graphics, x, y, width, height, state, text, Kit.font.width(text))
+        Kit.button(graphics, x, y, width, height, state, text, Kit.font.width(text), glass())
         clash?.let { Kit.ring(graphics, x - 1, y - 1, width + 2, height + 2, it.argb()) }
     }
 

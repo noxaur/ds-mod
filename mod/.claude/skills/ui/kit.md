@@ -22,6 +22,7 @@ A token names a job, and each theme gives it a color. `Theme.kt` has the values.
 | `thumb`, `thumbLight` | A scrollbar's thumb |
 | `ink`, `inkMuted`, `inkOff` | Labels on a panel or a control: normal, secondary, disabled |
 | `inkMatch` | The words of a search in a label on a panel or a control, such as a dropdown's value. On a well, the `match` role does this job |
+| `inkGood`, `inkBad` | Good and bad text on a panel or a control, such as Done or a count that is short. On a well, the `good` and `bad` roles do this job |
 | `inkShadow` | Whether ink has Minecraft's text shadow. Dark ink on a light panel has none |
 | `accent` | The selected thing |
 | `plate`, `plateEdge` | The translucent backing of the HUD |
@@ -83,6 +84,7 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `field` | Any, 16 tall in a text field | A well that a text field holds, ringed in `hoverOutline` under the mouse or with focus |
 | `label` | One line | A string in ink, or a `Kit.Marked` label with what a search matched in `inkMatch`, cut and measured when the query changes |
 | `slotFill`, `slotBorder`, `slotDim` | 16x16 inside, 18x18 border | Plain marks on a container's slots, colored by role: a fill behind the item, a frame around the slot, a dimming over the item |
+| `slotOutline` | 20x20 | A flat 1px square just outside a slot, corners included and no fill, for the one slot a key clicks next. In `accent`, or `bad` where the click would do nothing |
 | `veil` | Any | A wash in the panel's color over a part that is loading or has nothing to show, with a notice centered on it |
 | `bone` | Any | A block standing in for text or an icon while a layout loads, so the screen keeps its shape under its veil |
 | `cooldown` | 16x16 inside | The game's own cooldown wash over an item: half-white over the part of the wait still to run, draining down. The same in both themes, because it lies on the item |

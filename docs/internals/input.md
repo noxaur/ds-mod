@@ -34,6 +34,10 @@ An item lock is the id the server gives every item that does not stack, so two s
 
 Whether the mod may send input for the player, or refuse the player's own, is the user's decision. So a test reads the compiled release classes and fails on any place that acts that the approved list does not hold as it is now. A lint over the source was rejected, because it caught only the names its author thought of, and an exemption comment let whoever wrote the line approve it. The agent asks the user before it keeps a place that does anything new.
 
+## Forge Craft sends one click per key press
+
+Forge Craft repeats a forge craft from the keyboard, and each press sends one click, the next of the four the player made by hand, so the player still makes every step and sees each menu. One press that sent every click was rejected, because that is automation. A press waits up to a second for the menu it clicked to give way to the next, so a quick second press cannot land on the wrong button, and a menu the server never replaced takes a click again after that.
+
 ## Ctrl Click undoes the game's right click on macOS at the press alone
 
 On macOS the game turns a Ctrl left press into a right press, and counts it so the release that follows turns too. Ctrl Click undoes only the press and leaves every release to the game. Undoing the release too was rejected, because a setting flipped while the button is down would leave the count up and turn a later plain release into a right one.

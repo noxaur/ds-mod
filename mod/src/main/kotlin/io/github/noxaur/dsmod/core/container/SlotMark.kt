@@ -16,6 +16,7 @@ data class SlotMark(
     val rarity: Boolean = false,
     val hide: Boolean = false,
     val cooldown: SlotCooldown? = null,
+    val outline: Boolean = false,
 ) {
     companion object {
         val HIDE = SlotMark(Role.MUTED, hide = true)

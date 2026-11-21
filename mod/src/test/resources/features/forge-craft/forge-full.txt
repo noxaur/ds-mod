@@ -1,0 +1,1069 @@
++   0.0s > (opened "The Forge", 90 slots)
++   0.0s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 4) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 10) 1 x Void Plate
++   0.0s > (slot 11) 1 x Void Plate
++   0.0s > (slot 12) 1 x Void Plate
++   0.0s > (slot 13) 1 x Void Plate
++   0.0s > (slot 14) 1 x Void Plate
++   0.0s > (slot 15) 1 x Drill Motor
++   0.0s > (slot 16) 1 x Refined Obsidian
++   0.0s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 18) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 19) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 20) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 21) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 22) 1 x Forge Queue (8/10)
++   0.0s > (slot 23) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 24) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 25) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 26) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 27) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 28) 1 x Refined Obsidian
++   0.0s > (slot 29) 1 x Refined Obsidian
++   0.0s > (slot 30) 1 x Refined End Stone
++   0.0s > (slot 31) 1 x Refined End Stone
++   0.0s > (slot 32) 1 x Refined End Stone
++   0.0s > (slot 33) 1 x Refined End Stone
++   0.0s > (slot 34) 1 x Refined End Stone
++   0.0s > (slot 35) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 36) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 37) 1 x Refined End Stone
++   0.0s > (slot 38) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 39) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 40) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 41) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 42) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 43) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 44) 1 x minecraft:red_stained_glass_pane
++   0.0s > (slot 45) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 46) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 48) 1 x Claim All
++   0.0s > (slot 49) 1 x Close
++   0.0s > (slot 50) 1 x Forge Recipes
++   0.0s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 52) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 53) 1 x minecraft:black_stained_glass_pane
++   0.0s > (slot 54) 1 x Promising Pickaxe
++   0.0s > (slot 55) 2 x Bejeweled Handle
++   0.0s > (slot 56) 11 x Refined End Stone
++   0.0s > (slot 58) 2 x Fine Amethyst
++   0.0s > (slot 59) 10 x Chaotic Dragon Fragment
++   0.0s > (slot 61) 17 x Enchanted Crying Obsidian
++   0.0s > (slot 63) 1 x Refined Enderite Pickaxe
++   0.0s > (slot 64) 1 x Combat XP Boost
++   0.0s > (slot 67) 54 x Flawed Amethyst
++   0.0s > (slot 68) 36 x Enchanted End Stone
++   0.0s > (slot 69) 64 x Enchanted End Stone
++   0.0s > (slot 70) 1 x Refined Obsidian
++   0.0s > (slot 71) 64 x Enchanted End Stone
++   0.0s > (slot 72) 1 x Flint Arrow
++   0.0s > (slot 73) 64 x Enchanted End Stone
++   0.0s > (slot 74) 1 x Precise Golden Gun
++   0.0s > (slot 75) 2 x End Stone Rose
++   0.0s > (slot 76) 64 x Enchanted End Stone
++   0.0s > (slot 77) 64 x Enchanted End Stone
++   0.0s > (slot 78) 56 x Crying Obsidian
++   0.0s > (slot 79) 2 x Refined Crying Obsidian
++   0.0s > (slot 80) 2 x Ritual Residue
++   0.0s > (slot 81) 1 x Suspicious Giant's Sword
++   0.0s > (slot 82) 1 x Warped Aspect of the Void
++   0.0s > (slot 83) 1 x Fabled Frozen Scythe
++   0.0s > (slot 84) 1 x Fabled Edible Mace
++   0.0s > (slot 85) 1 x Crying Obsidian Pickaxe
++   0.0s > (slot 86) 64 x Obsidian
++   0.0s > (slot 87) 2 x Enchanted Obsidian
++   0.0s > (slot 88) 4 x Obsidian
++   0.0s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   0.2s > (slot 50) emptied
++   0.3s > (opened "Select Process", 90 slots)
++   0.3s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 4) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 11) 1 x Refining
++   0.3s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 13) 1 x Forging
++   0.3s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 15) 1 x Pickaxes
++   0.3s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 19) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 20) 1 x Drills
++   0.3s > (slot 21) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 22) 1 x Drill Parts
++   0.3s > (slot 23) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 24) 1 x Armor
++   0.3s > (slot 25) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 28) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 29) 1 x Reforge Stones
++   0.3s > (slot 30) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 31) 1 x Perfect Gemstones
++   0.3s > (slot 32) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 33) 1 x Other
++   0.3s > (slot 34) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 36) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 37) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 38) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 39) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 40) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 41) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 42) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 43) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 44) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 45) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 46) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 48) 1 x Go Back
++   0.3s > (slot 49) 1 x Close
++   0.3s > (slot 50) 1 x Search
++   0.3s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 52) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 53) 1 x minecraft:black_stained_glass_pane
++   0.3s > (slot 54) 1 x Promising Pickaxe
++   0.3s > (slot 55) 2 x Bejeweled Handle
++   0.3s > (slot 56) 11 x Refined End Stone
++   0.3s > (slot 58) 2 x Fine Amethyst
++   0.3s > (slot 59) 10 x Chaotic Dragon Fragment
++   0.3s > (slot 61) 17 x Enchanted Crying Obsidian
++   0.3s > (slot 63) 1 x Refined Enderite Pickaxe
++   0.3s > (slot 64) 1 x Combat XP Boost
++   0.3s > (slot 67) 54 x Flawed Amethyst
++   0.3s > (slot 68) 36 x Enchanted End Stone
++   0.3s > (slot 69) 64 x Enchanted End Stone
++   0.3s > (slot 70) 1 x Refined Obsidian
++   0.3s > (slot 71) 64 x Enchanted End Stone
++   0.3s > (slot 72) 1 x Flint Arrow
++   0.3s > (slot 73) 64 x Enchanted End Stone
++   0.3s > (slot 74) 1 x Precise Golden Gun
++   0.3s > (slot 75) 2 x End Stone Rose
++   0.3s > (slot 76) 64 x Enchanted End Stone
++   0.3s > (slot 77) 64 x Enchanted End Stone
++   0.3s > (slot 78) 56 x Crying Obsidian
++   0.3s > (slot 79) 2 x Refined Crying Obsidian
++   0.3s > (slot 80) 2 x Ritual Residue
++   0.3s > (slot 81) 1 x Suspicious Giant's Sword
++   0.3s > (slot 82) 1 x Warped Aspect of the Void
++   0.3s > (slot 83) 1 x Fabled Frozen Scythe
++   0.3s > (slot 84) 1 x Fabled Edible Mace
++   0.3s > (slot 85) 1 x Crying Obsidian Pickaxe
++   0.3s > (slot 86) 64 x Obsidian
++   0.3s > (slot 87) 2 x Enchanted Obsidian
++   0.3s > (slot 88) 4 x Obsidian
++   0.3s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   0.8s > (slot 11) emptied
++   0.9s > (opened "Refining", 90 slots)
++   0.9s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 4) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 10) 1 x Refined End Stone
++   0.9s > (slot 11) 1 x Refined Obsidian
++   0.9s > (slot 12) 1 x Refined Crying Obsidian
++   0.9s > (slot 13) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 15) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 19) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 20) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 21) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 22) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 23) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 24) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 25) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 28) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 29) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 30) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 31) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 32) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 33) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 34) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 36) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 37) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 38) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 39) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 40) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 41) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 42) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 43) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 44) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 45) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 46) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 48) 1 x Go Back
++   0.9s > (slot 49) 1 x Close
++   0.9s > (slot 50) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 52) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 53) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 54) 1 x Promising Pickaxe
++   0.9s > (slot 55) 2 x Bejeweled Handle
++   0.9s > (slot 56) 11 x Refined End Stone
++   0.9s > (slot 58) 2 x Fine Amethyst
++   0.9s > (slot 59) 10 x Chaotic Dragon Fragment
++   0.9s > (slot 61) 17 x Enchanted Crying Obsidian
++   0.9s > (slot 63) 1 x Refined Enderite Pickaxe
++   0.9s > (slot 64) 1 x Combat XP Boost
++   0.9s > (slot 67) 54 x Flawed Amethyst
++   0.9s > (slot 68) 36 x Enchanted End Stone
++   0.9s > (slot 69) 64 x Enchanted End Stone
++   0.9s > (slot 70) 1 x Refined Obsidian
++   0.9s > (slot 71) 64 x Enchanted End Stone
++   0.9s > (slot 72) 1 x Flint Arrow
++   0.9s > (slot 73) 64 x Enchanted End Stone
++   0.9s > (slot 74) 1 x Precise Golden Gun
++   0.9s > (slot 75) 2 x End Stone Rose
++   0.9s > (slot 76) 64 x Enchanted End Stone
++   0.9s > (slot 77) 64 x Enchanted End Stone
++   0.9s > (slot 78) 56 x Crying Obsidian
++   0.9s > (slot 79) 2 x Refined Crying Obsidian
++   0.9s > (slot 80) 2 x Ritual Residue
++   0.9s > (slot 81) 1 x Suspicious Giant's Sword
++   0.9s > (slot 82) 1 x Warped Aspect of the Void
++   0.9s > (slot 83) 1 x Fabled Frozen Scythe
++   0.9s > (slot 84) 1 x Fabled Edible Mace
++   0.9s > (slot 85) 1 x Crying Obsidian Pickaxe
++   0.9s > (slot 86) 64 x Obsidian
++   0.9s > (slot 87) 2 x Enchanted Obsidian
++   0.9s > (slot 88) 4 x Obsidian
++   0.9s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   1.1s > (slot 10) emptied
++   1.2s > (opened "Confirm Process", 72 slots)
++   1.2s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 4) 1 x Refined End Stone
++   1.2s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 11) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 13) 16 x Enchanted End Stone
++   1.2s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 15) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 19) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 20) 1 x Confirm
++   1.2s > (slot 21) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 22) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 23) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 24) 1 x Cancel
++   1.2s > (slot 25) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 28) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 29) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 30) 1 x Go Back
++   1.2s > (slot 31) 1 x Close
++   1.2s > (slot 32) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 33) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 34) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 36) 1 x Promising Pickaxe
++   1.2s > (slot 37) 2 x Bejeweled Handle
++   1.2s > (slot 38) 11 x Refined End Stone
++   1.2s > (slot 40) 2 x Fine Amethyst
++   1.2s > (slot 41) 10 x Chaotic Dragon Fragment
++   1.2s > (slot 43) 17 x Enchanted Crying Obsidian
++   1.2s > (slot 45) 1 x Refined Enderite Pickaxe
++   1.2s > (slot 46) 1 x Combat XP Boost
++   1.2s > (slot 49) 54 x Flawed Amethyst
++   1.2s > (slot 50) 36 x Enchanted End Stone
++   1.2s > (slot 51) 64 x Enchanted End Stone
++   1.2s > (slot 52) 1 x Refined Obsidian
++   1.2s > (slot 53) 64 x Enchanted End Stone
++   1.2s > (slot 54) 1 x Flint Arrow
++   1.2s > (slot 55) 64 x Enchanted End Stone
++   1.2s > (slot 56) 1 x Precise Golden Gun
++   1.2s > (slot 57) 2 x End Stone Rose
++   1.2s > (slot 58) 64 x Enchanted End Stone
++   1.2s > (slot 59) 64 x Enchanted End Stone
++   1.2s > (slot 60) 56 x Crying Obsidian
++   1.2s > (slot 61) 2 x Refined Crying Obsidian
++   1.2s > (slot 62) 2 x Ritual Residue
++   1.2s > (slot 63) 1 x Suspicious Giant's Sword
++   1.2s > (slot 64) 1 x Warped Aspect of the Void
++   1.2s > (slot 65) 1 x Fabled Frozen Scythe
++   1.2s > (slot 66) 1 x Fabled Edible Mace
++   1.2s > (slot 67) 1 x Crying Obsidian Pickaxe
++   1.2s > (slot 68) 64 x Obsidian
++   1.2s > (slot 69) 2 x Enchanted Obsidian
++   1.2s > (slot 70) 4 x Obsidian
++   1.2s > (slot 71) 1 x SkyBlock Menu (Right Click)
++   1.6s > (slot 20) emptied
++   1.8s > (slot 20) 1 x Confirm
++   1.8s > Queued Refined End Stone! It starts automatically when a Forge slot finishes.
++   1.8s > (slot 50) 20 x Enchanted End Stone
+             + slot 20: ACTION outline on Confirm
++   1.9s > (opened "The Forge", 90 slots)
++   1.9s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 4) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 10) 1 x Void Plate
++   1.9s > (slot 11) 1 x Void Plate
++   1.9s > (slot 12) 1 x Void Plate
++   1.9s > (slot 13) 1 x Void Plate
++   1.9s > (slot 14) 1 x Void Plate
++   1.9s > (slot 15) 1 x Drill Motor
++   1.9s > (slot 16) 1 x Refined Obsidian
++   1.9s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 18) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 19) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 20) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 21) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 22) 1 x Forge Queue (9/10)
++   1.9s > (slot 23) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 24) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 25) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 26) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 27) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 28) 1 x Refined Obsidian
++   1.9s > (slot 29) 1 x Refined Obsidian
++   1.9s > (slot 30) 1 x Refined End Stone
++   1.9s > (slot 31) 1 x Refined End Stone
++   1.9s > (slot 32) 1 x Refined End Stone
++   1.9s > (slot 33) 1 x Refined End Stone
++   1.9s > (slot 34) 1 x Refined End Stone
++   1.9s > (slot 35) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 36) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 37) 1 x Refined End Stone
++   1.9s > (slot 38) 1 x Refined End Stone
++   1.9s > (slot 39) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 40) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 41) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 42) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 43) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 44) 1 x minecraft:red_stained_glass_pane
++   1.9s > (slot 45) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 46) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 48) 1 x Claim All
++   1.9s > (slot 49) 1 x Close
++   1.9s > (slot 50) 1 x Forge Recipes
++   1.9s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 52) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 53) 1 x minecraft:black_stained_glass_pane
++   1.9s > (slot 54) 1 x Promising Pickaxe
++   1.9s > (slot 55) 2 x Bejeweled Handle
++   1.9s > (slot 56) 11 x Refined End Stone
++   1.9s > (slot 58) 2 x Fine Amethyst
++   1.9s > (slot 59) 10 x Chaotic Dragon Fragment
++   1.9s > (slot 61) 17 x Enchanted Crying Obsidian
++   1.9s > (slot 63) 1 x Refined Enderite Pickaxe
++   1.9s > (slot 64) 1 x Combat XP Boost
++   1.9s > (slot 67) 54 x Flawed Amethyst
++   1.9s > (slot 68) 20 x Enchanted End Stone
++   1.9s > (slot 69) 64 x Enchanted End Stone
++   1.9s > (slot 70) 1 x Refined Obsidian
++   1.9s > (slot 71) 64 x Enchanted End Stone
++   1.9s > (slot 72) 1 x Flint Arrow
++   1.9s > (slot 73) 64 x Enchanted End Stone
++   1.9s > (slot 74) 1 x Precise Golden Gun
++   1.9s > (slot 75) 2 x End Stone Rose
++   1.9s > (slot 76) 64 x Enchanted End Stone
++   1.9s > (slot 77) 64 x Enchanted End Stone
++   1.9s > (slot 78) 56 x Crying Obsidian
++   1.9s > (slot 79) 2 x Refined Crying Obsidian
++   1.9s > (slot 80) 2 x Ritual Residue
++   1.9s > (slot 81) 1 x Suspicious Giant's Sword
++   1.9s > (slot 82) 1 x Warped Aspect of the Void
++   1.9s > (slot 83) 1 x Fabled Frozen Scythe
++   1.9s > (slot 84) 1 x Fabled Edible Mace
++   1.9s > (slot 85) 1 x Crying Obsidian Pickaxe
++   1.9s > (slot 86) 64 x Obsidian
++   1.9s > (slot 87) 2 x Enchanted Obsidian
++   1.9s > (slot 88) 4 x Obsidian
++   1.9s > (slot 89) 1 x SkyBlock Menu (Right Click)
+             - slot 20
+             + slot 22: ACTION outline on Forge Queue (9/10)
++   2.2s > (slot 50) emptied
++   2.4s > (opened "Select Process", 90 slots)
++   2.4s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 4) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 11) 1 x Refining
++   2.4s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 13) 1 x Forging
++   2.4s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 15) 1 x Pickaxes
++   2.4s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 19) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 20) 1 x Drills
++   2.4s > (slot 21) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 22) 1 x Drill Parts
++   2.4s > (slot 23) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 24) 1 x Armor
++   2.4s > (slot 25) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 28) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 29) 1 x Reforge Stones
++   2.4s > (slot 30) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 31) 1 x Perfect Gemstones
++   2.4s > (slot 32) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 33) 1 x Other
++   2.4s > (slot 34) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 36) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 37) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 38) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 39) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 40) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 41) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 42) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 43) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 44) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 45) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 46) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 48) 1 x Go Back
++   2.4s > (slot 49) 1 x Close
++   2.4s > (slot 50) 1 x Search
++   2.4s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 52) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 53) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 54) 1 x Promising Pickaxe
++   2.4s > (slot 55) 2 x Bejeweled Handle
++   2.4s > (slot 56) 11 x Refined End Stone
++   2.4s > (slot 58) 2 x Fine Amethyst
++   2.4s > (slot 59) 10 x Chaotic Dragon Fragment
++   2.4s > (slot 61) 17 x Enchanted Crying Obsidian
++   2.4s > (slot 63) 1 x Refined Enderite Pickaxe
++   2.4s > (slot 64) 1 x Combat XP Boost
++   2.4s > (slot 67) 54 x Flawed Amethyst
++   2.4s > (slot 68) 20 x Enchanted End Stone
++   2.4s > (slot 69) 64 x Enchanted End Stone
++   2.4s > (slot 70) 1 x Refined Obsidian
++   2.4s > (slot 71) 64 x Enchanted End Stone
++   2.4s > (slot 72) 1 x Flint Arrow
++   2.4s > (slot 73) 64 x Enchanted End Stone
++   2.4s > (slot 74) 1 x Precise Golden Gun
++   2.4s > (slot 75) 2 x End Stone Rose
++   2.4s > (slot 76) 64 x Enchanted End Stone
++   2.4s > (slot 77) 64 x Enchanted End Stone
++   2.4s > (slot 78) 56 x Crying Obsidian
++   2.4s > (slot 79) 2 x Refined Crying Obsidian
++   2.4s > (slot 80) 2 x Ritual Residue
++   2.4s > (slot 81) 1 x Suspicious Giant's Sword
++   2.4s > (slot 82) 1 x Warped Aspect of the Void
++   2.4s > (slot 83) 1 x Fabled Frozen Scythe
++   2.4s > (slot 84) 1 x Fabled Edible Mace
++   2.4s > (slot 85) 1 x Crying Obsidian Pickaxe
++   2.4s > (slot 86) 64 x Obsidian
++   2.4s > (slot 87) 2 x Enchanted Obsidian
++   2.4s > (slot 88) 4 x Obsidian
++   2.4s > (slot 89) 1 x SkyBlock Menu (Right Click)
+             - slot 22
+             + slot 11: ACTION outline on Refining
++   2.9s > (slot 11) emptied
+             - slot 11
++   3.0s > (opened "Refining", 90 slots)
++   3.0s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 4) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 10) 1 x Refined End Stone
++   3.0s > (slot 11) 1 x Refined Obsidian
++   3.0s > (slot 12) 1 x Refined Crying Obsidian
++   3.0s > (slot 13) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 15) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 19) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 20) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 21) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 22) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 23) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 24) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 25) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 28) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 29) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 30) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 31) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 32) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 33) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 34) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 36) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 37) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 38) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 39) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 40) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 41) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 42) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 43) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 44) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 45) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 46) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 48) 1 x Go Back
++   3.0s > (slot 49) 1 x Close
++   3.0s > (slot 50) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 52) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 53) 1 x minecraft:black_stained_glass_pane
++   3.0s > (slot 54) 1 x Promising Pickaxe
++   3.0s > (slot 55) 2 x Bejeweled Handle
++   3.0s > (slot 56) 11 x Refined End Stone
++   3.0s > (slot 58) 2 x Fine Amethyst
++   3.0s > (slot 59) 10 x Chaotic Dragon Fragment
++   3.0s > (slot 61) 17 x Enchanted Crying Obsidian
++   3.0s > (slot 63) 1 x Refined Enderite Pickaxe
++   3.0s > (slot 64) 1 x Combat XP Boost
++   3.0s > (slot 67) 54 x Flawed Amethyst
++   3.0s > (slot 68) 20 x Enchanted End Stone
++   3.0s > (slot 69) 64 x Enchanted End Stone
++   3.0s > (slot 70) 1 x Refined Obsidian
++   3.0s > (slot 71) 64 x Enchanted End Stone
++   3.0s > (slot 72) 1 x Flint Arrow
++   3.0s > (slot 73) 64 x Enchanted End Stone
++   3.0s > (slot 74) 1 x Precise Golden Gun
++   3.0s > (slot 75) 2 x End Stone Rose
++   3.0s > (slot 76) 64 x Enchanted End Stone
++   3.0s > (slot 77) 64 x Enchanted End Stone
++   3.0s > (slot 78) 56 x Crying Obsidian
++   3.0s > (slot 79) 2 x Refined Crying Obsidian
++   3.0s > (slot 80) 2 x Ritual Residue
++   3.0s > (slot 81) 1 x Suspicious Giant's Sword
++   3.0s > (slot 82) 1 x Warped Aspect of the Void
++   3.0s > (slot 83) 1 x Fabled Frozen Scythe
++   3.0s > (slot 84) 1 x Fabled Edible Mace
++   3.0s > (slot 85) 1 x Crying Obsidian Pickaxe
++   3.0s > (slot 86) 64 x Obsidian
++   3.0s > (slot 87) 2 x Enchanted Obsidian
++   3.0s > (slot 88) 4 x Obsidian
++   3.0s > (slot 89) 1 x SkyBlock Menu (Right Click)
+             + slot 10: ACTION outline on Refined End Stone
++   3.3s > (slot 10) emptied
+             - slot 10
++   3.4s > (opened "Confirm Process", 72 slots)
++   3.4s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 4) 1 x Refined End Stone
++   3.4s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 11) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 13) 16 x Enchanted End Stone
++   3.4s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 15) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 19) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 20) 1 x Confirm
++   3.4s > (slot 21) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 22) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 23) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 24) 1 x Cancel
++   3.4s > (slot 25) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 28) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 29) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 30) 1 x Go Back
++   3.4s > (slot 31) 1 x Close
++   3.4s > (slot 32) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 33) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 34) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   3.4s > (slot 36) 1 x Promising Pickaxe
++   3.4s > (slot 37) 2 x Bejeweled Handle
++   3.4s > (slot 38) 11 x Refined End Stone
++   3.4s > (slot 40) 2 x Fine Amethyst
++   3.4s > (slot 41) 10 x Chaotic Dragon Fragment
++   3.4s > (slot 43) 17 x Enchanted Crying Obsidian
++   3.4s > (slot 45) 1 x Refined Enderite Pickaxe
++   3.4s > (slot 46) 1 x Combat XP Boost
++   3.4s > (slot 49) 54 x Flawed Amethyst
++   3.4s > (slot 50) 20 x Enchanted End Stone
++   3.4s > (slot 51) 64 x Enchanted End Stone
++   3.4s > (slot 52) 1 x Refined Obsidian
++   3.4s > (slot 53) 64 x Enchanted End Stone
++   3.4s > (slot 54) 1 x Flint Arrow
++   3.4s > (slot 55) 64 x Enchanted End Stone
++   3.4s > (slot 56) 1 x Precise Golden Gun
++   3.4s > (slot 57) 2 x End Stone Rose
++   3.4s > (slot 58) 64 x Enchanted End Stone
++   3.4s > (slot 59) 64 x Enchanted End Stone
++   3.4s > (slot 60) 56 x Crying Obsidian
++   3.4s > (slot 61) 2 x Refined Crying Obsidian
++   3.4s > (slot 62) 2 x Ritual Residue
++   3.4s > (slot 63) 1 x Suspicious Giant's Sword
++   3.4s > (slot 64) 1 x Warped Aspect of the Void
++   3.4s > (slot 65) 1 x Fabled Frozen Scythe
++   3.4s > (slot 66) 1 x Fabled Edible Mace
++   3.4s > (slot 67) 1 x Crying Obsidian Pickaxe
++   3.4s > (slot 68) 64 x Obsidian
++   3.4s > (slot 69) 2 x Enchanted Obsidian
++   3.4s > (slot 70) 4 x Obsidian
++   3.4s > (slot 71) 1 x SkyBlock Menu (Right Click)
+             + slot 20: ACTION outline on Confirm
++   3.7s > (slot 20) emptied
+             - slot 20
++   3.8s > (slot 20) 1 x Confirm
+             + slot 20: ACTION outline on Confirm
++   3.9s > Queued Refined End Stone! It starts automatically when a Forge slot finishes.
++   3.9s > (slot 50) 4 x Enchanted End Stone
++   3.9s > (opened "The Forge", 90 slots)
++   3.9s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 4) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 10) 1 x Void Plate
++   3.9s > (slot 11) 1 x Void Plate
++   3.9s > (slot 12) 1 x Void Plate
++   3.9s > (slot 13) 1 x Void Plate
++   3.9s > (slot 14) 1 x Void Plate
++   3.9s > (slot 15) 1 x Drill Motor
++   3.9s > (slot 16) 1 x Refined Obsidian
++   3.9s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 18) 1 x minecraft:red_stained_glass_pane
++   3.9s > (slot 19) 1 x minecraft:red_stained_glass_pane
++   3.9s > (slot 20) 1 x minecraft:red_stained_glass_pane
++   3.9s > (slot 21) 1 x minecraft:red_stained_glass_pane
++   3.9s > (slot 22) 1 x Forge Queue (10/10)
++   3.9s > (slot 23) 1 x minecraft:red_stained_glass_pane
++   3.9s > (slot 24) 1 x minecraft:red_stained_glass_pane
++   3.9s > (slot 25) 1 x minecraft:red_stained_glass_pane
++   3.9s > (slot 26) 1 x minecraft:red_stained_glass_pane
++   3.9s > (slot 27) 1 x minecraft:red_stained_glass_pane
++   3.9s > (slot 28) 1 x Refined Obsidian
++   3.9s > (slot 29) 1 x Refined Obsidian
++   3.9s > (slot 30) 1 x Refined End Stone
++   3.9s > (slot 31) 1 x Refined End Stone
++   3.9s > (slot 32) 1 x Refined End Stone
++   3.9s > (slot 33) 1 x Refined End Stone
++   3.9s > (slot 34) 1 x Refined End Stone
++   3.9s > (slot 35) 1 x minecraft:red_stained_glass_pane
++   3.9s > (slot 36) 1 x minecraft:red_stained_glass_pane
++   3.9s > (slot 37) 1 x Refined End Stone
++   3.9s > (slot 38) 1 x Refined End Stone
++   3.9s > (slot 39) 1 x Refined End Stone
++   3.9s > (slot 40) 1 x minecraft:red_stained_glass_pane
++   3.9s > (slot 41) 1 x minecraft:red_stained_glass_pane
++   3.9s > (slot 42) 1 x minecraft:red_stained_glass_pane
++   3.9s > (slot 43) 1 x minecraft:red_stained_glass_pane
++   3.9s > (slot 44) 1 x minecraft:red_stained_glass_pane
++   3.9s > (slot 45) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 46) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 48) 1 x Claim All
++   3.9s > (slot 49) 1 x Close
++   3.9s > (slot 50) 1 x Forge Recipes
++   3.9s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 52) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 53) 1 x minecraft:black_stained_glass_pane
++   3.9s > (slot 54) 1 x Promising Pickaxe
++   3.9s > (slot 55) 2 x Bejeweled Handle
++   3.9s > (slot 56) 11 x Refined End Stone
++   3.9s > (slot 58) 2 x Fine Amethyst
++   3.9s > (slot 59) 10 x Chaotic Dragon Fragment
++   3.9s > (slot 61) 17 x Enchanted Crying Obsidian
++   3.9s > (slot 63) 1 x Refined Enderite Pickaxe
++   3.9s > (slot 64) 1 x Combat XP Boost
++   3.9s > (slot 67) 54 x Flawed Amethyst
++   3.9s > (slot 68) 4 x Enchanted End Stone
++   3.9s > (slot 69) 64 x Enchanted End Stone
++   3.9s > (slot 70) 1 x Refined Obsidian
++   3.9s > (slot 71) 64 x Enchanted End Stone
++   3.9s > (slot 72) 1 x Flint Arrow
++   3.9s > (slot 73) 64 x Enchanted End Stone
++   3.9s > (slot 74) 1 x Precise Golden Gun
++   3.9s > (slot 75) 2 x End Stone Rose
++   3.9s > (slot 76) 64 x Enchanted End Stone
++   3.9s > (slot 77) 64 x Enchanted End Stone
++   3.9s > (slot 78) 56 x Crying Obsidian
++   3.9s > (slot 79) 2 x Refined Crying Obsidian
++   3.9s > (slot 80) 2 x Ritual Residue
++   3.9s > (slot 81) 1 x Suspicious Giant's Sword
++   3.9s > (slot 82) 1 x Warped Aspect of the Void
++   3.9s > (slot 83) 1 x Fabled Frozen Scythe
++   3.9s > (slot 84) 1 x Fabled Edible Mace
++   3.9s > (slot 85) 1 x Crying Obsidian Pickaxe
++   3.9s > (slot 86) 64 x Obsidian
++   3.9s > (slot 87) 2 x Enchanted Obsidian
++   3.9s > (slot 88) 4 x Obsidian
++   3.9s > (slot 89) 1 x SkyBlock Menu (Right Click)
+             - slot 20
+             + slot 22: BAD outline on Forge Queue (10/10)
++   4.4s > (slot 50) emptied
++   4.6s > (opened "Select Process", 90 slots)
++   4.6s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 4) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 11) 1 x Refining
++   4.6s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 13) 1 x Forging
++   4.6s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 15) 1 x Pickaxes
++   4.6s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 19) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 20) 1 x Drills
++   4.6s > (slot 21) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 22) 1 x Drill Parts
++   4.6s > (slot 23) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 24) 1 x Armor
++   4.6s > (slot 25) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 28) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 29) 1 x Reforge Stones
++   4.6s > (slot 30) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 31) 1 x Perfect Gemstones
++   4.6s > (slot 32) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 33) 1 x Other
++   4.6s > (slot 34) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 36) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 37) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 38) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 39) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 40) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 41) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 42) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 43) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 44) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 45) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 46) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 48) 1 x Go Back
++   4.6s > (slot 49) 1 x Close
++   4.6s > (slot 50) 1 x Search
++   4.6s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 52) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 53) 1 x minecraft:black_stained_glass_pane
++   4.6s > (slot 54) 1 x Promising Pickaxe
++   4.6s > (slot 55) 2 x Bejeweled Handle
++   4.6s > (slot 56) 11 x Refined End Stone
++   4.6s > (slot 58) 2 x Fine Amethyst
++   4.6s > (slot 59) 10 x Chaotic Dragon Fragment
++   4.6s > (slot 61) 17 x Enchanted Crying Obsidian
++   4.6s > (slot 63) 1 x Refined Enderite Pickaxe
++   4.6s > (slot 64) 1 x Combat XP Boost
++   4.6s > (slot 67) 54 x Flawed Amethyst
++   4.6s > (slot 68) 4 x Enchanted End Stone
++   4.6s > (slot 69) 64 x Enchanted End Stone
++   4.6s > (slot 70) 1 x Refined Obsidian
++   4.6s > (slot 71) 64 x Enchanted End Stone
++   4.6s > (slot 72) 1 x Flint Arrow
++   4.6s > (slot 73) 64 x Enchanted End Stone
++   4.6s > (slot 74) 1 x Precise Golden Gun
++   4.6s > (slot 75) 2 x End Stone Rose
++   4.6s > (slot 76) 64 x Enchanted End Stone
++   4.6s > (slot 77) 64 x Enchanted End Stone
++   4.6s > (slot 78) 56 x Crying Obsidian
++   4.6s > (slot 79) 2 x Refined Crying Obsidian
++   4.6s > (slot 80) 2 x Ritual Residue
++   4.6s > (slot 81) 1 x Suspicious Giant's Sword
++   4.6s > (slot 82) 1 x Warped Aspect of the Void
++   4.6s > (slot 83) 1 x Fabled Frozen Scythe
++   4.6s > (slot 84) 1 x Fabled Edible Mace
++   4.6s > (slot 85) 1 x Crying Obsidian Pickaxe
++   4.6s > (slot 86) 64 x Obsidian
++   4.6s > (slot 87) 2 x Enchanted Obsidian
++   4.6s > (slot 88) 4 x Obsidian
++   4.6s > (slot 89) 1 x SkyBlock Menu (Right Click)
+             - slot 22
+             + slot 11: ACTION outline on Refining
++   4.9s > (slot 11) emptied
+             - slot 11
++   5.0s > (opened "Refining", 90 slots)
++   5.0s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 4) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 10) 1 x Refined End Stone
++   5.0s > (slot 11) 1 x Refined Obsidian
++   5.0s > (slot 12) 1 x Refined Crying Obsidian
++   5.0s > (slot 13) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 15) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 19) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 20) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 21) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 22) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 23) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 24) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 25) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 28) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 29) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 30) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 31) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 32) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 33) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 34) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 36) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 37) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 38) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 39) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 40) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 41) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 42) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 43) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 44) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 45) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 46) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 48) 1 x Go Back
++   5.0s > (slot 49) 1 x Close
++   5.0s > (slot 50) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 52) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 53) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 54) 1 x Promising Pickaxe
++   5.0s > (slot 55) 2 x Bejeweled Handle
++   5.0s > (slot 56) 11 x Refined End Stone
++   5.0s > (slot 58) 2 x Fine Amethyst
++   5.0s > (slot 59) 10 x Chaotic Dragon Fragment
++   5.0s > (slot 61) 17 x Enchanted Crying Obsidian
++   5.0s > (slot 63) 1 x Refined Enderite Pickaxe
++   5.0s > (slot 64) 1 x Combat XP Boost
++   5.0s > (slot 67) 54 x Flawed Amethyst
++   5.0s > (slot 68) 4 x Enchanted End Stone
++   5.0s > (slot 69) 64 x Enchanted End Stone
++   5.0s > (slot 70) 1 x Refined Obsidian
++   5.0s > (slot 71) 64 x Enchanted End Stone
++   5.0s > (slot 72) 1 x Flint Arrow
++   5.0s > (slot 73) 64 x Enchanted End Stone
++   5.0s > (slot 74) 1 x Precise Golden Gun
++   5.0s > (slot 75) 2 x End Stone Rose
++   5.0s > (slot 76) 64 x Enchanted End Stone
++   5.0s > (slot 77) 64 x Enchanted End Stone
++   5.0s > (slot 78) 56 x Crying Obsidian
++   5.0s > (slot 79) 2 x Refined Crying Obsidian
++   5.0s > (slot 80) 2 x Ritual Residue
++   5.0s > (slot 81) 1 x Suspicious Giant's Sword
++   5.0s > (slot 82) 1 x Warped Aspect of the Void
++   5.0s > (slot 83) 1 x Fabled Frozen Scythe
++   5.0s > (slot 84) 1 x Fabled Edible Mace
++   5.0s > (slot 85) 1 x Crying Obsidian Pickaxe
++   5.0s > (slot 86) 64 x Obsidian
++   5.0s > (slot 87) 2 x Enchanted Obsidian
++   5.0s > (slot 88) 4 x Obsidian
+             + slot 10: ACTION outline on Refined End Stone
++   5.1s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   5.2s > (slot 10) emptied
+             - slot 10
++   5.3s > (opened "Confirm Process", 72 slots)
++   5.3s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 4) 1 x Refined End Stone
++   5.3s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 11) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 13) 16 x Enchanted End Stone
++   5.3s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 15) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 19) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 20) 1 x Confirm
++   5.3s > (slot 21) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 22) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 23) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 24) 1 x Cancel
++   5.3s > (slot 25) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 28) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 29) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 30) 1 x Go Back
++   5.3s > (slot 31) 1 x Close
++   5.3s > (slot 32) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 33) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 34) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   5.3s > (slot 36) 1 x Promising Pickaxe
++   5.3s > (slot 37) 2 x Bejeweled Handle
++   5.3s > (slot 38) 11 x Refined End Stone
++   5.3s > (slot 40) 2 x Fine Amethyst
++   5.3s > (slot 41) 10 x Chaotic Dragon Fragment
++   5.3s > (slot 43) 17 x Enchanted Crying Obsidian
++   5.3s > (slot 45) 1 x Refined Enderite Pickaxe
++   5.3s > (slot 46) 1 x Combat XP Boost
++   5.3s > (slot 49) 54 x Flawed Amethyst
++   5.3s > (slot 50) 4 x Enchanted End Stone
++   5.3s > (slot 51) 64 x Enchanted End Stone
++   5.3s > (slot 52) 1 x Refined Obsidian
++   5.3s > (slot 53) 64 x Enchanted End Stone
++   5.3s > (slot 54) 1 x Flint Arrow
++   5.3s > (slot 55) 64 x Enchanted End Stone
++   5.3s > (slot 56) 1 x Precise Golden Gun
++   5.3s > (slot 57) 2 x End Stone Rose
++   5.3s > (slot 58) 64 x Enchanted End Stone
++   5.3s > (slot 59) 64 x Enchanted End Stone
++   5.3s > (slot 60) 56 x Crying Obsidian
++   5.3s > (slot 61) 2 x Refined Crying Obsidian
++   5.3s > (slot 62) 2 x Ritual Residue
++   5.3s > (slot 63) 1 x Suspicious Giant's Sword
++   5.3s > (slot 64) 1 x Warped Aspect of the Void
++   5.3s > (slot 65) 1 x Fabled Frozen Scythe
++   5.3s > (slot 66) 1 x Fabled Edible Mace
++   5.3s > (slot 67) 1 x Crying Obsidian Pickaxe
++   5.3s > (slot 68) 64 x Obsidian
++   5.3s > (slot 69) 2 x Enchanted Obsidian
++   5.3s > (slot 70) 4 x Obsidian
++   5.3s > (slot 71) 1 x SkyBlock Menu (Right Click)
+             + slot 20: BAD outline on Confirm
++   5.6s > (slot 11) emptied
++   5.7s > (slot 11) 1 x minecraft:black_stained_glass_pane
++   5.8s > (slot 20) emptied
+             - slot 20
++   6.0s > Your Forge slots and queue are full.
++   6.0s > (slot 20) 1 x Confirm
+             + slot 20: BAD outline on Confirm
++   7.8s > (slot 20) emptied
+             - slot 20
++   8.0s > (slot 20) 1 x Confirm
+             + slot 20: BAD outline on Confirm
++   8.0s > Your Forge slots and queue are full.
++   8.7s > (opened your inventory, 46 slots)
++   8.7s > (slot 5) 1 x Enderite Helmet
++   8.7s > (slot 6) 1 x Enderite Chestplate
++   8.7s > (slot 7) 1 x Enderite Leggings
++   8.7s > (slot 8) 1 x Enderite Boots
++   8.7s > (slot 9) 1 x Promising Pickaxe
++   8.7s > (slot 10) 2 x Bejeweled Handle
++   8.7s > (slot 11) 11 x Refined End Stone
++   8.7s > (slot 12) 64 x Enchanted End Stone
++   8.7s > (slot 13) 2 x Fine Amethyst
++   8.7s > (slot 14) 10 x Chaotic Dragon Fragment
++   8.7s > (slot 16) 17 x Enchanted Crying Obsidian
++   8.7s > (slot 18) 1 x Refined Enderite Pickaxe
++   8.7s > (slot 19) 1 x Combat XP Boost
++   8.7s > (slot 21) 4 x Enchanted End Stone
++   8.7s > (slot 22) 54 x Flawed Amethyst
++   8.7s > (slot 23) 64 x Enchanted End Stone
++   8.7s > (slot 24) 64 x Enchanted End Stone
++   8.7s > (slot 25) 1 x Refined Obsidian
++   8.7s > (slot 26) 64 x Enchanted End Stone
++   8.7s > (slot 27) 1 x Flint Arrow
++   8.7s > (slot 28) 64 x Enchanted End Stone
++   8.7s > (slot 29) 1 x Precise Golden Gun
++   8.7s > (slot 30) 2 x End Stone Rose
++   8.7s > (slot 31) 64 x Enchanted End Stone
++   8.7s > (slot 32) 64 x Enchanted End Stone
++   8.7s > (slot 33) 56 x Crying Obsidian
++   8.7s > (slot 34) 2 x Refined Crying Obsidian
++   8.7s > (slot 35) 2 x Ritual Residue
++   8.7s > (slot 36) 1 x Suspicious Giant's Sword
++   8.7s > (slot 37) 1 x Warped Aspect of the Void
++   8.7s > (slot 38) 1 x Fabled Frozen Scythe
++   8.7s > (slot 39) 1 x Fabled Edible Mace
++   8.7s > (slot 40) 1 x Crying Obsidian Pickaxe
++   8.7s > (slot 41) 64 x Obsidian
++   8.7s > (slot 42) 2 x Enchanted Obsidian
++   8.7s > (slot 43) 4 x Obsidian
++   8.7s > (slot 44) 1 x SkyBlock Menu (Right Click)
++   8.7s > (slot 12) emptied
++   8.7s > (slot 21) emptied
++   8.7s > (slot 23) 4 x Enchanted End Stone
+             - slot 20
+saved forge-craft.json = {"amount":5}

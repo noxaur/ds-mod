@@ -449,6 +449,16 @@ Click the SkyBlock Menu item in the last hotbar slot, in your inventory or any m
 
 A dragon egg in the empty slot at the top left of the Dragon Sim Menu. Clicking it sends `/hotd`, which opens the Heart of the Dragon.
 
+### Forge Craft
+
+Craft an item at the forge once the usual way, and the mod remembers it until you leave the server. From then on, each press of the Craft Key (R) clicks the next button of that craft: Forge Queue, the category, the item, then Confirm. A repeat is four presses, one click each, and it works only in the forge's menus.
+
+The button your next press clicks has a thin outline. It turns red when the click would do nothing: at The Forge while the forge and its queue are full, and at Confirm Process while Confirm is gray because you're missing materials or the forge is full. A press there sends nothing.
+
+A panel beside the forge's menus shows the item, how many you can craft now, and what one craft takes. Point at the materials to see what you have of each. Set Amount to how many you want this visit, with − and +, the scroll wheel (Shift steps by 10), or by clicking the number and typing. Once you've crafted that many, the panel says Done and the key stops until you raise it. The count starts again each time you open the forge.
+
+Click the key in the panel's corner, then press a key or a side mouse button, to change it without opening the settings.
+
 ## Combat
 
 ### Damage Numbers

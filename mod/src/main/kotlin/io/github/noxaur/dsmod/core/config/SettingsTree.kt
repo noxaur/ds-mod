@@ -42,6 +42,7 @@ import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
 import io.github.noxaur.dsmod.core.feature.inventory.HideGlassPanes
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
+import io.github.noxaur.dsmod.core.feature.inventory.ForgeCraft
 import io.github.noxaur.dsmod.core.feature.inventory.HotdButton
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
@@ -264,6 +265,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                         feature(SkyBlockMenuClick(c))
                         feature(HotdButton(c))
                     }
+                    group(ForgeCraft(c))
                 }
                 section("The End", Role.EPIC) {
                     group("Dragon") {
