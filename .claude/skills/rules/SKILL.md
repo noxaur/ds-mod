@@ -29,7 +29,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | `docs/internals/` names no code, and holds one short paragraph per decision | `check:docs` in `mise.toml` |
 | `core` names nothing from Minecraft, Fabric, Mojang or `edge`, even by full name | `PurityTest` reads the compiled classes |
 | Each place the release build sends or refuses input for the player is approved | `InputSitesTest` against `mod/input-sites.txt`, and the agent asks the user before it keeps a site that sends, refuses or triggers anything new |
-| The release build runs only on dragsim.co, unless the player turns DragSim Only off | `Game` gates every feature in `core`, `SwitchesTest` makes the edge ask `Feature.runs`, and `GameTest`, `DragSimTest` and the game test `OnlyOnDragSimTest` |
+| The release build runs only on dragsim.co, unless the player turns DragSim Only off | `Game` gates every feature in `core`, `SwitchesTest` makes the edge ask `Feature.runs`, and `GameTest`, `DragSimTest` and the game test `DragSimOnlyTest` |
 | A feature fires only in the area it names | `Feature` takes an `Area` and `Game` gates on it. `FeatureReplayTest` replays each fixture outside the area |
 | A feature reads no area for itself, from the tab list or the sidebar, and sits in its area's folder | `InfoRows` hands a feature no place and refuses an area row, `area-by-declaration` in `mod/…/Rules.kt` for a place named in a feature, and `RulesTest` |
 | The mod's text and colors come from its text layer | `TextLayerTest` reads the compiled classes, and `text-by-role` in `mod/…/Rules.kt` for a hex color or a `§` |
@@ -42,6 +42,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | Every feature shows what its transcript says | `FeatureReplayTest` replays each feature's fixtures |
 | A feature that reads nothing from the server has a game test | `FeatureReplayTest` |
 | Every feature class is placed in `SettingsTree` | `FeaturesListedTest` reads the compiled classes |
+| Every on/off setting is a feature | `SettingsTree` refuses a switch outside a feature when it is built |
 | Every feature has a section in the player docs | `RulesTest` |
 | Every feature has a one-line entry in the README | `RulesTest` |
 | Every saved setting, a feature's saved key included, has exactly one row in the settings tree, or is listed as stored only with a reason, and every row has its own id, a Title Case name of three words or fewer and a one-sentence description | `SettingsTreeTest` |

@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.feature.hud.HudBackground
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
@@ -96,10 +97,10 @@ private fun freeBlockStaysOnScreen(context: ClientGameTestContext, world: net.fa
     context.runOnClient<Nothing> {
         hud.positions[TIMER] = fraction
         // A watched HUD setting is what makes the next tick place the block again.
-        hud.background = !hud.background
+        DsModClient.feature<HudBackground>().feature.enabled = false
     }
     context.waitTicks(2)
-    context.runOnClient<Nothing> { hud.background = !hud.background }
+    context.runOnClient<Nothing> { DsModClient.feature<HudBackground>().feature.enabled = true }
     context.waitTicks(2)
     val wide = context.computeOnClient<Hud.Placed, Nothing> { Hud.find(TIMER)!! }
     check(inside(wide, size.first, size.second)) { "On the wide GUI the timer sits at ${wide.x},${wide.y} ${wide.box()}" }

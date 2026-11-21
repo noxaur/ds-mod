@@ -54,10 +54,9 @@ gate edge.EyeGuards d497c96d3e10  EyeGuard
     approved by github.com/noxaur 2026-11-16T18:38:00Z
 gate edge.Hits af5b845f21bf
     can refuse the player's actions through AttackEntityCallback.EVENT
-gate edge.MenuBack aec320813e8e  BackButtons
+gate edge.MenuBack e5d60e26f8b1  BackButtons, BetterUi
     can refuse or change sent chat through ClientSendMessageEvents.COMMAND
     sends through ClientPacketListener.sendCommand
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate edge.Pings 374f3f901a23  PerformanceStats
     builds the packet ServerboundPingRequestPacket
     sends through ClientPacketListener.send
@@ -66,7 +65,7 @@ gate edge.SlotGuards 429fadb5c86f  SlotLock
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-gate edge.TabBar d41ae2360373  MenuTabs
+gate edge.TabBar 561144b0f29a  BetterUi, MenuTabs
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
 gate edge.capture.Recording ed76355333a5
@@ -95,9 +94,9 @@ gate edge.mixin.ContainerScreenMixin 5147eddf96ea
     hooks AbstractContainerScreen.extractTooltip
     hooks AbstractContainerScreen.init
     approved by github.com/noxaur 2026-11-16T01:17:00Z
-gate edge.mixin.CtrlClickMixin 0e450adf84b0
+gate edge.mixin.CtrlClickMixin 9d50fab45112  CtrlClick
     hooks MouseHandler.simulateRightClick
-    approved by github.com/noxaur 2026-11-20T12:01:00Z
+    approved by github.com/noxaur 2026-11-21T14:19:00Z
 gate edge.mixin.CursorMixin ec46fb6ba006
     hooks MouseHandler.grabMouse
     hooks MouseHandler.releaseMouse
@@ -188,5 +187,5 @@ gate edge.mixin.TooltipMixin draws
 gate edge.profile.ProfileModel b326cc5227a6
     changes the player through AbstractClientPlayer.setId
     changes the player through AbstractClientPlayer.setItemSlot
-gate edge.profile.Profiles 26d818f6eba8  ProfileViewer
+gate edge.profile.Profiles 2ad9fd309aa2  ProfileViewer
     builds text that runs a command when the player clicks it

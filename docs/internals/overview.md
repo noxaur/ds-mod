@@ -12,15 +12,15 @@ The mod's logic imports nothing from Minecraft or Fabric, and only the edge does
 
 ## The mod runs only on dragsim.co
 
-The features that read the server read lines in dragsim.co's own words, so on another server they can only misread them, and a wrong count is saved for good. So every feature is off away from dragsim.co, under one gate rather than one per kind of feature, and the mod decides it once per connection by the address the player reached. A hardcoded IP was rejected, because it would stop matching the day the server moves. A player who wants the mod elsewhere turns the setting off.
+The features that read the server read lines in dragsim.co's own words, so on another server they can only misread them, and a wrong count is saved for good. So until the player turns DragSim Only off, the logic turns every feature off away from dragsim.co, in one place rather than once per kind of feature. The edge only reports whether the player reached dragsim.co's address, decided once per connection, and DragSim Only is the one feature that check never turns off. A hardcoded IP was rejected, because it would stop matching the day the server moves.
 
 ## The debug build runs everywhere
 
 The debug build lifts the dragsim.co gate, because the game tests and a local run play in singleplayer. Making each test turn the setting off first was rejected, because it is one more thing to forget. For the same reason the gate starts open in the logic, so a unit test or a replay never meets it.
 
-## A feature that only changes drawing is still a feature
+## Every on/off setting is a feature
 
-A feature such as Fullbright handles no event, and only the edge draws it, yet it is still a feature in the one list of features. The settings, the player docs check and the tests all walk that list. A plain setting or a second list for drawing features was rejected, because a feature there would skip all three.
+A setting the player turns on or off is a feature, even Fullbright, which only the edge draws, or DragSim Only, which only the logic reads. The settings, the player docs check and the tests walk the one list of features, so each gets a docs section, a README line and a test. A plain switch was rejected, because six of them skipped all three, and the settings can no longer declare one. Settings that are not on or off, such as keys, scale and theme, stay plain settings.
 
 ## Release and debug are separate builds
 

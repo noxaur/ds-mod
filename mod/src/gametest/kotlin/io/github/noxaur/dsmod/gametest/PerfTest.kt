@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.feature.boss.BossBeacon
 import io.github.noxaur.dsmod.core.feature.boss.BossTracer
+import io.github.noxaur.dsmod.core.feature.contribute.ReportGameData
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.hud
@@ -88,7 +89,7 @@ class PerfTest : FabricClientGameTest {
                         """custom_name='"Perf Sword $slot"',lore=['"Damage: +$slot"','"LEGENDARY SWORD"']]""",
                 )
             }
-            context.runOnClient<Nothing> { DsModClient.settings.contribute.reportGameData = true }
+            context.runOnClient<Nothing> { DsModClient.feature<ReportGameData>().feature.enabled = true }
             context.waitTicks(20)
             context.runOnClient<Nothing> {
                 val group = HudGroup("perf", 6, 6, background = true)
@@ -130,7 +131,7 @@ class PerfTest : FabricClientGameTest {
             context.runOnClient<Nothing> {
                 it.gui.setScreen(null)
                 repeat(HUD_BLOCKS) { block -> Hud.hide("perf-$block") }
-                DsModClient.settings.contribute.reportGameData = false
+                DsModClient.feature<ReportGameData>().feature.enabled = false
             }
             System.getProperty("dsmod.jar")?.let { samples["jar"] = mutableListOf(File(it).length() / 1024.0) }
 

@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.chat.CopyChat
 import io.github.noxaur.dsmod.core.feature.chat.HideCooldownMessages
+import io.github.noxaur.dsmod.core.feature.contribute.ReportGameData
 import io.github.noxaur.dsmod.core.feature.end.BossFightTracker
 import io.github.noxaur.dsmod.core.feature.end.DragonTimer
 import io.github.noxaur.dsmod.core.feature.end.EyeGuard
@@ -16,6 +17,8 @@ import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
 import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
+import io.github.noxaur.dsmod.core.feature.general.CtrlClick
+import io.github.noxaur.dsmod.core.feature.general.DragSimOnly
 import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLook
@@ -31,8 +34,10 @@ import io.github.noxaur.dsmod.core.feature.general.PetLook
 import io.github.noxaur.dsmod.core.feature.general.PetPosition
 import io.github.noxaur.dsmod.core.feature.general.ProfileViewer
 import io.github.noxaur.dsmod.core.feature.hud.ChatHudEditor
+import io.github.noxaur.dsmod.core.feature.hud.HudBackground
 import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
 import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
+import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
 import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
 import io.github.noxaur.dsmod.core.feature.inventory.HideGlassPanes
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
@@ -99,8 +104,8 @@ class ConfigFileTest {
             assertTrue(inFight.value)
         }
 
+        assertFalse(tree.feature<DragSimOnly>().feature.enabled)
         c.general.run {
-            assertFalse(onlyOnDragSim)
             assertEquals(344, settingsKey)
             assertEquals(71, favoriteKey)
         }
@@ -180,7 +185,7 @@ class ConfigFileTest {
         }
         assertTrue(tree.feature<ArmorSwapGuard>().feature.enabled)
 
-        assertFalse(c.betterUi.enabled || tree.feature<BackButtons>().feature.enabled || tree.feature<MenuTabs>().feature.enabled)
+        assertFalse(tree.feature<BetterUi>().feature.enabled || tree.feature<BackButtons>().feature.enabled || tree.feature<MenuTabs>().feature.enabled)
         assertEquals(
             listOf(MenuTab(TabEdge.TOP, 2, "bazaar", "minecraft:gold_ingot", "Bazaar"), MenuTab(TabEdge.BOTTOM, 6, item = "", tooltip = "Search", search = true)),
             tree.feature<MenuTabs>().tabs.value,
@@ -195,12 +200,11 @@ class ConfigFileTest {
         c.hud.run {
             assertEquals(mapOf("zealot-tracker" to DsModConfig.Position(0.25f, 0.5f, 1.5f), "dragon-timer" to DsModConfig.Position(0.75f, 0.125f, 0.75f)), positions)
             assertEquals(Theme.VANILLA, theme)
-            assertFalse(background)
             assertEquals(1.75f, scale)
         }
-        assertFalse(tree.feature<ChatHudEditor>().feature.enabled)
+        assertFalse(tree.feature<ChatHudEditor>().feature.enabled || tree.feature<HudBackground>().feature.enabled)
 
-        assertTrue(c.contribute.reportGameData)
+        assertTrue(tree.feature<ReportGameData>().feature.enabled)
     }
 
     @Test
@@ -218,6 +222,15 @@ class ConfigFileTest {
         assertEquals(9f, loaded.feature<Camera>().distance.value)
         assertEquals(SlotStyle(gem = true), loaded.feature<ItemRarity>().inventoryStyle.value)
         assertFalse(dir.resolve("config.json.tmp").exists(), "the temporary file is renamed over the old one")
+    }
+
+    @Test
+    fun `a save on another system keeps a setting only a Mac shows`() {
+        path.writeText("""{"general":{"ctrlClick":false}}""")
+        val c = ConfigFile(path).load()
+        SettingsTree(c, mac = false)
+        ConfigFile(path).save(c)
+        assertFalse(SettingsTree(ConfigFile(path).load(), mac = true).feature<CtrlClick>().feature.enabled)
     }
 
     @Test

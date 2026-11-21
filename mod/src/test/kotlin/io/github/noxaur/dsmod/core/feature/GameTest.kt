@@ -7,6 +7,7 @@ import io.github.noxaur.dsmod.core.feature.boss.BossBeacon
 import io.github.noxaur.dsmod.core.feature.boss.BossTracer
 import io.github.noxaur.dsmod.core.feature.end.DragonTimer
 import io.github.noxaur.dsmod.core.feature.end.ProtectorStatus
+import io.github.noxaur.dsmod.core.feature.general.DragSimOnly
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.Boss
 import io.github.noxaur.dsmod.core.game.EntityGone
@@ -302,8 +303,8 @@ class GameTest {
 
     @Test
     fun `off dragsim co no feature hears a line, hides it or shows a readout`() {
-        var active = false
-        val game = Game(SettingsTree(config).features) { active }
+        val tree = SettingsTree(config)
+        val game = Game(tree.features) { false }
         val tab = TabList(listOf("Area: The End", "Protector: Rising (Tier 4/5, 20)").map { ServerText(ServerSpan(it)) })
         val refusal = SystemMessage(ServerText(ServerSpan("This ability is on cooldown for 4.35s")))
         game.post(0, tab)
@@ -313,7 +314,7 @@ class GameTest {
         assertEquals(emptyList(), game.readouts.mapNotNull { it.hud })
 
         // Turning the setting off mid-session brings the features back with the tab list they missed.
-        active = true
+        tree.feature<DragSimOnly>().feature.enabled = false
         game.tick(1_000)
         assertNotNull(game.readouts.single { it.feature.id == "protector-status" }.hud)
         assertEquals(false, game.post(1_000, refusal))

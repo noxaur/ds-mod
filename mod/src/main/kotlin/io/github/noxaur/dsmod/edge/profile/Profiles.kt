@@ -83,7 +83,7 @@ object Profiles {
 
     private fun open(context: CommandContext<FabricClientCommandSource>, name: String): Int {
         if (!DsModClient.runs<ProfileViewer>()) {
-            val why = if (DsModClient.active) "Profile Viewer is off. Turn it on in /dsmod to look players up." else "Profile Viewer works only on dragsim.co."
+            val why = if (DsModClient.game.active) "Profile Viewer is off. Turn it on in /dsmod to look players up." else "Profile Viewer works only on dragsim.co."
             Chat.send(text { bad(why) })
             return 0
         }

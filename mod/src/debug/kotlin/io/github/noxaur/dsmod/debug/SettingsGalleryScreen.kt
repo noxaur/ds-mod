@@ -126,10 +126,10 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
     private val rowsPage: List<List<Pair<String, List<Setting>>>> = listOf(
         listOf(
             "Switch: on, changed, with settings" to rows {
-                switch(v::on, "Dragon Timer", "Show when the egg returns.")
-                switch(v::off, "Fullbright", "Light the whole world.")
-                switch(v::feature, "Slot Lock", "Lock slots and items.") { keys(v::key, "Slot Key", "Lock the slot.") }
-                switch(v::open, "Protector Spawn Beam", "Show a beam.", id = "openSwitch") { keys(v::none, "Item Key", "Lock the item.") }
+                switch(Bind.of(v::on), "Dragon Timer", "Show when the egg returns.")
+                switch(Bind.of(v::off), "Fullbright", "Light the whole world.")
+                switch(Bind.of(v::feature), "Slot Lock", "Lock slots and items.") { keys(v::key, "Slot Key", "Lock the slot.") }
+                switch(Bind.of(v::open), "Protector Spawn Beam", "Show a beam.", id = "openSwitch") { keys(v::none, "Item Key", "Lock the item.") }
             },
             "Number: from the minimum, signed" to rows {
                 number(v::distance, "Distance", "Set the distance.", 1f..50f, step = 0.5f)
@@ -248,7 +248,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
     /** Rows as a search for "gilded look" shows them, with the words it matched painted, drawn apart from the rows above. */
     private val found = "Found by a search: gilded look" to rows {
         pick(Bind.of(v::foundPreset), "Style", "Pick a ready-made look.", RarityPreset.entries, id = "foundStyle") { slotLook(it) }
-        fold("foundFold", "Custom Look", "Build your own look.") { switch(v::foundGem, "Gem", "Put a gem.", id = "foundGem") }
+        fold("foundFold", "Custom Look", "Build your own look.") { switch(Bind.of(v::foundGem), "Gem", "Put a gem.", id = "foundGem") }
     }
     private val foundRows = SettingRows(HashSet(), ::layout, { _, _ -> })
     private val wells = ArrayList<Well>()
