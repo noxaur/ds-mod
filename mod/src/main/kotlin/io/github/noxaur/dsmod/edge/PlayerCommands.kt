@@ -4,6 +4,8 @@ import net.minecraft.client.Minecraft
 
 object PlayerCommands {
     fun send(command: String) {
-        Minecraft.getInstance().connection?.sendCommand(command)
+        val connection = Minecraft.getInstance().connection ?: return
+        MenuBack.sent(command)
+        connection.sendCommand(command)
     }
 }

@@ -70,4 +70,6 @@ object MenuBack {
 
     /** The command that opened the menu of [screen], or null when none did or it is not the menu open now. */
     fun opener(screen: AbstractContainerScreen<*>) = if (screen.menu === menu) trail.opener else null
+
+    fun sent(command: String) = trail.sent(System.currentTimeMillis(), command)
 }

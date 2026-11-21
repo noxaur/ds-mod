@@ -57,9 +57,10 @@ object CommandKeys {
     }
 
     private fun send(bind: CommandBind) {
+        val connection = Minecraft.getInstance().connection ?: return
         when (val message = bind.message) {
-            is Message.Command -> PlayerCommands.send(message.text)
-            is Message.Chat -> Minecraft.getInstance().connection?.sendChat(message.text)
+            is Message.Command -> connection.sendCommand(message.text)
+            is Message.Chat -> connection.sendChat(message.text)
             null -> {}
         }
     }
