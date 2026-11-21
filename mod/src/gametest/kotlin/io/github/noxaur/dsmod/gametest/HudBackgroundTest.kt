@@ -8,36 +8,40 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import javax.imageio.ImageIO
 
 class HudBackgroundTest : FabricClientGameTest {
-    private fun corner(context: ClientGameTestContext, name: String): Int {
+    private fun brightness(context: ClientGameTestContext, name: String): Int {
         val shot = context.screenshot(name)
         val (x, y) = context.computeOnClient<Pair<Int, Int>, Nothing> { client ->
             val block = checkNotNull(Hud.find(TIMER)) { "The dragon timer is not on the HUD" }
             val scale = client.window.guiScale
             ((block.x + 2 * block.scale) * scale).toInt() to ((block.y + 2 * block.scale) * scale).toInt()
         }
-        return ImageIO.read(shot.toFile()).getRGB(x, y) and 0xFFFFFF
+        val rgb = ImageIO.read(shot.toFile()).getRGB(x, y)
+        return (rgb shr 16 and 0xFF) + (rgb shr 8 and 0xFF) + (rgb and 0xFF)
     }
 
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
+            listOf("gamerule advance_time false", "gamerule advance_weather false", "time set noon").forEach { world.server.runCommand(it) }
             context.enterTheEnd()
             world.server.runCommand("""tellraw @a "§5✦ §dThe Egg has Spawned!"""")
             context.waitTicks(5)
-            val plated = corner(context, "hud-background-on")
-            try {
+            val plated = brightness(context, "hud-background-on")
+            val bare = try {
                 context.runOnClient<Nothing> { DsModClient.feature<HudBackground>().feature.enabled = false }
                 context.waitTicks(2)
-                val bare = corner(context, "hud-background-off")
-                check(bare != plated) { "The corner of the dragon timer is ${"%06x".format(bare)} with HUD Background off, as with it on" }
+                brightness(context, "hud-background-off")
             } finally {
                 context.runOnClient<Nothing> { DsModClient.feature<HudBackground>().feature.enabled = true }
             }
+            check(plated < bare - DARKER) { "The dragon timer's corner is $plated bright with HUD Background on and $bare with it off" }
             context.waitTicks(2)
-            check(corner(context, "hud-background-again") == plated) { "The plate did not come back with HUD Background on" }
+            val again = brightness(context, "hud-background-again")
+            check(again < bare - DARKER) { "The plate did not come back with HUD Background on: the corner is $again bright, and $bare bare" }
         }
     }
 
     private companion object {
         const val TIMER = "dragon-timer"
+        const val DARKER = 60
     }
 }

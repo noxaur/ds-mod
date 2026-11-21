@@ -17,6 +17,7 @@ import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
 import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
+import io.github.noxaur.dsmod.core.feature.general.CtrlClick
 import io.github.noxaur.dsmod.core.feature.general.DragSimOnly
 import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
 import io.github.noxaur.dsmod.core.feature.general.EquipmentLayout
@@ -221,6 +222,15 @@ class ConfigFileTest {
         assertEquals(9f, loaded.feature<Camera>().distance.value)
         assertEquals(SlotStyle(gem = true), loaded.feature<ItemRarity>().inventoryStyle.value)
         assertFalse(dir.resolve("config.json.tmp").exists(), "the temporary file is renamed over the old one")
+    }
+
+    @Test
+    fun `a save on another system keeps a setting only a Mac shows`() {
+        path.writeText("""{"general":{"ctrlClick":false}}""")
+        val c = ConfigFile(path).load()
+        SettingsTree(c, mac = false)
+        ConfigFile(path).save(c)
+        assertFalse(SettingsTree(ConfigFile(path).load(), mac = true).feature<CtrlClick>().feature.enabled)
     }
 
     @Test

@@ -180,6 +180,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
         private fun declare(c: DsModConfig, mac: Boolean): List<SettingSection> {
             val g = c.general
             val claim = SlayerClaim()
+            val ctrlClick = CtrlClick(c)
             val sections = Sections().apply {
                 // What applies everywhere comes first, then each area of the game, and Contribute last.
                 section("General", Role.VALUE) {
@@ -191,7 +192,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                         keys(g::favoriteKey, "Favorite Key", "Pick a key that stars the setting under your mouse.")
                     }
                     if (mac) group("Mouse") {
-                        feature(CtrlClick(c))
+                        feature(ctrlClick)
                     }
                     group("World") {
                         feature(Fullbright(c))
