@@ -3,6 +3,7 @@
   "package": "io.github.noxaur.dsmod.gametest.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
+    "ActionSpyMixin",
     "BackgroundWindowMixin",
     "ClickSpyMixin",
     "FocusEachTestMixin",

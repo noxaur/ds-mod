@@ -38,6 +38,10 @@ Whether the mod may send input for the player, or refuse the player's own, is th
 
 Forge Craft repeats a forge craft from the keyboard, and each press sends one click, the next of the four the player made by hand, so the player still makes every step and sees each menu. One press that sent every click was rejected, because that is automation. A press waits up to a second for the menu it clicked to give way to the next, so a quick second press cannot land on the wrong button, and a menu the server never replaced takes a click again after that.
 
+## Auto Clicker presses the game's own key once a tick
+
+dragsim.co allows auto clicking while the player walks, the user confirmed. Each click is the press the mouse makes on the attack or use key, so the game's key handling gives it every check a real click gets. The game reads clicks once a tick, so the pace counts ticks. Calling attack or use directly was rejected, since it skips those checks, and a pace in milliseconds, since two clicks could share a tick.
+
 ## Ctrl Click undoes the game's right click on macOS at the press alone
 
 On macOS the game turns a Ctrl left press into a right press, and counts it so the release that follows turns too. Ctrl Click undoes only the press and leaves every release to the game. Undoing the release too was rejected, because a setting flipped while the button is down would leave the count up and turn a later plain release into a right one.

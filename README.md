@@ -11,6 +11,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 ### General
 - **DragSim Only** – Runs ds-mod only on dragsim.co, until you turn it off.
 - **Ctrl Click** – Keeps Ctrl and a left click a Ctrl click on a Mac.
+- **Auto Clicker** – Clicks left or right 9.9 times a second while you hold the button, or toggle it, and walk. Off by default.
 
 ### Camera & Visuals
 - **Fullbright** – Lights caves and nights as brightly as day.

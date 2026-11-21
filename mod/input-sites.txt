@@ -9,6 +9,8 @@
 #     approved by github.com/<login> <time>  the user approved this site, as it is here, in the conversation. It
 #                                           goes when the site changes, and an agent's own approval has none.
 
+call edge.DsModClient.onInitializeClient -> edge.AutoClicks.register
+    approved by github.com/noxaur 2026-11-21T22:34:00Z
 call edge.DsModClient.onInitializeClient -> edge.CommandKeys.register
     approved by github.com/noxaur 2026-11-16T01:17:00Z
 call edge.DsModClient.onInitializeClient -> edge.ForgeCrafts.register
@@ -40,6 +42,8 @@ gate aw/dsmod.accesswidener 4f33ddcbbdf7
 gate edge.ArmorSwapGuards b388417355d2  ArmorSwapGuard
     can refuse the player's actions through UseItemCallback.EVENT
     approved by github.com/noxaur 2026-11-16T08:42:00Z
+gate edge.AutoClicks 99bc1c3c5593  AutoClicker
+    presses a key through KeyMapping.click
 gate edge.Chat 7c62093eb80b
     builds text that runs a command when the player clicks it
     approved by github.com/noxaur 2026-11-16T01:17:00Z
@@ -153,9 +157,9 @@ gate edge.mixin.ItemLayerAccessor 44bd4cac718b
 gate edge.mixin.KeyInputMixin 5e38927bfe13
     hooks KeyboardHandler.keyPress
     approved by github.com/noxaur 2026-11-21T20:37:00Z
-gate edge.mixin.KeyPressMixin f3167d4d9147
+gate edge.mixin.KeyPressMixin d715b502c2ad
     hooks KeyMapping.click
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
+    approved by github.com/noxaur 2026-11-21T22:52:00Z
 gate edge.mixin.MenuArtMixin draws
     hooks GuiGraphicsExtractor.blit
     hooks GuiGraphicsExtractor.blitSprite
