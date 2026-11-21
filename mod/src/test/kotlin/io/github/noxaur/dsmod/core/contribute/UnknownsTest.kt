@@ -144,8 +144,11 @@ class UnknownsTest {
     fun `what a player typed is removed with their name, though nothing else names them`() {
         unknowns.see("chat", "Party > Zed: meet me at the portal")
         unknowns.see("chat", "[MVP+] Ann: my secret")
+        unknowns.see("chat", "Bea whispers to you: a secret plan")
+        unknowns.see("chat", "Party members (2)\n[DRAGON] Cyd: the code is 1234")
 
         val samples = unknowns.batch.take().map { it.sample }
-        assertTrue(samples.none { "Zed" in it || "Ann" in it || "portal" in it || "secret" in it }, samples.toString())
+        assertEquals(4, samples.size)
+        assertTrue(samples.none { listOf("Zed", "Ann", "Bea", "Cyd", "portal", "secret", "code").any(it::contains) }, samples.toString())
     }
 }

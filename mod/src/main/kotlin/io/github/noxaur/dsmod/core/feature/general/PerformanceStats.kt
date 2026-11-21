@@ -7,7 +7,6 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.FrameRate
 import io.github.noxaur.dsmod.core.game.PingMeasured
-import io.github.noxaur.dsmod.core.game.ServerTime
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudLook
@@ -62,13 +61,10 @@ class PerformanceStats(config: DsModConfig) : HasFeature {
     val layout = feature.choice("performanceLayout", "Layout", "Line the values up in a row or a column.", StatsLayout.ROW)
     val look = feature.choice("performanceLook", "Look", "Show the values on the plate, or on nothing.", StatsLook.PLATE)
 
+    private val clock = ServerClock(feature)
     private var fps = -1
     private val pings = LongArray(PINGS)
     private var pingCount = 0
-
-    // When each time packet arrived, and the tick it carried, oldest first.
-    private val arrived = ArrayDeque<Long>()
-    private val ticks = ArrayDeque<Long>()
 
     init {
         feature.on<FrameRate> { frames, _ -> fps = frames.fps }
@@ -76,29 +72,14 @@ class PerformanceStats(config: DsModConfig) : HasFeature {
             pings[pingCount % PINGS] = ping.millis
             pingCount++
         }
-        feature.on<ServerTime> { time, now ->
-            // A clock that went back is another world's, as after a hop the client saw no change of world for.
-            if (ticks.isNotEmpty() && time.gameTime < ticks.last()) clearTicks()
-            arrived.addLast(now)
-            ticks.addLast(time.gameTime)
-            while (arrived.size > 2 && now - arrived[1] >= TPS_WINDOW_MILLIS) {
-                arrived.removeFirst()
-                ticks.removeFirst()
-            }
-        }
-        feature.on<WorldChanged> { _, _ -> clearTicks() }
-    }
-
-    private fun clearTicks() {
-        arrived.clear()
-        ticks.clear()
+        feature.on<WorldChanged> { _, now -> clock.clear(now) }
     }
 
     fun hud(now: Long): HudBlock? {
         val shown = values.value
         if (shown.isEmpty()) return null
         val ping = if (pingCount == 0) null else (0 until minOf(pingCount, PINGS)).sumOf { pings[it] } / minOf(pingCount, PINGS)
-        val tps = tps(now)
+        val tps = clock.tps(now)
         fun TextBuilder.show(stat: Stat) = when (stat) {
             Stat.FPS -> if (fps < 0) muted("-") else value(fps.toLong())
             Stat.PING -> if (ping == null) muted("-") else {
@@ -133,28 +114,10 @@ class PerformanceStats(config: DsModConfig) : HasFeature {
         }
     }
 
-    /** The server's ticks per second, or null until the window spans long enough to tell. */
-    private fun tps(now: Long): Double? {
-        if (arrived.isEmpty()) return null
-        val newest = arrived.last()
-        val end = if (now - newest > STALL_MILLIS) now else newest
-        val span = end - arrived.first()
-        if (span < MIN_SPAN_MILLIS) return null
-        return ((ticks.last() - ticks.first()) * 1000.0 / span).coerceIn(0.0, MAX_TPS)
-    }
-
     private companion object {
         const val PINGS = 5
         const val PING_WARNING = 150L
         const val PING_BAD = 300L
-        const val TPS_WINDOW_MILLIS = 10_000L
-
-        // Three of the server's once-a-second clocks, two seconds apart give or take the network's jitter.
-        const val MIN_SPAN_MILLIS = 1_500L
-
-        // The server sends its clock once a second, so three seconds without it is a server that stopped.
-        const val STALL_MILLIS = 3_000L
-        const val MAX_TPS = 20.0
         const val TPS_WARNING = 18.0
         const val TPS_BAD = 12.0
     }

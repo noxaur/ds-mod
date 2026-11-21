@@ -167,13 +167,15 @@ gate edge.mixin.PlayerShapeMixin b04e55336509
 gate edge.mixin.RecipeButtonMixin draws
     hooks ImageButton.extractContents
     approved by github.com/noxaur 2026-11-16T01:17:00Z
-gate edge.mixin.ServerPacketsMixin 7b36e8a1121b
+gate edge.mixin.ServerPacketsMixin 6b7a36388e18
     hooks ClientPacketListener.handleBlockUpdate
     hooks ClientPacketListener.handleChunkBlocksUpdate
     hooks ClientPacketListener.handleEntityEvent
     hooks ClientPacketListener.handlePongResponse
     hooks ClientPacketListener.handleSetTime
+    hooks ClientPacketListener.handleSystemChat
     hooks ClientPacketListener.setActionBarText
+    approved by github.com/noxaur 2026-11-21T00:09:00Z
 gate edge.mixin.SlotClickMixin 4a2f8fda01b4
     hooks AbstractContainerScreen.slotClicked
     approved by github.com/noxaur 2026-11-16T01:17:00Z

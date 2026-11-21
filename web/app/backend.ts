@@ -21,8 +21,15 @@ const Current = Schema.NullOr(
   Schema.Struct({ session: Schema.Struct({ expiresAt: Schema.DateFromString }), user: User }),
 );
 
-const call = (path: string, init: RequestInit) =>
-  Effect.tryPromise(() => fetch(`${backendUrl}/api/auth/${path}`, { ...init, cache: "no-store" })).pipe(
+const withTrustedKey = (headers: Record<string, string>) => {
+  const key = process.env["AUTH_TRUSTED_KEY"];
+  return key === undefined || key === "" ? headers : { ...headers, "x-auth-trusted-key": key };
+};
+
+const call = (path: string, init: RequestInit & { headers: Record<string, string> }) =>
+  Effect.tryPromise(() =>
+    fetch(`${backendUrl}/api/auth/${path}`, { ...init, headers: withTrustedKey(init.headers), cache: "no-store" }),
+  ).pipe(
     Effect.filterOrFail((response) => response.ok),
     Effect.flatMap((response) => Effect.tryPromise(() => response.json() as Promise<unknown>)),
     // Around the body too, which can stall after the headers arrived.

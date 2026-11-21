@@ -9,7 +9,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
 import net.minecraft.core.component.DataComponents
-import net.minecraft.gizmos.Gizmos
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.item.ItemStack
@@ -51,20 +50,6 @@ class EtherwarpOutlineTest : FabricClientGameTest {
         context.waitTicks(3)
     }
 
-    /**
-     * Takes a screenshot with a box drawn for one frame in it. Fabric's screenshot draws a frame of its own, outside
-     * the game's frame loop, which is where the game opens the collector a frame's gizmos go to. Without it, the box
-     * that a real frame draws has nowhere to go, so the collector is opened around the screenshot.
-     */
-    private fun screenshot(context: ClientGameTestContext, name: String): Path {
-        val frame = context.computeOnClient<Gizmos.TemporaryCollection, Nothing> { it.levelExtractor.collectPerFrameMainThreadGizmos() }
-        try {
-            return context.takeScreenshot(name)
-        } finally {
-            context.runOnClient<Nothing> { frame.close() }
-        }
-    }
-
     private fun set(context: ClientGameTestContext, world: TestSingleplayerContext, vararg commands: String) {
         commands.forEach(world.server::runCommand)
         context.waitTicks(3)
@@ -96,12 +81,12 @@ class EtherwarpOutlineTest : FabricClientGameTest {
 
                 hold(context, world, aspect)
                 check(target(context) == Etherwarp.Target(10, 101, 0, null)) { "The wall is not boxed as a warp: ${target(context)}" }
-                val valid = screenshot(context, "etherwarp-valid")
+                val valid = context.screenshot("etherwarp-valid")
                 check(near(valid, 0x55FF55) > 50) { "The screenshot shows no green box" }
 
                 set(context, world, "setblock 10 102 0 stone")
                 check(target(context) == Etherwarp.Target(10, 101, 0, Miss.NO_ROOM)) { "A block above the wall is not No Room: ${target(context)}" }
-                val noRoom = screenshot(context, "etherwarp-no-room")
+                val noRoom = context.screenshot("etherwarp-no-room")
                 check(near(noRoom, 0xFF5555) > 50) { "The screenshot shows no red box" }
                 DsModClient.feature<EtherwarpOutline>().failed.value = false
                 context.waitTicks(2)
@@ -111,7 +96,7 @@ class EtherwarpOutlineTest : FabricClientGameTest {
                 // The eye is half a block into its own, so x 58's near side is 57.5 blocks out, past the range.
                 set(context, world, "fill 10 101 0 10 102 0 air", "setblock 58 101 0 stone")
                 check(target(context) == Etherwarp.Target(58, 101, 0, Miss.TOO_FAR)) { "A block past the range is not Too Far: ${target(context)}" }
-                screenshot(context, "etherwarp-too-far")
+                context.screenshot("etherwarp-too-far")
                 set(context, world, "setblock 57 101 0 stone")
                 check(target(context) == Etherwarp.Target(57, 101, 0, null)) { "The last block in range is not boxed as a warp: ${target(context)}" }
 

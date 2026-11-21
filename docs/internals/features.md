@@ -32,7 +32,7 @@ Reading an item out of Minecraft is the costly part of a menu, and a chest of lo
 
 ## Packets that leave no state are posted as they arrive
 
-The tab list and the open container are client state, so the edge polls them. An action bar or a death leaves nothing to poll, and their order carries meaning: the Combat XP the server shows right after a death is the only sign of whose kill it was. So both are posted as they arrive. Polled once a tick, they would arrive in the poll's order and not the server's.
+The tab list and the open container are client state, so the edge polls them. An action bar, a death or a chat line leaves nothing to poll, and their order carries meaning: the Combat XP the server shows right after a death is the only sign of whose kill it was. So each is posted as it arrives. A chat line is read before Fabric asks whether it may show, because Fabric stops asking at the first refusal, and a line another mod hid would never reach a feature. A feature still hides a line through that question.
 
 ## Ping is asked for, and TPS is read from the server's clock
 

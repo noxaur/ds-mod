@@ -24,12 +24,12 @@ object PlayerNames {
     /** The server speaks for its own characters with these tags, as in `[NPC] Mort: Good luck.` */
     private val notPlayer = Regex("""^\[(?:NPC|BOSS)\] """)
 
-    /**
-     * Lines that start with a player's name, which is group 1. The first is a chat message: an optional channel such
-     * as `Guild > `, the rank, the name, at most one tag or symbol such as `[IRON]` or `✯`, then `: `.
-     */
+    private val speaker = Regex("""^(?:\w+ > )?$RANK(\w+)(?: \[[^\]]+\]| \S)?: """)
+
+    private val outsideTags = Regex("""\[[^\]]*\]|(\w+)""")
+
     private val atStart = listOf(
-        Regex("""^(?:\w+ > )?$RANK(\w+)(?: \[[^\]]+\]| \S)?: """),
+        speaker,
         Regex("""^\[[+-]\] $RANK(\w+)"""),
         Regex("""^$RANK(\w+) (?:has obtained |is now ready|opened a |just activated )"""),
         Regex("""^» $RANK(\w+) placed a Summoning Eye"""),
@@ -52,20 +52,17 @@ object PlayerNames {
     // The server writes `You` where the line is about the player themselves, as in `» You placed a Summoning Eye!`.
     private fun isName(name: String) = name.length >= 3 && name != "You" && !name.matches(textureName)
 
-    /**
-     * Where the words a player typed sit in [message]. On each line, whatever follows the first [known] name and the
-     * next `: ` is typed, whatever stands around the name, as in `[MVP+] Alice [IRON]: x`, `Party > Alice: x` and
-     * `You whisper to Bob: x`, because the server never puts a `: ` after a player's name in its own lines. The server's
-     * whisper, party and guild lines are in no capture yet, and this needs no list of them. A line of a boss's damage
-     * summary names a player and has no `: `, so its figures stay, and what the server's characters say, as in
-     * `[NPC] Mort: `, is never typed, even when a player shares the name.
-     */
-    fun typed(message: String, known: Set<String>): List<IntRange> = buildList {
+    class Typed(val words: IntRange, val names: List<IntRange>)
+
+    fun typed(message: String): List<Typed> = buildList {
         var start = 0
         for (line in message.split('\n')) {
-            val name = if (notPlayer.containsMatchIn(line)) null else word.findAll(line).firstOrNull { it.value in known }
-            val colon = name?.let { line.indexOf(": ", it.range.last + 1) } ?: -1
-            if (colon >= 0 && colon + 2 < line.length) add(start + colon + 2 until start + line.length)
+            val colon = line.indexOf(": ")
+            if (colon > 0 && colon + 2 < line.length && !line[0].isWhitespace() && !notPlayer.containsMatchIn(line)) {
+                val names = if (speaker.containsMatchIn(line)) emptyList()
+                else outsideTags.findAll(line.substring(0, colon)).mapNotNull { it.groups[1]?.range }.filter { isName(line.substring(it)) }.toList()
+                add(Typed(start + colon + 2 until start + line.length, names.map { start + it.first..start + it.last }))
+            }
             start += line.length + 1
         }
     }
@@ -93,12 +90,16 @@ object PlayerNames {
 
     private fun String.names(ranges: List<IntRange>) = ranges.map(::substring).filter(::isName)
 
-    /** Where [text], one chat message, shows a name: whoever it starts with, and whoever it names inside. */
-    fun inText(text: String): List<IntRange> {
-        if (notPlayer.containsMatchIn(text)) return emptyList()
-        val ranges = listOfNotNull(atStart.firstNotNullOfOrNull { it.find(text) }?.groups?.get(1)?.range) +
-            inside.findAll(text).flatMap { it.ranges() }
-        return ranges.filter { isName(text.substring(it)) }
+    fun inText(text: String): List<IntRange> = buildList {
+        var start = 0
+        for (line in text.split('\n')) {
+            if (!notPlayer.containsMatchIn(line)) {
+                val ranges = listOfNotNull(atStart.firstNotNullOfOrNull { it.find(line) }?.groups?.get(1)?.range) +
+                    inside.findAll(line).flatMap { it.ranges() }
+                ranges.filter { isName(line.substring(it)) }.forEach { add(start + it.first..start + it.last) }
+            }
+            start += line.length + 1
+        }
     }
 
     /**
