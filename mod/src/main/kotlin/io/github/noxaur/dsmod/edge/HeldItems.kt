@@ -156,7 +156,8 @@ object HeldItems {
 
     /** How many ticks the player's own swing lasts, from the game's [ticks]. Everyone else swings at their own pace. */
     fun swingTicks(entity: LivingEntity, ticks: Int): Int {
-        if (entity !== Minecraft.getInstance().player || !on) return ticks
+        val client = Minecraft.getInstance()
+        if (entity !== client.player || !client.options.cameraType.isFirstPerson || !on) return ticks
         val s = settings
         val base = if (s.ignoreHaste.value) entity.getItemInHand(entity.swingingArm ?: InteractionHand.MAIN_HAND).swingAnimation.duration() else ticks
         return HeldItem.swingTicks(base, s.swingSpeed.value)

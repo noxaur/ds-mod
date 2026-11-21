@@ -22,9 +22,9 @@ A line's time can't tell ticks apart: two events 49 ms apart can be one tick, an
 
 Developers' accounts can't reach all of the server, so players record it for them, and the recorder ships in the jar a player installs. It runs only for a contribution the player accepted, or in the debug build. While none runs it costs a frame one check, and the file is redacted before it leaves the machine. Recording reads game state on the client thread, so writing, redacting and uploading happen on other threads.
 
-## A capture is redacted by rules that say where a name sits
+## A capture is redacted by rules that say where a name sits, and typed chat fails closed
 
-A fixture goes into a public repository, so a capture is rewritten to hold no player name and no typed chat. A redactor fails both ways: a missed name leaves the machine, and a word taken for a name changes what the server sent. So each rule says where in a text a name sits. Typed chat is found by its shape, a known name and a colon, because the server's private chat formats are in no capture, and a list of them would be a guess that passes its own tests.
+A fixture goes into a public repository, so a capture is rewritten to hold no player name and no typed chat. A missed name leaves the machine, and a word taken for a name changes what the server sent, so each rule says where in a text a name sits. Typed chat fails closed: whatever follows the first colon of a line is typed, unless the line is indented or spoken by one of the server's own characters, as its lines with a colon almost always are. Needing a known name was rejected, because a speaker no other line names kept both name and words.
 
 ## Fixtures are checked for names two ways
 

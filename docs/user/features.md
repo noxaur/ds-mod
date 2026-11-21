@@ -25,7 +25,7 @@ Changes how your held item swings and where it sits in first person. Each settin
 | Setting | Does |
 | --- | --- |
 | Swing Style | Vanilla, 1.7 to hold the sword across the screen while you swing, Exhibition for the same with the sword sliding down on each hit, Spin for a full turn, or Stab to thrust it at the crosshair like a spear |
-| Swing Speed | Speeds your swing up to 3 times, or slows it down to a tenth |
+| Swing Speed | Speeds your swing up to 3 times, or slows it down to a tenth, in first person. In third person your arm swings at the game's own pace |
 | Item Size | Grows the item to twice its size, or shrinks it to a tenth |
 
 Open **Item Position** to move the item with Item X, Item Y and Item Z, or turn it about its grip with Item Yaw, Item Pitch and Item Roll. Your off hand mirrors them. Open **Swing Options** for:
