@@ -62,4 +62,14 @@ val rules = listOf(
         example = "val gold = 0xFF_AA_00",
         examples = listOf("val glass = 0xFF_AA_00_FF", "val gold = 0xFFAA00"),
     ),
+    Rule(
+        id = "send-through-player-commands",
+        files = "{src/main/**/edge/**,src/debug/**}",
+        except = "src/main/kotlin/**/edge/PlayerCommands.kt",
+        forbid = Regex("""(\.|::)\s*send(Command|Chat|UnattendedCommand)\b"""),
+        fix = "Send a command for the player with `PlayerCommands.send(command)`, and a chat line with `PlayerCommands.chat(line)`, " +
+            "so every command and chat line the mod sends for the player leaves from one place.",
+        example = "connection.sendCommand(message.text)",
+        examples = listOf("connection.sendChat(message.text)", "Minecraft.getInstance().connection!!::sendCommand", "connection.sendUnattendedCommand(command, null)"),
+    ),
 )
