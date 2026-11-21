@@ -9,6 +9,7 @@ import io.github.noxaur.dsmod.edge.HeldItems;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
@@ -39,9 +40,9 @@ abstract class HeldItemMixin {
         }
     }
 
-    @ModifyExpressionValue(method = "submitHandsWithItems", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/item/ItemModelResolver;swapAnimationScale(Lnet/minecraft/world/item/ItemStack;)F"))
-    private float dsmod$swapDepth(float scale) {
-        return HeldItems.INSTANCE.swapDepth(scale);
+    @WrapOperation(method = "submitHandsWithItems", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/item/ItemModelResolver;swapAnimationScale(Lnet/minecraft/world/item/ItemStack;)F"))
+    private float dsmod$swapDepth(ItemModelResolver resolver, ItemStack stack, Operation<Float> original) {
+        return HeldItems.INSTANCE.swapDepth(stack, original.call(resolver, stack));
     }
 
     private static HumanoidArm dsmod$armOf(AbstractClientPlayer player, InteractionHand hand) {

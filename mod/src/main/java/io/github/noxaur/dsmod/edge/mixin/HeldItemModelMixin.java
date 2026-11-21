@@ -22,8 +22,10 @@ abstract class HeldItemModelMixin {
 
     @WrapOperation(method = "applyTransform", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/cuboid/ItemTransform;apply(ZLcom/mojang/blaze3d/vertex/PoseStack$Pose;)V"))
     private void dsmod$hold(ItemTransform transform, boolean left, PoseStack.Pose pose, Operation<Void> original) {
+        boolean flip = specialRenderer == null && HeldItems.INSTANCE.getFlipping();
+        if (flip) HeldItems.INSTANCE.beforeHold(pose);
         if (!HeldItems.INSTANCE.hold(transform, left, pose)) original.call(transform, left, pose);
-        if (specialRenderer == null && HeldItems.INSTANCE.getFlipping()) HeldItems.INSTANCE.flip(pose);
+        if (flip) HeldItems.INSTANCE.flip(pose);
     }
 
     @WrapOperation(method = "submit", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitItem(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/world/item/ItemDisplayContext;III[ILjava/util/List;Lnet/minecraft/client/renderer/item/ItemStackRenderState$FoilType;)V"))

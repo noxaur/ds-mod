@@ -71,9 +71,16 @@ class HeldItemTest {
 
     @Test
     fun `an item past the screen's edge takes the view past it too`() {
-        val frame = ScreenView.frame(Frame(0.9f, 0.6f, 1.3f, 1f), right = true, shape = 1.5f)
-        assertTrue(frame.right >= 1.3f, "$frame")
+        val frame = ScreenView.frame(Frame(0.9f, 0.6f, 1.2f, 1f), right = true, shape = 1.5f)
+        assertTrue(frame.right >= 1.2f, "$frame")
         assertFalse(frame.onScreen)
+        assertEquals(1.5f, frame.width / frame.height, 1e-4f)
+    }
+
+    @Test
+    fun `an item that runs far past the edge, as one near the eye does, shows only a quarter screen past it`() {
+        val frame = ScreenView.frame(Frame(0.5f, 0.4f, 4f, 3f), right = true, shape = 1.5f)
+        assertTrue(frame.top >= 0.3f && frame.bottom <= 1 + ScreenView.OVERFLOW + 1e-5f, "$frame")
         assertEquals(1.5f, frame.width / frame.height, 1e-4f)
     }
 

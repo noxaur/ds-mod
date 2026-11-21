@@ -10,10 +10,13 @@ import io.github.noxaur.dsmod.core.hand.HeldItem
 import io.github.noxaur.dsmod.core.hand.ScreenView
 import io.github.noxaur.dsmod.core.ui.Narration
 import io.github.noxaur.dsmod.edge.mixin.GuiGraphicsAccessor
+import io.github.noxaur.dsmod.edge.mixin.ItemLayerAccessor
+import io.github.noxaur.dsmod.edge.mixin.ItemRenderStateAccessor
 import io.github.noxaur.dsmod.edge.ui.Box
 import io.github.noxaur.dsmod.edge.ui.BoxEditor
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.SettingRows
+import it.unimi.dsi.fastutil.floats.FloatArrayList
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.narration.NarratedElementType
@@ -28,6 +31,8 @@ import net.minecraft.client.renderer.SubmitNodeCollector
 import net.minecraft.client.renderer.item.ItemStackRenderState
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState
 import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.client.resources.model.geometry.BakedQuad
+import net.minecraft.core.Direction
 import net.minecraft.core.component.DataComponents
 import net.minecraft.util.LightCoordsUtil
 import net.minecraft.world.entity.HumanoidArm
@@ -197,12 +202,18 @@ class HeldItemPreview : BoxEditor {
         val samples = if (ticks == 0) 0 else SWING_SAMPLES
         HeldItems.drawing = true
         try {
+            outline.clear()
+            visitOutline(measured) {
+                outline.add(it.x)
+                outline.add(it.y)
+                outline.add(it.z)
+            }
             for (i in 0..samples) {
                 pose.setIdentity()
                 HeldItems.firstPerson(pose, arm, stack, if (samples == 0) 0f else i.toFloat() / (samples + 1))
                 val matrix = pose.last().pose()
-                measured.visitExtents { extent ->
-                    matrix.transformPosition(extent, point)
+                for (at in 0 until outline.size step 3) {
+                    matrix.transformPosition(point.set(outline.getFloat(at), outline.getFloat(at + 1), outline.getFloat(at + 2)))
                     projection.transform(clip.set(point, 1f))
                     if (clip.w > HAND_NEAR) {
                         val x = (clip.x / clip.w + 1) / 2
@@ -218,6 +229,26 @@ class HeldItemPreview : BoxEditor {
             HeldItems.drawing = false
         }
         return if (left > right) null else Frame(left, top, right, bottom)
+    }
+
+    private val outline = FloatArrayList()
+    private val layerPose = PoseStack.Pose()
+    private val corner = Vector3f()
+
+    private fun visitOutline(state: ItemStackRenderState, visit: (Vector3f) -> Unit) {
+        val layers = state as ItemRenderStateAccessor
+        var visited = false
+        for (i in 0 until layers.`dsmod$activeLayerCount`()) {
+            val layer = layers.`dsmod$layers`()[i] as ItemLayerAccessor
+            val quads = layer.`dsmod$quads`()
+            val edges = quads.filter { it.direction().axis != Direction.Axis.Z }.ifEmpty { quads }
+            if (edges.isEmpty()) continue
+            layerPose.setIdentity()
+            layer.`dsmod$applyTransform`(layerPose)
+            for (quad in edges) for (vertex in 0 until BakedQuad.VERTEX_COUNT) visit(corner.set(quad.position(vertex)).mulPosition(layerPose.pose()))
+            visited = true
+        }
+        if (!visited) state.visitExtents { visit(corner.set(it)) }
     }
 
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {

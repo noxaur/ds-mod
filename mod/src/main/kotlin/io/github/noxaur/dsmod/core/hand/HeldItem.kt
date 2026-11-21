@@ -60,6 +60,13 @@ data class Frame(val left: Float, val top: Float, val right: Float, val bottom: 
 
     fun union(other: Frame) = Frame(min(left, other.left), min(top, other.top), max(right, other.right), max(bottom, other.bottom))
 
+    fun within(bounds: Frame) = Frame(
+        left.coerceIn(bounds.left, bounds.right),
+        top.coerceIn(bounds.top, bounds.bottom),
+        right.coerceIn(bounds.left, bounds.right),
+        bottom.coerceIn(bounds.top, bounds.bottom),
+    )
+
     fun grow(by: Float) = Frame(left - by, top - by, right + by, bottom + by)
 
     fun growOnScreen(by: Float) = Frame(
@@ -79,9 +86,13 @@ data class Frame(val left: Float, val top: Float, val right: Float, val bottom: 
 object ScreenView {
     const val MARGIN = 0.03f
 
+    const val OVERFLOW = 0.25f
+
+    private val REACH = Frame(-OVERFLOW, -OVERFLOW, 1 + OVERFLOW, 1 + OVERFLOW)
+
     fun frame(item: Frame, right: Boolean, shape: Float): Frame {
         val corner = if (right) Frame(1f, 1f, 1f, 1f) else Frame(0f, 1f, 0f, 1f)
-        val needed = item.growOnScreen(MARGIN).union(corner)
+        val needed = item.within(REACH).growOnScreen(MARGIN).union(corner)
         return if (needed.width / needed.height < shape) {
             val (left, end) = widen(needed.left, needed.right, needed.height * shape, if (right) 1 else -1)
             Frame(left, needed.top, end, needed.bottom)
@@ -92,7 +103,7 @@ object ScreenView {
     }
 
     fun fit(item: Frame, shape: Float): Frame {
-        val room = item.grow(MARGIN)
+        val room = item.within(REACH).grow(MARGIN)
         val middleX = (room.left + room.right) / 2
         val middleY = (room.top + room.bottom) / 2
         val width = max(room.width, room.height * shape)

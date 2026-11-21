@@ -120,14 +120,14 @@ gate edge.mixin.FloatingTextMixin 1178eba96f0a
 gate edge.mixin.FullbrightMixin 4c8ba0a85eab  Fullbright
     hooks LightmapRenderStateExtractor.extract
     approved by github.com/noxaur 2026-11-16T08:42:00Z
-gate edge.mixin.HeldItemMixin 83fd975c7f4b
+gate edge.mixin.HeldItemMixin 68ce469876e1
     hooks ItemInHandRenderer.itemUsed
     hooks ItemInHandRenderer.shouldInstantlyReplaceVisibleItem
     hooks ItemInHandRenderer.submitArmWithItem
     hooks ItemInHandRenderer.submitHandsWithItems
     hooks ItemInHandRenderer.swingArm
     hooks ItemInHandRenderer.tick
-gate edge.mixin.HeldItemModelMixin e488dcae6aee
+gate edge.mixin.HeldItemModelMixin 305583a74354
     hooks ItemStackRenderState.LayerRenderState.applyTransform
     hooks ItemStackRenderState.LayerRenderState.submit
 gate edge.mixin.HiddenTextMixin a90e72dc5f00
@@ -135,6 +135,8 @@ gate edge.mixin.HiddenTextMixin a90e72dc5f00
 gate edge.mixin.HudHotbarMixin draws
     hooks Hud.extractSlot
     approved by github.com/noxaur 2026-11-16T01:17:00Z
+gate edge.mixin.ItemLayerAccessor 44bd4cac718b
+    opens ItemStackRenderState.LayerRenderState's private code
 gate edge.mixin.KeyInputMixin 5ebcb38f55be
     hooks KeyboardHandler.keyPress
     approved by github.com/noxaur 2026-11-16T01:17:00Z

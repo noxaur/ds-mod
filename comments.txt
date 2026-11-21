@@ -2248,7 +2248,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** * Moves the it
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** * Runs just before the item is drawn, after every swing and use pose, so the item turns and grows about the grip * and stays in the hand. Yaw and roll are mirrored for the left hand, as the hands are. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** How many ticks the player's own swing lasts, from the game's [ticks]. Everyone else swings at their own pace. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** The game's own swing moves the hand by this much, times [reach]. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** What the player holds in the hand on [arm]'s side. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** Whether the game may lower the item after the player uses it. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** Whether the hand shows [next] at once instead of lowering [shown] first. No Equip Reset does for the same item. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Hits.kt: /** * Posts [Hit] for the player's own attack on a living entity, which the server says nothing of. It only watches: every * attack passes on as the player made it. Kept apart from the rest of the edge because reading a Fabric player event * is an input site the user audits. */

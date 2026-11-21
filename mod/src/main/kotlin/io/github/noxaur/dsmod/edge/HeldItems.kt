@@ -25,6 +25,7 @@ import net.minecraft.world.item.ProjectileWeaponItem
 import net.minecraft.world.item.SwingAnimationType
 import org.joml.Matrix4f
 import org.joml.Quaternionf
+import org.joml.Vector3f
 
 private const val PI = Math.PI.toFloat()
 private const val DEGREES = PI / 180
@@ -38,25 +39,18 @@ object HeldItems {
 
     private fun side(arm: HumanoidArm) = if (arm == HumanoidArm.RIGHT) 1 else -1
 
-    /** What the player holds in the hand on [arm]'s side. */
-    private fun held(arm: HumanoidArm): ItemStack {
-        val player = Minecraft.getInstance().player ?: return ItemStack.EMPTY
-        return if (arm == player.mainArm) player.mainHandItem else player.offhandItem
-    }
+    private val drawn = arrayOf(ItemStack.EMPTY, ItemStack.EMPTY)
 
     fun canBlock(stack: ItemStack) = stack.`is`(ItemTags.SWORDS)
 
-    val blocking: Boolean
-        get() {
-            if (!on || !settings.blocking.value || style == HandStyle.STAB) return false
-            val client = Minecraft.getInstance()
-            val player = client.player ?: return false
-            return client.options.keyUse.isDown && canBlock(player.mainHandItem)
-        }
+    private fun blocking(stack: ItemStack): Boolean {
+        if (!on || !settings.blocking.value || style == HandStyle.STAB) return false
+        return Minecraft.getInstance().options.keyUse.isDown && canBlock(stack)
+    }
 
     fun blocks(entity: Any, arm: HumanoidArm): Boolean {
         val player = Minecraft.getInstance().player
-        return entity === player && arm == player.mainArm && blocking
+        return entity === player && arm == player.mainArm && blocking(player.mainHandItem)
     }
 
     /**
@@ -64,6 +58,7 @@ object HeldItems {
      * blade, and outward for either hand. The empty hand and a map are not an item to move.
      */
     fun place(pose: PoseStack, arm: HumanoidArm, stack: ItemStack) {
+        drawn[arm.ordinal] = stack
         if (!on || stack.isEmpty || stack.has(DataComponents.MAP_ID)) return
         val s = settings
         val x = s.itemX.value
@@ -92,7 +87,8 @@ object HeldItems {
 
     fun swing(pose: PoseStack, arm: HumanoidArm, attack: Float, spear: Boolean): Boolean {
         val player = Minecraft.getInstance().player
-        return swing(pose, arm, attack, held(arm), spear, player != null && arm == player.mainArm && blocking)
+        val stack = drawn[arm.ordinal]
+        return swing(pose, arm, attack, stack, spear, player != null && arm == player.mainArm && blocking(stack))
     }
 
     private fun swing(pose: PoseStack, arm: HumanoidArm, attack: Float, stack: ItemStack, spear: Boolean, blocks: Boolean): Boolean {
@@ -160,8 +156,17 @@ object HeldItems {
 
     val flipping: Boolean get() = drawing && on && settings.flip.value
 
+    private val beforeHold = Matrix4f()
+    private val afterHold = Matrix4f()
+    private val grip = Vector3f()
+
+    fun beforeHold(pose: PoseStack.Pose) {
+        beforeHold.set(pose.pose())
+    }
+
     fun flip(pose: PoseStack.Pose) {
-        pose.translate(1f, 0f, 0f)
+        afterHold.set(pose.pose()).invert().transformPosition(beforeHold.getTranslation(grip))
+        pose.translate(2 * grip.x, 0f, 0f)
         pose.scale(-1f, 1f, 1f)
     }
 
@@ -223,8 +228,12 @@ object HeldItems {
         return HeldItem.swingTicks(base, s.swingSpeed.value)
     }
 
-    fun swapDepth(scale: Float): Float =
-        if (on && style == HandStyle.STAB) Minecraft.getInstance().itemModelResolver.swapAnimationScale(SPEAR_TO_COPY) else scale
+    fun swapDepth(stack: ItemStack, scale: Float): Float =
+        if (on && style == HandStyle.STAB && !stack.isEmpty && !stack.has(DataComponents.MAP_ID)) {
+            Minecraft.getInstance().itemModelResolver.swapAnimationScale(SPEAR_TO_COPY)
+        } else {
+            scale
+        }
 
     fun swapScale(scale: Float): Float = if (noDipAfterHit) 1f else scale
 

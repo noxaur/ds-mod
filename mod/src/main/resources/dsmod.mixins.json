@@ -24,6 +24,8 @@
     "HeldItemMixin",
     "HeldItemModelMixin",
     "HiddenTextMixin",
+    "ItemLayerAccessor",
+    "ItemRenderStateAccessor",
     "HudHotbarMixin",
     "KeyInputMixin",
     "KeyPressMixin",
