@@ -934,4 +934,3 @@
 +  17.9s > (slot 44) 1 x SkyBlock Menu (Right Click)
 +  17.9s > (slot 42) 2 x Enchanted Obsidian
              - slot 22
-saved forge-craft.json = {"amount":5}
