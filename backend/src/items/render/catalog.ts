@@ -1,8 +1,8 @@
 import { Schema } from "effect";
 
-import { parseLegacy } from "../legacy.ts";
+import { parseLegacy } from "../../upstream/legacy.ts";
 import type { Line } from "../model.ts";
-import { count, flag, lenient, lists, numbers, parseColor, record, strings, text } from "./read.ts";
+import { count, flag, lenient, lists, numbers, parseColor, record, strings, text } from "../../upstream/read.ts";
 
 const skin = lenient(Schema.Struct({ value: Schema.String }));
 
