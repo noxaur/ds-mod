@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge.mixin;
 
+import io.github.noxaur.dsmod.edge.SkyBlockMenuClicks;
 import io.github.noxaur.dsmod.edge.SlotGuards;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.inventory.ContainerInput;
@@ -14,6 +15,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 abstract class SlotClickMixin {
     @Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true)
     private void dsmod$locked(Slot slot, int slotId, int button, ContainerInput input, CallbackInfo ci) {
-        if (SlotGuards.INSTANCE.refuses((AbstractContainerScreen<?>) (Object) this, slot, button, input)) ci.cancel();
+        if (SkyBlockMenuClicks.INSTANCE.opens(slot, input) || SlotGuards.INSTANCE.refuses((AbstractContainerScreen<?>) (Object) this, slot, button, input)) ci.cancel();
     }
 }
