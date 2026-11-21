@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.PingMeasured
 import io.github.noxaur.dsmod.core.game.ServerTime
+import io.github.noxaur.dsmod.core.game.SystemMessage
 import net.minecraft.client.Minecraft
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
@@ -27,6 +28,20 @@ object Packets {
     fun actionBar(text: Component) {
         val game = DsModClient.game
         if (game.wants(ActionBar::class.java)) game.post(System.currentTimeMillis(), ActionBar(text.toText()))
+    }
+
+    private var shown = true
+
+    fun systemChat(text: Component, overlay: Boolean) {
+        if (overlay) return actionBar(text)
+        val game = DsModClient.game
+        shown = !game.wants(SystemMessage::class.java) || game.post(System.currentTimeMillis(), SystemMessage(text.toText()))
+    }
+
+    fun shows() = shown
+
+    fun systemChatHandled() {
+        shown = true
     }
 
     fun time(gameTime: Long) {
