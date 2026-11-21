@@ -11,8 +11,8 @@ import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudLook
 import io.github.noxaur.dsmod.core.text.TextBuilder
+import io.github.noxaur.dsmod.core.text.fixed
 import io.github.noxaur.dsmod.core.text.grouped
-import java.util.Locale
 
 /** A value Performance Stats can show. */
 enum class Stat(private val label: String) {
@@ -92,7 +92,7 @@ class PerformanceStats(config: DsModConfig) : HasFeature {
                 muted(" ms")
             }
             Stat.TPS -> if (tps == null) muted("-") else {
-                val rate = "%.1f".format(Locale.US, tps)
+                val rate = fixed(tps, 1)
                 when {
                     tps < TPS_BAD -> bad(rate)
                     tps < TPS_WARNING -> warning(rate)

@@ -62,4 +62,44 @@ val rules = listOf(
         example = "val gold = 0xFF_AA_00",
         examples = listOf("val glass = 0xFF_AA_00_FF", "val gold = 0xFFAA00"),
     ),
+    Rule(
+        id = "number-by-helper",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        forbid = Regex("""\.format\("""),
+        fix = "Write a number with `fixed`, `amount`, `grouped` or `short`, and a time with `clock`, `duration` or " +
+            "`secondsLeft`, from core.text. If none fits, add one to `core/text/Numbers.kt`.",
+        example = """value("%.1f".format(Locale.US, tps))""",
+        examples = listOf("""String.format(Locale.US, "%.1fs", seconds)"""),
+    ),
+    Rule(
+        id = "rate-by-helper",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        forbid = Regex("""MILLIS_PER_(HOUR|MINUTE)|\b3_?600_?000\b"""),
+        fix = "Turn a count over a span into a rate with `perHour(count, millis)`, and a wait into text with " +
+            "`duration(millis)` or `secondsLeft(millis)`, from core.text.",
+        example = "const val MILLIS_PER_HOUR = 3_600_000.0",
+        examples = listOf("val rate = eyes * 3600000 / inEnd", "left / MILLIS_PER_MINUTE"),
+    ),
+    Rule(
+        id = "count-by-helper",
+        files = "src/main/kotlin/**/core/**.kt",
+        except = "src/main/kotlin/**/core/text/**.kt",
+        forbid = Regex(
+            """groupValues(\[\d+]|\??\.get\(\d+\))\??\.to(Int|Long|Double|Float)|\.replace\(",", ""\)|""" +
+                """(destructured\??\.let\s*\{\s*|\bline\([^{}\n]*\{\s*(?=\([\w\s,]*\)\s*,\s*\w+\s*->)|val\s*)\([\w\s,]*?\b(?<name>\w+)\b[\w\s,]*?\)""" +
+                """(\s*,\s*\w+)?\s*(->|=[^\n]*destructured)(?:[^{}]|\{[^{}]*})*?\b\k<name>\??\.to(Int|Long|Double|Float)(OrNull)?\(\)""",
+        ),
+        fix = "Read a number the server wrote with `count(text)` for a whole one or `number(text)` for one with decimals, " +
+            "from core.text. Both take the commas and give null for text that is no number.",
+        example = """toNext = left.replace(",", "").toLong()""",
+        examples = listOf(
+            "position = match.groupValues[1].toInt()",
+            "PERCENT.find(it)?.groupValues?.get(1)?.toFloatOrNull()",
+            "feature.line(\"Activated \", ACTIVATED) { (level, name), _ -> summoned(name, level.toInt()) }",
+            "QUEUE.matchEntire(name)?.destructured?.let { (count, size) ->\n    queued = count.toInt()\n    queueSize = size.toInt()\n}",
+            "val (dealt, place) = yours?.destructured ?: return@line\nposition = place.toInt()",
+            "val (level, name) = LINE.matchEntire(plain)?.destructured ?: return null\nval color = spans.lastOrNull { it.isNotBlank() }\nreturn Pet(name, level.toIntOrNull())",
+        ),
+        span = Span.FILE,
+    ),
 )
