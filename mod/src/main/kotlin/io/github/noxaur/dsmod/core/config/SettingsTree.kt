@@ -45,6 +45,7 @@ import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
 import io.github.noxaur.dsmod.core.feature.inventory.HotdButton
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
+import io.github.noxaur.dsmod.core.feature.inventory.SkyBlockMenuClick
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.feature.loot.RareDropAlert
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerBossAlert
@@ -260,6 +261,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                     group(BetterUi(c)) {
                         feature(BackButtons(c))
                         feature(MenuTabs(c))
+                        feature(SkyBlockMenuClick(c))
                         feature(HotdButton(c))
                     }
                 }

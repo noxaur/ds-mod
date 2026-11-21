@@ -75,6 +75,8 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         val animations = spot("animations")
         click(animations.x + 8, animations.y + 8)
         key(GLFW.GLFW_KEY_RIGHT)
+        val held = spot("itemPosition")
+        click(held.x + 20, held.y + 10)
         check(context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).marked("itemSize") }) { "Item Size showed no changed marker" }
         val reset = spot("resetAnimations")
         click(reset.controlX + reset.controlWidth / 2, reset.controlY + reset.controlHeight / 2)
