@@ -14,7 +14,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.fabricmc.fabric.mixin.client.gametest.input.KeyboardHandlerAccessor
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.ImageButton
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
@@ -38,17 +37,9 @@ class MenuTabsTest : FabricClientGameTest {
 
     private fun field(context: ClientGameTestContext) = ServerMenus.widget<KitTextField>(context)
 
-    private fun click(context: ClientGameTestContext, x: Int, y: Int, button: Int = GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-        val scale = context.computeOnClient<Double, Nothing> { it.window.guiScale.toDouble() }
-        context.input.setCursorPos(x * scale, y * scale)
-        context.waitTicks(1)
-        context.input.pressMouse(button)
-        context.waitTicks(2)
-    }
-
     private fun click(context: ClientGameTestContext, tab: String) {
         val shown = tabs(context).first { it.name == tab }
-        click(context, shown.x + shown.width / 2, shown.y + 10)
+        context.click(shown.x + shown.width / 2, shown.y + 10, settle = 2)
     }
 
     private fun screenIs(context: ClientGameTestContext, title: String) =
@@ -97,7 +88,7 @@ class MenuTabsTest : FabricClientGameTest {
                 check(field(context)?.value == "dragon sword") { "The search did not follow into the next menu" }
 
                 val close = ServerMenus.widgets<KitButton>(context).first { it.message.string == "Close Search" }
-                click(context, close.x + 8, close.y + 8)
+                context.click(close.x + 8, close.y + 8, settle = 2)
                 check(field(context) == null && tabs(context).any { it.name == "Search" }) { "The close button left the bar open" }
 
                 context.runOnClient<Nothing> { client ->
@@ -119,7 +110,7 @@ class MenuTabsTest : FabricClientGameTest {
                 context.runOnClient<Nothing> { DsModClient.feature<MenuTabs>().tabs.value = TabLayout.DEFAULT }
 
                 context.runOnClient<Nothing> { it.player!!.closeContainer() }
-                context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }
+                context.openInventory()
                 context.waitTicks(3)
                 check(tabs(context).size == 5 && tabs(context).none { it.selected }) { "The inventory's tabs are wrong" }
                 context.takeScreenshot("menu-tabs-inventory")
@@ -131,12 +122,12 @@ class MenuTabsTest : FabricClientGameTest {
                     val button = Screens.getWidgets(screen).filterIsInstance<ImageButton>().single()
                     (button.x + button.width / 2 to button.y + button.height / 2) to (screen as ContainerScreenAccessor).leftPos
                 }
-                click(context, book.first, book.second)
+                context.click(book.first, book.second, settle = 2)
                 val moved = context.computeOnClient<Int, Nothing> { (it.gui.screen() as ContainerScreenAccessor).leftPos } - leftBefore
                 check(moved != 0) { "The recipe book did not move the inventory" }
                 check(tabs(context).map { it.x } == before.map { it + moved }) { "The tabs stayed put when the recipe book moved the inventory by $moved" }
                 context.takeScreenshot("menu-tabs-recipe-book")
-                click(context, book.first + moved, book.second)
+                context.click(book.first + moved, book.second, settle = 2)
                 check(tabs(context).map { it.x } == before) { "The tabs did not come back when the recipe book closed" }
 
                 context.runOnClient<Nothing> { DsModClient.feature<MenuTabs>().feature.enabled = false }

@@ -48,8 +48,7 @@ class KitTest : FabricClientGameTest {
         for (page in listOf(SettingsGalleryScreen.Page.LISTS, SettingsGalleryScreen.Page.PANELS)) {
             context.setScreen { SettingsGalleryScreen(page) }
             context.waitTicks(2)
-            context.input.setCursorPos(0.0, 0.0)
-            context.waitTicks(2)
+            context.point(0, 0, settle = 2)
             val name = page.name.lowercase()
             context.takeScreenshot("kit-$name-charcoal")
             context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
@@ -65,14 +64,10 @@ class KitTest : FabricClientGameTest {
         check(missing.isEmpty()) { "No page of the gallery of settings rows shows $missing" }
         fun press(id: String) {
             val spot = context.computeOnClient<SettingRows.Spot?, Nothing> { (it.gui.screen() as SettingsGalleryScreen).spot(id) } ?: error("No row $id")
-            context.input.setCursorPos((spot.controlX + 8) * 2.0, (spot.controlY + 8) * 2.0)
-            context.waitTick()
-            context.input.pressMouse(0)
-            context.waitTicks(2)
+            context.click(spot.controlX + 8, spot.controlY + 8, settle = 2)
         }
         val distance = context.computeOnClient<SettingRows.Spot?, Nothing> { (it.gui.screen() as SettingsGalleryScreen).spot("distance") }!!
-        context.input.setCursorPos((distance.x + 20) * 2.0, (distance.y + 6) * 2.0)
-        context.waitTicks(2)
+        context.point(distance.x + 20, distance.y + 6, settle = 2)
         context.takeScreenshot("kit-rows-charcoal")
         context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
         context.waitTicks(2)

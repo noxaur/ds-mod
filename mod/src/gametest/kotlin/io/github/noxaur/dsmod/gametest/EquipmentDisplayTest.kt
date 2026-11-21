@@ -48,9 +48,7 @@ class EquipmentDisplayTest : FabricClientGameTest {
             context.runOnClient<Nothing> { it.gui.setScreen(ChatScreen("", false)) }
             context.waitForScreen(ChatScreen::class.java)
             val chest = piece(1)
-            val scale = context.computeOnClient<Int, Nothing> { it.window.guiScale }
-            context.input.setCursorPos(chest.first * scale, chest.second * scale)
-            context.waitTicks(5)
+            context.point(chest.first, chest.second, settle = 5)
             context.takeScreenshot("equipment-display-tooltip")
             context.runOnClient<Nothing> { it.gui.setScreen(null) }
 

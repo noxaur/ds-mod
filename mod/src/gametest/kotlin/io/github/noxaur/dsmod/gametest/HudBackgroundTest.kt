@@ -48,10 +48,7 @@ class HudBackgroundTest : FabricClientGameTest {
                 context.waitForScreen(HudEditorScreen::class.java)
                 val box = context.computeOnClient<KitCheckbox, Nothing> { it.gui.screen()!!.children().filterIsInstance<KitCheckbox>().single() }
                 check(context.computeOnClient<Boolean, Nothing> { !box.active }) { "The Background box can be clicked off dragsim.co, where the HUD draws no plate" }
-                val at = context.computeOnClient<Pair<Double, Double>, Nothing> { (box.x + 5.0) * it.window.guiScale to (box.y + 5.0) * it.window.guiScale }
-                context.input.setCursorPos(at.first, at.second)
-                context.input.pressMouse(0)
-                context.waitTick()
+                context.click(box.x + 5, box.y + 5)
                 check(context.computeOnClient<Boolean, Nothing> { DsModClient.feature<HudBackground>().feature.enabled }) {
                     "A click on the disabled Background box turned HUD Background off"
                 }

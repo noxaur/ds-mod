@@ -42,9 +42,7 @@ class InventoryHudTest : FabricClientGameTest {
         context.runOnClient<Nothing> { it.gui.setScreen(ChatScreen("", false)) }
         context.waitForScreen(ChatScreen::class.java)
         val dyed = cell(context, 0, 1)
-        val scale = context.computeOnClient<Int, Nothing> { it.window.guiScale }
-        context.input.setCursorPos(dyed.first * scale, dyed.second * scale)
-        context.waitTicks(2)
+        context.point(dyed.first, dyed.second, settle = 2)
         context.takeScreenshot("inventory-hud-tooltip")
         context.runOnClient<Nothing> { it.gui.setScreen(null) }
 

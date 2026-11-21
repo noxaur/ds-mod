@@ -163,8 +163,7 @@ class CommandBindGroupsTest : FabricClientGameTest {
         }
         open(context, SettingsTabs(at("Binds")))
         list()
-        context.input.setCursorPos(0.0, 0.0)
-        context.waitTicks(2)
+        context.point(0, 0, settle = 2)
         context.takeScreenshot("command-binds-guide")
     }
 }

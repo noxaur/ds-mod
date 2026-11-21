@@ -18,7 +18,7 @@ class FixedMenuLayoutTest : FabricClientGameTest {
         listOf(6, 4, 3).map { rows ->
             ServerMenus.open(context, world, rows, "$rows Rows")
             context.takeScreenshot("$shot-$rows-rows")
-            ServerMenus.corner(context, rows * 9 - 6) to ServerMenus.corner(context, rows * 9)
+            context.slotCorner(rows * 9 - 6) to context.slotCorner(rows * 9)
         }
 
     override fun runTest(context: ClientGameTestContext) {

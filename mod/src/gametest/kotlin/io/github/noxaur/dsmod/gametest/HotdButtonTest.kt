@@ -22,9 +22,9 @@ class HotdButtonTest : FabricClientGameTest {
 
             ServerMenus.open(context, world, 6, "Dragon Sim Menu") { it.setItem(13, ServerMenus.named(Items.PLAYER_HEAD, "Your Dragon Sim Profile")) }
             val at = egg(context)
-            check(at == ServerMenus.corner(context, HotdShortcut.SLOT)) { "The egg is at $at, not in slot ${HotdShortcut.SLOT}" }
+            check(at == context.slotCorner(HotdShortcut.SLOT)) { "The egg is at $at, not in slot ${HotdShortcut.SLOT}" }
             context.takeScreenshot("hotd-button-charcoal")
-            ServerMenus.hover(context, HotdShortcut.SLOT)
+            context.hoverSlot(HotdShortcut.SLOT)
             context.takeScreenshot("hotd-button-hovered")
             context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
             context.waitTicks(2)
@@ -44,15 +44,13 @@ class HotdButtonTest : FabricClientGameTest {
             context.runOnClient<Nothing> { it.player!!.containerMenu.carried = ItemStack.EMPTY }
             context.waitTicks(2)
 
-            val (x, y) = ServerMenus.corner(context, HotdShortcut.SLOT)
-            val scale = context.computeOnClient<Double, Nothing> { it.window.guiScale.toDouble() }
-            context.input.setCursorPos((x - 0.5) * scale, (y - 0.5) * scale)
-            context.waitTicks(3)
+            val (x, y) = context.slotCorner(HotdShortcut.SLOT)
+            context.point(x - 0.5, y - 0.5, settle = 3)
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT)
             ServerMenus.shows(context, "Heart of the Dragon")
 
             ServerMenus.open(context, world, 6, "Dragon Sim Menu")
-            ServerMenus.hover(context, HotdShortcut.SLOT)
+            context.hoverSlot(HotdShortcut.SLOT)
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
             ServerMenus.shows(context, "Heart of the Dragon")
             check(ServerMenus.panes(world) == 0) { "A click on the egg or its frame reached the pane under it" }

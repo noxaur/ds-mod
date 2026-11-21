@@ -7,7 +7,6 @@ import net.minecraft.client.gui.screens.ChatScreen
 
 /** The real mouse and keyboard on the open chat, in GUI pixels, for the tests that drag HUD blocks from it. */
 class InChat(private val context: ClientGameTestContext) {
-    private val scale = context.computeOnClient<Int, Nothing> { it.window.guiScale }.toDouble()
     val width = context.computeOnClient<Int, Nothing> { it.window.guiScaledWidth }
     val height = context.computeOnClient<Int, Nothing> { it.window.guiScaledHeight }
 
@@ -21,10 +20,7 @@ class InChat(private val context: ClientGameTestContext) {
         context.waitTick()
     }
 
-    fun move(x: Double, y: Double) {
-        context.input.setCursorPos(x * scale, y * scale)
-        context.waitTick()
-    }
+    fun move(x: Double, y: Double) = context.point(x, y)
 
     fun block(id: String) = context.computeOnClient<Hud.Placed, Nothing> { checkNotNull(Hud.find(id)) { "$id is not on the HUD" } }
 

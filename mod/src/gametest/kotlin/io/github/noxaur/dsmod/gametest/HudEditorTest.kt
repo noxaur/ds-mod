@@ -59,11 +59,9 @@ class HudEditorTest : FabricClientGameTest {
             // The panel works on the block clicked last: one step up by real mouse, on the stepper's plus.
             val plus = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
                 val stepper = steppers(client).first()
-                (stepper.right - 4.0) * client.window.guiScale to (stepper.y + 8.0) * client.window.guiScale
+                stepper.right - 4.0 to stepper.y + 8.0
             }
-            context.input.setCursorPos(plus.first, plus.second)
-            context.input.pressMouse(0)
-            context.waitTicks(2)
+            context.click(plus.first, plus.second, settle = 2)
             context.runOnClient<Nothing> { check(pixels(it) == start + 2) { "The stepper drew ${pixels(it)} pixels, not ${start + 2}" } }
 
             context.runOnClient<Nothing> { client ->
@@ -79,13 +77,8 @@ class HudEditorTest : FabricClientGameTest {
                 click(global.x + 4.0)
                 check(hud.scale == before) { "The HUD scale did not come back: ${hud.scale}" }
             }
-            val box = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
-                val box = client.gui.screen()!!.children().filterIsInstance<KitCheckbox>().single()
-                (box.x + 5.0) * client.window.guiScale to (box.y + 5.0) * client.window.guiScale
-            }
-            context.input.setCursorPos(box.first, box.second)
-            context.input.pressMouse(0)
-            context.waitTick()
+            val box = context.computeOnClient<KitCheckbox, Nothing> { client -> client.gui.screen()!!.children().filterIsInstance<KitCheckbox>().single() }
+            context.click(box.x + 5, box.y + 5)
             check(!DsModClient.runs<HudBackground>()) { "The checkbox did not turn the background off" }
             context.input.pressMouse(0)
             context.waitTick()

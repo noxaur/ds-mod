@@ -62,4 +62,21 @@ val rules = listOf(
         example = "val gold = 0xFF_AA_00",
         examples = listOf("val glass = 0xFF_AA_00_FF", "val gold = 0xFFAA00"),
     ),
+    Rule(
+        id = "gametest-point-by-pointer",
+        files = "src/gametest/**.{kt,java}",
+        except = "src/gametest/**/Pointer.kt",
+        forbid = Regex("""\bsetCursorPos\s*\("""),
+        fix = "Move the mouse in GUI pixels with `context.point(x, y)`, `context.click(x, y)` or `context.click(widget)`, " +
+            "and over a slot with `context.hoverSlot(index)` or `context.hoverOwnSlot(slot)`, from Pointer.kt, which scale by the real GUI scale.",
+        example = "context.input.setCursorPos(x * scale, y * scale)",
+    ),
+    Rule(
+        id = "gametest-inventory-by-pointer",
+        files = "src/gametest/**.{kt,java}",
+        except = "src/gametest/**/Pointer.kt",
+        forbid = Regex("""\bInventoryScreen\s*\("""),
+        fix = "Open the player's inventory with `context.openInventory()` from Pointer.kt.",
+        example = "context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }",
+    ),
 )

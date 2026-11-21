@@ -5,7 +5,6 @@ import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
-import io.github.noxaur.dsmod.edge.ui.SettingRows
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import io.github.noxaur.dsmod.gametest.SettingsSteps.hear
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
@@ -20,7 +19,7 @@ import net.minecraft.client.gui.screens.TitleScreen
 class SettingsNarrationTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = setUp(context)
-        context.input.setCursorPos(0.0, 0.0)
+        context.point(0, 0, settle = 0)
         SettingsDriver(context).narration()
         context.setScreen { TitleScreen() }
         restore(context, window)

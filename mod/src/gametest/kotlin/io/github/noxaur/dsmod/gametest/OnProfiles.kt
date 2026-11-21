@@ -76,20 +76,10 @@ class OnProfiles(private val context: ClientGameTestContext) : AutoCloseable {
         waitUntil("the profile of $name loaded") { screen(it).children().any { w -> w is KitTab } }
     }
 
-    fun move(x: Int, y: Int) {
-        val scale = context.computeOnClient<Int, Nothing> { it.window.guiScale }
-        context.input.setCursorPos(x * scale.toDouble(), y * scale.toDouble())
-        context.waitTick()
-    }
+    fun move(x: Int, y: Int) = context.point(x, y)
 
     fun tab(name: String) {
-        val at = context.computeOnClient<Pair<Int, Int>, Nothing> { client ->
-            val tab = screen(client).children().filterIsInstance<KitTab>().first { it.message.string == name } as AbstractWidget
-            tab.x + tab.width / 2 to tab.y + tab.height / 2
-        }
-        move(at.first, at.second)
-        context.input.pressMouse(0)
-        context.waitTick()
+        context.click(context.computeOnClient<AbstractWidget, Nothing> { client -> screen(client).children().filterIsInstance<KitTab>().first { it.message.string == name } as AbstractWidget })
     }
 
     fun tabs() = context.computeOnClient<List<String>, Nothing> { client -> screen(client).children().filterIsInstance<KitTab>().map { it.message.string } }
@@ -100,12 +90,7 @@ class OnProfiles(private val context: ClientGameTestContext) : AutoCloseable {
     fun pages() = context.computeOnClient<List<String>, Nothing> { client -> pageButtons(client).map { it.message.string } }
 
     fun press(page: String) {
-        val at = context.computeOnClient<Pair<Int, Int>, Nothing> { client ->
-            pageButtons(client).first { it.message.string == page }.let { it.x + it.width / 2 to it.y + it.height / 2 }
-        }
-        move(at.first, at.second)
-        context.input.pressMouse(0)
-        context.waitTick()
+        context.click(context.computeOnClient<KitButton, Nothing> { client -> pageButtons(client).first { it.message.string == page } })
     }
 
     /** Sweeps the mouse along the grid's rows until an item is under it, and says which. */
