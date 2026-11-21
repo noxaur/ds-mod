@@ -54,7 +54,7 @@ gate edge.CopyChats 60e707afcd60  CopyChat
 gate edge.EyeGuards d497c96d3e10  EyeGuard
     can refuse the player's actions through UseBlockCallback.EVENT
     approved by github.com/noxaur 2026-11-16T18:38:00Z
-gate edge.ForgeCrafts 9887a63d73bd  ForgeCraft
+gate edge.ForgeCrafts f61993578eec  ForgeCraft
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
@@ -144,9 +144,8 @@ gate edge.mixin.HudHotbarMixin draws
     approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.ItemLayerAccessor 44bd4cac718b
     opens ItemStackRenderState.LayerRenderState's private code
-gate edge.mixin.KeyInputMixin 5ebcb38f55be
+gate edge.mixin.KeyInputMixin 5e38927bfe13
     hooks KeyboardHandler.keyPress
-    approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.KeyPressMixin f3167d4d9147
     hooks KeyMapping.click
     approved by github.com/noxaur 2026-11-16T08:42:00Z

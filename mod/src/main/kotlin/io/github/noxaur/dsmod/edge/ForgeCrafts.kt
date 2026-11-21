@@ -26,6 +26,7 @@ import net.minecraft.util.Util
 import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.inventory.ContainerInput
 import net.minecraft.world.item.ItemStack
+import org.lwjgl.glfw.GLFW
 import java.util.IdentityHashMap
 
 object ForgeCrafts {
@@ -46,7 +47,6 @@ object ForgeCrafts {
 
     private var clicked: AbstractContainerMenu? = null
     private var clickedAt = 0L
-    private val held = HashSet<Int>()
     private val swallowed = HashSet<Int>()
 
     fun register() {
@@ -61,17 +61,14 @@ object ForgeCrafts {
             panel.sync()
             ScreenEvents.afterTick(screen).register {
                 panel.sync()
-                held.removeIf { !Keys.held(client, it) }
                 swallowed.removeIf { !Keys.held(client, it) }
             }
             ScreenEvents.beforeExtract(screen).register { _, _, _, _, _ -> panel.place() }
             ScreenEvents.afterBackground(screen).register { _, graphics, mouseX, mouseY, _ -> if (panel.shown) panel.draw(graphics, mouseX, mouseY) }
             ScreenKeyboardEvents.allowKeyPress(screen).register { _, event ->
-                val fresh = held.add(event.key())
-                !panel.shown || !key(client, screen, panel, event, fresh)
+                !panel.shown || !key(client, screen, panel, event, Keys.action == GLFW.GLFW_PRESS)
             }
             ScreenKeyboardEvents.afterKeyRelease(screen).register { _, event ->
-                held -= event.key()
                 panel.keys.release(event.key())
             }
             ScreenMouseEvents.allowMouseClick(screen).register { _, event ->
