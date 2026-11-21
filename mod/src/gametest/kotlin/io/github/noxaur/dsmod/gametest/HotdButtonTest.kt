@@ -16,7 +16,7 @@ import org.lwjgl.glfw.GLFW
 class HotdButtonTest : FabricClientGameTest {
     private fun egg(context: ClientGameTestContext) = context.computeOnClient<Pair<Int, Int>?, Nothing> { client ->
         val screen = client.gui.screen() as? ContainerScreen ?: return@computeOnClient null
-        Screens.getWidgets(screen).filterIsInstance<KitSlotButton>().firstOrNull { it.visible }?.let { it.x to it.y }
+        Screens.getWidgets(screen).filterIsInstance<KitSlotButton>().firstOrNull { it.visible }?.let { it.x + 1 to it.y + 1 }
     }
 
     override fun runTest(context: ClientGameTestContext) {
@@ -49,12 +49,21 @@ class HotdButtonTest : FabricClientGameTest {
             }
             context.waitTicks(2)
 
+            val (x, y) = ServerMenus.corner(context, HotdShortcut.SLOT)
+            val scale = context.computeOnClient<Double, Nothing> { it.window.guiScale.toDouble() }
+            context.input.setCursorPos((x - 0.5) * scale, (y - 0.5) * scale)
+            context.waitTicks(3)
+            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT)
+            ServerMenus.shows(context, "Heart of the Dragon")
+
+            ServerMenus.open(context, world, 6, "Dragon Sim Menu")
+            ServerMenus.hover(context, HotdShortcut.SLOT)
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
             ServerMenus.shows(context, "Heart of the Dragon")
             val panes = world.server.computeOnServer<Int, Nothing> { server ->
                 server.playerList.players.first().inventory.count { it.`is`(Items.STAINED_GLASS_PANE.black()) }
             }
-            check(panes == 0) { "The click on the egg reached the pane under it" }
+            check(panes == 0) { "A click on the egg or its frame reached the pane under it" }
             context.runOnClient<Nothing> { it.player!!.closeContainer() }
         }
     }

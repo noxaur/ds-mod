@@ -15,13 +15,14 @@ import net.minecraft.world.item.Items
 object HotdShortcut {
     private const val MENU = "Dragon Sim Menu"
     const val SLOT = 10
+    private const val ROWS = 6
     private const val NAME = "Open Heart of the Dragon"
 
     private val shown get() = DsModClient.runs<BetterUi>() && DsModClient.runs<HotdButton>()
 
     fun register() {
         ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
-            if (screen !is ContainerScreen || screen.title.string != MENU) return@register
+            if (screen !is ContainerScreen || screen.menu.rowCount != ROWS || screen.title.string != MENU) return@register
             val slot = screen.menu.slots[SLOT]
             screen as ContainerScreenAccessor
             val frame = { if (MenuSkin.skins(screen)) MenuSkin.glass(screen) else null }
