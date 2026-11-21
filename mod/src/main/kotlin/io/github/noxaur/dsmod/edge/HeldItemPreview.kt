@@ -150,7 +150,7 @@ class HeldItemPreview : BoxEditor {
         val bottom = top + VIEW_HEIGHT - 1
         val clipTop = maxOf(top + 1, box.clipTop)
         val clipBottom = minOf(bottom, box.clipBottom)
-        if (clipBottom <= clipTop) return null
+        if (clipBottom <= clipTop || !Items.DIAMOND_SWORD.builtInRegistryHolder().areComponentsBound()) return null
 
         val client = Minecraft.getInstance()
         val window = client.window
