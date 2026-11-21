@@ -19,10 +19,8 @@ call edge.DsModClient.onInitializeClient -> edge.Pings.register
     approved by github.com/noxaur 2026-11-16T19:47:00Z
 call edge.DsModClient.onInitializeClient -> edge.SlotGuards.register
     approved by github.com/noxaur 2026-11-16T08:42:00Z
-call edge.HotdShortcut.register -> edge.MenuBack.send
-    approved by github.com/noxaur 2026-11-21T18:26:00Z
-call edge.SkyBlockMenuClicks.opens -> edge.MenuBack.send
-    approved by github.com/noxaur 2026-11-21T18:08:00Z
+call edge.HotdShortcut.register -> edge.PlayerCommands.send
+call edge.SkyBlockMenuClicks.opens -> edge.PlayerCommands.send
 call edge.profile.ProfileScreen.dress -> edge.profile.ProfileModel.<init>
     approved by github.com/noxaur 2026-11-16T08:42:00Z
 call edge.profile.ProfileScreen.dress -> edge.profile.ProfileModel.dress
@@ -66,18 +64,19 @@ gate edge.ForgeCrafts d66e6ed07577  ForgeCraft
     approved by github.com/noxaur 2026-11-21T22:42:00Z
 gate edge.Hits af5b845f21bf
     can refuse the player's actions through AttackEntityCallback.EVENT
-gate edge.MenuBack 5a2fc0b891fe  BackButtons, BetterUi
+gate edge.MenuBack ed735e135c6a  BackButtons, BetterUi
     can refuse or change sent chat through ClientSendMessageEvents.COMMAND
-    sends through ClientPacketListener.sendCommand
 gate edge.Pings 374f3f901a23  PerformanceStats
     builds the packet ServerboundPingRequestPacket
     sends through ClientPacketListener.send
+gate edge.PlayerCommands 0b1a1b5ade3a
+    sends through ClientPacketListener.sendCommand
 gate edge.SlotGuards 429fadb5c86f  SlotLock
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-gate edge.TabBar 561144b0f29a  BetterUi, MenuTabs
+gate edge.TabBar a13cd64a3a04  BetterUi, MenuTabs
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
 gate edge.capture.Recording ed76355333a5
