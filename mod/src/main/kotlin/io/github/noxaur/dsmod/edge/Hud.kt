@@ -493,11 +493,7 @@ object Hud {
                             val x = block.iconX(row, i)
                             val itemY = top + block.iconY(row, i)
                             if (inventory) {
-                                when {
-                                    glass >= 0 -> Kit.glassSlot(graphics, x - 1, itemY - 1, alpha = alpha)
-                                    themed -> Kit.slot(graphics, x - 1, itemY - 1, alpha = alpha)
-                                    else -> Kit.slotAt(graphics, x - 1, itemY - 1, alpha)
-                                }
+                                if (themed) Kit.slotFrame(graphics, x - 1, itemY - 1, glass >= 0, alpha = alpha) else Kit.slotAt(graphics, x - 1, itemY - 1, alpha)
                             }
                             val slot = if (row.slot < 0) -1 else row.slot + i
                             val stack = stacks[i]
