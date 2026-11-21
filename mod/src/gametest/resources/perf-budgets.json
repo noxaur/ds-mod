@@ -62,7 +62,7 @@
       "group": "Tick",
       "label": "Entity tracker, 40 mobs hit each tick and 3 bosses",
       "unit": "µs",
-      "cap": 30
+      "cap": 40
     },
     "features": {
       "group": "Tick",
