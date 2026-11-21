@@ -181,12 +181,21 @@ While you sneak with an Aspect of the End or Aspect of the Void that has Etherwa
 | Box Through Walls | Shows the whole box, even behind the blocks in front of it. Turn it off to let blocks hide it |
 | Box Without Sneak | Shows the box while you stand too, from where your eye will be once you sneak. Off by default |
 
-### Auto Clicker
+### Auto Left Click
 
-Clicks 9.9 times a second while you hold left or right click and walk. It stops the moment you let go, stand still or open a menu, and each click goes through the game as your own would.
+Left clicks 9.9 times a second while you hold its key and walk. It stops the moment you let go, stand still or open a menu, and each click goes through the game as your own would.
 
-- **Left Click Key** and **Right Click Key:** the key or mouse button that runs each button's clicks. They start as the left and right mouse buttons, so you hold the button you want while you walk.
-- **Left Click Mode** and **Right Click Mode:** Hold, or Toggle to press once to start and again to stop. A toggled button still clicks only while you walk.
+- **Key:** any key or mouse button. It starts as the left mouse button, and can't be Auto Right Click's key.
+- **Mode:** Hold, or Toggle to press once to start and again to stop. A toggled click still runs only while you walk.
+
+<sub>Off by default.</sub>
+
+### Auto Right Click
+
+Right clicks the same way, 9.9 times a second while you hold its key and walk, such as to keep using a sword's ability as you run.
+
+- **Key:** any key or mouse button. It starts as the right mouse button, and can't be Auto Left Click's key.
+- **Mode:** Hold, or Toggle.
 
 <sub>Off by default.</sub>
 

@@ -7,9 +7,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class AutoClickerTest {
-    private val clicker = SettingsTree().feature<AutoClicker>()
-    private val trigger = clicker.left
+class AutoClickTest {
+    private val tree = SettingsTree()
+    private val trigger = tree.feature<AutoLeftClick>().click
+    private val right = tree.feature<AutoRightClick>().click
 
     private data class Tick(val walking: Boolean = true, val pressed: Boolean = false, val down: Boolean = true, val on: Boolean = true)
 
@@ -92,9 +93,23 @@ class AutoClickerTest {
     }
 
     @Test
-    fun `starts off, with the left and right mouse buttons held`() {
-        assertEquals(false, clicker.feature.enabled)
-        assertEquals(0 to KeyMode.HOLD, clicker.left.key.value to clicker.left.mode.value)
-        assertEquals(1 to KeyMode.HOLD, clicker.right.key.value to clicker.right.mode.value)
+    fun `a key the other button uses is refused`() {
+        trigger.key.value = 1
+        assertEquals(0, trigger.key.value)
+        right.key.value = 0
+        assertEquals(1, right.key.value)
+        right.key.value = KeyBind.NONE
+        trigger.key.value = 1
+        assertEquals(1, trigger.key.value)
+        trigger.key.value = KeyBind.NONE
+        right.key.value = KeyBind.NONE
+        assertEquals(KeyBind.NONE to KeyBind.NONE, trigger.key.value to right.key.value)
+    }
+
+    @Test
+    fun `both start off, on the left and right mouse buttons held`() {
+        assertEquals(false to false, tree.feature<AutoLeftClick>().feature.enabled to tree.feature<AutoRightClick>().feature.enabled)
+        assertEquals(0 to KeyMode.HOLD, trigger.key.value to trigger.mode.value)
+        assertEquals(1 to KeyMode.HOLD, right.key.value to right.mode.value)
     }
 }
