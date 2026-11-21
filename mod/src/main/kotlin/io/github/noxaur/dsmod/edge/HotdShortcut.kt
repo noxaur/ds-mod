@@ -27,7 +27,7 @@ object HotdShortcut {
             val slot = screen.menu.slots[SLOT]
             screen as ContainerScreenAccessor
             val frame = { if (MenuSkin.skins(screen)) MenuSkin.glass(screen) else null }
-            val button = KitSlotButton(screen.leftPos + slot.x, screen.topPos + slot.y, NAME, ItemStack(Items.DRAGON_EGG), frame) { MenuBack.send("hotd") }
+            val button = KitSlotButton(screen.leftPos + slot.x, screen.topPos + slot.y, NAME, ItemStack(Items.DRAGON_EGG), frame) { PlayerCommands.send("hotd") }
             button.setTooltip(Tooltip.create(text { body(NAME) }.toComponent()))
             button.visible = false
             Screens.getWidgets(screen).add(button)

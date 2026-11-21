@@ -11,7 +11,6 @@ import io.github.noxaur.dsmod.edge.ui.KitButton
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.Screens
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
@@ -52,7 +51,7 @@ object MenuBack {
             val chest = screen.menu.slots.subList(0, screen.menu.rowCount * 9)
             val slot = chest[chest.size - 6]
             screen as ContainerScreenAccessor
-            val button = KitButton(screen.leftPos + slot.x, screen.topPos + slot.y, Icon.BACK, GO_BACK) { send(command) }
+            val button = KitButton(screen.leftPos + slot.x, screen.topPos + slot.y, Icon.BACK, GO_BACK) { PlayerCommands.send(command) }
             button.setTooltip(Tooltip.create(text { body(GO_BACK); muted("\nSends /$command."); action("\nClick to go back.") }.toComponent()))
             button.visible = false
             button.glass = { MenuSkin.glass(screen) >= 0 }
@@ -71,14 +70,4 @@ object MenuBack {
 
     /** The command that opened the menu of [screen], or null when none did or it is not the menu open now. */
     fun opener(screen: AbstractContainerScreen<*>) = if (screen.menu === menu) trail.opener else null
-
-    /**
-     * Sends [command] for the player, on their click on a Back or Command button, and lets the trail know, so the menu
-     * it opens starts a run.
-     */
-    fun send(command: String) {
-        val connection = Minecraft.getInstance().connection ?: return
-        trail.sent(System.currentTimeMillis(), command)
-        connection.sendCommand(command)
-    }
 }
