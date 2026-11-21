@@ -4,12 +4,10 @@ import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
 import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.MenuTrail
-import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.KitButton
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
-import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
@@ -45,17 +43,11 @@ object MenuBack {
             val command = back ?: return@register
             if (screen !is ContainerScreen) return@register
             val chest = screen.menu.slots.subList(0, screen.menu.rowCount * 9)
-            val slot = chest[chest.size - 6]
-            screen as ContainerScreenAccessor
-            val button = KitButton(screen.leftPos + slot.x, screen.topPos + slot.y, Icon.BACK, GO_BACK) { PlayerCommands.send(command) }
-            button.setTooltip(Tooltip.create(text { body(GO_BACK); muted("\nSends /$command."); action("\nClick to go back.") }.toComponent()))
-            button.visible = false
-            button.glass = { MenuSkin.glass(screen) >= 0 }
-            Screens.getWidgets(screen).add(button)
-            ScreenEvents.afterTick(screen).register {
-                // The server fills a menu's slots over a few ticks, and can put its own Go Back in later.
-                button.visible = enabled && slot.item.filler && chest.none { it.item.plainName == GO_BACK }
-                Slots.cover(slot.index, button.visible)
+            SlotControls.add(screen, chest[chest.size - 6], { enabled && chest.none { it.item.plainName == GO_BACK } }) { x, y ->
+                KitButton(x, y, Icon.BACK, GO_BACK) { PlayerCommands.send(command) }.apply {
+                    setTooltip(Tooltip.create(text { body(GO_BACK); muted("\nSends /$command."); action("\nClick to go back.") }.toComponent()))
+                    glass = { MenuSkin.glass(screen) >= 0 }
+                }
             }
         }
     }

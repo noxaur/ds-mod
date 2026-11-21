@@ -3,7 +3,11 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
+import net.fabricmc.fabric.api.client.screen.v1.Screens
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
+import net.minecraft.commands.Commands
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.world.SimpleContainer
@@ -42,6 +46,11 @@ object ServerMenus {
         shows(context, title)
     }
 
+    fun command(world: TestSingleplayerContext, name: String, rows: Int, title: String, goBack: Boolean = true, fill: (SimpleContainer) -> Unit = {}) =
+        world.server.runOnServer<Nothing> { server ->
+            server.commands.dispatcher.register(Commands.literal(name).executes { it.source.playerOrException.openMenu(menu(rows, title, goBack, fill)); 1 })
+        }
+
     /** Waits until the client shows the menu titled [title], and its slots have arrived. */
     fun shows(context: ClientGameTestContext, title: String) {
         context.waitFor { (it.gui.screen() as? ContainerScreen)?.title?.string == title }
@@ -62,5 +71,17 @@ object ServerMenus {
         val scale = context.computeOnClient<Double, Nothing> { it.window.guiScale.toDouble() }
         context.input.setCursorPos((x + 8) * scale, (y + 8) * scale)
         context.waitTicks(3)
+    }
+
+    inline fun <reified W : AbstractWidget> widgets(context: ClientGameTestContext, crossinline which: (W) -> Boolean = { true }) =
+        context.computeOnClient<List<W>, Nothing> { client ->
+            val screen = client.gui.screen() as? AbstractContainerScreen<*> ?: return@computeOnClient emptyList()
+            Screens.getWidgets(screen).filterIsInstance<W>().filter { it.visible && which(it) }
+        }
+
+    inline fun <reified W : AbstractWidget> widget(context: ClientGameTestContext, crossinline which: (W) -> Boolean = { true }) = widgets(context, which).firstOrNull()
+
+    fun panes(world: TestSingleplayerContext) = world.server.computeOnServer<Int, Nothing> { server ->
+        server.playerList.players.first().inventory.count { it.`is`(Items.STAINED_GLASS_PANE.black()) }
     }
 }
