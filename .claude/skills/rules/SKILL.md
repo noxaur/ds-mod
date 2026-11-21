@@ -60,6 +60,8 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | A unit test run takes at most 30 seconds | `timeout` on `tasks.test` in `mod/build.gradle.kts`, and `scripts/test-time-limit.ts` in `backend/` and in `web/`, the global setup of the tests in each `vite.config.ts` |
 | A game test passes whichever tests ran before it | `FreshStart` in `mod/src/gametest/` starts the mod afresh before each test |
 | A game test takes at most 20 seconds, its world included | `TestClock` in `mod/src/gametest/` |
+| A game test's wait fails the test when it times out | `gametest-no-swallowed-wait` and `gametest-poll-by-waitfor` in `mod/…/Rules.kt`, and `waitUntil` in `mod/src/gametest/Waits.kt` |
+| A game test finds a widget through `ServerMenus` | `gametest-widget-by-servermenus` in `mod/…/Rules.kt` |
 | A commit passes every project's checks | `.githooks/pre-commit`, which `mise install` installs |
 | A pull request runs the game tests its change reaches | CI's `gametests` job, and `GameTestPick.kt` in `mod/src/debug/` |
 | Every file of `edge` and `debug` reaches a game test | `GameTestPickTest` |
