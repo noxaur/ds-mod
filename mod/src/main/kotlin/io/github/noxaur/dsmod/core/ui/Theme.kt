@@ -105,3 +105,11 @@ enum class Theme(
     /** The settings dropdown shows this. */
     override fun toString() = label
 }
+
+object GameScreenColors {
+    const val CROSSHAIR = 0xFFE0E0E0.toInt()
+    const val SKY_TOP = 0xFF6E9CF5.toInt()
+    const val SKY_HORIZON = 0xFFB7CFFA.toInt()
+    const val GROUND_TOP = 0xFF5D8C3E.toInt()
+    const val GROUND_BOTTOM = 0xFF3E6329.toInt()
+}

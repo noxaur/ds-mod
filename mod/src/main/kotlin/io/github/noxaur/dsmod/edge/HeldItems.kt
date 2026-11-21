@@ -3,40 +3,37 @@ package io.github.noxaur.dsmod.edge
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import io.github.noxaur.dsmod.core.feature.general.Animations
-import io.github.noxaur.dsmod.core.hand.Ease
+import io.github.noxaur.dsmod.core.hand.HandStyle
 import io.github.noxaur.dsmod.core.hand.HeldItem
-import io.github.noxaur.dsmod.core.hand.SwingStyle
+import java.util.IdentityHashMap
+import kotlin.math.abs
 import kotlin.math.sin
 import kotlin.math.sqrt
 import net.minecraft.client.Minecraft
 import net.minecraft.client.model.effects.SpearAnimations
+import net.minecraft.client.resources.model.cuboid.ItemTransform
+import net.minecraft.client.resources.model.geometry.BakedQuad
 import net.minecraft.core.component.DataComponents
+import net.minecraft.tags.ItemTags
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.HumanoidArm
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import net.minecraft.world.item.ProjectileWeaponItem
+import net.minecraft.world.item.SwingAnimationType
+import org.joml.Matrix4f
+import org.joml.Quaternionf
 
 private const val PI = Math.PI.toFloat()
+private const val DEGREES = PI / 180
 
-/** How much of the game's swing arc the 1.7 block-hit keeps. */
-private const val BLOCK_ARC = 0.3f
-
-/** How far the block-hit styles raise the game's blocking pose, which sits behind the hotbar. */
-private const val BLOCK_LIFT = 0.12f
-
-/**
- * Animations: how the player's own held item swings and where it sits in first person. The mixins ask this object,
- * and it leaves the game's own pose whenever the feature is off or a setting is at its default. It changes only what
- * is drawn: the game sends the swing on every click whatever the swing looks like.
- */
 object HeldItems {
     private val settings: Animations get() = DsModClient.feature(Animations::class.java)
     private val on: Boolean get() = DsModClient.runs<Animations>()
-    private val steady: Boolean get() = on && settings.noEquipReset.value
+    private val style: HandStyle get() = settings.style.value
 
-    /** How far into the block-hit pose the main hand is. */
-    private val block = Ease()
+    private val noDipAfterHit: Boolean get() = on && (settings.noEquipReset.value || style == HandStyle.V1_7)
 
     private fun side(arm: HumanoidArm) = if (arm == HumanoidArm.RIGHT) 1 else -1
 
@@ -44,6 +41,21 @@ object HeldItems {
     private fun held(arm: HumanoidArm): ItemStack {
         val player = Minecraft.getInstance().player ?: return ItemStack.EMPTY
         return if (arm == player.mainArm) player.mainHandItem else player.offhandItem
+    }
+
+    fun canBlock(stack: ItemStack) = stack.`is`(ItemTags.SWORDS)
+
+    val blocking: Boolean
+        get() {
+            if (!on || !settings.blocking.value || style == HandStyle.STAB) return false
+            val client = Minecraft.getInstance()
+            val player = client.player ?: return false
+            return client.options.keyUse.isDown && canBlock(player.mainHandItem)
+        }
+
+    fun blocks(entity: Any, arm: HumanoidArm): Boolean {
+        val player = Minecraft.getInstance().player
+        return entity === player && arm == player.mainArm && blocking
     }
 
     /**
@@ -77,76 +89,58 @@ object HeldItems {
         if (size != 1f) pose.scale(size, size, size)
     }
 
-    /**
-     * Draws this frame's swing in place of the game's, and says whether it did. Every style is the resting pose at
-     * [attack] 0, as the game's own swing is. A [spear] keeps its own stab under Vanilla.
-     */
     fun swing(pose: PoseStack, arm: HumanoidArm, attack: Float, spear: Boolean): Boolean {
+        val player = Minecraft.getInstance().player
+        return swing(pose, arm, attack, held(arm), spear, player != null && arm == player.mainArm && blocking)
+    }
+
+    private fun swing(pose: PoseStack, arm: HumanoidArm, attack: Float, stack: ItemStack, spear: Boolean, blocks: Boolean): Boolean {
         if (!on) return false
         val s = settings
-        if (s.noSwing.value || s.noBowSwing.value && held(arm).item is ProjectileWeaponItem) return true
+        val style = style
+        val still = s.noSwing.value || s.noBowSwing.value && stack.item is ProjectileWeaponItem
+        val reach = (if (s.scaleSwing.value) s.itemSize.value else 1f) * s.reach.value / 100
+        val turn = s.turn.value / 100
+        if (style == HandStyle.MODERN && !still && !blocks && reach == 1f && turn == 1f) return false
         val side = side(arm)
-        val reach = if (s.scaleSwing.value) s.itemSize.value else 1f
-        val style = s.swingStyle.value
-        when (style) {
-            SwingStyle.VANILLA -> {
-                if (reach == 1f) return false
-                if (spear) {
-                    stab(pose, side, arm, attack, reach)
-                } else {
-                    push(pose, side, attack, reach)
-                    arc(pose, side, attack, 1f)
-                }
-            }
-            SwingStyle.SPIN -> pose.mulPose(Axis.YP.rotationDegrees(side * -360f * attack))
-            SwingStyle.STAB -> stab(pose, side, arm, attack, reach)
-            SwingStyle.BLOCK_HIT, SwingStyle.EXHIBITION -> {
-                val player = Minecraft.getInstance().player ?: return false
-                // Only the main hand blocks. The off hand swings the game's way, scaled like any other swing.
-                val k = if (arm == player.mainArm) block.at(if (player.swinging) 1f else 0f, System.nanoTime()) else 0f
-                if (k == 0f && reach == 1f) return false
-                // The game's swing fades out as the pose comes in.
-                push(pose, side, attack, reach * (1 - k))
-                if (style == SwingStyle.BLOCK_HIT) {
-                    // A short punch: at full strength the game's arc would tip the sword below the screen.
-                    arc(pose, side, attack, 1 - k * (1 - BLOCK_ARC))
-                } else {
-                    arc(pose, side, attack, 1 - k)
-                    // The sword slides down and back toward the player at the swing's peak, and its tip dips.
-                    val peak = sin(sqrt(attack) * PI) * k
-                    pose.translate(0f, -0.08f * peak * reach, 0.1f * peak * reach)
-                    pose.mulPose(Axis.XP.rotationDegrees(-25f * peak))
-                }
-                // The sword held across the screen, as the game holds a blocking one, lifted clear of the hotbar.
-                pose.translate(side * -0.14142136f * k, (0.08f + BLOCK_LIFT) * k, 0.14142136f * k)
-                pose.mulPose(Axis.XP.rotationDegrees(-102.25f * k))
-                pose.mulPose(Axis.YP.rotationDegrees(side * 13.365f * k))
-                pose.mulPose(Axis.ZP.rotationDegrees(side * 78.05f * k))
-            }
+        val swung = if (still || blocks && style != HandStyle.V1_7) 0f else attack
+        if (style == HandStyle.STAB || spear && style == HandStyle.MODERN) {
+            stab(pose, side, arm, swung, reach, turn)
+        } else {
+            push(pose, side, swung, reach)
+            arc(pose, side, swung, turn)
+        }
+        if (blocks) {
+            pose.translate(side * -0.14142136f, 0.08f, 0.14142136f)
+            pose.mulPose(Axis.XP.rotationDegrees(-102.25f))
+            pose.mulPose(Axis.YP.rotationDegrees(side * 13.365f))
+            pose.mulPose(Axis.ZP.rotationDegrees(side * 78.05f))
         }
         return true
     }
 
-    /** Where the spear's stab is worked out, so its push can be scaled apart from its turn. */
     private val stabbing = PoseStack()
+    private val stabTurn = Quaternionf()
+    private val noTurn = Quaternionf()
 
-    /** The game's spear stab, its push times [reach]. */
-    private fun stab(pose: PoseStack, side: Int, arm: HumanoidArm, attack: Float, reach: Float) {
-        if (reach == 1f) return SpearAnimations.firstPersonAttack(attack, pose, side, arm)
+    private fun stab(pose: PoseStack, side: Int, arm: HumanoidArm, attack: Float, reach: Float, turn: Float) {
+        if (reach == 1f && turn == 1f) return SpearAnimations.firstPersonAttack(attack, pose, side, arm)
         stabbing.setIdentity()
         SpearAnimations.firstPersonAttack(attack, stabbing, side, arm)
         val stab = stabbing.last().pose()
-        pose.mulPose(stab.setTranslation(stab.m30() * reach, stab.m31() * reach, stab.m32() * reach))
+        pose.translate(stab.m30() * reach, stab.m31() * reach, stab.m32() * reach)
+        pose.mulPose(noTurn.identity().slerp(stab.getNormalizedRotation(stabTurn), turn))
     }
 
     /** The game's own swing moves the hand by this much, times [reach]. */
     private fun push(pose: PoseStack, side: Int, attack: Float, reach: Float) {
+        if (reach == 0f) return
         val root = sqrt(attack)
         pose.translate(reach * side * -0.4f * sin(root * PI), reach * 0.2f * sin(root * 2 * PI), reach * -0.2f * sin(attack * PI))
     }
 
-    /** The game's own swing turns the item by this much, times [amount]. At 1 it is the game's turn exactly. */
     private fun arc(pose: PoseStack, side: Int, attack: Float, amount: Float) {
+        if (amount == 0f) return
         val turn = sin(sqrt(attack) * PI) * amount
         pose.mulPose(Axis.YP.rotationDegrees(side * (45f - 20f * sin(attack * attack * PI) * amount)))
         pose.mulPose(Axis.ZP.rotationDegrees(side * -20f * turn))
@@ -154,21 +148,97 @@ object HeldItems {
         pose.mulPose(Axis.YP.rotationDegrees(side * -45f))
     }
 
+    @JvmStatic
+    var drawing = false
+
+    fun hold(transform: ItemTransform, left: Boolean, pose: PoseStack.Pose): Boolean {
+        if (!drawing || !on || style == HandStyle.MODERN || !isFlatSpriteInHand(transform)) return false
+        pose.mulPose(if (style == HandStyle.V1_7) (if (left) SPRITE_HOLD_1_7_LEFT else SPRITE_HOLD_1_7_RIGHT) else if (left) SPRITE_HOLD_SPEAR_LEFT else SPRITE_HOLD_SPEAR_RIGHT)
+        return true
+    }
+
+    val flipping: Boolean get() = drawing && on && settings.flip.value
+
+    fun flip(pose: PoseStack.Pose) {
+        pose.translate(1f, 0f, 0f)
+        pose.scale(-1f, 1f, 1f)
+    }
+
+    private val mirrored = IdentityHashMap<List<BakedQuad>, List<BakedQuad>>()
+
+    fun mirrored(quads: List<BakedQuad>): List<BakedQuad> {
+        mirrored[quads]?.let { return it }
+        if (mirrored.size >= MIRRORED_KEPT) mirrored.clear()
+        return quads.map { BakedQuad(it.position0(), it.position3(), it.position2(), it.position1(), it.packedUV0(), it.packedUV3(), it.packedUV2(), it.packedUV1(), it.direction(), it.materialInfo()) }
+            .also { mirrored[quads] = it }
+    }
+
+    private const val MIRRORED_KEPT = 16
+
+    private fun isFlatSpriteInHand(t: ItemTransform): Boolean {
+        val r = t.rotation()
+        val at = t.translation()
+        val s = t.scale()
+        return near(r.x(), 0f) && near(abs(r.y()), 90f) && near(abs(r.z()), 25f) && r.y() * r.z() < 0 &&
+            near(at.x(), 1.13f / 16) && near(at.y(), 3.2f / 16) && near(at.z(), 1.13f / 16) && near(s.x(), 0.68f) && near(s.y(), 0.68f) && near(s.z(), 0.68f)
+    }
+
+    private fun near(a: Float, b: Float) = abs(a - b) < 0.001f
+
+    private val SPRITE_HOLD_1_7_RIGHT = Matrix4f()
+        .rotateY(45 * DEGREES).translate(0f, -0.12f, 0f).scale(0.6f)
+        .rotateY(50 * DEGREES).rotateZ(-25 * DEGREES).translate(-0.9375f, -0.0625f, 0f)
+        .translate(1f, 0f, 7.5f / 16).rotateY(PI)
+
+    private val SPRITE_HOLD_SPEAR_RIGHT = Matrix4f()
+        .translate(3.13f / 16, 2f / 16, 0.13f / 16).rotateXYZ(-20 * DEGREES, 90 * DEGREES, -35 * DEGREES).scale(1.36f, 1.36f, 0.68f)
+        .translate(-0.5f, -0.5f, -0.5f).translate(1f, 0f, 1f).rotateY(PI)
+
+    private val SPRITE_HOLD_1_7_LEFT = mirroredForLeftHand(SPRITE_HOLD_1_7_RIGHT)
+    private val SPRITE_HOLD_SPEAR_LEFT = mirroredForLeftHand(SPRITE_HOLD_SPEAR_RIGHT)
+
+    private fun mirroredForLeftHand(right: Matrix4f) = Matrix4f().scale(-1f, 1f, 1f).mul(right).translate(0f, 0f, 1f).scale(1f, 1f, -1f)
+
+    private val SPEAR_TO_COPY by lazy { ItemStack(Items.DIAMOND_SPEAR) }
+
+    fun previewTicks(stack: ItemStack): Int {
+        val swung = if (on && style == HandStyle.STAB) SPEAR_TO_COPY else stack
+        return if (on) HeldItem.swingTicks(swung.swingAnimation.duration(), settings.swingSpeed.value) else swung.swingAnimation.duration()
+    }
+
     /** How many ticks the player's own swing lasts, from the game's [ticks]. Everyone else swings at their own pace. */
     fun swingTicks(entity: LivingEntity, ticks: Int): Int {
         val client = Minecraft.getInstance()
         if (entity !== client.player || !client.options.cameraType.isFirstPerson || !on) return ticks
         val s = settings
-        val base = if (s.ignoreHaste.value) entity.getItemInHand(entity.swingingArm ?: InteractionHand.MAIN_HAND).swingAnimation.duration() else ticks
+        val own = entity.getItemInHand(entity.swingingArm ?: InteractionHand.MAIN_HAND).swingAnimation.duration()
+        val swung = if (style == HandStyle.STAB) SPEAR_TO_COPY.swingAnimation.duration() else own
+        val base = if (s.ignoreHaste.value) swung else ticks - own + swung
         return HeldItem.swingTicks(base, s.swingSpeed.value)
     }
 
-    /** The game lowers the item after a swing by this cooldown scale, from 0 to 1. No Equip Reset keeps it up. */
-    fun swapScale(scale: Float): Float = if (steady) 1f else scale
+    fun swapDepth(scale: Float): Float =
+        if (on && style == HandStyle.STAB) Minecraft.getInstance().itemModelResolver.swapAnimationScale(SPEAR_TO_COPY) else scale
+
+    fun swapScale(scale: Float): Float = if (noDipAfterHit) 1f else scale
 
     /** Whether the hand shows [next] at once instead of lowering [shown] first. No Equip Reset does for the same item. */
-    fun replaceAtOnce(vanilla: Boolean, shown: ItemStack, next: ItemStack): Boolean = vanilla || steady && ItemStack.isSameItem(shown, next)
+    fun replaceAtOnce(vanilla: Boolean, shown: ItemStack, next: ItemStack): Boolean = vanilla || on && settings.noEquipReset.value && ItemStack.isSameItem(shown, next)
 
     /** Whether the game may lower the item after the player uses it. */
-    fun dipOnUse(): Boolean = !steady
+    fun dipOnUse(): Boolean = !(on && settings.noEquipReset.value)
+
+    fun firstPerson(pose: PoseStack, arm: HumanoidArm, stack: ItemStack, attack: Float) {
+        val side = side(arm)
+        place(pose, arm, stack)
+        pose.translate(side * 0.56f, -0.52f, -0.72f)
+        val spear = stack.swingAnimation.type() == SwingAnimationType.STAB
+        if (!swing(pose, arm, attack, stack, spear, blocks = false)) {
+            if (spear) SpearAnimations.firstPersonAttack(attack, pose, side, arm) else {
+                push(pose, side, attack, 1f)
+                arc(pose, side, attack, 1f)
+            }
+        }
+        turnAndSize(pose, arm)
+    }
 }

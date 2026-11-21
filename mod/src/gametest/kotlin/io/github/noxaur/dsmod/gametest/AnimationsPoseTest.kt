@@ -1,18 +1,13 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.feature.general.Animations
-import io.github.noxaur.dsmod.core.hand.SwingStyle
+import io.github.noxaur.dsmod.core.hand.HandStyle
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.gametest.HeldItemScene.Companion.changed
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.world.item.Items
 
-/**
- * Where the held item sits and how far it swings: Item Size, X, Y and Z, Yaw, Pitch and Roll, Scale Swing, No Swing
- * and No Bow Swing, on a sword, a spear, a bow and the off hand, and Reset. Each setting changes the frame, and each
- * that should leave it alone leaves it the same to the pixel. Read the screenshots.
- */
 class AnimationsPoseTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = HeldItemScene.run(context) {
         val animations = DsModClient.feature<Animations>()
@@ -28,6 +23,9 @@ class AnimationsPoseTest : FabricClientGameTest {
         animations.itemY.value = 0.2f
         animations.itemZ.value = 0.3f
         check(changed(vanilla, shot("animations-place")) > 1000) { "Item X, Y and Z did not move the sword" }
+        animations.itemX.value = -1.5f
+        animations.itemY.value = 1f
+        check(changed(vanilla, shot("animations-top-left"), right = false) > 1000) { "Item X and Y did not reach the top left" }
         animations.itemX.value = 0f
         animations.itemY.value = 0f
         animations.itemZ.value = 0f
@@ -41,16 +39,34 @@ class AnimationsPoseTest : FabricClientGameTest {
             turn(0f)
         }
 
+        animations.flip.value = true
+        check(changed(vanilla, shot("animations-flip")) > 1000) { "Flip did not mirror the sword" }
+        hold(Items.CRAFTING_TABLE)
+        val flippedBlock = shot("animations-flip-block")
+        animations.flip.value = false
+        check(changed(flippedBlock, shot("animations-block")) > 200) { "Flip did not mirror the block" }
+        hold(Items.DIAMOND_SWORD)
+
+        animations.reach.value = 0f
+        val pivot = midSwing("animations-pivot")
+        check(changed(vanillaSwing, pivot) > 1000 && changed(vanilla, pivot) > 1000) { "Reach 0% did not anchor the grip and pivot the sword" }
+        animations.turn.value = 0f
+        check(changed(vanilla, midSwing("animations-no-turn-no-reach")) == 0) { "Turn and Reach at 0% still moved the sword" }
+        animations.reach.value = 100f
+        val slide = midSwing("animations-slide")
+        check(changed(vanillaSwing, slide) > 1000 && changed(vanilla, slide) > 1000) { "Turn 0% did not slide the sword without turning it" }
+        animations.turn.value = 100f
+
         // A smaller sword swings a shorter way with Scale Swing, and the game's full way without it, and so does a stab.
         animations.itemSize.value = 0.5f
         val scaled = midSwing("animations-scale-swing")
         animations.scaleSwing.value = false
         check(changed(scaled, midSwing("animations-full-swing")) > 1000) { "Scale Swing did not change the swing" }
-        animations.swingStyle.value = SwingStyle.STAB
+        animations.style.value = HandStyle.STAB
         val fullStab = midSwing("animations-full-stab")
         animations.scaleSwing.value = true
         check(changed(fullStab, midSwing("animations-scaled-stab")) > 1000) { "Scale Swing did not change the stab" }
-        animations.swingStyle.value = SwingStyle.VANILLA
+        animations.style.value = HandStyle.MODERN
         animations.itemSize.value = 1f
 
         animations.noSwing.value = true
@@ -91,8 +107,11 @@ class AnimationsPoseTest : FabricClientGameTest {
         hold(Items.AIR, off = true)
 
         // Reset puts every setting back, so the frame is the game's own again.
-        animations.swingStyle.value = SwingStyle.SPIN
+        animations.style.value = HandStyle.V1_7
         animations.swingSpeed.value = 2f
+        animations.turn.value = 50f
+        animations.flip.value = true
+        animations.blocking.value = true
         animations.itemSize.value = 1.5f
         animations.itemX.value = 0.5f
         animations.itemYaw.value = 30f

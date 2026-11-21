@@ -374,7 +374,7 @@ class Items<T>(id: String, name: String, description: String, bind: Bind<Grouped
 }
 
 /** Which of ds-mod's editors a [Panel] or a [Preview] draws, which the edge gives a face. */
-enum class Canvas { HUD_LAYOUT, MENU_TABS, PLAYER_MODEL }
+enum class Canvas { HUD_LAYOUT, MENU_TABS, PLAYER_MODEL, HELD_ITEM }
 
 /**
  * A picture of what the rows around it do, such as the player's model with Player Model's settings on it. It holds

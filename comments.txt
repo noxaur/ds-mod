@@ -633,13 +633,11 @@ mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ActivePetTest.kt: /** Th
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ActivePetTest.kt: /** Whether [stack] wears [SKIN]. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ActivePetTest.kt: // A second read of the menu, a few seconds on, gives the rate and the time to the next level.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ActivePetTest.kt: // The menu's head wears the same skin as the floating one, taken from a head the server gave the player.
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/AnimationsPoseTest.kt: /** * Where the held item sits and how far it swings: Item Size, X, Y and Z, Yaw, Pitch and Roll, Scale Swing, No Swing * and No Bow Swing, on a sword, a spear, a bow and the off hand, and Reset. Each setting changes the frame, and each * that should leave it alone leaves it the same to the pixel. Read the screenshots. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/AnimationsPoseTest.kt: // A smaller sword swings a shorter way with Scale Swing, and the game's full way without it, and so does a stab.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/AnimationsPoseTest.kt: // A spear swings by a stab of its own, which the settings reach too.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/AnimationsPoseTest.kt: // No Bow Swing keeps a bow still and leaves every other item's swing alone.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/AnimationsPoseTest.kt: // Reset puts every setting back, so the frame is the game's own again.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/AnimationsPoseTest.kt: // The off hand moves outward, to the left, where the main hand moves right.
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/AnimationsTest.kt: /** * With every setting at its default, the held sword is the game's own to the pixel, at rest, mid-swing and in the dip * after a swing at the air. Then each swing style and the swing's speed: each style moves the sword its own way, and * the swing's length is measured in ticks. `AnimationsPoseTest` covers where the item sits. Read the screenshots. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/AnimationsTest.kt: // Slowed to half, so the swing lasts 12 ticks and the frame 4 ticks in is a third of the way.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ArmorSwapGuardTest.kt: /** * The player holds a chestplate and right clicks. Without the guard it goes on. With the guard it stays in the * hand until the player sneaks, and the server never hears of the click that was stopped. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ArmorSwapGuardTest.kt: // Looking up, so the click lands on no block.
@@ -1143,7 +1141,6 @@ mod/src/main/java/io/github/noxaur/dsmod/edge/mixin/DropKeyMixin.java: /** Slot 
 mod/src/main/java/io/github/noxaur/dsmod/edge/mixin/ExplosionParticleMixin.java: /** Hide Explosions: every particle is made here, so an explosion's cloud and its emitter end before they exist. */
 mod/src/main/java/io/github/noxaur/dsmod/edge/mixin/FloatingTextMixin.java: /** * The floating-text layer's hook: the server's text reaches a text display through its synced data, and the display * reads it back through `getText` only to rebuild what it draws, so the edit is asked for once per text. */
 mod/src/main/java/io/github/noxaur/dsmod/edge/mixin/FullbrightMixin.java: /** Fullbright: the lightmap adds sky and block light to an ambient floor, so a white floor lights every block fully. */
-mod/src/main/java/io/github/noxaur/dsmod/edge/mixin/HeldItemMixin.java: /** * Animations: the first-person held item's place, size, swing and dip. The place goes in as the hand's pose is * pushed, before any branch runs, because eating and drinking put the item in the hand twice and would move it twice. * The turn and the size go in just before the item is drawn, after every swing and use pose. */
 mod/src/main/java/io/github/noxaur/dsmod/edge/mixin/HeldItemMixin.java: /** A spear swings by its own stab, which never reaches `swingArm`. */
 mod/src/main/java/io/github/noxaur/dsmod/edge/mixin/HiddenTextMixin.java: /** A floating text a feature hid is culled, background and all, as if it stood behind the camera. */
 mod/src/main/java/io/github/noxaur/dsmod/edge/mixin/HudHotbarMixin.java: /** Rarity marks on the hotbar: vanilla draws its frame, then each item here, so a mark's back goes between them. */
@@ -1670,7 +1667,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePet.kt: //
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePet.kt: // The next session may bring another pet, and the sidebar names it only when it arrives.
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePet.kt: // This session only: the XP each pet had at the level it was read at, its item in the Pets menu, whose tooltip the
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePet.kt: // current pet's pace, and when the last mob died.
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/Animations.kt: /** * Shapes how the held item swings and where it sits in first person. It reads nothing from the server, so all of it * is `HeldItems` in the edge, with the rules in `core.hand`. The edge reads these settings each frame. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/Animations.kt: /** Puts every setting but the switch back to its default, so the defaults are declared once. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/Camera.kt: /** * Shapes the third-person view. It reads nothing from the server, so all of it is `Cameras` in the edge, with * the rules in `core.camera`. The edge reads these settings each frame. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/CommandBinds.kt: /** * Sends a command the player picked when they press its key in the world. It reads nothing from the server, so * all of it is `CommandKeys` in the edge, with the binds in the settings and their rules in `core.input`. */
@@ -1849,15 +1845,7 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/core/hand/Etherwarp.kt: /** How many 
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/hand/Etherwarp.kt: /** The block the line stops at, and why the warp fails there, or null [miss] when it lands. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/hand/Etherwarp.kt: /** Whether a block has a collision box. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/hand/Etherwarp.kt: // How far along the line each axis's next block boundary is, and how far apart its boundaries are.
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/hand/HeldItem.kt: /** * Eases a pose in and out over about a tenth of a second, so the block-hit pose follows whether the player is * swinging and not each swing, which a spam-click restarts every few ticks. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/hand/HeldItem.kt: /** * How many ticks a swing of [ticks] lasts at [speed], where 1 is the game's own. Never under one tick, or the * swing would end before it is drawn. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/hand/HeldItem.kt: /** Also what a saved Still loads as, the style No Swing replaced, since Gson loads a name it doesn't know as null. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/hand/HeldItem.kt: /** One full turn per swing. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/hand/HeldItem.kt: /** Straight out at the crosshair and back, as the game swings a spear. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/hand/HeldItem.kt: /** The amount to draw at [nanos], on the way to [target]. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/hand/HeldItem.kt: /** The block-hit with the sword sliding down and back on each swing instead of arcing. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/hand/HeldItem.kt: /** The old block-hit: the sword held across the screen as it swings. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/hand/HeldItem.kt: /** Two thirds of the way in each 40 ms. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/hud/HudBlock.kt: /** * A panel with its icons in 18px slots, as the player's inventory screen draws them: by the kit in the player's theme, * solid or as glass as their Menu Look says, while Menu Theme is on, and from the inventory's own texture while it is off. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/hud/HudBlock.kt: /** * A place on the HUD, in GUI pixels. Blocks shown in the same group stack under each other in the * order they were first shown, and share the group's background and [scale]. A group with a [dock] other than * [HudDock.FREE] ignores [x] and [y] and sits beside the hotbar. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/hud/HudBlock.kt: /** * A row of item icons, left to right, with an empty cell for each null. A row [apart] from the one above it leaves the * gap the inventory leaves above the hotbar. A row that shows the player's own inventory from its [slot] on, numbered as * the inventory menu numbers them, carries what the inventory's slots carry: the marks of Item Rarity, and on the * hotbar the slot the player holds. [text] names them, for the replay's transcript. */
@@ -2256,27 +2244,13 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/edge/FloatingTexts.kt: /** * The laye
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/FloatingTexts.kt: /** What a hidden text shows, told apart by identity, which `FloatingTextMixin` and `HiddenTextMixin` both read. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/FloatingTexts.kt: /** What to show in place of [text]: [HIDDEN], a replacement, or null to show it as the server sent it. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Frames.kt: /** Posts the game's own count of the frames it drew, which it makes once a second, so reading it once a second loses nothing. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** * Animations: how the player's own held item swings and where it sits in first person. The mixins ask this object, * and it leaves the game's own pose whenever the feature is off or a setting is at its default. It changes only what * is drawn: the game sends the swing on every click whatever the swing looks like. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** * Draws this frame's swing in place of the game's, and says whether it did. Every style is the resting pose at * [attack] 0, as the game's own swing is. A [spear] keeps its own stab under Vanilla. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** * Moves the item before the arm puts it in the hand, so X moves it across the screen rather than along the * blade, and outward for either hand. The empty hand and a map are not an item to move. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** * Runs just before the item is drawn, after every swing and use pose, so the item turns and grows about the grip * and stays in the hand. Yaw and roll are mirrored for the left hand, as the hands are. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** How far into the block-hit pose the main hand is. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** How far the block-hit styles raise the game's blocking pose, which sits behind the hotbar. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** How many ticks the player's own swing lasts, from the game's [ticks]. Everyone else swings at their own pace. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** How much of the game's swing arc the 1.7 block-hit keeps. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** The game lowers the item after a swing by this cooldown scale, from 0 to 1. No Equip Reset keeps it up. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** The game's own swing moves the hand by this much, times [reach]. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** The game's own swing turns the item by this much, times [amount]. At 1 it is the game's turn exactly. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** The game's spear stab, its push times [reach]. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** What the player holds in the hand on [arm]'s side. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** Where the spear's stab is worked out, so its push can be scaled apart from its turn. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** Whether the game may lower the item after the player uses it. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: /** Whether the hand shows [next] at once instead of lowering [shown] first. No Equip Reset does for the same item. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: // A short punch: at full strength the game's arc would tip the sword below the screen.
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: // Only the main hand blocks. The off hand swings the game's way, scaled like any other swing.
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: // The game's swing fades out as the pose comes in.
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: // The sword held across the screen, as the game holds a blocking one, lifted clear of the hotbar.
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/HeldItems.kt: // The sword slides down and back toward the player at the swing's peak, and its tip dips.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Hits.kt: /** * Posts [Hit] for the player's own attack on a living entity, which the server says nothing of. It only watches: every * attack passes on as the player made it. Kept apart from the rest of the edge because reading a Fabric player event * is an input site the user audits. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Hits.kt: // Fabric runs this on both sides in singleplayer, and only the client's own player's attack is the player's hit.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Hud.kt: /** * A block as it sits on the screen. [x] and [y], in GUI pixels, are where its plate's corner would be if it * stood alone, and [width] and [height] are that plate's size in HUD pixels, before [scale]. [dock] is where it * sits beside the hotbar, or [HudDock.FREE]. */

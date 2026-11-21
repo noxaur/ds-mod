@@ -3,6 +3,7 @@
   "package": "io.github.noxaur.dsmod.edge.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
+    "BlockingArmMixin",
     "CameraMixin",
     "CaptureInputMixin",
     "CapturePacketsMixin",
@@ -19,7 +20,9 @@
     "ExplosionParticleMixin",
     "FloatingTextMixin",
     "FullbrightMixin",
+    "GuiGraphicsAccessor",
     "HeldItemMixin",
+    "HeldItemModelMixin",
     "HiddenTextMixin",
     "HudHotbarMixin",
     "KeyInputMixin",

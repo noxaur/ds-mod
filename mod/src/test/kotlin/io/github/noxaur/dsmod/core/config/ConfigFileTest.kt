@@ -44,7 +44,7 @@ import io.github.noxaur.dsmod.core.feature.loot.RareDropAlert
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerBossAlert
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerTracker
 import io.github.noxaur.dsmod.core.game.Area
-import io.github.noxaur.dsmod.core.hand.SwingStyle
+import io.github.noxaur.dsmod.core.hand.HandStyle
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.Where
@@ -107,7 +107,7 @@ class ConfigFileTest {
         assertTrue(tree.feature<Fullbright>().feature.enabled && tree.feature<HideExplosions>().feature.enabled)
         tree.feature<Animations>().run {
             assertFalse(feature.enabled)
-            assertEquals(SwingStyle.EXHIBITION, swingStyle.value)
+            assertEquals(HandStyle.V1_7, style.value, "Exhibition, a block-hit, loads as 1.7")
             assertEquals(listOf(1.5f, 0.75f, 0.25f, -0.5f, 0.1f, 45f, -30f, 12f), listOf(swingSpeed, itemSize, itemX, itemY, itemZ, itemYaw, itemPitch, itemRoll).map { it.value })
             assertFalse(scaleSwing.value)
             assertTrue(noSwing.value && noBowSwing.value && ignoreHaste.value && noEquipReset.value)
@@ -227,7 +227,7 @@ class ConfigFileTest {
         val file = ConfigFile(path)
         val tree = SettingsTree(file.load())
         assertTrue(tree.feature<Fullbright>().feature.enabled)
-        assertEquals(SwingStyle.VANILLA, tree.feature<Animations>().swingStyle.value)
+        assertEquals(HandStyle.MODERN, tree.feature<Animations>().style.value)
         assertEquals(SettingsTree().feature<ProtectorSpawnBeam>().sections.value, tree.feature<ProtectorSpawnBeam>().sections.value)
         assertNull(file.unreadable)
     }
