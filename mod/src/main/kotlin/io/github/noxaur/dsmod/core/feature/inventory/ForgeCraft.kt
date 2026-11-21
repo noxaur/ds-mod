@@ -59,7 +59,7 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
     init {
         feature.on<ContainerOpened> { opened, _ ->
             val title = opened.title?.plain
-            if (title == null) away = true
+            if (!forge(title)) away = true
             if (title == FORGE && away) {
                 away = false
                 crafted = 0

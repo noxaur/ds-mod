@@ -124,6 +124,16 @@ class ForgeCraftTest {
     }
 
     @Test
+    fun `another menu between two forge menus starts a new visit`() {
+        feature.amount = 1
+        craftByHand()
+        assertTrue(feature.done)
+        open("Storage", 6, emptyMap())
+        forge(2)
+        assertEquals(0, feature.crafted)
+    }
+
+    @Test
     fun `another item's Confirm gets no click`() {
         craftByHand()
         open(ForgeCraft.CONFIRM, 4, mapOf(4 to item("minecraft:end_stone_bricks", "Refined End Stone"), 20 to item("minecraft:green_terracotta", "Confirm")))
