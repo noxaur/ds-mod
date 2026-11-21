@@ -55,6 +55,10 @@ class ForgeCraftTest : FabricClientGameTest {
         server.playerList.players.first().sendSystemMessage(Component.literal("Queued Refined Obsidian! It starts automatically when a Forge slot finishes."))
     }
 
+    private fun forging(world: TestSingleplayerContext) = world.server.runOnServer<Nothing> { server ->
+        server.playerList.players.first().sendSystemMessage(Component.literal("Forging Refined Obsidian! Ready in 49m 12s."))
+    }
+
     private fun press(context: ClientGameTestContext): List<Click> {
         ClickSpy.clear()
         context.input.pressKey(GLFW.GLFW_KEY_R)
@@ -85,7 +89,7 @@ class ForgeCraftTest : FabricClientGameTest {
             select(context, world)
             refining(context, world)
             confirm(context, world)
-            queued(world)
+            forging(world)
             forge(context, world, 1)
             check(context.computeOnClient<String?, Nothing> { feature.recipe?.name } == "Refined Obsidian") { "The craft was not remembered" }
             check(ServerMenus.widget<KitKeysButton>(context) != null) { "The panel did not show at The Forge" }

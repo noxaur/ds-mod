@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMultimap
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
 import com.mojang.authlib.properties.PropertyMap
+import io.github.noxaur.dsmod.core.container.Filler
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.Skulls
 import kotlinx.serialization.json.JsonArray
@@ -27,11 +28,17 @@ import net.minecraft.world.item.component.ResolvableProfile
 import java.util.Base64
 import java.util.UUID
 
+val ItemStack.id: String get() = BuiltInRegistries.ITEM.getKey(item).toString()
+
+val ItemStack.plainName: String? get() = get(DataComponents.CUSTOM_NAME)?.string
+
+val ItemStack.filler get() = Filler.of(id, plainName)
+
 /** Walks the components and the NBT directly, because the codecs are slow and this runs on the client thread. */
 fun ItemStack.toItem(): Item {
-    val id = BuiltInRegistries.ITEM.getKey(item).toString()
+    val key = id
     return Item(
-        id,
+        key,
         count,
         get(DataComponents.CUSTOM_NAME)?.toText(),
         get(DataComponents.LORE)?.lines()?.map { it.toText() }.orEmpty(),
@@ -41,7 +48,7 @@ fun ItemStack.toItem(): Item {
         get(DataComponents.ENCHANTMENT_GLINT_OVERRIDE),
         get(DataComponents.TOOLTIP_STYLE)?.toString(),
         hasFoil(),
-        get(DataComponents.ITEM_MODEL)?.toString()?.takeIf { it != id },
+        get(DataComponents.ITEM_MODEL)?.toString()?.takeIf { it != key },
     )
 }
 
