@@ -62,4 +62,39 @@ val rules = listOf(
         example = "val gold = 0xFF_AA_00",
         examples = listOf("val glass = 0xFF_AA_00_FF", "val gold = 0xFFAA00"),
     ),
+    Rule(
+        id = "no-bang-bang",
+        files = "src/{main,debug}/**.kt",
+        forbid = Regex("""!!(?![$"=])"""),
+        fix = "Say what a null means here: `?: return` when it can't happen in play, a local `val` for a smart cast, " +
+            "or `checkNotNull(x) { \"why\" }` when null is a bug.",
+        example = "val id = held.after!!.id",
+        examples = listOf("run(items[0]!!)", "slots[it]!!.isEmpty"),
+    ),
+    Rule(
+        id = "no-wall-clock-in-core",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        forbid = Regex("""System\.currentTimeMillis|System\.nanoTime|Instant\.now\("""),
+        fix = "A feature reads time from the `now` its handler receives, so a replay and a game test see the same clock.",
+        example = "val at = System.currentTimeMillis()",
+        examples = listOf("val at = System.nanoTime()", "val at = Instant.now()"),
+    ),
+    Rule(
+        id = "no-swallowed-catch",
+        files = "src/{main,debug}/**.kt",
+        forbid = Regex("""catch\s*\([^)]*\)\s*\{\s*\}"""),
+        fix = "A catch that does nothing hides the failure. Log it with `log.error(..)`, return what the failure means, " +
+            "or use `runCatching { .. }.getOrNull()` where a failure is an expected answer.",
+        example = "try { save() } catch (e: IOException) { }",
+        examples = listOf("try { save() } catch (e: IOException) {}", "catch (e: Exception) {\n    }"),
+        span = Span.FILE,
+    ),
+    Rule(
+        id = "item-id-by-items",
+        files = "src/main/kotlin/**/edge/**.kt",
+        except = "src/main/kotlin/**/edge/Items.kt",
+        forbid = Regex("""BuiltInRegistries\.ITEM\.getKey"""),
+        fix = "Read a stack's id with `stack.id` from `edge/Items.kt`, so every id is spelled the same way.",
+        example = "val id = BuiltInRegistries.ITEM.getKey(stack.item)",
+    ),
 )

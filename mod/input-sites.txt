@@ -49,19 +49,18 @@ gate edge.ChatDrags ff0895d0a3c1  ChatHudEditor
 gate edge.CommandKeys c28dd763de35  CommandBinds
     sends through ClientPacketListener.sendChat
     sends through ClientPacketListener.sendCommand
-gate edge.CopyChats 60e707afcd60  CopyChat
+gate edge.CopyChats d8f76f1b479d  CopyChat
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
 gate edge.EyeGuards d497c96d3e10  EyeGuard
     can refuse the player's actions through UseBlockCallback.EVENT
     approved by github.com/noxaur 2026-11-16T18:38:00Z
-gate edge.ForgeCrafts d66e6ed07577  ForgeCraft
+gate edge.ForgeCrafts 3fa695e7c324  ForgeCraft
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-    approved by github.com/noxaur 2026-11-21T22:42:00Z
 gate edge.Hits af5b845f21bf
     can refuse the player's actions through AttackEntityCallback.EVENT
 gate edge.MenuBack ed735e135c6a  BackButtons, BetterUi
@@ -71,12 +70,12 @@ gate edge.Pings 374f3f901a23  PerformanceStats
     sends through ClientPacketListener.send
 gate edge.PlayerCommands 0b1a1b5ade3a
     sends through ClientPacketListener.sendCommand
-gate edge.SlotGuards 429fadb5c86f  SlotLock
+gate edge.SlotGuards d6ebcce3e989  SlotLock
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-gate edge.TabBar a13cd64a3a04  BetterUi, MenuTabs
+gate edge.TabBar 6a1ffa193b07  BetterUi, MenuTabs
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
 gate edge.capture.Recording ed76355333a5
