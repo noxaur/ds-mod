@@ -170,6 +170,7 @@ gate edge.mixin.ServerPacketsMixin 6b7a36388e18
     hooks ClientPacketListener.handleSetTime
     hooks ClientPacketListener.handleSystemChat
     hooks ClientPacketListener.setActionBarText
+    approved by github.com/noxaur 2026-11-21T00:09:00Z
 gate edge.mixin.SlotClickMixin 4a2f8fda01b4
     hooks AbstractContainerScreen.slotClicked
     approved by github.com/noxaur 2026-11-16T01:17:00Z
