@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import io.github.noxaur.dsmod.edge.ui.KitSlotButton
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
+import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
@@ -30,10 +31,12 @@ object HotdShortcut {
             button.setTooltip(Tooltip.create(text { body(NAME); muted("\nSends /hotd.") }.toComponent()))
             button.visible = false
             Screens.getWidgets(screen).add(button)
-            ScreenEvents.afterTick(screen).register {
+            fun place() {
                 button.visible = shown && MenuBack.filler(slot.item) && screen.menu.carried.isEmpty
                 Slots.cover(SLOT, button.visible)
             }
+            ScreenEvents.afterTick(screen).register { place() }
+            ScreenMouseEvents.beforeMouseClick(screen).register { _, _ -> place() }
         }
     }
 }
