@@ -41,6 +41,11 @@ class AutoClickerTest {
     }
 
     @Test
+    fun `Hold clicks for a key already down without a press`() {
+        assertEquals(10, clicks(List(20) { Tick() }).size)
+    }
+
+    @Test
     fun `a stop saves up no burst`() {
         val walking = held(40) + List(100) { Tick(walking = false) } + List(40) { Tick() }
         val ticks = clicks(walking)

@@ -21,11 +21,16 @@ object AutoClicks {
     fun register() {
         ClientTickEvents.START_CLIENT_TICK.register { client ->
             val on = DsModClient.runs<AutoClicker>()
-            val walking = on && client.player != null && client.gui.screen() == null && client.options.let { it.keyUp.isDown || it.keyDown.isDown || it.keyLeft.isDown || it.keyRight.isDown }
-            val clicks = triggers(client).filter { (trigger, _) -> trigger.tick(on, walking, trigger in tapped, Keys.held(client, trigger.key.value)) }
+            val walking = on && client.player != null && client.gui.overlay() == null && client.gui.screen() == null &&
+                client.options.let { it.keyUp.isDown || it.keyDown.isDown || it.keyLeft.isDown || it.keyRight.isDown }
+            val clicks = triggers(client).mapNotNull { (trigger, mapping) ->
+                val pressed = trigger in tapped
+                val bound = KeyMappingHelper.getBoundKeyOf(mapping)
+                bound.takeIf { trigger.tick(on, walking, pressed, Keys.held(client, trigger.key.value)) && !mapping.isUnbound && !(pressed && Keys.matches(it, trigger.key.value)) }
+            }
             tapped.clear()
             clicking = true
-            for ((_, mapping) in clicks) KeyMapping.click(KeyMappingHelper.getBoundKeyOf(mapping))
+            for (bound in clicks) KeyMapping.click(bound)
             clicking = false
         }
     }

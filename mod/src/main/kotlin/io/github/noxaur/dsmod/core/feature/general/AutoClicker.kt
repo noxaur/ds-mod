@@ -24,7 +24,6 @@ class AutoClicker(config: DsModConfig) : HasFeature {
 
     class Trigger(val key: KeyBind, val mode: Choice<KeyMode>) {
         private var wasDown = false
-        private var holding = false
         private var toggled = false
         private var earned = 1.0
 
@@ -33,10 +32,9 @@ class AutoClicker(config: DsModConfig) : HasFeature {
             val hold = mode.value == KeyMode.HOLD
             val press = pressed && !wasDown
             wasDown = down
-            holding = active && hold && (press || holding && down)
             toggled = active && !hold && toggled != press
             earned = min(earned + PER_TICK, 1 + PER_TICK)
-            if (!walking || earned < 1 || !(holding || toggled)) return false
+            if (!walking || earned < 1 || !(if (hold) active && down else toggled)) return false
             earned -= 1
             return true
         }
