@@ -10,7 +10,6 @@ import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.text.Role
-import kotlinx.serialization.Serializable
 
 class ForgeCraft(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "forge-craft", Area.ANYWHERE, Store.INVENTORY, "Repeat your last forge craft, one click per key press.", slots = ::slots)
@@ -23,29 +22,11 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
         val name: String get() = item.name?.plain.orEmpty()
     }
 
-    @Serializable
-    data class Kept(val amount: Int = 5)
-
     data class Step(val menu: Int, val slot: Int, val blocked: Boolean)
-
-    private val kept = feature.saved(Kept())
 
     var recipe by feature.session<Recipe?> { null }
         private set
 
-    var amount: Int
-        get() = kept.value.amount
-        set(value) {
-            val clamped = value.coerceIn(AMOUNT_MIN, AMOUNT_MAX)
-            if (clamped != kept.value.amount) kept.value = kept.value.copy(amount = clamped)
-        }
-
-    var crafted by feature.world { 0 }
-        private set
-
-    val done: Boolean get() = recipe != null && crafted >= amount
-
-    private var away by feature.world { true }
     private var menu by feature.world<String?> { null }
     private var category by feature.world<String?> { null }
     private var queued by feature.world { 0 }
@@ -59,11 +40,6 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
     init {
         feature.on<ContainerOpened> { opened, _ ->
             val title = opened.title?.plain
-            if (!forge(title)) away = true
-            if (title == FORGE && away) {
-                away = false
-                crafted = 0
-            }
             if (menu == SELECT && title != null && title != FORGE && title != CONFIRM) {
                 category = title
                 offered.clear()
@@ -93,16 +69,11 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
     fun forge(title: String?): Boolean = title == FORGE || title == SELECT || title == CONFIRM || title in categories || title == recipe?.category
 
     private fun queued(name: String) {
-        val known = recipe
-        if (known?.name == name) {
-            crafted++
-            return
-        }
+        if (recipe?.name == name) return
         val item = offered[name] ?: return
         val from = category ?: return
         val materials = materials(item).map { (material, count) -> Material(material, count, seen[material]) }
         recipe = Recipe(from, item, materials)
-        crafted = 1
     }
 
     private fun top() = (feature.container.slots.size - INVENTORY_SLOTS).coerceAtLeast(0)
@@ -115,7 +86,6 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
 
     fun next(): Step? {
         val recipe = recipe ?: return null
-        if (done) return null
         val slots = feature.container.slots
         val id = feature.container.id
         return when (menu) {
@@ -141,6 +111,8 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
 
     val free: Int get() = (queueSize - queued).coerceAtLeast(0)
 
+    val full: Boolean get() = free == 0
+
     fun canCraft(): Int = minOf(covered(), free)
 
     private fun slots(now: Long): Map<Int, SlotMark> {
@@ -149,9 +121,6 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
     }
 
     companion object {
-        const val AMOUNT_MIN = 1
-        const val AMOUNT_MAX = 99
-
         private const val KEY_R = 82
         private const val QUEUE_SIZE = 10
         private const val INVENTORY_SLOTS = 36

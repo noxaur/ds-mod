@@ -22,7 +22,7 @@ A token names a job, and each theme gives it a color. `Theme.kt` has the values.
 | `thumb`, `thumbLight` | A scrollbar's thumb |
 | `ink`, `inkMuted`, `inkOff` | Labels on a panel or a control: normal, secondary, disabled |
 | `inkMatch` | The words of a search in a label on a panel or a control, such as a dropdown's value. On a well, the `match` role does this job |
-| `inkGood`, `inkBad` | Good and bad text on a panel or a control, such as Done or a count that is short. On a well, the `good` and `bad` roles do this job |
+| `inkBad` | Bad text on a panel or a control, such as a count that is short or Slots full. On a well, the `bad` role does this job |
 | `inkShadow` | Whether ink has Minecraft's text shadow. Dark ink on a light panel has none |
 | `accent` | The selected thing |
 | `plate`, `plateEdge` | The translucent backing of the HUD |
@@ -47,6 +47,7 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `plate` | Any | The HUD's backing: a translucent fill inside a notched ring |
 | `glass` | Any | A panel the world shows through: the plate's fill at an alpha the player sets, inside the plate's ring. Dark in both themes, so ink on it is `GLASS_INK` |
 | `glassSlot`, `glassWell` | 18x18, or any | A sunk square on glass, see-through at any alpha, so a clear menu still shows its grid |
+| `slotFrame` | 18x18, or 26x26 | An empty slot in the open menu's look: a `slot`, a `glassSlot` on glass, or nothing where the menu keeps its own texture, which already has the slot |
 | `button` on glass | 16 tall | `button` with `glass = true`: a lighter pane raised off the glass in the plate's ring, ringed in `hoverOutline` under the mouse and sunk into a `glassWell` while pressed, with its label in `GLASS_INK`. `KitButton.glass` asks for it each frame |
 | `glassTab` | 22x19, or 17 when not selected | A tab on glass. It stops at the panel's ring, since two see-through fills on each other show a darker band, so the selected one stands taller instead of joining |
 | `hotbar` | 20 per cell plus 2, by 22 | A strip of slots cut from the game's own hotbar sprite, for a HUD block in the Hotbar look. The one piece of chrome that is not the kit's, because it has to match the player's hotbar under their resource pack |

@@ -60,7 +60,6 @@ class ForgeCraftTest {
     @Test
     fun `a craft by hand is remembered, and each menu of it is one click`() {
         assertNull(feature.recipe)
-        feature.amount = 3
         craftByHand()
         assertEquals("Refined Obsidian", feature.recipe?.name)
         assertEquals(listOf(ForgeCraft.Material("Enchanted Obsidian", 16)), feature.recipe?.materials?.map { it.copy(icon = null) })
@@ -82,12 +81,10 @@ class ForgeCraftTest {
         confirm()
         post(SystemMessage(text("Forging Refined Obsidian! Ready in 49m 12s.")))
         assertEquals("Refined Obsidian", feature.recipe?.name)
-        assertEquals(1, feature.crafted)
     }
 
     @Test
     fun `missing materials make Confirm a red spot`() {
-        feature.amount = 3
         craftByHand()
         confirm(button = "minecraft:gray_terracotta", carried = 4)
         assertEquals(20 to true, next())
@@ -96,52 +93,23 @@ class ForgeCraftTest {
 
     @Test
     fun `a full forge makes Forge Queue a red spot`() {
-        feature.amount = 3
         craftByHand()
         forge(10)
+        assertTrue(feature.full)
         assertEquals(22 to true, next())
         assertEquals(0, feature.canCraft())
     }
 
     @Test
-    fun `the amount reached stops the key, and raising it resumes`() {
-        feature.amount = 2
-        craftByHand()
-        assertEquals(1, feature.crafted)
-        select()
-        refining()
-        confirm()
-        post(SystemMessage(text("Queued Refined Obsidian! It starts automatically when a Forge slot finishes.")))
-        forge(2)
-        assertTrue(feature.done)
-        assertNull(next())
-        feature.amount = 3
-        assertEquals(22 to false, next())
-    }
-
-    @Test
-    fun `a new visit to the forge counts from none`() {
-        feature.amount = 1
+    fun `the key keeps going until the forge is full`() {
         craftByHand()
         select()
         refining()
         confirm()
         post(SystemMessage(text("Queued Refined Obsidian! It starts automatically when a Forge slot finishes.")))
-        assertTrue(feature.done)
-        open(null, 0, emptyMap(), carried = 0)
         forge(2)
-        assertEquals(0, feature.crafted)
+        assertEquals("Refined Obsidian", feature.recipe?.name)
         assertEquals(22 to false, next())
-    }
-
-    @Test
-    fun `another menu between two forge menus starts a new visit`() {
-        feature.amount = 1
-        craftByHand()
-        assertTrue(feature.done)
-        open("Storage", 6, emptyMap())
-        forge(2)
-        assertEquals(0, feature.crafted)
     }
 
     @Test
@@ -149,14 +117,6 @@ class ForgeCraftTest {
         craftByHand()
         open(ForgeCraft.CONFIRM, 4, mapOf(4 to item("minecraft:end_stone_bricks", "Refined End Stone"), 20 to item("minecraft:green_terracotta", "Confirm")))
         assertNull(next())
-    }
-
-    @Test
-    fun `the amount stays between 1 and 99`() {
-        feature.amount = 0
-        assertEquals(1, feature.amount)
-        feature.amount = 500
-        assertEquals(99, feature.amount)
     }
 
     @Test

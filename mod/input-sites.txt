@@ -58,15 +58,14 @@ gate edge.CopyChats 60e707afcd60  CopyChat
 gate edge.EyeGuards d497c96d3e10  EyeGuard
     can refuse the player's actions through UseBlockCallback.EVENT
     approved by github.com/noxaur 2026-11-16T18:38:00Z
-gate edge.ForgeCrafts 73d7d65c1c4a  ForgeCraft
+gate edge.ForgeCrafts a449241cb66a  ForgeCraft
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-    can refuse the player's input through ScreenMouseEvents.allowMouseScroll
 gate edge.Hits af5b845f21bf
     can refuse the player's actions through AttackEntityCallback.EVENT
-gate edge.MenuBack 7203271c7a80  BackButtons, BetterUi
+gate edge.MenuBack 5a2fc0b891fe  BackButtons, BetterUi
     can refuse or change sent chat through ClientSendMessageEvents.COMMAND
     sends through ClientPacketListener.sendCommand
 gate edge.Pings 374f3f901a23  PerformanceStats

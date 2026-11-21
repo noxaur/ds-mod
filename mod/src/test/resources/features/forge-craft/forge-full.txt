@@ -1066,4 +1066,3 @@
 +   8.7s > (slot 21) emptied
 +   8.7s > (slot 23) 4 x Enchanted End Stone
              - slot 20
-saved forge-craft.json = {"amount":5}

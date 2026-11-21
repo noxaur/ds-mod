@@ -3,11 +3,8 @@ package io.github.noxaur.dsmod.edge
 import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
 import io.github.noxaur.dsmod.core.feature.inventory.HotdButton
 import io.github.noxaur.dsmod.core.text.text
-import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import io.github.noxaur.dsmod.edge.ui.KitSlotButton
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
-import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
-import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.world.item.ItemStack
@@ -24,19 +21,12 @@ object HotdShortcut {
     fun register() {
         ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
             if (screen !is ContainerScreen || screen.menu.rowCount != ROWS || screen.title.string != MENU) return@register
-            val slot = screen.menu.slots[SLOT]
-            screen as ContainerScreenAccessor
             val frame = { if (MenuSkin.skins(screen)) MenuSkin.glass(screen) >= 0 else null }
-            val button = KitSlotButton(screen.leftPos + slot.x, screen.topPos + slot.y, NAME, ItemStack(Items.DRAGON_EGG), frame) { MenuBack.send("hotd") }
-            button.setTooltip(Tooltip.create(text { body(NAME) }.toComponent()))
-            button.visible = false
-            Screens.getWidgets(screen).add(button)
-            fun place() {
-                button.visible = shown && slot.item.filler && screen.menu.carried.isEmpty
-                Slots.cover(SLOT, button.visible)
+            SlotControls.add(screen, screen.menu.slots[SLOT], { shown }) { x, y ->
+                KitSlotButton(x, y, NAME, ItemStack(Items.DRAGON_EGG), frame) { MenuBack.send("hotd") }.apply {
+                    setTooltip(Tooltip.create(text { body(NAME) }.toComponent()))
+                }
             }
-            ScreenEvents.afterTick(screen).register { place() }
-            ScreenMouseEvents.beforeMouseClick(screen).register { _, _ -> place() }
         }
     }
 }
