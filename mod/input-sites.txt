@@ -10,7 +10,7 @@
 #                                           goes when the site changes, and an agent's own approval has none.
 
 call edge.DsModClient.onInitializeClient -> edge.AutoClicks.register
-    approved by github.com/noxaur 2026-11-21T22:34:00Z
+    approved by github.com/noxaur 2026-11-21T23:02:00Z
 call edge.DsModClient.onInitializeClient -> edge.CommandKeys.register
     approved by github.com/noxaur 2026-11-16T01:17:00Z
 call edge.DsModClient.onInitializeClient -> edge.ForgeCrafts.register
@@ -41,6 +41,7 @@ gate edge.ArmorSwapGuards b388417355d2  ArmorSwapGuard
     approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate edge.AutoClicks 3a006ff8b3f9  AutoClicker
     presses a key through KeyMapping.click
+    approved by github.com/noxaur 2026-11-21T23:02:00Z
 gate edge.Chat 7c62093eb80b
     builds text that runs a command when the player clicks it
     approved by github.com/noxaur 2026-11-16T01:17:00Z
@@ -156,7 +157,7 @@ gate edge.mixin.KeyInputMixin 5e38927bfe13
     approved by github.com/noxaur 2026-11-21T20:37:00Z
 gate edge.mixin.KeyPressMixin d715b502c2ad
     hooks KeyMapping.click
-    approved by github.com/noxaur 2026-11-21T22:52:00Z
+    approved by github.com/noxaur 2026-11-21T23:02:00Z
 gate edge.mixin.MenuArtMixin draws
     hooks GuiGraphicsExtractor.blit
     hooks GuiGraphicsExtractor.blitSprite
