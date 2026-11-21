@@ -77,6 +77,8 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | `api/openapi.json` matches the backend's API definition | `app.test.ts` in `backend/src/` |
 | Backend code is formatted, type-safe and passes lint with no warnings | `vp check` in `check:backend` |
 | Backend failures are modeled with Effect, not `try` | `dsmod/no-try` in `backend/lint/dsmod.js` |
+| The backend logs through a named `console` call, never `console[level]` | `dsmod/no-computed-console` in `backend/lint/dsmod.js` |
+| The backend has no `any`, and reads JSON through a `Schema` outside its tests | `typescript/no-explicit-any` in `backend/vite.config.ts`, and `dsmod/no-json-parse` in `backend/lint/dsmod.js` |
 | `vite` is the Vite+ core of `vite-plus`'s version, so Void and Vite+ share one Vite | `vite.test.ts` in `backend/test/` |
 | `backend/src/` imports nothing from Void | `no-restricted-imports` in `backend/vite.config.ts` |
 | The memory stores and `routes/_store.ts` pass one contract, which has a case for every `Store` method | `storeContract` in `backend/test/contract.ts`, keyed by each store's methods so a missing case fails `tsc` |
