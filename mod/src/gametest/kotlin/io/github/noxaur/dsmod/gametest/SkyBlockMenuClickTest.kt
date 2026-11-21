@@ -7,7 +7,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
-import net.minecraft.commands.Commands
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.item.Items
 
@@ -41,11 +40,7 @@ class SkyBlockMenuClickTest : FabricClientGameTest {
         }
 
         context.worldBuilder().create().use { world ->
-            world.server.runOnServer<Nothing> { server ->
-                server.commands.dispatcher.register(
-                    Commands.literal("sbmenu").executes { it.source.playerOrException.openMenu(ServerMenus.menu(6, "SkyBlock Menu", goBack = false)); 1 },
-                )
-            }
+            ServerMenus.command(world, "sbmenu", 6, "SkyBlock Menu", goBack = false)
             world.server.runCommand("item replace entity @a hotbar.8 with $menuItem")
             world.server.runCommand("item replace entity @a inventory.0 with $menuItem")
             context.waitTicks(20)
