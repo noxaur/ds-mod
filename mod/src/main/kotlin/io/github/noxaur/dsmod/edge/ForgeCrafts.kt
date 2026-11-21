@@ -7,9 +7,7 @@ import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import io.github.noxaur.dsmod.edge.ui.Kit
-import io.github.noxaur.dsmod.edge.ui.KitButton
 import io.github.noxaur.dsmod.edge.ui.KitKeysButton
-import io.github.noxaur.dsmod.edge.ui.KitTextField
 import io.github.noxaur.dsmod.edge.ui.fit
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
@@ -32,13 +30,10 @@ import java.util.IdentityHashMap
 object ForgeCrafts {
     private const val MIN_WIDTH = 108
     private const val MAX_WIDTH = 128
-    private const val HEIGHT = 93
     private const val KEY_WIDTH = 28
-    private const val FIELD_WIDTH = 20
     private const val ITEM_ROW = 22
     private const val MATERIAL_ROW = 44
-    private const val AMOUNT_ROW = 70
-    private const val SHIFT_STEP = 10
+    private const val HEIGHT = MATERIAL_ROW + Kit.SLOT_SIZE + Kit.INSET
 
     private const val WAIT_MILLIS = 1000L
 
@@ -55,9 +50,6 @@ object ForgeCrafts {
             val panel = Panel(screen)
             val widgets = Screens.getWidgets(screen)
             widgets += panel.keys
-            widgets += panel.minus
-            widgets += panel.plus
-            widgets += panel.field
             panel.sync()
             ScreenEvents.afterTick(screen).register {
                 panel.sync()
@@ -77,27 +69,15 @@ object ForgeCrafts {
                 val background = panel.background(event.x(), event.y())
                 val allowed = when {
                     panel.keys.recording -> !(panel.keys.capture(button, mouse = true) || panel.keys.isMouseOver(event.x(), event.y()))
-                    panel.field.isFocused && !panel.field.isMouseOver(event.x(), event.y()) -> !background.also { panel.commit() }
-                    panel.field.isMouseOver(event.x(), event.y()) -> true.also { panel.opening = !panel.field.isFocused }
                     Keys.isMouse(feature.key.value) && button == feature.key.value -> false.also { press(client, screen) }
                     else -> !background
                 }
                 if (!allowed) swallowed += button
                 allowed
             }
-            ScreenMouseEvents.afterMouseClick(screen).register { _, _, consumed ->
-                if (panel.opening && panel.field.isFocused) panel.selectAll()
-                panel.opening = false
-                consumed
-            }
             ScreenMouseEvents.allowMouseRelease(screen).register { _, event ->
                 panel.keys.release(event.button())
                 !swallowed.remove(event.button())
-            }
-            ScreenMouseEvents.allowMouseScroll(screen).register { _, x, y, _, vertical ->
-                if (!panel.shown || vertical == 0.0 || !panel.overAmount(x, y)) return@register true
-                panel.step(if (vertical > 0) 1 else -1)
-                false
             }
         }
     }
@@ -106,7 +86,6 @@ object ForgeCrafts {
         val key = event.key()
         return when {
             panel.keys.recording -> true.also { panel.keys.capture(key) }
-            panel.field.isFocused -> true.also { panel.type(screen, event) }
             screen.focused is EditBox -> false
             Keys.isMouse(feature.key.value) || key != feature.key.value -> false
             !fresh -> true
@@ -132,7 +111,6 @@ object ForgeCrafts {
         if (!light) return ARGB.opaque(rgb)
         val t = Kit.theme
         return when (role) {
-            Role.GOOD -> t.inkGood
             Role.BAD -> t.inkBad
             Role.VALUE, Role.COMMON -> t.ink
             else -> ARGB.opaque(darker(rgb))
@@ -153,7 +131,6 @@ object ForgeCrafts {
         private var width = MIN_WIDTH
         private var name = ""
         private var shownName = ""
-        private var amountTip = ""
 
         private val stacks = IdentityHashMap<Item, ItemStack>()
 
@@ -164,67 +141,21 @@ object ForgeCrafts {
             it.glass = ::glass
             it.setTooltip(tip("Craft Key", "\nEach press clicks the outlined button.", "\nClick, then press a key."))
         }
-        val minus = stepper("-", -1)
-        val plus = stepper("+", 1)
-        val field: KitTextField = KitTextField(0, 0, FIELD_WIDTH, "Amount", "${feature.amount}", 2) { text ->
-            if (!text.all(Char::isDigit)) field.value = text.filter(Char::isDigit)
-        }
-        var opening = false
-
-        private fun stepper(label: String, by: Int) = KitButton(0, 0, label, { step(by) }, Kit.BUTTON_HEIGHT).also { it.glass = ::glass }
 
         private fun tip(name: String, detail: String, hint: String) = Tooltip.create(text { body(name); muted(detail); action(hint) }.toComponent())
 
-        fun selectAll() {
-            field.moveCursorToEnd(false)
-            field.setHighlightPos(0)
-        }
-
-        fun commit() {
-            field.value.toIntOrNull()?.let { feature.amount = it }
-            field.value = "${feature.amount}"
-            screen.focused = null
-        }
-
-        fun type(screen: ContainerScreen, event: KeyEvent) {
-            when {
-                event.isConfirmation -> commit()
-                event.isEscape -> {
-                    field.value = "${feature.amount}"
-                    screen.focused = null
-                }
-                else -> field.keyPressed(event)
-            }
-        }
-
         private fun glass() = MenuSkin.glass(screen) >= 0
-
-        fun step(by: Int) {
-            feature.amount += if (Minecraft.getInstance().hasShiftDown()) by * SHIFT_STEP else by
-        }
 
         fun sync() {
             val recipe = feature.recipe
             shown = on && recipe != null && feature.forge(screen.title.string)
-            for (widget in listOf(keys, minus, plus, field)) widget.visible = shown
-            if (!shown) {
-                if (field.isFocused) screen.focused = null
-                return
-            }
+            keys.visible = shown
+            if (!shown) return
             if (name != recipe!!.name) {
                 name = recipe.name
                 width = (Kit.INSET + ITEM_ROW + Kit.font.width(name) + Kit.INSET).coerceIn(MIN_WIDTH, MAX_WIDTH)
                 shownName = fit(name, width - Kit.INSET * 2 - ITEM_ROW)
             }
-            minus.active = feature.amount > ForgeCraft.AMOUNT_MIN
-            plus.active = feature.amount < ForgeCraft.AMOUNT_MAX
-            val made = "\n${feature.crafted} of ${feature.amount} crafted."
-            if (made != amountTip) {
-                amountTip = made
-                field.setTooltip(tip("Amount", made, "\nClick to type, or scroll."))
-            }
-            if (!field.isFocused && field.value != "${feature.amount}") field.value = "${feature.amount}"
-            field.setTextColor((if (feature.done) Role.GOOD else Role.VALUE).argb())
             place()
         }
 
@@ -234,19 +165,11 @@ object ForgeCrafts {
             val right = x + width - Kit.INSET
             keys.x = right - KEY_WIDTH
             keys.y = y + 3
-            plus.x = right - Kit.BUTTON_HEIGHT
-            minus.x = plus.x - 2 - FIELD_WIDTH - 2 - Kit.BUTTON_HEIGHT
-            minus.y = y + AMOUNT_ROW
-            plus.y = minus.y
-            field.place(plus.x - 2 - FIELD_WIDTH, minus.y)
         }
 
         fun background(mouseX: Double, mouseY: Double) =
             mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + HEIGHT &&
-                listOf(keys, minus, plus, field).none { it.isMouseOver(mouseX, mouseY) }
-
-        fun overAmount(mouseX: Double, mouseY: Double) =
-            mouseX >= x + Kit.INSET && mouseX < x + width - Kit.INSET && mouseY >= y + AMOUNT_ROW && mouseY < y + AMOUNT_ROW + Kit.BUTTON_HEIGHT
+                !keys.isMouseOver(mouseX, mouseY)
 
         private fun stack(item: Item) = stacks.getOrPut(item) { item.toStack().also { it.count = 1 } }
 
@@ -269,8 +192,8 @@ object ForgeCrafts {
             val nameRgb = recipe.item.name?.spans?.firstOrNull { it.color != null }?.color ?: Role.COMMON.rgb
             line(shownName, nameX, top, nameRgb, Role.rarity(nameRgb).takeIf { it == Role.COMMON })
             val can = feature.canCraft()
-            if (feature.done) {
-                line("Done", nameX, top + 10, Role.GOOD.rgb, Role.GOOD)
+            if (feature.full) {
+                line("Slots full", nameX, top + 10, Role.BAD.rgb, Role.BAD)
             } else {
                 val label = "Can craft "
                 Kit.label(g, label, nameX, top + 10, Kit.Ink.MUTED, glass >= 0)
@@ -296,13 +219,10 @@ object ForgeCrafts {
                 Kit.label(g, more, sx + (Kit.SLOT_SIZE - font.width(more)) / 2, row + 5, Kit.Ink.MUTED, glass >= 0)
             }
 
-            val amountY = y + AMOUNT_ROW
-            Kit.label(g, "Amount", ix, amountY + 4, Kit.Ink.NORMAL, glass >= 0)
-
             val tip = when {
                 over(mouseX, mouseY, ix, top, 18, 18) -> null.also { g.setTooltipForNextFrame(font, stack(recipe.item), mouseX, mouseY) }
                 shownName != name && over(mouseX, mouseY, nameX, top, inner - ITEM_ROW, 9) -> text { server(name, recipe.item.name!!) }
-                !feature.done && over(mouseX, mouseY, nameX, top + 9, inner - ITEM_ROW, 10) -> text {
+                over(mouseX, mouseY, nameX, top + 9, inner - ITEM_ROW, 10) -> text {
                     body("Can craft")
                     val covered = feature.covered()
                     if (covered > 0) muted("\nMaterials cover $covered.") else bad("\nMaterials cover none.")

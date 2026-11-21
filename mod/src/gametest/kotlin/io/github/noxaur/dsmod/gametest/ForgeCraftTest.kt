@@ -3,12 +3,10 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.core.feature.inventory.ForgeCraft
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
-import io.github.noxaur.dsmod.edge.ui.KitButton
 import io.github.noxaur.dsmod.edge.ui.KitKeysButton
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
-import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.core.component.DataComponents
@@ -52,15 +50,9 @@ class ForgeCraftTest : FabricClientGameTest {
         inventory.setItem(9, named(Items.OBSIDIAN, "Enchanted Obsidian", 0x55FF55, minOf(count, 64)))
     }
 
-    private fun queued(world: TestSingleplayerContext) = world.server.runOnServer<Nothing> { server ->
-        server.playerList.players.first().sendSystemMessage(Component.literal("Queued Refined Obsidian! It starts automatically when a Forge slot finishes."))
+    private fun forging(world: TestSingleplayerContext) = world.server.runOnServer<Nothing> { server ->
+        server.playerList.players.first().sendSystemMessage(Component.literal("Forging Refined Obsidian! Ready in 49m 12s."))
     }
-
-    private inline fun <reified W : AbstractWidget> widget(context: ClientGameTestContext, crossinline which: (W) -> Boolean = { true }) =
-        context.computeOnClient<W?, Nothing> { client ->
-            val screen = client.gui.screen() as? ContainerScreen ?: return@computeOnClient null
-            Screens.getWidgets(screen).filterIsInstance<W>().firstOrNull { it.visible && which(it) }
-        }
 
     private fun press(context: ClientGameTestContext): List<Click> {
         ClickSpy.clear()
@@ -79,23 +71,20 @@ class ForgeCraftTest : FabricClientGameTest {
 
     override fun runTest(context: ClientGameTestContext) {
         val feature = DsModClient.feature<ForgeCraft>()
-        context.runOnClient<Nothing> {
-            feature.key.value = GLFW.GLFW_KEY_R
-            feature.amount = 3
-        }
+        context.runOnClient<Nothing> { feature.key.value = GLFW.GLFW_KEY_R }
         context.worldBuilder().create().use { world ->
             carry(world, 34)
             forge(context, world, 0)
-            check(widget<KitKeysButton>(context) == null) { "The panel showed with nothing remembered" }
+            check(ServerMenus.widget<KitKeysButton>(context) == null) { "The panel showed with nothing remembered" }
             check(press(context).isEmpty()) { "The key clicked with nothing remembered" }
 
             select(context, world)
             refining(context, world)
             confirm(context, world)
-            queued(world)
+            forging(world)
             forge(context, world, 1)
             check(context.computeOnClient<String?, Nothing> { feature.recipe?.name } == "Refined Obsidian") { "The craft was not remembered" }
-            check(widget<KitKeysButton>(context) != null) { "The panel did not show at The Forge" }
+            check(ServerMenus.widget<KitKeysButton>(context) != null) { "The panel did not show at The Forge" }
             context.takeScreenshot("forge-craft-forge")
 
             check(press(context) == listOf(Click(22, 0, ContainerInput.PICKUP))) { "ForgeCrafts did not click Forge Queue once" }
@@ -114,7 +103,7 @@ class ForgeCraftTest : FabricClientGameTest {
             confirm(context, world)
             check(press(context) == listOf(Click(20, 0, ContainerInput.PICKUP))) { "The key did not click Confirm" }
 
-            val keys = widget<KitKeysButton>(context)!!
+            val keys = ServerMenus.widget<KitKeysButton>(context)!!
             clickAt(context, keys)
             check(context.computeOnClient<Boolean, Nothing> { keys.recording }) { "A click on the key button did not start recording" }
             context.takeScreenshot("forge-craft-listening")
@@ -128,18 +117,11 @@ class ForgeCraftTest : FabricClientGameTest {
             context.runOnClient<Nothing> { feature.key.value = GLFW.GLFW_KEY_R }
 
             forge(context, world, 2)
-            val plus = widget<KitButton>(context) { it.message.string == "+" }!!
-            clickAt(context, plus)
-            check(context.computeOnClient<Int, Nothing> { feature.amount } == 4) { "+ did not raise the amount" }
-            context.input.scroll(-1.0)
-            context.waitTicks(2)
-            check(context.computeOnClient<Int, Nothing> { feature.amount } == 3) { "The wheel over the amount did not lower it" }
-
             ServerMenus.hover(context, 6 * 9)
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
             context.waitTicks(2)
             val scale = context.computeOnClient<Double, Nothing> { it.window.guiScale.toDouble() }
-            val corner = widget<KitKeysButton>(context)!!
+            val corner = ServerMenus.widget<KitKeysButton>(context)!!
             ClickSpy.clear()
             context.input.setCursorPos((corner.x - 20) * scale, (corner.y + 48) * scale)
             context.waitTicks(2)
@@ -151,18 +133,12 @@ class ForgeCraftTest : FabricClientGameTest {
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
             context.waitTicks(2)
 
-            context.runOnClient<Nothing> { feature.amount = 1 }
-            forge(context, world, 3)
-            queued(world)
-            context.waitTicks(3)
-            check(context.computeOnClient<Boolean, Nothing> { feature.done }) { "The amount was not reached" }
-            check(press(context).isEmpty()) { "The key clicked after the amount was reached" }
-            context.takeScreenshot("forge-craft-done")
+            forge(context, world, 10)
+            check(context.computeOnClient<Boolean, Nothing> { feature.full }) { "The forge did not read as full" }
+            check(press(context).isEmpty()) { "The key clicked Forge Queue with the forge full" }
+            context.takeScreenshot("forge-craft-full")
 
-            context.runOnClient<Nothing> {
-                feature.amount = 5
-                DsModClient.settings.hud.theme = Theme.VANILLA
-            }
+            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
             carry(world, 4)
             confirm(context, world, ready = false)
             context.takeScreenshot("forge-craft-vanilla-missing")

@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.capture.CaptureWriter
 import io.github.noxaur.dsmod.core.capture.ChangeLog
 import io.github.noxaur.dsmod.core.capture.RawRecord
 import io.github.noxaur.dsmod.core.game.Metrics
+import io.github.noxaur.dsmod.edge.id
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -243,7 +244,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
             position(player.x.round2(), player.y.round2(), player.z.round2())
             put("yaw", player.yRot.toDouble().round2())
             put("pitch", player.xRot.toDouble().round2())
-            put("item", BuiltInRegistries.ITEM.getKey(held.item).toString())
+            put("item", held.id)
             put("name", held.hoverName.string)
             held.get(DataComponents.CUSTOM_DATA)?.copyTag()?.getCompound("item_data")?.flatMap { it.getString("item_id") }
                 ?.orElse(null)?.let { put("itemId", it) }
