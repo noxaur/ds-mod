@@ -38,7 +38,7 @@ object Slots {
      * [rarity] is the mark's role when the player's rarity style draws it, or null for a plain fill in [color], and a
      * [cooldown] draws neither.
      */
-    private class Shown(val color: Int, val rarity: Role?, val hide: Boolean, val label: Component?, val cooldown: SlotCooldown?)
+    private class Shown(val role: Role, val color: Int, val rarity: Role?, val hide: Boolean, val label: Component?, val cooldown: SlotCooldown?, val outline: Boolean)
 
     private val marks = HashMap<String, Map<Int, Shown>>()
     private val hidden = BitSet()
@@ -54,7 +54,7 @@ object Slots {
     /** Marks slots by their index in the open container's menu, replacing what [id] marked before. */
     fun mark(id: String, slots: Map<Int, SlotMark>) {
         marks[id] = slots.mapValues { (_, mark) ->
-            Shown(mark.role.argb(FILL_ALPHA), mark.role.takeIf { mark.rarity }, mark.hide, mark.label?.toComponent(), mark.cooldown)
+            Shown(mark.role, mark.role.argb(FILL_ALPHA), mark.role.takeIf { mark.rarity }, mark.hide, mark.label?.toComponent(), mark.cooldown, mark.outline)
         }
         recount()
     }
@@ -104,6 +104,7 @@ object Slots {
                     front(graphics, Surface.CONTAINER, shown, slot.x, slot.y)
                     shown.label?.let { graphics.text(font, it, slot.x, slot.y, -1, true) }
                     shown.cooldown?.let { cooldown(graphics, it, slot.x, slot.y) }
+                    if (shown.outline) Kit.slotOutline(graphics, slot.x, slot.y, if (shown.role == Role.ACTION) Kit.theme.accent else shown.role.argb())
                 }
             }
             ScreenEvents.remove(screen).register {
@@ -174,7 +175,7 @@ object Slots {
     }
 
     private fun back(graphics: GuiGraphicsExtractor, surface: Surface, shown: Shown, x: Int, y: Int) {
-        if (shown.cooldown != null) return
+        if (shown.cooldown != null || shown.outline) return
         val rarity = shown.rarity
         if (rarity == null) Kit.slotFill(graphics, x, y, shown.color)
         else art(graphics, surface, rarity, x, y)

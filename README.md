@@ -44,6 +44,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - **Better UI** – Turns Back Buttons and Menu Tabs on or off at once.
 - **Menu Tabs** – Your own command tabs and an item search in every menu.
 - **Back Buttons** – Adds Go Back to menus that have none.
+- **Forge Craft** – Repeat your last forge craft with a key, one click per press.
 - **Menu Theme** – Dark or glass menus, inventory and tooltips.
 - **Fixed Menu Layout** – Go Back, Close and your inventory sit in the same place in every menu.
 - **Hide Glass Panes** – Hides the blank glass panes that pad out menus.

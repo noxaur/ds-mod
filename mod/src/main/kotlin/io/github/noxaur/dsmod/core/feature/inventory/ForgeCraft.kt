@@ -1,0 +1,178 @@
+package io.github.noxaur.dsmod.core.feature.inventory
+
+import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.config.Store
+import io.github.noxaur.dsmod.core.container.SlotMark
+import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.HasFeature
+import io.github.noxaur.dsmod.core.game.Area
+import io.github.noxaur.dsmod.core.game.ContainerOpened
+import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.SlotChanged
+import io.github.noxaur.dsmod.core.text.Role
+import kotlinx.serialization.Serializable
+
+class ForgeCraft(config: DsModConfig) : HasFeature {
+    override val feature = Feature(config, "forge-craft", Area.ANYWHERE, Store.INVENTORY, "Repeat your last forge craft, one click per key press.", slots = ::slots)
+
+    val key = feature.keys("forgeCraftKey", "Craft Key", "Pick the key that clicks the next button of your last forge craft.", KEY_R)
+
+    data class Material(val name: String, val count: Int, val icon: Item? = null)
+
+    data class Recipe(val category: String, val item: Item, val materials: List<Material>) {
+        val name: String get() = item.name?.plain.orEmpty()
+    }
+
+    @Serializable
+    data class Kept(val amount: Int = 1)
+
+    data class Step(val menu: Int, val slot: Int, val blocked: Boolean)
+
+    private val kept = feature.saved(Kept())
+
+    var recipe by feature.session<Recipe?> { null }
+        private set
+
+    var amount: Int
+        get() = kept.value.amount
+        set(value) {
+            val clamped = value.coerceIn(AMOUNT_MIN, AMOUNT_MAX)
+            if (clamped != kept.value.amount) kept.value = kept.value.copy(amount = clamped)
+        }
+
+    var crafted by feature.world { 0 }
+        private set
+
+    val done: Boolean get() = recipe != null && crafted >= amount
+
+    private var away by feature.world { true }
+    private var menu by feature.world<String?> { null }
+    private var category by feature.world<String?> { null }
+    private var queued by feature.world { 0 }
+    private var queueSize by feature.world { QUEUE_SIZE }
+
+    private val offered by feature.world { HashMap<String, Item>() }
+    private val seen by feature.world { HashMap<String, Item>() }
+
+    private val categories by feature.world { HashSet<String>() }
+
+    init {
+        feature.on<ContainerOpened> { opened, _ ->
+            val title = opened.title?.plain
+            if (title == null) away = true
+            if (title == FORGE && away) {
+                away = false
+                crafted = 0
+            }
+            if (menu == SELECT && title != null && title != FORGE && title != CONFIRM) {
+                category = title
+                offered.clear()
+            }
+            menu = title
+        }
+        feature.on<SlotChanged> { changed, _ ->
+            if (!forge(menu)) return@on
+            val item = changed.item ?: return@on
+            val name = item.name?.plain?.ifEmpty { null } ?: return@on
+            seen.putIfAbsent(name, item)
+            if (changed.slot >= top()) return@on
+            val menu = menu
+            when {
+                menu == FORGE -> QUEUE.matchEntire(name)?.destructured?.let { (count, size) ->
+                    queued = count.toInt()
+                    queueSize = size.toInt()
+                }
+                menu == SELECT -> if (item.lore.any { it.plain == BROWSE }) categories += name
+                menu == category -> if (item.lore.any { it.plain == REQUIRED }) offered[name] = item
+            }
+        }
+        feature.line("Queued ", Regex("Queued (.+)! It starts automatically when a Forge slot finishes\\.")) { (name), _ -> queued(name) }
+    }
+
+    fun forge(title: String?): Boolean = title == FORGE || title == SELECT || title == CONFIRM || title in categories || title == recipe?.category
+
+    private fun queued(name: String) {
+        val known = recipe
+        if (known?.name == name) {
+            crafted++
+            return
+        }
+        val item = offered[name] ?: return
+        val from = category ?: return
+        val materials = materials(item).map { (material, count) -> Material(material, count, seen[material]) }
+        recipe = Recipe(from, item, materials)
+        crafted = 0
+    }
+
+    private fun top() = (feature.container.slots.size - INVENTORY_SLOTS).coerceAtLeast(0)
+
+    private fun find(name: (String) -> Boolean): Int? {
+        val slots = feature.container.slots
+        for (i in 0 until top()) if (slots[i]?.name?.plain?.let(name) == true) return i
+        return null
+    }
+
+    fun next(): Step? {
+        val recipe = recipe ?: return null
+        if (done) return null
+        val slots = feature.container.slots
+        val id = feature.container.id
+        return when (menu) {
+            FORGE -> find { QUEUE.matches(it) }?.let { Step(id, it, queued >= queueSize) }
+            SELECT -> find { it == recipe.category }?.let { Step(id, it, false) }
+            recipe.category -> find { it == recipe.name }?.let { Step(id, it, false) }
+            CONFIRM -> if (slots.getOrNull(CONFIRM_ITEM)?.name?.plain != recipe.name) null
+            else find { it == CONFIRM_BUTTON }?.let { Step(id, it, slots[it]?.id == GRAY) }
+            else -> null
+        }
+    }
+
+    fun has(name: String): Int {
+        val slots = feature.container.slots
+        var total = 0
+        for (i in top() until slots.size) slots[i]?.takeIf { it.name?.plain == name }?.let { total += it.count }
+        return total
+    }
+
+    fun icon(material: Material): Item? = material.icon ?: seen[material.name] ?: feature.container.slots.firstOrNull { it?.name?.plain == material.name }
+
+    fun covered(): Int = recipe?.materials?.minOfOrNull { has(it.name) / it.count.coerceAtLeast(1) } ?: 0
+
+    val free: Int get() = (queueSize - queued).coerceAtLeast(0)
+
+    fun canCraft(): Int = minOf(covered(), free)
+
+    private fun slots(now: Long): Map<Int, SlotMark> {
+        val step = next() ?: return emptyMap()
+        return mapOf(step.slot to SlotMark(if (step.blocked) Role.BAD else Role.ACTION, outline = true))
+    }
+
+    companion object {
+        const val AMOUNT_MIN = 1
+        const val AMOUNT_MAX = 99
+
+        private const val KEY_R = 82
+        private const val QUEUE_SIZE = 10
+        private const val INVENTORY_SLOTS = 36
+        private const val CONFIRM_ITEM = 4
+
+        const val FORGE = "The Forge"
+        const val SELECT = "Select Process"
+        const val CONFIRM = "Confirm Process"
+        private const val CONFIRM_BUTTON = "Confirm"
+        private const val BROWSE = "Click to browse!"
+        private const val REQUIRED = "Items Required"
+        private const val GRAY = "minecraft:gray_terracotta"
+        private val QUEUE = Regex("Forge Queue \\((\\d+)/(\\d+)\\)")
+        private val MATERIAL = Regex("(.+?)(?: x(\\d+))?")
+
+        fun materials(item: Item): List<Pair<String, Int>> {
+            val lines = item.lore.map { it.plain }
+            val start = lines.indexOf(REQUIRED)
+            if (start < 0) return emptyList()
+            return lines.drop(start + 1).takeWhile { it.isNotBlank() }.mapNotNull { line ->
+                MATERIAL.matchEntire(line.trim())?.destructured?.let { (name, count) -> name to (count.toIntOrNull() ?: 1) }
+            }
+        }
+    }
+}

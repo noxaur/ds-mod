@@ -11,6 +11,8 @@
 
 call edge.DsModClient.onInitializeClient -> edge.CommandKeys.register
     approved by github.com/noxaur 2026-11-16T01:17:00Z
+call edge.DsModClient.onInitializeClient -> edge.ForgeCrafts.register
+    approved by github.com/noxaur 2026-11-21T18:46:00Z
 call edge.DsModClient.onInitializeClient -> edge.MenuBack.register
     approved by github.com/noxaur 2026-11-16T01:17:00Z
 call edge.DsModClient.onInitializeClient -> edge.Pings.register
@@ -52,6 +54,12 @@ gate edge.CopyChats 60e707afcd60  CopyChat
 gate edge.EyeGuards d497c96d3e10  EyeGuard
     can refuse the player's actions through UseBlockCallback.EVENT
     approved by github.com/noxaur 2026-11-16T18:38:00Z
+gate edge.ForgeCrafts b9ba98c60798  ForgeCraft
+    acts through MultiPlayerGameMode.handleContainerInput
+    can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
+    can refuse the player's input through ScreenMouseEvents.allowMouseClick
+    can refuse the player's input through ScreenMouseEvents.allowMouseRelease
+    can refuse the player's input through ScreenMouseEvents.allowMouseScroll
 gate edge.Hits af5b845f21bf
     can refuse the player's actions through AttackEntityCallback.EVENT
 gate edge.MenuBack e5d60e26f8b1  BackButtons, BetterUi

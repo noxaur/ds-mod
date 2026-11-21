@@ -71,6 +71,7 @@ class SurfacesTest : FabricClientGameTest {
                         diamond.index to SlotMark(Role.GOOD, text { good("1") }),
                         diamond.index - 18 to SlotMark(Role.BAD),
                         diamond.index - 9 to SlotMark(Role.LEGENDARY, rarity = true),
+                        diamond.index + 1 to SlotMark(Role.ACTION, outline = true),
                     ),
                 )
                 val scale = client.window.guiScale

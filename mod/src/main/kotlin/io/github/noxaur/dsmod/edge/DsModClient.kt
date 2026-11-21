@@ -190,6 +190,7 @@ object DsModClient : ClientModInitializer {
         EyeGuards.register()
         CopyChats.register()
         SlotGuards.register()
+        ForgeCrafts.register()
         CommandKeys.register()
         Pings.register()
         ScreenEvents.AFTER_INIT.register { _, screen, _, _ -> if (screen is AbstractContainerScreen<*>) readouts.opened(screen) }
