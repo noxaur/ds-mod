@@ -19,7 +19,6 @@ call edge.DsModClient.onInitializeClient -> edge.Pings.register
     approved by github.com/noxaur 2026-11-16T19:47:00Z
 call edge.DsModClient.onInitializeClient -> edge.SlotGuards.register
     approved by github.com/noxaur 2026-11-16T08:42:00Z
-call edge.HotdShortcut.register -> edge.MenuBack.filler
 call edge.HotdShortcut.register -> edge.MenuBack.send
     approved by github.com/noxaur 2026-11-21T18:26:00Z
 call edge.SkyBlockMenuClicks.opens -> edge.MenuBack.send
@@ -67,7 +66,7 @@ gate edge.ForgeCrafts 73d7d65c1c4a  ForgeCraft
     can refuse the player's input through ScreenMouseEvents.allowMouseScroll
 gate edge.Hits af5b845f21bf
     can refuse the player's actions through AttackEntityCallback.EVENT
-gate edge.MenuBack fa3a0582c454  BackButtons, BetterUi
+gate edge.MenuBack 7203271c7a80  BackButtons, BetterUi
     can refuse or change sent chat through ClientSendMessageEvents.COMMAND
     sends through ClientPacketListener.sendCommand
 gate edge.Pings 374f3f901a23  PerformanceStats

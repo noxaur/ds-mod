@@ -35,8 +35,6 @@ import net.minecraft.client.gui.screens.inventory.LoomScreen
 import net.minecraft.client.gui.screens.inventory.MerchantScreen
 import net.minecraft.client.gui.screens.inventory.SmithingScreen
 import net.minecraft.client.gui.screens.inventory.StonecutterScreen
-import net.minecraft.core.component.DataComponents
-import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.Identifier
 import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.inventory.ChestMenu
@@ -165,7 +163,7 @@ object MenuSkin {
             val stack = menu.slots[i].item
             if (stack === buttonStacks[i]) continue
             buttonStacks[i] = stack
-            buttons[i] = if (stack.isEmpty) null else MenuButton.of(BuiltInRegistries.ITEM.getKey(stack.item).toString(), stack.get(DataComponents.CUSTOM_NAME)?.string)
+            buttons[i] = if (stack.isEmpty) null else MenuButton.of(stack.id, stack.plainName)
         }
     }
 

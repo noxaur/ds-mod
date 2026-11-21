@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.container.Filler
 import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
 import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
 import io.github.noxaur.dsmod.core.text.text
@@ -17,10 +16,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
-import net.minecraft.core.component.DataComponents
-import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.inventory.AbstractContainerMenu
-import net.minecraft.world.item.ItemStack
 
 /**
  * Back Buttons, under Better UI. A chest menu the server gave no Go Back gets a button where Go Back sits in the server's menus, in the
@@ -59,15 +55,11 @@ object MenuBack {
             Screens.getWidgets(screen).add(button)
             ScreenEvents.afterTick(screen).register {
                 // The server fills a menu's slots over a few ticks, and can put its own Go Back in later.
-                button.visible = enabled && filler(slot.item) && chest.none { named(it.item) }
+                button.visible = enabled && slot.item.filler && chest.none { it.item.plainName == GO_BACK }
                 Slots.cover(slot.index, button.visible)
             }
         }
     }
-
-    fun filler(stack: ItemStack) = Filler.of(BuiltInRegistries.ITEM.getKey(stack.item).toString(), stack.get(DataComponents.CUSTOM_NAME)?.string)
-
-    private fun named(stack: ItemStack) = stack.get(DataComponents.CUSTOM_NAME)?.string == GO_BACK
 
     /** The command that opened the menu of [screen], or null when none did or it is not the menu open now. */
     fun opener(screen: AbstractContainerScreen<*>) = if (screen.menu === menu) trail.opener else null

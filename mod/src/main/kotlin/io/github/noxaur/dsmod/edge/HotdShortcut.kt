@@ -32,7 +32,7 @@ object HotdShortcut {
             button.visible = false
             Screens.getWidgets(screen).add(button)
             fun place() {
-                button.visible = shown && MenuBack.filler(slot.item) && screen.menu.carried.isEmpty
+                button.visible = shown && slot.item.filler && screen.menu.carried.isEmpty
                 Slots.cover(SLOT, button.visible)
             }
             ScreenEvents.afterTick(screen).register { place() }

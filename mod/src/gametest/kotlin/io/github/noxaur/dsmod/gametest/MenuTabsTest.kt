@@ -15,13 +15,10 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.fabricmc.fabric.mixin.client.gametest.input.KeyboardHandlerAccessor
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.components.ImageButton
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.client.input.KeyEvent
-import net.minecraft.commands.Commands
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.Items
@@ -37,18 +34,9 @@ import org.lwjgl.glfw.GLFW
 class MenuTabsTest : FabricClientGameTest {
     private class Shown(val name: String, val x: Int, val y: Int, val width: Int, val selected: Boolean)
 
-    private fun <W : AbstractWidget> widgets(context: ClientGameTestContext, type: Class<W>) =
-        context.computeOnClient<List<W>, Nothing> { client ->
-            val screen = client.gui.screen() as? AbstractContainerScreen<*> ?: return@computeOnClient emptyList()
-            Screens.getWidgets(screen).filterIsInstance(type).filter { it.visible }
-        }
+    private fun tabs(context: ClientGameTestContext) = ServerMenus.widgets<KitTab>(context).map { Shown(it.message.string, it.x, it.y, it.width, it.selected) }
 
-    private fun tabs(context: ClientGameTestContext) = context.computeOnClient<List<Shown>, Nothing> { client ->
-        val screen = client.gui.screen() as? AbstractContainerScreen<*> ?: return@computeOnClient emptyList()
-        Screens.getWidgets(screen).filterIsInstance<KitTab>().filter { it.visible }.map { Shown(it.message.string, it.x, it.y, it.width, it.selected) }
-    }
-
-    private fun field(context: ClientGameTestContext) = widgets(context, KitTextField::class.java).firstOrNull()
+    private fun field(context: ClientGameTestContext) = ServerMenus.widget<KitTextField>(context)
 
     private fun click(context: ClientGameTestContext, x: Int, y: Int, button: Int = GLFW.GLFW_MOUSE_BUTTON_LEFT) {
         val scale = context.computeOnClient<Double, Nothing> { it.window.guiScale.toDouble() }
@@ -69,19 +57,10 @@ class MenuTabsTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
             context.runOnClient<Nothing> { DsModClient.feature<MenuTabs>().tabs.value = TabLayout.DEFAULT }
-            world.server.runOnServer<Nothing> { server ->
-                server.commands.dispatcher.register(
-                    Commands.literal("storage").executes {
-                        it.source.playerOrException.openMenu(
-                            ServerMenus.menu(6, "Storage", goBack = false) { chest ->
-                                chest.setItem(11, ServerMenus.named(Items.DIAMOND_SWORD, "Dragon Blade").also { s -> s.set(DataComponents.LORE, ItemLore(listOf(Component.literal("LEGENDARY SWORD")))) })
-                                chest.setItem(13, ServerMenus.named(Items.ENDER_PEARL, "Ender Pearl"))
-                                chest.setItem(15, ServerMenus.named(Items.PRISMARINE_SHARD, "Dragon Scale"))
-                            },
-                        )
-                        1
-                    },
-                )
+            ServerMenus.command(world, "storage", 6, "Storage", goBack = false) { chest ->
+                chest.setItem(11, ServerMenus.named(Items.DIAMOND_SWORD, "Dragon Blade").also { s -> s.set(DataComponents.LORE, ItemLore(listOf(Component.literal("LEGENDARY SWORD")))) })
+                chest.setItem(13, ServerMenus.named(Items.ENDER_PEARL, "Ender Pearl"))
+                chest.setItem(15, ServerMenus.named(Items.PRISMARINE_SHARD, "Dragon Scale"))
             }
             try {
                 ServerMenus.open(context, world, 3, "Maddox the Slayer", goBack = false)
@@ -117,7 +96,7 @@ class MenuTabsTest : FabricClientGameTest {
                 ServerMenus.open(context, world, 4, "Storage Page 2") { it.setItem(10, ServerMenus.named(Items.DIAMOND_SWORD, "Dragon Blade")) }
                 check(field(context)?.value == "dragon sword") { "The search did not follow into the next menu" }
 
-                val close = widgets(context, KitButton::class.java).first { it.message.string == "Close Search" }
+                val close = ServerMenus.widgets<KitButton>(context).first { it.message.string == "Close Search" }
                 click(context, close.x + 8, close.y + 8)
                 check(field(context) == null && tabs(context).any { it.name == "Search" }) { "The close button left the bar open" }
 
