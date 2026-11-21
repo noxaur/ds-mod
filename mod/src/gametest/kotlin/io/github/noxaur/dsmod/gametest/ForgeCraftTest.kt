@@ -7,7 +7,6 @@ import io.github.noxaur.dsmod.edge.ui.KitKeysButton
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
-import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.core.component.DataComponents
@@ -55,12 +54,6 @@ class ForgeCraftTest : FabricClientGameTest {
         server.playerList.players.first().sendSystemMessage(Component.literal("Forging Refined Obsidian! Ready in 49m 12s."))
     }
 
-    private inline fun <reified W : AbstractWidget> widget(context: ClientGameTestContext, crossinline which: (W) -> Boolean = { true }) =
-        context.computeOnClient<W?, Nothing> { client ->
-            val screen = client.gui.screen() as? ContainerScreen ?: return@computeOnClient null
-            Screens.getWidgets(screen).filterIsInstance<W>().firstOrNull { it.visible && which(it) }
-        }
-
     private fun press(context: ClientGameTestContext): List<Click> {
         ClickSpy.clear()
         context.input.pressKey(GLFW.GLFW_KEY_R)
@@ -82,7 +75,7 @@ class ForgeCraftTest : FabricClientGameTest {
         context.worldBuilder().create().use { world ->
             carry(world, 34)
             forge(context, world, 0)
-            check(widget<KitKeysButton>(context) == null) { "The panel showed with nothing remembered" }
+            check(ServerMenus.widget<KitKeysButton>(context) == null) { "The panel showed with nothing remembered" }
             check(press(context).isEmpty()) { "The key clicked with nothing remembered" }
 
             select(context, world)
@@ -91,7 +84,7 @@ class ForgeCraftTest : FabricClientGameTest {
             forging(world)
             forge(context, world, 1)
             check(context.computeOnClient<String?, Nothing> { feature.recipe?.name } == "Refined Obsidian") { "The craft was not remembered" }
-            check(widget<KitKeysButton>(context) != null) { "The panel did not show at The Forge" }
+            check(ServerMenus.widget<KitKeysButton>(context) != null) { "The panel did not show at The Forge" }
             context.takeScreenshot("forge-craft-forge")
 
             check(press(context) == listOf(Click(22, 0, ContainerInput.PICKUP))) { "ForgeCrafts did not click Forge Queue once" }
@@ -110,7 +103,7 @@ class ForgeCraftTest : FabricClientGameTest {
             confirm(context, world)
             check(press(context) == listOf(Click(20, 0, ContainerInput.PICKUP))) { "The key did not click Confirm" }
 
-            val keys = widget<KitKeysButton>(context)!!
+            val keys = ServerMenus.widget<KitKeysButton>(context)!!
             clickAt(context, keys)
             check(context.computeOnClient<Boolean, Nothing> { keys.recording }) { "A click on the key button did not start recording" }
             context.takeScreenshot("forge-craft-listening")
@@ -128,7 +121,7 @@ class ForgeCraftTest : FabricClientGameTest {
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
             context.waitTicks(2)
             val scale = context.computeOnClient<Double, Nothing> { it.window.guiScale.toDouble() }
-            val corner = widget<KitKeysButton>(context)!!
+            val corner = ServerMenus.widget<KitKeysButton>(context)!!
             ClickSpy.clear()
             context.input.setCursorPos((corner.x - 20) * scale, (corner.y + 48) * scale)
             context.waitTicks(2)
