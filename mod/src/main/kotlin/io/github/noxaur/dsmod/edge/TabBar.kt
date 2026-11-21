@@ -90,7 +90,7 @@ object TabBar {
                     search = tab
                     KitTab(x, edgeY(tab.edge), tab.edge, "Search", null, Icon.SEARCH, glass) { openSearch() }
                 } else {
-                    KitTab(x, edgeY(tab.edge), tab.edge, tab.tooltip.ifBlank { "/${tab.command}" }, icon(tab.item), null, glass) { MenuBack.send(tab.command) }
+                    KitTab(x, edgeY(tab.edge), tab.edge, tab.tooltip.ifBlank { "/${tab.command}" }, icon(tab.item), null, glass) { PlayerCommands.send(tab.command) }
                 }
                 widget.selected = i == selected
                 widget.setTooltip(Tooltip.create(tooltip(tab)))
