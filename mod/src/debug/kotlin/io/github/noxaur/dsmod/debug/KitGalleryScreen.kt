@@ -66,7 +66,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         mark(Items.NETHER_STAR, 1, Role.MYTHIC, ' '), mark(Items.LAPIS_LAZULI, 38, Role.RARE, ' '),
         mark(Items.BLAZE_ROD, 1, Role.LEGENDARY, 'b'), mark(Items.SLIME_BALL, 7, Role.UNCOMMON, ' '), mark(Items.PRISMARINE_SHARD, 1, Role.DIVINE, 'b'),
         mark(Items.PAPER, 20, Role.COMMON, 'd'), mark(Items.ENDER_EYE, 1, Role.EPIC, 'd'), mark(Items.QUARTZ, 9, Role.RARE, ' '), mark(Items.FEATHER, 4, Role.COMMON, 'h'),
-        mark(Items.AIR, 1, Role.COMMON, ' '), mark(Items.DIAMOND_SWORD, 1, Role.LEGENDARY, 'c'),
+        mark(Items.AIR, 1, Role.COMMON, ' '), mark(Items.DIAMOND_SWORD, 1, Role.LEGENDARY, 'c'), mark(Items.DRAGON_EGG, 1, Role.COMMON, 'l'),
     )
     private val wellRows = listOf(text { body("Dragon Timer") }, text { body("Fireball Alert") }).map { it.toComponent() }
     private val tabs = listOf(Items.GOLDEN_SWORD, Items.DIAMOND, Items.ENDER_PEARL, Items.EMERALD).map(::ItemStack)
@@ -202,11 +202,13 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
             val rarity = DsModClient.feature<ItemRarity>()
             val atlas = if (mark.style == 'b') SlotArts.atlas(rarity, Surface.CONTAINER) else null
             if (atlas != null) Kit.slotArt(g, sx + 1, sy + 1, atlas, mark.role.ordinal)
+            if (mark.style == 'l') Kit.slotHighlightBack(g, sx + 1, sy + 1)
             g.item(mark.item, sx + 1, sy + 1)
             g.itemDecorations(font, mark.item, sx + 1, sy + 1)
             if (mark.style == 'd') Kit.slotDim(g, sx + 1, sy + 1)
             if (mark.style == 'h') Kit.slotHover(g, sx + 1, sy + 1)
             if (mark.style == 'c') Kit.cooldown(g, sx + 1, sy + 1, 0.6f)
+            if (mark.style == 'l') Kit.slotHighlightFront(g, sx + 1, sy + 1)
             if (atlas != null && rarity.inventoryStyle.value.gem) {
                 Kit.slotGem(g, sx + 1, sy + 1, atlas, mark.role.ordinal)
             }

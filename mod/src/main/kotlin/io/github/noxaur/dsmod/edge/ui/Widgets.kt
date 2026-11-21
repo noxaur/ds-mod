@@ -134,8 +134,9 @@ class KitSlotButton(
             -1 -> Kit.slot(graphics, x, y)
             else -> Kit.glassSlot(graphics, x, y)
         }
+        if (isHoveredOrFocused) Kit.slotHighlightBack(graphics, x + 1, y + 1)
         graphics.item(item, x + 1, y + 1)
-        if (isHoveredOrFocused) Kit.slotHover(graphics, x + 1, y + 1)
+        if (isHoveredOrFocused) Kit.slotHighlightFront(graphics, x + 1, y + 1)
     }
 }
 
