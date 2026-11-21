@@ -64,6 +64,7 @@ gate edge.ForgeCrafts d66e6ed07577  ForgeCraft
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
+    approved by github.com/noxaur 2026-11-21T22:21:00Z
 gate edge.Hits af5b845f21bf
     can refuse the player's actions through AttackEntityCallback.EVENT
 gate edge.MenuBack fa3a0582c454  BackButtons, BetterUi
