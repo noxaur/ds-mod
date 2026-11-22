@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.core.feature.general
 import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.config.KeyBind
 import io.github.noxaur.dsmod.core.config.SettingsTree
+import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.input.ClickBudget
 import kotlin.random.Random
 import kotlin.test.Test
@@ -15,8 +16,9 @@ class AutoClickTest {
     }
 
     private val tree = SettingsTree()
-    private val trigger = tree.feature<AutoLeftClick>().click
-    private val right = tree.feature<AutoRightClick>().click
+    private val auto = tree.feature<AutoClick>()
+    private val trigger = auto.left
+    private val right = auto.right
     private val budget = ClickBudget()
 
     private data class Tick(val walking: Boolean = true, val pressed: Boolean = false, val down: Boolean = true, val on: Boolean = true)
@@ -46,8 +48,8 @@ class AutoClickTest {
 
     @Test
     fun `auto clicks fill only what the player's own clicks leave of 9 point 9 a second`() {
-        val auto = held(20 * 100).withIndex().count { (i, t) -> step(t).also { if (i % 4 == 0) budget.count(nanos) } }
-        assertEquals(990, auto + 500)
+        val clicked = held(20 * 100).withIndex().count { (i, t) -> step(t).also { if (i % 4 == 0) budget.count(nanos) } }
+        assertEquals(990, clicked + 500)
     }
 
     @Test
@@ -148,8 +150,20 @@ class AutoClickTest {
     }
 
     @Test
-    fun `both start off, on the left and right mouse buttons held`() {
-        assertEquals(false to false, tree.feature<AutoLeftClick>().feature.enabled to tree.feature<AutoRightClick>().feature.enabled)
+    fun `a part runs only while Auto Click and the part are both on`() {
+        Game(listOf(auto.feature))
+        auto.feature.enabled = true
+        assertEquals(true to true, trigger.runs to right.runs)
+        right.switch.value = false
+        assertEquals(true to false, trigger.runs to right.runs)
+        auto.feature.enabled = false
+        assertEquals(false to false, trigger.runs to right.runs)
+    }
+
+    @Test
+    fun `it starts off, with both parts on the left and right mouse buttons held`() {
+        assertEquals(false, auto.feature.enabled)
+        assertEquals(true to true, trigger.switch.value to right.switch.value)
         assertEquals(0 to KeyMode.HOLD, trigger.key.value to trigger.mode.value)
         assertEquals(1 to KeyMode.HOLD, right.key.value to right.mode.value)
     }

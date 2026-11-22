@@ -1,22 +1,15 @@
 import { Effect } from "effect";
 import { describe, expect, test } from "vite-plus/test";
 
+import { contribStore, itemStore, profileStore } from "../routes/_store.ts";
 import type { RecordingRequest } from "../src/contrib/model.ts";
-import type { Store, SubmissionRow } from "../src/contrib/store.ts";
-import type { ItemLimits, ItemStore, Observation } from "../src/items/store.ts";
-import type { ProfileStore } from "../src/profiles/store.ts";
+import type { SubmissionRow } from "../src/contrib/store.ts";
+import type { ItemLimits, Observation } from "../src/items/store.ts";
+import { localCloudflare } from "./cloudflare.ts";
 import { gzipped, sighting, spec } from "./harness.ts";
 
-export interface Stores {
-  readonly contrib: Store["Service"];
-  readonly items: ItemStore["Service"];
-  readonly profiles: ProfileStore["Service"];
-}
-
-export interface Implementation {
-  readonly stores: Stores;
-  readonly within: <A>(body: () => Promise<A>) => Promise<A>;
-}
+const stores = { contrib: contribStore, items: itemStore, profiles: profileStore };
+type Stores = typeof stores;
 
 const run = <A, E>(effect: Effect.Effect<A, E>) => Effect.runPromise(effect);
 
@@ -50,10 +43,10 @@ const unknown = (signature: string, sampled = "first") => ({
   firstSeen: "2026-01-01",
 });
 
-const appearances = (items: ItemStore["Service"], query: { entry?: string; after?: string; limit?: number } = {}) =>
+const appearances = (items: Stores["items"], query: { entry?: string; after?: string; limit?: number } = {}) =>
   run(items.appearances({ limit: 200, ...query }));
 
-const names = async (items: ItemStore["Service"]) => (await appearances(items)).items.map(({ entry }) => entry);
+const names = async (items: Stores["items"]) => (await appearances(items)).items.map(({ entry }) => entry);
 
 const roomy: ItemLimits = { maxRows: 1000, maxPlayerRows: 1000, maxSamples: 5 };
 
@@ -451,17 +444,12 @@ const suites: { readonly [Name in keyof Stores]: Cases<Stores[Name]> } = {
   },
 };
 
-export const storeContract = (implementation: string, make: () => Promise<Implementation>) => {
-  for (const [name, methods] of Object.entries(suites)) {
-    for (const [method, cases] of Object.entries(methods)) {
-      describe(`${implementation} ${name}.${method}`, () => {
-        for (const [title, body] of Object.entries(cases)) {
-          test(title, async () => {
-            const { stores, within } = await make();
-            await within(() => body(stores));
-          });
-        }
-      });
-    }
+for (const [name, methods] of Object.entries(suites)) {
+  for (const [method, cases] of Object.entries(methods)) {
+    describe(`${name}.${method}`, () => {
+      for (const [title, body] of Object.entries(cases)) {
+        test(title, () => localCloudflare()(() => body(stores)));
+      }
+    });
   }
-};
+}

@@ -38,7 +38,7 @@ Only one small layer touches the player's input, approved once by a hash of its 
 
 Forge Craft repeats a forge craft from the keyboard, and each press sends one click, the next of the four the player made by hand, so the player still makes every step and sees each menu. One press that sent every click was rejected, because that is automation. A press waits up to a second for the menu it clicked to give way to the next, so a quick second press cannot land on the wrong button, and a menu the server never replaced takes a click again after that.
 
-## Auto Left Click and Auto Right Click press the game's own key once a tick
+## Auto Click presses the game's own key once a tick
 
 dragsim.co allows auto clicking while the player walks, the user confirmed. Each click is the press the mouse makes on the attack or use key, so the game gives it every check a real click gets. A button never passes 9.9 a second, and the player's own clicks count but are never dropped, only the mod's. Clicks go out on ticks but the budget refills by the clock, since after a freeze the game runs the missed ticks at once. Calling attack or use directly was rejected, since it skips those checks.
 

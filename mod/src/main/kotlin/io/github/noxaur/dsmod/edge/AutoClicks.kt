@@ -2,8 +2,6 @@ package io.github.noxaur.dsmod.edge
 
 import com.mojang.blaze3d.platform.InputConstants
 import io.github.noxaur.dsmod.core.feature.general.AutoClick
-import io.github.noxaur.dsmod.core.feature.general.AutoLeftClick
-import io.github.noxaur.dsmod.core.feature.general.AutoRightClick
 import io.github.noxaur.dsmod.edge.input.Clicks
 import io.github.noxaur.dsmod.edge.input.InputApproved
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -12,15 +10,12 @@ import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
 
 object AutoClicks {
-    private class Button(val click: AutoClick, val on: Boolean, val mapping: KeyMapping)
+    private class Button(val click: AutoClick.Part, val mapping: KeyMapping)
 
     private var clicking = false
-    private val tapped = HashSet<AutoClick>()
+    private val tapped = HashSet<AutoClick.Part>()
 
-    private fun buttons(client: Minecraft) = listOf(
-        Button(DsModClient.feature<AutoLeftClick>().click, DsModClient.runs<AutoLeftClick>(), client.options.keyAttack),
-        Button(DsModClient.feature<AutoRightClick>().click, DsModClient.runs<AutoRightClick>(), client.options.keyUse),
-    )
+    private fun buttons(client: Minecraft) = DsModClient.feature<AutoClick>().let { listOf(Button(it.left, client.options.keyAttack), Button(it.right, client.options.keyUse)) }
 
     fun pressed(key: InputConstants.Key) {
         if (clicking) return
@@ -34,8 +29,9 @@ object AutoClicks {
                 client.options.let { it.keyUp.isDown || it.keyDown.isDown || it.keyLeft.isDown || it.keyRight.isDown }
             val due = buttons(client).filter { button ->
                 val click = button.click
+                val on = click.runs
                 val pressed = click in tapped
-                click.tick(button.on, walking && button.on, pressed, Keys.held(client, click.key.value)) &&
+                click.tick(on, walking && on, pressed, Keys.held(client, click.key.value)) &&
                     !(pressed && Keys.matches(KeyMappingHelper.getBoundKeyOf(button.mapping), click.key.value))
             }
             tapped.clear()
