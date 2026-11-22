@@ -76,6 +76,7 @@ class SavedFilesTest {
         writer.submit {}.get()
         files.flush()
         assertTrue("zealot-tracker.save" in session.game.metrics.snapshot().failures)
+        writer.submit {}.get()
 
         Files.delete(blocked)
         files.close()

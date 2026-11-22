@@ -88,7 +88,7 @@ class CaptureWriterTest {
 
         val closing = FutureTask { writer.close() }
         val closer = Thread(closing).apply { start() }
-        while (closer.state != Thread.State.TIMED_WAITING) Thread.onSpinWait()
+        while (closer.state != Thread.State.TIMED_WAITING && !closing.isDone) Thread.onSpinWait()
         release.countDown()
         closing.get()
 
