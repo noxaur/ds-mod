@@ -2,7 +2,6 @@ package io.github.noxaur.dsmod.core.game
 
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.count
-import io.github.noxaur.dsmod.core.text.number
 import kotlinx.serialization.Serializable
 
 // @keep The sidebar writes the active pet as `Pet: [Lvl 100] Black Cat`, and `Pet: None` when none is out
@@ -17,15 +16,6 @@ data class Pet(val name: String, val level: Int, val rarity: Role) {
         }
 
         fun nameOf(plain: String) = LINE.matchEntire(plain.trim())?.groupValues?.get(2)
-
-        val STANDS = EntityFilter(setOf("minecraft:armor_stand"), "[Lvl ")
-
-        /** @keep dragsim.co floats each player's pet beside them as an armor stand named like `[Lvl 100] Black Cat` that
-         * wears the pet's head, so a pet of another player's may show one of the same name */
-        fun worn(seen: EntitySeen): Pair<String, Item>? {
-            val head = seen.head?.takeIf { it.id == "minecraft:player_head" } ?: return null
-            return nameOf(seen.name.plain)?.let { it to head }
-        }
     }
 }
 
@@ -55,54 +45,5 @@ data class PetCard(
 ) {
     companion object {
         const val MENU = "Pets"
-
-        const val ACTIVE = "Click to deactivate!"
-
-        private const val HELD = "Held Item"
-        private const val MAX_LEVEL = "MAX LEVEL"
-        private val LEVEL = Regex("""LEVEL \d+""")
-        private val XP = Regex("""([\d,.]+)\s*/\s*([\d,.]+)""")
-        private val PERCENT = Regex("""(\d+(?:\.\d+)?)%""")
-        private val FOOTER = Regex("""(?:VERY SPECIAL|SPECIAL|DIVINE|MYTHIC|LEGENDARY|EPIC|RARE|UNCOMMON|COMMON)\s*([A-Z ]+?) PET""")
-
-        /** @keep Only a pet at its max level was seen, so the lines between its level and the click hint are read leniently:
-         * an `xp/needed` pair, or else a percent */
-        fun of(item: Item): PetCard? {
-            val lore = item.cleanLore
-            if (ACTIVE !in lore) return null
-            val pet = item.name?.let(Pet::of) ?: return null
-            val key = item.string("extra", "item_uuid", "uuid") ?: pet.name
-            val category = lore.firstNotNullOfOrNull { FOOTER.matchEntire(it)?.groupValues?.get(1)?.trim() }
-            val heldAt = lore.indexOf(HELD)
-            val held = item.lore.getOrNull(heldAt + 1)?.takeIf { heldAt >= 0 && lore[heldAt + 1].isNotEmpty() }?.let {
-                PetItem(lore[heldAt + 1], Role.rarity(it.spans.lastOrNull { span -> span.text.isNotBlank() }?.color))
-            }
-            val levelAt = lore.indexOfFirst { LEVEL.matches(it) }
-            if (levelAt < 0) return PetCard(pet, item, held, null, key = key, category = category)
-            val lines = lore.drop(levelAt + 1)
-                .takeWhile { it != "ACTIVE" && !it.startsWith("Click") }
-                .filter { it.isNotEmpty() }
-            if (MAX_LEVEL in lines) return PetCard(pet, item, held, PetProgress.MAX, key = key, category = category)
-            val xp = lines.firstNotNullOfOrNull { XP.find(it) }?.destructured?.let { (have, need) ->
-                val a = number(have)
-                val b = number(need)
-                if (a != null && b != null && b > 0) PetProgress((a / b).toFloat().coerceIn(0f, 1f), a, b) else null
-            }
-            val percent = lines.firstNotNullOfOrNull { PERCENT.find(it) }?.groupValues?.get(1)?.let(::number)?.toFloat()
-                ?.let { PetProgress((it / 100f).coerceIn(0f, 1f)) }
-            val progress = xp ?: percent
-            val unread = if (progress == null && lines.isNotEmpty()) lines.joinToString(" / ") else null
-            return PetCard(pet, item, held, progress, unread, key, category)
-        }
     }
-}
-
-/** @keep The server sends it right behind the death of a mob the player killed, within KILL_WINDOW_MILLIS, and
- * repeats it for about a second after */
-object CombatXp {
-    const val MARK = " Combat ("
-    const val KILL_WINDOW_MILLIS = 20L
-    private val GAIN = Regex("""\+([\d,.]+) Combat \(""")
-
-    fun gained(plain: String): Double? = GAIN.find(plain)?.groupValues?.get(1)?.let(::number)
 }
