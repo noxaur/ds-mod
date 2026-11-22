@@ -608,5 +608,11 @@ class SettingsScreen(
         private val opened = HashSet<String>()
 
         private val view = FavoritesView()
+
+        fun forget() {
+            tabs = null
+            opened.clear()
+            view.left()
+        }
     }
 }

@@ -120,6 +120,7 @@ object DsModClient : ClientModInitializer {
     }
 
     private fun start() {
+        SettingsScreen.forget()
         val tree = SettingsTree(settings)
         game = Game(tree.features) { anyServer || onDragSim }
         byType = tree.owners.associateBy { it.javaClass }
