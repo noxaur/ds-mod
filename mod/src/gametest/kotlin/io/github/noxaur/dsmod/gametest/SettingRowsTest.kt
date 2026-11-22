@@ -130,7 +130,7 @@ class SettingRowsTest : FabricClientGameTest {
         val right = GLFW.GLFW_MOUSE_BUTTON_RIGHT
         for ((button, onKey, bound) in listOf(Triple(left, true, left), Triple(right, true, right), Triple(left, false, right))) {
             click(k.controlX + 8, k.controlY + 8)
-            val (x, y) = if (onKey) k.controlX + 8 to k.controlY + 8 else k.x + 4 to k.y + 4
+            val (x, y) = if (onKey) k.controlX + 8 to k.controlY + 8 else k.x + 20 to k.y + k.height / 2
             click(x, y, button)
             expect("Mouse button $button ${if (onKey) "on" else "off"} the listening key", bound) { DsModClient.feature<FreeLook>().key.value }
         }
