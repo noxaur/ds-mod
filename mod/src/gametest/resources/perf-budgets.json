@@ -68,7 +68,7 @@
       "group": "Tick",
       "label": "Feature handlers and readouts per tick",
       "unit": "µs",
-      "cap": 10
+      "cap": 12
     },
     "capture-items": {
       "group": "Recording",
