@@ -8,7 +8,7 @@ The mod is open source, so anyone can build a client that sends anything. So the
 
 ## The website asks Mojang for the backend
 
-Mojang refuses the addresses that Cloudflare Workers share, so a Worker cannot ask who joined. The backend sends the question to a route on the website, which runs on Vercel and asks Mojang for it, with the key the two already share, so nobody else reaches Mojang through it. A proxy of our own was rejected, because it would be a third service to run and pay for. Without the relay set, as in development, the backend asks Mojang itself.
+Mojang refuses the addresses that Cloudflare Workers share, so a Worker cannot ask who joined. The backend sends the question to a route on the website, which runs on Vercel and asks Mojang for it, with the key the two already share, so nobody else reaches Mojang through it. A proxy of our own was rejected, because it would be a third service to run and pay for. A backend without the website's key, as in development, asks Mojang itself, so the relay needs no setting of its own that a deploy could forget.
 
 ## Only Mojang vouches for an account
 

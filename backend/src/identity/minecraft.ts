@@ -27,19 +27,18 @@ const Verify = Schema.toStandardSchemaV1(
 
 const unavailable = (why: string) => new APIError("SERVICE_UNAVAILABLE", { message: why });
 
-export interface MojangRelay {
-  readonly url: string;
-  readonly key: string;
-}
+const mojang = "https://sessionserver.mojang.com/session/minecraft/hasJoined";
+export const websiteRelay = "https://ds-mod.perwko.com/mojang/has-joined";
 
 export const mojangHasJoined =
-  (relay?: MojangRelay): HasJoined =>
+  (websiteKey?: string): HasJoined =>
   async (name, serverId) => {
-    const url = new URL(relay?.url ?? "https://sessionserver.mojang.com/session/minecraft/hasJoined");
+    const relayed = websiteKey !== undefined && websiteKey !== "";
+    const url = new URL(relayed ? websiteRelay : mojang);
     url.searchParams.set("username", name);
     url.searchParams.set("serverId", serverId);
     // Only a 204 means nobody joined. Anything else is Mojang failing, which the player can retry, not a refusal.
-    const response = await fetch(url, { headers: relay ? { [trustedKeyHeader]: relay.key } : {} }).catch(() => {
+    const response = await fetch(url, { headers: relayed ? { [trustedKeyHeader]: websiteKey } : {} }).catch(() => {
       throw unavailable("Mojang did not answer.");
     });
     if (response.status === 204) {
