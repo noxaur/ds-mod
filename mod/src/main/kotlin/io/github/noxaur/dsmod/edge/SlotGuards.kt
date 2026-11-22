@@ -200,7 +200,7 @@ object SlotGuards {
         if (input == ContainerInput.QUICK_MOVE && partner != null) {
             val above = find(screen, maxOf(own, partner))
             // The click the number key sends over a slot, which the player asked for by linking the two.
-            if (above != null) client.gameMode?.handleContainerInput(screen.menu.containerId, above.index, minOf(own, partner), ContainerInput.SWAP, client.player!!)
+            if (above != null) client.gameMode?.handleContainerInput(screen.menu.containerId, above.index, minOf(own, partner), ContainerInput.SWAP, checkNotNull(client.player) { "a click over a slot comes from a player" })
             return true
         }
         val refuses = slot != null && locked(slot) ||
@@ -356,7 +356,7 @@ object SlotGuards {
             val own = own(slot)
             if (flash > 0f && slot === refused) Kit.flash(graphics, slot.x, slot.y, 16, 16, flash)
             // Yellow for a slot, blue for a linked one, and green for an item that takes its lock along.
-            val role = if (own !in locks.locked) Role.GOOD else if (locks.partner(own!!) != null) Role.ACTION else Role.WARNING
+            val role = if (own == null || own !in locks.locked) Role.GOOD else if (locks.partner(own) != null) Role.ACTION else Role.WARNING
             Kit.icon(graphics, Icon.LOCK, slot.x, slot.y, role.argb())
         }
     }
