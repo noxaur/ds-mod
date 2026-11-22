@@ -26,6 +26,7 @@ class ActivePetTest : FabricClientGameTest {
         equipmentDisplay.feature.enabled = false
         try {
             context.worldBuilder().create().use { world ->
+                fun hudRows() = context.computeOnClient<List<String>, Nothing> { DsModClient.game.readouts.single { r -> r.feature.id == ID }.hud!!.rows.map { r -> r.text.plain } }
                 fun pet(level: Int) =
                     world.server.runCommand("""team modify ds_pet suffix [{"text":"[Lvl $level] ","color":"gray"},{"text":"Ender Dragon","color":"dark_purple"}]""")
                 listOf(
@@ -77,14 +78,14 @@ class ActivePetTest : FabricClientGameTest {
                 }
                 context.runOnClient<Nothing> { it.player!!.closeContainer() }
                 context.waitTicks(10)
-                val paced = context.computeOnClient<List<String>, Nothing> { DsModClient.game.readouts.single { r -> r.feature.id == ID }.hud!!.rows.map { r -> r.text.plain } }
+                val paced = hudRows()
                 check(paced.any { it.startsWith("XP per Hour: ") } && paced.any { it.startsWith("Next Level: ") }) { "Two reads gave no rate: $paced" }
                 context.takeScreenshot("active-pet-rate")
 
                 world.server.runCommand("""tellraw @a "Equipped Lucky Clover on [Lvl 37] Ender Dragon!"""")
                 pet(38)
                 context.waitTicks(20)
-                val rows = context.computeOnClient<List<String>, Nothing> { DsModClient.game.readouts.single { r -> r.feature.id == ID }.hud!!.rows.map { r -> r.text.plain } }
+                val rows = hudRows()
                 check(rows == listOf("[Lvl 38] Ender Dragon", "Item: Lucky Clover", "Open your Pets menu to read its XP.")) { "After the level up the block reads $rows" }
                 check(HeadSkin.worn(icon())) { "The icon went after the level up" }
                 context.takeScreenshot("active-pet-level-up")

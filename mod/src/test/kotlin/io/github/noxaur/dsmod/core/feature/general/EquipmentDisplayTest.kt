@@ -55,6 +55,8 @@ class EquipmentDisplayTest : Harness() {
     /** Each row as its icons, or as its text. */
     private fun shown() = hud(feature)?.rows?.map { if (it is ItemsRow) it.items else it.text.plain }
 
+    private fun heads() = shown().orEmpty().map { (it as List<*>).filterNotNull() }
+
     @Test
     fun `the armor shows in a row with no header, helmet first, with a gap for a piece not worn`() {
         post(*inventory(helmet, boots))
@@ -124,7 +126,7 @@ class EquipmentDisplayTest : Harness() {
     @Test
     fun `another player's pet coming nearer keeps the head already seen`() {
         post(pet(), near("[Lvl 100] Ender Dragon"), near("[Lvl 100] Tiger"))
-        assertEquals(listOf(listOf(head)), shown().orEmpty().map { (it as List<*>).filterNotNull() })
+        assertEquals(listOf(listOf(head)), heads())
     }
 
     @Test
@@ -132,7 +134,7 @@ class EquipmentDisplayTest : Harness() {
         val tiger = Item("minecraft:player_head", 1, skin = "tiger")
         post(pet(), near("[Lvl 100] Ender Dragon"), near("[Lvl 100] Tiger", 8, tiger))
         post(pet(name = "Tiger"))
-        assertEquals(listOf(listOf(tiger)), shown().orEmpty().map { (it as List<*>).filterNotNull() })
+        assertEquals(listOf(listOf(tiger)), heads())
     }
 
     @Test
@@ -191,16 +193,12 @@ class EquipmentDisplayTest : Harness() {
         post(pet(), near("[Lvl 100] Ender Dragon"), LeftServer)
         assertNull(shown())
         post(pet())
-        assertEquals(listOf(listOf(head)), shown().orEmpty().map { (it as List<*>).filterNotNull() })
+        assertEquals(listOf(listOf(head)), heads())
     }
 
     @Test
     fun `leaving the server while the feature is off forgets the pet once it is back on`() {
-        post(pet())
-        feature.feature.enabled = false
-        post(LeftServer)
-        feature.feature.enabled = true
-        pass()
+        leaveWhileOff(feature, pet())
         assertNull(shown())
     }
 

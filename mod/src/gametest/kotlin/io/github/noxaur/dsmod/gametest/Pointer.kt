@@ -57,6 +57,9 @@ fun ClientGameTestContext.clickOwnSlot(slot: Int, button: Int = 0, settle: Int =
 
 fun ClientGameTestContext.openInventory() = setScreen { InventoryScreen(checkNotNull(Minecraft.getInstance().player)) }
 
+fun <T> ClientGameTestContext.onContainer(read: (Minecraft, AbstractContainerScreen<*>) -> T): T =
+    computeOnClient<T, Nothing> { read(it, it.gui.screen() as AbstractContainerScreen<*>) }
+
 fun ClientGameTestContext.carried() = computeOnClient<Int, Nothing> { checkNotNull(it.player).containerMenu.carried.count }
 
 fun ClientGameTestContext.ownItem(slot: Int) = computeOnClient<Pair<Item, Int>, Nothing> { client ->

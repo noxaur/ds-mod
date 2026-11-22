@@ -33,6 +33,13 @@ import kotlin.test.assertSame
 class GameTest : Harness() {
     private val config = tree.config
 
+    private inner class SidebarListener {
+        var heard = 0
+        val feature = Feature(config, "listener", Area.ANYWHERE, Store.END, "Hears the sidebar in a test.").apply {
+            on<Sidebar> { _, _ -> heard++ }
+        }
+    }
+
     private fun marks(feature: HasFeature) = readout(feature).marks
 
     private val protector = EntitySeen(36339, "minecraft:iron_golem", text("[Lv100] Endstone Protector 10M/10M"))
@@ -264,17 +271,14 @@ class GameTest : Harness() {
 
     @Test
     fun `a feature that is switched back on hears the sidebar again`() {
-        var heard = 0
-        val listener = Feature(config, "listener", Area.ANYWHERE, Store.END, "Hears the sidebar in a test.").apply {
-            on<Sidebar> { _, _ -> heard++ }
-        }
-        val game = Game(listOf(listener))
+        val listener = SidebarListener()
+        val game = Game(listOf(listener.feature))
         game.post(0, Sidebar(lines = listOf(text("⏣ Village"))))
-        listener.enabled = false
+        listener.feature.enabled = false
         game.tick(1_000)
-        listener.enabled = true
+        listener.feature.enabled = true
         game.tick(2_000)
-        assertEquals(2, heard)
+        assertEquals(2, listener.heard)
     }
 
     @Test
@@ -289,18 +293,15 @@ class GameTest : Harness() {
 
     @Test
     fun `a feature switched on after the player left the server hears none of its sidebar`() {
-        var heard = 0
-        val listener = Feature(config, "listener", Area.ANYWHERE, Store.END, "Hears the sidebar in a test.").apply {
-            on<Sidebar> { _, _ -> heard++ }
-        }
-        val game = Game(listOf(listener))
-        listener.enabled = false
+        val listener = SidebarListener()
+        val game = Game(listOf(listener.feature))
+        listener.feature.enabled = false
         game.tick(0)
         game.post(1, Sidebar(lines = listOf(text("⏣ Village"))))
         game.post(2, LeftServer)
-        listener.enabled = true
+        listener.feature.enabled = true
         game.tick(3)
-        assertEquals(0, heard)
+        assertEquals(0, listener.heard)
     }
 
     @Test
