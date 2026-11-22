@@ -1,15 +1,14 @@
 package io.github.noxaur.dsmod.core.game
 
+import io.github.noxaur.dsmod.harness.lines
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /** The rows and lines are the ones a capture of 2026-11-14 shows in each place, with the padding the server sends. */
 class AreaTest {
-    private fun text(lines: List<String>) = lines.map { ServerText(ServerSpan(it)) }
-
     private fun areas(tab: List<String>, sidebar: List<String>): List<Area> {
-        val tabState = TabState().also { it.update(text(tab)) }
-        val sidebarState = SidebarState().also { it.update(Sidebar(lines = text(sidebar))) }
+        val tabState = TabState().also { it.update(lines(*tab.toTypedArray())) }
+        val sidebarState = SidebarState().also { it.update(Sidebar(lines = lines(*sidebar.toTypedArray()))) }
         return Area.entries.filter { it != Area.ANYWHERE && it.holds(tabState, sidebarState) }
     }
 
@@ -39,7 +38,7 @@ class AreaTest {
 
     @Test
     fun `the sidebar gives its place and its info lines`() {
-        val state = SidebarState().also { it.update(Sidebar(lines = text(listOf("", "Name: Player1", " ⏣ The Catacombs (F1)", "Purse: 527,057,149")))) }
+        val state = SidebarState().also { it.update(Sidebar(lines = lines("", "Name: Player1", " ⏣ The Catacombs (F1)", "Purse: 527,057,149"))) }
         assertEquals("The Catacombs (F1)", state.place)
         assertEquals("527,057,149", state.info("Purse"))
         assertEquals(4, state.lines.size)

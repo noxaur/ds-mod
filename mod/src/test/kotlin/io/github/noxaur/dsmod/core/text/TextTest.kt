@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.core.text
 
 import io.github.noxaur.dsmod.core.game.ServerSpan
-import io.github.noxaur.dsmod.core.game.ServerText
+import io.github.noxaur.dsmod.harness.text
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -51,7 +51,7 @@ class TextTest {
         val yellow = 0xFFFF55
         val gold = 0xFFAA00
         val red = 0xFF5555
-        val crit = ServerText(
+        val crit = text(
             ServerSpan("✧4,", white), ServerSpan("8", yellow), ServerSpan("7", gold), ServerSpan("6", red), ServerSpan(",", red),
             ServerSpan("4", gold), ServerSpan("4", yellow), ServerSpan("5✧", white),
         )
@@ -63,8 +63,8 @@ class TextTest {
     @Test
     fun `server text in one color stays one span, and uncolored text is white`() {
         val gray = 0xAAAAAA
-        assertEquals(listOf(Span("98.4k", gray)), text { server("98.4k", ServerText(ServerSpan("98,438", gray))) }.spans)
-        assertEquals(listOf(Span("1M", 0xFFFFFF)), text { server("1M", ServerText(ServerSpan("1,000,000"))) }.spans)
-        assertEquals(listOf(Span("7", gray)), text { server("7", ServerText(ServerSpan("1", 0xFFFFFF), ServerSpan("2", gray), ServerSpan("3", gray))) }.spans)
+        assertEquals(listOf(Span("98.4k", gray)), text { server("98.4k", text("98,438", gray)) }.spans)
+        assertEquals(listOf(Span("1M", 0xFFFFFF)), text { server("1M", text("1,000,000")) }.spans)
+        assertEquals(listOf(Span("7", gray)), text { server("7", text(ServerSpan("1", 0xFFFFFF), ServerSpan("2", gray), ServerSpan("3", gray))) }.spans)
     }
 }

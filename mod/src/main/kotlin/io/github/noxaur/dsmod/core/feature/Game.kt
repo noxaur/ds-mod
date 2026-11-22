@@ -292,7 +292,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         }
     }
 
-    private companion object {
+    internal companion object {
         const val REFRESH_MILLIS = 250L
     }
 }

@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.core.contribute
 
 import io.github.noxaur.dsmod.core.game.Item
-import io.github.noxaur.dsmod.core.game.ServerSpan
+import io.github.noxaur.dsmod.harness.text
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.Skulls
 import kotlinx.serialization.json.Json
@@ -18,7 +18,6 @@ class ItemSightingsTest {
     private val sightings = ItemSightings { setOf("Steve", "Zed") }
     private val uuid = "123e4567-e89b-12d3-a456-426614174000"
 
-    private fun text(line: String) = ServerText(listOf(ServerSpan(line)))
 
     private fun json(source: String) = Json.parseToJsonElement(source).jsonObject
 
