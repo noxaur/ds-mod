@@ -97,6 +97,7 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
             e.tag == "ProfileNotFound" && asked != null -> Failure(text { bad("$name has no such profile now.") }, retry = false, selected = true)
             e.tag == "ProfileNotFound" -> Failure(text { bad("$name has no profile yet.") }, retry = false)
             e.tag == "UpstreamUnavailable" -> Failure(text { bad("dragsim.co is not answering. Try again soon.") }, retry = true)
+            e.tag == "TooManyRequests" -> Failure(text { bad("That was a lot of profiles at once. Try again in a minute.") }, retry = true)
             e.status == null -> Failure(text { bad("${e.message} Try again soon.") }, retry = true)
             e.status == 401 -> Failure(text { bad("ds-mod could not sign you in. Try again soon.") }, retry = true)
             e.status >= 500 -> Failure(text { bad("ds-mod's backend is down. Try again soon.") }, retry = true)
