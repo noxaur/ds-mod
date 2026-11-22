@@ -35,7 +35,7 @@ After a deploy, `https://api.ds-mod.perwko.com/healthz` answers 204, and a `POST
 | --- | --- | --- |
 | `BETTER_AUTH_SECRET` | Signs every session | Created by Void on the first deploy. Changing it signs every player out |
 | `ADMIN_TOKEN` | What `dsctl` sends to act as an agent | The Worker, and the user's `~/.config/dsmod/production.env`, readable only by the user |
-| `AUTH_TRUSTED_KEY` | Lets the website's sign-in calls skip the per-address rate limit, which would otherwise count every player who signs in on the website together. The website's `AUTH_TRUSTED_KEY` in Vercel must hold the same value | The Worker, and the Vercel project's environment variables |
+| `AUTH_TRUSTED_KEY` | Lets the website's sign-in calls skip the per-address rate limit, which would otherwise count every player who signs in on the website together, and lets the backend ask Mojang through the website, because Mojang refuses Cloudflare's addresses. Without it, every sign-in from the mod answers 503. The website's `AUTH_TRUSTED_KEY` in Vercel must hold the same value | The Worker, and the Vercel project's environment variables |
 
 To change `ADMIN_TOKEN`, edit the file and pipe the value in. `void secret sync` waits on a prompt that a non-interactive shell never answers.
 
