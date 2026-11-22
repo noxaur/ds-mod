@@ -7,7 +7,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
 import kotlin.math.abs
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.CursorMixin]. */
 class KeepCursorTest : FabricClientGameTest {
     private fun cursor(context: ClientGameTestContext) = context.computeOnClient<Pair<Double, Double>, Nothing> { it.mouseHandler.xpos() to it.mouseHandler.ypos() }
 

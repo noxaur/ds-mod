@@ -18,7 +18,6 @@ import net.minecraft.client.gui.screens.TitleScreen
 import net.minecraft.client.input.MouseButtonInfo
 import org.lwjgl.glfw.GLFW
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.ui.KitTabBar], [io.github.noxaur.dsmod.edge.Browser], [io.github.noxaur.dsmod.edge.mixin.PerspectiveKeyMixin]. */
 class OwnSettingsTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = SettingsDriver(context).screen()
 

@@ -13,7 +13,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.TitleScreen
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.PerspectiveKeyMixin]. */
 class SettingsNarrationTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = setUp(context)

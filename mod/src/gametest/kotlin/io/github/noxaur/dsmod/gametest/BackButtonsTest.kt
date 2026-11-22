@@ -10,7 +10,6 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.MenuBack]. */
 class BackButtonsTest : FabricClientGameTest {
     private fun button(context: ClientGameTestContext) = context.goBackButton()?.let { it.x to it.y }
 

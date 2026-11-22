@@ -17,7 +17,6 @@ import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 import java.nio.file.Path
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.EnchantmentOfferMixin], [io.github.noxaur.dsmod.edge.mixin.MenuBackdropMixin], [io.github.noxaur.dsmod.edge.mixin.MenuLabelMixin]. */
 class MenuThemeTest : FabricClientGameTest {
     private fun checkPanel(context: ClientGameTestContext, shot: Path, theme: Theme) {
         val (left, top) = context.menuCorner()

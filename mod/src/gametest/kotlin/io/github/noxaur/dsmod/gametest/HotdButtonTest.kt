@@ -11,7 +11,6 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.MenuSkin], [io.github.noxaur.dsmod.edge.mixin.EnchantmentOfferMixin], [io.github.noxaur.dsmod.edge.mixin.MenuArtMixin], [io.github.noxaur.dsmod.edge.mixin.MenuBackdropMixin], [io.github.noxaur.dsmod.edge.mixin.MenuLabelMixin], [io.github.noxaur.dsmod.edge.mixin.MenuPaintMixin], [io.github.noxaur.dsmod.edge.mixin.RecipeButtonMixin], [io.github.noxaur.dsmod.edge.mixin.TooltipMixin]. */
 class HotdButtonTest : FabricClientGameTest {
     private fun egg(context: ClientGameTestContext) = ServerMenus.widget<KitSlotButton>(context)?.let { it.x + 1 to it.y + 1 }
 

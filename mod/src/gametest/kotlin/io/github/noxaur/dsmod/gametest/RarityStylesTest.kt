@@ -11,7 +11,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext
 import java.util.concurrent.CompletableFuture
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.MenuSkin], [io.github.noxaur.dsmod.edge.mixin.EnchantmentOfferMixin], [io.github.noxaur.dsmod.edge.mixin.MenuArtMixin], [io.github.noxaur.dsmod.edge.mixin.MenuBackdropMixin], [io.github.noxaur.dsmod.edge.mixin.MenuLabelMixin], [io.github.noxaur.dsmod.edge.mixin.MenuPaintMixin], [io.github.noxaur.dsmod.edge.mixin.RecipeButtonMixin], [io.github.noxaur.dsmod.edge.mixin.TooltipMixin]. */
 class RarityStylesTest : FabricClientGameTest {
     private companion object {
         const val DARK_CHEST = "dsmod_gametest:dark_chest"

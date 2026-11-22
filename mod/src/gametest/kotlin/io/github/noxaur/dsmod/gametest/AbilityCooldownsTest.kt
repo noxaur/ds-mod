@@ -8,7 +8,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import org.lwjgl.glfw.GLFW
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.Hits]. */
 class AbilityCooldownsTest : FabricClientGameTest {
     private fun readout(context: ClientGameTestContext) = context.computeOnClient<Pair<HudBlock?, Map<Int, SlotMark>>, Nothing> {
         val readout = DsModClient.game.readouts.single { it.feature.id == "ability-cooldowns" }
