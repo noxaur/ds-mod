@@ -303,10 +303,10 @@ val rules = listOf(
     Rule(
         id = "player-rows-by-container",
         files = "src/main/kotlin/**/core/feature/**.kt",
-        forbid = Regex("""^(?!\s*(\*|//))(?:[^"\n]*"[^"\n]*")*[^"\n]*?(?<![\w$]|\d\.)36(?![\w"]|\.\d)"""),
+        forbid = Regex("""^(?!\s*(\*|//))(?:[^"\n]*"[^"\\\n]*+(?:\\.[^"\\\n]*+)*+")*?[^"\n]*?(?<![\w$]|\d\.)36(?![\w"]|\.\d)"""),
         fix = PLAYER_SLOTS_FIX,
         example = """HOTBAR("Hotbar", 36, 9, false),""",
-        examples = listOf("for (slot in 36 until 45) read(slot)", "val hotbar = slots.subList(36, 45)", "slot in 36..44", "slot in 36..<45", "9..36"),
+        examples = listOf("for (slot in 36 until 45) read(slot)", "val hotbar = slots.subList(36, 45)", "slot in 36..44", "slot in 36..<45", "9..36", """if (menu == "\"") read(36)"""),
         counterExamples = listOf(
             "val ratio = 0.36",
             "val wide = 360",
@@ -314,6 +314,7 @@ val rules = listOf(
             " * the 36 slots the player carries",
             """val code = "36"""",
             """feature.unparsed("Level 36 reward")""",
+            """feature.unparsed("Level \"36 reward\"")""",
         ),
     ),
     Rule(
@@ -428,8 +429,8 @@ val rules = listOf(
         id = "part-by-itself",
         files = "src/main/kotlin/**/core/feature/**.kt",
         forbid = Regex(
-            """\bval\s+(?<clock>\w+)\s*(?::\s*\w+\s*)?=\s*ServerClock\s*\([\s\S]*?\bon<\s*(?:ServerTime|WorldChanged)\s*>\s*\{(?:[^{}]|\{[^{}]*})*?(?:\{[^{}]*?)?\b\k<clock>\s*\.|""" +
-                """\bval\s+(?<reader>\w+)\s*(?::\s*\w+\s*)?=\s*(?:ContainerReader|SlotMarks)\s*\([\s\S]*?\bon<\s*(?:ContainerOpened|SlotChanged|WorldChanged)\s*>\s*\{(?:[^{}]|\{[^{}]*})*?(?:\{[^{}]*?)?\b\k<reader>\s*\.""",
+            """\bval\s+(?<clock>\w+)\s*(?::\s*\w+\s*)?=\s*ServerClock\s*\([\s\S]*?\bon<\s*(?:ServerTime|WorldChanged)\s*>\s*\{(?:[^{}]*\{[^{}]*})*?[^{}]*?(?:\{[^{}]*?)?\b\k<clock>\s*\.\s*\w+\s*\(|""" +
+                """\bval\s+(?<reader>\w+)\s*(?::\s*\w+\s*)?=\s*(?:ContainerReader|SlotMarks)\s*\([\s\S]*?\bon<\s*(?:ContainerOpened|SlotChanged|WorldChanged)\s*>\s*\{(?:[^{}]*\{[^{}]*})*?[^{}]*?(?:\{[^{}]*?)?\b\k<reader>\s*\.\s*\w+\s*\(""",
         ),
         fix = "A part hears the events it needs for itself, because `Feature.on` runs every handler of a type in turn. `ServerClock` " +
             "follows `ServerTime` and clears itself on `WorldChanged`, and `ContainerReader` and `SlotMarks` see `ContainerOpened`, " +
@@ -448,6 +449,7 @@ val rules = listOf(
             "private val clock = ServerClock(feature)\ninit {\n    feature.on<WorldChanged> { _, _ -> timers.clear() }\n}",
             "private val clock = ServerClock(feature)\ninit {\n    feature.on<WorldChanged> { _, _ -> timers.clear() }\n    feature.on<Hit> { _, now -> started = clock.millis(now) }\n}",
             "private val marks = SlotMarks(feature, ::mark)\ninit {\n    feature.on<ActionBar> { _, _ -> marks.invalidate() }\n}",
+            "private val clock = ServerClock(feature)\ninit {\n    feature.on<ServerTime> { _, _ -> seen = clock.updates }\n}",
             "private val pets = CurrentPet(feature, ::changed)\ninit {\n    feature.on<SlotChanged> { event, _ -> if (event.item == null) pets.set(null) }\n}",
         ),
         span = Span.FILE_REPORTING_LAST_LINE,
