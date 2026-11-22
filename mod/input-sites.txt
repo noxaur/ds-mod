@@ -45,7 +45,7 @@ gate edge.AutoClicks 7ab079ee48b8  AutoLeftClick, AutoRightClick
 gate edge.Chat 7c62093eb80b
     builds text that runs a command when the player clicks it
     approved by github.com/noxaur 2026-11-16T01:17:00Z
-gate edge.ChatDrags ff0895d0a3c1  ChatHudEditor
+gate edge.ChatDrags 2ebeede0f190  ChatHudEditor
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseDrag
@@ -54,33 +54,33 @@ gate edge.ChatDrags ff0895d0a3c1  ChatHudEditor
 gate edge.CommandKeys c28dd763de35  CommandBinds
     sends through ClientPacketListener.sendChat
     sends through ClientPacketListener.sendCommand
-gate edge.CopyChats d8f76f1b479d  CopyChat
+gate edge.CopyChats b36f25f03dcf  CopyChat
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
 gate edge.EyeGuards d497c96d3e10  EyeGuard
     can refuse the player's actions through UseBlockCallback.EVENT
     approved by github.com/noxaur 2026-11-16T18:38:00Z
-gate edge.ForgeCrafts 19b4886abeb9  ForgeCraft
+gate edge.ForgeCrafts 48abe9f0c882  ForgeCraft
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
 gate edge.Hits af5b845f21bf
     can refuse the player's actions through AttackEntityCallback.EVENT
-gate edge.MenuBack ed735e135c6a  BackButtons, BetterUi
+gate edge.MenuBack 304a93b46faa  BackButtons, BetterUi
     can refuse or change sent chat through ClientSendMessageEvents.COMMAND
 gate edge.Pings 374f3f901a23  PerformanceStats
     builds the packet ServerboundPingRequestPacket
     sends through ClientPacketListener.send
 gate edge.PlayerCommands 0b1a1b5ade3a
     sends through ClientPacketListener.sendCommand
-gate edge.SlotGuards e030b53e5ba3  SlotLock
+gate edge.SlotGuards 01bcaf19e519  SlotLock
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-gate edge.TabBar 6a1ffa193b07  BetterUi, MenuTabs
+gate edge.TabBar b9877eaba022  BetterUi, MenuTabs
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
 gate edge.capture.Recording ed76355333a5

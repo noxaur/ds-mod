@@ -4,7 +4,6 @@ import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
 import io.github.noxaur.dsmod.core.feature.inventory.HotdButton
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.ui.KitSlotButton
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.world.item.ItemStack
@@ -19,8 +18,8 @@ object HotdShortcut {
     private val shown get() = DsModClient.runs<BetterUi>() && DsModClient.runs<HotdButton>()
 
     fun register() {
-        ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
-            if (screen !is ContainerScreen || screen.menu.rowCount != ROWS || screen.title.string != MENU) return@register
+        ScreenHooks.onEveryLayout<ContainerScreen> { screen, _ ->
+            if (screen.menu.rowCount != ROWS || screen.title.string != MENU) return@onEveryLayout
             val frame = { if (MenuSkin.skins(screen)) MenuSkin.glass(screen) >= 0 else null }
             SlotControls.add(screen, screen.menu.slots[SLOT], { shown }) { x, y ->
                 KitSlotButton(x, y, NAME, ItemStack(Items.DRAGON_EGG), frame) { PlayerCommands.send("hotd") }.apply {

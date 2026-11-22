@@ -126,9 +126,8 @@ object CopyChats {
     private class Row(val part: Part, val pose: Matrix3x2f, val top: Int, val bottom: Int)
 
     fun register() {
-        // Fabric drops a screen's listeners on every init, so they are added again here.
-        ScreenEvents.AFTER_INIT.register { client, screen, _, _ ->
-            if (screen !is ChatScreen) return@register
+        ScreenHooks.onEveryLayout<ChatScreen> { screen, _ ->
+            val client = Minecraft.getInstance()
             dismiss()
             ScreenEvents.remove(screen).register {
                 dismiss()
