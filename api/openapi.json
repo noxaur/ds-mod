@@ -170,6 +170,16 @@
               }
             }
           },
+          "429": {
+            "description": "The player called more often than a player can. A minute later they may again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooManyRequestsEncoded"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -235,6 +245,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/effect_HttpApiError_NotFoundEncoded"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The player called more often than a player can. A minute later they may again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooManyRequestsEncoded"
                 }
               }
             }
@@ -348,6 +368,16 @@
               }
             }
           },
+          "429": {
+            "description": "The player called more often than a player can. A minute later they may again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooManyRequestsEncoded"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -409,6 +439,16 @@
               }
             }
           },
+          "429": {
+            "description": "The player called more often than a player can. A minute later they may again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooManyRequestsEncoded"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -420,6 +460,7 @@
             }
           }
         },
+        "description": "The body is at most 1 MiB.",
         "summary": "Keeps what the player saw of items, to draw them as the game does.",
         "requestBody": {
           "content": {
@@ -459,7 +500,8 @@
                             "type": "object",
                             "properties": {
                               "text": {
-                                "type": "string"
+                                "type": "string",
+                                "maxLength": 1024
                               },
                               "color": {
                                 "type": "string",
@@ -485,7 +527,8 @@
                               "text"
                             ],
                             "additionalProperties": false
-                          }
+                          },
+                          "maxItems": 64
                         },
                         "lore": {
                           "type": "array",
@@ -495,7 +538,8 @@
                               "type": "object",
                               "properties": {
                                 "text": {
-                                  "type": "string"
+                                  "type": "string",
+                                  "maxLength": 1024
                                 },
                                 "color": {
                                   "type": "string",
@@ -521,7 +565,8 @@
                                 "text"
                               ],
                               "additionalProperties": false
-                            }
+                            },
+                            "maxItems": 64
                           },
                           "maxItems": 80
                         },
@@ -538,7 +583,11 @@
                           "maximum": 16777215
                         },
                         "data": {
-                          "type": "object"
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "maxLength": 64
+                          }
                         }
                       },
                       "required": [
@@ -602,6 +651,16 @@
               }
             }
           },
+          "429": {
+            "description": "The player called more often than a player can. A minute later they may again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooManyRequestsEncoded"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -613,6 +672,7 @@
             }
           }
         },
+        "description": "The body is at most 2 MiB.",
         "summary": "Counts what the mod saw and had no handling for.",
         "requestBody": {
           "content": {
@@ -7081,6 +7141,16 @@
               }
             }
           },
+          "429": {
+            "description": "The player called more often than a player can. A minute later they may again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooManyRequestsEncoded"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -8042,6 +8112,16 @@
               }
             }
           },
+          "429": {
+            "description": "The player called more often than a player can. A minute later they may again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooManyRequestsEncoded"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -8786,7 +8866,8 @@
                                     "type": "object",
                                     "properties": {
                                       "text": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "maxLength": 1024
                                       },
                                       "color": {
                                         "type": "string",
@@ -8812,7 +8893,8 @@
                                       "text"
                                     ],
                                     "additionalProperties": false
-                                  }
+                                  },
+                                  "maxItems": 64
                                 },
                                 "lore": {
                                   "type": "array",
@@ -8822,7 +8904,8 @@
                                       "type": "object",
                                       "properties": {
                                         "text": {
-                                          "type": "string"
+                                          "type": "string",
+                                          "maxLength": 1024
                                         },
                                         "color": {
                                           "type": "string",
@@ -8848,7 +8931,8 @@
                                         "text"
                                       ],
                                       "additionalProperties": false
-                                    }
+                                    },
+                                    "maxItems": 64
                                   },
                                   "maxItems": 80
                                 },
@@ -8865,7 +8949,11 @@
                                   "maximum": 16777215
                                 },
                                 "data": {
-                                  "type": "object"
+                                  "type": "object",
+                                  "propertyNames": {
+                                    "type": "string",
+                                    "maxLength": 64
+                                  }
                                 }
                               },
                               "required": [
@@ -9175,6 +9263,21 @@
         ],
         "additionalProperties": false
       },
+      "TooManyRequestsEncoded": {
+        "type": "object",
+        "properties": {
+          "_tag": {
+            "type": "string",
+            "enum": [
+              "TooManyRequests"
+            ]
+          }
+        },
+        "required": [
+          "_tag"
+        ],
+        "additionalProperties": false
+      },
       "UpstreamUnavailableEncoded": {
         "type": "object",
         "properties": {
@@ -9299,7 +9402,7 @@
     },
     {
       "name": "contrib",
-      "description": "What the mod calls, as the player its session names."
+      "description": "What the mod calls, as the player its session names. A player who calls too often is answered 429."
     },
     {
       "name": "profiles",

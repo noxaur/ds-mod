@@ -84,6 +84,19 @@ data class ItemSighting(
 
 private val json = Json { ignoreUnknownKeys = true }
 
+fun ItemSighting.toJson() = buildJsonObject {
+    put("entry", entry)
+    put("material", material)
+    itemModel?.let { put("itemModel", it) }
+    skinId?.let { put("skinId", it) }
+    put("name", name.toJson())
+    put("lore", buildJsonArray { lore.forEach { add(it.toJson()) } })
+    put("glint", glint)
+    skullTexture?.let { put("skullTexture", it) }
+    color?.let { put("color", it) }
+    put("data", data)
+}
+
 private fun ServerText.toJson() = buildJsonArray {
     for (span in spans) {
         add(
@@ -155,24 +168,7 @@ class Backend(private val url: String, private val identity: Identity, private v
         sightings.map { buildJsonObject { put("kind", it.kind); put("signature", it.signature); put("sample", it.sample) } },
     )
 
-    fun items(items: List<ItemSighting>) = report(
-        "/v1/contrib/items",
-        "items",
-        items.map { item ->
-            buildJsonObject {
-                put("entry", item.entry)
-                put("material", item.material)
-                item.itemModel?.let { put("itemModel", it) }
-                item.skinId?.let { put("skinId", it) }
-                put("name", item.name.toJson())
-                put("lore", buildJsonArray { item.lore.forEach { add(it.toJson()) } })
-                put("glint", item.glint)
-                item.skullTexture?.let { put("skullTexture", it) }
-                item.color?.let { put("color", it) }
-                put("data", item.data)
-            }
-        },
-    )
+    fun items(items: List<ItemSighting>) = report("/v1/contrib/items", "items", items.map { it.toJson() })
 
     private fun report(path: String, key: String, entries: List<JsonObject>) {
         val body = buildJsonObject {
