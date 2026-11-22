@@ -4,7 +4,6 @@ import io.github.noxaur.dsmod.core.feature.general.CommandBinds
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.Where
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
-import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.edge.ui.ItemsEditor
@@ -12,7 +11,6 @@ import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
-import io.github.noxaur.dsmod.gametest.SettingsSteps.theme
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.TitleScreen
@@ -77,10 +75,7 @@ class CommandBindsTest : FabricClientGameTest {
 
         // Its details open under it, with the area, the priority and how keys are read.
         press(lineOf(0), "Settings")
-        context.takeScreenshot("command-binds-details")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("command-binds-details-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("command-binds-details")
         val details = lineOf(0, details = true)
         press(details, "Area")
         check(commandBinds.binds.value.single().area != null) { "Area did not step" }
@@ -95,10 +90,7 @@ class CommandBindsTest : FabricClientGameTest {
         check(commandBinds.binds.value.size == 2 && !commandBinds.binds.value[1].enabled) { "The copy is ${commandBinds.binds.value.getOrNull(1)}" }
         press(lineOf(1), "On")
         check(commandBinds.binds.value[1].enabled) { "The copy's switch did not turn it on" }
-        context.takeScreenshot("command-binds-clash")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("command-binds-clash-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("command-binds-clash")
 
         // Delete asks twice, and a press elsewhere calls it off.
         press(lineOf(1), "Settings")

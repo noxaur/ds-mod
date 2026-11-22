@@ -328,4 +328,23 @@ val rules = listOf(
         fix = "Open the player's inventory with `context.openInventory()` from Pointer.kt.",
         example = "context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }",
     ),
+    Rule(
+        id = "gametest-theme-by-intheme",
+        files = "src/gametest/**.{kt,java}",
+        except = "src/gametest/**/Themes.kt",
+        forbid = Regex("""\bhud\s*\.\s*theme\s*=(?!=)"""),
+        fix = "Run a step in a theme with `context.inTheme(Theme.VANILLA) { .. }`, which puts the theme back after it, or take a " +
+            "screenshot in both themes with `context.shotInBothThemes(name)`, from Themes.kt.",
+        example = "context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }",
+        examples = listOf("hud.theme = theme"),
+    ),
+    Rule(
+        id = "gametest-pixels-by-pixels",
+        files = "src/gametest/**.{kt,java}",
+        except = "src/gametest/**/Pixels.kt",
+        forbid = Regex("""\bImageIO\s*\.\s*read\b"""),
+        fix = "Read a screenshot with `image(shot)`, a GUI pixel with `context.guiPixel(shot, x, y)`, and compare with " +
+            "`countNear`, `brightness`, `distance` and `diff`, from Pixels.kt.",
+        example = "val image = ImageIO.read(shot.toFile())",
+    ),
 )

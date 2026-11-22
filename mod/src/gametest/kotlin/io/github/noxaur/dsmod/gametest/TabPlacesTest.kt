@@ -5,14 +5,12 @@ import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.core.ui.TabLayout
-import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.edge.TabPlacesEditor
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
-import io.github.noxaur.dsmod.gametest.SettingsSteps.theme
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import org.lwjgl.glfw.GLFW
@@ -44,10 +42,7 @@ class TabPlacesTest : FabricClientGameTest {
         context.setScreen { SettingsScreen(null, SettingsTabs(at("Menus")), reveal = "tabs") }
         context.waitTicks(2)
         spot("tabs")
-        context.takeScreenshot("tab-places")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("tab-places-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("tab-places")
 
         // Storage dragged from the bottom-left to the top-left follows the mouse, and lands there.
         val from = place(TabEdge.BOTTOM, 0)
@@ -56,10 +51,7 @@ class TabPlacesTest : FabricClientGameTest {
         context.input.holdMouse(0)
         context.waitTick()
         for (step in 1..4) move(from.first + (to.first - from.first) * step / 4, from.second + (to.second - from.second) * step / 4)
-        context.takeScreenshot("tab-places-drag")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("tab-places-drag-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("tab-places-drag")
         context.input.releaseMouse(0)
         context.waitTicks(2)
         val storage = tabs().first { it.command == "storage" }

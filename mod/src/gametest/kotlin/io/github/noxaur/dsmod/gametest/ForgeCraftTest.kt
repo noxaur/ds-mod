@@ -122,14 +122,14 @@ class ForgeCraftTest : FabricClientGameTest {
             check(press(context).isEmpty()) { "The key clicked Forge Queue with the forge full" }
             context.takeScreenshot("forge-craft-full")
 
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
-            carry(world, 4)
-            confirm(context, world, ready = false)
-            context.takeScreenshot("forge-craft-vanilla-missing")
-            carry(world, 34)
-            forge(context, world, 3)
-            context.takeScreenshot("forge-craft-vanilla")
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
+            context.inTheme(Theme.VANILLA, settle = 0) {
+                carry(world, 4)
+                confirm(context, world, ready = false)
+                context.takeScreenshot("forge-craft-vanilla-missing")
+                carry(world, 34)
+                forge(context, world, 3)
+                context.takeScreenshot("forge-craft-vanilla")
+            }
         }
     }
 }

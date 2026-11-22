@@ -85,10 +85,7 @@ class HudEditorTest : FabricClientGameTest {
             check(DsModClient.runs<HudBackground>()) { "The checkbox did not turn the background on" }
             context.waitTicks(2)
             context.takeScreenshot("hud-editor-after")
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
-            context.waitTicks(2)
-            context.takeScreenshot("hud-editor-vanilla")
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
+            context.inTheme(Theme.VANILLA) { context.takeScreenshot("hud-editor-vanilla") }
 
             // A drag that starts on the block carries on over the panel, and Reset still reaches the block there.
             context.runOnClient<Nothing> { client ->

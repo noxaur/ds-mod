@@ -38,7 +38,6 @@ import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.input.MouseButtonInfo
 import net.minecraft.network.chat.Component
 import java.util.concurrent.CompletableFuture
-import javax.imageio.ImageIO
 import kotlin.math.abs
 
 /**
@@ -181,25 +180,17 @@ private fun subsectionLiftsUnderTheMouse(context: ClientGameTestContext) {
         }
     }
     context.waitTick()
-    val (at, scale) = context.computeOnClient<Pair<Pair<Int, Int>, Int>, Nothing> {
+    val at = context.computeOnClient<Pair<Int, Int>, Nothing> {
         val tree = (it.gui.screen() as Screen).children().filterIsInstance<KitNavTree>().single() as AbstractWidget
         // A subsection is 13px under the 16px section, and the side's face shows through until hover lifts it.
-        (tree.x + 4 to tree.y + 16 + 6) to it.window.guiScale
+        tree.x + 4 to tree.y + 16 + 6
     }
     context.point(at.first, at.second)
-    val spot = at.first * scale to at.second * scale
-    val shot = context.takeScreenshot("nav-subsection-hover")
-    val image = ImageIO.read(shot.toFile())
-    val pixel = image.getRGB(spot.first.coerceIn(0, image.width - 1), spot.second.coerceIn(0, image.height - 1))
+    val pixel = context.guiPixel(context.takeScreenshot("nav-subsection-hover"), at.first, at.second)
     val side = context.computeOnClient<Int, Nothing> { Kit.theme.side }
-    check(channelDistance(pixel, side) > 12) { "Hover left the subsection on the side color ${hex(side)}, pixel ${hex(pixel)}" }
+    check(distance(pixel, side) > 12) { "Hover left the subsection on the side color ${hex(side)}, pixel ${hex(pixel)}" }
     context.setScreen { null }
 }
-
-private fun channelDistance(pixel: Int, rgb: Int) =
-    abs((pixel shr 16 and 0xFF) - (rgb shr 16 and 0xFF)) +
-        abs((pixel shr 8 and 0xFF) - (rgb shr 8 and 0xFF)) +
-        abs((pixel and 0xFF) - (rgb and 0xFF))
 
 private fun hex(rgb: Int) = "#${(rgb and 0xFFFFFF).toString(16).padStart(6, '0')}"
 

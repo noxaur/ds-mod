@@ -3,8 +3,6 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.ui.Place
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
-import io.github.noxaur.dsmod.core.ui.Theme
-import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.edge.ui.SettingRows
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -49,11 +47,6 @@ internal object SettingsSteps {
             tabs.tabs.withIndex().joinToString(" ") { (i, tab) -> tab.title(names).let { if (i == tabs.selected) "[$it]" else it } }
         }
         check(shown == titles) { "$step: the tabs are $shown, not $titles" }
-    }
-
-    fun theme(context: ClientGameTestContext, theme: Theme) {
-        context.runOnClient<Nothing> { DsModClient.settings.hud.theme = theme }
-        context.waitTicks(2)
     }
 
     fun guiScale(context: ClientGameTestContext, scale: Int) {

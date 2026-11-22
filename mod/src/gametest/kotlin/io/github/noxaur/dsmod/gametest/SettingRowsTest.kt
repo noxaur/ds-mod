@@ -6,12 +6,10 @@ import io.github.noxaur.dsmod.core.container.Border
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
 import io.github.noxaur.dsmod.core.feature.general.Camera
-import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
 import io.github.noxaur.dsmod.core.feature.general.FreeLook
 import io.github.noxaur.dsmod.core.feature.general.Fullbright
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
-import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.edge.ui.SettingRows
@@ -20,7 +18,6 @@ import io.github.noxaur.dsmod.gametest.SettingsSteps.hear
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
-import io.github.noxaur.dsmod.gametest.SettingsSteps.theme
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.loader.api.FabricLoader
@@ -56,10 +53,7 @@ class SettingRowsTest : FabricClientGameTest {
         val cameraTabs = SettingsTabs(at("Camera"))
         open(context, cameraTabs)
         val searched = { context.computeOnClient<String, Nothing> { cameraTabs.current.place.query } }
-        context.takeScreenshot("own-settings-camera")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("own-settings-camera-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("own-settings-camera")
 
         var d = spot("cameraDistance")
         // The track runs 70 pixels inside its edge, from 1 to 50.
@@ -158,10 +152,7 @@ class SettingRowsTest : FabricClientGameTest {
         val camera = spot("camera")
         click(camera.controlX + 11, camera.controlY + 6)
         expect("The heading switch", false) { DsModClient.feature<Camera>().feature.enabled }
-        context.takeScreenshot("own-settings-dimmed")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("own-settings-dimmed-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("own-settings-dimmed")
         d = spot("cameraDistance")
         click(d.controlX + 71, d.controlY + 6)
         expect("A dimmed row stays editable", 50f) { DsModClient.feature<Camera>().distance.value }
@@ -172,10 +163,7 @@ class SettingRowsTest : FabricClientGameTest {
         open(context, SettingsTabs(at("Inventory")))
         val style = spot("rarityPreset")
         click(style.controlX + 8, style.controlY + 8)
-        context.takeScreenshot("own-settings-style-menu")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("own-settings-style-menu-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("own-settings-style-menu")
         // Showcase is the first tile, and the menu opened lit on Gilded, the current one.
         key(GLFW.GLFW_KEY_LEFT)
         key(GLFW.GLFW_KEY_ENTER)
@@ -201,10 +189,7 @@ class SettingRowsTest : FabricClientGameTest {
         val gem = spot("gem")
         click(gem.x + 20, gem.y + gem.height / 2)
         expect("A press anywhere on a switch's row", true) { DsModClient.feature<ItemRarity>().inventoryStyle.value.gem }
-        context.takeScreenshot("own-settings-custom-look")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("own-settings-custom-look-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("own-settings-custom-look")
         // A switch's own settings open under it from its button, and close to a summary.
         val lock = spot("slot-lock")
         click(lock.extraX + 7, lock.controlY + 6)
@@ -231,10 +216,7 @@ class SettingRowsTest : FabricClientGameTest {
         context.waitTicks(2)
         val sections = context.computeOnClient<Int, Nothing> { DsModClient.feature<ProtectorSpawnBeam>().sections.value.size }
         check(sections == 2) { "A drag on the span's empty track did not draw a second stretch: $sections" }
-        context.takeScreenshot("own-settings-span")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("own-settings-span-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("own-settings-span")
 
         // A search finds an option inside a choice, and opens the switch that holds it.
         open(context, SettingsTabs(at("General")))

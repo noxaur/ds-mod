@@ -1,7 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
-import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.edge.HudEditorScreen
@@ -9,7 +8,6 @@ import io.github.noxaur.dsmod.edge.HudLayoutEditor
 import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import io.github.noxaur.dsmod.gametest.SettingsSteps.guiScale
-import io.github.noxaur.dsmod.gametest.SettingsSteps.theme
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import org.lwjgl.glfw.GLFW
@@ -53,10 +51,7 @@ class HudLayoutTest : FabricClientGameTest {
         context.waitTicks(2)
         spot("hudLayout")
         context.waitTicks(2)
-        context.takeScreenshot("hud-layout")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("hud-layout-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("hud-layout")
 
         // A drag moves the block, by the map's scale, and the place is kept.
         val start = point()
@@ -64,10 +59,7 @@ class HudLayoutTest : FabricClientGameTest {
         context.input.holdMouse(0)
         context.waitTick()
         for (step in 1..4) move(start.first + step * 12, start.second + step * 6)
-        context.takeScreenshot("hud-layout-drag")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("hud-layout-drag-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("hud-layout-drag")
         context.input.releaseMouse(0)
         context.waitTicks(2)
         check(ID in hud.positions) { "A drag on the layout did not place the block" }

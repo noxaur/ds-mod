@@ -9,7 +9,6 @@ import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
-import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
@@ -72,10 +71,7 @@ class ItemRarityTest : FabricClientGameTest {
         check(itemRarity.hotbarStyle.value.floor != itemRarity.containerStyle().floor) {
             "The hotbar's Floor set ${itemRarity.hotbarStyle.value.floor}, and the inventory's is ${itemRarity.containerStyle().floor}"
         }
-        context.takeScreenshot("rarity-hotbar-own")
-        SettingsSteps.theme(context, Theme.VANILLA)
-        context.takeScreenshot("rarity-hotbar-own-vanilla")
-        SettingsSteps.theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("rarity-hotbar-own")
         context.setScreen { null }
         context.waitTicks(5)
         context.takeScreenshot("rarity-hotbar-in-game")

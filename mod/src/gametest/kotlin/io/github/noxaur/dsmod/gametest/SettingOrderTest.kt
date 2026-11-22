@@ -3,7 +3,6 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
 import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
-import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.edge.ui.SettingRows
@@ -12,7 +11,6 @@ import io.github.noxaur.dsmod.gametest.SettingsSteps.hear
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
-import io.github.noxaur.dsmod.gametest.SettingsSteps.theme
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.TitleScreen
@@ -44,10 +42,7 @@ class SettingOrderTest : FabricClientGameTest {
         click(list.x + 20, list.y + list.height / 2)
         spot("inventoryRows")
         spot("equipmentPieces")
-        context.takeScreenshot("own-settings-order")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("own-settings-order-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("own-settings-order")
         val (helmet, chestplate, leggings, boots, pet) = EquipmentPiece.entries
         var e = entry(0)
         move(e.x + SettingRows.PAD + 1, e.y + 8)
@@ -81,10 +76,7 @@ class SettingOrderTest : FabricClientGameTest {
         hear(context, "Pet, switch, on, 4 of 5", "On Pet after Alt+Up")
         move(entry(0).x + 30, entry(0).y + 8)
         hear(context, "Chestplate, switch, on, 1 of 5", "Over the first entry")
-        context.takeScreenshot("own-settings-order-changed")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("own-settings-order-changed-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("own-settings-order-changed")
 
     }
 }

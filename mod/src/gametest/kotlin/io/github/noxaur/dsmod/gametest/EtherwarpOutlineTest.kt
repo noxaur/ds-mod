@@ -15,8 +15,6 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
 import net.minecraft.world.phys.AABB
-import java.nio.file.Path
-import javax.imageio.ImageIO
 
 /**
  * The player stands on a pillar high in the air and looks east along y 101, the height of a sneaking eye, with an
@@ -55,18 +53,6 @@ class EtherwarpOutlineTest : FabricClientGameTest {
         context.waitTicks(3)
     }
 
-    /** How many pixels in the middle of the screen are near [rgb], a box's edge color. */
-    private fun near(screenshot: Path, rgb: Int): Int {
-        val image = ImageIO.read(screenshot.toFile())
-        var count = 0
-        for (y in image.height / 4 until image.height * 3 / 4) for (x in image.width / 4 until image.width * 3 / 4) {
-            val pixel = image.getRGB(x, y)
-            val distance = Math.abs((pixel shr 16 and 0xFF) - (rgb shr 16 and 0xFF)) +
-                Math.abs((pixel shr 8 and 0xFF) - (rgb shr 8 and 0xFF)) + Math.abs((pixel and 0xFF) - (rgb and 0xFF))
-            if (distance < 60) count++
-        }
-        return count
-    }
 
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
@@ -82,12 +68,12 @@ class EtherwarpOutlineTest : FabricClientGameTest {
                 hold(context, world, aspect)
                 check(target(context) == Etherwarp.Target(10, 101, 0, null)) { "The wall is not boxed as a warp: ${target(context)}" }
                 val valid = context.screenshot("etherwarp-valid")
-                check(near(valid, 0x55FF55) > 50) { "The screenshot shows no green box" }
+                check(countNear(valid, 0x55FF55, middle = true) > 50) { "The screenshot shows no green box" }
 
                 set(context, world, "setblock 10 102 0 stone")
                 check(target(context) == Etherwarp.Target(10, 101, 0, Miss.NO_ROOM)) { "A block above the wall is not No Room: ${target(context)}" }
                 val noRoom = context.screenshot("etherwarp-no-room")
-                check(near(noRoom, 0xFF5555) > 50) { "The screenshot shows no red box" }
+                check(countNear(noRoom, 0xFF5555, middle = true) > 50) { "The screenshot shows no red box" }
                 DsModClient.feature<EtherwarpOutline>().failed.value = false
                 context.waitTicks(2)
                 check(target(context) == null) { "A failed warp is boxed with Failed Warps off: ${target(context)}" }
