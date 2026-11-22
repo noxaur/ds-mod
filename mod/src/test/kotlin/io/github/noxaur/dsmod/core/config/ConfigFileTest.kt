@@ -17,6 +17,7 @@ import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
 import io.github.noxaur.dsmod.core.feature.end.ProtectorStatus
 import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
 import io.github.noxaur.dsmod.core.feature.general.Animations
+import io.github.noxaur.dsmod.core.feature.general.AutoClick
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
 import io.github.noxaur.dsmod.core.feature.general.CtrlClick
@@ -39,7 +40,6 @@ import io.github.noxaur.dsmod.core.feature.hud.ChatHudEditor
 import io.github.noxaur.dsmod.core.feature.hud.HudBackground
 import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
 import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
-import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
 import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
 import io.github.noxaur.dsmod.core.feature.inventory.HideGlassPanes
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
@@ -179,7 +179,7 @@ class ConfigFileTest {
         }
         assertTrue(tree.feature<ArmorSwapGuard>().feature.enabled)
 
-        assertFalse(tree.feature<BetterUi>().feature.switch.value || tree.feature<BackButtons>().feature.switch.value || tree.feature<MenuTabs>().feature.switch.value)
+        assertFalse(tree.features.single { it.id == "better-ui" }.switch.value || tree.feature<BackButtons>().feature.switch.value || tree.feature<MenuTabs>().feature.switch.value)
         assertEquals(
             listOf(MenuTab(TabEdge.TOP, 2, "bazaar", "minecraft:gold_ingot", "Bazaar"), MenuTab(TabEdge.BOTTOM, 6, item = "", tooltip = "Search", search = true)),
             tree.feature<MenuTabs>().tabs.value,
@@ -240,6 +240,26 @@ class ConfigFileTest {
             ConfigFile(path).save(c)
             val saved = path.readText()
             for (key in listOf("rarityPreset", "inventoryStyle", "hotbarStyle")) assertFalse("\"$key\"" in saved, "$old left $key in the file")
+        }
+    }
+
+    @Test
+    fun `Auto Left Click and Auto Right Click load as the parts of Auto Click, and the next save drops their keys`() {
+        val old = """"autoLeftClickKey":74,"autoLeftClickMode":"TOGGLE","autoRightClickKey":75,"autoRightClickMode":"HOLD""""
+        for ((switches, on) in listOf((false to true) to true, (true to false) to true, (false to false) to false)) {
+            path.writeText("""{"general":{"autoLeftClick":${switches.first},"autoRightClick":${switches.second},$old}}""")
+            val c = ConfigFile(path).load()
+            SettingsTree(c).feature<AutoClick>().run {
+                assertEquals(on, feature.enabled, "$switches")
+                assertEquals(switches, left.switch.value to right.switch.value)
+                assertEquals(listOf(74, 75), listOf(left.key.value, right.key.value))
+                assertEquals(KeyMode.TOGGLE to KeyMode.HOLD, left.mode.value to right.mode.value)
+                feature.enabled = false
+            }
+            ConfigFile(path).save(c)
+            val saved = path.readText()
+            for (key in listOf("autoLeftClick", "autoRightClick")) assertFalse("\"$key" in saved, "$switches left $key in the file")
+            assertFalse(SettingsTree(ConfigFile(path).load()).feature<AutoClick>().feature.enabled, "$switches turned on again")
         }
     }
 

@@ -91,7 +91,7 @@ const timeThroughEffect = defineRule({
   },
 });
 
-const builtByHarness = new Set(["makeApp", "memoryServices", "betterAuth", "memoryAdapter"]);
+const builtByHarness = new Set(["makeApp", "betterAuth", "memoryAdapter"]);
 
 const keyName = (property) =>
   property.type === "Property" && property.computed === false && property.key.type === "Identifier"
