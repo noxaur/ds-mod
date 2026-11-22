@@ -37,6 +37,7 @@ class ContainerPoller(private val game: Game) {
     fun poll(client: Minecraft) {
         read(client)
         left = BUDGET_NANOS
+        scheduled = false
     }
 
     fun changed(client: Minecraft) {
