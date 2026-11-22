@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.Game
+import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.world.BoxStyle
 import io.github.noxaur.dsmod.core.world.EntityBeam
@@ -8,7 +9,6 @@ import io.github.noxaur.dsmod.core.world.Mark
 import io.github.noxaur.dsmod.core.world.Point
 import io.github.noxaur.dsmod.core.world.Tracer
 import io.github.noxaur.dsmod.core.world.Waypoint
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionContext
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionEvents
 import net.minecraft.client.Minecraft
@@ -121,10 +121,10 @@ object World {
 
     fun register() {
         LevelExtractionEvents.AFTER_BLOCK_OUTLINE_EXTRACTION.register { context, _ ->
-            if (beamsShown.isNotEmpty() || tracersShown.isNotEmpty()) game.metrics.time("world.follow") { follow(context) }
+            if (beamsShown.isNotEmpty() || tracersShown.isNotEmpty()) game.metrics.time("world.follow", Metrics.FRAME) { follow(context) }
         }
-        ClientTickEvents.END_CLIENT_TICK.register { client ->
-            val level = client.level ?: return@register
+        Ticks.end { client ->
+            val level = client.level ?: return@end
             val camera = client.gameRenderer.mainCamera().position()
             find(level)
             for (i in shown.indices) {

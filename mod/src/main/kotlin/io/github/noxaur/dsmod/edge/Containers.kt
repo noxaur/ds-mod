@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.edge
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
@@ -45,7 +46,7 @@ class ContainerPoller(private val game: Game) {
         scheduled = true
         client.schedule {
             scheduled = false
-            game.metrics.time("container-read") { read(client) }
+            game.metrics.time("container-read", Metrics.PACKETS) { read(client) }
         }
     }
 

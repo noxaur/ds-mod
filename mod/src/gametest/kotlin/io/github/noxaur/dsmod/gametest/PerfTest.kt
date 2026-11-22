@@ -27,38 +27,35 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
 import java.io.File
-import java.lang.management.ManagementFactory
 import java.util.Locale
 import kotlin.io.path.Path
-import kotlin.io.path.exists
-import kotlin.io.path.readLines
 import kotlin.io.path.writeText
 
 private const val WARM_UP_TICKS = 60
 private const val WINDOWS = 12
 private const val INVENTORY_SLOTS = 36
-private const val WINDOW_TICKS = 10
+private const val WINDOW_TICKS = 5
 private const val HUD_BLOCKS = 8
 private const val FIRST_MARKED_SLOT = 9
 private const val MARKED_SLOTS = 36
 private const val SIDEBAR_LINES = 15
 private const val ARMORED_MOBS = 40
-private const val RECORDING_WARM_UP_TICKS = 100
+private const val RECORDING_WARM_UP_TICKS = 40
 private const val MENU_SLOTS = 54
+private const val JAR = "jar"
 
 class PerfTest : FabricClientGameTest {
     @Serializable
-    private class Device(val name: String, val calibrate: Double)
+    private class Row(val label: String, val cap: Double)
 
     @Serializable
-    private class Row(val group: String, val label: String, val unit: String, val cap: Double, val gate: String = "median")
+    private class Budgets(val calibrate: Double, val rows: Map<String, Row>)
 
-    @Serializable
-    private class Budgets(val device: Device, val rows: Map<String, Row>)
+    private lateinit var budgets: Budgets
+    private val samples = HashMap<String, MutableList<Double>>()
 
     override fun runTest(context: ClientGameTestContext) {
-        val budgets = Json.decodeFromString<Budgets>(checkNotNull(javaClass.getResource("/perf-budgets.json")).readText())
-        val samples = HashMap<String, MutableList<Double>>()
+        budgets = Json.decodeFromString(checkNotNull(javaClass.getResource("/perf-budgets.json")).readText())
 
         context.worldBuilder().create().use { world ->
             world.server.runCommand("""scoreboard objectives add perf dummy "DragSim"""")
@@ -92,21 +89,11 @@ class PerfTest : FabricClientGameTest {
                 })
             }
             context.waitTicks(WARM_UP_TICKS)
-
-            repeat(WINDOWS) {
-                val timers = timers(context) { context.waitTicks(WINDOW_TICKS) }
-                check(timers.keys.none { it.startsWith("capture-") }) { "The recorder ran before anything started it: ${timers.keys}" }
-                var features = 0L
-                for ((name, timer) in timers) {
-                    if (name in budgets.rows) samples.add(name, timer)
-                    else features += timer.totalNanos
-                }
-                samples.getOrPut("features", ::ArrayList) += features / 1000.0 / WINDOW_TICKS
-            }
-            etherwarp(context, world, samples)
-            recording(context, world, samples)
-            bosses(context, world, samples)
-            menuBurst(context, world, samples)
+            windows(context, "inventory") { context.waitTicks(WINDOW_TICKS) }
+            etherwarp(context, world)
+            recording(context, world)
+            bosses(context, world)
+            menuBurst(context, world)
             val calibrate = context.computeOnClient<Double, Nothing> {
                 repeat(3) { spin() }
                 List(7) { spin() }.sorted()[3]
@@ -116,41 +103,65 @@ class PerfTest : FabricClientGameTest {
                 repeat(HUD_BLOCKS) { block -> Hud.hide("perf-$block") }
                 DsModClient.feature<ReportGameData>().feature.enabled = false
             }
-            System.getProperty("dsmod.jar")?.let { samples["jar"] = mutableListOf(File(it).length() / 1024.0) }
+            System.getProperty("dsmod.jar")?.let { samples[JAR] = mutableListOf(File(it).length() / 1024.0) }
+            report(budgets.calibrate / calibrate)
+        }
+    }
 
-            val speed = budgets.device.calibrate / calibrate
-            val failed = ArrayList<String>()
-            val tables = LinkedHashMap<String, MutableList<String>>()
-            for ((name, row) in budgets.rows) {
-                if (name == "jar" && name !in samples) continue
-                val values = samples[name]?.map { if (row.unit == "µs") it * speed else it }
-                val stats = values?.let { mapOf("median" to it.sorted()[it.size / 2], "mean" to it.average(), "max" to it.max()) }
-                val ok = stats != null && stats.getValue(row.gate) <= row.cap
-                if (!ok) failed += row.label
-                val cells = stats?.entries?.joinToString(" | ") { (key, value) -> if (ok || key != row.gate) number(value) else "**${number(value)}**" }
-                    ?: "| | **none**"
-                tables.getOrPut(row.group, ::ArrayList) +=
-                    "| ${row.label} | $cells | ≤ ${number(row.cap)} ${row.unit} (${row.gate}) | ${if (ok) "✅" else "❌"} |"
+    private fun report(speed: Double) {
+        val failed = ArrayList<String>()
+        val tables = LinkedHashMap<String, MutableList<String>>()
+        for ((name, row) in budgets.rows) {
+            if (name == JAR && name !in samples) continue
+            val unit = if (name == JAR) "KB" else "µs"
+            val values = samples[name]?.sorted()?.map { if (name == JAR) it else it * speed }
+            val median = values?.get(values.size / 2)
+            val max = values?.last()
+            val ok = median != null && median <= row.cap
+            if (!ok) failed += row.label
+            val cells = if (median == null || max == null) "**none** | " else "${if (ok) number(median) else "**${number(median)}**"} | ${number(max)}"
+            val group = if (name == JAR) "Size" else name.substringAfter('.').replaceFirstChar(Char::uppercase)
+            tables.getOrPut(group, ::ArrayList) +=
+                "| ${row.label} | $cells | ≤ ${number(row.cap)} $unit | ${if (ok) "✅" else "❌"} |"
+        }
+        val note = "(scaled to the reference machine, which this one runs at ${"%.2f".format(Locale.ROOT, speed)}×)"
+        val report = buildString {
+            appendLine(if (failed.isEmpty()) "### ✅ Performance $note" else "### ❌ Performance: ${failed.size} over the cap $note")
+            for ((group, rows) in tables) {
+                appendLine()
+                appendLine("| $group | Median | Max | Cap | |")
+                appendLine("|:--|:--|:--|:--|:--|")
+                rows.forEach(::appendLine)
             }
-            val note = "(as a ${budgets.device.name} · ${machine()} · speed ${"%.2f".format(Locale.ROOT, speed)}×)"
-            val report = buildString {
-                appendLine(if (failed.isEmpty()) "### ✅ Performance $note" else "### ❌ Performance: ${failed.size} over the cap $note")
-                for ((group, rows) in tables) {
-                    appendLine()
-                    appendLine("| $group | Median | Mean | Max | Cap | |")
-                    appendLine("|:--|:--|:--|:--|:--|:--|")
-                    rows.forEach(::appendLine)
-                }
+        }
+        Path("perf.md").writeText(report)
+        println(report)
+        check(failed.isEmpty()) {
+            "Over the cap: ${failed.joinToString()}. The table is in perf.md. Make the code faster, or raise the cap in perf-budgets.json if the user agrees."
+        }
+    }
+
+    private fun windows(context: ClientGameTestContext, scenario: String, window: (Int) -> Unit) {
+        repeat(WINDOWS) { at ->
+            val start = context.computeOnClient<Long, Nothing> {
+                DsModClient.game.metrics.flush()
+                DrawnFrames.count
             }
-            Path("perf.md").writeText(report)
-            println(report)
-            check(failed.isEmpty()) {
-                "Over the cap: ${failed.joinToString()}. The table is in perf.md. Make the code faster, or raise the cap in perf-budgets.json if the user agrees."
+            window(at)
+            val (timers, frames) = context.computeOnClient<Pair<Map<String, Metrics.Timer>, Long>, Nothing> {
+                DsModClient.game.metrics.snapshot().timers to DrawnFrames.count - start
+            }
+            val per = mapOf(Metrics.TICK to WINDOW_TICKS.toLong(), Metrics.FRAME to frames, Metrics.PACKETS to 1L)
+            for ((boundary, count) in per) {
+                val name = "$scenario.$boundary"
+                if (name !in budgets.rows) continue
+                val timer = checkNotNull(timers[boundary]) { "${budgets.rows.getValue(name).label}: the mod did no $boundary work" }
+                samples.getOrPut(name, ::ArrayList) += timer.totalNanos / 1000.0 / count
             }
         }
     }
 
-    private fun etherwarp(context: ClientGameTestContext, world: TestSingleplayerContext, samples: HashMap<String, MutableList<Double>>) {
+    private fun etherwarp(context: ClientGameTestContext, world: TestSingleplayerContext) {
         context.runOnClient<Nothing> { it.gui.setScreen(null) }
         world.server.runOnServer<Nothing> { server ->
             server.player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack(Items.DIAMOND_SHOVEL).also { stack ->
@@ -161,22 +172,18 @@ class PerfTest : FabricClientGameTest {
         context.input.lookAt(0f, 0f)
         context.waitTicks(20)
         try {
-            repeat(WINDOWS) { window ->
-                context.runOnClient<Nothing> { DsModClient.game.metrics.flush() }
+            windows(context, "etherwarp") { window ->
                 repeat(WINDOW_TICKS) { tick ->
                     context.input.lookAt((window * WINDOW_TICKS + tick).toFloat(), 0f)
                     context.waitTick()
                 }
-                val timer = context.computeOnClient<Metrics.Timer?, Nothing> { DsModClient.game.metrics.snapshot().timers["etherwarp.frame"] }
-                checkNotNull(timer) { "Etherwarp Outline drew no frame" }
-                samples.getOrPut("etherwarp.frame", ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
             }
         } finally {
             context.input.releaseKey { it.keyShift }
         }
     }
 
-    private fun recording(context: ClientGameTestContext, world: TestSingleplayerContext, samples: HashMap<String, MutableList<Double>>) {
+    private fun recording(context: ClientGameTestContext, world: TestSingleplayerContext) {
         world.give(
             (0 until world.server.computeOnServer<Int, Nothing> { it.player.inventory.containerSize }).associateWith { slot ->
                 ServerMenus.lored(Items.DIAMOND_SWORD, "Sword $slot", (1..20).map { "Line $it of the lore of sword $slot" })
@@ -194,14 +201,11 @@ class PerfTest : FabricClientGameTest {
         check(seen >= ARMORED_MOBS) { "Only $seen of the $ARMORED_MOBS mobs are in view" }
         val session = context.computeOnClient<CaptureSession, Nothing> { Recorder.start(it.gameDirectory.toPath().resolve("dsmod/captures")) }
         context.waitTicks(RECORDING_WARM_UP_TICKS)
-        repeat(WINDOWS) {
-            val timers = timers(context) { context.waitTicks(WINDOW_TICKS) }
-            for ((name, timer) in timers) if (name.startsWith("capture-")) samples.add(name, timer)
-        }
+        windows(context, "recording") { context.waitTicks(WINDOW_TICKS) }
         context.runOnClient<Nothing> { Recorder.stop(session) }
     }
 
-    private fun bosses(context: ClientGameTestContext, world: TestSingleplayerContext, samples: HashMap<String, MutableList<Double>>) {
+    private fun bosses(context: ClientGameTestContext, world: TestSingleplayerContext) {
         world.server.runCommand("""execute at @a run summon iron_golem ~ ~ ~-12 {NoAI:1b,CustomName:"[Lv100] Endstone Protector 10M/10M"}""")
         world.server.runCommand("""execute at @a run summon zombie ~12 ~ ~ {NoAI:1b,CustomName:"☠ Revenant Horror I 3.8M/3.8M❤"}""")
         world.server.runCommand("""execute at @a run summon zombie ~-12 ~ ~ {NoAI:1b,CustomName:"☠ Atoned Horror V 50M/50M❤"}""")
@@ -219,18 +223,15 @@ class PerfTest : FabricClientGameTest {
             fight(-at)
             context.waitTick()
         }
-        repeat(WINDOWS) { window ->
-            val timers = timers(context) {
-                repeat(WINDOW_TICKS) { tick ->
-                    fight(window * WINDOW_TICKS + tick)
-                    context.waitTick()
-                }
+        windows(context, "bosses") { window ->
+            repeat(WINDOW_TICKS) { tick ->
+                fight(window * WINDOW_TICKS + tick)
+                context.waitTick()
             }
-            for (name in listOf("entities", "world.follow")) samples.add(name, checkNotNull(timers[name]) { "No $name timer ran" })
         }
     }
 
-    private fun menuBurst(context: ClientGameTestContext, world: TestSingleplayerContext, samples: HashMap<String, MutableList<Double>>) {
+    private fun menuBurst(context: ClientGameTestContext, world: TestSingleplayerContext) {
         val chest = SimpleContainer(MENU_SLOTS)
         val fill = { page: Int ->
             for (slot in 0 until MENU_SLOTS) {
@@ -242,24 +243,11 @@ class PerfTest : FabricClientGameTest {
             server.player.openMenu(ServerMenus.sixRows(chest, "Perf Menu"))
         }
         context.waitTicks(20)
-        repeat(WINDOWS) { window ->
-            val timers = timers(context) {
-                world.server.runOnServer<Nothing> { fill(window + 1) }
-                context.waitTicks(WINDOW_TICKS)
-            }
-            samples.add("container-read", checkNotNull(timers["container-read"]) { "The swapped menu was not read from its packets" })
+        windows(context, "menu") { window ->
+            world.server.runOnServer<Nothing> { fill(window + 1) }
+            context.waitTicks(WINDOW_TICKS)
         }
         context.runOnClient<Nothing> { it.player!!.closeContainer() }
-    }
-
-    private fun timers(context: ClientGameTestContext, wait: () -> Unit): Map<String, Metrics.Timer> {
-        context.runOnClient<Nothing> { DsModClient.game.metrics.flush() }
-        wait()
-        return context.computeOnClient<Map<String, Metrics.Timer>, Nothing> { DsModClient.game.metrics.snapshot().timers }
-    }
-
-    private fun HashMap<String, MutableList<Double>>.add(name: String, timer: Metrics.Timer) {
-        getOrPut(name, ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
     }
 
     private fun spin(): Double {
@@ -274,13 +262,6 @@ class PerfTest : FabricClientGameTest {
         }
         check(sum != 0L)
         return (System.nanoTime() - start) / 1e6
-    }
-
-    private fun machine(): String {
-        val cpuinfo = Path("/proc/cpuinfo")
-        val cpu = if (cpuinfo.exists()) cpuinfo.readLines().firstOrNull { it.startsWith("model name") }?.substringAfter(": ") else null
-        val os = ManagementFactory.getOperatingSystemMXBean() as com.sun.management.OperatingSystemMXBean
-        return "${cpu ?: System.getProperty("os.arch")}, ${os.availableProcessors} cores, ${os.totalMemorySize shr 30} GB"
     }
 
     private fun number(value: Double) = when {

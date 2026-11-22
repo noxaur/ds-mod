@@ -79,14 +79,6 @@ object InventoryGrid {
         context.waitFor { Hud.find(ID) != null && point().let { p -> Hud.itemAt(p.first, p.second)?.hoverName?.string == name } }
     }
 
-    fun drawMicros(context: ClientGameTestContext): Long {
-        context.runOnClient<Nothing> { DsModClient.game.metrics.flush() }
-        context.waitTicks(10)
-        return context.computeOnClient<Long, Nothing> {
-            DsModClient.game.metrics.snapshot().timers.getValue("hud.draw").let { timer -> timer.totalNanos / timer.count / 1000 }
-        }
-    }
-
     fun pixel(context: ClientGameTestContext, shot: Path, point: Pair<Double, Double>, dx: Int, dy: Int): Int {
         return context.guiPixel(shot, point.first + dx, point.second + dy)
     }

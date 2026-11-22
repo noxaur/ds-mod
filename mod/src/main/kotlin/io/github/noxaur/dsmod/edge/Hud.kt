@@ -2,13 +2,14 @@ package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.hud.HideInF3
+import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.hud.BarRow
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudBox
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.HudLook
-import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.hud.ItemsRow
 import io.github.noxaur.dsmod.edge.ui.Kit
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
@@ -371,7 +372,7 @@ object Hud {
         HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, Identifier.fromNamespaceAndPath("dsmod", "hud")) { graphics, delta ->
             if (shown.isEmpty()) return@attachElementBefore
             if (hiddenInF3()) return@attachElementBefore
-            game.metrics.time("hud.draw") { draw(graphics, delta.getGameTimeDeltaPartialTick(false)) }
+            game.metrics.time("hud.draw", Metrics.FRAME) { draw(graphics, delta.getGameTimeDeltaPartialTick(false)) }
         }
     }
 

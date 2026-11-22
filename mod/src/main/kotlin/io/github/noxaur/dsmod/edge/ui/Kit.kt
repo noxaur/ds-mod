@@ -3,14 +3,14 @@ package io.github.noxaur.dsmod.edge.ui
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.core.ui.GameScreenColors
 import io.github.noxaur.dsmod.core.ui.Piece
 import io.github.noxaur.dsmod.core.ui.SettingsSearch
 import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.core.ui.TabStrip
-import io.github.noxaur.dsmod.core.ui.GameScreenColors
 import io.github.noxaur.dsmod.core.ui.Theme
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import io.github.noxaur.dsmod.edge.Ticks
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphicsExtractor
@@ -156,9 +156,9 @@ object Kit {
     // @keep A texture made or uploaded while a frame is being built breaks every frame after it, so paint at the end of a tick.
     fun register(hud: DsModConfig.Hud) {
         this.hud = hud
-        ClientTickEvents.END_CLIENT_TICK.register {
+        Ticks.end {
             val t = theme
-            if (t === slotTheme) return@register
+            if (t === slotTheme) return@end
             slotTexture = paintSlot(slotTexture, SLOT_TEXTURE, t.slot, t.slotShade, t.slotLight)
             glassSlotTexture = paintSlot(glassSlotTexture, GLASS_SLOT_TEXTURE, glassFace(t), glassShade(t), glassLight(t))
             slotTheme = t

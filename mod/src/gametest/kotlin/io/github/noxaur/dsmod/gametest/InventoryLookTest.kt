@@ -8,7 +8,6 @@ import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.gametest.InventoryGrid.cell
-import io.github.noxaur.dsmod.gametest.InventoryGrid.drawMicros
 import io.github.noxaur.dsmod.gametest.InventoryGrid.panelColor
 import io.github.noxaur.dsmod.gametest.InventoryGrid.showHotbar
 import io.github.noxaur.dsmod.gametest.InventoryGrid.waitForItem
@@ -56,7 +55,6 @@ class InventoryLookTest : FabricClientGameTest {
                         check(half != expected && half != clear) { "At an opacity of 50 the panel is %06X, between %06X and %06X".format(half, clear, expected) }
                         opacity(100f)
                     }
-                    println("InventoryLookTest: the HUD drew the Inventory look in ${drawMicros(context)}µs a frame, Menu Theme $themed, $theme, $menuLook")
                 }
             }
         } finally {
@@ -77,7 +75,6 @@ class InventoryLookTest : FabricClientGameTest {
             inventoryHud.layout.value = InventoryLayout.ROWS
             waitForItem(context, "Item 35") { cell(context, 2, 8, inventory = false) }
             context.takeScreenshot("inventory-hud-${look.name.lowercase()}")
-            println("InventoryLookTest: the HUD drew the ${look.name} look in ${drawMicros(context)}µs a frame")
         }
     }
 }

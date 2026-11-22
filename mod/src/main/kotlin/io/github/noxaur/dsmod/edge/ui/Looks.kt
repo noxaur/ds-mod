@@ -6,7 +6,7 @@ import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Look
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import io.github.noxaur.dsmod.edge.Ticks
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.texture.DynamicTexture
@@ -45,7 +45,7 @@ object Looks {
 
     // @keep A texture made while a frame is being built breaks the frames after it, so paint at the end of a tick.
     fun register() {
-        ClientTickEvents.END_CLIENT_TICK.register { if (!painted) paint() }
+        Ticks.end { if (!painted) paint() }
     }
 
     private fun paint() {
