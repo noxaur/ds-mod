@@ -8,13 +8,24 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class AutoClickTest {
+    private companion object {
+        const val TICK = 50_000_000L
+    }
+
     private val tree = SettingsTree()
     private val trigger = tree.feature<AutoLeftClick>().click
     private val right = tree.feature<AutoRightClick>().click
 
     private data class Tick(val walking: Boolean = true, val pressed: Boolean = false, val down: Boolean = true, val on: Boolean = true)
 
-    private fun clicks(ticks: List<Tick>) = ticks.indices.filter { ticks[it].let { t -> trigger.tick(t.on, t.walking, t.pressed, t.down) && trigger.spend() } }
+    private var nanos = 0L
+
+    private fun step(t: Tick): Boolean {
+        nanos += TICK
+        return trigger.tick(t.on, t.walking, t.pressed, t.down, nanos) && trigger.spend(nanos)
+    }
+
+    private fun clicks(ticks: List<Tick>) = ticks.indices.filter { step(ticks[it]) }
 
     private fun held(count: Int, walking: Boolean = true) = listOf(Tick(walking, pressed = true)) + List(count - 1) { Tick(walking) }
 
@@ -32,13 +43,19 @@ class AutoClickTest {
 
     @Test
     fun `the player's own clicks spend the same 9 point 9 a second`() {
-        assertEquals(990, (0 until 20 * 100).count { trigger.tick(true, false, false, false); trigger.spend() })
+        assertEquals(990, (0 until 20 * 100).count { step(Tick(walking = false)); trigger.spend(nanos) })
     }
 
     @Test
     fun `the player's own clicks on top of auto clicks stay at 9 point 9 a second`() {
-        val ticks = held(20 * 100)
-        assertEquals(990, ticks.sumOf { t -> listOf(trigger.tick(t.on, t.walking, t.pressed, t.down) && trigger.spend(), trigger.spend()).count { it } })
+        assertEquals(990, held(20 * 100).count { t -> listOf(step(t), trigger.spend(nanos)).any { it } })
+    }
+
+    @Test
+    fun `ticks the game catches up on after a freeze release no burst`() {
+        clicks(held(20))
+        nanos += 500_000_000L
+        assertEquals(1, (0 until 10).count { trigger.tick(true, true, false, true, nanos) && trigger.spend(nanos) })
     }
 
     @Test

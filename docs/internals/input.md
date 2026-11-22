@@ -40,7 +40,7 @@ Forge Craft repeats a forge craft from the keyboard, and each press sends one cl
 
 ## Auto Left Click and Auto Right Click press the game's own key once a tick
 
-dragsim.co allows auto clicking while the player walks, the user confirmed. Each click is the press the mouse makes on the attack or use key, so the game's key handling gives it every check a real click gets. The game reads clicks once a tick, so the pace counts ticks. The user asked that a button never pass 9.9 a second, so while a feature is on, the player's own clicks of its button spend the same pace and one past it is dropped. Calling attack or use directly was rejected, since it skips those checks, and a pace in milliseconds, since two clicks could share a tick.
+dragsim.co allows auto clicking while the player walks, the user confirmed. Each click is the press the mouse makes on the attack or use key, so the game gives it every check a real click gets. The user asked that a button never pass 9.9 a second, so while a feature is on, the player's own clicks share its budget and one past it is dropped. Clicks go out on ticks but the budget refills by the clock, since after a freeze the game runs the missed ticks at once. Calling attack or use directly was rejected, since it skips those checks.
 
 ## Ctrl Click undoes the game's right click on macOS at the press alone
 

@@ -15,19 +15,26 @@ class AutoClick(feature: Feature, id: String, button: String, other: String, def
 
     private var wasDown = false
     private var toggled by feature.world { false }
-    private var earned = 1.0
+    private var earned = FULL
+    private var refilled: Long? = null
 
-    fun tick(on: Boolean, walking: Boolean, pressed: Boolean, down: Boolean): Boolean {
+    private fun refill(nanos: Long) {
+        refilled?.let { earned = min(earned + (nanos - it) * CPS / 1e9, FULL) }
+        refilled = nanos
+    }
+
+    fun tick(on: Boolean, walking: Boolean, pressed: Boolean, down: Boolean, nanos: Long): Boolean {
         val active = on && key.value != KeyBind.NONE
         val hold = mode.value == KeyMode.HOLD
         val press = pressed && !wasDown
         wasDown = down
         toggled = active && !hold && toggled != press
-        earned = min(earned + PER_TICK, 1 + PER_TICK)
+        refill(nanos)
         return walking && earned >= 1 && if (hold) active && down else toggled
     }
 
-    fun spend(): Boolean {
+    fun spend(nanos: Long): Boolean {
+        refill(nanos)
         if (earned < 1) return false
         earned -= 1
         return true
@@ -35,7 +42,7 @@ class AutoClick(feature: Feature, id: String, button: String, other: String, def
 
     companion object {
         const val CPS = 9.9
-        private const val PER_TICK = CPS / 20
+        private const val FULL = 1 + CPS / 20
 
         fun pair(left: AutoClick, right: AutoClick) {
             left.paired = right
