@@ -42,9 +42,9 @@ Forge Craft repeats a forge craft from the keyboard, and each press sends one cl
 
 dragsim.co refuses a wardrobe click for a second after the menu opens, so a key pressed in that second is held and clicked when it ends, as the user asked. Dropping the press was rejected, because the player would have to press again. Each press is still one click on the button its key names, and only the last held press is clicked. The second starts again when any menu opens, because a new menu is a new opening to the server.
 
-## Auto Left Click and Auto Right Click press the game's own key once a tick
+## Auto Click presses the game's own key once a tick
 
-dragsim.co allows auto clicking while the player walks, the user confirmed. Each click is the press the mouse makes on the attack or use key, so the game gives it every check a real click gets. The user asked that a button never pass 9.9 a second, so while a feature is on, the player's own clicks share its budget and one past it is dropped. Clicks go out on ticks but the budget refills by the clock, since after a freeze the game runs the missed ticks at once. Calling attack or use directly was rejected, since it skips those checks.
+dragsim.co allows auto clicking while the player walks, the user confirmed. Each click is the press the mouse makes on the attack or use key, so the game gives it every check a real click gets. The user asked that a button never pass 9.9 a second, so while a part of Auto Click is on, the player's own clicks of its button share its budget and one past it is dropped. Clicks go out on ticks but the budget refills by the clock, since after a freeze the game runs the missed ticks at once. Calling attack or use directly was rejected, since it skips those checks.
 
 ## Ctrl Click undoes the game's right click on macOS at the press alone
 

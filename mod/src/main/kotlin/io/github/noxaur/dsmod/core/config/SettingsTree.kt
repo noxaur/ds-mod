@@ -4,6 +4,7 @@ import io.github.noxaur.dsmod.core.feature.boss.BossBeacon
 import io.github.noxaur.dsmod.core.feature.boss.BossTracer
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
+import io.github.noxaur.dsmod.core.feature.camel
 import io.github.noxaur.dsmod.core.feature.boss.SlayerClaim
 import io.github.noxaur.dsmod.core.feature.chat.CopyChat
 import io.github.noxaur.dsmod.core.feature.chat.HideCooldownMessages
@@ -21,8 +22,6 @@ import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
 import io.github.noxaur.dsmod.core.feature.general.AutoClick
-import io.github.noxaur.dsmod.core.feature.general.AutoLeftClick
-import io.github.noxaur.dsmod.core.feature.general.AutoRightClick
 import io.github.noxaur.dsmod.core.feature.general.CtrlClick
 import io.github.noxaur.dsmod.core.feature.general.DragSimOnly
 import io.github.noxaur.dsmod.core.feature.general.DamageNumbers
@@ -119,7 +118,8 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
         fun home(switch: Switch): SettingSection? = fresh.firstOrNull { section -> section.walk().any { it is Switch && it.field == switch.field } }
 
         /** @keep Versions up to 0.1.0 starred MoulConfig's options by path, as general.fullbright, and a feature's switch by
-         * its field's name. */
+         * its field's name. A feature that became a switch of another's, as Auto Left Click, keeps its star through the
+         * camel case of its old id. */
         fun favorites(saved: List<String>): List<String> {
             val rows = fresh.flatMap { it.walk() }
             val ids = rows.mapTo(HashSet()) { it.id }
@@ -131,7 +131,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                     byField.putIfAbsent("$section.$key", row.id)
                 }
             }
-            return saved.mapNotNull { if (it in ids) it else byField[it] ?: BUTTONS[it] }.distinct()
+            return saved.mapNotNull { if (it in ids) it else byField[it] ?: byField[camel(it)] ?: BUTTONS[it] }.distinct()
         }
 
         private val BUTTONS = mapOf(
@@ -172,13 +172,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                         feature(HideExplosions(c))
                     }
                     group(EtherwarpOutline(c), "Etherwarp")
-                    group("Auto Clicker") {
-                        val left = AutoLeftClick(c)
-                        val right = AutoRightClick(c)
-                        AutoClick.pair(left.click, right.click)
-                        feature(left)
-                        feature(right)
-                    }
+                    group(AutoClick(c))
                     group(AbilityCooldowns(c))
                     group(Animations(c))
                     group(PlayerModel(c))
