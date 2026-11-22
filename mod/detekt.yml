@@ -138,6 +138,7 @@ dsmod:
       - 'item.data["item_data"]?.jsonObject?.get("rarity")'
     counterExamples:
       - 'kept["item_data"] = JsonObject(it)'
+      - 'value as? com.google.gson.JsonObject?'
       - 'return withoutUuids(JsonObject(kept)) as JsonObject'
 
   ForbiddenText/rate-by-helper:
@@ -376,6 +377,12 @@ dsmod:
             private val marks = SlotMarks(feature, ::mark)
             init {
                 feature.on<ContainerOpened> { _, _ -> this.marks.invalidate() }
+            }
+        }
+      - |
+        class Example {
+            private val marks = SlotMarks(feature, ::mark)
+            init {
                 feature.on<SlotChanged> { _, _ -> this .marks.invalidate() }
             }
         }
@@ -488,6 +495,8 @@ style:
         reason: *number
       - value: 'java.util.Formatter.format'
         reason: *number
+      - value: 'java.text.MessageFormat.format'
+        reason: *number
     examples:
       - |
         import java.util.Locale
@@ -501,6 +510,9 @@ style:
       - |
         import java.util.Formatter
         fun example(n: Double) = Formatter().format("%.1f", n)
+      - |
+        import java.text.MessageFormat
+        fun example(n: Double) = MessageFormat.format("{0,number,0.0}", n)
 
   ForbiddenMethodCall/count-by-helper:
     active: true

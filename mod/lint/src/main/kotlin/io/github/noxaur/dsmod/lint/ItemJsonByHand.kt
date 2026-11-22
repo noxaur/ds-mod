@@ -25,7 +25,8 @@ class ItemJsonByHand(config: Config) : Rule(config, "A safe cast to `JsonObject`
     private fun castsToJsonObject(expression: KtBinaryExpressionWithTypeRHS): Boolean {
         val type = expression.right?.typeElement
         val inner = (type as? KtNullableType)?.innerType ?: type
-        return (inner as? KtUserType)?.referencedName == "JsonObject"
+        val name = (inner as? KtUserType)?.takeIf { it.referencedName == "JsonObject" } ?: return false
+        return name.qualifier == null || name.text.replace(Regex("\\s"), "") == "kotlinx.serialization.json.JsonObject"
     }
 
     override fun visitArrayAccessExpression(expression: KtArrayAccessExpression) {
