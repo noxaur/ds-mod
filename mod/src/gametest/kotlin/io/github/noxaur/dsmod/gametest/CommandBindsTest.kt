@@ -5,8 +5,6 @@ import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.Where
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.edge.DsModClient
-import io.github.noxaur.dsmod.edge.SettingsScreen
-import io.github.noxaur.dsmod.edge.ui.ItemsEditor
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
@@ -121,32 +119,3 @@ class CommandBindsTest : FabricClientGameTest {
 }
 
 /** Drives the list of binds in the settings, by its lines and the names of their controls, at GUI scale 2. */
-internal class BindsDriver(context: ClientGameTestContext) : SettingsDriver(context) {
-    /** Scrolls the list into view. */
-    fun list() = spot("binds")
-
-    fun lines() = context.computeOnClient<Int, Nothing> { ((it.gui.screen() as SettingsScreen).editor("binds") as ItemsEditor<*>).size }
-
-    fun foot() = lines() - 1
-
-    fun line(i: Int) = i
-
-    /** The line of bind [index], or of its details. */
-    fun lineOf(index: Int, details: Boolean = false) = context.computeOnClient<Int, Nothing> { editorNow(it).lineOf(index, details) }
-
-    /** The line of [group]'s heading, or of its details. */
-    fun headingOf(group: String, details: Boolean = false) = context.computeOnClient<Int, Nothing> { editorNow(it).headingOf(group, details) }
-
-    private fun editorNow(client: net.minecraft.client.Minecraft) = (client.gui.screen() as SettingsScreen).editor("binds") as ItemsEditor<*>
-
-    /** Where line [line]'s control named [control] is, or the line itself. */
-    fun at(line: Int, control: String? = null): IntArray {
-        val spot = context.computeOnClient<IntArray?, Nothing> { (((it.gui.screen() as SettingsScreen).editor("binds")) as ItemsEditor<*>).spot(line, control) }
-        return spot ?: error("Line $line of the binds has no ${control ?: "line"}; it has ${lines()} lines")
-    }
-
-    fun press(line: Int, control: String? = null, button: Int = 0, dx: Int = -1) {
-        val (x, y, w, h) = at(line, control).let { listOf(it[0], it[1], it[2], it[3]) }
-        click(x + if (dx >= 0) dx else w / 2, y + h / 2, button)
-    }
-}

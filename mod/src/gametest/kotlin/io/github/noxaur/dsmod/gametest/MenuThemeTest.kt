@@ -142,7 +142,7 @@ class MenuThemeTest : FabricClientGameTest {
 
             context.setScreen { null }
             world.server.runOnServer<Nothing> { server ->
-                server.playerList.players.first().openMenu(SimpleMenuProvider({ id, inventory, _ -> HopperMenu(id, inventory) }, Component.literal("Hopper")))
+                server.player.openMenu(SimpleMenuProvider({ id, inventory, _ -> HopperMenu(id, inventory) }, Component.literal("Hopper")))
             }
             context.waitFor { it.gui.screen() is HopperScreen }
             context.waitTicks(5)

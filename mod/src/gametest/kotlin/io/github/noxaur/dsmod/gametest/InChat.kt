@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.edge.Hud
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.screens.ChatScreen
 
@@ -24,9 +25,13 @@ class InChat(private val context: ClientGameTestContext) {
 
     fun block(id: String) = context.computeOnClient<Hud.Placed, Nothing> { checkNotNull(Hud.find(id)) { "$id is not on the HUD" } }
 
-    fun input() = context.computeOnClient<String, Nothing> { client ->
-        (client.gui.screen() as? ChatScreen)?.children()?.filterIsInstance<EditBox>()?.single()?.value ?: error("The chat closed")
-    }
+    private fun box(client: Minecraft) = (client.gui.screen() as? ChatScreen)?.widgets<EditBox>()?.singleOrNull() ?: error("The chat closed")
+
+    fun input() = context.computeOnClient<String, Nothing> { box(it).value }
+
+    fun cursor() = context.computeOnClient<Int, Nothing> { box(it).cursorPosition }
+
+    fun clearInput() = context.runOnClient<Nothing> { box(it).value = "" }
 
     /** Presses on [id] 5 in from its corner, drags the mouse until the corner would be at [x], [y], runs [during] and lets go. */
     fun drag(id: String, x: Number, y: Number, during: () -> Unit = {}) {

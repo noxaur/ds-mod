@@ -17,7 +17,6 @@ import org.lwjgl.glfw.GLFW
 import kotlin.io.path.readText
 import kotlin.math.roundToInt
 
-private const val ID = "dragon-timer"
 
 /**
  * Opens the editor with nothing on the HUD, then over a live block. Moves and resizes the block, works every
@@ -32,19 +31,18 @@ class HudEditorTest : FabricClientGameTest {
             context.takeScreenshot("hud-editor-empty")
             context.setScreen { null }
 
-            context.enterTheEnd()
-            world.server.runCommand("""tellraw @a "§5✦ §dThe Egg has Spawned!"""")
+            context.showDragonTimer(world)
             context.waitTicks(5)
             context.runOnClient<Nothing> { DsModClient.openHudEditor() }
             context.waitForScreen(HudEditorScreen::class.java)
             context.takeScreenshot("hud-editor-before")
 
             // The block's drawn scale, in screen pixels per HUD pixel.
-            fun pixels(client: Minecraft) = (Hud.find(ID)!!.scale * client.window.guiScale).roundToInt()
+            fun pixels(client: Minecraft) = (Hud.find(DRAGON_TIMER)!!.scale * client.window.guiScale).roundToInt()
 
             val start = context.computeOnClient<Int, Nothing> { client ->
                 val screen = client.gui.screen()!!
-                val block = Hud.find(ID)!!
+                val block = Hud.find(DRAGON_TIMER)!!
                 val start = pixels(client)
                 check(screen.mouseClicked(press(block.x + 5.0, block.y + 5.0), false)) { "The block was not under the mouse" }
                 screen.mouseDragged(press(block.x + 105.0, block.y + 65.0), 100.0, 60.0)
@@ -53,7 +51,7 @@ class HudEditorTest : FabricClientGameTest {
                 check(pixels(client) == start + 1) { "A scroll step drew ${pixels(client)} pixels, not ${start + 1}" }
                 start
             }
-            val moved = DsModClient.settings.hud.positions.getValue(ID)
+            val moved = DsModClient.settings.hud.positions.getValue(DRAGON_TIMER)
             check(moved.x > 0.05f && moved.y > 0.05f && moved.scale > 1f) { "Not moved and scaled: $moved" }
 
             // The panel works on the block clicked last: one step up by real mouse, on the stepper's plus.
@@ -77,7 +75,7 @@ class HudEditorTest : FabricClientGameTest {
                 click(global.x + 4.0)
                 check(hud.scale == before) { "The HUD scale did not come back: ${hud.scale}" }
             }
-            val box = context.computeOnClient<KitCheckbox, Nothing> { client -> client.gui.screen()!!.children().filterIsInstance<KitCheckbox>().single() }
+            val box = context.computeOnClient<KitCheckbox, Nothing> { client -> checkNotNull(client.gui.screen()).widgets<KitCheckbox>().single() }
             context.click(box.x + 5, box.y + 5)
             check(!DsModClient.runs<HudBackground>()) { "The checkbox did not turn the background off" }
             context.input.pressMouse(0)
@@ -90,37 +88,37 @@ class HudEditorTest : FabricClientGameTest {
             // A drag that starts on the block carries on over the panel, and Reset still reaches the block there.
             context.runOnClient<Nothing> { client ->
                 val screen = client.gui.screen()!!
-                val block = Hud.find(ID)!!
+                val block = Hud.find(DRAGON_TIMER)!!
                 // Grabbed 5 in, so the block's bottom lands on the screen's, where it stays whole.
                 val to = screen.width / 2.0 to screen.height - block.height * block.scale - 2.0 + 5.0
                 check(screen.mouseClicked(press(block.x + 5.0, block.y + 5.0), false)) { "The block was not under the mouse" }
                 screen.mouseDragged(press(to.first, to.second), 0.0, 0.0)
                 screen.mouseReleased(press(to.first, to.second))
-                val under = Hud.find(ID)!!
+                val under = Hud.find(DRAGON_TIMER)!!
                 check(Math.abs(under.x + 5.0 - to.first) <= 1 && Math.abs(under.y + 5.0 - to.second) <= 1) { "The drag stopped at the panel: ${under.x}, ${under.y}" }
             }
             context.waitTicks(2)
             context.takeScreenshot("hud-editor-under-panel")
             context.clickScreenButton("Reset")
-            check(ID !in DsModClient.settings.hud.positions) { "Reset kept the position" }
+            check(DRAGON_TIMER !in DsModClient.settings.hud.positions) { "Reset kept the position" }
 
 
             // Let go three pixels off the middle of the screen, the block centers itself. With Shift it stays where it was dropped.
             fun dragTo(screen: net.minecraft.client.gui.screens.Screen, x: Double, y: Double): Hud.Placed {
-                val block = Hud.find(ID)!!
+                val block = Hud.find(DRAGON_TIMER)!!
                 check(screen.mouseClicked(press(block.x + 5.0, block.y + 5.0), false)) { "The block was not under the mouse" }
                 screen.mouseDragged(press(x + 5.0, y + 5.0), 0.0, 0.0)
                 screen.mouseReleased(press(x + 5.0, y + 5.0))
-                return Hud.find(ID)!!
+                return Hud.find(DRAGON_TIMER)!!
             }
             val (centered, middle) = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
                 val screen = client.gui.screen()!!
-                val size = Hud.find(ID)!!.let { it.width * it.scale to it.height * it.scale }
+                val size = Hud.find(DRAGON_TIMER)!!.let { it.width * it.scale to it.height * it.scale }
                 val centered = (screen.width - size.first) / 2.0
                 val middle = (screen.height - size.second) / 2.0
                 // Every other feature's placeholder stacks down from the top-left, and grows with each feature until one of its
                 // edges is nearer the drop than the middle is. Those blocks come back when Done closes the editor.
-                Hud.placed().filter { it.id != ID }.forEach { Hud.hide(it.id) }
+                Hud.placed().filter { it.id != DRAGON_TIMER }.forEach { Hud.hide(it.id) }
                 val snapped = dragTo(screen, centered + 3, middle - 3)
                 check(Math.abs(snapped.x - centered) < 0.6 && Math.abs(snapped.y - middle) < 0.6) { "The block did not center: ${snapped.x}, ${snapped.y}, wanted $centered, $middle on ${screen.width}x${screen.height} with $size" }
                 centered to middle
@@ -136,54 +134,54 @@ class HudEditorTest : FabricClientGameTest {
             // Escape during a drag puts the block back and leaves the editor open. Without a drag it closes the editor.
             context.runOnClient<Nothing> { client ->
                 val screen = client.gui.screen()!!
-                val before = Hud.find(ID)!!
+                val before = Hud.find(DRAGON_TIMER)!!
                 check(screen.mouseClicked(press(before.x + 5.0, before.y + 5.0), false)) { "The block was not under the mouse" }
                 screen.mouseDragged(press(before.x + 45.0, before.y + 35.0), 40.0, 30.0)
                 check(screen.keyPressed(net.minecraft.client.input.KeyEvent(org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE, 0, 0))) { "Escape was not taken" }
                 screen.mouseReleased(press(before.x + 45.0, before.y + 35.0))
-                val after = Hud.find(ID)!!
+                val after = Hud.find(DRAGON_TIMER)!!
                 check(after.x == before.x && after.y == before.y && client.gui.screen() === screen) { "Escape left the block at ${after.x}, ${after.y}, not ${before.x}, ${before.y}" }
             }
 
             // The arrows nudge the block picked last, a pixel or ten with Shift.
-            val picked = context.computeOnClient<Pair<Float, Float>, Nothing> { Hud.find(ID)!!.let { it.x to it.y } }
+            val picked = context.computeOnClient<Pair<Float, Float>, Nothing> { Hud.find(DRAGON_TIMER)!!.let { it.x to it.y } }
             context.input.pressKey(GLFW.GLFW_KEY_LEFT)
             context.input.holdShift()
             context.input.pressKey(GLFW.GLFW_KEY_UP)
             context.input.releaseShift()
             context.waitTick()
             context.runOnClient<Nothing> {
-                val block = Hud.find(ID)!!
+                val block = Hud.find(DRAGON_TIMER)!!
                 check(block.x == picked.first - 1 && block.y == picked.second - 10) { "The arrows put the block at ${block.x}, ${block.y}, not ${picked.first - 1}, ${picked.second - 10}" }
             }
 
             // A right press on a block resets it.
             context.runOnClient<Nothing> { client ->
                 val screen = client.gui.screen()!!
-                val block = Hud.find(ID)!!
+                val block = Hud.find(DRAGON_TIMER)!!
                 check(screen.mouseClicked(MouseButtonEvent(block.x + 5.0, block.y + 5.0, MouseButtonInfo(1, 0)), false)) { "The right press was not taken" }
                 screen.mouseReleased(MouseButtonEvent(block.x + 5.0, block.y + 5.0, MouseButtonInfo(1, 0)))
-                check(ID !in DsModClient.settings.hud.positions) { "The right press kept the position" }
+                check(DRAGON_TIMER !in DsModClient.settings.hud.positions) { "The right press kept the position" }
             }
 
             context.runOnClient<Nothing> { client ->
                 val screen = client.gui.screen()!!
-                val block = Hud.find(ID)!!
+                val block = Hud.find(DRAGON_TIMER)!!
                 check(screen.mouseClicked(press(block.x + 5.0, block.y + 5.0), false)) { "The block was not under the mouse" }
                 screen.mouseDragged(press(block.x + 105.0, block.y + 65.0), 100.0, 60.0)
                 screen.mouseReleased(press(block.x + 105.0, block.y + 65.0))
             }
-            val placed = DsModClient.settings.hud.positions.getValue(ID)
+            val placed = DsModClient.settings.hud.positions.getValue(DRAGON_TIMER)
             context.clickScreenButton("Done")
             context.waitFor { it.gui.screen() == null }
             context.waitTicks(20)
             val saved = FabricLoader.getInstance().configDir.resolve("dsmod/config.json").readText()
-            check(""""$ID":{"x":${placed.x},"y":${placed.y},"scale":${placed.scale}}""" in saved) { "The position was not saved: $saved" }
+            check(""""$DRAGON_TIMER":{"x":${placed.x},"y":${placed.y},"scale":${placed.scale}}""" in saved) { "The position was not saved: $saved" }
             context.takeScreenshot("hud-moved")
         }
     }
 
     private fun press(x: Double, y: Double) = MouseButtonEvent(x, y, MouseButtonInfo(0, 0))
 
-    private fun steppers(client: Minecraft) = client.gui.screen()!!.children().filterIsInstance<KitStepper>()
+    private fun steppers(client: Minecraft) = checkNotNull(client.gui.screen()).widgets<KitStepper>()
 }

@@ -18,8 +18,7 @@ class GizmoCollectorTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         LevelExtractionEvents.AFTER_BLOCK_OUTLINE_EXTRACTION.register { _, _ -> if (drawing) World.draw(box) }
         context.worldBuilder().create().use { world ->
-            world.server.runCommand("fill -1 99 -1 1 99 1 stone")
-            world.server.runCommand("tp @a 0.5 100 0.5 -90 0")
+            world.standOnStone()
             context.input.lookAt(-90f, 0f)
             context.waitTicks(10)
 

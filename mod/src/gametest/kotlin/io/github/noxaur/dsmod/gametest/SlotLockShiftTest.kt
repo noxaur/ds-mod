@@ -63,12 +63,7 @@ class SlotLockShiftTest : FabricClientGameTest {
             check(clicks.size <= cap) { "${clicks.size} packets for $destinations destinations (parked=$parked), cap $cap: $clicks" }
         }
         fun give(world: TestSingleplayerContext, stacks: Map<Int, ItemStack>) {
-            world.server.runOnServer<Nothing> { server ->
-                val player = server.playerList.players.single()
-                player.inventory.clearContent()
-                for ((slot, stack) in stacks) player.inventory.setItem(slot, stack.copy())
-                player.containerMenu.broadcastChanges()
-            }
+            world.give(stacks)
             context.waitTicks(5)
             context.runOnClient<Nothing> { client ->
                 val inventory = client.player!!.inventory
@@ -209,7 +204,7 @@ class SlotLockShiftTest : FabricClientGameTest {
     /** One log in the craft grid and [planks] already in the only slot that can hold more. The result is 4. */
     private fun resultThatDoesNotFit(context: ClientGameTestContext, world: TestSingleplayerContext, planks: Int, freeAfter: Boolean = false): ResultAttempt {
         world.server.runOnServer<Nothing> { server ->
-            val player = server.playerList.players.single()
+            val player = server.player
             player.inventory.clearContent()
             for (slot in 0..35) player.inventory.setItem(slot, ItemStack(Items.COBBLESTONE, 64))
             player.inventory.setItem(0, ItemStack(Items.OAK_PLANKS, planks))
@@ -238,8 +233,8 @@ class SlotLockShiftTest : FabricClientGameTest {
         context.input.pressMouse(0)
         context.waitTicks(2)
         world.server.runOnServer<Nothing> { server ->
-            server.playerList.players.single().inventory.setItem(9, ItemStack(Items.COBBLESTONE, 64))
-            server.playerList.players.single().containerMenu.broadcastChanges()
+            server.player.inventory.setItem(9, ItemStack(Items.COBBLESTONE, 64))
+            server.player.containerMenu.broadcastChanges()
         }
         context.waitTicks(3)
         var refused = false
@@ -252,8 +247,8 @@ class SlotLockShiftTest : FabricClientGameTest {
             if (freeAfter) {
                 // Room opens after the cancel. A click still pending would now take the result by itself.
                 world.server.runOnServer<Nothing> { server ->
-                    server.playerList.players.single().inventory.setItem(2, ItemStack.EMPTY)
-                    server.playerList.players.single().containerMenu.broadcastChanges()
+                    server.player.inventory.setItem(2, ItemStack.EMPTY)
+                    server.player.containerMenu.broadcastChanges()
                 }
                 context.waitTicks(10)
             }

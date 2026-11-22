@@ -10,16 +10,14 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 /** The server sends system messages, and the Dragon Timer shows what the player would read. */
 class DragonTimerTest : FabricClientGameTest {
     private fun readout(context: ClientGameTestContext) = context.computeOnClient<List<String>, Nothing> {
-        DsModClient.game.readouts.single { it.feature.id == "dragon-timer" }.hud?.rows?.map { row -> row.text.plain } ?: emptyList()
+        DsModClient.game.readouts.single { it.feature.id == DRAGON_TIMER }.hud?.rows?.map { row -> row.text.plain } ?: emptyList()
     }
 
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
             val seen = ArrayList<GameEvent>()
             context.runOnClient<Nothing> { DsModClient.game.tap = { _, event -> seen += event } }
-            context.enterTheEnd()
-
-            world.server.runCommand("""tellraw @a "§5✦ §dThe Egg has Spawned!"""")
+            context.showDragonTimer(world)
             context.waitTicks(5)
             check(readout(context) == listOf("Eyes: 0/8")) { "Expected Eyes: 0/8, got ${readout(context)}" }
 

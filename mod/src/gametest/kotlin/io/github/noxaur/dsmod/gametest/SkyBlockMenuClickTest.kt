@@ -38,7 +38,7 @@ class SkyBlockMenuClickTest : FabricClientGameTest {
             val sent = ClickSpy.during(context) { click(8) }
             check(sent.isEmpty()) { "The click on the SkyBlock Menu item reached the slot: $sent" }
             ServerMenus.shows(context, "SkyBlock Menu")
-            val kept = world.server.computeOnServer<Boolean, Nothing> { server -> server.playerList.players.first().inventory.getItem(8).`is`(Items.NETHER_STAR) }
+            val kept = world.server.computeOnServer<Boolean, Nothing> { server -> server.player.inventory.getItem(8).`is`(Items.NETHER_STAR) }
             check(kept) { "The SkyBlock Menu item left the ninth hotbar slot" }
             context.runOnClient<Nothing> { it.player!!.closeContainer() }
             context.waitTicks(5)

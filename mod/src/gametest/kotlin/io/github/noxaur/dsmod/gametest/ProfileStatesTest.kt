@@ -61,12 +61,12 @@ class ProfileStatesTest : FabricClientGameTest {
                 context.waitForScreen(ProfileScreen::class.java)
                 context.waitTicks(10)
                 context.takeScreenshot("state-loading")
-                context.waitUntil("the slow profile loaded") { profiles.screen(it).children().any { w -> w is KitTab } }
+                context.waitUntil("the slow profile loaded") { profiles.screen(it).widgets<KitTab>().isNotEmpty() }
 
                 context.setScreen { null }
                 profiles.command("pv Down")
                 context.waitForScreen(ProfileScreen::class.java)
-                context.waitUntil("the retry button showed") { profiles.screen(it).children().any { w -> (w as? AbstractWidget)?.message?.string == "Retry" } }
+                context.waitUntil("the retry button showed") { profiles.screen(it).widgets<AbstractWidget>().any { w -> w.message.string == "Retry" } }
                 context.takeScreenshot("state-upstream-down")
 
                 profiles.open("Stale")

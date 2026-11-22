@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContex
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.commands.Commands
 import net.minecraft.core.component.DataComponents
@@ -41,7 +42,7 @@ object ServerMenus {
 
     /** Opens a menu [rows] tall titled [title], as [menu] builds it, and waits until the client shows it. */
     fun open(context: ClientGameTestContext, world: TestSingleplayerContext, rows: Int, title: String, goBack: Boolean = true, fill: (SimpleContainer) -> Unit = {}) {
-        world.server.runOnServer<Nothing> { server -> server.playerList.players.first().openMenu(menu(rows, title, goBack, fill)) }
+        world.server.runOnServer<Nothing> { server -> server.player.openMenu(menu(rows, title, goBack, fill)) }
         shows(context, title)
     }
 
@@ -67,6 +68,8 @@ object ServerMenus {
     inline fun <reified W : AbstractWidget> widget(context: ClientGameTestContext, crossinline which: (W) -> Boolean = { true }) = widgets(context, which).firstOrNull()
 
     fun panes(world: TestSingleplayerContext) = world.server.computeOnServer<Int, Nothing> { server ->
-        server.playerList.players.first().inventory.count { it.`is`(Items.STAINED_GLASS_PANE.black()) }
+        server.player.inventory.count { it.`is`(Items.STAINED_GLASS_PANE.black()) }
     }
 }
+
+inline fun <reified W> Screen.widgets(): List<W> = children().filterIsInstance<W>()

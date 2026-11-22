@@ -85,7 +85,8 @@ class HeldItemScene private constructor(private val context: ClientGameTestConte
             val animations = DsModClient.feature<Animations>()
             context.worldBuilder().create().use { world ->
                 val scene = HeldItemScene(context, world)
-                listOf("gamerule advance_time false", "gamerule advance_weather false", "clear @a").forEach(scene::command)
+                world.freezeTime(noon = false)
+                scene.command("clear @a")
                 context.input.lookAt(0f, 90f)
                 // The vignette eases toward the light where the player stands for half a minute and shades the whole
                 // frame, and the attack indicator shows the cooldown a swing at the air starts. Neither is the item.

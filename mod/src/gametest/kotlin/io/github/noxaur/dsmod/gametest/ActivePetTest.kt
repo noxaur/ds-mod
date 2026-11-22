@@ -11,7 +11,6 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.ItemLore
-import java.util.Base64
 
 /**
  * Active Pet's block on the HUD, with its icon left of its rows. The sidebar names the pet, a pet floating beside the
@@ -50,16 +49,16 @@ class ActivePetTest : FabricClientGameTest {
                 context.takeScreenshot("active-pet-name")
 
                 world.server.runCommand(
-                    """execute at @a run summon armor_stand ~1 ~1 ~1 {CustomName:"[Lvl 37] Ender Dragon",Invisible:1b,NoGravity:1b,equipment:{head:{id:"minecraft:player_head",components:{"minecraft:profile":{properties:[{name:"textures",value:"$TEXTURES"}]}}}}}""",
+                    """execute at @a run summon armor_stand ~1 ~1 ~1 {CustomName:"[Lvl 37] Ender Dragon",Invisible:1b,NoGravity:1b,equipment:{head:{id:"minecraft:player_head",components:{"minecraft:profile":{properties:[{name:"textures",value:"${HeadSkin.TEXTURES}"}]}}}}}""",
                 )
                 context.waitTicks(30)
-                check(skin(icon())) { "The icon is not the head of the pet floating beside the player" }
+                check(HeadSkin.worn(icon())) { "The icon is not the head of the pet floating beside the player" }
                 context.takeScreenshot("active-pet-head")
 
                 // The menu's head wears the same skin as the floating one, taken from a head the server gave the player.
-                world.server.runCommand("give @a minecraft:player_head[profile={properties:[{name:\"textures\",value:\"$TEXTURES\"}]}]")
+                world.server.runCommand("give @a minecraft:player_head[profile={properties:[{name:\"textures\",value:\"${HeadSkin.TEXTURES}\"}]}]")
                 context.waitTicks(5)
-                val head = world.server.computeOnServer<ItemStack, Nothing> { it.playerList.players.first().inventory.getItem(0).copy() }
+                val head = world.server.computeOnServer<ItemStack, Nothing> { it.player.inventory.getItem(0).copy() }
                 ServerMenus.open(context, world, 6, "Pets") { chest ->
                     chest.setItem(11, card(head.copy(), active = false, "Click to summon!"))
                     chest.setItem(13, card(head.copy(), active = true, "Progress to Level 38: 40%", "4,000/10,000 XP"))
@@ -89,7 +88,7 @@ class ActivePetTest : FabricClientGameTest {
                 context.waitTicks(20)
                 val rows = context.computeOnClient<List<String>, Nothing> { DsModClient.game.readouts.single { r -> r.feature.id == ID }.hud!!.rows.map { r -> r.text.plain } }
                 check(rows == listOf("[Lvl 38] Ender Dragon", "Item: Lucky Clover", "Open your Pets menu to read its XP.")) { "After the level up the block reads $rows" }
-                check(skin(icon())) { "The icon went after the level up" }
+                check(HeadSkin.worn(icon())) { "The icon went after the level up" }
                 context.takeScreenshot("active-pet-level-up")
             }
         } finally {
@@ -112,15 +111,7 @@ class ActivePetTest : FabricClientGameTest {
         return stack
     }
 
-    /** Whether [stack] wears [SKIN]. */
-    private fun skin(stack: ItemStack?): Boolean {
-        val value = stack?.get(DataComponents.PROFILE)?.partialProfile()?.properties()?.get("textures")?.firstOrNull()?.value() ?: return false
-        return SKIN in String(Base64.getDecoder().decode(value))
-    }
-
     private companion object {
         const val ID = "active-pet"
-        const val SKIN = "f83159c5bb7d80454d2d646b15774b7116aabcb3af5b6777a27573fc45f7854f"
-        val TEXTURES: String = Base64.getEncoder().encodeToString("{\"textures\":{\"SKIN\":{\"url\":\"http://textures.minecraft.net/texture/$SKIN\"}}}".toByteArray())
     }
 }

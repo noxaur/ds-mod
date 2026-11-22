@@ -87,8 +87,7 @@ class SurfacesTest : FabricClientGameTest {
             }
 
             // At GUI scale 2 a HUD scale of 1.3 snaps to 1.5, three screen pixels per HUD pixel, so every edge stays whole.
-            context.enterTheEnd()
-            world.server.runCommand("""tellraw @a "§5✦ §dThe Egg has Spawned!"""")
+            context.showDragonTimer(world)
             context.runOnClient<Nothing> { client ->
                 client.options.guiScale().set(2)
                 client.resizeGui()
@@ -96,7 +95,7 @@ class SurfacesTest : FabricClientGameTest {
             }
             context.waitTicks(5)
             context.runOnClient<Nothing> {
-                val scale = Hud.find("dragon-timer")?.scale
+                val scale = Hud.find(DRAGON_TIMER)?.scale
                 check(scale == 1.5f) { "The HUD scale snapped to $scale, not 1.5" }
             }
             context.takeScreenshot("hud-scale-1.5")
