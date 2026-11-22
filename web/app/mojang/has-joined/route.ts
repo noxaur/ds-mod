@@ -1,15 +1,13 @@
 import { Effect } from "effect";
 
 import { sameSecret } from "../../../shared/secret";
-import { joinUrl, readJoinQuery, relayKeyHeader, trustedKeyHeader } from "../../../shared/website";
-import { relayKey, trustedKey } from "../../env";
+import { joinUrl, readJoinQuery, relayKeyHeader } from "../../../shared/website";
+import { relayKey } from "../../env";
 
 const mojang = "https://sessionserver.mojang.com/session/minecraft/hasJoined";
 
 export async function GET(request: Request) {
-  // @keep A backend from before the relay key sends only the trusted key. Drop this once none is deployed.
-  const legacy = sameSecret(request.headers.get(trustedKeyHeader), trustedKey());
-  if (!sameSecret(request.headers.get(relayKeyHeader), relayKey()) && !legacy) {
+  if (!sameSecret(request.headers.get(relayKeyHeader), relayKey())) {
     return new Response(null, { status: 404 });
   }
   const question = readJoinQuery(new URL(request.url).searchParams);
