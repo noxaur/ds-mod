@@ -7,6 +7,8 @@ import io.github.noxaur.dsmod.core.text.FormatCodes
 import io.github.noxaur.dsmod.core.text.StyledRun
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Selection
+import io.github.noxaur.dsmod.edge.input.InputApproved
+import io.github.noxaur.dsmod.edge.input.Refusals
 import io.github.noxaur.dsmod.edge.mixin.ChatComponentAccessor
 import io.github.noxaur.dsmod.edge.ui.Kit
 import java.util.IdentityHashMap
@@ -15,8 +17,6 @@ import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.roundToInt
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
-import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
-import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ActiveTextCollector
 import net.minecraft.client.gui.GuiGraphicsExtractor
@@ -109,6 +109,7 @@ object CopyChats {
 
     private class Row(val part: Part, val pose: Matrix3x2f, val top: Int, val bottom: Int)
 
+    @InputApproved(reaches = ["Refusals.allowKeyPress", "Refusals.allowMouseClick", "Refusals.allowMouseRelease"])
     fun register() {
         ScreenHooks.onEveryLayout<ChatScreen> { screen, _ ->
             val client = Minecraft.getInstance()
@@ -118,15 +119,15 @@ object CopyChats {
                 selection = Selection()
                 layouts.clear()
             }
-            ScreenMouseEvents.allowMouseClick(screen).register { _, event -> !copyChat.feature.runs || !pressed(client, event) }
-            ScreenMouseEvents.allowMouseRelease(screen).register { _, event ->
+            Refusals.allowMouseClick(screen).register { _, event -> !copyChat.feature.runs || !pressed(client, event) }
+            Refusals.allowMouseRelease(screen).register { _, event ->
                 if (event.button() != 1 || drag == null) return@register true
                 drag = null
                 chosen = Format.TEXT
                 open(client, event.x().toInt(), event.y().toInt())
                 false
             }
-            ScreenKeyboardEvents.allowKeyPress(screen).register { _, event -> !key(client, event) }
+            Refusals.allowKeyPress(screen).register { _, event -> !key(client, event) }
             // @keep Minecraft draws the frame's tooltip at the end of the screen's own pass, so the label is set before it.
             ScreenEvents.beforeExtract(screen).register { _, graphics, _, _, _ ->
                 if (Util.getMillis() - copiedAt < FLASH_MS) graphics.setTooltipForNextFrame(client.font, copiedLabel, copiedX, copiedY)

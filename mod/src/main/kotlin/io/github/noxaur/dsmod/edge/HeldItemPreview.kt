@@ -9,6 +9,7 @@ import io.github.noxaur.dsmod.core.hand.HandPreview
 import io.github.noxaur.dsmod.core.hand.HeldItem
 import io.github.noxaur.dsmod.core.hand.ScreenView
 import io.github.noxaur.dsmod.core.ui.Narration
+import io.github.noxaur.dsmod.edge.input.InputApproved
 import io.github.noxaur.dsmod.edge.mixin.GuiGraphicsAccessor
 import io.github.noxaur.dsmod.edge.mixin.ItemLayerAccessor
 import io.github.noxaur.dsmod.edge.mixin.ItemRenderStateAccessor
@@ -235,6 +236,7 @@ class HeldItemPreview : BoxEditor {
     private val layerPose = PoseStack.Pose()
     private val corner = Vector3f()
 
+    @InputApproved(reaches = ["edge.mixin.ItemLayerAccessor.dsmod\$applyTransform", "edge.mixin.ItemLayerAccessor.dsmod\$quads"])
     private fun visitOutline(state: ItemStackRenderState, visit: (Vector3f) -> Unit) {
         val layers = state as ItemRenderStateAccessor
         var visited = false

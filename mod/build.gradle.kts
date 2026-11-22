@@ -245,10 +245,7 @@ tasks.test {
     timeout = Duration.ofSeconds(30)
     inputs.dir("src")
     inputs.files(sourceSets["gametest"].output.classesDirs)
-    inputs.file("input-sites.txt")
     inputs.files("../README.md", "../docs/user/features.md")
-    systemProperty("inputSites.approve", providers.gradleProperty("approve").getOrElse(""))
-    systemProperty("inputSites.approvedBy", providers.gradleProperty("approvedBy").getOrElse(""))
     testLogging {
         events("failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL

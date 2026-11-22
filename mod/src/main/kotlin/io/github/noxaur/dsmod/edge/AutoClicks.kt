@@ -2,6 +2,8 @@ package io.github.noxaur.dsmod.edge
 
 import com.mojang.blaze3d.platform.InputConstants
 import io.github.noxaur.dsmod.core.feature.general.AutoClick
+import io.github.noxaur.dsmod.edge.input.Clicks
+import io.github.noxaur.dsmod.edge.input.InputApproved
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.KeyMapping
@@ -26,25 +28,21 @@ object AutoClicks {
         for (button in buttons(Minecraft.getInstance())) if (Keys.matches(key, button.click.key.value)) tapped += button.click
     }
 
-    fun allows(attack: Boolean): Boolean {
-        val click = buttons(Minecraft.getInstance())[if (attack) 0 else 1].click
-        return !click.runs || click.spend(System.nanoTime())
-    }
-
+    @InputApproved(by = "noxaur", reaches = ["Clicks.press"])
     fun register() {
         ClientTickEvents.START_CLIENT_TICK.register { client ->
             val walking = client.player != null && client.gui.overlay() == null && client.gui.screen() == null &&
                 client.options.let { it.keyUp.isDown || it.keyDown.isDown || it.keyLeft.isDown || it.keyRight.isDown }
-            val clicks = buttons(client).mapNotNull { button ->
+            val due = buttons(client).filter { button ->
                 val click = button.click
                 val on = click.runs
                 val pressed = click in tapped
-                val due = click.tick(on, walking && on, pressed, Keys.held(client, click.key.value), System.nanoTime())
-                KeyMappingHelper.getBoundKeyOf(button.mapping).takeIf { due && !button.mapping.isUnbound && !(pressed && Keys.matches(it, click.key.value)) }
+                click.tick(on, walking && on, pressed, Keys.held(client, click.key.value)) &&
+                    !(pressed && Keys.matches(KeyMappingHelper.getBoundKeyOf(button.mapping), click.key.value))
             }
             tapped.clear()
             clicking = true
-            for (bound in clicks) KeyMapping.click(bound)
+            for (button in due) Clicks.press(button.mapping)
             clicking = false
         }
     }

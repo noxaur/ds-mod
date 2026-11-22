@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.edge.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import io.github.noxaur.dsmod.edge.Cameras;
+import io.github.noxaur.dsmod.edge.input.InputApproved;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -18,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /** @keep The angle and the start are set after the game has put the camera at the player's eyes and before it backs the
  * camera out along that angle, so a tilt also moves the camera and the wall check runs from the lifted start. */
+@InputApproved(by = "noxaur", hash = "38be690c7e6d")
 @Mixin(Camera.class)
 abstract class CameraMixin {
     @Shadow @Final private Minecraft minecraft;

@@ -6,6 +6,8 @@ import io.github.noxaur.dsmod.core.input.BindMatcher
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.CommandBind.Message
 import io.github.noxaur.dsmod.core.input.Where
+import io.github.noxaur.dsmod.edge.input.InputApproved
+import io.github.noxaur.dsmod.edge.input.PlayerCommands
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.EditBox
@@ -57,6 +59,7 @@ object CommandKeys {
         }
     }
 
+    @InputApproved(reaches = ["PlayerCommands.chat", "PlayerCommands.send"])
     private fun send(bind: CommandBind) {
         when (val message = bind.message) {
             is Message.Command -> PlayerCommands.send(message.text)

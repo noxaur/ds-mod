@@ -8,8 +8,6 @@ import io.github.noxaur.dsmod.core.config.Switch
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
-import kotlin.math.ceil
-import kotlin.math.min
 
 class AutoClick(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "auto-click", Area.ANYWHERE, Store.GENERAL, "Click 9.9 times a second on a key while you walk.", default = false)
@@ -38,42 +36,18 @@ class AutoClick(config: DsModConfig) : HasFeature {
 
         private var wasDown = false
         private var toggled by feature.world { false }
-        private var earned = FULL
-        private var refilled: Long? = null
-        private val recent = LongArray(ceil(CPS).toInt()) { Long.MIN_VALUE }
-        private var oldest = 0
 
-        private fun refill(nanos: Long) {
-            refilled?.let { earned = min(earned + (nanos - it) * CPS / 1e9, FULL) }
-            refilled = nanos
-        }
-
-        fun tick(on: Boolean, walking: Boolean, pressed: Boolean, down: Boolean, nanos: Long): Boolean {
+        fun tick(on: Boolean, walking: Boolean, pressed: Boolean, down: Boolean): Boolean {
             val active = on && key.value != KeyBind.NONE
             val hold = mode.value == KeyMode.HOLD
             val press = pressed && !wasDown
             wasDown = down
             toggled = active && !hold && toggled != press
-            refill(nanos)
-            return walking && admits(nanos) && if (hold) active && down else toggled
-        }
-
-        private fun admits(nanos: Long) = earned >= 1 && recent[oldest].let { it == Long.MIN_VALUE || nanos - it >= SECOND }
-
-        fun spend(nanos: Long): Boolean {
-            refill(nanos)
-            if (!admits(nanos)) return false
-            earned -= 1
-            recent[oldest] = nanos
-            oldest = (oldest + 1) % recent.size
-            return true
+            return walking && if (hold) active && down else toggled
         }
     }
 
     companion object {
-        const val CPS = 9.9
-        private const val FULL = 1 + CPS / 20
-        private const val SECOND = 1_000_000_000L
         private const val MOUSE_LEFT = 0
         private const val MOUSE_RIGHT = 1
     }

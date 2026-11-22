@@ -1,7 +1,8 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.end.EyeGuard
-import net.fabricmc.fabric.api.event.player.UseBlockCallback
+import io.github.noxaur.dsmod.edge.input.InputApproved
+import io.github.noxaur.dsmod.edge.input.Refusals
 import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
@@ -20,8 +21,9 @@ object EyeGuards {
     private var guarded: BlockPos? = null
     private var until = 0L
 
+    @InputApproved(by = "noxaur", reaches = ["Refusals.useBlock"])
     fun register() {
-        UseBlockCallback.EVENT.register { player, level, hand, hit ->
+        Refusals.useBlock().register { player, level, hand, hit ->
             if (!level.isClientSide || !guard.feature.runs) return@register InteractionResult.PASS
             val now = System.currentTimeMillis()
             val again = now < until && hit.blockPos == guarded

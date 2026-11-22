@@ -1,7 +1,8 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
-import net.fabricmc.fabric.api.event.player.UseItemCallback
+import io.github.noxaur.dsmod.edge.input.InputApproved
+import io.github.noxaur.dsmod.edge.input.Refusals
 import net.minecraft.core.component.DataComponents
 import net.minecraft.world.InteractionResult
 
@@ -13,8 +14,9 @@ object ArmorSwapGuards {
         this.guard = guard
     }
 
+    @InputApproved(by = "noxaur", reaches = ["Refusals.useItem"])
     fun register() {
-        UseItemCallback.EVENT.register { player, level, hand ->
+        Refusals.useItem().register { player, level, hand ->
             val swaps = level.isClientSide && guard.feature.runs && !player.isShiftKeyDown &&
                 player.getItemInHand(hand).get(DataComponents.EQUIPPABLE)?.swappable == true
             // @keep Fabric sends nothing to the server for a failed use.
