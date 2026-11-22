@@ -161,11 +161,11 @@
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.AutoLeftClickTest"
+        "value": "io.github.noxaur.dsmod.gametest.AutoClickTest"
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.AutoRightClickTest"
+        "value": "io.github.noxaur.dsmod.gametest.AutoClickRightTest"
       },
       {
         "adapter": "kotlin",
