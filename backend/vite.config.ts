@@ -75,6 +75,8 @@ export default defineConfig({
         },
       },
       { files: ["src/**/*.test.ts"], rules: { "dsmod/no-json-parse": "off" } },
+      { files: ["**/*.test.ts", "test/**"], rules: { "dsmod/test-harness": "error" } },
+      { files: ["test/harness.ts"], rules: { "dsmod/test-harness": "off" } },
       {
         files: ["src/**/*.test.ts", "src/ids.ts", "src/identity/minecraft.ts"],
         rules: { "dsmod/time-through-effect": "off" },
