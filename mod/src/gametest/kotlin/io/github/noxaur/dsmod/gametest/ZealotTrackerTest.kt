@@ -9,7 +9,6 @@ import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.SavedFiles]. */
 class ZealotTrackerTest : FabricClientGameTest {
     private val file = FabricLoader.getInstance().configDir.resolve("dsmod/data/zealot-tracker.json")
 

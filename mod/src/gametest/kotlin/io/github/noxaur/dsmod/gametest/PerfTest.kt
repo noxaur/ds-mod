@@ -44,7 +44,6 @@ private const val SIDEBAR_LINES = 15
 private const val ARMORED_MOBS = 40
 private const val RECORDING_WARM_UP_TICKS = 100
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.capture.BlockScan], [io.github.noxaur.dsmod.edge.mixin.CaptureInputMixin], [io.github.noxaur.dsmod.edge.mixin.HudHotbarMixin]. */
 class PerfTest : FabricClientGameTest {
     @Serializable
     private class Device(val name: String, val calibrate: Double)
