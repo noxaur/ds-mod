@@ -1,117 +1,97 @@
 package io.github.noxaur.dsmod.core.container
 
-import io.github.noxaur.dsmod.core.config.SettingsTree
-import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.text.Role
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class SlotArtTest {
     private val rgb = Role.LEGENDARY.rgb
-    private val opaque = 255 shl 24
 
     private fun at(art: IntArray, x: Int, y: Int) = art[y * SlotArt.SIZE + x]
     private fun alpha(art: IntArray, x: Int, y: Int) = at(art, x, y) ushr 24
     private fun color(art: IntArray, x: Int, y: Int) = at(art, x, y) and 0xFFFFFF
+    private fun back(mark: MarkStyle, dark: Boolean = true, sparkles: Boolean = false, variant: Int = 0) =
+        SlotArt.back(SlotStyle(mark, sparkles = sparkles), rgb, dark, variant)
 
     @Test
-    fun `a style with nothing in it paints nothing`() {
-        val art = SlotArt.back(SlotStyle(Border.NONE, Fill.NONE), rgb, dark = false)
-        assertTrue(art.all { it == 0 })
-    }
-
-    @Test
-    fun `the square and gilded borders leave the corner pixels out, and the rounded one two more`() {
-        for (border in listOf(Border.SQUARE, Border.GILDED)) {
-            val art = SlotArt.back(SlotStyle(border), rgb, dark = false)
-            assertEquals(0, alpha(art, 0, 0), "$border")
-            assertEquals(255, alpha(art, 1, 0), "$border")
+    fun `every style paints one color, leaning toward white on a dark slot`() {
+        for (mark in MarkStyle.entries) {
+            val light = back(mark, dark = false)
+            val dark = back(mark, dark = true)
+            assertEquals(setOf(rgb), light.filter { it ushr 24 > 0 }.map { it and 0xFFFFFF }.toSet(), "$mark on light")
+            assertEquals(setOf(SlotArt.light(rgb, 0.2)), dark.filter { it ushr 24 > 0 }.map { it and 0xFFFFFF }.toSet(), "$mark on dark")
         }
-        val rounded = SlotArt.back(SlotStyle(Border.ROUNDED), rgb, dark = false)
-        assertEquals(0, alpha(rounded, 1, 0))
-        assertEquals(255, alpha(rounded, 1, 1))
-        assertEquals(opaque or rgb, at(rounded, 2, 0))
     }
 
     @Test
-    fun `the flat border is a full square, corners and all`() {
-        val art = SlotArt.back(SlotStyle(Border.FLAT, Fill.NONE), rgb, dark = false)
-        for ((x, y) in listOf(0 to 0, 17 to 0, 0 to 17, 17 to 17, 8 to 0, 0 to 8)) assertEquals(opaque or rgb, at(art, x, y), "($x, $y)")
+    fun `the frame is strongest at the item area's edge and never bare in the middle, with nothing outside it`() {
+        val art = back(MarkStyle.FRAME)
+        assertEquals(0, alpha(art, 0, 8), "the slot's own bevel stays visible")
+        assertTrue(alpha(art, 1, 8) > alpha(art, 2, 8))
+        assertEquals(alpha(art, 1, 1), alpha(art, 8, 1), "a corner glows no more than a side")
+        assertTrue(alpha(art, 8, 8) > 0)
+    }
+
+    @Test
+    fun `the aura's corners are clear and its rim pixels partly see-through, which makes it read as round`() {
+        val art = back(MarkStyle.AURA)
         assertEquals(0, alpha(art, 1, 1))
+        val rim = alpha(art, 4, 2)
+        assertTrue(rim in 1 until alpha(art, 8, 2), "an edge pixel the circle half covers is fainter than a covered one")
+        assertTrue(alpha(art, 8, 2) > alpha(art, 8, 8), "strongest at the rim")
+        assertTrue(alpha(art, 8, 8) > 0)
     }
 
     @Test
-    fun `the gilded outline takes the shade on a light slot and the color on a dark one`() {
-        val light = SlotArt.back(SlotStyle(Border.GILDED), rgb, dark = false)
-        val dark = SlotArt.back(SlotStyle(Border.GILDED), rgb, dark = true)
-        assertEquals(SlotArt.shade(rgb), color(light, 5, 0))
-        assertEquals(rgb, color(dark, 5, 0))
-        assertEquals(SlotArt.light(rgb), color(light, 5, 1))
+    fun `the underglow pools under the item and fades up`() {
+        val art = back(MarkStyle.UNDERGLOW)
+        assertTrue(alpha(art, 8, 17) > alpha(art, 8, 12))
+        assertTrue(alpha(art, 8, 17) > alpha(art, 1, 17))
+        assertEquals(0, alpha(art, 8, 2))
     }
 
     @Test
-    fun `the glow is even along each side, clear behind the item, and stronger on a light slot`() {
-        val light = SlotArt.back(SlotStyle(Border.NONE, Fill.GLOW), rgb, dark = false)
-        val dark = SlotArt.back(SlotStyle(Border.NONE, Fill.GLOW), rgb, dark = true)
-        assertEquals(alpha(light, 1, 1), alpha(light, 8, 1))
-        assertEquals(0, alpha(light, 8, 8))
-        assertTrue(alpha(light, 8, 1) > alpha(dark, 8, 1))
-        // On dark the glow leans toward white, so a dim color still reads as light.
-        assertNotEquals(rgb, color(dark, 8, 1))
+    fun `a gray slot gets more of the color, but never all of it`() {
+        for (mark in MarkStyle.entries) {
+            val light = back(mark, dark = false)
+            val dark = back(mark, dark = true)
+            assertTrue(light.indices.all { (light[it] ushr 24) >= (dark[it] ushr 24) }, "$mark")
+            assertTrue(light.all { (it ushr 24) <= 204 }, "$mark hides the gray")
+        }
     }
 
     @Test
-    fun `the wash tints the whole slot, the halo is strongest at its edge and leaves the corners`() {
-        val wash = SlotArt.back(SlotStyle(Border.NONE, Fill.WASH), rgb, dark = true)
-        assertTrue(alpha(wash, 8, 8) > 0)
-        assertTrue(alpha(wash, 1, 8) > alpha(wash, 8, 8))
-        val halo = SlotArt.back(SlotStyle(Border.NONE, Fill.HALO), rgb, dark = true)
-        assertTrue(alpha(halo, 2, 9) > alpha(halo, 9, 9))
-        assertEquals(0, alpha(halo, 1, 1))
+    fun `sparkles glint inside the colored area, away from the stack count, and each placement differs`() {
+        for (mark in MarkStyle.entries) {
+            val plain = back(mark)
+            val placements = (0 until SlotArt.VARIANTS).map { back(mark, sparkles = true, variant = it) }
+            for (art in placements) {
+                assertTrue(art.contentEquals(plain).not(), "$mark has no sparkle")
+                for (i in art.indices) {
+                    if (art[i] == plain[i]) continue
+                    assertTrue(plain[i] ushr 24 > 12, "$mark sparkles outside its color at ${i % SlotArt.SIZE}, ${i / SlotArt.SIZE}")
+                }
+                assertTrue(art.indices.any { art[it] and 0xFFFFFF == 0xFFFFFF }, "$mark has no white center")
+            }
+            assertEquals(SlotArt.VARIANTS, placements.map { it.toList() }.toSet().size, "$mark repeats a placement")
+            // The centers keep off the corner where the game writes a stack's count.
+            for (art in placements) for (y in 10 until SlotArt.SIZE) for (x in 10 until SlotArt.SIZE) assertNotEquals(0xFFFFFF, color(art, x, y), "$mark at $x, $y")
+        }
     }
 
     @Test
-    fun `the pedestal is lit on top and shaded below, along the slot's bottom`() {
-        val art = SlotArt.back(SlotStyle(Border.NONE, Fill.NONE, Floor.PEDESTAL), rgb, dark = false)
-        assertEquals(SlotArt.light(rgb), color(art, 2, 14))
-        assertEquals(SlotArt.shade(rgb), color(art, 2, 16))
-        assertEquals(0, alpha(art, 2, 13))
+    fun `the same placement paints the same pixels every time, and none without sparkles`() {
+        assertArrayEquals(back(MarkStyle.AURA, sparkles = true, variant = 2), back(MarkStyle.AURA, sparkles = true, variant = 2))
+        assertArrayEquals(back(MarkStyle.AURA, variant = 0), back(MarkStyle.AURA, variant = 3))
     }
 
     @Test
-    fun `the border is drawn over the floor`() {
-        // The gilded bevel's bottom row lies on the pedestal's shaded one.
-        val art = SlotArt.back(SlotStyle(Border.GILDED, Fill.WASH, Floor.PEDESTAL), rgb, dark = false)
-        assertEquals(opaque or rgb, at(art, 5, 16))
-    }
-
-    @Test
-    fun `the gem has a dark outline and empty corners`() {
-        val gem = SlotArt.gem(rgb)
-        fun pixel(x: Int, y: Int) = gem[y * SlotArt.GEM + x]
-        assertEquals(opaque or rgb, pixel(3, 3))
-        assertEquals(0, pixel(0, 0))
-        val outline = pixel(3, 0)
-        assertEquals(0, outline and 0xFFFFFF)
-        assertTrue(outline ushr 24 in 1..254)
-    }
-
-    @Test
-    fun `a stepper wraps at both ends, and the presets differ`() {
-        assertEquals(Border.GILDED, Border.NONE.step(-1, Border.entries))
-        assertEquals(Border.NONE, Border.GILDED.step(1, Border.entries))
-        val made = RarityPreset.entries.mapNotNull { it.style }
-        assertEquals(made.size, made.toSet().size)
-    }
-
-    @Test
-    fun `containers show the preset, and the player's own style only under Custom`() {
-        val settings = SettingsTree().feature<ItemRarity>()
-        settings.inventoryStyle.value = SlotStyle(Border.SQUARE, Fill.WASH)
-        assertEquals(RarityPreset.GILDED.style, settings.containerStyle())
-        settings.preset.value = RarityPreset.CUSTOM
-        assertEquals(SlotStyle(Border.SQUARE, Fill.WASH), settings.containerStyle())
+    fun `opacity is drawn, not painted`() {
+        assertArrayEquals(SlotArt.back(SlotStyle(MarkStyle.FRAME), rgb, true), SlotArt.back(SlotStyle(MarkStyle.FRAME, opacity = 40), rgb, true))
+        assertFalse(SlotStyle().sparkles)
     }
 }

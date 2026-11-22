@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.container.SlotCooldown
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
@@ -29,8 +30,8 @@ private const val FILL_ALPHA = 110
  * A hidden or covered slot draws nothing here: `ContainerScreenMixin` asks [hides] and skips its item, highlight and
  * tooltip.
  *
- * A mark is drawn in two parts: its back behind the item, and for a rarity mark with a gem, the gem over it.
- * A hidden slot draws nothing here: `ContainerScreenMixin` asks [hides] and skips its item, highlight and tooltip.
+ * A mark is drawn behind the item, and a cooldown over it. A rarity mark is the player's style for that surface, in
+ * the sparkle placement its slot's index picks.
  */
 object Slots {
     /**
@@ -80,24 +81,23 @@ object Slots {
     fun rarity(index: Int): Role? = marks.values.firstNotNullOfOrNull { it[index]?.rarity }
 
     fun register() {
-        // The backs go under the items from `HudHotbarMixin`. This draws the gems and the cooldowns, after vanilla drew the items.
+        // The backs go under the items from `HudHotbarMixin`. This draws the cooldowns, after vanilla drew the items.
         HudElementRegistry.attachElementAfter(VanillaHudElements.HOTBAR, Identifier.fromNamespaceAndPath("dsmod", "hotbar")) { graphics, _ ->
-            if (!onHotbar() || !cooldowns && !(settings.hotbarMarks.value && SlotArts.style(settings, Surface.HOTBAR).gem)) return@attachElementAfter
+            if (!onHotbar() || !cooldowns) return@attachElementAfter
             DsModClient.game.metrics.time("slots.draw") {
                 val left = graphics.guiWidth() / 2 - 88
                 val top = graphics.guiHeight() - 19
-                for (i in 0 until Inventory.SELECTION_SIZE) drawFront(graphics, Surface.HOTBAR, InventoryMenu.USE_ROW_SLOT_START + i, left + i * HOTBAR_PITCH, top)
+                for (i in 0 until Inventory.SELECTION_SIZE) drawFront(graphics, InventoryMenu.USE_ROW_SLOT_START + i, left + i * HOTBAR_PITCH, top)
             }
         }
         ScreenHooks.onEveryLayout<AbstractContainerScreen<*>> { screen, _ ->
-            SlotArts.checkPacks()
+            SlotArts.checkSlots()
             val font = Minecraft.getInstance().font
             ScreenEvents.afterBackground(screen).register { _, graphics, _, _, _ ->
-                each(screen, graphics) { slot, shown -> back(graphics, Surface.CONTAINER, shown, slot.x, slot.y) }
+                each(screen, graphics) { index, slot, shown -> back(graphics, Surface.CONTAINER, shown, index, slot.x, slot.y) }
             }
             ScreenEvents.afterForeground(screen).register { _, graphics, _, _, _ ->
-                each(screen, graphics) { slot, shown ->
-                    front(graphics, Surface.CONTAINER, shown, slot.x, slot.y)
+                each(screen, graphics) { _, slot, shown ->
                     shown.label?.let { graphics.text(font, it, slot.x, slot.y, -1, true) }
                     shown.cooldown?.let { cooldown(graphics, it, slot.x, slot.y) }
                     if (shown.outline) Kit.slotOutline(graphics, slot.x, slot.y, if (shown.role == Role.ACTION) Kit.theme.accent else shown.role.argb())
@@ -125,19 +125,12 @@ object Slots {
 
     /** Draws what goes behind the item in slot [index] of the open menu, whose 16x16 starts at [x], [y]. */
     fun drawBack(graphics: GuiGraphicsExtractor, surface: Surface, index: Int, x: Int, y: Int) {
-        for (slots in marks.values) slots[index]?.takeUnless { it.hide }?.let { back(graphics, surface, it, x, y) }
+        for (slots in marks.values) slots[index]?.takeUnless { it.hide }?.let { back(graphics, surface, it, index, x, y) }
     }
 
-    /**
-     * Draws what goes over the item in slot [index]: the gem of a rarity mark, when the style has one, and a cooldown.
-     * On the hotbar the gem follows the player's switch for marks there, and a cooldown its feature's own.
-     */
-    fun drawFront(graphics: GuiGraphicsExtractor, surface: Surface, index: Int, x: Int, y: Int) {
-        for (slots in marks.values) {
-            val shown = slots[index]?.takeUnless { it.hide } ?: continue
-            if (surface != Surface.HOTBAR || settings.hotbarMarks.value) front(graphics, surface, shown, x, y)
-            shown.cooldown?.let { cooldown(graphics, it, x, y) }
-        }
+    /** Draws what goes over the item in slot [index]: a cooldown, which follows its feature's own switch, on the hotbar as well. */
+    fun drawFront(graphics: GuiGraphicsExtractor, index: Int, x: Int, y: Int) {
+        for (slots in marks.values) slots[index]?.takeUnless { it.hide }?.cooldown?.let { cooldown(graphics, it, x, y) }
     }
 
     /** The wash of a [cooldown] over the item at [x], [y], and its seconds where the stack count goes, as of this frame. */
@@ -160,34 +153,24 @@ object Slots {
      */
     fun marks(rarity: Role?) = rarity != null && DsModClient.runs<ItemRarity>() && (rarity != Role.COMMON || settings.markCommon.value)
 
-    /** Draws [rarity]'s mark behind an item at [x], [y] that the mod draws itself, in the player's style for menus. */
-    fun rarityBack(graphics: GuiGraphicsExtractor, rarity: Role, x: Int, y: Int) {
-        art(graphics, Surface.CONTAINER, rarity, x, y)
+    /**
+     * Draws [rarity]'s mark behind an item at [x], [y] that the mod draws itself, in the player's style for menus. [index]
+     * is the slot's place in its grid, which picks the sparkles' placement.
+     */
+    fun rarityBack(graphics: GuiGraphicsExtractor, rarity: Role, index: Int, x: Int, y: Int) {
+        art(graphics, Surface.CONTAINER, rarity, index, x, y)
     }
 
-    /** Draws [rarity]'s gem over that item, when the player's style has one. */
-    fun rarityFront(graphics: GuiGraphicsExtractor, rarity: Role, x: Int, y: Int) {
-        gem(graphics, Surface.CONTAINER, rarity, x, y)
-    }
-
-    private fun back(graphics: GuiGraphicsExtractor, surface: Surface, shown: Shown, x: Int, y: Int) {
+    private fun back(graphics: GuiGraphicsExtractor, surface: Surface, shown: Shown, index: Int, x: Int, y: Int) {
         if (shown.cooldown != null || shown.outline) return
         val rarity = shown.rarity
         if (rarity == null) Kit.slotFill(graphics, x, y, shown.color)
-        else art(graphics, surface, rarity, x, y)
+        else art(graphics, surface, rarity, index, x, y)
     }
 
-    private fun front(graphics: GuiGraphicsExtractor, surface: Surface, shown: Shown, x: Int, y: Int) {
-        gem(graphics, surface, shown.rarity ?: return, x, y)
-    }
-
-    private fun art(graphics: GuiGraphicsExtractor, surface: Surface, rarity: Role, x: Int, y: Int) {
-        SlotArts.atlas(settings, surface)?.let { Kit.slotArt(graphics, x, y, it, rarity.ordinal) }
-    }
-
-    private fun gem(graphics: GuiGraphicsExtractor, surface: Surface, rarity: Role, x: Int, y: Int) {
-        if (!SlotArts.style(settings, surface).gem) return
-        SlotArts.atlas(settings, surface)?.let { Kit.slotGem(graphics, x, y, it, rarity.ordinal) }
+    private fun art(graphics: GuiGraphicsExtractor, surface: Surface, rarity: Role, index: Int, x: Int, y: Int) {
+        val atlas = SlotArts.atlas(settings, surface) ?: return
+        Kit.slotArt(graphics, x, y, atlas, rarity.ordinal, index % SlotArt.VARIANTS, SlotArts.style(settings, surface).opacity)
     }
 
     private fun onHotbar(): Boolean {
@@ -197,14 +180,14 @@ object Slots {
         return player.containerMenu === player.inventoryMenu && !player.isSpectator
     }
 
-    private inline fun each(screen: AbstractContainerScreen<*>, graphics: GuiGraphicsExtractor, draw: (Slot, Shown) -> Unit) {
+    private inline fun each(screen: AbstractContainerScreen<*>, graphics: GuiGraphicsExtractor, draw: (Int, Slot, Shown) -> Unit) {
         if (marks.isEmpty()) return
         DsModClient.game.metrics.time("slots.draw") {
             screen.drawInContainer(graphics) {
                 for (slots in marks.values) {
                     for ((index, shown) in slots) {
                         val slot = screen.menu.slots.getOrNull(index)
-                        if (slot != null && !shown.hide) draw(slot, shown)
+                        if (slot != null && !shown.hide) draw(index, slot, shown)
                     }
                 }
             }

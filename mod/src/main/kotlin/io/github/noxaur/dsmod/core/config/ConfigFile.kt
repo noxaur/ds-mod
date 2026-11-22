@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.config
 
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -76,6 +77,9 @@ class ConfigFile(private val file: Path) {
             for (store in Store.entries) {
                 val section = tree[store.key] as? JsonObject ?: continue
                 config.stored(store).pending = { slot -> read(slot, section) }
+                // A former key is read once, so a feature built again on this config keeps what the player set since.
+                val former = HashMap(section)
+                config.stored(store).held = { key, serializer -> former.remove(key)?.let { decode(serializer, it) } }
             }
             return config
         }
@@ -85,11 +89,13 @@ class ConfigFile(private val file: Path) {
         /** Sets [slot] from [section] under its key, or a key it was formerly saved under. A value its type no longer has keeps the default. */
         private fun <T> read(slot: Slot<T>, section: JsonObject) {
             val element = (listOf(slot.key) + slot.formerly).firstNotNullOfOrNull(section::get) ?: return
-            slot.value = try {
-                json.decodeFromJsonElement(slot.serializer, element)
-            } catch (e: IllegalArgumentException) {
-                slot.default
-            }
+            slot.value = decode(slot.serializer, element) ?: slot.default
+        }
+
+        private fun <T> decode(serializer: DeserializationStrategy<T>, element: JsonElement): T? = try {
+            json.decodeFromJsonElement(serializer, element)
+        } catch (e: IllegalArgumentException) {
+            null
         }
     }
 }

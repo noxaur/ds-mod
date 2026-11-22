@@ -91,7 +91,7 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `cooldown` | 16x16 inside | The game's own cooldown wash over an item: half-white over the part of the wait still to run, draining down. The same in both themes, because it lies on the item |
 | `slotHover` | 16x16 inside | The white wash over the slot under the mouse, in a grid the mod draws itself, as a menu lights its own |
 | `slotHighlightBack`, `slotHighlightFront` | 24x24 around the item | Vanilla's own slot highlight, behind the item and over it, for a slot the mod adds to a server menu, so it lights as the menu's items do |
-| `slotArt`, `slotGem` | 18x18, 7x7 | A rarity mark's back behind the item and its gem over it, cut from an `Atlas` that `SlotArts` bakes from the player's style, or from any row of a bigger atlas |
+| `slotArt` | 18x18 | A rarity mark behind the item at an opacity, cut from an `Atlas` that `SlotArts` bakes from the player's style, or from any row of a bigger atlas |
 | `inventory`, `slotAt` | 176x166, 18x18 | The player's inventory, and one empty slot of it, from the resource pack's own texture, for a preview that must match the real screen |
 
 ## Widgets
@@ -114,7 +114,7 @@ A widget is a vanilla widget with a kit face. It takes its label as a string and
 | `KitPickMenu` | A pick's menu: a row of tiles under its dropdown, each a `Look` over its name, as the pick section of `controls.md` says. Typing lights a tile as in `KitMenu` |
 | `SettingRows` | The rows of a settings screen, each a `Setting` with the face of its kind, and the behaviors every row shares, as `settings.md` says. It lays out on change and draws only the rows that show. Its `narration` is one entry of the screen's narration, which the screen adds with `addWidget` |
 | `Editor` | A row that edits many values in place, such as `ItemsEditor` for a list and the editors of a canvas. `SettingRows` hosts it under the row's header, lays it out on change, hands it the input while the player is inside it, and draws its menus over the rows |
-| `Looks` | Draws each `Look` a pick shows, 18 tall. Slot looks come from one atlas of every border, fill and floor alone, painted once |
+| `Looks` | Draws each `Look` a pick shows, 18 tall. Slot looks come from one atlas of every style, with and without sparkles, painted once |
 | `KitRangeSlider` | A 16 tall track with any number of spans, for picking stretches of a scale. Press and drag on the track to draw one or click to add one, drag an end or the middle, right-click to remove. The cursor shows what a press will do. `Sections` in `core/ui` holds its rules: a span is at least 5 long, and two within 3 of each other become one |
 
 Controls in a row are 4 apart, and rows are 4 apart. A label beside a control sits on the control's text baseline.

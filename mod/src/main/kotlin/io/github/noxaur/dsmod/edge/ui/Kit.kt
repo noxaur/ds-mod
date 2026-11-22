@@ -769,14 +769,13 @@ object Kit {
     fun held(g: GuiGraphicsExtractor, x: Int, y: Int, vanilla: Boolean) =
         slotBorder(g, x, y, if (vanilla) Theme.VANILLA.accent else theme.accent)
 
-    /** Draws cell [cell] of row [row] of a rarity atlas behind the 16x16 item area at [x], [y], covering the slot's whole 18x18. */
-    fun slotArt(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int, row: Int = 0) = cellBlit(g, atlas, x - 1, y - 1, cell, row, SlotArt.SIZE)
-
-    /** Draws cell [cell]'s gem over the item at [x], [y], from the item's top-left pixel, in an atlas whose gems are [rows] slots down. */
-    fun slotGem(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int, rows: Int = 1) = cellBlit(g, atlas, x, y, cell, rows, SlotArt.GEM)
-
-    private fun cellBlit(g: GuiGraphicsExtractor, atlas: Atlas, x: Int, y: Int, cell: Int, row: Int, size: Int) = g.blit(
-        RenderPipelines.GUI_TEXTURED, atlas.id, x, y, (cell * SlotArt.SIZE).toFloat(), (row * SlotArt.SIZE).toFloat(), size, size, atlas.width, atlas.height,
+    /**
+     * Draws cell [cell] of row [row] of a rarity atlas behind the 16x16 item area at [x], [y], covering the slot's whole
+     * 18x18, at [opacity] percent.
+     */
+    fun slotArt(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int, row: Int = 0, opacity: Int = 100) = g.blit(
+        RenderPipelines.GUI_TEXTURED, atlas.id, x - 1, y - 1, (cell * SlotArt.SIZE).toFloat(), (row * SlotArt.SIZE).toFloat(), SlotArt.SIZE, SlotArt.SIZE,
+        atlas.width, atlas.height, ARGB.white((opacity.coerceIn(0, 100) * 255 + 50) / 100),
     )
 
     /**
@@ -905,6 +904,9 @@ object Kit {
         if (width > 0 && height > 0) g.fill(x, y, x + width, y + height, color)
     }
 
+    /** Whether [argb] reads as dark, so art over it needs to lean toward white to show. */
+    fun dark(argb: Int) = (ARGB.red(argb) * 299 + ARGB.green(argb) * 587 + ARGB.blue(argb) * 114) / 1000 < DARK_BELOW
+
     private fun mix(from: Int, to: Int, amount: Float) = ARGB.color(
         ARGB.alpha(from),
         channel(ARGB.red(from), ARGB.red(to), amount),
@@ -958,6 +960,8 @@ object Kit {
     private val FLAME = intArrayOf(6, 8, 6, 9, 5, 9, 5, 10, 4, 10, 4, 11, 3, 11, 3, 12, 2, 12, 2, 12, 2, 12, 2, 12, 3, 11, 4, 10)
     const val BUBBLES_HEIGHT = 29
     private const val BUBBLE = 3
+    // The luminance below which a color reads as dark.
+    private const val DARK_BELOW = 90
     private val BUBBLES = intArrayOf(1, 25, 6, 21, 2, 16, 7, 11, 3, 6, 6, 1)
     private val GOOD = Role.GOOD.argb()
     private val BODY = Role.BODY.argb()

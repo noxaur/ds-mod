@@ -6,21 +6,22 @@ import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.edge.ui.Atlas
+import io.github.noxaur.dsmod.edge.ui.Kit
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.resources.Identifier
-import net.minecraft.util.ARGB
 import org.slf4j.LoggerFactory
 
 /** Where a rarity mark is drawn. Each has its own style, and the hotbar's sits over the world, so it is always dark. */
 enum class Surface { CONTAINER, HOTBAR }
 
 /**
- * Bakes the player's rarity style into one atlas per [Surface]: a row of 18x18 backs, one cell per [Role], and a row
- * of gems under it. A slot then costs one blit. The atlas is painted again only when its style changes or the
- * resource packs make a chest's slots dark or light, and that paint waits for the end of the client tick: a texture
- * uploaded while a frame is being built breaks every frame after it.
+ * Bakes the player's rarity style into one atlas per [Surface]: 18x18 backs, one column per [Role] and one row per
+ * sparkle placement. A slot then costs one blit, and its index picks the row. The atlas is painted again only when
+ * the style's mark or sparkles change or the resource packs make a chest's slots dark or light, and that paint waits
+ * for the end of the client tick: a texture uploaded while a frame is being built breaks every frame after it. The
+ * opacity is the blit's, so it needs no paint.
  */
 object SlotArts {
     private class Baked(val texture: DynamicTexture, val atlas: Atlas)
@@ -28,7 +29,7 @@ object SlotArts {
     private class Ready(val atlas: Atlas, val style: SlotStyle, val dark: Boolean)
 
     private val width = Role.entries.size * SlotArt.SIZE
-    private val height = SlotArt.SIZE + SlotArt.GEM
+    private val height = SlotArt.VARIANTS * SlotArt.SIZE
     private val baked = HashMap<Surface, Baked>()
     private val ready = HashMap<Surface, Ready>()
     // What the next tick should paint, by surface. Plain arrays, because a draw asks for every marked slot.
@@ -37,8 +38,9 @@ object SlotArts {
     private val chest = Identifier.withDefaultNamespace("textures/gui/container/generic_54.png")
     private val log = LoggerFactory.getLogger("dsmod")
     private var packs: List<String>? = null
+    private var packDark = false
 
-    /** Whether the resource packs draw a chest's slots dark, read from the pixel inside its first slot. */
+    /** Whether a container's slots are drawn dark, as [checkSlots] last read it. */
     var containerDark = false
         private set
 
@@ -64,7 +66,8 @@ object SlotArts {
             val style = wantedStyle[surface.ordinal] ?: continue
             val dark = wantedDark[surface.ordinal]
             val have = ready[surface]
-            if (have != null && have.style == style && have.dark == dark) continue
+            // The opacity is the blit's, so a change of it alone keeps the atlas.
+            if (have != null && have.style.mark == style.mark && have.style.sparkles == style.sparkles && have.dark == dark) continue
             ready[surface] = Ready(bake(surface, style, dark), style, dark)
         }
     }
@@ -79,17 +82,23 @@ object SlotArts {
         ready.clear()
     }
 
-    /** Reads the chest's slot again when the selected resource packs changed. Call it as a container screen opens. */
-    fun checkPacks() {
+    /**
+     * Reads again whether a container's slots are dark. Call it as a container screen opens. While Menu Theme draws the
+     * menus the slots are the theme's, or glass over the world, which is dark. Otherwise they are the resource packs',
+     * read from the pixel inside a chest's first slot when the selected packs changed.
+     */
+    fun checkSlots() {
         val client = Minecraft.getInstance()
         val selected = client.resourcePackRepository.selectedIds.toList()
-        if (selected == packs) return
-        packs = selected
-        containerDark = runCatching {
-            client.resourceManager.getResource(chest).map { resource ->
-                resource.open().use { stream -> NativeImage.read(stream).use { it.getPixel(CHEST_SLOT_X, CHEST_SLOT_Y) } }
-            }.map { (ARGB.red(it) * 299 + ARGB.green(it) * 587 + ARGB.blue(it) * 114) / 1000 < DARK_BELOW }.orElse(false)
-        }.onFailure { log.warn("Could not read the chest texture, so rarity marks assume a light slot", it) }.getOrDefault(false)
+        if (selected != packs) {
+            packs = selected
+            packDark = runCatching {
+                client.resourceManager.getResource(chest).map { resource ->
+                    resource.open().use { stream -> NativeImage.read(stream).use { it.getPixel(CHEST_SLOT_X, CHEST_SLOT_Y) } }
+                }.map { Kit.dark(it) }.orElse(false)
+            }.onFailure { log.warn("Could not read the chest texture, so rarity marks assume a light slot", it) }.getOrDefault(false)
+        }
+        containerDark = if (MenuSkin.themed) MenuSkin.glassAlpha >= 0 || Kit.dark(Kit.theme.slot) else packDark
     }
 
     private fun paintAndUpload(surface: Surface, style: SlotStyle, dark: Boolean): Atlas {
@@ -107,17 +116,17 @@ object SlotArts {
 
     private fun paint(art: Baked, style: SlotStyle, dark: Boolean) {
         val image = art.texture.pixels ?: return
-        for (role in Role.entries) {
+        for (role in Role.RARITIES) {
             val left = role.ordinal * SlotArt.SIZE
-            val back = SlotArt.back(style, role.rgb, dark)
-            for (j in 0 until SlotArt.SIZE) for (i in 0 until SlotArt.SIZE) image.setPixel(left + i, j, back[j * SlotArt.SIZE + i])
-            val gem = SlotArt.gem(role.rgb)
-            for (j in 0 until SlotArt.GEM) for (i in 0 until SlotArt.GEM) image.setPixel(left + i, SlotArt.SIZE + j, gem[j * SlotArt.GEM + i])
+            for (variant in 0 until SlotArt.VARIANTS) {
+                val back = SlotArt.back(style, role.rgb, dark, variant)
+                val top = variant * SlotArt.SIZE
+                for (j in 0 until SlotArt.SIZE) for (i in 0 until SlotArt.SIZE) image.setPixel(left + i, top + j, back[j * SlotArt.SIZE + i])
+            }
         }
         art.texture.upload()
     }
 
     private const val CHEST_SLOT_X = 8
     private const val CHEST_SLOT_Y = 18
-    private const val DARK_BELOW = 90
 }

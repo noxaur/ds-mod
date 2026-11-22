@@ -361,22 +361,19 @@ A message is copied whole, also when it wraps over several rows. A block the ser
 Each item's slot is marked in the color of its rarity, in every menu and on your hotbar.
 
 <p>
-  <img src="../images/rarity-chest.png" width="49%" alt="A chest in the Minimal look: each rare item stands on a shelf in its rarity's color, with a small gem in its corner">
-  <img src="../images/rarity-settings.png" width="49%" alt="Item Rarity in the settings: the Gilded style, and the hotbar's border, fill, floor and gem, each with a preview of its slot">
+  <img src="../images/rarity-chest.png" width="49%" alt="A chest in the Aura style: each item sits on a round glow in its rarity's color, with a few sparkles in it">
+  <img src="../images/rarity-settings.png" width="49%" alt="Item Rarity in the settings: Style, Opacity and Sparkles, and the hotbar's own under Hotbar, each style with a preview of its slots">
 </p>
 
-Rarity Style picks the look: Showcase, Gilded or Minimal, from loudest to quietest, or Custom for your own. Custom Look, under it, picks each part with a preview of it. A change there starts from the look you had and switches Rarity Style to Custom.
-
-| Part | Choices |
+| Setting | What it does |
 | --- | --- |
-| Border | None, Flat, Square, Rounded, Gilded |
-| Fill | None, Glow, Wash, Halo |
-| Floor | None, Pedestal, Sparks, Rise |
-| Gem | A small gem over the item's top-left corner |
+| Style | Frame tints the whole slot, strongest along its edge. Aura is a round glow behind the item. Underglow is light pooling under the item |
+| Opacity | How solid the marks are, from 10% to 100% |
+| Sparkles | A few glints inside each mark, placed a little differently in each slot |
 
-The hotbar uses your inventory's look until you turn off Match Inventory under Hotbar, and then its own Border, Fill, Floor and Gem, starting from the look it had.
+The hotbar uses your inventory's look until you turn off Match Inventory under Hotbar, and then its own Style, Opacity and Sparkles, starting from the look it had.
 
-<sub>Common items are not marked unless you tick Mark Common. With a resource pack that makes menus dark, the colors change to read well on it.</sub>
+<sub>Common items are not marked unless you turn on Common Items. With a resource pack that makes menus dark, the colors change to read well on it.</sub>
 
 ### Menu Theme
 

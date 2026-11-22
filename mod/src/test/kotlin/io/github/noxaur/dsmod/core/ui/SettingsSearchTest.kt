@@ -108,8 +108,10 @@ class SettingsSearchTest {
     fun `the settings tree finds a feature by its own name, and an option inside a fold`() {
         val tree = SettingsTree().sections
         assertTrue(SettingsSearch.hits(tree, "rarity").any { hit -> hit.group.name == "Item Rarity" })
-        val halo = SettingsSearch.hits(tree, "halo").single()
-        assertEquals(setOf("customLook", "hotbarMarks"), halo.open, "both the inventory's own look and the hotbar's have the fill")
+        assertEquals(setOf("swingOptions"), SettingsSearch.hits(tree, "fatigue").single().open)
+        val underglow = SettingsSearch.hits(tree, "underglow").single()
+        assertEquals(listOf("style", "hotbarMarks"), underglow.rows.map { it.id }, "both the inventory's look and the hotbar's have the style")
+        assertEquals(setOf("hotbarMarks"), underglow.open, "the hotbar's style shows under its switch")
     }
 
     private fun marked(text: String, query: String) =

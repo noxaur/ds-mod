@@ -2,7 +2,7 @@ package io.github.noxaur.dsmod.core.config
 
 import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.camera.Views
-import io.github.noxaur.dsmod.core.container.RarityPreset
+import io.github.noxaur.dsmod.core.container.MarkStyle
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.chat.CopyChat
 import io.github.noxaur.dsmod.core.feature.chat.HideCooldownMessages
@@ -165,10 +165,10 @@ class ConfigFileTest {
 
         tree.feature<ItemRarity>().run {
             assertFalse(feature.enabled)
-            assertEquals(RarityPreset.CUSTOM, preset.value)
-            // MoulConfig's Gson wrote a style as {}, since its fields had no @Expose, so the old file holds no custom look.
-            assertEquals(SlotStyle(), inventoryStyle.value)
-            assertEquals(SlotStyle(), hotbarStyle.value)
+            // MoulConfig's Gson wrote a look as {}, since its fields had no @Expose, so Custom showed the Gilded look,
+            // and that carries over as a Frame.
+            assertEquals(SlotStyle(MarkStyle.FRAME), inventoryStyle.value)
+            assertEquals(SlotStyle(MarkStyle.FRAME), hotbarStyle.value)
             assertFalse(hotbarMatches.value || hotbarMarks.value)
             assertTrue(markCommon.value)
         }
@@ -212,7 +212,7 @@ class ConfigFileTest {
         val c = DsModConfig()
         val tree = SettingsTree(c)
         tree.feature<Camera>().distance.value = 9f
-        tree.feature<ItemRarity>().inventoryStyle.value = SlotStyle(gem = true)
+        tree.feature<ItemRarity>().inventoryStyle.value = SlotStyle(MarkStyle.AURA, opacity = 45, sparkles = true)
         c.hud.positions["boss-fight-tracker"] = DsModConfig.Position(0.5f, 0.5f, 2f)
         ConfigFile(path).save(c)
         val back = ConfigFile(path).load()
@@ -220,8 +220,35 @@ class ConfigFileTest {
         val loaded = SettingsTree(back)
         assertEquals(ConfigFile.encode(c), ConfigFile.encode(back))
         assertEquals(9f, loaded.feature<Camera>().distance.value)
-        assertEquals(SlotStyle(gem = true), loaded.feature<ItemRarity>().inventoryStyle.value)
+        assertEquals(SlotStyle(MarkStyle.AURA, opacity = 45, sparkles = true), loaded.feature<ItemRarity>().inventoryStyle.value)
         assertFalse(dir.resolve("config.json.tmp").exists(), "the temporary file is renamed over the old one")
+    }
+
+    @Test
+    fun `an older rarity preset or look carries over as the nearest style, and the next save drops its keys`() {
+        val looks = mapOf(
+            """"rarityPreset":"SHOWCASE"""" to MarkStyle.AURA,
+            """"rarityPreset":"GILDED"""" to MarkStyle.FRAME,
+            """"rarityPreset":"MINIMAL"""" to MarkStyle.UNDERGLOW,
+            """"rarityPreset":"CUSTOM","inventoryStyle":{"border":"NONE","fill":"HALO"}""" to MarkStyle.AURA,
+            """"rarityPreset":"CUSTOM","inventoryStyle":{"border":"ROUNDED","fill":"NONE"}""" to MarkStyle.AURA,
+            """"rarityPreset":"CUSTOM","inventoryStyle":{"border":"FLAT","fill":"NONE"}""" to MarkStyle.FRAME,
+            """"rarityPreset":"CUSTOM","inventoryStyle":{"border":"NONE","fill":"WASH"}""" to MarkStyle.FRAME,
+            """"rarityPreset":"CUSTOM","inventoryStyle":{"border":"NONE","fill":"NONE","floor":"SPARKS","gem":true}""" to MarkStyle.UNDERGLOW,
+        )
+        for ((old, mark) in looks) {
+            path.writeText("""{"inventory":{$old,"hotbarMatches":false,"hotbarStyle":{"border":"NONE","fill":"NONE","floor":"PEDESTAL"}}}""")
+            val c = ConfigFile(path).load()
+            val rarity = SettingsTree(c).feature<ItemRarity>()
+            assertEquals(SlotStyle(mark), rarity.inventoryStyle.value, old)
+            assertEquals(SlotStyle(MarkStyle.UNDERGLOW), rarity.hotbarStyle.value, old)
+            // A tree built again on the same config, as the game tests restart the mod, keeps what the player set since.
+            rarity.inventoryStyle.value = SlotStyle(MarkStyle.UNDERGLOW, opacity = 50)
+            assertEquals(SlotStyle(MarkStyle.UNDERGLOW, opacity = 50), SettingsTree(c).feature<ItemRarity>().inventoryStyle.value, old)
+            ConfigFile(path).save(c)
+            val saved = path.readText()
+            for (key in listOf("rarityPreset", "inventoryStyle", "hotbarStyle")) assertFalse("\"$key\"" in saved, "$old left $key in the file")
+        }
     }
 
     @Test

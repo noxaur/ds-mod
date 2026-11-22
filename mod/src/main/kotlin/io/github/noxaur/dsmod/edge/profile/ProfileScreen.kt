@@ -233,7 +233,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
     private fun nameOf(profile: Profile?) = profile?.player?.name ?: lookup.name
 
     override fun init() {
-        SlotArts.checkPacks()
+        SlotArts.checkSlots()
         panelX = (width - PANEL_WIDTH) / 2
         panelY = (height - PANEL_HEIGHT + Kit.TAB_HEIGHT) / 2
         left = panelX + Kit.INSET
@@ -928,7 +928,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
             val x = contentX + column * Kit.SLOT_SIZE
             val y = top + row * Kit.SLOT_SIZE + if (hotbar && row == rows - 1) Kit.GAP else 0
             val shown = items?.getOrNull(i) ?: if (column == worn && items != null) equipment.getOrNull(row) else null
-            slot(graphics, shown, x, y, mouseX, mouseY, item)
+            slot(graphics, shown, i, x, y, mouseX, mouseY, item)
         }
         if (worn != null && items != null) Kit.ring(graphics, contentX + worn * Kit.SLOT_SIZE, top, Kit.SLOT_SIZE, 4 * Kit.SLOT_SIZE, Role.GOOD.argb())
         if (pets) {
@@ -959,7 +959,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         if (inventory) {
             Kit.label(graphics, "Equipment", sx, y, Kit.Ink.MUTED)
             y += SECTION
-            for ((i, w) in equipment.withIndex()) slot(graphics, w.takeUnless { summary.hidden }, sx + i * Kit.SLOT_SIZE, y, mouseX, mouseY, item)
+            for ((i, w) in equipment.withIndex()) slot(graphics, w.takeUnless { summary.hidden }, i, sx + i * Kit.SLOT_SIZE, y, mouseX, mouseY, item)
             y += Kit.SLOT_SIZE + Kit.GAP * 2
         }
         if (pets) y = draw(graphics, texts.activePet, sx, y)
@@ -991,17 +991,16 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         }
     }
 
-    /** One slot of a grid the screen draws: the frame, the rarity mark behind and over the item, and the hover. */
-    private fun slot(graphics: GuiGraphicsExtractor, shown: Shown?, x: Int, y: Int, mouseX: Int, mouseY: Int, hover: (DrawnItem, ItemStack) -> Unit) {
+    /** Slot [index] of a grid the screen draws: the frame, the rarity mark behind the item, and the hover. */
+    private fun slot(graphics: GuiGraphicsExtractor, shown: Shown?, index: Int, x: Int, y: Int, mouseX: Int, mouseY: Int, hover: (DrawnItem, ItemStack) -> Unit) {
         Kit.slot(graphics, x, y)
         shown ?: return
         val mark = shown.mark?.takeIf { Slots.marks(it) }
-        if (mark != null) Slots.rarityBack(graphics, mark, x + 1, y + 1)
+        if (mark != null) Slots.rarityBack(graphics, mark, index, x + 1, y + 1)
         graphics.item(shown.stack, x + 1, y + 1)
         graphics.itemDecorations(font, shown.stack, x + 1, y + 1)
         val over = inside(mouseX, mouseY, x, y, Kit.SLOT_SIZE, Kit.SLOT_SIZE)
         if (over) Kit.slotHover(graphics, x + 1, y + 1)
-        if (mark != null) Slots.rarityFront(graphics, mark, x + 1, y + 1)
         if (over) hover(shown.item, shown.stack)
     }
 

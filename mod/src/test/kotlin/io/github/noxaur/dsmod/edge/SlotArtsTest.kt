@@ -2,7 +2,7 @@ package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
-import io.github.noxaur.dsmod.core.container.Border
+import io.github.noxaur.dsmod.core.container.MarkStyle
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.edge.ui.Atlas
 import net.minecraft.resources.Identifier
@@ -38,7 +38,7 @@ class SlotArtsTest {
         val first = SlotArts.atlas(inventory, Surface.HOTBAR)
         checkNotNull(first)
 
-        inventory.hotbarStyle.value = SlotStyle(border = Border.FLAT)
+        inventory.hotbarStyle.value = SlotStyle(MarkStyle.AURA)
         val during = SlotArts.atlas(inventory, Surface.HOTBAR)
         assertEquals(first.id, during?.id)
         assertEquals(1, uploads)
@@ -46,5 +46,25 @@ class SlotArtsTest {
         SlotArts.tick(paint)
         assertEquals(2, uploads)
         assertNotEquals(first.id, SlotArts.atlas(inventory, Surface.HOTBAR)?.id)
+    }
+
+    @Test
+    fun `a change of opacity alone paints nothing, since the blit draws it`() {
+        var uploads = 0
+        val paint = { _: Surface, _: SlotStyle, _: Boolean ->
+            uploads++
+            Atlas(Identifier.fromNamespaceAndPath("dsmod", "rarity/test-$uploads"), 1, 1)
+        }
+        val inventory = SettingsTree().feature<ItemRarity>()
+        SlotArts.atlas(inventory, Surface.CONTAINER)
+        SlotArts.tick(paint)
+        inventory.inventoryStyle.value = SlotStyle(opacity = 40)
+        SlotArts.atlas(inventory, Surface.CONTAINER)
+        SlotArts.tick(paint)
+        assertEquals(1, uploads)
+        inventory.inventoryStyle.value = SlotStyle(opacity = 40, sparkles = true)
+        SlotArts.atlas(inventory, Surface.CONTAINER)
+        SlotArts.tick(paint)
+        assertEquals(2, uploads)
     }
 }

@@ -60,15 +60,9 @@ class SettingsNarrationTest : FabricClientGameTest {
         }
 
         open(context, SettingsTabs(at("Inventory")))
-        over("rarityPreset", "Style, pick, Gilded, 2 of 4")
-        // What is open lasts as long as the tabs do, so a test before this one may have opened it.
-        if (context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).spot("border") == null }) {
-            val fold = spot("customLook")
-            move(fold.x + 20, fold.y + 10)
-            context.input.pressMouse(0)
-            context.waitTicks(2)
-        }
-        over("customLook", "Custom Look, fold, expanded")
+        over("style", "Style, pick, Frame, 1 of 3")
+        over("opacity", "Opacity, number, 100%")
+        over("sparkles", "Sparkles, switch, off")
         over("slot-lock", "Slot Lock, switch, on, collapsed")
 
         open(context, SettingsTabs(at("The End")))
@@ -98,9 +92,9 @@ class SettingsNarrationTest : FabricClientGameTest {
         move(120 + 30, 9)
         hear(context, "General, tab, selected", "Over the tab")
 
-        // A search paints the words it matched: in names and descriptions, in a fold's name, and in a dropdown's value.
+        // A search paints the words it matched: in a switch's name that opens to show a hit, in a description, and in a dropdown's value.
         open(context, SettingsTabs(at("General")))
-        context.input.typeChars("gilded look")
+        context.input.typeChars("frame hotbar")
         context.waitTicks(2)
         context.takeScreenshot("own-settings-search-marks")
         theme(context, Theme.VANILLA)
