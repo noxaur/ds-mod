@@ -1,7 +1,8 @@
 import { expect, test } from "vite-plus/test";
 
 import { authRequest, testAuth } from "../../test/harness.ts";
-import { trustedKeyHeader, websiteRules } from "./trusted.ts";
+import { trustedKeyHeader } from "../../../web/shared/website.ts";
+import { websiteRules } from "./trusted.ts";
 
 const key = "a-trusted-key-that-only-the-website-knows";
 const limit = 3;

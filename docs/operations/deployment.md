@@ -35,12 +35,24 @@ After a deploy, `https://api.ds-mod.perwko.com/healthz` answers 204, and a `POST
 | --- | --- | --- |
 | `BETTER_AUTH_SECRET` | Signs every session | Created by Void on the first deploy. Changing it signs every player out |
 | `ADMIN_TOKEN` | What `dsctl` sends to act as an agent | The Worker, and the user's `~/.config/dsmod/production.env`, readable only by the user |
-| `AUTH_TRUSTED_KEY` | Lets the website's sign-in calls skip the per-address rate limit, which would otherwise count every player who signs in on the website together, and lets the backend ask Mojang through the website, because Mojang refuses Cloudflare's addresses. Without it, every sign-in from the mod answers 503. The website's `AUTH_TRUSTED_KEY` in Vercel must hold the same value | The Worker, and the Vercel project's environment variables |
+| `AUTH_TRUSTED_KEY` | Lets the website's sign-in calls skip the per-address rate limit, which would otherwise count every player who signs in on the website together. The website's `AUTH_TRUSTED_KEY` in Vercel must hold the same value | The Worker, and the Vercel project's environment variables |
+| `MOJANG_RELAY_URL` | `https://ds-mod.perwko.com/mojang/has-joined`, where the backend asks Mojang who joined, because Mojang refuses Cloudflare's addresses. Without it the backend asks Mojang itself, and every sign-in from the mod answers 503 | The Worker |
+| `MOJANG_RELAY_KEY` | What the backend sends the relay, which answers nobody else. The website's `MOJANG_RELAY_KEY` in Vercel must hold the same value | The Worker, and the Vercel project's environment variables |
 
 To change `ADMIN_TOKEN`, edit the file and pipe the value in. `void secret sync` waits on a prompt that a non-interactive shell never answers.
 
 ```sh
 sed -n 's/^ADMIN_TOKEN=//p' ~/.config/dsmod/production.env | tr -d '\n' | pnpm exec void secret put ADMIN_TOKEN
+```
+
+To change `MOJANG_RELAY_KEY`, set the website's first and redeploy it, then the Worker's. A sign-in in between answers 503, because the old key no longer opens the relay. In `backend/`, with the user signed in to Vercel:
+
+```sh
+key=$(openssl rand -hex 32)
+printf %s "$key" | pnpm dlx vercel env add MOJANG_RELAY_KEY --environment production --sensitive --force --project ds-mod &&
+  pnpm dlx vercel redeploy ds-mod.perwko.com &&
+  printf %s "$key" | pnpm exec void secret put MOJANG_RELAY_KEY
+unset key
 ```
 
 `dsctl` reaches the deployment with `DSMOD_BACKEND=https://api.ds-mod.perwko.com` and `DSMOD_ADMIN_TOKEN` read from that file.
@@ -55,4 +67,4 @@ Vercel reads `packageManager` only from a `package.json` at the repository's roo
 
 `web/scripts/vercel-ignore.sh` skips a build of `main` when nothing in `web/` changed since the last built commit, which Vercel gives as `VERCEL_GIT_PREVIOUS_SHA`. Vercel clones ten commits deep, so the script fetches an older base by its SHA, which works because the repository is public. Whatever it cannot judge, it builds, including the first build, which has no previous commit. A skipped build shows as canceled in Vercel and still counts toward the deployment quota. To build a skipped commit, redeploy it in Vercel with the project's Ignore Build Step unchecked.
 
-The project's settings in Vercel hold `BACKEND_URL=https://api.ds-mod.perwko.com`, `AUTH_TRUSTED_KEY` and Node 24. A change to either is made in Vercel and needs a redeploy.
+The project's settings in Vercel hold `BACKEND_URL=https://api.ds-mod.perwko.com`, `AUTH_TRUSTED_KEY`, `MOJANG_RELAY_KEY` and Node 24. A change to any of them is made in Vercel and needs a redeploy.
