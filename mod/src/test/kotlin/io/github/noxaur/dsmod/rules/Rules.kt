@@ -61,15 +61,14 @@ val rules = listOf(
     ),
     Rule(
         id = "screen-by-hook",
-        files = "src/{main/kotlin/**/edge/**.kt,debug/**.kt}",
+        files = "src/{main,debug}/**.{kt,java}",
         except = "src/main/kotlin/**/edge/ScreenHooks.kt",
-        forbid = Regex("""ScreenEvents\s*\.\s*AFTER_INIT\b"""),
+        forbid = Regex("""\bAFTER_INIT\b"""),
         fix = "Add to a screen with `ScreenHooks.onEveryLayout<ScreenType> { screen, opened -> .. }`. It runs on every layout, " +
             "because Fabric drops a screen's listeners on each one, and `opened` is true only on the first, so state for one " +
             "menu survives a resize. For a container screen, `openedByServer` and `creative` in `ContainerScreens.kt` name which ones.",
         example = "ScreenEvents.AFTER_INIT.register { _, screen, _, _ -> }",
-        examples = listOf("ScreenEvents .AFTER_INIT", "ScreenEvents\n    .AFTER_INIT"),
-        span = Span.FILE,
+        examples = listOf("ScreenEvents\n    .AFTER_INIT", "FabricScreens.AFTER_INIT.register((client, screen, w, h) -> {});"),
     ),
     Rule(
         id = "text-by-role",
