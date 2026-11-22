@@ -49,6 +49,10 @@ interface HasFeature {
     val feature: Feature
 }
 
+fun interface Handler<in E : GameEvent> {
+    fun handle(event: E, now: Long)
+}
+
 /**
  * The part a feature holds, which `Game` runs. A feature turns events into its own state in [on], and turns that state
  * into what the player sees in the [hud], [slots] and [marks] it passes here, says something once with [notice] and
@@ -140,7 +144,7 @@ class Feature(
 
     internal var gate: () -> Boolean = { true }
 
-    internal val handlers = HashMap<Class<out GameEvent>, (GameEvent, Long) -> Unit>()
+    internal val handlers = HashMap<Class<out GameEvent>, Handler<GameEvent>>()
     internal lateinit var metrics: Metrics
     /**
      * The tab list's `Key: value` rows, read with [InfoRows.info]. `Game` keeps the rows that tell the area, so
@@ -288,12 +292,17 @@ class Feature(
     }
 
     /** Handles every [E] the server sends. `now` is when it arrived, in epoch milliseconds. */
-    inline fun <reified E : GameEvent> on(noinline handler: (event: E, now: Long) -> Unit) = on(E::class.java, handler)
+    inline fun <reified E : GameEvent> on(handler: Handler<E>) = on(E::class.java, handler)
 
     @PublishedApi
-    internal fun <E : GameEvent> on(type: Class<E>, handler: (E, Long) -> Unit) {
+    internal fun <E : GameEvent> on(type: Class<E>, handler: Handler<E>) {
         @Suppress("UNCHECKED_CAST")
-        check(handlers.put(type, handler as (GameEvent, Long) -> Unit) == null) { "$id already handles ${type.simpleName}" }
+        handlers.merge(type, handler as Handler<GameEvent>) { first, then ->
+            Handler { event, now ->
+                first.handle(event, now)
+                then.handle(event, now)
+            }
+        }
     }
 
     private class Line(val head: (String) -> Boolean, val read: (String, Long) -> Boolean)

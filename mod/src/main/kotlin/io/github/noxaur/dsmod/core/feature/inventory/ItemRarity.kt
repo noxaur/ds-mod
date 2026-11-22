@@ -13,8 +13,6 @@ import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
-import io.github.noxaur.dsmod.core.game.ContainerOpened
-import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Look
 
@@ -91,35 +89,23 @@ class ItemRarity(config: DsModConfig) : HasFeature {
     /** The look the hotbar's marks are drawn in: the inventory's while they match, or the hotbar's own. */
     fun hotbarLook(): SlotStyle = if (hotbarMatches.value) containerStyle() else hotbarStyle.value
 
-    private var marks = emptyMap<Int, SlotMark>()
-    private var changed = false
     private var common = markCommon.value
 
     private val byRarity = Role.RARITIES.associate { it.name to SlotMark(it, rarity = true) }
 
-    init {
-        feature.on<ContainerOpened> { _, _ -> changed = true }
-        feature.on<SlotChanged> { _, _ -> changed = true }
+    private val marks = SlotMarks(feature) { _, item, _ ->
+        val rarity = item.rarity ?: return@SlotMarks null
+        val mark = byRarity[rarity]
+        if (mark == null) feature.unparsed(rarity)
+        mark?.takeIf { it.role != Role.COMMON || common }
     }
 
     fun slots(now: Long): Map<Int, SlotMark> {
         if (common != markCommon.value) {
             common = !common
-            changed = true
+            marks.invalidate()
         }
-        if (!changed) return marks
-        changed = false
-        val next = HashMap<Int, SlotMark>()
-        feature.container.slots.forEachIndexed { slot, item ->
-            val rarity = item?.rarity ?: return@forEachIndexed
-            val mark = byRarity[rarity]
-            when {
-                mark == null -> feature.unparsed(rarity)
-                mark.role != Role.COMMON || common -> next[slot] = mark
-            }
-        }
-        marks = next
-        return marks
+        return marks.marks(now)
     }
 }
 
