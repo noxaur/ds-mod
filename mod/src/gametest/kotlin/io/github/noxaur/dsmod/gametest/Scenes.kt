@@ -15,10 +15,10 @@ import java.util.UUID
 
 val MinecraftServer.player: ServerPlayer get() = playerList.players.single()
 
-fun TestSingleplayerContext.freezeTime(noon: Boolean = true) {
+fun TestSingleplayerContext.freezeTime(at: String? = "noon") {
     server.runCommand("gamerule advance_time false")
     server.runCommand("gamerule advance_weather false")
-    if (noon) server.runCommand("time set noon")
+    if (at != null) server.runCommand("time set $at")
 }
 
 fun TestSingleplayerContext.standOnStone() {
@@ -30,12 +30,18 @@ fun TestSingleplayerContext.give(stacks: Map<Int, ItemStack>) = server.runOnServ
     val player = server.player
     player.inventory.clearContent()
     for ((slot, stack) in stacks) player.inventory.setItem(slot, stack.copy())
-    player.containerMenu.broadcastChanges()
+    player.containerMenu.carried = ItemStack.EMPTY
+    player.containerMenu.sendAllDataToRemote()
 }
+
+fun TestSingleplayerContext.floatPet(name: String) = server.runCommand(
+    """execute at @a run summon armor_stand ~1 ~1 ~1 {CustomName:"$name",Invisible:1b,NoGravity:1b,equipment:{head:{id:"minecraft:player_head",components:{"minecraft:profile":{properties:[{name:"textures",value:"${HeadSkin.TEXTURES}"}]}}}}}""",
+)
 
 object HeadSkin {
     const val SKIN = "f83159c5bb7d80454d2d646b15774b7116aabcb3af5b6777a27573fc45f7854f"
     val TEXTURES: String = Base64.getEncoder().encodeToString("{\"textures\":{\"SKIN\":{\"url\":\"http://textures.minecraft.net/texture/$SKIN\"}}}".toByteArray())
+    val ITEM = "minecraft:player_head[profile={properties:[{name:\"textures\",value:\"$TEXTURES\"}]}]"
 
     fun profile(): ResolvableProfile = ResolvableProfile.createResolved(
         GameProfile(UUID.nameUUIDFromBytes(SKIN.toByteArray()), "", PropertyMap(ImmutableMultimap.of("textures", Property("textures", TEXTURES)))),

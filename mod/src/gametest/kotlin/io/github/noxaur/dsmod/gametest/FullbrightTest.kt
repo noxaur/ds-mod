@@ -18,7 +18,7 @@ class FullbrightTest : FabricClientGameTest {
 
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
-            world.server.runCommand("time set midnight")
+            world.freezeTime("midnight")
             context.waitTicks(40)
             val dark = ground(context.takeScreenshot("fullbright-off"))
             try {

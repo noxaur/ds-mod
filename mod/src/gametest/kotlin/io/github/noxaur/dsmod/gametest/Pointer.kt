@@ -47,6 +47,14 @@ fun ClientGameTestContext.ownSlot(slot: Int) = computeOnClient<Int, Nothing> { c
 
 fun ClientGameTestContext.hoverOwnSlot(slot: Int, settle: Int = 3) = hoverSlot(ownSlot(slot), settle)
 
+fun ClientGameTestContext.clickSlot(index: Int, button: Int = 0, settle: Int = 3) {
+    hoverSlot(index, settle)
+    input.pressMouse(button)
+    waitTicks(settle)
+}
+
+fun ClientGameTestContext.clickOwnSlot(slot: Int, button: Int = 0, settle: Int = 3) = clickSlot(ownSlot(slot), button, settle)
+
 fun ClientGameTestContext.openInventory() = setScreen { InventoryScreen(checkNotNull(Minecraft.getInstance().player)) }
 
 fun ClientGameTestContext.carried() = computeOnClient<Int, Nothing> { checkNotNull(it.player).containerMenu.carried.count }

@@ -23,15 +23,6 @@ class SlotLockShiftTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val feature = DsModClient.feature<SlotLock>()
 
-        fun item(slot: Int) = context.ownItem(slot)
-        fun carried() = context.carried()
-        fun menuIndex(slot: Int) = context.ownSlot(slot)
-        fun hoverMenu(index: Int) = context.hoverSlot(index, settle = 2)
-        fun click(slot: Int) {
-            hoverMenu(menuIndex(slot))
-            context.input.pressMouse(0)
-            context.waitTicks(2)
-        }
         /** The Shift click, and every container packet from it through the next ticks, while a result may refill. */
         fun shift(index: Int, settle: Int = 2): List<Click> {
             var refused = false
@@ -45,10 +36,10 @@ class SlotLockShiftTest : FabricClientGameTest {
                 }
                 context.waitTicks(settle)
             }
-            check(refused) { "The Shift click was handed to vanilla: $clicks, slot9=${item(9)}, slot0=${item(0)}, slot1=${item(1)}, slot2=${item(2)}" }
+            check(refused) { "The Shift click was handed to vanilla: $clicks, slot9=${context.ownItem(9)}, slot0=${context.ownItem(0)}, slot1=${context.ownItem(1)}, slot2=${context.ownItem(2)}" }
             return clicks
         }
-        fun shiftOwn(slot: Int, settle: Int = 2) = shift(menuIndex(slot), settle)
+        fun shiftOwn(slot: Int, settle: Int = 2) = shift(context.ownSlot(slot), settle)
         fun lock(slots: Set<Int>) = context.runOnClient<Nothing> {
             feature.feature.enabled = true
             feature.locks = SlotLocks(slots)
@@ -62,16 +53,6 @@ class SlotLockShiftTest : FabricClientGameTest {
             val cap = 2 + destinations + if (parked) 2 else 0
             check(clicks.size <= cap) { "${clicks.size} packets for $destinations destinations (parked=$parked), cap $cap: $clicks" }
         }
-        fun give(world: TestSingleplayerContext, stacks: Map<Int, ItemStack>) {
-            world.give(stacks)
-            context.waitTicks(5)
-            context.runOnClient<Nothing> { client ->
-                val inventory = client.player!!.inventory
-                inventory.clearContent()
-                for ((slot, stack) in stacks) inventory.setItem(slot, stack.copy())
-                client.player!!.containerMenu.carried = ItemStack.EMPTY
-            }
-        }
 
         context.worldBuilder().create().use { world ->
             try {
@@ -79,56 +60,60 @@ class SlotLockShiftTest : FabricClientGameTest {
                 context.waitForScreen(InventoryScreen::class.java)
 
                 // One left click per unlocked slot. 32 cobble, hotbar 0 holds 40, hotbar 1 locked.
-                give(world, mapOf(0 to ItemStack(Items.COBBLESTONE, 40), 9 to ItemStack(Items.COBBLESTONE, 32)))
+                world.give(mapOf(0 to ItemStack(Items.COBBLESTONE, 40), 9 to ItemStack(Items.COBBLESTONE, 32)))
+                context.waitTicks(5)
                 lock(setOf(1))
                 val partial = shiftOwn(9)
-                val hotbar0 = menuIndex(0)
-                val hotbar2 = menuIndex(2)
-                val source = menuIndex(9)
+                val hotbar0 = context.ownSlot(0)
+                val hotbar2 = context.ownSlot(2)
+                val source = context.ownSlot(9)
                 check(partial == listOf(Click(source, 0, ContainerInput.PICKUP), Click(hotbar0, 0, ContainerInput.PICKUP), Click(hotbar2, 0, ContainerInput.PICKUP))) {
                     "Partial stack clicks were $partial"
                 }
                 within(partial, destinations = 2, parked = false)
-                check(item(1).second == 0 && item(0).second == 64 && item(2).second == 8 && item(9).second == 0) {
-                    "A partial stack left ${item(1)} in the locked slot, ${item(0)} filled, ${item(2)} with the rest and ${item(9)} behind"
+                check(context.ownItem(1).second == 0 && context.ownItem(0).second == 64 && context.ownItem(2).second == 8 && context.ownItem(9).second == 0) {
+                    "A partial stack left ${context.ownItem(1)} in the locked slot, ${context.ownItem(0)} filled, ${context.ownItem(2)} with the rest and ${context.ownItem(9)} behind"
                 }
 
                 // The rest goes back to the source: one pickup, one destination, one put-back.
-                give(world, mapOf(0 to ItemStack(Items.COBBLESTONE, 40), 9 to ItemStack(Items.COBBLESTONE, 32)))
+                world.give(mapOf(0 to ItemStack(Items.COBBLESTONE, 40), 9 to ItemStack(Items.COBBLESTONE, 32)))
+                context.waitTicks(5)
                 lock((1..8).toSet())
                 val putBack = shiftOwn(9)
                 check(putBack == listOf(Click(source, 0, ContainerInput.PICKUP), Click(hotbar0, 0, ContainerInput.PICKUP), Click(source, 0, ContainerInput.PICKUP))) {
                     "Put-back clicks were $putBack"
                 }
                 within(putBack, destinations = 1, parked = false)
-                check(item(0).second == 64 && item(9).second == 8 && (1..8).all { item(it).second == 0 }) {
-                    "The leftover left the source at ${item(9)} and a locked slot holding ${item(1)}"
+                check(context.ownItem(0).second == 64 && context.ownItem(9).second == 8 && (1..8).all { context.ownItem(it).second == 0 }) {
+                    "The leftover left the source at ${context.ownItem(9)} and a locked slot holding ${context.ownItem(1)}"
                 }
 
                 // The held stack sits on an inventory slot that is not a destination, then comes back.
-                give(world, mapOf(9 to ItemStack(Items.COBBLESTONE, 32), 10 to ItemStack(Items.DIRT, 10)))
+                world.give(mapOf(9 to ItemStack(Items.COBBLESTONE, 32), 10 to ItemStack(Items.DIRT, 10)))
+                context.waitTicks(5)
                 lock(setOf(0))
-                click(10)
-                check(carried() == 10) { "The dirt did not come up onto the cursor" }
+                context.clickOwnSlot(10, settle = 2)
+                check(context.carried() == 10) { "The dirt did not come up onto the cursor" }
                 val parked = shiftOwn(9)
-                val park = menuIndex(10)
-                val beside = menuIndex(1)
+                val park = context.ownSlot(10)
+                val beside = context.ownSlot(1)
                 check(parked == listOf(Click(park, 0, ContainerInput.PICKUP), Click(source, 0, ContainerInput.PICKUP), Click(beside, 0, ContainerInput.PICKUP), Click(park, 0, ContainerInput.PICKUP))) {
                     "Parked clicks were $parked"
                 }
                 within(parked, destinations = 1, parked = true)
-                check(item(0).second == 0 && item(1).first == Items.COBBLESTONE && item(1).second == 32 && carried() == 10) {
-                    "With dirt on the cursor the cobble left ${item(0)} locked, ${item(1)} beside it, and the cursor holds ${carried()}"
+                check(context.ownItem(0).second == 0 && context.ownItem(1).first == Items.COBBLESTONE && context.ownItem(1).second == 32 && context.carried() == 10) {
+                    "With dirt on the cursor the cobble left ${context.ownItem(0)} locked, ${context.ownItem(1)} beside it, and the cursor holds ${context.carried()}"
                 }
 
                 // No inventory slot outside the move. An empty craft cell is not a park, and vanilla must not run.
-                give(world, (2..35).associateWith { ItemStack(Items.COBBLESTONE, 64) } + mapOf(9 to ItemStack(Items.COBBLESTONE, 32)))
+                world.give((2..35).associateWith { ItemStack(Items.COBBLESTONE, 64) } + mapOf(9 to ItemStack(Items.COBBLESTONE, 32)))
+                context.waitTicks(5)
                 lock(setOf(0))
                 context.runOnClient<Nothing> { it.player!!.containerMenu.carried = ItemStack(Items.DIRT, 10) }
                 val nowhere = shiftOwn(9)
                 check(nowhere.isEmpty()) { "A click was sent with nowhere to park: $nowhere" }
-                check(item(0).second == 0 && item(9).second == 32 && carried() == 10) {
-                    "With nowhere to park the locked slot holds ${item(0)}, the source ${item(9)}, and the cursor ${carried()}"
+                check(context.ownItem(0).second == 0 && context.ownItem(9).second == 32 && context.carried() == 10) {
+                    "With nowhere to park the locked slot holds ${context.ownItem(0)}, the source ${context.ownItem(9)}, and the cursor ${context.carried()}"
                 }
                 val craftEmpty = context.computeOnClient<Boolean, Nothing> { client ->
                     val screen = client.gui.screen() as AbstractContainerScreen<*>
@@ -137,9 +122,10 @@ class SlotLockShiftTest : FabricClientGameTest {
                 check(craftEmpty) { "The held stack was written into the craft grid" }
 
                 // Two logs keep crafting across ticks, one left click on the result each time the whole output fits.
-                give(world, mapOf(9 to ItemStack(Items.OAK_LOG, 2)))
-                click(9)
-                hoverMenu(1)
+                world.give(mapOf(9 to ItemStack(Items.OAK_LOG, 2)))
+                context.waitTicks(5)
+                context.clickOwnSlot(9, settle = 2)
+                context.hoverSlot(1, settle = 2)
                 context.input.pressMouse(0)
                 context.waitTicks(3)
                 lock(setOf(8))
@@ -147,8 +133,8 @@ class SlotLockShiftTest : FabricClientGameTest {
                 left(crafted)
                 check(crafted.count { it.slot == 0 } == 2 && crafted.size == 4) { "The two crafts sent $crafted" }
                 within(crafted, destinations = 2, parked = false)
-                check(item(8).second == 0 && item(7).first == Items.OAK_PLANKS && item(7).second == 8 && carried() == 0) {
-                    "The crafts left ${item(8)} in the locked slot, ${item(7)} beside it, and the cursor holds ${carried()}"
+                check(context.ownItem(8).second == 0 && context.ownItem(7).first == Items.OAK_PLANKS && context.ownItem(7).second == 8 && context.carried() == 0) {
+                    "The crafts left ${context.ownItem(8)} in the locked slot, ${context.ownItem(7)} beside it, and the cursor holds ${context.carried()}"
                 }
 
                 // Room for 2 of a 4-plank result. One right click would destroy the other half, so nothing is sent.
@@ -164,7 +150,8 @@ class SlotLockShiftTest : FabricClientGameTest {
                 }
 
                 // The mode or the player is missing. The click is cancelled and nothing is sent.
-                give(world, mapOf(9 to ItemStack(Items.COBBLESTONE, 32)))
+                world.give(mapOf(9 to ItemStack(Items.COBBLESTONE, 32)))
+                context.waitTicks(5)
                 lock(setOf(0))
                 fun refusesShift(client: Minecraft, what: String, without: () -> Unit, back: () -> Unit) {
                     val screen = client.gui.screen() as AbstractContainerScreen<*>
@@ -190,7 +177,7 @@ class SlotLockShiftTest : FabricClientGameTest {
                     }
                 }
                 check(noPlayer.isEmpty()) { "A missing player sent $noPlayer" }
-                check(item(9).second == 32 && item(0).second == 0) { "A missing mode moved the stack to ${item(0)} and left ${item(9)}" }
+                check(context.ownItem(9).second == 32 && context.ownItem(0).second == 0) { "A missing mode moved the stack to ${context.ownItem(0)} and left ${context.ownItem(9)}" }
             } finally {
                 context.runOnClient<Nothing> {
                     feature.feature.enabled = true
@@ -203,35 +190,14 @@ class SlotLockShiftTest : FabricClientGameTest {
 
     /** One log in the craft grid and [planks] already in the only slot that can hold more. The result is 4. */
     private fun resultThatDoesNotFit(context: ClientGameTestContext, world: TestSingleplayerContext, planks: Int, freeAfter: Boolean = false): ResultAttempt {
-        world.server.runOnServer<Nothing> { server ->
-            val player = server.player
-            player.inventory.clearContent()
-            for (slot in 0..35) player.inventory.setItem(slot, ItemStack(Items.COBBLESTONE, 64))
-            player.inventory.setItem(0, ItemStack(Items.OAK_PLANKS, planks))
-            player.inventory.setItem(1, ItemStack.EMPTY)
-            player.inventory.setItem(9, ItemStack(Items.OAK_LOG, 1))
-            player.containerMenu.broadcastChanges()
-        }
+        world.give((0..35).associateWith { ItemStack(Items.COBBLESTONE, 64) } + mapOf(0 to ItemStack(Items.OAK_PLANKS, planks), 1 to ItemStack.EMPTY, 9 to ItemStack(Items.OAK_LOG, 1)))
         context.waitTicks(5)
-        context.runOnClient<Nothing> { client ->
-            val inventory = client.player!!.inventory
-            inventory.clearContent()
-            for (slot in 0..35) inventory.setItem(slot, ItemStack(Items.COBBLESTONE, 64))
-            inventory.setItem(0, ItemStack(Items.OAK_PLANKS, planks))
-            inventory.setItem(1, ItemStack.EMPTY)
-            inventory.setItem(9, ItemStack(Items.OAK_LOG, 1))
-            client.player!!.containerMenu.carried = ItemStack.EMPTY
-        }
         context.runOnClient<Nothing> {
             val feature = DsModClient.feature<SlotLock>()
             feature.locks = SlotLocks(setOf(1))
         }
-        context.hoverOwnSlot(9, settle = 2)
-        context.input.pressMouse(0)
-        context.waitTicks(2)
-        context.hoverSlot(1, settle = 2)
-        context.input.pressMouse(0)
-        context.waitTicks(2)
+        context.clickOwnSlot(9, settle = 2)
+        context.clickSlot(1, settle = 2)
         world.server.runOnServer<Nothing> { server ->
             server.player.inventory.setItem(9, ItemStack(Items.COBBLESTONE, 64))
             server.player.containerMenu.broadcastChanges()

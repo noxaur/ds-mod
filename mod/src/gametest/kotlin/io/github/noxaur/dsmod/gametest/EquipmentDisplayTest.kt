@@ -23,7 +23,7 @@ import net.minecraft.world.item.Items
 class EquipmentDisplayTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
-            world.server.runCommand("item replace entity @a armor.head with minecraft:player_head[profile={properties:[{name:\"textures\",value:\"${HeadSkin.TEXTURES}\"}]}]")
+            world.server.runCommand("item replace entity @a armor.head with ${HeadSkin.ITEM}")
             world.server.runCommand("item replace entity @a armor.chest with minecraft:leather_chestplate[dyed_color=$DYE]")
             world.server.runCommand("item replace entity @a armor.feet with minecraft:leather_boots[dyed_color=$DYE]")
             context.waitTicks(20)
@@ -76,9 +76,7 @@ class EquipmentDisplayTest : FabricClientGameTest {
             context.takeScreenshot("equipment-display-pet-name")
 
             // dragsim.co floats the pet beside the player as an armor stand wearing its head, named as the sidebar names it.
-            world.server.runCommand(
-                """execute at @a run summon armor_stand ~1 ~1 ~1 {CustomName:"[Lvl 100] Ender Dragon",Invisible:1b,NoGravity:1b,equipment:{head:{id:"minecraft:player_head",components:{"minecraft:profile":{properties:[{name:"textures",value:"${HeadSkin.TEXTURES}"}]},"minecraft:custom_name":"Pet Head"}}}}""",
-            )
+            world.floatPet("[Lvl 100] Ender Dragon")
             context.waitTicks(30)
             val icon = stackAt(piece(4))
             check(HeadSkin.worn(icon)) { "The pet's icon lost the skin of the head it wears: $icon" }

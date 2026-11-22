@@ -48,15 +48,13 @@ class ActivePetTest : FabricClientGameTest {
                 check(icon() == null) { "The pet has an icon before its head was seen" }
                 context.takeScreenshot("active-pet-name")
 
-                world.server.runCommand(
-                    """execute at @a run summon armor_stand ~1 ~1 ~1 {CustomName:"[Lvl 37] Ender Dragon",Invisible:1b,NoGravity:1b,equipment:{head:{id:"minecraft:player_head",components:{"minecraft:profile":{properties:[{name:"textures",value:"${HeadSkin.TEXTURES}"}]}}}}}""",
-                )
+                world.floatPet("[Lvl 37] Ender Dragon")
                 context.waitTicks(30)
                 check(HeadSkin.worn(icon())) { "The icon is not the head of the pet floating beside the player" }
                 context.takeScreenshot("active-pet-head")
 
                 // The menu's head wears the same skin as the floating one, taken from a head the server gave the player.
-                world.server.runCommand("give @a minecraft:player_head[profile={properties:[{name:\"textures\",value:\"${HeadSkin.TEXTURES}\"}]}]")
+                world.server.runCommand("give @a ${HeadSkin.ITEM}")
                 context.waitTicks(5)
                 val head = world.server.computeOnServer<ItemStack, Nothing> { it.player.inventory.getItem(0).copy() }
                 ServerMenus.open(context, world, 6, "Pets") { chest ->

@@ -141,6 +141,16 @@ class BackendTest {
     }
 
     @Test
+    fun `a backend that could not ask Mojang is told apart from one that is down`() {
+        answers["/api/auth/minecraft/verify"] = { 503 to """{"message":"Mojang answered 403."}""" }
+
+        val failure = assertFailsWith<BackendException> { backend.oneTimeToken() }
+
+        assertEquals(503, failure.status)
+        assertEquals(Backend.MOJANG_DOWN, failure.message)
+    }
+
+    @Test
     fun `a profile is asked for by name, and another of the player's by its id`() {
         val body = resource("profiles/profile.json")
         answers["/v1/players/Testwyrm/profile"] = { 200 to body }
