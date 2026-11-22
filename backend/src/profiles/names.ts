@@ -1,5 +1,5 @@
 import type { Line } from "../items/model.ts";
-import { titleCase } from "../items/title.ts";
+import { titleCase } from "../upstream/title.ts";
 
 export { titleCase };
 

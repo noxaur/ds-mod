@@ -11,6 +11,47 @@ const noTry = defineRule({
   },
 });
 
+const noComputedConsole = defineRule({
+  meta: {
+    messages: {
+      computedConsole:
+        "no-console cannot see console[level]. Call console.error(..) where it is the Worker's log, or write through the logger that app.ts uses.",
+    },
+  },
+  create(context) {
+    return {
+      MemberExpression(node) {
+        if (node.object.type === "Identifier" && node.object.name === "console" && node.computed) {
+          context.report({ node, messageId: "computedConsole" });
+        }
+      },
+    };
+  },
+});
+
+const noJsonParse = defineRule({
+  meta: {
+    messages: {
+      jsonParse:
+        "JSON.parse returns any. Decode with Schema.decodeUnknownEffect(Schema.fromJsonString(X)), so the shape is checked and a bad body is a failure.",
+    },
+  },
+  create(context) {
+    return {
+      MemberExpression(node) {
+        if (
+          node.object.type === "Identifier" &&
+          node.object.name === "JSON" &&
+          !node.computed &&
+          node.property.name === "parse"
+        ) {
+          context.report({ node, messageId: "jsonParse" });
+        }
+      },
+    };
+  },
+});
+
 const isName = (node, name) => node.type === "Identifier" && node.name === name;
 
 const isMember = (node, object, property) =>
@@ -70,5 +111,11 @@ const testHarness = defineRule({
 
 export default definePlugin({
   meta: { name: "dsmod" },
-  rules: { "no-try": noTry, "time-through-effect": timeThroughEffect, "test-harness": testHarness },
+  rules: {
+    "no-try": noTry,
+    "no-computed-console": noComputedConsole,
+    "no-json-parse": noJsonParse,
+    "time-through-effect": timeThroughEffect,
+    "test-harness": testHarness,
+  },
 });

@@ -26,7 +26,7 @@ fun List<EntityFilter>.view(before: EntitySeen?, after: EntitySeen?, event: Game
     return when {
         has && had -> event
         has -> after
-        had -> EntityGone(before!!.id)
+        had && before != null -> EntityGone(before.id)
         else -> null
     }
 }
