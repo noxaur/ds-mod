@@ -34,7 +34,7 @@ class ZealotTrackerTest : FabricClientGameTest {
             world.server.runCommand("""kill @e[name="[Lv55] Zealot Theirs"]""")
             context.waitTicks(10)
             context.runOnClient<Nothing> { DsModClient.saved.flush() }
-            repeat(100) { if (file.readText() != """{"drops":{"Summoning Eye":7},"kills":0}""") return@repeat else context.waitTicks(1) }
+            context.waitUntil("the drop and the kill were written", 100) { file.readText() != """{"drops":{"Summoning Eye":7},"kills":0}""" }
             val written = file.readText()
             check(written == """{"drops":{"Summoning Eye":8},"kills":1}""") { "Expected 7 loaded, 1 drop and 1 kill counted, the file says $written" }
             check(!file.resolveSibling("zealot-tracker.json.tmp").exists()) { "The temporary file was left behind" }

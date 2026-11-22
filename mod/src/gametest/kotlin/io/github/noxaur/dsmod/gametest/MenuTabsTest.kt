@@ -12,7 +12,6 @@ import io.github.noxaur.dsmod.edge.ui.KitTab
 import io.github.noxaur.dsmod.edge.ui.KitTextField
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
-import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.fabricmc.fabric.mixin.client.gametest.input.KeyboardHandlerAccessor
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.ImageButton
@@ -126,11 +125,9 @@ class MenuTabsTest : FabricClientGameTest {
 
                 // The recipe book moves the inventory sideways, and the tabs must move with it.
                 val before = tabs(context).map { it.x }
-                val (book, leftBefore) = context.computeOnClient<Pair<Pair<Int, Int>, Int>, Nothing> { client ->
-                    val screen = client.gui.screen() as InventoryScreen
-                    val button = Screens.getWidgets(screen).filterIsInstance<ImageButton>().single()
-                    (button.x + button.width / 2 to button.y + button.height / 2) to (screen as ContainerScreenAccessor).leftPos
-                }
+                val button = ServerMenus.widgets<ImageButton>(context).single()
+                val book = button.x + button.width / 2 to button.y + button.height / 2
+                val leftBefore = context.computeOnClient<Int, Nothing> { (it.gui.screen() as ContainerScreenAccessor).leftPos }
                 click(context, book.first, book.second)
                 val moved = context.computeOnClient<Int, Nothing> { (it.gui.screen() as ContainerScreenAccessor).leftPos } - leftBefore
                 check(moved != 0) { "The recipe book did not move the inventory" }
