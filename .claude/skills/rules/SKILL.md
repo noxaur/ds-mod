@@ -32,6 +32,9 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | The release build runs only on dragsim.co, unless the player turns DragSim Only off | `Game` gates every feature in `core`, `SwitchesTest` makes the edge ask `Feature.runs`, and `GameTest`, `DragSimTest` and the game test `DragSimOnlyTest` |
 | A feature fires only in the area it names | `Feature` takes an `Area` and `Game` gates on it. `FeatureReplayTest` replays each fixture outside the area |
 | A feature reads no area for itself, from the tab list or the sidebar, and sits in its area's folder | `InfoRows` hands a feature no place and refuses an area row, `area-by-declaration` in `mod/…/Rules.kt` for a place named in a feature, and `RulesTest` |
+| A feature tells the player's own kills through one part | `OwnKills`, and `kills-by-own-kills` in `mod/…/Rules.kt` for Combat XP read anywhere else |
+| A feature marks slots and reads a container again after a change through one layer | `SlotMarks` and `ContainerReader`, and `container-by-reader` in `mod/…/Rules.kt` for a handler that only sets a flag |
+| A feature follows the player's active pet through one part | `CurrentPet`, and `pet-by-current-pet` in `mod/…/Rules.kt` for a pet read anywhere else |
 | The mod's text and colors come from its text layer | `TextLayerTest` reads the compiled classes, and `text-by-role` in `mod/…/Rules.kt` for a hex color or a `§` |
 | A feature reads a chat line by its start, and a line that starts right and fails to parse is counted | `line` in `Feature`, and `chat-by-line` in `mod/…/Rules.kt` for a chat handler written by hand |
 | The mod's shapes are drawn by its kit, in the player's theme | `KitTest` reads the compiled classes |
