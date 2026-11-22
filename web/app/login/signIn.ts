@@ -1,5 +1,6 @@
 import { Effect } from "effect";
 import { sessionCookie, sessionOf, verifyOneTimeToken } from "../backend";
+import { inProduction } from "../env";
 
 /** Holds a redeemed session until the player confirms whose it is. Sent only to the login page. */
 export const pendingCookie = "dsmod_pending";
@@ -32,7 +33,7 @@ const put = (jar: Jar, name: string, value: string, expires: Date, path: string)
     path,
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: inProduction(),
   });
 
 const dropPending = (jar: Jar) => put(jar, pendingCookie, "", new Date(0), "/login");

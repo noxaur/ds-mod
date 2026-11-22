@@ -47,6 +47,12 @@ class BackButtonsTest : FabricClientGameTest {
             val at = button(context)
             check(at == context.slotCorner(4 * 9 - 6)) { "The Back button is at $at, not where Go Back sits" }
             context.takeScreenshot("back-button-charcoal")
+            val window = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.screenWidth to it.window.screenHeight }
+            context.input.resizeWindow(window.first + 200, window.second + 100)
+            context.waitTicks(2)
+            check(button(context) == context.slotCorner(4 * 9 - 6)) { "A resize lost the Back button or left it where Go Back was" }
+            context.input.resizeWindow(window.first, window.second)
+            context.waitTicks(2)
             context.hoverSlot(4 * 9 - 6)
             context.takeScreenshot("back-button-hovered")
             context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }

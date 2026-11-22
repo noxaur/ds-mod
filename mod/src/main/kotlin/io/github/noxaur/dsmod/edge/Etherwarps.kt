@@ -25,7 +25,7 @@ object Etherwarps {
     // The world the line is followed through, held only while it is, so a world the player left is not kept.
     private var level: ClientLevel? = null
     private val blocks = Etherwarp.Blocks { x, y, z ->
-        val level = level!!
+        val level = checkNotNull(level) { "the line is followed only while its world is held" }
         !level.getBlockState(at.set(x, y, z)).getCollisionShape(level, at).isEmpty
     }
 

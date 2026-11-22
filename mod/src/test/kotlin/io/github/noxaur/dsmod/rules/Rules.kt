@@ -49,6 +49,28 @@ val rules = listOf(
         span = Span.FILE,
     ),
     Rule(
+        id = "container-by-reads",
+        files = "src/{main,debug}/**.{kt,java}",
+        except = "src/main/{kotlin/**/edge/ContainerScreens.kt,java/**/edge/mixin/ContainerScreenAccessor.java}",
+        forbid = Regex("""\bContainerScreenAccessor\b"""),
+        fix = "Read a container screen's place from `ContainerScreens.kt`: `containerLeft`, `containerTop`, `containerWidth`, " +
+            "`containerHeight`, `slotUnderMouse`, `screenX(slot)` and `screenY(slot)`, and draw at a slot's own x and y inside " +
+            "`screen.drawInContainer(graphics) { .. }`. If a read is missing, add it there.",
+        example = "val left = (screen as ContainerScreenAccessor).leftPos",
+        examples = listOf("import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor", "ContainerScreenAccessor at = (ContainerScreenAccessor) screen;"),
+    ),
+    Rule(
+        id = "screen-by-hook",
+        files = "src/{main,debug}/**.{kt,java}",
+        except = "src/main/kotlin/**/edge/ScreenHooks.kt",
+        forbid = Regex("""\bAFTER_INIT\b"""),
+        fix = "Add to a screen with `ScreenHooks.onEveryLayout<ScreenType> { screen, opened -> .. }`. It runs on every layout, " +
+            "because Fabric drops a screen's listeners on each one, and `opened` is true only on the first, so state for one " +
+            "menu survives a resize. For a container screen, `openedByServer` and `creative` in `ContainerScreens.kt` name which ones.",
+        example = "ScreenEvents.AFTER_INIT.register { _, screen, _, _ -> }",
+        examples = listOf("ScreenEvents\n    .AFTER_INIT", "FabricScreens.AFTER_INIT.register((client, screen, w, h) -> {});"),
+    ),
+    Rule(
         id = "text-by-role",
         files = "src/main/**.{kt,java}",
         // PlayerNames strips the `§` codes of an older capture's raw text and reads them to tell an NPC's label. It colors nothing.
@@ -61,6 +83,140 @@ val rules = listOf(
             "from core.text and print it with `Chat.send`. If no role fits, add one to `Role`.",
         example = "val gold = 0xFF_AA_00",
         examples = listOf("val glass = 0xFF_AA_00_FF", "val gold = 0xFFAA00"),
+    ),
+    Rule(
+        id = "item-data-by-hand",
+        files = "src/main/kotlin/**/edge/**.kt",
+        except = "src/main/kotlin/**/edge/Items.kt",
+        forbid = Regex(""""(?:item_data|item_skin)""""),
+        fix = "Read a stack's SkyBlock id with `stack.itemId`, its uuid with `stack.itemUuid` and its skin with `stack.skinId`, " +
+            "from edge/Items.kt, which copies the tag once per item. For another field, add it there.",
+        example = """val id = stack.get(DataComponents.CUSTOM_DATA)?.copyTag()?.getCompoundOrEmpty("item_data")?.getStringOr("item_id", "")""",
+        examples = listOf("""tag.getCompoundOrEmpty("extra").getCompoundOrEmpty("item_skin").getStringOr("skinId", "")"""),
+    ),
+    Rule(
+        id = "lore-glyphs-by-hand",
+        files = "src/main/kotlin/**/core/**.kt",
+        except = "src/main/kotlin/**/core/game/Item.kt",
+        forbid = Regex("""[\uE000-\uF8FF]|\\u(?:[Ee][0-9A-Fa-f]{3}|[Ff][0-8][0-9A-Fa-f]{2})"""),
+        fix = "Read lore as `item.cleanLore`, which drops the glyphs of the server's resource pack and trims each line once per " +
+            "item, and the lines under a header with `item.section(header)`, or `item.sections(regex) { heading, lines -> .. }`.",
+        example = """line.filterNot { it in '\uE000'..'\uF8FF' }""",
+        examples = listOf("line.filterNot { it in '\uE000'..'\uF8FF' }", "val glyph = '\uE001'"),
+    ),
+    Rule(
+        id = "item-json-by-hand",
+        files = "src/main/kotlin/**/core/{game,feature,contribute}/**.kt",
+        except = "src/main/kotlin/**/core/game/Item.kt",
+        forbid = Regex("""as\?\s*JsonObject|\bdata\s*\[\s*"(?:item_data|extra)""""),
+        fix = "Read an item's data with `item.string(\"item_data\", \"rarity\")`, or `item.objectAt(..)` for an object. " +
+            "Other JSON reads with `jsonObject` and `jsonPrimitive` inside a `runCatching`.",
+        example = """((item.data["item_data"] as? JsonObject)?.get("rarity") as? JsonPrimitive)?.contentOrNull""",
+        examples = listOf("(data[\"extra\"] as?\n    JsonObject)", """item.data["item_data"]?.jsonObject?.get("rarity")"""),
+        span = Span.FILE,
+    ),
+    Rule(
+        id = "number-by-helper",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        forbid = Regex("""\.format\("""),
+        fix = "Write a number with `fixed`, `amount`, `grouped` or `short`, and a time with `clock`, `duration` or " +
+            "`secondsLeft`, from core.text. If none fits, add one to `core/text/Numbers.kt`.",
+        example = """value("%.1f".format(Locale.US, tps))""",
+        examples = listOf("""String.format(Locale.US, "%.1fs", seconds)"""),
+    ),
+    Rule(
+        id = "rate-by-helper",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        forbid = Regex("""MILLIS_PER_(HOUR|MINUTE)|\b3_?600_?000\b"""),
+        fix = "Turn a count over a span into a rate with `perHour(count, millis)`, and a wait into text with " +
+            "`duration(millis)` or `secondsLeft(millis)`, from core.text.",
+        example = "const val MILLIS_PER_HOUR = 3_600_000.0",
+        examples = listOf("val rate = eyes * 3600000 / inEnd", "left / MILLIS_PER_MINUTE"),
+    ),
+    Rule(
+        id = "count-by-helper",
+        files = "src/main/kotlin/**/core/**.kt",
+        except = "src/main/kotlin/**/core/text/**.kt",
+        forbid = Regex(
+            """groupValues(\[\d+]|\??\.get\(\d+\))\??\.to(Int|Long|Double|Float)|\.replace\(",", ""\)|""" +
+                """(destructured\??\.let\s*\{\s*|\bline\([^{}\n]*\{\s*(?=\([\w\s,]*\)\s*,\s*\w+\s*->)|val\s*)\([\w\s,]*?\b(?<name>\w+)\b[\w\s,]*?\)""" +
+                """(\s*,\s*\w+)?\s*(->|=[^\n]*destructured)(?:[^{}]|\{[^{}]*})*?\b\k<name>\??\.to(Int|Long|Double|Float)(OrNull)?\(\)""",
+        ),
+        fix = "Read a number the server wrote with `count(text)` for a whole one or `number(text)` for one with decimals, " +
+            "from core.text. Both take the commas and give null for text that is no number.",
+        example = """toNext = left.replace(",", "").toLong()""",
+        examples = listOf(
+            "position = match.groupValues[1].toInt()",
+            "PERCENT.find(it)?.groupValues?.get(1)?.toFloatOrNull()",
+            "feature.line(\"Activated \", ACTIVATED) { (level, name), _ -> summoned(name, level.toInt()) }",
+            "QUEUE.matchEntire(name)?.destructured?.let { (count, size) ->\n    queued = count.toInt()\n    queueSize = size.toInt()\n}",
+            "val (dealt, place) = yours?.destructured ?: return@line\nposition = place.toInt()",
+            "val (level, name) = LINE.matchEntire(plain)?.destructured ?: return null\nval color = spans.lastOrNull { it.isNotBlank() }\nreturn Pet(name, level.toIntOrNull())",
+        ),
+        span = Span.FILE,
+    ),
+    Rule(
+        id = "no-bang-bang",
+        files = "src/{main,debug}/**.kt",
+        forbid = Regex("""!!(?![$"=])"""),
+        fix = "Say what a null means here: `?: return` when it can't happen in play, a local `val` for a smart cast, " +
+            "or `checkNotNull(x) { \"why\" }` when null is a bug.",
+        example = "val id = held.after!!.id",
+        examples = listOf("run(items[0]!!)", "slots[it]!!.isEmpty"),
+    ),
+    Rule(
+        id = "no-wall-clock-in-core",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        forbid = Regex("""System\.currentTimeMillis|System\.nanoTime|Instant\.now\("""),
+        fix = "A feature reads time from the `now` its handler receives, so a replay and a game test see the same clock.",
+        example = "val at = System.currentTimeMillis()",
+        examples = listOf("val at = System.nanoTime()", "val at = Instant.now()"),
+    ),
+    Rule(
+        id = "no-swallowed-catch",
+        files = "src/{main,debug}/**.kt",
+        forbid = Regex("""catch\s*\([^)]*\)\s*\{\s*\}"""),
+        fix = "A catch that does nothing hides the failure. Log it with `log.error(..)`, return what the failure means, " +
+            "or use `runCatching { .. }.getOrNull()` where a failure is an expected answer.",
+        example = "try { save() } catch (e: IOException) { }",
+        examples = listOf("try { save() } catch (e: IOException) {}", "catch (e: Exception) {\n    }"),
+        span = Span.FILE,
+    ),
+    Rule(
+        id = "item-id-by-items",
+        files = "src/main/kotlin/**/edge/**.kt",
+        except = "src/main/kotlin/**/edge/Items.kt",
+        forbid = Regex("""BuiltInRegistries\.ITEM\.getKey"""),
+        fix = "Read a stack's id with `stack.id` from `edge/Items.kt`, so every id is spelled the same way.",
+        example = "val id = BuiltInRegistries.ITEM.getKey(stack.item)",
+    ),
+    Rule(
+        id = "gametest-no-swallowed-wait",
+        files = "src/gametest/**.kt",
+        forbid = Regex("""runCatching\s*\{[^}]*\bwait(?:For|Until)"""),
+        fix = "A wait that times out is a failed test, so let it throw. To check that something does not happen, " +
+            "`waitTicks(n)` for as long as it would take and then assert the count.",
+        example = "runCatching { context.waitFor({ count(it, word) >= times }, ROUND_TRIP) }",
+        examples = listOf("runCatching { context.waitUntil(\"it came\") { done() } }"),
+    ),
+    Rule(
+        id = "gametest-widget-by-servermenus",
+        files = "src/gametest/**.kt",
+        except = "src/gametest/**/ServerMenus.kt",
+        forbid = Regex("""Screens\.getWidgets\("""),
+        fix = "Find a widget on the open screen with `ServerMenus.widget<W>(context) { .. }` or `ServerMenus.widgets<W>(context)`, " +
+            "which read it on the client thread and skip a hidden one.",
+        example = "Screens.getWidgets(screen).filterIsInstance<ImageButton>().single()",
+    ),
+    Rule(
+        id = "gametest-poll-by-waitfor",
+        files = "src/gametest/**.kt",
+        forbid = Regex("""repeat\(\d+\)\s*\{(?:(?!\n\s*\}\n)[\s\S]){0,250}?waitTicks\(1\)"""),
+        fix = "Wait for a condition with `context.waitFor({ .. }, ticks)`, or `context.waitUntil(\"what\") { .. }` from Waits.kt, " +
+            "which throws when the time is up. A loop of `waitTicks(1)` ends quietly and the test goes on.",
+        example = "repeat(100) { if (done()) return@repeat else context.waitTicks(1) }",
+        examples = listOf("repeat(200) {\n    if (done()) return\n    context.waitTicks(1)\n}"),
+        span = Span.FILE,
     ),
     Rule(
         id = "gametest-point-by-pointer",

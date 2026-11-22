@@ -7,7 +7,6 @@ import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
-import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.gui.components.ImageButton
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.HopperScreen
@@ -157,9 +156,7 @@ class MenuThemeTest : FabricClientGameTest {
                 val shot = context.takeScreenshot("themed-inventory-${theme.name.lowercase()}")
                 solid[theme] = shot
                 checkPanel(context, shot, theme)
-                val (x, y) = context.computeOnClient<Pair<Int, Int>, Nothing> { client ->
-                    Screens.getWidgets(client.gui.screen()!!).filterIsInstance<ImageButton>().single().let { it.x to it.y }
-                }
+                val (x, y) = ServerMenus.widgets<ImageButton>(context).single().let { it.x to it.y }
                 val face = pixel(context, shot, x + 3, y + 3)
                 check(face in listOf(theme.raised, theme.hover).map { it and 0xFFFFFF }) { "The recipe book button is %06X in %s, not a kit button".format(face, shot) }
             }

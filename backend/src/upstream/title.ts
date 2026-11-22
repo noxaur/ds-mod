@@ -1,4 +1,3 @@
-/** `NEST_ZEALOT` and `nest zealot` are both `Nest Zealot`. */
 export const titleCase = (id: string): string =>
   id
     .split(/[_\s]+/u)
