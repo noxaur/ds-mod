@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.core.feature.general
 import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.config.KeyBind
 import io.github.noxaur.dsmod.core.config.SettingsTree
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -48,7 +49,7 @@ class AutoClickTest {
 
     @Test
     fun `the player's own clicks on top of auto clicks stay at 9 point 9 a second`() {
-        assertEquals(990, held(20 * 100).count { t -> listOf(step(t), trigger.spend(nanos)).any { it } })
+        assertEquals(990, held(20 * 100).sumOf { t -> listOf(step(t), trigger.spend(nanos)).count { it } })
     }
 
     @Test
@@ -56,6 +57,15 @@ class AutoClickTest {
         clicks(held(20))
         nanos += 500_000_000L
         assertEquals(1, (0 until 10).count { trigger.tick(true, true, false, true, nanos) && trigger.spend(nanos) })
+    }
+
+    @Test
+    fun `uneven ticks never fit 11 clicks in a second`() {
+        val random = Random(1)
+        val at = (0 until 20 * 30).map { it * TICK + random.nextLong(-20_000_000L, 20_000_000L) }
+        val admitted = at.filter { trigger.tick(true, true, false, true, it) && trigger.spend(it) }
+        assertTrue(admitted.size > 280)
+        assertTrue(admitted.windowed(11).all { it.last() - it.first() >= 1_000_000_000L })
     }
 
     @Test
