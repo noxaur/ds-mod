@@ -7,7 +7,9 @@ import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.KeyBind
+import io.github.noxaur.dsmod.core.game.ContainerState.Companion.INVENTORY
 import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudLook
@@ -56,7 +58,7 @@ enum class InventoryLayout(private val label: String) {
  */
 class InventoryHud(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "inventory-hud", Area.ANYWHERE, Store.GENERAL, "Show a grid of the items in your inventory on the HUD.", default = false, formerly = listOf("inventoryPreview"), hud = ::hud)
-    private val inventory = ContainerReader(feature, FIRST..LAST)
+    private val inventory = InventoryReader(feature)
 
     val shownRows = feature.order("inventoryRows", "Rows", "Pick the rows to show, and drag them into order.", listOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM))
     val look = feature.choice("inventoryLook", "Look", "Show the items on the plate, on nothing, or as your inventory.", InventoryLook.INVENTORY)
@@ -85,9 +87,14 @@ class InventoryHud(config: DsModConfig) : HasFeature {
     private var shown = settings()
     private var block: HudBlock? = null
 
+    init {
+        feature.on<SlotChanged> { event, _ -> inventory.changed(event) { it in FIRST..LAST } }
+    }
+
     fun hud(now: Long): HudBlock? {
-        val read = inventory.changed()
+        val read = inventory.stale && feature.container.id == INVENTORY && feature.container.slots.size > LAST
         if (read) {
+            inventory.stale = false
             items = feature.container.slots.subList(FIRST, LAST + 1).toList()
         }
         val changed = shown != settings()

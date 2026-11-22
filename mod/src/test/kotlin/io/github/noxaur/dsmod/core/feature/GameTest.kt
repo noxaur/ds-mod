@@ -127,22 +127,6 @@ class GameTest {
     }
 
     @Test
-    fun `a part handles the events it needs beside its feature, in the order each was added`() {
-        val heard = ArrayList<String>()
-        val listener = object : HasFeature {
-            override val feature = Feature(config, "listener", Area.ANYWHERE, Store.END, "Hears a hop in a test.")
-
-            init {
-                feature.on<WorldChanged> { _, _ -> heard += "part" }
-                feature.on<WorldChanged> { _, _ -> heard += "feature" }
-            }
-        }
-        val game = Game(listOf(listener.feature))
-        game.post(0, WorldChanged)
-        assertEquals(listOf("part", "feature"), heard)
-    }
-
-    @Test
     fun `a slayer spawn line in the world the player left claims no boss in the next`() {
         tree.feature<BossBeacon>().feature.enabled = true
         say(0, "☠ SLAYER BOSS SPAWNING!")

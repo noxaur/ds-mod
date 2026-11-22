@@ -7,6 +7,7 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.FrameRate
 import io.github.noxaur.dsmod.core.game.PingMeasured
+import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudLook
 import io.github.noxaur.dsmod.core.text.TextBuilder
@@ -71,6 +72,7 @@ class PerformanceStats(config: DsModConfig) : HasFeature {
             pings[pingCount % PINGS] = ping.millis
             pingCount++
         }
+        feature.on<WorldChanged> { _, now -> clock.clear(now) }
     }
 
     fun hud(now: Long): HudBlock? {
