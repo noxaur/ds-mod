@@ -33,6 +33,7 @@ class ContainerPoller(private val game: Game) {
     private var inventory: Read? = null
     private var scheduled = false
     private var left = BUDGET_NANOS
+    private val changes = ArrayList<SlotChanged>()
 
     fun poll(client: Minecraft) {
         read(client)
@@ -78,7 +79,11 @@ class ContainerPoller(private val game: Game) {
             val item = if (stack.isEmpty) null else stack.toItem()
             if (item == items[i]) continue
             items[i] = item
-            game.post(System.currentTimeMillis(), SlotChanged(i, item))
+            changes += SlotChanged(i, item)
+        }
+        if (changes.isNotEmpty()) {
+            game.post(System.currentTimeMillis(), changes)
+            changes.clear()
         }
         left -= System.nanoTime() - start
     }

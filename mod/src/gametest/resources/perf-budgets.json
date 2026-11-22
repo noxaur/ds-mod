@@ -56,7 +56,7 @@
       "group": "Tick",
       "label": "Menu packets, 54 slots swapped at once",
       "unit": "µs",
-      "cap": 1000
+      "cap": 500
     },
     "item-sights": {
       "group": "Tick",
