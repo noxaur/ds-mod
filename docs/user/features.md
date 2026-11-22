@@ -109,7 +109,7 @@ Times every item ability you use, such as Giant's Slam, the Tuba's Howl, a katan
 
 ### Equipment Display
 
-Shows the armor you wear and your pet as a row of icons on the HUD, with each head's skin and each leather piece's dye. Your pet's head joins the row once you open the Pets menu or it floats near you, and until then the pet shows as its name under the row. Open the chat and point at a piece to read its tooltip. The pet's tooltip from the Pets menu names its held item.
+Shows the armor you wear and your pet as a row of icons on the HUD, with each head's skin and each leather piece's dye. Your pet's head joins the row once you open the Pets menu or it floats near you, and until then the pet shows as its name under the row. Open the chat and point at a piece to read its tooltip. The pet's tooltip from the Pets menu names its held item. A dungeon's sidebar names no pet, so there the row keeps the pet you had out.
 
 | Setting | Does |
 | --- | --- |
