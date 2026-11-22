@@ -39,12 +39,12 @@ class SettingsScreenTest : FabricClientGameTest {
 
             val general = DsModClient.settings.general
             try {
-                general.settingsKey = GLFW.GLFW_KEY_KP_ADD
+                general.settingsKey.value = GLFW.GLFW_KEY_KP_ADD
                 context.input.pressKey(GLFW.GLFW_KEY_KP_ADD)
                 context.waitTicks(3)
                 check(screen() is SettingsScreen) { "The Settings Key opened ${screen()}" }
             } finally {
-                general.settingsKey = -1
+                general.settingsKey.value = -1
                 context.runOnClient<Nothing> { it.gui.setScreen(null) }
                 context.waitTicks(2)
             }

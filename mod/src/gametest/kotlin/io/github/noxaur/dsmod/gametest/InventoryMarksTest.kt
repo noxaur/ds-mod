@@ -101,7 +101,7 @@ class InventoryMarksTest : FabricClientGameTest {
         val grown = context.placed(ID).scale
         check(grown == docked.scale + 1f / guiScale) { "A step up from a docked grid drawn at ${docked.scale} drew it at $grown, not ${docked.scale + 1f / guiScale}" }
         context.setScreen { null }
-        DsModClient.settings.hud.positions.remove(ID)
+        DsModClient.settings.hud.positions.value -= ID
     }
 
     private fun dockedRow(width: Int, height: Int): Pair<Pair<Int, Int>, Pair<Int, Int>>? {

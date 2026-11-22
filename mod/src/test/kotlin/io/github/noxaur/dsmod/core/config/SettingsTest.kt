@@ -10,15 +10,17 @@ import kotlin.test.assertTrue
 
 class SettingsTest {
     private class Values {
-        var on = true
-        var distance = 4f
-        var height = 0f
-        var gap = 250f
-        var tier = Tier.EPIC
-        var key = 76
-        var spans = listOf(Section(175, 200))
-        var other = false
-        var pieces = mutableListOf(Piece.HELMET, Piece.BOOTS, Piece.PET)
+        private val s = Stored(Store.GENERAL)
+
+        val on = s.slot("on", true)
+        val distance = s.slot("distance", 4f)
+        val height = s.slot("height", 0f)
+        val gap = s.slot("gap", 250f)
+        val tier = s.slot("tier", Tier.EPIC)
+        val key = s.slot("key", 76)
+        val spans = s.slot("spans", listOf(Section(175, 200)))
+        val other = s.slot("other", false)
+        val pieces = s.slot("pieces", listOf(Piece.HELMET, Piece.BOOTS, Piece.PET))
     }
 
     private enum class Tier { RARE, EPIC, RNGESUS }
@@ -35,33 +37,33 @@ class SettingsTest {
 
     private val v = Values()
     private val rows = Rows().apply {
-        switch(Bind.of(v::on), "Feature", "Turn it on.") {
-            number(v::distance, "Distance", "Set it.", 1f..50f, step = 0.5f)
-            keys(v::key, "Key", "Pick it.")
+        switch(v.on.bind, "Feature", "Turn it on.") {
+            number(v.distance.bind, "Distance", "Set it.", 1f..50f, step = 0.5f)
+            keys(v.key.bind, "Key", "Pick it.")
         }
-        number(v::height, "Height", "Set it.", -2f..3f, step = 0.1f)
-        number(v::gap, "Gap", "Set it.", 50f..1000f, step = 50f, unit = " ms")
-        choice(v::tier, "Tier", "Pick it.")
-        span(Bind.of(v::spans), "Timing", "Pick it.", max = 200)
-        order(v::pieces, "Pieces", "Pick them.")
-        pick(Bind("Values.other", v::other::get, v::other::set), "Look", "Pick it.", listOf(false, true)) { Look.Slots(io.github.noxaur.dsmod.core.container.SlotStyle(), if (it) 3 else 1) }
+        number(v.height.bind, "Height", "Set it.", -2f..3f, step = 0.1f)
+        number(v.gap.bind, "Gap", "Set it.", 50f..1000f, step = 50f, unit = " ms")
+        choice(v.tier.bind, "Tier", "Pick it.", Tier.entries)
+        span(v.spans.bind, "Timing", "Pick it.", max = 200)
+        order(v.pieces.bind, "Pieces", "Pick them.", Piece.entries)
+        pick(v.other.bind, "Look", "Pick it.", listOf(false, true)) { Look.Slots(io.github.noxaur.dsmod.core.container.SlotStyle(), if (it) 3 else 1) }
     }.rows.also { SettingsTree.link(it, null) }
     private val byName = rows.flatMap { it.walk().toList() }.associateBy { it.name }
 
     private fun number(name: String) = byName.getValue(name) as Number
 
-    private fun heightFold() = Rows().apply { fold("f", "Fold", "More.") { number(v::height, "Height", "Set it.", -2f..3f, step = 0.1f) } }.rows.single()
+    private fun heightFold() = Rows().apply { fold("f", "Fold", "More.") { number(v.height.bind, "Height", "Set it.", -2f..3f, step = 0.1f) } }.rows.single()
 
     @Test
     fun `a number clamps, keeps to its steps from the minimum, and has the step's decimals`() {
         val distance = number("Distance")
         distance.value = 60f
-        assertEquals(50f, v.distance)
+        assertEquals(50f, v.distance.value)
         distance.value = 4.3f
-        assertEquals(4.5f, v.distance)
+        assertEquals(4.5f, v.distance.value)
         val height = number("Height")
         height.value = 0.3f
-        assertEquals(0.3f, v.height, "a tenth stays a tenth, not 0.30000001")
+        assertEquals(0.3f, v.height.value, "a tenth stays a tenth, not 0.30000001")
         assertEquals(1, height.decimals)
         assertEquals(0, number("Gap").decimals)
         assertEquals("0.3", height.format())
@@ -71,9 +73,9 @@ class SettingsTest {
     fun `a number steps, by ten with Shift, and stops at its ends`() {
         val gap = number("Gap")
         gap.step(1)
-        assertEquals(300f, v.gap)
+        assertEquals(300f, v.gap.value)
         gap.step(-10)
-        assertEquals(50f, v.gap)
+        assertEquals(50f, v.gap.value)
     }
 
     @Test
@@ -91,9 +93,9 @@ class SettingsTest {
         assertEquals(0f, height.zero)
         assertEquals(1f, number("Distance").zero)
         height.at(1.0)
-        assertEquals(3f, v.height)
+        assertEquals(3f, v.height.value)
         height.at(0.5)
-        assertEquals(0.5f, v.height)
+        assertEquals(0.5f, v.height.value)
         assertEquals(0.5f, height.fraction(0.5f))
     }
 
@@ -102,11 +104,11 @@ class SettingsTest {
         @Suppress("UNCHECKED_CAST")
         val tier = byName.getValue("Tier") as Choice<Tier>
         tier.step(1)
-        assertEquals(Tier.RNGESUS, v.tier)
+        assertEquals(Tier.RNGESUS, v.tier.value)
         tier.step(1)
-        assertEquals(Tier.RARE, v.tier)
+        assertEquals(Tier.RARE, v.tier.value)
         tier.step(-1)
-        assertEquals(Tier.RNGESUS, v.tier)
+        assertEquals(Tier.RNGESUS, v.tier.value)
         assertTrue("rngesus" in tier.searchText)
     }
 
@@ -118,10 +120,10 @@ class SettingsTest {
         assertTrue(distance.changed)
         assertEquals("4.0", distance.default { "" })
         distance.reset()
-        assertEquals(4f, v.distance)
+        assertEquals(4f, v.distance.value)
         val key = byName.getValue("Key") as KeyBind
         key.clear()
-        assertEquals(KeyBind.NONE, v.key)
+        assertEquals(KeyBind.NONE, v.key.value)
         assertTrue(key.changed)
     }
 
@@ -131,17 +133,17 @@ class SettingsTest {
         assertEquals("4.0, L", (byName.getValue("Feature") as Switch).closed(names))
         assertEquals("250 ms", byName.getValue("Gap").summary(names))
         assertEquals("175–200", byName.getValue("Timing").summary(names))
-        v.spans = emptyList()
+        v.spans.value = emptyList()
         assertEquals("Never", byName.getValue("Timing").summary(names))
         assertNull(byName.getValue("Feature").summary(names), "a switch leaves itself out")
     }
 
     @Test
     fun `rows under an off switch dim and stay editable`() {
-        v.on = false
+        v.on.value = false
         assertTrue(number("Distance").dimmed)
         number("Distance").step(1)
-        assertEquals(4.5f, v.distance)
+        assertEquals(4.5f, v.distance.value)
         assertFalse(number("Height").dimmed)
     }
 
@@ -149,10 +151,10 @@ class SettingsTest {
     fun `a fold is changed when a row in it is, and resets them all`() {
         val fold = heightFold()
         assertFalse(fold.changed)
-        v.height = 1f
+        v.height.value = 1f
         assertTrue(fold.changed)
         fold.reset()
-        assertEquals(0f, v.height)
+        assertEquals(0f, v.height.value)
     }
 
     @Test
@@ -168,7 +170,7 @@ class SettingsTest {
         assertEquals("Key, key bind, L", byName.getValue("Key").narration(keys))
         assertEquals("Timing, span, 175 to 200", byName.getValue("Timing").narration(keys))
         val more = Rows().apply {
-            fold("f", "Fold", "More.") { switch(Bind.of(v::other), "Other", "Turn it on.") }
+            fold("f", "Fold", "More.") { switch(v.other.bind, "Other", "Turn it on.") }
             action("moveHud", "Move HUD", "Drag a block.", button = "Move") {}
         }.rows
         assertEquals("Fold, fold, collapsed", more[0].narration(keys))
@@ -180,17 +182,17 @@ class SettingsTest {
         val keys = { _: Int -> "K" }
         number("Distance").value = 7.5f
         assertEquals("Distance, number, 7.5, changed from 4.0", byName.getValue("Distance").narration(keys))
-        v.on = false
+        v.on.value = false
         assertEquals("Distance, number, 7.5, changed from 4.0, dimmed, Feature is off", byName.getValue("Distance").narration(keys))
         assertEquals("Feature, switch, off, collapsed, changed from On", byName.getValue("Feature").narration(keys))
         val fold = heightFold()
-        v.height = 1f
+        v.height.value = 1f
         assertEquals("Fold, fold, expanded, changed", fold.narration(keys, open = true), "a fold has no default of its own to name")
     }
 
     @Test
     fun `a row names the switch that dims it, the nearest first`() {
-        v.on = false
+        v.on.value = false
         assertEquals("Feature", number("Distance").dimmedBy?.name)
         assertNull(number("Height").dimmedBy)
     }
@@ -212,19 +214,19 @@ class SettingsTest {
         val pieces = pieces()
         pieces.move(3, 1)
         assertEquals(listOf(Piece.HELMET, Piece.CHESTPLATE, Piece.BOOTS, Piece.PET), pieces.entries, "a hidden entry moves too")
-        assertEquals(listOf(Piece.HELMET, Piece.BOOTS, Piece.PET), v.pieces, "and the value keeps only the shown ones")
+        assertEquals(listOf(Piece.HELMET, Piece.BOOTS, Piece.PET), v.pieces.value, "and the value keeps only the shown ones")
         pieces.switch(1)
-        assertEquals(listOf(Piece.HELMET, Piece.CHESTPLATE, Piece.BOOTS, Piece.PET), v.pieces, "it shows where it sits")
+        assertEquals(listOf(Piece.HELMET, Piece.CHESTPLATE, Piece.BOOTS, Piece.PET), v.pieces.value, "it shows where it sits")
         pieces.switch(0)
-        assertEquals(listOf(Piece.CHESTPLATE, Piece.BOOTS, Piece.PET), v.pieces)
+        assertEquals(listOf(Piece.CHESTPLATE, Piece.BOOTS, Piece.PET), v.pieces.value)
         assertEquals(Piece.HELMET, pieces.entries[0], "a hidden entry keeps its place")
         pieces.switch(0)
-        assertEquals(Piece.HELMET, v.pieces.first(), "and shows in it again")
+        assertEquals(Piece.HELMET, v.pieces.value.first(), "and shows in it again")
         for (i in 1..3) pieces.switch(i)
-        assertEquals(listOf(Piece.HELMET), v.pieces)
+        assertEquals(listOf(Piece.HELMET), v.pieces.value)
         assertFalse(pieces.canSwitch(0))
         pieces.switch(0)
-        assertEquals(listOf(Piece.HELMET), v.pieces, "the last shown entry cannot hide")
+        assertEquals(listOf(Piece.HELMET), v.pieces.value, "the last shown entry cannot hide")
     }
 
     @Test
@@ -233,12 +235,12 @@ class SettingsTest {
         val before = pieces.entries
         val shown = pieces.value
         assertEquals(2, pieces.move(0, 2), "a drag drops it on the line under the mouse")
-        assertEquals(listOf(Piece.BOOTS, Piece.PET, Piece.HELMET), v.pieces)
+        assertEquals(listOf(Piece.BOOTS, Piece.PET, Piece.HELMET), v.pieces.value)
         assertEquals(3, pieces.move(2, 3 + 1), "a key past the end stays at the end")
         assertEquals(0, pieces.move(0, -1))
         pieces.restore(before, shown)
         assertEquals(before, pieces.entries)
-        assertEquals(shown, v.pieces)
+        assertEquals(shown, v.pieces.value)
     }
 
     @Test
@@ -251,16 +253,16 @@ class SettingsTest {
         assertEquals("Boots, switch, on, 1 of 4", pieces.entryNarration(0))
         assertEquals("Chestplate, switch, off, 4 of 4", pieces.entryNarration(3))
         pieces.reset()
-        assertEquals(listOf(Piece.HELMET, Piece.BOOTS, Piece.PET), v.pieces)
+        assertEquals(listOf(Piece.HELMET, Piece.BOOTS, Piece.PET), v.pieces.value)
         assertEquals(Piece.HELMET, pieces.entries[0], "a reset rebuilds the list around the value")
-        v.pieces = mutableListOf(Piece.PET, Piece.PET, Piece.BOOTS)
-        pieces.value = v.pieces
-        assertEquals(listOf(Piece.PET, Piece.BOOTS), v.pieces, "a value holds each entry once")
+        v.pieces.value = listOf(Piece.PET, Piece.PET, Piece.BOOTS)
+        pieces.value = v.pieces.value
+        assertEquals(listOf(Piece.PET, Piece.BOOTS), v.pieces.value, "a value holds each entry once")
     }
 
     @Test
     fun `a row reaches the field it is bound to`() {
-        assertEquals("Values.distance", (number("Distance")).field)
-        assertEquals("Values.other", (byName.getValue("Look") as Valued<*>).field)
+        assertEquals("General.distance", (number("Distance")).field)
+        assertEquals("General.other", (byName.getValue("Look") as Valued<*>).field)
     }
 }

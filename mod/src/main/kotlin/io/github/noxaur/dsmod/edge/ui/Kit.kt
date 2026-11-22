@@ -100,7 +100,7 @@ object Kit {
     private const val PAGE_TAB_LEAD_UP = 12
     private const val PAGE_TAB_TEXT_UP = 11
 
-    val theme: Theme get() = DsModClient.settings.hud.theme
+    val theme: Theme get() = DsModClient.settings.hud.theme.value
     val font: Font get() = Minecraft.getInstance().font
 
     fun state(active: Boolean, hovered: Boolean, pressed: Boolean) = when {

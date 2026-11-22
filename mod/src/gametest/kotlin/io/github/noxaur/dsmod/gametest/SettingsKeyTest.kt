@@ -21,8 +21,8 @@ class SettingsKeyTest : FabricClientGameTest {
         context.worldBuilder().create().use {
             try {
                 context.waitTicks(5)
-                check(settings.settingsKey == -1) { "The Settings Key starts on ${settings.settingsKey}" }
-                settings.settingsKey = unclaimedKey
+                check(settings.settingsKey.value == -1) { "The Settings Key starts on ${settings.settingsKey.value}" }
+                settings.settingsKey.value = unclaimedKey
                 context.input.pressKey(unclaimedKey)
                 context.waitTicks(3)
                 check(open()) { "The Settings Key opened ${screen()}" }
@@ -50,7 +50,7 @@ class SettingsKeyTest : FabricClientGameTest {
                 context.takeScreenshot("settings-search")
                 context.runOnClient<Nothing> { SettingsScreen.session().current.search("") }
             } finally {
-                settings.settingsKey = -1
+                settings.settingsKey.value = -1
                 close()
             }
         }

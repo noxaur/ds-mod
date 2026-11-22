@@ -152,7 +152,7 @@ class HudEditorScreen(
         scale.active = id != null
         scale.value = HudScale.label(id?.let(readouts::scale) ?: 1f)
         reset.active = id != null && readouts.isPlaced(id)
-        hudScale.value = HudScale.label(settings.scale)
+        hudScale.value = HudScale.label(settings.scale.value)
     }
 
     private fun inPanel(x: Double, y: Double) = x >= panelX && x < panelX + panelWidth && y >= panelY && y < panelY + panelHeight

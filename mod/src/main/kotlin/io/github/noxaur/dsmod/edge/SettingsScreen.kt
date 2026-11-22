@@ -75,7 +75,7 @@ class SettingsScreen(
     private val icons = List(sections.size) { if (it == FAVORITES) Icon.STAR else null }
     private val tree = NavTree(sections.map { it.named.size })
     private val pane = Scroll()
-    private val rows = SettingRows(opened, ::build, ::scrollTo, stars = SettingRows.Stars({ it in config.favorites }, ::star, { config.general.favoriteKey }))
+    private val rows = SettingRows(opened, ::build, ::scrollTo, stars = SettingRows.Stars({ it in config.favorites }, ::star, { config.general.favoriteKey.value }))
 
     private lateinit var search: KitTextField
     private lateinit var nav: KitNavTree
@@ -299,7 +299,7 @@ class SettingsScreen(
             val hits = Favorites.hits(sections, view.rows(every, config.favorites) { it.id }.map { it.id })
             if (hits.isEmpty()) {
                 y += EMPTY_TOP
-                val key = config.general.favoriteKey.takeIf { it >= 0 }?.let(Keys::name)
+                val key = config.general.favoriteKey.value.takeIf { it >= 0 }?.let(Keys::name)
                 for ((line, ink) in listOf(
                     "No favorites yet." to Kit.Ink.NORMAL,
                     (if (key == null) "Click a setting's star to keep it here." else "Click a setting's star, or press $key over it, to keep it here.") to Kit.Ink.MUTED,
@@ -419,7 +419,7 @@ class SettingsScreen(
         val key = event.key()
         eatChar = false
         if (rows.capturing) return rows.keyPressed(event)
-        val favorite = config.general.favoriteKey
+        val favorite = config.general.favoriteKey.value
         if (key == favorite && !Keys.isMouse(favorite) && favoriteFree(event) && rows.starAt(mouseX, mouseY, keyboard = true)) return true.also { eatChar = true }
         if (Keys.control(event) && controlKey(event)) return true
         if (Keys.alt(event) && (event.isLeft || event.isRight)) return true.also { history(event.isLeft) }
@@ -481,7 +481,7 @@ class SettingsScreen(
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
         sync()
         if (!rows.recordingKeys && (event.button() == MOUSE_BACK || event.button() == MOUSE_FORWARD)) return true.also { history(event.button() == MOUSE_BACK) }
-        val favorite = config.general.favoriteKey
+        val favorite = config.general.favoriteKey.value
         val inPane = event.x >= side && event.y >= BAR
         if (!rows.capturing && Keys.isMouse(favorite) && event.button() == favorite && favoriteFree(event) && inPane && rows.starAt(event.x, event.y, keyboard = false)) return true
         if ((rows.capturing || event.x >= side && event.y >= BAR) && rows.mouseClicked(event, doubleClick)) {

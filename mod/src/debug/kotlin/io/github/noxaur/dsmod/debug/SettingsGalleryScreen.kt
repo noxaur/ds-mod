@@ -7,6 +7,8 @@ import io.github.noxaur.dsmod.core.config.Kind
 import io.github.noxaur.dsmod.core.config.Pick
 import io.github.noxaur.dsmod.core.config.Rows
 import io.github.noxaur.dsmod.core.config.Setting
+import io.github.noxaur.dsmod.core.config.Store
+import io.github.noxaur.dsmod.core.config.Stored
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.config.Switch
 import io.github.noxaur.dsmod.core.container.MarkStyle
@@ -48,31 +50,33 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
     private class Column(val width: Int, val parts: List<Pair<String, List<Setting>>>)
 
     private class Values {
-        var on = true
-        var off = false
-        var feature = true
-        var open = true
-        var heading = true
-        var distance = 4f
-        var tilt = -12f
-        var tier = Tier.EPIC
-        var views = Tier.RARE
-        var preset = MarkStyle.FRAME
-        var theme = Theme.VANILLA
-        var key = 342
-        var none = 75
-        var spans = listOf(Section(150, 160), Section(175, 200))
-        var sparkled = MarkStyle.AURA
-        var gate = false
-        var dimNumber = 4f
-        var dimTier = Tier.EPIC
-        var dimKey = 76
-        var dimSpans = listOf(Section(175, 200))
-        var dimPreset = MarkStyle.AURA
-        var foundPreset = MarkStyle.FRAME
-        var foundSparkles = false
-        var rows = mutableListOf(Row.TOP, Row.HOTBAR)
-        var dimPieces = mutableListOf(EquipmentPiece.HELMET, EquipmentPiece.PET)
+        private val s = Stored(Store.GENERAL)
+
+        val on = s.slot("on", true)
+        val off = s.slot("off", false)
+        val feature = s.slot("feature", true)
+        val open = s.slot("open", true)
+        val heading = s.slot("heading", true)
+        val distance = s.slot("distance", 4f)
+        val tilt = s.slot("tilt", -12f)
+        val tier = s.slot("tier", Tier.EPIC)
+        val views = s.slot("views", Tier.RARE)
+        val preset = s.slot("preset", MarkStyle.FRAME)
+        val theme = s.slot("theme", Theme.VANILLA)
+        val key = s.slot("key", 342)
+        val none = s.slot("none", 75)
+        val spans = s.slot("spans", listOf(Section(150, 160), Section(175, 200)))
+        val sparkled = s.slot("sparkled", MarkStyle.AURA)
+        val gate = s.slot("gate", false)
+        val dimNumber = s.slot("dimNumber", 4f)
+        val dimTier = s.slot("dimTier", Tier.EPIC)
+        val dimKey = s.slot("dimKey", 76)
+        val dimSpans = s.slot("dimSpans", listOf(Section(175, 200)))
+        val dimPreset = s.slot("dimPreset", MarkStyle.AURA)
+        val foundPreset = s.slot("foundPreset", MarkStyle.FRAME)
+        val foundSparkles = s.slot("foundSparkles", false)
+        val rows = s.slot("rows", listOf(Row.TOP, Row.HOTBAR))
+        val dimPieces = s.slot("dimPieces", listOf(EquipmentPiece.HELMET, EquipmentPiece.PET))
         var binds = Grouped(
             sampleBinds("/sbmenu") + listOf(
                 CommandBind("Pets", "/pets", listOf(GLFW.GLFW_KEY_E)),
@@ -86,8 +90,8 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
         )
         var noBinds = Grouped<CommandBind>()
         var dimBinds = Grouped(listOf(CommandBind("End", "/warp end", listOf(GLFW.GLFW_KEY_F6))))
-        var tabs = TabLayout.DEFAULT
-        var dimTabs = TabLayout.DEFAULT
+        val tabs = s.slot("tabs", TabLayout.DEFAULT)
+        val dimTabs = s.slot("dimTabs", TabLayout.DEFAULT)
     }
 
     private enum class Tier(private val label: String) {
@@ -110,55 +114,55 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
     private class Well(val x: Int, val y: Int, val width: Int, val height: Int, val caption: String)
 
     private val v = Values()
-    private val gate = Switch("gate", "Feature", "Turn it on.", Bind.of(v::gate))
-    private val heading = Switch("heading", "Heading", "Turn the group on.", Bind.of(v::heading))
+    private val gate = Switch("gate", "Feature", "Turn it on.", v.gate.bind)
+    private val heading = Switch("heading", "Heading", "Turn the group on.", v.heading.bind)
 
     private val rowsPage: List<List<Pair<String, List<Setting>>>> = listOf(
         listOf(
             "Switch: on, changed, with settings" to rows {
-                switch(Bind.of(v::on), "Dragon Timer", "Show when the egg returns.")
-                switch(Bind.of(v::off), "Fullbright", "Light the whole world.")
-                switch(Bind.of(v::feature), "Slot Lock", "Lock slots and items.") { keys(v::key, "Slot Key", "Lock the slot.") }
-                switch(Bind.of(v::open), "Protector Spawn Beam", "Show a beam.", id = "openSwitch") { keys(v::none, "Item Key", "Lock the item.") }
+                switch(v.on.bind, "Dragon Timer", "Show when the egg returns.")
+                switch(v.off.bind, "Fullbright", "Light the whole world.")
+                switch(v.feature.bind, "Slot Lock", "Lock slots and items.") { keys(v.key.bind, "Slot Key", "Lock the slot.") }
+                switch(v.open.bind, "Protector Spawn Beam", "Show a beam.", id = "openSwitch") { keys(v.none.bind, "Item Key", "Lock the item.") }
             },
             "Number: from the minimum, signed" to rows {
-                number(v::distance, "Distance", "Set the distance.", 1f..50f, step = 0.5f)
-                number(v::tilt, "Tilt", "Angle the camera.", -45f..45f, step = 1f, unit = "°")
+                number(v.distance.bind, "Distance", "Set the distance.", 1f..50f, step = 0.5f)
+                number(v.tilt.bind, "Tilt", "Angle the camera.", -45f..45f, step = 1f, unit = "°")
             },
         ),
         listOf(
             "Choice and pick: idle, changed" to rows {
-                choice(v::tier, "Alert Tier", "Pick the lowest tier.")
-                choice(v::views, "F5 Views", "Pick the views.")
-                pick(v::preset, "Style", "Pick a look.") { slotLook(it) }
-                pick(v::theme, "Theme", "Pick the colors.") { Look.Swatch(it) }
+                choice(v.tier.bind, "Alert Tier", "Pick the lowest tier.", Tier.entries)
+                choice(v.views.bind, "F5 Views", "Pick the views.", Tier.entries)
+                pick(v.preset.bind, "Style", "Pick a look.", MarkStyle.entries) { slotLook(it) }
+                pick(v.theme.bind, "Theme", "Pick the colors.", Theme.entries) { Look.Swatch(it) }
             },
             "Keys: set, cleared" to rows {
-                keys(v::key, "Key", "Pick the key.", id = "galleryKey")
-                keys(v::none, "None", "Pick the key.", id = "galleryNone")
+                keys(v.key.bind, "Key", "Pick the key.", id = "galleryKey")
+                keys(v.none.bind, "None", "Pick the key.", id = "galleryNone")
             },
             "Dimmed too" to rows {
-                span(Bind.of(v::dimSpans), "Timing", "Pick it.", max = 200, dependsOn = gate)
-                pick(Bind.of(v::dimPreset), "Style", "Pick it.", MarkStyle.entries, dependsOn = gate) { slotLook(it) }
+                span(v.dimSpans.bind, "Timing", "Pick it.", max = 200, dependsOn = gate)
+                pick(v.dimPreset.bind, "Style", "Pick it.", MarkStyle.entries, dependsOn = gate) { slotLook(it) }
                 action("noop", "Edit Binds", "Edit them.", button = "Edit", dependsOn = gate) {}
             },
         ),
         listOf(
             "Span, fold, action, order" to rows {
-                span(Bind.of(v::spans), "Beam Timing", "Pick when it shows.", max = 200, ticks = listOf(50, 100, 150))
+                span(v.spans.bind, "Beam Timing", "Pick when it shows.", max = 200, ticks = listOf(50, 100, 150))
                 fold("openFold", "Open Fold", "Build your own.") {
-                    pick(Bind.of(v::sparkled), "Sparkled", "Pick the shape.", MarkStyle.entries) {
+                    pick(v.sparkled.bind, "Sparkled", "Pick the shape.", MarkStyle.entries) {
                         Look.Slots(SlotStyle(it, opacity = 60, sparkles = true), 1)
                     }
                 }
                 action("noop", "Move HUD", "Drag a block.", button = "Move") {}
-                order(v::rows, "Rows", "Order them.", id = "openOrder")
+                order(v.rows.bind, "Rows", "Order them.", Row.entries, id = "openOrder")
             },
             "Dimmed under an off switch" to rows {
-                number(v::dimNumber, "Distance", "Set it.", 1f..50f, step = 0.5f, dependsOn = gate)
-                choice(v::dimTier, "Tier", "Pick it.", dependsOn = gate)
-                keys(v::dimKey, "Key", "Pick it.", dependsOn = gate)
-                order(v::dimPieces, "Pieces", "Pick them.", id = "dimOrder", dependsOn = gate)
+                number(v.dimNumber.bind, "Distance", "Set it.", 1f..50f, step = 0.5f, dependsOn = gate)
+                choice(v.dimTier.bind, "Tier", "Pick it.", Tier.entries, dependsOn = gate)
+                keys(v.dimKey.bind, "Key", "Pick it.", dependsOn = gate)
+                order(v.dimPieces.bind, "Pieces", "Pick them.", EquipmentPiece.entries, id = "dimOrder", dependsOn = gate)
             },
         ),
     )
@@ -170,15 +174,15 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
             360,
             listOf(
                 "Items: groups, a folded one, an off one, clashes" to rows {
-                    items(Bind.of(v::binds), "Binds", "Name each bind, pick its keys and choose where it works.", CommandBinds, id = "galleryBinds")
+                    items(Bind("General.binds", { v.binds }, { v.binds = it }), "Binds", "Name each bind, pick its keys and choose where it works.", CommandBinds, id = "galleryBinds")
                 },
             ),
         ),
         Column(
             244,
             listOf(
-                "Items: empty" to rows { items(Bind.of(v::noBinds), "Binds", "Add one.", CommandBinds, id = "noBinds") },
-                "Items: dimmed" to rows { items(Bind.of(v::dimBinds), "Binds", "Add one.", CommandBinds, id = "dimBinds", dependsOn = gate) },
+                "Items: empty" to rows { items(Bind("General.noBinds", { v.noBinds }, { v.noBinds = it }), "Binds", "Add one.", CommandBinds, id = "noBinds") },
+                "Items: dimmed" to rows { items(Bind("General.dimBinds", { v.dimBinds }, { v.dimBinds = it }), "Binds", "Add one.", CommandBinds, id = "dimBinds", dependsOn = gate) },
             ),
         ),
     )
@@ -188,7 +192,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
             COLUMN,
             listOf(
                 "Panel: menu tabs, changed" to rows {
-                    panel(Bind.of(v::tabs), "Tabs", "Press a place to add a tab.", Canvas.MENU_TABS, id = "galleryTabs") { "${it.size} tabs" }
+                    panel(v.tabs.bind, "Tabs", "Press a place to add a tab.", Canvas.MENU_TABS, id = "galleryTabs") { "${it.size} tabs" }
                 },
             ),
         ),
@@ -197,7 +201,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
             listOf(
                 "Panel: the HUD's layout" to rows {
                     val hud = DsModClient.settings.hud
-                    panel(Bind("Hud.positions", { HashMap(hud.positions) }, { hud.positions.clear(); hud.positions.putAll(it) }), "Layout", "Drag a block.", Canvas.HUD_LAYOUT, id = "galleryLayout") {
+                    panel(hud.positions.bind, "Layout", "Drag a block.", Canvas.HUD_LAYOUT, id = "galleryLayout") {
                         "${it.size} moved"
                     }
                     action("galleryMove", "Move HUD", "Move it over the game.", button = "Move") {}
@@ -208,7 +212,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
             COLUMN,
             listOf(
                 "Panel: dimmed" to rows {
-                    panel(Bind.of(v::dimTabs), "Tabs", "Press a place.", Canvas.MENU_TABS, id = "dimTabs", dependsOn = gate) { "${it.size} tabs" }
+                    panel(v.dimTabs.bind, "Tabs", "Press a place.", Canvas.MENU_TABS, id = "dimTabs", dependsOn = gate) { "${it.size} tabs" }
                 },
                 "Preview: the player's model" to rows {
                     preview("galleryPreview", "Preview", "Drag the model to turn it.", Canvas.PLAYER_MODEL)
@@ -233,8 +237,8 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
     private val settingRows = SettingRows(opened, ::layout, { _, _ -> })
 
     private val found = "Found by a search: frame look" to rows {
-        pick(Bind.of(v::foundPreset), "Style", "Pick a look for the marks.", MarkStyle.entries, id = "foundStyle") { slotLook(it) }
-        fold("foundFold", "Hotbar Look", "Give the hotbar its own look.") { switch(Bind.of(v::foundSparkles), "Sparkles", "Add glints.", id = "foundSparkles") }
+        pick(v.foundPreset.bind, "Style", "Pick a look for the marks.", MarkStyle.entries, id = "foundStyle") { slotLook(it) }
+        fold("foundFold", "Hotbar Look", "Give the hotbar its own look.") { switch(v.foundSparkles.bind, "Sparkles", "Add glints.", id = "foundSparkles") }
     }
     private val foundRows = SettingRows(HashSet(), ::layout, { _, _ -> })
     private val wells = ArrayList<Well>()
@@ -246,14 +250,14 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
     private fun rows(block: Rows.() -> Unit) = Rows().apply(block).rows.also { SettingsTree.link(it, null) }
 
     init {
-        v.off = true
-        v.views = Tier.RNGESUS
-        v.theme = Theme.CHARCOAL
-        v.tilt = 12f
-        v.none = -1
-        v.foundSparkles = true
-        v.rows = mutableListOf(Row.TOP)
-        v.tabs = TabLayout.DEFAULT.drop(1)
+        v.off.value = true
+        v.views.value = Tier.RNGESUS
+        v.theme.value = Theme.CHARCOAL
+        v.tilt.value = 12f
+        v.none.value = -1
+        v.foundSparkles.value = true
+        v.rows.value = listOf(Row.TOP)
+        v.tabs.value = TabLayout.DEFAULT.drop(1)
     }
 
     override fun init() {

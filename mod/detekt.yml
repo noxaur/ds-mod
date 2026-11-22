@@ -622,19 +622,19 @@ style:
     includes: ['**/src/gametest/**']
     excludes: ['**/gametest/Themes.kt']
     methods:
-      - value: 'io.github.noxaur.dsmod.core.config.DsModConfig.Hud.setTheme'
+      - value: 'io.github.noxaur.dsmod.core.config.DsModConfig.Hud.getTheme'
         reason: 'Run a step in a theme with `context.inTheme(Theme.VANILLA) { .. }`, which puts the theme back after it, or take a screenshot in both themes with `context.shotInBothThemes(name)`, from Themes.kt.'
     examples:
       - |
         import io.github.noxaur.dsmod.core.config.DsModConfig
         import io.github.noxaur.dsmod.core.ui.Theme
         fun example(hud: DsModConfig.Hud) {
-            hud.theme = Theme.VANILLA
+            hud.theme.value = Theme.VANILLA
         }
     counterExamples:
       - |
         import io.github.noxaur.dsmod.core.config.DsModConfig
-        fun example(hud: DsModConfig.Hud) = hud.theme
+        fun example(hud: DsModConfig.Hud) = hud.scale.value
 
   ForbiddenMethodCall/gametest-pixels-by-pixels:
     active: true
