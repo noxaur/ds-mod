@@ -77,6 +77,7 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     private var markAt = 0L
 
     private var quiet = true
+    private var quietClock = -1
 
     init {
         feature.on<ActionBar> { bar, now ->
@@ -148,9 +149,10 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     }
 
     private fun live(now: Long): Long? {
-        if (quiet) return null
+        if (quiet && clock.updates == quietClock) return null
         val at = clock.millis(now)
         quiet = timers.values.none { at - it.end < READY_MILLIS }
+        quietClock = clock.updates
         return at.takeUnless { quiet }
     }
 
@@ -210,9 +212,9 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     }
 
     fun hud(now: Long): HudBlock? {
+        read()
         if (!list.value) return null
         val at = live(now) ?: return null
-        read()
         val from = (shortest.value * 1000).toLong()
         val shown = timers.values.filter { it.lore >= from && at - it.end < READY_MILLIS }.sortedBy { it.end }
         if (shown.isEmpty()) return null
@@ -229,9 +231,9 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     }
 
     fun slots(now: Long): Map<Int, SlotMark> {
+        read()
         if (!onItems.value) return emptyMap()
         markAt = live(now) ?: return emptyMap()
-        read()
         if (clock.updates != marksClock) {
             marksClock = clock.updates
             marks.invalidate()
