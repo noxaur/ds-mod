@@ -201,7 +201,7 @@ object Contribute {
                 files.isEmpty() -> tell { body("Nothing is waiting to be sent. Open Contribute in the settings to record a request.") }
                 else -> {
                     tell { body("Sending ${files.size} kept recording" + if (files.size == 1) "." else "s.") }
-                    files.forEach { upload(Kept.requestId(it)!!, it) }
+                    files.forEach { file -> upload(checkNotNull(Kept.requestId(file)) { "a kept recording is named for its request" }, file) }
                 }
             }
         }

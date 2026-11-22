@@ -16,9 +16,10 @@ import io.github.noxaur.dsmod.core.game.SetCharge
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
+import io.github.noxaur.dsmod.core.text.fixed
+import io.github.noxaur.dsmod.core.text.secondsLeft
 import io.github.noxaur.dsmod.core.text.text
 import java.util.IdentityHashMap
-import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.ceil
 
@@ -276,8 +277,8 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
 
         /** `3.2s` under ten seconds, `45s` under a minute, then `1m 48s`, each rounded up so Ready is never early. */
         fun seconds(millis: Long): String {
-            if (millis < 10_000) return String.format(Locale.US, "%.1fs", ceil(millis / 100.0) / 10)
-            val whole = ceil(millis / 1000.0).toLong()
+            if (millis < 10_000) return "${fixed(ceil(millis / 100.0) / 10, 1)}s"
+            val whole = secondsLeft(millis)
             return if (whole < 60) "${whole}s" else "${whole / 60}m ${whole % 60}s"
         }
     }
