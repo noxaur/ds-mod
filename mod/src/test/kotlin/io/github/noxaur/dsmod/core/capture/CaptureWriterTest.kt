@@ -12,6 +12,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import java.nio.file.Files
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.FutureTask
 import kotlin.io.path.readLines
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -74,14 +75,22 @@ class CaptureWriterTest {
 
     @Test
     fun `close waits for every record, however long the writer takes`() {
+        val started = CountDownLatch(1)
+        val release = CountDownLatch(1)
         val writer = CaptureWriter(dir)
         writer.record(RawRecord.BOSSBARS) {
-            Thread.sleep(300)
+            started.countDown()
+            release.await()
             buildJsonObject { put("title", "slow") }
         }
         repeat(100) { writer.record(it.toLong(), drop) }
+        started.await()
 
-        writer.close()
+        val closing = FutureTask { writer.close() }
+        val closer = Thread(closing).apply { start() }
+        while (closer.state != Thread.State.TIMED_WAITING) Thread.onSpinWait()
+        release.countDown()
+        closing.get()
 
         assertEquals(101, writer.file.readLines().size)
     }

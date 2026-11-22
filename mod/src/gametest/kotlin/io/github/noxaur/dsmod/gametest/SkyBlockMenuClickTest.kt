@@ -11,21 +11,15 @@ class SkyBlockMenuClickTest : FabricClientGameTest {
     private val menuItem = "nether_star[custom_data={item_data:{item_id:\"skyblock_menu\"}}]"
 
     override fun runTest(context: ClientGameTestContext) {
-        fun carried() = context.carried()
         fun open() {
             context.openInventory()
             context.waitForScreen(InventoryScreen::class.java)
             context.waitTicks(3)
         }
-        fun click(slot: Int) {
-            context.hoverOwnSlot(slot)
-            context.input.pressMouse(0)
-            context.waitTicks(3)
-        }
         fun picksUp(slot: Int, why: String) {
-            click(slot)
-            check(carried() == 1) { "A click on $why picked nothing up" }
-            click(slot)
+            context.clickOwnSlot(slot)
+            check(context.carried() == 1) { "A click on $why picked nothing up" }
+            context.clickOwnSlot(slot)
         }
 
         context.worldBuilder().create().use { world ->
@@ -35,7 +29,7 @@ class SkyBlockMenuClickTest : FabricClientGameTest {
             context.waitTicks(20)
 
             open()
-            val sent = ClickSpy.during(context) { click(8) }
+            val sent = ClickSpy.during(context) { context.clickOwnSlot(8) }
             check(sent.isEmpty()) { "The click on the SkyBlock Menu item reached the slot: $sent" }
             ServerMenus.shows(context, "SkyBlock Menu")
             val kept = world.server.computeOnServer<Boolean, Nothing> { server -> server.player.inventory.getItem(8).`is`(Items.NETHER_STAR) }

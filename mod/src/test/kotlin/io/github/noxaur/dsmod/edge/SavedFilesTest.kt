@@ -8,6 +8,7 @@ import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
 import io.github.noxaur.dsmod.core.game.TabList
 import java.nio.file.Files
+import java.util.concurrent.Executors
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.readText
@@ -68,14 +69,12 @@ class SavedFilesTest {
         val blocked = dir.resolve("blocked")
         blocked.writeText("a file where the folder should be")
         val session = game()
-        val files = SavedFiles(blocked, session.game)
+        val writer = Executors.newSingleThreadExecutor()
+        val files = SavedFiles(blocked, session.game) { writer }
         session.drop("RARE DROP! (Summoning Eye) (✯ 90%)")
-        // Each flush reports the write that failed before it and starts the next, which the pause lets fail too.
-        var flushes = 0
-        while ("zealot-tracker.save" !in session.game.metrics.snapshot().failures && flushes++ < 200) {
-            files.flush()
-            Thread.sleep(25)
-        }
+        files.flush()
+        writer.submit {}.get()
+        files.flush()
         assertTrue("zealot-tracker.save" in session.game.metrics.snapshot().failures)
 
         Files.delete(blocked)

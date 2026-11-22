@@ -3095,7 +3095,6 @@ mod/src/test/kotlin/io/github/noxaur/dsmod/debug/capture/CutFixtureTest.kt: /** 
 mod/src/test/kotlin/io/github/noxaur/dsmod/debug/capture/CutFixtureTest.kt: // A cut that starts after the hop and before the new tab list starts nowhere.
 mod/src/test/kotlin/io/github/noxaur/dsmod/debug/capture/CutFixtureTest.kt: // A hop inside the window keeps the tab list the window started with.
 mod/src/test/kotlin/io/github/noxaur/dsmod/debug/capture/CutFixtureTest.kt: // Opened before the window, the kept inventory is its state, and the slot emptied since stays empty.
-mod/src/test/kotlin/io/github/noxaur/dsmod/edge/SavedFilesTest.kt: // Each flush reports the write that failed before it and starts the next, which the pause lets fail too.
 mod/src/test/kotlin/io/github/noxaur/dsmod/edge/SavedFilesTest.kt: // The tab list in `game()` is the one change, and it is the player's, not a feature's.
 mod/src/test/kotlin/io/github/noxaur/dsmod/rules/ClonesTest.kt: /** * Finds code copied with a value or two changed. A run of [RUN] tokens that shows twice, or of [SHORT_RUN] tokens that * shows three times, is a copied block. Two lines of one file, each at least [LINE] tokens long, that differ in at most * [CHANGED] of their tokens are a copied line. Comments, imports and the parameter lists of declarations are left out, * because an override has to repeat its signature. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/rules/ClonesTest.kt: /** Each copy in [sources], a map of file to text, as the places it shows. A copy marked `rule:clone <reason>` is left out. */
