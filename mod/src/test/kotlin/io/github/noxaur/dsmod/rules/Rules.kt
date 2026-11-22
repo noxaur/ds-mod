@@ -429,13 +429,13 @@ val rules = listOf(
         id = "part-by-itself",
         files = "src/main/kotlin/**/core/feature/**.kt",
         forbid = Regex(
-            """\bval\s+(?<clock>\w+)\s*(?::\s*\w+\s*)?=\s*ServerClock\s*\([\s\S]*?\bon<\s*(?:ServerTime|WorldChanged)\s*>\s*\{(?:[^{}]*\{[^{}]*})*?[^{}]*?(?:\{[^{}]*?)?\b\k<clock>\s*\.\s*\w+\s*\(|""" +
-                """\bval\s+(?<reader>\w+)\s*(?::\s*\w+\s*)?=\s*(?:ContainerReader|SlotMarks)\s*\([\s\S]*?\bon<\s*(?:ContainerOpened|SlotChanged|WorldChanged)\s*>\s*\{(?:[^{}]*\{[^{}]*})*?[^{}]*?(?:\{[^{}]*?)?\b\k<reader>\s*\.\s*\w+\s*\(""",
+            """\bval\s+(?<clock>\w+)\s*(?::\s*\w+\s*)?=\s*ServerClock\s*\([\s\S]*?\bon<\s*(?:ServerTime|WorldChanged)\s*>\s*\{(?:[^{}]*\{[^{}]*})*?[^{}]*?(?:\{[^{}]*?)?\b\k<clock>\s*\.\s*(?:clear|record)\s*\(|""" +
+                """\bval\s+(?<reader>\w+)\s*(?::\s*\w+\s*)?=\s*(?:ContainerReader|SlotMarks)\s*\([\s\S]*?\bon<\s*(?:ContainerOpened|SlotChanged|WorldChanged)\s*>\s*\{(?:[^{}]*\{[^{}]*})*?[^{}]*?(?:\{[^{}]*?)?\b\k<reader>\s*\.\s*(?:invalidate\w*\s*\(|changed\s*\(\s*[^)\s])""",
         ),
         fix = "A part hears the events it needs for itself, because `Feature.on` runs every handler of a type in turn. `ServerClock` " +
             "follows `ServerTime` and clears itself on `WorldChanged`, and `ContainerReader` and `SlotMarks` see `ContainerOpened`, " +
             "`SlotChanged` and `WorldChanged` and tell the change through `changed()` and `marks(now)`. Drop this call from the " +
-            "handler, and read the part where the feature shows what it holds.",
+            "handler. Reading the part there is fine.",
         example = "private val clock = ServerClock(feature)\n\ninit {\n    feature.on<WorldChanged> { _, now -> clock.clear(now) }\n}",
         examples = listOf(
             "private val inventory = ContainerReader(feature, FIRST..LAST)\n\ninit {\n    feature.on<SlotChanged> { event, _ -> inventory.changed(event) { it in FIRST..LAST } }\n}",
@@ -450,6 +450,8 @@ val rules = listOf(
             "private val clock = ServerClock(feature)\ninit {\n    feature.on<WorldChanged> { _, _ -> timers.clear() }\n    feature.on<Hit> { _, now -> started = clock.millis(now) }\n}",
             "private val marks = SlotMarks(feature, ::mark)\ninit {\n    feature.on<ActionBar> { _, _ -> marks.invalidate() }\n}",
             "private val clock = ServerClock(feature)\ninit {\n    feature.on<ServerTime> { _, _ -> seen = clock.updates }\n}",
+            "private val clock = ServerClock(feature)\ninit {\n    feature.on<ServerTime> { _, now -> seenTps = clock.tps(now) }\n}",
+            "private val items = ContainerReader(feature)\ninit {\n    feature.on<SlotChanged> { _, _ -> if (items.changed()) read() }\n}",
             "private val pets = CurrentPet(feature, ::changed)\ninit {\n    feature.on<SlotChanged> { event, _ -> if (event.item == null) pets.set(null) }\n}",
         ),
         span = Span.FILE_REPORTING_LAST_LINE,
