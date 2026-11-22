@@ -1,4 +1,4 @@
-import { numberEntries, record } from "./read.ts";
+import { numberEntries, record } from "../../upstream/read.ts";
 
 /**
  * An item as the mod sees it in the game: its `id`, its tooltip and the server's `custom_data`. The tests turn one into

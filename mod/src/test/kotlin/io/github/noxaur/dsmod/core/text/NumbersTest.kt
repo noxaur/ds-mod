@@ -76,4 +76,45 @@ class NumbersTest {
         assertEquals("3h 5m", duration((3 * 60 + 5) * 60_000L))
         assertEquals("2d 4h", duration((52 * 60) * 60_000L))
     }
+
+    @Test
+    fun `a wait can round to the nearest minute instead`() {
+        assertEquals("4h 0m", duration(4 * 60 * 60_000L + 29_999, nearest = true))
+        assertEquals("4h 1m", duration(4 * 60 * 60_000L + 30_000, nearest = true))
+        assertEquals("<1m", duration(29_999, nearest = true))
+    }
+
+    @Test
+    fun `a fixed number keeps its places, a whole one too`() {
+        assertEquals("1.0", fixed(1.0, 1))
+        assertEquals("19.9", fixed(19.94, 1))
+        assertEquals("1234.50", fixed(1234.5, 2))
+        assertEquals("3", fixed(2.6, 0))
+    }
+
+    @Test
+    fun `a number the server wrote reads with or without its commas, and other text reads as none`() {
+        assertEquals(1_234_567, count("1,234,567"))
+        assertEquals(8, count("8"))
+        assertEquals(null, count(""))
+        assertEquals(null, count("1.5"))
+        assertEquals(1234.5, number("1,234.5"))
+        assertEquals(40.0, number("40"))
+        assertEquals(null, number("x"))
+    }
+
+    @Test
+    fun `a rate is per hour`() {
+        assertEquals(2000.0, perHour(1000.0, 30 * 60_000L))
+        assertEquals(6.0, perHour(1.0, 10 * 60_000L))
+    }
+
+    @Test
+    fun `the seconds left round up and stop at zero`() {
+        assertEquals(30L, secondsLeft(30_000))
+        assertEquals(30L, secondsLeft(29_001))
+        assertEquals(1L, secondsLeft(1))
+        assertEquals(0L, secondsLeft(0))
+        assertEquals(0L, secondsLeft(-5_000))
+    }
 }

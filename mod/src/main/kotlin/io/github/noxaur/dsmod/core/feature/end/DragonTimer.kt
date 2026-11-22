@@ -7,6 +7,8 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.clock
+import io.github.noxaur.dsmod.core.text.count
+import io.github.noxaur.dsmod.core.text.secondsLeft
 
 /** Follows the dragon fight in the End: the egg's return, the eyes placed and the dragon's time alive. */
 class DragonTimer(config: DsModConfig) : HasFeature {
@@ -31,18 +33,18 @@ class DragonTimer(config: DsModConfig) : HasFeature {
             phase = if (news == "spawned!") Phase.Alive(name, now) else Phase.Unknown
         }
         feature.line("The Dragon Egg is respawning", Regex("""The Dragon Egg is respawning in (\d+) seconds\.""")) { (seconds), now ->
-            phase = Phase.Egg(now + seconds.toLong() * 1000)
+            phase = Phase.Egg(now + (count(seconds) ?: return@line) * 1000L)
         }
         feature.line("✦ The Egg has Spawned!") { phase = Phase.Eyes(0) }
         feature.line(Regex("""» .+ Summoning Eye"""), Regex("""» .+ placed a Summoning Eye! \((\d+)/(\d+)\)""")) { (placed, needed), _ ->
-            phase = Phase.Eyes(placed.toInt())
-            eyesNeeded = needed.toInt()
+            phase = Phase.Eyes(count(placed) ?: return@line)
+            eyesNeeded = count(needed) ?: return@line
         }
     }
 
     fun hud(now: Long): HudBlock? = when (val phase = phase) {
         is Phase.Alive -> feature.block { row("${phase.dragon} Dragon") { value(clock(now - phase.since)) } }
-        is Phase.Egg -> feature.block { row("Egg") { value("${((phase.at - now + 999) / 1000).coerceAtLeast(0)}s") } }
+        is Phase.Egg -> feature.block { row("Egg") { value("${secondsLeft(phase.at - now)}s") } }
         is Phase.Eyes -> feature.block { row("Eyes") { value("${phase.placed}/$eyesNeeded") } }
         Phase.Unknown -> null
     }

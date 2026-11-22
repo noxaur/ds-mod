@@ -1,6 +1,6 @@
 import { Effect, Schema } from "effect";
 
-const backendUrl = process.env["BACKEND_URL"] ?? "http://127.0.0.1:16385";
+import { backendUrl, trustedKey } from "./env";
 
 export const sessionCookie = "dsmod_session";
 
@@ -22,7 +22,7 @@ const Current = Schema.NullOr(
 );
 
 const withTrustedKey = (headers: Record<string, string>) => {
-  const key = process.env["AUTH_TRUSTED_KEY"];
+  const key = trustedKey();
   return key === undefined || key === "" ? headers : { ...headers, "x-auth-trusted-key": key };
 };
 

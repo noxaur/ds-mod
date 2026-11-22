@@ -74,7 +74,7 @@ class ContributeScreen(private val signingIn: Boolean, private val parent: Scree
             addRenderableWidget(
                 KitButton(accept.right + Kit.GAP, buttons, "Skip", {
                     Contribute.skip(request)
-                    queue = queue!!.drop(1)
+                    queue = queue?.drop(1)
                     rebuildWidgets()
                 }),
             )
