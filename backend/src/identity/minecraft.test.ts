@@ -228,14 +228,6 @@ test("a backend given the relay asks Mojang through it, with the relay's key", a
   expect(new Headers(init?.headers).has(trustedKeyHeader)).toBe(false);
 });
 
-test("a backend with the trusted key also sends it, so a website from before the relay key still answers", async () => {
-  const fetchMock = mojangSays(new Response(null, { status: 204 }));
-  await mojangHasJoined({ ...relay, trustedKey: "the-trusted-key" })("Notch", "ab".repeat(20));
-  const headers = new Headers(fetchMock.mock.calls[0]?.[1]?.headers);
-  expect(headers.get(relayKeyHeader)).toBe("the-key");
-  expect(headers.get(trustedKeyHeader)).toBe("the-trusted-key");
-});
-
 test.each([
   ["refuses", new Response(null, { status: 404 }), "The website's Mojang relay answered 404."],
   ["is unreachable", new Error("down"), "The website's Mojang relay did not answer."],

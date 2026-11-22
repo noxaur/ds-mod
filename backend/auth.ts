@@ -8,12 +8,11 @@ const setting = (value: unknown) => (typeof value === "string" && value !== "" ?
 
 export default defineAuth(({ defaults, env }) => {
   const relayUrl = setting(env["MOJANG_RELAY_URL"]);
-  const trustedKey = setting(env["AUTH_TRUSTED_KEY"]);
   return {
     ...defaults,
     ...signInOptions(
       mojangHasJoined(
-        relayUrl === undefined ? undefined : { url: relayUrl, key: setting(env["MOJANG_RELAY_KEY"]) ?? "", trustedKey },
+        relayUrl === undefined ? undefined : { url: relayUrl, key: setting(env["MOJANG_RELAY_KEY"]) ?? "" },
       ),
     ),
     /** @keep Challenges need no sign-in and each is a row until it expires, so one address gets few. The count lives
@@ -22,7 +21,7 @@ export default defineAuth(({ defaults, env }) => {
       ...defaults.rateLimit,
       customRules: {
         ...defaults.rateLimit?.customRules,
-        ...websiteRules(trustedKey),
+        ...websiteRules(setting(env["AUTH_TRUSTED_KEY"])),
         "/minecraft/challenge": { window: 60, max: 10 },
         "/minecraft/verify": { window: 60, max: 10 },
       },
