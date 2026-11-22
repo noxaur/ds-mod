@@ -42,7 +42,7 @@ sealed interface InputSite {
 
     data class Stray(override val name: String, val does: List<String>) : InputSite
 
-    data class Caller(override val name: String, val reaches: List<String>, val approval: Approval?, val java: Boolean, val overloads: Int = 1) : InputSite
+    data class Caller(override val name: String, val reaches: List<String>, val approval: Approval?, val java: Boolean) : InputSite
 
     data class Stale(override val name: String) : InputSite
 }
@@ -53,6 +53,7 @@ private const val MOD = "io/github/noxaur/dsmod/"
 private const val CORE = "${MOD}core/"
 private const val LAYER = "${MOD}edge/input/"
 private const val APPROVED = "L${LAYER}InputApproved;"
+private const val WIDENER = "aw/dsmod.accesswidener"
 private const val REMOTE = "net/minecraft/client/player/RemotePlayer"
 private const val MIXIN = "Lorg/spongepowered/asm/mixin/Mixin;"
 private const val INJECT = "Lorg/spongepowered/asm/mixin/injection/Inject;"
@@ -335,41 +336,67 @@ fun inputSites(classes: List<ByteArray>, widener: List<String> = emptyList(), la
         sunk.groupBy({ it.first }, { it.second }).forEach { (from, does) -> sites += InputSite.Stray(from, does.distinct().sorted()) }
     }
 
-    fun source(node: ClassNode, method: String): Pair<ClassNode, String> {
+    fun source(node: ClassNode, name: String, desc: String?): Triple<ClassNode, String, String?> {
         val outer = node.outerClass?.let { nodes[it]?.first }
         val outerMethod = node.outerMethod
-        return if (outer != null && outerMethod != null) source(outer, outerMethod) else node to origin(method, node.kotlin)
+        if (outer != null && outerMethod != null) return source(outer, outerMethod, node.outerMethodDesc)
+        val real = origin(name, node.kotlin)
+        return Triple(node, real, desc.takeIf { real == name })
     }
 
-    val callers = LinkedHashMap<Pair<ClassNode, String>, MutableSet<String>>()
+    fun short(owner: String) = owner.removePrefix(layer).replace('/', '.').replace('$', '.')
+
+    val callers = LinkedHashMap<Triple<ClassNode, String, String?>, MutableSet<String>>()
     for ((group, members) in groups) {
         if (group in hashed) continue
         for ((node, _) in members) {
             for (method in node.methods) {
-                val reached = targets(method).mapNotNull { ref ->
+                val called = targets(method).mapNotNull { ref ->
                     val declaring = sinks.declaring(ref.owner, ref.name, ref.desc) ?: return@mapNotNull null
                     when {
-                        declaring.startsWith(layer) -> "${declaring.removePrefix(layer).replace('/', '.').replace('$', '.')}.${origin(ref.name, kotlin = true)}"
+                        declaring.startsWith(layer) -> "${short(declaring)}.${origin(ref.name, kotlin = true)}"
                         declaring.substringBefore('$') in acting -> "${display(declaring)}.${ref.name}"
                         else -> null
                     }
                 }.toList()
-                if (reached.isNotEmpty()) callers.getOrPut(source(node, method.name)) { sortedSetOf() } += reached
+                val read = method.instructions.filterIsInstance<FieldInsnNode>()
+                    .filter { it.owner.startsWith(layer) && it.name != "INSTANCE" && it.name != "Companion" && '$' !in it.name }
+                    .map { "${short(it.owner)}.${it.name}" }
+                if (called.isNotEmpty() || read.isNotEmpty()) callers.getOrPut(source(node, method.name, method.desc)) { sortedSetOf() } += called + read
             }
         }
     }
-    callers.forEach { (at, reached) ->
-        val (node, method) = at
-        val named = node.methods.filter { it.name == method && it.access and (Opcodes.ACC_SYNTHETIC or Opcodes.ACC_BRIDGE) == 0 }
-        val found = named.mapNotNull { it.approval() }
-        val approval = if (found.isEmpty() || found.size < named.size) null else Approval(found.first().by, "", found.flatMap { it.reaches }.distinct())
-        sites += InputSite.Caller("${display(node.name)}.$method", reached.toList(), approval, node.sourceFile.orEmpty().endsWith(".java"), named.size)
+
+    fun overloads(node: ClassNode, name: String) = node.methods.filter { it.name == name && it.access and (Opcodes.ACC_SYNTHETIC or Opcodes.ACC_BRIDGE) == 0 }
+
+    fun label(node: ClassNode, method: MethodNode) = "${display(node.name)}.${method.name}" + if (overloads(node, method.name).size > 1) method.desc else ""
+
+    for ((at, entries) in callers.entries.groupBy({ it.key.first to it.key.second }, { it.key.third to it.value })) {
+        val (node, name) = at
+        val java = node.sourceFile.orEmpty().endsWith(".java")
+        val shared = entries.filter { it.first == null }.flatMap { it.second }
+        val methods = overloads(node, name)
+        if (methods.isEmpty()) sites += InputSite.Caller("${display(node.name)}.$name", entries.flatMap { it.second }.distinct().sorted(), null, java)
+        for (method in methods) {
+            val reached = (entries.filter { it.first == method.desc }.flatMap { it.second } + shared).distinct().sorted()
+            if (reached.isNotEmpty()) sites += InputSite.Caller(label(node, method), reached, method.approval(), java)
+        }
+    }
+
+    val aw = widener.filter { it.isNotBlank() && !it.startsWith("accessWidener") && !it.startsWith("#") }
+    if (aw.isNotEmpty()) {
+        val line = widener.firstOrNull { it.startsWith("# @InputApproved(") }.orEmpty()
+        val approval = if (line.isEmpty()) null else Approval(
+            Regex("by = \"([^\"]*)\"").find(line)?.groupValues?.get(1).orEmpty(), Regex("hash = \"([^\"]*)\"").find(line)?.groupValues?.get(1).orEmpty(), emptyList(),
+        )
+        val digest = MessageDigest.getInstance("SHA-256").digest(aw.joinToString("\n").toByteArray()).joinToString("") { "%02x".format(it) }.take(12)
+        sites += InputSite.Gate(WIDENER, digest, listOf("opens Minecraft's private code"), approval, java = false)
     }
 
     val sited = sites.map { it.name }.toSet()
     for ((node, _) in nodes.values) {
         if (node.approval() != null && display(node.name) !in sited) sites += InputSite.Stale(display(node.name))
-        node.methods.filter { it.approval() != null }.map { "${display(node.name)}.${it.name}" }.filter { it !in sited }.distinct().forEach { sites += InputSite.Stale(it) }
+        node.methods.filter { it.approval() != null }.map { label(node, it) }.filter { it !in sited }.distinct().forEach { sites += InputSite.Stale(it) }
     }
     return sites.sortedBy { it.name }
 }
@@ -388,7 +415,7 @@ fun InputSite.problem(): String? {
     return when (this) {
         is InputSite.Stray -> "$name  (outside edge/input) call the primitive in edge/input that does this, or add one there" + does.joinToString("") { "\n    $it" }
         is InputSite.Gate -> {
-            val fix = "@InputApproved(${by}hash = \"$hash\")"
+            val fix = (if (name == WIDENER) "the line # " else "") + "@InputApproved(${by}hash = \"$hash\")"
             when {
                 leaks.isNotEmpty() -> "$name  (reaches ${leaks.joinToString()}) a primitive reaches only edge/input and core, so its hash covers all it runs"
                 this.approval == null -> "$name  (new) add $fix" + does.joinToString("") { "\n    $it" }
@@ -401,7 +428,7 @@ fun InputSite.problem(): String? {
             val fix = "@InputApproved(${by}reaches = ${quoted(reaches, java)})"
             when {
                 name.endsWith(".<init>") || name.endsWith(".<clinit>") -> "$name  (an initializer) reaches ${reaches.joinToString()}. Make the call from a named function, which takes the approval."
-                this.approval == null -> "$name  (new) add $fix" + (if (overloads > 1) " to each of its $overloads overloads" else "") + reaches.joinToString("") { "\n  + $it" }
+                this.approval == null -> "$name  (new) add $fix" + reaches.joinToString("") { "\n  + $it" }
                 approved.toSet() == reaches.toSet() -> null
                 else -> "$name  (changed) make it $fix" + (reaches - approved.toSet()).joinToString("") { "\n  + $it" } + (approved - reaches.toSet()).joinToString("") { "\n  - $it" }
             }
@@ -594,6 +621,8 @@ class InputSitesTest {
                     M("send", primitive(), marks = listOf(approved("by", "noxaur", "reaches", listOf("Send.run")))),
                     M("send", primitive(), desc = "(I)V"),
                 ),
+                example("input/Holder", run(), fields = listOf("TASK")),
+                example("HolderReader", run(*static("${MOD}example/input/Holder", "TASK"))),
                 example("Invokes", M("invokeStartAttack", access = Opcodes.ACC_PUBLIC, marks = listOf(annotation(INVOKER))), mixin = "net/minecraft/client/Minecraft"),
                 example("InvokerCaller", run(call("${MOD}example/Invokes", "invokeStartAttack"))),
             ),
@@ -615,13 +644,13 @@ class InputSitesTest {
             names(InputSite.Stray::class.java),
         )
         assertEquals(
-            listOf("DrawsAtSend", "Hook", "HooksKeys", "HooksPlayer", "Invokes", "Replaces", "Writes", "input.Budgeted", "input.Leaky", "input.Send"),
+            listOf("aw/dsmod.accesswidener", "DrawsAtSend", "Hook", "HooksKeys", "HooksPlayer", "Invokes", "Replaces", "Writes", "input.Budgeted", "input.Holder", "input.Leaky", "input.Send"),
             names(InputSite.Gate::class.java),
         )
         assertEquals(
             listOf(
-                "Approved.run", "Bad.run", "Caller.run", "DerivedCaller.run", "Draws.dsmod\$hand", "InvokerCaller.run", "Lambda.register", "Later.schedule",
-                "Overloaded.send", "Reference.run", "Unsure.run",
+                "Approved.run", "Bad.run", "Caller.run", "DerivedCaller.run", "Draws.dsmod\$hand", "HolderReader.run", "InvokerCaller.run", "Lambda.register",
+                "Later.schedule", "Overloaded.send()V", "Overloaded.send(I)V", "Reference.run", "Unsure.run",
             ),
             names(InputSite.Caller::class.java),
         )
@@ -631,7 +660,10 @@ class InputSitesTest {
         assertEquals("example.Unsure.run  (changed) make it @InputApproved(by = \"noxaur\", reaches = [\"Send.run\"])\n  + Send.run\n  - Send.other", problems.getValue("Unsure.run"))
         assertTrue(problems.getValue("Writes").orEmpty().startsWith("example.Writes  (changed) make it @InputApproved(by = \"noxaur\", hash = \""))
         assertTrue(problems.getValue("Bad.run").orEmpty().contains("no GitHub login"))
-        assertTrue(problems.getValue("Overloaded.send").orEmpty().contains("to each of its 2 overloads"))
+        assertEquals(null, problems.getValue("Overloaded.send()V"))
+        assertTrue(problems.getValue("Overloaded.send(I)V").orEmpty().contains("(new)"))
+        assertEquals(listOf("Holder.TASK"), (sites.single { it.name == "example.HolderReader.run" } as InputSite.Caller).reaches)
+        assertTrue(problems.getValue("aw/dsmod.accesswidener").orEmpty().contains("(new) add the line # @InputApproved("))
         assertEquals(listOf("example.Invokes.invokeStartAttack"), (sites.single { it.name == "example.InvokerCaller.run" } as InputSite.Caller).reaches)
         assertTrue(problems.getValue("input.Leaky").orEmpty().contains("reaches example.Plain"))
         assertEquals(null, (sites.single { it.name == "example.input.Budgeted" } as InputSite.Gate).leaks.ifEmpty { null })
