@@ -6,7 +6,7 @@ import { gzipSync } from "node:zlib";
 import { Effect } from "effect";
 import { expect, onTestFinished, test, vi } from "vite-plus/test";
 
-import { spec, testApp } from "../test/harness.ts";
+import { spec, testApp, truncatedGzip } from "../test/harness.ts";
 import { dsctl } from "./dsctl.ts";
 
 /** A backend with nothing in it, dsctl pointed at it with [token], and a way to call it as a player. */
@@ -133,7 +133,7 @@ test("unknowns lists the most seen first, one line each", async () => {
 test("a run that cannot be read is named as a problem, and the others are still written", async () => {
   const { run, lines, upload } = backend();
   const [id = ""] = await lines("create", briefFile(golem));
-  const broken = (await upload("ann", id, new Uint8Array([0x1f, 0x8b, 1, 2]))).value;
+  const broken = (await upload("ann", id, truncatedGzip())).value;
   await upload("bob", id, gzipSync("{}\n"));
   const out = directory();
   // Two uploads in the same millisecond are ordered by id, so either run can be A.

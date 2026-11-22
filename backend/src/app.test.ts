@@ -3,11 +3,11 @@ import { readFileSync } from "node:fs";
 import { expect, test, vi } from "vite-plus/test";
 
 import { openapi, openapiFile } from "../scripts/openapi.ts";
-import { advance, gzipped, spec, testApp, testClock } from "../test/harness.ts";
+import { advance, gzipped, gzippedOverLimit, signedOutCaller, spec, testApp, testClock } from "../test/harness.ts";
 import { Effect, Schema } from "effect";
 
 import { Api } from "./api.ts";
-import { MAX_BODY, type Services } from "./app.ts";
+import type { Services } from "./app.ts";
 import { MAX_UNKNOWNS } from "./contrib/contrib.ts";
 import { memoryStore } from "./contrib/store.ts";
 
@@ -158,7 +158,7 @@ test("only the exact admin token makes a caller an agent", async () => {
 });
 
 test("with no admin token set, nobody is an agent", async () => {
-  const { call } = testApp({}, () => ({ userId: null, adminToken: undefined }));
+  const { call } = testApp({}, signedOutCaller);
   for (const authorization of ["Bearer ", "Bearer undefined", ""]) {
     expect((await call(null, "GET", "/v1/admin/requests", undefined, { authorization })).status).toBe(401);
   }
@@ -195,9 +195,7 @@ test("a closed request takes no skips, and a version is a short string", async (
 test("a body over the limit is refused, and keeps nothing", async () => {
   const { call, create, submit } = backend();
   const id = await create();
-  const huge = new Uint8Array(Number(MAX_BODY) + 1);
-  huge.set([0x1f, 0x8b]);
-  expect((await submit("ann", id, huge)).status).toBe(413);
+  expect((await submit("ann", id, gzippedOverLimit())).status).toBe(413);
   expect((await call("agent", "GET", "/v1/admin/requests")).value).toMatchObject([{ submissions: [] }]);
 });
 
@@ -267,8 +265,8 @@ test("a store that fails answers 500 with nothing in it, and only that reaches t
   expect((await call("agent", "POST", "/v1/admin/requests", { wanted: 0 })).status).toBe(400);
   expect((await call(null, "GET", "/v1/contrib/requests")).status).toBe(401);
   expect((await call("ann", "POST", "/v1/contrib/unknowns", "{")).status).toBe(400);
-  const huge = new Uint8Array(Number(MAX_BODY) + 1);
-  expect((await call("ann", "POST", "/v1/contrib/requests/nothing/submissions?modVersion=1", huge)).status).toBe(413);
+  const submission = "/v1/contrib/requests/nothing/submissions?modVersion=1";
+  expect((await call("ann", "POST", submission, gzippedOverLimit())).status).toBe(413);
   expect(logged, "a refusal is the client's mistake, not the backend's").not.toHaveBeenCalled();
   const broken = { ...memoryStore(), requests: Effect.die(new Error("D1 is down")) };
   expect(await backend({ contrib: broken }).call("ann", "GET", "/v1/contrib/requests")).toEqual({
