@@ -10,7 +10,6 @@ import org.lwjgl.glfw.GLFW
 import kotlin.io.path.readText
 import kotlin.math.roundToInt
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.ChatDrags], [io.github.noxaur.dsmod.edge.Chat], [io.github.noxaur.dsmod.edge.ui.Editor], [io.github.noxaur.dsmod.edge.ui.ItemsEditor]. */
 class ChatHudEditorTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.inWorldWithoutTimerPlace { world ->

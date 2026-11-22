@@ -57,9 +57,9 @@ private const val MOUSE_FORWARD = 4
 
 class SettingsScreen(
     private val parent: Screen?,
-    private val tabs: SettingsTabs = session(),
-    private val config: DsModConfig = DsModClient.settings,
-    private val save: () -> Unit = DsModClient::saveSettings,
+    private val config: DsModConfig,
+    private val save: () -> Unit,
+    private val tabs: SettingsTabs = session(config),
     private var reveal: String? = null,
     private var query: String? = null,
 ) : Screen(text { body("ds-mod") }.toComponent()) {
@@ -602,11 +602,17 @@ class SettingsScreen(
 
         private var tabs: SettingsTabs? = null
 
-        fun session(): SettingsTabs =
-            tabs ?: SettingsTabs(Place(if (DsModClient.settings.favorites.isEmpty()) FAVORITES + 1 else FAVORITES)).also { tabs = it }
+        fun session(config: DsModConfig): SettingsTabs =
+            tabs ?: SettingsTabs(Place(if (config.favorites.isEmpty()) FAVORITES + 1 else FAVORITES)).also { tabs = it }
 
         private val opened = HashSet<String>()
 
         private val view = FavoritesView()
+
+        fun forget() {
+            tabs = null
+            opened.clear()
+            view.left()
+        }
     }
 }

@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.debug
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Bind
 import io.github.noxaur.dsmod.core.config.Canvas
 import io.github.noxaur.dsmod.core.config.Grouped
@@ -23,7 +24,6 @@ import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.core.ui.SettingsSearch
 import io.github.noxaur.dsmod.core.ui.Theme
-import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.toComponent
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.SettingRows
@@ -40,7 +40,7 @@ private const val HEIGHT = 352
 private const val COLUMN = 198
 private const val HEADING = 12
 
-class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { body(page.title) }.toComponent()) {
+class SettingsGalleryScreen(private val hud: DsModConfig.Hud, private val page: Page = Page.ROWS) : Screen(text { body(page.title) }.toComponent()) {
     enum class Page(val title: String) {
         ROWS("Settings Rows"),
         LISTS("Settings Lists"),
@@ -200,7 +200,6 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
             COLUMN,
             listOf(
                 "Panel: the HUD's layout" to rows {
-                    val hud = DsModClient.settings.hud
                     panel(hud.positions.bind, "Layout", "Drag a block.", Canvas.HUD_LAYOUT, id = "galleryLayout") {
                         "${it.size} moved"
                     }

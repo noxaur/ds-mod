@@ -259,7 +259,8 @@ fun inputSites(classes: List<ByteArray>, widener: List<String> = emptyList()): L
         val draws = sunk.isEmpty() && shape.isNotEmpty() && shape.all { it.draws }
         val does = (shape.flatMap { it.does } + sunk).distinct().sorted()
         val features = classNodes.flatMap { node ->
-            node.methods.flatMap { m -> m.instructions.filterIsInstance<LdcInsnNode>().mapNotNull { (it.cst as? Type)?.internalName } }
+            node.fields.map { Type.getType(it.desc) }.filter { it.sort == Type.OBJECT }.map { it.internalName } +
+                node.methods.flatMap { m -> m.instructions.filterIsInstance<LdcInsnNode>().mapNotNull { (it.cst as? Type)?.internalName } }
         }.filter { "${MOD}core/feature/HasFeature" in sinks.lineage(it) && it != "${MOD}core/feature/HasFeature" }.map { it.substringAfterLast('/') }.distinct().sorted()
         val digest = MessageDigest.getInstance("SHA-256")
         members.sortedBy { it.first.name }.forEach { (_, bytes) -> digest.update(behavior(bytes)) }

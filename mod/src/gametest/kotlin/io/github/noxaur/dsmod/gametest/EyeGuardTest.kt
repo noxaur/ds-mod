@@ -7,7 +7,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.block.LeverBlock
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.EyeGuards]. */
 class EyeGuardTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.inWorld { world ->

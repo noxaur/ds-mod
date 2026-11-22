@@ -12,13 +12,18 @@ import net.minecraft.util.Util
 object Pings {
     private const val EVERY_MILLIS = 1_000L
     private var sent = 0L
+    private lateinit var stats: PerformanceStats
+
+    fun bind(stats: PerformanceStats) {
+        this.stats = stats
+    }
 
     fun register() {
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             val connection = client.connection ?: return@register
             val now = Util.getMillis()
             if (now - sent < EVERY_MILLIS || client.debugOverlay.showNetworkCharts()) return@register
-            if (!DsModClient.runs<PerformanceStats>() || Stat.PING !in DsModClient.feature<PerformanceStats>().values.value || !Hud.visible) return@register
+            if (!stats.feature.runs || Stat.PING !in stats.values.value || !Hud.visible) return@register
             sent = now
             connection.send(ServerboundPingRequestPacket(now))
         }

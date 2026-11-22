@@ -12,7 +12,7 @@ import org.lwjgl.glfw.GLFW
 class SettingsScreenTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         fun screen() = context.computeOnClient<Screen?, Nothing> { it.gui.screen() }
-        fun place() = context.computeOnClient<Int, Nothing> { SettingsScreen.session().current.place.section }
+        fun place() = context.computeOnClient<Int, Nothing> { SettingsScreen.session(DsModClient.settings).current.place.section }
 
         context.waitForScreen(TitleScreen::class.java)
         check(DsModClient.settings.favorites.isEmpty() && place() != SettingsScreen.FAVORITES) { "The first open would show an empty Favorites" }

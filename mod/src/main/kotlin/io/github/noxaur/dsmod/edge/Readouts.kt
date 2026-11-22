@@ -25,7 +25,7 @@ private const val MAX_SCALE = 4f
 private const val MIN_HUD_SCALE = 0.5f
 private const val MAX_HUD_SCALE = 3f
 
-class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
+class Readouts(private val game: Game, private val settings: DsModConfig.Hud, private val hudBackground: HudBackground) {
     private val handed = IntArray(game.readouts.size) { -1 }
     private var width = 0
     private var height = 0
@@ -68,7 +68,7 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud) {
         game.messages.clear()
         val client = Minecraft.getInstance()
         val window = client.window
-        val plated = DsModClient.runs<HudBackground>()
+        val plated = hudBackground.feature.runs
         if (window.guiScaledWidth != width || window.guiScaledHeight != height || window.guiScale != guiScale ||
             settings.scale.value != hudScale || plated != background ||
             client.options.mainHand().get() !== mainHand || client.options.attackIndicator().get() !== indicator
