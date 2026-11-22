@@ -13,10 +13,8 @@ import kotlin.test.assertEquals
 
 private const val CORE = "io/github/noxaur/dsmod/core/"
 
-/** What `core` may not name: it runs in plain JVM tests, so it holds no Minecraft, Fabric or Mojang library, and nothing from `edge`. */
 private val OUTSIDE = listOf("net/minecraft/", "com/mojang/", "net/fabricmc/", "io/github/noxaur/dsmod/edge/")
 
-/** Every outside class a class in `core` names, in a descriptor, signature, annotation or instruction, as `Core -> Outside`. */
 fun impurities(classes: List<ClassNode>): List<String> = classes.filter { it.name.startsWith(CORE) }.flatMap { node ->
     val named = sortedSetOf<String>()
     node.accept(

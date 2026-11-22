@@ -4,10 +4,6 @@ import io.github.noxaur.dsmod.edge.mixin.ChatComponentAccessor
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 
-/**
- * The server sends a Rare and an Epic drop, and the edge delivers what Rare Drop Alert says. Read the screenshot:
- * the title must name the Golden Eye alone, and the mod's chat line must sit under the server's drop line.
- */
 class RareDropAlertTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.inWorld { world ->

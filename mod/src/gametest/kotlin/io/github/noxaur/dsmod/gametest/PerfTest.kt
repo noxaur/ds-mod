@@ -44,19 +44,7 @@ private const val SIDEBAR_LINES = 15
 private const val ARMORED_MOBS = 40
 private const val RECORDING_WARM_UP_TICKS = 100
 
-/**
- * Measures the mod in a real game and checks each row against `perf-budgets.json`. The numbers are the mod's
- * own [Metrics] timers, read over [WINDOWS] windows of [WINDOW_TICKS] ticks while the HUD shows [HUD_BLOCKS]
- * blocks, the open inventory has [MARKED_SLOTS] marked slots and the sidebar has [SIDEBAR_LINES] lines. Then it
- * records, with a full inventory of named items with long lore and [ARMORED_MOBS] named, armored mobs in view, and
- * reads the recorder's own timers for a pass over the items and over the entities. Last, with three bosses among those
- * mobs and the mobs hit on every tick, it reads the entity tracker's tick and the frame of Boss Beacon's and Boss
- * Tracer's marks.
- *
- * The caps are for the device in the budgets file. A fixed loop measures how fast this machine is next to
- * that device, and each time is scaled to it before the check, so a slower runner needs no caps of its own.
- * The table goes to `perf.md` in the run folder, and a row over its cap fails the test.
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.capture.BlockScan], [io.github.noxaur.dsmod.edge.mixin.CaptureInputMixin], [io.github.noxaur.dsmod.edge.mixin.HudHotbarMixin]. */
 class PerfTest : FabricClientGameTest {
     @Serializable
     private class Device(val name: String, val calibrate: Double)
@@ -72,7 +60,6 @@ class PerfTest : FabricClientGameTest {
         val samples = HashMap<String, MutableList<Double>>()
 
         context.worldBuilder().create().use { world ->
-            // A full sidebar, each line in a team's prefix as dragsim.co sends it.
             world.server.runCommand("""scoreboard objectives add perf dummy "DragSim"""")
             world.server.runCommand("scoreboard objectives setdisplay sidebar perf")
             repeat(SIDEBAR_LINES) { line ->
@@ -81,7 +68,6 @@ class PerfTest : FabricClientGameTest {
                 world.server.runCommand("team join line$line §$line")
                 world.server.runCommand("scoreboard players set §$line perf $line")
             }
-            // A full inventory of the server's items, read by item sightings while the player reports what is unseen.
             repeat(INVENTORY_SLOTS) { slot ->
                 world.server.runCommand(
                     """item replace entity @p container.$slot with diamond_sword[custom_data={item_data:{item_id:"perf_$slot",rarity:"LEGENDARY"}},""" +
@@ -134,7 +120,6 @@ class PerfTest : FabricClientGameTest {
             val failed = ArrayList<String>()
             val tables = LinkedHashMap<String, MutableList<String>>()
             for ((name, row) in budgets.rows) {
-                // The dev run has no jar to weigh.
                 if (name == "jar" && name !in samples) continue
                 val values = samples[name]?.map { if (row.unit == "µs") it * speed else it }
                 val stats = values?.let { mapOf("median" to it.sorted()[it.size / 2], "mean" to it.average(), "max" to it.max()) }
@@ -163,11 +148,6 @@ class PerfTest : FabricClientGameTest {
         }
     }
 
-    /**
-     * Adds a sample of Etherwarp Outline's frame per window, while the player sneaks with an Aspect of the Void and
-     * looks out over the flat world at nothing, so the line is followed its whole way: the range and the stretch
-     * past it where a target is too far. The view changes each tick, so each frame follows it again.
-     */
     private fun etherwarp(context: ClientGameTestContext, world: TestSingleplayerContext, samples: HashMap<String, MutableList<Double>>) {
         context.runOnClient<Nothing> { it.gui.setScreen(null) }
         world.server.runOnServer<Nothing> { server ->
@@ -194,7 +174,6 @@ class PerfTest : FabricClientGameTest {
         }
     }
 
-    /** Adds a sample for each `capture-` timer a pass ran under, per pass. A pass runs on one tick in five. */
     private fun recording(context: ClientGameTestContext, world: TestSingleplayerContext, samples: HashMap<String, MutableList<Double>>) {
         world.give(
             (0 until world.server.computeOnServer<Int, Nothing> { it.player.inventory.containerSize }).associateWith { slot ->
@@ -223,12 +202,6 @@ class PerfTest : FabricClientGameTest {
         context.runOnClient<Nothing> { Recorder.stop(session) }
     }
 
-    /**
-     * Adds a sample of the entity tracker per tick and of the boss marks per frame, with the Protector and two slayer
-     * bosses among the named mobs [recording] left. Each tick renames those mobs, as the server does a mob on each hit
-     * to show its health, so the tracker reads every name again, and the player turns so that the marks are followed
-     * on each frame.
-     */
     private fun bosses(context: ClientGameTestContext, world: TestSingleplayerContext, samples: HashMap<String, MutableList<Double>>) {
         world.server.runCommand("""execute at @a run summon iron_golem ~ ~ ~-12 {NoAI:1b,CustomName:"[Lv100] Endstone Protector 10M/10M"}""")
         world.server.runCommand("""execute at @a run summon zombie ~12 ~ ~ {NoAI:1b,CustomName:"☠ Revenant Horror I 3.8M/3.8M❤"}""")
@@ -243,8 +216,6 @@ class PerfTest : FabricClientGameTest {
             world.server.runCommand("""execute as @e[tag=perf] run data modify entity @s CustomName set value "[Lv70] Zealot ${13_000 - at}/13k❤"""")
             context.input.lookAt(at * 3f, 0f)
         }
-        // A player who fights hits mobs for minutes, so the code for a new name is compiled before it is timed. Meanwhile
-        // the features find the bosses.
         repeat(RECORDING_WARM_UP_TICKS) { at ->
             fight(-at)
             context.waitTick()
@@ -270,7 +241,6 @@ class PerfTest : FabricClientGameTest {
         getOrPut(name, ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
     }
 
-    /** A fixed amount of work for one core, in ms. */
     private fun spin(): Double {
         val start = System.nanoTime()
         var x = 88172645463325252L

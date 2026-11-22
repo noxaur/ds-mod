@@ -18,12 +18,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-/**
- * Makes a real server send each kind of interface, and checks that the capture file holds it. Covers
- * [io.github.noxaur.dsmod.edge.SidebarPoller].
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.SidebarPoller], [io.github.noxaur.dsmod.edge.capture.BlockScan], [io.github.noxaur.dsmod.edge.mixin.CaptureInputMixin]. */
 class CaptureTest : FabricClientGameTest {
-    /** What a line of each type must hold, by type. */
     private val expected = listOf(
         "system" to "RARE DROP!",
         "world" to "{}",
@@ -34,12 +30,11 @@ class CaptureTest : FabricClientGameTest {
         "actionbar" to "Mana 100",
         "title" to "Fight",
         "sidebar" to "Coins",
-        // The server blanks the line's name and puts its text in the team, as dragsim.co does.
+        // @keep The server blanks the line's name and puts its text in the team, as dragsim.co does.
         "sidebar" to "\"plain\":\"Purse: 531\"",
         "bossbars" to "Young Dragon",
         "container" to "\"size\":46",
         "slot" to "Aspect of the Test",
-        // What the `slot` event leaves out.
         "itemcomponents" to "dragsim:epic",
         "entities" to "Hologram",
         "entities" to "minecraft:dragon_head",
@@ -72,21 +67,17 @@ class CaptureTest : FabricClientGameTest {
         "entities" to "minecraft:filled_map",
         "map" to "\"colors\"",
         "time" to "gameTime",
-        // A ping is asked for only while Performance Stats shows it, which the test turns on.
         "ping" to "millis",
         "fps" to "\"fps\"",
     )
 
     override fun runTest(context: ClientGameTestContext) {
-        // `BriefTest` checks `step`, which only a brief records.
         val unchecked = eventTypes + RawRecord.entries.map { it.type } - expected.map { it.first }.toSet() - RawRecord.STEP.type
         check(unchecked.isEmpty()) { "No check for the capture types $unchecked. Make the server send each one here, and add what its line must hold to `expected`." }
         lateinit var file: Path
         context.worldBuilder().create().use { world ->
-            // The server owns map data, so make a real one for the frame to show.
             var mapId = 0
             world.server.runOnServer<Nothing> { mapId = MapItem.create(it.overworld(), 0, 0, 0.toByte(), false, false).get(DataComponents.MAP_ID)!!.id() }
-            // These exist before the capture starts, so only a scan can find them.
             listOf(
                 """execute at @a run setblock ~3 ~ ~1 minecraft:player_head[rotation=4]{profile:{id:[I;1,2,3,4],name:"DsHead",properties:[{name:"textures",value:"eyJ0ZXh0dXJlcyI6e319"}]}}""",
                 "execute at @a run setblock ~3 ~ ~2 minecraft:obsidian",
@@ -128,8 +119,6 @@ class CaptureTest : FabricClientGameTest {
             ).forEach(world.server::runCommand)
             world.eggSpawns()
             context.waitTicks(20)
-            // One mob dies and one is carried far away, which the server reports as a removal without a death. The
-            // slayer boss is hit, which renames it.
             listOf(
                 "kill @e[name=Victim]",
                 "execute as @e[name=Leaver] run tp @s ~ ~ ~5000",
@@ -137,21 +126,17 @@ class CaptureTest : FabricClientGameTest {
             ).forEach(world.server::runCommand)
             context.waitTicks(5)
             world.server.runCommand("kill @e[type=zombie]")
-            // A mob just ahead of the crosshair, for the left press to hit.
             world.server.runCommand("execute as @a at @s anchored eyes positioned ^ ^ ^2 run summon husk ~ ~-1 ~ {NoAI:1b,Silent:1b}")
             context.waitTicks(5)
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT)
             world.server.runOnServer<Nothing> { it.playerList.broadcastAll(ClientboundTabListPacket(Component.literal("Dragon Sim"), Component.literal("dragsim.co"))) }
             context.waitTicks(40)
-            // Last, because a new world drops the entities and blocks the checks above read.
             world.server.runCommand("execute in minecraft:the_nether run tp @a 0 100 0")
             context.waitTicks(20)
         }
-        // Leaving the world leaves its server, so the capture runs on past it to record that. Fabric says so on the
-        // network thread, and the features hear it at the end of the next client tick.
+        // @keep Fabric reports leaving the world on the network thread, and the features hear it at the end of the next client tick.
         context.waitTick()
-        // The file is finished off the client thread, and the toggle says so when it is whole.
         var said: String? = null
         context.runOnClient<Nothing> { client -> DsModDebug.toggleCapture(client) { said = it } }
         context.waitFor { said != null }

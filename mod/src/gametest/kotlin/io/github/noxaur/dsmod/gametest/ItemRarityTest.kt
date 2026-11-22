@@ -47,7 +47,6 @@ class ItemRarityTest : FabricClientGameTest {
         context.setScreen { null }
         context.waitTicks(5)
         context.takeScreenshot("rarity-hotbar-in-game")
-        // Match Inventory on again draws the hotbar in the inventory's look, and keeps the hotbar's own for later.
         context.runOnClient<Nothing> { itemRarity.hotbarMatches.value = true }
         check(itemRarity.hotbarLook() == itemRarity.containerStyle()) { "Matching left the hotbar in ${itemRarity.hotbarLook()}" }
         context.runOnClient<Nothing> {
@@ -89,7 +88,6 @@ class ItemRarityTest : FabricClientGameTest {
             val bow = context.computeOnClient<Item?, Nothing> { DsModClient.game.container.slots[10] }
             check(bow?.name == ServerText(ServerSpan("Rare Bow", 0x5555FF, bold = true))) { "The client read $bow" }
 
-            // Slot 36 is the first hotbar slot, which `container.0` fills with a Common item, unmarked until Mark Common is on.
             val expected = marked(9 to Role.LEGENDARY, 10 to Role.RARE)
             check(marks(context) == expected) { "Marked ${marks(context)}" }
 
@@ -102,7 +100,6 @@ class ItemRarityTest : FabricClientGameTest {
             val title = context.computeOnClient<String?, Nothing> { DsModClient.game.container.title?.plain }
             check(title == "Test Chest") { "The container was titled $title" }
             val chestMarks = marks(context)
-            // The chest's 54 slots, then the player's 27 and 9 that it shows.
             val inChest = marked(
                 2 to Role.UNCOMMON, 4 to Role.RARE, 6 to Role.EPIC, 8 to Role.LEGENDARY, 19 to Role.MYTHIC,
                 21 to Role.DIVINE, 23 to Role.SPECIAL, 54 + 0 to Role.LEGENDARY, 54 + 1 to Role.RARE,
@@ -116,7 +113,6 @@ class ItemRarityTest : FabricClientGameTest {
             val back = context.computeOnClient<Int, Nothing> { DsModClient.game.container.id }
             check(back == 0 && marks(context) == expected) { "Back in the inventory, container $back is marked ${marks(context)}" }
 
-            // With no menu open the hotbar carries the marks. Read the screenshot: white, blue and gold behind the first three items.
             context.runOnClient<Nothing> { DsModClient.feature<ItemRarity>().markCommon.value = true }
             world.server.runCommand("""item replace entity @a container.1 with bow[custom_data={item_data:{rarity:"RARE"}}]""")
             world.server.runCommand("""item replace entity @a container.2 with diamond_sword[custom_data={item_data:{rarity:"LEGENDARY"}}]""")

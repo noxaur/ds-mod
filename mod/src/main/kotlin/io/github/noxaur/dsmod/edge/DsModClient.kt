@@ -62,16 +62,9 @@ object DsModClient : ClientModInitializer {
     private var ticks = 0
     private var onDragSim = false
 
-    /** Set on the network thread when the client leaves a server, for [leave] to pass on on the client thread. */
     @Volatile
     private var left = false
 
-    /**
-     * Tells the features and a request's run that the player left the server, once, at the start of the next tick or
-     * before the next join, whichever comes first, so a new server never hears the last one's leave. A run asks again
-     * just before it moves on, since the network thread may say so during the tick. The features hear it while the
-     * game still counts as on dragsim.co.
-     */
     fun leave() {
         if (!left) return
         left = false
@@ -80,57 +73,41 @@ object DsModClient : ClientModInitializer {
         Recording.left()
     }
 
-    /** dragsim.co's addresses, so a player who joins by IP is on it too. Looked up off the client thread, and empty until then. */
     @Volatile
     private var dragSimAt = emptySet<InetAddress>()
 
-    /** Looks dragsim.co up again for the next join, so a move to a new IP is followed and a failed lookup is retried. */
     private fun lookUpDragSim() {
         Thread.ofVirtual().start { runCatching { dragSimAt = InetAddress.getAllByName(DragSim.HOST).toSet() } }
     }
 
-    /** Lets the mod run on any server whatever the setting says. The debug build sets it, so `runClient` and the game tests run anywhere. */
     var anyServer = false
 
     private var byType = emptyMap<Class<out HasFeature>, HasFeature>()
 
-    /** Whether the feature of [type] runs now, which is false off dragsim.co whatever its switch says, and outside its area. */
     fun runs(type: Class<out HasFeature>): Boolean = byType[type]?.feature?.runs == true
 
     inline fun <reified F : HasFeature> runs() = runs(F::class.java)
 
-    /** The feature of [type], whose settings the edge reads. It is built anew by [restart], so look it up where it is read. */
     fun <F : HasFeature> feature(type: Class<F>): F = type.cast(byType.getValue(type))
 
     inline fun <reified F : HasFeature> feature(): F = feature(F::class.java)
 
-    /**
-     * Opens the settings over the screen shown now, which Done goes back to, where the player left them: at the row
-     * [id], or searched for [search], when one is given. It is the one way in, for `/dsmod`, `/dsm`, the Settings Key
-     * and Mod Menu.
-     */
     fun openSettings(id: String? = null, search: String? = null) =
         Minecraft.getInstance().let { it.setScreenAndShow(SettingsScreen(it.gui.screen(), reveal = id, query = search)) }
 
-    /** Writes the settings to disk. The settings screen does it when it closes, and every editor that changes them. */
     fun saveSettings() {
         runCatching { file.save(settings) }.onFailure { log.error("Could not save the settings", it) }
     }
 
-    /**
-     * The game's own key event, which it sends only with no screen open, so a key typed into chat is not a press.
-     * The settings open on the next tick, after the game has handed out the typed character, or the search would take it.
-     */
+    /** @keep The settings open on the next tick, after the game has handed out the typed character, or the search would take it. */
     fun pressed(key: InputConstants.Key) {
         if (Keys.matches(key, settings.general.settingsKey)) Minecraft.getInstance().schedule { openSettings() }
         if (Keys.matches(key, settings.hud.editKey)) Minecraft.getInstance().schedule { openHudEditor() }
     }
 
-    /** Each of the mod's own screens goes back to the screen it was opened over, so a button in the settings returns there. */
     fun openHudEditor() =
         Minecraft.getInstance().let { it.setScreenAndShow(HudEditorScreen(readouts, settings.hud, it.gui.screen(), ::saveSettings)) }
 
-    /** Tells the player once, in their first world, that their settings file could not be read and where it went. */
     private fun warnUnreadable() {
         val kept = file.unreadable ?: return
         log.error("Could not read the settings, so they start from the defaults. The old file is {}", kept)
@@ -142,7 +119,6 @@ object DsModClient : ClientModInitializer {
         }
     }
 
-    /** Builds what a launch starts from: every feature, the game's state, what the player saved, and what reads and shows them. */
     private fun start() {
         val tree = SettingsTree(settings)
         game = Game(tree.features) { anyServer || onDragSim }
@@ -158,11 +134,6 @@ object DsModClient : ClientModInitializer {
         }
     }
 
-    /**
-     * Saves, runs [between], then starts again from what a launch loads, so no feature keeps what it saw. The game tests
-     * call it before each test, as Fabric restores the game's options, and clear the saved files in [between], so a test
-     * passes whichever ran before it.
-     */
     fun restart(between: () -> Unit = {}) {
         saved.close()
         between()
@@ -218,11 +189,10 @@ object DsModClient : ClientModInitializer {
             log.info("Joined {} at {}, which is {}dragsim.co", handler.serverData?.ip ?: "singleplayer", reached, if (onDragSim) "" else "not ")
             lookUpDragSim()
         }
-        // Fabric says so on the network thread, and the game drops the tasks queued for its thread as it disconnects.
+        // @keep Fabric says so on the network thread, and the game drops the tasks queued for its thread as it disconnects.
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> left = true }
         ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ ->
             Packets.worldChanged()
-            // The end-of-tick draw runs before readouts replace the marks, so the old world must already be clear.
             World.worldChanged()
             game.post(System.currentTimeMillis(), WorldChanged)
             tabs.forget()
@@ -248,22 +218,20 @@ object DsModClient : ClientModInitializer {
                 saved.flush()
                 game.metrics.flush()
             }
-            // After every listener registered before this one, so the capture's tick covers what this tick posted.
             Recorder.endedClientTick()
         }
-        // In this order: a request's run cut short is deleted, the recorder finishes what it holds, then an upload gets its moment.
         ClientLifecycleEvents.CLIENT_STOPPING.register {
             Recording.quit()
             Recorder.quit()
             Contribute.quit()
             saved.close()
         }
-        // `/dsm` is the short name, as `/sh` is SkyHanni's. `/du` is DragSim Utils', and a player may run both mods.
+        // @keep `/du` is DragSim Utils' command, and a player may run both mods.
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
             for (name in listOf("dsmod", "dsm")) dispatcher.register(
                 ClientCommands.literal(name)
                     .executes { context ->
-                        // The chat screen closes after the command returns, so open on the next tick.
+                        // @keep The chat screen closes after the command returns, so open on the next tick.
                         context.source.client.schedule { openSettings() }
                         1
                     }

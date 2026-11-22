@@ -44,7 +44,6 @@ class FavoritesTest {
         val starred = listOf("general.fullbright", "loot.rareDropAlert")
         val after = view.toggle(starred, "general.fullbright", here = true)
         assertEquals(listOf("loot.rareDropAlert"), after)
-        // The row stays in place, so a quick second press lands on it and stars it again.
         assertEquals(listOf("general.fullbright", "loot.rareDropAlert"), view.rows(all, after) { it })
         val again = view.toggle(after, "general.fullbright", here = true)
         assertEquals(listOf("loot.rareDropAlert", "general.fullbright"), again)

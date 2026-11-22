@@ -13,15 +13,8 @@ private const val WIDTH = 240
 private const val LINE = 10
 private const val MARGIN = 4
 
-/** The panel's height around its lines: the insets, the title row and the buttons. */
 private const val CHROME = Kit.INSET * 2 + 11 + 4 + 4 + Kit.BUTTON_HEIGHT
 
-/**
- * A popover over the game with one request the player qualifies for: what they would do, how long it may take, and
- * Accept or Skip. The game keeps running behind it. It starts by asking the backend, which first signs the player
- * in when [signingIn], and [offer] or [fail] fills it in. Close goes back to [parent], the screen it was opened over,
- * and Accept to the game, where the run starts.
- */
 class ContributeScreen(private val signingIn: Boolean, private val parent: Screen? = null) : Screen(text { body("Contribute") }.toComponent()) {
     private class Line(val text: String, val ink: Kit.Ink)
 
@@ -36,7 +29,6 @@ class ContributeScreen(private val signingIn: Boolean, private val parent: Scree
 
     override fun onClose() = minecraft.gui.setScreen(parent)
 
-    /** Shows the first of [requests], or says that none is left. */
     fun offer(requests: List<Request>) {
         queue = requests
         redraw()
@@ -47,7 +39,6 @@ class ContributeScreen(private val signingIn: Boolean, private val parent: Scree
         redraw()
     }
 
-    /** A screen that is not on yet builds from what it holds when it opens. */
     private fun redraw() {
         if (width > 0) rebuildWidgets()
     }
@@ -55,11 +46,9 @@ class ContributeScreen(private val signingIn: Boolean, private val parent: Scree
     override fun init() {
         val request = queue?.firstOrNull()
         val inner = WIDTH - Kit.INSET * 2
-        // The buttons sit under the lines, so the lines get what the window leaves above them.
         val room = ((height - MARGIN * 2 - CHROME) / LINE).coerceAtLeast(0)
         lines = when {
             failure != null -> wrap("Could not load requests. $failure Close and open Contribute to try again.", inner, Kit.Ink.NORMAL)
-            // Mojang confirms the account before the first call of a session, which takes a second or two.
             queue == null && signingIn -> wrap("Signing in with your Minecraft account...", inner, Kit.Ink.MUTED)
             queue == null -> listOf(Line("Looking for requests...", Kit.Ink.MUTED))
             request == null -> wrap("No request needs you right now. Check again later.", inner, Kit.Ink.NORMAL)
@@ -84,7 +73,6 @@ class ContributeScreen(private val signingIn: Boolean, private val parent: Scree
         addRenderableWidget(close)
     }
 
-    /** The request in at most [room] lines. Steps that do not fit are counted in a last line, and the player sees them all once they accept. */
     private fun describe(request: Request, inner: Int, room: Int): List<Line> {
         val head = wrap(request.brief.name, inner, Kit.Ink.NORMAL)
         val tail = wrap("Up to ${clock(request.timeoutSeconds * 1000L)} to finish.", inner, Kit.Ink.MUTED) +
@@ -98,7 +86,6 @@ class ContributeScreen(private val signingIn: Boolean, private val parent: Scree
         }
         val forSteps = room - head.size - tail.size
         var fits = steps.size
-        // A step is shown whole or not at all, and the line that counts the rest takes one of the lines.
         if (steps.sumOf { it.size } > forSteps) {
             fits = 0
             var used = 1
@@ -118,7 +105,6 @@ class ContributeScreen(private val signingIn: Boolean, private val parent: Scree
                 line = ""
             }
             line = if (line.isEmpty()) word else "$line $word"
-            // A word wider than the panel, such as a long command, is cut where the panel ends.
             while (font.width(line) > maxWidth) {
                 val fits = font.plainSubstrByWidth(line, maxWidth)
                 out += Line(fits, ink)

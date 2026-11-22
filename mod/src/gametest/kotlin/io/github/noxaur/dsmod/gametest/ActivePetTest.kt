@@ -12,12 +12,6 @@ import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.ItemLore
 
-/**
- * Active Pet's block on the HUD, with its icon left of its rows. The sidebar names the pet, a pet floating beside the
- * player gives its head, and the Pets menu its held item and XP, with the active pet marked. A held item in chat and a
- * level up in the sidebar follow. Read the screenshots: the name in Epic purple with the hint, the head beside it, the
- * mark in the menu, the bar at 40%, the rate after a second read, and after the level up the new item and the hint again.
- */
 class ActivePetTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val activePet = DsModClient.feature<ActivePet>()
@@ -41,7 +35,6 @@ class ActivePetTest : FabricClientGameTest {
                 pet(37)
                 context.waitTicks(20)
 
-                /** The middle of the block's icon in GUI pixels, and the item there. */
                 fun icon(): ItemStack? = context.computeOnClient<ItemStack?, Nothing> {
                     val block = checkNotNull(Hud.find(ID)) { "Active Pet is not on the HUD" }
                     Hud.itemAt((block.x + 12 * block.scale).toDouble(), (block.y + 12 * block.scale).toDouble())
@@ -54,7 +47,6 @@ class ActivePetTest : FabricClientGameTest {
                 check(HeadSkin.worn(icon())) { "The icon is not the head of the pet floating beside the player" }
                 context.takeScreenshot("active-pet-head")
 
-                // The menu's head wears the same skin as the floating one, taken from a head the server gave the player.
                 world.server.runCommand("give @a ${HeadSkin.ITEM}")
                 context.waitTicks(5)
                 val head = world.server.computeOnServer<ItemStack, Nothing> { it.player.inventory.getItem(0).copy() }
@@ -71,7 +63,6 @@ class ActivePetTest : FabricClientGameTest {
                 context.waitTicks(10)
                 context.takeScreenshot("active-pet")
 
-                // A second read of the menu, a few seconds on, gives the rate and the time to the next level.
                 context.waitTicks(60)
                 ServerMenus.open(context, world, 6, "Pets") { chest ->
                     chest.setItem(13, card(head.copy(), active = true, "Progress to Level 38: 50%", "5,000/10,000 XP"))
@@ -96,7 +87,6 @@ class ActivePetTest : FabricClientGameTest {
         }
     }
 
-    /** The Ender Dragon as the Pets menu shows it, holding Gold Claws, with [progress] under its level. */
     private fun card(stack: ItemStack, active: Boolean, vararg progress: String): ItemStack {
         stack.set(DataComponents.CUSTOM_NAME, Component.literal("[Lvl 37] ").withStyle(ChatFormatting.GRAY).append(Component.literal(if (active) "Ender Dragon" else "Wolf").withStyle(ChatFormatting.DARK_PURPLE)))
         val lines = listOf(

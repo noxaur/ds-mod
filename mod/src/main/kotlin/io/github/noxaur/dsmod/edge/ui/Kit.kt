@@ -23,7 +23,6 @@ import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
-/** A white sprite in `textures/gui/sprites/`, which [Kit.icon] tints. */
 enum class Icon(val width: Int, val height: Int) {
     CHECK(7, 6),
     CROSS(7, 5),
@@ -43,24 +42,13 @@ enum class Icon(val width: Int, val height: Int) {
     val sprite: Identifier = Identifier.fromNamespaceAndPath("dsmod", name.lowercase())
 }
 
-/** A texture of [width] by [height] that the kit blits cells from. */
 class Atlas(val id: Identifier, val width: Int, val height: Int)
 
-/**
- * Draws ds-mod's chrome in the player's [Theme]. Every shape is a few fills in GUI pixels and keeps no state,
- * so a screen calls these every frame with numbers it worked out in `init`. `kit.md` beside the ui skill
- * describes each one.
- */
 object Kit {
     enum class State { IDLE, HOVER, DOWN, OFF }
 
-    /** Ink by job: a label, a secondary one, a disabled one, and the words a search matched. */
     enum class Ink { NORMAL, MUTED, OFF, MATCH }
 
-    /**
-     * A label with the stretches a search matched, cut and measured once when the query or the label changes, so a
-     * frame only draws it. [label] draws the matches in [Ink.MATCH] and the rest in the ink it is given.
-     */
     class Marked(pieces: List<Piece>) {
         val text = pieces.joinToString("") { it.text }
         internal val parts = Array(pieces.size) { pieces[it].text }
@@ -76,7 +64,6 @@ object Kit {
         }
 
         companion object {
-            /** [text] marked where it holds one of [words], or null when it holds none, so it draws as a plain label. */
             fun of(text: String, words: List<String>): Marked? =
                 if (words.isEmpty()) null else SettingsSearch.pieces(text, words).takeIf { p -> p.any { it.match } }?.let(::Marked)
         }
@@ -92,7 +79,6 @@ object Kit {
     const val CHECKBOX_SIZE = 10
     const val DIVIDER_HEIGHT = 2
 
-    /** The height of a line of text. */
     const val LABEL_HEIGHT = 8
     const val GAP = 4
     const val INSET = 7
@@ -110,7 +96,6 @@ object Kit {
     private const val DIM_WASH = 150
     private const val PAGE_TAB_PAD = 5
 
-    /** A page tab's swatch or icon, and its ×, each in a square this wide, the × mirroring the swatch at the other end. */
     const val PAGE_TAB_LEAD = 9
     private const val PAGE_TAB_LEAD_UP = 12
     private const val PAGE_TAB_TEXT_UP = 11
@@ -125,17 +110,12 @@ object Kit {
         else -> State.IDLE
     }
 
-    /** A panel, as solid as [alpha] from 0 to 255 says, for a HUD block the player lets the world show through. */
     fun panel(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, alpha: Int = OPAQUE) {
         if (alpha <= 0) return
         val t = theme
         frame(g, x, y, width, height, fade(t.outline, alpha), fade(t.panel, alpha), fade(t.panelLight, alpha), fade(t.panelShade, alpha))
     }
 
-    /**
-     * A button with [label] centered, where [labelWidth] is the label's width, measured once. On a [glass] menu it is a
-     * pane of glass raised off it instead, with its label in [GLASS_INK].
-     */
     fun button(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, label: String, labelWidth: Int, glass: Boolean = false) {
         buttonFace(g, x, y, width, height, state, glass)
         val dy = if (state == State.DOWN) 1 else 0
@@ -161,17 +141,11 @@ object Kit {
         bevel(g, x, y, width, height, t.well, t.wellShade, t.wellLight)
     }
 
-    /** A text field's well, ringed in the hover outline under the mouse or with focus, as a checkbox is. */
     fun field(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
         well(g, x, y, width, height)
         focusRing(g, x, y, width, height, state)
     }
 
-    /**
-     * An 18x18 slot, with the item's 16x16 at one pixel in, or a crafting result's 26x26 with it at five in. A menu draws
-     * dozens of the small one each frame, so [register] paints it once per theme into [SLOT_TEXTURE] and it is drawn as
-     * one blit instead of five fills. Until the paint is done it is drawn with the fills.
-     */
     fun slot(g: GuiGraphicsExtractor, x: Int, y: Int, size: Int = SLOT_SIZE, alpha: Int = OPAQUE) {
         if (alpha <= 0) return
         val t = theme
@@ -179,8 +153,7 @@ object Kit {
         slotBlit(g, SLOT_TEXTURE, x, y, alpha)
     }
 
-    // A texture made or uploaded while a frame is being built broke every frame after it in the game tests, so the
-    // paint happens at the end of a tick, between frames.
+    // @keep A texture made or uploaded while a frame is being built breaks every frame after it, so paint at the end of a tick.
     fun register() {
         ClientTickEvents.END_CLIENT_TICK.register {
             val t = theme
@@ -200,17 +173,12 @@ object Kit {
         return texture
     }
 
-    /**
-     * Glass in place of a [panel]: the HUD plate's dark fill at [alpha], from 0 for clear to 255, inside its notched
-     * ring. It is dark in both themes, so a menu's labels on it take [GLASS_INK].
-     */
     fun glass(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, alpha: Int) {
         val t = theme
         if (alpha > 0) rect(g, x + 1, y + 1, width - 2, height - 2, ARGB.color(alpha, t.plate))
         ring(g, x, y, width, height, t.plateEdge)
     }
 
-    /** A sunk square of glass, see-through whatever the glass's own alpha, so a clear menu still shows its grid. */
     fun glassWell(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
         val t = theme
         bevel(g, x, y, width, height, glassFace(t), glassShade(t), glassLight(t))
@@ -224,18 +192,13 @@ object Kit {
         }
     }
 
-    /** A [slot] on glass: a [glassWell] the size of a slot, painted once per theme as [slot] is. */
     fun glassSlot(g: GuiGraphicsExtractor, x: Int, y: Int, size: Int = SLOT_SIZE, alpha: Int = OPAQUE) {
         if (alpha <= 0) return
         if (size != SLOT_SIZE || theme !== slotTheme) return glassWell(g, x, y, size, size)
         slotBlit(g, GLASS_SLOT_TEXTURE, x, y, alpha)
     }
 
-    /**
-     * A [tab] on a [glass] panel, filled at the panel's [alpha]. It stops at the panel's ring instead of reaching into
-     * the panel, since two see-through fills on each other would show a darker band. The [selected] one stands 2px
-     * taller, and one under the mouse is ringed in `hoverOutline`. Its content starts where a [tab]'s does.
-     */
+    /** @keep A tab on a glass panel stops at the panel's ring, since two see-through fills on each other would show a darker band. */
     fun glassTab(
         g: GuiGraphicsExtractor, x: Int, panelY: Int, selected: Boolean, alpha: Int, edge: TabEdge = TabEdge.TOP,
         hovered: Boolean = false, width: Int = TAB_WIDTH,
@@ -243,7 +206,6 @@ object Kit {
         val t = theme
         val color = if (hovered) t.hoverOutline else t.plateEdge
         val fill = ARGB.color(alpha, t.plate)
-        // The rows the tab stands out from the panel, its ring included.
         val out = if (selected) TAB_HEIGHT - 2 else TAB_HEIGHT - 4
         val inner = width - 2
         if (edge == TabEdge.BOTTOM) {
@@ -259,32 +221,22 @@ object Kit {
         return panelY - TAB_HEIGHT + if (selected) 4 else 5
     }
 
-    /** The top and the two sides of a tab at [x], [top], [width] wide, the sides [side] tall below the top. */
     private fun tabOutline(g: GuiGraphicsExtractor, x: Int, top: Int, width: Int, side: Int, color: Int) {
         rect(g, x + 1, top, width - 2, 1, color)
         rect(g, x, top + 1, 1, side, color)
         rect(g, x + width - 1, top + 1, 1, side, color)
     }
 
-    // Glass's sunk parts, from the plate's tokens so they follow the theme: a light lower edge and a dark upper one.
     private fun glassFace(t: Theme) = ARGB.color(GLASS_FACE_ALPHA, t.outline)
     private fun glassShade(t: Theme) = ARGB.color(GLASS_SHADE_ALPHA, t.outline)
     private fun glassLight(t: Theme) = ARGB.color(GLASS_LIGHT_ALPHA, t.plateEdge)
 
-    /**
-     * The backing of a tooltip whose text fills [width] by [height] at [x], [y]: the HUD's plate, nearly opaque so
-     * the slots behind it do not show through, reaching four pixels past the text as vanilla's does.
-     */
     fun tooltip(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
         val t = theme
         rect(g, x - 3, y - 3, width + 6, height + 6, ARGB.color(TOOLTIP_ALPHA, t.plate))
         ring(g, x - 4, y - 4, width + 8, height + 8, t.plateEdge)
     }
 
-    /**
-     * A strip of [cells] slots cut from the game's own hotbar sprite, so it looks as the player's hotbar does under any
-     * resource pack. A cell is [HOTBAR_CELL] wide, and the strip [hotbarWidth] by [HOTBAR_HEIGHT]. Its item goes 3px in.
-     */
     fun hotbar(g: GuiGraphicsExtractor, x: Int, y: Int, cells: Int) {
         val body = 1 + cells * HOTBAR_CELL
         g.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR, HOTBAR_WIDTH, HOTBAR_HEIGHT, 0, 0, x, y, body, HOTBAR_HEIGHT)
@@ -315,7 +267,6 @@ object Kit {
         ring(g, x, y, width, height, t.plateEdge)
     }
 
-    /** A 6 tall well filled to [fraction] in [color], with a lit top row and a shaded bottom row. */
     fun bar(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, fraction: Float, color: Int) {
         well(g, x, y, width, BAR_HEIGHT)
         barFill(g, x + 1, y + 1, ((width - 2) * fraction).roundToInt(), 4, color)
@@ -327,7 +278,6 @@ object Kit {
         if (height > 2) stripe(g, x, y + height - 1, width, color, ARGB.black(1f), 0.35f)
     }
 
-    /** A 6 wide well with its thumb [thumbY] pixels below the top of the track. */
     fun scrollbar(g: GuiGraphicsExtractor, x: Int, y: Int, height: Int, thumbY: Int, thumbHeight: Int) {
         well(g, x, y, SCROLLBAR_WIDTH, height)
         thumb(g, x + 1, y + 1 + thumbY, SCROLLBAR_WIDTH - 2, thumbHeight, State.IDLE)
@@ -387,12 +337,6 @@ object Kit {
 
     private fun sunk(glass: Boolean) = if (glass) glassFace(theme) else theme.well
 
-    /**
-     * A tab on the [edge] of a panel, where [panelY] is that edge: the panel's top, or its bottom for a tab under it.
-     * The [selected] one joins the panel, so draw it after the panel. The rest sit 2px further out in `tabOff`, or in
-     * `hover` while [hovered]. A tab is [width] wide, and a wider one holds a field. Its 16px content starts at the
-     * returned y.
-     */
     fun tab(g: GuiGraphicsExtractor, x: Int, panelY: Int, selected: Boolean, edge: TabEdge = TabEdge.TOP, hovered: Boolean = false, width: Int = TAB_WIDTH): Int =
         tab(g, x, panelY, selected, edge, hovered, width, TAB_HEIGHT)
 
@@ -425,20 +369,12 @@ object Kit {
         return y + 2
     }
 
-    /** A row of browser tabs across the top of a pane: a strip in `side` with a 1px outline along its bottom, which the tabs sit on. */
     fun tabBar(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int) {
         val t = theme
         rect(g, x, y, width, TAB_BAR_HEIGHT - 1, t.side)
         rect(g, x, y + TAB_BAR_HEIGHT - 1, width, 1, t.outline)
     }
 
-    /**
-     * A browser tab on a [tabBar] whose bottom line is at [lineY]: 15 tall in `tabOff`, or `hover` under the mouse,
-     * with a muted [label]. The [selected] one is 17 tall in the panel's color and covers the line, so it joins the
-     * pane below, and DOWN is that tab while it is dragged, outlined as hover is. Before the label sits a [swatch]
-     * color, or an [icon], or nothing when both are left out. [close] shows the × in its state, or hides it when null.
-     * The label is cut to [pageTabLabel] beforehand.
-     */
     fun pageTab(
         g: GuiGraphicsExtractor, x: Int, lineY: Int, width: Int, state: State, selected: Boolean, label: String,
         swatch: Int = 0, icon: Icon? = null, close: State? = null,
@@ -470,21 +406,17 @@ object Kit {
     private fun leadIcon(g: GuiGraphicsExtractor, icon: Icon, x: Int, y: Int, color: Int) =
         icon(g, icon, x + (PAGE_TAB_LEAD - icon.width) / 2, y + (PAGE_TAB_LEAD - icon.height) / 2, color, theme.inkShadow)
 
-    /** The room a [pageTab] [width] wide leaves its label, with a swatch or icon before it when [lead], and a × after it when [close]. */
     fun pageTabLabel(width: Int, lead: Boolean, close: Boolean) =
         width - PAGE_TAB_PAD - (if (lead) PAGE_TAB_LEAD + GAP else 0) - (if (close) GAP + PAGE_TAB_LEAD else 0) - PAGE_TAB_PAD
 
-    /** Where the [PAGE_TAB_LEAD] square × of a [pageTab] at [x], [width] wide, starts: as far in from the right as the swatch is from the left. */
     fun pageTabCloseX(x: Int, width: Int) = x + width - PAGE_TAB_PAD - PAGE_TAB_LEAD
 
     fun pageTabCloseY(lineY: Int) = lineY - PAGE_TAB_LEAD_UP
 
-    /** Role text on a [tabBar], on the line its tabs' titles sit on, such as the brand at its end. It has a text shadow in both themes. */
     fun tag(g: GuiGraphicsExtractor, x: Int, lineY: Int, text: Component) {
         g.text(font, text, x, lineY - PAGE_TAB_TEXT_UP, -1, true)
     }
 
-    /** The New Tab button after the tabs of a [tabBar]: a 15 wide tab holding a plus. */
     fun newTab(g: GuiGraphicsExtractor, x: Int, lineY: Int, state: State) {
         tabFace(g, x, lineY, NEW_TAB_WIDTH, state, false)
         label(g, "+", x + (NEW_TAB_WIDTH - font.width("+")) / 2 + 1, lineY - PAGE_TAB_TEXT_UP, if (state == State.HOVER) Ink.NORMAL else Ink.MUTED)
@@ -496,7 +428,6 @@ object Kit {
             val y = lineY - 16
             val edge = if (state == State.DOWN) t.hoverOutline else t.outline
             tabOutline(g, x, y, width, 16, edge)
-            // Down to the line and over it, so the tab and the pane are one surface.
             rect(g, x + 1, y + 1, width - 2, 16, t.panel)
             rect(g, x + 1, y + 1, width - 3, 1, t.panelLight)
             rect(g, x + 1, y + 1, 1, 15, t.panelLight)
@@ -511,7 +442,6 @@ object Kit {
         rect(g, x + width - 2, y + 2, 1, 13, t.wellShade)
     }
 
-    /** A 10x10 well holding the check when [checked]. Hover and focus ring it. */
     fun checkbox(g: GuiGraphicsExtractor, x: Int, y: Int, checked: Boolean, state: State) {
         val t = theme
         well(g, x, y, CHECKBOX_SIZE, CHECKBOX_SIZE)
@@ -519,15 +449,10 @@ object Kit {
         if (checked) icon(g, Icon.CHECK, x + 2, y + 2, if (state == State.OFF) t.inkOff else GOOD, state != State.OFF)
     }
 
-    /**
-     * A switch: a 22x12 sunk track with a raised 10x10 knob, which sits on the right in the good role when [on].
-     * Hover and focus outline the knob. Off, as for a switch the player cannot turn now, its knob is the panel's.
-     */
     fun switch(g: GuiGraphicsExtractor, x: Int, y: Int, on: Boolean, state: State) {
         val t = theme
         val lit = state == State.HOVER || state == State.DOWN
         if (state == State.OFF) {
-            // The track keeps a trace of the good role, so an on switch that cannot turn still reads as on.
             if (on) bevel(g, x, y, SWITCH_WIDTH, SWITCH_HEIGHT, mix(t.well, GOOD, 0.15f), mix(t.wellShade, GOOD, 0.08f), mix(t.wellLight, GOOD, 0.2f)) else well(g, x, y, SWITCH_WIDTH, SWITCH_HEIGHT)
             frame(g, if (on) x + SWITCH_WIDTH - 11 else x + 1, y + 1, 10, 10, t.outline, t.panel, t.panel, t.panel)
             return
@@ -541,17 +466,12 @@ object Kit {
         }
     }
 
-    /** A setting's changed marker: a 3x3 dot in the accent color, ringed under the mouse because a press resets it. */
     fun marker(g: GuiGraphicsExtractor, x: Int, y: Int, state: State) {
         val t = theme
         rect(g, x, y, 3, 3, t.accent)
         focusRing(g, x, y, 3, 3, state)
     }
 
-    /**
-     * A dropdown's raised face: [label] after a [lead] wide preview, if any, and the down arrow at the end, in a square
-     * that mirrors the label's start. It is lit while its menu is open.
-     */
     fun dropdown(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, label: String, lead: Int = 0, marked: Marked? = null) {
         val t = theme
         face(g, x, y, width, height, state)
@@ -565,45 +485,33 @@ object Kit {
 
     private fun leadRoom(lead: Int) = if (lead > 0) lead + GAP - 1 else 0
 
-    /** The room a [dropdown] [width] wide leaves its label after a [lead] wide preview. */
     fun dropdownLabel(width: Int, lead: Int = 0) = width - DROPDOWN_PAD * 2 - Icon.DOWN.width - GAP - leadRoom(lead)
 
-    /** How wide a [dropdown] must be to hold a [label] wide label after a [lead] wide preview. */
     fun dropdownWidth(label: Int, lead: Int = 0) = label + DROPDOWN_PAD * 2 + Icon.DOWN.width + GAP + leadRoom(lead)
 
-    /** A lift of a well under the mouse or the keyboard, behind a row of a settings group. */
     fun wellRow(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) = rect(g, x, y, width, height, mix(theme.well, BODY, 0.05f))
 
-    /** A wash in the well's color over something dimmed, such as a setting under a switch that is off. It stays editable. */
     fun dim(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) = rect(g, x, y, width, height, ARGB.color(DIM_WASH, theme.well))
 
-    /** Two columns of four dots on a well, which say the line they start can be dragged. [lit] brightens them under the mouse or the keys. */
     fun grip(g: GuiGraphicsExtractor, x: Int, y: Int, lit: Boolean) {
         val color = mix(theme.well, BODY, if (lit) 0.8f else 0.4f)
         for (row in 0 until 4) for (column in 0 until 2) rect(g, x + column * 2, y + row * 2, 1, 1, color)
     }
 
-    /** A 1px line down the left of rows that open under another, joining them to it. */
     fun guide(g: GuiGraphicsExtractor, x: Int, y: Int, height: Int) = rect(g, x, y, 1, height, mix(theme.well, BODY, 0.18f))
 
-    /** A small panel in [look]'s colors with a well in it, as a preview of that theme. */
     fun themeSwatch(g: GuiGraphicsExtractor, x: Int, y: Int, look: Theme) {
         frame(g, x, y, SWATCH_WIDTH, SWATCH_HEIGHT, look.outline, look.panel, look.panelLight, look.panelShade)
         bevel(g, x + 3, y + 3, 9, SWATCH_HEIGHT - 6, look.well, look.wellShade, look.wellLight)
         frame(g, x + 13, y + 3, 6, SWATCH_HEIGHT - 6, look.outline, look.raised, look.raisedLight, look.raisedShade)
     }
 
-    /** A tile of a menu of previews, ringed in the accent when [selected] and in the hover outline when lit. */
     fun tile(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, lit: Boolean, selected: Boolean) {
         val t = theme
         if (lit) rect(g, x + 1, y + 1, width - 2, height - 2, t.hover)
         if (selected || lit) ring(g, x, y, width, height, if (selected) t.accent else t.hoverOutline)
     }
 
-    /**
-     * A switched-on stretch of a range slider's track: a raised face in the accent color, which lifts under the
-     * mouse and sinks while it is dragged.
-     */
     fun span(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
         val t = theme
         val face = when (state) {
@@ -618,11 +526,9 @@ object Kit {
         if (state == State.DOWN) frame(g, x, y, width, height, outline, face, shade, face) else frame(g, x, y, width, height, outline, face, light, shade)
     }
 
-    /** A white wash over something the player just acted on, fading as [strength] goes from 1 to 0. */
     fun flash(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, strength: Float) =
         rect(g, x, y, width, height, ARGB.white(strength.coerceIn(0f, 1f)))
 
-    /** A 1px mark across a track, where a scale changes. */
     fun tick(g: GuiGraphicsExtractor, x: Int, y: Int, height: Int) = rect(g, x, y, 1, height, theme.wellLight)
 
     fun divider(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int) {
@@ -631,26 +537,19 @@ object Kit {
         rect(g, x, y + 1, width, 1, t.panelLight)
     }
 
-    /** A 1px line across a panel, or across a well between its rows when [onWell], faint enough to sit under text. */
     fun rule(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, onWell: Boolean = false) {
         val t = theme
         rect(g, x, y, width, 1, if (onWell) mix(t.well, BODY, 0.07f) else mix(t.panel, t.ink, 0.12f))
     }
 
-    /** A panel's face with no frame, for a screen that fills the window and has no outer panel. */
     fun backdrop(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) = rect(g, x, y, width, height, theme.panel)
 
-    /** A screen's side strip, such as a settings sidebar: a step back from the panel, with an outline down its right edge. */
     fun side(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
         val t = theme
         rect(g, x, y, width - 1, height, t.side)
         rect(g, x + width - 1, y, 1, height, t.outline)
     }
 
-    /**
-     * A line of a navigation tree on a [side]. Under the mouse or the keyboard its face lifts a little. The
-     * [selected] one lifts further and has a 2px bar in ink down its left edge, so it is told by two signals.
-     */
     fun navRow(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, selected: Boolean) {
         val t = theme
         when {
@@ -663,13 +562,11 @@ object Kit {
         }
     }
 
-    /** A square of [color] in a 1px outline, such as a section's placeholder icon or a color to pick. */
     fun swatch(g: GuiGraphicsExtractor, x: Int, y: Int, size: Int, color: Int) {
         rect(g, x, y, size, size, theme.outline)
         rect(g, x + 1, y + 1, size - 2, size - 2, color)
     }
 
-    /** A 1px line around a box, with its corners left out. */
     fun ring(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, color: Int) {
         rect(g, x + 1, y, width - 2, 1, color)
         rect(g, x + 1, y + height - 1, width - 2, 1, color)
@@ -682,7 +579,6 @@ object Kit {
         g.blitSprite(RenderPipelines.GUI_TEXTURED, icon.sprite, x, y, icon.width, icon.height, color)
     }
 
-    /** A 1px line of whole pixels from one point to another, with a dark line beside it so it reads over anything. */
     fun line(g: GuiGraphicsExtractor, fromX: Int, fromY: Int, toX: Int, toY: Int, color: Int) {
         val shadow = ARGB.scaleRGB(color, 0.25f)
         val dx = abs(toX - fromX)
@@ -708,7 +604,6 @@ object Kit {
         }
     }
 
-    /** A plain string in the theme's ink, which is chrome. Text that means something is built with `text { }`. */
     fun label(g: GuiGraphicsExtractor, text: String, x: Int, y: Int, ink: Ink = Ink.NORMAL) {
         g.text(font, text, x, y, color(ink), ink != Ink.OFF && theme.inkShadow)
     }
@@ -718,7 +613,6 @@ object Kit {
         g.text(font, text, x, y, if (ink == Ink.OFF) GLASS_INK_OFF else GLASS_INK, ink != Ink.OFF)
     }
 
-    /** A [Marked] label: what a search matched in [Ink.MATCH], and the rest in [ink]. */
     fun label(g: GuiGraphicsExtractor, text: Marked, x: Int, y: Int, ink: Ink = Ink.NORMAL) {
         for (i in text.parts.indices) label(g, text.parts[i], x + text.offsets[i], y, if (text.matches[i]) Ink.MATCH else ink)
     }
@@ -734,20 +628,14 @@ object Kit {
         Ink.MATCH -> theme.inkMatch
     }
 
-    /** Fills the 16x16 item area at [x], [y] behind the item. */
     fun slotFill(g: GuiGraphicsExtractor, x: Int, y: Int, color: Int) = rect(g, x, y, 16, 16, color)
 
-    /**
-     * The game's own cooldown wash over the 16x16 item at [x], [y]: half-white over the bottom [left] of it, so it drains
-     * down as the wait runs out, the way an ender pearl's does. The same in both themes, because it lies on the item.
-     */
     fun cooldown(g: GuiGraphicsExtractor, x: Int, y: Int, left: Float) {
         if (left <= 0f) return
         val top = y + floor(16 * (1 - left.coerceAtMost(1f))).toInt()
         rect(g, x, top, 16, y + 16 - top, ARGB.white(COOLDOWN_ALPHA))
     }
 
-    /** Frames the 16x16 item area at [x], [y] with a full 18x18 square, such as the two slots of a link. */
     fun slotBorder(g: GuiGraphicsExtractor, x: Int, y: Int, color: Int) {
         rect(g, x - 1, y - 1, 18, 1, color)
         rect(g, x - 1, y + 16, 18, 1, color)
@@ -762,10 +650,6 @@ object Kit {
         rect(g, x + 17, y - 1, 1, 18, color)
     }
 
-    /**
-     * Rings the 16x16 item area at [x], [y] as the slot the player holds, in the theme's accent, which reads on a light
-     * panel and a dark one where white is lost on light gray, or over the inventory's own texture in the Vanilla theme's.
-     */
     fun held(g: GuiGraphicsExtractor, x: Int, y: Int, vanilla: Boolean) =
         slotBorder(g, x, y, if (vanilla) Theme.VANILLA.accent else theme.accent)
 
@@ -774,10 +658,6 @@ object Kit {
         atlas.width, atlas.height, ARGB.white((opacity.coerceIn(0, 100) * 255 + 50) / 100),
     )
 
-    /**
-     * The player's inventory as the resource pack draws it, 176x166, so a preview of their slots matches the
-     * real screen. [slotAt] draws one empty slot of it instead, for a preview that shows a slot alone.
-     */
     fun inventory(g: GuiGraphicsExtractor, x: Int, y: Int) =
         g.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, x, y, 0f, 0f, INVENTORY_WIDTH, INVENTORY_HEIGHT, 256, 256)
 
@@ -785,10 +665,6 @@ object Kit {
         if (alpha > 0) g.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, x, y, EMPTY_SLOT_U, EMPTY_SLOT_V, SLOT_SIZE, SLOT_SIZE, 256, 256, ARGB.white(alpha))
     }
 
-    /**
-     * A panel of any size cut from the player's inventory as the resource pack draws it, the vanilla counterpart of
-     * [panel]: its corners as they are, and its edges and face stretched from one pixel's width of them.
-     */
     fun inventoryPanel(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, alpha: Int = OPAQUE) {
         if (alpha <= 0) return
         val color = ARGB.white(alpha)
@@ -797,7 +673,6 @@ object Kit {
         val h = height - 2 * c
         val right = INVENTORY_WIDTH - c
         val bottom = INVENTORY_HEIGHT - c
-        // Each part: where it goes, from the panel's corner, and the region of the texture stretched over it.
         fun part(dx: Int, dy: Int, u: Int, v: Int, width: Int, height: Int, regionWidth: Int, regionHeight: Int) = g.blit(
             RenderPipelines.GUI_TEXTURED, INVENTORY, x + dx, y + dy, u.toFloat(), v.toFloat(), width, height, regionWidth, regionHeight, 256, 256, color,
         )
@@ -812,16 +687,12 @@ object Kit {
         part(c + w, c + h, right, bottom, c, c, c, c)
     }
 
-    /** Darkens the item at [x], [y], drawn over it. */
     fun slotDim(g: GuiGraphicsExtractor, x: Int, y: Int) = rect(g, x, y, 16, 16, ARGB.color(DIM_ALPHA, theme.well))
 
-    /** A wash in the panel's color over a part of a screen that is waiting or has nothing to show, so a notice reads over it. */
     fun veil(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) = rect(g, x, y, width, height, ARGB.color(VEIL_ALPHA, theme.panel))
 
-    /** A block that stands in for text or an icon in a layout still loading, so the screen keeps its shape. */
     fun bone(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) = rect(g, x, y, width, height, ARGB.color(BONE_ALPHA, theme.inkMuted))
 
-    /** The wash over the slot under the mouse in a grid the mod draws, as a menu lights its own: white, half through. */
     fun slotHover(g: GuiGraphicsExtractor, x: Int, y: Int) = rect(g, x, y, 16, 16, ARGB.white(HOVER_STRENGTH))
 
     fun slotHighlightBack(g: GuiGraphicsExtractor, x: Int, y: Int) = g.blitSprite(RenderPipelines.GUI_TEXTURED, HIGHLIGHT_BACK, x - 4, y - 4, 24, 24)
@@ -852,11 +723,6 @@ object Kit {
 
     private fun stripe(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, color: Int, tint: Int, amount: Float) = rect(g, x, y, width, 1, mix(color, tint, amount))
 
-    /**
-     * A button's face on glass: a lighter pane in the plate's ring with a lit top and left, which the mouse lightens and
-     * rings in `hoverOutline`, and which sinks into a [glassWell] while pressed. Its alpha is its own, so it reads on
-     * clear glass too.
-     */
     private fun glassFace(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
         val t = theme
         when (state) {
@@ -872,17 +738,14 @@ object Kit {
         }
     }
 
-    /** A raised thing: a notched outline with a bevel inside, light on the top and left. */
     private fun frame(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, outline: Int, face: Int, light: Int, shade: Int) {
         ring(g, x, y, width, height, outline)
         bevel(g, x + 1, y + 1, width - 2, height - 2, face, light, shade)
     }
 
-    /** A face with [topLeft] along its top and left and [bottomRight] along the rest. Its two odd corners keep the face. */
     private fun bevel(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, face: Int, topLeft: Int, bottomRight: Int) =
         bevelRects(x, y, width, height, face, topLeft, bottomRight) { rx, ry, rw, rh, color -> rect(g, rx, ry, rw, rh, color) }
 
-    /** The rectangles of [bevel], in drawing order, handed to [fill] as x, y, width, height and color. */
     private inline fun bevelRects(
         x: Int, y: Int, width: Int, height: Int, face: Int, topLeft: Int, bottomRight: Int, fill: (Int, Int, Int, Int, Int) -> Unit,
     ) {
@@ -893,7 +756,6 @@ object Kit {
         fill(x + width - 1, y + 1, 1, height - 1, bottomRight)
     }
 
-    /** [color] with its own alpha scaled by [alpha], from 0 to 255. */
     private fun fade(color: Int, alpha: Int) = if (alpha >= OPAQUE) color else ARGB.color(ARGB.alpha(color) * alpha / OPAQUE, color)
 
     private fun rect(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, color: Int) {
@@ -925,13 +787,11 @@ object Kit {
     private const val GLASS_SHADE_ALPHA = 170
     private const val GLASS_LIGHT_ALPHA = 140
 
-    /** Ink on glass, which is dark in both themes, so it is the light ink of the HUD, with its shadow. */
     val GLASS_INK = Role.BODY.argb()
     val GLASS_INK_OFF = Role.MUTED.argb()
     private const val GLASS_BUTTON = 0.16f
     private const val GLASS_BUTTON_HOVER = 0.3f
 
-    /** The game's hotbar: a 1px rim around 9 cells. */
     private val HOTBAR: Identifier = Identifier.withDefaultNamespace("hud/hotbar")
     private const val GAME_HOTBAR_CELLS = 9
     private const val GAME_CROSSHAIR_REACH = 4
@@ -945,10 +805,8 @@ object Kit {
 
     private val INVENTORY = Identifier.withDefaultNamespace("textures/gui/container/inventory.png")
 
-    // The inventory's rounded corner, outline and bevel, past which its edges and face are the same all along.
     private const val PANEL_CORNER = 4
 
-    // The last slot of the inventory's main grid, which holds nothing but its frame.
     private const val EMPTY_SLOT_U = 151f
     private const val EMPTY_SLOT_V = 119f
     private const val FLAME_SIZE = 14

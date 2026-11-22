@@ -12,12 +12,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/**
- * Finds code copied with a value or two changed. A run of [RUN] tokens that shows twice, or of [SHORT_RUN] tokens that
- * shows three times, is a copied block. Two lines of one file, each at least [LINE] tokens long, that differ in at most
- * [CHANGED] of their tokens are a copied line. Comments, imports and the parameter lists of declarations are left out,
- * because an override has to repeat its signature.
- */
+/** @keep The parameter lists of declarations are left out, because an override has to repeat its signature. */
 object Clones {
     const val RUN = 40
     const val SHORT_RUN = 25
@@ -38,12 +33,10 @@ object Clones {
 
     class Token(val text: String, val line: Int)
 
-    /** Where a copy sits: a [file] and a 1-based [line]. */
     data class At(val file: String, val line: Int) {
         override fun toString() = "$file:$line"
     }
 
-    /** The tokens of a Kotlin [source], each with its line. A declaration's parameter list becomes one `()` token. */
     fun tokens(source: String): List<Token> {
         val text = header.replace(source, "")
         val raw = ArrayList<Token>()
@@ -79,7 +72,6 @@ object Clones {
         return out
     }
 
-    /** Each copy in [sources], a map of file to text, as the places it shows. A copy marked `rule:clone <reason>` is left out. */
     fun find(sources: Map<String, String>): List<List<At>> {
         val files = sources.mapValues { tokens(it.value) }
         val lines = sources.mapValues { it.value.lines() }
@@ -121,7 +113,6 @@ object Clones {
         return found
     }
 
-    /** The token edit distance from [a] to [b], or any number above [cap] once it passes it. */
     private fun distance(a: List<String>, b: List<String>, cap: Int): Int {
         if (kotlin.math.abs(a.size - b.size) > cap) return cap + 1
         var previous = IntArray(b.size + 1) { it }

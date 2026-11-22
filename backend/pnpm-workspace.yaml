@@ -1,6 +1,5 @@
-# Refuse packages published less than 14 days ago.
 minimumReleaseAge: 20160
-# Void and Vite+ must share one Vite, or their plugin types and runtime split in two.
+# @keep Void and Vite+ must share one Vite, or their plugin types and runtime split in two.
 overrides:
   vite: npm:@voidzero-dev/vite-plus-core@1.4.0
   vitest: 5.0.5

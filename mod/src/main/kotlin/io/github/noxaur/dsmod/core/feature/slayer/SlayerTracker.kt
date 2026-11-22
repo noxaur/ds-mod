@@ -11,16 +11,11 @@ import io.github.noxaur.dsmod.core.text.clock
 import io.github.noxaur.dsmod.core.text.count
 import kotlinx.serialization.Serializable
 
-/** Every slayer boss the player has slain. */
 @Serializable
 data class SlayerKills(val slain: Int = 0)
 
-/**
- * Counts the slayer bosses the player slays, which the server announces to the quest's owner alone, and times each
- * from its spawn to its death. A failed quest sends no such line, so it counts for nothing. The quest's lines are
- * indented, which a player's chat line never is, and give the quest's goal and the XP left to the next level. The
- * readout stays hidden until the first quest or boss, so it never shows for a player who does no slayers.
- */
+/** @keep A failed quest sends no such line, so it counts for nothing. The quest's lines are indented, which a
+ * player's chat line never is */
 class SlayerTracker(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "slayer-tracker", Area.ANYWHERE, Store.SLAYER, "Count the slayer bosses you slay and time each from spawn to slain.", hud = ::hud)
 

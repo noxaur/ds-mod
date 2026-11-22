@@ -121,7 +121,6 @@ class GameTest : Harness() {
         game.tick(3)
         assertEquals(0 to 2, listener.inWorld to listener.inSession)
 
-        // The player left while it was off, so it comes back without that session.
         game.post(4, LeftServer)
         listener.feature.enabled = true
         game.tick(5)
@@ -156,7 +155,6 @@ class GameTest : Harness() {
 
     private val revenant = EntitySeen(7, "minecraft:zombie", text("☠ Revenant Horror I 1.5M/3.8M❤"))
 
-    /** The marks Boss Beacon and Boss Tracer put on the boss of id 7, so a test can see whether both took it for the player's. */
     private fun ownMarks() = marks(tree.feature<BossBeacon>()).map { (it as EntityBeam).entity } to marks(tree.feature<BossTracer>()).map { (it as Tracer).entity }
 
     @Test
@@ -175,7 +173,6 @@ class GameTest : Harness() {
         game.post(0, LeftServer)
         say(1, "☠ SLAYER BOSS SPAWNING!")
         game.post(2, revenant)
-        // Boss Beacon was off when the player left, so it hears that leave only now, after the new session's claim.
         tree.feature<BossBeacon>().feature.enabled = true
         game.tick(3)
         assertEquals(listOf(7) to listOf(7), ownMarks())
@@ -200,7 +197,6 @@ class GameTest : Harness() {
     fun `a dragon that leaves leaves no egg timer behind`() {
         game.post(0, TabList(listOf(text("Area: The End"))))
         say(0, "The Dragon Egg is respawning in 30 seconds.")
-        // The egg's return and the eyes went by unread, as they do while the player is elsewhere.
         say(60_000, "☠ The Young Dragon has spawned!")
         say(61_000, "☠ The Young Dragon has de-spawned.")
         game.tick(61_000)
@@ -230,7 +226,6 @@ class GameTest : Harness() {
         game.tick(1_000)
         assertNull(hud(tree.feature<DragonTimer>()))
 
-        // The dragon died while the feature saw nothing, so the timer must not pick it up again.
         tree.feature<DragonTimer>().feature.enabled = true
         game.tick(2_000)
         assertNull(hud(tree.feature<DragonTimer>()))
@@ -246,7 +241,6 @@ class GameTest : Harness() {
         game.tick(1_000)
         assertNull(hud(tree.feature<ProtectorStatus>()))
 
-        // No row changed meanwhile, so no new tab list is coming.
         tree.feature<ProtectorStatus>().feature.enabled = true
         game.tick(2_000)
         assertEquals(before, hud(tree.feature<ProtectorStatus>()))
@@ -325,7 +319,6 @@ class GameTest : Harness() {
         assertEquals(true, game.post(0, refusal))
         assertEquals(emptyList(), game.readouts.mapNotNull { it.hud })
 
-        // Turning the setting off mid-session brings the features back with the tab list they missed.
         offline.tree.feature<DragSimOnly>().feature.enabled = false
         offline.pass(1_000)
         assertNotNull(offline.hud(offline.tree.feature<ProtectorStatus>()))

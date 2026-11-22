@@ -10,18 +10,13 @@ import kotlinx.serialization.json.jsonObject
 import java.nio.file.Path
 import kotlin.io.path.useLines
 
-/**
- * Where the server puts a player's name, and where a player's own words start. [Redactor] and `FixtureLeakTest`
- * learn names only here, so they cannot disagree. Each rule is a shape a capture shows, so teach a new one here
- * from a capture, never from a guess.
- */
+/** @keep Each rule is a shape a capture shows, never a guess, and Redactor and FixtureLeakTest learn names only here, so they
+ * cannot disagree. */
 object PlayerNames {
-    /** A name is a whole word, since a Minecraft name is letters, digits and `_`. */
     internal val word = Regex("""\w+""")
 
     private const val RANK = """(?:\[[^\]]+\] )?"""
 
-    /** The server speaks for its own characters with these tags, as in `[NPC] Mort: Good luck.` */
     private val notPlayer = Regex("""^\[(?:NPC|BOSS)\] """)
 
     private val speaker = Regex("""^(?:\w+ > )?$RANK(\w+)(?: \[[^\]]+\]| \S)?: """)
@@ -38,18 +33,14 @@ object PlayerNames {
         Regex("""^✦ $RANK(\w+) has woken """),
     )
 
-    /** Names inside a line, such as a boss's damage summary or a booster's activator, each in its own group. */
     private val inside = Regex("""$RANK(\w+) dealt the final blow|Damager $RANK(\w+) - | by $RANK(\w+)$""", RegexOption.MULTILINE)
 
     private val rankedName = Regex("""^\s*($RANK)(\w+)""")
 
-    /**
-     * The server names the textures of its own heads with an `h` and fifteen hex digits. They tell an agent which head
-     * a mob wears, and no player is called that.
-     */
+    /** @keep The server names the textures of its own heads with an h and fifteen hex digits, and no player is called that. */
     private val textureName = Regex("""h[0-9a-f]{15}""")
 
-    // The server writes `You` where the line is about the player themselves, as in `» You placed a Summoning Eye!`.
+    /** @keep The server writes `You` where the line is about the player themselves, as in `» You placed a Summoning Eye!`. */
     private fun isName(name: String) = name.length >= 3 && name != "You" && !name.matches(textureName)
 
     class Typed(val words: IntRange, val names: List<IntRange>)
@@ -67,19 +58,15 @@ object PlayerNames {
         }
     }
 
-    /**
-     * The name a player entity shows, as a match whose group 1 is the rank and group 2 the name, or null when [entity]
-     * is no player entity or shows a colored label. The server's NPCs are player entities too. It colors some labels,
-     * as in `§e§lCLICK`, and names others plainly, as in `Mort` or `Dungeons`, while a player's name arrives plain with
-     * the player's rank, if any. So a ranked name is surely a player's, and a plain one may be an NPC's.
-     */
+    /** @keep The server's NPCs are player entities too. It colors some labels, as in `§e§lCLICK`, and names others plainly,
+     * as in `Mort`, while a player's name arrives plain with the player's rank, if any. So a ranked name is surely a
+     * player's, and a plain one may be an NPC's. */
     fun onEntity(entity: JsonObject): MatchResult? {
         if ((entity["entity"] as? JsonPrimitive)?.content != "minecraft:player") return null
         val raw = (entity["name"]?.let { if (it is JsonObject) it["text"] else it } as? JsonPrimitive)?.content ?: return null
         return if (raw.startsWith("§")) null else rankedName.find(raw)?.takeIf { isName(it.groupValues[2]) }
     }
 
-    /** Events store text as `plain`, raw records as `text` with `§` codes. */
     private fun plain(text: JsonElement?): String = when (text) {
         is JsonObject -> plain(text["plain"] ?: text["text"])
         is JsonPrimitive -> text.content.replace(Regex("§."), "")
@@ -102,12 +89,10 @@ object PlayerNames {
         }
     }
 
-    /**
-     * Where each of one tab list's [rows] shows a name. The player rows are the first column under its title, which is
-     * the area, and an info row can name whoever started a booster, as in ` Admin Booster 6m 47s by [ADMIN] name`. The
-     * column is 19 rows. A dungeon puts `Class: Mage` rows there too, and the Dungeon Hub has no `Info` title after
-     * it. A tab list of one column has the `Info` title inside the first 19 rows, and the players end there.
-     */
+    /** @keep The player rows are the first column under its title, which is the area, and an info row can name whoever
+     * started a booster, as in ` Admin Booster 6m 47s by [ADMIN] name`. The column is 19 rows. A dungeon puts `Class:
+     * Mage` rows there too. A tab list of one column has the `Info` title inside the first 19 rows, and the players
+     * end there. */
     fun inTabList(rows: List<String>): List<List<IntRange>> {
         val players = 1 until (rows.indexOfFirst { it.trim() == "Info" }.takeIf { it > 0 } ?: 20).coerceAtMost(20)
         return rows.mapIndexed { i, row ->
@@ -120,15 +105,12 @@ object PlayerNames {
 
     private val sidebarName = Regex("""^Name: (\w+)""")
 
-    /** Where a [line] of the sidebar shows a name, in its `Name: ` line. */
     fun inSidebar(line: String): IntRange? = sidebarName.nameIn(line)
 
     private val seller = Regex("""^Seller: $RANK(\w+)""")
 
-    /** Where a [line] of an auction item's lore names its seller. */
     fun inLore(line: String): IntRange? = seller.nameIn(line)
 
-    /** The name in a [profile], which a skull, a head item or a player entity's head carries. */
     fun inProfile(profile: JsonObject): String? = (profile["name"] as? JsonPrimitive)?.takeIf { it.isString }?.content?.takeIf(::isName)
 
     private fun MutableSet<String>.inJson(json: JsonElement, key: String = "") {
@@ -147,20 +129,11 @@ object PlayerNames {
 
     private val learnedFrom = setOf("system", "chat", "tablist", "sidebar", "tabheader", "entities", "skulls", "itemcomponents", "slot", "container")
 
-    /**
-     * Every name in [captures] that may be replaced wherever it stands, read one line at a time so a long capture never
-     * sits in memory. A word the server writes as its own in any of them counts as its own in all. Two kinds are left out, and [Redactor] replaces them only in a text where a rule finds them. A
-     * plain name on a player entity may be an NPC's. And a player may be called what the server calls itself or a
-     * place, as a staff account is named after the server: a name the sidebar's title, its `⏣` place, the tab list's
-     * area or its header also shows would otherwise turn hundreds of the server's lines into `PlayerN`.
-     */
+    /** @keep A plain name on a player entity may be an NPC's, and a player may be called what the server calls itself or a
+     * place, as a staff account is named after the server, so a name the sidebar's title, its `⏣` place, the tab
+     * list's area or its header also shows is left out. */
     fun of(vararg captures: Path): Set<String> = learn(captures).let { (names, server) -> names.filterTo(HashSet()) { it !in server } }
 
-    /**
-     * Each of [names] that [text] holds anywhere. A fixture holds aliases, so a player who is called one cannot be told
-     * from it and is left out. A Minecraft name stands as one whole word, so reading the text's words once keeps this
-     * as fast with a thousand names as with ten.
-     */
     fun leaked(names: Set<String>, text: String): Set<String> {
         val (plain, other) = names.filterNot { it.matches(alias) }.partition { it.matches(word) }
         val wanted = plain.toSet()
@@ -168,10 +141,8 @@ object PlayerNames {
             other.filter { Regex("""(?<!\w)${Regex.escape(it)}(?!\w)""").containsMatchIn(text) }
     }
 
-    /** The name [Redactor] gives a player in a fixture. */
     val alias = Regex("""Player\d+""")
 
-    /** Every name a rule finds where a player's name stands in [captures], those the server also writes as its own included. */
     fun found(vararg captures: Path): Set<String> = learn(captures).first
 
     private fun learn(captures: Array<out Path>): Pair<Set<String>, Set<String>> {
@@ -193,7 +164,8 @@ object PlayerNames {
                     }
                     "tabheader" -> server.words(plain(data["header"]))
                     "tablist" -> {
-                        // An older capture keys the rows of the first column `!aa` to `!at`, the first being the title.
+                        /** @keep An older capture keys the rows of the first column `!aa` to `!at`, the first being the
+                         * title. */
                         val rows = data["rows"]?.jsonArray?.map(::plain)
                             ?: data["entries"]?.jsonObject?.values.orEmpty().filterIsInstance<JsonObject>()
                                 .filter { plain(it["name"]).matches(Regex("![a][a-z]")) }.sortedBy { plain(it["name"]) }.map { plain(it["text"]) }

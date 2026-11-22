@@ -8,11 +8,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Fabric tells the game its window has focus once, as the run starts, and drops the window's own focus events. The
- * game hands a screen its mouse moves only while it has focus, so a test that took focus away would break every drag
- * after it. Each test starts with the focus Fabric gave the run.
- */
+/** @keep Fabric gives the game its window focus once, as the run starts, and drops the window's own focus events. The game
+ * hands a screen its mouse moves only while it has focus, so each test restores the focus Fabric gave. */
 @Mixin(FabricClientGameTestRunner.class)
 abstract class FocusEachTestMixin {
     @Inject(method = "setupInitialGameTestState", at = @At("TAIL"))

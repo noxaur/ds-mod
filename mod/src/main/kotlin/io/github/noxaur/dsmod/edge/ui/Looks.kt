@@ -15,7 +15,6 @@ import net.minecraft.resources.Identifier
 object Looks {
     const val HEIGHT = Kit.SLOT_SIZE
 
-    /** The rarities a slot look shows, rarest first. */
     private val RARITIES = listOf(Role.LEGENDARY, Role.EPIC, Role.RARE)
     private val COLUMNS = MarkStyle.entries.size * 2
     private val ATLAS = Atlas(Identifier.fromNamespaceAndPath("dsmod", "kit/looks"), COLUMNS * SlotArt.SIZE, RARITIES.size * 2 * SlotArt.SIZE)
@@ -35,7 +34,6 @@ object Looks {
 
     private fun slots(g: GuiGraphicsExtractor, look: Look.Slots, x: Int, y: Int) {
         val style = look.style
-        // The art for a light slot keeps more of the color, as on a chest's gray slot.
         val dark = Kit.dark(Kit.theme.slot)
         val column = style.mark.ordinal * 2 + if (style.sparkles) 1 else 0
         for (i in 0 until look.count) {
@@ -45,8 +43,7 @@ object Looks {
         }
     }
 
-    // As with the kit's slot, a texture made while a frame is being built breaks the frames after it, so it is
-    // painted at the end of a tick.
+    // @keep A texture made while a frame is being built breaks the frames after it, so paint at the end of a tick.
     fun register() {
         ClientTickEvents.END_CLIENT_TICK.register { if (!painted) paint() }
     }

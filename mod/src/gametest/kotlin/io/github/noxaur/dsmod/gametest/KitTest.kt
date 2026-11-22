@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.gametest.SettingsSteps.guiScale
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 
+/** @keep Covers [io.github.noxaur.dsmod.edge.Browser], [io.github.noxaur.dsmod.edge.mixin.MouseTurnMixin]. */
 class KitTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = inKit(context) {
         context.setScreen { KitGalleryScreen() }
@@ -18,9 +19,8 @@ class KitTest : FabricClientGameTest {
     companion object {
         fun inKit(context: ClientGameTestContext, test: () -> Unit) {
             val window = SettingsSteps.windowSize(context)
-            // The gallery is 575x335 GUI pixels with a glass strip 47 below it, which needs more room than the test window has at GUI scale 2.
             context.input.resizeWindow(1280, 800)
-            // An item needs a world's registries, and the gallery shows items in its slots.
+            // @keep An item needs a world's registries, and the gallery shows items in its slots.
             context.worldBuilder().create().use {
                 guiScale(context, 2)
                 test()

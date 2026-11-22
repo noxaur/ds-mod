@@ -5,32 +5,23 @@ import io.github.noxaur.dsmod.core.text.count
 import io.github.noxaur.dsmod.core.text.number
 import kotlinx.serialization.Serializable
 
-/**
- * A pet as dragsim.co names it everywhere: `[Lvl 100] Black Cat`, with the name in its rarity's color. The sidebar
- * writes the active one as `Pet: [Lvl 100] Black Cat`, and `Pet: None` when none is out.
- */
+// @keep The sidebar writes the active pet as `Pet: [Lvl 100] Black Cat`, and `Pet: None` when none is out
 data class Pet(val name: String, val level: Int, val rarity: Role) {
     companion object {
         val LINE = Regex("""\[Lvl (\d+)] (.+)""")
 
-        /** The pet [text] names, its rarity from the color of the last span with text, which is the name's. */
         fun of(text: ServerText, plain: String = text.plain.trim()): Pet? {
             val (level, name) = LINE.matchEntire(plain)?.destructured ?: return null
             val color = text.spans.lastOrNull { it.text.isNotBlank() }?.color
             return Pet(name, count(level) ?: return null, Role.rarity(color) ?: Role.COMMON)
         }
 
-        /** The name of the pet [plain] names, without its level, which goes up in play. */
         fun nameOf(plain: String) = LINE.matchEntire(plain.trim())?.groupValues?.get(2)
 
-        /** The pets that float beside players, for a feature's `readEntities`. [worn] reads each one. */
         val STANDS = EntityFilter(setOf("minecraft:armor_stand"), "[Lvl ")
 
-        /**
-         * The name of the pet [seen] is and the head it wears, or null when it is none. dragsim.co floats each player's
-         * pet beside them as an armor stand named like `[Lvl 100] Black Cat` that wears the pet's head, so a pet of
-         * another player's may show one of the same name.
-         */
+        /** @keep dragsim.co floats each player's pet beside them as an armor stand named like `[Lvl 100] Black Cat` that
+         * wears the pet's head, so a pet of another player's may show one of the same name */
         fun worn(seen: EntitySeen): Pair<String, Item>? {
             val head = seen.head?.takeIf { it.id == "minecraft:player_head" } ?: return null
             return nameOf(seen.name.plain)?.let { it to head }
@@ -38,11 +29,9 @@ data class Pet(val name: String, val level: Int, val rarity: Role) {
     }
 }
 
-/** The pet item a pet holds, such as Gold Claws, in its rarity when the server gave one. */
 @Serializable
 data class PetItem(val name: String = "", val rarity: Role? = null)
 
-/** How far a pet is through its level: [MAX] at its last, or [fraction] from 0 to 1 with the XP when the menu writes it. */
 data class PetProgress(val fraction: Float, val xp: Double? = null, val needed: Double? = null) {
     val max: Boolean get() = this === MAX
 
@@ -51,13 +40,10 @@ data class PetProgress(val fraction: Float, val xp: Double? = null, val needed: 
     }
 }
 
-/**
- * The active pet's item in the Pets menu: the only pet whose lore says [ACTIVE]. Its lore names the item it holds
- * under `Held Item`, then `LEVEL 100` and either `MAX LEVEL` or how far it is to the next level, and ends in its
- * rarity and [category], as `LEGENDARY COMBAT PET`. dragsim.co draws a rule after `Held Item` and a bar before
- * `LEVEL 100` with its resource pack's glyphs, which sit in Unicode's private use area, so each line is read without
- * them. [key] tells this pet from another of its name: the item's uuid when the server sends one, else the name.
- */
+/** @keep Its lore names the item it holds under `Held Item`, then `LEVEL 100` and either `MAX LEVEL` or how far it is
+ * to the next level, and ends in its rarity and category, as `LEGENDARY COMBAT PET`. dragsim.co draws a rule
+ * after `Held Item` and a bar before `LEVEL 100` with its resource pack's glyphs, which sit in Unicode's
+ * private use area, so each line is read without them */
 data class PetCard(
     val pet: Pet,
     val icon: Item,
@@ -70,7 +56,6 @@ data class PetCard(
     companion object {
         const val MENU = "Pets"
 
-        /** The line under the active pet in the Pets menu, which no other pet has. */
         const val ACTIVE = "Click to deactivate!"
 
         private const val HELD = "Held Item"
@@ -80,11 +65,8 @@ data class PetCard(
         private val PERCENT = Regex("""(\d+(?:\.\d+)?)%""")
         private val FOOTER = Regex("""(?:VERY SPECIAL|SPECIAL|DIVINE|MYTHIC|LEGENDARY|EPIC|RARE|UNCOMMON|COMMON)\s*([A-Z ]+?) PET""")
 
-        /**
-         * The card [item] is, when it is the active pet in the Pets menu. The lines between its level and the click
-         * hint are read leniently, since only a pet at its max level was seen: an `xp/needed` pair, or else a percent.
-         * A pet below its max level whose lines hold neither has a null progress and those lines in [unread].
-         */
+        /** @keep Only a pet at its max level was seen, so the lines between its level and the click hint are read leniently:
+         * an `xp/needed` pair, or else a percent */
         fun of(item: Item): PetCard? {
             val lore = item.cleanLore
             if (ACTIVE !in lore) return null
@@ -115,10 +97,8 @@ data class PetCard(
     }
 }
 
-/**
- * The Combat XP the action bar says the player just gained, as `+40 Combat (12.5%)`. The server sends it right behind
- * the death of a mob the player killed, within [KILL_WINDOW_MILLIS], and repeats it for about a second after.
- */
+/** @keep The server sends it right behind the death of a mob the player killed, within KILL_WINDOW_MILLIS, and
+ * repeats it for about a second after */
 object CombatXp {
     const val MARK = " Combat ("
     const val KILL_WINDOW_MILLIS = 20L

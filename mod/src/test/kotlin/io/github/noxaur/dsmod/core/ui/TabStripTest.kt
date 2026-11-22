@@ -19,7 +19,6 @@ class TabStripTest {
 
     @Test
     fun `tabs shrink to share the room, down to the narrowest`() {
-        // 4 tabs and the button in 260: the view is 244, so each tab is 60.
         val strip = strip(4, 260)
         assertEquals(60, strip.width)
         assertFalse(strip.overflows)
@@ -73,7 +72,6 @@ class TabStripTest {
     @Test
     fun `a dragged tab passes a neighbor once the mouse crosses the neighbor's middle`() {
         val strip = strip(4, 400)
-        // Each tab is 92 and one apart, so tab 1's middle is at 93 + 46.
         assertEquals(0, strip.drop(138, 0))
         assertEquals(1, strip.drop(139, 0))
         assertEquals(3, strip.drop(399, 0), "past the last tab it goes last")

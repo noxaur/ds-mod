@@ -22,6 +22,9 @@ fun placesWhere(classes: List<ClassNode>, matches: (AbstractInsnNode) -> Boolean
     }
 }.distinct()
 
+/** @keep A method reference such as `Component::literal` is a handle among an invokedynamic's bootstrap arguments. */
+fun handlesOf(insn: AbstractInsnNode): List<Handle> = (insn as? InvokeDynamicInsnNode)?.bsmArgs.orEmpty().filterIsInstance<Handle>()
+
 fun assertNoPlaces(found: List<String>, fix: String) = assertEquals(emptyList(), found, fix + "\n" + found.joinToString("\n") + "\n")
 
 fun edgeClass(name: String, line: Int, vararg insns: AbstractInsnNode) = ClassNode().apply {

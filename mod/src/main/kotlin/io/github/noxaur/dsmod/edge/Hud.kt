@@ -30,29 +30,23 @@ private const val BAR_WIDTH = 80
 private const val BAR_GAP = 1
 private const val BLOCK_GAP = 4
 
-// An item is 16px, and a pixel of air follows it as one follows a line of text.
 private const val ITEM = 16
 private const val ITEM_PITCH = ITEM + 1
+private const val TRAILING_SPACING = 1
 
-// A block's icon stands this far left of its rows.
 private const val ICON_GAP = 4
 
-// The inventory leaves this much between its rows and the hotbar.
 private const val ROWS_GAP = 4
 
-// Vanilla's hotbar squashes a stack that lands about a point 12px down it, over a span of 5 ticks per unit of growth.
+// @keep Vanilla's hotbar squashes a stack that lands about a point 12px down it, over a span of 5 ticks per unit of growth.
 private const val POP_FOOT = 12f
 private const val POP_SPAN = 5f
 
-// An item sits this far into a hotbar cell.
 private const val HOTBAR_INSET = 3
 
-// The plate's ring, then 3px of air before the text.
 private const val PADDING = 4
 
-// Vanilla's hotbar is 182 wide in the middle of the screen. The offhand slot takes 29px beside it, and the attack
-// indicator, when the player shows it on the hotbar, 24px on the other side. A docked block keeps the 7px vanilla
-// leaves between the offhand slot and the hotbar.
+/* @keep Vanilla's hotbar is 182 wide in the middle of the screen. The offhand slot takes 29px beside it, and the attack indicator, when the player shows it on the hotbar, 24px on the other side. A docked block keeps the 7px vanilla leaves between the offhand slot and the hotbar. */
 private const val HOTBAR_HALF = 91
 private const val OFFHAND = 29
 private const val INDICATOR_RIGHT = 24
@@ -60,16 +54,8 @@ private const val INDICATOR_LEFT = 22
 private const val DOCK_GAP = 7
 
 object Hud {
-    /**
-     * A line of text, with a bar under it when [bar] is set, or a row of item icons when [stacks] is, the player's
-     * inventory from its [slot] on when that is not -1. [y] is from the block's top, and [x] from its first column.
-     */
     private class Row(val text: Component, val bar: BarRow?, val barColor: Int, val stacks: List<ItemStack?>?, val y: Int, val slot: Int, val x: Int = 0)
 
-    /**
-     * [alpha] is how solid the Inventory look's panel and slots are, and [pops] bobs an item as it lands, as the hotbar
-     * does. [icon] stands left of the rows, [iconY] down from the block's top.
-     */
     private class Block(
         val header: Component?,
         val icon: ItemStack?,
@@ -89,79 +75,57 @@ object Hud {
         val down = down(look)
         val pitch = pitch(look)
 
-        /** Where icon [i] of [row] sits, from the block's plate corner and its top. A row of a block in [columns] runs down. */
         fun iconX(row: Row, i: Int) = PADDING + across + row.x + if (columns) 0 else i * pitch
 
         fun iconY(row: Row, i: Int) = row.y + down + if (columns) i * pitch else 0
     }
 
-    /** An item icon as it sits on the screen, in GUI pixels. */
     private class Cell(val x: Float, val y: Float, val size: Float, val stack: ItemStack)
     private class Group(var place: HudGroup) {
         val blocks = LinkedHashMap<String, Block>()
 
-        // Read every frame, so these are rebuilt on change and the frame loop allocates nothing.
+        // @keep Read every frame, so these are rebuilt on change and the frame loop allocates nothing.
         var shown = emptyList<Block>()
         var width = 0
         var height = 0
         var x = 0
         var y = 0
 
-        // The scale it is drawn at: the player's, or for a group docked beside the hotbar, as much of it as fits there.
         var scale = 1f
 
-        // The top and height of each run of blocks that sit on the plate, from the group's corner, and the runs while a
-        // menu is open, without the blocks that step aside for it.
         var plates = IntArray(0)
         var menuPlates = IntArray(0)
     }
 
-    /**
-     * A block as it sits on the screen. [x] and [y], in GUI pixels, are where its plate's corner would be if it
-     * stood alone, and [width] and [height] are that plate's size in HUD pixels, before [scale]. [dock] is where it
-     * sits beside the hotbar, or [HudDock.FREE].
-     */
     class Placed(val id: String, val x: Float, val y: Float, val width: Int, val height: Int, val scale: Float, val dock: HudDock) {
         fun contains(px: Double, py: Double) = px >= x && px < x + width * scale && py >= y && py < y + height * scale
 
-        /** Its box as drawn, at its scale. */
         fun box() = HudBox(id, x, y, width * scale, height * scale)
     }
 
     private val groups = LinkedHashMap<String, Group>()
 
-    // Each block's stacks by the item they were built from. A block shown again reuses the stack of an item it showed
-    // before, because building one costs tens of microseconds and an inventory changes one slot at a time. A slot that
-    // did not change holds the very same item, so identity finds it without hashing its lore.
+    /* @keep Each block's stacks by the item they were built from. A block shown again reuses the stack of an item it showed before, because building one costs tens of microseconds and an inventory changes one slot at a time. A slot that did not change holds the very same item, so identity finds it without hashing its lore. */
     private val stacksByItem = HashMap<String, IdentityHashMap<Item, ItemStack>>()
     private var shown = emptyList<Group>()
     private var placed = emptyList<Placed>()
     private var cells = emptyList<Cell>()
 
-    // Blocks the player hid with a key. They keep their place in their group and come back as they were.
     private val concealed = HashSet<String>()
 
-    /**
-     * Puts [block] in [group], replacing what [id] showed before. The group's corner is its plate's corner.
-     * A block that is not [placeable] is one no feature owns, so the HUD editor cannot grab it. A group stacks its
-     * blocks by [order], so a block that leaves the stack and comes back takes its old place in it.
-     */
     fun show(id: String, group: HudGroup, block: HudBlock, placeable: Boolean = true, order: Int = 0) {
         val font = Minecraft.getInstance().font
         val line = font.lineHeight + 1
         val hotbar = block.look == HudLook.HOTBAR
         val inventory = block.look == HudLook.INVENTORY
         val header = block.header.takeIf { it.spans.isNotEmpty() }?.toComponent()
-        // The inventory's panel leaves its inset around the slots.
         var height = (if (header != null) line else 0) + if (inventory) Kit.INSET else 0
         var width = header?.let(font::width) ?: 0
         val built = stacksByItem[id].orEmpty()
         val kept = IdentityHashMap<Item, ItemStack>()
         val icon = block.icon?.let { kept.getOrPut(it) { built[it] ?: it.toStack() } }
         val iconY = height
-        // With an icon, every row starts past it.
         val indent = if (icon != null) ITEM + ICON_GAP else 0
-        // In columns the rows of icons stand side by side from where the first one starts. The hotbar's sprite only lies across.
         val columns = block.columns && !hotbar
         val pitch = pitch(block.look)
         var columnX = indent
@@ -207,7 +171,6 @@ object Hud {
         groups.values.forEach { if (it.place.id != group.id) it.blocks.remove(id) }
         val target = groups.getOrPut(group.id) { Group(group) }
         target.place = group
-        // A block that joins, or whose place in the order changed, as when a live block turns into a stand-in, is sorted in.
         val moved = target.blocks[id]?.order != order
         target.blocks[id] = Block(
             header, icon, iconY, rows, block.look, width, height, placeable, block.overMenus, columns,
@@ -221,7 +184,6 @@ object Hud {
         layout()
     }
 
-    /** Takes [id]'s block off the screen while [hidden], keeping it to show again, as a key the player bound does. */
     fun conceal(id: String, hidden: Boolean) {
         if (if (hidden) concealed.add(id) else concealed.remove(id)) layout()
     }
@@ -232,20 +194,16 @@ object Hud {
         layout()
     }
 
-    /** Whether the player can see the HUD now: the game's own HUD is up, and Hide In F3 has not taken it off. */
     val visible: Boolean get() = !Minecraft.getInstance().gui.hud.isHidden && !hiddenInF3()
 
-    /** Whether Hide In F3 takes the HUD off now. A HUD the player cannot see can't be pointed at either. */
     private fun hiddenInF3() = DsModClient.runs<HideInF3>() && Minecraft.getInstance().debugOverlay.showDebugScreen()
 
-    /** The block under a point in GUI pixels, topmost first. */
     fun at(px: Double, py: Double): Placed? {
         if (hiddenInF3()) return null
         for (i in placed.size - 1 downTo 0) if (placed[i].contains(px, py)) return placed[i]
         return null
     }
 
-    /** The item drawn under a point in GUI pixels, or null. */
     fun itemAt(px: Double, py: Double): ItemStack? {
         if (hiddenInF3()) return null
         for (i in cells.indices.reversed()) {
@@ -255,7 +213,6 @@ object Hud {
         return null
     }
 
-    /** Every block on the screen that the HUD editor can move, in the order they are drawn. */
     fun placed(): List<Placed> = if (hiddenInF3()) emptyList() else placed
 
     fun find(id: String): Placed? {
@@ -263,7 +220,6 @@ object Hud {
         return null
     }
 
-    /** The box block [id] would fill docked at [dock] beside the hotbar, drawn at [scale] or as much of it as fits, in GUI pixels. */
     fun dockSpot(id: String, dock: HudDock, scale: Float): HudBox? {
         val group = groups.values.firstOrNull { id in it.blocks } ?: return null
         val block = group.blocks.getValue(id)
@@ -305,10 +261,6 @@ object Hud {
         cells = items
     }
 
-    /**
-     * Each run of blocks that sit on the plate, as a top and a height, so a block of another look breaks the plate, as
-     * does one that steps aside for an open [menu].
-     */
     private fun plates(group: Group, menu: Boolean): IntArray {
         if (!group.place.background) return IntArray(0)
         val runs = ArrayList<Int>()
@@ -331,18 +283,10 @@ object Hud {
         return runs.toIntArray()
     }
 
-    /**
-     * Sets the group's corner: where the player put it, or flush beside the hotbar with its bottom on the screen's,
-     * past whatever vanilla draws on that side. A group with a plate puts the plate's edge there, and one without its
-     * contents'. A docked group too wide for the room beside the hotbar is drawn smaller, by whole screen pixels per
-     * HUD pixel as the rest of the HUD is, so a big one such as the inventory still fits on a narrow screen.
-     */
     private fun place(group: Group) {
         val dock = group.place.dock
         group.scale = group.place.scale
         if (dock == HudDock.FREE) {
-            // The saved place is still the fraction of the screen. A smaller GUI uses that fraction, then pulls the
-            // corner back so the plate that is about to be drawn stays on the screen.
             val window = Minecraft.getInstance().window
             group.x = onScreen(group.place.x, window.guiScaledWidth, group.width, group.scale)
             group.y = onScreen(group.place.y, window.guiScaledHeight, group.height, group.scale)
@@ -354,13 +298,8 @@ object Hud {
         group.scale = spot.scale
     }
 
-    /** Where a docked block's corner goes, in GUI pixels, and the [scale] it is drawn at there. */
     private class Spot(val x: Int, val y: Int, val scale: Float)
 
-    /**
-     * The corner of contents [width] by [height] HUD pixels, drawn at [scale] or smaller where the room beside the
-     * hotbar is narrower, docked at [dock], with a plate when [plated].
-     */
     private fun corner(dock: HudDock, width: Int, height: Int, plated: Boolean, scale: Float): Spot {
         val client = Minecraft.getInstance()
         val screenWidth = client.window.guiScaledWidth
@@ -374,7 +313,6 @@ object Hud {
             else -> 0
         }
         val room = middle - HOTBAR_HALF - beside - DOCK_GAP + if (left) 0 else screenWidth % 2
-        // The box that lines up with the hotbar: the plate, or with none the contents, which start PADDING in.
         val box = if (plated) plate(width) else width
         val guiScale = client.window.guiScale
         val fitted = if (box * scale > room) maxOf(1, room * guiScale / box) / guiScale.toFloat() else scale
@@ -386,12 +324,10 @@ object Hud {
         } else {
             (middle + HOTBAR_HALF + beside + DOCK_GAP - inset).toInt()
         }
-        // On a narrow screen there may be no room beside the hotbar, and a block cut off by the edge reads worse than one over the offhand slot.
         x = x.coerceIn(-inset.toInt(), (screenWidth - drawnWidth - inset).toInt().coerceAtLeast(0))
         return Spot(x, (client.window.guiScaledHeight - drawnHeight - inset).toInt(), fitted)
     }
 
-    /** How far into a row of [look] its first item sits, across and down, and how far apart its items are. */
     private fun across(look: HudLook) = when (look) {
         HudLook.HOTBAR -> HOTBAR_INSET
         HudLook.INVENTORY -> Kit.INSET + 1
@@ -410,15 +346,12 @@ object Hud {
         else -> ITEM_PITCH
     }
 
-    // Each line ends in a pixel of spacing, which the plate's air already gives.
-    /** [saved] pulled back so a plate around [size] drawn at [scale] ends on the screen's [room]. */
     private fun onScreen(saved: Int, room: Int, size: Int, scale: Float) = saved.coerceIn(0, (room - plate(size) * scale).roundToInt().coerceAtLeast(0))
 
-    private fun plate(size: Int) = size + PADDING * 2 - 1
+    private fun plate(size: Int) = size + PADDING * 2 - TRAILING_SPACING
 
     fun register() {
-        // With the chat open the mouse is free, so pointing at an icon shows the item's tooltip. Minecraft draws the
-        // frame's tooltip at the end of the screen's own pass, so it is set before that pass.
+        // @keep Minecraft draws the frame's tooltip at the end of the screen's own pass, so it is set before that pass.
         ScreenHooks.onEveryLayout<ChatScreen> { screen, _ ->
             val client = Minecraft.getInstance()
             ScreenEvents.beforeExtract(screen).register { _, graphics, x, y, _ ->
@@ -433,16 +366,13 @@ object Hud {
         }
     }
 
-    /** Draws every block where it sits, as the game's HUD does each frame, and as the settings' layout draws it small. */
     fun draw(graphics: GuiGraphicsExtractor, partial: Float = 0f) {
         val client = Minecraft.getInstance()
         val font = client.font
         val line = font.lineHeight + 1
-        // The Inventory look matches the inventory screen, which Menu Theme draws with the kit, solid or as glass.
         val themed = MenuSkin.themed
         val glass = MenuSkin.glassAlpha
         val menu = client.gui.screen() is AbstractContainerScreen<*>
-        // The hotbar slot the player holds, numbered as the inventory menu numbers it.
         val player = client.player
         val held = player?.let { InventoryMenu.USE_ROW_SLOT_START + it.inventory.selectedSlot } ?: -1
         val pose = graphics.pose()
@@ -481,7 +411,6 @@ object Hud {
                     val stacks = row.stacks
                     if (stacks != null) {
                         if (hotbar) Kit.hotbar(graphics, PADDING, y, stacks.size)
-                        // The inventory's look takes the inventory screen's rarity art, and the others the hotbar's.
                         val surface = if (inventory) Surface.CONTAINER else Surface.HOTBAR
                         for (i in stacks.indices) {
                             val x = block.iconX(row, i)
@@ -493,7 +422,6 @@ object Hud {
                             val stack = stacks[i]
                             if (stack != null) {
                                 if (slot >= 0) Slots.drawBack(graphics, surface, slot, x, itemY)
-                                // The hotbar bobs a stack as it lands, from the inventory's own stack, which counts the bob down.
                                 val pop = if (block.pops && player != null && slot in InventoryMenu.INV_SLOT_START until InventoryMenu.SHIELD_SLOT) {
                                     player.inventory.getItem(if (slot >= InventoryMenu.USE_ROW_SLOT_START) slot - InventoryMenu.USE_ROW_SLOT_START else slot).popTime - partial
                                 } else {

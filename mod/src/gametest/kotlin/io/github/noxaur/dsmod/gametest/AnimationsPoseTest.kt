@@ -51,7 +51,6 @@ class AnimationsPoseTest : FabricClientGameTest {
         check(changed(vanillaSwing, slide) > 1000 && changed(vanilla, slide) > 1000) { "Turn 0% did not slide the sword without turning it" }
         animations.turn.value = 100f
 
-        // A smaller sword swings a shorter way with Scale Swing, and the game's full way without it, and so does a stab.
         animations.itemSize.value = 0.5f
         val scaled = midSwing("animations-scale-swing")
         animations.scaleSwing.value = false

@@ -7,13 +7,8 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
 
-/**
- * Walks from a six-row menu to a four-row and a three-row one, as the server's menus go, and checks that Go Back and the
- * inventory stay put. With the setting off they move, as in vanilla. Read the screenshots: in the vanilla one the
- * texture must line up with its slots.
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.ChestScreenMixin], [io.github.noxaur.dsmod.edge.mixin.ContainerScreenMixin]. */
 class FixedMenuLayoutTest : FabricClientGameTest {
-    /** Where Go Back and the first inventory slot sit in menus of six, four and three rows. */
     private fun walk(context: ClientGameTestContext, world: TestSingleplayerContext, shot: String) =
         listOf(6, 4, 3).map { rows ->
             ServerMenus.open(context, world, rows, "$rows Rows")

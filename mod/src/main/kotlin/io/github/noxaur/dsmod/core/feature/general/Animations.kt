@@ -47,7 +47,6 @@ class Animations(config: DsModConfig) : HasFeature {
         feature.action("resetAnimations", "Reset Animations", "Put every Animations setting back to the game's own.", button = "Reset", run = ::reset)
     }
 
-    /** Puts every setting but the switch back to its default, so the defaults are declared once. */
     fun reset() = feature.rows.forEach { it.reset() }
 
     private fun percent(key: String, name: String, description: String) = feature.number(key, name, description, 100f, 0f..100f, step = 5f, unit = "%")

@@ -7,7 +7,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Puts the brief's name first in the window title, where a task bar that cuts the title short still shows it. */
 @Mixin(Minecraft.class)
 abstract class BriefTitleMixin {
     @Inject(method = "createTitle", at = @At("RETURN"), cancellable = true)

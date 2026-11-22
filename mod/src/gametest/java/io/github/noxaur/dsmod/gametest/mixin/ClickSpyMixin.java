@@ -9,7 +9,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Each container click the game mode sends, so a test can count the packets of one Shift click. */
 @Mixin(MultiPlayerGameMode.class)
 public class ClickSpyMixin {
     @Inject(method = "handleContainerInput", at = @At("HEAD"))

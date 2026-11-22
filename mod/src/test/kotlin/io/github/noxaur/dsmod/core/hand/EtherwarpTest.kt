@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class EtherwarpTest {
-    // An Aspect of the Void's lore as a capture shows it, with the glyphs of the server's tooltip font left out.
+    // @keep An Aspect of the Void's lore as a capture shows it, with the glyphs of the server's tooltip font left out.
     private val aspect = listOf(
         "Instant Transmission RIGHT CLICK",
         "Teleport 15 blocks ahead of you and",
@@ -45,7 +45,6 @@ class EtherwarpTest {
         assertEquals(0, Etherwarp.range(emptyList()))
     }
 
-    /** Blocks with a collision box at [solid], each as `x,y,z`. */
     private fun world(vararg solid: String) = Etherwarp.Blocks { x, y, z -> "$x,$y,$z" in solid }
 
     private fun east(blocks: Etherwarp.Blocks, range: Int = 57, beyond: Int = 0) =
@@ -65,7 +64,6 @@ class EtherwarpTest {
 
     @Test
     fun `a block whose near side is within the range is reached, and one past it is too far`() {
-        // The eye is half a block in, so block 57's near side is 56.5 blocks away and block 58's is 57.5.
         assertEquals(Target(57, 1, 0, null), east(world("57,1,0")))
         assertNull(east(world("58,1,0")))
         assertEquals(Target(58, 1, 0, Miss.TOO_FAR), east(world("58,1,0"), beyond = Etherwarp.BEYOND))
@@ -74,11 +72,9 @@ class EtherwarpTest {
 
     @Test
     fun `the line crosses every block it passes through, corners and negative sides included`() {
-        // Down and to the west at a slant: the line enters x -1 before it drops to y 0.
         val look = Triple(-0.8, -0.6, 0.0)
         val found = Etherwarp.target(0.5, 1.5, 0.5, look.first, look.second, look.third, 57, 0, world("-1,1,0", "0,0,0"))
         assertEquals(Target(-1, 1, 0, null), found)
-        // Straight down from the exact edge of a block, with no movement on two axes.
         assertEquals(Target(0, -4, 0, null), Etherwarp.target(0.0, 1.0, 0.0, 0.0, -1.0, 0.0, 57, 0, world("0,-4,0")))
     }
 

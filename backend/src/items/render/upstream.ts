@@ -2,7 +2,6 @@ import { Schema } from "effect";
 
 import { count, flag, lenient, record, type StatSet, statSet, strings, text } from "../../upstream/read.ts";
 
-/** An item as dragsim.co's player API sends it, with every field that is missing or of the wrong type left out. */
 export interface UpstreamItem {
   readonly entry: string | undefined;
   readonly count: number;
@@ -12,7 +11,6 @@ export interface UpstreamItem {
   readonly rarity: string | undefined;
   readonly reforge: string;
   readonly color: unknown;
-  /** `item_data.skull`, when the server says. */
   readonly skull: boolean | undefined;
   readonly reforgeStats: StatSet;
   readonly stats: StatSet;
@@ -21,7 +19,6 @@ export interface UpstreamItem {
   readonly fumingBooks: number;
   readonly finalSynchronizers: number;
   readonly npcSellPrice: number | undefined;
-  /** `extra`, whose keys are the item's own modifiers, such as `drill`. */
   readonly extra: Readonly<Record<string, unknown>>;
   readonly artOfWar: boolean;
   readonly recombobulated: boolean;
@@ -31,7 +28,6 @@ export interface UpstreamItem {
   readonly kills: number;
   readonly skinId: string | undefined;
   readonly dye: unknown;
-  /** The base64 skull texture the item carries. */
   readonly skin: unknown;
   readonly abilities: readonly string[];
 }
@@ -39,7 +35,6 @@ export interface UpstreamItem {
 const Stars = lenient(Schema.Struct({ stars: Schema.Finite }));
 const SkinId = lenient(Schema.Struct({ skinId: Schema.String }));
 
-/** The item a slot holds, or undefined for a slot that is empty or holds something that is not an item. */
 export const readItem = (raw: unknown): UpstreamItem | undefined => {
   const item = record(raw);
   const material = text(item["material"]);

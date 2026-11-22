@@ -6,7 +6,6 @@ import io.github.noxaur.dsmod.edge.toComponent
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 
-/** Prints every text role to chat, so the screenshot shows the palette as the player sees it. */
 class ChatTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use {

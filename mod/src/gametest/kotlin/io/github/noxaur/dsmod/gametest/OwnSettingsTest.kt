@@ -17,13 +17,7 @@ import net.minecraft.client.gui.screens.TitleScreen
 import net.minecraft.client.input.MouseButtonInfo
 import org.lwjgl.glfw.GLFW
 
-/**
- * Screenshots ds-mod's own settings screen in both themes: a section with its subsections, a row's tooltip, every
- * section expanded, a search with hits and one with none, the narrow sidebar at GUI scale 3, and the tab bar with
- * several tabs, a blank one, a drag, an overflow and the 427x240 size. Each tab press, drag and key is checked
- * against the tabs, and the tabs outlive the screen. Escape goes back to the screen it was opened over.
- * `SettingRowsTest` drives the rows. Covers [io.github.noxaur.dsmod.edge.ui.KitTabBar].
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.ui.KitTabBar], [io.github.noxaur.dsmod.edge.Browser], [io.github.noxaur.dsmod.edge.mixin.PerspectiveKeyMixin]. */
 class OwnSettingsTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = SettingsDriver(context).screen()
 
@@ -33,22 +27,17 @@ class OwnSettingsTest : FabricClientGameTest {
         context.takeScreenshot("own-settings-charcoal")
         context.inTheme(Theme.VANILLA) { context.takeScreenshot("own-settings-vanilla") }
 
-        // The sidebar's list starts 24 down, with sections 16 tall and subsections 13, and Favorites first.
-
-        // Inventory is under General's four subsections, Camera, Binds, Interface and Chat. Its first row, under the mouse, lifts.
         click(30, 24 + 16 + 16 + 4 * 13 + 4 * 16 + 8)
         move(160, 18 + 8 + 2 + 12 + 4 + 10)
         context.waitTicks(10)
         context.takeScreenshot("own-settings-hover")
 
-        // The button beside Done collapses every section while one is open, and then expands them all.
         click(116 - 1 - 4 - 8, 360 - 4 - 8)
         context.takeScreenshot("own-settings-collapsed")
         click(116 - 1 - 4 - 8, 360 - 4 - 8)
         context.takeScreenshot("own-settings-expanded")
         click(116 - 1 - 4 - 8, 360 - 4 - 8)
 
-        // From General: Down past General's four subsections and seven sections to Combat, Right opens it, Down onto Loot, and Enter jumps there.
         open(context, SettingsTabs(at("General")))
         for (k in List(12) { GLFW.GLFW_KEY_DOWN } + listOf(GLFW.GLFW_KEY_RIGHT, GLFW.GLFW_KEY_DOWN, GLFW.GLFW_KEY_DOWN, GLFW.GLFW_KEY_ENTER)) {
             context.input.pressKey(k)
@@ -56,12 +45,10 @@ class OwnSettingsTest : FabricClientGameTest {
         }
         context.waitTicks(10)
         context.takeScreenshot("own-settings-keys")
-        // The wheel over the pane scrolls it.
         move(400, 200)
         context.input.scroll(-1.0)
         context.waitTicks(2)
         context.takeScreenshot("own-settings-wheel")
-        // Ctrl+F takes the keyboard to the search field.
         key(GLFW.GLFW_KEY_F, control = true)
         context.input.typeChars("eyes")
         context.waitTicks(2)
@@ -70,8 +57,7 @@ class OwnSettingsTest : FabricClientGameTest {
         context.waitTicks(2)
         context.takeScreenshot("own-settings-empty")
 
-        // Tabs. With The End open, the sidebar's rows are Favorites and seven sections from 24, The End 152, Dragon 168, Protector 181, Drops 194, then Combat 207.
-        // A left press with the Ctrl key, as the system sends it. On macOS the game makes it a right press, and Ctrl Click keeps it.
+        // @keep On macOS the game makes a Ctrl left press a right press, and Ctrl Click keeps it.
         val ctrlTabs = SettingsTabs(at("The End"))
         open(context, ctrlTabs)
         move(30, 207 + 8)
@@ -90,7 +76,6 @@ class OwnSettingsTest : FabricClientGameTest {
         expect(context, tabs, "[The End] Combat", "A Ctrl press on a section opens it after the selected tab, in the background")
         click(40, 181 + 6, GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
         expect(context, tabs, "[The End] The End Combat", "A middle press on a subsection opens its section")
-        // The bar's tabs start 4 in from the sidebar's 116, each 92 wide and 1 apart, and the plus comes after them.
         click(120 + 3 * 93 + 7, 9)
         expect(context, tabs, "The End [New Tab] The End Combat", "The plus opens a blank tab after the selected one")
         context.input.typeChars("eyes")
@@ -99,7 +84,6 @@ class OwnSettingsTest : FabricClientGameTest {
         key(GLFW.GLFW_KEY_T, control = true)
         expect(context, tabs, "The End eyes [New Tab] The End Combat", "Ctrl+T opens a blank tab")
         context.takeScreenshot("own-settings-tab-blank")
-        // Five tabs share the room, so each is 85 wide.
         click(120 + 3 * 86 + 30, 9)
         expect(context, tabs, "The End eyes New Tab [The End] Combat", "A press selects a tab")
         val marked = context.computeOnClient<Int, Nothing> { tabs.current.current }
@@ -107,7 +91,6 @@ class OwnSettingsTest : FabricClientGameTest {
         move(120 + 1 * 86 + 30, 9)
         context.shotInBothThemes("own-settings-tabs")
 
-        // A drag past a neighbor's middle moves the tab there, and the tab follows the mouse.
         move(120 + 4 * 86 + 20, 9)
         context.input.holdMouse(0)
         context.waitTick()
@@ -136,7 +119,6 @@ class OwnSettingsTest : FabricClientGameTest {
         key(GLFW.GLFW_KEY_1, control = true)
         expect(context, tabs, "[The End] eyes Combat New Tab The End", "Ctrl+1 selects the first tab")
 
-        // A press in the sidebar takes the tab there, and the history walks back and forward.
         click(30, 207 + 8)
         expect(context, tabs, "[Combat] eyes Combat New Tab The End", "A press on a section goes there in the same tab")
         key(GLFW.GLFW_KEY_LEFT, alt = true)
@@ -148,25 +130,21 @@ class OwnSettingsTest : FabricClientGameTest {
         click(400, 200, GLFW.GLFW_MOUSE_BUTTON_5)
         expect(context, tabs, "[Combat] eyes Combat New Tab The End", "The mouse's forward button goes forward")
 
-        // The × shows on the tab under the mouse, 5 in from its right, and a middle press closes a tab too.
         click(120 + 86 + 85 - 5 - 4, 9)
         expect(context, tabs, "[Combat] Combat New Tab The End", "A press on the × closes that tab")
         click(120 + 86 + 30, 9, GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
         expect(context, tabs, "[Combat] New Tab The End", "A middle press closes a tab")
 
-        // Too many tabs: they shrink to 44 and the strip scrolls, keeping the selected one in sight.
         repeat(8) { key(GLFW.GLFW_KEY_T, control = true) }
         expect(context, tabs, "Combat New Tab New Tab New Tab New Tab New Tab New Tab New Tab [New Tab] New Tab The End", "Ctrl+T opens each after the last one opened")
         context.input.typeChars("loot")
         context.waitTicks(2)
         context.takeScreenshot("own-settings-tab-overflow")
-        // The wheel down scrolls the strip on to the tabs past its right end.
         move(300, 9)
         context.input.scroll(-1.0)
         context.waitTicks(2)
         context.takeScreenshot("own-settings-tab-overflow-wheel")
 
-        // The tabs outlive the screen, as a browser's session does.
         val before = context.computeOnClient<Int, Nothing> { SettingsScreen.session().size }
         context.setScreen { SettingsScreen(TitleScreen()) }
         context.waitTicks(2)
@@ -179,7 +157,7 @@ class OwnSettingsTest : FabricClientGameTest {
         val after = context.computeOnClient<Int, Nothing> { SettingsScreen.session().size }
         check(after == before + 1) { "The settings opened again with $after tabs, not the ${before + 1} they closed with" }
 
-        // The smallest window the game allows at GUI scale 2.
+        // @keep 854x480 is the smallest window the game allows.
         context.input.resizeWindow(854, 480)
         open(context, SettingsTabs(at("Camera")))
         context.takeScreenshot("own-settings-small-camera")

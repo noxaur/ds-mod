@@ -14,22 +14,13 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
 
-/**
- * Chat HUD Editor. With the chat open, a block on the HUD moves, docks, resizes and resets by [HudMover]'s rules, as it
- * does in the HUD editor, and a feature with nothing to show stands in as its outlined title so it can be placed too.
- * Minecraft draws the chat over the HUD, so where a row of chat, the input, the command suggestions or a command's
- * usage lie over a block, the press, the wheel and the hover are the chat's and it works as it always has. The
- * keyboard stays the input's, except while the mouse holds a block, when Escape puts it back and the arrows nudge it.
- */
 object ChatDrags {
     private lateinit var mover: HudMover
     private val readouts get() = DsModClient.readouts
     private lateinit var settings: DsModConfig.Hud
 
-    /** Whether a block moved since the chat opened, so closing it saves. */
     private var changed = false
 
-    // The tooltip of the block last hovered, kept so a frame over the same block builds nothing.
     private var tipId: String? = null
     private var tipPlaced = false
     private var tip = emptyList<Component>()
@@ -70,7 +61,6 @@ object ChatDrags {
                 changed = true
                 false
             }
-            // Only while the mouse holds a block, when the player is not editing the input.
             ScreenKeyboardEvents.allowKeyPress(screen).register { _, event ->
                 val held = mover.held?.let(Hud::find)
                 when {
@@ -82,11 +72,10 @@ object ChatDrags {
                     else -> true
                 }
             }
-            // Minecraft draws the frame's tooltip at the end of the screen's own pass, so it is set before that pass.
+            // @keep Minecraft draws the frame's tooltip at the end of the screen's own pass, so it is set before that pass.
             ScreenEvents.beforeExtract(screen).register { _, graphics, x, y, _ ->
                 if (mover.held != null) return@register
                 val block = under(client, screen, x.toDouble(), y.toDouble()) ?: return@register
-                // An item on the block shows its own tooltip, from Hud.
                 if (Hud.itemAt(x.toDouble(), y.toDouble()) != null) return@register
                 graphics.setComponentTooltipForNextFrame(client.font, tooltip(block.id), x, y)
             }
@@ -110,7 +99,6 @@ object ChatDrags {
 
     private fun on(client: Minecraft) = DsModClient.runs<ChatHudEditor>() && !client.gui.hud.isHidden
 
-    /** The block at a point in GUI pixels that the chat leaves to Chat HUD Editor, or null. */
     private fun under(client: Minecraft, screen: ChatScreen, x: Double, y: Double): Hud.Placed? {
         if (!on(client)) return null
         val block = Hud.at(x, y) ?: return null
@@ -120,15 +108,14 @@ object ChatDrags {
         return block
     }
 
-    /** Whether the command suggestions, or the usage drawn in their place, cover a point. */
     private fun suggests(screen: ChatScreen, x: Int, y: Int): Boolean {
         val suggestions = (screen as ChatScreenAccessor).commandSuggestions as CommandSuggestionsAccessor
         val list = suggestions.suggestions
-        // The list draws a pixel past its rect, above and below, when it has more to scroll to.
+        // @keep The list draws a pixel past its rect, above and below, when it has more to scroll to.
         if (list != null) return (list as SuggestionsListAccessor).rect.let { x >= it.x && x < it.x + it.width && y >= it.y - 1 && y <= it.y + it.height }
         val lines = suggestions.commandUsage.size
         if (lines == 0) return false
-        // Minecraft's own numbers: each line is 12 tall, the newest one's top 27 above the screen's bottom.
+        // @keep Minecraft's own numbers: each line is 12 tall, the newest one's top 27 above the screen's bottom.
         val left = suggestions.commandUsagePosition - 1
         return x >= left && x < left + suggestions.commandUsageWidth + 2 && y >= screen.height - 27 - 12 * (lines - 1) && y < screen.height - 15
     }

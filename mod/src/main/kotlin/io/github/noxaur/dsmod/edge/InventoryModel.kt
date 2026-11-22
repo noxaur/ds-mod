@@ -5,15 +5,9 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState
 import net.minecraft.world.entity.Entity
 
-/** A model drawn in a box on a screen, as the inventory draws the player. */
 object InventoryModel {
-    /** The inventory's own offset, which keeps the feet off the bottom of the box. */
     const val Y_OFFSET = 0.0625f
 
-    /**
-     * [entity] as the inventory draws it: with no shadow, outline or name, at the game's own size, looking ahead and
-     * turned [yaw] degrees from facing the viewer. A screen that wants the name writes it beside the box.
-     */
     fun state(entity: Entity, yaw: Float): EntityRenderState {
         val state = Minecraft.getInstance().entityRenderDispatcher.getRenderer(entity).createRenderState(entity, 1f)
         state.shadowPieces.clear()

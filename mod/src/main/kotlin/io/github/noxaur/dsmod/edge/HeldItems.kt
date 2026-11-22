@@ -53,10 +53,6 @@ object HeldItems {
         return entity === player && arm == player.mainArm && blocking(player.mainHandItem)
     }
 
-    /**
-     * Moves the item before the arm puts it in the hand, so X moves it across the screen rather than along the
-     * blade, and outward for either hand. The empty hand and a map are not an item to move.
-     */
     fun place(pose: PoseStack, arm: HumanoidArm, stack: ItemStack) {
         drawn[arm.ordinal] = stack
         if (!on || stack.isEmpty || stack.has(DataComponents.MAP_ID)) return
@@ -67,10 +63,6 @@ object HeldItems {
         if (x != 0f || y != 0f || z != 0f) pose.translate(side(arm) * x, y, -z)
     }
 
-    /**
-     * Runs just before the item is drawn, after every swing and use pose, so the item turns and grows about the grip
-     * and stays in the hand. Yaw and roll are mirrored for the left hand, as the hands are.
-     */
     fun turnAndSize(pose: PoseStack, arm: HumanoidArm) {
         if (!on) return
         val s = settings
@@ -129,7 +121,6 @@ object HeldItems {
         pose.mulPose(noTurn.identity().slerp(stab.getNormalizedRotation(stabTurn), turn))
     }
 
-    /** The game's own swing moves the hand by this much, times [reach]. */
     private fun push(pose: PoseStack, side: Int, attack: Float, reach: Float) {
         if (reach == 0f) return
         val root = sqrt(attack)
@@ -217,7 +208,6 @@ object HeldItems {
         return if (on) HeldItem.swingTicks(swung.swingAnimation.duration(), settings.swingSpeed.value) else swung.swingAnimation.duration()
     }
 
-    /** How many ticks the player's own swing lasts, from the game's [ticks]. Everyone else swings at their own pace. */
     fun swingTicks(entity: LivingEntity, ticks: Int): Int {
         val client = Minecraft.getInstance()
         if (entity !== client.player || !client.options.cameraType.isFirstPerson || !on) return ticks
@@ -237,10 +227,8 @@ object HeldItems {
 
     fun swapScale(scale: Float): Float = if (noDipAfterHit) 1f else scale
 
-    /** Whether the hand shows [next] at once instead of lowering [shown] first. No Equip Reset does for the same item. */
     fun replaceAtOnce(vanilla: Boolean, shown: ItemStack, next: ItemStack): Boolean = vanilla || on && settings.noEquipReset.value && ItemStack.isSameItem(shown, next)
 
-    /** Whether the game may lower the item after the player uses it. */
     fun dipOnUse(): Boolean = !(on && settings.noEquipReset.value)
 
     fun firstPerson(pose: PoseStack, arm: HumanoidArm, stack: ItemStack, attack: Float) {

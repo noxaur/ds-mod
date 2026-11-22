@@ -16,13 +16,7 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
 import net.minecraft.world.phys.AABB
 
-/**
- * The player stands on a pillar high in the air and looks east along y 101, the height of a sneaking eye, with an
- * Aspect of the Void whose lore is written as dragsim.co writes it. A wall 10 blocks out is boxed green, then red
- * as No Room once a block sits above it, and a block past the 57-block range is red as Too Far. Water, grass and a
- * torch on the line do not stop it, a slab is boxed as half a block, and nothing is boxed without the item or the
- * sneak. Read the screenshots: a green box, a red box labeled No Room, a red box labeled Too Far, and the settings.
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.ui.ItemsEditor]. */
 class EtherwarpOutlineTest : FabricClientGameTest {
     private val aspect = listOf(
         "§7Teleport §a15 blocks §7ahead of you and",
@@ -53,7 +47,6 @@ class EtherwarpOutlineTest : FabricClientGameTest {
         context.waitTicks(3)
     }
 
-
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
             world.standOnStone()
@@ -80,7 +73,6 @@ class EtherwarpOutlineTest : FabricClientGameTest {
                 check(target(context) == null) { "A failed warp is boxed with Failed Warps off: ${target(context)}" }
                 DsModClient.feature<EtherwarpOutline>().failed.value = true
 
-                // The eye is half a block into its own, so x 58's near side is 57.5 blocks out, past the range.
                 set(context, world, "fill 10 101 0 10 102 0 air", "setblock 58 101 0 stone")
                 check(target(context) == Etherwarp.Target(58, 101, 0, Miss.TOO_FAR)) { "A block past the range is not Too Far: ${target(context)}" }
                 context.screenshot("etherwarp-too-far")
@@ -92,11 +84,9 @@ class EtherwarpOutlineTest : FabricClientGameTest {
                 check(bounds(context)?.maxY == 101.5) { "A slab is boxed as ${bounds(context)}" }
                 DsModClient.feature<EtherwarpOutline>().throughWalls.value = false
                 context.waitTicks(2)
-                // A box the blocks may hide stands just off the slab's faces, so the two do not flicker.
                 check(bounds(context)!!.maxY > 101.5) { "A box behind walls lies on the slab: ${bounds(context)}" }
                 DsModClient.feature<EtherwarpOutline>().throughWalls.value = true
 
-                // Fluids, plants and torches have no collision box, so the line passes through them.
                 set(context, world, "setblock 4 101 0 water", "setblock 6 100 0 grass_block", "setblock 6 101 0 short_grass",
                     "setblock 7 100 0 stone", "setblock 7 101 0 torch")
                 check(target(context) == Etherwarp.Target(12, 101, 0, null)) { "Water, grass or a torch stopped the line: ${target(context)}" }

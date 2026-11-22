@@ -11,17 +11,14 @@ type Progress = typeof ProgressModel.Type;
  */
 export const SLAYER_MAX_LEVEL = 9;
 
-/** `combat` and `catacombs` have a table of their own, and every other skill uses the default one. */
 const tableOf = (progression: Progression, skill: string): readonly number[] =>
   skill === "combat" ? progression.combat : skill === "catacombs" ? progression.catacombs : progression.default;
 
-/** The level `totalXp` reaches in a table of cumulative XP, and the XP into it and to the next. */
 export const skillProgress = (
   progression: Progression,
   id: string,
   totalXp: number,
-  /** The id the progress is shown under, when it is not the skill whose table is used. */
-  as: string = id,
+  shownAs: string = id,
 ): Progress => {
   const table = tableOf(progression, id);
   let level = 0;
@@ -31,8 +28,8 @@ export const skillProgress = (
   const start = level === 0 ? 0 : (table[level - 1] ?? 0);
   const next = table[level];
   return {
-    id: as,
-    name: titleCase(as),
+    id: shownAs,
+    name: titleCase(shownAs),
     level,
     maxLevel: table.length,
     totalXp,
@@ -41,7 +38,7 @@ export const skillProgress = (
   };
 };
 
-/** The slayers in `slayer`, which holds `<id>_xp` and `<id>_level` for each. */
+// @keep `slayer` holds `<id>_xp` and `<id>_level` for each slayer.
 export const slayerProgress = (slayer: Readonly<Record<string, number>>): Progress[] =>
   Object.entries(slayer).flatMap(([key, totalXp]) => {
     if (!key.endsWith("_xp")) {

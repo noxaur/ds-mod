@@ -29,19 +29,9 @@ import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.world.Mark
 import kotlinx.serialization.Serializable
 
-/** The features that have told the player they hide a server line. */
 @Serializable
 data class Hidden(val told: Set<String> = emptySet())
 
-/**
- * Runs the features. The edge calls [post] for each event and [tick] once a tick, then hands each
- * changed [Readout] to the shared layers, so a feature's own code never runs inside the render loop. A
- * readout is rebuilt after an event its feature could see, and otherwise a few times a second for its clocks.
- * A feature locked to an [io.github.noxaur.dsmod.core.game.Area] gets its events and shows its readout only there.
- * The entity events keep a table of what the client holds, and each feature hears and holds only the entities its
- * filters match.
- * While [active] is false every feature is treated as switched off, which is how the edge keeps the mod to dragsim.co.
- */
 class Game(private val features: List<Feature>, val metrics: Metrics = Metrics(), private val connected: () -> Boolean = { true }) {
     private val dragSimOnly = features.firstOrNull { it.id == DragSimOnly.ID }
 
@@ -58,49 +48,37 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         var marks: List<Mark> = emptyList()
             internal set
 
-        /** Goes up each time [hud], [slots] or [marks] changes, so the edge hands them over only then. */
         var version = 0
             internal set
         internal var stale = true
-        /** Whether the feature hears events, which [sync] alone changes. */
         internal var on = false
         internal var refreshedAt = 0L
 
-        /** Whether the player left the server while the feature was off, so it must forget that session when it comes back. */
         internal var missedLeave = false
     }
 
     val readouts = features.map(::Readout)
 
-    /** Sees every event before the features do. The debug build records captures through it. */
     var tap: ((time: Long, event: GameEvent) -> Unit)? = null
 
     private val tab = TabState()
 
-    /** The players the tab list shows now. */
     val tabPlayers get() = tab.players
 
-    /** The places the player has been, which decide the contributions they are offered. The edge saves it. */
     val places = Saved(Places.serializer(), Places())
     private var lastTab: TabList? = null
 
-    /** The features that told the player they hide a line, so each tells them once. The edge saves it. */
     val hidden = Saved(Hidden.serializer(), Hidden())
 
-    /** The sidebar, as of the last event the edge posted. */
     val sidebar = SidebarState()
     private var lastSidebar: Sidebar? = null
 
-    /** Whether the tab list and the sidebar put the player in [area], for the edge to ask on the player's behalf. */
     fun isIn(area: Area) = area.holds(tab, sidebar)
 
-    /** What the features said since the edge last delivered and cleared it. */
     val messages = ArrayList<Message>()
 
-    /** The open container, as of the last event the edge posted. */
     val container = ContainerState()
 
-    /** Each change of world and each leave of the server, as [Feature.worldNumber] reads it. */
     private var worlds = 0
 
     private val held = EntityTable()
@@ -121,26 +99,13 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         }
     }
 
-    /**
-     * Whether anything would read an event of [type]. A source that costs something asks before it builds
-     * one. Every feature may read [tab] and [sidebar], and they decide its area, so both are wanted while any
-     * feature is on. A container is wanted only while a feature that handles one is on.
-     */
     fun wants(type: Class<out GameEvent>) =
         tap != null || active && features.any { it.enabled && (type == TabList::class.java || type == Sidebar::class.java || type in it.handlers) }
 
-    /**
-     * Whether a feature would be handed an event of [type] right now, which also takes the player being in the
-     * feature's area. A source whose event comes once, such as a block that is already standing, holds it
-     * back until this is true, because [post] gives a feature outside its area nothing.
-     */
+    /** @keep A source whose event comes once, such as a block that is already standing, holds it back until this is true,
+     * because post gives a feature outside its area nothing */
     fun reaches(type: Class<out GameEvent>) = active && features.any { it.enabled && type in it.handlers && it.area.holds(tab, sidebar) }
 
-    /**
-     * The filters of the entities a feature reads now, for the edge's tracker: each one's that is on, and every one's
-     * while [tap] records, so that a capture can be cut for any of them. The same list until one of them changes, and
-     * empty while nothing reads entities.
-     */
     fun entityFilters(): List<EntityFilter> {
         val all = tap != null
         val on = all || active
@@ -153,18 +118,15 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         return filters
     }
 
-    /** The text a feature put in place of the [io.github.noxaur.dsmod.core.game.FloatingText] just posted, or null to keep the server's. */
     var replaced: Text? = null
         private set
 
-    /** Returns false when a feature hid [event], which the edge honors for a chat line and a floating text. */
     fun post(time: Long, event: GameEvent): Boolean {
         tap?.invoke(time, event)
         sync(time)
         var shown = true
         replaced = null
         val entity = held.apply(event)
-        // Any feature may read the shared state, so a change to it makes every readout stale.
         val shared = when (event) {
             is TabList -> true.also {
                 lastTab = event
@@ -182,15 +144,14 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             }
             is ContainerOpened -> true.also { metrics.time("container") { container.opened(event) } }
             is SlotChanged -> true.also { metrics.time("container") { container.changed(event) } }
-            // The new world's tab list and sidebar have not arrived, so the old one's area must not outlive the hop. A
-            // disconnect changes no world, and a feature switched on after it must not hear the old server's sidebar.
+            /** @keep The new world's tab list and sidebar have not arrived, so the old one's area must not outlive the hop. A
+             * disconnect changes no world, and a feature switched on after it must not hear the old server's sidebar */
             WorldChanged, LeftServer -> true.also {
                 worlds++
                 lastTab = null
                 lastSidebar = null
                 tab.update(emptyList())
                 sidebar.update(Sidebar())
-                // A new world numbers its entities again.
                 held.clear()
                 for (feature in readers) feature.heldEntities.clear()
             }
@@ -202,7 +163,6 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
                 if (event == LeftServer) readouts[i].missedLeave = true
                 continue
             }
-            // Outside its area a feature still follows the tab list, the sidebar, the world and the server, which is how it knows it left.
             val reaches = event is TabList || event is Sidebar || event is WorldChanged || event is LeftServer || feature.area.holds(tab, sidebar)
             val heard = if (entity) feature.entityFilters.view(held.before, held.after, event) ?: continue else event
             val handler = if (reaches) feature.handlers[heard.javaClass] else null
@@ -228,10 +188,6 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         return shown
     }
 
-    /**
-     * Tells the player where to turn [feature] off, the first time it hides a line, because they did not ask for a
-     * server line to go missing. A feature the player turned on themselves hides what they asked it to.
-     */
     private fun tellHidden(feature: Feature) {
         hidden.value = Hidden(hidden.value.told + feature.id)
         if (!feature.switch.default) return
@@ -239,13 +195,10 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         messages += Notice(feature.title, text { body("Hid a message from the server. Turn off "); value(feature.title); body(" under ${section.name} in /dsmod to see them.") })
     }
 
-    /**
-     * Turns each feature on or off as its switch and [active] say. [post] does this before an event reaches any
-     * feature, so a feature switched on between two ticks never hears an event twice, once as it comes and again
-     * as what it missed. A feature that is off sees no events. It forgets its world when it goes off, and hears the
-     * tab list and the sidebar again when it comes back, because the next ones arrive only when a row changes. A
-     * server it left meanwhile comes first, so it forgets that session before it hears the new one.
-     */
+    /** @keep A feature switched on between two ticks never hears an event twice, because post syncs before an event
+     * reaches any feature. One that comes back hears the tab list and the sidebar again, because the next ones
+     * arrive only when a row changes. A server it left meanwhile comes first, so it forgets that session before it
+     * hears the new one */
     private fun sync(time: Long) {
         val active = active
         for (readout in readouts) {
@@ -259,7 +212,6 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
                 feature.forget(event)
                 feature.handlers[event.javaClass]?.let { metrics.time(feature.id) { it.handle(event, time) } }
             }
-            // It hears the entities it reads that the client already holds, as it would have when they came.
             if (!on) feature.heldEntities.clear() else if (feature.entityFilters.isNotEmpty()) for (seen in held.values) {
                 if (feature.entityFilters.none { it.matches(seen) }) continue
                 feature.handlers[EntitySeen::class.java]?.let { metrics.time(feature.id) { it.handle(seen, time) } }

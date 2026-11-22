@@ -1,10 +1,5 @@
 package io.github.noxaur.dsmod.core.inventory
 
-/**
- * One slot a Shift click may fill, already in the menu's own order.
- * [same] means it holds this item and [count] is still under [limit]. [acceptsEmpty] means it is empty and may hold it.
- * A locked slot is skipped, and the items it would have taken go on to the next slot that can.
- */
 data class ShiftSlot(
     val index: Int,
     val count: Int,
@@ -14,11 +9,6 @@ data class ShiftSlot(
     val locked: Boolean,
 )
 
-/**
- * How many items each slot takes from a stack of [moving], in the two passes a Shift click uses: matching stacks
- * first, then empty slots. [skipLocked] leaves a locked slot untouched. An item that does not stack has no first pass.
- * The menu index is paired with the count it takes.
- */
 fun shiftPlaces(moving: Int, slots: List<ShiftSlot>, skipLocked: Boolean = true, stackable: Boolean = true): List<Pair<Int, Int>> {
     if (moving <= 0) return emptyList()
     val taken = IntArray(slots.size)

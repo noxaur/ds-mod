@@ -9,10 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Menu Theme' Glass look: a menu opened in the world dims the world behind it with one gradient, which would leave
- * clear glass a gray sheet. A glass menu skips the gradient and nothing else, so every other screen keeps it.
- */
+/** @keep A menu opened in the world dims the world behind it with one gradient, which would leave clear glass a gray sheet. */
 @Mixin(Screen.class)
 abstract class MenuBackdropMixin {
     @Inject(method = "extractTransparentBackground", at = @At("HEAD"), cancellable = true)

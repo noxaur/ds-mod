@@ -14,11 +14,6 @@ import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.Style
 import java.util.Optional
 
-/**
- * A player's name in a chat line from the server links to their profile: its hover says so, and its click runs the
- * mod's own command, which opens the viewer. The rank and the message around the name keep their styles. Then what
- * the viewer says while it loads, when dragsim.co is down, and when the copy is an old one.
- */
 class ProfileStatesTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         OnProfiles(context).use { profiles ->
@@ -49,7 +44,6 @@ class ProfileStatesTest : FabricClientGameTest {
                 val nameY = (height - 45).toDouble()
                 profiles.move(nameX.toInt(), nameY.toInt())
                 context.takeScreenshot("profile-chat-name")
-                // The chat screen runs the name's click, and Fabric keeps that command from the server.
                 val clicked = context.computeOnClient<Boolean, Nothing> { client ->
                     (client.gui.screen() as ChatScreen).mouseClicked(MouseButtonEvent(nameX, nameY, MouseButtonInfo(0, 0)), false)
                 }

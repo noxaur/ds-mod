@@ -1,23 +1,20 @@
 import type { Line } from "../items/model.ts";
 import type { Sections } from "./wire.ts";
 
-/** A container as the game shows it: raw upstream items in reading order, null where a slot is empty. */
 export interface Layout {
   readonly id: string;
   readonly title: Line;
   readonly columns: number;
   readonly slots: number;
-  /** The items of the container, or for `pets` the pets as the server sends them. */
+  // @keep The items of the container, or for `pets` the pets as the server sends them.
   readonly cells: readonly unknown[];
 }
 
-/** The container of the player's pets, whose cells are pets and not items. */
 export const PETS_ID = "pets";
 
 const COLUMNS = 9;
 
-/*
- * What dragsim.co's data shows of where items sit, from three players' profiles:
+/* @keep What dragsim.co's data shows of where items sit, from three players' profiles:
  * - `inventory` has keys 0 to 44. 0 to 8 are the hotbar, 9 to 35 the rows above it, and 41 to 44 the worn helmet,
  *   chestplate, leggings and boots. 36 to 40 were empty on all three, so what they are is unknown.
  * - `ender_chest` has keys 0 to 26 and `storage` has 30 pages of keys 0 to 44. `accessory_bag` has no page and went to
@@ -35,43 +32,37 @@ const MAIN_FIRST = 9;
 const MAIN_SLOTS = 27;
 const ENDER_CHEST_SLOTS = 27;
 const STORAGE_PAGE_SLOTS = 45;
-/** Ten rows. Captures reached key 40, and a key past this would make the grid follow it. */
+// @keep Ten rows. Captures reached key 40, and a key past this would make the grid follow it.
 const ACCESSORY_BAG_SLOTS = COLUMNS * 10;
 const WARDROBE_PAGE = 9;
 
 const plain = (text: string): Line => [{ text }];
 
-/** A slot number as the server writes one: a whole number with no sign or leading zero. */
 const SLOT_KEY = /^(0|[1-9]\d*)$/u;
 
 const isItem = (value: unknown): boolean =>
   typeof value === "object" && value !== null && Object.keys(value).length > 0;
 
-/** The items of `entries` that sit in no place of the container, in key order with the numbered keys first. */
 const strays = (entries: Readonly<Record<string, unknown>> | null | undefined, placed: (key: number) => boolean) =>
   Object.entries(entries ?? {})
     .filter(([key, value]) => isItem(value) && !(SLOT_KEY.test(key) && placed(Number(key))))
     .toSorted(([a], [b]) => (SLOT_KEY.test(a) ? Number(a) : Infinity) - (SLOT_KEY.test(b) ? Number(b) : Infinity))
     .map(([, value]) => value);
 
-/** `items` in order, with nulls after the last to fill its row. */
 const packed = (items: readonly unknown[]): readonly unknown[] => [
   ...items,
   ...Array.from({ length: (COLUMNS - (items.length % COLUMNS)) % COLUMNS }, () => null),
 ];
 
-/** A container for what has no place, listed only when something is there. */
 const others = (id: string, title: string, items: readonly unknown[]): readonly Layout[] =>
   items.length === 0 ? [] : [grid(id, title, packed(items))];
 
 const cell = (items: Readonly<Record<string, unknown>> | null | undefined, key: number): unknown =>
   items?.[String(key)] ?? null;
 
-/** The highest slot number among `keys`, or -1 when there is none. */
 const lastKey = (keys: readonly string[]): number =>
   Math.max(-1, ...keys.filter((key) => SLOT_KEY.test(key)).map(Number));
 
-/** Slots numbered from 0, in full rows, at least `minimum` and never past `maximum`. */
 const rows = (
   items: Readonly<Record<string, unknown>> | null | undefined,
   minimum: number,
@@ -90,7 +81,7 @@ const grid = (id: string, title: string, cells: readonly unknown[]): Layout => (
   cells,
 });
 
-/** What the player wears, helmet first, and the item in the first hotbar slot, which is a guess at what they hold. */
+// @keep The API does not say what the player holds, so `held` is the first hotbar slot.
 export const equipmentCells = (inventory: Sections["inventory"]) => ({
   helmet: cell(inventory, HELMET),
   chestplate: cell(inventory, HELMET + 1),
@@ -105,7 +96,6 @@ const wardrobePages = (wardrobe: NonNullable<Sections["wardrobe"]>): readonly La
   const slots = wardrobe.slots ?? {};
   const last = lastKey(Object.keys(slots));
   const pages = Array.from({ length: Math.max(1, Math.ceil((last + 1) / WARDROBE_PAGE)) }, (_page, page) =>
-    // A row for each part, and a column for each wardrobe slot, as the game lays the wardrobe out.
     grid(
       `wardrobe:${String(page)}`,
       `Wardrobe ${String(page + 1)}`,
@@ -135,14 +125,13 @@ const wardrobePages = (wardrobe: NonNullable<Sections["wardrobe"]>): readonly La
 const isInventorySlot = (key: number): boolean =>
   key < HOTBAR_SLOTS + MAIN_SLOTS || (key >= HELMET && key < HELMET + ARMOR_SLOTS);
 
-/** Every container of a profile, in the order a client lists them. */
 export const layoutsOf = (sections: Sections): readonly Layout[] => {
   const storage = sections.storage ?? {};
   const pageKeys = Object.keys(storage);
   const pages = pageKeys.filter((key) => SLOT_KEY.test(key)).toSorted((a, b) => Number(a) - Number(b));
   const pets = sections.pets ?? [];
   return [
-    // The game shows the hotbar under the rows, though it holds the first keys.
+    // @keep The game shows the hotbar under the rows, though it holds the first keys.
     grid("inventory", "Inventory", [
       ...Array.from({ length: MAIN_SLOTS }, (_, key) => cell(sections.inventory, MAIN_FIRST + key)),
       ...Array.from({ length: HOTBAR_SLOTS }, (_, key) => cell(sections.inventory, HOTBAR_FIRST + key)),

@@ -3,7 +3,6 @@ package io.github.noxaur.dsmod.gametest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.world.inventory.ContainerInput
 
-/** One `handleContainerInput`, which is one container-click packet. */
 data class Click(val slot: Int, val button: Int, val input: ContainerInput)
 
 object ClickSpy {

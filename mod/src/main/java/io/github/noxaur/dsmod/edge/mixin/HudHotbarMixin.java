@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Rarity marks on the hotbar: vanilla draws its frame, then each item here, so a mark's back goes between them. */
+/** @keep Vanilla draws its frame, then each item here, so a mark's back goes between them. */
 @Mixin(Hud.class)
 abstract class HudHotbarMixin {
     @Inject(method = "extractSlot", at = @At("HEAD"))

@@ -9,10 +9,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-/**
- * The real edge loads the saved file in a running game, counts a drop and a kill the server sends, and writes them back.
- * Covers [io.github.noxaur.dsmod.edge.SavedFiles].
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.SavedFiles]. */
 class ZealotTrackerTest : FabricClientGameTest {
     private val file = FabricLoader.getInstance().configDir.resolve("dsmod/data/zealot-tracker.json")
 
@@ -24,8 +21,6 @@ class ZealotTrackerTest : FabricClientGameTest {
         context.worldBuilder().create().use { world ->
             context.enterTheEnd()
             world.server.runCommand("""tellraw @a "§6§lRARE DROP! §7(§5Summoning Eye§7) (§b✯ 90%§7)"""")
-            // A zealot dies and the Combat XP reaches the action bar with it, which is the player's own kill. The second
-            // zealot dies with no XP, as another player's kill does.
             listOf("Mine", "Theirs").forEach { world.server.runCommand("""execute at @a run summon pig ~ ~ ~3 {CustomName:"[Lv55] Zealot $it",NoAI:1b,Silent:1b}""") }
             context.waitTicks(20)
             world.server.runCommand("""kill @e[name="[Lv55] Zealot Mine"]""")

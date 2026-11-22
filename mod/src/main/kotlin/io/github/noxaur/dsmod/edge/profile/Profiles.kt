@@ -29,24 +29,16 @@ import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 
-/**
- * Profile Viewer's commands: `/pv` for the player's own profile, `/pv <name>` for anyone's, and the same under
- * `/dsmod pv`. The server has its own `/pv <vault>`, so `/pv` with a number of one or two digits is not ours: the name
- * refuses it as a command the client does not know, and Fabric then sends the line on to the server as typed. Off
- * dragsim.co, or with the setting off, `/pv` is not registered for the line at all, so it reaches the server whole.
- * A player's name in chat opens their profile when clicked.
- */
+// @keep The server has its own `/pv <vault>`, so a vault number of one or two digits is refused as an unknown command and Fabric then sends the line on to the server.
 object Profiles {
     private val on get() = DsModClient.runs<ProfileViewer>()
 
-    /** The backend, which caches every lookup for every player, so the screen asks only when the player does. */
     var source: ProfileSource = object : ProfileSource {
         override fun profile(name: String, profile: String?) = Account.backend.async { profile(name, profile) }
 
         override fun container(snapshot: String, id: String) = Account.backend.async { container(snapshot, id) }
     }
 
-    /** Opens [name]'s profile over the screen shown now. Call it on the client thread. */
     fun open(name: String) {
         if (!Profile.validName(name)) return Chat.send(text { bad("$name is not a Minecraft name.") })
         val client = Minecraft.getInstance()
@@ -64,16 +56,11 @@ object Profiles {
         }
     }
 
-    /**
-     * [message] with each player's name in it made a link to their profile, with a hover that says so. The click runs
-     * `/dsmod pv`, which is always the mod's own, so Fabric runs it here and nothing reaches the server.
-     */
     fun names(message: Component): Component = message.restyle(PlayerNames.inText(message.string)) { name, style ->
         style.withClickEvent(ClickEvent.RunCommand("/dsmod pv $name"))
             .withHoverEvent(HoverEvent.ShowText(text { action("Click to view "); body(name); action("'s profile") }.toComponent()))
     }
 
-    /** `/dsmod pv`, which says so when the setting is off instead of passing the line to the server. */
     fun dsmod(): LiteralArgumentBuilder<FabricClientCommandSource> = command("pv")
 
     private fun command(literal: String): LiteralArgumentBuilder<FabricClientCommandSource> =
@@ -87,18 +74,16 @@ object Profiles {
             Chat.send(text { bad(why) })
             return 0
         }
-        // The chat screen closes after the command returns, so open on the next tick.
+        // @keep The chat screen closes after the command returns, so open on the next tick.
         context.source.client.schedule { open(name) }
         return 1
     }
 
-    /** The players in the tab list, which are the ones a player most often looks up. Typing sends nothing. */
     private fun suggest(context: CommandContext<FabricClientCommandSource>, builder: SuggestionsBuilder): CompletableFuture<Suggestions> {
         val names = context.source.client.connection?.onlinePlayers?.map { it.profile.name() }?.filter(Profile::validName).orEmpty()
         return SharedSuggestionProvider.suggest(names, builder)
     }
 
-    /** A Minecraft name. A vault number is the server's, so it reads as a command the client does not have. */
     private object PlayerName : ArgumentType<String> {
         override fun parse(reader: StringReader): String {
             val start = reader.cursor

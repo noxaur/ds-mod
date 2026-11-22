@@ -4,7 +4,7 @@ import io.github.noxaur.dsmod.harness.lines
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/** The rows and lines are the ones a capture of 2026-11-14 shows in each place, with the padding the server sends. */
+/** @keep The rows and lines are the ones a capture of 2026-11-14 shows in each place, with the padding the server sends. */
 class AreaTest {
     private fun areas(tab: List<String>, sidebar: List<String>): List<Area> {
         val tabState = TabState().also { it.update(lines(*tab.toTypedArray())) }

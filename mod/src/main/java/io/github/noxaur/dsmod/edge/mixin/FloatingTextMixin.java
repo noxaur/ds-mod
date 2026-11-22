@@ -14,10 +14,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * The floating-text layer's hook: the server's text reaches a text display through its synced data, and the display
- * reads it back through `getText` only to rebuild what it draws, so the edit is asked for once per text.
- */
+/** @keep The server's text reaches a text display through its synced data, and the display reads it back through `getText`
+ * only to rebuild what it draws, so the edit is asked for once per text. */
 @Mixin(Display.TextDisplay.class)
 abstract class FloatingTextMixin implements EditedText {
     @Shadow

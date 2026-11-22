@@ -27,18 +27,9 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 
-/**
- * Menu Tabs set up in the settings: a small menu with its tab places along the top and bottom edges, and beside it
- * the picked tab's command, item and name. A press on an empty place adds a tab there, and a press on a tab picks
- * it. A tab dragged to another place trades places with any tab there, and Escape during the drag puts it back. A
- * press on the menu gives it the keys: the arrows move the picked tab, Tab picks the next, Delete asks for a second
- * press, and Escape gives the keys back. Each change applies at once.
- */
 class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host: Editor.Host) : BoxEditor {
     override val box = Box()
 
-
-    // The menu, from the content's top, and the form beside or under it.
     private var menuY = 0
     private var formX = 0
     private var formY = 0
@@ -47,7 +38,6 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
     private var readoutY = 0
     private val buttons = EditorButtons(BUTTONS)
 
-    /** The index in the tabs of the tab the form changes, or -1. */
     private var selected = -1
     private var grabbed = -1
     private var grabX = 0.0
@@ -58,13 +48,11 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
     private var mouseX = 0.0
     private var mouseY = 0.0
 
-    /** Whether the keys are on the menu, which a press there or Enter on the row gives it. */
     private var entered = false
     private var armed = false
     private var readout = ""
     private var readoutText: Component = Component.empty()
 
-    /** The place the mouse was over when the readout was last made, as [code] says, so it is made again only on a change. */
     private var readFor = NONE
     private var labelWidth = 0
 
@@ -108,7 +96,6 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
             formWidth = minOf(width, FORM_MAX)
         }
         buttonsY = formY + FIELD_STEP * 3
-        // Two buttons to a row, each half the form, as the tab editor had them.
         val half = (formWidth - Kit.GAP) / 2
         for (i in BUTTONS.indices) {
             buttons.place(i, formX + (i % 2) * (half + Kit.GAP), half)
@@ -124,7 +111,6 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         say(place(mouseX, mouseY))
     }
 
-    /** Words the readout for the mouse over [at], once per change. */
     private fun say(at: Int) {
         readFor = at
         readout = readout(at)
@@ -151,7 +137,6 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         val place = place(this.mouseX, this.mouseY)
         val hoveredTab = if (grabbed < 0 && place != NONE) TabLayout.at(tabs, edgeOf(place), slotOf(place)) else -1
         if (place != readFor && !dragging) say(place)
-        // The tabs sit behind the menu, as they do on a real one, with an outline on each free place.
         for (edge in TabEdge.entries) {
             for (slot in 0 until TabLayout.PER_EDGE) {
                 val index = TabLayout.at(tabs, edge, slot)
@@ -175,7 +160,6 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         if (entered && keys) Kit.ring(g, box.x - 2, menuY - 2, MENU_WIDTH + 4, MENU_HEIGHT + 4, t.hoverOutline)
 
         val tab = tabs.getOrNull(selected)
-        // The form sits on the row's well, so its names are role text, which reads there in both themes.
         for ((i, label) in LABEL_TEXT.withIndex()) {
             g.text(font, label, formX, box.origin + formY + i * FIELD_STEP + (Kit.BUTTON_HEIGHT - 8) / 2, -1, true)
             fields[i].extractRenderState(g, mouseX, mouseY, 0f)
@@ -203,8 +187,6 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         return null
     }
 
-    /** The middle of place [slot] along [edge], on the screen, so a test can press it. */
-    /** Where form field [which] is, 0 the command, 1 the item and 2 the name, so a test can type in it. */
     fun fieldSpot(which: Int): IntArray {
         val field = fields[which]
         return intArrayOf(field.x, field.y, field.width, field.height)
@@ -215,7 +197,6 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         return box.x + TabLayout.x(slot) + Kit.TAB_WIDTH / 2 to y + Kit.TAB_HEIGHT / 2
     }
 
-    /** The middle of the field or button named [name] on the screen. */
     fun controlAt(name: String): Pair<Int, Int> {
         val field = fields.getOrNull(LABELS.indexOf(name))
         if (field != null) return field.x + field.width / 2 to field.y + 4
@@ -234,10 +215,7 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         }
     }
 
-    /**
-     * The item a tab shows, made once per item. Before the first world the game has not given items their parts,
-     * so a tab shows no item on the title screen rather than failing.
-     */
+    /** @keep Before the first world the game has not given items their parts, so a tab shows no item on the title screen rather than failing. */
     private fun icon(id: String): ItemStack? {
         if (!Items.PAPER.builtInRegistryHolder().areComponentsBound()) return null
         return icons.getOrPut(id) { stackOf(id) }
@@ -245,17 +223,14 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
 
     private fun edgeY(edge: TabEdge) = if (edge == TabEdge.TOP) menuTop() else menuTop() + MENU_HEIGHT
 
-    /** Where a tab on [edge] starts, tucked 2 pixels behind the menu. */
     private fun tabY(edge: TabEdge) = edgeY(edge) + if (edge == TabEdge.TOP) 2 - Kit.TAB_HEIGHT else -2
 
-    /** A place as one number, so the frame finds the one under the mouse without making anything. */
     private fun code(edge: TabEdge, slot: Int) = edge.ordinal * TabLayout.PER_EDGE + slot
 
     private fun edgeOf(code: Int) = TabEdge.entries[code / TabLayout.PER_EDGE]
 
     private fun slotOf(code: Int) = code % TabLayout.PER_EDGE
 
-    /** The place under the mouse, along either edge, or [NONE]. */
     private fun place(px: Double, py: Double): Int {
         if (py < box.clipTop || py >= box.clipBottom) return NONE
         val menuY = menuTop()
@@ -268,7 +243,6 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         return if (slot < 0) NONE else code(edge, slot)
     }
 
-    /** Where a dragged tab lands: the place along the edge nearer the mouse, or null past the ends of the edges. */
     private fun dropAt(px: Double, py: Double): Pair<TabEdge, Int>? {
         val slot = TabLayout.slotAt(px.toInt() - box.x)
         if (slot < 0) return null
@@ -297,7 +271,6 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
         val px = event.x()
         val py = event.y()
-        // A press elsewhere, a field scrolled under the tab bar included, takes the keys back and still does its own job.
         if (!box.isOver(px, py)) {
             leave()
             return false
@@ -379,7 +352,6 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         if (typing != null) {
             when {
                 event.isEscape || event.isConfirmation -> focus(null)
-                // Tab and Shift + Tab move between the form's fields, as in the binds list.
                 event.key() == GLFW.GLFW_KEY_TAB -> {
                     val by = if (Keys.shift(event)) -1 else 1
                     var at = fields.indexOf(typing)
@@ -443,14 +415,12 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         if (field != null) entered = true
     }
 
-    /** Points the form at the tab at [index], or at none for -1. */
     private fun select(index: Int) {
         if (index != selected) armed = false
         selected = index
         val tab = tabs.getOrNull(index)
         val form = tab?.takeIf { !it.search }
         for (field in fields) field.active = form != null
-        // The fields write to the selected tab as they are filled, so they are filled while none is selected.
         selected = -1
         command.value = form?.command ?: ""
         item.value = form?.item?.removePrefix("minecraft:") ?: ""

@@ -10,7 +10,6 @@ import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudLook
 
-/** A piece the display can show: a piece of armor and the slot of the player's inventory that holds it, or the pet. */
 enum class EquipmentPiece(private val label: String, val slot: Int) {
     HELMET("Helmet", 5),
     CHESTPLATE("Chestplate", 6),
@@ -22,7 +21,6 @@ enum class EquipmentPiece(private val label: String, val slot: Int) {
     override fun toString() = label
 }
 
-/** How the icons line up. */
 enum class EquipmentLayout(private val label: String) {
     ROW("Row"),
     COLUMN("Column"),
@@ -31,7 +29,6 @@ enum class EquipmentLayout(private val label: String) {
     override fun toString() = label
 }
 
-/** What the pieces sit on: the HUD's plate, nothing, or slots like the hotbar's. */
 enum class EquipmentLook(private val label: String, val hud: HudLook) {
     PLATE("Plate", HudLook.PLATE),
     CLEAR("Clear", HudLook.CLEAR),
@@ -41,7 +38,6 @@ enum class EquipmentLook(private val label: String, val hud: HudLook) {
     override fun toString() = label
 }
 
-/** Where the pet sits: among the armor in the order of the pieces, or on a row of its own above or below them. */
 enum class PetPosition(private val label: String) {
     WITH_ARMOR("With Armor"),
     ABOVE("Above"),
@@ -51,7 +47,6 @@ enum class PetPosition(private val label: String) {
     override fun toString() = label
 }
 
-/** How the pet shows: its head among the armor, or its name on a line of its own. */
 enum class PetLook(private val label: String) {
     ICON("Icon"),
     NAME("Name"),
@@ -60,16 +55,9 @@ enum class PetLook(private val label: String) {
     override fun toString() = label
 }
 
-/**
- * Shows the [pieces] the player picked, in their order, as icons with no header, the way the equipment menu shows
- * them. An empty cell stands for a piece not worn.
- *
- * The armor comes from the player's own inventory, and the last seen is kept while another menu is open, since that
- * menu does not hold the armor. The pet comes from the sidebar's line `Pet: [Lvl 100] Ender Dragon`. Its icon is the
- * active pet's item in the Pets menu, whose tooltip names its held item, or else the head of the last pet seen whose
- * name is the sidebar's: dragsim.co floats each pet beside its owner. Until one of those is seen, or with [petLook]
- * on Name, the pet is a line under the icons, as the sidebar writes it, with its held item once the menu showed it.
- */
+/** @keep The armor comes from the player's own inventory, and the last seen is kept while another menu is open, since
+ * that menu does not hold the armor. The pet comes from the sidebar's line `Pet: [Lvl 100] Ender Dragon`.
+ * dragsim.co floats each pet beside its owner, so the head of the last pet seen by that name is its icon */
 class EquipmentDisplay(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "equipment-display", Area.ANYWHERE, Store.GENERAL, "Show your armor and pet on the HUD.", hud = ::hud)
     private val inventory = ContainerReader(feature, ARMOR.minOf { it.slot }..ARMOR.maxOf { it.slot })
@@ -81,7 +69,6 @@ class EquipmentDisplay(config: DsModConfig) : HasFeature {
     val petLook = feature.choice("petLook", "Pet Look", "Show your pet as its head, or as its name and level.", PetLook.ICON)
     val petPosition = feature.choice("petPosition", "Pet Position", "Put your pet among the armor, or on a row above or below it.", PetPosition.WITH_ARMOR)
 
-    /** The settings the block was built with, so a refresh rebuilds it only when one changed. */
     private data class Shown(
         val layout: EquipmentLayout,
         val pieces: List<EquipmentPiece>,
@@ -106,7 +93,7 @@ class EquipmentDisplay(config: DsModConfig) : HasFeature {
                 block = build()
             }
         }
-        // Compared field by field, so a refresh with nothing new allocates nothing.
+        // @keep Compared field by field, so a refresh with nothing new allocates nothing
         if (shown.layout != layout.value || shown.pieces != pieces.value || shown.petLook != petLook.value ||
             shown.petPosition != petPosition.value || shown.look != look.value || shown.placement != placement.value
         ) {

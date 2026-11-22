@@ -10,7 +10,6 @@ import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.resources.language.I18n
 import org.lwjgl.glfw.GLFW
 
-/** A bound key as `KeyBind` holds it: a GLFW key code, a mouse button from 0 to 9, or -1 for none. */
 object Keys {
     @JvmStatic
     var action = GLFW.GLFW_PRESS
@@ -25,12 +24,9 @@ object Keys {
         else -> InputConstants.isKeyDown(client.window, bound)
     }
 
-    // A modifier held with a key or a press. The keyboard is asked too, since a game test's input carries no modifiers.
-
-    /** Ctrl, or Cmd on macOS. */
+    // @keep The keyboard is asked too, since a game test's input carries no modifiers.
     fun control(input: InputWithModifiers) = input.hasControlDownWithQuirk() || command(Minecraft.getInstance()) || Minecraft.getInstance().hasControlDown()
 
-    /** Whether the key for shortcuts is held: Ctrl, or Cmd on macOS. */
     fun command(client: Minecraft): Boolean {
         val keys = if (InputQuirks.REPLACE_CTRL_KEY_WITH_CMD_KEY) listOf(GLFW.GLFW_KEY_LEFT_SUPER, GLFW.GLFW_KEY_RIGHT_SUPER) else listOf(GLFW.GLFW_KEY_LEFT_CONTROL, GLFW.GLFW_KEY_RIGHT_CONTROL)
         return keys.any { InputConstants.isKeyDown(client.window, it) }
@@ -40,27 +36,21 @@ object Keys {
 
     fun alt(input: InputWithModifiers) = input.hasAltDown() || Minecraft.getInstance().hasAltDown()
 
-    /** 1 for the plus keys and -1 for the minus keys, which resize a HUD block, and 0 for any other. */
     fun resizeStep(event: KeyEvent) = when (event.key()) {
         GLFW.GLFW_KEY_EQUAL, GLFW.GLFW_KEY_KP_ADD -> 1
         GLFW.GLFW_KEY_MINUS, GLFW.GLFW_KEY_KP_SUBTRACT -> -1
         else -> 0
     }
 
-    /** What the game calls the [bound] key, such as "F6" or "Mouse Button 4", or "None". */
     fun name(bound: Int): String = when {
         bound < 0 -> "None"
         isMouse(bound) -> InputConstants.Type.MOUSE.getOrCreate(bound).displayName.string
         else -> InputConstants.Type.KEYSYM.getOrCreate(bound).displayName.string
     }
 
-    /** Several keys as one label: "Shift + F6" held together, "F6 » F7" in order, or "None". */
     fun names(keys: List<Int>, inOrder: Boolean): String = if (keys.isEmpty()) "None" else keys.joinToString(if (inOrder) " » " else " + ", transform = ::name)
 
-    /**
-     * The name of the game's own key bind on [bound], or null. A debug key works only with F3 held, so F3 is the
-     * only one of those that counts, and F6, which the game binds to F3+F6, is free.
-     */
+    /** @keep A debug key works only with F3 held, so F3 is the only one of those that counts, and F6, which the game binds to F3+F6, is free. */
     fun gameKey(bound: Int): String? {
         val options = Minecraft.getInstance().options
         return options.keyMappings.firstOrNull {
@@ -68,6 +58,5 @@ object Keys {
         }?.let { I18n.get(it.name) }
     }
 
-    /** Whether the game's [key] is the [bound] one. */
     fun matches(key: InputConstants.Key, bound: Int) = bound >= 0 && key.value == bound && (key.type == InputConstants.Type.MOUSE) == isMouse(bound)
 }

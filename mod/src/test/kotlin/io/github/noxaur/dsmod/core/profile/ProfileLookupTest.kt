@@ -8,7 +8,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
-/** Drives the lookup with answers held back until the test gives them, so each order of answers can be tried. */
 class ProfileLookupTest {
     private val profile = Profile.parse(resource("profiles/profile.json"))
     private val inventory = Profile.parseContainer(resource("profiles/containers/inventory.json"))
@@ -84,7 +83,6 @@ class ProfileLookupTest {
         assertEquals("renewed/inventory", source.containers[2].first)
         source.containers[2].second.completeExceptionally(failed(410, "SnapshotExpired"))
         assertIs<Load.Failed>(lookup.container("inventory"))
-        // The ender chest was from the old moment, so it is fetched again from the new one.
         assertIs<Load.Loading>(lookup.container("ender_chest"))
         assertEquals("renewed/ender_chest", source.containers.last().first)
     }
@@ -97,13 +95,11 @@ class ProfileLookupTest {
         source.containers[0].second.completeExceptionally(failed(410, "SnapshotExpired"))
         source.containers[1].second.completeExceptionally(failed(410, "SnapshotExpired"))
         source.profiles[1].second.complete(profile.copy(snapshot = "new-1"))
-        // The second renewal belongs to the old snapshot, so it changes nothing.
         source.profiles[2].second.complete(profile.copy(snapshot = "new-2"))
         assertEquals("new-1", assertIs<Load.Loaded<Profile>>(lookup.state).value.snapshot)
         source.containers.last().second.complete(inventory)
         assertEquals("new-1/inventory", source.containers.last().first)
         assertEquals(Load.Loaded(inventory), lookup.container("inventory"))
-        // The ender chest's own renewal was dropped, so it is asked for again from the new snapshot.
         lookup.container("ender_chest")
         assertEquals("new-1/ender_chest", source.containers.last().first)
     }

@@ -8,16 +8,11 @@ import java.util.Base64
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
-/**
- * A group of binds as text a player can paste to another, as SkyOcean shares its hotkeys: JSON, gzipped and in
- * Base64, after a prefix that tells it apart from anything else on the clipboard.
- */
 object BindShare {
     private const val PREFIX = "dsmod-binds:"
     private const val MAX_BINDS = 100
     private const val MAX_BYTES = 1 shl 16
 
-    /** The longest group name. */
     const val GROUP_LENGTH = 32
 
     data class Shared(@Expose val group: String = "", @Expose val binds: List<CommandBind> = emptyList())
@@ -30,11 +25,8 @@ object BindShare {
         return PREFIX + Base64.getEncoder().encodeToString(bytes.toByteArray())
     }
 
-    /**
-     * The group in [text], or null when it holds none. Every bind comes in switched off, so the player reads each
-     * command before a key can send it, and anything the text left out or got wrong takes its default.
-     */
-    @Suppress("USELESS_CAST", "SENSELESS_COMPARISON") // Gson writes null into a field the text gets wrong.
+    // @keep Every bind comes in switched off, so the player reads each command before a key can send it.
+    @Suppress("USELESS_CAST", "SENSELESS_COMPARISON") // @keep Gson writes null into a field the text gets wrong.
     fun decode(text: String): Shared? {
         val body = text.trim().takeIf { it.startsWith(PREFIX) }?.removePrefix(PREFIX) ?: return null
         val shared = runCatching {

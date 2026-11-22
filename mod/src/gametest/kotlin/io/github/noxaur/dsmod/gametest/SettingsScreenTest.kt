@@ -9,11 +9,6 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.TitleScreen
 import org.lwjgl.glfw.GLFW
 
-/**
- * The jars a player installs open ds-mod's own settings every way the player can ask: `/dsmod`, the Settings Key in
- * the world, and Mod Menu's config button, each going back to where it came from. With nothing starred, the first
- * open shows the first section of the tree and not an empty Favorites.
- */
 class SettingsScreenTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         fun screen() = context.computeOnClient<Screen?, Nothing> { it.gui.screen() }
@@ -22,7 +17,6 @@ class SettingsScreenTest : FabricClientGameTest {
         context.waitForScreen(TitleScreen::class.java)
         check(DsModClient.settings.favorites.isEmpty() && place() != SettingsScreen.FAVORITES) { "The first open would show an empty Favorites" }
 
-        // Mod Menu's config button for ds-mod, which goes back to the screen it was pressed on.
         val title = screen()
         val fromModMenu = context.computeOnClient<Screen?, Nothing> { ModMenu.getConfigScreen("dsmod", title) }
         check(fromModMenu is SettingsScreen) { "Mod Menu's config button opens $fromModMenu" }

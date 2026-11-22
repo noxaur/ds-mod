@@ -10,9 +10,7 @@ export interface CatalogItem {
   readonly name: string | undefined;
   readonly tier: string | undefined;
   readonly glowing: boolean;
-  /** The base64 skull texture. */
   readonly skin: string | undefined;
-  /** The `r,g,b` the item is dyed, as `0xRRGGBB`. */
   readonly color: number | undefined;
   readonly description: readonly Line[];
 }
@@ -29,15 +27,12 @@ export interface Ability {
   readonly cooldown: number;
 }
 
-/** A pet species, from the catalog's `pets`. */
 export interface CatalogPet {
   readonly display: string;
   readonly maxLevel: number | undefined;
   readonly levels: boolean;
   readonly category: string | undefined;
-  /** The base64 skull texture. */
   readonly skin: string | undefined;
-  /** What each level adds, as stat id and amount. */
   readonly perks: Readonly<Record<string, number>>;
   readonly description: readonly Line[];
 }
@@ -49,27 +44,25 @@ export interface Rules {
   readonly artOfWarDamage: number;
   readonly enrichmentAmount: number;
   readonly enrichmentStat: string;
-  /** What a dungeon item adds at Catacombs level 0, as a fraction. */
+  // @keep What a dungeon item adds at Catacombs level 0, as a fraction.
   readonly dungeonBonus: number;
   readonly statOrder: readonly string[];
 }
 
 export interface Stat {
-  /** The `§` code of the stat's color, such as `c`. */
+  // @keep The `§` code of the stat's color, such as `c`.
   readonly color: string;
   readonly name: string;
 }
 
-/** The parts of dragsim.co's `catalog.json` the renderer reads, decoded once. */
 export interface Catalog {
   readonly items: ReadonlyMap<string, CatalogItem>;
   readonly dungeon: ReadonlySet<string>;
-  /** Abilities by item, in the catalog's order, and by key for the ones an item has but its entry does not list. */
+  // @keep Abilities by item in the catalog's order, and by key for the ones an item has but its entry does not list.
   readonly itemAbilities: ReadonlyMap<string, ReadonlyMap<string, Ability>>;
   readonly abilities: ReadonlyMap<string, Ability>;
   readonly reforges: ReadonlyMap<string, readonly Line[]>;
   readonly stats: ReadonlyMap<string, Stat>;
-  /** Pet species by lowercase id, such as `golden_dragon`. */
   readonly pets: ReadonlyMap<string, CatalogPet>;
   readonly rules: Rules;
 }
@@ -197,10 +190,7 @@ const decode = (source: unknown): Catalog => {
 
 const decoded = new WeakMap<object, Catalog>();
 
-/**
- * The catalog's parts the renderer reads. A request passes the same parsed catalog each time and decoding it is slow,
- * so this keeps the result for as long as the catalog lives.
- */
+/** @keep A request passes the same parsed catalog each time and decoding it is slow, so the result is kept. */
 export const decodeCatalog = (raw: unknown): Catalog => {
   if (typeof raw !== "object" || raw === null) {
     return decode(raw);

@@ -10,17 +10,10 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 
-/**
- * Sends a command that opens a menu, walks into a menu from it that has no Go Back, and clicks the button the mod puts
- * there. The click must send the command again and reach no slot. A menu with its own Go Back, one with an item where
- * Go Back would sit, a storage page with an empty slot there, and one opened with no command in the run get no button.
- * Read the screenshots in both themes, and the tooltip, which names the command.
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.MenuBack]. */
 class BackButtonsTest : FabricClientGameTest {
-    /** Where the open menu's visible Back button sits, or null when it has none. */
     private fun button(context: ClientGameTestContext) = context.goBackButton()?.let { it.x to it.y }
 
-    /** Opens the menu titled [title] from the open one, as a click in a server menu does. */
     private fun from(context: ClientGameTestContext, world: TestSingleplayerContext, title: String, goBack: Boolean, fill: (net.minecraft.world.SimpleContainer) -> Unit = {}) =
         ServerMenus.open(context, world, 4, title, goBack, fill)
 

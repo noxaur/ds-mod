@@ -29,7 +29,6 @@ class BossFightTrackerTest : Harness() {
     fun `loot rows stay with the dragon whose header opened them`() {
         game.post(0, TabList(lines("Area: The End")))
         down(330_500, "UNSTABLE DRAGON")
-        // A second dragon can fall during the ten seconds before the first dragon's loot.
         down(335_000, "CHAOTIC DRAGON")
         say(340_500, "Here is your loot from the last dragon:")
         say(340_500, " - 10x Unstable Dragon Fragment")
@@ -42,7 +41,6 @@ class BossFightTrackerTest : Harness() {
     fun `a header with no earlier one goes to the dragon still inside the loot window`() {
         game.post(0, TabList(lines("Area: The End")))
         down(0, "UNSTABLE DRAGON")
-        // The loot header never arrives. A later dragon's header must not be recorded on this one.
         down(60_000, "CHAOTIC DRAGON")
         say(70_000, "Here is your loot from the last dragon:")
         say(70_000, " - 8x Chaotic Dragon Fragment")
@@ -56,7 +54,6 @@ class BossFightTrackerTest : Harness() {
         game.post(0, TabList(lines("Area: The End")))
         down(0, "UNSTABLE DRAGON")
         game.post(1_000, WorldChanged)
-        // The new world's tab list is what puts the player back in the End.
         game.post(1_500, TabList(lines("Area: The End")))
         down(2_000, "CHAOTIC DRAGON")
         say(12_000, "Here is your loot from the last dragon:")

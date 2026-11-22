@@ -6,14 +6,14 @@ import { gzipSync } from "node:zlib";
 import { Effect } from "effect";
 import { expect, onTestFinished, test, vi } from "vite-plus/test";
 
-import { spec, testApp, truncatedGzip } from "../test/harness.ts";
+import { advance, spec, testApp, testClock, truncatedGzip } from "../test/harness.ts";
 import { dsctl } from "./dsctl.ts";
 
-/** A backend with nothing in it, dsctl pointed at it with [token], and a way to call it as a player. */
+const clock = await testClock("2026-11-15T12:00:00Z");
+
 function backend(token = "secret") {
-  const { app, call } = testApp();
+  const { app, call } = testApp({ clock });
   const fetch = (input: RequestInfo | URL, init?: RequestInit) => app(new Request(input, init));
-  /** What dsctl prints, or the message it fails with, which the real command prints on stderr. */
   const run = (...args: string[]) =>
     Effect.runPromise(
       dsctl(args, { backend: "http://backend", token, fetch }).pipe(
@@ -29,8 +29,10 @@ function backend(token = "secret") {
     const result = await run(...args);
     return "failed" in result ? result.failed : "succeeded";
   };
-  const upload = (player: string, id: string, capture: Uint8Array) =>
-    call(player, "POST", `/v1/contrib/requests/${id}/submissions?modVersion=1.0.0`, capture);
+  const upload = async (player: string, id: string, capture: Uint8Array) => {
+    await advance(clock, 1000);
+    return call(player, "POST", `/v1/contrib/requests/${id}/submissions?modVersion=1.0.0`, capture);
+  };
   const offers = async (player: string) => (await call(player, "GET", "/v1/contrib/requests")).value;
   return { run, lines, failure, call, upload, offers };
 }
@@ -59,9 +61,10 @@ test("an agent publishes a brief, players record it, and pull writes one file pe
   const stem = `golem-tiers-${id}`;
   expect(await lines("pull", id, out)).toEqual([join(out, `${stem}-a.jsonl`), join(out, `${stem}-b.jsonl`)]);
   expect(readdirSync(out).toSorted()).toEqual([`${stem}-a.jsonl`, `${stem}-b.jsonl`]);
-  // Two uploads in the same millisecond are ordered by id, so either player's run can be A.
-  const runs = readdirSync(out).map((file) => readFileSync(join(out, file), "utf8"));
-  expect(runs.toSorted()).toEqual(['{"type":"chat"}\n', '{"type":"step"}\n']);
+  const runs = readdirSync(out)
+    .toSorted()
+    .map((file) => readFileSync(join(out, file), "utf8"));
+  expect(runs).toEqual(['{"type":"step"}\n', '{"type":"chat"}\n']);
 });
 
 test("two briefs with the same name pulled into one directory keep every run", async () => {
@@ -136,12 +139,10 @@ test("a run that cannot be read is named as a problem, and the others are still 
   const broken = (await upload("ann", id, truncatedGzip())).value;
   await upload("bob", id, gzipSync("{}\n"));
   const out = directory();
-  // Two uploads in the same millisecond are ordered by id, so either run can be A.
   const result = await run("pull", id, out);
-  expect(result.problems).toEqual([expect.stringMatching(/^Run [AB] .* is not a gzipped capture\.$/)]);
+  expect(result.problems).toEqual([expect.stringMatching(/^Run A .* is not a gzipped capture\.$/)]);
   expect(result.problems[0]).toContain(`(${String(Reflect.get(Object(broken), "id"))})`);
-  const letter = result.problems[0]?.charAt(4) === "A" ? "b" : "a";
-  expect(result.out).toEqual([join(out, `golem-tiers-${id}-${letter}.jsonl`)]);
+  expect(result.out).toEqual([join(out, `golem-tiers-${id}-b.jsonl`)]);
 });
 
 test("a brief that cannot be read or published says which, naming the problem", async () => {
@@ -162,7 +163,6 @@ test("a wrong token, an unknown id and a bad command each say what went wrong", 
 
 test("a body the backend refuses is named by where and what it expected", async () => {
   const { app } = testApp();
-  // A dsctl from another version than the backend's: its brief carries a key the backend does not know.
   const fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const body: unknown = await new Request(input, init).json();
     return app(new Request(input, { ...init, body: JSON.stringify({ ...Object(body), retries: 2 }) }));

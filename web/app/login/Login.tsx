@@ -14,7 +14,6 @@ type Step =
 
 const expired: Step = { at: "expired" };
 
-/** The whole sign-in on one address: it trades the link's token, asks whose account it is, and says how it ended. */
 export function Login() {
   const [step, setStep] = useState<Step>({ at: "loading" });
   const started = useRef(false);
@@ -24,8 +23,8 @@ export function Login() {
       return;
     }
     started.current = true;
-    // The token rides in the fragment, which the browser sends to no server. It leaves the address bar once the
-    // answer is in, because Next's router puts back an address that changes while the page is still starting.
+    /* @keep The token rides in the fragment, which the browser sends to no server. It leaves the address bar once the
+     * answer is in, because Next's router puts back an address that changes while the page is still starting. */
     void begin(window.location.hash.slice(1))
       .then(
         (asked): Step => (asked === null ? expired : { at: "confirm", asked, status: "asking" }),
@@ -49,7 +48,6 @@ export function Login() {
               : { at: "done", asked: { ...asked, name } },
         );
       },
-      // The backend did not answer, and the session is still pending, so the player can try again.
       () => {
         setStep({ at: "confirm", asked, status: "unanswered" });
       },

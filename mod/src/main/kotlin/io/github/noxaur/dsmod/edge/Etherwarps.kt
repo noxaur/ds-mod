@@ -12,28 +12,20 @@ import net.minecraft.world.entity.Pose
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.phys.AABB
 
-/**
- * Etherwarp Outline: boxes the block the held item's Etherwarp would land on, while the player sneaks. The box
- * follows the crosshair, so it is drawn on each frame, and the line is followed again only when the view or the
- * tick has changed since, which picks up a block that changed under a still view. It only draws, and sends nothing.
- */
 object Etherwarps {
     private val settings: EtherwarpOutline get() = DsModClient.feature(EtherwarpOutline::class.java)
 
     private val at = BlockPos.MutableBlockPos()
 
-    // The world the line is followed through, held only while it is, so a world the player left is not kept.
     private var level: ClientLevel? = null
     private val blocks = Etherwarp.Blocks { x, y, z ->
         val level = checkNotNull(level) { "the line is followed only while its world is held" }
         !level.getBlockState(at.set(x, y, z)).getCollisionShape(level, at).isEmpty
     }
 
-    // The game hands back the same stack every frame until the slot changes, so its lore is read once.
     private var held: ItemStack? = null
     private var range = 0
 
-    // The view the target was last found for.
     private var tick = -1L
     private var eyeX = 0.0
     private var eyeY = 0.0
@@ -43,11 +35,9 @@ object Etherwarps {
     private var foundRange = 0
     private var world = 0
 
-    /** The block boxed on this frame, and why a warp there fails, or null when nothing is boxed. The game test reads it. */
     var target: Etherwarp.Target? = null
         private set
 
-    /** The box drawn on this frame, or null. The game test reads it. */
     var box: World.FrameBox? = null
         private set
 
@@ -71,8 +61,8 @@ object Etherwarps {
         }
         if (range == 0) return clear()
         DsModClient.game.metrics.time("etherwarp.frame") {
-            // The server warps from where it last saw the player, which is where the last tick left them and not
-            // where this frame draws them, and from a sneaking eye, which is lower than a standing one.
+            /* @keep The server warps from where it last saw the player, which is where the last tick left them and not where
+             * this frame draws them, and from a sneaking eye, which is lower than a standing one. */
             val x = player.x
             val y = player.y + player.getEyeHeight(Pose.CROUCHING)
             val z = player.z
@@ -108,7 +98,6 @@ object Etherwarps {
         }
     }
 
-    /** Draws nothing, and follows the line again the next time the box shows. */
     private fun clear() {
         target = null
         box = null

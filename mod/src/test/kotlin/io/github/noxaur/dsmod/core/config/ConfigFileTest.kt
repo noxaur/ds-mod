@@ -80,18 +80,14 @@ class ConfigFileTest {
     private val dir = Files.createTempDirectory("dsmod-config")
     private val path = dir.resolve("config.json")
 
-    /**
-     * `config/moulconfig.json` was written by version 0.1.0, which saved through MoulConfig's Gson, with every setting
-     * set away from its default. Each value comes back, through the feature that owns it now, and a favorite saved by
-     * MoulConfig's path becomes its row's id.
-     */
+    /** @keep `config/moulconfig.json` was written by version 0.1.0, which saved through MoulConfig's Gson. */
     @Test
     fun `a file the MoulConfig build wrote loads every value`() {
         path.writeText(resource("config/moulconfig.json"))
         val c = ConfigFile(path).load()
         val tree = SettingsTree(c)
         assertEquals(listOf("general.fullbright", "loot.lootAlerts", "hud.scale", "end.editBeam", "general.resetAnimations"), c.favorites)
-        // Loot Alerts became Rare Drop Alert, and its star followed its former key to the feature's row.
+        // @keep Loot Alerts became Rare Drop Alert, and its star followed its former key to the feature's row.
         assertEquals(listOf("fullbright", "rare-drop-alert", "hudScale", "beamSections", "resetAnimations"), SettingsTree.favorites(c.favorites))
 
         assertFalse(tree.feature<HideCooldownMessages>().feature.enabled)
@@ -214,7 +210,6 @@ class ConfigFileTest {
         c.hud.positions["boss-fight-tracker"] = DsModConfig.Position(0.5f, 0.5f, 2f)
         ConfigFile(path).save(c)
         val back = ConfigFile(path).load()
-        // A slot is written once its feature is built, so both sides are read through a tree.
         val loaded = SettingsTree(back)
         assertEquals(ConfigFile.encode(c), ConfigFile.encode(back))
         assertEquals(9f, loaded.feature<Camera>().distance.value)
@@ -269,7 +264,6 @@ class ConfigFileTest {
         assertNull(file.unreadable)
     }
 
-    /** The file keeps MoulConfig's keys: each feature's settings sit in its section, and its switch under its field's old name. */
     @Test
     fun `a saved file holds every feature's keys in its section, and a switch under the camel case of its id`() {
         val tree = SettingsTree()
@@ -295,7 +289,6 @@ class ConfigFileTest {
         val kept = dir.listDirectoryEntries("config.json.corrupt-*").single()
         assertEquals(kept, file.unreadable)
         assertEquals("{not json", kept.readText())
-        // A save writes a new file and leaves the kept one alone.
         file.save(c)
         assertEquals("{not json", kept.readText())
         assertTrue(path.exists())

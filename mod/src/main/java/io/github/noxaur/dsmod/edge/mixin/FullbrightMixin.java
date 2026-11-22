@@ -9,7 +9,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Fullbright: the lightmap adds sky and block light to an ambient floor, so a white floor lights every block fully. */
 @Mixin(LightmapRenderStateExtractor.class)
 abstract class FullbrightMixin {
     @Inject(method = "extract", at = @At("RETURN"))

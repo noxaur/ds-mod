@@ -3,8 +3,7 @@ description: Reads Mesa and LLVM into the page cache in the background, so the g
 runs:
   using: composite
   steps:
-    # The game's first window waits while Mesa and LLVM page in from the runner's cold disk, 0 to 20 seconds a
-    # run, so they are read while Gradle compiles.
+    # @keep The game's first window waits 0 to 20 seconds on Mesa and LLVM paging in from the runner's cold disk.
     - shell: bash
       run: |
         {

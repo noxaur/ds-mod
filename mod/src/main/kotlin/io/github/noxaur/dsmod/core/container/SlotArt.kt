@@ -7,7 +7,6 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 object SlotArt {
-    /** The art covers the slot's whole 18x18, one pixel around the item. */
     const val SIZE = 18
 
     const val VARIANTS = 4
@@ -97,7 +96,6 @@ object SlotArt {
         }
     }
 
-    /** Straight-alpha pixels, painted back to front. */
     private class Canvas(val size: Int) {
         val pixels = IntArray(size * size)
 

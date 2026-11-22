@@ -17,10 +17,6 @@ import net.minecraft.world.item.component.ResolvableProfile
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.SkullBlockEntity
 
-/**
- * The first draw in a new world must not keep the last world's marks, and a player head with no skin must
- * not be posted as the Protector's marker.
- */
 class EndTrackerEdgeTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
@@ -47,7 +43,6 @@ class EndTrackerEdgeTest : FabricClientGameTest {
                 DsModClient.game.tap = null
             }
 
-            // The profile packet can land two or more ticks after the block update, with no second block() call.
             context.runOnClient<Nothing> { client ->
                 val pos = placeHead(client, posted, 2)
                 repeat(2) { Packets.tick(client) }
@@ -58,7 +53,6 @@ class EndTrackerEdgeTest : FabricClientGameTest {
                 DsModClient.game.tap = null
             }
 
-            // A decorative head never grows a profile, so it is never posted, including after the grace has run out.
             context.runOnClient<Nothing> { client ->
                 placeHead(client, posted, 3)
                 repeat(40) { Packets.tick(client) }
@@ -80,7 +74,7 @@ class EndTrackerEdgeTest : FabricClientGameTest {
 
     private fun giveSkin(client: Minecraft, pos: BlockPos) {
         val skull = checkNotNull(client.level).getBlockEntity(pos) as SkullBlockEntity
-        // The skull has no public setter. The server sends the profile on the block entity, which is this field.
+        // @keep The skull has no public setter. The server sends the profile on the block entity, which is this field.
         SkullBlockEntity::class.java.getDeclaredField("owner").apply { isAccessible = true }
             .set(skull, ResolvableProfile.createUnresolved("DsHead"))
     }

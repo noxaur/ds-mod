@@ -9,7 +9,6 @@ import kotlin.io.path.extension
 import kotlin.io.path.readBytes
 import kotlin.streams.asSequence
 
-/** Every class the release source set compiled to, for a test that checks what the code does and not how it reads. */
 fun releaseClasses(): List<ClassNode> {
     val classes = listOf("build/classes/kotlin/main", "build/classes/java/main").map(Path::of).filter { it.exists() }.flatMap { dir ->
         Files.walk(dir).asSequence().filter { it.extension == "class" }
