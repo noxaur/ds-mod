@@ -111,7 +111,7 @@ class ContributeTest : FabricClientGameTest {
                 press(context)
             }
             // Leaving the world is leaving the server, which ends the run and deletes its capture.
-            waitUntil(context, "the run that left the world was deleted") { files(dir).isEmpty() && !Recorder.running }
+            context.waitUntil("the run that left the world was deleted") { files(dir).isEmpty() && !Recorder.running }
             check(uploads.none { "/left/" in it.path }) { "A run that left the world was sent" }
         } finally {
             server.stop(0)
@@ -123,12 +123,12 @@ class ContributeTest : FabricClientGameTest {
         context.waitTicks(2)
         context.takeScreenshot("contribute-signing-in")
         signIn.countDown()
-        waitUntil(context, "the offers arrived") { buttons().size == 3 }
+        context.waitUntil("the offers arrived") { buttons().size == 3 }
         context.inTheme(Theme.VANILLA) { context.takeScreenshot("contribute-offer-vanilla") }
         context.takeScreenshot("contribute-offer-charcoal")
         // The End is offered first, since the player has been there, and the Crimson Isle never, since they have not.
         click(context, "Skip")
-        waitUntil(context, "the skip reached the backend") { skips == listOf("/v1/contrib/requests/end/skip") }
+        context.waitUntil("the skip reached the backend") { skips == listOf("/v1/contrib/requests/end/skip") }
         click(context, "Accept")
         check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() == null && Recording.busy }) { "Accept did not start the run" }
     }
@@ -156,7 +156,7 @@ class ContributeTest : FabricClientGameTest {
         press(context)
         context.takeScreenshot("contribute-recording")
         repeat(3) { press(context) }
-        waitUntil(context, "the run was sent and its files deleted") { uploads.isNotEmpty() && files(dir).isEmpty() }
+        context.waitUntil("the run was sent and its files deleted") { uploads.isNotEmpty() && files(dir).isEmpty() }
         return uploads.single()
     }
 
@@ -165,10 +165,10 @@ class ContributeTest : FabricClientGameTest {
         start(context, request("kept"))
         press(context)
         context.runOnClient<Nothing> { Contribute.submit() }
-        waitUntil(context, "the failed upload was kept, redacted") { uploads.size == 2 && files(dir).map { it.fileName.toString() }.singleOrNull()?.startsWith("kept~") == true }
+        context.waitUntil("the failed upload was kept, redacted") { uploads.size == 2 && files(dir).map { it.fileName.toString() }.singleOrNull()?.startsWith("kept~") == true }
         uploadStatus = 200
         context.runOnClient<Nothing> { Contribute.submit() }
-        waitUntil(context, "the kept recording was sent again and deleted") { uploads.size == 3 && files(dir).isEmpty() }
+        context.waitUntil("the kept recording was sent again and deleted") { uploads.size == 3 && files(dir).isEmpty() }
         check(uploads[1].bytes.contentEquals(uploads[2].bytes)) { "The resend sent another file" }
     }
 
@@ -177,7 +177,7 @@ class ContributeTest : FabricClientGameTest {
         start(context, request("closed"))
         press(context)
         context.runOnClient<Nothing> { Contribute.submit() }
-        waitUntil(context, "the refused recording was deleted") { uploads.size == 4 && files(dir).isEmpty() }
+        context.waitUntil("the refused recording was deleted") { uploads.size == 4 && files(dir).isEmpty() }
         uploadStatus = 200
     }
 
@@ -187,7 +187,7 @@ class ContributeTest : FabricClientGameTest {
         press(context)
         check(context.computeOnClient<Boolean, Nothing> { Recorder.running }) { "The first press did not start the capture" }
         end()
-        waitUntil(context, "the run that $how left nothing") { !Recording.busy && !Recorder.running && files(dir).isEmpty() }
+        context.waitUntil("the run that $how left nothing") { !Recording.busy && !Recorder.running && files(dir).isEmpty() }
         context.waitTicks(10)
         check(uploads.size == before) { "A run that $how was sent" }
     }
@@ -210,13 +210,4 @@ class ContributeTest : FabricClientGameTest {
     }
 
     private fun files(dir: Path): List<Path> = if (dir.exists()) dir.listDirectoryEntries() else emptyList()
-
-    /** Waits for work on other threads, up to ten seconds. */
-    private fun waitUntil(context: ClientGameTestContext, what: String, done: () -> Boolean) {
-        repeat(200) {
-            if (context.computeOnClient<Boolean, Nothing> { done() }) return
-            context.waitTicks(1)
-        }
-        error("Timed out waiting until $what")
-    }
 }

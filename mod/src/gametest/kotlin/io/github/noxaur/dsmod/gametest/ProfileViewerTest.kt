@@ -70,7 +70,7 @@ class ProfileViewerTest : FabricClientGameTest {
                 context.takeScreenshot("profile-stat-tooltip")
 
                 profiles.tab("Inventory")
-                profiles.waitUntil("the inventory loaded") { profiles.asked.any { "/containers/inventory" in it } }
+                context.waitUntil("the inventory loaded") { profiles.asked.any { "/containers/inventory" in it } }
                 context.waitTicks(5)
                 // The other tabs have a title row, so their content starts lower than the overview's.
                 val gridY = context.computeOnClient<Int, Nothing> { profiles.screen(it).viewY }
@@ -100,7 +100,7 @@ class ProfileViewerTest : FabricClientGameTest {
                 val containers = profiles.asked.count { "/containers/" in it }
                 profiles.command("dsmod pv Hidden")
                 context.waitForScreen(ProfileScreen::class.java)
-                profiles.waitUntil("the hidden profile loaded") { profiles.screen(it).children().any { w -> w is KitTab } }
+                context.waitUntil("the hidden profile loaded") { profiles.screen(it).children().any { w -> w is KitTab } }
                 profiles.tab("Inventory")
                 context.waitTicks(5)
                 context.takeScreenshot("profile-hidden")
