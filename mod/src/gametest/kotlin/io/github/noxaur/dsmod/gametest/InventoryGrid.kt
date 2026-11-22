@@ -26,7 +26,6 @@ import net.minecraft.world.item.component.ResolvableProfile
 import java.nio.file.Path
 import java.util.Base64
 import java.util.UUID
-import javax.imageio.ImageIO
 
 /**
  * The world the Inventory HUD game tests share: an inventory of named items with lore as long as dragsim.co's, a
@@ -115,18 +114,13 @@ object InventoryGrid {
 
     /** The color in [shot] at [dx], [dy] GUI pixels from [point], without its alpha. */
     fun pixel(context: ClientGameTestContext, shot: Path, point: Pair<Double, Double>, dx: Int, dy: Int): Int {
-        val scale = context.computeOnClient<Int, Nothing> { it.window.guiScale }
-        return ImageIO.read(shot.toFile()).getRGB(((point.first + dx) * scale).toInt(), ((point.second + dy) * scale).toInt()) and 0xFFFFFF
+        return context.guiPixel(shot, point.first + dx, point.second + dy)
     }
 
     /** The color of the grid's panel in [shot], a few pixels in from its corner, between the edge and the first slot. */
     fun panelColor(context: ClientGameTestContext, shot: Path): Int {
-        val (x, y) = context.computeOnClient<Pair<Int, Int>, Nothing> { client ->
-            val block = checkNotNull(Hud.find(ID))
-            val scale = client.window.guiScale
-            ((block.x + (4 + 5) * block.scale) * scale).toInt() to ((block.y + (4 + 5) * block.scale) * scale).toInt()
-        }
-        return ImageIO.read(shot.toFile()).getRGB(x, y) and 0xFFFFFF
+        val block = context.computeOnClient<Hud.Placed, Nothing> { checkNotNull(Hud.find(ID)) }
+        return context.guiPixel(shot, block.x + (4 + 5) * block.scale, block.y + (4 + 5) * block.scale)
     }
 
     /** Whether [stack] wears the head's skin, which the HUD rebuilt from the mod's own record of the item. */

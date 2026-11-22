@@ -124,11 +124,8 @@ class ContributeTest : FabricClientGameTest {
         context.takeScreenshot("contribute-signing-in")
         signIn.countDown()
         waitUntil(context, "the offers arrived") { buttons().size == 3 }
-        for (theme in listOf(Theme.VANILLA, Theme.CHARCOAL)) {
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = theme }
-            context.waitTicks(2)
-            context.takeScreenshot("contribute-offer-${theme.name.lowercase()}")
-        }
+        context.inTheme(Theme.VANILLA) { context.takeScreenshot("contribute-offer-vanilla") }
+        context.takeScreenshot("contribute-offer-charcoal")
         // The End is offered first, since the player has been there, and the Crimson Isle never, since they have not.
         click(context, "Skip")
         waitUntil(context, "the skip reached the backend") { skips == listOf("/v1/contrib/requests/end/skip") }
@@ -139,14 +136,12 @@ class ContributeTest : FabricClientGameTest {
     /** A brief far longer than a window at Minecraft's smallest GUI height, 240, shows what fits and keeps its buttons on screen. */
     private fun longBrief(context: ClientGameTestContext) {
         val long = Request("long", Brief("Every tier", (1..30).map { Brief.Step("Do the thing for tier $it and wait for the next one", if (it % 3 == 0) "Do not hit it." else null) }), emptyList(), 600)
-        for (theme in listOf(Theme.CHARCOAL, Theme.VANILLA)) {
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = theme }
+        for (theme in listOf(Theme.CHARCOAL, Theme.VANILLA)) context.inTheme(theme) {
             context.setScreen { ContributeScreen(signingIn = false).also { it.offer(listOf(long)) } }
             context.waitTicks(2)
             context.takeScreenshot("contribute-long-${theme.name.lowercase()}")
         }
         context.runOnClient<Nothing> { client ->
-            DsModClient.settings.hud.theme = Theme.CHARCOAL
             val screen = client.gui.screen()!!
             check(screen.height <= 240) { "The window is ${screen.height} GUI pixels high, which is no small window" }
             check(buttons().map { it.message.string } == listOf("Accept", "Skip", "Close")) { "The buttons are ${buttons().map { it.message.string }}" }

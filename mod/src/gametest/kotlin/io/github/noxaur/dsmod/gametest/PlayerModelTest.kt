@@ -16,7 +16,6 @@ import net.minecraft.client.renderer.entity.player.AvatarRenderer
 import net.minecraft.client.renderer.entity.state.AvatarRenderState
 import net.minecraft.util.Mth
 import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
 import kotlin.math.abs
 
 /**
@@ -26,19 +25,11 @@ import kotlin.math.abs
  */
 class PlayerModelTest : FabricClientGameTest {
     /** How many pixels differ by more than the shade of one or two the models' lighting flickers by between frames. */
-    private fun moved(a: BufferedImage, b: BufferedImage): Int {
-        var count = 0
-        for (y in 0 until a.height) for (x in 0 until a.width) {
-            val p = a.getRGB(x, y)
-            val q = b.getRGB(x, y)
-            if ((0..16 step 8).any { abs((p shr it and 0xFF) - (q shr it and 0xFF)) > 8 }) count++
-        }
-        return count
-    }
+    private fun moved(a: BufferedImage, b: BufferedImage) = diff(a, b, tolerance = 8)
 
     override fun runTest(context: ClientGameTestContext) {
         val playerModel = DsModClient.feature<PlayerModel>()
-        fun shot(name: String): BufferedImage = ImageIO.read(context.takeScreenshot(name).toFile())
+        fun shot(name: String): BufferedImage = image(context.takeScreenshot(name))
 
         val vignette = context.computeOnClient<Boolean, Nothing> { it.options.vignette().get() }
         context.worldBuilder().create().use { world ->
@@ -215,10 +206,7 @@ class PlayerModelTest : FabricClientGameTest {
                     Hud.placed().map { intArrayOf(((it.x - 4) * k).toInt(), ((it.y - 4) * k).toInt(), ((it.x + it.width * it.scale + 4) * k).toInt(), ((it.y + it.height * it.scale + 4) * k).toInt()) }
                 }
                 val on = shot("player-model-first-person-on")
-                var outside = 0
-                for (y in 0 until first.height) for (x in 0 until first.width) {
-                    if (first.getRGB(x, y) != on.getRGB(x, y) && hud.none { x >= it[0] && x < it[2] && y >= it[1] && y < it[3] }) outside++
-                }
+                val outside = diff(first, on) { x, y -> hud.none { x >= it[0] && x < it[2] && y >= it[1] && y < it[3] } }
                 check(outside == 0) { "Player Model changed first person by $outside pixels" }
 
                 playerModel.reset()

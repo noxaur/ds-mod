@@ -2,7 +2,6 @@ package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
-import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
@@ -10,7 +9,6 @@ import io.github.noxaur.dsmod.gametest.SettingsSteps.hear
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
-import io.github.noxaur.dsmod.gametest.SettingsSteps.theme
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.TitleScreen
@@ -101,9 +99,6 @@ class SettingsNarrationTest : FabricClientGameTest {
         open(context, SettingsTabs(at("General")))
         context.input.typeChars("gilded look")
         context.waitTicks(2)
-        context.takeScreenshot("own-settings-search-marks")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("own-settings-search-marks-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("own-settings-search-marks")
     }
 }

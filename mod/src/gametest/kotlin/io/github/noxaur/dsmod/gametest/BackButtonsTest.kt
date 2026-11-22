@@ -49,10 +49,7 @@ class BackButtonsTest : FabricClientGameTest {
             context.takeScreenshot("back-button-charcoal")
             context.hoverSlot(4 * 9 - 6)
             context.takeScreenshot("back-button-hovered")
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
-            context.waitTicks(2)
-            context.takeScreenshot("back-button-vanilla")
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
+            context.inTheme(Theme.VANILLA) { context.takeScreenshot("back-button-vanilla") }
 
             context.runOnClient<Nothing> { DsModClient.feature<BackButtons>().feature.enabled = false }
             try {

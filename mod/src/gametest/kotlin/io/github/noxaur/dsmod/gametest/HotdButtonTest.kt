@@ -26,10 +26,7 @@ class HotdButtonTest : FabricClientGameTest {
             context.takeScreenshot("hotd-button-charcoal")
             context.hoverSlot(HotdShortcut.SLOT)
             context.takeScreenshot("hotd-button-hovered")
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
-            context.waitTicks(2)
-            context.takeScreenshot("hotd-button-vanilla")
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
+            context.inTheme(Theme.VANILLA) { context.takeScreenshot("hotd-button-vanilla") }
 
             context.runOnClient<Nothing> { DsModClient.feature<HotdButton>().feature.enabled = false }
             try {

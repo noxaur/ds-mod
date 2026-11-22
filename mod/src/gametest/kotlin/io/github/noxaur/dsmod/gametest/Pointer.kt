@@ -31,6 +31,11 @@ fun ClientGameTestContext.slotCorner(index: Int) = computeOnClient<Pair<Int, Int
     at.leftPos + slot.x to at.topPos + slot.y
 }
 
+fun ClientGameTestContext.menuCorner() = computeOnClient<Pair<Int, Int>, Nothing> { client ->
+    val screen = client.gui.screen() as ContainerScreenAccessor
+    screen.leftPos to screen.topPos
+}
+
 fun ClientGameTestContext.hoverSlot(index: Int, settle: Int = 3) {
     val (x, y) = slotCorner(index)
     point(x + 8, y + 8, settle)

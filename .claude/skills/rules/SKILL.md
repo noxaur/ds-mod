@@ -57,6 +57,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | A game test passes whichever tests ran before it | `FreshStart` in `mod/src/gametest/` starts the mod afresh before each test |
 | A game test takes at most 20 seconds, its world included | `TestClock` in `mod/src/gametest/` |
 | A game test moves the mouse, clicks and opens the inventory through `Pointer.kt`, in GUI pixels | `gametest-point-by-pointer` and `gametest-inventory-by-pointer` in `mod/…/Rules.kt` |
+| A game test switches the theme through `Themes.kt`, which puts it back, and reads a screenshot's pixels through `Pixels.kt` | `gametest-theme-by-intheme` and `gametest-pixels-by-pixels` in `mod/…/Rules.kt` |
 | A game test reads the clicks a step sent only from that step | `ClickSpy.during` in `mod/src/gametest/`, which keeps the record private |
 | A commit passes every project's checks | `.githooks/pre-commit`, which `mise install` installs |
 | A pull request runs the game tests its change reaches | CI's `gametests` job, and `GameTestPick.kt` in `mod/src/debug/` |

@@ -44,10 +44,7 @@ class ProfileViewerTest : FabricClientGameTest {
                 context.waitTicks(10)
                 context.takeScreenshot("profile-overview")
                 check(context.computeOnClient<Boolean, Nothing> { !profiles.screen(it).overflows }) { "The overview needs a scrollbar" }
-                context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
-                context.waitTicks(2)
-                context.takeScreenshot("profile-overview-vanilla")
-                context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
+                context.inTheme(Theme.VANILLA) { context.takeScreenshot("profile-overview-vanilla") }
 
                 val (contentX, viewY) = context.computeOnClient<Pair<Int, Int>, Nothing> { profiles.screen(it).contentX to profiles.screen(it).viewY }
                 // The model sits left of the content. A drag turns it, and the skill under the mouse shows its XP.

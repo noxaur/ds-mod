@@ -1,7 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.feature.chat.CopyChat
-import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.CopyChats
 import io.github.noxaur.dsmod.edge.CopyChats.Format
 import io.github.noxaur.dsmod.edge.DsModClient
@@ -91,11 +90,7 @@ class CopyChatTest : FabricClientGameTest {
                 context.input.releaseMouse(1)
                 context.waitTick()
                 check(CopyChats.menu?.header == "Copy 3 Messages") { "The drag opened ${CopyChats.menu?.header}" }
-                context.takeScreenshot("copy-chat-menu")
-                DsModClient.settings.hud.theme = Theme.VANILLA
-                context.waitTick()
-                context.takeScreenshot("copy-chat-menu-vanilla")
-                DsModClient.settings.hud.theme = Theme.CHARCOAL
+                context.shotInBothThemes("copy-chat-menu", settle = 1)
                 press(Format.FORMATTED)
                 copied("&6&lRARE DROP! &#12ab34Summoning Eye\n$long\nThe last message.", "Formatted, for three messages")
 
@@ -312,7 +307,6 @@ class CopyChatTest : FabricClientGameTest {
             }
         } finally {
             DsModClient.feature<CopyChat>().feature.enabled = true
-            DsModClient.settings.hud.theme = Theme.CHARCOAL
             CopyChats.clipboard = clipboard
         }
     }

@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
@@ -33,11 +32,7 @@ class ChatHudEditorTest : FabricClientGameTest {
 
             val start = chat.block(ID)
             chat.move(start.x + 5.0, start.y + 5.0)
-            context.takeScreenshot("chat-hud-editor-hover")
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
-            context.waitTick()
-            context.takeScreenshot("chat-hud-editor-hover-vanilla")
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
+            context.shotInBothThemes("chat-hud-editor-hover", settle = 1)
 
             // Escape during a drag out of the stack puts the block back in its place there, and the stack as it was.
             val stack = context.computeOnClient<List<Pair<Float, Float>>, Nothing> { Hud.placed().map { it.x to it.y } }

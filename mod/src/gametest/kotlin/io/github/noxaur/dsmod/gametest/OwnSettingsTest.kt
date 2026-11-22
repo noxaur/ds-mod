@@ -10,7 +10,6 @@ import io.github.noxaur.dsmod.gametest.SettingsSteps.guiScale
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
-import io.github.noxaur.dsmod.gametest.SettingsSteps.theme
 import io.github.noxaur.dsmod.gametest.mixin.MouseButtonInvoker
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -32,9 +31,7 @@ class OwnSettingsTest : FabricClientGameTest {
         val window = setUp(context)
         open(context, SettingsTabs(at("General")))
         context.takeScreenshot("own-settings-charcoal")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("own-settings-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.inTheme(Theme.VANILLA) { context.takeScreenshot("own-settings-vanilla") }
 
         // The sidebar's list starts 24 down, with sections 16 tall and subsections 13, and Favorites first.
 
@@ -68,10 +65,7 @@ class OwnSettingsTest : FabricClientGameTest {
         key(GLFW.GLFW_KEY_F, control = true)
         context.input.typeChars("eyes")
         context.waitTicks(2)
-        context.takeScreenshot("own-settings-search")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("own-settings-search-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("own-settings-search")
         context.input.typeChars("zz")
         context.waitTicks(2)
         context.takeScreenshot("own-settings-empty")
@@ -111,10 +105,7 @@ class OwnSettingsTest : FabricClientGameTest {
         val marked = context.computeOnClient<Int, Nothing> { tabs.current.current }
         check(marked == 1) { "The tab opened from Protector marks subsection $marked, not Protector" }
         move(120 + 1 * 86 + 30, 9)
-        context.takeScreenshot("own-settings-tabs")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("own-settings-tabs-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("own-settings-tabs")
 
         // A drag past a neighbor's middle moves the tab there, and the tab follows the mouse.
         move(120 + 4 * 86 + 20, 9)
@@ -200,10 +191,7 @@ class OwnSettingsTest : FabricClientGameTest {
             small.select(2)
         }
         open(context, small)
-        context.takeScreenshot("own-settings-small")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("own-settings-small-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("own-settings-small")
         context.input.resizeWindow(1280, 720)
 
         guiScale(context, 3)
