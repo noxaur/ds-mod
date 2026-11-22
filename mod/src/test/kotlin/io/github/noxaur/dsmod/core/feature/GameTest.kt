@@ -1,11 +1,14 @@
 package io.github.noxaur.dsmod.core.feature
 
-import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.harness.Harness
+import io.github.noxaur.dsmod.harness.chat
+import io.github.noxaur.dsmod.harness.text
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.boss.BossBeacon
 import io.github.noxaur.dsmod.core.feature.boss.BossTracer
 import io.github.noxaur.dsmod.core.feature.end.DragonTimer
+import io.github.noxaur.dsmod.core.feature.end.EyeGuard
 import io.github.noxaur.dsmod.core.feature.end.ProtectorStatus
 import io.github.noxaur.dsmod.core.feature.general.DragSimOnly
 import io.github.noxaur.dsmod.core.game.Area
@@ -14,8 +17,6 @@ import io.github.noxaur.dsmod.core.game.EntityGone
 import io.github.noxaur.dsmod.core.game.EntitySeen
 import io.github.noxaur.dsmod.core.game.Pet
 import io.github.noxaur.dsmod.core.game.LeftServer
-import io.github.noxaur.dsmod.core.game.ServerSpan
-import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
@@ -29,19 +30,15 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 
-class GameTest {
-    private val config = DsModConfig()
-    private val tree = SettingsTree(config)
-    private val game = Game(tree.features)
+class GameTest : Harness() {
+    private val config = tree.config
 
-    private fun say(time: Long, line: String) = game.post(time, SystemMessage(ServerText(ServerSpan(line))))
+    private fun say(time: Long, line: String) = game.post(time, chat(line))
 
-    private fun hud(id: String) = game.readouts.single { it.feature.id == id }.hud
+    private fun marks(feature: HasFeature) = readout(feature).marks
 
-    private fun marks(id: String) = game.readouts.single { it.feature.id == id }.marks
-
-    private val protector = EntitySeen(36339, "minecraft:iron_golem", ServerText(ServerSpan("[Lv100] Endstone Protector 10M/10M")))
-    private val pet = EntitySeen(12, "minecraft:armor_stand", ServerText(ServerSpan("[Lvl 100] Black Cat")))
+    private val protector = EntitySeen(36339, "minecraft:iron_golem", text("[Lv100] Endstone Protector 10M/10M"))
+    private val pet = EntitySeen(12, "minecraft:armor_stand", text("[Lvl 100] Black Cat"))
 
     @Test
     fun `the tracker reads only what a feature that is on reads, and every feature's while a capture records`() {
@@ -62,10 +59,10 @@ class GameTest {
         game.post(0, pet)
         game.post(0, protector)
         game.tick(0)
-        assertEquals(listOf(EntityBeam(36339, "Endstone Protector", Role.BAD)), marks("boss-beacon"))
+        assertEquals(listOf(EntityBeam(36339, "Endstone Protector", Role.BAD)), marks(tree.feature<BossBeacon>()))
         game.post(50, EntityGone(36339))
         game.tick(50)
-        assertEquals(emptyList(), marks("boss-beacon"))
+        assertEquals(emptyList(), marks(tree.feature<BossBeacon>()))
     }
 
     @Test
@@ -75,7 +72,7 @@ class GameTest {
         game.tick(0)
         tree.feature<BossTracer>().feature.enabled = true
         game.tick(50)
-        assertEquals(listOf(Tracer(36339, Role.BAD)), marks("boss-tracer"))
+        assertEquals(listOf(Tracer(36339, Role.BAD)), marks(tree.feature<BossTracer>()))
     }
 
     @Test
@@ -109,7 +106,7 @@ class GameTest {
             }
         }
         val game = Game(listOf(listener.feature))
-        val line = SystemMessage(ServerText(ServerSpan("Anything")))
+        val line = chat("Anything")
         game.post(0, line)
         game.post(1, WorldChanged)
         assertEquals(0 to 1, listener.inWorld to listener.inSession)
@@ -131,15 +128,15 @@ class GameTest {
         tree.feature<BossBeacon>().feature.enabled = true
         say(0, "☠ SLAYER BOSS SPAWNING!")
         game.post(1, WorldChanged)
-        game.post(2, EntitySeen(7, "minecraft:zombie", ServerText(ServerSpan("☠ Revenant Horror I 1.5M/3.8M❤"))))
+        game.post(2, EntitySeen(7, "minecraft:zombie", text("☠ Revenant Horror I 1.5M/3.8M❤")))
         game.tick(2)
-        assertEquals(emptyList(), marks("boss-beacon"))
+        assertEquals(emptyList(), marks(tree.feature<BossBeacon>()))
     }
 
-    private val revenant = EntitySeen(7, "minecraft:zombie", ServerText(ServerSpan("☠ Revenant Horror I 1.5M/3.8M❤")))
+    private val revenant = EntitySeen(7, "minecraft:zombie", text("☠ Revenant Horror I 1.5M/3.8M❤"))
 
     /** The marks Boss Beacon and Boss Tracer put on the boss of id 7, so a test can see whether both took it for the player's. */
-    private fun ownMarks() = marks("boss-beacon").map { (it as EntityBeam).entity } to marks("boss-tracer").map { (it as Tracer).entity }
+    private fun ownMarks() = marks(tree.feature<BossBeacon>()).map { (it as EntityBeam).entity } to marks(tree.feature<BossTracer>()).map { (it as Tracer).entity }
 
     @Test
     fun `Boss Beacon switched on after the spawn line marks the boss Boss Tracer took for the player's`() {
@@ -169,7 +166,7 @@ class GameTest {
     @Test
     fun `a slayer boss already in view when Boss Tracer comes on is not taken for the player's`() {
         tree.feature<BossBeacon>().feature.enabled = true
-        game.post(0, EntitySeen(9, "minecraft:zombie", ServerText(ServerSpan("☠ Atoned Horror V 50M/50M❤"))))
+        game.post(0, EntitySeen(9, "minecraft:zombie", text("☠ Atoned Horror V 50M/50M❤")))
         say(1_000, "☠ SLAYER BOSS SPAWNING!")
         tree.feature<BossTracer>().feature.enabled = true
         game.tick(2_000)
@@ -180,13 +177,13 @@ class GameTest {
 
     @Test
     fun `a dragon that leaves leaves no egg timer behind`() {
-        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+        game.post(0, TabList(listOf(text("Area: The End"))))
         say(0, "The Dragon Egg is respawning in 30 seconds.")
         // The egg's return and the eyes went by unread, as they do while the player is elsewhere.
         say(60_000, "☠ The Young Dragon has spawned!")
         say(61_000, "☠ The Young Dragon has de-spawned.")
         game.tick(61_000)
-        assertNull(hud("dragon-timer"))
+        assertNull(hud(tree.feature<DragonTimer>()))
     }
 
     @Test
@@ -195,57 +192,57 @@ class GameTest {
         game.post(0, protector)
         game.post(0, WorldChanged)
         game.tick(0)
-        assertEquals(emptyList(), marks("boss-beacon"))
+        assertEquals(emptyList(), marks(tree.feature<BossBeacon>()))
         tree.feature<BossTracer>().feature.enabled = true
         game.tick(50)
-        assertEquals(emptyList(), marks("boss-tracer"))
+        assertEquals(emptyList(), marks(tree.feature<BossTracer>()))
     }
 
     @Test
     fun `a feature that was switched off comes back knowing nothing of the world it left`() {
-        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+        game.post(0, TabList(listOf(text("Area: The End"))))
         say(0, "☠ The Young Dragon has spawned!")
         game.tick(0)
-        assertNotNull(hud("dragon-timer"))
+        assertNotNull(hud(tree.feature<DragonTimer>()))
 
         tree.feature<DragonTimer>().feature.enabled = false
         game.tick(1_000)
-        assertNull(hud("dragon-timer"))
+        assertNull(hud(tree.feature<DragonTimer>()))
 
         // The dragon died while the feature saw nothing, so the timer must not pick it up again.
         tree.feature<DragonTimer>().feature.enabled = true
         game.tick(2_000)
-        assertNull(hud("dragon-timer"))
+        assertNull(hud(tree.feature<DragonTimer>()))
     }
 
     @Test
     fun `a feature that is switched back on hears the tab list again`() {
-        game.post(0, TabList(listOf("Area: The End", "Protector: Rising (Tier 4/5, 20)").map { ServerText(ServerSpan(it)) }))
+        game.post(0, TabList(listOf("Area: The End", "Protector: Rising (Tier 4/5, 20)").map { text(it) }))
         game.tick(0)
-        val before = assertNotNull(hud("protector-status"))
+        val before = assertNotNull(hud(tree.feature<ProtectorStatus>()))
 
         tree.feature<ProtectorStatus>().feature.enabled = false
         game.tick(1_000)
-        assertNull(hud("protector-status"))
+        assertNull(hud(tree.feature<ProtectorStatus>()))
 
         // No row changed meanwhile, so no new tab list is coming.
         tree.feature<ProtectorStatus>().feature.enabled = true
         game.tick(2_000)
-        assertEquals(before, hud("protector-status"))
+        assertEquals(before, hud(tree.feature<ProtectorStatus>()))
     }
 
     @Test
     fun `a feature locked to an area hears nothing before the server names one`() {
         say(0, "☠ The Young Dragon has spawned!")
         game.tick(0)
-        assertNull(hud("dragon-timer"))
+        assertNull(hud(tree.feature<DragonTimer>()))
     }
 
     @Test
     fun `an edge feature locked to an area runs only there, and stays on for the HUD`() {
-        val eyes = game.readouts.single { it.feature.id == "eye-guard" }.feature
+        val eyes = tree.feature<EyeGuard>().feature
         assertEquals(false to true, eyes.runs to eyes.on)
-        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+        game.post(0, TabList(listOf(text("Area: The End"))))
         assertEquals(true, eyes.runs)
         game.post(1, WorldChanged)
         assertEquals(false, eyes.runs)
@@ -258,7 +255,7 @@ class GameTest {
             on<Sidebar> { _, _ -> heard++ }
         }
         val game = Game(listOf(listener))
-        game.post(0, Sidebar(lines = listOf(ServerText(ServerSpan("⏣ Village")))))
+        game.post(0, Sidebar(lines = listOf(text("⏣ Village"))))
         listener.enabled = false
         game.tick(1_000)
         listener.enabled = true
@@ -285,7 +282,7 @@ class GameTest {
         val game = Game(listOf(listener))
         listener.enabled = false
         game.tick(0)
-        game.post(1, Sidebar(lines = listOf(ServerText(ServerSpan("⏣ Village")))))
+        game.post(1, Sidebar(lines = listOf(text("⏣ Village"))))
         game.post(2, LeftServer)
         listener.enabled = true
         game.tick(3)
@@ -294,19 +291,19 @@ class GameTest {
 
     @Test
     fun `the area of the world the player left does not outlive the hop`() {
-        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+        game.post(0, TabList(listOf(text("Area: The End"))))
         game.post(1, WorldChanged)
         say(2, "☠ The Young Dragon has spawned!")
         game.tick(2)
-        assertNull(hud("dragon-timer"))
+        assertNull(hud(tree.feature<DragonTimer>()))
     }
 
     @Test
     fun `off dragsim co no feature hears a line, hides it or shows a readout`() {
-        val tree = SettingsTree(config)
-        val game = Game(tree.features) { false }
-        val tab = TabList(listOf("Area: The End", "Protector: Rising (Tier 4/5, 20)").map { ServerText(ServerSpan(it)) })
-        val refusal = SystemMessage(ServerText(ServerSpan("This ability is on cooldown for 4.35s")))
+        val offline = object : Harness(SettingsTree(config), onDragSim = { false }) {}
+        val game = offline.game
+        val tab = TabList(listOf("Area: The End", "Protector: Rising (Tier 4/5, 20)").map { text(it) })
+        val refusal = chat("This ability is on cooldown for 4.35s")
         game.post(0, tab)
         game.tick(0)
         assertEquals(false, game.wants(SystemMessage::class.java))
@@ -314,9 +311,9 @@ class GameTest {
         assertEquals(emptyList(), game.readouts.mapNotNull { it.hud })
 
         // Turning the setting off mid-session brings the features back with the tab list they missed.
-        tree.feature<DragSimOnly>().feature.enabled = false
-        game.tick(1_000)
-        assertNotNull(game.readouts.single { it.feature.id == "protector-status" }.hud)
+        offline.tree.feature<DragSimOnly>().feature.enabled = false
+        offline.pass(1_000)
+        assertNotNull(offline.hud(offline.tree.feature<ProtectorStatus>()))
         assertEquals(false, game.post(1_000, refusal))
     }
 
@@ -335,7 +332,7 @@ class GameTest {
         }
         hider.enabled = true
         val game = Game(listOf(hider))
-        assertEquals(false, game.post(0, SystemMessage(ServerText(ServerSpan("Anything")))))
+        assertEquals(false, game.post(0, chat("Anything")))
         assertEquals(emptyList(), game.messages)
     }
 }

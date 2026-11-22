@@ -1,6 +1,9 @@
 package io.github.noxaur.dsmod.core.feature
 
 import io.github.noxaur.dsmod.core.capture.Captured
+import io.github.noxaur.dsmod.harness.chat
+import io.github.noxaur.dsmod.harness.Harness
+import io.github.noxaur.dsmod.harness.text
 import io.github.noxaur.dsmod.core.capture.readCapture
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.container.SlotMark
@@ -19,8 +22,6 @@ import io.github.noxaur.dsmod.core.game.FrameRate
 import io.github.noxaur.dsmod.core.game.PingMeasured
 import io.github.noxaur.dsmod.core.game.ServerTime
 import io.github.noxaur.dsmod.core.game.Item
-import io.github.noxaur.dsmod.core.game.ServerSpan
-import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.SystemMessage
@@ -92,7 +93,9 @@ class FeatureReplayTest {
         }
     }
 
-    private fun fresh(id: String) = Game(listOf(SettingsTree().features.single { it.id == id }.also { it.enabled = true }))
+    private val owners = SettingsTree().owners.associate { it.feature.id to it::class }
+
+    private fun fresh(id: String) = object : Harness(alone = owners.getValue(id)) {}.also { it.readout().feature.enabled = true }
 
     /** A feature that reads nothing from the server has nothing to replay, so a game test must show it instead. */
     private fun fixtures(feature: Feature): List<Path> {
@@ -109,9 +112,9 @@ class FeatureReplayTest {
         return fixtures
     }
 
-    private fun tabList(vararg rows: String) = TabList(rows.map { ServerText(ServerSpan(it)) })
+    private fun tabList(vararg rows: String) = TabList(rows.map { text(it) })
 
-    private fun sidebar(vararg lines: String) = Sidebar(lines = lines.map { ServerText(ServerSpan(it)) })
+    private fun sidebar(vararg lines: String) = Sidebar(lines = lines.map { text(it) })
 
     /**
      * A fixture's events. One cut without the tab list or the sidebar says nothing of where the player was, so it
@@ -160,7 +163,8 @@ class FeatureReplayTest {
         dynamicTest(feature.id) {
             val written = ArrayList<Path>()
             for (fixture in fixtures(feature)) {
-                val game = fresh(feature.id)
+                val session = fresh(feature.id)
+                val game = session.game
                 val events = events(feature, fixture)
                 val start = events.first().time
                 var shown = emptyList<String>()
@@ -169,13 +173,13 @@ class FeatureReplayTest {
                 val infoRows = HashSet<String>()
                 val transcript = buildString {
                     fun readout() {
-                        val lines = game.readouts.single().hud?.let { block -> listOfNotNull(block.header.plain.ifEmpty { null }, block.icon?.let { "  (icon) ${name(it)}" }) + block.rows.map { "  " + it.text.plain } }
+                        val lines = session.readout().hud?.let { block -> listOfNotNull(block.header.plain.ifEmpty { null }, block.icon?.let { "  (icon) ${name(it)}" }) + block.rows.map { "  " + it.text.plain } }
                             ?: emptyList()
                         if (lines != shown) {
                             shown = lines
                             lines.ifEmpty { listOf("(nothing)") }.forEach { appendLine("             $it") }
                         }
-                        val marks = game.readouts.single().slots
+                        val marks = session.readout().slots
                         if (marks != marked) {
                             for (slot in marked.keys.sorted()) if (marks[slot] != marked[slot]) appendLine("             - slot $slot")
                             for (slot in marks.keys.sorted()) {
@@ -197,7 +201,7 @@ class FeatureReplayTest {
                             }
                             marked = marks
                         }
-                        val inWorld = game.readouts.single().marks
+                        val inWorld = session.readout().marks
                         if (inWorld != drawn) {
                             drawn = inWorld
                             if (inWorld.isEmpty()) appendLine("             (no marks in the world)")
@@ -228,7 +232,7 @@ class FeatureReplayTest {
                     val metrics = game.metrics.snapshot()
                     assertEquals(emptyMap(), metrics.failures, "${feature.id} threw while replaying $fixture")
                     metrics.counters.toSortedMap().forEach { (name, count) -> appendLine("$name = $count") }
-                    game.readouts.single().feature.state?.let { appendLine("saved ${feature.id}.json = ${it.encode()}") }
+                    session.readout().feature.state?.let { appendLine("saved ${feature.id}.json = ${it.encode()}") }
                     if (game.hidden.value.told.isNotEmpty()) appendLine("saved hidden.json = ${game.hidden.encode()}")
                 }
 
@@ -255,8 +259,9 @@ class FeatureReplayTest {
             dynamicTest(feature.id) {
                 val untouched = feature.state?.encode()
                 for (fixture in fixtures(feature)) {
-                    val game = fresh(feature.id)
-                    val state = game.readouts.single().feature.state
+                    val session = fresh(feature.id)
+                    val game = session.game
+                    val state = session.readout().feature.state
                     game.post(0, tabList("Area: Somewhere Else"))
                     game.post(0, sidebar("⏣ Somewhere Else"))
                     val outside = readCapture(fixture).filter { it.event !is TabList && it.event !is Sidebar }
@@ -267,8 +272,8 @@ class FeatureReplayTest {
                         assertEquals(emptyList(), game.messages, "${feature.id} spoke $where")
                     }, ticked = {
                         val where = "outside ${feature.area}, replaying $fixture"
-                        assertEquals(null, game.readouts.single().hud, "${feature.id} showed its HUD $where")
-                        assertEquals(emptyMap(), game.readouts.single().slots, "${feature.id} marked slots $where")
+                        assertEquals(null, session.readout().hud, "${feature.id} showed its HUD $where")
+                        assertEquals(emptyMap(), session.readout().slots, "${feature.id} marked slots $where")
                         assertEquals(untouched, state?.encode(), "${feature.id} saved something $where")
                     })
                 }
@@ -277,9 +282,9 @@ class FeatureReplayTest {
 
     @Test
     fun `play ticks once for the events of one recorded client tick`() {
-        val game = fresh(SettingsTree().features.first().id)
-        val death = SystemMessage(ServerText(ServerSpan("Zealot was slain")))
-        val bar = ActionBar(ServerText(ServerSpan("Kills: 4")))
+        val game = fresh(SettingsTree().features.first().id).game
+        val death = chat("Zealot was slain")
+        val bar = ActionBar(text("Kills: 4"))
         val ticks = ArrayList<Long>()
         play(
             game,
@@ -295,8 +300,8 @@ class FeatureReplayTest {
 
     @Test
     fun `play ticks after every event when the capture recorded no client tick`() {
-        val game = fresh(SettingsTree().features.first().id)
-        val line = SystemMessage(ServerText(ServerSpan("hello")))
+        val game = fresh(SettingsTree().features.first().id).game
+        val line = chat("hello")
         val ticks = ArrayList<Long>()
         val events = listOf(Captured(100, line), Captured(101, line), Captured(149, line))
         play(game, events, ticked = { ticks += it })
@@ -307,7 +312,8 @@ class FeatureReplayTest {
     fun `every feature stays inside the time budget`(): List<DynamicTest> = SettingsTree().features.map { feature ->
         dynamicTest(feature.id) {
             for (fixture in fixtures(feature)) {
-                val game = fresh(feature.id)
+                val session = fresh(feature.id)
+                val game = session.game
                 val events = events(feature, fixture)
                 fun replay(times: Int) = repeat(times) {
                     play(game, events)
