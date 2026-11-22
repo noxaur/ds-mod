@@ -1,9 +1,9 @@
 package io.github.noxaur.dsmod.edge.capture
 
+import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.capture.CaptureIncompleteException
 import io.github.noxaur.dsmod.core.capture.RawRecord
 import io.github.noxaur.dsmod.edge.Background
-import io.github.noxaur.dsmod.edge.DsModClient
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -17,6 +17,12 @@ import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 
 object Recorder {
+    private lateinit var game: Game
+
+    fun bind(game: Game) {
+        this.game = game
+    }
+
     @Volatile
     private var session: CaptureSession? = null
 
@@ -24,7 +30,7 @@ object Recorder {
 
     fun start(dir: Path): CaptureSession {
         check(session == null) { "A capture is already running." }
-        return CaptureSession(dir, DsModClient.game).also { session = it }
+        return CaptureSession(dir, game).also { session = it }
     }
 
     fun stop(own: CaptureSession, done: (whole: Boolean) -> Unit = {}) {

@@ -7,9 +7,15 @@ import net.minecraft.world.InteractionResult
 
 /** @keep A right click on a block and the use of the held item reach the server as two messages, and only the second swaps armor. */
 object ArmorSwapGuards {
+    private lateinit var guard: ArmorSwapGuard
+
+    fun bind(guard: ArmorSwapGuard) {
+        this.guard = guard
+    }
+
     fun register() {
         UseItemCallback.EVENT.register { player, level, hand ->
-            val swaps = level.isClientSide && DsModClient.runs<ArmorSwapGuard>() && !player.isShiftKeyDown &&
+            val swaps = level.isClientSide && guard.feature.runs && !player.isShiftKeyDown &&
                 player.getItemInHand(hand).get(DataComponents.EQUIPPABLE)?.swappable == true
             // @keep Fabric sends nothing to the server for a failed use.
             if (swaps) InteractionResult.FAIL else InteractionResult.PASS
