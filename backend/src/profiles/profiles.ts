@@ -1,9 +1,9 @@
 import { Effect, Option, Schema } from "effect";
 
-import { numberEntries } from "../items/render/read.ts";
-import { decodeCatalog, entriesOf, makeRenderer } from "../items/render.ts";
-import { ItemStore } from "../items/store.ts";
-import { parseLegacy } from "../items/legacy.ts";
+import { decodeCatalog, rendererFor } from "../items/render.ts";
+import { parseLegacy } from "../upstream/legacy.ts";
+import { numberEntries } from "../upstream/read.ts";
+import { newId } from "../ids.ts";
 import { catalog, lookup } from "./cache.ts";
 import { equipmentCells, layoutsOf, PETS_ID } from "./layout.ts";
 import type { Layout } from "./layout.ts";
@@ -41,9 +41,13 @@ const sectionsOf = (profile: WireProfile): Sections => ({
 /** Draws the items of one answer, which may hold nulls where a slot is empty. */
 const draw = Effect.fn(function* (items: readonly unknown[], inventory: Sections["inventory"]) {
   const present = items.filter((item) => item !== null && item !== undefined);
-  const hints = yield* (yield* ItemStore).hints(entriesOf(present));
   const worn = equipmentCells(inventory);
-  const renderer = makeRenderer((yield* catalog).raw, hints, [worn.helmet, worn.chestplate, worn.leggings, worn.boots]);
+  const renderer = yield* rendererFor((yield* catalog).raw, present, [
+    worn.helmet,
+    worn.chestplate,
+    worn.leggings,
+    worn.boots,
+  ]);
   return items.map((item) => (item === null || item === undefined ? null : renderer.render(item)));
 });
 
@@ -98,7 +102,7 @@ export const profile = Effect.fn(function* (name: string, profileId: string | un
   const hidden = current.inventory_hidden === true;
   const sections = sectionsOf(current);
 
-  const id = crypto.randomUUID();
+  const id = yield* newId;
   // A snapshot's key is new each time, so a refusal is the store failing, which no client can fix.
   yield* Effect.orDie((yield* ProfileStore).put(snapshotKey(id), { hidden, sections }, SNAPSHOT_SECONDS));
 
