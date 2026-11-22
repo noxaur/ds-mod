@@ -1,38 +1,25 @@
-import { betterAuth } from "better-auth";
-import { memoryAdapter } from "better-auth/adapters/memory";
 import { expect, test } from "vite-plus/test";
 
-import { signInOptions } from "./options.ts";
+import { authRequest, testAuth } from "../../test/harness.ts";
 import { trustedKeyHeader, websiteRules } from "./trusted.ts";
 
 const key = "a-trusted-key-that-only-the-website-knows";
 const limit = 3;
 
 const backend = (trustedKey: string | undefined) => {
-  const auth = betterAuth({
-    ...signInOptions(),
-    baseURL: "http://backend",
-    secret: "a-test-secret-that-is-long-enough-for-better-auth",
-    database: memoryAdapter({ user: [], session: [], account: [], verification: [] }),
-    rateLimit: {
-      enabled: true,
-      storage: "memory",
-      window: 60,
-      max: limit,
-      customRules: websiteRules(trustedKey),
-    },
+  const auth = testAuth({
+    enabled: true,
+    storage: "memory",
+    window: 60,
+    max: limit,
+    customRules: websiteRules(trustedKey),
   });
   return (address: string, path: string, headers: Record<string, string> = {}) =>
     auth.handler(
-      new Request(`http://backend/api/auth${path}`, {
+      authRequest(path, {
         method: path === "/get-session" ? "GET" : "POST",
-        headers: {
-          "content-type": "application/json",
-          origin: "http://backend",
-          "x-forwarded-for": address,
-          ...headers,
-        },
-        ...(path === "/get-session" ? {} : { body: JSON.stringify({ token: "unknown" }) }),
+        headers: { "x-forwarded-for": address, ...headers },
+        ...(path === "/get-session" ? {} : { body: { token: "unknown" } }),
       }),
     );
 };

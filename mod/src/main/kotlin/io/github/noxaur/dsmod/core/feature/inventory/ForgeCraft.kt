@@ -137,13 +137,8 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
         private val QUEUE = Regex("Forge Queue \\((\\d+)/(\\d+)\\)")
         private val MATERIAL = Regex("(.+?)(?: x(\\d+))?")
 
-        fun materials(item: Item): List<Pair<String, Int>> {
-            val lines = item.lore.map { it.plain }
-            val start = lines.indexOf(REQUIRED)
-            if (start < 0) return emptyList()
-            return lines.drop(start + 1).takeWhile { it.isNotBlank() }.mapNotNull { line ->
-                MATERIAL.matchEntire(line.trim())?.destructured?.let { (name, amount) -> name to (count(amount) ?: 1) }
-            }
+        fun materials(item: Item): List<Pair<String, Int>> = item.section(REQUIRED).mapNotNull { line ->
+            MATERIAL.matchEntire(line)?.destructured?.let { (name, amount) -> name to (count(amount) ?: 1) }
         }
     }
 }

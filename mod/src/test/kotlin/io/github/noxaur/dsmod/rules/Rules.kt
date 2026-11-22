@@ -49,6 +49,28 @@ val rules = listOf(
         span = Span.FILE,
     ),
     Rule(
+        id = "container-by-reads",
+        files = "src/{main,debug}/**.{kt,java}",
+        except = "src/main/{kotlin/**/edge/ContainerScreens.kt,java/**/edge/mixin/ContainerScreenAccessor.java}",
+        forbid = Regex("""\bContainerScreenAccessor\b"""),
+        fix = "Read a container screen's place from `ContainerScreens.kt`: `containerLeft`, `containerTop`, `containerWidth`, " +
+            "`containerHeight`, `slotUnderMouse`, `screenX(slot)` and `screenY(slot)`, and draw at a slot's own x and y inside " +
+            "`screen.drawInContainer(graphics) { .. }`. If a read is missing, add it there.",
+        example = "val left = (screen as ContainerScreenAccessor).leftPos",
+        examples = listOf("import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor", "ContainerScreenAccessor at = (ContainerScreenAccessor) screen;"),
+    ),
+    Rule(
+        id = "screen-by-hook",
+        files = "src/{main,debug}/**.{kt,java}",
+        except = "src/main/kotlin/**/edge/ScreenHooks.kt",
+        forbid = Regex("""\bAFTER_INIT\b"""),
+        fix = "Add to a screen with `ScreenHooks.onEveryLayout<ScreenType> { screen, opened -> .. }`. It runs on every layout, " +
+            "because Fabric drops a screen's listeners on each one, and `opened` is true only on the first, so state for one " +
+            "menu survives a resize. For a container screen, `openedByServer` and `creative` in `ContainerScreens.kt` name which ones.",
+        example = "ScreenEvents.AFTER_INIT.register { _, screen, _, _ -> }",
+        examples = listOf("ScreenEvents\n    .AFTER_INIT", "FabricScreens.AFTER_INIT.register((client, screen, w, h) -> {});"),
+    ),
+    Rule(
         id = "text-by-role",
         files = "src/main/**.{kt,java}",
         // PlayerNames strips the `§` codes of an older capture's raw text and reads them to tell an NPC's label. It colors nothing.
@@ -71,6 +93,27 @@ val rules = listOf(
             "from edge/Items.kt, which copies the tag once per item. For another field, add it there.",
         example = """val id = stack.get(DataComponents.CUSTOM_DATA)?.copyTag()?.getCompoundOrEmpty("item_data")?.getStringOr("item_id", "")""",
         examples = listOf("""tag.getCompoundOrEmpty("extra").getCompoundOrEmpty("item_skin").getStringOr("skinId", "")"""),
+    ),
+    Rule(
+        id = "lore-glyphs-by-hand",
+        files = "src/main/kotlin/**/core/**.kt",
+        except = "src/main/kotlin/**/core/game/Item.kt",
+        forbid = Regex("""[\uE000-\uF8FF]|\\u(?:[Ee][0-9A-Fa-f]{3}|[Ff][0-8][0-9A-Fa-f]{2})"""),
+        fix = "Read lore as `item.cleanLore`, which drops the glyphs of the server's resource pack and trims each line once per " +
+            "item, and the lines under a header with `item.section(header)`, or `item.sections(regex) { heading, lines -> .. }`.",
+        example = """line.filterNot { it in '\uE000'..'\uF8FF' }""",
+        examples = listOf("line.filterNot { it in '\uE000'..'\uF8FF' }", "val glyph = '\uE001'"),
+    ),
+    Rule(
+        id = "item-json-by-hand",
+        files = "src/main/kotlin/**/core/{game,feature,contribute}/**.kt",
+        except = "src/main/kotlin/**/core/game/Item.kt",
+        forbid = Regex("""as\?\s*JsonObject|\bdata\s*\[\s*"(?:item_data|extra)""""),
+        fix = "Read an item's data with `item.string(\"item_data\", \"rarity\")`, or `item.objectAt(..)` for an object. " +
+            "Other JSON reads with `jsonObject` and `jsonPrimitive` inside a `runCatching`.",
+        example = """((item.data["item_data"] as? JsonObject)?.get("rarity") as? JsonPrimitive)?.contentOrNull""",
+        examples = listOf("(data[\"extra\"] as?\n    JsonObject)", """item.data["item_data"]?.jsonObject?.get("rarity")"""),
+        span = Span.FILE,
     ),
     Rule(
         id = "number-by-helper",

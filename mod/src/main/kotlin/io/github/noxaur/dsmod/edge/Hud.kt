@@ -425,8 +425,8 @@ object Hud {
     fun register() {
         // With the chat open the mouse is free, so pointing at an icon shows the item's tooltip. Minecraft draws the
         // frame's tooltip at the end of the screen's own pass, so it is set before that pass.
-        ScreenEvents.AFTER_INIT.register { client, screen, _, _ ->
-            if (screen !is ChatScreen) return@register
+        ScreenHooks.onEveryLayout<ChatScreen> { screen, _ ->
+            val client = Minecraft.getInstance()
             ScreenEvents.beforeExtract(screen).register { _, graphics, x, y, _ ->
                 if (client.gui.hud.isHidden) return@register
                 itemAt(x.toDouble(), y.toDouble())?.let { graphics.setTooltipForNextFrame(client.font, it, x, y) }

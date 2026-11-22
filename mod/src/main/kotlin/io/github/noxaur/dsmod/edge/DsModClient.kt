@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 
 object DsModClient : ClientModInitializer {
     private const val FLUSH_TICKS = 20 * 60
@@ -195,7 +194,7 @@ object DsModClient : ClientModInitializer {
         SlotGuards.register()
         CommandKeys.register()
         Pings.register()
-        ScreenEvents.AFTER_INIT.register { _, screen, _, _ -> if (screen is AbstractContainerScreen<*>) readouts.opened(screen) }
+        ScreenHooks.onEveryLayout<AbstractContainerScreen<*>> { screen, _ -> readouts.opened(screen) }
         ChatDrags.register(settings.hud, ::saveSettings)
         Editors.register(Canvas.HUD_LAYOUT) { panel, host -> @Suppress("UNCHECKED_CAST") HudLayoutEditor(panel as Panel<Map<String, DsModConfig.Position>>, readouts, host) }
         Editors.register(Canvas.MENU_TABS) { panel, host -> @Suppress("UNCHECKED_CAST") TabPlacesEditor(panel as Panel<List<MenuTab>>, host) }
