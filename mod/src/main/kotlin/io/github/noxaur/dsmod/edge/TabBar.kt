@@ -70,7 +70,7 @@ object TabBar {
 
             val widgets = Screens.getWidgets(screen)
             val tabs = DsModClient.feature<MenuTabs>().tabs.value.filter { it.slot in 0 until TabLayout.PER_EDGE }
-            val selected = TabLayout.selected(tabs, MenuBack.opener(screen))
+            val selected = TabLayout.selected(tabs, Trail.opener(screen))
             val made = ArrayList<Pair<MenuTab, KitTab>>()
             val glass = { MenuSkin.glass(screen) }
             var search: MenuTab? = null

@@ -47,6 +47,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | The edge reads a stack's SkyBlock data in one place, which reads each item's tag once | `item-data-by-hand` in `mod/…/Rules.kt` |
 | The edge looks up an item or an entity type by its registry id in one place | `registry-by-hand` in `mod/…/Rules.kt` |
 | Core reads an item's lore and data through `Item`, which strips the server's glyphs once per item | `lore-glyphs-by-hand` and `item-json-by-hand` in `mod/…/Rules.kt` |
+| Every command and chat line the mod sends for the player goes through one sender | `send-through-player-commands` in `mod/…/Rules.kt` |
 | The mod's shapes are drawn by its kit, in the player's theme | `KitTest` reads the compiled classes |
 | The mod's code is not copied with a value or two changed | `ClonesTest` in `mod/…/rules/` finds a repeated block and a near-identical line |
 | Release code cannot use debug tools | The `main` and `debug` source sets |
