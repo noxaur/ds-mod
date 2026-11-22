@@ -14,11 +14,17 @@ class Rule(
     val except: String? = null,
     /** Forms beside [example] that the rule must catch, including ones split over lines. */
     val examples: List<String> = emptyList(),
+    val counterExamples: List<String> = emptyList(),
     val span: Span = Span.LINE,
 )
 
 /** [LINE] matches one source line. [FILE] matches the whole file, so a hit may span lines. */
-enum class Span { LINE, FILE }
+enum class Span { LINE, FILE, FILE_REPORTING_LAST_LINE }
+
+private const val PLAYER_SLOTS_FIX =
+    "In core, the open container's `menuSlots` and `playerSlots` from `ContainerState` say which slots are the menu's " +
+        "and which the player's, and its `CARRIED_SLOTS`, `ROW_SLOTS`, `WORN_SLOTS` and `OFFHAND_SLOT` where the inventory " +
+        "holds them. In the edge, name a slot with Minecraft's own number, as `InventoryMenu.USE_ROW_SLOT_START`."
 
 val rules = listOf(
     Rule(
@@ -290,10 +296,18 @@ val rules = listOf(
         files = "src/main/**.{kt,java}",
         except = "src/main/kotlin/**/core/game/ContainerState.kt",
         forbid = Regex("""const\s+val\s+\w+\s*(:\s*Int\s*)?=\s*36(?![\w.])"""),
-        fix = "In core, the open container's `menuSlots` and `playerSlots` from `ContainerState` say which slots are the menu's " +
-            "and which the player's. In the edge, name a slot with Minecraft's own number, as `InventoryMenu.USE_ROW_SLOT_START`.",
+        fix = PLAYER_SLOTS_FIX,
         example = "private const val HOTBAR_FIRST = 36",
         examples = listOf("const val PLAYER_SLOTS=36", "const val PLAYER_SLOTS: Int = 36"),
+    ),
+    Rule(
+        id = "player-rows-by-container",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        forbid = Regex("""^(?!\s*(\*|//)).*?(?<![\w.$"])36(?![\w."])"""),
+        fix = PLAYER_SLOTS_FIX,
+        example = """HOTBAR("Hotbar", 36, 9, false),""",
+        examples = listOf("for (slot in 36 until 45) read(slot)", "val hotbar = slots.subList(36, 45)"),
+        counterExamples = listOf("val ratio = 0.36", "val wide = 360", " * the 36 slots the player carries", """val code = "36""""),
     ),
     Rule(
         id = "protector-by-stage",
@@ -402,5 +416,30 @@ val rules = listOf(
         example = "private val shown get() = DsModClient.runs<BetterUi>() && DsModClient.runs<MenuTabs>()",
         examples = listOf("DsModClient.INSTANCE.runs(BetterUi.class)", "runs< BetterUi >()", "DsModClient.INSTANCE.runs(\n    BetterUi.class)"),
         span = Span.FILE,
+    ),
+    Rule(
+        id = "part-by-itself",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        forbid = Regex(
+            """\bval\s+(?<clock>\w+)\s*(?::\s*\w+\s*)?=\s*ServerClock\s*\([\s\S]*?\bon<\s*(?:ServerTime|WorldChanged)\s*>\s*\{[^{}]*?\b\k<clock>\s*\.|""" +
+                """\bval\s+(?<reader>\w+)\s*(?::\s*\w+\s*)?=\s*(?:ContainerReader|SlotMarks)\s*\([\s\S]*?\bon<\s*(?:ContainerOpened|SlotChanged|WorldChanged)\s*>\s*\{[^{}]*?\b\k<reader>\s*\.""",
+        ),
+        fix = "A part hears the events it needs for itself, because `Feature.on` runs every handler of a type in turn. `ServerClock` " +
+            "follows `ServerTime` and clears itself on `WorldChanged`, and `ContainerReader` and `SlotMarks` see `ContainerOpened`, " +
+            "`SlotChanged` and `WorldChanged` and tell the change through `changed()` and `marks(now)`. Drop this call from the " +
+            "handler, and read the part where the feature shows what it holds.",
+        example = "private val clock = ServerClock(feature)\n\ninit {\n    feature.on<WorldChanged> { _, now -> clock.clear(now) }\n}",
+        examples = listOf(
+            "private val inventory = ContainerReader(feature, FIRST..LAST)\n\ninit {\n    feature.on<SlotChanged> { event, _ -> inventory.changed(event) { it in FIRST..LAST } }\n}",
+            "private val marks: SlotMarks = SlotMarks(feature, ::mark)\ninit {\n    feature.on< ContainerOpened > {\n        _, _ -> marks.invalidate()\n    }\n}",
+        ),
+        counterExamples = listOf(
+            "private val clock = ServerClock(feature)\ninit {\n    feature.on<Hit> { _, now -> started = clock.millis(now) }\n}",
+            "private val clock = ServerClock(feature)\ninit {\n    feature.on<SlotChanged> { _, now -> changedAt = clock.millis(now) }\n}",
+            "private val clock = ServerClock(feature)\ninit {\n    feature.on<WorldChanged> { _, _ -> timers.clear() }\n}",
+            "private val marks = SlotMarks(feature, ::mark)\ninit {\n    feature.on<ActionBar> { _, _ -> marks.invalidate() }\n}",
+            "private val pets = CurrentPet(feature, ::changed)\ninit {\n    feature.on<SlotChanged> { event, _ -> if (event.item == null) pets.set(null) }\n}",
+        ),
+        span = Span.FILE_REPORTING_LAST_LINE,
     ),
 )
