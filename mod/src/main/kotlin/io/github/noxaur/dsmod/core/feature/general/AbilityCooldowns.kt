@@ -170,7 +170,7 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
      */
     private fun unheaded(name: String): Known? {
         val slots = feature.container.slots
-        for (i in own() until slots.size) {
+        for (i in feature.container.playerSlots) {
             val item = slots[i] ?: continue
             if (item.lore.none { it.plain.contains(name, ignoreCase = true) }) continue
             val millis = Abilities.cooldown(item) ?: continue
@@ -186,7 +186,7 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
         stale = false
         marked = true
         val slots = feature.container.slots
-        for (i in own() until slots.size) {
+        for (i in feature.container.playerSlots) {
             val item = slots[i] ?: continue
             for (ability in read(item).abilities) known[ability.name.lowercase()] = ability
         }
@@ -199,12 +199,6 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
             b.worn >= b.pieces || pieces >= b.pieces
         }
     }
-
-    /**
-     * The first slot of the player's own items in the open container: all of their inventory, and the last four rows of
-     * a menu, so another player's items in their profile neither set a length nor take a mark.
-     */
-    private fun own() = if (feature.container.id == INVENTORY) 0 else maxOf(0, feature.container.slots.size - PLAYER_SLOTS)
 
     private fun read(item: Item): Read = reads.getOrPut(item) {
         if (reads.size > MAX_READS) reads.clear()
@@ -242,7 +236,7 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
         val next = HashMap<Int, SlotMark>()
         var until = Long.MAX_VALUE
         val slots = feature.container.slots
-        for (slot in own() until slots.size) {
+        for (slot in feature.container.playerSlots) {
             val item = slots[slot] ?: continue
             var timer: Timer? = null
             for (key in read(item).keys) {
@@ -265,7 +259,6 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     }
 
     private companion object {
-        const val PLAYER_SLOTS = 36
 
         /** The inventory's helmet, chestplate, leggings and boots slots. */
         val ARMOR = listOf(5, 6, 7, 8)

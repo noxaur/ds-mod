@@ -23,6 +23,10 @@ import net.minecraft.world.item.ItemStack
  * again only when the server gave the entity another, which it does a mob on each hit. Entities are kept by their id
  * unboxed, so a tick allocates only for a new entity, a new name or an event.
  */
+val Entity.typeId: String get() = BuiltInRegistries.ENTITY_TYPE.getKey(type).toString()
+
+fun entityType(id: String): EntityType<*> = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse(id))
+
 class EntityTracker(private val game: Game) {
     private class Known(val id: Int, var name: Component?, var head: ItemStack?, var matched: Boolean, var pass: Int)
 
@@ -50,7 +54,7 @@ class EntityTracker(private val game: Game) {
         tapped = game.tap
         if (wanted !== filters) {
             filters = wanted
-            tests = wanted.map { filter -> Test(filter.types.mapTo(HashSet()) { BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse(it)) }, filter.prefix) }
+            tests = wanted.map { filter -> Test(filter.types.mapTo(HashSet()) { entityType(it) }, filter.prefix) }
             types = tests.flatMapTo(HashSet()) { it.types }
             anyType = tests.any { it.types.isEmpty() }
         }
@@ -104,7 +108,7 @@ class EntityTracker(private val game: Game) {
         when {
             !was || tap || newHead -> game.post(
                 time,
-                EntitySeen(entity.id, BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString(), (name ?: Component.empty()).toText(), head?.takeUnless { it.isEmpty }?.toItem()),
+                EntitySeen(entity.id, entity.typeId, (name ?: Component.empty()).toText(), head?.takeUnless { it.isEmpty }?.toItem()),
             )
             named != name -> game.post(time, EntityRenamed(entity.id, (name ?: Component.empty()).toText()))
         }

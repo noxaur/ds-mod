@@ -126,6 +126,27 @@ val rules = listOf(
         examples = listOf("""tag.getCompoundOrEmpty("extra").getCompoundOrEmpty("item_skin").getStringOr("skinId", "")"""),
     ),
     Rule(
+        id = "lore-glyphs-by-hand",
+        files = "src/main/kotlin/**/core/**.kt",
+        except = "src/main/kotlin/**/core/game/Item.kt",
+        forbid = Regex("""[\uE000-\uF8FF]|\\u(?:[Ee][0-9A-Fa-f]{3}|[Ff][0-8][0-9A-Fa-f]{2})"""),
+        fix = "Read lore as `item.cleanLore`, which drops the glyphs of the server's resource pack and trims each line once per " +
+            "item, and the lines under a header with `item.section(header)`, or `item.sections(regex) { heading, lines -> .. }`.",
+        example = """line.filterNot { it in '\uE000'..'\uF8FF' }""",
+        examples = listOf("line.filterNot { it in '\uE000'..'\uF8FF' }", "val glyph = '\uE001'"),
+    ),
+    Rule(
+        id = "item-json-by-hand",
+        files = "src/main/kotlin/**/core/{game,feature,contribute}/**.kt",
+        except = "src/main/kotlin/**/core/game/Item.kt",
+        forbid = Regex("""as\?\s*JsonObject|\bdata\s*\[\s*"(?:item_data|extra)""""),
+        fix = "Read an item's data with `item.string(\"item_data\", \"rarity\")`, or `item.objectAt(..)` for an object. " +
+            "Other JSON reads with `jsonObject` and `jsonPrimitive` inside a `runCatching`.",
+        example = """((item.data["item_data"] as? JsonObject)?.get("rarity") as? JsonPrimitive)?.contentOrNull""",
+        examples = listOf("(data[\"extra\"] as?\n    JsonObject)", """item.data["item_data"]?.jsonObject?.get("rarity")"""),
+        span = Span.FILE,
+    ),
+    Rule(
         id = "number-by-helper",
         files = "src/main/kotlin/**/core/feature/**.kt",
         forbid = Regex("""\.format\("""),
@@ -193,14 +214,6 @@ val rules = listOf(
         span = Span.FILE,
     ),
     Rule(
-        id = "item-id-by-items",
-        files = "src/main/kotlin/**/edge/**.kt",
-        except = "src/main/kotlin/**/edge/Items.kt",
-        forbid = Regex("""BuiltInRegistries\.ITEM\.getKey"""),
-        fix = "Read a stack's id with `stack.id` from `edge/Items.kt`, so every id is spelled the same way.",
-        example = "val id = BuiltInRegistries.ITEM.getKey(stack.item)",
-    ),
-    Rule(
         id = "gametest-no-swallowed-wait",
         files = "src/gametest/**.kt",
         forbid = Regex("""runCatching\s*\{[^}]*\bwait(?:For|Until)"""),
@@ -227,5 +240,27 @@ val rules = listOf(
         example = "repeat(100) { if (done()) return@repeat else context.waitTicks(1) }",
         examples = listOf("repeat(200) {\n    if (done()) return\n    context.waitTicks(1)\n}"),
         span = Span.FILE,
+    ),
+    Rule(
+        id = "registry-by-hand",
+        files = "src/main/kotlin/**/edge/**.kt",
+        except = "src/main/kotlin/**/edge/{Items,Entities}.kt",
+        forbid = Regex("""BuiltInRegistries\s*\.\s*(ITEM|ENTITY_TYPE)\b"""),
+        fix = "Look an item up with `stackOf(id)`, a barrier when the game has no such item, or `isItem(id)`, and read a " +
+            "stack's id with `stack.id`, from edge/Items.kt. Read an entity's type id with `entity.typeId`, and find a type " +
+            "with `entityType(id)`, from edge/Entities.kt.",
+        example = """Hit(BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString())""",
+        examples = listOf("val id = BuiltInRegistries.ITEM.getKey(stack.item)", """Identifier.tryParse(id)?.let(BuiltInRegistries.ITEM::containsKey)""", "BuiltInRegistries\n    .ITEM.getKey(item)"),
+        span = Span.FILE,
+    ),
+    Rule(
+        id = "player-slots-by-container",
+        files = "src/main/**.{kt,java}",
+        except = "src/main/kotlin/**/core/game/ContainerState.kt",
+        forbid = Regex("""const\s+val\s+\w+\s*(:\s*Int\s*)?=\s*36(?![\w.])"""),
+        fix = "In core, the open container's `menuSlots` and `playerSlots` from `ContainerState` say which slots are the menu's " +
+            "and which the player's. In the edge, name a slot with Minecraft's own number, as `InventoryMenu.USE_ROW_SLOT_START`.",
+        example = "private const val HOTBAR_FIRST = 36",
+        examples = listOf("const val PLAYER_SLOTS=36", "const val PLAYER_SLOTS: Int = 36"),
     ),
 )

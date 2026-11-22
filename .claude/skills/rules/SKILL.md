@@ -36,11 +36,13 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | A feature writes a number, a rate or a time, and reads a number the server wrote, through `core.text` | `number-by-helper`, `rate-by-helper` and `count-by-helper` in `mod/…/Rules.kt` |
 | A feature reads a chat line by its start, and a line that starts right and fails to parse is counted | `line` in `Feature`, and `chat-by-line` in `mod/…/Rules.kt` for a chat handler written by hand |
 | A mod test builds server text, reads a readout and reads a test resource through the harness in `mod/src/test/…/harness/` | `server-text-by-harness`, `readout-by-harness` and `resource-by-harness` in `mod/…/Rules.kt` |
+| Which slots of an open container are the player's is named once | `ContainerState`'s `menuSlots` and `playerSlots`, and `player-slots-by-container` in `mod/…/Rules.kt` |
 | The mod holds no `!!`, so each null is said as a `?: return`, a smart cast or a `checkNotNull` that gives its reason | `no-bang-bang` in `mod/…/Rules.kt` |
 | A feature reads time from the `now` its handler receives, never the wall clock | `no-wall-clock-in-core` in `mod/…/Rules.kt` |
 | No catch block is empty | `no-swallowed-catch` in `mod/…/Rules.kt` |
-| An item's id is read through `edge/Items.kt` | `item-id-by-items` in `mod/…/Rules.kt` |
 | The edge reads a stack's SkyBlock data in one place, which reads each item's tag once | `item-data-by-hand` in `mod/…/Rules.kt` |
+| The edge looks up an item or an entity type by its registry id in one place | `registry-by-hand` in `mod/…/Rules.kt` |
+| Core reads an item's lore and data through `Item`, which strips the server's glyphs once per item | `lore-glyphs-by-hand` and `item-json-by-hand` in `mod/…/Rules.kt` |
 | The mod's shapes are drawn by its kit, in the player's theme | `KitTest` reads the compiled classes |
 | The mod's code is not copied with a value or two changed | `ClonesTest` in `mod/…/rules/` finds a repeated block and a near-identical line |
 | Release code cannot use debug tools | The `main` and `debug` source sets |
