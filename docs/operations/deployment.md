@@ -45,12 +45,15 @@ To change `ADMIN_TOKEN`, edit the file and pipe the value in. `void secret sync`
 sed -n 's/^ADMIN_TOKEN=//p' ~/.config/dsmod/production.env | tr -d '\n' | pnpm exec void secret put ADMIN_TOKEN
 ```
 
-To change `MOJANG_RELAY_KEY`, set the website's first and redeploy it, then the Worker's. A sign-in in between answers 503, because the old key no longer opens the relay. In `backend/`, with the user signed in to Vercel:
+To change `MOJANG_RELAY_KEY`, set the website's and redeploy it, check that the live relay opens to the new key, and only then set the Worker's. A sign-in in between answers 503, because the old key no longer opens the relay. The check asks about a server id nobody joined, which Mojang answers 204 and a refused key 404. In `backend/`, with the user signed in to Vercel:
 
 ```sh
 key=$(openssl rand -hex 32)
 printf %s "$key" | pnpm dlx vercel env add MOJANG_RELAY_KEY --environment production --sensitive --force --project ds-mod &&
   pnpm dlx vercel redeploy ds-mod.perwko.com &&
+  printf 'x-mojang-relay-key: %s' "$key" |
+  curl -sS -o /dev/null -w '%{http_code}' -H @- "https://ds-mod.perwko.com/mojang/has-joined?username=Notch&serverId=$(printf '0%.0s' $(seq 40))" |
+  grep -qx 204 &&
   printf %s "$key" | pnpm exec void secret put MOJANG_RELAY_KEY
 unset key
 ```
