@@ -13,22 +13,21 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.Minecraft
 import net.minecraft.core.BlockPos
+import net.minecraft.gizmos.CuboidGizmo
 import net.minecraft.world.item.component.ResolvableProfile
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.SkullBlockEntity
+import net.minecraft.world.phys.AABB
 
 class EndTrackerEdgeTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
-            context.runOnClient<Nothing> {
-                World.show("stale", listOf(BlockBox(1, 64, 1, Role.GOOD)))
-                check(World.marksQueued() == 1) { "The mark was not queued" }
-            }
+            context.runOnClient<Nothing> { World.show("stale", listOf(BlockBox(1, 64, 1, Role.GOOD))) }
+            context.waitTick()
+            context.checkClient("The mark was not drawn") { staleDrawn(it) }
             world.server.runCommand("execute in minecraft:the_end run tp @a 0 80 0")
             context.waitTicks(10)
-            context.runOnClient<Nothing> {
-                check(World.marksQueued() == 0) { "The new world still had ${World.marksQueued()} marks queued" }
-            }
+            context.checkClient("The new world still drew the old world's mark") { !staleDrawn(it) }
 
             val posted = ArrayList<HeadPlaced>()
             context.runOnClient<Nothing> { client ->
@@ -61,6 +60,8 @@ class EndTrackerEdgeTest : FabricClientGameTest {
             }
         }
     }
+
+    private fun staleDrawn(client: Minecraft) = client.perTickGizmos.any { (it.gizmo() as? CuboidGizmo)?.aabb() == AABB(1.0, 64.0, 1.0, 2.0, 65.0, 2.0) }
 
     private fun placeHead(client: Minecraft, posted: MutableList<HeadPlaced>, above: Int): BlockPos {
         posted.clear()

@@ -175,6 +175,4 @@ internal class TabsDriver(context: ClientGameTestContext) : SettingsDriver(conte
     private fun editor() = context.computeOnClient<TabPlacesEditor, Nothing> { (it.gui.screen() as SettingsScreen).editor("tabs") as TabPlacesEditor }
 
     fun place(edge: TabEdge, slot: Int) = context.computeOnClient<Pair<Int, Int>, Nothing> { editor().placeAt(edge, slot) }
-
-    fun field(which: Int) = context.computeOnClient<IntArray, Nothing> { editor().fieldSpot(which) }
 }

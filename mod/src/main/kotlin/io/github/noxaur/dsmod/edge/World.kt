@@ -113,8 +113,6 @@ object World {
         tracersShown = tracers.values.flatten()
     }
 
-    fun marksQueued() = shown.size + beamsShown.size + tracersShown.size
-
     fun worldChanged() {
         marks.clear()
         beams.clear()

@@ -127,8 +127,8 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         context.waitTicks(2)
         val storage = place(TabEdge.BOTTOM, 0)
         click(storage.first, storage.second)
-        val itemField = field(1)
-        click(itemField[0] + itemField[2] / 2, itemField[1] + itemField[3] / 2)
+        key(GLFW.GLFW_KEY_ENTER)
+        key(GLFW.GLFW_KEY_TAB)
         key(GLFW.GLFW_KEY_END)
         repeat(16) { key(GLFW.GLFW_KEY_BACKSPACE) }
         relayout()

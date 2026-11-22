@@ -187,11 +187,6 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         return null
     }
 
-    fun fieldSpot(which: Int): IntArray {
-        val field = fields[which]
-        return intArrayOf(field.x, field.y, field.width, field.height)
-    }
-
     fun placeAt(edge: TabEdge, slot: Int): Pair<Int, Int> {
         val y = tabY(edge)
         return box.x + TabLayout.x(slot) + Kit.TAB_WIDTH / 2 to y + Kit.TAB_HEIGHT / 2
