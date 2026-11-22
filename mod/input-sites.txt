@@ -68,7 +68,7 @@ gate edge.ForgeCrafts 19b4886abeb9  ForgeCraft
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
 gate edge.Hits af5b845f21bf
     can refuse the player's actions through AttackEntityCallback.EVENT
-gate edge.MenuBack ed735e135c6a  BackButtons, BetterUi
+gate edge.MenuBack 5a39de1acc74  BackButtons
     can refuse or change sent chat through ClientSendMessageEvents.COMMAND
 gate edge.Pings 374f3f901a23  PerformanceStats
     builds the packet ServerboundPingRequestPacket
@@ -80,7 +80,7 @@ gate edge.SlotGuards c461090a69b6  SlotLock
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-gate edge.TabBar 6a1ffa193b07  BetterUi, MenuTabs
+gate edge.TabBar 60ca491428d3  MenuTabs
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
 gate edge.capture.Recording ed76355333a5
