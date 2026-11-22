@@ -342,5 +342,10 @@ tasks.register("lintClasspath") {
     doLast { out.get().asFile.writeText(classpath.asPath) }
 }
 tasks.named("detekt") { onlyIf("it resolves no types, so the lint rules run in detektMain, detektDebug, detektTest and detektGametest") { false } }
-tasks.check { dependsOn("detektMain", "detektDebug", "detektTest", "detektGametest") }
+val lintCheck = tasks.register("lintCheck") {
+    group = "verification"
+    description = "Runs the lint rules in detekt.yml on every source set, and checks that each rule flags its examples."
+    dependsOn("detektMain", "detektDebug", "detektTest", "detektGametest", ":lint:test")
+}
+tasks.check { dependsOn(lintCheck) }
 tasks.matching { it.name.startsWith("detekt") }.configureEach { mustRunAfter(tasks.test) }

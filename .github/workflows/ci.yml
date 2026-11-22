@@ -24,13 +24,28 @@ jobs:
       - id: setup
         uses: ./.github/actions/setup-mod
       - working-directory: mod
-        run: ./gradlew ${{ steps.setup.outputs.gradle-args }} check
+        run: ./gradlew ${{ steps.setup.outputs.gradle-args }} :check -x lintCheck
       - if: failure()
         uses: actions/upload-artifact@v7
         with:
           name: mod
           path: mod/build/reports/tests
           if-no-files-found: ignore
+      - uses: ./.github/actions/time-limit
+        with:
+          warm: ${{ steps.setup.outputs.warm }}
+
+  lint:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - id: setup
+        uses: ./.github/actions/setup-mod
+        with:
+          cache: lint
+      - working-directory: mod
+        run: ./gradlew ${{ steps.setup.outputs.gradle-args }} lintCheck
       - uses: ./.github/actions/time-limit
         with:
           warm: ${{ steps.setup.outputs.warm }}
