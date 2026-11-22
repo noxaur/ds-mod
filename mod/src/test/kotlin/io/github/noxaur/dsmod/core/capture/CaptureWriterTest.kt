@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.capture
 
 import io.github.noxaur.dsmod.core.game.ActionBar
+import io.github.noxaur.dsmod.harness.readCapture
 import io.github.noxaur.dsmod.harness.text
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.SystemMessage

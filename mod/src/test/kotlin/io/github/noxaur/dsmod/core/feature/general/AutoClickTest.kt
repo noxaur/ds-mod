@@ -3,6 +3,8 @@ package io.github.noxaur.dsmod.core.feature.general
 import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.config.KeyBind
 import io.github.noxaur.dsmod.core.config.SettingsTree
+import io.github.noxaur.dsmod.core.feature.Game
+import io.github.noxaur.dsmod.core.input.ClickBudget
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -14,8 +16,10 @@ class AutoClickTest {
     }
 
     private val tree = SettingsTree()
-    private val trigger = tree.feature<AutoLeftClick>().click
-    private val right = tree.feature<AutoRightClick>().click
+    private val auto = tree.feature<AutoClick>()
+    private val trigger = auto.left
+    private val right = auto.right
+    private val budget = ClickBudget()
 
     private data class Tick(val walking: Boolean = true, val pressed: Boolean = false, val down: Boolean = true, val on: Boolean = true)
 
@@ -23,7 +27,7 @@ class AutoClickTest {
 
     private fun step(t: Tick): Boolean {
         nanos += TICK
-        return trigger.tick(t.on, t.walking, t.pressed, t.down, nanos) && trigger.spend(nanos)
+        return trigger.tick(t.on, t.walking, t.pressed, t.down) && budget.spend(nanos)
     }
 
     private fun clicks(ticks: List<Tick>) = ticks.indices.filter { step(ticks[it]) }
@@ -43,27 +47,28 @@ class AutoClickTest {
     }
 
     @Test
-    fun `the player's own clicks spend the same 9 point 9 a second`() {
-        assertEquals(990, (0 until 20 * 100).count { step(Tick(walking = false)); trigger.spend(nanos) })
+    fun `auto clicks fill only what the player's own clicks leave of 9 point 9 a second`() {
+        val clicked = held(20 * 100).withIndex().count { (i, t) -> step(t).also { if (i % 4 == 0) budget.count(nanos) } }
+        assertEquals(990, clicked + 500)
     }
 
     @Test
-    fun `the player's own clicks on top of auto clicks stay at 9 point 9 a second`() {
-        assertEquals(990, held(20 * 100).sumOf { t -> listOf(step(t), trigger.spend(nanos)).count { it } })
+    fun `the player's own clicks past 9 point 9 a second leave no auto clicks`() {
+        assertEquals(0, held(20 * 10).count { t -> budget.count(nanos).let { step(t) } })
     }
 
     @Test
     fun `ticks the game catches up on after a freeze release no burst`() {
         clicks(held(20))
         nanos += 500_000_000L
-        assertEquals(1, (0 until 10).count { trigger.tick(true, true, false, true, nanos) && trigger.spend(nanos) })
+        assertEquals(1, (0 until 10).count { trigger.tick(true, true, false, true) && budget.spend(nanos) })
     }
 
     @Test
     fun `uneven ticks never fit 11 clicks in a second`() {
         val random = Random(1)
         val at = (0 until 20 * 30).map { it * TICK + random.nextLong(-20_000_000L, 20_000_000L) }
-        val admitted = at.filter { trigger.tick(true, true, false, true, it) && trigger.spend(it) }
+        val admitted = at.filter { trigger.tick(true, true, false, true) && budget.spend(it) }
         assertTrue(admitted.size > 280)
         assertTrue(admitted.windowed(11).all { it.last() - it.first() >= 1_000_000_000L })
     }
@@ -145,8 +150,20 @@ class AutoClickTest {
     }
 
     @Test
-    fun `both start off, on the left and right mouse buttons held`() {
-        assertEquals(false to false, tree.feature<AutoLeftClick>().feature.enabled to tree.feature<AutoRightClick>().feature.enabled)
+    fun `a part runs only while Auto Click and the part are both on`() {
+        Game(listOf(auto.feature))
+        auto.feature.enabled = true
+        assertEquals(true to true, trigger.runs to right.runs)
+        right.switch.value = false
+        assertEquals(true to false, trigger.runs to right.runs)
+        auto.feature.enabled = false
+        assertEquals(false to false, trigger.runs to right.runs)
+    }
+
+    @Test
+    fun `it starts off, with both parts on the left and right mouse buttons held`() {
+        assertEquals(false, auto.feature.enabled)
+        assertEquals(true to true, trigger.switch.value to right.switch.value)
         assertEquals(0 to KeyMode.HOLD, trigger.key.value to trigger.mode.value)
         assertEquals(1 to KeyMode.HOLD, right.key.value to right.mode.value)
     }

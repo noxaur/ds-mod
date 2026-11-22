@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.noxaur.dsmod.edge.HeldItems;
+import io.github.noxaur.dsmod.edge.input.InputApproved;
 import java.util.List;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -15,6 +16,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 
+@InputApproved(hash = "305583a74354")
 @Mixin(targets = "net.minecraft.client.renderer.item.ItemStackRenderState$LayerRenderState")
 abstract class HeldItemModelMixin {
     @Shadow

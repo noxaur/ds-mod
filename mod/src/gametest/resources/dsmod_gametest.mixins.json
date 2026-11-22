@@ -12,7 +12,8 @@
     "HandAccessor",
     "HoveredSlotAccessor",
     "HudAccessor",
-    "MouseButtonInvoker"
+    "MouseButtonInvoker",
+    "NarrationInvoker"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -16,7 +16,6 @@ class EditorButtons(private val labels: List<String>) {
 
     fun width(i: Int) = spots[i * 2 + 1]
 
-    fun middle(i: Int) = x(i) + width(i) / 2
 
     fun at(i: Int, y: Int, px: Double, py: Double) = px >= x(i) && px < x(i) + width(i) && py >= y && py < y + Kit.BUTTON_HEIGHT
 

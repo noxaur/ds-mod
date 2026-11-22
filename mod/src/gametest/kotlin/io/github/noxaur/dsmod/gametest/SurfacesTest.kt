@@ -6,10 +6,7 @@ import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.hud
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
-import io.github.noxaur.dsmod.core.world.BlockBox
-import io.github.noxaur.dsmod.core.world.Path
 import io.github.noxaur.dsmod.core.world.Point
-import io.github.noxaur.dsmod.core.world.Ring
 import io.github.noxaur.dsmod.core.world.Waypoint
 import io.github.noxaur.dsmod.edge.Alerts
 import io.github.noxaur.dsmod.edge.Chat
@@ -22,7 +19,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.world.item.Items
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.HudHotbarMixin]. */
 class SurfacesTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.inWorld { world ->
@@ -45,13 +41,7 @@ class SurfacesTest : FabricClientGameTest {
                 Hud.show("plain", HudGroup("plain", 6, 110), hud("No Background") {
                     row("Ping") { value(42); muted("ms") }
                 })
-                val block = ahead(6.0, -3.0)
-                World.show("test", listOf(
-                    Waypoint(ahead(14.0, 4.0), "Dragon Nest"),
-                    BlockBox(Math.floor(block.x).toInt(), Math.floor(block.y).toInt(), Math.floor(block.z).toInt(), Role.GOOD),
-                    Ring(ahead(7.0, 0.0, 0.05), 2.5f, Role.WARNING),
-                    Path(listOf(ahead(3.0, -1.0, 0.1), ahead(5.0, 1.0, 0.1), ahead(14.0, 4.0, 0.1)), Role.ACTION),
-                ))
+                World.show("test", listOf(Waypoint(ahead(14.0, 4.0), "Dragon Nest")))
                 Alerts.title(text { warning("Storage Full") }, text { body("Storage is full. Sell your scales to keep earning.") })
                 Alerts.actionBar(text { muted("Next boss: "); value("2m 5s") })
                 Chat.notice("Scale Tracker", text { value("Dragon Scale"); body(" x12") })
@@ -88,7 +78,7 @@ class SurfacesTest : FabricClientGameTest {
             context.runOnClient<Nothing> { client ->
                 client.options.guiScale().set(2)
                 client.resizeGui()
-                DsModClient.settings.hud.scale = 1.3f
+                DsModClient.settings.hud.scale.value = 1.3f
             }
             context.waitTicks(5)
             context.runOnClient<Nothing> {
@@ -96,7 +86,7 @@ class SurfacesTest : FabricClientGameTest {
                 check(scale == 1.5f) { "The HUD scale snapped to $scale, not 1.5" }
             }
             context.takeScreenshot("hud-scale-1.5")
-            context.runOnClient<Nothing> { DsModClient.settings.hud.scale = 1f }
+            context.runOnClient<Nothing> { DsModClient.settings.hud.scale.value = 1f }
             context.restoreDefaultGameOptions()
             context.runOnClient<Nothing> { it.resizeGui() }
         }

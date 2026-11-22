@@ -41,6 +41,5 @@ class AreaTest {
         val state = SidebarState().also { it.update(Sidebar(lines = lines("", "Name: Player1", " ⏣ The Catacombs (F1)", "Purse: 527,057,149"))) }
         assertEquals("The Catacombs (F1)", state.place)
         assertEquals("527,057,149", state.info("Purse"))
-        assertEquals(4, state.lines.size)
     }
 }

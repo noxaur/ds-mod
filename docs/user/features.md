@@ -181,25 +181,18 @@ While you sneak with an Aspect of the End or Aspect of the Void that has Etherwa
 | Box Through Walls | Shows the whole box, even behind the blocks in front of it. Turn it off to let blocks hide it |
 | Box Without Sneak | Shows the box while you stand too, from where your eye will be once you sneak. Off by default |
 
-### Auto Left Click
+### Auto Click
 
-Left clicks 9.9 times a second while you hold its key and walk. It stops the moment you let go, stand still or open a menu, and each click goes through the game as your own would.
+Clicks 9.9 times a second while you hold a key and walk. It stops the moment you let go, stand still or open a menu, and each click goes through the game as your own would. It has a part for each button, and both start on once you turn Auto Click on.
 
-- **Key:** any key or mouse button. It starts as the left mouse button, and can't be Auto Right Click's key.
-- **Mode:** Hold, or Toggle to press once to start and again to stop. A toggled click still runs only while you walk.
+| Setting | Does |
+| --- | --- |
+| Left Click | Left clicks while its key is down |
+| Right Click | Right clicks while its key is down, such as to keep using a sword's ability as you run |
+| Key | Any key or mouse button. Left Click starts on the left mouse button and Right Click on the right, and the two can't share a key |
+| Mode | Hold, or Toggle to press once to start and again to stop. A toggled click still runs only while you walk |
 
-While it's on, your own left clicks share the same 9.9 a second, so left clicking never goes faster.
-
-<sub>Off by default.</sub>
-
-### Auto Right Click
-
-Right clicks the same way, 9.9 times a second while you hold its key and walk, such as to keep using a sword's ability as you run.
-
-- **Key:** any key or mouse button. It starts as the right mouse button, and can't be Auto Left Click's key.
-- **Mode:** Hold, or Toggle.
-
-While it's on, your own right clicks share the same 9.9 a second, so right clicking never goes faster.
+Your own clicks always go through. They count toward the 9.9 a second, so Auto Click skips one of its clicks rather than take the two of you past it.
 
 <sub>Off by default.</sub>
 

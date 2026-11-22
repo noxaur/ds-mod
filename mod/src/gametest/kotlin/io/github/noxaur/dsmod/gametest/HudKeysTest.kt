@@ -15,7 +15,7 @@ class HudKeysTest : FabricClientGameTest {
         val guiScale = context.computeOnClient<Int, Nothing> { it.window.guiScale }
         fun pixels() = context.computeOnClient<Int, Nothing> { (checkNotNull(Hud.find(ID)).scale * guiScale).roundToInt() }
         try {
-            hud.editKey = GLFW.GLFW_KEY_J
+            hud.editKey.value = GLFW.GLFW_KEY_J
             context.input.pressKey(GLFW.GLFW_KEY_J)
             context.waitForScreen(HudEditorScreen::class.java)
 
@@ -30,8 +30,8 @@ class HudKeysTest : FabricClientGameTest {
             check(pixels() == before) { "- did not make the grid smaller: ${pixels()} pixels, not $before" }
             context.setScreen { null }
         } finally {
-            hud.editKey = -1
-            hud.positions.remove(ID)
+            hud.editKey.value = -1
+            hud.positions.value -= ID
         }
     }
 }

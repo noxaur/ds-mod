@@ -3,6 +3,8 @@ import nextVitals from "eslint-config-next/core-web-vitals";
 import { defineConfig, globalIgnores } from "eslint/config";
 import tseslint from "typescript-eslint";
 
+import secretCompare from "./lint/secret-compare.js";
+
 const uiSdk =
   "ds-mod builds every interactive control from ui-sdk, so focus, keyboard and ARIA behave the same everywhere.";
 
@@ -53,6 +55,7 @@ export default defineConfig(
   tseslint.configs.stylisticTypeChecked,
   {
     linterOptions: { reportUnusedDisableDirectives: "error", reportUnusedInlineConfigs: "error" },
+    plugins: { dsmod: { rules: { "secret-compare": secretCompare } } },
     languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname } },
     rules: {
       eqeqeq: "error",
@@ -66,6 +69,7 @@ export default defineConfig(
       "@typescript-eslint/switch-exhaustiveness-check": "error",
       "@typescript-eslint/no-shadow": "error",
       "@typescript-eslint/explicit-module-boundary-types": "off",
+      "dsmod/secret-compare": "error",
       "no-restricted-syntax": restricted(),
       "no-restricted-imports": [
         "error",
@@ -119,6 +123,24 @@ export default defineConfig(
     files: ["app/**/*.{ts,tsx}"],
     ignores: ["app/env.ts", "app/**/*.test.{ts,tsx}"],
     rules: { "no-restricted-syntax": restricted(noProcessEnv, noJsonParse) },
+  },
+  {
+    files: ["shared/**/*.ts"],
+    ignores: ["shared/**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              regex: "^(?!\\./)",
+              message:
+                "The backend imports shared/ too, and installs none of the website's packages. Keep it to plain TypeScript.",
+            },
+          ],
+        },
+      ],
+    },
   },
   { files: ["**/*.{js,mjs,cjs}"], extends: [tseslint.configs.disableTypeChecked] },
 );

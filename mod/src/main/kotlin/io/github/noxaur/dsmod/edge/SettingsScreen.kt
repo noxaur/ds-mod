@@ -26,7 +26,6 @@ import io.github.noxaur.dsmod.edge.ui.KitTextField
 import io.github.noxaur.dsmod.edge.ui.SettingRows
 import io.github.noxaur.dsmod.edge.ui.fit
 import net.minecraft.client.gui.GuiGraphicsExtractor
-import net.minecraft.client.gui.narration.ScreenNarrationCollector
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.CharacterEvent
 import net.minecraft.client.input.InputWithModifiers
@@ -57,9 +56,9 @@ private const val MOUSE_FORWARD = 4
 
 class SettingsScreen(
     private val parent: Screen?,
-    private val tabs: SettingsTabs = session(),
-    private val config: DsModConfig = DsModClient.settings,
-    private val save: () -> Unit = DsModClient::saveSettings,
+    private val config: DsModConfig,
+    private val save: () -> Unit,
+    private val tabs: SettingsTabs = session(config),
     private var reveal: String? = null,
     private var query: String? = null,
 ) : Screen(text { body("ds-mod") }.toComponent()) {
@@ -70,15 +69,15 @@ class SettingsScreen(
     private class Group(y: Int, height: Int) : Item(y, height)
     private class Empty(y: Int, val line: String, val x: Int, val ink: Kit.Ink) : Item(y, 8)
 
-    private val sections = sections(config)
+    internal val sections = sections(config)
     private val every = sections.flatMap { it.walk() }
     private val icons = List(sections.size) { if (it == FAVORITES) Icon.STAR else null }
     private val tree = NavTree(sections.map { it.named.size })
     private val pane = Scroll()
-    private val rows = SettingRows(opened, ::build, ::scrollTo, stars = SettingRows.Stars({ it in config.favorites }, ::star, { config.general.favoriteKey }))
+    internal val rows = SettingRows(opened, ::build, ::scrollTo, stars = SettingRows.Stars({ it in config.favorites }, ::star, { config.general.favoriteKey.value }))
 
     private lateinit var search: KitTextField
-    private lateinit var nav: KitNavTree
+    internal lateinit var nav: KitNavTree
     private lateinit var bar: KitTabBar
     private lateinit var fold: KitButton
     private var clear: KitButton? = null
@@ -299,7 +298,7 @@ class SettingsScreen(
             val hits = Favorites.hits(sections, view.rows(every, config.favorites) { it.id }.map { it.id })
             if (hits.isEmpty()) {
                 y += EMPTY_TOP
-                val key = config.general.favoriteKey.takeIf { it >= 0 }?.let(Keys::name)
+                val key = config.general.favoriteKey.value.takeIf { it >= 0 }?.let(Keys::name)
                 for ((line, ink) in listOf(
                     "No favorites yet." to Kit.Ink.NORMAL,
                     (if (key == null) "Click a setting's star to keep it here." else "Click a setting's star, or press $key over it, to keep it here.") to Kit.Ink.MUTED,
@@ -387,27 +386,7 @@ class SettingsScreen(
         sync()
     }
 
-    fun spot(id: String, entry: Int = -1): SettingRows.Spot? {
-        sync()
-        return rows.spot(id, entry)
-    }
-
-    fun line(section: String): Int? = nav.middle(NavRow(sections.indexOfFirst { it.name == section }))
-
-    fun shown() = rows.ids()
-
-    fun marked(id: String) = rows.marked(id)
-
-    fun editor(id: String): Editor? {
-        sync()
-        return rows.editor(id)
-    }
-
-    fun reveal(id: String) {
-        rows.reveal(id)
-    }
-
-    private fun sync() = rows.view(BAR - pane.offset, BAR, height, width, height)
+    internal fun sync() = rows.view(BAR - pane.offset, BAR, height, width, height)
 
     private fun spy() {
         if (tree.searching || pane.gliding || pane.offset == spiedAt) return
@@ -419,7 +398,7 @@ class SettingsScreen(
         val key = event.key()
         eatChar = false
         if (rows.capturing) return rows.keyPressed(event)
-        val favorite = config.general.favoriteKey
+        val favorite = config.general.favoriteKey.value
         if (key == favorite && !Keys.isMouse(favorite) && favoriteFree(event) && rows.starAt(mouseX, mouseY, keyboard = true)) return true.also { eatChar = true }
         if (Keys.control(event) && controlKey(event)) return true
         if (Keys.alt(event) && (event.isLeft || event.isRight)) return true.also { history(event.isLeft) }
@@ -481,7 +460,7 @@ class SettingsScreen(
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
         sync()
         if (!rows.recordingKeys && (event.button() == MOUSE_BACK || event.button() == MOUSE_FORWARD)) return true.also { history(event.button() == MOUSE_BACK) }
-        val favorite = config.general.favoriteKey
+        val favorite = config.general.favoriteKey.value
         val inPane = event.x >= side && event.y >= BAR
         if (!rows.capturing && Keys.isMouse(favorite) && event.button() == favorite && favoriteFree(event) && inPane && rows.starAt(event.x, event.y, keyboard = false)) return true
         if ((rows.capturing || event.x >= side && event.y >= BAR) && rows.mouseClicked(event, doubleClick)) {
@@ -534,8 +513,6 @@ class SettingsScreen(
         if (scrollY != 0.0) pane.by(if (scrollY > 0) -ROW else ROW)
         return true
     }
-
-    fun narration(): String = ScreenNarrationCollector().apply { update(::updateNarrationState) }.collectNarrationText(true)
 
     override fun setInitialFocus() = setFocused(null)
 
@@ -602,11 +579,17 @@ class SettingsScreen(
 
         private var tabs: SettingsTabs? = null
 
-        fun session(): SettingsTabs =
-            tabs ?: SettingsTabs(Place(if (DsModClient.settings.favorites.isEmpty()) FAVORITES + 1 else FAVORITES)).also { tabs = it }
+        fun session(config: DsModConfig): SettingsTabs =
+            tabs ?: SettingsTabs(Place(if (config.favorites.isEmpty()) FAVORITES + 1 else FAVORITES)).also { tabs = it }
 
         private val opened = HashSet<String>()
 
         private val view = FavoritesView()
+
+        fun forget() {
+            tabs = null
+            opened.clear()
+            view.left()
+        }
     }
 }

@@ -1,20 +1,21 @@
-import { Effect, Schema } from "effect";
+import { Schema } from "effect";
 import { expect, test } from "vite-plus/test";
 
-import { sighting, testApp } from "../../test/harness.ts";
+import { sighting, testApp, unlimited } from "../../test/harness.ts";
 import { ItemAppearances } from "./model.ts";
 import { MAX_PLAYER_ITEM_ROWS, MAX_SAMPLES } from "./items.ts";
-import { type ItemStore, MIN_PLAYERS, memoryItemStore } from "./store.ts";
+import { itemStore } from "../../routes/_store.ts";
+import { MIN_PLAYERS } from "./store.ts";
 
 const texture = (url: string) => btoa(JSON.stringify({ textures: { SKIN: { url } } }));
 const mojang = texture("http://textures.minecraft.net/texture/abc123");
 
-const backend = (items: ItemStore["Service"] = memoryItemStore()) => {
-  const { call } = testApp({ items });
+const backend = () => {
+  const { call, run } = testApp({ limiter: unlimited });
   const send = (who: string, sightings: unknown[]) =>
     call(who, "POST", "/v1/contrib/items", { modVersion: "1.0.0", items: sightings });
   const admin = (query = "") => call("agent", "GET", `/v1/admin/items${query}`);
-  const hints = (...entries: string[]) => Effect.runPromise(items.hints(entries));
+  const hints = (...entries: string[]) => run(itemStore.hints(entries));
   const entries = async (query = "") => Schema.decodeUnknownSync(ItemAppearances)((await admin(query)).value);
   return { send, admin, entries, hints };
 };
@@ -59,12 +60,12 @@ test("glint is always, never or mixed by what the players saw", async () => {
   }
   await send("bob", [sighting("both", { glint: false })]);
   const found = await hints("always", "never", "mixed", "both");
-  expect([...found].map(([entry, hint]) => [entry, hint.glint])).toEqual([
-    ["always", "always"],
-    ["never", "never"],
-    ["mixed", "mixed"],
-    ["both", "mixed"],
-  ]);
+  expect(Object.fromEntries([...found].map(([entry, hint]) => [entry, hint.glint]))).toEqual({
+    always: "always",
+    never: "never",
+    mixed: "mixed",
+    both: "mixed",
+  });
 });
 
 test("a texture counts when two players saw it on the same skin", async () => {

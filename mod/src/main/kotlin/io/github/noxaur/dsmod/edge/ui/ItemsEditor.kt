@@ -21,11 +21,11 @@ import net.minecraft.network.chat.Component
 import org.lwjgl.glfw.GLFW
 
 class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host) : Editor {
-    private enum class Kind { HEADING, ITEM, EMPTY, DETAILS, FOOT, NOTHING }
+    internal enum class Kind { HEADING, ITEM, EMPTY, DETAILS, FOOT, NOTHING }
 
-    private enum class Does { CELL, DETAILS, FOLD, GROUP, UP, DOWN, DUPLICATE, DELETE, EXPORT, NAME, ADD, ADD_GROUP, IMPORT }
+    internal enum class Does { CELL, DETAILS, FOLD, GROUP, UP, DOWN, DUPLICATE, DELETE, EXPORT, NAME, ADD, ADD_GROUP, IMPORT }
 
-    private class Line(val kind: Kind, val entry: Entry?, val y: Int, val height: Int) {
+    internal class Line(val kind: Kind, val entry: Entry?, val y: Int, val height: Int) {
         val hits = ArrayList<Hit>()
         var text: Component = Component.empty()
         var muted: Component = Component.empty()
@@ -35,7 +35,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         val held: Entry get() = checkNotNull(entry) { "a $kind line holds an entry" }
     }
 
-    private class Hit(val line: Line, val x: Int, val dy: Int, val width: Int, val height: Int, val does: Does, val cell: Int = -1, val caption: String = "") {
+    internal class Hit(val line: Line, val x: Int, val dy: Int, val width: Int, val height: Int, val does: Does, val cell: Int = -1, val caption: String = "") {
         var name: Component? = null
         var label = ""
         var text: Component = Component.empty()
@@ -45,10 +45,10 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         val y get() = line.y + dy
     }
 
-    private val lines = ArrayList<Line>()
-    private var x = 0
-    private var width = 0
-    private var origin = 0
+    internal val lines = ArrayList<Line>()
+    internal var x = 0
+    internal var width = 0
+    internal var origin = 0
     private var clipTop = 0
     private var clipBottom = 0
     private var screenWidth = 0
@@ -393,21 +393,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         }
         return null
     }
-
-    fun spot(line: Int, control: String? = null): IntArray? {
-        val at = lines.getOrNull(line) ?: return null
-        if (control == null) return intArrayOf(x, origin + at.y, width, at.height)
-        val hit = at.hits.firstOrNull { it.caption == control } ?: return null
-        return intArrayOf(hit.x, origin + hit.y, hit.width, hit.height)
-    }
-
-    val size get() = lines.size
-
-    fun lineOf(index: Int, details: Boolean = false) = indexOf(Entry.Item(index), details)
-
-    fun headingOf(group: String, details: Boolean = false) = indexOf(Entry.Heading(group), details)
-
-    private fun indexOf(entry: Entry, details: Boolean) = lines.indexOfFirst { it.entry == entry && (it.kind == Kind.DETAILS) == details }
 
     private fun linesOf(vararg kinds: Kind) = lines.filter { it.kind in kinds }
 

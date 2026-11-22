@@ -8,7 +8,7 @@ Void deploys the backend to Cloudflare Workers and owns the database, the file s
 
 ## One file touches the database and the file store
 
-Void binds the database only to a file that imports it, and the API must stay free of Void. So one file outside the API reads and writes storage, and each domain keeps its rules behind a store interface with an in-memory twin. One contract suite runs against both stores, so they cannot disagree without a test failing. A rule two stores both need is one function in the API, so only what must be atomic stays in SQL.
+Void binds the database only to a file that imports it, and the API must stay free of Void. So one file outside the API reads and writes storage, behind a store interface each domain declares, and a rule that need not be atomic is a function in the API, so a new store keeps it. Tests run that file itself, over the real migrations. An in-memory twin with a contract suite to keep it honest was rejected, because it wrote the SQL's caps, its one run per player and its ordering a second time in JavaScript.
 
 ## The database runs in tests as SQLite with the real migrations
 
@@ -21,6 +21,10 @@ The entry route says who is calling, a signed-in player or an agent, and puts it
 ## Only a failure the client can fix is in the contract
 
 A failure no client can fix, such as a database that is down, is logged and answered with an empty 500. Only what the client got wrong is an error the endpoint declares, so the contract never lists a failure the client could not act on.
+
+## A player's pace is counted by Cloudflare's rate-limit binding
+
+Anyone with a Minecraft account can sign in, so each endpoint caps its body, small unless it names more, and each player's calls are counted per minute, with a tighter count where a call costs more, such as a profile from dragsim.co. The binding counts each location apart, which is enough to stop one account. KV was rejected because it takes one write a second per key, and a Durable Object because an exact worldwide count costs a round trip on every call.
 
 ## The website runs on Vercel, beside the backend
 

@@ -9,7 +9,6 @@ import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.edge.DsModClient
-import io.github.noxaur.dsmod.edge.SettingsScreen
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import kotlinx.serialization.json.JsonObject
@@ -28,7 +27,7 @@ class ItemRarityTest : FabricClientGameTest {
         val scale = context.computeOnClient<Int, Nothing> { it.options.guiScale().get() }
         SettingsSteps.fit(context, 2)
         val driver = SettingsDriver(context)
-        context.setScreen { SettingsScreen(null, SettingsTabs(SettingsSteps.at("Inventory")), reveal = "hotbarMatches") }
+        context.setScreen { DsModClient.settingsScreen(null, SettingsTabs(SettingsSteps.at("Inventory")), reveal = "hotbarMatches") }
         context.waitTicks(2)
         val match = driver.spot("hotbarMatches")
         context.runOnClient<Nothing> { it.gui.toastManager().clear() }

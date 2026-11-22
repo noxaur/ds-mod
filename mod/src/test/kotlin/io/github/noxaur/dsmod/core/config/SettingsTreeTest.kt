@@ -6,10 +6,8 @@ import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
 import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
-import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
-import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.descriptors.elementNames
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -22,31 +20,34 @@ class SettingsTreeTest {
     private val tree = settings.sections
     private val rows = tree.flatMap { it.walk() }
     private val rarity = settings.feature<ItemRarity>()
+    private val stored = emptyMap<String, String>()
+    private val spanned = settings.feature<CommandBinds>().run { listOf(groups, collapsedGroups, offGroups).map { it.bind.field } }
 
-    private val saved = DsModConfig.serializer().descriptor.let { config ->
-        (0 until config.elementsCount).map(config::getElementDescriptor).filter { it.kind == StructureKind.CLASS }.flatMap { category ->
-            category.elementNames.map { "${category.serialName.substringAfterLast('.')}.$it" }
-        }
-    } + Store.entries.flatMap { store -> config.stored(store).all.map { it.bind.field } }
+    private val saved = Store.entries.flatMap { store -> config.stored(store).all.map { it.bind.field } }
+
+    @Test
+    fun `a setting is saved in a slot of a store, so its key is written where it is declared`() {
+        assertEquals(listOf("favorites"), DsModConfig.serializer().descriptor.elementNames.toList(), "Declare the setting with Stored.slot, not as a field of DsModConfig")
+    }
 
     @Test
     fun `every saved field is reached by exactly one row, or is stored only, with a reason`() {
         assertEquals(saved, saved.distinct(), "a feature's key is also a field: ${saved.groupBy { it }.filterValues { it.size > 1 }.keys}")
-        val reached = rows.filterIsInstance<Valued<*>>().flatMap { it.fields }
+        val reached = rows.filterIsInstance<Valued<*>>().map { it.field } + spanned
         assertEquals(reached, reached.distinct(), "two rows reach the same field: ${reached.groupBy { it }.filterValues { it.size > 1 }.keys}")
         for (field in saved) {
             val whole = field in reached
             val parts = reached.count { it.startsWith("$field.") }
-            val stored = field in SettingsTree.STORED
-            assertTrue(listOf(whole, parts > 0, stored).count { it } == 1, "$field: reached $whole, by $parts parts, stored only $stored")
+            val only = field in stored
+            assertTrue(listOf(whole, parts > 0, only).count { it } == 1, "$field: reached $whole, by $parts parts, stored only $only")
         }
-        for (field in reached + SettingsTree.STORED.keys) assertTrue(saved.any { field == it || field.startsWith("$it.") }, "$field is not a saved field")
+        for (field in reached + stored.keys) assertTrue(saved.any { field == it || field.startsWith("$it.") }, "$field is not a saved field")
     }
 
     @Test
     fun `a feature in a group runs only while the group is on, and keeps its own switch`() {
         val tree = SettingsTree()
-        val group = tree.feature<BetterUi>().feature
+        val group = tree.features.single { it.id == "better-ui" }
         val back = tree.feature<BackButtons>().feature
         assertTrue(back.on)
         group.enabled = false

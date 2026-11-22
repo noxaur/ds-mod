@@ -40,7 +40,6 @@ import net.minecraft.network.chat.Component
 import java.util.concurrent.CompletableFuture
 import kotlin.math.abs
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.Frames], [io.github.noxaur.dsmod.edge.mixin.TooltipMixin]. */
 class HudUiFixesTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = SettingsSteps.windowSize(context)
@@ -63,7 +62,7 @@ class HudUiFixesTest : FabricClientGameTest {
             context.runOnClient<Nothing> {
                 Hud.hide("under")
                 Hud.hide("over")
-                DsModClient.settings.hud.positions.clear()
+                DsModClient.settings.hud.positions.value = emptyMap()
             }
             SettingsSteps.restore(context, window)
         }
@@ -83,7 +82,7 @@ private fun freeBlockStaysOnScreen(context: ClientGameTestContext, world: net.fa
         1f,
     )
     context.runOnClient<Nothing> {
-        hud.positions[DRAGON_TIMER] = fraction
+        hud.positions.value += DRAGON_TIMER to fraction
         // @keep A watched HUD setting is what makes the next tick place the block again.
         DsModClient.feature<HudBackground>().feature.enabled = false
     }
@@ -100,7 +99,7 @@ private fun freeBlockStaysOnScreen(context: ClientGameTestContext, world: net.fa
     check(inside(narrow.first, narrow.second, narrow.third)) {
         "After the GUI shrinks the timer runs off it: ${narrow.first.x},${narrow.first.y} size ${narrow.first.width * narrow.first.scale}x${narrow.first.height * narrow.first.scale} on ${narrow.second}x${narrow.third}"
     }
-    val saved = context.computeOnClient<DsModConfig.Position, Nothing> { hud.positions.getValue(DRAGON_TIMER) }
+    val saved = context.computeOnClient<DsModConfig.Position, Nothing> { hud.positions.value.getValue(DRAGON_TIMER) }
     check(saved.x == fraction.x && saved.y == fraction.y) { "Clamping rewrote the saved fraction $saved" }
 
     guiScale(context, 1)

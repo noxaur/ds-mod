@@ -5,6 +5,8 @@ import { DatabaseSync, type SQLInputValue } from "node:sqlite";
 import { Effect, Exit } from "effect";
 import { withRuntimeEnv } from "void/_env";
 
+import config from "../void.config.ts";
+
 // @keep D1 refuses a statement with more bound values than this.
 const MAX_BOUND_VALUES = 100;
 
@@ -95,20 +97,36 @@ const r2 = () => {
   };
 };
 
-const kvNamespace = () => {
-  const values = new Map<string, string>();
+const kvNamespace = (now: () => number) => {
+  const values = new Map<string, { value: string; until: number }>();
   return {
-    get: (key: string) => Promise.resolve(values.get(key) ?? null),
-    put: (key: string, value: string) => Promise.resolve(void values.set(key, value)),
+    get: (key: string) => {
+      const kept = values.get(key);
+      return Promise.resolve(kept !== undefined && now() < kept.until ? kept.value : null);
+    },
+    put: (key: string, value: string, options: { expirationTtl?: number } = {}) =>
+      Promise.resolve(void values.set(key, { value, until: now() + (options.expirationTtl ?? Infinity) * 1000 })),
   };
 };
 
-export const localCloudflare = () => {
+// @keep Counts in fixed windows, as Cloudflare's rate-limit binding does, with the limits void.config.ts gives it.
+const rateLimit = (now: () => number, { limit, period }: { limit: number; period: number }) => {
+  const windows = new Map<string, { window: number; calls: number }>();
+  return {
+    limit: ({ key }: { key: string }) => {
+      const window = Math.floor(now() / (period * 1000));
+      const last = windows.get(key);
+      const calls = last?.window === window ? last.calls + 1 : 1;
+      windows.set(key, { window, calls });
+      return Promise.resolve({ success: calls <= limit });
+    },
+  };
+};
+
+export const localCloudflare = (now: () => number = Date.now) => {
   const sqlite = new DatabaseSync(":memory:");
   migrate(sqlite);
-  const env = { DB: new D1(sqlite), STORAGE: r2(), KV: kvNamespace() };
-  return {
-    sqlite,
-    within: <A>(body: () => Promise<A>): Promise<A> => withRuntimeEnv(env, body),
-  };
+  const rates = (config.cloudflare?.ratelimits ?? []).map(({ name, simple }) => [name, rateLimit(now, simple)]);
+  const env = { DB: new D1(sqlite), STORAGE: r2(), KV: kvNamespace(now), ...Object.fromEntries(rates) };
+  return <A>(body: () => Promise<A>): Promise<A> => withRuntimeEnv(env, body);
 };

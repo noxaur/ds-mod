@@ -10,13 +10,17 @@ Every feature has a fixture cut from a capture, replayed through the same game l
 
 Each rule the mod enforces in its source is a detekt rule, and each rule about what the compiled classes may call is an ArchUnit rule. Both read the code as the compiler does, so a line break, a full name or a method reference cannot slip past them, and each rule's examples prove it still fires. Regular expressions over the source were rejected, because they matched text and missed every spelling they did not foresee. A linter of our own was rejected too, because following each Kotlin release is lasting work.
 
+## The release jar carries no test hook
+
+A release member needs a caller in the release or debug code, and a game test's call does not count, because the jar would carry the hook for every player. So a game test writes its own reads of a screen and reaches the state the screen keeps from other modules. Hooks in the release code were rejected, because nothing told them apart from code that had lost its last caller.
+
 ## CI measures the mod in a real game
 
 Fast and smooth is checked, not promised. A perf test boots the jars a player installs and times the mod where the game calls it: each tick, each frame and each burst of the server's packets, so a part can move or be renamed without touching the test. A timer per part was rejected, because every refactor edited the test, and a unit benchmark because it misses the draw cost. Every time is scaled to a reference device, and each cap gates the median of twelve windows, because one window on a shared runner can be several times slower.
 
 ## A pull request runs the game tests its change reaches
 
-The game takes long to boot and each test makes a fresh world, so the whole suite runs before a beta, and a pull request runs only the tests its change reaches, found by walking names in the source. An agent naming the tests was rejected, because the instruction was skipped or answered wrong. Recording which classes each test runs was rejected, because the central classes run in every test.
+The game takes long to boot and each test makes a fresh world, so the whole suite runs before a beta, and a pull request runs only the tests its change reaches, found from the classes the compiled code names. Matching words in the source was rejected, because pruning comments turned tests off. An agent naming the tests was rejected, because it was skipped or answered wrong. Recording which classes each test runs was rejected, because the central classes run in every test.
 
 ## A game test runs behind the developer
 

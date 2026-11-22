@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge.ui
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.GameScreenColors
@@ -9,7 +10,6 @@ import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.core.ui.TabStrip
 import io.github.noxaur.dsmod.core.ui.Theme
-import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Ticks
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
@@ -50,7 +50,6 @@ object Kit {
     enum class Ink { NORMAL, MUTED, OFF, MATCH }
 
     class Marked(pieces: List<Piece>) {
-        val text = pieces.joinToString("") { it.text }
         internal val parts = Array(pieces.size) { pieces[it].text }
         internal val matches = BooleanArray(pieces.size) { pieces[it].match }
         internal val offsets = IntArray(pieces.size)
@@ -77,7 +76,6 @@ object Kit {
     const val TAB_WIDTH = TabLayout.TAB_WIDTH
     const val TAB_HEIGHT = 21
     const val CHECKBOX_SIZE = 10
-    const val DIVIDER_HEIGHT = 2
 
     const val LABEL_HEIGHT = 8
     const val GAP = 4
@@ -100,7 +98,9 @@ object Kit {
     private const val PAGE_TAB_LEAD_UP = 12
     private const val PAGE_TAB_TEXT_UP = 11
 
-    val theme: Theme get() = DsModClient.settings.hud.theme
+    private lateinit var hud: DsModConfig.Hud
+
+    val theme: Theme get() = hud.theme.value
     val font: Font get() = Minecraft.getInstance().font
 
     fun state(active: Boolean, hovered: Boolean, pressed: Boolean) = when {
@@ -154,7 +154,8 @@ object Kit {
     }
 
     // @keep A texture made or uploaded while a frame is being built breaks every frame after it, so paint at the end of a tick.
-    fun register() {
+    fun register(hud: DsModConfig.Hud) {
+        this.hud = hud
         Ticks.end {
             val t = theme
             if (t === slotTheme) return@end
@@ -657,9 +658,6 @@ object Kit {
         RenderPipelines.GUI_TEXTURED, atlas.id, x - 1, y - 1, (cell * SlotArt.SIZE).toFloat(), (row * SlotArt.SIZE).toFloat(), SlotArt.SIZE, SlotArt.SIZE,
         atlas.width, atlas.height, ARGB.white((opacity.coerceIn(0, 100) * 255 + 50) / 100),
     )
-
-    fun inventory(g: GuiGraphicsExtractor, x: Int, y: Int) =
-        g.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, x, y, 0f, 0f, INVENTORY_WIDTH, INVENTORY_HEIGHT, 256, 256)
 
     fun slotAt(g: GuiGraphicsExtractor, x: Int, y: Int, alpha: Int = OPAQUE) {
         if (alpha > 0) g.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, x, y, EMPTY_SLOT_U, EMPTY_SLOT_V, SLOT_SIZE, SLOT_SIZE, 256, 256, ARGB.white(alpha))

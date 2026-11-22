@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 
 import { expect, test, vi } from "vite-plus/test";
 
+import { contribStore } from "../routes/_store.ts";
 import { openapi, openapiFile } from "../scripts/openapi.ts";
 import { advance, gzipped, gzippedOverLimit, signedOutCaller, spec, testApp, testClock } from "../test/harness.ts";
 import { Effect, Schema } from "effect";
@@ -9,7 +10,6 @@ import { Effect, Schema } from "effect";
 import { Api } from "./api.ts";
 import type { Services } from "./app.ts";
 import { MAX_UNKNOWNS } from "./contrib/contrib.ts";
-import { memoryStore } from "./contrib/store.ts";
 
 const clock = await testClock("2026-11-15T12:00:00Z");
 
@@ -33,7 +33,7 @@ function backend(overrides: Partial<Services> = {}) {
   const create = async () => Created((await call("agent", "POST", "/v1/admin/requests", spec)).value).id;
   const submit = (who: string, id: string, capture = gzipped(1, 2, 3)) =>
     call(who, "POST", `/v1/contrib/requests/${id}/submissions?modVersion=1.0.0`, capture);
-  return { call, create, submit };
+  return { call, create, submit, run: app.run };
 }
 
 test("healthz says the backend is up", async () => {
@@ -228,15 +228,14 @@ test("a request that does not decode says where and what was expected, and only 
 });
 
 test("invented sightings stop being kept at the cap, and known ones still count", async () => {
-  const store = memoryStore();
-  const { call } = backend({ contrib: store });
+  const { call, run } = backend();
   const post = (sightings: unknown[]) =>
     call("ann", "POST", "/v1/contrib/unknowns", { modVersion: "1.0.0", sightings });
   for (let from = 0; from < MAX_UNKNOWNS + 200; from += 100) {
     expect((await post(invented(from))).status).toBe(204);
   }
   await post([{ kind: "chat", signature: "s0", sample: "x" }]);
-  const kept = await Effect.runPromise(store.unknowns);
+  const kept = await run(contribStore.unknowns);
   expect(kept).toHaveLength(MAX_UNKNOWNS);
   expect(kept.find((unknown) => unknown.signature === "s0")?.count).toBe(2);
 });
@@ -263,7 +262,7 @@ test("a store that fails answers 500 with nothing in it, and only that reaches t
   const submission = "/v1/contrib/requests/nothing/submissions?modVersion=1";
   expect((await call("ann", "POST", submission, gzippedOverLimit())).status).toBe(413);
   expect(logged, "a refusal is the client's mistake, not the backend's").not.toHaveBeenCalled();
-  const broken = { ...memoryStore(), requests: Effect.die(new Error("D1 is down")) };
+  const broken = { ...contribStore, requests: Effect.die(new Error("D1 is down")) };
   expect(await backend({ contrib: broken }).call("ann", "GET", "/v1/contrib/requests")).toEqual({
     status: 500,
     value: new Uint8Array(),
@@ -273,13 +272,12 @@ test("a store that fails answers 500 with nothing in it, and only that reaches t
 });
 
 test("a player who already has a run is refused before their file reaches the store", async () => {
-  const store = memoryStore();
   let stored = 0;
   const counting = {
-    ...store,
-    insertSubmission: (...args: Parameters<typeof store.insertSubmission>) => {
+    ...contribStore,
+    insertSubmission: (...args: Parameters<typeof contribStore.insertSubmission>) => {
       stored++;
-      return store.insertSubmission(...args);
+      return contribStore.insertSubmission(...args);
     },
   };
   const { create, submit } = backend({ contrib: counting });

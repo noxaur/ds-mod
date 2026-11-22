@@ -21,8 +21,8 @@ class SettingsKeyTest : FabricClientGameTest {
         context.worldBuilder().create().use {
             try {
                 context.waitTicks(5)
-                check(settings.settingsKey == -1) { "The Settings Key starts on ${settings.settingsKey}" }
-                settings.settingsKey = unclaimedKey
+                check(settings.settingsKey.value == -1) { "The Settings Key starts on ${settings.settingsKey.value}" }
+                settings.settingsKey.value = unclaimedKey
                 context.input.pressKey(unclaimedKey)
                 context.waitTicks(3)
                 check(open()) { "The Settings Key opened ${screen()}" }
@@ -45,12 +45,12 @@ class SettingsKeyTest : FabricClientGameTest {
                 context.waitTicks(3)
                 check(open()) { "/dsmod zealot opened ${screen()}" }
                 val found = context.computeOnClient<List<String>, Nothing> { (it.gui.screen() as SettingsScreen).shown() }
-                val query = context.computeOnClient<String, Nothing> { SettingsScreen.session().current.place.query }
+                val query = context.computeOnClient<String, Nothing> { SettingsScreen.session(DsModClient.settings).current.place.query }
                 check(query == "zealot" && "zealot-tracker" in found) { "/dsmod zealot searched \"$query\" and lists $found" }
                 context.takeScreenshot("settings-search")
-                context.runOnClient<Nothing> { SettingsScreen.session().current.search("") }
+                context.runOnClient<Nothing> { SettingsScreen.session(DsModClient.settings).current.search("") }
             } finally {
-                settings.settingsKey = -1
+                settings.settingsKey.value = -1
                 close()
             }
         }

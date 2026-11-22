@@ -1,4 +1,4 @@
-import { Context, Schema } from "effect";
+import { ByteSize, Context, Schema } from "effect";
 import {
   HttpApi,
   HttpApiEndpoint,
@@ -12,6 +12,7 @@ import {
 
 import { Offer, RecordingRequest, RequestReport, RequestSpec, Sighting, Unknown } from "./contrib/model.ts";
 import { ItemAppearances, ItemSighting } from "./items/model.ts";
+import type { Rate } from "./limiter.ts";
 import {
   Container,
   ContainerNotFound,
@@ -31,11 +32,30 @@ export class Caller extends Context.Service<
 
 export class Player extends Context.Service<Player, { readonly userId: string }>()("dsmod/Player") {}
 
+export class TooManyRequests extends Schema.TaggedError<TooManyRequests>()(
+  "TooManyRequests",
+  {},
+  { httpApiStatus: 429, description: "The player called more often than a player can. A minute later they may again." },
+) {}
+
 /** @keep Void checks the bearer session token before the API runs, so the scheme is only for the contract. */
 export class SignedIn extends HttpApiMiddleware.Service<SignedIn, { provides: Player }>()("dsmod/SignedIn", {
-  error: HttpApiError.Unauthorized,
+  error: [HttpApiError.Unauthorized, TooManyRequests],
   security: { session: HttpApiSecurity.bearer },
 }) {}
+
+/** @keep The largest body an endpoint reads. An endpoint that takes more says so, so no new one inherits a large limit. */
+export const MaxBody = Context.Reference<ByteSize.ByteSize>("dsmod/MaxBody", {
+  defaultValue: () => ByteSize.kibibytes(64),
+});
+
+/** @keep A capture of half an hour in a busy place is under this once gzipped. */
+export const MAX_CAPTURE = ByteSize.megabytes(50);
+
+export class BodyLimit extends HttpApiMiddleware.Service<BodyLimit>()("dsmod/BodyLimit") {}
+
+// @keep An endpoint that costs more than a plain call counts against this rate as well as the player's own.
+export const Limited = Context.Reference<Rate | null>("dsmod/Limited", { defaultValue: () => null });
 
 export class Agent extends HttpApiMiddleware.Service<Agent>()("dsmod/Agent", {
   error: HttpApiError.Unauthorized,
@@ -73,10 +93,12 @@ export const Api = HttpApi.make("dsmod")
           payload: Capture,
           success: Schema.Struct(id),
           error: [HttpApiError.NotFound, HttpApiError.Conflict, HttpApiError.BadRequest],
-        }).annotate(
-          OpenApi.Description,
-          "Keeps the player's run of a request: the capture file, gzipped, at most 50 MB (413 above it, as for any body). A player has one run per request. A filled request still takes a run from a player who was recording when it filled, and a closed one, or one with twice the wanted number of runs, takes none (409).",
-        ),
+        })
+          .annotate(MaxBody, MAX_CAPTURE)
+          .annotate(
+            OpenApi.Description,
+            "Keeps the player's run of a request: the capture file, gzipped, at most 50 MB (413 above it, as for any body). A player has one run per request. A filled request still takes a run from a player who was recording when it filled, and a closed one, or one with twice the wanted number of runs, takes none (409).",
+          ),
       )
       .add(
         HttpApiEndpoint.post("items", "/v1/contrib/items", {
@@ -84,7 +106,11 @@ export const Api = HttpApi.make("dsmod")
             modVersion: ModVersion,
             items: Schema.Array(ItemSighting).check(Schema.isMaxLength(50)),
           }),
-        }).annotate(OpenApi.Summary, "Keeps what the player saw of items, to draw them as the game does."),
+        })
+          .annotate(MaxBody, ByteSize.mebibytes(1))
+          .annotate(Limited, "items")
+          .annotate(OpenApi.Summary, "Keeps what the player saw of items, to draw them as the game does.")
+          .annotate(OpenApi.Description, "The body is at most 1 MiB."),
       )
       .add(
         HttpApiEndpoint.post("report", "/v1/contrib/unknowns", {
@@ -92,10 +118,16 @@ export const Api = HttpApi.make("dsmod")
             modVersion: ModVersion,
             sightings: Schema.Array(Sighting).check(Schema.isMaxLength(100)),
           }),
-        }).annotate(OpenApi.Summary, "Counts what the mod saw and had no handling for."),
+        })
+          .annotate(MaxBody, ByteSize.mebibytes(2))
+          .annotate(OpenApi.Summary, "Counts what the mod saw and had no handling for.")
+          .annotate(OpenApi.Description, "The body is at most 2 MiB."),
       )
       .middleware(SignedIn)
-      .annotate(OpenApi.Description, "What the mod calls, as the player its session names."),
+      .annotate(
+        OpenApi.Description,
+        "What the mod calls, as the player its session names. A player who calls too often is answered 429.",
+      ),
   )
   .add(
     HttpApiGroup.make("profiles")
@@ -105,10 +137,12 @@ export const Api = HttpApi.make("dsmod")
           query: { profile: Schema.optionalKey(ProfileId) },
           success: Profile,
           error: [PlayerNotFound, ProfileNotFound, UpstreamUnavailable],
-        }).annotate(
-          OpenApi.Description,
-          "A player's profile as the overview draws it: the one they play now, or the one `profile` names. The backend keeps a copy for a short while, so asking again soon does not reach dragsim.co.",
-        ),
+        })
+          .annotate(Limited, "profile")
+          .annotate(
+            OpenApi.Description,
+            "A player's profile as the overview draws it: the one they play now, or the one `profile` names. The backend keeps a copy for a short while, so asking again soon does not reach dragsim.co.",
+          ),
       )
       .add(
         HttpApiEndpoint.get("container", "/v1/snapshots/:snapshot/containers/:container", {
@@ -176,6 +210,7 @@ export const Api = HttpApi.make("dsmod")
       .middleware(Agent)
       .annotate(OpenApi.Description, "What an agent calls through dsctl, with the admin token."),
   )
+  .middleware(BodyLimit)
   // @keep The mod parses a brief strictly, so a key it does not know, such as `secs`, is refused here, not dropped.
   .middleware(HttpApiMiddleware.ProblemDetails)
   .annotate(HttpApi.PayloadParseOptions, { onExcessProperty: "error" })

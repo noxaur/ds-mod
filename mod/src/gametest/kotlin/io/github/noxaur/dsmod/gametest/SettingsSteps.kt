@@ -48,7 +48,7 @@ internal object SettingsSteps {
     }
 
     fun open(context: ClientGameTestContext, tabs: SettingsTabs) {
-        context.setScreen { SettingsScreen(TitleScreen(), tabs) }
+        context.setScreen { DsModClient.settingsScreen(TitleScreen(), tabs) }
         context.waitTicks(2)
     }
 
@@ -122,7 +122,7 @@ internal open class SettingsDriver(val context: ClientGameTestContext) {
         click(row.extraX + 7, row.controlY + 6)
     }
 
-    fun unfold(id: String, opener: String, entry: Int = -1, press: (SettingRows.Spot) -> Pair<Int, Int>) {
+    fun unfold(id: String, opener: String, entry: Int = -1, press: (Spot) -> Pair<Int, Int>) {
         if (shows(id, entry)) return
         val (x, y) = press(spot(opener))
         move(x, y)
@@ -130,10 +130,10 @@ internal open class SettingsDriver(val context: ClientGameTestContext) {
         context.waitTicks(2)
     }
 
-    fun spot(id: String, entry: Int = -1): SettingRows.Spot {
+    fun spot(id: String, entry: Int = -1): Spot {
         context.runOnClient<Nothing> { (it.gui.screen() as SettingsScreen).reveal(id) }
         context.waitTicks(2)
-        return context.computeOnClient<SettingRows.Spot?, Nothing> { (it.gui.screen() as SettingsScreen).spot(id, entry) }
+        return context.computeOnClient<Spot?, Nothing> { (it.gui.screen() as SettingsScreen).spot(id, entry) }
             ?: error("No row $id${if (entry >= 0) ", entry $entry," else ""} on the screen")
     }
 }

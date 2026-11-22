@@ -3,77 +3,117 @@ package io.github.noxaur.dsmod.debug
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class GameTestPickTest {
-    private val edge = "src/main/kotlin/io/github/noxaur/dsmod/edge"
-    private val gametest = "src/gametest/kotlin/io/github/noxaur/dsmod/gametest"
-    private val sources = mapOf(
-        "$edge/Chat.kt" to "object Chat { fun send() = Lines.of() }",
-        "$edge/Lines.kt" to "object Lines { fun of() = 1 }",
-        "$edge/Lonely.kt" to "object Lonely",
-        "$edge/mixin/ChatMixin.java" to "class ChatMixin { void at() { Chat.INSTANCE.send(); } }",
-        "$gametest/ChatTest.kt" to "class ChatTest { fun run() = Chat.send() }",
-        "$gametest/ChatAgainTest.kt" to "class ChatAgainTest { // as ChatTest, twice }",
-        "$edge/mixin/RunMixin.java" to "class RunMixin { String test = \"ChatTest\"; }",
-        "$gametest/HelperTest.kt" to "class HelperTest { fun run() = Spy.watch() }",
-        "$gametest/Spy.kt" to "object Spy { fun watch() = 1 }",
-        "src/main/kotlin/io/github/noxaur/dsmod/core/Game.kt" to "class Game",
+    private fun path(name: String) = when {
+        name.startsWith("gametest/") -> "src/gametest/kotlin/io/github/noxaur/dsmod/$name.kt"
+        name.endsWith("Mixin") -> "src/main/java/io/github/noxaur/dsmod/$name.java"
+        else -> "src/main/kotlin/io/github/noxaur/dsmod/$name.kt"
+    }
+
+    private fun test(name: String) = "io.github.noxaur.dsmod.$name".replace('/', '.')
+
+    private fun sources(vararg named: Pair<String, List<String>>) = Sources(
+        named.toMap().mapValues { it.value.toSet() },
+        named.associate { (name, _) -> name to path(name.substringBefore('$')) },
+        named.map { it.first }.filter { it.startsWith("gametest/") && it.endsWith("Test") }.associateWith(::test),
+        setOf(path("debug/Tool")),
+        mapOf("edge/Lines" to setOf("/lines/chat.json"), "gametest/CounterTest" to setOf("counted.json")),
     )
-    private val tests = setOf("ChatTest", "ChatAgainTest", "HelperTest")
 
-    private fun pick(vararg changed: String) = pickGameTests(sources, tests, changed.toList())
+    private val sources = sources(
+        "edge/Chat" to listOf("edge/Lines"),
+        "edge/Lines" to emptyList(),
+        "edge/Lonely" to listOf("edge/Lines"),
+        "edge/Feature" to listOf("core/Counter"),
+        "edge/mixin/ChatMixin" to listOf("edge/Chat"),
+        "edge/mixin/FeatureMixin" to listOf("edge/Feature"),
+        "core/Counter" to emptyList(),
+        "gametest/ChatTest" to listOf("edge/Chat"),
+        "gametest/HelperTest" to listOf("gametest/Spy"),
+        "gametest/CounterTest" to listOf("core/Counter"),
+        "gametest/Spy" to listOf("edge/Lines"),
+        "debug/Tool" to emptyList(),
+    )
+
+    private fun pick(vararg changed: String) = pickGameTests(sources, changed.toList())
 
     @Test
-    fun `a file reaches the tests that name it, and the tests that name what names it`() {
-        assertEquals(Picked(setOf("ChatTest"), emptyList()), pick("$edge/Chat.kt"))
-        assertEquals(Picked(setOf("ChatTest"), emptyList()), pick("$edge/Lines.kt"))
-        assertEquals(Picked(setOf("HelperTest"), emptyList()), pick("$gametest/Spy.kt"))
-        assertEquals(Picked(setOf("ChatTest"), emptyList()), pick("$gametest/ChatTest.kt"))
+    fun `a file reaches the tests that name its classes, and the tests that name what names them, nearest first`() {
+        assertEquals(Picked(setOf(test("gametest/ChatTest")), emptyList()), pick(path("edge/Chat")))
+        assertEquals(Picked(setOf(test("gametest/HelperTest")), emptyList()), pick(path("gametest/Spy")))
+        assertEquals(Picked(setOf(test("gametest/ChatTest"), test("gametest/HelperTest")), emptyList()), pick(path("edge/Lines")))
+        assertEquals(Picked(setOf(test("gametest/ChatTest")), emptyList()), pick(path("gametest/ChatTest")))
     }
 
     @Test
-    fun `a mixin nothing names reaches what it names`() {
-        assertEquals(Picked(setOf("ChatTest"), emptyList()), pick("$edge/mixin/ChatMixin.java"))
-        assertEquals(Picked(setOf("ChatTest"), emptyList()), pick("$edge/mixin/RunMixin.java"))
+    fun `a file no test reaches reaches the tests of the most particular class it names`() {
+        assertEquals(Picked(setOf(test("gametest/ChatTest")), emptyList()), pick(path("edge/mixin/ChatMixin")))
+        assertEquals(Picked(setOf(test("gametest/CounterTest")), emptyList()), pick(path("edge/Feature")))
+        assertEquals(Picked(setOf(test("gametest/CounterTest")), emptyList()), pick(path("edge/mixin/FeatureMixin")))
     }
 
     @Test
-    fun `the build and a deleted file run the smoke test, core runs none, and a file no test reaches is unreached`() {
+    fun `a resource reaches the tests of the classes that load it by name, and one no class names runs the smoke test`() {
+        assertEquals(Picked(setOf(test("gametest/ChatTest"), test("gametest/HelperTest")), emptyList()), pick("src/main/resources/lines/chat.json"))
+        assertEquals(Picked(setOf(test("gametest/CounterTest")), emptyList()), pick("src/test/resources/profiles/counted.json"))
+        assertEquals(Picked(setOf(SMOKE_TEST), emptyList()), pick("src/main/resources/dsmod.mixins.json"))
+    }
+
+    @Test
+    fun `the build and a deleted file run the smoke test, core, unit tests and tools run none, and a file no test reaches is unreached`() {
         assertEquals(Picked(setOf(SMOKE_TEST), emptyList()), pick("build.gradle.kts"))
         assertEquals(Picked(setOf(SMOKE_TEST), emptyList()), pick("src/main/resources/fabric.mod.json"))
-        assertEquals(Picked(setOf(SMOKE_TEST), emptyList()), pick("$edge/mixin/GoneMixin.java"))
-        assertEquals(Picked(setOf(SMOKE_TEST), emptyList()), pick("src/gametest/resources/dsmod_gametest.mixins.json"))
-        assertEquals(Picked(emptySet(), emptyList()), pick("src/main/kotlin/io/github/noxaur/dsmod/core/Game.kt"))
-        assertEquals(Picked(emptySet(), listOf("$edge/Lonely.kt")), pick("$edge/Lonely.kt"))
+        assertEquals(Picked(setOf(SMOKE_TEST), emptyList()), pick("src/gametest/fabric.mod.json"))
+        assertEquals(Picked(setOf(SMOKE_TEST), emptyList()), pick(path("edge/mixin/GoneMixin")))
+        assertEquals(Picked(emptySet(), emptyList()), pick(path("core/Counter")))
+        assertEquals(Picked(emptySet(), emptyList()), pick("src/test/kotlin/io/github/noxaur/dsmod/ChatTest.kt"))
+        assertEquals(Picked(emptySet(), emptyList()), pick(path("debug/Tool")))
+        val lonely = sources(*sources.names.map { it.key to it.value.toList() }.toTypedArray(), "edge/Alone" to emptyList())
+        assertEquals(Picked(emptySet(), listOf(path("edge/Alone"))), pickGameTests(lonely, listOf(path("edge/Alone"))))
     }
 
     @Test
-    fun `a file most tests name runs the smoke test`() {
-        val many = (1..13).associate { "$gametest/T${it}Test.kt" to "class T${it}Test { val x = Hub }" }
-        val hubbed = sources + many + ("$edge/Hub.kt" to "object Hub")
-        assertEquals(setOf(SMOKE_TEST), pickGameTests(hubbed, tests + many.keys.map { it.substringAfterLast('/').removeSuffix(".kt") }, listOf("$edge/Hub.kt")).tests)
+    fun `a class most tests name is a hub, which a change runs the smoke test for and a walk stops at`() {
+        val many = (1..13).map { "gametest/T${it}Test" to listOf("edge/Hub") }
+        val hubbed = sources(*many.toTypedArray(), "edge/Hub" to listOf("edge/Under"), "edge/Under" to emptyList(), "gametest/UnderTest" to listOf("edge/Under"))
+        assertEquals(setOf(SMOKE_TEST), pickGameTests(hubbed, listOf(path("edge/Hub"))).tests)
+        assertEquals(setOf(test("gametest/UnderTest")), pickGameTests(hubbed, listOf(path("edge/Under"))).tests)
     }
 
     @Test
-    fun `a change that reaches more tests than a pick runs runs the smoke test`() {
-        val wide = (1..MOST_PICKED + 1).flatMap { listOf("$edge/F$it.kt" to "object F$it", "$gametest/F${it}Test.kt" to "class F${it}Test { val x = F$it }") }.toMap()
-        val names = wide.keys.filter { it.endsWith("Test.kt") }.map { it.substringAfterLast('/').removeSuffix(".kt") }.toSet()
-        val edges = wide.keys.filterNot { it.endsWith("Test.kt") }
-        assertEquals(setOf(SMOKE_TEST), pickGameTests(sources + wide, tests + names, edges).tests)
-        assertEquals(MOST_PICKED, pickGameTests(sources + wide, tests + names, edges.take(MOST_PICKED)).tests.size)
+    fun `a change reaching more tests than a pick runs takes the nearest that fit, or the smoke test`() {
+        val wide = (1..MOST_PICKED + 1).map { "gametest/F${it}Test" to listOf("edge/Wide") } +
+            ("edge/Wide" to emptyList()) + ("edge/Narrow" to emptyList()) + ("gametest/NarrowTest" to listOf("edge/Narrow")) +
+            ("gametest/Far" to listOf("edge/Narrow")) + (1..MOST_PICKED).map { "gametest/G${it}Test" to listOf("gametest/Far") }
+        val spread = sources(*wide.toTypedArray())
+        assertEquals(setOf(SMOKE_TEST), pickGameTests(spread, listOf(path("edge/Wide"))).tests)
+        assertEquals(setOf(test("gametest/NarrowTest")), pickGameTests(spread, listOf(path("edge/Narrow"))).tests)
+        val each = (1..MOST_PICKED + 1).flatMap { listOf("edge/E$it" to emptyList(), "gametest/E${it}Test" to listOf("edge/E$it")) }
+        val apart = sources(*each.toTypedArray())
+        assertEquals(setOf(SMOKE_TEST), pickGameTests(apart, (1..MOST_PICKED + 1).map { path("edge/E$it") }).tests)
+        assertEquals(MOST_PICKED, pickGameTests(apart, (1..MOST_PICKED).map { path("edge/E$it") }).tests.size)
+    }
+
+    private val real by lazy { readSources(File(".")) }
+
+    @Test
+    fun `the game tests are the concrete classes that run as one`() {
+        assertTrue(test("gametest/ProfileTourTest") in real.tests.values)
+        assertTrue(test("gametest/ProfileTour") !in real.tests.values)
+        assertTrue(SMOKE_TEST in real.tests.values)
     }
 
     @Test
     fun `every file of edge and debug reaches a game test`() {
-        val mod = File(".")
-        val sources = gameTestSources(mod)
-        val unreached = pickGameTests(sources, gameTestNames(mod), sources.keys).unreached
+        val unreached = pickGameTests(real, real.files.values.toSet()).unreached
         assertEquals(
             emptyList(),
             unreached,
             unreached.joinToString("\n", postfix = "\n") {
-                "$it: reaches no game test, so a commit that changes it runs none. Write a game test that covers it, or " +
-                    "name its class in the KDoc of the test that does."
+                "$it: reaches no game test, so a commit that changes it runs none. Write a game test whose code names one of its classes, " +
+                    "or one of the classes it names."
             },
         )
     }

@@ -19,7 +19,7 @@ class HudDockTest : FabricClientGameTest {
         context.worldBuilder().create().use { world ->
             world.server.runCommand("item replace entity @a armor.chest with minecraft:iron_chestplate")
             world.server.runCommand("item replace entity @a armor.feet with minecraft:iron_boots")
-            DsModClient.settings.hud.positions.remove(ID)
+            DsModClient.settings.hud.positions.value -= ID
             equipmentDisplay.placement.value = HudDock.LEFT_OF_HOTBAR
             try {
                 context.waitFor { Hud.find(ID)?.dock == HudDock.LEFT_OF_HOTBAR }
@@ -43,8 +43,8 @@ class HudDockTest : FabricClientGameTest {
                 chat.drag(ID, right.first - 80, right.second - 80) { context.input.pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitTick() }
                 check(equipmentDisplay.placement.value == HudDock.RIGHT_OF_HOTBAR) { "Escape left the placement at ${equipmentDisplay.placement.value}" }
 
-                val hudScale = DsModClient.settings.hud.scale
-                DsModClient.settings.hud.scale = 3f
+                val hudScale = DsModClient.settings.hud.scale.value
+                DsModClient.settings.hud.scale.value = 3f
                 try {
                     context.waitTick()
                     val big = chat.block(ID)
@@ -54,7 +54,7 @@ class HudDockTest : FabricClientGameTest {
                     val after = chat.block(ID)
                     check(equipmentDisplay.placement.value == HudDock.RIGHT_OF_HOTBAR && after.scale == big.scale) { "A notch down at HUD scale 3 left ${equipmentDisplay.placement.value} at ${after.scale}, from ${big.scale}" }
                 } finally {
-                    DsModClient.settings.hud.scale = hudScale
+                    DsModClient.settings.hud.scale.value = hudScale
                 }
                 context.waitTick()
 
@@ -70,7 +70,7 @@ class HudDockTest : FabricClientGameTest {
                 chat.move(again.x + 5.0, again.y + 5.0)
                 context.input.pressMouse(1)
                 context.waitTick()
-                check(equipmentDisplay.placement.value == HudDock.FREE && ID !in DsModClient.settings.hud.positions) { "The right press left ${equipmentDisplay.placement.value}" }
+                check(equipmentDisplay.placement.value == HudDock.FREE && ID !in DsModClient.settings.hud.positions.value) { "The right press left ${equipmentDisplay.placement.value}" }
                 context.setScreen { null }
 
                 context.runOnClient<Nothing> { DsModClient.openHudEditor() }
@@ -81,7 +81,7 @@ class HudDockTest : FabricClientGameTest {
                 context.setScreen { null }
             } finally {
                 equipmentDisplay.placement.value = HudDock.FREE
-                DsModClient.settings.hud.positions.remove(ID)
+                DsModClient.settings.hud.positions.value -= ID
             }
         }
     }

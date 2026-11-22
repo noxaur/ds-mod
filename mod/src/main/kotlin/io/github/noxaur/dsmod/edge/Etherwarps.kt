@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.general.EtherwarpOutline
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.hand.Etherwarp
@@ -14,7 +15,13 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.phys.AABB
 
 object Etherwarps {
-    private val settings: EtherwarpOutline get() = DsModClient.feature(EtherwarpOutline::class.java)
+    private lateinit var game: Game
+    private lateinit var settings: EtherwarpOutline
+
+    fun bind(game: Game, settings: EtherwarpOutline) {
+        this.game = game
+        this.settings = settings
+    }
 
     private val at = BlockPos.MutableBlockPos()
 
@@ -50,7 +57,7 @@ object Etherwarps {
         val client = Minecraft.getInstance()
         val player = client.player
         val s = settings
-        if (!DsModClient.runs<EtherwarpOutline>() || player == null || client.gui.screen() != null || client.gui.hud.isHidden ||
+        if (!s.feature.runs || player == null || client.gui.screen() != null || client.gui.hud.isHidden ||
             !player.isShiftKeyDown && !s.withoutSneak.value
         ) {
             return clear()
@@ -61,7 +68,7 @@ object Etherwarps {
             range = Etherwarp.range(stack.get(DataComponents.LORE)?.lines()?.map { it.toText().plain }.orEmpty())
         }
         if (range == 0) return clear()
-        DsModClient.game.metrics.time("etherwarp.frame", Metrics.FRAME) {
+        game.metrics.time("etherwarp.frame", Metrics.FRAME) {
             /* @keep The server warps from where it last saw the player, which is where the last tick left them and not where
              * this frame draws them, and from a sneaking eye, which is lower than a standing one. */
             val x = player.x

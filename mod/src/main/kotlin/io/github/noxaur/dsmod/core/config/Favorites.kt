@@ -5,8 +5,6 @@ import io.github.noxaur.dsmod.core.ui.SettingHit
 object Favorites {
     fun toggle(starred: List<String>, id: String): List<String> = if (id in starred) starred - id else starred + id
 
-    fun listed(search: String) = search.isBlank()
-
     fun <T> pick(all: List<T>, ids: Collection<String>, id: (T) -> String): List<T> = ids.toSet().let { set -> all.filter { id(it) in set } }
 
     fun hits(sections: List<SettingSection>, shown: Collection<String>): List<SettingHit> {

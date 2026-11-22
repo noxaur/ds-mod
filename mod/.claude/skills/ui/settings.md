@@ -4,11 +4,11 @@ ds-mod's settings screen draws every setting from one tree, `SettingsTree` in `c
 
 ## Add a setting
 
-A feature's setting is one line in the feature's class, as `val inFight = switch("beamInFight", "During the Fight", "Keep the beam while the Protector is up.", default = false)`, with a kind from the table below. Its first argument is its key in the player's config file, under the feature's `Store`, so never rename one that shipped: a key that has to change names the old one as `formerly`. Its default is written there and nowhere else. The feature reads it as `inFight.value`, and the edge as `DsModClient.feature<ProtectorSpawnBeam>().inFight.value`. Write no drawing or input code. A new class of values needs `@Serializable`.
+A feature's setting is one line in the feature's class, as `val inFight = switch("beamInFight", "During the Fight", "Keep the beam while the Protector is up.", default = false)`, with a kind from the table below. Its first argument is its key in the player's config file, under the feature's `Store`, so never rename one that shipped: a key that has to change names the old one as `formerly`. Its default is written there and nowhere else. The feature reads it as `inFight.value`, and the edge as `beam.inFight.value`, from the feature `DsModClient` hands it. Write no drawing or input code. A new class of values needs `@Serializable`.
 
 A setting of no feature, which is never an on/off one because each of those is a feature, is a field in its class of `DsModConfig` with a default, and one line in `SettingsTree` in its section and group. The field's name is its key, and its default is read from a fresh `DsModConfig()`, so write it nowhere else.
 
-A saved value that no row should edit is `stored("inventoryLook", SlotStyle())` in its feature, for a row that reads and writes several, or goes on `SettingsTree.STORED` with the reason when it is a field. `STORED` is empty, because every field the player sets has a row: a list of things the player made is an Items row, and a canvas is a Panel row. A row that edits several slots at once names the rest with `Bind.spanning`. Rows that only matter in one state, such as the hotbar's own look while it does not match the inventory, go in `shownWhile({ .. }) { .. }`: the screen, search and a closed parent's summary leave them out until the condition holds. A row that only needs another switch on dims with `dependsOn` instead. A key that an older version saved in a shape the feature no longer has is read once with `former<T>(key)` while the feature is built, and the next save drops it, as `ItemRarity` carries its old presets over.
+A saved value that no row should edit is `stored("inventoryLook", SlotStyle())` in its feature, for a row that reads and writes several, or goes on `stored` in `SettingsTreeTest` with the reason when it is a field. `stored` is empty, because every field the player sets has a row: a list of things the player made is an Items row, and a canvas is a Panel row. A row that edits several slots at once names the rest in `spanned` in `SettingsTreeTest`. Rows that only matter in one state, such as the hotbar's own look while it does not match the inventory, go in `shownWhile({ .. }) { .. }`: the screen, search and a closed parent's summary leave them out until the condition holds. A row that only needs another switch on dims with `dependsOn` instead. A key that an older version saved in a shape the feature no longer has is read once with `former<T>(key)` while the feature is built, and the next save drops it, as `ItemRarity` carries its old presets over.
 
 | Kind | Declare it with | For |
 | --- | --- | --- |
@@ -35,7 +35,7 @@ A row bound to part of a value, such as one part of a rarity style, takes a `Bin
 ## Wording
 
 - A name is Title Case, three words or fewer, and says what the setting is: "Slot Lock", "F5 Views".
-- A description is one sentence that starts with a verb and ends with a period, in at most `Setting.DESCRIPTION_MAX` characters. A row shows two lines of it and the rest in a tooltip, so put what matters first.
+- A description is one sentence that starts with a verb and ends with a period, in at most the `DESCRIPTION_MAX` characters of `RulesTest`. A row shows two lines of it and the rest in a tooltip, so put what matters first.
 - A choice's values read in Title Case, from the enum's `toString`.
 
 ## Add a look

@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.edge.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.noxaur.dsmod.edge.PlayerModels;
+import io.github.noxaur.dsmod.edge.input.InputApproved;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -13,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /** @keep The spin's facing is handed to the game's own turn after a screen such as the inventory has set a facing of its own.
  * The size and tilt come after the game's own turns and before its scale and the model's offset. */
+@InputApproved(hash = "b04e55336509")
 @Mixin(AvatarRenderer.class)
 abstract class PlayerShapeMixin {
     @ModifyArg(

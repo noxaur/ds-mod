@@ -44,7 +44,6 @@ private const val RECORDING_WARM_UP_TICKS = 100
 private const val MENU_SLOTS = 54
 private const val JAR = "jar"
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.capture.BlockScan], [io.github.noxaur.dsmod.edge.mixin.CaptureInputMixin], [io.github.noxaur.dsmod.edge.mixin.HudHotbarMixin]. */
 class PerfTest : FabricClientGameTest {
     @Serializable
     private class Row(val label: String, val cap: Double)

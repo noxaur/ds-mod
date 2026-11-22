@@ -9,7 +9,33 @@
       }
     ],
     "workers_dev": false,
-    "preview_urls": false
+    "preview_urls": false,
+    "ratelimits": [
+      {
+        "name": "RATE_PLAYER",
+        "namespace_id": "2101",
+        "simple": {
+          "limit": 120,
+          "period": 60
+        }
+      },
+      {
+        "name": "RATE_PROFILE",
+        "namespace_id": "2102",
+        "simple": {
+          "limit": 30,
+          "period": 60
+        }
+      },
+      {
+        "name": "RATE_ITEMS",
+        "namespace_id": "2103",
+        "simple": {
+          "limit": 5,
+          "period": 60
+        }
+      }
+    ]
   },
   "resolved": {
     "name": "dsmod-backend",
@@ -19,6 +45,8 @@
         "custom_domain": true
       }
     ],
+    "workers_dev": false,
+    "preview_urls": false,
     "account_id": "865dded96630ca6a533584a80efad356",
     "compatibility_date": "2026-02-24",
     "d1_databases": [
@@ -35,8 +63,32 @@
         "bucket_name": "dsmod-backend-storage"
       }
     ],
-    "workers_dev": false,
-    "preview_urls": false
+    "ratelimits": [
+      {
+        "name": "RATE_PLAYER",
+        "namespace_id": "2101",
+        "simple": {
+          "limit": 120,
+          "period": 60
+        }
+      },
+      {
+        "name": "RATE_PROFILE",
+        "namespace_id": "2102",
+        "simple": {
+          "limit": 30,
+          "period": 60
+        }
+      },
+      {
+        "name": "RATE_ITEMS",
+        "namespace_id": "2103",
+        "simple": {
+          "limit": 5,
+          "period": 60
+        }
+      }
+    ]
   },
-  "text": "{\n  \"name\": \"dsmod-backend\",\n  \"routes\": [\n    {\n      \"pattern\": \"api.ds-mod.perwko.com\",\n      \"custom_domain\": true\n    }\n  ],\n  \"account_id\": \"865dded96630ca6a533584a80efad356\",\n  \"compatibility_date\": \"2026-02-24\",\n  \"d1_databases\": [\n    {\n      \"binding\": \"DB\",\n      \"database_name\": \"dsmod-backend-db\",\n      \"database_id\": \"a6c78345-b338-4a9d-bc5f-d3c4e767c093\",\n      \"migrations_dir\": \"./db/migrations\"\n    }\n  ],\n  \"r2_buckets\": [\n    {\n      \"binding\": \"STORAGE\",\n      \"bucket_name\": \"dsmod-backend-storage\"\n    }\n  ],\n  \"workers_dev\": false,\n  \"preview_urls\": false\n}\n"
+  "text": "{\n  \"name\": \"dsmod-backend\",\n  \"routes\": [\n    {\n      \"pattern\": \"api.ds-mod.perwko.com\",\n      \"custom_domain\": true\n    }\n  ],\n  \"workers_dev\": false,\n  \"preview_urls\": false,\n  \"account_id\": \"865dded96630ca6a533584a80efad356\",\n  \"compatibility_date\": \"2026-02-24\",\n  \"d1_databases\": [\n    {\n      \"binding\": \"DB\",\n      \"database_name\": \"dsmod-backend-db\",\n      \"database_id\": \"a6c78345-b338-4a9d-bc5f-d3c4e767c093\",\n      \"migrations_dir\": \"./db/migrations\"\n    }\n  ],\n  \"r2_buckets\": [\n    {\n      \"binding\": \"STORAGE\",\n      \"bucket_name\": \"dsmod-backend-storage\"\n    }\n  ],\n  \"ratelimits\": [\n    {\n      \"name\": \"RATE_PLAYER\",\n      \"namespace_id\": \"2101\",\n      \"simple\": {\n        \"limit\": 120,\n        \"period\": 60\n      }\n    },\n    {\n      \"name\": \"RATE_PROFILE\",\n      \"namespace_id\": \"2102\",\n      \"simple\": {\n        \"limit\": 30,\n        \"period\": 60\n      }\n    },\n    {\n      \"name\": \"RATE_ITEMS\",\n      \"namespace_id\": \"2103\",\n      \"simple\": {\n        \"limit\": 5,\n        \"period\": 60\n      }\n    }\n  ]\n}\n"
 }

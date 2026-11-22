@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.hud.HudBackground
 import io.github.noxaur.dsmod.core.hud.HudScale
@@ -21,6 +22,8 @@ private const val HUD_SCALE = "HUD Scale"
 private const val VALUE_WIDTH = 30
 
 class HudEditorScreen(
+    private val game: Game,
+    private val hudBackground: HudBackground,
     private val readouts: Readouts,
     private val settings: DsModConfig.Hud,
     parent: Screen?,
@@ -65,10 +68,10 @@ class HudEditorScreen(
         reset = addRenderableWidget(KitButton(scale.right + Kit.GAP, scaleY, "Reset", { selected?.let(readouts::reset); refresh() }))
         hudScale = addRenderableWidget(KitStepper(controlX, hudScaleY, HUD_SCALE, VALUE_WIDTH) { by -> readouts.resizeAll(by); refresh() })
         background = addRenderableWidget(
-            KitCheckbox(hudScale.right + Kit.GAP, hudScaleY + (Kit.BUTTON_HEIGHT - Kit.CHECKBOX_SIZE) / 2, "Background", DsModClient.runs<HudBackground>()) {
-                DsModClient.feature<HudBackground>().feature.enabled = it
+            KitCheckbox(hudScale.right + Kit.GAP, hudScaleY + (Kit.BUTTON_HEIGHT - Kit.CHECKBOX_SIZE) / 2, "Background", hudBackground.feature.runs) {
+                hudBackground.feature.enabled = it
             },
-        ).apply { active = DsModClient.game.active }
+        ).apply { active = game.active }
         refresh()
     }
 
@@ -152,7 +155,7 @@ class HudEditorScreen(
         scale.active = id != null
         scale.value = HudScale.label(id?.let(readouts::scale) ?: 1f)
         reset.active = id != null && readouts.isPlaced(id)
-        hudScale.value = HudScale.label(settings.scale)
+        hudScale.value = HudScale.label(settings.scale.value)
     }
 
     private fun inPanel(x: Double, y: Double) = x >= panelX && x < panelX + panelWidth && y >= panelY && y < panelY + panelHeight

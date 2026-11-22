@@ -11,35 +11,6 @@ dsmod:
     examples:
       - 'if (event.lines.any { "Dungeon Hub" in it.plain }) return'
 
-  ForbiddenReference/chat-by-line:
-    active: true
-    includes: ['**/src/main/kotlin/**/core/feature/**']
-    excludes: ['**/core/feature/Feature.kt']
-    symbols: ['io.github.noxaur.dsmod.core.game.SystemMessage']
-    reason: 'Read a chat line with `line(head) { .. }`, or `line(head, pattern) { (a, b), now -> .. }` to parse it. `head` is the line''s start, a String or a Regex for a start that varies, because a player can type anything after their name. A line whose head matches and whose pattern does not counts as unparsed by itself.'
-    examples:
-      - |
-        import io.github.noxaur.dsmod.core.feature.Feature
-        import io.github.noxaur.dsmod.core.game.SystemMessage
-        fun example(feature: Feature) = feature.on<SystemMessage> { message, _ -> println(message.text.plain) }
-      - |
-        import io.github.noxaur.dsmod.core.game.SystemMessage
-        val type = SystemMessage::class
-
-  ForbiddenReference/kills-by-own-kills:
-    active: true
-    includes: ['**/src/main/kotlin/**/core/feature/**']
-    excludes: ['**/core/feature/general/OwnKills.kt']
-    symbols: ['io.github.noxaur.dsmod.core.game.CombatXp']
-    reason: 'Count the player''s own kills with `OwnKills(feature, { death -> .. }) { count, xp, now -> .. }`, which matches each death to the Combat XP action bar behind it and reads the XP.'
-    examples:
-      - |
-        import io.github.noxaur.dsmod.core.game.CombatXp
-        fun example(plain: String) = CombatXp.MARK in plain
-      - |
-        import io.github.noxaur.dsmod.core.game.CombatXp
-        fun example(plain: String) = plain.let(CombatXp::gained)
-
   ContainerByReader/container-by-reader:
     active: true
     includes: ['**/src/main/kotlin/**/core/feature/**']
@@ -56,30 +27,12 @@ dsmod:
       - 'feature.on<SlotChanged> { _, _ -> changed = read() }'
       - 'feature.on<ActionBar> { _, _ -> stale = true }'
 
-  ForbiddenReference/pet-by-current-pet:
-    active: true
-    includes: ['**/src/main/kotlin/**/core/feature/**']
-    excludes: ['**/core/feature/general/CurrentPet.kt']
-    symbols:
-      - 'io.github.noxaur.dsmod.core.game.Pet.Companion.STANDS'
-      - 'io.github.noxaur.dsmod.core.game.Pet.Companion.worn'
-      - 'io.github.noxaur.dsmod.core.game.PetCard.Companion.of'
-    reason: &pet 'Follow the pet the player has out with `CurrentPet(feature, { before -> .. })`, which reads the sidebar, the Pets menu''s card and the heads of pets nearby, and forgets the pet when the player leaves.'
-    examples:
-      - |
-        import io.github.noxaur.dsmod.core.game.Item
-        import io.github.noxaur.dsmod.core.game.PetCard
-        fun example(item: Item?) = item?.let(PetCard::of)
-      - |
-        import io.github.noxaur.dsmod.core.game.Pet
-        val stands = Pet.STANDS
-
   ForbiddenText/pet-by-current-pet:
     active: true
     includes: ['**/src/main/kotlin/**/core/feature/**']
     excludes: ['**/core/feature/general/CurrentPet.kt']
     pattern: '"Pet:'
-    reason: *pet
+    reason: 'Follow the pet the player has out with `CurrentPet(feature, { before -> .. })`, which reads the sidebar, the Pets menu''s card and the heads of pets nearby, and forgets the pet when the player leaves.'
     examples:
       - 'line.startsWith("Pet:")'
 
@@ -346,23 +299,8 @@ dsmod:
   PartByItself/part-by-itself:
     active: true
     includes: ['**/src/main/kotlin/**/core/feature/**']
-    reason: 'A part hears the events it needs for itself, because `Feature.on` runs every handler of a type in turn. `ServerClock` follows `ServerTime` and clears itself on `WorldChanged`, and `ContainerReader` and `SlotMarks` see `ContainerOpened`, `SlotChanged` and `WorldChanged` and tell the change through `changed()` and `marks(now)`. Drop this call from the handler. Reading the part there is fine.'
+    reason: 'Drop this call. `SlotMarks` hears `ContainerOpened`, `SlotChanged` and `WorldChanged` for itself, because `Feature.on` runs every handler of a type in turn, and rebuilds its marks then. Call `invalidate()` only on a change it cannot see, as a setting the player turned.'
     examples:
-      - |
-        class Example {
-            private val clock = ServerClock(feature)
-
-            init {
-                feature.on<WorldChanged> { _, now -> clock.clear(now) }
-            }
-        }
-      - |
-        class Example {
-            private val inventory = ContainerReader(feature, FIRST..LAST)
-            init {
-                feature.on<SlotChanged> { event, _ -> inventory.changed(event) { it in FIRST..LAST } }
-            }
-        }
       - |
         class Example {
             private val marks: SlotMarks = SlotMarks(feature, ::mark)
@@ -383,19 +321,16 @@ dsmod:
         }
       - |
         class Example {
-            private val clock = ServerClock(feature)
+            private val marks = SlotMarks(feature, ::mark)
             init {
-                feature.on<WorldChanged> { _, now ->
-                    timers.forEach { it.stop() }
-                    clock.clear(now)
-                }
+                feature.on<ContainerOpened> { _, _ -> this.marks.invalidate() }
             }
         }
       - |
         class Example {
             private val marks = SlotMarks(feature, ::mark)
             init {
-                feature.on<ContainerOpened> { _, _ -> this.marks.invalidate() }
+                feature.on<WorldChanged> { _, now -> marks.invalidateAt(now) }
             }
         }
       - |
@@ -408,28 +343,6 @@ dsmod:
     counterExamples:
       - |
         class Example {
-            private val clock = ServerClock(feature)
-            init {
-                feature.on<Hit> { _, now -> started = clock.millis(now) }
-            }
-        }
-      - |
-        class Example {
-            private val clock = ServerClock(feature)
-            init {
-                feature.on<SlotChanged> { _, now -> changedAt = clock.millis(now) }
-            }
-        }
-      - |
-        class Example {
-            private val clock = ServerClock(feature)
-            init {
-                feature.on<WorldChanged> { _, _ -> timers.clear() }
-                feature.on<Hit> { _, now -> started = clock.millis(now) }
-            }
-        }
-      - |
-        class Example {
             private val marks = SlotMarks(feature, ::mark)
             init {
                 feature.on<ActionBar> { _, _ -> marks.invalidate() }
@@ -437,30 +350,9 @@ dsmod:
         }
       - |
         class Example {
-            private val clock = ServerClock(feature)
+            private val marks = SlotMarks(feature, ::mark)
             init {
-                feature.on<ServerTime> { _, now -> seenTps = clock.tps(now) }
-            }
-        }
-      - |
-        class Example {
-            private val items = ContainerReader(feature)
-            init {
-                feature.on<SlotChanged> { _, _ -> if (items.changed()) read() }
-            }
-        }
-      - |
-        class Example {
-            private val items = ContainerReader(feature)
-            init {
-                feature.on<SlotChanged> { _, _ -> if (items.changed { it.isEmpty }) read() }
-            }
-        }
-      - |
-        class Example {
-            private val pets = CurrentPet(feature, ::changed)
-            init {
-                feature.on<SlotChanged> { event, _ -> if (event.item == null) pets.set(null) }
+                feature.on<SlotChanged> { _, now -> shown = marks.marks(now) }
             }
         }
 
@@ -641,19 +533,19 @@ style:
     includes: ['**/src/gametest/**']
     excludes: ['**/gametest/Themes.kt']
     methods:
-      - value: 'io.github.noxaur.dsmod.core.config.DsModConfig.Hud.setTheme'
+      - value: 'io.github.noxaur.dsmod.core.config.DsModConfig.Hud.getTheme'
         reason: 'Run a step in a theme with `context.inTheme(Theme.VANILLA) { .. }`, which puts the theme back after it, or take a screenshot in both themes with `context.shotInBothThemes(name)`, from Themes.kt.'
     examples:
       - |
         import io.github.noxaur.dsmod.core.config.DsModConfig
         import io.github.noxaur.dsmod.core.ui.Theme
         fun example(hud: DsModConfig.Hud) {
-            hud.theme = Theme.VANILLA
+            hud.theme.value = Theme.VANILLA
         }
     counterExamples:
       - |
         import io.github.noxaur.dsmod.core.config.DsModConfig
-        fun example(hud: DsModConfig.Hud) = hud.theme
+        fun example(hud: DsModConfig.Hud) = hud.scale.value
 
   ForbiddenMethodCall/gametest-pixels-by-pixels:
     active: true

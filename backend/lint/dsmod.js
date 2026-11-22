@@ -1,5 +1,7 @@
 import { definePlugin, defineRule } from "vite-plus/lint/plugins";
 
+import secretCompare from "../../web/lint/secret-compare.js";
+
 const noTry = defineRule({
   meta: { messages: { noTry: "Model failure with Effect (Effect.try, Effect.tryPromise) instead of try/catch." } },
   create(context) {
@@ -89,7 +91,7 @@ const timeThroughEffect = defineRule({
   },
 });
 
-const builtByHarness = new Set(["makeApp", "memoryServices", "betterAuth", "memoryAdapter"]);
+const builtByHarness = new Set(["makeApp", "betterAuth", "memoryAdapter"]);
 
 const keyName = (property) =>
   property.type === "Property" && property.computed === false && property.key.type === "Identifier"
@@ -139,5 +141,6 @@ export default definePlugin({
     "no-json-parse": noJsonParse,
     "time-through-effect": timeThroughEffect,
     "test-harness": testHarness,
+    "secret-compare": defineRule(secretCompare),
   },
 });

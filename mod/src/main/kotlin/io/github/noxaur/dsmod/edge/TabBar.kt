@@ -7,6 +7,9 @@ import io.github.noxaur.dsmod.core.ui.ItemSearch
 import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.core.ui.TabLayout
+import io.github.noxaur.dsmod.edge.input.InputApproved
+import io.github.noxaur.dsmod.edge.input.PlayerCommands
+import io.github.noxaur.dsmod.edge.input.Refusals
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitButton
@@ -14,7 +17,6 @@ import io.github.noxaur.dsmod.edge.ui.KitTab
 import io.github.noxaur.dsmod.edge.ui.KitTextField
 import java.util.BitSet
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
-import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.gui.components.AbstractWidget
@@ -25,7 +27,13 @@ import net.minecraft.world.item.ItemStack
 import org.lwjgl.glfw.GLFW
 
 object TabBar {
-    private val shown get() = DsModClient.runs<MenuTabs>()
+    private lateinit var menuTabs: MenuTabs
+
+    fun bind(menuTabs: MenuTabs) {
+        this.menuTabs = menuTabs
+    }
+
+    private val shown get() = menuTabs.feature.runs
 
     private const val SEARCH_LENGTH = 64
 
@@ -47,6 +55,7 @@ object TabBar {
         }
     }.toComponent()
 
+    @InputApproved(reaches = ["PlayerCommands.send", "Refusals.allowKeyPress", "Refusals.allowMouseClick"])
     fun register() {
         ScreenHooks.onEveryLayout<AbstractContainerScreen<*>> { screen, opened ->
             if (screen.creative) return@onEveryLayout
@@ -60,7 +69,7 @@ object TabBar {
             fun edgeY(edge: TabEdge) = if (edge == TabEdge.TOP) screen.containerTop else screen.containerBottom
 
             val widgets = Screens.getWidgets(screen)
-            val tabs = DsModClient.feature<MenuTabs>().tabs.value.filter { it.slot in 0 until TabLayout.PER_EDGE }
+            val tabs = menuTabs.tabs.value.filter { it.slot in 0 until TabLayout.PER_EDGE }
             val selected = TabLayout.selected(tabs, Trail.opener(screen))
             val made = ArrayList<Pair<MenuTab, KitTab>>()
             val glass = { MenuSkin.glass(screen) }
@@ -143,7 +152,7 @@ object TabBar {
                     if (dims(slot.index) && slot.isActive) Kit.slotDim(graphics, screen.screenX(slot), screen.screenY(slot))
                 }
             }
-            ScreenKeyboardEvents.allowKeyPress(screen).register { _, event ->
+            Refusals.allowKeyPress(screen).register { _, event ->
                 when {
                     !shown -> true
                     field.isFocused -> {
@@ -166,7 +175,7 @@ object TabBar {
                 if (field.visible && screen.focused is KitTab) screen.focused = field
                 true
             }
-            ScreenMouseEvents.allowMouseClick(screen).register { _, event ->
+            Refusals.allowMouseClick(screen).register { _, event ->
                 if (!field.visible) return@register true
                 val over = field.isMouseOver(event.x(), event.y())
                 if (over && event.button() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
