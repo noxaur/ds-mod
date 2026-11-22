@@ -49,6 +49,10 @@
       },
       {
         "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.KitRowsTest"
+      },
+      {
+        "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.OwnSettingsTest"
       },
       {
@@ -190,6 +194,10 @@
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.AnimationsPoseTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.AnimationsItemsTest"
       },
       {
         "adapter": "kotlin",
