@@ -188,6 +188,8 @@ Left clicks 9.9 times a second while you hold its key and walk. It stops the mom
 - **Key:** any key or mouse button. It starts as the left mouse button, and can't be Auto Right Click's key.
 - **Mode:** Hold, or Toggle to press once to start and again to stop. A toggled click still runs only while you walk.
 
+While it's on, your own left clicks share the same 9.9 a second, so left clicking never goes faster.
+
 <sub>Off by default.</sub>
 
 ### Auto Right Click
@@ -196,6 +198,8 @@ Right clicks the same way, 9.9 times a second while you hold its key and walk, s
 
 - **Key:** any key or mouse button. It starts as the right mouse button, and can't be Auto Left Click's key.
 - **Mode:** Hold, or Toggle.
+
+While it's on, your own right clicks share the same 9.9 a second, so right clicking never goes faster.
 
 <sub>Off by default.</sub>
 

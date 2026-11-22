@@ -3093,18 +3093,13 @@ mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/AbilityCooldowns
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/AbilityCooldownsTest.kt: // The container state follows the slots while the feature is off, and the feature sees none of it.
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/AbilityCooldownsTest.kt: // The server's cooldown is 8s, as under a Sky Mall cut: 7s are left, not 9.
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePetTest.kt: /** A mob the player killed, and the action bar's Combat XP right behind its death. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePetTest.kt: /** Lets [millis] pass, then refreshes the readouts. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePetTest.kt: /** The active pet's item as the Pets menu shows it, with [progress] as the lines under its level. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePetTest.kt: // 1,000 XP in half an hour is 2,000 an hour, so the 8,000 left take four hours.
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePetTest.kt: // 100 Combat XP gave 50 pet XP, so each Combat XP is half a pet XP.
-mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePetTest.kt: // Equipment Display reads the same lines, so it is off to keep the readouts to this feature's.
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePetTest.kt: // With no uuid, the menu's last read of either is what shows.
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/DamageNumbersTest.kt: /** What the player sees in place of [text]: null when it is hidden, else the text shown. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/EquipmentDisplayTest.kt: /** Each row as its icons, or as its text. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/EquipmentDisplayTest.kt: /** The Pets menu with [active] marked as dragsim.co marks the pet that is out, holding [held]. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/EquipmentDisplayTest.kt: // A readout refreshes at least every 250 ms, which is how a changed setting shows with no event.
-mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/InventoryHudTest.kt: /** The player's own inventory, with [items] by slot. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/InventoryHudTest.kt: // A readout refreshes at least every 250 ms, which is how a changed setting shows with no event.
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/PerformanceStatsTest.kt: /** One time packet a second for [seconds], each carrying [ticks] more than the last. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/PerformanceStatsTest.kt: /** The role of the value after [label], read from its color. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/general/PerformanceStatsTest.kt: /** What the replay of a local server cannot show: a lagging dragsim.co's colors, a clock that goes back, and the settings. */

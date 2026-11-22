@@ -5,6 +5,7 @@
   "client": [
     "BlockingArmMixin",
     "CameraMixin",
+    "ClickCapMixin",
     "CaptureInputMixin",
     "CapturePacketsMixin",
     "ChatComponentAccessor",

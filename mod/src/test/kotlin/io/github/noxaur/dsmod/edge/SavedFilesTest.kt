@@ -1,11 +1,12 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.SettingsTree
+import io.github.noxaur.dsmod.harness.chat
+import io.github.noxaur.dsmod.harness.Harness
+import io.github.noxaur.dsmod.harness.lines
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.game.ServerSpan
-import io.github.noxaur.dsmod.core.game.SystemMessage
+import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
 import io.github.noxaur.dsmod.core.game.TabList
-import io.github.noxaur.dsmod.core.game.ServerText
 import java.nio.file.Files
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
@@ -20,19 +21,19 @@ class SavedFilesTest {
     private val dir = Files.createTempDirectory("dsmod-saved")
     private val file = dir.resolve("zealot-tracker.json")
 
-    private fun game() = Game(SettingsTree().features).also { game ->
-        game.readouts.forEach { it.feature.enabled = true }
-        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+    private fun game() = object : Harness() {}.also { session ->
+        session.tree.features.forEach { it.enabled = true }
+        session.post(TabList(lines("Area: The End")))
     }
 
-    private fun Game.drop(line: String) = post(0, SystemMessage(ServerText(ServerSpan(line))))
+    private fun Harness.drop(line: String) = post(chat(line))
 
-    private fun Game.saved() = readouts.single { it.feature.id == "zealot-tracker" }.feature.state!!.encode()
+    private fun Harness.saved() = readout(tree.feature<ZealotTracker>()).feature.state!!.encode()
 
     @Test
     fun `a saved state comes back in the next session`() {
         val first = game()
-        val files = SavedFiles(dir, first)
+        val files = SavedFiles(dir, first.game)
         first.drop("RARE DROP! (Summoning Eye) (✯ 90%)")
         first.drop("RNGESUS DROP! [Lvl 1] Enderman")
         files.close()
@@ -40,24 +41,24 @@ class SavedFilesTest {
         assertEquals(emptyList(), dir.listDirectoryEntries().filter { it.fileName.toString().endsWith(".tmp") })
 
         val second = game()
-        SavedFiles(dir, second).load()
+        SavedFiles(dir, second.game).load()
         assertEquals(first.saved(), second.saved())
-        assertEquals(emptyMap(), second.metrics.snapshot().failures)
+        assertEquals(emptyMap(), second.game.metrics.snapshot().failures)
     }
 
     @Test
     fun `a file that does not parse is kept aside and the feature starts from its default`() {
         file.writeText("{not json")
-        val game = game()
-        val files = SavedFiles(dir, game)
+        val session = game()
+        val files = SavedFiles(dir, session.game)
         files.load()
 
-        assertEquals("""{"drops":{},"kills":0}""", game.saved())
-        assertTrue("zealot-tracker.load" in game.metrics.snapshot().failures)
+        assertEquals("""{"drops":{},"kills":0}""", session.saved())
+        assertTrue("zealot-tracker.load" in session.game.metrics.snapshot().failures)
         assertFalse(file.exists())
         assertEquals("{not json", dir.listDirectoryEntries("zealot-tracker.json.corrupt-*").single().readText())
 
-        game.drop("RARE DROP! (Summoning Eye) (✯ 90%)")
+        session.drop("RARE DROP! (Summoning Eye) (✯ 90%)")
         files.close()
         assertEquals("""{"drops":{"Summoning Eye":1},"kills":0}""", file.readText())
     }
@@ -66,16 +67,16 @@ class SavedFilesTest {
     fun `a write that failed is tried again`() {
         val blocked = dir.resolve("blocked")
         blocked.writeText("a file where the folder should be")
-        val game = game()
-        val files = SavedFiles(blocked, game)
-        game.drop("RARE DROP! (Summoning Eye) (✯ 90%)")
+        val session = game()
+        val files = SavedFiles(blocked, session.game)
+        session.drop("RARE DROP! (Summoning Eye) (✯ 90%)")
         // Each flush reports the write that failed before it and starts the next, which the pause lets fail too.
         var flushes = 0
-        while ("zealot-tracker.save" !in game.metrics.snapshot().failures && flushes++ < 200) {
+        while ("zealot-tracker.save" !in session.game.metrics.snapshot().failures && flushes++ < 200) {
             files.flush()
             Thread.sleep(25)
         }
-        assertTrue("zealot-tracker.save" in game.metrics.snapshot().failures)
+        assertTrue("zealot-tracker.save" in session.game.metrics.snapshot().failures)
 
         Files.delete(blocked)
         files.close()
@@ -84,11 +85,11 @@ class SavedFilesTest {
 
     @Test
     fun `nothing is written when nothing changed`() {
-        val game = game()
-        val files = SavedFiles(dir, game)
+        val session = game()
+        val files = SavedFiles(dir, session.game)
         files.load()
-        game.drop("hello")
-        game.drop("[VIP] Player1: RARE DROP! (Summoning Eye) (✯ 90%)")
+        session.drop("hello")
+        session.drop("[VIP] Player1: RARE DROP! (Summoning Eye) (✯ 90%)")
         files.close()
         // The tab list in `game()` is the one change, and it is the player's, not a feature's.
         assertEquals(listOf("places.json"), dir.listDirectoryEntries().map { it.fileName.toString() })
@@ -96,12 +97,12 @@ class SavedFilesTest {
 
     @Test
     fun `a tab list or sidebar that names no new place writes nothing`() {
-        val game = game()
-        SavedFiles(dir, game).close()
+        val session = game()
+        SavedFiles(dir, session.game).close()
         Files.delete(dir.resolve("places.json"))
 
-        val files = SavedFiles(dir, game)
-        repeat(3) { game.post(2, TabList(listOf(ServerText(ServerSpan("Area: The End"))))) }
+        val files = SavedFiles(dir, session.game)
+        repeat(3) { session.post(TabList(lines("Area: The End"))) }
         files.close()
         assertFalse(dir.resolve("places.json").exists())
     }
@@ -109,8 +110,8 @@ class SavedFilesTest {
     @Test
     fun `the places the player has been come back in the next session`() {
         val first = game()
-        first.post(1, TabList(listOf(ServerText(ServerSpan("Area: Hub")))))
-        SavedFiles(dir, first).close()
+        first.post(TabList(lines("Area: Hub")))
+        SavedFiles(dir, first.game).close()
         assertEquals("""{"names":["The End","Hub"]}""", dir.resolve("places.json").readText())
 
         val second = Game(SettingsTree().features)
@@ -120,9 +121,9 @@ class SavedFilesTest {
 
     @Test
     fun `a state is written once per change`() {
-        val game = game()
-        val files = SavedFiles(dir, game)
-        game.drop("RARE DROP! (Summoning Eye) (✯ 90%)")
+        val session = game()
+        val files = SavedFiles(dir, session.game)
+        session.drop("RARE DROP! (Summoning Eye) (✯ 90%)")
         files.flush()
         files.flush()
         files.close()
