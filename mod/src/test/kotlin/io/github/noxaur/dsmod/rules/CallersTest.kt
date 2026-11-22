@@ -25,6 +25,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.extension
+import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.readText
 import kotlin.streams.asSequence
@@ -35,13 +36,13 @@ class Callers(
     private val classes: JavaClasses,
     private val checked: DescribedPredicate<JavaClass>,
     private val callers: DescribedPredicate<JavaClass>,
-    sources: String,
+    private val sources: Map<String, String>,
     private val entrypoints: Set<String> = emptySet(),
 ) {
     private val constants = HashSet<String>()
     private val inline = HashSet<String>()
     private val inlined = HashSet<String>()
-    private val words = Regex("""\w+""").findAll(sources).groupingBy { it.value }.eachCount()
+    private val words = Words(sources)
     private val groups = HashMap<JavaMember, List<JavaMember>>()
     private val inherited = HashMap<String, Set<String>?>()
 
@@ -72,13 +73,19 @@ class Callers(
             .flatMap { it.fields + it.codeUnits }
             .filter { it.name != "<clinit>" && !it.isSynthetic() && (JavaModifier.PUBLIC in it.modifiers || JavaModifier.PROTECTED in it.modifiers) }
             .filter { member -> group(member).none(::rooted) }
-        val dead = LinkedHashSet<JavaMember>()
-        while (true) {
-            val found = members.filter { it !in dead && !live(it, dead) }
-            if (found.isEmpty()) break
-            dead += found
+        val candidates = members.toSet()
+        val live = HashSet<JavaMember>()
+        val waiting = HashMap<JavaMember, Set<JavaMember>>()
+        for (member in members) {
+            val reached = (group(member) + implementations(member)).flatMap { origins(it) }
+            if (reached.any { it !in candidates } || named(member)) live += member else waiting[member] = reached.toSet()
         }
-        return dead.map(::describe).distinct().sorted()
+        do {
+            val woke = waiting.filterValues { it.any(live::contains) }.keys
+            live += woke
+            waiting.keys -= woke
+        } while (woke.isNotEmpty())
+        return waiting.keys.map(::describe).distinct().sorted()
     }
 
     private fun describe(member: JavaMember): String {
@@ -92,27 +99,34 @@ class Callers(
         return "$file: ${member.owner.simpleName}.${name.replace(MANGLED, "")}"
     }
 
-    private fun live(member: JavaMember, dead: Set<JavaMember>): Boolean = when {
-        group(member).any { used(it, dead) } -> true
-        member is JavaCodeUnit && JavaModifier.ABSTRACT in member.modifiers -> implementations(member).any { used(it, dead) }
-        member is JavaField && "${member.owner.name}.${member.name}" in constants -> (words[member.name] ?: 0) > 1
+    private fun named(member: JavaMember): Boolean = when {
+        member is JavaField && "${member.owner.name}.${member.name}" in constants -> named(member)
         member is JavaCodeUnit && "${member.owner.name}.${member.name}/${member.rawParameterTypes.size}" in inline -> member.name in inlined
         else -> false
     }
 
-    private fun used(member: JavaMember, dead: Set<JavaMember>, target: JavaMember = member, seen: Set<JavaMember> = setOf(member)): Boolean =
-        member.accessesToSelf.any { access ->
+    private fun named(constant: JavaField): Boolean {
+        val name = constant.name
+        if (constants.count { it.substringAfterLast('.') == name } == 1) return name in words.used
+        val file = constant.owner.packageName.replace('.', '/') + "/" + constant.owner.source.flatMap { it.fileName }.orElse("")
+        return "${constant.owner.home().simpleName}.$name" in words.qualified ||
+            words.bare.any { (path, names) -> path.endsWith(file) && name in names }
+    }
+
+    private fun origins(member: JavaMember, target: JavaMember = member, seen: Set<JavaMember> = setOf(member)): List<JavaMember> =
+        member.accessesToSelf.flatMap { access ->
             val origin = access.origin
             val inClass = origin.owner == member.owner
             when {
-                access is JavaFieldAccess && access.accessType == JavaFieldAccess.AccessType.SET -> false
-                !callers.test(origin.owner) || origin in dead || origin in seen || together(origin, target) -> false
-                inClass && JavaModifier.BRIDGE in origin.modifiers -> true
-                inClass && forwards(origin, member) -> used(origin, dead, target, seen + origin)
+                access is JavaFieldAccess && access.accessType == JavaFieldAccess.AccessType.SET -> emptyList()
+                !callers.test(origin.owner) || origin in seen || together(origin, target) -> emptyList()
+                inClass && JavaModifier.BRIDGE in origin.modifiers -> listOf(origin)
+                inClass && forwards(origin, member) -> origins(origin, target, seen + origin)
                 inClass && origin.isSynthetic() -> origin.owner.codeUnits
                     .filter { it.name == origin.name.substringBefore('$') && !it.isSynthetic() }
-                    .let { enclosing -> member !in enclosing && (enclosing.isEmpty() || !dead.containsAll(enclosing)) }
-                else -> true
+                    .ifEmpty { listOf(origin) }
+                    .filter { it != member }
+                else -> listOf(origin)
             }
         }
 
@@ -125,10 +139,16 @@ class Callers(
     }
 
     private fun together(a: JavaMember, b: JavaMember) = a.owner.home() == b.owner.home() &&
-        (a.isConstructor() && b.isConstructor() && a.owner == b.owner || property(a)?.let { it == property(b) } == true)
+        (a.isConstructor() && b.isConstructor() && a.owner == b.owner && !secondary(a) && !secondary(b) ||
+            property(a)?.let { it == property(b) } == true)
 
-    private fun implementations(method: JavaCodeUnit) = method.owner.allSubclasses.flatMap { it.codeUnits }
-        .filter { it.name == method.name && it.rawParameterTypes == method.rawParameterTypes }
+    private fun secondary(constructor: JavaMember) = constructor is JavaCodeUnit && !constructor.isSynthetic() &&
+        constructor.rawParameterTypes.isNotEmpty() &&
+        constructor.constructorCallsFromSelf.any { it.target.owner == constructor.owner && it.target.resolveMember().map { t -> !t.isSynthetic() }.orElse(false) }
+
+    private fun implementations(member: JavaMember) =
+        if (member !is JavaCodeUnit || JavaModifier.ABSTRACT !in member.modifiers) emptyList()
+        else member.owner.allSubclasses.flatMap { it.codeUnits }.filter { it.name == member.name && it.rawParameterTypes == member.rawParameterTypes }
 
     private fun rooted(member: JavaMember): Boolean = when {
         member.owner.isAnnotation -> true
@@ -151,11 +171,30 @@ class Callers(
             } catch (_: LinkageError) {
                 null
             }
-        } ?: return true
+        } ?: return method.owner.name in entrypoints
         return "${method.name}${method.rawParameterTypes.map { it.name }}" in signatures
     }
 
+    private class Words(sources: Map<String, String>) {
+        val used = HashSet<String>()
+        val qualified = HashSet<String>()
+        val bare = HashMap<String, HashSet<String>>()
+
+        init {
+            for ((path, text) in sources) {
+                val tokens = TOKEN.findAll(text).map { it.value }.toList()
+                for ((i, token) in tokens.withIndex()) {
+                    if (token == "." || tokens.getOrNull(i - 1) == "val") continue
+                    used += token
+                    if (tokens.getOrNull(i - 1) == ".") tokens.getOrNull(i - 2)?.let { qualified += "$it.$token" }
+                    else bare.getOrPut(path, ::HashSet) += token
+                }
+            }
+        }
+    }
+
     private companion object {
+        val TOKEN = Regex("""\w+|\.""")
         const val INLINED = "\$i\$f\$"
         const val DEFAULT = "\$default"
         const val ACCESS = "access\$"
@@ -190,7 +229,7 @@ class Callers(
 
 private fun sources(vararg sets: String) = sets.flatMap { listOf("src/$it/kotlin", "src/$it/java") }.map(Path::of).filter { it.exists() }
     .flatMap { dir -> Files.walk(dir).use { files -> files.asSequence().filter { it.isRegularFile() && it.extension in setOf("kt", "java") }.toList() } }
-    .joinToString("\n") { it.readText() }
+    .associate { it.invariantSeparatorsPathString to it.readText() }
 
 private val entrypoints by lazy {
     Json.parseToJsonElement(Path.of("src/main/resources/fabric.mod.json").readText())
@@ -216,19 +255,23 @@ class CallersTest {
     fun `the rule catches a member only a game test or nothing uses, and passes the rest`() {
         val inFixture = describe<JavaClass>("in CallersFixture.kt") { it.source.flatMap { s -> s.fileName }.orElse("") == "CallersFixture.kt" }
         val fixtures = ClassFileImporter().withImportOption { it.contains("/rules/Callers") }.importPackagesOf(CallersFixture::class.java).that(inFixture)
-        val checked = describe<JavaClass>("the fixture") { it.simpleName == "CallersFixture" || it.name.endsWith("CallersShared\$Companion") }
+        val checked = describe<JavaClass>("the fixture") { it.simpleName in setOf("CallersFixture", "CallersBuilt") || it.name.endsWith("CallersShared\$Companion") }
         val callers = inFixture.and(describe("outside the game test") { it.simpleName != "CallersGameTest" })
         assertEquals(
             listOf(
+                "rules/CallersFixture.kt: CallersBuilt.<init>(String)",
+                "rules/CallersFixture.kt: CallersFixture.GAP",
                 "rules/CallersFixture.kt: CallersFixture.UNNAMED",
                 "rules/CallersFixture.kt: CallersFixture.hook()",
+                "rules/CallersFixture.kt: CallersFixture.ping()",
+                "rules/CallersFixture.kt: CallersFixture.pong()",
                 "rules/CallersFixture.kt: CallersFixture.uncalled()",
                 "rules/CallersFixture.kt: CallersFixture.uninlined(Function0)",
                 "rules/CallersFixture.kt: CallersFixture.unreachable()",
                 "rules/CallersFixture.kt: CallersFixture.unread",
                 "rules/CallersFixture.kt: Companion.UNSHARED",
             ),
-            Callers(fixtures, checked, callers, Path.of(FIXTURE).readText()).unused(),
+            Callers(fixtures, checked, callers, mapOf(FIXTURE to Path.of(FIXTURE).readText())).unused(),
         )
     }
 
