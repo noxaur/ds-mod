@@ -366,7 +366,7 @@ Each item's slot is marked in the color of its rarity, in every menu and on your
 
 <p>
   <img src="../images/rarity-chest.png" width="49%" alt="A chest in the Aura style: each item sits on a round glow in its rarity's color, with a few sparkles in it">
-  <img src="../images/rarity-settings.png" width="49%" alt="Item Rarity in the settings: Style, Opacity and Sparkles, and the hotbar's own under Hotbar, each style with a preview of its slots">
+  <img src="../images/rarity-settings.png" width="49%" alt="Item Rarity in the settings: Style with a preview of its slots, Opacity and Sparkles, and Match Inventory under Hotbar">
 </p>
 
 | Setting | What it does |
@@ -375,7 +375,7 @@ Each item's slot is marked in the color of its rarity, in every menu and on your
 | Opacity | How solid the marks are, from 10% to 100% |
 | Sparkles | A few glints inside each mark, placed a little differently in each slot |
 
-The hotbar uses your inventory's look until you turn off Match Inventory under Hotbar, and then its own Style, Opacity and Sparkles, starting from the look it had.
+The hotbar uses your inventory's look until you turn off Match Inventory under Hotbar. Its own Style, Opacity and Sparkles then show under it, starting from the look it had.
 
 <sub>Common items are not marked unless you turn on Common Items. With a resource pack that makes menus dark, the colors change to read well on it.</sub>
 

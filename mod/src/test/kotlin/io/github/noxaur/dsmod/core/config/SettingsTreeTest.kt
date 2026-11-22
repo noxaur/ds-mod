@@ -94,6 +94,14 @@ class SettingsTreeTest {
     }
 
     @Test
+    fun `the hotbar's own look shows only while it does not match the inventory`() {
+        val own = listOf("hotbarStyle", "hotbarOpacity", "hotbarSparkles").map { id -> rows.single { it.id == id } }
+        assertTrue(own.none { it.visible })
+        rarity.hotbarMatches.value = false
+        assertTrue(own.all { it.visible })
+    }
+
+    @Test
     fun `a hotbar row set to another look makes it the hotbar's own`() {
         val sparkles = rows.single { it.id == "hotbarSparkles" } as Switch
         sparkles.reset()
@@ -172,7 +180,10 @@ class SettingsTreeTest {
     fun `a closed switch sums up its settings`() {
         val slotLock = rows.single { it.id == "slot-lock" } as Switch
         assertEquals("L, K", slotLock.closed { mapOf(76 to "L", 75 to "K")[it] ?: "?" })
-        assertEquals("Frame, 100%", (rows.single { it.id == "hotbarMarks" } as Switch).closed { "" })
+        val hotbar = rows.single { it.id == "hotbarMarks" } as Switch
+        assertEquals("", hotbar.closed { "" })
+        rarity.hotbarMatches.value = false
+        assertEquals("Frame, 100%", hotbar.closed { "" })
     }
 
     @Test

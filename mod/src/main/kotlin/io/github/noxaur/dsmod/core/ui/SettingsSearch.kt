@@ -27,7 +27,7 @@ object SettingsSearch {
             for (group in section.groups) {
                 val heading = listOfNotNull(group.name, group.switch?.name, group.switch?.description).joinToString(" ").lowercase()
                 val open = HashSet<String>()
-                val rows = group.rows.filter { row -> found(row, heading, words, open) != Found.NO }
+                val rows = group.rows.filter { row -> row.visible && found(row, heading, words, open) != Found.NO }
                 if (rows.isNotEmpty()) hits += SettingHit(i, group, rows, open)
             }
         }
@@ -42,7 +42,7 @@ object SettingsSearch {
      */
     private fun found(row: Setting, above: String, words: List<String>, open: MutableSet<String>): Found {
         var below = false
-        for (child in row.children) if (found(child, "$above ${row.name.lowercase()}", words, open) == Found.SELF) below = true
+        for (child in row.children) if (child.visible && found(child, "$above ${row.name.lowercase()}", words, open) == Found.SELF) below = true
         if (below) open += row.id
         val text = "$above ${row.searchText}"
         // An ordered list opens when a word names one of its entries, so the entry shows.

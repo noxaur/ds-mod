@@ -150,6 +150,8 @@ class SettingRows(
 
     /** Each row's editor by the row's id, kept across layouts so what it holds, such as the picked line, stays. */
     private val made = HashMap<String, Editor>()
+    private val conditional = HashMap<Setting, Boolean>()
+
     private val host = Editor.Host({ relayout() }, { top, bottom -> scrollTo(top, bottom) }, { refresh() }, { words })
 
     /** The editor a press went to, which takes the drag and the release. */
@@ -305,15 +307,20 @@ class SettingRows(
         focusId = lines.getOrNull(focus)?.key
         spokenId = lines.getOrNull(spoken)?.key
         lines.clear()
+        conditional.clear()
         mode = Mode.Idle
     }
 
     /** Lays [rows] out from [y] down, [width] wide, and returns the content y under them. */
     fun add(rows: List<Setting>, x: Int, y: Int, width: Int): Int {
         var at = y
-        for ((i, setting) in rows.withIndex()) {
-            if (i > 0) at += 1
-            val line = Line(setting, x, at, width, false, i > 0)
+        var first = true
+        for (setting in rows) {
+            if (setting.shownWhile != null) conditional[setting] = setting.visible
+            if (!setting.visible) continue
+            if (!first) at += 1
+            val line = Line(setting, x, at, width, false, !first)
+            first = false
             measure(line)
             lines += line
             at += line.height
@@ -547,7 +554,7 @@ class SettingRows(
     }
 
     private fun changed() {
-        refresh()
+        if (conditional.any { (setting, shown) -> setting.visible != shown }) relayout() else refresh()
     }
 
     private fun top(line: Line) = origin + line.y

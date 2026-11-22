@@ -59,19 +59,21 @@ class ItemRarity(config: DsModConfig) : HasFeature {
             hotbarMatches.value = it
         }
         switch(match, "Match Inventory", "Mark the hotbar in the same look as your inventory.")
-        looks(
-            field = hotbarStyle.bind.field,
-            idPrefix = "hotbar",
-            look = ::hotbarLook,
-            follows = { if (hotbarMatches.value) hotbarLook() else null },
-            write = {
-                hotbarStyle.value = it
-                hotbarMatches.value = false
-            },
-            style = "Pick how the color fills each hotbar slot.",
-            opacity = "Set how solid the hotbar's marks are.",
-            sparkles = "Add a few glints to each hotbar mark.",
-        )
+        shownWhile({ !hotbarMatches.value }) {
+            looks(
+                field = hotbarStyle.bind.field,
+                idPrefix = "hotbar",
+                look = ::hotbarLook,
+                follows = { if (hotbarMatches.value) hotbarLook() else null },
+                write = {
+                    hotbarStyle.value = it
+                    hotbarMatches.value = false
+                },
+                style = "Pick how the color fills each hotbar slot.",
+                opacity = "Set how solid the hotbar's marks are.",
+                sparkles = "Add a few glints to each hotbar mark.",
+            )
+        }
     }
 
     fun containerStyle(): SlotStyle = inventoryStyle.value
