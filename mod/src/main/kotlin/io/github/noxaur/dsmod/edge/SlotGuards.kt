@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.edge
 
-import com.google.common.collect.MapMaker
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.inventory.ShiftSlot
 import io.github.noxaur.dsmod.core.inventory.SlotLocks
@@ -17,14 +16,12 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
-import net.minecraft.core.component.DataComponents
 import net.minecraft.util.Util
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.inventory.ContainerInput
 import net.minecraft.world.inventory.InventoryMenu
 import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.component.CustomData
 
 /**
  * Slot Lock. Every way a menu moves an item goes through one method of the screen, so `SlotClickMixin` asks
@@ -51,19 +48,10 @@ object SlotGuards {
     /** While the item key is held, whether the items it passes over lock or unlock, as the first one with an ID did. */
     private var lockingItems: Boolean? = null
 
-    /** Each item's ID by its data component, which stacks share and never change. Reading one copies the whole tag. */
-    private val ids: MutableMap<CustomData, String> = MapMaker().weakKeys().makeMap()
-
-    /** The ID the server gives an item that does not stack, in `item_data.uuid`, or null. */
-    private fun id(stack: ItemStack): String? {
-        val data = stack.get(DataComponents.CUSTOM_DATA) ?: return null
-        return ids.getOrPut(data) { data.copyTag().getCompoundOrEmpty("item_data").getStringOr("uuid", "") }.ifEmpty { null }
-    }
-
     /** Whether [slot] is a locked slot of the player's inventory, or holds a locked item there. */
     private fun locked(slot: Slot): Boolean {
         val own = own(slot) ?: return false
-        return own in locks.locked || locks.items.isNotEmpty() && id(slot.item) in locks.items
+        return own in locks.locked || locks.items.isNotEmpty() && slot.item.itemUuid in locks.items
     }
     private var refused: Slot? = null
     private var refusedAt = 0L
@@ -164,7 +152,7 @@ object SlotGuards {
     private fun lockItem(screen: AbstractContainerScreen<*>, first: Boolean) {
         val slot = screen.slotUnderMouse ?: return
         if (own(slot) == null || !slot.hasItem()) return
-        val id = id(slot.item)
+        val id = slot.item.itemUuid
         if (id == null) {
             // Only where the key went down, since a sweep crosses stacks on its way.
             if (first) Chat.notice(feature.feature.title, text { bad("An item that stacks cannot be locked. Lock its slot instead.") })
@@ -203,7 +191,7 @@ object SlotGuards {
         }
         val refuses = slot != null && locked(slot) ||
             // A number key or the off-hand key over another slot trades with that hotbar slot or the off hand.
-            input == ContainerInput.SWAP && (button in locks.locked || client.player?.inventory?.getItem(button)?.let(::id) in locks.items) ||
+            input == ContainerInput.SWAP && (button in locks.locked || client.player?.inventory?.getItem(button)?.itemUuid in locks.items) ||
             // A double click gathers every stack like the carried one, out of locked slots too.
             input == ContainerInput.PICKUP_ALL && screen.menu.slots.any { locked(it) && ItemStack.isSameItemSameComponents(screen.menu.carried, it.item) }
         if (refuses) {
@@ -318,7 +306,7 @@ object SlotGuards {
     /** Whether the drop key outside a menu must not drop the held item. */
     fun keepsHeld(): Boolean {
         val inventory = Minecraft.getInstance().player?.inventory ?: return false
-        return on && (inventory.selectedSlot in locks.locked || id(inventory.selectedItem) in locks.items)
+        return on && (inventory.selectedSlot in locks.locked || inventory.selectedItem.itemUuid in locks.items)
     }
 
     /**

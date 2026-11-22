@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import com.google.common.collect.ImmutableMultimap
+import com.google.common.collect.MapMaker
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
 import com.mojang.authlib.properties.PropertyMap
@@ -22,6 +23,7 @@ import net.minecraft.nbt.StringTag
 import net.minecraft.nbt.Tag
 import net.minecraft.resources.Identifier
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.component.CustomData
 import net.minecraft.world.item.component.DyedItemColor
 import net.minecraft.world.item.component.ItemLore
 import net.minecraft.world.item.component.ResolvableProfile
@@ -33,6 +35,28 @@ val ItemStack.id: String get() = BuiltInRegistries.ITEM.getKey(item).toString()
 val ItemStack.plainName: String? get() = get(DataComponents.CUSTOM_NAME)?.string
 
 val ItemStack.filler get() = Filler.of(id, plainName)
+
+val ItemStack.itemId: String? get() = skyBlockData?.itemId
+
+val ItemStack.itemUuid: String? get() = skyBlockData?.uuid
+
+val ItemStack.skinId: String? get() = skyBlockData?.skinId
+
+private class SkyBlockData(val itemId: String?, val uuid: String?, val skinId: String?)
+
+private val skyBlockDataByTag: MutableMap<CustomData, SkyBlockData> = MapMaker().weakKeys().makeMap()
+
+private val ItemStack.skyBlockData: SkyBlockData?
+    get() {
+        val data = get(DataComponents.CUSTOM_DATA) ?: return null
+        return skyBlockDataByTag.getOrPut(data) {
+            val tag = data.copyTag()
+            val item = tag.getCompoundOrEmpty("item_data")
+            SkyBlockData(item.string("item_id"), item.string("uuid"), tag.getCompoundOrEmpty("extra").getCompoundOrEmpty("item_skin").string("skinId"))
+        }
+    }
+
+private fun CompoundTag.string(key: String) = getStringOr(key, "").ifEmpty { null }
 
 /** Walks the components and the NBT directly, because the codecs are slow and this runs on the client thread. */
 fun ItemStack.toItem(): Item {

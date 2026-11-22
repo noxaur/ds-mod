@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.capture.ChangeLog
 import io.github.noxaur.dsmod.core.capture.RawRecord
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.edge.id
+import io.github.noxaur.dsmod.edge.itemId
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -246,8 +247,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
             put("pitch", player.xRot.toDouble().round2())
             put("item", held.id)
             put("name", held.hoverName.string)
-            held.get(DataComponents.CUSTOM_DATA)?.copyTag()?.getCompound("item_data")?.flatMap { it.getString("item_id") }
-                ?.orElse(null)?.let { put("itemId", it) }
+            held.itemId?.let { put("itemId", it) }
             when {
                 hit is EntityHitResult -> put("target", buildJsonObject { entityFields(hit.entity) })
                 hit is BlockHitResult && hit.type == HitResult.Type.BLOCK ->

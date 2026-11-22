@@ -39,6 +39,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | A feature reads time from the `now` its handler receives, never the wall clock | `no-wall-clock-in-core` in `mod/…/Rules.kt` |
 | No catch block is empty | `no-swallowed-catch` in `mod/…/Rules.kt` |
 | An item's id is read through `edge/Items.kt` | `item-id-by-items` in `mod/…/Rules.kt` |
+| The edge reads a stack's SkyBlock data in one place, which reads each item's tag once | `item-data-by-hand` in `mod/…/Rules.kt` |
 | The mod's shapes are drawn by its kit, in the player's theme | `KitTest` reads the compiled classes |
 | The mod's code is not copied with a value or two changed | `ClonesTest` in `mod/…/rules/` finds a repeated block and a near-identical line |
 | Release code cannot use debug tools | The `main` and `debug` source sets |
