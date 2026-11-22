@@ -45,6 +45,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         var mutedX = 0
         var folded = false
         val bottom get() = y + height
+        val held: Entry get() = checkNotNull(entry) { "a $kind line holds an entry" }
     }
 
     /** A control on a line: where it sits, what a press does, and what it shows, which [refresh] fills in. */
@@ -565,14 +566,15 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     }
 
     private fun drawCell(g: GuiGraphicsExtractor, hit: Hit, y: Int, state: Kit.State, mx: Double, my: Double) {
+        val recording = recorder
         when (val cell = cellAt(hit.cell)) {
             is Cell.Check -> {
                 Kit.switch(g, hit.x, y, hit.on, state)
                 hit.name?.takeIf { hit.width > Kit.SWITCH_WIDTH }?.let { g.text(font, it, hit.x + Kit.SWITCH_WIDTH + Kit.GAP, y + (hit.height - 8) / 2, -1, true) }
             }
             is Cell.Text -> drawField(g, hit, y, state, mx, my)
-            is Cell.Keys -> if (recordHit === hit && recorder != null) {
-                recorder!!.extractRenderState(g, mx.toInt(), my.toInt(), 0f)
+            is Cell.Keys -> if (recordHit === hit && recording != null) {
+                recording.extractRenderState(g, mx.toInt(), my.toInt(), 0f)
             } else {
                 labelButton(g, hit, y, state, hit.label)
                 hit.clash?.let { ringHit(g, hit, y, it.argb()) }
@@ -620,7 +622,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
             val cell = hit?.takeIf { it.does == Does.CELL }?.let { cellAt(it.cell) }
             when {
                 // A right press clears keys and steps a cycle back, as on any row. Elsewhere it opens the line's menu.
-                cell is Cell.Keys -> change { set(hit, cell.set(itemOf(hit)!!, emptyList())) }
+                cell is Cell.Keys -> change { set(hit, cell.set(itemAt(hit), emptyList())) }
                 cell is Cell.Pick<T, *> -> stepPick(hit, if (Keys.shift(event)) 1 else -1)
                 line.kind == Kind.ITEM || line.kind == Kind.HEADING || line.kind == Kind.EMPTY -> openMenu(line, mx.toInt(), my.toInt())
                 else -> refresh()
@@ -639,7 +641,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
                 if (doubleClick) return true.also { fold(group, group !in list.folded) }
                 if (group.isNotEmpty()) startDrag(line.entry, my)
             }
-            Kind.ITEM -> startDrag(line.entry!!, my)
+            Kind.ITEM -> startDrag(line.held, my)
             else -> Unit
         }
         refresh()
@@ -716,7 +718,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         val entry = hit.line.entry
         when (hit.does) {
             Does.CELL -> when (val cell = cellAt(hit.cell)) {
-                is Cell.Check -> change { set(hit, cell.set(itemOf(hit)!!, !cell.get(itemOf(hit)!!))) }
+                is Cell.Check -> change { set(hit, cell.set(itemAt(hit), !cell.get(itemAt(hit)))) }
                 is Cell.Text -> openText(hit, cell)
                 is Cell.Keys -> record(hit, cell)
                 is Cell.Pick<T, *> -> stepPick(hit, if (shift) -1 else 1)
@@ -724,10 +726,10 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
             }
             Does.FOLD -> fold(group(entry), group(entry) !in list.folded)
             Does.GROUP -> change { items.switchGroup(group(entry), group(entry) in list.off) }
-            Does.DETAILS -> toggleDetails(entry!!)
-            Does.UP, Does.DOWN -> nudge(entry!!, if (hit.does == Does.UP) -1 else 1)
+            Does.DETAILS -> toggleDetails(hit.line.held)
+            Does.UP, Does.DOWN -> nudge(hit.line.held, if (hit.does == Does.UP) -1 else 1)
             Does.DUPLICATE -> duplicate(entry as Entry.Item)
-            Does.DELETE -> delete(entry!!)
+            Does.DELETE -> delete(hit.line.held)
             Does.EXPORT -> export(exportGroup(hit))
             Does.NAME -> openField(hit, (entry as Entry.Heading).group, type.groupLength, NAME, "")
             Does.ADD -> add()
@@ -740,18 +742,20 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
 
     private fun itemOf(hit: Hit): T? = (hit.line.entry as? Entry.Item)?.let { list.items.getOrNull(it.index) }
 
+    private fun itemAt(hit: Hit): T = checkNotNull(itemOf(hit)) { "a cell's line holds an item" }
+
     private fun set(hit: Hit, item: T) = items.set((hit.line.entry as Entry.Item).index, item)
 
     private fun stepPick(hit: Hit, by: Int) {
         val cell = cellAt(hit.cell) as Cell.Pick<T, *>
-        change { set(hit, cell.step(itemOf(hit)!!, by)) }
+        change { set(hit, cell.step(itemAt(hit), by)) }
     }
 
     @Suppress("UNCHECKED_CAST")
     private fun stepCount(hit: Hit, by: Int) {
         if (by == 0) return
         val cell = cellAt(hit.cell) as Cell.Count<T>
-        change { set(hit, cell.step(itemOf(hit)!!, by)) }
+        change { set(hit, cell.step(itemAt(hit), by)) }
     }
 
     /** A change to the values: every line and row reads them again. */
@@ -958,7 +962,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         if (items.canNudge(entry, 1)) menuItems += "Move Down" to { nudge(entry, 1) }
     }
 
-    private fun openText(hit: Hit, cell: Cell.Text<T>, value: String = cell.get(itemOf(hit)!!)) = openField(hit, value, cell.max, cell.name, cell.hint)
+    private fun openText(hit: Hit, cell: Cell.Text<T>, value: String = cell.get(itemAt(hit))) = openField(hit, value, cell.max, cell.name, cell.hint)
 
     private fun openField(hit: Hit, value: String, max: Int, name: String, hint: String) {
         closeField()
@@ -1088,7 +1092,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
                     event.isLeft -> fold(group, true)
                     event.isRight -> fold(group, false)
                     key == GLFW.GLFW_KEY_SPACE -> change { items.switchGroup(group, group in list.off) }
-                    event.isSelection || event.isConfirmation -> toggleDetails(line.entry!!)
+                    event.isSelection || event.isConfirmation -> toggleDetails(line.held)
                     else -> return false
                 }
             }
@@ -1189,7 +1193,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         if (!inside) return false
         val line = pickedLine() ?: return false
         val hit = line.hits.getOrNull(cursor)
-        val said = if (line.kind == Kind.HEADING || line.kind == Kind.ITEM) items.lineNarration(line.entry!!, Keys::names) else null
+        val said = if (line.kind == Kind.HEADING || line.kind == Kind.ITEM) items.lineNarration(line.held, Keys::names) else null
         output.add(NarratedElementType.TITLE, Narration.join(said, hit?.let(::spoken)))
         if (status.isNotEmpty()) output.add(NarratedElementType.HINT, status.joinToString(" ") { it.string })
         return true

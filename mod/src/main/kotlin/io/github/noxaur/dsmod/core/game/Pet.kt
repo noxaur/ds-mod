@@ -1,6 +1,8 @@
 package io.github.noxaur.dsmod.core.game
 
 import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.core.text.count
+import io.github.noxaur.dsmod.core.text.number
 import kotlinx.serialization.Serializable
 
 /**
@@ -15,7 +17,7 @@ data class Pet(val name: String, val level: Int, val rarity: Role) {
         fun of(text: ServerText, plain: String = text.plain.trim()): Pet? {
             val (level, name) = LINE.matchEntire(plain)?.destructured ?: return null
             val color = text.spans.lastOrNull { it.text.isNotBlank() }?.color
-            return Pet(name, level.toIntOrNull() ?: return null, Role.rarity(color) ?: Role.COMMON)
+            return Pet(name, count(level) ?: return null, Role.rarity(color) ?: Role.COMMON)
         }
 
         /** The name of the pet [plain] names, without its level, which goes up in play. */
@@ -100,11 +102,11 @@ data class PetCard(
                 .filter { it.isNotEmpty() }
             if (MAX_LEVEL in lines) return PetCard(pet, item, held, PetProgress.MAX, key = key, category = category)
             val xp = lines.firstNotNullOfOrNull { XP.find(it) }?.destructured?.let { (have, need) ->
-                val a = have.replace(",", "").toDoubleOrNull()
-                val b = need.replace(",", "").toDoubleOrNull()
+                val a = number(have)
+                val b = number(need)
                 if (a != null && b != null && b > 0) PetProgress((a / b).toFloat().coerceIn(0f, 1f), a, b) else null
             }
-            val percent = lines.firstNotNullOfOrNull { PERCENT.find(it) }?.groupValues?.get(1)?.toFloatOrNull()
+            val percent = lines.firstNotNullOfOrNull { PERCENT.find(it) }?.groupValues?.get(1)?.let(::number)?.toFloat()
                 ?.let { PetProgress((it / 100f).coerceIn(0f, 1f)) }
             val progress = xp ?: percent
             val unread = if (progress == null && lines.isNotEmpty()) lines.joinToString(" / ") else null
@@ -122,5 +124,5 @@ object CombatXp {
     const val KILL_WINDOW_MILLIS = 20L
     private val GAIN = Regex("""\+([\d,.]+) Combat \(""")
 
-    fun gained(plain: String): Double? = GAIN.find(plain)?.groupValues?.get(1)?.replace(",", "")?.toDoubleOrNull()
+    fun gained(plain: String): Double? = GAIN.find(plain)?.groupValues?.get(1)?.let(::number)
 }

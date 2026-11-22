@@ -1,6 +1,5 @@
-import type { Line, Span } from "./model.ts";
+import type { Line, Span } from "../items/model.ts";
 
-/** What `§` followed by each color code means, as the `#RRGGBB` a span carries. */
 const COLORS: Readonly<Record<string, string>> = {
   "0": "#000000",
   "1": "#0000AA",
@@ -20,7 +19,6 @@ const COLORS: Readonly<Record<string, string>> = {
   f: "#FFFFFF",
 };
 
-/** The `#RRGGBB` for a `§` color code such as `6`, or undefined for one that is not a color. */
 export const colorOf = (code: string): string | undefined => COLORS[code.toLowerCase()];
 
 type Style = Omit<Span, "text">;
@@ -33,7 +31,6 @@ const same = (a: Style, b: Style): boolean =>
   a.strikethrough === b.strikethrough &&
   a.obfuscated === b.obfuscated;
 
-/** Appends text in a style, joining it to the span before when the style is the same. */
 export const push = (spans: Span[], text: string, style: Style): void => {
   if (text === "") {
     return;
@@ -46,16 +43,8 @@ export const push = (spans: Span[], text: string, style: Style): void => {
   spans.push({ text, ...style });
 };
 
-/**
- * A style code: `§`, or the `&` the server's catalog also writes in some descriptions, then the code. `§x` and six
- * `§` digits is the form that names a color the sixteen codes cannot.
- */
 const MARKER = /[§&]([0-9a-fk-or])|§x((?:§[0-9a-f]){6})/giu;
 
-/**
- * Reads the server's `§` text into a line. A color code clears the styles before it, and `§r` clears everything back
- * to `color`, which is what text with no code in front of it is drawn in. A flag that is false is left out.
- */
 export const parseLegacy = (text: string, color?: string): Line => {
   const spans: Span[] = [];
   const base = (): Style => (color === undefined ? {} : { color });

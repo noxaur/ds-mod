@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.core.game
 
+import io.github.noxaur.dsmod.core.text.count
+import io.github.noxaur.dsmod.core.text.number
 import kotlin.math.roundToLong
 
 /** An ability an item's lore names, with the wait between two uses. */
@@ -57,8 +59,13 @@ object Abilities {
     /** The charging set bonus in a worn piece's lore, or null when it has none. */
     fun charge(item: Item): SetCharge? {
         item.sections(TIERED) { bonus, lines ->
-            val charge = lines.firstNotNullOfOrNull { CHARGE.matchEntire(it) } ?: return@sections
-            return SetCharge(bonus.groupValues[1], bonus.groupValues[2].toInt(), charge.groupValues[1].toInt(), millis(charge.groupValues[2]))
+            val worn = count(bonus.groupValues[2]) ?: return@sections
+            for (line in lines) {
+                val charge = CHARGE.matchEntire(line) ?: continue
+                val pieces = count(charge.groupValues[1]) ?: continue
+                val every = millis(charge.groupValues[2]) ?: continue
+                return SetCharge(bonus.groupValues[1], worn, pieces, every)
+            }
         }
         return null
     }
@@ -74,5 +81,5 @@ object Abilities {
     /** The milliseconds a whole [plain] line names in its first group, or null when the line is not this regex's. */
     private fun Regex.seconds(plain: String) = matchEntire(plain)?.groupValues?.get(1)?.let(::millis)
 
-    private fun millis(seconds: String) = (seconds.toDouble() * 1000).roundToLong()
+    private fun millis(seconds: String) = number(seconds)?.let { (it * 1000).roundToLong() }
 }
