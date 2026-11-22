@@ -1,38 +1,28 @@
 package io.github.noxaur.dsmod.core.feature.inventory
 
-import io.github.noxaur.dsmod.core.config.SettingsTree
-import io.github.noxaur.dsmod.core.feature.Game
+import io.github.noxaur.dsmod.harness.Harness
+import io.github.noxaur.dsmod.harness.chat
+import io.github.noxaur.dsmod.harness.lines
+import io.github.noxaur.dsmod.harness.text
 import io.github.noxaur.dsmod.core.game.ContainerOpened
-import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Item
-import io.github.noxaur.dsmod.core.game.ServerSpan
-import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.SlotChanged
-import io.github.noxaur.dsmod.core.game.SystemMessage
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class ForgeCraftTest {
-    private val feature = SettingsTree().feature<ForgeCraft>()
-    private val game = Game(listOf(feature.feature))
+class ForgeCraftTest : Harness(alone = ForgeCraft::class) {
+    private val feature = tree.feature<ForgeCraft>()
     private var id = 1
 
-    private fun post(vararg events: GameEvent) {
-        for (event in events) game.post(0, event)
-        game.tick(0)
-    }
-
-    private fun text(plain: String) = ServerText(ServerSpan(plain))
-
-    private fun item(id: String, name: String, count: Int = 1, vararg lore: String) = Item(id, count, text(name), lore.map(::text))
+    private fun item(id: String, name: String, count: Int = 1, vararg lore: String) = Item(id, count, text(name), lines(*lore))
 
     private val obsidian = item("minecraft:obsidian", "Refined Obsidian", 1, "RARE", "", "Items Required", "Enchanted Obsidian x16", "", "Duration: 49m 12s")
 
     private fun open(title: String?, rows: Int, items: Map<Int, Item>, carried: Int = 34) {
         val size = rows * 9 + 36
-        post(ContainerOpened(id++, title?.let(::text), size))
+        post(ContainerOpened(id++, title?.let { text(it) }, size))
         for ((slot, item) in items) post(SlotChanged(slot, item))
         if (carried > 0) post(SlotChanged(size - 1, item("minecraft:obsidian", "Enchanted Obsidian", carried)))
     }
@@ -51,7 +41,7 @@ class ForgeCraftTest {
         select()
         refining()
         confirm()
-        post(SystemMessage(text("Queued Refined Obsidian! It starts automatically when a Forge slot finishes.")))
+        post(chat("Queued Refined Obsidian! It starts automatically when a Forge slot finishes."))
         forge(1)
     }
 
@@ -79,7 +69,7 @@ class ForgeCraftTest {
         select()
         refining()
         confirm()
-        post(SystemMessage(text("Forging Refined Obsidian! Ready in 49m 12s.")))
+        post(chat("Forging Refined Obsidian! Ready in 49m 12s."))
         assertEquals("Refined Obsidian", feature.recipe?.name)
     }
 
@@ -106,7 +96,7 @@ class ForgeCraftTest {
         select()
         refining()
         confirm()
-        post(SystemMessage(text("Queued Refined Obsidian! It starts automatically when a Forge slot finishes.")))
+        post(chat("Queued Refined Obsidian! It starts automatically when a Forge slot finishes."))
         forge(2)
         assertEquals("Refined Obsidian", feature.recipe?.name)
         assertEquals(22 to false, next())

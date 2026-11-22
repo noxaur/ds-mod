@@ -1,11 +1,12 @@
 package io.github.noxaur.dsmod.core.game
 
 import kotlin.test.Test
+import io.github.noxaur.dsmod.harness.text
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class BossTest {
-    private fun seen(entity: String, name: String) = EntitySeen(1, "minecraft:$entity", ServerText(ServerSpan(name)))
+    private fun seen(entity: String, name: String) = EntitySeen(1, "minecraft:$entity", text(name))
 
     @Test
     fun `every dragon is a Dragon, since its name holds only its level and health`() {

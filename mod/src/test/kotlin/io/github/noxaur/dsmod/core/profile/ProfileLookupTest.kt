@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.profile
 
+import io.github.noxaur.dsmod.harness.resource
 import io.github.noxaur.dsmod.core.backend.BackendException
 import java.util.concurrent.CompletableFuture
 import kotlin.test.Test
@@ -9,8 +10,8 @@ import kotlin.test.assertTrue
 
 /** Drives the lookup with answers held back until the test gives them, so each order of answers can be tried. */
 class ProfileLookupTest {
-    private val profile = Profile.parse(checkNotNull(javaClass.getResource("/profiles/profile.json")).readText())
-    private val inventory = Profile.parseContainer(checkNotNull(javaClass.getResource("/profiles/containers/inventory.json")).readText())
+    private val profile = Profile.parse(resource("profiles/profile.json"))
+    private val inventory = Profile.parseContainer(resource("profiles/containers/inventory.json"))
 
     private class Source : ProfileSource {
         val profiles = ArrayList<Pair<String?, CompletableFuture<Profile>>>()
