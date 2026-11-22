@@ -152,6 +152,7 @@ object DsModClient : ClientModInitializer {
         Slots.register()
         MenuSkin.register()
         ForgeCrafts.register()
+        Wardrobes.register()
         AutoClicks.register()
         Trail.register()
         MenuBack.register()

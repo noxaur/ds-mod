@@ -38,6 +38,10 @@ Whether the mod may send input for the player, or refuse the player's own, is th
 
 Forge Craft repeats a forge craft from the keyboard, and each press sends one click, the next of the four the player made by hand, so the player still makes every step and sees each menu. One press that sent every click was rejected, because that is automation. A press waits up to a second for the menu it clicked to give way to the next, so a quick second press cannot land on the wrong button, and a menu the server never replaced takes a click again after that.
 
+## Wardrobe Keys holds a press until the server's second is up
+
+dragsim.co refuses a wardrobe click for a second after the menu opens, so a key pressed in that second is held and clicked when it ends, as the user asked. Dropping the press was rejected, because the player would have to press again. Each press is still one click on the button its key names, and only the last held press is clicked. The second starts again when any menu opens, because a new menu is a new opening to the server.
+
 ## Auto Left Click and Auto Right Click press the game's own key once a tick
 
 dragsim.co allows auto clicking while the player walks, the user confirmed. Each click is the press the mouse makes on the attack or use key, so the game gives it every check a real click gets. The user asked that a button never pass 9.9 a second, so while a feature is on, the player's own clicks share its budget and one past it is dropped. Clicks go out on ticks but the budget refills by the clock, since after a freeze the game runs the missed ticks at once. Calling attack or use directly was rejected, since it skips those checks.

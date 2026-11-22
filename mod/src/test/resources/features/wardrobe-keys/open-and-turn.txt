@@ -1,0 +1,381 @@
++   0.0s > (opened your inventory, 46 slots)
++   0.0s > (slot 5) 1 x Enderite Helmet
++   0.0s > (slot 6) 1 x Enderite Chestplate
++   0.0s > (slot 7) 1 x Enderite Leggings
++   0.0s > (slot 8) 1 x Enderite Boots
++   0.0s > (slot 9) 1 x Promising Pickaxe
++   0.0s > (slot 10) 2 x Bejeweled Handle
++   0.0s > (slot 11) 64 x Crying Obsidian
++   0.0s > (slot 12) 5 x Arcane Dragon Fragment
++   0.0s > (slot 13) 1 x End Stone Rose
++   0.0s > (slot 14) 15 x Old Dragon Fragment
++   0.0s > (slot 15) 4 x Summoning Eye
++   0.0s > (slot 18) 1 x Refined Enderite Pickaxe
++   0.0s > (slot 19) 1 x Amethyst Gauntlet
++   0.0s > (slot 20) 1 x Precise Runaan's Bow
++   0.0s > (slot 27) 1 x Flint Arrow
++   0.0s > (slot 29) 1 x Obsidian Drill OD-355
++   0.0s > (slot 35) 1 x InfiniEye™
++   0.0s > (slot 36) 1 x Suspicious Giant's Sword
++   0.0s > (slot 37) 1 x Warped Aspect of the Void
++   0.0s > (slot 38) 1 x Fabled Frozen Scythe
++   0.0s > (slot 39) 1 x Fabled Edible Mace
++   0.0s > (slot 40) 1 x Precise Golden Gun
++   0.0s > (slot 41) 1 x Crying Obsidian Pickaxe
++   0.0s > (slot 42) 1 x Scorpion Bow
++   0.0s > (slot 44) 1 x SkyBlock Menu (Right Click)
++   0.8s > (opened "Wardrobe", 90 slots)
++   0.8s > (slot 0) 1 x Necrotic Storm Helmet
++   0.8s > (slot 1) 1 x Renowned Superior Dragon Helmet
++   0.8s > (slot 2) 1 x Enderite Helmet
++   0.8s > (slot 3) 1 x Crown of Greed
++   0.8s > (slot 9) 1 x Necrotic Storm Chestplate
++   0.8s > (slot 10) 1 x Renowned Superior Dragon Chestplate
++   0.8s > (slot 11) 1 x Enderite Chestplate
++   0.8s > (slot 12) 1 x Renowned Elegant Tuxedo Jacket
++   0.8s > (slot 18) 1 x Necrotic Storm Leggings
++   0.8s > (slot 19) 1 x Renowned Superior Dragon Leggings
++   0.8s > (slot 20) 1 x Enderite Leggings
++   0.8s > (slot 21) 1 x Spiked Elegant Tuxedo Pants
++   0.9s > (slot 27) 1 x Necrotic Storm Boots
++   0.9s > (slot 28) 1 x Renowned Superior Dragon Boots
++   0.9s > (slot 29) 1 x Enderite Boots
++   0.9s > (slot 30) 1 x Spiked Elegant Tuxedo Oxfords
++   0.9s > (slot 36) 1 x Slot 1
++   0.9s > (slot 37) 1 x Slot 2
++   0.9s > (slot 38) 1 x Slot 3
++   0.9s > (slot 39) 1 x Slot 4
++   0.9s > (slot 40) 1 x Slot 5
++   0.9s > (slot 41) 1 x Slot 6
++   0.9s > (slot 42) 1 x Slot 7
++   0.9s > (slot 43) 1 x Slot 8
++   0.9s > (slot 44) 1 x Slot 9
++   0.9s > (slot 45) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 46) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 48) 1 x Go Back
++   0.9s > (slot 49) 1 x Close
++   0.9s > (slot 50) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 52) 1 x minecraft:black_stained_glass_pane
++   0.9s > (slot 53) 1 x Next page
++   0.9s > (slot 54) 1 x Promising Pickaxe
++   0.9s > (slot 55) 2 x Bejeweled Handle
++   0.9s > (slot 56) 64 x Crying Obsidian
++   0.9s > (slot 57) 5 x Arcane Dragon Fragment
++   0.9s > (slot 58) 1 x End Stone Rose
++   0.9s > (slot 59) 15 x Old Dragon Fragment
++   0.9s > (slot 60) 4 x Summoning Eye
++   0.9s > (slot 63) 1 x Refined Enderite Pickaxe
++   0.9s > (slot 64) 1 x Amethyst Gauntlet
++   0.9s > (slot 65) 1 x Precise Runaan's Bow
++   0.9s > (slot 72) 1 x Flint Arrow
++   0.9s > (slot 74) 1 x Obsidian Drill OD-355
++   0.9s > (slot 80) 1 x InfiniEye™
++   0.9s > (slot 81) 1 x Suspicious Giant's Sword
++   0.9s > (slot 82) 1 x Warped Aspect of the Void
++   0.9s > (slot 83) 1 x Fabled Frozen Scythe
++   0.9s > (slot 84) 1 x Fabled Edible Mace
++   0.9s > (slot 85) 1 x Precise Golden Gun
++   0.9s > (slot 86) 1 x Crying Obsidian Pickaxe
++   0.9s > (slot 87) 1 x Scorpion Bow
++   0.9s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   1.7s > (slot 36) emptied
++   1.9s > Equipped wardrobe slot 1!
++   1.9s > (slot 36) 1 x Slot 1
++   1.9s > (slot 38) 1 x Slot 3
++   1.9s > (slot 81) 1 x Suspicious Giant's Sword
++   3.2s > (opened your inventory, 46 slots)
++   3.2s > (slot 5) 1 x Enderite Helmet
++   3.2s > (slot 6) 1 x Enderite Chestplate
++   3.2s > (slot 7) 1 x Enderite Leggings
++   3.2s > (slot 8) 1 x Enderite Boots
++   3.2s > (slot 9) 1 x Promising Pickaxe
++   3.2s > (slot 10) 2 x Bejeweled Handle
++   3.2s > (slot 11) 64 x Crying Obsidian
++   3.2s > (slot 12) 5 x Arcane Dragon Fragment
++   3.2s > (slot 13) 1 x End Stone Rose
++   3.2s > (slot 14) 15 x Old Dragon Fragment
++   3.2s > (slot 15) 4 x Summoning Eye
++   3.2s > (slot 18) 1 x Refined Enderite Pickaxe
++   3.2s > (slot 19) 1 x Amethyst Gauntlet
++   3.2s > (slot 20) 1 x Precise Runaan's Bow
++   3.2s > (slot 27) 1 x Flint Arrow
++   3.2s > (slot 29) 1 x Obsidian Drill OD-355
++   3.2s > (slot 35) 1 x InfiniEye™
++   3.2s > (slot 36) 1 x Suspicious Giant's Sword
++   3.2s > (slot 37) 1 x Warped Aspect of the Void
++   3.2s > (slot 38) 1 x Fabled Frozen Scythe
++   3.2s > (slot 39) 1 x Fabled Edible Mace
++   3.2s > (slot 40) 1 x Precise Golden Gun
++   3.2s > (slot 41) 1 x Crying Obsidian Pickaxe
++   3.2s > (slot 42) 1 x Scorpion Bow
++   3.2s > (slot 44) 1 x SkyBlock Menu (Right Click)
++   3.2s > (slot 5) 1 x Necrotic Storm Helmet
++   3.2s > (slot 6) 1 x Necrotic Storm Chestplate
++   3.2s > (slot 7) 1 x Necrotic Storm Leggings
++   3.2s > (slot 8) 1 x Necrotic Storm Boots
++   3.2s > (slot 36) 1 x Suspicious Giant's Sword
++   4.5s > (opened "Wardrobe", 90 slots)
++   4.5s > (slot 0) 1 x Necrotic Storm Helmet
++   4.5s > (slot 1) 1 x Renowned Superior Dragon Helmet
++   4.5s > (slot 2) 1 x Enderite Helmet
++   4.5s > (slot 3) 1 x Crown of Greed
++   4.5s > (slot 9) 1 x Necrotic Storm Chestplate
++   4.5s > (slot 10) 1 x Renowned Superior Dragon Chestplate
++   4.5s > (slot 11) 1 x Enderite Chestplate
++   4.5s > (slot 12) 1 x Renowned Elegant Tuxedo Jacket
++   4.5s > (slot 18) 1 x Necrotic Storm Leggings
++   4.5s > (slot 19) 1 x Renowned Superior Dragon Leggings
++   4.5s > (slot 20) 1 x Enderite Leggings
++   4.5s > (slot 21) 1 x Spiked Elegant Tuxedo Pants
++   4.5s > (slot 27) 1 x Necrotic Storm Boots
++   4.5s > (slot 28) 1 x Renowned Superior Dragon Boots
++   4.5s > (slot 29) 1 x Enderite Boots
++   4.5s > (slot 30) 1 x Spiked Elegant Tuxedo Oxfords
++   4.5s > (slot 36) 1 x Slot 1
++   4.5s > (slot 37) 1 x Slot 2
++   4.5s > (slot 38) 1 x Slot 3
++   4.5s > (slot 39) 1 x Slot 4
++   4.5s > (slot 40) 1 x Slot 5
++   4.5s > (slot 41) 1 x Slot 6
++   4.5s > (slot 42) 1 x Slot 7
++   4.5s > (slot 43) 1 x Slot 8
++   4.5s > (slot 44) 1 x Slot 9
++   4.5s > (slot 45) 1 x minecraft:black_stained_glass_pane
++   4.5s > (slot 46) 1 x minecraft:black_stained_glass_pane
++   4.5s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   4.5s > (slot 48) 1 x Go Back
++   4.5s > (slot 49) 1 x Close
++   4.5s > (slot 50) 1 x minecraft:black_stained_glass_pane
++   4.5s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   4.5s > (slot 52) 1 x minecraft:black_stained_glass_pane
++   4.5s > (slot 53) 1 x Next page
++   4.5s > (slot 54) 1 x Promising Pickaxe
++   4.5s > (slot 55) 2 x Bejeweled Handle
++   4.5s > (slot 56) 64 x Crying Obsidian
++   4.5s > (slot 57) 5 x Arcane Dragon Fragment
++   4.5s > (slot 58) 1 x End Stone Rose
++   4.5s > (slot 59) 15 x Old Dragon Fragment
++   4.5s > (slot 60) 4 x Summoning Eye
++   4.5s > (slot 63) 1 x Refined Enderite Pickaxe
++   4.5s > (slot 64) 1 x Amethyst Gauntlet
++   4.5s > (slot 65) 1 x Precise Runaan's Bow
++   4.5s > (slot 72) 1 x Flint Arrow
++   4.5s > (slot 74) 1 x Obsidian Drill OD-355
++   4.5s > (slot 80) 1 x InfiniEye™
++   4.5s > (slot 81) 1 x Suspicious Giant's Sword
++   4.5s > (slot 82) 1 x Warped Aspect of the Void
++   4.5s > (slot 83) 1 x Fabled Frozen Scythe
++   4.5s > (slot 84) 1 x Fabled Edible Mace
++   4.5s > (slot 85) 1 x Precise Golden Gun
++   4.5s > (slot 86) 1 x Crying Obsidian Pickaxe
++   4.5s > (slot 87) 1 x Scorpion Bow
++   4.5s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   5.2s > (slot 38) emptied
++   5.4s > Wait one second after opening the wardrobe before swapping armor.
++   5.5s > (slot 38) 1 x Slot 3
++   7.3s > (opened your inventory, 46 slots)
++   7.3s > (slot 5) 1 x Necrotic Storm Helmet
++   7.3s > (slot 6) 1 x Necrotic Storm Chestplate
++   7.3s > (slot 7) 1 x Necrotic Storm Leggings
++   7.3s > (slot 8) 1 x Necrotic Storm Boots
++   7.3s > (slot 9) 1 x Promising Pickaxe
++   7.3s > (slot 10) 2 x Bejeweled Handle
++   7.3s > (slot 11) 64 x Crying Obsidian
++   7.3s > (slot 12) 5 x Arcane Dragon Fragment
++   7.3s > (slot 13) 1 x End Stone Rose
++   7.3s > (slot 14) 15 x Old Dragon Fragment
++   7.3s > (slot 15) 4 x Summoning Eye
++   7.3s > (slot 18) 1 x Refined Enderite Pickaxe
++   7.3s > (slot 19) 1 x Amethyst Gauntlet
++   7.3s > (slot 20) 1 x Precise Runaan's Bow
++   7.3s > (slot 27) 1 x Flint Arrow
++   7.3s > (slot 29) 1 x Obsidian Drill OD-355
++   7.3s > (slot 35) 1 x InfiniEye™
++   7.3s > (slot 36) 1 x Suspicious Giant's Sword
++   7.3s > (slot 37) 1 x Warped Aspect of the Void
++   7.3s > (slot 38) 1 x Fabled Frozen Scythe
++   7.3s > (slot 39) 1 x Fabled Edible Mace
++   7.3s > (slot 40) 1 x Precise Golden Gun
++   7.3s > (slot 41) 1 x Crying Obsidian Pickaxe
++   7.3s > (slot 42) 1 x Scorpion Bow
++   7.3s > (slot 44) 1 x SkyBlock Menu (Right Click)
++  10.3s > (opened "Wardrobe", 90 slots)
++  10.3s > (slot 0) 1 x Necrotic Storm Helmet
++  10.3s > (slot 1) 1 x Renowned Superior Dragon Helmet
++  10.3s > (slot 2) 1 x Enderite Helmet
++  10.3s > (slot 3) 1 x Crown of Greed
++  10.3s > (slot 9) 1 x Necrotic Storm Chestplate
++  10.3s > (slot 10) 1 x Renowned Superior Dragon Chestplate
++  10.3s > (slot 11) 1 x Enderite Chestplate
++  10.3s > (slot 12) 1 x Renowned Elegant Tuxedo Jacket
++  10.3s > (slot 18) 1 x Necrotic Storm Leggings
++  10.3s > (slot 19) 1 x Renowned Superior Dragon Leggings
++  10.3s > (slot 20) 1 x Enderite Leggings
++  10.3s > (slot 21) 1 x Spiked Elegant Tuxedo Pants
++  10.3s > (slot 27) 1 x Necrotic Storm Boots
++  10.3s > (slot 28) 1 x Renowned Superior Dragon Boots
++  10.3s > (slot 29) 1 x Enderite Boots
++  10.3s > (slot 30) 1 x Spiked Elegant Tuxedo Oxfords
++  10.3s > (slot 36) 1 x Slot 1
++  10.3s > (slot 37) 1 x Slot 2
++  10.3s > (slot 38) 1 x Slot 3
++  10.3s > (slot 39) 1 x Slot 4
++  10.3s > (slot 40) 1 x Slot 5
++  10.3s > (slot 41) 1 x Slot 6
++  10.3s > (slot 42) 1 x Slot 7
++  10.3s > (slot 43) 1 x Slot 8
++  10.3s > (slot 44) 1 x Slot 9
++  10.3s > (slot 45) 1 x minecraft:black_stained_glass_pane
++  10.3s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  10.3s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  10.3s > (slot 48) 1 x Go Back
++  10.3s > (slot 49) 1 x Close
++  10.3s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  10.4s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  10.4s > (slot 52) 1 x minecraft:black_stained_glass_pane
++  10.4s > (slot 53) 1 x Next page
++  10.4s > (slot 54) 1 x Promising Pickaxe
++  10.4s > (slot 55) 2 x Bejeweled Handle
++  10.4s > (slot 56) 64 x Crying Obsidian
++  10.4s > (slot 57) 5 x Arcane Dragon Fragment
++  10.4s > (slot 58) 1 x End Stone Rose
++  10.4s > (slot 59) 15 x Old Dragon Fragment
++  10.4s > (slot 60) 4 x Summoning Eye
++  10.4s > (slot 63) 1 x Refined Enderite Pickaxe
++  10.4s > (slot 64) 1 x Amethyst Gauntlet
++  10.4s > (slot 65) 1 x Precise Runaan's Bow
++  10.4s > (slot 72) 1 x Flint Arrow
++  10.4s > (slot 74) 1 x Obsidian Drill OD-355
++  10.4s > (slot 80) 1 x InfiniEye™
++  10.4s > (slot 81) 1 x Suspicious Giant's Sword
++  10.4s > (slot 82) 1 x Warped Aspect of the Void
++  10.4s > (slot 83) 1 x Fabled Frozen Scythe
++  10.4s > (slot 84) 1 x Fabled Edible Mace
++  10.4s > (slot 85) 1 x Precise Golden Gun
++  10.4s > (slot 86) 1 x Crying Obsidian Pickaxe
++  10.4s > (slot 87) 1 x Scorpion Bow
++  10.4s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  11.8s > (slot 53) emptied
++  12.0s > (slot 0) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 2) 1 x Locked
++  12.0s > (slot 3) 1 x Locked
++  12.0s > (slot 4) 1 x Locked
++  12.0s > (slot 5) 1 x Locked
++  12.0s > (slot 6) 1 x Locked
++  12.0s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 8) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 9) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 11) 1 x Locked
++  12.0s > (slot 12) 1 x Locked
++  12.0s > (slot 13) 1 x Locked
++  12.0s > (slot 14) 1 x Locked
++  12.0s > (slot 15) 1 x Locked
++  12.0s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 20) 1 x Locked
++  12.0s > (slot 21) 1 x Locked
++  12.0s > (slot 22) 1 x Locked
++  12.0s > (slot 23) 1 x Locked
++  12.0s > (slot 24) 1 x Locked
++  12.0s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 29) 1 x Locked
++  12.0s > (slot 30) 1 x Locked
++  12.0s > (slot 31) 1 x Locked
++  12.0s > (slot 32) 1 x Locked
++  12.0s > (slot 33) 1 x Locked
++  12.0s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 36) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 38) 1 x Locked
++  12.0s > (slot 39) 1 x Locked
++  12.0s > (slot 40) 1 x Locked
++  12.0s > (slot 41) 1 x Locked
++  12.0s > (slot 42) 1 x Locked
++  12.0s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 44) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 45) 1 x Previous page
++  12.0s > (slot 53) 1 x minecraft:black_stained_glass_pane
++  12.8s > (slot 45) emptied
++  12.9s > (slot 0) 1 x Necrotic Storm Helmet
++  12.9s > (slot 1) 1 x Renowned Superior Dragon Helmet
++  12.9s > (slot 2) 1 x Enderite Helmet
++  12.9s > (slot 3) 1 x Crown of Greed
++  12.9s > (slot 4) emptied
++  12.9s > (slot 5) emptied
++  12.9s > (slot 6) emptied
++  12.9s > (slot 7) emptied
++  12.9s > (slot 8) emptied
++  12.9s > (slot 9) 1 x Necrotic Storm Chestplate
++  12.9s > (slot 10) 1 x Renowned Superior Dragon Chestplate
++  12.9s > (slot 11) 1 x Enderite Chestplate
++  12.9s > (slot 12) 1 x Renowned Elegant Tuxedo Jacket
++  12.9s > (slot 13) emptied
++  12.9s > (slot 14) emptied
++  12.9s > (slot 15) emptied
++  12.9s > (slot 16) emptied
++  12.9s > (slot 17) emptied
++  12.9s > (slot 18) 1 x Necrotic Storm Leggings
++  12.9s > (slot 19) 1 x Renowned Superior Dragon Leggings
++  12.9s > (slot 20) 1 x Enderite Leggings
++  12.9s > (slot 21) 1 x Spiked Elegant Tuxedo Pants
++  12.9s > (slot 22) emptied
++  12.9s > (slot 23) emptied
++  12.9s > (slot 24) emptied
++  12.9s > (slot 25) emptied
++  12.9s > (slot 26) emptied
++  12.9s > (slot 27) 1 x Necrotic Storm Boots
++  12.9s > (slot 28) 1 x Renowned Superior Dragon Boots
++  12.9s > (slot 29) 1 x Enderite Boots
++  12.9s > (slot 30) 1 x Spiked Elegant Tuxedo Oxfords
++  12.9s > (slot 31) emptied
++  12.9s > (slot 32) emptied
++  12.9s > (slot 33) emptied
++  12.9s > (slot 34) emptied
++  12.9s > (slot 35) emptied
++  12.9s > (slot 36) 1 x Slot 1
++  12.9s > (slot 37) 1 x Slot 2
++  12.9s > (slot 38) 1 x Slot 3
++  12.9s > (slot 39) 1 x Slot 4
++  12.9s > (slot 40) 1 x Slot 5
++  12.9s > (slot 41) 1 x Slot 6
++  12.9s > (slot 42) 1 x Slot 7
++  12.9s > (slot 43) 1 x Slot 8
++  12.9s > (slot 44) 1 x Slot 9
++  12.9s > (slot 45) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 53) 1 x Next page
++  13.9s > (opened your inventory, 46 slots)
++  13.9s > (slot 5) 1 x Necrotic Storm Helmet
++  13.9s > (slot 6) 1 x Necrotic Storm Chestplate
++  13.9s > (slot 7) 1 x Necrotic Storm Leggings
++  13.9s > (slot 8) 1 x Necrotic Storm Boots
++  13.9s > (slot 9) 1 x Promising Pickaxe
++  13.9s > (slot 10) 2 x Bejeweled Handle
++  13.9s > (slot 11) 64 x Crying Obsidian
++  13.9s > (slot 12) 5 x Arcane Dragon Fragment
++  13.9s > (slot 13) 1 x End Stone Rose
++  13.9s > (slot 14) 15 x Old Dragon Fragment
++  13.9s > (slot 15) 4 x Summoning Eye
++  13.9s > (slot 18) 1 x Refined Enderite Pickaxe
++  13.9s > (slot 19) 1 x Amethyst Gauntlet
++  13.9s > (slot 20) 1 x Precise Runaan's Bow
++  13.9s > (slot 27) 1 x Flint Arrow
++  13.9s > (slot 29) 1 x Obsidian Drill OD-355
++  13.9s > (slot 35) 1 x InfiniEye™
++  13.9s > (slot 36) 1 x Suspicious Giant's Sword
++  13.9s > (slot 37) 1 x Warped Aspect of the Void
++  13.9s > (slot 38) 1 x Fabled Frozen Scythe
++  13.9s > (slot 39) 1 x Fabled Edible Mace
++  13.9s > (slot 40) 1 x Precise Golden Gun
++  13.9s > (slot 41) 1 x Crying Obsidian Pickaxe
++  13.9s > (slot 42) 1 x Scorpion Bow
++  13.9s > (slot 44) 1 x SkyBlock Menu (Right Click)

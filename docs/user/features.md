@@ -478,6 +478,14 @@ A panel beside the forge's menus shows the item, how many you can craft now, and
 
 Click the key in the panel's corner, then press a key or a side mouse button, to change it without opening the settings.
 
+### Wardrobe Keys
+
+In the Wardrobe, press 1 to 9 to click the nine slot buttons of the page you're on, from left to right, the same as clicking the button yourself. On the second page, 1 is Slot 10. Each press is one click.
+
+The server refuses a wardrobe click for a second after the menu opens, so a press in that second waits for it. The seconds left show beside the menu's title, and the button your press will click has a thin outline. Press another number while you wait to change your mind.
+
+Change the keys under Keys in Wardrobe Keys' settings. Each key works only in the Wardrobe, so 1 to 9 still pick your hotbar slot everywhere else.
+
 ## Combat
 
 ### Damage Numbers
