@@ -4,11 +4,9 @@ import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
-import io.github.noxaur.dsmod.core.game.ActionBar
+import io.github.noxaur.dsmod.core.feature.general.OwnKills
 import io.github.noxaur.dsmod.core.game.Area
-import io.github.noxaur.dsmod.core.game.CombatXp
 import io.github.noxaur.dsmod.core.game.Drop
-import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
@@ -38,33 +36,15 @@ class ZealotTracker(config: DsModConfig) : HasFeature {
     private var endSince: Long? = null
     private var kills = 0
 
-    // When the last few zealots died. One action bar can confirm several that died together.
-    private val died = LongArray(8)
-    private var diedNext = 0
-
     init {
         feature.on<TabList> { _, now ->
             if (feature.here && endSince == null) endSince = now
             if (!feature.here) leaveEnd(now)
         }
         feature.on<WorldChanged> { _, now -> leaveEnd(now) }
-        feature.on<EntityDied> { death, now ->
-            val name = death.name.plain
-            if ("Zealot" !in name || "Bruiser" in name) return@on
-            died[diedNext] = now
-            diedNext = (diedNext + 1) % died.size
-        }
-        feature.on<ActionBar> { bar, now ->
-            if (CombatXp.MARK !in bar.text.plain) return@on
-            var confirmed = 0
-            for (i in died.indices) {
-                if (died[i] == 0L || now - died[i] !in 0..CombatXp.KILL_WINDOW_MILLIS) continue
-                died[i] = 0
-                confirmed++
-            }
-            if (confirmed == 0) return@on
-            kills += confirmed
-            allTime.value = allTime.value.copy(kills = allTime.value.kills + confirmed)
+        OwnKills(feature, { "Zealot" in it.name.plain && "Bruiser" !in it.name.plain }) { count, _, _ ->
+            kills += count
+            allTime.value = allTime.value.copy(kills = allTime.value.kills + count)
         }
         feature.line(Drop.head, Drop::parse) { drop, _ ->
             val name = drop.item

@@ -207,7 +207,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             val heard = if (entity) feature.entityFilters.view(held.before, held.after, event) ?: continue else event
             val handler = if (reaches) feature.handlers[heard.javaClass] else null
             feature.forget(heard)
-            if (handler != null) metrics.time(feature.id) { handler(heard, time) }
+            if (handler != null) metrics.time(feature.id) { handler.handle(heard, time) }
             when (heard) {
                 is EntitySeen -> feature.heldEntities[heard.id] = heard
                 is EntityRenamed -> feature.heldEntities[heard.id] = checkNotNull(held.after) { "a renamed entity is held after the rename" }
@@ -257,12 +257,12 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             readout.missedLeave = false
             for (event in missed) {
                 feature.forget(event)
-                feature.handlers[event.javaClass]?.let { metrics.time(feature.id) { it(event, time) } }
+                feature.handlers[event.javaClass]?.let { metrics.time(feature.id) { it.handle(event, time) } }
             }
             // It hears the entities it reads that the client already holds, as it would have when they came.
             if (!on) feature.heldEntities.clear() else if (feature.entityFilters.isNotEmpty()) for (seen in held.values) {
                 if (feature.entityFilters.none { it.matches(seen) }) continue
-                feature.handlers[EntitySeen::class.java]?.let { metrics.time(feature.id) { it(seen, time) } }
+                feature.handlers[EntitySeen::class.java]?.let { metrics.time(feature.id) { it.handle(seen, time) } }
                 feature.heldEntities[seen.id] = seen
             }
         }

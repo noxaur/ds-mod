@@ -71,9 +71,6 @@ class PerfTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val budgets = Json.decodeFromString<Budgets>(checkNotNull(javaClass.getResource("/perf-budgets.json")).readText())
         val samples = HashMap<String, MutableList<Double>>()
-        val probe = HashMap<String, Long>()
-        val probeCounts = HashMap<String, Long>()
-        val probeWindows = HashMap<String, MutableList<Long>>()
 
         context.worldBuilder().create().use { world ->
             // A full sidebar, each line in a team's prefix as dragsim.co sends it.
@@ -120,12 +117,7 @@ class PerfTest : FabricClientGameTest {
                 var features = 0L
                 for ((name, timer) in timers) {
                     if (name in budgets.rows) samples.getOrPut(name, ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
-                    else {
-                        features += timer.totalNanos
-                        probe.merge(name, timer.totalNanos, Long::plus)
-                        probeCounts.merge(name, timer.count, Long::plus)
-                        probeWindows.getOrPut(name, ::ArrayList) += timer.totalNanos
-                    }
+                    else features += timer.totalNanos
                 }
                 samples.getOrPut("features", ::ArrayList) += features / 1000.0 / WINDOW_TICKS
             }
@@ -166,14 +158,6 @@ class PerfTest : FabricClientGameTest {
                     appendLine("| $group | Median | Mean | Max | Cap | |")
                     appendLine("|:--|:--|:--|:--|:--|:--|")
                     rows.forEach(::appendLine)
-                }
-                appendLine()
-                appendLine("| Probe timer | Median µs per tick | Mean µs per tick | Calls |")
-                appendLine("|:--|:--|:--|:--|")
-                for ((name, nanos) in probe.entries.sortedByDescending { it.value }.take(25)) {
-                    val windows = (probeWindows[name].orEmpty() + List(WINDOWS - probeWindows[name].orEmpty().size) { 0L }).sorted()
-                    val median = windows[windows.size / 2] * speed / 1000.0 / WINDOW_TICKS
-                    appendLine("| $name | ${"%.3f".format(Locale.ROOT, median)} | ${"%.3f".format(Locale.ROOT, nanos * speed / 1000.0 / (WINDOWS * WINDOW_TICKS))} | ${probeCounts[name]} |")
                 }
             }
             Path("perf.md").writeText(report)

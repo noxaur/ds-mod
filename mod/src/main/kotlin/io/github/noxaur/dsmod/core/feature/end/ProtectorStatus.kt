@@ -6,6 +6,10 @@ import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ProtectorRow
+import io.github.noxaur.dsmod.core.game.ProtectorStage
+import io.github.noxaur.dsmod.core.game.ProtectorStage.RESTING
+import io.github.noxaur.dsmod.core.game.ProtectorStage.RISING
+import io.github.noxaur.dsmod.core.game.ProtectorStage.SPAWNED
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.clock
@@ -19,7 +23,7 @@ class ProtectorStatus(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "protector-status", Area.END, Store.END, "Show the Protector's stage and the kills left until it emerges.", formerly = listOf("golemStatus"), hud = ::hud)
 
     private var row: String? by feature.world { null }
-    private var stage: String? by feature.world { null }
+    private var stage: ProtectorStage? by feature.world { null }
     private var tier = ""
     private var toGo = ""
     private var spawnedAt by feature.world { 0L }
@@ -35,7 +39,7 @@ class ProtectorStatus(config: DsModConfig) : HasFeature {
             if (value == null) return@on
             val (name, tiers, left) = ProtectorRow.parse(value) ?: return@on feature.unparsed(value)
             // The tab list moving on from the fight ends it, whether or not the defeat reached chat.
-            if (name == "Resting" || previous == "Spawned" && name != "Spawned") {
+            if (name == RESTING || previous == SPAWNED && name != SPAWNED) {
                 spawnedAt = 0
                 defeatedAt = 0
             }
@@ -49,7 +53,7 @@ class ProtectorStatus(config: DsModConfig) : HasFeature {
         }
         feature.line("The Endstone Protector has been defeated!") { now ->
             // The tab list ends the fight when the row leaves Spawned. A later defeat line is that fight, already over.
-            if (stage == "Spawned" || spawnedAt > 0) defeatedAt = now
+            if (stage == SPAWNED || spawnedAt > 0) defeatedAt = now
         }
     }
 
@@ -60,12 +64,12 @@ class ProtectorStatus(config: DsModConfig) : HasFeature {
                 row("Stage") { value("Defeated") }
                 if (spawnedAt > 0) row("Fight") { value(clock(defeatedAt - spawnedAt)) }
             }
-            spawnedAt > 0 || stage == "Spawned" -> feature.block {
-                row("Stage") { value("Spawned") }
+            spawnedAt > 0 || stage == SPAWNED -> feature.block {
+                row("Stage") { value(SPAWNED.label) }
                 if (spawnedAt > 0) row("Alive") { value(clock(now - spawnedAt)) }
             }
-            stage == "Resting" -> killsLeft("Resting")
-            stage == "Rising" -> killsLeft("Rising $tier")
+            stage == RESTING -> killsLeft(RESTING.label)
+            stage == RISING -> killsLeft("${RISING.label} $tier")
             else -> null
         }
     }
