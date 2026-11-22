@@ -3,9 +3,9 @@ import { describe, expect, test } from "vite-plus/test";
 
 import type { RecordingRequest } from "../src/contrib/model.ts";
 import type { Store, SubmissionRow } from "../src/contrib/store.ts";
-import type { ItemSighting } from "../src/items/model.ts";
 import type { ItemLimits, ItemStore, Observation } from "../src/items/store.ts";
 import type { ProfileStore } from "../src/profiles/store.ts";
+import { gzipped, sighting, spec } from "./harness.ts";
 
 export interface Stores {
   readonly contrib: Store["Service"];
@@ -22,35 +22,17 @@ export interface Implementation {
 const run = <A, E>(effect: Effect.Effect<A, E>) => Effect.runPromise(effect);
 
 const request = (id: string, extra: Partial<RecordingRequest> = {}): RecordingRequest => ({
+  ...spec,
   id,
   status: "open",
   createdAt: "2026-01-01T00:00:00.000Z",
-  brief: {
-    name: `Brief ${id}`,
-    steps: [
-      { do: "Warp", note: "now" },
-      { do: "Wait", seconds: 60 },
-    ],
-  },
-  requirements: [{ kind: "area", value: "The End" }],
-  timeoutSeconds: 300,
-  wanted: 2,
   ...extra,
 });
 
 const submission = (id: string, requestId: string, userId: string, createdAt = "2026-01-01T00:00:00.000Z") =>
   ({ id, requestId, userId, modVersion: "1.0.0", bytes: 3, createdAt }) satisfies SubmissionRow;
 
-const capture = (...bytes: number[]) => new Uint8Array([0x1f, 0x8b, ...bytes]);
-
-const sample = (entry: string, text = "a"): ItemSighting => ({
-  entry,
-  material: "minecraft:iron_sword",
-  name: [{ text }],
-  lore: [],
-  glint: true,
-  data: {},
-});
+const sample = (entry: string, text = "a") => sighting(entry, { name: [{ text }] });
 
 const seen = (entry: string, extra: Partial<Observation> = {}): Observation => ({
   entry,
@@ -91,7 +73,7 @@ const runs = [
 
 const insertRuns = async (contrib: Stores["contrib"]) => {
   for (const row of runs) {
-    await run(contrib.insertSubmission(row, capture(1), 100));
+    await run(contrib.insertSubmission(row, gzipped(1), 100));
   }
 };
 
@@ -170,32 +152,32 @@ const suites: { readonly [Name in keyof Stores]: Cases<Stores[Name]> } = {
       "doneBy lists the skips and runs of that player alone": async ({ contrib }) => {
         await run(contrib.insertSkip("r1", "ann"));
         await run(contrib.insertSkip("r1", "bob"));
-        await run(contrib.insertSubmission(submission("s1", "r2", "ann"), capture(1), 100));
-        await run(contrib.insertSubmission(submission("s2", "r3", "bob"), capture(2), 100));
+        await run(contrib.insertSubmission(submission("s1", "r2", "ann"), gzipped(1), 100));
+        await run(contrib.insertSubmission(submission("s2", "r3", "bob"), gzipped(2), 100));
         expect((await run(contrib.doneBy("ann"))).toSorted()).toEqual(["r1", "r2"]);
         expect(await run(contrib.doneBy("nobody"))).toEqual([]);
       },
     },
     insertSubmission: {
       "a player's second run is refused and leaves nothing behind": async ({ contrib }) => {
-        expect(await run(contrib.insertSubmission(submission("s1", "r1", "ann"), capture(1), 100))).toBe(true);
-        expect(await run(contrib.insertSubmission(submission("s2", "r1", "ann"), capture(2), 100))).toBe(false);
-        expect(await run(contrib.capture("s1"))).toEqual(capture(1));
+        expect(await run(contrib.insertSubmission(submission("s1", "r1", "ann"), gzipped(1), 100))).toBe(true);
+        expect(await run(contrib.insertSubmission(submission("s2", "r1", "ann"), gzipped(2), 100))).toBe(false);
+        expect(await run(contrib.capture("s1"))).toEqual(gzipped(1));
         expect(await run(contrib.capture("s2"))).toBeNull();
-        expect(await run(contrib.insertSubmission(submission("s3", "r2", "ann"), capture(3), 100))).toBe(true);
-        expect(await run(contrib.insertSubmission(submission("s4", "r1", "bob"), capture(4), 100))).toBe(true);
+        expect(await run(contrib.insertSubmission(submission("s3", "r2", "ann"), gzipped(3), 100))).toBe(true);
+        expect(await run(contrib.insertSubmission(submission("s4", "r1", "bob"), gzipped(4), 100))).toBe(true);
       },
       "a run for a closed request is refused and leaves nothing behind": async ({ contrib }) => {
         await run(contrib.insertRequest(request("r1")));
         await run(contrib.close("r1"));
-        expect(await run(contrib.insertSubmission(submission("s1", "r1", "ann"), capture(1), 100))).toBe(false);
+        expect(await run(contrib.insertSubmission(submission("s1", "r1", "ann"), gzipped(1), 100))).toBe(false);
         expect(await run(contrib.submissionsOf("r1"))).toEqual([]);
         expect(await run(contrib.capture("s1"))).toBeNull();
       },
       "two uploads of one player at once keep one": async ({ contrib }) => {
         const results = await Promise.all([
-          run(contrib.insertSubmission(submission("s1", "r1", "ann"), capture(1), 100)),
-          run(contrib.insertSubmission(submission("s2", "r1", "ann"), capture(2), 100)),
+          run(contrib.insertSubmission(submission("s1", "r1", "ann"), gzipped(1), 100)),
+          run(contrib.insertSubmission(submission("s2", "r1", "ann"), gzipped(2), 100)),
         ]);
         expect(results.toSorted()).toEqual([false, true]);
         const kept = await run(contrib.submissionsOf("r1"));
@@ -203,10 +185,10 @@ const suites: { readonly [Name in keyof Stores]: Cases<Stores[Name]> } = {
         expect(await run(contrib.capture(kept[0]?.id ?? ""))).not.toBeNull();
       },
       "two players at once stay within twice the wanted runs": async ({ contrib }) => {
-        expect(await run(contrib.insertSubmission(submission("s0", "r1", "ann"), capture(1), 2))).toBe(true);
+        expect(await run(contrib.insertSubmission(submission("s0", "r1", "ann"), gzipped(1), 2))).toBe(true);
         const results = await Promise.all([
-          run(contrib.insertSubmission(submission("s1", "r1", "bob"), capture(2), 2)),
-          run(contrib.insertSubmission(submission("s2", "r1", "cat"), capture(3), 2)),
+          run(contrib.insertSubmission(submission("s1", "r1", "bob"), gzipped(2), 2)),
+          run(contrib.insertSubmission(submission("s2", "r1", "cat"), gzipped(3), 2)),
         ]);
         expect(results.toSorted()).toEqual([false, true]);
         expect((await run(contrib.submissionsOf("r1"))).map(({ id }) => id)).toEqual(["s0", "s1"]);
@@ -228,8 +210,8 @@ const suites: { readonly [Name in keyof Stores]: Cases<Stores[Name]> } = {
     },
     capture: {
       "a capture comes back as it went in, and an unknown id is null": async ({ contrib }) => {
-        await run(contrib.insertSubmission(submission("s1", "r1", "ann"), capture(1, 2, 3), 100));
-        expect(await run(contrib.capture("s1"))).toEqual(capture(1, 2, 3));
+        await run(contrib.insertSubmission(submission("s1", "r1", "ann"), gzipped(1, 2, 3), 100));
+        expect(await run(contrib.capture("s1"))).toEqual(gzipped(1, 2, 3));
         expect(await run(contrib.capture("nothing"))).toBeNull();
       },
     },

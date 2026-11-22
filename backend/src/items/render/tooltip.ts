@@ -1,6 +1,7 @@
-import { colorOf, parseLegacy, push } from "../legacy.ts";
+import { colorOf, parseLegacy, push } from "../../upstream/legacy.ts";
 import type { Line, Span } from "../model.ts";
-import { titleCase } from "../title.ts";
+import { RARITY_COLORS } from "../../upstream/rarity.ts";
+import { titleCase } from "../../upstream/title.ts";
 import type { Ability, Catalog, CatalogItem } from "./catalog.ts";
 import { advance } from "./font.ts";
 import type { UpstreamItem } from "./upstream.ts";
@@ -14,19 +15,6 @@ const GOLD = "#FFAA00";
 const GREEN = "#55FF55";
 const AQUA = "#00AAAA";
 const PINK = "#FF55FF";
-
-export const RARITY_COLORS: Readonly<Record<string, string>> = {
-  COMMON: "#FFFFFF",
-  UNCOMMON: "#55FF55",
-  RARE: "#5555FF",
-  EPIC: "#AA00AA",
-  LEGENDARY: "#FFAA00",
-  MYTHIC: "#FF55FF",
-  DIVINE: "#55FFFF",
-  SPECIAL: "#FF5555",
-  VERY_SPECIAL: "#FF5555",
-  SUPREME: "#AA0000",
-};
 
 /** The icon the server draws before a stat, which the catalog does not carry. The ones past `speed` are guesses. */
 const ICONS: Readonly<Record<string, string>> = {

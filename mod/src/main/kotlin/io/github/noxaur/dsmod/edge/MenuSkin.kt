@@ -9,7 +9,6 @@ import io.github.noxaur.dsmod.core.ui.CursorMemory
 import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.Menus
 import io.github.noxaur.dsmod.core.ui.TabEdge
-import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement
@@ -147,9 +146,7 @@ object MenuSkin {
         HudElementRegistry.replaceElement(VanillaHudElements.CROSSHAIR) { element ->
             HudElement { graphics, delta -> if (!glassOpen()) element.extractRenderState(graphics, delta) }
         }
-        ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
-            if (screen is ContainerScreen) ScreenEvents.afterTick(screen).register { findButtons(screen.menu) }
-        }
+        ScreenHooks.onEveryLayout<ContainerScreen> { screen, _ -> ScreenEvents.afterTick(screen).register { findButtons(screen.menu) } }
     }
 
     private fun findButtons(menu: ChestMenu) {
@@ -171,7 +168,7 @@ object MenuSkin {
         if (screen.menu === buttonMenu && skins(screen)) buttons.getOrNull(index) else null
 
     fun drawButton(graphics: GuiGraphicsExtractor, screen: AbstractContainerScreen<*>, slot: Slot, button: MenuButton) {
-        val hovered = (screen as ContainerScreenAccessor).hoveredSlot === slot
+        val hovered = screen.slotUnderMouse === slot
         val icon = when (button) {
             MenuButton.BACK -> Icon.BACK
             MenuButton.CLOSE -> Icon.CROSS
@@ -237,10 +234,9 @@ object MenuSkin {
     private fun background(g: GuiGraphicsExtractor, screen: AbstractContainerScreen<*>, texture: Identifier) = DsModClient.game.metrics.time("menus.draw") {
         val glass = paintGlass
         val solid = glass < 0
-        screen as ContainerScreenAccessor
-        val left = screen.leftPos
-        val top = screen.topPos
-        if (solid) Kit.panel(g, left, top, screen.imageWidth, screen.imageHeight) else Kit.glass(g, left, top, screen.imageWidth, screen.imageHeight, glass)
+        val left = screen.containerLeft
+        val top = screen.containerTop
+        if (solid) Kit.panel(g, left, top, screen.containerWidth, screen.containerHeight) else Kit.glass(g, left, top, screen.containerWidth, screen.containerHeight, glass)
         when (screen) {
             is InventoryScreen -> well(g, left + 25, top + 7, 51, 72)
             is AbstractFurnaceScreen<*> -> {

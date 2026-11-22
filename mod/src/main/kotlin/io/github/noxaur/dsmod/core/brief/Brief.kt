@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.hud.HudRow
 import io.github.noxaur.dsmod.core.hud.TextRow
 import io.github.noxaur.dsmod.core.hud.hud
 import io.github.noxaur.dsmod.core.text.clock
+import io.github.noxaur.dsmod.core.text.secondsLeft
 import io.github.noxaur.dsmod.core.text.text
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -71,7 +72,7 @@ class BriefRun(val brief: Brief, private val openedAt: Long = 0, private val tim
     /** The seconds left before the pass times out, or null when it has no limit. */
     fun timeLeft(now: Long): Int? {
         val seconds = timeoutSeconds ?: return null
-        return secondsLeft(seconds, openedAt, now)
+        return secondsLeft(seconds * 1000L - (now - openedAt)).toInt()
     }
 
     /** Moves on when a timed step has run out. True when it did. */
@@ -80,7 +81,7 @@ class BriefRun(val brief: Brief, private val openedAt: Long = 0, private val tim
     /** The seconds left on a timed step, or null when the current step has no timer. */
     fun remaining(now: Long): Int? {
         val seconds = brief.steps.getOrNull(current)?.seconds ?: return null
-        return secondsLeft(seconds, since, now)
+        return secondsLeft(seconds * 1000L - (now - since)).toInt()
     }
 
     /**
@@ -140,9 +141,6 @@ class BriefRun(val brief: Brief, private val openedAt: Long = 0, private val tim
         return hud(brief.name) {}.copy(rows = rows)
     }
 }
-
-/** Whole seconds left of [seconds] counted from [since], rounded up, and never below zero. */
-private fun secondsLeft(seconds: Int, since: Long, now: Long) = ((seconds * 1000L - (now - since) + 999) / 1000).toInt().coerceAtLeast(0)
 
 private fun wrap(text: String): List<String> {
     val lines = mutableListOf<String>()

@@ -1,8 +1,6 @@
-import type { Catalog } from "../items/render/catalog.ts";
-import { named, statSheet } from "../items/render/facts.ts";
-import { count, lists, numberEntries, record, text } from "../items/render/read.ts";
-import { statSet } from "../items/render/upstream.ts";
-import { titleCase } from "../items/title.ts";
+import { type Catalog, named, statSheet } from "../items/render.ts";
+import { count, lists, numberEntries, record, statSet, text } from "../upstream/read.ts";
+import { titleCase } from "../upstream/title.ts";
 import type { Profile } from "./model.ts";
 import { mobName } from "./names.ts";
 import { skillProgress } from "./progress.ts";
