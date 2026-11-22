@@ -21,10 +21,7 @@ fun ClientGameTestContext.autoClicks(walk: Boolean, key: Int?) = counted {
 }
 
 fun ClientGameTestContext.ownClicks(button: Int) = counted {
-    repeat(20) {
-        input.pressMouse(button)
-        waitTicks(1)
-    }
+    repeat(20) { input.pressMouse(button) }
 }
 
 private fun ClientGameTestContext.counted(body: () -> Unit): Pair<Int, Int> {
