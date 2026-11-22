@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.FloatingText
+import io.github.noxaur.dsmod.core.text.number
 import io.github.noxaur.dsmod.core.text.short
 import io.github.noxaur.dsmod.core.text.text
 
@@ -47,8 +48,8 @@ class DamageNumbers(config: DsModConfig) : HasFeature {
                 DamageShown.ALL -> Unit
             }
             if (!shorten.value) return@on
-            val number = short(digits.replace(",", "").toDouble(), decimals.value.toInt())
-            if (number != digits) feature.replace(text { server(before + number + after, event.text) })
+            val shown = short(number(digits) ?: return@on feature.unparsed(plain), decimals.value.toInt())
+            if (shown != digits) feature.replace(text { server(before + shown + after, event.text) })
         }
     }
 
