@@ -63,6 +63,15 @@ class WardrobeKeysTest : Harness(alone = WardrobeKeys::class) {
     }
 
     @Test
+    fun `a held press is outlined on the next tick, not the next refresh`() {
+        open(WardrobeKeys.TITLE)
+        pass(100)
+        feature.press(key(2), time)
+        pass(50)
+        assertEquals(setOf(37), readout(feature).slots.keys)
+    }
+
+    @Test
     fun `a new menu drops a held press and starts the second again`() {
         open(WardrobeKeys.TITLE)
         feature.press(key(2), time)

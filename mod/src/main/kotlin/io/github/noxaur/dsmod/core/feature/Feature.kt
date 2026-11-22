@@ -111,6 +111,12 @@ class Feature(
     internal lateinit var messages: MutableList<Message>
     internal var hides = false
 
+    internal var redrawn = false
+
+    fun redraw() {
+        redrawn = true
+    }
+
     val worldNumber: Int get() = worlds()
 
     internal var worlds: () -> Int = { 0 }

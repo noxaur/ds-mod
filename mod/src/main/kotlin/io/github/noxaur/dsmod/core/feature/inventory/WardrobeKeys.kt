@@ -55,7 +55,10 @@ class WardrobeKeys(config: DsModConfig) : HasFeature {
 
     private fun hold(index: Int?) {
         queued = index
-        marks = index?.let(::button)?.let { mapOf(it to SlotMark(Role.ACTION, outline = true)) } ?: emptyMap()
+        val next = index?.let(::button)?.let { mapOf(it to SlotMark(Role.ACTION, outline = true)) } ?: emptyMap()
+        if (next == marks) return
+        marks = next
+        feature.redraw()
     }
 
     private fun slot(index: Int) = BUTTON_ROW * ContainerState.ROW_SLOTS + index
