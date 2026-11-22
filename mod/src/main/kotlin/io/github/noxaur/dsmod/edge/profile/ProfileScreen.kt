@@ -661,7 +661,8 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         return listOfNotNull(
             Row({ w -> (if (rarity != null) text { rarity(fit(pet.name, w), rarity) } else text { body(fit(pet.name, w)) }).toComponent() }, emptyList()),
             pet.category?.let { fact("Category", it) },
-            fact("Level", pet.level?.let { "$it / ${pet.maxLevel ?: "?"}" } ?: "Unknown"),
+            fact("Level", "${pet.level} / ${pet.maxLevel}"),
+            pet.xpForNextLevel?.let { next -> fact("Progress", "${grouped(pet.xpIntoLevel.toLong())} / ${grouped(next.toLong())}") },
             Row(muted("Total XP"), listOf(text { value(amount(pet.totalXp)) }.toComponent())),
             pet.heldItem?.let { fact("Held", it.name) },
             pet.skinOverride?.let { fact("Skin", it.name.removeSuffix(" Skin")) },

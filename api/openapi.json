@@ -1953,23 +1953,42 @@
                             ]
                           },
                           "level": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "maxLevel": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "xpIntoLevel": {
                             "anyOf": [
                               {
-                                "type": "integer",
-                                "minimum": -9007199254740991,
-                                "maximum": 9007199254740991
+                                "type": "number"
                               },
                               {
-                                "type": "null"
+                                "type": "string",
+                                "enum": [
+                                  "Infinity",
+                                  "-Infinity",
+                                  "NaN"
+                                ]
                               }
                             ]
                           },
-                          "maxLevel": {
+                          "xpForNextLevel": {
                             "anyOf": [
                               {
-                                "type": "integer",
-                                "minimum": -9007199254740991,
-                                "maximum": 9007199254740991
+                                "type": "number"
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "Infinity",
+                                  "-Infinity",
+                                  "NaN"
+                                ]
                               },
                               {
                                 "type": "null"
@@ -2862,6 +2881,8 @@
                           "skinOverride",
                           "level",
                           "maxLevel",
+                          "xpIntoLevel",
+                          "xpForNextLevel",
                           "category",
                           "perks",
                           "description",

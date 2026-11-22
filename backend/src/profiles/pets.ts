@@ -17,6 +17,33 @@ const label = (name: string, value: string, color = WHITE): Line => [
 /** `1,234,567` for a number of whole units. */
 const grouped = (value: number): string => Math.floor(value).toLocaleString("en-US");
 
+const ORDINARY_CURVE: Readonly<Record<string, readonly [number, number]>> = {
+  COMMON: [100, 75],
+  UNCOMMON: [175, 125],
+  RARE: [275, 175],
+  EPIC: [400, 250],
+  LEGENDARY: [600, 350],
+  MYTHIC: [800, 500],
+};
+
+const petLevel = (species: ReturnType<Catalog["pets"]["get"]>, type: string, rarity: string, totalXp: number) => {
+  const golden = type.toLowerCase() === "golden_dragon";
+  const maxLevel = golden ? Math.trunc(species?.maxLevel ?? 200) : 100;
+  if (!golden && species?.levels !== true) {
+    return { level: maxLevel, maxLevel, xpIntoLevel: 0, xpForNextLevel: null };
+  }
+  const [base, growth] = ORDINARY_CURVE[rarity.toUpperCase()] ?? [100, 75];
+  const step = (level: number): number =>
+    golden ? (level === 101 ? 650 : 204_075) : Math.floor((base + growth * level) * (1 + 3 * (level / 100) ** 2));
+  let level = golden ? 101 : 1;
+  let xpIntoLevel = totalXp;
+  while (level < maxLevel && xpIntoLevel >= step(level)) {
+    xpIntoLevel -= step(level);
+    level += 1;
+  }
+  return { level, maxLevel, xpIntoLevel, xpForNextLevel: level < maxLevel ? step(level) : null };
+};
+
 /** Whether a skin is safe to hand a client, once for each texture of a catalog, because checking decodes it. */
 const checked = new WeakMap<Catalog, Map<string, string | undefined>>();
 const textureOf = (catalog: Catalog, value: string | undefined): string | undefined => {
@@ -31,11 +58,6 @@ const textureOf = (catalog: Catalog, value: string | undefined): string | undefi
   return known.get(value);
 };
 
-/**
- * The pet read from what the server sends, with what the catalog adds. `item` is the backend's own drawing of the
- * pet for a grid, because the server's API sends no tooltip for a pet: its head, its name in the rarity's color,
- * and a lore of the little that is known. The server's own tooltip would show the level and the abilities, and this has neither, because no pet XP table is known.
- */
 export const petOf = (catalog: Catalog, raw: unknown): Pet => {
   const source = record(raw);
   const type = text(source["type"]) ?? "UNKNOWN";
@@ -52,6 +74,7 @@ export const petOf = (catalog: Catalog, raw: unknown): Pet => {
   const skinTexture = skin === undefined ? undefined : catalog.items.get(skin)?.skin;
   const texture = textureOf(catalog, skinTexture) ?? textureOf(catalog, species?.skin);
   const color = RARITY_COLORS[rarity.toUpperCase()] ?? WHITE;
+  const progress = petLevel(species, type, rarity, totalXp);
   const heldTier = held === undefined ? undefined : catalog.items.get(held)?.tier;
   const lore: Line[] = [
     ...(species?.category === undefined ? [] : [[{ text: `${titleCase(species.category)} Pet`, color: GRAY }]]),
@@ -76,8 +99,7 @@ export const petOf = (catalog: Catalog, raw: unknown): Pet => {
     active,
     heldItem,
     skinOverride,
-    level: null,
-    maxLevel: species?.maxLevel === undefined ? null : Math.trunc(species.maxLevel),
+    ...progress,
     category: species?.category === undefined ? null : titleCase(species.category),
     perks: statValues(catalog, species?.perks ?? {}),
     description: species?.description ?? [],
@@ -85,7 +107,10 @@ export const petOf = (catalog: Catalog, raw: unknown): Pet => {
       entry: null,
       material: "minecraft:player_head",
       count: 1,
-      name: [{ text: name, color }],
+      name: [
+        { text: `[Lvl ${progress.level}] `, color: GRAY },
+        { text: name, color },
+      ],
       lore,
       rarity,
       glint: false,

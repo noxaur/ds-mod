@@ -15,6 +15,10 @@
    "count": 1,
    "name": [
     {
+     "text": "[Lvl 200] ",
+     "color": "#AAAAAA"
+    },
+    {
      "text": "Golden Dragon",
      "color": "#FFAA00"
     }
@@ -91,6 +95,10 @@
    "material": "minecraft:player_head",
    "count": 1,
    "name": [
+    {
+     "text": "[Lvl 100] ",
+     "color": "#AAAAAA"
+    },
     {
      "text": "Black Cat",
      "color": "#AA00AA"

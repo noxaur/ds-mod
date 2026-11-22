@@ -68,7 +68,8 @@ class ProfileTest {
         assertEquals("maxor_helmet", data?.get("item_id")?.jsonPrimitive?.content)
         val pet = profile.pets.single { it.active }
         assertEquals("Lucky Clover", pet.heldItem?.name)
-        assertEquals("Golden Dragon", pet.item.name.plain)
+        assertEquals("[Lvl 200] Golden Dragon", pet.item.name.plain)
+        assertEquals(200, pet.level)
         val forge = profile.forge.first { it.stage == "RUNNING" }
         assertEquals(0f, forge.done(forge.startedAt))
         assertEquals(0.5f, forge.done(forge.startedAt + forge.durationMs / 2))

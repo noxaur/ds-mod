@@ -181,7 +181,6 @@ data class Hotd(
     data class Node(val id: String, val name: String, val level: Double)
 }
 
-/** A pet. [level] is null while no pet XP table is known, so [totalXp] is what to show. [item] draws it in a grid. */
 @Serializable
 data class Pet(
     val type: String,
@@ -193,8 +192,10 @@ data class Pet(
     val active: Boolean = false,
     val heldItem: Named? = null,
     val skinOverride: Named? = null,
-    val level: Int? = null,
-    val maxLevel: Int? = null,
+    val level: Int,
+    val maxLevel: Int,
+    val xpIntoLevel: Double = 0.0,
+    val xpForNextLevel: Double? = null,
     val category: String? = null,
     val perks: List<StatValue> = emptyList(),
     val description: List<Line> = emptyList(),

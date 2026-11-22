@@ -693,20 +693,32 @@ test("a pet is named from the catalog, with its held item, skin and a grid drawi
     active: true,
     heldItem: { id: "pet_item_lucky_clover", name: "Lucky Clover" },
     skinOverride: { id: "pet_skin_golden_dragon_ancient", name: "Ancient Golden Dragon Skin" },
-    level: null,
+    level: 200,
     maxLevel: 200,
+    xpIntoLevel: 1_778_563_928,
+    xpForNextLevel: null,
     category: "Combat",
     perks: [{ id: "strength", name: "Strength", color: "#FF5555", value: 0.5 }],
   });
   expect(golden?.item).toMatchObject({
     material: "minecraft:player_head",
     rarity: "LEGENDARY",
-    name: [{ text: "Golden Dragon", color: "#FFAA00" }],
+    name: [
+      { text: "[Lvl 200] ", color: "#AAAAAA" },
+      { text: "Golden Dragon", color: "#FFAA00" },
+    ],
     skullTexture: catalog.pets.golden_dragon.skin.value,
   });
   expect(golden?.item.lore.map((line) => line.map((span) => span.text).join(""))).toContain("Held Item: Lucky Clover");
-  // A species the catalog lacks is named from its id, and has no texture or maximum.
-  expect(cat).toMatchObject({ name: "Black Cat", heldItem: null, skinOverride: null, maxLevel: null });
+  expect(cat).toMatchObject({
+    name: "Black Cat",
+    heldItem: null,
+    skinOverride: null,
+    level: 100,
+    maxLevel: 100,
+    xpIntoLevel: 0,
+    xpForNextLevel: null,
+  });
   const { snapshot } = value;
   const pets = await container(`/v1/snapshots/${snapshot}/containers/pets`);
   expect(pets).toMatchObject({ id: "pets", slots: 9, hidden: false });
@@ -720,9 +732,29 @@ test("a hidden profile still shows its pets, and no item", async () => {
   const value = await profile();
   expect(value.pets).toHaveLength(2);
   expect(value.containers.find((box) => box.id === "pets")).toMatchObject({ hidden: false, slots: 9 });
-  expect((await container(`/v1/snapshots/${value.snapshot}/containers/pets`)).items[0]?.name[0]?.text).toBe(
+  expect((await container(`/v1/snapshots/${value.snapshot}/containers/pets`)).items[0]?.name[1]?.text).toBe(
     "Golden Dragon",
   );
+});
+
+test("a pet's level is worked out from its XP as dragsim.co does", async () => {
+  const { profile, state } = backend();
+  const [golden, cat] = player.profile.pets;
+  const pets = [
+    { ...golden, totalXp: 650 + 3 * 204_075 + 1_000 },
+    { ...golden, totalXp: 0 },
+    { ...cat, rarity: "RARE", totalXp: 450 + 625 + 10 },
+  ];
+  state.player = { status: 200, body: { ...player, profile: { ...player.profile, pets } } };
+  state.catalog = {
+    status: 200,
+    body: { ...catalog, pets: { ...catalog.pets, black_cat: { id: "BLACK_CAT", display: "Black Cat", levels: true } } },
+  };
+  expect((await profile()).pets).toMatchObject([
+    { level: 105, maxLevel: 200, xpIntoLevel: 1_000, xpForNextLevel: 204_075 },
+    { level: 101, maxLevel: 200, xpIntoLevel: 0, xpForNextLevel: 650 },
+    { level: 3, maxLevel: 100, xpIntoLevel: 10, xpForNextLevel: 802 },
+  ]);
 });
 
 test("an item with no place is never dropped, and its container is listed only then", async () => {

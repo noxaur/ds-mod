@@ -345,7 +345,6 @@ backend/src/profiles/model.ts: /** * Something with levels: a skill or a slayer.
 backend/src/profiles/model.ts: /** * The RNG meters. `progress` is the `kills` the server keeps for the meter, in the meter's own unit, so the * `mine_` ones count blocks. The names are the ids in title case. */
 backend/src/profiles/model.ts: /** * The XP of each class, leveled by the catalog's `catacombs` table, the same one the Catacombs skill uses, because * the numbers fit it. It is the table of the game this server copies, and the data does not say so. */
 backend/src/profiles/model.ts: /** * The pet drawn for a grid: its head, its name in the rarity's color, and a lore of what is known. This is rebuilt * by the backend and is not the server's own tooltip, which the API does not send. */
-backend/src/profiles/model.ts: /** * `xpCurve` as the server sends it. It was `2` on every pet seen, so which table of levels it picks is unknown, * and `level` stays null until the backend has one. */
 backend/src/profiles/model.ts: /** A Minecraft username, which is all dragsim.co looks a player up by. */
 backend/src/profiles/model.ts: /** A mob of the bestiary. */
 backend/src/profiles/model.ts: /** A number the profile shows, formatted as the game shows it, so a new one needs no client change. */
@@ -377,7 +376,6 @@ backend/src/profiles/model.ts: /** The catalog's display name for the species, e
 backend/src/profiles/model.ts: /** The class the player has selected, such as `TANK`, or null when the server names none. */
 backend/src/profiles/model.ts: /** The essences the player holds, such as `wither_essence`. */
 backend/src/profiles/model.ts: /** The pet item it holds, `equippedItem` upstream, named from the catalog's items. Null when it holds none. */
-backend/src/profiles/model.ts: /** The pet's level. Null always for now: neither the data nor the catalog has a pet XP table. */
 backend/src/profiles/model.ts: /** The pet's rarity, such as `LEGENDARY`. */
 backend/src/profiles/model.ts: /** The player's stats in the four groups the server keeps them in. */
 backend/src/profiles/model.ts: /** The server's `core`. A number such as 10 beside `tier`. What it counts is unknown, so it is passed on as it is. */
@@ -393,7 +391,6 @@ backend/src/profiles/model.ts: /** The server's recipe id, such as `refined_end_
 backend/src/profiles/model.ts: /** The server's species id, such as `GOLDEN_DRAGON`. */
 backend/src/profiles/model.ts: /** The server's stage, such as `READY`. A client shows one it does not know as it is. */
 backend/src/profiles/model.ts: /** The skin it wears, `skinOverride` upstream, named from the catalog's items. Null when it wears none. */
-backend/src/profiles/model.ts: /** The species' highest level from the catalog, or null when the catalog lacks the species. */
 backend/src/profiles/model.ts: /** The wardrobe slot that is worn, a key of `wardrobe:*` counted from 0, or null when none is. */
 backend/src/profiles/model.ts: /** This profile's name and mode, from the profile itself, for when `profiles` does not list it. */
 backend/src/profiles/model.ts: /** True when dragsim.co could not be reached and this is the last copy the backend had. */
@@ -413,7 +410,6 @@ backend/src/profiles/names.ts: /** * The ranks whose colors the game's chat and 
 backend/src/profiles/names.ts: /** A bestiary id names the mob, with `_MOB` after the ones that are also a slayer's boss. */
 backend/src/profiles/names.ts: /** How the game shows a rank before a name. `MVP_PLUS` reads `[MVP+]`, and the rank of a player with none has no prefix. */
 backend/src/profiles/names.ts: /** The bosses the server's slayers are named for, by the mob's id. A slayer not here shows its id in title case. */
-backend/src/profiles/pets.ts: /** * The pet read from what the server sends, with what the catalog adds. `item` is the backend's own drawing of the * pet for a grid, because the server's API sends no tooltip for a pet: its head, its name in the rarity's color, * and a lore of the little that is known. The server's own tooltip would show the level and the abilities, and this has neither, because no pet XP table is known. */
 backend/src/profiles/pets.ts: /** Whether a skin is safe to hand a client, once for each texture of a catalog, because checking decodes it. */
 backend/src/profiles/pets.ts: /** `1,234,567` for a number of whole units. */
 backend/src/profiles/profiles.test.ts: /** * Every field path of a real player's answer, with no values: `*` stands for any key of an open map, and `[]` for a * list's element. A skeleton is built from them, so a field the real data has and the shape misses fails here. */
@@ -427,7 +423,6 @@ backend/src/profiles/profiles.test.ts: // A mob with no kills is not a top kill,
 backend/src/profiles/profiles.test.ts: // A refresh late in the day renews the name.
 backend/src/profiles/profiles.test.ts: // A refresh too soon after the name was written does not renew it, and the name still outlives that copy.
 backend/src/profiles/profiles.test.ts: // A skill the catalog has no table for uses the default one, and still shows.
-backend/src/profiles/profiles.test.ts: // A species the catalog lacks is named from its id, and has no texture or maximum.
 backend/src/profiles/profiles.test.ts: // A stat the catalog does not know is named from its id, in gray, and sorts last.
 backend/src/profiles/profiles.test.ts: // A store that forgets each value when its time is up, as KV does.
 backend/src/profiles/profiles.test.ts: // About 5 ms with a real player's profile, 18 pets included. The bound only catches a cache that stopped working, such as a 2 MB
@@ -1852,7 +1847,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/core/profile/Profile.kt: /** * The ki
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/profile/Profile.kt: /** * The player's Catacombs: the class they picked, the classes they played on the Catacombs table, each floor's runs, * and their essence. The Catacombs level itself is among the skills. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/profile/Profile.kt: /** A grid the profile has, listed in the order its tabs go. [hidden] when the player hid their inventory. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/profile/Profile.kt: /** A line of styled text, which the contract sends as a bare list of spans. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/profile/Profile.kt: /** A pet. [level] is null while no pet XP table is known, so [totalXp] is what to show. [item] draws it in a grid. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/profile/Profile.kt: /** An item as the game would draw it in a slot, with the tooltip the backend rebuilt for it. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/profile/Profile.kt: /** How far along it is at [now], from 0 to 1. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/profile/Profile.kt: /** How full the level's bar is: full at the cap, empty when the next level's size is unknown. */

@@ -65,10 +65,6 @@ export const Pet = Schema.Struct({
   rarity: Schema.String,
   /** Raw pet XP. */
   totalXp: Schema.Number,
-  /**
-   * `xpCurve` as the server sends it. It was `2` on every pet seen, so which table of levels it picks is unknown,
-   * and `level` stays null until the backend has one.
-   */
   xpCurve: Schema.Number,
   /** How many pet candies were used. */
   candiesUsed: Schema.Int,
@@ -78,10 +74,10 @@ export const Pet = Schema.Struct({
   heldItem: Schema.NullOr(Named),
   /** The skin it wears, `skinOverride` upstream, named from the catalog's items. Null when it wears none. */
   skinOverride: Schema.NullOr(Named),
-  /** The pet's level. Null always for now: neither the data nor the catalog has a pet XP table. */
-  level: Schema.NullOr(Schema.Int),
-  /** The species' highest level from the catalog, or null when the catalog lacks the species. */
-  maxLevel: Schema.NullOr(Schema.Int),
+  level: Schema.Int,
+  maxLevel: Schema.Int,
+  xpIntoLevel: Schema.Number,
+  xpForNextLevel: Schema.NullOr(Schema.Number),
   /** The catalog's category of the species, such as `Combat`, or null. */
   category: Schema.NullOr(Schema.String),
   /** What each level of the species adds. `value` is per level, not a total. */

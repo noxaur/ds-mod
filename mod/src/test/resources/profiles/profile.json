@@ -479,8 +479,10 @@
     "id": "pet_skin_golden_dragon_ancient",
     "name": "Ancient Golden Dragon Skin"
    },
-   "level": null,
+   "level": 200,
    "maxLevel": 200,
+   "xpIntoLevel": 1778563928,
+   "xpForNextLevel": null,
    "category": "Combat",
    "perks": [
     {
@@ -509,6 +511,10 @@
     "material": "minecraft:player_head",
     "count": 1,
     "name": [
+     {
+      "text": "[Lvl 200] ",
+      "color": "#AAAAAA"
+     },
      {
       "text": "Golden Dragon",
       "color": "#FFAA00"
@@ -592,8 +598,10 @@
    "active": false,
    "heldItem": null,
    "skinOverride": null,
-   "level": null,
-   "maxLevel": null,
+   "level": 100,
+   "maxLevel": 100,
+   "xpIntoLevel": 0,
+   "xpForNextLevel": null,
    "category": null,
    "perks": [],
    "description": [],
@@ -602,6 +610,10 @@
     "material": "minecraft:player_head",
     "count": 1,
     "name": [
+     {
+      "text": "[Lvl 100] ",
+      "color": "#AAAAAA"
+     },
      {
       "text": "Black Cat",
       "color": "#AA00AA"
