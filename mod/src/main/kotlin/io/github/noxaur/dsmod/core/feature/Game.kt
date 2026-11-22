@@ -225,8 +225,9 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         for (readout in readouts) {
             val feature = readout.feature
             val enabled = readout.on
-            if (!readout.stale && enabled && time - readout.refreshedAt in 0 until REFRESH_MILLIS) continue
+            if (!readout.stale && !feature.redrawn && enabled && time - readout.refreshedAt in 0 until REFRESH_MILLIS) continue
             readout.stale = !enabled
+            feature.redrawn = false
             readout.refreshedAt = time
             var hud: HudBlock? = null
             var slots = emptyMap<Int, SlotMark>()

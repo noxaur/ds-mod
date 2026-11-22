@@ -153,6 +153,7 @@ object DsModClient : ClientModInitializer {
         Pings.bind(tree.feature())
         SkyBlockMenuClicks.bind(tree.feature())
         SlotGuards.bind(tree.feature())
+        Wardrobes.bind(tree.feature())
         TabBar.bind(tree.feature())
         Profiles.bind(game, tree.feature())
     }
@@ -170,6 +171,7 @@ object DsModClient : ClientModInitializer {
         Slots.register()
         MenuSkin.register()
         ForgeCrafts.register()
+        Wardrobes.register()
         AutoClicks.register()
         Trail.register()
         MenuBack.register()

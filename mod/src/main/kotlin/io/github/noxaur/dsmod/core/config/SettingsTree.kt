@@ -50,6 +50,7 @@ import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
 import io.github.noxaur.dsmod.core.feature.inventory.SkyBlockMenuClick
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
+import io.github.noxaur.dsmod.core.feature.inventory.WardrobeKeys
 import io.github.noxaur.dsmod.core.feature.loot.RareDropAlert
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerBossAlert
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerTracker
@@ -231,6 +232,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                         feature(HotdButton(c))
                     }
                     group(ForgeCraft(c))
+                    group(WardrobeKeys(c))
                 }
                 section("The End", Role.EPIC) {
                     group("Dragon") {

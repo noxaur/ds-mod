@@ -1,5 +1,5 @@
 accessWidener v2 official
-# @InputApproved(hash = "c5a601581b2a")
+# @InputApproved(hash = "a1dbb206259c")
 
 accessible field net/minecraft/client/gui/Hud title Lnet/minecraft/network/chat/Component;
 accessible field net/minecraft/client/gui/Hud subtitle Lnet/minecraft/network/chat/Component;
@@ -12,3 +12,5 @@ accessible field net/minecraft/client/gui/components/BossHealthOverlay events Lj
 accessible method net/minecraft/client/gui/components/PlayerTabOverlay getPlayerInfos ()Ljava/util/List;
 accessible field net/minecraft/client/gui/Hud SCORE_DISPLAY_ORDER Ljava/util/Comparator;
 accessible field net/minecraft/world/inventory/AbstractContainerMenu menuType Lnet/minecraft/world/inventory/MenuType;
+accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen titleLabelX I
+accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen titleLabelY I

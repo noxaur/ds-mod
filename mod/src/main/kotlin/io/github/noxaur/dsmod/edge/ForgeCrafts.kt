@@ -48,9 +48,9 @@ object ForgeCrafts {
 
     private var clicked: AbstractContainerMenu? = null
     private var clickedAt = 0L
-    private val swallowed = HashSet<Int>()
+    private val taken = TakenButtons()
 
-    @InputApproved(by = "noxaur", reaches = ["Refusals.allowKeyPress", "Refusals.allowMouseClick", "Refusals.allowMouseRelease"])
+    @InputApproved(by = "noxaur", reaches = ["Refusals.allowKeyPress"])
     fun register() {
         ScreenHooks.onEveryLayout<ContainerScreen> { screen, _ ->
             val client = Minecraft.getInstance()
@@ -58,10 +58,7 @@ object ForgeCrafts {
             val widgets = Screens.getWidgets(screen)
             widgets += panel.keys
             panel.sync()
-            ScreenEvents.afterTick(screen).register {
-                panel.sync()
-                swallowed.removeIf { !Keys.held(client, it) }
-            }
+            ScreenEvents.afterTick(screen).register { panel.sync() }
             ScreenEvents.beforeExtract(screen).register { _, _, _, _, _ -> panel.place() }
             ScreenEvents.afterBackground(screen).register { _, graphics, mouseX, mouseY, _ -> if (panel.shown) panel.draw(graphics, mouseX, mouseY) }
             Refusals.allowKeyPress(screen).register { _, event ->
@@ -70,21 +67,14 @@ object ForgeCrafts {
             ScreenKeyboardEvents.afterKeyRelease(screen).register { _, event ->
                 panel.keys.release(event.key())
             }
-            Refusals.allowMouseClick(screen).register { _, event ->
-                if (!panel.shown) return@register true
+            taken.register(screen, released = panel.keys::release) { event ->
+                if (!panel.shown) return@register false
                 val button = event.button()
-                val background = panel.background(event.x(), event.y())
-                val allowed = when {
-                    panel.keys.recording -> !(panel.keys.capture(event) || panel.keys.isMouseOver(event.x(), event.y()))
-                    Keys.isMouse(feature.key.value) && button == feature.key.value -> false.also { press(client, screen) }
-                    else -> !background
+                when {
+                    panel.keys.recording -> panel.keys.capture(event) || panel.keys.isMouseOver(event.x(), event.y())
+                    Keys.isMouse(feature.key.value) && button == feature.key.value -> true.also { press(client, screen) }
+                    else -> panel.background(event.x(), event.y())
                 }
-                if (!allowed) swallowed += button
-                allowed
-            }
-            Refusals.allowMouseRelease(screen).register { _, event ->
-                panel.keys.release(event.button())
-                !swallowed.remove(event.button())
             }
         }
     }
