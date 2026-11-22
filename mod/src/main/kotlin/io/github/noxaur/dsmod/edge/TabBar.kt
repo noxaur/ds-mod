@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
@@ -32,7 +31,7 @@ import org.lwjgl.glfw.GLFW
  * it covers, which dims every item whose name and lore lack a word of the query.
  */
 object TabBar {
-    private val shown get() = DsModClient.runs<BetterUi>() && DsModClient.runs<MenuTabs>()
+    private val shown get() = DsModClient.runs<MenuTabs>()
 
     private const val SEARCH_LENGTH = 64
 

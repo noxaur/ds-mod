@@ -128,7 +128,7 @@ class Feature(
     val rows: List<Setting> get() = settings.rows
 
     var enabled: Boolean
-        get() = switch.value
+        get() = switch.value && !switch.dimmed
         set(value) {
             switch.value = value
         }

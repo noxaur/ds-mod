@@ -1,7 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
-import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.MenuTrail
 import io.github.noxaur.dsmod.edge.ui.Icon
@@ -19,7 +18,7 @@ import net.minecraft.client.gui.screens.inventory.ContainerScreen
 object MenuBack {
     private const val GO_BACK = "Go Back"
 
-    private val enabled get() = DsModClient.runs<BetterUi>() && DsModClient.runs<BackButtons>()
+    private val enabled get() = DsModClient.runs<BackButtons>()
 
     fun register() {
         ScreenHooks.onEveryLayout<ContainerScreen> { screen, _ ->

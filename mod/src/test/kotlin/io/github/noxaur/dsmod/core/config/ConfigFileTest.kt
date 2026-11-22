@@ -185,7 +185,7 @@ class ConfigFileTest {
         }
         assertTrue(tree.feature<ArmorSwapGuard>().feature.enabled)
 
-        assertFalse(tree.feature<BetterUi>().feature.enabled || tree.feature<BackButtons>().feature.enabled || tree.feature<MenuTabs>().feature.enabled)
+        assertFalse(tree.feature<BetterUi>().feature.switch.value || tree.feature<BackButtons>().feature.switch.value || tree.feature<MenuTabs>().feature.switch.value)
         assertEquals(
             listOf(MenuTab(TabEdge.TOP, 2, "bazaar", "minecraft:gold_ingot", "Bazaar"), MenuTab(TabEdge.BOTTOM, 6, item = "", tooltip = "Search", search = true)),
             tree.feature<MenuTabs>().tabs.value,
