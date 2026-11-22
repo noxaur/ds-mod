@@ -2,8 +2,8 @@ package io.github.noxaur.dsmod.core.feature.general
 
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.ActionBar
-import io.github.noxaur.dsmod.core.game.CombatXp
 import io.github.noxaur.dsmod.core.game.EntityDied
+import io.github.noxaur.dsmod.core.text.number
 
 class OwnKills(feature: Feature, accept: (EntityDied) -> Boolean, kill: (count: Int, xp: Double?, now: Long) -> Unit) {
     private val died = LongArray(8)
@@ -30,4 +30,14 @@ class OwnKills(feature: Feature, accept: (EntityDied) -> Boolean, kill: (count: 
             kill(count, xp, now)
         }
     }
+}
+
+/** @keep The server sends it right behind the death of a mob the player killed, within KILL_WINDOW_MILLIS, and
+ * repeats it for about a second after */
+private object CombatXp {
+    const val MARK = " Combat ("
+    const val KILL_WINDOW_MILLIS = 20L
+    private val GAIN = Regex("""\+([\d,.]+) Combat \(""")
+
+    fun gained(plain: String): Double? = GAIN.find(plain)?.groupValues?.get(1)?.let(::number)
 }

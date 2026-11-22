@@ -40,7 +40,7 @@ import io.github.noxaur.dsmod.core.feature.hud.HideInF3
 import io.github.noxaur.dsmod.core.feature.hud.HudBackground
 import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
 import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
-import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
+import io.github.noxaur.dsmod.core.feature.inventory.betterUi
 import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
 import io.github.noxaur.dsmod.core.feature.inventory.HideGlassPanes
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
@@ -235,7 +235,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                         feature(HideGlassPanes(c))
                         feature(KeepCursor(c))
                     }
-                    group(BetterUi(c)) {
+                    group(betterUi(c)) {
                         feature(BackButtons(c))
                         feature(MenuTabs(c))
                         feature(SkyBlockMenuClick(c))
