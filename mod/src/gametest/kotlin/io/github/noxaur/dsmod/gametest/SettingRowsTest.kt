@@ -1,8 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.config.SettingsTree
-import io.github.noxaur.dsmod.core.container.Border
-import io.github.noxaur.dsmod.core.container.RarityPreset
+import io.github.noxaur.dsmod.core.container.MarkStyle
 import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.FreeLook
@@ -157,37 +156,26 @@ class SettingRowsTest : FabricClientGameTest {
         click(camera.controlX + 11, camera.controlY + 6)
         expect("The heading switch again", true) { DsModClient.feature<Camera>().feature.enabled }
 
-        // Inventory: the Style pick's menu of looks, and the Custom Look fold.
         open(context, SettingsTabs(at("Inventory")))
-        val style = spot("rarityPreset")
+        val style = spot("style")
         click(style.controlX + 8, style.controlY + 8)
         context.shotInBothThemes("own-settings-style-menu")
-        // Showcase is the first tile, and the menu opened lit on Gilded, the current one.
-        key(GLFW.GLFW_KEY_LEFT)
+        key(GLFW.GLFW_KEY_RIGHT)
         key(GLFW.GLFW_KEY_ENTER)
-        expect("Left and Enter in the pick's menu", RarityPreset.SHOWCASE) { DsModClient.feature<ItemRarity>().preset.value }
+        expect("Right and Enter in the pick's menu", MarkStyle.AURA) { DsModClient.feature<ItemRarity>().inventoryStyle.value.mark }
         // Typing lights a tile by its name, and Escape leaves the style as it was.
         click(style.controlX + 8, style.controlY + 8)
-        context.input.typeChars("m")
+        context.input.typeChars("u")
         context.waitTicks(2)
         context.takeScreenshot("own-settings-pick-typed")
-        hear(context, "Minimal, 3 of 4", "M in the pick's menu")
+        hear(context, "Underglow, 3 of 3", "U in the pick's menu")
         key(GLFW.GLFW_KEY_ESCAPE)
-        expect("Escape from the pick's menu", RarityPreset.SHOWCASE) { DsModClient.feature<ItemRarity>().preset.value }
-        val fold = spot("customLook")
-        click(fold.x + 20, fold.y + 10)
-        val border = spot("border")
-        click(border.controlX + 8, border.controlY + 8)
-        // The tiles run None, Flat: the menu opened on Rounded, Showcase's own.
-        key(GLFW.GLFW_KEY_LEFT)
-        key(GLFW.GLFW_KEY_LEFT)
-        key(GLFW.GLFW_KEY_ENTER)
-        expect("A part of the look", Border.FLAT) { DsModClient.feature<ItemRarity>().inventoryStyle.value.border }
-        expect("A part switches the style to Custom", RarityPreset.CUSTOM) { DsModClient.feature<ItemRarity>().preset.value }
-        val gem = spot("gem")
-        click(gem.x + 20, gem.y + gem.height / 2)
-        expect("A press anywhere on a switch's row", true) { DsModClient.feature<ItemRarity>().inventoryStyle.value.gem }
-        context.shotInBothThemes("own-settings-custom-look")
+        expect("Escape from the pick's menu", MarkStyle.AURA) { DsModClient.feature<ItemRarity>().inventoryStyle.value.mark }
+        val sparkles = spot("sparkles")
+        click(sparkles.x + 20, sparkles.y + sparkles.height / 2)
+        expect("A press anywhere on a switch's row", true) { DsModClient.feature<ItemRarity>().inventoryStyle.value.sparkles }
+        expect("A row of the look keeps the rest of it", MarkStyle.AURA) { DsModClient.feature<ItemRarity>().inventoryStyle.value.mark }
+        context.shotInBothThemes("own-settings-rarity-look")
         // A switch's own settings open under it from its button, and close to a summary.
         toggle("slot-lock")
         check(shows("slotLockKey")) { "Slot Lock's button did not open its settings" }
@@ -262,8 +250,6 @@ class SettingRowsTest : FabricClientGameTest {
         context.runOnClient<Nothing> {
             for (setting in SettingsTree(DsModClient.settings).sections.flatMap { it.walk() }) setting.reset()
             DsModClient.feature<ProtectorSpawnBeam>().sections.reset()
-            // Resetting a part of the custom look switches Style to Custom, so the style is put back after its parts.
-            DsModClient.feature<ItemRarity>().preset.reset()
             DsModClient.saveSettings()
         }
     }

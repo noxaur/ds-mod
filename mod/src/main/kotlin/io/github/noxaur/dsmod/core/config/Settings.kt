@@ -81,6 +81,11 @@ sealed class Setting(val id: String, val name: String, val description: String, 
     var dependsOn: Switch? = null
         internal set
 
+    var shownWhile: (() -> Boolean)? = null
+        internal set
+
+    val visible: Boolean get() = shownWhile?.invoke() != false
+
     /** The switch that is off and dims this row: the one it sits under first, then the one it depends on, or a switch above either. */
     val dimmedBy: Switch? get() = gate?.let { if (!it.value) it else it.dimmedBy } ?: dependsOn?.let { if (!it.value) it else it.dimmedBy }
 
@@ -197,7 +202,7 @@ class Switch(id: String, name: String, description: String, bind: Bind<Boolean>,
     }
 
     /** What the closed settings hold, such as `L, K`, shown before the switch. */
-    fun closed(keys: (Int) -> String) = children.mapNotNull { it.summary(keys) }.joinToString(", ")
+    fun closed(keys: (Int) -> String) = children.filter { it.visible }.mapNotNull { it.summary(keys) }.joinToString(", ")
 
     override fun default(keys: (Int) -> String) = if (default) "On" else "Off"
 
@@ -333,7 +338,7 @@ class Fold(id: String, name: String, description: String, override val children:
 
     override fun reset() = children.forEach { it.reset() }
 
-    override fun summary(keys: (Int) -> String) = children.mapNotNull { it.summary(keys) }.joinToString(" · ")
+    override fun summary(keys: (Int) -> String) = children.filter { it.visible }.mapNotNull { it.summary(keys) }.joinToString(" · ")
 
     override fun spoken(keys: (Int) -> String, open: Boolean) = if (open) "expanded" else "collapsed"
 }
@@ -492,6 +497,13 @@ class Rows {
 
     fun <T> order(bind: Bind<List<T>>, name: String, description: String, values: List<T>, id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null) =
         add(Order(id, name, description, bind, values), dependsOn)
+
+    fun shownWhile(condition: () -> Boolean, rows: Rows.() -> Unit) {
+        for (row in nested(rows)) {
+            row.shownWhile = condition
+            added += row
+        }
+    }
 
     fun fold(id: String, name: String, description: String, dependsOn: Switch? = null, rows: Rows.() -> Unit) =
         add(Fold(id, name, description, nested(rows)), dependsOn)

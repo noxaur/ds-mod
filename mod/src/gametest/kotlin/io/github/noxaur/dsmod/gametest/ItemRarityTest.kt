@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
@@ -13,26 +12,9 @@ import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
-import net.minecraft.client.gui.screens.inventory.InventoryScreen
-import net.minecraft.core.component.DataComponents
-import net.minecraft.nbt.CompoundTag
-import net.minecraft.network.chat.Component
-import net.minecraft.world.Container
-import net.minecraft.world.SimpleContainer
-import net.minecraft.world.SimpleMenuProvider
-import net.minecraft.world.inventory.ChestMenu
-import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.Items
-import net.minecraft.world.item.component.CustomData
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
-/**
- * Gives the player items the way dragsim.co builds them, checks the `Item` the edge reads from them, then opens
- * the inventory and a chest and checks the marks. Read the screenshots: the default gilded frame must sit around
- * the slot of each item but the Common one, and the tooltip must sit over a frame. Then the hotbar, and its own look in the settings.
- */
 class ItemRarityTest : FabricClientGameTest {
     private fun marks(context: ClientGameTestContext) = context.computeOnClient<Map<Int, SlotMark>, Nothing> {
         DsModClient.game.readouts.single { it.feature.id == "item-rarity" }.slots
@@ -40,16 +22,6 @@ class ItemRarityTest : FabricClientGameTest {
 
     private fun marked(vararg slots: Pair<Int, Role>) = slots.associate { (slot, role) -> slot to SlotMark(role, rarity = true) }
 
-    private fun chestItem(name: String, rarity: String): ItemStack = ItemStack(Items.DIAMOND_SWORD).also {
-        it.set(DataComponents.CUSTOM_NAME, Component.literal(name))
-        it.set(DataComponents.CUSTOM_DATA, CustomData.of(CompoundTag().apply { put("item_data", CompoundTag().apply { putString("rarity", rarity) }) }))
-    }
-
-    /**
-     * Works the hotbar's own look in the settings, under Item Rarity: Match Inventory off starts the hotbar from the
-     * inventory's look, and a part changes the hotbar alone, which the real hotbar shows. Read the screenshots: the
-     * rows in each theme, and the hotbar with a floor the inventory lacks.
-     */
     private fun hotbarLook(context: ClientGameTestContext) {
         val itemRarity = DsModClient.feature<ItemRarity>()
         val window = SettingsSteps.windowSize(context)
@@ -59,16 +31,17 @@ class ItemRarityTest : FabricClientGameTest {
         context.setScreen { SettingsScreen(null, SettingsTabs(SettingsSteps.at("Inventory")), reveal = "hotbarMatches") }
         context.waitTicks(2)
         val match = driver.spot("hotbarMatches")
+        context.runOnClient<Nothing> { it.gui.toastManager().clear() }
+        driver.move(600, 340)
         context.takeScreenshot("rarity-hotbar-look")
         driver.click(match.x + 20, match.y + match.height / 2)
         check(!itemRarity.hotbarMatches.value && itemRarity.hotbarStyle.value == itemRarity.containerStyle()) { "Match Inventory off left the hotbar ${itemRarity.hotbarStyle.value}" }
-        // The wheel over a pick steps it, here to the floor after None.
-        val floor = driver.spot("hotbarFloor")
-        driver.move(floor.controlX + 8, floor.controlY + 8)
+        val style = driver.spot("hotbarStyle")
+        driver.move(style.controlX + 8, style.controlY + 8)
         context.input.scroll(-1.0)
         context.waitTicks(2)
-        check(itemRarity.hotbarStyle.value.floor != itemRarity.containerStyle().floor) {
-            "The hotbar's Floor set ${itemRarity.hotbarStyle.value.floor}, and the inventory's is ${itemRarity.containerStyle().floor}"
+        check(itemRarity.hotbarStyle.value.mark != itemRarity.containerStyle().mark) {
+            "The hotbar's Style set ${itemRarity.hotbarStyle.value.mark}, and the inventory's is ${itemRarity.containerStyle().mark}"
         }
         context.shotInBothThemes("rarity-hotbar-own")
         context.setScreen { null }
@@ -78,7 +51,6 @@ class ItemRarityTest : FabricClientGameTest {
         context.runOnClient<Nothing> { itemRarity.hotbarMatches.value = true }
         check(itemRarity.hotbarLook() == itemRarity.containerStyle()) { "Matching left the hotbar in ${itemRarity.hotbarLook()}" }
         context.runOnClient<Nothing> {
-            itemRarity.preset.value = RarityPreset.GILDED
             itemRarity.inventoryStyle.value = SlotStyle()
             itemRarity.hotbarStyle.value = SlotStyle()
             itemRarity.hotbarMatches.value = true
@@ -126,24 +98,7 @@ class ItemRarityTest : FabricClientGameTest {
             context.hoverSlot(10, settle = 5)
             context.takeScreenshot("rarity-inventory")
 
-            world.server.runOnServer<Nothing> { server ->
-                val chest: Container = SimpleContainer(54).also {
-                    it.setItem(0, chestItem("Common Sword", "COMMON"))
-                    it.setItem(2, chestItem("Uncommon Sword", "UNCOMMON"))
-                    it.setItem(4, chestItem("Rare Sword", "RARE"))
-                    it.setItem(6, chestItem("Epic Sword", "EPIC"))
-                    it.setItem(8, chestItem("Legendary Sword", "LEGENDARY"))
-                    it.setItem(19, chestItem("Mythic Sword", "MYTHIC"))
-                    it.setItem(21, chestItem("Divine Sword", "DIVINE"))
-                    it.setItem(23, chestItem("Special Sword", "SPECIAL"))
-                    it.setItem(25, ItemStack(Items.STONE))
-                }
-                server.player.openMenu(
-                    SimpleMenuProvider({ id, inventory, _ -> ChestMenu.sixRows(id, inventory, chest) }, Component.literal("Test Chest")),
-                )
-            }
-            context.waitFor { it.gui.screen() is AbstractContainerScreen<*> && it.gui.screen() !is InventoryScreen }
-            context.waitTicks(10)
+            RarityChest.open(context, world.server)
             val title = context.computeOnClient<String?, Nothing> { DsModClient.game.container.title?.plain }
             check(title == "Test Chest") { "The container was titled $title" }
             val chestMarks = marks(context)
@@ -155,15 +110,6 @@ class ItemRarityTest : FabricClientGameTest {
             check(chestMarks == inChest) { "Marked $chestMarks" }
             context.hoverSlot(4, settle = 5)
             context.takeScreenshot("rarity-chest")
-
-            // The feature guide's picture: the Minimal preset in a chest, with no tooltip or toast over it.
-            context.runOnClient<Nothing> {
-                DsModClient.feature<ItemRarity>().preset.value = RarityPreset.MINIMAL
-                it.gui.toastManager().clear()
-            }
-            context.point(0, 0, settle = 5)
-            context.takeScreenshot("rarity-chest-minimal")
-            context.runOnClient<Nothing> { DsModClient.feature<ItemRarity>().preset.value = RarityPreset.GILDED }
 
             context.runOnClient<Nothing> { it.player!!.closeContainer() }
             context.waitTicks(5)

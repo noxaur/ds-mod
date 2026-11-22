@@ -40,7 +40,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - **Hide Cooldown Messages** – Hides the "ability is on cooldown" messages.
 
 ### Inventory & Menus
-- **Item Rarity** – Colors each slot by its item's rarity, in a look you pick or build.
+- **Item Rarity** – Colors each slot by its item's rarity, as a Frame, an Aura or an Underglow, with sparkles if you like.
 - **Slot Lock** – Lock slots and items so a misclick can't move or drop them.
 - **Armor Swap Guard** – Stops a right click from swapping the armor you wear.
 - **Better UI** – Turns the controls the mod adds to menus on or off at once.

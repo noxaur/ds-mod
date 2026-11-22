@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.config
 
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -76,6 +77,8 @@ class ConfigFile(private val file: Path) {
             for (store in Store.entries) {
                 val section = tree[store.key] as? JsonObject ?: continue
                 config.stored(store).pending = { slot -> read(slot, section) }
+                val former = HashMap(section)
+                config.stored(store).held = { key, serializer -> former.remove(key)?.let { decode(serializer, it) } }
             }
             return config
         }
@@ -90,6 +93,12 @@ class ConfigFile(private val file: Path) {
             } catch (e: IllegalArgumentException) {
                 slot.default
             }
+        }
+
+        private fun <T> decode(serializer: DeserializationStrategy<T>, element: JsonElement): T? = try {
+            json.decodeFromJsonElement(serializer, element)
+        } catch (e: IllegalArgumentException) {
+            null
         }
     }
 }

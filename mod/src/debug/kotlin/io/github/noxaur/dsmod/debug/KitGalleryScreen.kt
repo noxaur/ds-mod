@@ -5,10 +5,7 @@ import io.github.noxaur.dsmod.core.text.TextBuilder
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.TabEdge
-import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
-import io.github.noxaur.dsmod.edge.DsModClient
-import io.github.noxaur.dsmod.edge.SlotArts
-import io.github.noxaur.dsmod.edge.Surface
+import io.github.noxaur.dsmod.edge.Slots
 import io.github.noxaur.dsmod.edge.toComponent
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
@@ -199,9 +196,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
             Kit.slot(g, sx, sy)
             val mark = marks.getOrNull(i) ?: continue
             if (mark.style == 'f') Kit.slotFill(g, sx + 1, sy + 1, mark.color)
-            val rarity = DsModClient.feature<ItemRarity>()
-            val atlas = if (mark.style == 'b') SlotArts.atlas(rarity, Surface.CONTAINER) else null
-            if (atlas != null) Kit.slotArt(g, sx + 1, sy + 1, atlas, mark.role.ordinal)
+            if (mark.style == 'b') Slots.rarityBack(g, mark.role, i, sx + 1, sy + 1)
             if (mark.style == 'l') Kit.slotHighlightBack(g, sx + 1, sy + 1)
             g.item(mark.item, sx + 1, sy + 1)
             g.itemDecorations(font, mark.item, sx + 1, sy + 1)
@@ -209,9 +204,6 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
             if (mark.style == 'h') Kit.slotHover(g, sx + 1, sy + 1)
             if (mark.style == 'c') Kit.cooldown(g, sx + 1, sy + 1, 0.6f)
             if (mark.style == 'l') Kit.slotHighlightFront(g, sx + 1, sy + 1)
-            if (atlas != null && rarity.inventoryStyle.value.gem) {
-                Kit.slotGem(g, sx + 1, sy + 1, atlas, mark.role.ordinal)
-            }
         }
         Kit.scrollbar(g, gx + 93, gy, 72, 6, 30)
     }

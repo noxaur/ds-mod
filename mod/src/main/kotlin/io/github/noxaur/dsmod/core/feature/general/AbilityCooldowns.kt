@@ -10,6 +10,7 @@ import io.github.noxaur.dsmod.core.game.Abilities
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerState.Companion.INVENTORY
+import io.github.noxaur.dsmod.core.game.ContainerState.Companion.WORN_SLOTS
 import io.github.noxaur.dsmod.core.game.Hit
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.SetCharge
@@ -194,8 +195,8 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
             val item = slots[i] ?: continue
             for (ability in read(item).abilities) known[ability.name.lowercase()] = ability
         }
-        if (feature.container.id != INVENTORY || slots.size <= BOOTS) return
-        val worn = ARMOR.map { slots[it]?.let(::read) }
+        if (feature.container.id != INVENTORY || slots.size <= WORN_SLOTS.last) return
+        val worn = WORN_SLOTS.map { slots[it]?.let(::read) }
         val bonus = worn.firstNotNullOfOrNull { it?.charge }
         // The server's count of worn pieces is the lore's, and a helmet that counts as any set's stands in for the set's own.
         charge = bonus?.takeIf { b ->
@@ -261,11 +262,6 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     }
 
     private companion object {
-
-        /** The inventory's helmet, chestplate, leggings and boots slots. */
-        val ARMOR = listOf(5, 6, 7, 8)
-        const val BOOTS = 8
-
         const val USED = "You used "
         val USED_LINE = Regex("""You used (.+?)[!.]?""")
         val SOULCRY = Regex("""(?:☠ )?Soulcry! \+.*""")

@@ -170,7 +170,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
             "general.resetAnimations" to "resetAnimations",
             "end.editBeam" to "beamSections",
             "betterUi.editTabs" to "tabs",
-            "inventory.editRarityStyle" to "customLook",
+            "inventory.editRarityStyle" to "style",
             "hud.edit" to "moveHud",
             "contribute.open" to "requests",
         )

@@ -101,7 +101,7 @@ class PerfTest : FabricClientGameTest {
             context.openInventory()
             context.runOnClient<Nothing> {
                 Slots.mark("perf", (0 until MARKED_SLOTS).associate { slot ->
-                    FIRST_MARKED_SLOT + slot to SlotMark(Role.GOOD, text { good("$slot") }, rarity = slot % 2 == 0)
+                    FIRST_MARKED_SLOT + slot to SlotMark(Role.UNCOMMON, text { good("$slot") }, rarity = slot % 2 == 0)
                 })
             }
             context.waitTicks(WARM_UP_TICKS)

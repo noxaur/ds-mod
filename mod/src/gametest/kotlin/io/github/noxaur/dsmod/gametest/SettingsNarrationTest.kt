@@ -57,10 +57,9 @@ class SettingsNarrationTest : FabricClientGameTest {
         }
 
         open(context, SettingsTabs(at("Inventory")))
-        over("rarityPreset", "Style, pick, Gilded, 2 of 4")
-        // What is open lasts as long as the tabs do, so a test before this one may have opened it.
-        unfold("border", "customLook") { it.x + 20 to it.y + 10 }
-        over("customLook", "Custom Look, fold, expanded")
+        over("style", "Style, pick, Frame, 1 of 3")
+        over("opacity", "Opacity, number, 100%")
+        over("sparkles", "Sparkles, switch, off")
         over("slot-lock", "Slot Lock, switch, on, collapsed")
 
         open(context, SettingsTabs(at("The End")))
@@ -80,9 +79,8 @@ class SettingsNarrationTest : FabricClientGameTest {
         move(120 + 30, 9)
         hear(context, "General, tab, selected", "Over the tab")
 
-        // A search paints the words it matched: in names and descriptions, in a fold's name, and in a dropdown's value.
         open(context, SettingsTabs(at("General")))
-        context.input.typeChars("gilded look")
+        context.input.typeChars("frame hotbar")
         context.waitTicks(2)
         context.shotInBothThemes("own-settings-search-marks")
     }

@@ -9,8 +9,7 @@ import io.github.noxaur.dsmod.core.config.Rows
 import io.github.noxaur.dsmod.core.config.Setting
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.config.Switch
-import io.github.noxaur.dsmod.core.container.Border
-import io.github.noxaur.dsmod.core.container.RarityPreset
+import io.github.noxaur.dsmod.core.container.MarkStyle
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
 import io.github.noxaur.dsmod.core.input.CommandBind
@@ -64,20 +63,20 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
         var tilt = -12f
         var tier = Tier.EPIC
         var views = Tier.RARE
-        var preset = RarityPreset.GILDED
+        var preset = MarkStyle.FRAME
         var theme = Theme.VANILLA
         var key = 342
         var none = 75
         var spans = listOf(Section(150, 160), Section(175, 200))
-        var border = Border.GILDED
+        var sparkled = MarkStyle.AURA
         var gate = false
         var dimNumber = 4f
         var dimTier = Tier.EPIC
         var dimKey = 76
         var dimSpans = listOf(Section(175, 200))
-        var dimPreset = RarityPreset.SHOWCASE
-        var foundPreset = RarityPreset.GILDED
-        var foundGem = false
+        var dimPreset = MarkStyle.AURA
+        var foundPreset = MarkStyle.FRAME
+        var foundSparkles = false
         var rows = mutableListOf(Row.TOP, Row.HOTBAR)
         var dimPieces = mutableListOf(EquipmentPiece.HELMET, EquipmentPiece.PET)
         var binds = Grouped(
@@ -146,7 +145,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
             },
             "Dimmed too" to rows {
                 span(Bind.of(v::dimSpans), "Timing", "Pick it.", max = 200, dependsOn = gate)
-                pick(Bind.of(v::dimPreset), "Style", "Pick it.", RarityPreset.entries, dependsOn = gate) { slotLook(it) }
+                pick(Bind.of(v::dimPreset), "Style", "Pick it.", MarkStyle.entries, dependsOn = gate) { slotLook(it) }
                 action("noop", "Edit Binds", "Edit them.", button = "Edit", dependsOn = gate) {}
             },
         ),
@@ -154,8 +153,8 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
             "Span, fold, action, order" to rows {
                 span(Bind.of(v::spans), "Beam Timing", "Pick when it shows.", max = 200, ticks = listOf(50, 100, 150))
                 fold("openFold", "Open Fold", "Build your own.") {
-                    pick(Bind.of(v::border), "Border", "Pick the ring.", Border.entries, label = { it.label }) {
-                        Look.Slots(SlotStyle(border = it), 1)
+                    pick(Bind.of(v::sparkled), "Sparkled", "Pick the shape.", MarkStyle.entries) {
+                        Look.Slots(SlotStyle(it, opacity = 60, sparkles = true), 1)
                     }
                 }
                 action("noop", "Move HUD", "Drag a block.", button = "Move") {}
@@ -170,8 +169,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
         ),
     )
 
-
-    private fun slotLook(preset: RarityPreset) = Look.Slots(preset.style ?: SlotStyle())
+    private fun slotLook(mark: MarkStyle) = Look.Slots(SlotStyle(mark))
 
     private val listsPage = listOf(
         Column(
@@ -242,10 +240,9 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
     private val opened = hashSetOf("openSwitch", "openFold", "openOrder")
     private val settingRows = SettingRows(opened, ::layout, { _, _ -> })
 
-    /** Rows as a search for "gilded look" shows them, with the words it matched painted, drawn apart from the rows above. */
-    private val found = "Found by a search: gilded look" to rows {
-        pick(Bind.of(v::foundPreset), "Style", "Pick a ready-made look.", RarityPreset.entries, id = "foundStyle") { slotLook(it) }
-        fold("foundFold", "Custom Look", "Build your own look.") { switch(Bind.of(v::foundGem), "Gem", "Put a gem.", id = "foundGem") }
+    private val found = "Found by a search: frame look" to rows {
+        pick(Bind.of(v::foundPreset), "Style", "Pick a look for the marks.", MarkStyle.entries, id = "foundStyle") { slotLook(it) }
+        fold("foundFold", "Hotbar Look", "Give the hotbar its own look.") { switch(Bind.of(v::foundSparkles), "Sparkles", "Add glints.", id = "foundSparkles") }
     }
     private val foundRows = SettingRows(HashSet(), ::layout, { _, _ -> })
     private val wells = ArrayList<Well>()
@@ -264,7 +261,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
         v.theme = Theme.CHARCOAL
         v.tilt = 12f
         v.none = -1
-        v.foundGem = true
+        v.foundSparkles = true
         v.rows = mutableListOf(Row.TOP)
         v.tabs = TabLayout.DEFAULT.drop(1)
     }
@@ -290,7 +287,7 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
             }
             if (c == 0 && page == Page.ROWS) {
                 foundRows.begin()
-                foundRows.words = SettingsSearch.words("gilded look")
+                foundRows.words = SettingsSearch.words("frame look")
                 y += HEADING
                 val bottom = foundRows.add(found.second, x + 1, y + 1, COLUMN - 2)
                 wells += Well(x, y, COLUMN, bottom - y + 1, found.first)
