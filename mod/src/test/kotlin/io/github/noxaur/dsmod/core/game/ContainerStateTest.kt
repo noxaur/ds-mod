@@ -34,4 +34,15 @@ class ContainerStateTest {
         state.post(ContainerOpened(6, null, 90), ContainerOpened(0, null, 46, kept = true))
         assertEquals(listOf(stone, null), state.slots.subList(9, 11))
     }
+
+    @Test
+    fun `a menu's own slots come first and the player's 36 last, and in the inventory every slot is the player's`() {
+        val state = ContainerState()
+        state.post(ContainerOpened(5, null, 63))
+        assertEquals(0 until 27, state.menuSlots)
+        assertEquals(27 until 63, state.playerSlots)
+        state.post(ContainerOpened(0, null, 46))
+        assertEquals(0 until 0, state.menuSlots)
+        assertEquals(0 until 46, state.playerSlots)
+    }
 }

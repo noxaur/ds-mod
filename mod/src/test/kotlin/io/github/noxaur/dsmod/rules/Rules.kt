@@ -223,6 +223,16 @@ val rules = listOf(
         span = Span.FILE,
     ),
     Rule(
+        id = "player-slots-by-container",
+        files = "src/main/**.{kt,java}",
+        except = "src/main/kotlin/**/core/game/ContainerState.kt",
+        forbid = Regex("""const\s+val\s+\w+\s*(:\s*Int\s*)?=\s*36(?![\w.])"""),
+        fix = "In core, the open container's `menuSlots` and `playerSlots` from `ContainerState` say which slots are the menu's " +
+            "and which the player's. In the edge, name a slot with Minecraft's own number, as `InventoryMenu.USE_ROW_SLOT_START`.",
+        example = "private const val HOTBAR_FIRST = 36",
+        examples = listOf("const val PLAYER_SLOTS=36", "const val PLAYER_SLOTS: Int = 36"),
+    ),
+    Rule(
         id = "protector-by-stage",
         files = "src/main/kotlin/**/core/feature/**.kt",
         forbid = Regex(""""(Spawned|Resting|Rising)\b"""),
