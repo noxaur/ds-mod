@@ -37,5 +37,9 @@ class ContainerState {
         /** The player's own inventory, which the client always numbers 0. */
         const val INVENTORY = 0
         private const val PLAYER_SLOTS = 36
+        const val ROW_SLOTS = 9
+        val WORN_SLOTS = 5..8
+        val CARRIED_SLOTS = WORN_SLOTS.last + 1 until WORN_SLOTS.last + 1 + PLAYER_SLOTS
+        val OFFHAND_SLOT = CARRIED_SLOTS.last + 1
     }
 }
