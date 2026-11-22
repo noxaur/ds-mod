@@ -40,6 +40,8 @@ export default defineConfig({
       "typescript/switch-exhaustiveness-check": "error",
       "typescript/no-floating-promises": "error",
       "dsmod/no-try": "error",
+      "dsmod/no-computed-console": "error",
+      "typescript/no-explicit-any": "error",
       // An Effect generator leaves early with `return yield* failure`, which this rule reads as a missing value.
       // TypeScript's noImplicitReturns still catches a function that forgets to return.
       "typescript/consistent-return": "off",
@@ -49,6 +51,7 @@ export default defineConfig({
       {
         files: ["src/profiles/**"],
         rules: {
+          "dsmod/no-json-parse": "error",
           "no-restricted-imports": [
             "error",
             {
@@ -65,6 +68,7 @@ export default defineConfig({
           ],
         },
       },
+      { files: ["src/**/*.test.ts"], rules: { "dsmod/no-json-parse": "off" } },
     ],
   },
 });

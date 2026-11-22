@@ -21,6 +21,31 @@ const uiSdkElements = {
   progress: "@ui-sdk/react/progress",
 };
 
+const restricted = (...more) => [
+  "error",
+  {
+    selector: "TryStatement",
+    message: "Model failure with Effect (Effect.try, Effect.tryPromise) instead of try/catch.",
+  },
+  { selector: "JSXAttribute[name.name='popover']", message: `Use @ui-sdk/react/popover. ${uiSdk}` },
+  {
+    selector: "MemberExpression[object.name='console'][computed=true]",
+    message: "no-console cannot see console[level]. Call console.error(..) where the server's log is meant.",
+  },
+  ...more,
+];
+
+const noProcessEnv = {
+  selector: "MemberExpression[object.name='process'][property.name='env']",
+  message: "Read the environment in app/env.ts and import what it exports, so every setting is named in one place.",
+};
+
+const noJsonParse = {
+  selector: "MemberExpression[object.name='JSON'][property.name='parse']",
+  message:
+    "JSON.parse returns any. Decode with Schema.decodeUnknownEffect(Schema.fromJsonString(X)), so the shape is checked and a bad body is a failure.",
+};
+
 export default defineConfig(
   globalIgnores([".next/**", "out/**", "next-env.d.ts"]),
   js.configs.recommended,
@@ -42,14 +67,7 @@ export default defineConfig(
       "@typescript-eslint/switch-exhaustiveness-check": "error",
       "@typescript-eslint/no-shadow": "error",
       "@typescript-eslint/explicit-module-boundary-types": "off",
-      "no-restricted-syntax": [
-        "error",
-        {
-          selector: "TryStatement",
-          message: "Model failure with Effect (Effect.try, Effect.tryPromise) instead of try/catch.",
-        },
-        { selector: "JSXAttribute[name.name='popover']", message: `Use @ui-sdk/react/popover. ${uiSdk}` },
-      ],
+      "no-restricted-syntax": restricted(),
       "no-restricted-imports": [
         "error",
         {
@@ -92,6 +110,16 @@ export default defineConfig(
         },
       ],
     },
+  },
+  {
+    files: ["app/**/*.{ts,tsx}"],
+    ignores: ["app/env.ts"],
+    rules: { "no-restricted-syntax": restricted(noProcessEnv) },
+  },
+  {
+    files: ["app/**/*.{ts,tsx}"],
+    ignores: ["app/env.ts", "app/**/*.test.{ts,tsx}"],
+    rules: { "no-restricted-syntax": restricted(noProcessEnv, noJsonParse) },
   },
   { files: ["**/*.{js,mjs,cjs}"], extends: [tseslint.configs.disableTypeChecked] },
 );
