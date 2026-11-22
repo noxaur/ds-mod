@@ -9,7 +9,7 @@ import net.minecraft.client.gui.screens.Screen
 
 object Hooks {
     private lateinit var fullbright: Fullbright
-    private lateinit var ctrlClick: CtrlClick
+    private var ctrlClick: CtrlClick? = null
     private lateinit var hideExplosions: HideExplosions
     private lateinit var keys: (InputConstants.Key) -> Unit
     private lateinit var settings: (Screen?) -> Screen
@@ -17,7 +17,7 @@ object Hooks {
     lateinit var hud: DsModConfig.Hud
         private set
 
-    fun bind(fullbright: Fullbright, ctrlClick: CtrlClick, hideExplosions: HideExplosions) {
+    fun bind(fullbright: Fullbright, ctrlClick: CtrlClick?, hideExplosions: HideExplosions) {
         this.fullbright = fullbright
         this.ctrlClick = ctrlClick
         this.hideExplosions = hideExplosions
@@ -33,7 +33,7 @@ object Hooks {
     fun fullbright() = fullbright.feature.runs
 
     @JvmStatic
-    fun ctrlClicks() = ctrlClick.feature.runs
+    fun ctrlClicks() = ctrlClick?.feature?.runs == true
 
     @JvmStatic
     fun hidesExplosions() = hideExplosions.feature.runs

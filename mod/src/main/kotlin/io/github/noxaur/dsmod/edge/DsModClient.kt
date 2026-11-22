@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.feature.general.CtrlClick
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.brigadier.arguments.StringArgumentType
@@ -129,7 +130,7 @@ object DsModClient : ClientModInitializer {
         game.metrics.sinks += { snapshot ->
             snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }
         }
-        Hooks.bind(tree.feature(), tree.feature(), tree.feature())
+        Hooks.bind(tree.feature(), tree.owners.filterIsInstance<CtrlClick>().firstOrNull(), tree.feature())
         Hud.bind(game, tree.feature())
         Slots.bind(game, tree.feature())
         MenuSkin.bind(game, tree.feature(), tree.feature(), tree.feature())
