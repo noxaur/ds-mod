@@ -201,7 +201,7 @@ class ConfigFileTest {
         assertTrue(tree.feature<ReportGameData>().feature.enabled)
     }
 
-    /** @keep `config/main.json` was written by main at ae6f8a1f7 with every row changed from its default, on a Mac so
+    /** @keep `config/main.json` was written by main at aebc7effe with every row changed from its default, on a Mac so
      * Ctrl Click has its row. Write it again only to add a setting, never to change a key that shipped. */
     @Test
     fun `a file this version's main wrote loads every value, and saves again unchanged`() {
