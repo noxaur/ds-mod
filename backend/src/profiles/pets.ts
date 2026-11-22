@@ -14,7 +14,6 @@ const label = (name: string, value: string, color = WHITE): Line => [
   { text: value, color },
 ];
 
-/** `1,234,567` for a number of whole units. */
 const grouped = (value: number): string => Math.floor(value).toLocaleString("en-US");
 
 const ORDINARY_CURVE: Readonly<Record<string, readonly [number, number]>> = {
@@ -44,7 +43,7 @@ const petLevel = (species: ReturnType<Catalog["pets"]["get"]>, type: string, rar
   return { level, maxLevel, xpIntoLevel, xpForNextLevel: level < maxLevel ? step(level) : null };
 };
 
-/** Whether a skin is safe to hand a client, once for each texture of a catalog, because checking decodes it. */
+// @keep Checking a skin decodes it, so each texture of a catalog is checked once.
 const checked = new WeakMap<Catalog, Map<string, string | undefined>>();
 const textureOf = (catalog: Catalog, value: string | undefined): string | undefined => {
   if (value === undefined) {

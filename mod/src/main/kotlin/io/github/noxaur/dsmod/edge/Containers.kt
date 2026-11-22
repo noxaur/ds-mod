@@ -11,10 +11,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.inventory.InventoryMenu
 import net.minecraft.world.item.ItemStack
 
-/**
- * Stores [stack] as the last read of slot [i] in [stacks] and [counts], and says whether it equals what it replaced.
- * The server often resends the whole inventory, which swaps every stack for an equal one.
- */
+/** @keep The server often resends the whole inventory, which swaps every stack for an equal one. */
 internal fun remember(stacks: Array<ItemStack?>, counts: IntArray, i: Int, stack: ItemStack): Boolean {
     val previous = stacks[i]
     val equal = previous != null && stack.count == counts[i] && ItemStack.isSameItemSameComponents(previous, stack)
@@ -23,16 +20,7 @@ internal fun remember(stacks: Array<ItemStack?>, counts: IntArray, i: Int, stack
     return equal
 }
 
-/**
- * Reads the client's open menu once a tick and posts what changed to [game]. A slot is looked at again only
- * when its stack is a different object or has a different count, so a quiet tick compares references.
- * A stack that the client edits in place and leaves at the same count goes unnoticed.
- * Comparing and reading items is the costly part, so one poll does that for at most [BUDGET_NANOS] and the rest of
- * a big menu follows on the next ticks, top slot first.
- * The player's own inventory keeps what was read of it while another menu is open, so going back to it reads only
- * the slots whose stack changed, and the features never see it half read.
- * The poller starts over when [Game.tap] changes, so a capture that starts later still begins with every slot.
- */
+/** @keep Compares stack references and counts, so a stack the client edits in place and leaves at the same count goes unnoticed. */
 class ContainerPoller(private val game: Game) {
     private class Read(val menu: AbstractContainerMenu, val stacks: Array<ItemStack?>, val counts: IntArray, val items: Array<Item?>)
 
@@ -48,12 +36,11 @@ class ContainerPoller(private val game: Game) {
         if (!game.wants(ContainerOpened::class.java) && !game.wants(SlotChanged::class.java)) return
         val player = client.player ?: return
         val open = player.containerMenu
-        // Any screen can sit over the player's own inventory, so only another menu has a title of its own.
+        // @keep Any screen can sit over the player's own inventory, so only another menu has a title of its own.
         val openTitle = if (open === player.inventoryMenu) null else (client.gui.screen() as? AbstractContainerScreen<*>)?.title
         val slots = open.slots
         if (open !== menu || openTitle != title || game.tap !== tapped) {
             val left = menu
-            // A new tap, such as a capture starting, has seen no slot yet, so nothing read before it may be kept.
             if (game.tap !== tapped) inventory = null else if (left is InventoryMenu) inventory = Read(left, stacks, counts, items)
             val kept = inventory?.takeIf { it.menu === open }
             menu = open

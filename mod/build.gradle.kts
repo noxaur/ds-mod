@@ -30,7 +30,7 @@ repositories {
         name = "DevAuth"
         content { includeGroup("me.djtheredstoner") }
     }
-    // tla2tools is published only as a GitHub release asset.
+    // @keep tla2tools is published only as a GitHub release asset.
     exclusiveContent {
         forRepository {
             ivy("https://github.com/tlaplus/tlaplus/releases/download/") {
@@ -42,10 +42,8 @@ repositories {
     }
 }
 
-// Third-party mods that `runClient` loads beside ds-mod, as a player's instance would have them.
 val devMods = configurations.create("devMods") { isTransitive = false }
 
-// `main` is the release build. `debug` holds developer tools and ships only in the debug jar.
 val debug = sourceSets.create("debug") {
     compileClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
     runtimeClasspath += sourceSets.main.get().output + sourceSets.main.get().runtimeClasspath
@@ -56,7 +54,6 @@ sourceSets.test {
 }
 
 loom {
-    // The recorder reads private Minecraft fields.
     accessWidenerPath = file("src/main/resources/dsmod.accesswidener")
     mods {
         register("dsmod") { sourceSet(sourceSets.main.get()) }
@@ -65,7 +62,6 @@ loom {
     runs.named("client") { setSource(debug) }
 }
 
-// `./gradlew runClientGameTest` boots the real client and runs the tests in src/gametest.
 fabricApi {
     configureTests {
         createSourceSet = true
@@ -79,7 +75,6 @@ sourceSets.named("gametest") {
     compileClasspath += debug.output
     runtimeClasspath += debug.output
 }
-// The backend's answers that the unit tests read, so the game test draws the same profile.
 tasks.named<ProcessResources>("processGametestResources") {
     from("src/test/resources") { include("profiles/**") }
 }
@@ -89,7 +84,6 @@ dependencies {
     implementation("net.fabricmc:fabric-loader:${property("loader_version")}")
     implementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
     implementation("net.fabricmc:fabric-language-kotlin:${property("fabric_kotlin_version")}")
-    // Mod Menu's config button opens the settings. Only its API is compiled against, and a player without it never loads that class.
     compileOnly("maven.modrinth:modmenu:${property("modmenu_version")}") { isTransitive = false }
 
     devMods("maven.modrinth:sodium:${property("sodium_version")}")
@@ -97,7 +91,6 @@ dependencies {
     devMods("maven.modrinth:modmenu:${property("modmenu_version")}")
     devMods("maven.modrinth:placeholder-api:${property("placeholder_api_version")}")
     devMods("maven.modrinth:spark:${property("spark_version")}")
-    // Logs runClient in with a real Microsoft account, so it can join online servers.
     devMods("me.djtheredstoner:DevAuth-fabric:${property("devauth_version")}")
 
     testImplementation(kotlin("test"))
@@ -110,13 +103,10 @@ kotlin {
     jvmToolchain(25)
 }
 
-// A fresh `run/` starts with the user's dev settings from `run-defaults/` and DragSim's resource pack. Each file is
-// copied only when `run/` lacks it, so what the user changes in game stays.
 val seedRun = tasks.register("seedRun") {
     val defaults = file("run-defaults")
     val run = file("run")
-    // The pack is 40 MB, so it lives in the Gradle home, shared by every checkout, and never in git. The client keeps a
-    // server's pack at downloads/<the id the server sends>/<sha1>, and verifies the hash, so a stale copy is replaced.
+    // @keep The client keeps a server's pack at downloads/<the id the server sends>/<sha1>, and verifies the hash, so a stale copy is replaced.
     val cache = gradle.gradleUserHomeDir.resolve("caches/dsmod/dragsim.zip")
     val pack = run.resolve("downloads/c2222eea-454f-35cd-b85c-93c1c5a59e17")
     doNotTrackState("Copies into the game folder, which the game writes to")
@@ -134,7 +124,7 @@ val seedRun = tasks.register("seedRun") {
             val partial = cache.resolveSibling("dragsim.zip.part").apply { parentFile.mkdirs() }
             val transfer = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).followRedirects(HttpClient.Redirect.NORMAL).build()
                 .sendAsync(request.build(), HttpResponse.BodyHandlers.ofFile(partial.toPath(), CREATE, WRITE, TRUNCATE_EXISTING))
-            // A request's own timeout ends at the headers, so a server that stalls in the body would hold the game back.
+            // @keep A request's own timeout ends at the headers, so a server that stalls in the body would hold the game back.
             val response = runCatching { transfer.get(2, TimeUnit.MINUTES) }.onFailure { transfer.cancel(true) }.getOrThrow()
             if (response.statusCode() == 200) {
                 partial.renameTo(cache.apply { delete() })
@@ -152,7 +142,6 @@ val seedRun = tasks.register("seedRun") {
     }
 }
 
-// `./gradlew runClient -Pbrief=<file>` names the window after the brief and shows its steps. See Brief.kt.
 tasks.named<JavaExec>("runClient") {
     dependsOn(seedRun)
     val mods = devMods.elements
@@ -179,12 +168,10 @@ tasks.withType<ProcessResources>().configureEach {
     filesMatching("fabric.mod.json") { expand("version" to version, "backend_url" to backend, "website_url" to website) }
 }
 
-// Release build: build/libs/dsmod-<version>.jar
 tasks.jar {
     from("../LICENSE", "NOTICE")
 }
 
-// Debug build: build/libs/dsmod-<version>-debug.jar, the release jar plus the debug tools.
 val debugJar = tasks.register<Jar>("debugJar") {
     archiveClassifier = "debug"
     from(debug.output)
@@ -194,17 +181,12 @@ val debugJar = tasks.register<Jar>("debugJar") {
 
 tasks.assemble { dependsOn(debugJar) }
 
-// `./gradlew runProdClientGameTest` runs the same game tests against the built jars, as a player would load them.
 dependencies {
     productionRuntimeMods("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
     productionRuntimeMods("net.fabricmc:fabric-language-kotlin:${property("fabric_kotlin_version")}")
-    // SettingsScreenTest presses Mod Menu's config button, so both game test runs load Mod Menu.
     productionRuntimeMods("maven.modrinth:modmenu:${property("modmenu_version")}") { isTransitive = false }
     "gametestImplementation"("maven.modrinth:modmenu:${property("modmenu_version")}") { isTransitive = false }
 }
-// A run with no `-Pgametests` runs the tests that the change since the branch left `main` reaches, as GameTestPick.kt
-// picks them, and CI's gametests job runs one. `-Pgametests=PerfTest,ChatTest` names them, and `-Pgametests=all`
-// runs every one, which takes minutes, so it is for the beta pipeline.
 val gametests = providers.gradleProperty("gametests")
 val picked = layout.buildDirectory.file("gametests/picked")
 val pickGameTests = tasks.register<JavaExec>("pickGameTests") {
@@ -244,7 +226,6 @@ val gametestJar = tasks.register<Jar>("gametestJar") {
     destinationDirectory = layout.buildDirectory.dir("devlibs")
     from(sourceSets["gametest"].output)
 }
-// Loom keeps this run folder, and a config a test saved last time would change what the tests see.
 val cleanProdClientGameTest = tasks.register<Delete>("cleanProdClientGameTest") {
     delete(layout.buildDirectory.dir("run/prodClientGameTest/config"))
 }
@@ -252,16 +233,13 @@ tasks.register<net.fabricmc.loom.task.prod.ClientProductionRunTask>("runProdClie
     dependsOn(cleanProdClientGameTest)
     group = "verification"
     description = "Runs the client game tests against the release and debug jars."
-    // Loom would add the release jar beside the debug jar that already holds it, so list the mods explicitly.
+    // @keep Loom would add the release jar beside the debug jar that already holds it, so the mods are listed explicitly.
     mods.setFrom(debugJar, gametestJar, configurations.productionRuntimeMods)
     jvmArgs.add("-Dfabric.client.gametest")
-    // PerfTest weighs the jar a player installs.
     jvmArgs.add(tasks.jar.flatMap { it.archiveFile }.map { "-Ddsmod.jar=${it.asFile.path}" })
     runDir = layout.buildDirectory.dir("run/prodClientGameTest")
-    // A CI runner has no display.
     useXVFB = providers.environmentVariable("CI").isPresent
 }
-// A picked run is skipped when the change reaches no test.
 if (!gametests.isPresent) {
     val pick = picked.get().asFile
     tasks.matching { it.name == "runClientGameTest" || it.name == "runProdClientGameTest" }.configureEach {
@@ -270,7 +248,6 @@ if (!gametests.isPresent) {
     }
 }
 
-// `./gradlew cutFixture --args="<capture> <feature id> <name> <from>-<to> [--types a,b] [--info Key,Key] [--system regex]"`
 tasks.register<JavaExec>("cutFixture") {
     group = "development"
     description = "Cuts a redacted fixture out of a capture. See CutFixture.kt."
@@ -280,16 +257,12 @@ tasks.register<JavaExec>("cutFixture") {
 
 tasks.test {
     useJUnitPlatform()
-    // The unit tests are the fast loop. One that needs longer belongs in a game test.
     timeout = Duration.ofSeconds(30)
-    // RulesTest reads the sources and the docs that list features, so a change to either must rerun it.
     inputs.dir("src")
     inputs.file("input-sites.txt")
     inputs.files("../README.md", "../docs/user/features.md")
-    // The user's yes to an input site, which InputSitesTest records with their GitHub login.
     systemProperty("inputSites.approve", providers.gradleProperty("approve").getOrElse(""))
     systemProperty("inputSites.approvedBy", providers.gradleProperty("approvedBy").getOrElse(""))
-    // Print the whole failure, so a broken rule shows its fix in the terminal.
     testLogging {
         events("failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
@@ -297,7 +270,6 @@ tasks.test {
     }
 }
 
-// One TLC run per specs/<Name>.tla that has a specs/<Name>.cfg beside it.
 val specs = fileTree("../specs") { include("*.cfg") }.files.sortedBy { it.name }
 val tlc = tasks.register("tlc") {
     group = "verification"
@@ -313,8 +285,7 @@ specs.forEach { cfg ->
         workingDir = file("../specs")
         val meta = layout.buildDirectory.dir("tlc/$name")
         args("-config", cfg.name, "-metadir", meta.get().asFile.path, "-deadlock", "$name.tla")
-        // TLC unpacks Naturals.tla and the other standard modules into java.io.tmpdir. The specs run in
-        // parallel, and in one shared /tmp one run can parse another's half-written module.
+        // @keep TLC unpacks Naturals.tla into java.io.tmpdir, and in one shared /tmp one parallel run can parse another's half-written module.
         val tmp = meta.map { it.dir("tmp") }
         jvmArgs(tmp.map { "-Djava.io.tmpdir=${it.asFile.path}" }.get())
         doFirst { tmp.get().asFile.mkdirs() }

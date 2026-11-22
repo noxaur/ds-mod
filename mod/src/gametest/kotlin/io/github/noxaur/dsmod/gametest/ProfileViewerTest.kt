@@ -12,19 +12,11 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import java.util.concurrent.CopyOnWriteArrayList
 
-/**
- * Looks players up through `/pv` against [OnProfiles]' stub of the backend. Opens the overview, turns the model with
- * the real mouse, hovers a skill, opens the inventory and a storage page and hovers an item, and checks that each tab
- * asks for its container once. Checks that `/pv 12` is left to the server's vault command, that a missing player and
- * a hidden inventory each say so, and that `/pv` does nothing with the setting off. `ProfileTourTest` and
- * `ProfileStatesTest` cover the rest of the viewer.
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.profile.Profiles]. */
 class ProfileViewerTest : FabricClientGameTest {
-    /** The `item_id` of each stack whose tooltip another mod's hook saw, as DragSim Utils' hooks read it. */
     private val hooked = CopyOnWriteArrayList<String>()
 
     override fun runTest(context: ClientGameTestContext) {
-        // Another mod adds to a real item's tooltip through Fabric's hook and reads the server's data from the stack.
         ItemTooltipCallback.EVENT.register { stack, _, _, lines ->
             val id = stack.get(DataComponents.CUSTOM_DATA)?.copyTag()?.getCompoundOrEmpty("item_data")?.getStringOr("item_id", "")
             if (!id.isNullOrEmpty()) {
@@ -35,7 +27,6 @@ class ProfileViewerTest : FabricClientGameTest {
         OnProfiles(context).use { profiles ->
             context.worldBuilder().create().use {
                 context.waitTicks(20)
-                // The server's /pv <vault> is not ours, so nothing opens and the line goes on to the server.
                 profiles.command("pv 12")
                 context.waitTicks(5)
                 check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() !is ProfileScreen }) { "/pv 12 opened the profile viewer" }
@@ -47,7 +38,6 @@ class ProfileViewerTest : FabricClientGameTest {
                 context.inTheme(Theme.VANILLA) { context.takeScreenshot("profile-overview-vanilla") }
 
                 val (contentX, viewY) = context.computeOnClient<Pair<Int, Int>, Nothing> { profiles.screen(it).contentX to profiles.screen(it).viewY }
-                // The model sits left of the content. A drag turns it, and the skill under the mouse shows its XP.
                 profiles.move(contentX - 57, viewY + 60)
                 context.input.holdMouse(0)
                 profiles.move(contentX - 20, viewY + 50)
@@ -56,7 +46,6 @@ class ProfileViewerTest : FabricClientGameTest {
                 profiles.move(contentX + 40, viewY + 18)
                 context.takeScreenshot("profile-skill-tooltip")
 
-                // Kills past the first five are in the well's tooltip.
                 profiles.move(contentX + 200, viewY + 150)
                 context.takeScreenshot("profile-kills-tooltip")
                 profiles.tab("Dungeons")
@@ -64,7 +53,6 @@ class ProfileViewerTest : FabricClientGameTest {
                 context.takeScreenshot("profile-dungeons")
                 check(context.computeOnClient<Boolean, Nothing> { !profiles.screen(it).overflows }) { "The dungeons tab needs a scrollbar" }
 
-                // Each stat's hover breaks it down by the server's groups. Health is the second row.
                 profiles.tab("Player Stats")
                 profiles.move(contentX + 20, viewY + 28)
                 context.takeScreenshot("profile-stat-tooltip")
@@ -72,7 +60,6 @@ class ProfileViewerTest : FabricClientGameTest {
                 profiles.tab("Inventory")
                 context.waitUntil("the inventory loaded") { profiles.asked.any { "/containers/inventory" in it } }
                 context.waitTicks(5)
-                // The other tabs have a title row, so their content starts lower than the overview's.
                 val gridY = context.computeOnClient<Int, Nothing> { profiles.screen(it).viewY }
                 val item = profiles.hoverItem(contentX, gridY)
                 context.takeScreenshot("profile-inventory-tooltip")

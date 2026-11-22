@@ -11,10 +11,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import org.lwjgl.glfw.GLFW
 
-/**
- * A key the player binds shows and hides the grid, by a press under Toggle and while it is held under Hold, and with
- * none the grid always shows.
- */
 class InventoryKeyTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = InventoryGrid.with(context) {
         val inventoryHud = DsModClient.feature<InventoryHud>()
@@ -26,7 +22,6 @@ class InventoryKeyTest : FabricClientGameTest {
         check(shown()) { "Binding a key hid the grid before its first press" }
         context.input.pressKey(key)
         context.waitFor { Hud.find(ID) == null }
-        // A key held down repeats its event, as the game sends it, and a repeat is not another press.
         context.input.holdKey(key)
         context.waitFor { Hud.find(ID) != null }
         context.runOnClient<Nothing> { InventoryKey.pressed(InputConstants.Type.KEYSYM.getOrCreate(key)) }
@@ -53,6 +48,5 @@ class InventoryKeyTest : FabricClientGameTest {
         inventoryHud.key.value = -1
         context.waitTicks(2)
         check(shown()) { "With no key the grid does not always show" }
-
     }
 }

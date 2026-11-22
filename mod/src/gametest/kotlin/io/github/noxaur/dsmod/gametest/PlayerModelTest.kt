@@ -18,13 +18,7 @@ import net.minecraft.util.Mth
 import java.awt.image.BufferedImage
 import kotlin.math.abs
 
-/**
- * The player seen from the front in third person, with a mannequin beside them: each Player Model setting changes the
- * frame by more than the idle sway of the arms does, Only Me leaves the mannequin as the game draws it, and first
- * person stays the game's own to the pixel. Read the screenshots.
- */
 class PlayerModelTest : FabricClientGameTest {
-    /** How many pixels differ by more than the shade of one or two the models' lighting flickers by between frames. */
     private fun moved(a: BufferedImage, b: BufferedImage) = diff(a, b, tolerance = 8)
 
     override fun runTest(context: ClientGameTestContext) {
@@ -40,16 +34,13 @@ class PlayerModelTest : FabricClientGameTest {
                     "execute at @a run summon mannequin ~2.5 ~ ~1 {Rotation:[0f,0f]}",
                 ).forEach(world.server::runCommand)
                 context.input.lookAt(0f, 0f)
-                // The vignette eases toward the light for half a minute after a join and shades the whole frame.
+                // @keep The vignette eases toward the light for half a minute after a join and shades the whole frame.
                 context.runOnClient<Nothing> {
                     it.options.vignette().set(false)
                     it.options.cameraType = CameraType.THIRD_PERSON_FRONT
                 }
                 context.waitTicks(40)
 
-                // The arms sway as the player stands, by a hundred pixels or so between one frame and the next and
-                // by thousands over a few seconds, so each setting is held against a frame of the game's own taken
-                // just before it.
                 val still = 1000
                 fun against(what: String, region: (BufferedImage) -> BufferedImage = { it }): Int {
                     val name = "player-model-${what.lowercase().replace(' ', '-')}"
@@ -79,7 +70,6 @@ class PlayerModelTest : FabricClientGameTest {
                 playerModel.upsideDown.value = true
                 differs("Upside Down")
                 playerModel.upsideDown.value = false
-                // Flat on the ground with the arms ahead, the way the settings combine.
                 playerModel.tiltForward.value = 90f
                 playerModel.pose.value = ModelPose.ARMS_UP
                 differs("Flat")
@@ -89,8 +79,6 @@ class PlayerModelTest : FabricClientGameTest {
                     differs("Pose ${pose.name.lowercase().replace('_', '-')}")
                 }
 
-                // Player Model only draws. The player's own turn, look, head and place, which the game sends the server,
-                // are the same with every setting at its most as with the feature off.
                 fun body() = context.computeOnClient<List<Double>, Nothing> { client ->
                     val p = client.player!!
                     listOf(p.yRot, p.xRot, p.yHeadRot, p.yBodyRot).map(Float::toDouble) + listOf(p.x, p.y, p.z)
@@ -111,15 +99,12 @@ class PlayerModelTest : FabricClientGameTest {
                 playerModel.reset()
                 playerModel.target.value = ModelTarget.SELF
 
-                // A spin moves the model between two frames a few ticks apart. A T-pose holds the arms still.
                 playerModel.pose.value = ModelPose.T_POSE
                 playerModel.spin.value = 0.5f
                 val spinning = shot("player-model-spin")
                 context.waitTicks(5)
                 moved(spinning, shot("player-model-spin-later")).let { check(it > still) { "Spin moved only $it pixels" } }
 
-                // While it spins, the model faces where the spin says as it is drawn, however the body is turned, and the
-                // head turns with it. Without a spin both follow the player.
                 fun facing(body: Float) = context.computeOnClient<Pair<Float, Float>, Nothing> { client ->
                     val player = client.player!!
                     player.yBodyRot = body
@@ -143,8 +128,6 @@ class PlayerModelTest : FabricClientGameTest {
                 check(followedHead != 0f) { "Without a spin the head did not follow the player's look" }
                 playerModel.pose.value = ModelPose.GAME
 
-                // The mannequin stands on the right of the frame. Only Me leaves it as the game draws it, and
-                // Everyone shrinks it too.
                 val mannequin = { image: BufferedImage -> image.getSubimage(image.width * 2 / 3, 0, image.width / 3, image.height) }
                 playerModel.size.value = 0.5f
                 against("Only Me", mannequin).let { check(it < still) { "Only Me changed the mannequin by $it pixels" } }
@@ -152,14 +135,12 @@ class PlayerModelTest : FabricClientGameTest {
                 against("Everyone", mannequin).let { check(it > still) { "Everyone changed the mannequin by only $it pixels" } }
                 playerModel.target.value = ModelTarget.SELF
 
-                // The inventory draws the same model.
                 playerModel.size.value = 1f
                 playerModel.pose.value = ModelPose.STAR
                 playerModel.tiltSideways.value = 20f
                 context.openInventory()
                 context.waitTicks(2)
                 context.takeScreenshot("player-model-inventory")
-                // The inventory turns the model toward the mouse, and a spin still turns it there. The mouse stays put.
                 val box = context.computeOnClient<IntArray, Nothing> { client ->
                     val k = client.window.guiScale.toInt()
                     val left = (client.window.guiScaledWidth - 176) / 2
@@ -178,17 +159,14 @@ class PlayerModelTest : FabricClientGameTest {
                 val spun = moved(spinStart, model("player-model-inventory-spin-later"))
                 check(spun > 500) { "Spin turned the inventory's model by only $spun pixels" }
                 playerModel.spin.value = 0f
-                // The rows, with the changed ones marked.
                 context.setScreen { SettingsScreen(null, SettingsTabs(at("General")), reveal = "resetPlayerModel") }
                 context.waitTicks(2)
                 context.takeScreenshot("player-model-settings")
                 context.setScreen { null }
 
-                // First person draws no model, and its hand is drawn apart from the model, so nothing changes there.
                 context.runOnClient<Nothing> { it.options.cameraType = CameraType.FIRST_PERSON }
                 context.input.lookAt(0f, 90f)
                 playerModel.feature.enabled = false
-                // The arm trails a turn of the camera for a while.
                 context.waitFor { val p = it.player!!; p.xBob == p.xRot && p.xBobO == p.xRot && p.yBob == p.yRot && p.yBobO == p.yRot }
                 val first = shot("player-model-first-person")
                 playerModel.feature.enabled = true
@@ -198,13 +176,12 @@ class PlayerModelTest : FabricClientGameTest {
                 playerModel.spin.value = 2f
                 playerModel.pose.value = ModelPose.ZOMBIE
                 context.waitTicks(2)
-                // A block on ds-mod's HUD, such as a cooldown an earlier test started, may count down between the frames.
-                val hud = context.computeOnClient<List<IntArray>, Nothing> { client ->
+                val hudBlocks = context.computeOnClient<List<IntArray>, Nothing> { client ->
                     val k = client.window.guiScale.toFloat()
                     Hud.placed().map { intArrayOf(((it.x - 4) * k).toInt(), ((it.y - 4) * k).toInt(), ((it.x + it.width * it.scale + 4) * k).toInt(), ((it.y + it.height * it.scale + 4) * k).toInt()) }
                 }
                 val on = shot("player-model-first-person-on")
-                val outside = diff(first, on) { x, y -> hud.none { x >= it[0] && x < it[2] && y >= it[1] && y < it[3] } }
+                val outside = diff(first, on) { x, y -> hudBlocks.none { x >= it[0] && x < it[2] && y >= it[1] && y < it[3] } }
                 check(outside == 0) { "Player Model changed first person by $outside pixels" }
 
                 playerModel.reset()

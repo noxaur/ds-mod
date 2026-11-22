@@ -20,11 +20,6 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.TitleScreen
 import org.lwjgl.glfw.GLFW
 
-/**
- * The settings screen keeps a number typed into an open field across a resize, a digit typed after a click on a
- * number, a wheel that must not step an open field, and a button that writes other settings. Menu Tabs stores a
- * cleared item. The binds list puts a cancelled drag's selection back and exports the group that was picked.
- */
 class SettingsScreenFixesTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = setUp(context)
@@ -37,8 +32,6 @@ class SettingsScreenFixesTest : FabricClientGameTest {
 
     private fun SettingsDriver.rows() {
         val distance = { DsModClient.feature<Camera>().distance.value }
-        val distanceBefore = distance()
-        val itemSizeBefore = DsModClient.feature<Animations>().itemSize.value
         val tabs = SettingsTabs(at("Camera"))
         open(context, tabs)
         val d = spot("cameraDistance")
@@ -79,12 +72,6 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         check(context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).marked("itemSize") }.not()) {
             "Reset Animations left Item Size's changed marker up"
         }
-        // The next game test reads these settings, so leave them as this one found them.
-        context.runOnClient<Nothing> {
-            DsModClient.feature<Camera>().distance.value = distanceBefore
-            DsModClient.feature<Animations>().itemSize.value = itemSizeBefore
-            DsModClient.saveSettings()
-        }
     }
 
     private fun BindsDriver.lists() {
@@ -120,7 +107,7 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         val copied = context.computeOnClient<String, Nothing> { Minecraft.getInstance().keyboardHandler.clipboard }
         check(copied.startsWith("dsmod-binds:")) { "Export copied \"$copied\" instead of the Dungeons bind" }
         relayout {
-            // An empty clipboard does not replace the previous copy, so the marker has to be text.
+            // @keep An empty clipboard does not replace the previous copy, so the marker has to be text.
             Minecraft.getInstance().keyboardHandler.clipboard = "none"
         }
         press(foot(), "Export")
@@ -153,4 +140,3 @@ class SettingsScreenFixesTest : FabricClientGameTest {
     }
 }
 
-/** Drives Menu Tabs' form, at GUI scale 2. */

@@ -22,7 +22,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.world.item.Items
 
-/** Shows every surface once, so the screenshots show each layer as the player sees it. */
 class SurfacesTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.inWorld { world ->
@@ -84,7 +83,6 @@ class SurfacesTest : FabricClientGameTest {
                 World.hide("test")
             }
 
-            // At GUI scale 2 a HUD scale of 1.3 snaps to 1.5, three screen pixels per HUD pixel, so every edge stays whole.
             context.showDragonTimer(world)
             context.runOnClient<Nothing> { client ->
                 client.options.guiScale().set(2)

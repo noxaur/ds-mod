@@ -20,20 +20,17 @@ import net.minecraft.network.chat.ComponentSerialization
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.ResolvableProfile
 
-/** The plain text, plus the full component so colours and hover text survive. */
 fun Component.toCaptureJson(): JsonObject = buildJsonObject {
     put("text", string)
     put("component", encode(ComponentSerialization.CODEC, this@toCaptureJson))
 }
 
-/** The `x`, `y` and `z` that every positioned record carries. */
 fun JsonObjectBuilder.position(x: Number, y: Number, z: Number) {
     put("x", x)
     put("y", y)
     put("z", z)
 }
 
-/** The item with all its data components, as the server sent it. */
 fun ItemStack.toCaptureJson(): JsonElement = encode(ItemStack.CODEC, this)
 
 private fun <T : Any> encode(codec: Codec<T>, value: T): JsonElement {
@@ -53,5 +50,4 @@ private fun GsonElement.toKotlinx(): JsonElement = when (this) {
     else -> JsonNull
 }
 
-/** The profile as Minecraft stores it, with the name, id and skin textures. */
 fun ResolvableProfile.toCaptureJson(): JsonElement = encode(ResolvableProfile.CODEC, this)

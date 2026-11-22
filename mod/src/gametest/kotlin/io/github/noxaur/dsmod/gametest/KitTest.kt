@@ -12,16 +12,11 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import org.lwjgl.glfw.GLFW
 import kotlin.reflect.KClass
 
-/**
- * Screenshots the kit's gallery in each theme at GUI scale 2, and in Charcoal at GUI scale 1, then its pages of
- * settings rows, lists and panels, which together must show every kind of row and every look.
- */
 class KitTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = SettingsSteps.windowSize(context)
-        // The gallery is 575x335 GUI pixels with a glass strip 47 below it, which needs more room than the test window has at GUI scale 2.
         context.input.resizeWindow(1280, 800)
-        // An item needs a world's registries, and the gallery shows items in its slots.
+        // @keep An item needs a world's registries, and the gallery shows items in its slots.
         context.worldBuilder().create().use {
             context.setScreen { KitGalleryScreen() }
             guiScale(context, 2)
@@ -36,7 +31,6 @@ class KitTest : FabricClientGameTest {
         SettingsSteps.restore(context, window)
     }
 
-    /** The settings rows' page: every kind and every look, in both themes, with a choice's and a pick's menu open. */
     private fun rows(context: ClientGameTestContext) {
         val kinds = HashSet<Kind>()
         val looks = HashSet<KClass<out Look>>()

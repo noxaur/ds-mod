@@ -38,51 +38,22 @@ import net.minecraft.util.ARGB
 import net.minecraft.util.FormattedCharSequence
 import org.lwjgl.glfw.GLFW
 
-/**
- * The rows of settings on a screen, each a [Setting] with the face of its kind: the name with its description under
- * it on the left, and a kit control on the right. A host lays them out with [begin], [add] and [heading] for each
- * group and [end], whenever what is shown changes, and draws them each frame with [draw] and [drawMenu]. A row that
- * opens, such as a fold, asks the host to lay out again through [relayout]. The host hands over its mouse and keys,
- * and [scrollTo] asks it to scroll a stretch of the content into view.
- *
- * Every row gets the same behaviors, whatever its kind: the changed marker, dimming, a summary while closed, the
- * keyboard, a tooltip when its text is cut short, the words of a search painted where they match, and narration
- * through [narration], which the host adds as a widget. `controls.md` has each kind's conventions.
- *
- * An ordered list's entries are lines of their own under its row, each with the list as its setting and its place
- * in [Line.entry], so the mouse, the keys and narration reach them as they reach rows. A row that edits many values
- * in place, a list the player builds or a panel, has an [Editor] under its name, made by [editors] and kept across
- * layouts, which takes the mouse over it and the keys while they are on its row.
- */
 class SettingRows(
-    /** The rows that are open, which the host keeps across screens. */
     val opened: MutableSet<String>,
     private val relayout: () -> Unit,
     private val scrollTo: (top: Int, bottom: Int) -> Unit,
     private val editors: (Setting, Editor.Host) -> Editor = Editors::of,
-    /** The stars beside the rows' names, or null for rows that take none, such as the gallery's. */
     private val stars: Stars? = null,
 ) {
-    /** A tooltip's lines, made once. */
     class Tip(val lines: List<FormattedCharSequence>)
 
-    /**
-     * Whether each row is starred, what a press on its star does, and the Favorite Key, a key's GLFW code or a mouse
-     * button, which the star's tooltip names.
-     */
     class Stars(val on: (String) -> Boolean, val toggle: (String) -> Unit, val key: () -> Int)
 
-    /**
-     * Where a row is on the screen: the row, its control, the second part of its control (a number's field or a
-     * switch's settings button) and its changed marker. A row with an editor has the editor as its control.
-     */
     class Spot(
         val x: Int, val y: Int, val width: Int, val height: Int,
         val controlX: Int, val controlY: Int, val controlWidth: Int, val controlHeight: Int,
         val extraX: Int, val extraWidth: Int, val markerX: Int, val markerY: Int,
-        /** The star's top-left corner, or -1 for a row that has none. */
         val starX: Int, val starY: Int,
-        /** A span's slider: its track's left, top and width. */
         val sliderX: Int = -1, val sliderY: Int = -1, val sliderWidth: Int = 0,
     )
 
@@ -93,30 +64,25 @@ class SettingRows(
         var description: List<Component> = emptyList()
         var cut = false
 
-        // The control, in content coordinates: the dropdown, the button, or the track of a switch or a number.
         var cx = 0
         var cy = 0
         var cw = 0
         var ch = 0
 
-        // A second part of the control: a number's field, or a switch's settings button.
         var ex = 0
         var ew = 0
 
         var open = false
 
-        /** Whether an ordered list's entry shows, and whether it is the last shown one, which cannot hide. */
         var on = false
         var locked = false
 
-        /** How wide a closed ordered list's summary may be. */
         var room = 0
         var guideTo = 0
         var changed = false
         var dimmed = false
         var label = ""
 
-        /** [label] or a fold's name with what the search matched, or null when it matched nothing there. */
         var marked: Kit.Marked? = null
         var muted = ""
         var mutedX = 0
@@ -131,7 +97,6 @@ class SettingRows(
         var tip: Tip? = null
         var resetTip: Tip? = null
 
-        /** Where the star sits, in content coordinates, or -1 with no star, and whether the row is starred. */
         var starX = -1
         var starY = 0
         var starred = false
@@ -141,20 +106,17 @@ class SettingRows(
 
         val arrow get() = if (open) Icon.DOWN else Icon.RIGHT
 
-        /** What names this line across layouts: the row's id, and an entry's place after it. */
         val key get() = if (entry < 0) setting.id else "${setting.id}#$entry"
     }
 
     private val lines = ArrayList<Line>()
     private val font get() = Kit.font
 
-    /** Each row's editor by the row's id, kept across layouts so what it holds, such as the picked line, stays. */
     private val made = HashMap<String, Editor>()
     private val conditional = HashMap<Setting, Boolean>()
 
     private val host = Editor.Host({ relayout() }, { top, bottom -> scrollTo(top, bottom) }, { refresh() }, { words })
 
-    /** The editor a press went to, which takes the drag and the release. */
     private var pressed: Editor? = null
     private var origin = 0
     private var clipTop = 0
@@ -162,11 +124,9 @@ class SettingRows(
     private var screenWidth = 0
     private var screenHeight = 0
 
-    /** The line the keyboard is on, or -1. */
     private var focus = -1
     private var focusId: String? = null
 
-    /** Whether the keyboard works the rows, which a press on one or Tab gives them. */
     var keys = false
         set(value) {
             field = value
@@ -177,16 +137,13 @@ class SettingRows(
             }
         }
 
-    /** Focus looks like hover, and shows once a key moved it. */
     private var shownFocus = false
 
-    /** Shows the keyboard's row, as when Tab brings the keys to the rows. */
     fun showFocus() {
         shownFocus = true
         spoken = focus
     }
 
-    /** What the mouse and the keys are on, one at a time: nothing, an open menu, field or key button, or a held press. */
     private sealed interface Mode {
         object Idle : Mode
 
@@ -196,18 +153,12 @@ class SettingRows(
 
         class Recording(val button: KitKeysButton, val line: Line) : Mode
 
-        /** A press the mouse still holds on [line]. */
         sealed interface Drag : Mode {
             val line: Line
         }
 
-        /** A number's track or a span's slider. */
         class Slide(override val line: Line) : Drag
 
-        /**
-         * An entry pressed and perhaps dragged: where the press was, whether it toggles on release if it never moved,
-         * and the list before it moved. [line] follows the entry as it moves.
-         */
         class Reorder(override var line: Line, val pressY: Double, val toggleOnRelease: Boolean, val before: Pair<List<Any?>, List<Any?>>) : Drag {
             var moved = false
         }
@@ -215,51 +166,34 @@ class SettingRows(
 
     private var mode: Mode = Mode.Idle
 
-    /** The line a held press is on. */
     private val dragging get() = (mode as? Mode.Drag)?.line
 
-    /** The open menu, if any. */
     private val menu get() = (mode as? Mode.Menu)?.widget
 
-    /**
-     * The rows a search opened to show a hit inside them. They belong to that query, so typing a longer one does not
-     * leave open what a shorter one found, and the host sets them on each layout.
-     */
     var found: MutableSet<String> = HashSet()
 
-    /** Whether a menu, a field, a key button or an entry's drag has the keys, which the host then hands over before its own. */
     val capturing get() = when (mode) {
         Mode.Idle, is Mode.Slide -> capturer() != null
         else -> true
     }
 
-    /** Whether a key button records, a row's or an editor's, so the mouse's back and forward buttons are keys to it. */
     val recordingKeys get() = mode is Mode.Recording || capturer()?.recording == true
 
-    /** The editor that holds the keys and the mouse now, if any. */
     private fun capturer(): Editor? {
         for (line in lines) if (line.editor?.capturing == true) return line.editor
         return null
     }
 
-    /** The words of the search the rows show, painted where a row's text matches them. The host sets them on each layout. */
     var words: List<String> = emptyList()
 
-    /** The line narration speaks of: the one the mouse came onto or the keyboard moved to last. */
     private var spoken = -1
     private var spokenId: String? = null
     private var hoverId: String? = null
 
-    /** A key that a menu or a key button took, whose character must not reach the host's search. */
     private var swallow = false
 
-    /**
-     * The rows as one entry of the screen's narration, as a vanilla list is one: it speaks the row the mouse or the
-     * keyboard is on, and the open menu, field or key button. It takes no input, so the host adds it with `addWidget`.
-     */
     val narration = Narrated()
 
-    /** The rows' entry in the screen's narration. */
     inner class Narrated : GuiEventListener, NarratableEntry {
         private var focused = false
 
@@ -278,10 +212,8 @@ class SettingRows(
         override fun updateNarration(output: NarrationElementOutput) = narrate(output)
     }
 
-    /** Where the content's top is on the screen, the stretch of the screen it shows, and the screen's size, for menus. */
     fun view(originY: Int, top: Int, bottom: Int, width: Int, height: Int) {
         if (originY != origin) {
-            // A menu or a field belongs where it was opened, so a scroll closes it.
             when (mode) {
                 is Mode.Menu -> mode = Mode.Idle
                 is Mode.Field -> commit()
@@ -301,8 +233,7 @@ class SettingRows(
     }
 
     fun begin() {
-        // A resize rebuilds the rows without a click outside the field, so the typed number is taken first.
-        // Escape closes the field without taking it, and that path does not come through here.
+        // @keep A resize rebuilds the rows without a click outside the field, so the typed number is taken first. Escape closes the field without taking it, and that path does not come through here.
         if (mode is Mode.Field) commit()
         focusId = lines.getOrNull(focus)?.key
         spokenId = lines.getOrNull(spoken)?.key
@@ -311,7 +242,6 @@ class SettingRows(
         mode = Mode.Idle
     }
 
-    /** Lays [rows] out from [y] down, [width] wide, and returns the content y under them. */
     fun add(rows: List<Setting>, x: Int, y: Int, width: Int): Int {
         var at = y
         var first = true
@@ -343,7 +273,6 @@ class SettingRows(
         return at
     }
 
-    /** A group's heading switch at [x], [y], beside the heading's name at [nameX], with its star after it, [HEADING_STAR] wide. */
     fun heading(switch: Switch, x: Int, y: Int, nameX: Int) {
         val line = Line(switch, x, y, Kit.SWITCH_WIDTH, true, false)
         line.height = Kit.SWITCH_HEIGHT
@@ -366,7 +295,6 @@ class SettingRows(
         refresh()
     }
 
-    /** Works out where each part of a row sits. Its words and widths are made here, once per layout. */
     private fun measure(line: Line) {
         val s = line.setting
         val inner = line.width - PAD * 2
@@ -419,7 +347,6 @@ class SettingRows(
             is Order<*> -> {
                 line.cw = SETTINGS
                 line.ch = SETTINGS
-                // The summary takes at most a third of a narrow row, so the name and description keep their room.
                 line.room = minOf(ORDER_SUMMARY, inner / 3)
                 reserve = line.room + Kit.GAP
             }
@@ -427,7 +354,6 @@ class SettingRows(
         }
         if (s is Fold) {
             line.height = FOLD_HEIGHT + 4
-            // Room between the arrow and the name for the changed marker.
             line.nameX = line.x + 2 + FOLD_PAD + Icon.RIGHT.width + Kit.GAP + 4
             line.name = text { body(s.name) }.toComponent()
             line.marked = Kit.Marked.of(s.name, words)
@@ -473,7 +399,6 @@ class SettingRows(
         }
         line.cy = line.y + (line.height - line.ch) / 2
         when {
-            // The summary sits before the switch, and the switch before its settings button.
             s is Switch && line.ew > 0 -> {
                 line.ex = right - SETTINGS
                 line.cx = line.ex - Kit.GAP - line.cw
@@ -486,16 +411,13 @@ class SettingRows(
         }
     }
 
-    /** [text] in body or muted text, with what the search matched in the match role. */
     private fun marked(text: String, muted: Boolean) = marked(text, words, muted)
 
-    /** Reads each row's value again into what its face shows. Call it after a change, never per frame. */
     fun refresh() {
         for (line in lines) {
             val s = line.setting
             line.changed = line.entry < 0 && s.changed
             line.starred = line.starX >= 0 && stars?.on(s.id) == true
-            // The tip names the state and the Favorite Key, either of which a change may have changed.
             line.starTip = null
             line.dimmed = !line.heading && s.dimmed
             if (s is Order<*> && line.entry >= 0) {
@@ -573,14 +495,12 @@ class SettingRows(
 
     private fun extraHeight(line: Line) = if (line.setting is Number) Kit.BUTTON_HEIGHT else SETTINGS
 
-    /** Whether the mouse is on an entry's grip, which drags it. */
     private fun overGrip(line: Line, mouseX: Double) = line.entry >= 0 && mouseX < line.nameX - 1
 
     private fun markerY(line: Line) = top(line) + if (line.setting is Fold) 2 + (FOLD_HEIGHT - 3) / 2 else if (line.heading) 2 + 2 else NAME_TOP + 2
 
     private fun overMarker(line: Line, mouseX: Double, mouseY: Double) = line.changed && inside(mouseX, mouseY, line.nameX - 6, markerY(line) - 3, 6, 9)
 
-    /** Whether the mouse is on the row's star, or a pixel around it, as a 7x7 target is easy to miss. */
     private fun overStar(line: Line, mouseX: Double, mouseY: Double) =
         line.starX >= 0 && inside(mouseX, mouseY, line.starX - 1, origin + line.starY - 1, Icon.STAR.width + 2, Icon.STAR.height + 2)
 
@@ -596,7 +516,6 @@ class SettingRows(
         return -1
     }
 
-    /** Where the row [id] is, or the line of its ordered list's [entry], if it is laid out, so a link or a test can find it. */
     fun spot(id: String, entry: Int = -1): Spot? {
         val l = lines.firstOrNull { it.setting.id == id && it.entry == entry } ?: return null
         val slider = l.slider
@@ -606,23 +525,18 @@ class SettingRows(
         )
     }
 
-    /** The ids of the rows laid out, in order, without headings' switches and list entries, so a test can read what a page lists. */
     fun ids() = lines.filter { !it.heading && it.entry < 0 }.map { it.setting.id }
 
-    /** Whether the row [id] paints its changed marker, so a test can see that a refresh redrew it. */
     fun marked(id: String) = lines.firstOrNull { it.setting.id == id && it.entry < 0 }?.changed == true
 
-    /** The editor of the row [id], once it has been laid out, so a test can find its controls. */
     fun editor(id: String): Editor? = made[id]
 
-    /** Scrolls the row [id] into view. */
     fun reveal(id: String) {
         lines.firstOrNull { it.setting.id == id }?.let { reveal(it) }
     }
 
     private fun reveal(line: Line) = scrollTo(line.y - FOCUS_MARGIN, line.bottom + FOCUS_MARGIN)
 
-    /** Draws the rows that show, and returns the tooltip of what is under the mouse, if any. */
     fun draw(g: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float): Tip? {
         val mx = mouseX.toDouble()
         val my = mouseY.toDouble()
@@ -645,7 +559,6 @@ class SettingRows(
             face(g, line, top, i == hovered, lit && line.editor == null, menu != null && i == focus, mx, my)
             val editorTip = line.editor?.draw(g, mouseX, mouseY, keys && i == focus)
             if (line.changed) Kit.marker(g, line.nameX - 5, markerY(line), if (i == hovered && overMarker(line, mx, my)) Kit.State.HOVER else Kit.State.IDLE)
-            // A star shows on a starred row, and on the row under the mouse or the keys, faint until the mouse is on it.
             if (line.starX >= 0 && (line.starred || lit || i == hovered)) {
                 val onStar = i == hovered && overStar(line, mx, my)
                 val color = when {
@@ -662,7 +575,6 @@ class SettingRows(
         return tip
     }
 
-    /** Draws the open menu over everything else. */
     fun drawMenu(g: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         menu?.extractRenderState(g, mouseX, mouseY, partialTick)
         for (line in lines) line.editor?.drawOver(g, mouseX, mouseY)
@@ -773,7 +685,6 @@ class SettingRows(
     private fun labelButton(g: GuiGraphicsExtractor, line: Line, cy: Int, state: Kit.State) =
         Kit.button(g, line.cx, cy, line.cw, line.ch, state, line.label, font.width(line.label))
 
-    /** The arrow button of a row that opens, and the muted summary beside it. */
     private fun openButton(g: GuiGraphicsExtractor, line: Line, bx: Int, by: Int, state: Kit.State, top: Int) {
         Kit.button(g, bx, by, SETTINGS, SETTINGS, state, line.arrow)
         if (line.muted.isNotEmpty()) g.text(font, line.muted, line.mutedX, top + (line.height - 8) / 2, Role.MUTED.argb(), true)
@@ -805,7 +716,6 @@ class SettingRows(
         ).also { line.tip = it }
     }
 
-    /** Takes a press, and returns whether it was on a row. A press outside an open menu or field closes it and still does its own job. */
     fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
         val mx = event.x
         val my = event.y
@@ -821,7 +731,6 @@ class SettingRows(
             is Mode.Recording -> if (open.button.pressed(event) { finishRecording() }) return true
             else -> Unit
         }
-        // An editor holding a field, a menu or the keys takes the press first, and lets one elsewhere do its own job.
         capturer()?.let { if (it.mouseClicked(event, doubleClick)) return true.also { _ -> pressed = it } }
         val i = lineAt(mx, my)
         if (i < 0) return false
@@ -842,7 +751,6 @@ class SettingRows(
         if (order is Order<*> && line.entry >= 0) {
             if (right) return true
             if (overControl(line, mx, my)) return true.also { change { order.switch(line.entry) } }
-            // A press on the grip or the name picks the entry up, and one that never moves toggles it, as a switch row's press does.
             mode = Mode.Reorder(line, my, !overGrip(line, mx), order.entries.toList() to order.value.toList())
             return true
         }
@@ -883,10 +791,6 @@ class SettingRows(
         return true
     }
 
-    /**
-     * The Favorite Key: stars or unstars the row under the mouse, or, for a key on the [keyboard], the row the keys
-     * are on while they show. Returns whether there was one.
-     */
     fun starAt(mouseX: Double, mouseY: Double, keyboard: Boolean): Boolean {
         val line = (if (keyboard && keys && shownFocus) lines.getOrNull(focus) else null) ?: lines.getOrNull(lineAt(mouseX, mouseY)) ?: return false
         if (line.starX < 0) return false
@@ -899,7 +803,6 @@ class SettingRows(
         refresh()
     }
 
-    /** Puts the keys on line [i], and tells an editor they left it. */
     private fun moveFocus(i: Int) {
         if (i != focus) lines.getOrNull(focus)?.editor?.leave()
         focus = i
@@ -911,7 +814,6 @@ class SettingRows(
             is Mode.Reorder -> {
                 if (!drag.moved && Math.abs(event.y - drag.pressY) < DRAG_START) return true
                 drag.moved = true
-                // The entry moves to the line under the mouse, and stays at the list's ends past them.
                 val line = drag.line
                 val first = lines.indexOfFirst { it.setting === line.setting && it.entry == 0 }
                 val to = Math.floorDiv((event.y - top(lines[first])).toInt(), ENTRY_HEIGHT)
@@ -958,9 +860,8 @@ class SettingRows(
         return true
     }
 
-    /** The wheel over a number or a dropdown steps it, by ten with Shift. Elsewhere it is the host's, to scroll. */
     fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double, shift: Boolean): Boolean {
-        // An open field keeps what was typed. Stepping it would leave the stepped value behind when Escape discards the text.
+        // @keep Stepping an open field would leave the stepped value behind when Escape discards the text.
         if (mode is Mode.Menu || mode is Mode.Field || amount == 0.0) return false
         val i = lineAt(mouseX, mouseY).takeIf { it >= 0 } ?: return false
         val line = lines[i]
@@ -974,7 +875,6 @@ class SettingRows(
         return true
     }
 
-    /** Takes a key while the rows have the keyboard, or while a menu, field or key button is open. Returns whether it took it. */
     fun keyPressed(event: KeyEvent): Boolean {
         swallow = false
         when (val open = mode) {
@@ -1001,7 +901,6 @@ class SettingRows(
         }
         capturer()?.let { return it.keyPressed(event) }
         (mode as? Mode.Reorder)?.let { drag ->
-            // Escape during a drag puts the list back, and the drag keeps every other key until it ends.
             if (event.isEscape) {
                 change { restore(drag.line.setting as Order<*>, drag.before.first, drag.before.second) }
                 mode = Mode.Idle
@@ -1013,12 +912,10 @@ class SettingRows(
         if (line.editor?.keyPressed(event) == true) return true.also { shownFocus = true }
         val s = line.setting
         val shift = Keys.shift(event)
-        // Up, Down and Escape on an entry do what they do on any row, and Alt with Up or Down moves it.
         if (s is Order<*> && line.entry >= 0 && (Keys.alt(event) || !(event.isUp || event.isDown || event.isEscape))) {
             when {
                 event.isUp || event.isDown -> moveEntry(line, line.entry + if (event.isUp) -1 else 1)
                 event.isLeft -> {
-                    // Left steps out to the list's row, as it steps out of a section's subsections.
                     focus = lines.indexOfFirst { it.setting === s && it.entry < 0 }
                     spoken = focus
                 }
@@ -1081,10 +978,6 @@ class SettingRows(
         return true
     }
 
-    /**
-     * Typing goes to an open field or an open menu, and a digit typed on a number opens its field with it. The
-     * character of a key that a menu or a key button took goes nowhere, so recording K does not start a search.
-     */
     fun charTyped(event: CharacterEvent): Boolean {
         (mode as? Mode.Field)?.let { return it.field.charTyped(event) }
         (capturer() ?: lines.getOrNull(focus)?.takeIf { keys }?.editor)?.let { if (it.charTyped(event)) return true }
@@ -1097,7 +990,6 @@ class SettingRows(
             return true
         }
         val line = lines.getOrNull(focus) ?: return false
-        // A click puts the keys on the row before the focus is shown, and the next digit still opens the field.
         if (!keys || line.setting !is Number) return false
         val c = event.codepoint()
         if (c !in '0'.code..'9'.code && c != '-'.code && c != '.'.code) return false
@@ -1105,7 +997,6 @@ class SettingRows(
         return true
     }
 
-    /** Enter or Space on a row does what a press on its control does. */
     private fun press(line: Line) {
         when (val s = line.setting) {
             is Switch -> change { s.toggle() }
@@ -1122,7 +1013,6 @@ class SettingRows(
         }
     }
 
-    /** Moves the entry on [line] to the place [to], with the keys or the mouse following it, and shows where it went. */
     private fun moveEntry(line: Line, to: Int) {
         val order = line.setting as Order<*>
         val at = order.move(line.entry, to)
@@ -1163,7 +1053,6 @@ class SettingRows(
         change { s.at((mouseX - line.cx - 1) / (TRACK - 2)) }
     }
 
-    /** The span takes what its slider holds now. */
     private fun take(line: Line) {
         val s = line.setting as Span
         val sections = line.slider?.sections ?: return
@@ -1183,7 +1072,6 @@ class SettingRows(
         mode = Mode.Menu(widget)
     }
 
-    /** Opens the number's field to type in, holding [typed] or else its value, selected. */
     private fun edit(line: Line, typed: String?) {
         val s = line.setting as Number
         val y = origin + line.y + (line.height - Kit.BUTTON_HEIGHT) / 2
@@ -1197,7 +1085,6 @@ class SettingRows(
         mode = Mode.Field(field, line)
     }
 
-    /** Takes what the field holds, if it is a number, and closes it. */
     private fun commit() {
         val open = mode as? Mode.Field ?: return
         val s = open.line.setting as Number
@@ -1220,11 +1107,6 @@ class SettingRows(
         mode = Mode.Idle
     }
 
-    /**
-     * Says the open menu, field or key button, or else the row narration is on: its name, kind, value, changes and
-     * dimming as [Setting.narration] words them, its description as a hint, as vanilla says a tooltip, and where it
-     * is among the rows.
-     */
     private fun narrate(output: NarrationElementOutput) {
         when (val open = mode) {
             is Mode.Menu -> return open.widget.updateNarration(output)
@@ -1248,7 +1130,6 @@ class SettingRows(
         output.add(NarratedElementType.HINT, line.setting.description)
     }
 
-    /** The screen is going: each editor lets go of what it holds. */
     fun dispose() {
         for (editor in made.values) editor.close()
     }
@@ -1287,14 +1168,12 @@ class SettingRows(
         private const val STAR_GAP = 4
         private const val STAR_ROOM = STAR_GAP + 7
 
-        /** How far a heading's star reaches past its switch, so the heading's rule starts after it. */
         const val HEADING_STAR = Kit.GAP + 7
 
         private const val ENTRY_HINT = "Drag it by its grip, or press Alt with Up or Down, to move it."
     }
 }
 
-/** [text] in body or muted text, with what the search for [words] matched in the match role. */
 internal fun marked(text: String, words: List<String>, muted: Boolean) = text {
     for (piece in SettingsSearch.pieces(text, words)) {
         when {
@@ -1305,14 +1184,12 @@ internal fun marked(text: String, words: List<String>, muted: Boolean) = text {
     }
 }.toComponent()
 
-/** Hands a press on this open widget to it, and says whether it was on it. */
 internal fun AbstractWidget.takesPress(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
     val over = isMouseOver(event.x, event.y)
     if (over) mouseClicked(event, doubleClick)
     return over
 }
 
-/** Gives a press to the key recorder, calls [finish] when it ended the recording, and says whether the press was its. */
 internal inline fun KitKeysButton.pressed(event: MouseButtonEvent, finish: () -> Unit): Boolean {
     val took = capture(event.button(), mouse = true)
     if (!recording) finish()

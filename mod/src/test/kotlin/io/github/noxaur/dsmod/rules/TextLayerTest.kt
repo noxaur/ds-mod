@@ -14,10 +14,7 @@ import kotlin.test.assertEquals
 private const val CHAT = "net/minecraft/network/chat/"
 private const val MOD = "io/github/noxaur/dsmod/"
 
-/**
- * The classes that make colored text. `Text` describes it, `Chat` prints it and `Theme` owns the colors. `PlayerNames`
- * and `Redactor` only read the `§` codes of an older capture's raw text to strip them.
- */
+/** @keep `PlayerNames` and `Redactor` only read the `§` codes of an older capture's raw text, to strip them. */
 private val textLayer = listOf("core/text/", "core/ui/Theme", "edge/Chat", "core/capture/PlayerNames", "core/capture/Redactor").map { MOD + it }
 
 private val styled = setOf("literal", "translatable", "translatableWithFallback", "keybind", "nbt", "score", "selector", "nullToEmpty")
@@ -36,23 +33,19 @@ private fun styles(owner: String, name: String, static: Boolean) = when (owner) 
     else -> false
 }
 
-/** Whether [insn] gives text a color, a style or a `§` code, which only the text layer may do. */
 private fun styling(insn: AbstractInsnNode) = when (insn) {
     is LdcInsnNode -> (insn.cst as? String)?.contains('§') == true
     is FieldInsnNode -> insn.owner == "net/minecraft/ChatFormatting"
     is MethodInsnNode -> styles(insn.owner, insn.name, insn.opcode == Opcodes.INVOKESTATIC)
-    // A method reference such as `Component::literal` is a handle among the bootstrap arguments.
-    is InvokeDynamicInsnNode -> insn.bsmArgs.filterIsInstance<Handle>().any { styles(it.owner, it.name, it.tag == Opcodes.H_INVOKESTATIC) }
+    is InvokeDynamicInsnNode -> handlesOf(insn).any { styles(it.owner, it.name, it.tag == Opcodes.H_INVOKESTATIC) }
     else -> false
 }
 
-/** Whether [name] is one of the text layer's classes, or a class nested in one, and not a class that only starts like one. */
 private fun inTextLayer(name: String): Boolean {
     val top = name.substringBefore('$').removeSuffix("Kt")
     return textLayer.any { if (it.endsWith('/')) top.startsWith(it) else top == it }
 }
 
-/** Every place in [classes] outside the text layer that colors or styles text, as `file:line`. */
 fun stylings(classes: List<ClassNode>): List<String> = placesWhere(classes.filter { node -> !inTextLayer(node.name) }, ::styling)
 
 class TextLayerTest {
@@ -68,7 +61,6 @@ class TextLayerTest {
     @Test
     fun `the scan catches a color however the code spells it`() {
         fun calling(name: String, insn: AbstractInsnNode) = edgeClass(name, 7, insn)
-        // What javac emits for `Function<String, MutableComponent> f = Component::literal`.
         fun reference(target: Handle) = lambdaReference(
             "apply",
             "()Ljava/util/function/Function;",

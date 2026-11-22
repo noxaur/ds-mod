@@ -12,11 +12,9 @@ import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.text.text
 import kotlinx.serialization.Serializable
 
-/** Whether the player has been told that filler panes are hidden. */
 @Serializable
 data class HideGlassPanesTold(val told: Boolean = false)
 
-/** Hides the [Filler] panes in a menu, so the items that do something stand out. */
 class HideGlassPanes(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "hide-glass-panes", Area.ANYWHERE, Store.INVENTORY, "Hide the blank glass panes that pad out menus.", formerly = listOf("hideFiller"), slots = ::slots)
 

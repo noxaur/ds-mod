@@ -1,7 +1,6 @@
 name: label
 
-# Labels a pull request or an issue by the type in its title, `type(scope): description`. pull_request_target
-# so that a fork's pull request gets a token that can label it. It checks nothing out and reads only the title.
+# @keep pull_request_target gives a fork's pull request a token that can label it, so nothing is checked out and only the title is read.
 on:
   pull_request_target:
     types: [opened, edited, reopened]

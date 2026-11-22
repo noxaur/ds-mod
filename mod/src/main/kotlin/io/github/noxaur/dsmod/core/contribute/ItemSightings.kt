@@ -3,7 +3,6 @@ package io.github.noxaur.dsmod.core.contribute
 import io.github.noxaur.dsmod.core.backend.ItemSighting
 import io.github.noxaur.dsmod.core.capture.Redactor
 import io.github.noxaur.dsmod.core.game.Item
-import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.Skulls
@@ -12,21 +11,14 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
-/**
- * Collects how the player's own items look, for the player who agreed to send it. A sighting is one look of one item
- * `entry`, so two items that look the same go once. [own] gives the names the player surely sees, their own and the tab
- * list's, which the [Redactor] removes from every name and lore line. Call it on the client thread.
- */
 class ItemSightings(private val own: () -> Set<String>) {
-    /** What waits to be sent. */
     val batch = Batch<ItemSighting> { listOf(it.entry, it.glint, it.skinId, it.skullTexture, it.lore) }
 
-    /** Collects what [item] looks like, unless it is not an item of the server's, or the backend would refuse it. */
     fun see(item: Item) {
         if (batch.full) return
         val redacted = (Redactor(own()).redact(SlotChanged(0, item)) as SlotChanged).item ?: return
-        // The redactor drops a skin, as a capture must, but a head's texture is what a sighting is for. The skin is only
-        // its address, with no name or id beside it, and the backend draws it only once a second player saw it.
+        /** @keep The redactor drops a skin, as a capture must, but a head's texture is what a sighting is for. The skin is
+         * only its address, with no name or id beside it, and the backend draws it only once a second player saw it. */
         batch.add(sighting(redacted.copy(skin = item.skin)) ?: return)
     }
 
@@ -58,11 +50,8 @@ class ItemSightings(private val own: () -> Set<String>) {
         is JsonPrimitive -> if (json.isString) JsonPrimitive(UUID.replace(json.content, "")) else json
     }
 
-    /**
-     * What of `custom_data` goes: the keys that say how an item is built, and inside `item_data` and `extra` only the
-     * keys listed in [ITEM_DATA] and [EXTRA]. The ids of the copy and anything else the server keeps there, now or
-     * added later, stay on the player's machine.
-     */
+    /** @keep The ids of the copy and anything else the server keeps in custom_data, now or added later, stay on the player's
+     * machine. */
     private fun allowed(item: Item): JsonObject {
         val kept = HashMap<String, JsonElement>()
         item.objectAt("item_data")?.let { kept["item_data"] = JsonObject(it.filterKeys { key -> key in ITEM_DATA }) }
@@ -71,7 +60,6 @@ class ItemSightings(private val own: () -> Set<String>) {
         return withoutUuids(JsonObject(kept)) as JsonObject
     }
 
-    /** `extra` keeps the building blocks the renderer reads. A skin is only its `skinId`. */
     private fun extra(extra: JsonObject, skin: JsonObject?): JsonObject {
         val kept = extra.filterKeys { it in EXTRA }.toMutableMap()
         skin?.get("skinId")?.let { kept["item_skin"] = JsonObject(mapOf("skinId" to it)) } ?: kept.remove("item_skin")
@@ -82,7 +70,6 @@ class ItemSightings(private val own: () -> Set<String>) {
         const val MAX_LORE = 80
         const val MAX_ID = 128
         const val MAX_TEXTURE = 4096
-        /** A dyed color without the alpha the game may keep above it. */
         const val RGB = (1 shl 24) - 1
         val ITEM_DATA = setOf("npc_sell_price", "reforge_stats", "color", "item_id", "reforge", "item_type", "item_name", "skull", "rarity")
         val EXTRA = setOf("item_dye", "item_skin", "dungeon_upgrade", "wither_scrolls", "coating", "attunement", "drill", "enrichment")

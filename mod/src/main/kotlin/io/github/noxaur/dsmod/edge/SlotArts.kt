@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.resources.Identifier
 import org.slf4j.LoggerFactory
 
-/** Where a rarity mark is drawn. Each has its own style, and the hotbar's sits over the world, so it is always dark. */
 enum class Surface { CONTAINER, HOTBAR }
 
 object SlotArts {
@@ -25,7 +24,6 @@ object SlotArts {
     private val height = SlotArt.VARIANTS * SlotArt.SIZE
     private val baked = HashMap<Surface, Baked>()
     private val ready = HashMap<Surface, Ready>()
-    // What the next tick should paint, by surface. Plain arrays, because a draw asks for every marked slot.
     private val wantedStyle = arrayOfNulls<SlotStyle>(Surface.entries.size)
     private val wantedDark = BooleanArray(Surface.entries.size)
     private val chest = Identifier.withDefaultNamespace("textures/gui/container/generic_54.png")
@@ -39,10 +37,6 @@ object SlotArts {
     fun style(settings: ItemRarity, surface: Surface): SlotStyle =
         if (surface == Surface.HOTBAR) settings.hotbarLook() else settings.containerStyle()
 
-    /**
-     * The atlas to draw for [surface], or null when none has been uploaded yet. Records what the next tick should
-     * paint. A restyle keeps returning the previous atlas until that paint has been uploaded.
-     */
     fun atlas(settings: ItemRarity, surface: Surface): Atlas? {
         val style = style(settings, surface)
         val dark = surface == Surface.HOTBAR || containerDark
@@ -51,8 +45,8 @@ object SlotArts {
         return ready[surface]?.atlas
     }
 
-    // A texture made or uploaded while a frame is being built broke every frame after it in the game tests, so the
-    // paint happens at the end of a tick, between frames. [bake] is the real upload; a test passes its own.
+    /* @keep A texture made or uploaded while a frame is being built broke every frame after it in the game tests, so the
+     * paint happens at the end of a tick, between frames. */
     fun tick(bake: (Surface, SlotStyle, Boolean) -> Atlas = ::paintAndUpload) {
         for (surface in Surface.entries) {
             val style = wantedStyle[surface.ordinal] ?: continue
@@ -70,7 +64,6 @@ object SlotArts {
         }
     }
 
-    /** Drops a remembered atlas. Tests start from nothing; the game never calls this. */
     internal fun reset() {
         wantedStyle.fill(null)
         ready.clear()

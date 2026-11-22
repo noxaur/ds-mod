@@ -14,12 +14,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.TitleScreen
 
-/**
- * Works Protector Spawn Beam's Beam Timing row with the real mouse: a click adds a section, a press and drag draws one, a
- * section drawn or stretched into its neighbor joins it and comes apart again when the mouse backs off, and a right
- * click removes one. Checks each step in the settings, that During the Fight turns on from its row, that closing
- * saves both, and that the changed marker puts them back. Read the screenshots in both themes.
- */
 class BeamTimingTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = setUp(context)
@@ -27,14 +21,12 @@ class BeamTimingTest : FabricClientGameTest {
         val protectorSpawnBeam = DsModClient.feature<ProtectorSpawnBeam>()
         try {
             open(context, SettingsTabs(at("The End")))
-            // Protector Spawn Beam's button opens its settings, unless an earlier test left them open.
             val beacon = driver.spot("protector-spawn-beam")
             if (!driver.shows("beamSections")) driver.click(beacon.extraX + 7, beacon.controlY + 6)
             check(protectorSpawnBeam.sections.value == listOf(Section(175, 200))) { "The settings start with ${protectorSpawnBeam.sections.value}" }
             val span = driver.spot("beamSections")
             context.takeScreenshot("beam-timing-default")
 
-            // Window pixels of a value on the track, at the middle of the track's height.
             fun move(value: Int) = context.point(span.sliderX + 1 + value * (span.sliderWidth - 2) / 200.0, span.sliderY + 8.0)
             fun release(value: Int) {
                 move(value)
@@ -56,7 +48,6 @@ class BeamTimingTest : FabricClientGameTest {
             context.waitTicks(2)
             context.takeScreenshot("beam-timing-drawn")
 
-            // Drawn to three short of the last section, the two are one. Backing off parts them, and going in joins them for good.
             move(140)
             context.input.holdMouse(0)
             move(172)
@@ -66,7 +57,6 @@ class BeamTimingTest : FabricClientGameTest {
             release(185)
             sections(Section(48, 73), Section(100, 130), Section(140, 200), step = "Releasing inside the last section")
 
-            // An end stretched to beside its neighbor joins it too.
             move(129)
             context.input.holdMouse(0)
             release(137)
@@ -89,7 +79,6 @@ class BeamTimingTest : FabricClientGameTest {
             val saved = savedConfig()["end"].asJsonObject
             check(saved["beamSections"].toString() == """[{"from":100,"to":200}]""" && saved["beamInFight"].asBoolean) { "The timing was not saved: $saved" }
 
-            // The changed marker puts each back to its default.
             open(context, SettingsTabs(at("The End")))
             for (id in listOf("beamSections", "beamInFight")) driver.spot(id).let { driver.click(it.markerX + 2, it.markerY) }
             check(protectorSpawnBeam.sections.value == protectorSpawnBeam.sections.default && !protectorSpawnBeam.inFight.value) { "The markers left ${protectorSpawnBeam.sections.value}, fight ${protectorSpawnBeam.inFight.value}" }

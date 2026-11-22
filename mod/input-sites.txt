@@ -34,9 +34,8 @@ call edge.profile.ProfileScreen.extractRenderState -> edge.profile.ProfileModel.
     approved by github.com/noxaur 2026-11-16T08:42:00Z
 call edge.profile.ProfileScreen.ghost_delegate -> edge.profile.ProfileModel.<init>
     approved by github.com/noxaur 2026-11-16T08:42:00Z
-gate aw/dsmod.accesswidener 4f33ddcbbdf7
+gate aw/dsmod.accesswidener 868b2f0a96ec
     opens Minecraft's private code
-    approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.ArmorSwapGuards b388417355d2  ArmorSwapGuard
     can refuse the player's actions through UseItemCallback.EVENT
     approved by github.com/noxaur 2026-11-16T08:42:00Z
@@ -52,7 +51,7 @@ gate edge.ChatDrags 2ebeede0f190  ChatHudEditor
     can refuse the player's input through ScreenMouseEvents.allowMouseDrag
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
     can refuse the player's input through ScreenMouseEvents.allowMouseScroll
-gate edge.CopyChats b36f25f03dcf  CopyChat
+gate edge.CopyChats d2120e05f873  CopyChat
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
@@ -72,7 +71,7 @@ gate edge.Pings 374f3f901a23  PerformanceStats
 gate edge.PlayerCommands 7a2042275b07
     sends through ClientPacketListener.sendChat
     sends through ClientPacketListener.sendCommand
-gate edge.SlotGuards 01bcaf19e519  SlotLock
+gate edge.SlotGuards 9f03d883badd  SlotLock
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
@@ -82,7 +81,7 @@ gate edge.TabBar 0aaaf510acda  MenuTabs
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
 gate edge.Trail d75180319c06
     can refuse or change sent chat through ClientSendMessageEvents.COMMAND
-gate edge.capture.Recording ed76355333a5
+gate edge.capture.Recording 5b736e1b983a
     takes the player's key presses through KeyMapping.consumeClick
 gate edge.mixin.BlockingArmMixin 08d619328bcc
     hooks AvatarRenderer.getArmPose

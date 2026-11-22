@@ -7,10 +7,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
 import kotlin.math.abs
 
-/**
- * Opens one menu from another, as the server does with a close and an open in one tick, and checks where the cursor
- * ends up. The game takes and releases the mouse only while its window has focus, which Fabric gives every test.
- */
 class KeepCursorTest : FabricClientGameTest {
     private fun cursor(context: ClientGameTestContext) = context.computeOnClient<Pair<Double, Double>, Nothing> { it.mouseHandler.xpos() to it.mouseHandler.ypos() }
 

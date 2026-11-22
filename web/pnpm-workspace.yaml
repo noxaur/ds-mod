@@ -1,4 +1,4 @@
-# Refuse packages published less than 14 days ago. ui-sdk is in beta and only has fresh releases.
+# @keep ui-sdk is in beta and only has fresh releases, so it skips the release-age wait.
 minimumReleaseAge: 20160
 minimumReleaseAgeExclude:
   - "@ui-sdk/*"

@@ -9,10 +9,6 @@ import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.player.ModelPose
 import io.github.noxaur.dsmod.core.player.ModelTarget
 
-/**
- * Resizes, tilts, spins and poses player models, as only this player sees them. It reads nothing from the server, so
- * all of it is `PlayerModels` in the edge, with the rules in `core.player`. The edge reads these settings each frame.
- */
 class PlayerModel(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "player-model", Area.ANYWHERE, Store.GENERAL, "Resize, tilt, spin and pose players, as only you see them.", default = false)
 
@@ -30,7 +26,6 @@ class PlayerModel(config: DsModConfig) : HasFeature {
     val tiltSideways = feature.number("modelTiltSideways", "Tilt Sideways", "Lean the model to its right, or left below zero, in degrees.", 0f, -180f..180f, step = 1f, unit = "°")
     val upsideDown = feature.switch("modelUpsideDown", "Upside Down", "Stand the model on its head.", default = false)
 
-    /** Turns a second, the other way below zero. */
     val spin = feature.number("modelSpin", "Spin", "Spin the model this many turns a second, the other way below zero.", 0f, -5f..5f, step = 0.1f, unit = "/s")
     val pose = feature.choice("modelPose", "Pose", "Hold the model's arms and legs still in a pose.", ModelPose.GAME)
 
@@ -38,7 +33,6 @@ class PlayerModel(config: DsModConfig) : HasFeature {
         feature.action("resetPlayerModel", "Reset Model", "Put every Player Model setting back to the game's own.", button = "Reset", run = ::reset)
     }
 
-    /** Puts every setting but the switch and whose model back to its default. */
     fun reset() = feature.rows.forEach { if (it !== target) it.reset() }
 
     private fun scale(key: String, name: String, description: String) = feature.number(key, name, description, 1f, 0.1f..3f, step = 0.05f, unit = "x")

@@ -38,12 +38,6 @@ private const val HEIGHT = 352
 private const val COLUMN = 198
 private const val HEADING = 12
 
-/**
- * The kit gallery's pages of settings rows: every [Kind] of row, idle, changed and open, and each again dimmed under
- * an off switch, with every [Look] a pick shows. `/dskit rows` opens the rows, `/dskit lists` a list the player
- * builds, full, empty and dimmed, and `/dskit panels` each panel. The rows work, so a press opens a menu. [kinds]
- * and [looks] say what a page shows, and `KitTest` fails on a kind or a look that no page shows.
- */
 class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { body(page.title) }.toComponent()) {
     enum class Page(val title: String) {
         ROWS("Settings Rows"),
@@ -231,10 +225,8 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
 
     private val all = columns.flatMap { it.parts }.flatMap { (_, settings) -> settings.flatMap { it.walk().toList() } } + heading + gate
 
-    /** The kinds of row the page shows. */
     val kinds: Set<Kind> = all.map { it.kind }.toSet()
 
-    /** The kinds of look the page's picks show. */
     val looks: Set<KClass<out Look>> = all.filterIsInstance<Pick<*>>().flatMap { pick -> pick.values.indices.map { pick.lookAt(it)::class } }.toSet()
 
     private val opened = hashSetOf("openSwitch", "openFold", "openOrder")
@@ -249,13 +241,11 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
     private var ox = 0
     private var oy = 0
 
-    /** Where the row [id] is, so a test can press it. */
     fun spot(id: String) = settingRows.spot(id)
 
     private fun rows(block: Rows.() -> Unit) = Rows().apply(block).rows.also { SettingsTree.link(it, null) }
 
     init {
-        // The changed variants, against the defaults the rows took when they were made.
         v.off = true
         v.views = Tier.RNGESUS
         v.theme = Theme.CHARCOAL

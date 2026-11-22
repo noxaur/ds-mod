@@ -36,7 +36,6 @@ class EquipmentDisplayTest : Harness() {
 
     private fun near(name: String, id: Int = 7, head: Item = this.head) = EntitySeen(id, "minecraft:armor_stand", text(name), head)
 
-    /** The Pets menu with [active] marked as dragsim.co marks the pet that is out, holding [held]. */
     private fun petsMenu(active: String, held: String) = arrayOf<GameEvent>(
         ContainerOpened(25, text("Pets"), 90),
         SlotChanged(12, menuItem("Tiger", held, active = false)),
@@ -52,7 +51,6 @@ class EquipmentDisplayTest : Harness() {
         skin = name.lowercase().replace(" ", ""),
     )
 
-    /** Each row as its icons, or as its text. */
     private fun shown() = hud(feature)?.rows?.map { if (it is ItemsRow) it.items else it.text.plain }
 
     private fun heads() = shown().orEmpty().map { (it as List<*>).filterNotNull() }

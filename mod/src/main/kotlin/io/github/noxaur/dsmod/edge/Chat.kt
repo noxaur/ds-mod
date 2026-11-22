@@ -15,28 +15,24 @@ import java.util.Optional
 object Chat {
     private val prefix: Component by lazy {
         text { brand("[ds-mod]") }.toComponent().withStyle {
-            // Fabric runs a clicked client command locally, so nothing reaches the server.
+            // @keep Fabric runs a clicked client command locally, so nothing reaches the server.
             it.withClickEvent(ClickEvent.RunCommand("/dsmod"))
                 .withHoverEvent(HoverEvent.ShowText(text { action("Click to open settings.") }.toComponent()))
         }.append(" ")
     }
 
-    /** Prints one line to the player's chat, behind the mod's prefix. Call it on the client thread. */
     fun send(text: Text) {
         Minecraft.getInstance().gui.hud.chat.addClientSystemMessage(Component.empty().append(prefix).append(text.toComponent()))
     }
 
-    /** A low-urgency notice from one feature: its name, a separator, then [detail]. */
     fun notice(feature: String, detail: Text) = send(noticeText(feature, detail))
 
-    /** The line [notice] prints, for an alert to print with its title. */
     fun noticeText(feature: String, detail: Text) = Text(text { body(feature); muted(" | ") }.spans + detail.spans)
 }
 
 fun Text.toComponent(): MutableComponent =
     spans.fold(Component.empty()) { line, span -> line.append(Component.literal(span.text).withColor(span.rgb)) }
 
-/** The component [ServerText] was read from, styled span by span, so a lore line keeps the server's colors and no italics. */
 fun ServerText.toComponent(): MutableComponent = spans.fold(Component.empty()) { line, span ->
     line.append(
         Component.literal(span.text).withStyle {
@@ -46,10 +42,6 @@ fun ServerText.toComponent(): MutableComponent = spans.fold(Component.empty()) {
     )
 }
 
-/**
- * This line with each of [ranges] of its plain text restyled by [restyle], which gets the text in the range. The rest
- * keeps its styles, and a piece the server made clickable keeps its own click.
- */
 fun Component.restyle(ranges: List<IntRange>, restyle: (String, Style) -> Style): Component {
     if (ranges.isEmpty()) return this
     val plain = string

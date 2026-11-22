@@ -9,7 +9,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** The rules of a list the player builds, on the list of command binds, which the edge's face only draws. */
 class ItemsTest {
     private val a = CommandBind(command = "/a")
     private val b = CommandBind(command = "/b")

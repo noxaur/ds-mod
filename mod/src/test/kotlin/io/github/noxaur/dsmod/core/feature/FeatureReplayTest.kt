@@ -49,22 +49,13 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-/**
- * Replays capture excerpts through each feature. `features/<id>/<name>.jsonl` is the excerpt, and
- * `<name>.txt` beside it is the transcript: every event, whether the feature hid it, what the feature said, and
- * the HUD block, the slot marks and the marks in the world each time they changed.
- */
 class FeatureReplayTest {
     private val root = Path.of("src/test/resources/features")
 
-    /** A handler or a readout that averages more than this is too slow for the client thread. */
     private val budgetNanos = 20_000L
+    private val warmUpRuns = 2_000
+    private val measuredRuns = 2_000
 
-    /**
-     * Posts every event as it arrives. When the capture recorded client ticks, ticks once after each tick's events,
-     * at the time of the last of them. A capture with no tick on any event ticks after every event, which is how
-     * those transcripts were written. [posted] runs after each post, [ticked] after each tick.
-     */
     private fun play(
         game: Game,
         events: List<Captured>,
@@ -102,7 +93,6 @@ class FeatureReplayTest {
         for (fixture in fixtures(feature)) body(fixture, fresh(feature.id))
     }
 
-    /** A feature that reads nothing from the server has nothing to replay, so a game test must show it instead. */
     private fun fixtures(feature: Feature): List<Path> {
         val dir = root.resolve(feature.id)
         val fixtures = if (dir.isDirectory()) dir.listDirectoryEntries("*.jsonl").sorted() else emptyList()
@@ -117,10 +107,6 @@ class FeatureReplayTest {
         return fixtures
     }
 
-    /**
-     * A fixture's events. One cut without the tab list or the sidebar says nothing of where the player was, so it
-     * replays inside the feature's own area.
-     */
     private fun events(feature: Feature, fixture: Path): List<Captured> {
         val events = readCapture(fixture)
         val start = events.first().time
@@ -131,7 +117,6 @@ class FeatureReplayTest {
 
     private fun name(item: Item) = item.name?.plain?.ifBlank { null } ?: item.id
 
-    /** A tab list is 40 rows, so it shows only the `Key: value` rows that differ from [previous], which it then replaces. */
     private fun describe(event: GameEvent, previous: MutableSet<String>) = when (event) {
         is SystemMessage -> event.text.plain
         WorldChanged -> "(the world changed)"
@@ -252,7 +237,6 @@ class FeatureReplayTest {
         }
     }
 
-    /** The tab list and the sidebar name another place, and then the feature's own fixtures play: every line that would fire it at home. */
     @TestFactory
     fun `a feature locked to an area does nothing outside it`(): List<DynamicTest> =
         SettingsTree().features.filter { it.area != Area.ANYWHERE }.map { feature ->
@@ -317,10 +301,9 @@ class FeatureReplayTest {
                     play(game, events)
                     game.messages.clear()
                 }
-                // The first runs are interpreted, so they are not what a player gets.
-                replay(2_000)
+                replay(warmUpRuns)
                 game.metrics.flush()
-                replay(2_000)
+                replay(measuredRuns)
                 game.metrics.snapshot().timers.forEach { (name, timer) ->
                     val mean = timer.totalNanos / timer.count
                     assertTrue(mean < budgetNanos, "$name takes ${mean}ns on average replaying $fixture. The budget is ${budgetNanos}ns.")

@@ -17,13 +17,6 @@ import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 import java.nio.file.Path
 
-/**
- * Opens a server menu, the inventory and a hopper with Menu Theme and Hide Glass Panes on, and checks the colors the kit
- * drew: the panel in the theme's color, and a filler pane's slot left as bare panel. Read the screenshots in both
- * themes: a light title on the dark panel, a dark tooltip over the hovered item, no tooltip over filler, the server's
- * Go Back and Close and the recipe book's button drawn by the kit, and Close's own tooltip over it. Under the Glass look
- * the chest and the inventory show the world undimmed through a dark sheet, with light labels, glass tabs and glass buttons.
- */
 class MenuThemeTest : FabricClientGameTest {
     private fun checkPanel(context: ClientGameTestContext, shot: Path, theme: Theme) {
         val (left, top) = context.menuCorner()
@@ -31,14 +24,12 @@ class MenuThemeTest : FabricClientGameTest {
         check(panel == theme.panel and 0xFFFFFF) { "The panel is %06X in %s, not the theme's %06X".format(panel, shot, theme.panel and 0xFFFFFF) }
     }
 
-    /** Checks that glass left the world in [glass] undimmed, by a pixel off the menu that is dimmed in [solid]. */
     private fun checkUndimmed(context: ClientGameTestContext, glass: Path, solid: Path) {
         val clear = ThemedMenus.pixel(context, glass, 2, 2)
         val dimmed = ThemedMenus.pixel(context, solid, 2, 2)
         check(brightness(clear) > brightness(dimmed) + 60) { "The world behind %s is %06X, no brighter than %06X behind %s".format(glass, clear, dimmed, solid) }
     }
 
-    /** Checks that glass at full opacity is the theme's plate, so the slider reaches solid. */
     private fun checkFullGlass(context: ClientGameTestContext, name: String, theme: Theme) {
         ThemedMenus.look(context, MenuLook.GLASS, 100f)
         val shot = context.takeScreenshot(name)
@@ -99,7 +90,6 @@ class MenuThemeTest : FabricClientGameTest {
                 ThemedMenus.look(context, MenuLook.GLASS, 0f)
                 context.takeScreenshot("glass-chest-clear")
                 ThemedMenus.look(context, MenuLook.GLASS)
-                // Glass is a look of Menu Theme, so with them off the chest is vanilla's, dimmed as vanilla's is.
                 context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().feature.enabled = false }
                 context.waitTicks(2)
                 checkUndimmed(context, glass, context.takeScreenshot("glass-chest-themed-off"))
@@ -108,7 +98,6 @@ class MenuThemeTest : FabricClientGameTest {
                 ThemedMenus.look(context, MenuLook.SOLID)
             }
             context.hoverSlot(6 * 9 - 5)
-            // Only the drawing changes, so a click on Close still picks up the server's item.
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
             context.waitTicks(3)
             val carried = context.computeOnClient<String, Nothing> { it.player!!.containerMenu.carried.hoverName.string }

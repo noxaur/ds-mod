@@ -14,11 +14,8 @@ import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.clock
 
-/**
- * Follows the Endstone Protector. The tab list's `Protector` row has its stage and the zealot kills the
- * lobby still needs before it emerges. The tab list never says the golem was defeated, and lags the chat by a
- * second or two, so the messages add when it emerged and when it fell.
- */
+/** @keep The tab list's `Protector` row never says the golem was defeated and lags the chat by a second or two, so
+ * the messages add when it emerged and when it fell */
 class ProtectorStatus(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "protector-status", Area.END, Store.END, "Show the Protector's stage and the kills left until it emerges.", formerly = listOf("golemStatus"), hud = ::hud)
 
@@ -38,7 +35,6 @@ class ProtectorStatus(config: DsModConfig) : HasFeature {
             stage = null
             if (value == null) return@on
             val (name, tiers, left) = ProtectorRow.parse(value) ?: return@on feature.unparsed(value)
-            // The tab list moving on from the fight ends it, whether or not the defeat reached chat.
             if (name == RESTING || previous == SPAWNED && name != SPAWNED) {
                 spawnedAt = 0
                 defeatedAt = 0
@@ -52,13 +48,11 @@ class ProtectorStatus(config: DsModConfig) : HasFeature {
             defeatedAt = 0
         }
         feature.line("The Endstone Protector has been defeated!") { now ->
-            // The tab list ends the fight when the row leaves Spawned. A later defeat line is that fight, already over.
             if (stage == SPAWNED || spawnedAt > 0) defeatedAt = now
         }
     }
 
     fun hud(now: Long): HudBlock? {
-        // Chat is a second or two ahead of the tab list, so a fight that chat reported wins over the tab's stage.
         return when {
             defeatedAt > 0 -> feature.block {
                 row("Stage") { value("Defeated") }

@@ -4,7 +4,6 @@ node = "24"
 pnpm = "10.34.9"
 ast-grep = "0.51.1"
 
-# A commit runs `mise run check`. See .githooks/pre-commit.
 [hooks]
 postinstall = "git config core.hooksPath .githooks"
 

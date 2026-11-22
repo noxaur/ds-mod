@@ -11,7 +11,7 @@ import * as Profiles from "./profiles/profiles.ts";
 import { ProfileStore } from "./profiles/store.ts";
 import { Upstream } from "./profiles/upstream.ts";
 
-/** Compares in the same time whether or not the first characters match, so the admin token cannot be guessed a letter at a time. */
+// @keep Constant time, so the admin token cannot be guessed a letter at a time.
 function same(given: string, expected: string) {
   let difference = given.length ^ expected.length;
   for (let index = 0; index < given.length; index++) {
@@ -20,8 +20,7 @@ function same(given: string, expected: string) {
   return difference === 0;
 }
 
-// A middleware may only require services the app is built with, and Caller comes with each request, so it is read as
-// an option. A request without one has no caller and is refused.
+// @keep A middleware may only require services the app is built with, and Caller comes with each request.
 const caller = Effect.map(
   Effect.serviceOption(Caller),
   Option.getOrElse(() => ({ userId: null, adminToken: undefined })),
@@ -38,7 +37,6 @@ const SignedInLive = Layer.succeed(SignedIn)({
     }),
 });
 
-// With no admin token configured, nobody is an agent.
 const AgentLive = Layer.succeed(Agent)({
   adminToken: (handler, { credential }) =>
     Effect.gen(function* () {
@@ -89,19 +87,17 @@ const web = HttpRouter.toWebHandler(
       Layer.provide(ProfilesLive, SignedInLive),
       Layer.provide(AdminLive, AgentLive),
     ]),
-    // The client sent what the errors quote, and a refusal is never logged, so they reach only that client.
+    // @keep The client sent what the errors quote, and a refusal is never logged, so they reach only that client.
     Layer.provide(HttpApiMiddleware.layerProblemDetails({ includeDetails: true })),
     Layer.provide(HttpServer.layerServices),
   ),
   { disableLogger: true },
 );
 
-// A failure no handler expected, such as a database that is down, answers an empty 500 so nothing internal leaks.
-// The cause goes to the Worker's log instead: the dev server's terminal, or the Worker's logs in Cloudflare. Effect
-// reports a body it could not read too, but that is the client's mistake, answered 400 or 413, like the refusals
-// a handler declares.
+/** @keep A failure no handler expected answers an empty 500 so nothing internal leaks, and goes to the Worker's log
+ * instead. A body Effect could not read is the client's mistake, answered 400 or 413, so it is not logged. */
 const logFailures = ErrorReporter.make(({ cause, error }) => {
-  // Effect lets the request's parse error die, so it is a defect here and not a failure.
+  // @keep Effect lets the request's parse error die, so it is a defect here and not a failure.
   const unreadable = cause.reasons.every((reason) => {
     const original = Cause.isDieReason(reason) ? reason.defect : Cause.isFailReason(reason) ? reason.error : undefined;
     return HttpServerError.isHttpServerError(original) && original.reason instanceof HttpServerError.RequestParseError;
@@ -112,13 +108,9 @@ const logFailures = ErrorReporter.make(({ cause, error }) => {
   }
 });
 
-/**
- * The largest body any endpoint reads, a capture of half an hour in a busy place being under it once gzipped. A body is read
- * against it as it arrives, so a client cannot make the Worker hold more than this, whatever it claims to send.
- */
+/** @keep A capture of half an hour in a busy place is under this once gzipped. */
 export const MAX_BODY = ByteSize.megabytes(50);
 
-/** Where the API keeps what it keeps, and how it reaches dragsim.co. A test hands it in-memory ones. */
 export interface Services {
   readonly contrib: Store["Service"];
   readonly items: ItemStore["Service"];
@@ -127,10 +119,6 @@ export interface Services {
   readonly clock: Clock.Clock;
 }
 
-/**
- * The API as a function from request to response, keeping what it keeps in [services]. [callerOf] says who a request
- * is from, and is the only thing that can.
- */
 export const makeApp = (services: Services, callerOf: (request: Request) => Caller["Service"]) => {
   const context = Context.make(Store, services.contrib).pipe(
     Context.add(ItemStore, services.items),

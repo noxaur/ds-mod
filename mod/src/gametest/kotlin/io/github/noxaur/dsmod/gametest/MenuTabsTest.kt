@@ -19,12 +19,6 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
 import org.lwjgl.glfw.GLFW
 
-/**
- * Puts the default tabs on a menu and clicks them. A command tab sends its command, and the tab for the command that
- * opened the menu joins the panel. The search tab opens a bar toward the middle of the menu over the tabs beside it,
- * which dims the items that do not match, keeps E from closing the menu while typing, follows into the next menu and
- * closes with its button. The tabs follow the inventory when the recipe book moves it. Read the screenshots in both themes: the tabs, the selected tab, and the open bar.
- */
 class MenuTabsTest : FabricClientGameTest {
     private class Shown(val name: String, val x: Int, val y: Int, val width: Int, val selected: Boolean)
 
@@ -93,7 +87,6 @@ class MenuTabsTest : FabricClientGameTest {
                 context.waitTicks(2)
                 check(field(context) == null) { "Escape on an empty bar left it open" }
 
-                // On the bottom, right of the middle, the bar opens left over the command tabs.
                 context.runOnClient<Nothing> { DsModClient.feature<MenuTabs>().tabs.value = TabLayout.DEFAULT.map { if (it.search) it.copy(edge = TabEdge.BOTTOM, slot = 5) else it } }
                 ServerMenus.open(context, world, 4, "Storage Page 3")
                 click(context, "Search")
@@ -108,7 +101,6 @@ class MenuTabsTest : FabricClientGameTest {
                 check(tabs(context).size == 5 && tabs(context).none { it.selected }) { "The inventory's tabs are wrong" }
                 context.takeScreenshot("menu-tabs-inventory")
 
-                // The recipe book moves the inventory sideways, and the tabs must move with it.
                 val before = tabs(context).map { it.x }
                 val button = ServerMenus.widgets<ImageButton>(context).single()
                 val book = button.x + button.width / 2 to button.y + button.height / 2

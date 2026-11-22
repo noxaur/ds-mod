@@ -17,17 +17,6 @@ import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.input.MouseButtonInfo
 import net.minecraft.util.ARGB
 
-/**
- * A navigation tree on a [Kit.side]: sections with a colored placeholder icon and their [names], each with the
- * named subsections in [subNames], as the navigation tree section of `controls.md` says. [tree] holds its rules.
- *
- * A press on a section runs [onSelect], and on a subsection [onJump]. A Ctrl or middle press on either runs [onOpen]
- * with the subsection, or -1 for a section, so it opens in a tab of its own. A section's arrow shows or hides its
- * subsections, and [onFold] hears that it did. While [counts] is set, as during a search, the arrows and
- * subsections are hidden and each section shows its count, dimmed at none. The wheel and the scrollbar's thumb
- * scroll it when it overflows. The screen hands it the keys with [key], since a focused search field must not
- * keep Up and Down from it, and says through [hasKeys] whether it has them, so narration speaks its cursor only then.
- */
 class KitNavTree(
     x: Int,
     y: Int,
@@ -41,7 +30,6 @@ class KitNavTree(
     private val onJump: (Int, Int) -> Unit,
     private val onFold: () -> Unit,
     private val onOpen: (Int, Int) -> Unit,
-    /** An icon in place of a section's swatch, such as Favorites' star, by section. */
     private val icons: List<Icon?> = emptyList(),
 ) : AbstractWidget(x, y, width, height, text { body("Sections") }.toComponent()) {
     private val scroll = Scroll()
@@ -53,13 +41,10 @@ class KitNavTree(
     private var counts: IntArray? = null
     private var thumbGrab = -1.0
 
-    /** Whether the keyboard moved last, which shows the cursor. A press hides it again. */
     private var keyboard = false
 
-    /** Whether the screen gives the sidebar the keys now. */
     var hasKeys: () -> Boolean = { true }
 
-    /** The line narration speaks of: the one the mouse came onto or the cursor moved to last. */
     private var spoken: NavRow? = null
     private var hoverRow: NavRow? = null
 
@@ -69,14 +54,12 @@ class KitNavTree(
         refresh()
     }
 
-    /** Shows each section's count of hits, or the tree again when [counts] is null. */
     fun counts(counts: IntArray?) {
         this.counts = counts
         countLabels = counts?.let { c -> Array(c.size) { c[it].toString() } }
         refresh()
     }
 
-    /** Works out the lines again after the tree changed. */
     fun refresh() {
         val rows = tree.rows
         tops = IntArray(rows.size + 1)
@@ -96,19 +79,16 @@ class KitNavTree(
         cut = BooleanArray(rows.size) { i -> rows[i].let { labels[i] != if (it.isSection) names[it.section] else subNames[it.section][it.sub] } }
     }
 
-    /** Scrolls the tree so [row] is in sight. */
     fun reveal(row: NavRow) {
         val i = tree.rows.indexOf(row).takeIf { it >= 0 } ?: return
         if (tops[i] < scroll.offset) scroll.to(tops[i]) else if (tops[i + 1] > scroll.offset + height) scroll.to(tops[i + 1] - height)
     }
 
-    /** How far down the screen the middle of [row]'s line is, or null while the tree hides it, so a test can find it. */
     fun middle(row: NavRow): Int? {
         val i = tree.rows.indexOf(row).takeIf { it >= 0 } ?: return null
         return y + (tops[i] + tops[i + 1]) / 2 - scroll.offset
     }
 
-    /** Up and Down move the cursor, Right and Left open and close, and Enter opens what the cursor is on. */
     fun key(event: KeyEvent): Boolean {
         when {
             event.isUp -> tree.move(-1)
@@ -139,7 +119,6 @@ class KitNavTree(
     private fun onChevron(row: NavRow, mouseX: Double) =
         row.isSection && counts == null && tree.expandable(row.section) && mouseX >= x + chevronX(rowWidth) && mouseX < x + chevronX(rowWidth) + ICON
 
-    /** The arrow sits in a square as wide as the swatch, as far in from the row's right as the swatch is from its left. */
     private fun chevronX(rowWidth: Int) = rowWidth - PAD - ICON
 
     private fun onScrollbar(mouseX: Double) = scroll.overflows && mouseX >= x + width - Kit.SCROLLBAR_WIDTH
@@ -221,7 +200,7 @@ class KitNavTree(
                 val countLabels = countLabels
                 if (countLabels != null) {
                     val label = countLabels[row.section]
-                    // The text's width counts the blank column after its last letter, which the right edge's padding already holds.
+                    // @keep The game's text width counts the blank column after a last letter, which the right edge's padding already holds.
                     if (!dim) Kit.label(graphics, label, x + width - PAD - Kit.font.width(label) + 1, top + 4, Kit.Ink.MUTED)
                 } else if (tree.expandable(row.section)) {
                     val cx = x + chevronX(width)
@@ -262,7 +241,6 @@ class KitNavTree(
         const val ICON = 9
         const val PAD = 5
 
-        /** Where a section's name and its subsections' names start, after the icon. */
         const val TEXT_X = PAD + ICON + Kit.GAP
         private const val WHEEL = SECTION
         private const val DIM_ALPHA = 96

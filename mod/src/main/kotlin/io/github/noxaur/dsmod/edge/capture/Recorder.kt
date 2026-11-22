@@ -16,23 +16,17 @@ import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 
-/**
- * Holds the one capture that may be running. Nothing records until [start], and while none runs every hook here is
- * one null check on the client thread. Whoever starts a capture keeps the session and is the only one to [stop] it.
- */
 object Recorder {
     @Volatile
     private var session: CaptureSession? = null
 
     val running get() = session != null
 
-    /** Starts recording into a new file in [dir]. */
     fun start(dir: Path): CaptureSession {
         check(session == null) { "A capture is already running." }
         return CaptureSession(dir, DsModClient.game).also { session = it }
     }
 
-    /** Stops [own], then finishes its file off the client thread and tells [done] there whether the file is whole. */
     fun stop(own: CaptureSession, done: (whole: Boolean) -> Unit = {}) {
         check(session === own) { "That capture is not the running one." }
         session = null
@@ -48,25 +42,19 @@ object Recorder {
         false
     }
 
-    /** Adds a raw record of the [RawRecord] named [type] to the running capture. */
     fun record(type: String, data: () -> JsonObject) {
         session?.record(RawRecord.of(type), data)
     }
 
-    /** Called by `CapturePacketsMixin` on the client thread. */
     fun onPacket(packet: Packet<*>) {
         session?.packet(packet)
     }
 
-    /** Called by `CaptureInputMixin` on the client thread, for `swing` or `use`. */
     fun onInput(client: Minecraft, type: String) {
         session?.input(client, RawRecord.of(type))
     }
 
-    /**
-     * The client tick finished. Events posted before this belong to the tick that just ended, and the next
-     * record belongs to the next one. Call it at the end of `END_CLIENT_TICK`, after the listeners that post.
-     */
+    /** @keep Events posted before this belong to the tick that just ended. Call it at the end of `END_CLIENT_TICK`, after the listeners that post. */
     fun endedClientTick() {
         session?.endedClientTick()
     }
@@ -84,10 +72,6 @@ object Recorder {
         ClientTickEvents.END_CLIENT_TICK.register { client -> session?.tick(client) }
     }
 
-    /**
-     * Quitting: stops what still runs, which keeps its file, and waits for every capture still being finished,
-     * because the background thread dies with the game. Whoever wants their capture gone stops it first.
-     */
     fun quit() {
         session?.let(::stop)
         Background.io.shutdown()

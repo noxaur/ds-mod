@@ -5,7 +5,6 @@ import games from "../fixtures/game-items.json" with { type: "json" };
 import { toUpstream } from "./fromGame.testing.ts";
 import { gameData } from "./gameData.ts";
 
-/** Every leaf of [value] by its path, with a boolean as the byte the game's NBT holds it as. */
 const leaves = (value: unknown, path = ""): Record<string, unknown> => {
   if (typeof value === "boolean") {
     return { [path]: value ? 1 : 0 };

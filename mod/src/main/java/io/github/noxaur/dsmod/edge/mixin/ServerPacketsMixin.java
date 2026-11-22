@@ -14,10 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Hands the edge the packets that leave no client state to read. Each handler runs twice, and only the
- * client-thread pass reaches TAIL, except the pong's, which the game handles on the network thread alone.
- */
+/** @keep Each handler runs twice, and only the client-thread pass reaches TAIL, except the pong's, which the game handles on the network thread alone. */
 @Mixin(ClientPacketListener.class)
 abstract class ServerPacketsMixin {
     @Inject(

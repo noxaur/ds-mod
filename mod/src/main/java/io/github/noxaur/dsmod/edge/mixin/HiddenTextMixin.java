@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** A floating text a feature hid is culled, background and all, as if it stood behind the camera. */
 @Mixin(EntityRenderer.class)
 abstract class HiddenTextMixin {
     @Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true)

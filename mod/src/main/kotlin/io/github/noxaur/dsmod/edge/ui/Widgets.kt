@@ -31,7 +31,6 @@ import net.minecraft.world.item.ItemStack
 
 private fun plain(label: String) = text { body(label) }.toComponent()
 
-/** A button with a [label], or a 16x16 one with an [icon] and [label] for narration. It runs [action] when pressed. */
 class KitButton private constructor(
     x: Int,
     y: Int,
@@ -49,7 +48,6 @@ class KitButton private constructor(
     private val labelWidth = Kit.font.width(label)
     private var pressed = false
 
-    /** Shows another [icon] on an icon button, with [label] as what narration and its tooltip say it does. */
     fun show(icon: Icon, label: String) {
         if (icon == this.icon) return
         this.icon = icon
@@ -57,7 +55,6 @@ class KitButton private constructor(
         setTooltip(Tooltip.create(plain(label)))
     }
 
-    /** Whether the button sits on a glass menu, asked each frame, which gives it a [Kit.button] of glass. */
     var glass: () -> Boolean = { false }
 
     override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
@@ -80,11 +77,6 @@ class KitButton private constructor(
     }
 }
 
-/**
- * A tab on the [edge] of a menu whose edge is at [panelY], showing [item] or else [icon], which runs [action] when
- * pressed. [name] is what narration reads. The [selected] one joins the menu's panel. [glass] gives the alpha of the
- * menu's glass each frame, or -1 for a solid panel, and on glass the tab is a [Kit.glassTab].
- */
 class KitTab(
     x: Int,
     private val panelY: Int,
@@ -136,10 +128,6 @@ class KitSlotButton(
     }
 }
 
-/**
- * A checkbox with its [label] 4px to the right. [onChange] gets the new value. [onWell] draws the label as body
- * text, which reads on a well in both themes, where ink would not.
- */
 class KitCheckbox(
     x: Int,
     y: Int,
@@ -173,10 +161,6 @@ class KitCheckbox(
     override fun updateWidgetNarration(output: NarrationElementOutput) = defaultButtonNarrationText(output)
 }
 
-/**
- * A minus button, a [value] and a plus button, for a number with few useful steps. [onStep] gets -1 or 1, and
- * the screen sets [value] after. The arrow keys step it while it has focus.
- */
 class KitStepper(x: Int, y: Int, private val name: String, valueWidth: Int, private val onStep: (Int) -> Unit) :
     AbstractWidget(x, y, Kit.BUTTON_HEIGHT * 2 + Kit.GAP * 2 + valueWidth, Kit.BUTTON_HEIGHT, plain(name)) {
     private var valueX = 0
@@ -235,15 +219,6 @@ class KitStepper(x: Int, y: Int, private val name: String, valueWidth: Int, priv
     }
 }
 
-/**
- * A track from 0 to [max] with any number of switched-on [sections], and a tick at each of [ticks].
- *
- * On the empty track, a click adds a section around itself, and a press and drag draws one from where the button
- * went down to where it comes up. A drag on a section's end resizes it, a drag on its middle slides it, and a
- * right click removes it. Sections that meet become one, and come apart again if the drag backs off before the
- * button is released. The cursor shows which of these a press would do. With focus, the arrow keys slide the
- * section last touched and Delete removes it. The screen reads [sections] and [selected] after [onChange].
- */
 class KitRangeSlider(
     x: Int,
     y: Int,
@@ -262,18 +237,15 @@ class KitRangeSlider(
             selected = selected.coerceAtMost(value.size - 1)
         }
 
-    /** The index of the section last touched, or -1. */
     var selected = -1
         private set
 
-    /** Selects the next section, so the keyboard can reach each one in turn. Returns whether there is one. */
     fun selectNext(): Boolean {
         if (sections.isEmpty()) return false
         selected = (selected + 1) % sections.size
         return true
     }
 
-    // A drag is worked out from the sections as the press found them, so a merge on the way can come undone.
     private var grab: Grab? = null
     private var base = sections
     private var grabbed = -1
@@ -285,7 +257,6 @@ class KitRangeSlider(
 
     private fun value(mouseX: Double) = (((mouseX - x - 1) * max / (width - 2)) + 0.5).toInt().coerceIn(0, max)
 
-    /** The section under the mouse and the part of it, where the last [EDGE_GRIP] pixels of each end resize. */
     private fun hit(mouseX: Double): Pair<Int, Grab>? {
         for (i in sections.indices) {
             val from = pixel(sections[i].from)
@@ -300,7 +271,6 @@ class KitRangeSlider(
         return null
     }
 
-    /** Shows [next] with the section that holds [anchor] selected. */
     private fun show(next: List<Section>, anchor: Int) {
         val changed = next != sections
         sections = next
@@ -318,8 +288,7 @@ class KitRangeSlider(
             if (hit != null) {
                 selected = -1
                 sections = Sections.remove(sections, hit.first)
-                // The left button may still be down from a drag. Leaving the grab set makes the next drag
-                // event rebuild the track from the list taken at the left press, which puts this section back.
+                // @keep The left button may still be down from a drag, and a set grab would rebuild the track from the list taken at the left press, putting this section back.
                 grab = null
                 onChange()
             }
@@ -348,7 +317,6 @@ class KitRangeSlider(
                 show(Sections.move(base, grabbed, from, max), from)
             }
             Grab.NEW -> {
-                // A press that has not moved yet is still a click.
                 if (!drew && Math.abs(event.x - pressedX) < DRAG_START) return
                 drew = true
                 show(Sections.draw(base, pressedAt, at, max), pressedAt)
@@ -410,11 +378,6 @@ class KitRangeSlider(
     }
 }
 
-/**
- * A text field on a well, 16 tall. It is vanilla's `EditBox`, so every key a text field has works, with its text
- * 4 in from the well's left edge, or after an [icon] there. [place] moves it by the well's corner, and a press
- * anywhere on the well lands.
- */
 class KitTextField(x: Int, y: Int, width: Int, label: String, value: String, maxLength: Int, onChange: (String) -> Unit) :
     EditBox(Kit.font, x + PAD, y + TOP, width - PAD * 2, Kit.font.lineHeight, plain(label)) {
     private var icon: Icon? = null
@@ -427,10 +390,8 @@ class KitTextField(x: Int, y: Int, width: Int, label: String, value: String, max
         setResponder(onChange)
     }
 
-    /** Shows [text] in muted text while the field is empty. */
     fun hint(text: String) = apply { setHint(text { muted(text) }.toComponent()) }
 
-    /** Puts [icon] at the well's left in muted text, which reads on a well in both themes, and the text after it. */
     fun icon(icon: Icon) = apply {
         val room = icon.width + PAD
         this.icon = icon
@@ -461,14 +422,6 @@ class KitTextField(x: Int, y: Int, width: Int, label: String, value: String, max
     }
 }
 
-/**
- * A button that shows keys and records new ones, for keys held together or, with [inOrder], pressed in turn. A
- * press, or Enter or Space with focus, starts recording. Each key and each middle or side mouse button adds
- * itself, up to [max]. Keys held together are done once all are let go. Escape, a left or right press elsewhere,
- * or focus leaving ends recording, and with nothing recorded the keys stay as they were. The screen hands it keys,
- * releases and presses with [capture] and [release] while it is [recording], because a screen takes Escape first.
- * A key it shares is ringed in the role in [clash].
- */
 class KitKeysButton(
     x: Int,
     y: Int,
@@ -518,7 +471,6 @@ class KitKeysButton(
         down.clear()
     }
 
-    /** Takes a key, or a mouse button when [mouse], while recording. Returns whether it took it. */
     fun capture(bound: Int, mouse: Boolean = false): Boolean {
         if (!recording) return false
         if (mouse && (bound == 0 || bound == 1) || !mouse && bound == ESCAPE) {
@@ -531,7 +483,6 @@ class KitKeysButton(
         return true
     }
 
-    /** A key or button was let go. Keys held together are done once every one is up. */
     fun release(bound: Int) {
         if (!recording || !down.remove(bound)) return
         if (!inOrder && down.isEmpty() && recorded.isNotEmpty()) finish()
@@ -568,15 +519,10 @@ class KitKeysButton(
     private fun names(keys: List<Int>) = Keys.names(keys, inOrder)
 
     private companion object {
-        /** GLFW's code for Escape. */
         const val ESCAPE = 256
     }
 }
 
-/**
- * A button that steps through [values], showing the current one. A press or Enter goes to the next, and a right
- * press, Shift with either, or the wheel goes back. [onChange] gets the new value.
- */
 class KitCycleButton<T>(
     x: Int,
     y: Int,
@@ -632,14 +578,12 @@ class KitCycleButton<T>(
     override fun updateWidgetNarration(output: NarrationElementOutput) = defaultButtonNarrationText(output)
 }
 
-/** [text] cut to [width] pixels, ending in an ellipsis when it was longer. */
 fun fit(text: String, width: Int): String {
     val font = Kit.font
     if (font.width(text) <= width) return text
     return font.plainSubstrByWidth(text, width - font.width("...")) + "..."
 }
 
-/** [text] broken at spaces into lines of at most [width] pixels, the last of [max] ending in an ellipsis when cut. */
 fun wrap(text: String, width: Int, max: Int): List<String> {
     val lines = ArrayList<String>()
     var line = ""
@@ -656,16 +600,6 @@ fun wrap(text: String, width: Int, max: Int): List<String> {
     return if (lines.size <= max) lines else lines.take(max - 1) + fit(lines.drop(max - 1).joinToString(" "), width)
 }
 
-/**
- * A context menu: a small panel of [items] that opens beside the mouse at [mouseX], [mouseY] and stays inside the
- * screen of [screenWidth] by [screenHeight]. The item under the mouse, or the one the arrow keys are on, is lit,
- * and a press or Enter does it and closes the menu through [onClose]. Escape closes it too. The screen closes it
- * on a press outside and lets that press do its own job, as `controls.md` says.
- *
- * A dropdown's menu has a check on the [checked] item, which it opens lit, and [below] places it under the dropdown.
- * Typing a letter lights the next item that starts with it, as [TypeAhead] says, and the [words] of a search are
- * painted where an item matches them.
- */
 class KitMenu(
     mouseX: Int,
     mouseY: Int,
@@ -683,15 +617,10 @@ class KitMenu(
     private val pointer = Pointer()
 
     init {
-        // Beside the mouse, so the press that opened it lands on nothing in it.
         x = (mouseX + 2).let { if (it + width > screenWidth) mouseX - 2 - width else it }.coerceAtLeast(0)
         y = mouseY.coerceAtMost(screenHeight - height).coerceAtLeast(0)
     }
 
-    /**
-     * Places the menu under the dropdown at [anchorX], [anchorY], at least as wide and lined up with its right edge,
-     * or over it where the screen has no room below.
-     */
     fun below(anchorX: Int, anchorY: Int, anchorWidth: Int, anchorHeight: Int, screenWidth: Int, screenHeight: Int) = apply {
         width = maxOf(width, anchorWidth)
         x = belowX(anchorX, anchorWidth, width, screenWidth)
@@ -700,7 +629,6 @@ class KitMenu(
 
     private fun at(mouseY: Double): Int {
         val index = (mouseY - y - PAD) / ITEM
-        // Toward zero, so a click in the padding above the first item is not item 0.
         if (index < 0) return -1
         return index.toInt().takeIf { it in items.indices } ?: -1
     }
@@ -756,13 +684,6 @@ class KitMenu(
     }
 }
 
-/**
- * A pick's menu: a panel of tiles under its dropdown, each showing a value's [looks] over its [labels], with the
- * [selected] one ringed in the accent. The tile under the mouse, or the one the arrow keys are on, is lit, and a
- * press or Enter picks it through [onPick] and closes the menu through [onClose]. Escape closes it too. Tiles wrap
- * into rows no wider than the screen. Typing lights a tile by its name, as in [KitMenu], and the [words] of a search
- * are painted where a name matches them.
- */
 class KitPickMenu(
     private val looks: List<Look>,
     private val labels: List<String>,
@@ -785,7 +706,6 @@ class KitPickMenu(
         height = PAD * 2 + rows * TILE + (rows - 1) * GAP
     }
 
-    /** Places the menu under the dropdown at [anchorX], [anchorY], lined up with its right edge, or over it where there is no room. */
     fun below(anchorX: Int, anchorY: Int, anchorWidth: Int, anchorHeight: Int, screenWidth: Int, screenHeight: Int) = apply {
         x = belowX(anchorX, anchorWidth, width, screenWidth)
         y = belowY(anchorY, anchorHeight, height, screenHeight)
@@ -853,7 +773,6 @@ class KitPickMenu(
     }
 }
 
-/** Whether the mouse moved since the last frame, so a menu lights what is under it only then and the keys keep what they lit. */
 private class Pointer {
     private var x = Int.MIN_VALUE
     private var y = Int.MIN_VALUE
@@ -863,14 +782,12 @@ private class Pointer {
         y = mouseY
     }
 
-    /** The item [at] reports under the mouse once it has moved over [hovered] menu, else [lit]. */
     inline fun lit(hovered: Boolean, mouseX: Int, mouseY: Int, lit: Int, at: () -> Int): Int {
         if (!hovered || !moved(mouseX, mouseY)) return lit
         return at().takeIf { it >= 0 } ?: lit
     }
 }
 
-/** What the next letter lights, or null when the event is not one a menu jumps by. */
 private fun TypeAhead.jump(event: CharacterEvent, labels: List<String>, lit: Int): Int? {
     val char = typed(event) ?: return null
     return type(char, Util.getMillis(), labels, lit)
@@ -881,7 +798,6 @@ private fun belowX(anchorX: Int, anchorWidth: Int, width: Int, screenWidth: Int)
 private fun belowY(anchorY: Int, anchorHeight: Int, height: Int, screenHeight: Int) =
     if (anchorY + anchorHeight + 1 + height <= screenHeight) anchorY + anchorHeight + 1 else (anchorY - 1 - height).coerceAtLeast(0)
 
-/** The character a menu jumps by, or null for a space, which picks, or anything that is not text. */
 private fun typed(event: CharacterEvent): Char? {
     val code = event.codepoint()
     return if (!event.isAllowedChatCharacter || Character.isWhitespace(code) || Character.isSupplementaryCodePoint(code)) null else code.toChar()

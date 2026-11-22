@@ -15,16 +15,10 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 
-/**
- * A Shift click around a locked slot. One left click picks the stack up, one left click fills each unlocked slot,
- * and one left click puts back what did not fit. A crafting result is taken only when the whole output fits.
- * A held stack is parked on a real inventory slot, or the click is cancelled.
- */
 class SlotLockShiftTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val feature = DsModClient.feature<SlotLock>()
 
-        /** The Shift click, and every container packet from it through the next ticks, while a result may refill. */
         fun shift(index: Int, settle: Int = 2): List<Click> {
             val (refused, clicks) = context.shiftSpied(index, send = true, settle)
             check(refused) { "The Shift click was handed to vanilla: $clicks, slot9=${context.ownItem(9)}, slot0=${context.ownItem(0)}, slot1=${context.ownItem(1)}, slot2=${context.ownItem(2)}" }
@@ -41,7 +35,6 @@ class SlotLockShiftTest : FabricClientGameTest {
         fun left(clicks: List<Click>) {
             check(clicks.all { it.button == 0 && it.input == ContainerInput.PICKUP }) { "A click was not a left pickup: $clicks" }
         }
-        /** Pickup, one left click per destination, and a put-back. Parking adds the set-down and the pick-up. */
         fun within(clicks: List<Click>, destinations: Int, parked: Boolean) {
             left(clicks)
             val cap = 2 + destinations + if (parked) 2 else 0
@@ -53,7 +46,6 @@ class SlotLockShiftTest : FabricClientGameTest {
                 context.openInventory()
                 context.waitForScreen(InventoryScreen::class.java)
 
-                // One left click per unlocked slot. 32 cobble, hotbar 0 holds 40, hotbar 1 locked.
                 world.give(mapOf(0 to ItemStack(Items.COBBLESTONE, 40), 9 to ItemStack(Items.COBBLESTONE, 32)))
                 context.waitTicks(5)
                 lock(setOf(1))
@@ -69,7 +61,6 @@ class SlotLockShiftTest : FabricClientGameTest {
                     "A partial stack left ${context.ownItem(1)} in the locked slot, ${context.ownItem(0)} filled, ${context.ownItem(2)} with the rest and ${context.ownItem(9)} behind"
                 }
 
-                // The rest goes back to the source: one pickup, one destination, one put-back.
                 world.give(mapOf(0 to ItemStack(Items.COBBLESTONE, 40), 9 to ItemStack(Items.COBBLESTONE, 32)))
                 context.waitTicks(5)
                 lock((1..8).toSet())
@@ -82,7 +73,6 @@ class SlotLockShiftTest : FabricClientGameTest {
                     "The leftover left the source at ${context.ownItem(9)} and a locked slot holding ${context.ownItem(1)}"
                 }
 
-                // The held stack sits on an inventory slot that is not a destination, then comes back.
                 world.give(mapOf(9 to ItemStack(Items.COBBLESTONE, 32), 10 to ItemStack(Items.DIRT, 10)))
                 context.waitTicks(5)
                 lock(setOf(0))
@@ -99,7 +89,6 @@ class SlotLockShiftTest : FabricClientGameTest {
                     "With dirt on the cursor the cobble left ${context.ownItem(0)} locked, ${context.ownItem(1)} beside it, and the cursor holds ${context.carried()}"
                 }
 
-                // No inventory slot outside the move. An empty craft cell is not a park, and vanilla must not run.
                 world.give((2..35).associateWith { ItemStack(Items.COBBLESTONE, 64) } + mapOf(9 to ItemStack(Items.COBBLESTONE, 32)))
                 context.waitTicks(5)
                 lock(setOf(0))
@@ -112,7 +101,6 @@ class SlotLockShiftTest : FabricClientGameTest {
                 val craftEmpty = context.onContainer { _, screen -> screen.menu.getSlot(1).hasItem().not() }
                 check(craftEmpty) { "The held stack was written into the craft grid" }
 
-                // Two logs keep crafting across ticks, one left click on the result each time the whole output fits.
                 world.give(mapOf(9 to ItemStack(Items.OAK_LOG, 2)))
                 context.waitTicks(5)
                 context.clickOwnSlot(9, settle = 2)
@@ -128,19 +116,16 @@ class SlotLockShiftTest : FabricClientGameTest {
                     "The crafts left ${context.ownItem(8)} in the locked slot, ${context.ownItem(7)} beside it, and the cursor holds ${context.carried()}"
                 }
 
-                // Room for 2 of a 4-plank result. One right click would destroy the other half, so nothing is sent.
                 val half = resultThatDoesNotFit(context, world, planks = 62)
                 check(half.clicks.isEmpty() && half.result == 4 && half.planks == 62 && half.log) {
                     "A result with room for half sent ${half.clicks}, left ${half.result} in the result and ${half.planks} planks"
                 }
 
-                // Room for 1, which is under half. The click is not kept pending.
                 val less = resultThatDoesNotFit(context, world, planks = 63, freeAfter = true)
                 check(less.clicks.isEmpty() && less.result == 4 && less.planks == 63 && less.log) {
                     "A result with room for one sent ${less.clicks}, left ${less.result} in the result and ${less.planks} planks"
                 }
 
-                // The mode or the player is missing. The click is cancelled and nothing is sent.
                 world.give(mapOf(9 to ItemStack(Items.COBBLESTONE, 32)))
                 context.waitTicks(5)
                 lock(setOf(0))
@@ -179,7 +164,6 @@ class SlotLockShiftTest : FabricClientGameTest {
         }
     }
 
-    /** One log in the craft grid and [planks] already in the only slot that can hold more. The result is 4. */
     private fun resultThatDoesNotFit(context: ClientGameTestContext, world: TestSingleplayerContext, planks: Int, freeAfter: Boolean = false): ResultAttempt {
         world.give((0..35).associateWith { ItemStack(Items.COBBLESTONE, 64) } + mapOf(0 to ItemStack(Items.OAK_PLANKS, planks), 1 to ItemStack.EMPTY, 9 to ItemStack(Items.OAK_LOG, 1)))
         context.waitTicks(5)
@@ -196,7 +180,6 @@ class SlotLockShiftTest : FabricClientGameTest {
         context.waitTicks(3)
         val (refused, clicks) = context.shiftSpied(0, send = false, settle = 10) {
             if (freeAfter) {
-                // Room opens after the cancel. A click still pending would now take the result by itself.
                 world.server.runOnServer<Nothing> { server ->
                     server.player.inventory.setItem(2, ItemStack.EMPTY)
                     server.player.containerMenu.broadcastChanges()

@@ -8,16 +8,11 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.AbstractWidget
 import java.util.concurrent.CopyOnWriteArrayList
 
-/**
- * A stub of the backend's profile routes, which answers with the profiles the unit tests read, and the real mouse on
- * the profile viewer, in GUI pixels, for the tests of the profile viewer. Close it to stop the stub.
- */
 class OnProfiles(private val context: ClientGameTestContext) : AutoCloseable {
     private fun resource(name: String) = checkNotNull(javaClass.getResource("/profiles/$name")).readText()
 
     private val profile = resource("profile.json")
 
-    /** Every path the viewer asked the stub for, in order. */
     val asked = CopyOnWriteArrayList<String>()
 
     private val backend = FakeBackend("Testwyrm") { call ->
@@ -25,13 +20,11 @@ class OnProfiles(private val context: ClientGameTestContext) : AutoCloseable {
         asked += call.exchange.requestURI.toString()
         when {
             path == "/v1/players/Testwyrm/profile" -> 200 to profile
-            // A hidden inventory hides every container but the pets, as the backend hides them.
             path == "/v1/players/Hidden/profile" -> 200 to profile.replace("\"hidden\": false", "\"hidden\": true").replace(PETS_HIDDEN, "$1false")
             path == "/v1/players/Stale/profile" -> 200 to profile.replace("\"stale\": false", "\"stale\": true")
             path == "/v1/players/Down/profile" -> 503 to """{"_tag":"UpstreamUnavailable"}"""
-            path == "/v1/players/Slow/profile" -> 200.also { Thread.sleep(SLOW_MILLIS) } to profile
+            path == "/v1/players/Slow/profile" -> 200.also { Thread.sleep(LOADING_SCREENSHOT_MILLIS) } to profile
             path.startsWith("/v1/players/") -> 404 to """{"_tag":"PlayerNotFound"}"""
-            // Each container as the backend answered it for the same player, by its id with the colon a dash.
             path.matches(Regex("/v1/snapshots/[^/]+/containers/.+")) -> 200 to resource("containers/${path.substringAfterLast('/').replace(':', '-')}.json")
             else -> 404 to ""
         }
@@ -41,10 +34,8 @@ class OnProfiles(private val context: ClientGameTestContext) : AutoCloseable {
 
     fun screen(client: Minecraft) = client.gui.screen() as ProfileScreen
 
-    /** Types [line] as a command, which is how Fabric decides whether it is the mod's or the server's. */
     fun command(line: String) = context.runOnClient<Nothing> { it.connection!!.sendCommand(line) }
 
-    /** Opens the viewer on [name] with `/pv` and waits until its profile shows. */
     fun open(name: String) {
         context.setScreen { null }
         command("pv $name")
@@ -60,7 +51,6 @@ class OnProfiles(private val context: ClientGameTestContext) : AutoCloseable {
 
     fun tabs() = context.computeOnClient<List<String>, Nothing> { client -> screen(client).widgets<KitTab>().map { it.message.string } }
 
-    /** The buttons that show a page of the tab, each named by its number. */
     private fun pageButtons(client: Minecraft) = screen(client).widgets<KitButton>().filter { it.message.string.all(Char::isDigit) }
 
     fun pages() = context.computeOnClient<List<String>, Nothing> { client -> pageButtons(client).map { it.message.string } }
@@ -69,7 +59,6 @@ class OnProfiles(private val context: ClientGameTestContext) : AutoCloseable {
         context.click(context.computeOnClient<KitButton, Nothing> { client -> pageButtons(client).first { it.message.string == page } })
     }
 
-    /** Sweeps the mouse along the grid's rows until an item is under it, and says which. */
     fun hoverItem(contentX: Int, viewY: Int): String? {
         for (row in 0 until 4) {
             for (x in contentX until contentX + 296 step 9) {
@@ -82,8 +71,7 @@ class OnProfiles(private val context: ClientGameTestContext) : AutoCloseable {
     }
 
     private companion object {
-        /** Long enough for the screenshot of the loading line. */
-        const val SLOW_MILLIS = 1500L
+        const val LOADING_SCREENSHOT_MILLIS = 1500L
         val PETS_HIDDEN = Regex("(?s)(\"id\": \"pets\".*?\"hidden\": )true")
     }
 }

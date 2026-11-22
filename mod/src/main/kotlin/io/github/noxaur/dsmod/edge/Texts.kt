@@ -9,7 +9,6 @@ import net.minecraft.util.StringDecomposer
 private fun Style.toSpan(text: String = "") =
     ServerSpan(text, color?.value, isBold, isItalic, isUnderlined, isStrikethrough, isObfuscated)
 
-/** What the player reads: the decomposer resolves legacy color codes and inherited styles the way the renderer does. */
 fun Component.toText(): ServerText {
     val spans = ArrayList<ServerSpan>()
     val run = StringBuilder()

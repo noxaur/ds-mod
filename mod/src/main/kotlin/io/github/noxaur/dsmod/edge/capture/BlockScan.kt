@@ -19,7 +19,6 @@ import net.minecraft.world.level.block.entity.SkullBlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.chunk.status.ChunkStatus
 
-/** Block kinds the dungeon puzzles and the End read. Add a block here, or a tag to [watchedTags], to record it too. */
 private val watchedBlocks: Set<Block> = setOf(
     Blocks.OBSIDIAN, Blocks.SEA_LANTERN, Blocks.PRISMARINE, Blocks.ICE, Blocks.PACKED_ICE,
     Blocks.POLISHED_ANDESITE, Blocks.CHEST, Blocks.TRAPPED_CHEST, Blocks.END_PORTAL_FRAME,
@@ -32,11 +31,6 @@ private const val RADIUS_CHUNKS = 4
 private const val PERIOD_TICKS = 20
 private const val BUDGET_NANOS = 500_000L
 
-/**
- * Records `blockstates` (the watched blocks) and `skulls` (skull blocks with their profile) in the chunks
- * around the player, including what was there before the capture started. A pass over the chunks nearest
- * first takes at most [BUDGET_NANOS] a tick, and a new pass starts [PERIOD_TICKS] after the last one ended.
- */
 class BlockScan(private val changes: ChangeLog, private val nanoTime: () -> Long = System::nanoTime) {
     private val queue = ArrayDeque<ChunkPos>()
     private val states = HashMap<String, JsonElement>()
@@ -45,7 +39,6 @@ class BlockScan(private val changes: ChangeLog, private val nanoTime: () -> Long
     private var idle = 0
     private var world: ClientLevel? = null
 
-    /** True once the maps hold a finished pass. A queued pass is another world's blocks and must not be published. */
     private var complete = false
 
     fun tick(level: ClientLevel, player: Player) {
@@ -73,7 +66,6 @@ class BlockScan(private val changes: ChangeLog, private val nanoTime: () -> Long
         }
     }
 
-    /** Publishes a finished pass. A pass still queued is dropped, so a warp's blocks are not mixed in. */
     fun detach() {
         if (complete && queue.isEmpty()) offer()
         drop()

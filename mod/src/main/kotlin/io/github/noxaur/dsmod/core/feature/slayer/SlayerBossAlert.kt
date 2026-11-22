@@ -8,7 +8,6 @@ import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.SlayerLine
 import io.github.noxaur.dsmod.core.text.text
 
-/** Alerts the player when their own slayer boss spawns, which the server announces to the quest's owner alone. */
 class SlayerBossAlert(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "slayer-boss-alert", Area.ANYWHERE, Store.SLAYER, "Alert you when your slayer boss spawns.")
 

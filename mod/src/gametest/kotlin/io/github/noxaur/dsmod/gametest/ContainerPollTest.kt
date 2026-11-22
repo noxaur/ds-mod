@@ -15,10 +15,6 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
 
-/**
- * Opens a chest of 54 items with long lore, which is more than one tick may spend reading. The edge must read
- * it over several ticks and still deliver every slot.
- */
 class ContainerPollTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         var tick = 0

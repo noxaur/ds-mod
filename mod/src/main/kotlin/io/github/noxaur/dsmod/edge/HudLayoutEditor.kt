@@ -24,15 +24,6 @@ import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.network.chat.Component
 import org.lwjgl.glfw.GLFW
 
-/**
- * The HUD's layout in the settings: a small copy of the screen with every HUD block drawn where it sits, by the
- * HUD itself, and the hotbar for a landmark. A point on the copy stands for a point of the game's screen, so
- * [HudMover] moves the blocks by the same rules as the HUD editor and the chat screen: a drag lines up, docks and
- * stays on the screen, the wheel resizes and a right press resets. A press gives the map the keys: the arrows nudge
- * the picked block, + and - resize it, Backspace puts it back in the stack, Tab picks the next, and Escape gives the
- * keys back, or puts a dragged block back. Under the map, the picked block's name and size, with Smaller, Bigger
- * and Reset.
- */
 class HudLayoutEditor(
     private val panel: Panel<Map<String, DsModConfig.Position>>,
     private val readouts: Readouts,
@@ -59,7 +50,6 @@ class HudLayoutEditor(
     override val capturing get() = entered || grabbed != null
 
     override fun layout(x: Int, y: Int, width: Int): Int {
-        // While the layout shows, a block with nothing to show still shows its header, so it can be placed.
         if (!readouts.editing) readouts.editing = true
         box.place(x, y, width)
         val window = Minecraft.getInstance().window
@@ -80,7 +70,6 @@ class HudLayoutEditor(
     }
 
     override fun refresh() {
-        // A reset in the settings changes the places under the HUD, so it is placed again.
         val now = panel.value
         if (now != seen) {
             seen = now
@@ -102,22 +91,18 @@ class HudLayoutEditor(
 
     private fun overMap(mouseX: Double, mouseY: Double) = box.isOver(mouseX, mouseY, mapX, map.width, map.height)
 
-    /** The block under a point of the screen showing the settings, by the point of the game's screen it stands for. */
     private fun blockAt(mouseX: Double, mouseY: Double): Hud.Placed? {
         if (!overMap(mouseX, mouseY)) return null
         return Hud.at(map.screen(mouseX - mapX).toDouble(), map.screen(mouseY - (box.origin + box.top)).toDouble())
     }
 
-    /** Where the middle of [id]'s block is drawn on the map, on the screen, so a test can grab it. */
     fun pointOf(id: String): Pair<Int, Int>? {
         val block = Hud.find(id) ?: return null
         return (mapX + (block.x + block.width * block.scale / 2) * map.scale).toInt() to (box.origin + box.top + (block.y + block.height * block.scale / 2) * map.scale).toInt()
     }
 
-    /** How many screen pixels of the game one pixel of the map stands for. */
     val scale get() = 1 / map.scale
 
-    /** The middle of the button named [name] under the map. */
     fun buttonAt(name: String): Pair<Int, Int> {
         val i = BUTTONS.indexOf(name)
         return buttons.middle(i) to box.origin + footY + Kit.BUTTON_HEIGHT / 2
@@ -134,7 +119,6 @@ class HudLayoutEditor(
         pose.pushMatrix()
         pose.translate(mx.toFloat(), my.toFloat())
         pose.scale(map.scale, map.scale)
-        // The hotbar shows where the bottom of the screen is, as the player sees it in the world.
         Kit.hotbar(g, (map.screenWidth - Kit.hotbarWidth(HOTBAR_CELLS)) / 2, map.screenHeight - Kit.HOTBAR_HEIGHT, HOTBAR_CELLS)
         Hud.draw(g)
         val placed = Hud.placed()
@@ -178,7 +162,6 @@ class HudLayoutEditor(
         val px = event.x
         val py = event.y
         if (!box.isOver(px, py)) {
-            // A press elsewhere takes the keys back and still does its own job.
             leave()
             return false
         }
@@ -255,7 +238,6 @@ class HudLayoutEditor(
 
     override fun keyPressed(event: KeyEvent): Boolean {
         if (grabbed != null) {
-            // Escape during a drag puts the block back where it was, an arrow nudges it, and the drag keeps every other key.
             if (event.isEscape && mover.cancel() || grabbed?.let(Hud::find)?.let { mover.nudge(it, event) } == true) changed()
             return true
         }

@@ -6,10 +6,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.core.particles.ParticleTypes
 
-/**
- * The server sets off the same explosion twice. Without the hider the client makes its cloud, and with it the
- * client makes none, while another particle still appears. Read both screenshots.
- */
 class HideExplosionsTest : FabricClientGameTest {
     private fun made(context: ClientGameTestContext, explosion: Boolean) = context.computeOnClient<Boolean, Nothing> { client ->
         val at = client.player!!.position()

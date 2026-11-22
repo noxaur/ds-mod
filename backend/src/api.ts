@@ -24,40 +24,28 @@ import {
   UpstreamUnavailable,
 } from "./profiles/model.ts";
 
-/**
- * Who a request is from, as the entry point that verified it says: the player whose session Void found, and the
- * admin token an agent must match. `makeApp` adds it to each request's context, where a client cannot reach.
- */
 export class Caller extends Context.Service<
   Caller,
   { readonly userId: string | null; readonly adminToken: string | undefined }
 >()("dsmod/Caller") {}
 
-/** The signed-in player a contrib handler acts for. */
 export class Player extends Context.Service<Player, { readonly userId: string }>()("dsmod/Player") {}
 
-/**
- * Lets a request through only when Void's session names a player, and gives the handler that player. The mod sends
- * the session token sign-in gave it as a bearer token. Void checks it before the API runs, so the scheme is here for
- * the contract and the middleware reads the player Void found.
- */
+/** @keep Void checks the bearer session token before the API runs, so the scheme is only for the contract. */
 export class SignedIn extends HttpApiMiddleware.Service<SignedIn, { provides: Player }>()("dsmod/SignedIn", {
   error: HttpApiError.Unauthorized,
   security: { session: HttpApiSecurity.bearer },
 }) {}
 
-/** Lets a request through only when it carries the admin token, which only an agent's `dsctl` has. */
 export class Agent extends HttpApiMiddleware.Service<Agent>()("dsmod/Agent", {
   error: HttpApiError.Unauthorized,
   security: { adminToken: HttpApiSecurity.bearer },
 }) {}
 
 const id = { id: Schema.String };
-// A version is a few characters, and it is stored with every run, so a client may not send a megabyte as one.
 const ModVersion = Schema.String.check(Schema.isMaxLength(64));
 const Capture = Schema.Uint8Array.pipe(HttpApiSchema.asUint8Array());
 
-/** Every REST endpoint but sign-in. `api/openapi.json` is generated from this, so the mod and the website read the same contract. */
 export const Api = HttpApi.make("dsmod")
   .add(
     HttpApiGroup.make("health").add(
@@ -188,9 +176,7 @@ export const Api = HttpApi.make("dsmod")
       .middleware(Agent)
       .annotate(OpenApi.Description, "What an agent calls through dsctl, with the admin token."),
   )
-  // A body, path or query that does not decode is a 400 whose `errors` say where and what was expected, so an agent
-  // can fix its request. The mod parses a brief strictly, so a key it does not know, such as `secs` for `seconds`, is
-  // refused here instead of being dropped and costing a step its timer.
+  // @keep The mod parses a brief strictly, so a key it does not know, such as `secs`, is refused here, not dropped.
   .middleware(HttpApiMiddleware.ProblemDetails)
   .annotate(HttpApi.PayloadParseOptions, { onExcessProperty: "error" })
   .annotateMerge(OpenApi.annotations({ title: "ds-mod backend", version: "0.1.0" }));

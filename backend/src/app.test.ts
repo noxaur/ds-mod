@@ -23,12 +23,10 @@ const Listed = Schema.decodeUnknownSync(
   ),
 );
 
-/** A backend with nothing in it, and a way to call it as an agent, as a player, or as nobody. */
 function backend(overrides: Partial<Services> = {}) {
   const app = testApp({ clock, ...overrides });
   const call: typeof app.call = async (...args) => {
-    // The store orders runs by time and then by random id, so each request starts in a later millisecond than the
-    // last, and a test's runs are lettered in the order it sends them.
+    // @keep The store orders runs by time, then random id, so each call is a millisecond after the last.
     await advance(clock, 1);
     return app.call(...args);
   };
@@ -135,7 +133,6 @@ test("the same unknown thing from many players is one row with a count", async (
 test("a player cannot call any agent route, and nobody calls a player route without signing in", async () => {
   const { call, create } = backend();
   const id = await create();
-  // Every endpoint of each group, from the API itself, so a new one is checked without being listed here.
   const routes = (group: "admin" | "contrib") =>
     Object.values(Api.groups[group].endpoints).map((endpoint) => ({
       method: endpoint.method,
@@ -208,7 +205,6 @@ test("a request with no steps or a zero timer is refused", async () => {
   );
 });
 
-/** The 400 a request that does not decode gets: the one problem at [path], and what was expected there. */
 const refused = (path: unknown[], message: string) => ({
   status: 400,
   value: expect.objectContaining({ status: 400, errors: [{ path, message }] }),
@@ -225,7 +221,6 @@ test("a request that does not decode says where and what was expected, and only 
   );
   expect(logged).not.toHaveBeenCalled();
   logged.mockRestore();
-  // A refusal the endpoint declares is answered as before.
   expect(await submit("ann", await create(), new Uint8Array([1]))).toEqual({
     status: 400,
     value: { _tag: "BadRequest" },

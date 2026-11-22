@@ -8,7 +8,6 @@ import org.objectweb.asm.tree.ClassNode
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/** Each class in [classes] that is a feature, one that implements [HasFeature], and is not in [listed]. */
 fun unlisted(classes: List<ClassNode>, listed: Set<String>): List<String> =
     classes.filter { Type.getInternalName(HasFeature::class.java) in it.interfaces && it.name !in listed }.map { it.name.replace('/', '.') }
 

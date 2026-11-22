@@ -18,7 +18,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/** Runs the real [Backend] against a stub that answers like the backend's routes, over a real socket. */
 class BackendTest {
     private class Seen(val method: String, val path: String, val headers: Map<String, String>, val body: ByteArray)
 
@@ -27,7 +26,6 @@ class BackendTest {
     private var challenges = 0
     private var sessions = 0
 
-    /** What each path answers, as a status and a body. The default is 204. */
     private val answers = HashMap<String, (Seen) -> Pair<Int, String>>()
 
     private val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
@@ -247,7 +245,6 @@ class BackendTest {
             answers[path] = { status to "" }
             assertEquals(answer, backend.submit("r1", file))
         }
-        // An empty 400 can be a body that broke on the way, and a 503 a backend that is down, so both may be sent again.
         for (status in listOf(400, 503)) {
             answers[path] = { status to "" }
             assertEquals(status, assertFailsWith<BackendException> { backend.submit("r1", file) }.status)

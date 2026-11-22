@@ -8,7 +8,6 @@ import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.world.EntityBeam
 
-/** A beam over each boss the player picks, named and with the distance to it, which follows the boss. */
 class BossBeacon(config: DsModConfig, claim: SlayerClaim) : HasFeature {
     override val feature: Feature = Feature(
         config, "boss-beacon", Area.ANYWHERE, Store.SLAYER, "Show a beam over each boss you pick, with its distance.", default = false,

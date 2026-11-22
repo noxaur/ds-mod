@@ -11,10 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Menu Theme: a tooltip with no style of its own gets the kit's backing. dragsim.co gives its items a style per rarity
- * from its resource pack, such as `dragsim:legendary`, and those keep the server's look.
- */
+/** @keep dragsim.co gives its items a style per rarity from its resource pack, such as `dragsim:legendary`, and those keep the server's look. */
 @Mixin(TooltipRenderUtil.class)
 abstract class TooltipMixin {
     @Inject(method = "extractTooltipBackground", at = @At("HEAD"), cancellable = true)

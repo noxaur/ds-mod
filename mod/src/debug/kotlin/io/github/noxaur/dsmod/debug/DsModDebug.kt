@@ -13,22 +13,11 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
 import java.nio.file.Path
 
-/**
- * The developer's tools: `/dscapture` records without a brief, `/dskit` shows the kit and `/dskit rows` its settings
- * rows, `-Pbrief` starts a brief at launch, and the title screen has a button that joins DragSim.
- */
 object DsModDebug : ClientModInitializer {
-    /** The capture `/dscapture` started, while it runs. */
     private var capture: CaptureSession? = null
 
-    /** Read by BriefTitleMixin for the window title. */
     fun briefName(): String? = Recording.name()
 
-    /**
-     * Starts a capture, or ends the one it started, and returns the file. The file is finished off the client
-     * thread, and [say] hears on the client thread how each went. While a brief is on, its capture is the brief's
-     * to start and end, so this refuses and returns null.
-     */
     fun toggleCapture(client: Minecraft, say: (String) -> Unit = {}): Path? {
         capture?.let { own ->
             capture = null
@@ -42,17 +31,16 @@ object DsModDebug : ClientModInitializer {
         return Recorder.start(client.gameDirectory.toPath().resolve("dsmod/captures")).also { capture = it }.file.also { say("Capture started: $it") }
     }
 
-    // The chat screen closes after the command returns, so open on the next tick.
+    // @keep The chat screen closes after the command returns, so open on the next tick.
     private fun open(client: Minecraft, screen: () -> Screen): Int {
         client.schedule { client.setScreenAndShow(screen()) }
         return 1
     }
 
     override fun onInitializeClient() {
-        // A developer tests in singleplayer and on servers of their own, so the debug build runs everywhere.
         DsModClient.anyServer = true
         JoinDragSim.register()
-        // `./gradlew runClient -Pbrief=<file>` sets this. The window does not exist yet, and takes its title when it opens.
+        // @keep The window does not exist yet, and takes its title when it opens.
         System.getProperty("dsmod.brief")?.let { Recording.startAtLaunch(Brief.read(Path.of(it))) }
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
             dispatcher.register(
@@ -68,7 +56,6 @@ object DsModDebug : ClientModInitializer {
                         open(context.source.client) { KitGalleryScreen() }
                     }
                     .apply {
-                        // A page of settings rows, lists or panels.
                         for (page in SettingsGalleryScreen.Page.entries) {
                             then(
                                 ClientCommands.literal(page.name.lowercase()).executes { context ->

@@ -14,12 +14,6 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 
-/**
- * The worn armor shows on the HUD as the player wears it, so a head keeps its skin and dyed leather its color, and the
- * chat's free mouse reads a piece's tooltip. The pet shows by name until its head floats beside the player, and then as that
- * head at the end of the row. Read the screenshots: the row with a gap for the missing leggings, the tooltip over the
- * chestplate, the column, the pet's name under the row, and the pet's head in it.
- */
 class EquipmentDisplayTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
@@ -28,7 +22,6 @@ class EquipmentDisplayTest : FabricClientGameTest {
             world.server.runCommand("item replace entity @a armor.feet with minecraft:leather_boots[dyed_color=$DYE]")
             context.waitTicks(20)
 
-            /** The middle of piece [index] in GUI pixels, counted along the row or down the column, in plate or hotbar slots. */
             fun piece(index: Int, column: Boolean = false, hotbar: Boolean = false): Pair<Double, Double> = context.computeOnClient<Pair<Double, Double>, Nothing> {
                 val block = checkNotNull(Hud.find(ID)) { "The equipment is not on the HUD" }
                 val inset = if (hotbar) 3 else 0
@@ -60,7 +53,6 @@ class EquipmentDisplayTest : FabricClientGameTest {
                 DsModClient.feature<EquipmentDisplay>().layout.value = EquipmentLayout.ROW
             }
 
-            // The sidebar's pet line, here an Epic pet as dragsim.co writes it. With no head seen yet, the name shows under the row.
             listOf(
                 """scoreboard objectives add ds dummy "Dragon Sim"""",
                 "scoreboard objectives setdisplay sidebar ds",
@@ -75,7 +67,6 @@ class EquipmentDisplayTest : FabricClientGameTest {
             check(stackAt(piece(4)) == null) { "The pet has an icon before its head was seen" }
             context.takeScreenshot("equipment-display-pet-name")
 
-            // dragsim.co floats the pet beside the player as an armor stand wearing its head, named as the sidebar names it.
             world.floatPet("[Lvl 100] Ender Dragon")
             context.waitTicks(30)
             val icon = stackAt(piece(4))
@@ -93,7 +84,6 @@ class EquipmentDisplayTest : FabricClientGameTest {
                 check(HeadSkin.worn(stackAt(piece(0, hotbar = true)))) { "The hotbar look moved the helmet off its slot" }
                 context.takeScreenshot("equipment-display-hotbar")
 
-                // Docked, a slot lines up with the hotbar's: its item 3px into a strip 7px past the hotbar's right end.
                 equipmentDisplay.placement.value = HudDock.RIGHT_OF_HOTBAR
                 context.waitTicks(10)
                 val (width, height) = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.guiScaledWidth to it.window.guiScaledHeight }
@@ -102,7 +92,6 @@ class EquipmentDisplayTest : FabricClientGameTest {
                 check(HeadSkin.worn(stackAt(first.first + 4 * 20 to first.second))) { "The pet is not in the fifth slot right of the hotbar" }
                 context.takeScreenshot("equipment-display-docked-right")
 
-                // Left of the hotbar it leaves the offhand slot's 29px, and the pet sits on a row of its own above the armor.
                 equipmentDisplay.placement.value = HudDock.LEFT_OF_HOTBAR
                 equipmentDisplay.petPosition.value = PetPosition.ABOVE
                 context.waitTicks(10)

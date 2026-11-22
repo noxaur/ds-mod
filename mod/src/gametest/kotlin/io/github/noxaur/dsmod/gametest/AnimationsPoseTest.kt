@@ -51,7 +51,6 @@ class AnimationsPoseTest : FabricClientGameTest {
         check(changed(vanillaSwing, slide) > 1000 && changed(vanilla, slide) > 1000) { "Turn 0% did not slide the sword without turning it" }
         animations.turn.value = 100f
 
-        // A smaller sword swings a shorter way with Scale Swing, and the game's full way without it, and so does a stab.
         animations.itemSize.value = 0.5f
         val scaled = midSwing("animations-scale-swing")
         animations.scaleSwing.value = false
@@ -66,7 +65,6 @@ class AnimationsPoseTest : FabricClientGameTest {
         animations.noSwing.value = true
         check(changed(vanilla, midSwing("animations-no-swing")) == 0) { "No Swing moved the sword" }
 
-        // A spear swings by a stab of its own, which the settings reach too.
         hold(Items.DIAMOND_SPEAR)
         val spear = shot("animations-spear")
         check(changed(spear, midSwing("animations-spear-no-swing")) == 0) { "No Swing let the spear stab" }
@@ -81,7 +79,6 @@ class AnimationsPoseTest : FabricClientGameTest {
         animations.scaleSwing.value = true
         animations.itemSize.value = 1f
 
-        // No Bow Swing keeps a bow still and leaves every other item's swing alone.
         hold(Items.BOW)
         val bow = shot("animations-bow")
         check(changed(bow, midSwing("animations-bow-swing")) > 1000) { "The bow did not swing" }
@@ -91,7 +88,6 @@ class AnimationsPoseTest : FabricClientGameTest {
         check(changed(vanillaSwing, midSwing("animations-no-bow-swing-sword")) == 0) { "No Bow Swing changed the sword's swing" }
         animations.noBowSwing.value = false
 
-        // The off hand moves outward, to the left, where the main hand moves right.
         hold(Items.DIAMOND_SWORD, off = true)
         val both = shot("animations-off-hand")
         animations.itemX.value = 0.3f
@@ -100,7 +96,6 @@ class AnimationsPoseTest : FabricClientGameTest {
         check(changed(both, moved, right = false) > 1000) { "Item X did not move the off hand's sword" }
         hold(Items.AIR, off = true)
 
-        // Reset puts every setting back, so the frame is the game's own again.
         animations.style.value = HandStyle.V1_7
         animations.swingSpeed.value = 2f
         animations.turn.value = 50f

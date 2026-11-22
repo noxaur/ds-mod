@@ -22,7 +22,6 @@ import { type Upstream, UpstreamDown } from "../src/profiles/upstream.ts";
 const decodeSpec = Schema.decodeUnknownSync(RequestSpec);
 const decodeSighting = Schema.decodeUnknownSync(ItemSighting);
 const decodeStatus = Schema.decodeUnknownSync(RecordingRequest.fields.status);
-// A database or storage failure is a defect: no client can do anything about it. makeApp logs it and answers 500.
 const run = <A>(query: () => PromiseLike<A>) => Effect.orDie(Effect.tryPromise(query));
 
 const toRequest = (row: typeof requests.$inferSelect) => ({
@@ -32,7 +31,6 @@ const toRequest = (row: typeof requests.$inferSelect) => ({
   createdAt: row.createdAt,
 });
 
-/** The store on Cloudflare: rows in D1 and capture files in R2. It outlives a move off Void as the only file to rewrite. */
 export const contribStore: Store["Service"] = {
   insertRequest: ({ id, status, createdAt, ...spec }) =>
     run(() => db.insert(requests).values({ id, status, createdAt, spec })).pipe(Effect.asVoid),
@@ -62,11 +60,10 @@ export const contribStore: Store["Service"] = {
     ]).pipe(Effect.map((rows) => rows.map((row) => row.id))),
   insertSubmission: (row, capture, maxRuns) =>
     run(async () => {
-      // The file first, so a row always has one: a run that counts towards filling a request is a run an agent can
-      // read. When the row is refused or never written, the file is deleted, which nothing reads.
+      /** @keep The file first, so a row always has one: a run that counts towards filling a request is a run an agent
+       * can read. */
       await storage.put(`captures/${row.id}`, capture);
-      // One statement: the cap, the request's status and the one-run-per-player index all decide here, so neither a
-      // second upload nor a close can slip in between the check in contrib.ts and this insert.
+      // @keep One statement, so neither a second upload nor a close can slip in between the check in contrib.ts and here.
       const kept = await db.all<{ id: string }>(sql`
         INSERT INTO ${submissions} (id, request_id, user_id, mod_version, bytes, created_at)
         SELECT ${row.id}, ${row.requestId}, ${row.userId}, ${row.modVersion}, ${row.bytes}, ${row.createdAt}
@@ -96,8 +93,7 @@ export const contribStore: Store["Service"] = {
     }),
   countUnknown: (unknown, maxRows) =>
     run(() =>
-      // A known signature is counted. A new one is inserted only while the table is under the cap. One statement,
-      // so two new signatures at once cannot both pass.
+      // @keep One statement, so two new signatures at once cannot both pass the cap.
       db.run(sql`
         INSERT INTO ${unknowns} (kind, signature, sample, count, mod_version, first_seen)
         SELECT ${unknown.kind}, ${unknown.signature}, ${unknown.sample}, 1, ${unknown.modVersion}, ${unknown.firstSeen}
@@ -110,14 +106,12 @@ export const contribStore: Store["Service"] = {
   unknowns: run(() => db.select().from(unknowns)),
 };
 
-/** Copies of dragsim.co's answers in KV, which drops each when its time is up. */
 export const profileStore: ProfileStore["Service"] = {
   get: (key) => run(() => kv.get(key)),
   put: (key, value, ttlSeconds) =>
     Effect.tryPromise({ try: () => kv.put(key, value, { ttl: ttlSeconds }), catch: () => new WriteRefused() }),
 };
 
-/** dragsim.co itself. A network failure, or an answer that is not JSON, is dragsim.co being down. */
 export const upstream: Upstream["Service"] = {
   get: (path) =>
     Effect.tryPromise({
@@ -153,10 +147,9 @@ const textureTallies = (entries?: readonly string[]) =>
     .where(entries === undefined ? undefined : inArray(itemTextures.entry, [...entries]))
     .groupBy(itemTextures.entry, itemTextures.skinId, itemTextures.texture);
 
-// D1 takes at most 100 bound values in a statement.
+// @keep D1 takes at most 100 bound values in a statement.
 const CHUNK = 90;
 
-/** Tallies for any number of entries, in the statements D1's bound-value limit allows. */
 const talliesOf = async (entries: readonly string[]) => {
   const found: EntryTally[] = [];
   const textures: TextureTally[] = [];
@@ -170,7 +163,6 @@ const talliesOf = async (entries: readonly string[]) => {
 
 type Statements = Parameters<typeof db.batch>[0];
 
-/** Sends statements to D1 as one round trip that succeeds or fails whole. */
 const batch = async (statements: Statements[number][]) => {
   const [first, ...rest] = statements;
   if (first !== undefined) {
@@ -178,10 +170,7 @@ const batch = async (statements: Statements[number][]) => {
   }
 };
 
-/**
- * A new row is kept only while this player and the table are under their caps. A row that is already there is
- * updated even when the table is full. The counts are read in the insert, so two reports cannot both pass them.
- */
+/** @keep The caps are counted inside the insert, so two reports cannot both pass them. */
 const seenWrite = (userId: string, modVersion: string, limits: { maxRows: number; maxPlayerRows: number }) => {
   return (entry: string, glint: boolean, plain: boolean) =>
     db
@@ -262,7 +251,6 @@ const sampleWrite = (userId: string, maxSamples: number) => (entry: string, samp
     )
     .onConflictDoNothing();
 
-/** The sightings in D1. The rules are in `items.ts` and `store.ts`, and each cap is decided inside one write batch. */
 export const itemStore: ItemStore["Service"] = {
   record: (userId, modVersion, observations, limits) =>
     run(async () => {

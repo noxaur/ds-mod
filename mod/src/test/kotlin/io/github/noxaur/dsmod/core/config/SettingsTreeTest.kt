@@ -16,7 +16,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/** The tree is the schema of the settings, so these keep it one system: every saved field has one row, worded alike. */
 class SettingsTreeTest {
     private val config = DsModConfig()
     private val settings = SettingsTree(config, mac = true)
@@ -24,10 +23,6 @@ class SettingsTreeTest {
     private val rows = tree.flatMap { it.walk() }
     private val rarity = settings.feature<ItemRarity>()
 
-    /**
-     * `Class.field` of every field in each category of `DsModConfig` that the config file saves, and of every slot the
-     * features declared while the tree was built.
-     */
     private val saved = DsModConfig.serializer().descriptor.let { config ->
         (0 until config.elementsCount).map(config::getElementDescriptor).filter { it.kind == StructureKind.CLASS }.flatMap { category ->
             category.elementNames.map { "${category.serialName.substringAfterLast('.')}.$it" }
@@ -194,7 +189,6 @@ class SettingsTreeTest {
     }
 
     private companion object {
-        /** Words Title Case leaves small after the first. */
         val MINOR = setOf("a", "an", "the", "of", "in", "on", "to", "for", "and", "or")
     }
 }

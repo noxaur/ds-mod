@@ -54,7 +54,7 @@ abstract class HeldItemMixin {
         if (HeldItems.INSTANCE.swing(pose, arm, attack, false)) ci.cancel();
     }
 
-    /** A spear swings by its own stab, which never reaches `swingArm`. */
+    /** @keep A spear swings by its own stab, which never reaches `swingArm`. */
     @WrapOperation(method = "submitArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/effects/SpearAnimations;firstPersonAttack(FLcom/mojang/blaze3d/vertex/PoseStack;ILnet/minecraft/world/entity/HumanoidArm;)V"))
     private void dsmod$stab(float attack, PoseStack pose, int invert, HumanoidArm arm, Operation<Void> original) {
         if (!HeldItems.INSTANCE.swing(pose, arm, attack, true)) original.call(attack, pose, invert, arm);

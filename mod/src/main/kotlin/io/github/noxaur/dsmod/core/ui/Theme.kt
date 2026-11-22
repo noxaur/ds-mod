@@ -2,7 +2,6 @@ package io.github.noxaur.dsmod.core.ui
 
 import io.github.noxaur.dsmod.core.text.Role
 
-/** The colors of ds-mod's chrome, as ARGB, one per job. `mod/.claude/skills/ui/kit.md` says what each token is for. */
 enum class Theme(
     private val label: String,
     val outline: Int,
@@ -95,7 +94,7 @@ enum class Theme(
         ink = 0xFF3F3F3F.toInt(),
         inkMuted = 0xFF636363.toInt(),
         inkOff = 0xFF8B8B8B.toInt(),
-        // The match role's yellow is lost on a light face, so a dark amber reads as the same highlight.
+        // @keep The match role's yellow is lost on a light face, so a dark amber reads as the same highlight.
         inkMatch = 0xFF7A4A00.toInt(),
         inkBad = 0xFFB3261E.toInt(),
         inkShadow = false,
@@ -105,7 +104,6 @@ enum class Theme(
     ),
     ;
 
-    /** The settings dropdown shows this. */
     override fun toString() = label
 }
 

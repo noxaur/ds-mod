@@ -3,29 +3,20 @@ package io.github.noxaur.dsmod.core.contribute
 import io.github.noxaur.dsmod.core.backend.BackendException
 import io.github.noxaur.dsmod.core.backend.unwrapped
 
-/**
- * What a player agreed to send, collected until it is time to send it: a batch of at most [MAX_BATCH] things, each
- * told apart by [key]. A thing is not collected again while it waits, is on its way, or was delivered, and a report
- * goes out rarely, so a player who agreed to it is asked for little. Call it on the client thread.
- */
 class Batch<T : Any>(private val key: (T) -> Any) {
     private val pending = LinkedHashMap<Any, T>()
     private val sending = HashSet<Any>()
     private val sent = HashSet<Any>()
 
-    /** What was already looked at, as the caller keyed it. A menu resends the same line for every slot, so most calls end here. */
     private val seen = HashSet<Any>()
 
-    /** Whether a batch is already as big as it goes, so there is no point in looking at more. */
     val full get() = pending.size >= MAX_BATCH
 
-    /** True the first time the caller shows [looked], so that what it costs to read the thing is paid once. */
     fun fresh(looked: Any): Boolean {
         if (seen.size >= MAX_SEEN) seen.clear()
         return seen.add(looked)
     }
 
-    /** Collects [thing], unless it is already waiting, on its way, or delivered. */
     fun add(thing: T) {
         val k = key(thing)
         if (k in sent || k in sending || k in pending) return
@@ -37,10 +28,6 @@ class Batch<T : Any>(private val key: (T) -> Any) {
     private var waitingSince = -1L
     private var lastReport: Long? = null
 
-    /**
-     * Whether a report should go at [now], and if so counts it as sent. The first goes [FIRST_MILLIS] after something
-     * began to wait, so a short session still reports, and each later one [SPACING_MILLIS] after the one before.
-     */
     fun due(now: Long): Boolean {
         if (!waiting) {
             waitingSince = -1
@@ -54,7 +41,6 @@ class Batch<T : Any>(private val key: (T) -> Any) {
         return true
     }
 
-    /** Takes what is waiting, to send. Tell [finished] how it went, and until then these are not collected again. */
     fun take(): List<T> {
         val batch = pending.values.toList()
         sending.addAll(pending.keys)
@@ -62,12 +48,6 @@ class Batch<T : Any>(private val key: (T) -> Any) {
         return batch
     }
 
-    /**
-     * Ends what [take] began for [batch], with the [error] that stopped it, or null when it was delivered. A delivered
-     * batch is not collected again this session, and neither is one the backend refused for good, because sending it
-     * again can only fail again. Any other failure, such as a sign-in, a busy backend or no network, leaves it
-     * waiting for the next report, as far as a batch has room, and the rest may be seen again.
-     */
     fun finished(batch: List<T>, error: Throwable? = null) {
         val done = error == null || refusedForGood(error)
         for (thing in batch) {
@@ -75,11 +55,10 @@ class Batch<T : Any>(private val key: (T) -> Any) {
             if (!sending.remove(k)) continue
             if (done) sent.add(k) else if (pending.size < MAX_BATCH) pending[k] = thing
         }
-        // What found no room must be read again to come back.
+        // @keep What found no room must be read again to come back.
         if (!done) seen.clear()
     }
 
-    /** Forgets what is waiting, for a player who switched the report off. */
     fun drop() {
         waitingSince = -1
         pending.clear()
@@ -92,7 +71,6 @@ class Batch<T : Any>(private val key: (T) -> Any) {
         const val MAX_BATCH = 50
         private const val MAX_SEEN = 1024
 
-        /** The statuses that say the backend cannot take this batch as it is: a bad shape, a gone route, a conflict, a size. */
         private val REFUSED = setOf(400, 404, 409, 413, 422)
 
         private fun refusedForGood(error: Throwable): Boolean =

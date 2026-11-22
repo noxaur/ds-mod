@@ -5,10 +5,7 @@ import { newId, nowIso } from "../ids.ts";
 import type { RequestSpec } from "./model.ts";
 import { Store } from "./store.ts";
 
-/**
- * Any signed-in client can invent sightings, so the table stops taking new ones here and only counts the ones it
- * has. An agent reads them long before a real game has this many unknown things.
- */
+/** @keep Any signed-in client can invent sightings, so past this the table only counts the ones it has. */
 export const MAX_UNKNOWNS = 5000;
 
 export const createRequest = Effect.fn(function* (spec: RequestSpec) {
@@ -18,7 +15,6 @@ export const createRequest = Effect.fn(function* (spec: RequestSpec) {
   return request;
 });
 
-/** The open requests a player has neither recorded nor skipped. The mod drops the ones whose requirements they miss. */
 export const offersFor = Effect.fn(function* (userId: string) {
   const store = yield* Store;
   const done = new Set(yield* store.doneBy(userId));
@@ -37,20 +33,14 @@ const requestOf = Effect.fn(function* (id: string) {
 
 export const skip = Effect.fn(function* (requestId: string, userId: string) {
   const request = yield* requestOf(requestId);
-  // A request nobody is offered any more needs no hiding.
   if (request.status === "open") {
     yield* (yield* Store).insertSkip(requestId, userId);
   }
 });
 
-/**
- * Keeps one player's run. A request is filled once enough different players recorded it, which only stops it being
- * offered: a player who accepted before that is still recording, so their run is kept too, up to twice the wanted
- * number. One player sending twice at the same moment is different: the store keeps one run per player, so a
- * single client cannot fill a request alone.
- */
+/** @keep Filling a request only stops it being offered: a player who accepted before is still recording, so their run
+ * is kept too, up to twice `wanted`. The store keeps one run per player, so a single client cannot fill a request. */
 export const submit = Effect.fn(function* (requestId: string, userId: string, modVersion: string, capture: Uint8Array) {
-  // The mod sends gzip, and an agent's tools read nothing else.
   const gzipped = capture[0] === 0x1f && capture[1] === 0x8b;
   if (!gzipped) {
     return yield* new HttpApiError.BadRequest();
@@ -58,9 +48,7 @@ export const submit = Effect.fn(function* (requestId: string, userId: string, mo
   const store = yield* Store;
   const request = yield* requestOf(requestId);
   const runs = yield* store.submissionsOf(requestId);
-  // Closed, already recorded, or already at twice `wanted`: refuse before storing a file. Two uploads at once, or an
-  // upload and a close, can both pass this read. The insert below is what keeps the table at that cap, one run per
-  // player, and a closed request without a new run.
+  // @keep Two uploads at once, or an upload and a close, can both pass this read. The insert below decides.
   const maxRuns = request.wanted * 2;
   if (request.status === "closed" || runs.length >= maxRuns || runs.some((run) => run.userId === userId)) {
     return yield* new HttpApiError.Conflict();
@@ -85,11 +73,10 @@ export const close = Effect.fn(function* (requestId: string) {
   yield* (yield* Store).close(requestId);
 });
 
-/** A, B, ... Z, then AA, AB, as spreadsheet columns go, so the 27th player is not mistaken for the first. */
 const letter = (index: number): string =>
   (index >= 26 ? letter(Math.floor(index / 26) - 1) : "") + String.fromCharCode(65 + (index % 26));
 
-/** Every request with its runs. A player is a letter here, in the order they submitted, and never an id. */
+// @keep A player is a letter here, in the order they submitted, and never an id.
 export const reports = Effect.gen(function* () {
   const store = yield* Store;
   const skips = yield* store.skips;

@@ -91,7 +91,6 @@ class SavedFilesTest {
         session.drop("hello")
         session.drop("[VIP] Player1: RARE DROP! (Summoning Eye) (✯ 90%)")
         files.close()
-        // The tab list in `game()` is the one change, and it is the player's, not a feature's.
         assertEquals(listOf("places.json"), dir.listDirectoryEntries().map { it.fileName.toString() })
     }
 

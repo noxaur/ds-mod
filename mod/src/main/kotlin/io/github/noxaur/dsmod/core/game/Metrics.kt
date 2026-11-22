@@ -2,11 +2,6 @@ package io.github.noxaur.dsmod.core.game
 
 import kotlinx.serialization.Serializable
 
-/**
- * What the mod measures about itself: how long each feature takes, what it failed on and what it
- * counted. Numbers add up in memory on the client thread, and [flush] hands a [Snapshot] to every
- * sink, so recording costs the game no I/O.
- */
 class Metrics(private val nanoTime: () -> Long = System::nanoTime) {
     @Serializable
     data class Timer(val count: Long = 0, val totalNanos: Long = 0, val maxNanos: Long = 0)
@@ -23,13 +18,11 @@ class Metrics(private val nanoTime: () -> Long = System::nanoTime) {
     private val counters = HashMap<String, Long>()
     private val failures = HashMap<String, Failure>()
 
-    /** Hears each text a feature failed to parse, with the feature's id. Set only while the player sends them on. */
     var onUnparsed: ((feature: String, sample: String) -> Unit)? = null
 
-    /** Receives each [flush]. A sink that does I/O must hand the snapshot to its own thread. */
+    // @keep A sink that does I/O must hand the snapshot to its own thread
     val sinks = ArrayList<(Snapshot) -> Unit>()
 
-    /** Times [block] under [name]. A throw is recorded as a failure and goes no further. */
     inline fun time(name: String, block: () -> Unit) {
         val start = start()
         try {
@@ -54,7 +47,6 @@ class Metrics(private val nanoTime: () -> Long = System::nanoTime) {
         failures.toMap(),
     )
 
-    /** Hands the numbers since the last flush to every sink and starts over. */
     fun flush() {
         val snapshot = snapshot()
         timings.clear()

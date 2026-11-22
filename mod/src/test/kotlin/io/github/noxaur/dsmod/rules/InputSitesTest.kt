@@ -37,17 +37,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-/**
- * A place in the release build that sends input for the player, changes or refuses the player's own input, or calls a
- * class that sends. A gate is a class that does it itself, and its hash covers the whole class, so any edit to it needs
- * a new approval. A mixin that only hooks drawing is approved by its hooks instead, and its hash is [DRAWS]. A call
- * comes from outside the gates into a gate's method that sends, so a new caller needs one too, while an edit to an
- * existing caller does not.
- */
+/** @keep A gate is a class that sends input for the player, or changes or refuses it, and its hash covers the whole class, so any edit to it needs a new approval. A mixin that only hooks drawing is approved by its hooks instead, and its hash is [DRAWS]. A call comes from outside the gates into a gate's method that sends, so a new caller needs approval too, while an edit to an existing caller does not. */
 sealed interface InputSite {
     val key: String
 
-    /** The site as `input-sites.txt` holds it: its line, then what it does, one indented line each. */
     val block: String
 
     data class Gate(val name: String, val hash: String, val does: List<String>, val features: List<String> = emptyList()) : InputSite {
@@ -64,7 +57,6 @@ sealed interface InputSite {
 
 const val DRAWS = "draws"
 
-/** What one instruction does to the player's input. [acts] is false for what waits on the player, such as a refused click. */
 private class Sink(val does: String, val acts: Boolean = true)
 
 private const val MOD = "io/github/noxaur/dsmod/"
@@ -73,7 +65,6 @@ private const val INJECT = "Lorg/spongepowered/asm/mixin/injection/Inject;"
 private const val AT = "Lorg/spongepowered/asm/mixin/injection/At;"
 private const val ACCESSOR = "Lorg/spongepowered/asm/mixin/gen/Accessor;"
 
-/** What a call to [owner].[name] does to the player's input, or null when it does nothing to it. */
 private fun calledOn(owner: String, name: String, opcode: Int): Sink? {
     val what = "${owner.substringAfterLast('/').replace('$', '.')}.$name"
     val getter = Regex("^(get|is|has|can)[A-Z]").containsMatchIn(name)
@@ -103,8 +94,7 @@ private fun calledOn(owner: String, name: String, opcode: Int): Sink? {
         owner == "net/minecraft/client/gui/screens/Screen" && opcode != Opcodes.INVOKESPECIAL &&
             name in setOf("handleComponentClicked", "handleClickEvent", "mouseClicked", "keyPressed") ->
             Sink("plays a click or key on a screen through $what")
-        // A container screen's close tells the server, and a plain screen's does not. A super call counts here, because
-        // only a subclass of a container screen makes one, and forwarding to it is how that subclass would act.
+        // @keep A container screen's close tells the server and a plain screen's does not, so a super call counts: only a subclass of a container screen makes one.
         owner == "net/minecraft/client/gui/screens/inventory/AbstractContainerScreen" &&
             name in setOf("slotClicked", "onClose", "mouseClicked", "keyPressed") ->
             Sink("plays a click or key on a screen through $what")
@@ -116,7 +106,6 @@ private fun calledOn(owner: String, name: String, opcode: Int): Sink? {
         owner.startsWith("net/fabricmc/fabric/api/client/message/v1/ClientSendMessageEvents") -> Sink("can refuse or change sent chat through $what")
         owner.startsWith("net/fabricmc/fabric/api/event/player/") || owner == "net/fabricmc/fabric/api/event/client/player/ClientPreAttackCallback" ->
             Sink("can refuse the player's actions through $what", acts = false)
-        // Reflection that runs or writes what it found, which the scan cannot follow. Looking a method up runs nothing.
         owner == "java/lang/reflect/Method" && name == "invoke" || owner == "java/lang/reflect/Field" && name.startsWith("set") ||
             owner == "java/lang/reflect/Constructor" && name == "newInstance" || owner == "java/lang/invoke/MethodHandle" && name.startsWith("invoke") ||
             owner == "java/lang/invoke/VarHandle" && Regex("^(set|compareAnd|weakCompare|getAnd)").containsMatchIn(name) ||
@@ -126,7 +115,6 @@ private fun calledOn(owner: String, name: String, opcode: Int): Sink? {
     }
 }
 
-/** What constructing [type] does to the player's input, or null when it does nothing to it. */
 private fun built(type: String): Sink? = when {
     type.startsWith("net/minecraft/network/protocol/") && type.substringAfterLast('/').startsWith("Serverbound") ->
         Sink("builds the packet ${type.substringAfterLast('/')}")
@@ -134,10 +122,7 @@ private fun built(type: String): Sink? = when {
     else -> null
 }
 
-/**
- * Reads what instructions do to the player's input. A call is matched on its owner and on every class the owner
- * extends or implements, so a subclass such as `ToggleKeyMapping`, or one of the mod's own, is no way around it.
- */
+/** @keep A call is matched on its owner and on every class the owner extends or implements, so a subclass such as `ToggleKeyMapping`, or one of the mod's own, is no way around it. */
 private class Sinks(private val mod: Map<String, ClassNode>) {
     private val lineages = HashMap<String, List<String>>()
 
@@ -147,28 +132,23 @@ private class Sinks(private val mod: Map<String, ClassNode>) {
         listOf(owner) + supers.flatMap(::lineage)
     }
 
-    /** The mod class that declares [name] with [desc] for a call on [owner], or null when only Minecraft or Java does. */
     fun declaring(owner: String, name: String, desc: String) =
         lineage(owner).firstOrNull { o -> mod[o]?.methods?.any { it.name == name && it.desc == desc } == true }
 
-    // A call the mod's own code answers is scanned where that code is, and one it inherits is Minecraft's.
     fun called(owner: String, name: String, opcode: Int, desc: String? = null) =
         if (desc != null && declaring(owner, name, desc) != null) null
         else lineage(owner).firstNotNullOfOrNull { calledOn(it, name, opcode) }
 
-    /** A method handle runs its method, and a constructor's handle builds its class. */
     private fun handle(handle: Handle) = if (handle.name == "<init>") built(handle.owner) else called(handle.owner, handle.name, 0, handle.desc)
 
-    /** What [insn] does to the player's input, or null when it does nothing to it. */
     fun of(insn: AbstractInsnNode): Sink? = when (insn) {
         is MethodInsnNode -> called(insn.owner, insn.name, insn.opcode, insn.desc)
         is InvokeDynamicInsnNode -> insn.bsmArgs.filterIsInstance<Handle>().firstNotNullOfOrNull(::handle)
         is LdcInsnNode -> (insn.cst as? Handle)?.let(::handle)
         is TypeInsnNode -> if (insn.opcode == Opcodes.NEW) built(insn.desc) else null
         is FieldInsnNode -> when {
-            // `this$0` and its kind are the compiler's own fields on a nested class.
+            // @keep `this$0` and its kind are the compiler's own fields on a nested class.
             insn.opcode == Opcodes.PUTFIELD && !insn.name.contains('$') && called(insn.owner, "set", 0) != null -> Sink("writes ${insn.owner.substringAfterLast('/')}.${insn.name}")
-            // A Fabric event such as `UseItemCallback.EVENT` is a field.
             insn.opcode == Opcodes.GETSTATIC && insn.owner.startsWith("net/fabricmc/") -> called(insn.owner, insn.name, insn.opcode)
             else -> null
         }
@@ -176,10 +156,8 @@ private class Sinks(private val mod: Map<String, ClassNode>) {
     }
 }
 
-/** A method by its owner, name and descriptor, so an overload is a method of its own. */
 private data class MethodRef(val owner: String, val name: String, val desc: String)
 
-/** The mod methods [method] calls or takes a reference to, constructors included. */
 private fun targets(method: MethodNode) = method.instructions.asSequence().flatMap { insn ->
     when (insn) {
         is MethodInsnNode -> sequenceOf(MethodRef(insn.owner, insn.name, insn.desc))
@@ -191,21 +169,15 @@ private fun targets(method: MethodNode) = method.instructions.asSequence().flatM
 
 private fun display(internal: String) = internal.removePrefix(MOD).replace('/', '.').replace('$', '.')
 
-/** The method a Kotlin or Java lambda was written in, so a lambda's calls count as its enclosing method's, without a mixin's `dsmod$`. */
 private fun enclosing(method: String) = method.removePrefix("lambda$").removePrefix("dsmod$").substringBefore('$')
 
 private fun annotations(vararg lists: List<AnnotationNode>?) = lists.flatMap { it.orEmpty() }
 
-/** An annotation's [name] value, which ASM keeps as a flat list of name then value. */
 private fun AnnotationNode.value(name: String): Any? = values.orEmpty().chunked(2).firstOrNull { it[0] == name }?.get(1)
 
 private fun AnnotationNode.strings(name: String) = (value(name) as? List<*>).orEmpty().filterIsInstance<String>()
 
-/**
- * What a mixin hooks. It [draws] when every hook is in a method that draws, at no call or field the scan counts as
- * input, and every other method it adds is a helper of its own, since an unmarked method of a target's name replaces
- * the target's. Anything the scan cannot tell is hashed with its code, so a new kind of hook fails closed.
- */
+/** @keep A mixin [draws] when every hook is in a method that draws, at no call or field the scan counts as input, and every other method it adds is a helper of its own, since an unmarked method of a target's name replaces the target's. Anything the scan cannot tell is hashed with its code, so a new kind of hook fails closed. */
 private class Shape(val draws: Boolean, val readOnly: Boolean, val does: List<String>)
 
 private val DRAWING = Regex("^(render|extract|submit|draw)[A-Z]|^blit(Sprite)?$")
@@ -213,7 +185,7 @@ private val DRAWING = Regex("^(render|extract|submit|draw)[A-Z]|^blit(Sprite)?$"
 private fun shape(node: ClassNode, mixin: AnnotationNode, sinks: Sinks): Shape {
     val targets = (mixin.value("value") as? List<*>).orEmpty().filterIsInstance<Type>().map { it.internalName } + mixin.strings("targets").map { it.replace('.', '/') }
     val named = targets.map { it.substringAfterLast('/').replace('$', '.') }
-    // A hook on the player, or anything the scan counts as input, can write its fields through a shadow.
+    // @keep A hook on the player, or anything the scan counts as input, can write its fields through a shadow.
     var draws = targets.none { sinks.called(it, "set", 0) != null }
     var hooked = false
     var readOnly = true
@@ -226,10 +198,10 @@ private fun shape(node: ClassNode, mixin: AnnotationNode, sinks: Sinks): Shape {
             injector != null -> {
                 hooked = true
                 readOnly = false
-                // A method is named alone, as `name(desc)`, or as `Lowner;name(desc)`, and only the owner ends in a `;` before the `(`.
+                // @keep A hook names a method alone, as `name(desc)`, or as `Lowner;name(desc)`, and only the owner ends in a `;` before the `(`.
                 val hooks = injector.strings("method").map { it.substringBefore('(').substringAfter(';').substringBefore(':') }
                 val at = (injector.value("at") as? List<*>).orEmpty().filterIsInstance<AnnotationNode>().mapNotNull { it.value("target") as? String }
-                // An `at` names a call as `Lowner;name(desc)` or a field as `Lowner;name:type`.
+                // @keep An `at` names a call as `Lowner;name(desc)` or a field as `Lowner;name:type`.
                 val atInput = at.any { target ->
                     val owner = target.removePrefix("L").substringBefore(';')
                     val name = target.substringAfter(';').substringBefore('(').substringBefore(':')
@@ -258,14 +230,9 @@ private fun shape(node: ClassNode, mixin: AnnotationNode, sinks: Sinks): Shape {
     return Shape(draws && hooked, readOnly && reads && !hooked, does.distinct())
 }
 
-/**
- * Kotlin copies its debug data, which [ClassReader.SKIP_DEBUG] drops as attributes, into annotations too: the source
- * map, whose lines for an inlined call such as `DsModClient.runs` move with the file it is inlined from, and a
- * coroutine's lines and local names. Only debuggers and stack traces read them.
- */
+/** @keep Kotlin copies its debug data, which [ClassReader.SKIP_DEBUG] drops as attributes, into annotations too: the source map, whose lines for an inlined call such as `DsModClient.runs` move with the file it is inlined from, and a coroutine's lines and local names. */
 private val DEBUG_ANNOTATIONS = setOf("Lkotlin/jvm/internal/SourceDebugExtension;", "Lkotlin/coroutines/jvm/internal/DebugMetadata;")
 
-/** A class without its line numbers, local names, source file and source map, so moving a line keeps the audit. */
 private fun behavior(bytes: ByteArray) = ClassWriter(0).also { writer ->
     ClassReader(bytes).accept(object : ClassVisitor(Opcodes.ASM9, writer) {
         override fun visitAnnotation(descriptor: String, visible: Boolean) =
@@ -275,14 +242,12 @@ private fun behavior(bytes: ByteArray) = ClassWriter(0).also { writer ->
 
 private fun hash(digest: MessageDigest) = digest.digest().joinToString("") { "%02x".format(it) }.take(12)
 
-/** Every input site in [classes], the bytes of the compiled release classes, and in the access widener's [widener] lines. */
 fun inputSites(classes: List<ByteArray>, widener: List<String> = emptyList()): List<InputSite> {
     val nodes = classes.associate { bytes -> ClassNode().also { ClassReader(bytes).accept(it, ClassReader.SKIP_FRAMES) }.let { it.name to (it to bytes) } }
     val groups = nodes.values.groupBy { (node, _) -> node.name.substringBefore('$') }
     val sinks = Sinks(nodes.mapValues { it.value.first })
 
     val gates = mutableListOf<InputSite.Gate>()
-    // The gates that act for the player themselves, not only refuse or wait on a click, so their callers are audited too.
     val acting = mutableSetOf<String>()
     for ((group, members) in groups) {
         val classNodes = members.map { it.first }
@@ -290,7 +255,6 @@ fun inputSites(classes: List<ByteArray>, widener: List<String> = emptyList()): L
         val sunk = classNodes.flatMap { node -> node.methods.flatMap { method -> method.instructions.mapNotNull(sinks::of).map { it.does } } }
         if (mixins.isEmpty() && sunk.isEmpty()) continue
         val shape = mixins.map { (node, mixin) -> shape(node, mixin, sinks) }
-        // An accessor that returns a value only reads, so a mixin of nothing else cannot change what the player does.
         if (sunk.isEmpty() && shape.isNotEmpty() && shape.all { it.readOnly }) continue
         val draws = sunk.isEmpty() && shape.isNotEmpty() && shape.all { it.draws }
         val does = (shape.flatMap { it.does } + sunk).distinct().sorted()
@@ -300,15 +264,14 @@ fun inputSites(classes: List<ByteArray>, widener: List<String> = emptyList()): L
         val digest = MessageDigest.getInstance("SHA-256")
         members.sortedBy { it.first.name }.forEach { (_, bytes) -> digest.update(behavior(bytes)) }
         gates += InputSite.Gate(display(group), if (draws) DRAWS else hash(digest), does, features)
-        // A drawing mixin's code is not approved line by line, so a call it makes into a gate that acts is listed.
+        // @keep A drawing mixin's code is not approved line by line, so a call it makes into a gate that acts is listed.
         if (draws) continue
 
-        // Any method of an acting gate may reach its sends, through a field, a callback or a handle, so every call
-        // into one from outside counts. Following the paths inside the class would miss the next new way.
+        /** @keep Any method of an acting gate may reach its sends, through a field, a callback or a handle, so every call into one from outside counts. Following the paths inside the class would miss the next new way. */
         val acts = classNodes.any { node ->
             node.methods.any { method ->
                 method.instructions.any { sinks.of(it)?.acts == true } ||
-                    // An invoker runs a private Minecraft method, and an accessor that returns nothing writes a private field.
+                    // @keep An invoker runs a private Minecraft method, and an accessor that returns nothing writes a private field.
                     method.invisibleAnnotations.orEmpty().any { it.desc.endsWith("/Invoker;") } ||
                     method.invisibleAnnotations.orEmpty().any { it.desc.endsWith("/Accessor;") } && Type.getReturnType(method.desc) == Type.VOID_TYPE
             }
@@ -322,16 +285,13 @@ fun inputSites(classes: List<ByteArray>, widener: List<String> = emptyList()): L
             node.methods.flatMap { method ->
                 val from = "${display(group)}.${enclosing(method.name)}"
                 val called = targets(method).mapNotNull { ref ->
-                    // A call through a subclass reaches the method where it is declared.
                     val declaring = sinks.declaring(ref.owner, ref.name, ref.desc) ?: return@mapNotNull null
                     val target = nodes.getValue(declaring).first.methods.first { it.name == ref.name && it.desc == ref.desc }
-                    // Kotlin `private` is file-private and compiles to a nestmate call, so a class in the same file can
-                    // reach a private member. The caller is already outside the gate, so the member is listed either way.
+                    /** @keep Kotlin `private` is file-private and compiles to a nestmate call, so a class in the same file can reach a private member. The caller is already outside the gate, so the member is listed either way. */
                     if (declaring.substringBefore('$') !in acting) return@mapNotNull null
                     InputSite.Call(from, "${display(declaring)}.${ref.name}")
                 }.toList()
-                // A field of an acting gate can hold a callback that sends, so reading one is a call too. An object's
-                // `INSTANCE` counts only when the method calls nothing on it, as when it hands the object on.
+                /** @keep A field of an acting gate can hold a callback that sends, so reading one is a call too. An object's `INSTANCE` counts only when the method calls nothing on it, as when it hands the object on. */
                 val read = method.instructions.filterIsInstance<FieldInsnNode>().mapNotNull { insn ->
                     val gate = insn.owner.substringBefore('$')
                     val field = nodes[insn.owner]?.first?.fields?.firstOrNull { it.name == insn.name }
@@ -371,10 +331,8 @@ private fun String.unstamped() = lines().filterNot { it.startsWith(STAMP) }.join
 
 private fun String.stamp() = lines().firstOrNull { it.startsWith(STAMP) }
 
-/** How `-Papprove` names a site: a gate by its class, a call as `from->to`. */
 private val InputSite.id get() = key.substringAfter(' ').replace(" ", "")
 
-/** The sites `input-sites.txt` holds, keyed like [InputSite.key]. A merge can leave two blocks for one key. */
 private fun approved(text: String) = text.lines().filter { !it.startsWith("#") }.joinToString("\n")
     .split(Regex("\n(?=\\S)")).map { it.trim('\n') }.filter { it.isNotBlank() }
     .groupBy { block -> block.lineSequence().first().split(Regex("\\s+")).let { if (it[0] == "call") "call ${it[1]} -> ${it[3]}" else "${it[0]} ${it[1]}" } }
@@ -393,7 +351,7 @@ class InputSitesTest {
         val text = file.takeIf { it.exists() }?.readText().orEmpty()
         val approved = approved(text)
 
-        // The user's yes, recorded by `-Papprove=<site>,<site> -PapprovedBy=<login>`, binds to the site as it is now.
+        // @keep The user's yes, recorded by `-Papprove=<site>,<site> -PapprovedBy=<login>`, binds to the site as it is now.
         val approve = System.getProperty("inputSites.approve").orEmpty().split(',').map { it.trim() }.filter { it.isNotEmpty() }.toSet()
         val approver = System.getProperty("inputSites.approvedBy").orEmpty()
         val unknown = approve - found.map { it.id }.toSet()
@@ -408,7 +366,6 @@ class InputSitesTest {
         }
         if (text == written) return
 
-        // Written like a transcript: the run that changes the file fails once, so the list is read before it is kept.
         file.writeText(written)
         val changed = found.filter { site -> site.id !in approve && approved[site.key].orEmpty().none { it.unstamped() == site.block } }
         val gone = approved.keys - found.map { it.key }.toSet()
@@ -430,7 +387,6 @@ class InputSitesTest {
         )
     }
 
-    /** How [site] differs from the blocks the file held for it, so the agent can tell a refactor from a new effect. */
     private fun compared(site: InputSite, before: List<String>?): String {
         if (before == null) return "(new)" + site.block.lines().drop(1).joinToString("") { "\n$it" }
         val was = before.flatMap { it.unstamped().lines().drop(1) }.toSet()
@@ -443,10 +399,6 @@ class InputSitesTest {
 
     @Test
     fun `a gate's hash follows its code and not its lines`() {
-        /**
-         * A gate as Kotlin compiles it: [line] is where its call is, [inlined] the line of `DsModClient.runs` its source
-         * map points at, and the debug data that names both is written as attributes and as annotations.
-         */
         fun gate(line: Int, inlined: Int, push: Int = Opcodes.ICONST_0, send: String = "sendCommand"): String {
             val smap = "SMAP\nGate.kt\nKotlin\n*S Kotlin\n*F\n+ 1 Gate.kt\n${MOD}example/Gate\n+ 2 DsModClient.kt\n${MOD}edge/DsModClient\n*L\n" +
                 "1#1,40:1\n$inlined#2:41\n*S KotlinDebug\n*F\n+ 1 Gate.kt\n${MOD}example/Gate\n*L\n$line#1:41\n*E\n"
@@ -466,7 +418,6 @@ class InputSitesTest {
                     val end = LabelNode()
                     instructions.add(start)
                     instructions.add(LineNumberNode(line, start))
-                    // Kotlin marks an inlined call with a local named for the function.
                     instructions.add(InsnNode(push))
                     instructions.add(VarInsnNode(Opcodes.ISTORE, 0))
                     instructions.add(InsnNode(Opcodes.ACONST_NULL))
@@ -538,7 +489,7 @@ class InputSitesTest {
                 example("Use", run(FieldInsnNode(Opcodes.GETSTATIC, "net/fabricmc/fabric/api/event/player/UseItemCallback", "EVENT", "Lnet/fabricmc/fabric/api/event/Event;"), InsnNode(Opcodes.POP))),
                 example("Consume", run(call("net/minecraft/client/KeyMapping", "consumeClick"))),
                 example("Inventory", run(call("net/minecraft/client/player/LocalPlayer", "sendOpenInventory"))),
-                // ToggleKeyMapping extends KeyMapping, and the scan reads that from Minecraft's own class.
+                // @keep ToggleKeyMapping extends KeyMapping, and the scan reads that from Minecraft's own class.
                 example("Toggle", run(call("net/minecraft/client/ToggleKeyMapping", "setDown"))),
                 example("Reflect", run(call("java/lang/reflect/Method", "invoke"))),
                 example("Handle", run(call("java/lang/invoke/VarHandle", "set"))),
@@ -546,28 +497,23 @@ class InputSitesTest {
                 example("Caller", run(call("${MOD}example/Command", "run"))),
                 example("Clicker", run(call("${MOD}example/Link", "run"))),
                 example("Reader", run(call("net/minecraft/client/multiplayer/MultiPlayerGameMode", "getPlayerMode"))),
-                // A private overload of a sending method hides no caller of the public one.
                 example(
                     "Overload",
                     M("send", call("net/minecraft/client/multiplayer/ClientPacketListener", "sendCommand"), desc = "(Ljava/lang/String;)V"),
                     M("send", access = Opcodes.ACC_PRIVATE or Opcodes.ACC_STATIC),
                 ),
                 example("OverloadCaller", run(InsnNode(Opcodes.ACONST_NULL), call("${MOD}example/Overload", "send", "(Ljava/lang/String;)V"))),
-                // A private member of an acting gate, called from another class in the same file, is still a call site.
                 example("Sender", M("send", call("net/minecraft/client/multiplayer/ClientPacketListener", "sendCommand"), access = Opcodes.ACC_PRIVATE or Opcodes.ACC_STATIC)),
                 example("Trigger", M("go", call("${MOD}example/Sender", "send"), access = Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC)),
                 example("Held", run(call("net/minecraft/client/multiplayer/ClientPacketListener", "sendCommand")), privateFields = listOf("TASK")),
                 example("HeldReader", run(FieldInsnNode(Opcodes.GETSTATIC, "${MOD}example/Held", "TASK", "Ljava/lang/Runnable;"), InsnNode(Opcodes.POP))),
-                // A method that hands a callback of the gate's own to a scheduler sends when the callback does.
                 example("Later", M("schedule", *new("${MOD}example/Later\$1"))),
                 example("Later\$1", M("run", call("net/minecraft/client/multiplayer/ClientPacketListener", "sendCommand"), access = Opcodes.ACC_PUBLIC)),
                 example("LaterCaller", run(call("${MOD}example/Later", "schedule"))),
-                // A call through a subclass of a gate, or a click on a screen the mod inherits from Minecraft.
                 example("Derived", M("unused", access = Opcodes.ACC_PUBLIC), superName = "${MOD}example/Command"),
                 example("DerivedCaller", run(call("${MOD}example/Derived", "run"))),
                 example("Menu", M("unused", access = Opcodes.ACC_PUBLIC), superName = "net/minecraft/client/gui/screens/inventory/InventoryScreen"),
                 example("MenuClicker", run(MethodInsnNode(Opcodes.INVOKEVIRTUAL, "${MOD}example/Menu", "mouseClicked", "(Lnet/minecraft/client/input/MouseButtonEvent;Z)Z"))),
-                // A container screen of the mod's own that forwards its close to Minecraft's.
                 example(
                     "Closing",
                     M("onClose", VarInsnNode(Opcodes.ALOAD, 0),
@@ -575,19 +521,14 @@ class InputSitesTest {
                     superName = "net/minecraft/client/gui/screens/inventory/InventoryScreen",
                 ),
                 example("CloseCaller", run(InsnNode(Opcodes.ACONST_NULL), MethodInsnNode(Opcodes.INVOKEVIRTUAL, "${MOD}example/Closing", "onClose", "()V"))),
-                // A callback kept in a gate's field, run by a class outside the gates.
                 example("Callbacks", run(call("net/minecraft/client/multiplayer/ClientPacketListener", "sendCommand")), fields = listOf("COMMAND")),
                 example("CallbackCaller", run(FieldInsnNode(Opcodes.GETSTATIC, "${MOD}example/Callbacks", "COMMAND", "Ljava/lang/Runnable;"), InsnNode(Opcodes.POP))),
-                // A gate names the features it asks, so a reader sees whose it is.
                 example("Asks", run(LdcInsnNode(Type.getObjectType("${MOD}core/feature/general/Fullbright")), InsnNode(Opcodes.POP), call("net/minecraft/client/KeyMapping", "consumeClick"))),
-                // A mixin that only hooks drawing is approved by its hooks, and a call it makes into a gate is listed.
                 example("Draws", hook("dsmod\$hand", "extractHand", call("${MOD}example/Command", "run")), mixin = "net/minecraft/client/renderer/ItemInHandRenderer"),
-                // A drawing method's hook at a send, a hook on input, a hook on the player, or a method that may replace the target's.
                 example("DrawsAtSend", hook("dsmod\$hand", "extractHand", at = "Lnet/minecraft/client/multiplayer/ClientPacketListener;sendCommand(Ljava/lang/String;)V"), mixin = "net/minecraft/client/renderer/ItemInHandRenderer"),
                 example("HooksKeys", hook("dsmod\$key", "keyPress"), mixin = "net/minecraft/client/KeyboardHandler"),
                 example("HooksPlayer", hook("dsmod\$hand", "extractHand"), mixin = "net/minecraft/client/player/LocalPlayer"),
                 example("Replaces", hook("dsmod\$hand", "extractHand"), M("mouseClicked", access = Opcodes.ACC_PUBLIC), mixin = "net/minecraft/client/gui/screens/Screen"),
-                // An accessor that returns a value only reads, and one that returns nothing writes.
                 example("Reads", M("getMenu", InsnNode(Opcodes.ACONST_NULL), desc = "()Ljava/lang/Object;", access = Opcodes.ACC_PUBLIC, marks = listOf(annotation(ACCESSOR))), mixin = "net/minecraft/client/gui/screens/Screen"),
                 example("Writes", M("setMenu", desc = "(Ljava/lang/Object;)V", access = Opcodes.ACC_PUBLIC, marks = listOf(annotation(ACCESSOR))), mixin = "net/minecraft/client/gui/screens/Screen"),
             ),

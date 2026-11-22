@@ -6,7 +6,7 @@ import type { Services } from "../app.ts";
 import catalog from "./fixtures/catalog.json" with { type: "json" };
 import player from "./fixtures/player.json" with { type: "json" };
 import REAL_PATHS from "./fixtures/real-paths.json" with { type: "json" };
-import { CATALOG_FRESH_MS, CATALOG_RETRY_MS, FRESH_MS } from "./cache.ts";
+import { CATALOG_FRESH_MS, CATALOG_RETRY_MS, FRESH_MS, MISSING_SECONDS } from "./cache.ts";
 import { Container, Profile } from "./model.ts";
 import { layoutsOf } from "./layout.ts";
 import { unmappedPaths } from "./wire.ts";
@@ -22,7 +22,6 @@ const ann = (overrides: Partial<Services>) => {
   return { get: (path: string) => call("ann", "GET", path) };
 };
 
-/** dragsim.co as the fixtures say it is, counting what it was asked, and failing on demand. */
 function backend() {
   const asked: string[] = [];
   const state: { player: Answer; catalog: Answer } = {
@@ -38,11 +37,9 @@ function backend() {
       },
     },
   });
-  /** A profile as the contract says it is, so an answer that drifts from it fails here. */
   const profile = async (path = "/v1/players/Testwyrm/profile") =>
     Schema.decodeUnknownSync(Profile)((await get(path)).value);
   const container = async (path: string) => Schema.decodeUnknownSync(Container)((await get(path)).value);
-  /** The status and the `_tag` of a failure, which is how a client tells the 404s apart. */
   const failure = async (path: string) => {
     const { status, value } = await get(path);
     const tag: unknown = Reflect.get(Object(value), "_tag");
@@ -87,7 +84,7 @@ test("a profile is the player's, with levels worked out from the catalog", async
   ]);
 
   const skills = Object.fromEntries(value.skills.map((skill) => [skill.id, skill]));
-  // 175 XP is exactly the cumulative XP of combat level 2, so level 2 has just begun.
+  // @keep 175 XP is exactly the cumulative XP of combat level 2, so level 2 has just begun.
   expect(skills["combat"]).toMatchObject({
     name: "Combat",
     level: 2,
@@ -97,7 +94,6 @@ test("a profile is the player's, with levels worked out from the catalog", async
   });
   expect(skills["mining"]).toMatchObject({ level: 0, xpIntoLevel: 49, xpForNextLevel: 50 });
   expect(skills["catacombs"]).toMatchObject({ maxLevel: 50, level: 50, xpForNextLevel: null });
-  // A skill the catalog has no table for uses the default one, and still shows.
   expect(skills["dragon_slaying"]).toMatchObject({ name: "Dragon Slaying", level: 1, maxLevel: 100 });
   expect(skills["taming"]).toMatchObject({ level: 100, xpForNextLevel: null });
 });
@@ -143,7 +139,6 @@ test("stats are formatted as the game shows them, and the top kills are the ten 
   expect(value.topKills).toHaveLength(10);
   expect(value.topKills[0]).toEqual({ id: "NEST_ZEALOT", name: "Nest Zealot", kills: 368742 });
   expect(kills).toEqual(kills.toSorted((a, b) => b - a));
-  // A mob with no kills is not a top kill, and `_MOB` is the id's, not the name's.
   expect(value.topKills.map((kill) => kill.id)).not.toContain("VOIDGLOOM_SERAPH_MOB");
   expect(value.topKills.map((kill) => kill.name)).not.toContain("Revenant Horror Mob");
 });
@@ -162,7 +157,6 @@ test("the containers are listed as the game lays them out", async () => {
     ["pets", 9, 9],
   ]);
   expect(value.containers.every((box) => !box.hidden)).toBe(true);
-  // Armor is inventory keys 41 to 44, and the held item is the first hotbar slot. How each is drawn is the renderer's test.
   const { helmet, chestplate, leggings, boots, held } = value.equipment;
   expect([helmet, chestplate, leggings, boots, held].map((item) => item?.entry)).toEqual([
     "maxor_helmet",
@@ -187,7 +181,6 @@ test("a hidden profile lists its containers with no items, and no equipment", as
   state.player = { status: 200, body: { ...player, profile: { ...player.profile, inventory_hidden: true } } };
   const value = await profile();
   expect(value.equipment).toEqual({ helmet: null, chestplate: null, leggings: null, boots: null, held: null });
-  // Which wardrobe slot is worn is not an item, so hiding the items keeps it.
   expect(value.equippedWardrobeSlot).toBe(2);
   expect(value.containers.length).toBeGreaterThan(5);
   expect(value.containers.filter((box) => box.id !== "pets").every((box) => box.hidden && box.slots === 0)).toBe(true);
@@ -224,7 +217,7 @@ test("a hidden player's items are kept nowhere", async () => {
 });
 
 test("a copy the store refuses costs the lookup nothing, and the name is written once", async () => {
-  // KV takes one write per key a second. This store refuses every write to a key it already holds.
+  // @keep KV takes one write per key a second. This store refuses every write to a key it already holds.
   const store = memoryProfileStore();
   const written: string[] = [];
   const { get } = ann({
@@ -242,10 +235,8 @@ test("a copy the store refuses costs the lookup nothing, and the name is written
       get: (path) => Effect.succeed({ status: 200, body: path.startsWith("/data/catalog") ? catalog : player }),
     },
   });
-  // Another lookup of this profile wrote it a moment ago, so this one's copy is refused.
   written.push("profile:11111111-2222-4333-8444-555555555555:selected");
   expect((await get("/v1/players/Testwyrm/profile")).status).toBe(200);
-  // Picking the other profile at once fetches again, which must not write the name a second time.
   expect((await get(`/v1/players/Testwyrm/profile?profile=${OTHER_PROFILE}`)).status).toBe(200);
   expect(written.filter((key) => key.startsWith("name:"))).toHaveLength(1);
 });
@@ -290,7 +281,6 @@ test("a copy answers as stale when dragsim.co is down, however old", async () =>
 });
 
 test("a name outlives the first day, so a later copy still answers when dragsim.co is down", async () => {
-  // A store that forgets each value when its time is up, as KV does.
   const values = new Map<string, { value: unknown; until: number }>();
   const state: { player: Answer } = { player: { status: 200, body: player } };
   const { get } = ann({
@@ -317,14 +307,12 @@ test("a name outlives the first day, so a later copy still answers when dragsim.
     expect(response.status).toBe(200);
     expect(Schema.decodeUnknownSync(Profile)(response.value)).toMatchObject({ stale: true, fetchedAt });
   };
-  // A refresh late in the day renews the name.
   expect((await lookUp()).status).toBe(200);
   await advance(clock, 23 * hour);
   expect((await lookUp()).status).toBe(200);
   state.player = "down";
   await advance(clock, 2 * hour);
   await stale("2026-11-16T11:00:00.000Z");
-  // A refresh too soon after the name was written does not renew it, and the name still outlives that copy.
   state.player = { status: 200, body: player };
   await advance(clock, 2 * hour);
   expect((await lookUp()).status).toBe(200);
@@ -378,6 +366,9 @@ test("a name dragsim.co does not know is remembered for a minute", async () => {
   expect(await failure("/v1/players/Nobody/profile")).toEqual({ status: 404, tag: "PlayerNotFound" });
   expect((await failure("/v1/players/nobody/profile")).status).toBe(404);
   expect(playerCalls()).toBe(1);
+  await advance(clock, MISSING_SECONDS * 1000);
+  expect((await failure("/v1/players/Nobody/profile")).status).toBe(404);
+  expect(playerCalls()).toBe(2);
 });
 
 test("a name that was known and is now missing stops reaching dragsim.co", async () => {
@@ -439,7 +430,6 @@ test("a snapshot that is gone, a container that is not there and a bad id are to
     status: 410,
     tag: "SnapshotExpired",
   });
-  // An id that is not one this backend makes never reaches the store.
   expect((await failure("/v1/snapshots/profile:x:selected/containers/inventory")).tag).toBe("SnapshotExpired");
   expect((await failure("/v1/snapshots/catalog/containers/inventory")).tag).toBe("SnapshotExpired");
 });
@@ -452,18 +442,10 @@ test("a profile answer is quick once cached", async () => {
   for (let call = 0; call < calls; call++) {
     await get("/v1/players/Testwyrm/profile");
   }
-  // About 5 ms with a real player's profile, 18 pets included. The bound only catches a cache that stopped working, such as a 2 MB
-  // catalog parse per call.
+  // @keep About 5 ms with a real player's profile, 18 pets included. The bound only catches a cache that stopped working.
   expect((performance.now() - start) / calls).toBeLessThan(25);
 });
 
-/** The keys of the real player the first agent sampled, with no values. A key added upstream must be mapped. */
-/**
- * Every field path of a real player's answer, with no values: `*` stands for any key of an open map, and `[]` for a
- * list's element. A skeleton is built from them, so a field the real data has and the shape misses fails here.
- */
-
-/** A value with every path, `1` at each leaf. An empty map in one item is a leaf here and fuller elsewhere, and the fuller wins. */
 const build = (paths: readonly (readonly string[])[]): unknown => {
   const deeper = paths.filter((parts) => parts.length > 0);
   if (deeper.length === 0) {
@@ -578,7 +560,6 @@ test("the profile's own numbers, save time and worn wardrobe slot come through",
   expect(value.playerStats.base).toEqual([
     { id: "intelligence", name: "Intelligence", color: "#55FFFF", value: 300 },
     { id: "health", name: "Health", color: "#FF5555", value: 600 },
-    // A stat the catalog does not know is named from its id, in gray, and sorts last.
     { id: "mystery", name: "Mystery", color: "#AAAAAA", value: 1 },
   ]);
   expect(value.playerStats.additive.map((stat) => stat.value)).toEqual([15]);
@@ -814,7 +795,6 @@ test("an item with no place is never dropped, and its container is listed only t
   ]);
   expect(await entries("wardrobe:other")).toEqual(["off"]);
   expect(await entries("accessories:other")).toEqual(["bag"]);
-  // The hotbar keeps its order, and armor still dresses the model.
   expect((await entries("inventory")).slice(-3)).toEqual(["scylla", "crypt_cache_item", "glacial_scythe"]);
   expect(value.equipment.helmet?.entry).toBe("maxor_helmet");
 });
@@ -826,7 +806,6 @@ test("a slot key past a container's grid stays beside it and does not grow the g
     layoutsOf({
       ender_chest: { "100000": stray },
       storage: { "0": { "100000": stray } },
-      // Key 40 is inside the bag the captures reached. A key far past that is not a slot.
       accessory_bag: { "40": talisman, "100000": stray },
     }).map((layout) => [layout.id, layout]),
   );
@@ -861,7 +840,6 @@ test("one skill, slayer, or bestiary value that is not a finite number is skippe
   expect(skills["enchanting"]).toBeUndefined();
   expect(skills["taming"]).toMatchObject({ level: 100 });
   expect(value.slayers.find((slayer) => slayer.id === "zombie")).toMatchObject({ level: 9, totalXp: 17642500 });
-  // The xp entry is skipped, so the slayer is not listed. A bad level does not drop the xp beside it.
   expect(value.slayers.find((slayer) => slayer.id === "spider")).toBeUndefined();
   expect(value.slayers.find((slayer) => slayer.id === "enderman")).toMatchObject({ level: 0, totalXp: 60444500 });
   expect(value.bestiary.find((mob) => mob.id === "NEST_ZEALOT")).toBeUndefined();

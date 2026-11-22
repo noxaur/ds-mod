@@ -11,51 +11,36 @@ export interface SubmissionRow {
   readonly createdAt: string;
 }
 
-/**
- * The rows and files contributions keep. A check that two requests could race past lives here, in one statement the
- * database runs alone, and every other rule lives in `contrib.ts`.
- */
 export class Store extends Context.Service<
   Store,
   {
     readonly insertRequest: (request: RecordingRequest) => Effect.Effect<void>;
     readonly requests: Effect.Effect<readonly RecordingRequest[]>;
     readonly request: (id: string) => Effect.Effect<RecordingRequest | null>;
-    /** Marks an open request filled. A closed one stays closed. */
     readonly fill: (id: string) => Effect.Effect<void>;
     readonly close: (id: string) => Effect.Effect<void>;
-    /** Does nothing when the player already skipped it. */
     readonly insertSkip: (requestId: string, userId: string) => Effect.Effect<void>;
     readonly skips: Effect.Effect<readonly { readonly requestId: string; readonly userId: string }[]>;
-    /** The ids of the requests a player skipped or recorded. */
     readonly doneBy: (userId: string) => Effect.Effect<readonly string[]>;
-    /**
-     * False, and nothing is kept, when this player already has a run or the request already has `maxRuns`.
-     * The cap is decided in the same step as the insert, so two players at once cannot both pass it.
-     */
+    /** @keep False, and nothing is kept, when this player already has a run or the request has `maxRuns`. Decided in
+     * the insert, so two players at once cannot both pass. */
     readonly insertSubmission: (row: SubmissionRow, capture: Uint8Array, maxRuns: number) => Effect.Effect<boolean>;
-    /** Oldest first, in the same order every time, because a run's letter is its place in this list. */
+    /** @keep Oldest first, in the same order every time, because a run's letter is its place in this list. */
     readonly submissions: Effect.Effect<readonly SubmissionRow[]>;
     readonly submissionsOf: (requestId: string) => Effect.Effect<readonly SubmissionRow[]>;
     readonly capture: (submissionId: string) => Effect.Effect<Uint8Array | null>;
-    /**
-     * Adds one to the count of a sighting that is already known, and keeps its first sample. A new one is kept only
-     * while fewer than [maxRows] are.
-     */
+    /** @keep Counts a known sighting and keeps its first sample. A new one is kept only while fewer than `maxRows` are. */
     readonly countUnknown: (unknown: Omit<Unknown, "count">, maxRows: number) => Effect.Effect<void>;
     readonly unknowns: Effect.Effect<readonly Unknown[]>;
   }
 >()("dsmod/contrib/Store") {}
 
-/** Whether a new sighting may still be kept, given how many rows there are. */
 export const roomForUnknown = (rows: number, maxRows: number): boolean => rows < maxRows;
 
 const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
-/** The order `submissions` promises, so a run's letter never moves: by time, and by id when the time is the same. */
 const oldestFirst = (a: SubmissionRow, b: SubmissionRow) => compare(a.createdAt, b.createdAt) || compare(a.id, b.id);
 
-/** A store that forgets everything when the process ends, for the tests. */
 export const memoryStore = (): Store["Service"] => {
   const requests: RecordingRequest[] = [];
   const skips: { requestId: string; userId: string }[] = [];

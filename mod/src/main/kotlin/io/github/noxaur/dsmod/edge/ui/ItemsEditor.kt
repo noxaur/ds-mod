@@ -20,24 +20,11 @@ import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.network.chat.Component
 import org.lwjgl.glfw.GLFW
 
-/**
- * A list the player builds, edited where it sits in the settings, as `controls.md`'s list of things to edit says.
- * Each group is a heading that folds, with a switch for the group and a count, and each item a line of its cells,
- * such as a switch, a name, a command, keys and where they work. What does not fit a line opens under it from the
- * button at its end, with the line's actions. A line or a heading is dragged to move it, and a line dropped under
- * another heading joins that group. A right press opens a menu of what can be done to the line. Deletes ask for a
- * second press. Under the list are Add, Add Group, Import and Export, and a line that says what the picked line
- * lacks or what the last action did.
- *
- * Its rules are [Items]'s, so this lays out on change, draws what shows, and turns the mouse and the keys into them.
- */
 class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host) : Editor {
     private enum class Kind { HEADING, ITEM, EMPTY, DETAILS, FOOT, NOTHING }
 
-    /** What a press on a part of a line does. */
     private enum class Does { CELL, DETAILS, FOLD, GROUP, UP, DOWN, DUPLICATE, DELETE, EXPORT, NAME, ADD, ADD_GROUP, IMPORT }
 
-    /** A line of the list, in content coordinates. [entry] is the list's line it belongs to, which a details strip shares. */
     private class Line(val kind: Kind, val entry: Entry?, val y: Int, val height: Int) {
         val hits = ArrayList<Hit>()
         var text: Component = Component.empty()
@@ -48,9 +35,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         val held: Entry get() = checkNotNull(entry) { "a $kind line holds an entry" }
     }
 
-    /** A control on a line: where it sits, what a press does, and what it shows, which [refresh] fills in. */
     private class Hit(val line: Line, val x: Int, val dy: Int, val width: Int, val height: Int, val does: Does, val cell: Int = -1, val caption: String = "") {
-        /** The name drawn before or after the control, in the muted role, since it sits on the list's well. */
         var name: Component? = null
         var label = ""
         var text: Component = Component.empty()
@@ -71,23 +56,19 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     private var status = emptyList<Component>()
     private var statusY = 0
 
-    /** The list's line the keys or the last press are on, of which kind, whether the keys are inside the list, and on which control. */
     private var picked: Entry? = null
     private var pickedKind = Kind.NOTHING
 
-    /** The group Export means once the keys or the mouse have moved onto the foot, which has no group of its own. */
     private var footGroup: String? = null
     private var inside = false
     private var cursor = 0
     private var shownFocus = false
 
-    /** The one line whose details are open, and the line whose Delete asks for its second press. */
     private var details: Entry? = null
     private var armed: Entry? = null
     private var said: String? = null
     private var saidBad = false
 
-    /** The open field, and the line and control it belongs to, so a layout finds it again. */
     private var field: KitTextField? = null
     private var fieldHit: Hit? = null
     private var fieldEntry: Entry? = null
@@ -97,10 +78,8 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     private var recordHit: Hit? = null
     private var menu: KitMenu? = null
 
-    /** A line pressed and maybe being dragged: where the press was, whether it moved, and the list before, for Escape. */
     private var dragged: Entry? = null
 
-    /** The entry the drag started on, so cancelling it puts the selection back there. */
     private var draggedFrom: Entry? = null
     private var pressY = 0.0
     private var moved = false
@@ -142,7 +121,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         if (pickedKind != Kind.FOOT && pickedKind != Kind.NOTHING && lines.none { it.entry == picked && it.kind == pickedKind }) {
             pick(lines.firstOrNull { it.kind == Kind.HEADING || it.kind == Kind.ITEM }, keepCursor = false)
         }
-        // An open field stays open across a layout, on the control it was opened on, as a group's name does while it is typed.
         if (field != null) {
             fieldHit = lines.firstOrNull { it.entry == fieldEntry && it.kind == fieldKind }?.hits?.getOrNull(fieldIndex)
             val hit = fieldHit
@@ -169,7 +147,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         val end = right() - SETTINGS - Kit.GAP
         val rest = cells.withIndex().drop(if (first != null) 1 else 0)
         val fixed = rest.sumOf { (_, cell) -> widthOf(cell) } + Kit.GAP * (rest.size - 1)
-        // On a narrow pane the cells of a set width give up room, so the one that grows keeps enough to read.
         val room = end - start
         val shrink = if (room - fixed >= MIN_GROW) 1f else (room - MIN_GROW - Kit.GAP * (rest.size - 1)).toFloat() / (fixed - Kit.GAP * (rest.size - 1))
         val grow = room - rest.sumOf { (_, cell) -> (widthOf(cell) * shrink).toInt() } - Kit.GAP * (rest.size - 1)
@@ -193,7 +170,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         is Cell.Count -> COUNT
     }
 
-    /** The strip under a line: an item's other cells and its actions, or a group's name and its actions. */
     private fun details(entry: Entry, y: Int): Line {
         val placed = ArrayList<Triple<Int, Int, (Line, Int, Int) -> Hit>>()
         val start = x + if (entry is Entry.Item) ITEM_SWITCH else HEADING_SWITCH
@@ -224,7 +200,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
             val w = minOf(NAME_FIELD, end - start - label)
             put(label + w) { l, hx, dy -> Hit(l, hx + label, dy + 1, w, Kit.BUTTON_HEIGHT, Does.NAME, caption = NAME) }
         }
-        // The actions sit together at the end of the last row.
         val named = entry is Entry.Item || entry is Entry.Heading && entry.group.isNotEmpty()
         val actions = buildList {
             if (named) {
@@ -270,7 +245,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
 
     private fun buttonWidth(label: String) = font.width(label) + 16
 
-    /** Reads the list again into what each line shows. Call it after a change, never per frame. */
     override fun refresh() {
         tip = null
         val value = list
@@ -350,7 +324,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         null -> ""
     }
 
-    /** What the line under the list says, and whether it is bad: what the last action did, what stops the picked line, or nothing. */
     private fun statusText(value: Grouped<T>, clashing: BooleanArray): Pair<String, Boolean> {
         when (val gone = armed) {
             is Entry.Item -> return "Press Delete again to delete this ${type.noun}." to false
@@ -385,14 +358,12 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
             !type.on(item) -> "Off. Turn on its switch to use it."
             clash != null -> "$names also fires ${type.title(clash)}."
             game != null -> "$names is also the game's $game key."
-            // A line that works needs no words: its cells already say what it does.
             else -> ""
         }
     }
 
     override fun view(origin: Int, clipTop: Int, clipBottom: Int, screenWidth: Int, screenHeight: Int) {
         if (origin != this.origin) {
-            // A field, a key button or a menu belongs where it was opened, so a scroll closes it.
             closeField()
             finishRecording()
             menu = null
@@ -423,10 +394,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         return null
     }
 
-    /**
-     * Where a control of line [line] is on the screen, as x, y, width and height, so a test can press it: the line
-     * itself for a null [control], or the control named [control], such as "Command", "Settings" or "Delete".
-     */
     fun spot(line: Int, control: String? = null): IntArray? {
         val at = lines.getOrNull(line) ?: return null
         if (control == null) return intArrayOf(x, origin + at.y, width, at.height)
@@ -434,13 +401,10 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         return intArrayOf(hit.x, origin + hit.y, hit.width, hit.height)
     }
 
-    /** How many lines the list shows, details and the foot included. */
     val size get() = lines.size
 
-    /** The line of item [index], or of its details when [details], or -1 when it does not show. */
     fun lineOf(index: Int, details: Boolean = false) = indexOf(Entry.Item(index), details)
 
-    /** The line of [group]'s heading, or of its details when [details]. */
     fun headingOf(group: String, details: Boolean = false) = indexOf(Entry.Heading(group), details)
 
     private fun indexOf(entry: Entry, details: Boolean) = lines.indexOfFirst { it.entry == entry && (it.kind == Kind.DETAILS) == details }
@@ -460,7 +424,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         val overHit = over?.let { hitAt(it, mx, my) }
         val focusLine = if (keys && inside && shownFocus) pickedLine() else null
         val holding = dragged != null && moved
-        // Index loops, so a frame makes no iterators.
+        // @keep Index loops, so a frame makes no iterators.
         for (l in lines.indices) {
             val line = lines[l]
             val y = origin + line.y
@@ -506,8 +470,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         return if (overHit?.does == Does.CELL && cellAt(overHit.cell) is Cell.Keys && overHit.clash != null && index >= 0) clashTip(index) else null
     }
 
-    /** Names the other use of a ringed key, as vanilla's controls name a clash. */
-    /** The clash tip last made, and the item it is for, kept until a refresh so the screen's hover delay runs out. */
     private var tip: SettingRows.Tip? = null
     private var tipIndex = -1
 
@@ -599,11 +561,9 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         val my = event.y
         menu?.let {
             if (it.takesPress(event, doubleClick)) return true
-            // A press outside closes the menu and still does its own job.
             menu = null
         }
         field?.let {
-            // A field scrolled out of the pane, such as under the tab bar, takes no press.
             if (isOver(mx, my) && it.takesPress(event, doubleClick)) return true
             closeField()
         }
@@ -621,7 +581,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         if (event.button() == 1) {
             val cell = hit?.takeIf { it.does == Does.CELL }?.let { cellAt(it.cell) }
             when {
-                // A right press clears keys and steps a cycle back, as on any row. Elsewhere it opens the line's menu.
                 cell is Cell.Keys -> change { set(hit, cell.set(itemAt(hit), emptyList())) }
                 cell is Cell.Pick<T, *> -> stepPick(hit, if (Keys.shift(event)) 1 else -1)
                 line.kind == Kind.ITEM || line.kind == Kind.HEADING || line.kind == Kind.EMPTY -> openMenu(line, mx.toInt(), my.toInt())
@@ -637,7 +596,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         when (line.kind) {
             Kind.HEADING -> {
                 val group = (line.entry as Entry.Heading).group
-                // A double press anywhere on the heading folds and unfolds it, as the arrow does.
                 if (doubleClick) return true.also { fold(group, group !in list.folded) }
                 if (group.isNotEmpty()) startDrag(line.entry, my)
             }
@@ -661,7 +619,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         if (!moved) {
             if (Math.abs(event.y - pressY) < DRAG_START) return true
             moved = true
-            // Every line is one height while a drag moves them, so the line under the mouse is found by its place.
             if (details != null) {
                 details = null
                 host.relayout()
@@ -669,7 +626,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         }
         val listed = linesOf(Kind.HEADING, Kind.ITEM, Kind.EMPTY)
         val first = listed.firstOrNull() ?: return true
-        // Past the pane's edge the line stays at the end of the list, and the pane follows it.
         val to = Math.floorDiv((event.y - (origin + first.y)).toInt(), LINE).coerceIn(0, listed.lastIndex)
         if (to == items.entries().indexOf(entry)) return true
         when (entry) {
@@ -713,7 +669,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         }
     }
 
-    /** What a press on [hit] does, or Enter and Space on it. A press on a count steps by the side it lands on, and a key steps up. */
     private fun press(hit: Hit, shift: Boolean, mouseX: Double? = null) {
         val entry = hit.line.entry
         when (hit.does) {
@@ -758,7 +713,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         change { set(hit, cell.step(itemAt(hit), by)) }
     }
 
-    /** A change to the values: every line and row reads them again. */
     private inline fun change(block: () -> Unit) {
         block()
         said = null
@@ -766,7 +720,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         host.changed()
     }
 
-    /** A change to what the list holds: it lays out again, then the keys' line comes into view. */
     private inline fun restructure(block: () -> Unit) {
         block()
         host.relayout()
@@ -775,7 +728,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     }
 
     private fun pick(line: Line?, keepCursor: Boolean) {
-        // The foot line has no entry of its own. Export still means the group that was picked before it.
         if (line?.kind == Kind.FOOT) {
             if (pickedKind != Kind.FOOT) footGroup = group(picked)
         } else {
@@ -797,7 +749,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     }
 
     private fun fold(group: String, folded: Boolean) {
-        // An item folded away cannot stay picked, so its group is picked instead.
         val p = picked
         if (folded && p is Entry.Item && group(p) == group) pickEntry(Entry.Heading(group))
         if (folded && details is Entry.Item && group(details) == group) details = null
@@ -827,7 +778,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     private fun delete(entry: Entry) {
         if (entry is Entry.Heading && entry.group.isEmpty() || entry is Entry.Empty) return
         if (armed != entry) {
-            // The first press rings Delete, which the details hold, so they open to show it.
             armed = entry
             said = null
             if (details != entry) {
@@ -872,7 +822,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
             at = items.add(group)
             pickEntry(Entry.Item(at))
         }
-        // A new one wants its command first.
         val line = pickedLine() ?: return
         val command = line.hits.lastOrNull { it.does == Does.CELL && cellAt(it.cell) is Cell.Text } ?: return
         cursor = line.hits.indexOf(command)
@@ -890,7 +839,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         rename(name)
     }
 
-    /** Opens the group's details with its name selected, to type over. */
     private fun rename(group: String) {
         if (details != Entry.Heading(group)) {
             details = Entry.Heading(group)
@@ -901,7 +849,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         field?.setHighlightPos(0)
     }
 
-    /** The group Export copies. On the foot it is the group picked before the foot, which [pick] remembers. */
     private fun exportGroup(hit: Hit): String =
         if (hit.line.kind == Kind.FOOT) footGroup ?: group(picked) else group(hit.line.entry ?: picked)
 
@@ -956,7 +903,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         refresh()
     }
 
-    /** Move Up and Move Down, where each would move the line. */
     private fun moveItems(menuItems: MutableList<Pair<String, () -> Unit>>, entry: Entry) {
         if (items.canNudge(entry, -1)) menuItems += "Move Up" to { nudge(entry, -1) }
         if (items.canNudge(entry, 1)) menuItems += "Move Down" to { nudge(entry, 1) }
@@ -979,7 +925,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         refresh()
     }
 
-    /** What is typed applies at once, as everything in the settings does. A group takes a new name once no other has it. */
     private fun typedInto(typed: String) {
         val hit = fieldHit ?: return
         if (hit.does == Does.NAME) {
@@ -1009,7 +954,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         val open = field ?: return
         field = null
         fieldHit = null
-        // A group's name that could not be taken goes back to the one it kept.
         if (saidBad) said = null
         open.setFocused(false)
         refresh()
@@ -1060,7 +1004,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
             return true
         }
         if (dragged != null && moved) {
-            // Escape during a drag puts the list back, and the drag keeps every other key until it ends.
             if (event.isEscape) {
                 val home = draggedFrom
                 before?.let { items.value = it }
@@ -1107,13 +1050,11 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         return true
     }
 
-    /** Moves the keys a line, past the lines that hold nothing to press, and out of the list at either end. */
     private fun step(by: Int): Boolean {
         val stops = linesOf(Kind.HEADING, Kind.ITEM, Kind.DETAILS, Kind.FOOT)
         val at = stops.indexOfFirst { it.entry == picked && it.kind == pickedKind }
         val next = at + by
         if (at < 0 || next !in stops.indices) {
-            // Up from the first line gives the keys back to the row's name, and Down from the last goes on to the next row.
             inside = false
             refresh()
             return by < 0 && at >= 0
@@ -1121,7 +1062,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         val line = stops[next]
         val column = pickedLine()?.hits?.getOrNull(cursor)?.x
         pick(line, keepCursor = true)
-        // The keys keep to the control nearest the one they were on, as a grid's do.
         cursor = if (column == null || line.hits.isEmpty()) 0 else line.hits.indices.minBy { Math.abs(line.hits[it].x - column) }
         reveal(line)
         refresh()
@@ -1138,7 +1078,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         refresh()
     }
 
-    /** Tab in a field goes on to the next field of the line, and Shift with it back. */
     private fun nextField(by: Int) {
         val hit = fieldHit ?: return
         val fields = hit.line.hits.filter { it.does == Does.CELL && cellAt(it.cell) is Cell.Text }
@@ -1199,7 +1138,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         return true
     }
 
-    /** A control as the narrator says it: its name, its kind and its value. */
     private fun spoken(hit: Hit): String = when (hit.does) {
         Does.CELL -> when (val cell = cellAt(hit.cell)) {
             is Cell.Check -> Narration.join(cell.name, "switch", if (hit.on) "on" else "off")
@@ -1235,7 +1173,6 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         const val DRAG_START = 2.0
         const val TIP = 170
 
-        /** A cell's place among the details, past the places of the line's own cells. */
         const val DETAIL = 100
     }
 }

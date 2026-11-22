@@ -8,7 +8,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Command Binds: every press and release of a mouse button, with a screen open or not, before the game acts on it. */
 @Mixin(MouseHandler.class)
 abstract class MouseInputMixin {
     @Inject(method = "onButton", at = @At("HEAD"))

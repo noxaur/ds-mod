@@ -7,13 +7,10 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.ChatScreen
 import org.lwjgl.glfw.GLFW
 
-/**
- * The ways into the settings besides `/dsmod`: the Settings Key opens them in the world and not from chat, and has no
- * key until the player picks one. `/dsm` is the short name, and words after either command search.
- */
 class SettingsKeyTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val settings = DsModClient.settings.general
+        val unclaimedKey = GLFW.GLFW_KEY_KP_ADD
         fun screen() = context.computeOnClient<String, Nothing> { it.gui.screen()?.javaClass?.simpleName ?: "none" }
         fun open() = screen() == "SettingsScreen"
         fun close() {
@@ -25,18 +22,16 @@ class SettingsKeyTest : FabricClientGameTest {
             try {
                 context.waitTicks(5)
                 check(settings.settingsKey == -1) { "The Settings Key starts on ${settings.settingsKey}" }
-                // A key the game leaves free, since O and the like are the game's own now.
-                settings.settingsKey = GLFW.GLFW_KEY_KP_ADD
-                context.input.pressKey(GLFW.GLFW_KEY_KP_ADD)
+                settings.settingsKey = unclaimedKey
+                context.input.pressKey(unclaimedKey)
                 context.waitTicks(3)
                 check(open()) { "The Settings Key opened ${screen()}" }
                 context.takeScreenshot("settings-key")
                 close()
 
-                // A key typed into chat is not a press.
                 context.runOnClient<Nothing> { it.gui.setScreen(ChatScreen("", false)) }
                 context.waitTicks(2)
-                context.input.pressKey(GLFW.GLFW_KEY_KP_ADD)
+                context.input.pressKey(unclaimedKey)
                 context.waitTicks(3)
                 check(screen() == "ChatScreen") { "The key typed into chat opened ${screen()}" }
                 close()

@@ -41,13 +41,20 @@ const ICONS: Readonly<Record<string, string>> = {
   vitality: "♨",
 };
 
-/** The stats a dungeon scales. The rest, such as speed and crit chance, are drawn the same in a dungeon. */
-const SCALED = new Set(["damage", "strength", "critical_damage", "health", "defense", "intelligence", "true_defense"]);
+const DUNGEON_SCALED = new Set([
+  "damage",
+  "strength",
+  "critical_damage",
+  "health",
+  "defense",
+  "intelligence",
+  "true_defense",
+]);
 const PERCENT = new Set(["critical_chance", "critical_damage", "attack_speed", "ability_damage"]);
 const ARMOR = new Set(["HELMET", "CHESTPLATE", "LEGGINGS", "BOOTS"]);
 const WEAPON = new Set(["SWORD", "BOW", "WAND", "AXE", "HOE", "SPADE"]);
 
-/** Whole numbers stay whole, and the rest keep up to two decimals, so `19.999999999999996` reads `20`. */
+// @keep Rounds to two decimals, so `19.999999999999996` reads `20`.
 export const num = (value: number): string => String(Math.round(value * 100) / 100);
 
 const grouped = (value: number): string => value.toLocaleString("en-US", { maximumFractionDigits: 2 });
@@ -56,7 +63,7 @@ const plain = (line: Line): string => line.map((span) => span.text).join("");
 
 const bar = (width: number): string => `\ue100\ue200${"\ue101\ue200".repeat(width)}\ue102\ue200`;
 
-/** The server's own marker before text of this width, which moves the cursor so the text sits inside its box. */
+// @keep The server's own marker before text of this width, which moves the cursor so the text sits inside its box.
 const gap = (base: number, width: number): string => String.fromCodePoint(base + Math.min(Math.max(width, 0), 255));
 
 const styleOf = ({ text: _text, ...style }: Span): Omit<Span, "text"> => style;
@@ -112,7 +119,7 @@ const statLine = (
     parts.push({ text: `(${signed(enrich)})`, color: PINK });
   }
   if (dungeon) {
-    const scale = SCALED.has(id) ? 1 + rules.dungeonBonus + item.stars * rules.starMultiplier : 1;
+    const scale = DUNGEON_SCALED.has(id) ? 1 + rules.dungeonBonus + item.stars * rules.starMultiplier : 1;
     parts.push({ text: `(${signed(total * scale)})`, color: DARK_GRAY });
   }
   const line: Span[] = [];
@@ -168,7 +175,6 @@ const abilityBody = (ability: Ability): Line[] => {
   return lines;
 };
 
-/** The header above an ability's text, laid out to the width `wide` of the widest line of the tooltip. */
 const abilityHeader = (ability: Ability, wide: number, worn: number): Line => {
   const header: Span[] = [];
   const triggered = ability.trigger !== "" && ability.trigger !== "PASSIVE" && ability.trigger !== "FULL SET BONUS";
@@ -229,7 +235,6 @@ const footer = (item: UpstreamItem, catalogItem: CatalogItem | undefined, dungeo
 const STAR = "✪";
 const MASTER_STARS = "➊➋➌➍➎";
 
-/** The name as the game shows it: the reforge in front, the item in its rarity's color, and the dungeon stars after. */
 export const name = (item: UpstreamItem, catalogItem: CatalogItem | undefined, fallback: string): Line => {
   const rarity = (item.rarity ?? catalogItem?.tier)?.toUpperCase() ?? "COMMON";
   const color = RARITY_COLORS[rarity] ?? WHITE;
@@ -269,7 +274,6 @@ const blocks = (sections: readonly (readonly Line[])[]): Line[] => {
   return lines;
 };
 
-/** The lines under the name: stats, what the reforge adds, the description, the abilities, and the rarity footer. */
 export const lore = (
   catalog: Catalog,
   item: UpstreamItem,

@@ -8,7 +8,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Hands the attack and use buttons to the recorder before the game acts on them. */
 @Mixin(Minecraft.class)
 abstract class CaptureInputMixin {
     @Inject(method = "startAttack", at = @At("HEAD"))

@@ -18,13 +18,8 @@ import kotlin.io.path.readText
 
 private const val WRAP = 44
 
-/**
- * What an agent asks the developer to record: [name] tells this client's window from another agent's,
- * and [steps] are done in order.
- */
 @Serializable
 data class Brief(val name: String, val steps: List<Step>) {
-    /** One thing to do. With [seconds] the step is timed and moves on by itself, and without it the developer says when it is done. */
     @Serializable
     data class Step(@SerialName("do") val action: String, val note: String? = null, val seconds: Int? = null)
 
@@ -35,24 +30,17 @@ data class Brief(val name: String, val steps: List<Step>) {
     }
 
     companion object {
-        /** Reads a brief, and fails on a key it does not know, so a typo is not a step that silently lost its timer. */
         fun read(file: Path): Brief = Json.decodeFromString(serializer(), file.readText())
     }
 }
 
-/**
- * One pass through a [brief]. It waits before the first step until the player starts it. With a [timeoutSeconds],
- * the pass is [timedOut] that long after [openedAt], whether or not it has started.
- */
 class BriefRun(val brief: Brief, private val openedAt: Long = 0, private val timeoutSeconds: Int? = null) {
-    /** The index of the step being done: -1 before the first, and the number of steps after the last. */
     var current = -1
         private set
     private var since = 0L
 
     val done get() = current >= brief.steps.size
 
-    /** Moves to the next step. False when the last one is already done. */
     fun advance(now: Long): Boolean {
         if (done) return false
         current++
@@ -60,40 +48,32 @@ class BriefRun(val brief: Brief, private val openedAt: Long = 0, private val tim
         return true
     }
 
-    /** Ends the run before its last step, for a player who has recorded what the request asked for. */
     fun finish(now: Long) {
         current = brief.steps.size
         since = now
     }
 
-    /** Whether the run has taken longer than it may and is not done. */
     fun timedOut(now: Long) = timeoutSeconds != null && !done && now - openedAt >= timeoutSeconds * 1000L
 
-    /** The seconds left before the pass times out, or null when it has no limit. */
     fun timeLeft(now: Long): Int? {
         val seconds = timeoutSeconds ?: return null
         return secondsLeft(seconds * 1000L - (now - openedAt)).toInt()
     }
 
-    /** Moves on when a timed step has run out. True when it did. */
     fun tick(now: Long) = remaining(now) == 0 && advance(now)
 
-    /** The seconds left on a timed step, or null when the current step has no timer. */
     fun remaining(now: Long): Int? {
         val seconds = brief.steps.getOrNull(current)?.seconds ?: return null
         return secondsLeft(seconds * 1000L - (now - since)).toInt()
     }
 
-    /**
-     * Moves on when a timed step has run out, and once more for each of the player's [presses]. Returns the `step`
-     * record of each move, built as it happens: a record built later would name whatever step the run is on by then.
-     */
+    /** @keep each step record is built as it happens, since one built later would name whatever step the run is on by
+     * then */
     fun step(now: Long, presses: Int): List<JsonObject> = buildList {
         if (tick(now)) add(record())
         repeat(presses) { if (advance(now)) add(record()) }
     }
 
-    /** The `step` record for the capture: the step that starts now, or that the last one is done. */
     fun record(): JsonObject = buildJsonObject {
         val step = brief.steps.getOrNull(current)
         if (step == null) put("done", true) else {
@@ -102,7 +82,6 @@ class BriefRun(val brief: Brief, private val openedAt: Long = 0, private val tim
         }
     }
 
-    /** The checklist. [key] is the name of the key that moves on, and [saved] the capture's file once it is written. */
     fun hud(now: Long, key: String, saved: String?): HudBlock {
         val rows = mutableListOf<HudRow>()
         brief.steps.forEachIndexed { i, step ->

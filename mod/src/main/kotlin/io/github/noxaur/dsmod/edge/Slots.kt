@@ -25,24 +25,17 @@ private const val HOTBAR_PITCH = 20
 private const val FILL_ALPHA = 110
 
 object Slots {
-    /**
-     * [rarity] is the mark's role when the player's rarity style draws it, or null for a plain fill in [color], and a
-     * [cooldown] draws neither.
-     */
     private class Shown(val role: Role, val color: Int, val rarity: Role?, val hide: Boolean, val label: Component?, val cooldown: SlotCooldown?, val outline: Boolean)
 
     private val marks = HashMap<String, Map<Int, Shown>>()
     private val hidden = BitSet()
 
-    /** Whether any mark is a cooldown, which the hotbar shows whatever the player's switch for marks there says. */
     private var cooldowns = false
 
-    /** The seconds a cooldown shows, built once each. */
     private val counts = HashMap<String, Component>()
     private val covered = BitSet()
     private val settings get() = DsModClient.feature<ItemRarity>()
 
-    /** Marks slots by their index in the open container's menu, replacing what [id] marked before. */
     fun mark(id: String, slots: Map<Int, SlotMark>) {
         marks[id] = slots.mapValues { (_, mark) ->
             Shown(mark.role, mark.role.argb(FILL_ALPHA), mark.role.takeIf { mark.rarity }, mark.hide, mark.label?.toComponent(), mark.cooldown, mark.outline)
@@ -55,7 +48,6 @@ object Slots {
         recount()
     }
 
-    /** Whether the slot at [index] in the open menu is hidden, asked for each slot each frame. */
     fun hides(index: Int) = hidden[index] || covered[index]
 
     fun cover(index: Int, on: Boolean) {
@@ -68,7 +60,6 @@ object Slots {
         for (slots in marks.values) for ((index, shown) in slots) if (shown.hide) hidden.set(index)
     }
 
-    /** The rarity that marks slot [index] of the open menu, if one does. */
     fun rarity(index: Int): Role? = marks.values.firstNotNullOfOrNull { it[index]?.rarity }
 
     fun register() {
@@ -101,18 +92,16 @@ object Slots {
         }
     }
 
-    /** Called by `HudHotbarMixin` as vanilla is about to draw the hotbar item at [x], [y]. */
     @JvmStatic
     fun hotbarSlot(graphics: GuiGraphicsExtractor, x: Int, y: Int) {
         if (!onHotbar() || !settings.hotbarMarks.value) return
         val from = x - (graphics.guiWidth() / 2 - 88)
         val i = from / HOTBAR_PITCH
-        // The offhand slot comes through here too, left of the first slot.
+        // @keep The offhand slot comes through here too, left of the first slot.
         if (from < 0 || from % HOTBAR_PITCH != 0 || i >= Inventory.SELECTION_SIZE || y != graphics.guiHeight() - 19) return
         drawBack(graphics, Surface.HOTBAR, InventoryMenu.USE_ROW_SLOT_START + i, x, y)
     }
 
-    /** Draws what goes behind the item in slot [index] of the open menu, whose 16x16 starts at [x], [y]. */
     fun drawBack(graphics: GuiGraphicsExtractor, surface: Surface, index: Int, x: Int, y: Int) {
         for (slots in marks.values) slots[index]?.takeUnless { it.hide }?.let { back(graphics, surface, it, index, x, y) }
     }
@@ -121,7 +110,6 @@ object Slots {
         for (slots in marks.values) slots[index]?.takeUnless { it.hide }?.cooldown?.let { cooldown(graphics, it, x, y) }
     }
 
-    /** The wash of a [cooldown] over the item at [x], [y], and its seconds where the stack count goes, as of this frame. */
     private fun cooldown(graphics: GuiGraphicsExtractor, cooldown: SlotCooldown, x: Int, y: Int) {
         val now = System.currentTimeMillis()
         val left = cooldown.end - now
@@ -131,14 +119,9 @@ object Slots {
         val label = if (seconds < 60) "$seconds" else "${seconds / 60}m"
         val text = counts.getOrPut(label) { text { value(label) }.toComponent() }
         val font = Minecraft.getInstance().font
-        // Over the item, where the game writes a stack's count.
         graphics.text(font, text, x + 17 - font.width(text), y + 9, -1, true)
     }
 
-    /**
-     * Whether a slot the mod draws itself, such as the profile viewer's, marks [rarity] as Item Rarity marks a menu's,
-     * by the same switches.
-     */
     fun marks(rarity: Role?) = rarity != null && DsModClient.runs<ItemRarity>() && (rarity != Role.COMMON || settings.markCommon.value)
 
     fun rarityBack(graphics: GuiGraphicsExtractor, rarity: Role, index: Int, x: Int, y: Int) {
@@ -160,7 +143,6 @@ object Slots {
     private fun onHotbar(): Boolean {
         if (marks.isEmpty() || !settings.hotbarMarks.value && !cooldowns) return false
         val player = Minecraft.getInstance().player ?: return false
-        // A mark's slot is an index in the open menu, which is the inventory's only while no other menu is open.
         return player.containerMenu === player.inventoryMenu && !player.isSpectator
     }
 

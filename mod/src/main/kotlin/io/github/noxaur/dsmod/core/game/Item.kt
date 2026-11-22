@@ -7,15 +7,9 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 
-/**
- * An item stack as the server sent it. [name] and [lore] are the custom name and lore, which the server uses
- * for everything the player reads, and [data] is the whole `custom_data`, where the server keeps what it knows.
- * The rest is how the item looks, so the mod can draw it as the server does: [skin] is a head's texture, the last
- * part of its `textures.minecraft.net` address, [dye] is dyed leather's color, [glint] overrides the enchantment
- * shine, and [style] is the tooltip's frame, such as `dragsim:legendary`. [foil] is whether the game draws the shine
- * at all, from enchantments or the override, and [model] is an `item_model` other than [id]'s own. A capture keeps
- * each only when it is set.
- */
+/** @keep skin is the last part of a head's `textures.minecraft.net` address, foil is whether the game draws the shine
+ * at all, from enchantments or the glint override, and style is the tooltip's frame, such as
+ * `dragsim:legendary`. A capture keeps each only when it is set */
 @Serializable
 data class Item(
     val id: String,
@@ -35,7 +29,6 @@ data class Item(
     val cleanLore: List<String>
         get() = cleanLoreRead ?: lore.map { withoutGlyphs(it.plain) }.also { cleanLoreRead = it }
 
-    /** The rarity in `item_data`, such as `LEGENDARY`, or null for an item with none. */
     val rarity: String? get() = string("item_data", "rarity")
 
     fun section(header: String): List<String> {

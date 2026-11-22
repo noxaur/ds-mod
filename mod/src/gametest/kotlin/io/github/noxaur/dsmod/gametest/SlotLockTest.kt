@@ -15,13 +15,6 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 
-/**
- * Works Slot Lock in the player's inventory with the real key and mouse. The key locks the slot under the mouse,
- * and then a click, a number key, the drop key and a double click each leave the slot as it was. Holding the key
- * from a hotbar slot to a slot above links the two, and a Shift click trades their places. Outside the menu the
- * drop key keeps a locked slot's item. Slots are the inventory's own: 0 to 8 is the hotbar and 9 the first above.
- * Read the screenshots: a link shows its frames and line under the mouse and only its padlocks at rest.
- */
 class SlotLockTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val slotLock = DsModClient.feature<SlotLock>()
@@ -51,7 +44,6 @@ class SlotLockTest : FabricClientGameTest {
             context.waitForScreen(InventoryScreen::class.java)
             context.waitTicks(3)
         }
-        /** A click on an empty slot puts the carried stack down, and the second picks it up and gathers the rest like it. */
         fun doubleClick(slot: Int) {
             hover(slot)
             context.input.pressMouse(0)
@@ -59,7 +51,6 @@ class SlotLockTest : FabricClientGameTest {
             context.waitTicks(5)
         }
 
-        /** The test's mouse carries no Shift, so the click goes the way the screen sends one: to the guard, then to the game. */
         fun shiftClick(slot: Int) {
             context.runOnClient<Nothing> { client ->
                 val screen = client.gui.screen() as AbstractContainerScreen<*>
@@ -85,7 +76,6 @@ class SlotLockTest : FabricClientGameTest {
             try {
                 for ((slot, give) in listOf(
                     "hotbar.0" to "diamond_sword", "hotbar.1" to "stone 5", "inventory.0" to "diamond_pickaxe", "inventory.1" to "stone 5",
-                    // An item as dragsim.co marks one that does not stack.
                     "inventory.2" to "diamond_axe[custom_data={item_data:{uuid:\"an-axe\"}}]",
                     "inventory.14" to "diamond_hoe[custom_data={item_data:{uuid:\"a-hoe\"}}]",
                 )) {
@@ -113,7 +103,6 @@ class SlotLockTest : FabricClientGameTest {
                 context.waitTicks(3)
                 check(context.ownItem(0).first == Items.DIAMOND_SWORD) { "The drop key over the locked slot dropped the sword" }
 
-                // The key is a mouse button too.
                 slotLock.slotLockKey.value = 2
                 click(10, 2)
                 check(10 in slotLock.locks.locked) { "The middle button did not lock the slot, and left ${slotLock.locks}" }
@@ -123,7 +112,6 @@ class SlotLockTest : FabricClientGameTest {
                 check(context.carried() == 5 && context.ownItem(10).second == 5) { "A double click gathered from the locked stack: carrying ${context.carried()}, and ${context.ownItem(10)} is left" }
                 click(1)
 
-                // Two hotbar slots cannot be linked.
                 link(0, 1)
                 check(slotLock.locks.links.isEmpty() && slotLock.locks.locked == setOf(0, 10)) { "A drag between two hotbar slots left ${slotLock.locks}" }
 
@@ -144,7 +132,6 @@ class SlotLockTest : FabricClientGameTest {
                 tap(10)
                 check(slotLock.locks == SlotLocks()) { "Unlocking every slot left ${slotLock.locks}" }
 
-                // An item lock follows the item. Slot 11 holds the axe with an ID, and stone has none.
                 hover(11)
                 context.input.pressKey(itemKey)
                 context.waitTicks(3)
@@ -170,7 +157,6 @@ class SlotLockTest : FabricClientGameTest {
                 context.waitTicks(3)
                 check(slotLock.locks == SlotLocks()) { "The item key over stone, which stacks, left ${slotLock.locks}" }
 
-                // A held item key locks every item it sweeps over, past the stone, and unlocks them as the first was locked.
                 fun sweep(vararg slots: Int) {
                     hover(slots.first())
                     context.input.holdKey(itemKey)
@@ -183,7 +169,6 @@ class SlotLockTest : FabricClientGameTest {
                 sweep(23, 13)
                 check(slotLock.locks == SlotLocks()) { "Sweeping the item key back from a locked item left ${slotLock.locks}" }
 
-                // A Shift click on the axe would land in the first empty hotbar slot, which is locked, so it goes to the next.
                 tap(2)
                 shiftClick(13)
                 check(context.ownItem(2).second == 0 && context.ownItem(3).first == Items.DIAMOND_AXE && context.ownItem(13).second == 0) {

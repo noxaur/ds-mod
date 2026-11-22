@@ -57,7 +57,6 @@ import java.util.UUID
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
-// The panel is 423 wide, so it fits a screen 854 pixels wide at GUI scale 2.
 private const val LEFT_WIDTH = 96
 private const val CONTENT_WIDTH = 296
 private const val INNER_HEIGHT = 184
@@ -66,7 +65,6 @@ private const val VIEW_WIDTH = CONTENT_WIDTH + Kit.GAP + Kit.SCROLLBAR_WIDTH
 private const val PANEL_WIDTH = Kit.INSET * 2 + LEFT_WIDTH + Kit.INSET + VIEW_WIDTH
 private const val PANEL_HEIGHT = Kit.INSET * 2 + INNER_HEIGHT
 
-// A sheet has two columns: bars down the left, wells of rows down the right.
 private const val PROGRESS_WIDTH = 144
 private const val LIST_WIDTH = CONTENT_WIDTH - PROGRESS_WIDTH - Kit.GAP
 private const val HALF_WIDTH = (CONTENT_WIDTH - Kit.GAP) / 2
@@ -77,26 +75,22 @@ private const val SECTION = 12
 private const val COLUMN_GAP = 8
 private const val SCROLL_STEP = 18
 
-// A container's grid is nine slots wide on the left, and its side panel fills the rest.
 private const val GRID_WIDTH = 9 * Kit.SLOT_SIZE
 private const val SIDE_X = GRID_WIDTH + 8
 private const val SIDE_WIDTH = CONTENT_WIDTH - SIDE_X
 private const val PAGE_BUTTON = 22
 private const val PAGES_PER_ROW = 5
 
-// Where page button [i] stands from the side panel's left edge, and from the top of its Pages heading.
 private fun pageX(i: Int) = i % PAGES_PER_ROW * (PAGE_BUTTON + Kit.GAP)
 
 private fun pageY(i: Int) = SECTION + i / PAGES_PER_ROW * (Kit.BUTTON_HEIGHT + Kit.GAP)
 
 private fun inside(mouseX: Int, mouseY: Int, x: Int, y: Int, width: Int, height: Int) = mouseX in x until x + width && mouseY in y until y + height
 
-/** How tall what was drawn from [top] down to [bottom] stands, without the gap that each drawing leaves under itself. */
 private fun extent(bottom: Int, top: Int) = bottom - Kit.GAP - top
 
 private val Profile.playerUuid get() = runCatching { UUID.fromString(player.uuid) }.getOrNull()
 
-/** The kinds of container with a tab of their own, each with the item on its tab. One tab holds every page of a kind. */
 private val TAB_ITEMS = mapOf(
     "inventory" to Items.CHEST,
     "ender_chest" to Items.ENDER_CHEST,
@@ -106,7 +100,7 @@ private val TAB_ITEMS = mapOf(
     "pets" to Items.BONE,
 )
 
-/** How big a hidden container's grid is drawn behind its notice, since the backend sends no size for one. */
+/** @keep The backend sends no size for a hidden container, so its grid is drawn at the game's usual size. */
 private val HIDDEN_SLOTS = mapOf("inventory" to 36, "ender_chest" to 27, "storage" to 45, "wardrobe" to 36, "accessories" to 18)
 
 private val SKILL_ITEMS = mapOf(
@@ -133,11 +127,6 @@ private val SKILL_ITEMS = mapOf(
     "blaze" to Items.BLAZE_ROD,
 )
 
-/**
- * The shape of a profile with nothing in it: as many skills, slayers, stats, classes and kills as most have. While a
- * profile loads or fails, the overview draws this with bones for its words and a veil over it, so the screen keeps
- * its shape and the notice sits where the profile will be.
- */
 private val SKELETON = run {
     fun progress(n: Int) = List(n) { Progress("", "", 0, 1, 0.0, 0.0, null) }
     Profile(
@@ -149,28 +138,19 @@ private val SKELETON = run {
     )
 }
 
-/**
- * The profile viewer: another player's profile, or the player's own, as the backend has it. A tab along the top for
- * the overview, each sheet of numbers and each kind of container, the player on the left turning on a turntable, and
- * the profile picker under them. Items are real `ItemStack`s with the player's rarity marks, so they look and hover
- * as in a menu, and [hovered] says which one is under the mouse. While something loads, fails or is hidden, its part
- * of the screen keeps its shape under a veil with the notice in its middle. Closing goes back to [parent].
- */
 class ProfileScreen(private val lookup: ProfileLookup, private val parent: Screen?) : Screen(text { body("Profile Viewer") }.toComponent()) {
     private val turntable = Turntable()
     private var model: ProfileModel? = null
     private var dressed: Profile? = null
     private var equipment = emptyList<Shown?>()
 
-    /** What the screen was built for, so a change of the lookup's state rebuilds it. */
     private var built: Load<Profile>? = null
     private var last: Profile? = null
 
     private var tab = OVERVIEW
     private val pages = HashMap<String, Int>()
 
-    // The shown container's items, built once for as long as it is the one shown. A switch or a new snapshot brings
-    // another container under the same id, so it is matched by the answer, not by the id.
+    // @keep A switch or a new snapshot brings another container under the same id, so the shown container's items are matched by the answer, not by the id.
     private var stacked: Container? = null
     private var stacks = emptyList<Shown?>()
     private var tabs = emptyList<Tab>()
@@ -181,38 +161,27 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
     private var left = 0
     private var top = 0
 
-    /** Where the tab's content starts, which a game test aims the mouse from. */
     var contentX = 0
         private set
     val viewY get() = if (headless) top else top + HEADER
 
-    // A sheet has no title row, so its content starts at the top and has the whole height.
     private val headless get() = tab in SHEETS || profile == null
     private val viewHeight get() = INNER_HEIGHT - (viewY - top)
     private var scroll = 0
     private var contentHeight = 0
     private var scrolling = false
 
-    /** The item under the mouse, the hook for a tooltip of the mod's own later. Null when there is none. */
     var hovered: DrawnItem? = null
         private set
 
     private class Tab(val kind: String, val name: String, val icon: ItemStack, val pages: List<ContainerSummary>)
 
-    /** An item ready to draw, with the rarity its mark shows, or null when it shows none. */
     private class Shown(val item: DrawnItem, val stack: ItemStack, val mark: Role?)
 
-    /** What covers part of the screen: a line in the middle of a veil, with an icon and buttons. */
     private class Notice(val message: Component, val icon: Icon?, val color: Int, val wholeScreen: Boolean, val failure: Failure? = null)
 
-    /** A row as it is built: its name, given the room the values leave it, then its values, and its hover. */
     private class Row(val name: (Int) -> Component, val values: List<Component>, val tip: List<Component>? = null)
 
-    /**
-     * A heading over a well of rows. A row's first cell is its name, on the left, and the rest stand at the right in
-     * columns as wide as their widest cell, [gap] apart. [header] is a first row of muted column names, and [tips]
-     * the hover of each row that has one.
-     */
     private class Table(
         val title: String,
         val width: Int,
@@ -224,7 +193,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         val gap: Int,
         val tips: List<List<Component>?>,
     ) {
-        /** How tall the table stands with [limit] of its rows, the gap under it included. */
         fun height(limit: Int = rows.size) = SECTION + ((if (header != null) 1 else 0) + rows.size.coerceAtMost(limit)).coerceAtLeast(1) * ROW + 5 + Kit.GAP
     }
 
@@ -285,10 +253,8 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         }
     }
 
-    /** The profile the picker shows: the one asked for while it loads, so the picker does not step back meanwhile. */
     private fun picked(profile: Profile) = profile.choices.firstOrNull { it.id == lookup.asked && lookup.state is Load.Loading } ?: profile.choice
 
-    /** The overview, then the sheets of numbers, the containers, and the long lists last. A tab with nothing in it is left out. */
     private fun tabs(profile: Profile): List<Tab> {
         val head = ItemStack(Items.PLAYER_HEAD).apply {
             profile.playerUuid?.let { set(DataComponents.PROFILE, ResolvableProfile.createUnresolved(it)) }
@@ -326,7 +292,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         current.dress(worn)
     }
 
-    /** A stand-in player for the well while there is no profile, which the veil dims. */
     private val ghost by lazy { minecraft.level?.let { ProfileModel(it, UUID(0, 0), "Steve") } }
 
     private fun shown(item: DrawnItem): Shown {
@@ -355,7 +320,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
 
     private fun shownSummary(): ContainerSummary? = shownTab()?.let { t -> t.pages.getOrNull(page(t)) }
 
-    /** The shown container's answer. The pets come with the profile, so they are never fetched. */
     private fun shownContainer(): Load<Container>? {
         val summary = shownSummary() ?: return null
         if (summary.hidden || summary.id == PETS) return null
@@ -365,7 +329,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
     override fun onClose() = minecraft.gui.setScreen(parent)
 
     override fun tick() {
-        // Answers arrive between frames, and the tabs, the picker and the buttons follow what arrived.
         if (lookup.state !== built || failedContainer() != builtFailure) rebuildWidgets()
     }
 
@@ -378,7 +341,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         super.rebuildWidgets()
     }
 
-    /** What the screen should say over its veil now, if anything: the profile's state first, then the shown tab's. */
     private fun notice(): Notice? {
         val name = nameOf(profile)
         when (val state = lookup.state) {
@@ -399,10 +361,8 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
 
     private fun failed(failure: Failure, wholeScreen: Boolean) = Notice(failure.message.toComponent(), Icon.WARN, Role.BAD.argb(), wholeScreen, failure)
 
-    /** The middle of what the notice covers: the whole inside of the panel, or the tab's content. */
     private fun noticeCenter(notice: Notice) = if (notice.wholeScreen) left + (LEFT_WIDTH + Kit.INSET + CONTENT_WIDTH) / 2 else contentX + CONTENT_WIDTH / 2
 
-    /** The notice's box from top to bottom, centered with its buttons, if any, under it. */
     private fun noticeBox(notice: Notice, buttons: Boolean): Pair<Int, Int> {
         val lines = font.split(notice.message, NOTICE_TEXT).size.coerceIn(1, 2)
         val height = lines * LINE + 10
@@ -412,7 +372,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         return boxTop to boxTop + height
     }
 
-    // Where the mouse was on the last frame, for the arrow keys that turn the model under it.
     private var mouseX = 0.0
     private var mouseY = 0.0
 
@@ -427,7 +386,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
 
         val profile = profile
         val notice = notice()
-        // Under a notice nothing answers the mouse, so no tooltip shows through the veil.
         val mx = if (notice == null) mouseX else -1
         val my = if (notice == null) mouseY else -1
 
@@ -478,7 +436,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         tooltip?.let { graphics.setComponentTooltipForNextFrame(font, it, mouseX, mouseY) }
     }
 
-    /** The hover over the name: when dragsim.co last saved the profile and when the backend read it, and whether it is old. */
     private fun ages(profile: Profile, now: Long): List<Component> = listOfNotNull(
         text { body(profile.player.name) }.toComponent(),
         profile.savedAt?.let { text { muted("Saved by dragsim.co "); value(ago(it, now)) }.toComponent() },
@@ -486,7 +443,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         if (profile.stale) text { warning("dragsim.co did not answer, so this may be out of date.") }.toComponent() else null,
     )
 
-    /** The veil over what is waiting or empty, and the notice's box in its middle. Loading's dots step in place. */
     private fun drawNotice(graphics: GuiGraphicsExtractor, notice: Notice, now: Long) {
         if (notice.wholeScreen) {
             Kit.veil(graphics, left, top, LEFT_WIDTH + Kit.INSET + VIEW_WIDTH, INNER_HEIGHT)
@@ -502,18 +458,12 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         Kit.well(graphics, boxX, boxTop, boxWidth, boxBottom - boxTop)
         notice.icon?.let { Kit.icon(graphics, it, boxX + 8, boxTop + 5 + (8 - it.height) / 2, notice.color) }
         for ((i, line) in lines.withIndex()) graphics.text(font, line, boxX + 8 + iconWidth, boxTop + 6 + i * LINE, -1, true)
-        // The dots go after a fixed "Loading", so the word holds still while they step.
         if (notice.message.string == LOADING) {
             val dots = text { muted(".".repeat((now / DOT_MILLIS % 4).toInt())) }.toComponent()
             graphics.text(font, dots, boxX + 8 + font.width(notice.message), boxTop + 6, -1, true)
         }
     }
 
-    /**
-     * The text the screen draws, built once per profile and not each frame, each tab's the first time it is shown.
-     * [names] is the rank and name, on one line when they fit and two when not, then the profile's mode when it is
-     * not a normal one, then whether it is old.
-     */
     private inner class Texts(private val profile: Profile?) {
         private val shown = profile ?: SKELETON
 
@@ -531,10 +481,8 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
 
         val dungeons = shown.dungeons
 
-        /** The five classes, and any the mod does not know, in the game's order. */
         val classes = dungeons?.allClasses.orEmpty()
 
-        /** The Catacombs level over each class, as the Dungeons tab bars them. */
         val catacombs = shown.skills.filter { it.id == "catacombs" } + classes
 
         val labels: Map<Progress, String> = (shown.skills + shown.slayers + classes).associateWith {
@@ -551,7 +499,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
 
         val allKills = listOf(text { body("Top Kills") }.toComponent()) + shown.topKills.map { text { muted("${it.name}: "); value(it.kills) }.toComponent() }
 
-        /** Each stat once, in its color, with its base value. Its hover has what each of the server's groups gives it. */
         val playerStats by lazy {
             val sheet = shown.playerStats
             val groups = listOf("Base" to sheet.base, "Additive" to sheet.additive, "Multiplicative" to sheet.multiplicative, "Increase Max" to sheet.increaseMax)
@@ -574,10 +521,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
             )
         }
 
-        /**
-         * Each floor's runs and best score, a row a floor number with its master floor's in the columns beside it,
-         * as the game pairs them. A floor of another kind is a row of its own.
-         */
         val floors by lazy {
             val list = dungeons?.floors.orEmpty()
             if (list.isEmpty()) return@lazy table("Floors", LIST_WIDTH, emptyList(), empty = "No floors finished yet.")
@@ -626,7 +569,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
 
         val pets: List<Shown?> by lazy { shown.pets.map { shown(it.item) } }
 
-        /** The active pet beside the pets' grid: its name in its rarity's color, then what it has. */
         val activePet by lazy {
             val pet = shown.pets.firstOrNull { it.active } ?: return@lazy table("Active Pet", SIDE_WIDTH, emptyList(), empty = "None.")
             table("Active Pet", SIDE_WIDTH, petRows(pet))
@@ -635,7 +577,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         private var forgeAt = -1L
         private var forgeTable: Table? = null
 
-        /** The forge's slots, each with what it makes and when, rebuilt once a second for the time left. */
         fun forge(now: Long): Table? {
             if (shown.forge.isEmpty()) return null
             val second = now / 1000
@@ -682,7 +623,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         Texts(profile)
     }
 
-    /** A name in the body color, cut to its room. */
     private fun body(name: String) = named(name, TextBuilder::body)
 
     private fun muted(name: String) = named(name, TextBuilder::muted)
@@ -691,19 +631,13 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
 
     private fun counts(title: String, entries: List<Pair<String, Double>>) = table(title, HALF_WIDTH, entries.map { (name, n) -> figure(body(name), n) }, empty = "None yet.")
 
-    /** A row of a name and one amount. */
     private fun figure(name: (Int) -> Component, n: Double) = Row(name, listOf(text { value(amount(n)) }.toComponent()))
 
-    /** A stat's name in the color the game gives the stat. */
     private fun colored(stat: StatValue): (Int) -> Component = { w ->
         val rgb = stat.rgb
         if (rgb == null) text { muted(fit(stat.name, w)) }.toComponent() else ServerText(listOf(ServerSpan(fit(stat.name, w), rgb))).toComponent()
     }
 
-    /**
-     * Builds a table [width] wide, measuring its columns so the names get the room the values leave. With one value
-     * a row, as a list of names and numbers, each name gets the room its own value leaves.
-     */
     private fun table(title: String, width: Int, rows: List<Row>, header: List<String>? = null, note: String = "", empty: String? = null, gap: Int = COLUMN_GAP): Table {
         val head = header?.map { text { muted(it) }.toComponent() }
         val count = maxOf(rows.maxOfOrNull { it.values.size } ?: 0, (head?.size ?: 1) - 1)
@@ -716,7 +650,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         return Table(title, width, built, columns, head, note, font.width(note), gap, rows.map { it.tip })
     }
 
-    /** A long list in two wells side by side, the first half in the left one. One of [splitAt] rows or fewer stays in one well. */
     private fun halves(title: String, width: Int, rows: List<Row>, note: String = "", splitAt: Int = SPLIT_AT): List<Table> {
         if (rows.size <= splitAt) return listOf(table(title, width, rows, note = note, empty = "None yet."))
         val half = (width - Kit.GAP) / 2
@@ -724,7 +657,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         return listOf(table(title, half, rows.take(cut)), table("", half, rows.drop(cut), note = note))
     }
 
-    /** The rank, name, mode and age at the top of the well. Returns the y below them. */
     private fun drawName(graphics: GuiGraphicsExtractor, profile: Profile?): Int {
         val lines = texts(profile).names
         val center = left + LEFT_WIDTH / 2
@@ -734,7 +666,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
 
     private fun icon(id: String) = skillIcons.getOrPut(id) { ItemStack(SKILL_ITEMS[id.lowercase(Locale.US)] ?: Items.BOOK) }
 
-    /** A heading and a bar for each of [list], one below the other. With [ghostly], bones stand in for the words. Returns the y below them. */
     private fun progress(graphics: GuiGraphicsExtractor, texts: Texts, title: String, list: List<Progress>, x: Int, top: Int, mouseX: Int, mouseY: Int, ghostly: Boolean, hover: (List<Component>) -> Unit): Int {
         if (list.isEmpty()) return top
         var y = top
@@ -749,7 +680,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
                 graphics.item(icon(p.id), x, y)
                 val label = texts.labels.getValue(p)
                 Kit.label(graphics, label, x + 20, y)
-                // The class the player picked, which a run starts them as.
                 if (picked) Kit.icon(graphics, Icon.CHECK, x + 23 + font.width(label), y + 1, Role.GOOD.argb())
             }
             Kit.bar(graphics, x + 20, y + 10, PROGRESS_WIDTH - 20, p.fraction, (if (p.maxed) Role.GOOD else Role.VALUE).argb())
@@ -759,10 +689,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         return y + Kit.GAP
     }
 
-    /**
-     * A table at [x], [top], with at most [limit] rows. With [ghostly], bones stand in for the words. [tip] shows over
-     * the well, and where it is null, the hover of the row under the mouse. Returns the y below it.
-     */
     private fun draw(graphics: GuiGraphicsExtractor, t: Table, x: Int, top: Int, mouseX: Int = -1, mouseY: Int = -1, ghostly: Boolean = false, limit: Int = t.rows.size, tip: List<Component>? = null, hover: (List<Component>) -> Unit = {}): Int {
         if (t.title.isNotEmpty()) Kit.label(graphics, t.title, x, top, Kit.Ink.MUTED)
         if (t.note.isNotEmpty()) Kit.label(graphics, t.note, x + t.width - t.noteWidth, top, Kit.Ink.MUTED)
@@ -794,7 +720,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         return bottom + Kit.GAP
     }
 
-    /** Tables side by side from [x], each as wide as it was built. Returns the y below the tallest. */
     private fun side(graphics: GuiGraphicsExtractor, tables: List<Table>, x: Int, top: Int, mouseX: Int = -1, mouseY: Int = -1, hover: (List<Component>) -> Unit = {}): Int {
         var at = x
         var bottom = top
@@ -805,7 +730,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         return bottom
     }
 
-    /** The five classes side by side, each its icon with its level where a stack's count goes, the picked one ringed. Returns the y below them. */
     private fun classes(graphics: GuiGraphicsExtractor, texts: Texts, x: Int, top: Int, mouseX: Int, mouseY: Int, ghostly: Boolean, hover: (List<Component>) -> Unit): Int {
         val classes = texts.classes
         if (classes.isEmpty()) return top
@@ -831,10 +755,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         return y + CLASS_HEIGHT + Kit.GAP
     }
 
-    /**
-     * Skills and slayers down the left, and stats, the classes and the top kills down the right, all on one screen:
-     * the kills take the rows the rest leave, and their hover lists every one.
-     */
     private fun overview(graphics: GuiGraphicsExtractor, profile: Profile, top: Int, mouseX: Int, mouseY: Int, ghostly: Boolean, hover: (List<Component>) -> Unit): Int {
         val texts = texts(profile)
         var left = progress(graphics, texts, "Skills", profile.skills, contentX, top, mouseX, mouseY, ghostly, hover)
@@ -850,14 +770,9 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         return extent(maxOf(left, right), top)
     }
 
-    /** The player's stats in two wells, each stat's breakdown in its hover. */
     private fun playerStats(graphics: GuiGraphicsExtractor, profile: Profile, top: Int, mouseX: Int, mouseY: Int, hover: (List<Component>) -> Unit) =
         extent(side(graphics, texts(profile).playerStats, contentX, top, mouseX, mouseY, hover), top)
 
-    /**
-     * The Catacombs: its level and each class down the left, the picked class ticked, and the essence under them; the
-     * runs and each floor's completions and best score down the right, master floors beside the rest.
-     */
     private fun dungeons(graphics: GuiGraphicsExtractor, profile: Profile, top: Int, mouseX: Int, mouseY: Int, hover: (List<Component>) -> Unit): Int {
         val texts = texts(profile)
         var left = progress(graphics, texts, "Catacombs", texts.catacombs, contentX, top, mouseX, mouseY, false, hover)
@@ -867,7 +782,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         return extent(maxOf(left, right), top)
     }
 
-    /** The Heart of the Dragon and the forge down the left, and the Heart's nodes down the right. */
     private fun mining(graphics: GuiGraphicsExtractor, profile: Profile, top: Int, now: Long): Int {
         val texts = texts(profile)
         var left = texts.heart?.let { draw(graphics, it, contentX, top) } ?: top
@@ -876,7 +790,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         return extent(maxOf(left, right), top)
     }
 
-    /** The collections, and beside them the RNG meters. */
     private fun collections(graphics: GuiGraphicsExtractor, profile: Profile, top: Int): Int {
         val texts = texts(profile)
         return extent(side(graphics, listOf(texts.collections, texts.meters), contentX, top), top)
@@ -895,11 +808,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         return lines
     }
 
-    /**
-     * A container's tab: its grid on the left, and beside it its pages, what the player wears when it is the
-     * inventory, the active pet when it is the pets, and a count of what it holds. A grid still loading, failed or
-     * hidden is drawn empty for its notice.
-     */
     private fun container(graphics: GuiGraphicsExtractor, profile: Profile?, mouseX: Int, mouseY: Int, hover: (List<Component>) -> Unit, item: (DrawnItem, ItemStack) -> Unit): Int {
         val summary = shownSummary() ?: return 0
         val texts = texts(profile)
@@ -918,11 +826,9 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         val columns = summary.columns.coerceIn(1, 9)
         val slots = if (summary.hidden) HIDDEN_SLOTS[summary.kind] ?: columns * 3 else summary.slots
         val rows = (slots + columns - 1) / columns
-        // The inventory's last row is the hotbar, set apart as the game sets it apart.
         val inventory = summary.id == "inventory"
         val hotbar = inventory && rows > 1
         val height = rows * Kit.SLOT_SIZE + if (hotbar) Kit.GAP else 0
-        // The wardrobe leaves out the set the player wears, so it is drawn back into its column from what they wear.
         val worn = profile?.equippedWardrobeSlot?.takeIf { summary.id == "wardrobe:${it / 9}" }?.rem(9)
 
         graphics.enableScissor(contentX, viewY, contentX + GRID_WIDTH, viewY + viewHeight)
@@ -958,7 +864,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
             val px = sx + pageX(shown)
             val py = y + pageY(shown)
             y += SECTION + rowsOfPages * (Kit.BUTTON_HEIGHT + Kit.GAP) + Kit.GAP
-            // The page shown is ringed, as a selected tab joins its panel.
             Kit.ring(graphics, px - 1, py - 1, PAGE_BUTTON + 2, Kit.BUTTON_HEIGHT + 2, Kit.theme.accent)
         }
         if (inventory) {
@@ -973,12 +878,10 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         return maxOf(height, y - sideTop)
     }
 
-    // The count beside the grid shown, built again only when the grid is another.
     private var counted: List<Shown?>? = null
     private var countedWorn: Int? = null
     private var counts: Table? = null
 
-    /** How many slots hold something, and how many items of each rarity, with the worn wardrobe slot. */
     private fun contents(summary: ContainerSummary, items: List<Shown?>, worn: Int?): Table {
         val cached = counts
         if (cached != null && counted === items && countedWorn == worn) return cached
@@ -1010,12 +913,10 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
 
     private fun maxScroll() = (contentHeight - viewHeight).coerceAtLeast(0)
 
-    /** Whether the tab shown needs its scrollbar. The overview and the dungeons are laid out to fit without one. */
     val overflows get() = maxScroll() > 0
 
     private fun thumbHeight() = ((viewHeight - 2) * viewHeight / contentHeight.coerceAtLeast(viewHeight)).coerceAtLeast(8)
 
-    /** Where the sheets' right column starts, beside the bars. */
     private val rightX get() = contentX + PROGRESS_WIDTH + Kit.GAP
 
     private fun scrollbarX() = contentX + CONTENT_WIDTH + Kit.GAP
@@ -1081,14 +982,12 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         scroll = (scroll + by).coerceIn(0, maxScroll())
     }
 
-    /** Puts the thumb's middle under the mouse. */
     private fun dragThumb(mouseY: Double) {
         val thumb = thumbHeight()
         val at = ((mouseY - viewY - 1 - thumb / 2.0) / (viewHeight - 2 - thumb)).coerceIn(0.0, 1.0)
         scroll = (at * maxScroll()).roundToInt()
     }
 
-    /** A profile in the picker by its name. The line under the player's name says its mode. */
     private fun choiceName(choice: ProfileChoice) = choice.name.plain
 
     private companion object {
@@ -1100,27 +999,21 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         const val COLLECTIONS = "collections"
         const val PETS = "pets"
 
-        /** The tabs drawn as sheets of numbers, which have no title row. */
         val SHEETS = setOf(OVERVIEW, STATS, DUNGEONS, MINING, BESTIARY, COLLECTIONS)
 
         const val LOADING = "Loading"
         const val DOT_MILLIS = 350L
         const val NOTICE_TEXT = 220
 
-        // A list longer than this is split into two wells side by side.
         const val SPLIT_AT = 4
 
-        // The classes' row: each icon with its level over its corner, inside the well's edge.
         const val CLASS_HEIGHT = 20
 
-        // How many of the player's heights the model's box holds, which leaves room above the head as it tips.
         const val MODEL_HEIGHTS = 2.8
         val LOG = LoggerFactory.getLogger("dsmod")
 
-        /** A mode such as `IRONMAN` as the player reads it: Ironman. An unknown one is shown the same way. */
         fun title(mode: String) = mode.lowercase(Locale.US).split('_').joinToString(" ") { word -> word.replaceFirstChar { it.titlecase(Locale.US) } }
 
-        /** Time left in its two largest units, such as 1h 4m or 21m 3s. */
         fun remaining(millis: Long): String {
             val s = millis / 1000
             return when {
@@ -1130,7 +1023,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
             }
         }
 
-        /** How long ago [iso] was, in the largest unit that is at least one. */
         fun ago(iso: String, now: Long): String {
             val then = runCatching { Instant.parse(iso).toEpochMilli() }.getOrNull() ?: return "earlier"
             val minutes = Duration.ofMillis(now - then).toMinutes()
