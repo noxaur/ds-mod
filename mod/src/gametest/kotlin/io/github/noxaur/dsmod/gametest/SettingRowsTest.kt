@@ -7,6 +7,7 @@ import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.FreeLook
 import io.github.noxaur.dsmod.core.feature.general.Fullbright
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
+import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
@@ -169,6 +170,10 @@ class SettingRowsTest : FabricClientGameTest {
         context.shotInBothThemes("own-settings-rarity-look")
         toggle("slot-lock")
         check(shows("slotLockKey")) { "Slot Lock's button did not open its settings" }
+        val slotKey = spot("slotLockKey")
+        click(slotKey.controlX + 8, slotKey.controlY + 8)
+        click(slotKey.controlX + 8, slotKey.controlY + 8)
+        expect("A left click on the listening Slot Key", GLFW.GLFW_KEY_L) { DsModClient.feature<SlotLock>().slotLockKey.value }
         spot("itemLockKey")
         context.takeScreenshot("own-settings-switch-open")
         toggle("slot-lock")

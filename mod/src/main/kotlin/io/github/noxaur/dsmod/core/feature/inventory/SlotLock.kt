@@ -10,8 +10,8 @@ import io.github.noxaur.dsmod.core.inventory.SlotLocks
 class SlotLock(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "slot-lock", Area.ANYWHERE, Store.INVENTORY, "Lock inventory slots and items so a misclick cannot move them.")
 
-    val slotLockKey = feature.keys("slotLockKey", "Slot Key", "Pick the key or mouse button that locks the slot under the mouse.", KEY_L)
-    val itemLockKey = feature.keys("itemLockKey", "Item Key", "Pick the key that locks an item that does not stack.", KEY_K)
+    val slotLockKey = feature.keys("slotLockKey", "Slot Key", "Pick the key or mouse button that locks the slot under the mouse.", KEY_L, clicks = false)
+    val itemLockKey = feature.keys("itemLockKey", "Item Key", "Pick the key that locks an item that does not stack.", KEY_K, clicks = false)
 
     private val kept = feature.saved(SlotLocks())
 

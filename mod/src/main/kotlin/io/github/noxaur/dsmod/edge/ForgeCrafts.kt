@@ -136,6 +136,7 @@ object ForgeCrafts {
             feature.key.value = keys.firstOrNull() ?: KeyBind.NONE
         }.also {
             it.prompt = "?"
+            it.clicks = feature.key.clicks
             it.glass = ::glass
             it.setTooltip(tip("Craft Key", "\nEach press clicks the outlined button.", "\nClick, then press a key."))
         }

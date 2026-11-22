@@ -15,7 +15,7 @@ import io.github.noxaur.dsmod.core.text.count
 class ForgeCraft(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "forge-craft", Area.ANYWHERE, Store.INVENTORY, "Repeat your last forge craft, one click per key press.", slots = ::slots)
 
-    val key = feature.keys("forgeCraftKey", "Craft Key", "Pick the key that clicks the next button of your last forge craft.", KEY_R)
+    val key = feature.keys("forgeCraftKey", "Craft Key", "Pick the key that clicks the next button of your last forge craft.", KEY_R, clicks = false)
 
     data class Material(val name: String, val count: Int, val icon: Item? = null)
 
