@@ -105,6 +105,15 @@ export const DrawnItem = Schema.Struct({
 });
 export type DrawnItem = typeof DrawnItem.Type;
 
+/** @keep The longest span in the captures is 224 characters, and the most spans on one line is 10. */
+export const MAX_SPAN_TEXT = 1024;
+export const MAX_LINE_SPANS = 64;
+export const MAX_DATA_CHARS = 16_384;
+
+const SightedLine = Schema.Array(
+  Span.mapFields((fields) => ({ ...fields, text: fields.text.check(Schema.isMaxLength(MAX_SPAN_TEXT)) })),
+).check(Schema.isMaxLength(MAX_LINE_SPANS));
+
 /** @keep Any signed-in client can send anything, so nothing here is drawn until enough players agree on it. Fields are
  * only ever added, because the payload is read strictly and an older backend never runs against a newer mod. */
 export const ItemSighting = Schema.Struct({
@@ -112,14 +121,19 @@ export const ItemSighting = Schema.Struct({
   material: Schema.String.check(Schema.isMaxLength(128)),
   itemModel: Schema.optionalKey(Schema.String.check(Schema.isMaxLength(128))),
   skinId: Schema.optionalKey(Schema.String.check(Schema.isMaxLength(128))),
-  name: Line,
-  lore: Schema.Array(Line).check(Schema.isMaxLength(80)),
+  name: SightedLine,
+  lore: Schema.Array(SightedLine).check(Schema.isMaxLength(80)),
   glint: Schema.Boolean,
   skullTexture: Schema.optionalKey(Schema.String.check(Schema.isMaxLength(4096))),
   color: Schema.optionalKey(Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 0xffffff }))),
   /** @keep The keys of `custom_data` the mod lets through, none that name a player or a copy. Open, so a key the server
-   * adds reaches the backend without a mod release. */
-  data: Schema.Record(Schema.String, Schema.Unknown),
+   * adds reaches the backend without a mod release. The most the captures hold is 885 characters as JSON. */
+  data: Schema.Record(Schema.String.check(Schema.isMaxLength(64)), Schema.Unknown).check(
+    Schema.makeFilter(
+      (data) =>
+        JSON.stringify(data).length <= MAX_DATA_CHARS || `Expected at most ${MAX_DATA_CHARS} characters of JSON`,
+    ),
+  ),
 });
 export type ItemSighting = typeof ItemSighting.Type;
 

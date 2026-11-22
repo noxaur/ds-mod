@@ -367,6 +367,13 @@ const suites: { readonly [Name in keyof Stores]: Cases<Stores[Name]> } = {
       },
     },
     appearances: {
+      "a sample kept before a bound was tightened is left out, and its entry still reads": async ({ items }) => {
+        await run(items.record("ann", "1", [seen("a", { sample: sample("a", "x".repeat(2000)) })], roomy));
+        await run(items.record("bob", "1", [seen("a", { sample: sample("a") })], roomy));
+        expect((await appearances(items, { entry: "a" })).items).toMatchObject([
+          { entry: "a", players: 2, samples: [{ name: [{ text: "a" }] }] },
+        ]);
+      },
       "the agent's view is one entry with its samples, or a page of entries without": async ({ items }) => {
         await run(items.record("ann", "1", [seen("a", { sample: sample("a") }), seen("b"), seen("c")], roomy));
         await run(items.record("bob", "1", [seen("a", { sample: sample("a") })], roomy));
