@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.debug
 
+import io.github.noxaur.dsmod.edge.Hooks
 import io.github.noxaur.dsmod.core.brief.Brief
-import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.capture.CaptureSession
 import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
@@ -38,7 +38,6 @@ object DsModDebug : ClientModInitializer {
     }
 
     override fun onInitializeClient() {
-        DsModClient.anyServer = true
         JoinDragSim.register()
         // @keep The window does not exist yet, and takes its title when it opens.
         System.getProperty("dsmod.brief")?.let { Recording.startAtLaunch(Brief.read(Path.of(it))) }
@@ -59,7 +58,7 @@ object DsModDebug : ClientModInitializer {
                         for (page in SettingsGalleryScreen.Page.entries) {
                             then(
                                 ClientCommands.literal(page.name.lowercase()).executes { context ->
-                                    open(context.source.client) { SettingsGalleryScreen(page) }
+                                    open(context.source.client) { SettingsGalleryScreen(Hooks.hud, page) }
                                 },
                             )
                         }

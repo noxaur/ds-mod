@@ -16,7 +16,13 @@ object HotdShortcut {
     private const val ROWS = 6
     private const val NAME = "Open Heart of the Dragon"
 
-    private val shown get() = DsModClient.runs<HotdButton>()
+    private lateinit var button: HotdButton
+
+    fun bind(button: HotdButton) {
+        this.button = button
+    }
+
+    private val shown get() = button.feature.runs
 
     @InputApproved(reaches = ["PlayerCommands.send"])
     fun register() {

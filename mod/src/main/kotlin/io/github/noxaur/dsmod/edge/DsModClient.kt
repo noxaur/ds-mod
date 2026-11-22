@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.feature.general.CtrlClick
+import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.brigadier.arguments.StringArgumentType
 import io.github.noxaur.dsmod.core.config.Canvas
@@ -10,7 +12,6 @@ import io.github.noxaur.dsmod.core.config.Panel
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.feature.contribute.ReportGameData
 import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.WorldChanged
@@ -35,6 +36,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.rendering.v1.PictureInPictureRendererRegistry
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.Screen
 import org.slf4j.LoggerFactory
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -49,10 +51,10 @@ object DsModClient : ClientModInitializer {
 
     lateinit var settings: DsModConfig
         private set
+    private lateinit var tree: SettingsTree
     lateinit var game: Game
         private set
-    lateinit var readouts: Readouts
-        private set
+    private lateinit var readouts: Readouts
     lateinit var saved: SavedFiles
         private set
     private lateinit var tabs: TabListPoller
@@ -65,7 +67,7 @@ object DsModClient : ClientModInitializer {
     @Volatile
     private var left = false
 
-    fun leave() {
+    private fun leave() {
         if (!left) return
         left = false
         game.post(System.currentTimeMillis(), LeftServer)
@@ -80,33 +82,30 @@ object DsModClient : ClientModInitializer {
         Thread.ofVirtual().start { runCatching { dragSimAt = InetAddress.getAllByName(DragSim.HOST).toSet() } }
     }
 
-    var anyServer = false
+    var anyServer = FabricLoader.getInstance().isModLoaded("dsmod_debug")
 
-    private var byType = emptyMap<Class<out HasFeature>, HasFeature>()
-
-    fun runs(type: Class<out HasFeature>): Boolean = byType[type]?.feature?.runs == true
-
-    inline fun <reified F : HasFeature> runs() = runs(F::class.java)
-
-    fun <F : HasFeature> feature(type: Class<F>): F = type.cast(byType.getValue(type))
+    fun <F : HasFeature> feature(type: Class<F>): F = tree.feature(type)
 
     inline fun <reified F : HasFeature> feature(): F = feature(F::class.java)
 
+    fun settingsScreen(parent: Screen?, tabs: SettingsTabs = SettingsScreen.session(settings), reveal: String? = null, query: String? = null) =
+        SettingsScreen(parent, settings, ::saveSettings, tabs, reveal, query)
+
     fun openSettings(id: String? = null, search: String? = null) =
-        Minecraft.getInstance().let { it.setScreenAndShow(SettingsScreen(it.gui.screen(), reveal = id, query = search)) }
+        Minecraft.getInstance().let { it.setScreenAndShow(settingsScreen(it.gui.screen(), reveal = id, query = search)) }
 
     fun saveSettings() {
         runCatching { file.save(settings) }.onFailure { log.error("Could not save the settings", it) }
     }
 
     /** @keep The settings open on the next tick, after the game has handed out the typed character, or the search would take it. */
-    fun pressed(key: InputConstants.Key) {
+    private fun pressed(key: InputConstants.Key) {
         if (Keys.matches(key, settings.general.settingsKey)) Minecraft.getInstance().schedule { openSettings() }
         if (Keys.matches(key, settings.hud.editKey)) Minecraft.getInstance().schedule { openHudEditor() }
     }
 
     fun openHudEditor() =
-        Minecraft.getInstance().let { it.setScreenAndShow(HudEditorScreen(readouts, settings.hud, it.gui.screen(), ::saveSettings)) }
+        Minecraft.getInstance().let { it.setScreenAndShow(HudEditorScreen(game, tree.feature(), readouts, settings.hud, it.gui.screen(), ::saveSettings)) }
 
     private fun warnUnreadable() {
         val kept = file.unreadable ?: return
@@ -120,11 +119,10 @@ object DsModClient : ClientModInitializer {
     }
 
     private fun start() {
-        val tree = SettingsTree(settings)
+        tree = SettingsTree(settings)
         game = Game(tree.features) { anyServer || onDragSim }
-        byType = tree.owners.associateBy { it.javaClass }
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
-        readouts = Readouts(game, settings.hud)
+        readouts = Readouts(game, settings.hud, tree.feature())
         tabs = TabListPoller(game)
         sidebars = SidebarPoller(game)
         containers = ContainerPoller(game)
@@ -132,6 +130,35 @@ object DsModClient : ClientModInitializer {
         game.metrics.sinks += { snapshot ->
             snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }
         }
+        Hooks.bind(tree.feature(), tree.owners.filterIsInstance<CtrlClick>().firstOrNull(), tree.feature())
+        Hud.bind(game, tree.feature())
+        Slots.bind(game, tree.feature())
+        MenuSkin.bind(game, tree.feature(), tree.feature(), tree.feature())
+        World.bind(game)
+        Packets.bind(game)
+        FloatingTexts.bind(game)
+        Etherwarps.bind(game, tree.feature())
+        HeldItems.bind(tree.feature())
+        Cameras.bind(tree.feature(), tree.feature())
+        PlayerModels.bind(tree.feature())
+        InventoryKey.bind(tree.feature())
+        Recorder.bind(game)
+        Contribute.bind(game, tree.feature())
+        ArmorSwapGuards.bind(tree.feature())
+        AutoClicks.bind(tree.feature())
+        ChatDrags.bind(readouts, tree.feature())
+        CommandKeys.bind(game, tree.feature())
+        CopyChats.bind(tree.feature())
+        EyeGuards.bind(tree.feature())
+        ForgeCrafts.bind(tree.feature())
+        Hits.bind(game)
+        HotdShortcut.bind(tree.feature())
+        MenuBack.bind(tree.feature())
+        Pings.bind(tree.feature())
+        SkyBlockMenuClicks.bind(tree.feature())
+        SlotGuards.bind(tree.feature())
+        TabBar.bind(tree.feature())
+        Profiles.bind(game, tree.feature())
     }
 
     fun restart(between: () -> Unit = {}) {
@@ -145,7 +172,8 @@ object DsModClient : ClientModInitializer {
         settings = file.load().apply { favorites = SettingsTree.favorites(favorites) }
         warnUnreadable()
         start()
-        Kit.register()
+        Hooks.register(settings.hud, ::pressed) { parent -> settingsScreen(parent) }
+        Kit.register(settings.hud)
         Looks.register()
         SlotArts.register()
         Hud.register()
@@ -176,7 +204,7 @@ object DsModClient : ClientModInitializer {
         Opens.register(Opens.HUD_EDITOR, ::openHudEditor)
         Opens.register(Opens.REQUESTS, Contribute::open)
         Recorder.register()
-        Recording.register()
+        Recording.register(::leave)
         Contribute.register()
         Profiles.registerNames()
 
@@ -208,12 +236,12 @@ object DsModClient : ClientModInitializer {
             }
             game.metrics.time("container-poll") { containers.poll(it) }
             game.metrics.time("entities") { entities.track(it) }
-            Frames.tick(it)
+            Frames.tick(it, game)
             Packets.tick(it)
             game.tick(System.currentTimeMillis())
             readouts.push()
             InventoryKey.tick(it)
-            Contribute.tick(game, runs<ReportGameData>(), System.currentTimeMillis())
+            Contribute.tick(System.currentTimeMillis())
             if (++ticks % FLUSH_TICKS == 0) {
                 saved.flush()
                 game.metrics.flush()

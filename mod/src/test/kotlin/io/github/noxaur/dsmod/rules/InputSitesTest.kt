@@ -192,9 +192,13 @@ private fun references(node: ClassNode) = (listOfNotNull(node.superName) + node.
 
 private fun display(internal: String) = internal.removePrefix(MOD).replace('/', '.').replace('$', '.')
 
+private const val INTERNAL = "\$io_github_noxaur_dsmod"
+
+private fun declared(method: String) = method.removeSuffix(INTERNAL)
+
 private fun origin(method: String, kotlin: Boolean) = when {
     method.startsWith("lambda$") -> method.removePrefix("lambda$").substringBeforeLast('$')
-    kotlin -> method.removePrefix("access$").substringBefore('$')
+    kotlin -> declared(method).removePrefix("access$").substringBefore('$')
     else -> method
 }
 
@@ -341,7 +345,7 @@ fun inputSites(classes: List<ByteArray>, widener: List<String> = emptyList(), la
         val outerMethod = node.outerMethod
         if (outer != null && outerMethod != null) return source(outer, outerMethod, node.outerMethodDesc)
         val real = origin(name, node.kotlin)
-        return Triple(node, real, desc.takeIf { real == name })
+        return Triple(node, real, desc.takeIf { real == declared(name) })
     }
 
     fun short(owner: String) = owner.removePrefix(layer).replace('/', '.').replace('$', '.')
@@ -360,16 +364,17 @@ fun inputSites(classes: List<ByteArray>, widener: List<String> = emptyList(), la
                     }
                 }.toList()
                 val read = method.instructions.filterIsInstance<FieldInsnNode>()
-                    .filter { it.owner.startsWith(layer) && it.name != "INSTANCE" && it.name != "Companion" && '$' !in it.name }
+                    .filter { it.owner.startsWith(layer) && '$' !in it.name }
+                    .filter { it.name != "INSTANCE" && it.name != "Companion" || called.none { call -> call.startsWith("${short(it.owner)}.") } }
                     .map { "${short(it.owner)}.${it.name}" }
                 if (called.isNotEmpty() || read.isNotEmpty()) callers.getOrPut(source(node, method.name, method.desc)) { sortedSetOf() } += called + read
             }
         }
     }
 
-    fun overloads(node: ClassNode, name: String) = node.methods.filter { it.name == name && it.access and (Opcodes.ACC_SYNTHETIC or Opcodes.ACC_BRIDGE) == 0 }
+    fun overloads(node: ClassNode, name: String) = node.methods.filter { declared(it.name) == name && it.access and (Opcodes.ACC_SYNTHETIC or Opcodes.ACC_BRIDGE) == 0 }
 
-    fun label(node: ClassNode, method: MethodNode) = "${display(node.name)}.${method.name}" + if (overloads(node, method.name).size > 1) method.desc else ""
+    fun label(node: ClassNode, method: MethodNode) = declared(method.name).let { name -> "${display(node.name)}.$name" + if (overloads(node, name).size > 1) method.desc else "" }
 
     for ((at, entries) in callers.entries.groupBy({ it.key.first to it.key.second }, { it.key.third to it.value })) {
         val (node, name) = at
@@ -622,6 +627,12 @@ class InputSitesTest {
                     M("send", primitive(), desc = "(I)V"),
                 ),
                 example("input/Holder", run(), fields = listOf("TASK")),
+                example("SingletonUser", run(*static("${MOD}example/input/Send", "INSTANCE"))),
+                example(
+                    "Internal",
+                    M("send", primitive(), desc = "(I)V", marks = listOf(approved("by", "noxaur", "reaches", listOf("Send.run")))),
+                    M("send$INTERNAL", primitive(), desc = "(Ljava/lang/String;)V"),
+                ),
                 example("HolderReader", run(*static("${MOD}example/input/Holder", "TASK"))),
                 example("Invokes", M("invokeStartAttack", access = Opcodes.ACC_PUBLIC, marks = listOf(annotation(INVOKER))), mixin = "net/minecraft/client/Minecraft"),
                 example("InvokerCaller", run(call("${MOD}example/Invokes", "invokeStartAttack"))),
@@ -649,8 +660,8 @@ class InputSitesTest {
         )
         assertEquals(
             listOf(
-                "Approved.run", "Bad.run", "Caller.run", "DerivedCaller.run", "Draws.dsmod\$hand", "HolderReader.run", "InvokerCaller.run", "Lambda.register",
-                "Later.schedule", "Overloaded.send()V", "Overloaded.send(I)V", "Reference.run", "Unsure.run",
+                "Approved.run", "Bad.run", "Caller.run", "DerivedCaller.run", "Draws.dsmod\$hand", "HolderReader.run", "Internal.send(I)V", "Internal.send(Ljava/lang/String;)V",
+                "InvokerCaller.run", "Lambda.register", "Later.schedule", "Overloaded.send()V", "Overloaded.send(I)V", "Reference.run", "SingletonUser.run", "Unsure.run",
             ),
             names(InputSite.Caller::class.java),
         )
@@ -662,6 +673,9 @@ class InputSitesTest {
         assertTrue(problems.getValue("Bad.run").orEmpty().contains("no GitHub login"))
         assertEquals(null, problems.getValue("Overloaded.send()V"))
         assertTrue(problems.getValue("Overloaded.send(I)V").orEmpty().contains("(new)"))
+        assertEquals(null, problems.getValue("Internal.send(I)V"))
+        assertTrue(problems.getValue("Internal.send(Ljava/lang/String;)V").orEmpty().contains("(new)"))
+        assertEquals(listOf("Send.INSTANCE"), (sites.single { it.name == "example.SingletonUser.run" } as InputSite.Caller).reaches)
         assertEquals(listOf("Holder.TASK"), (sites.single { it.name == "example.HolderReader.run" } as InputSite.Caller).reaches)
         assertTrue(problems.getValue("aw/dsmod.accesswidener").orEmpty().contains("(new) add the line # @InputApproved("))
         assertEquals(listOf("example.Invokes.invokeStartAttack"), (sites.single { it.name == "example.InvokerCaller.run" } as InputSite.Caller).reaches)

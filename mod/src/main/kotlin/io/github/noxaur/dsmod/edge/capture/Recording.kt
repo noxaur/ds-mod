@@ -6,7 +6,6 @@ import io.github.noxaur.dsmod.core.brief.BriefRun
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.Chat
-import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.edge.contribute.Contribute
 import io.github.noxaur.dsmod.edge.input.InputApproved
@@ -20,6 +19,8 @@ import java.nio.file.Files
 
 /** @keep `specs/Contribute.tla` is the life of a request's run. */
 object Recording {
+    private lateinit var leave: () -> Unit
+
     private const val BELOW_STATUS_EFFECTS = 54
     private const val PLATE_AND_MARGIN = 9
 
@@ -121,7 +122,7 @@ object Recording {
     @InputApproved(reaches = ["KeyPresses.take"])
     private fun tick(client: Minecraft) {
         // @keep A run that lost its connection during this tick must not finish and send now.
-        DsModClient.leave()
+        leave()
         val now = System.currentTimeMillis()
         if (ended(run, now)) {
             drainNextStep()
@@ -159,7 +160,8 @@ object Recording {
         if (request != null) cancel()
     }
 
-    fun register() {
+    fun register(leave: () -> Unit) {
+        this.leave = leave
         nextStep = KeyMappingHelper.registerKeyMapping(KeyMapping("key.dsmod.next_step", GLFW.GLFW_KEY_RIGHT_BRACKET, KeyMapping.Category.MISC))
         ClientTickEvents.END_CLIENT_TICK.register(::tick)
     }

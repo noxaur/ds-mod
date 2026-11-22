@@ -27,7 +27,13 @@ import net.minecraft.world.item.ItemStack
 import org.lwjgl.glfw.GLFW
 
 object TabBar {
-    private val shown get() = DsModClient.runs<MenuTabs>()
+    private lateinit var menuTabs: MenuTabs
+
+    fun bind(menuTabs: MenuTabs) {
+        this.menuTabs = menuTabs
+    }
+
+    private val shown get() = menuTabs.feature.runs
 
     private const val SEARCH_LENGTH = 64
 
@@ -63,7 +69,7 @@ object TabBar {
             fun edgeY(edge: TabEdge) = if (edge == TabEdge.TOP) screen.containerTop else screen.containerBottom
 
             val widgets = Screens.getWidgets(screen)
-            val tabs = DsModClient.feature<MenuTabs>().tabs.value.filter { it.slot in 0 until TabLayout.PER_EDGE }
+            val tabs = menuTabs.tabs.value.filter { it.slot in 0 until TabLayout.PER_EDGE }
             val selected = TabLayout.selected(tabs, Trail.opener(screen))
             val made = ArrayList<Pair<MenuTab, KitTab>>()
             val glass = { MenuSkin.glass(screen) }

@@ -16,7 +16,8 @@ import net.minecraft.network.chat.Component
 
 object ChatDrags {
     private lateinit var mover: HudMover
-    private val readouts get() = DsModClient.readouts
+    private lateinit var readouts: Readouts
+    private lateinit var editor: ChatHudEditor
     private lateinit var settings: DsModConfig.Hud
 
     private var changed = false
@@ -24,6 +25,11 @@ object ChatDrags {
     private var tipId: String? = null
     private var tipPlaced = false
     private var tip = emptyList<Component>()
+
+    fun bind(readouts: Readouts, editor: ChatHudEditor) {
+        this.readouts = readouts
+        this.editor = editor
+    }
 
     @InputApproved(reaches = ["Refusals.allowKeyPress", "Refusals.allowMouseClick", "Refusals.allowMouseDrag", "Refusals.allowMouseRelease", "Refusals.allowMouseScroll"])
     fun register(settings: DsModConfig.Hud, save: () -> Unit) {
@@ -98,7 +104,7 @@ object ChatDrags {
         }
     }
 
-    private fun on(client: Minecraft) = DsModClient.runs<ChatHudEditor>() && !client.gui.hud.isHidden
+    private fun on(client: Minecraft) = editor.feature.runs && !client.gui.hud.isHidden
 
     private fun under(client: Minecraft, screen: ChatScreen, x: Double, y: Double): Hud.Placed? {
         if (!on(client)) return null

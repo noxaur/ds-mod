@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge.contribute
 
+import io.github.noxaur.dsmod.core.feature.contribute.ReportGameData
 import io.github.noxaur.dsmod.core.backend.Backend
 import io.github.noxaur.dsmod.core.backend.Request
 import io.github.noxaur.dsmod.core.backend.Upload
@@ -16,7 +17,6 @@ import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.Account
 import io.github.noxaur.dsmod.edge.Background
 import io.github.noxaur.dsmod.edge.Chat
-import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
 import net.fabricmc.loader.api.FabricLoader
@@ -42,7 +42,15 @@ object Contribute {
     /** @keep Offers are fetched only after the startup sweep, so it never deletes a capture a run is writing. */
     private lateinit var swept: CompletableFuture<Unit>
 
-    private val names = { DsModClient.game.tabPlayers + Account.name }
+    private lateinit var game: Game
+    private lateinit var reportGameData: ReportGameData
+
+    fun bind(game: Game, reportGameData: ReportGameData) {
+        this.game = game
+        this.reportGameData = reportGameData
+    }
+
+    private val names = { game.tabPlayers + Account.name }
     private val unknowns = Unknowns(names)
     private val items = ItemSightings(names)
     private val sights = InventorySights(items)
@@ -62,7 +70,7 @@ object Contribute {
         val client = Minecraft.getInstance()
         val screen = ContributeScreen(signingIn = !Account.backend.signedIn, parent = client.gui.screen())
         client.setScreenAndShow(screen)
-        val places = DsModClient.game.places.value
+        val places = game.places.value
         swept.thenCompose { Account.backend.async { requests() } }.whenComplete { requests, error ->
             client.execute { if (error != null) screen.fail(Account.why(error)) else screen.offer(requests.filter { Requirements.qualifies(it, places) }) }
         }
@@ -185,7 +193,8 @@ object Contribute {
         runCatching { CompletableFuture.allOf(*uploads.toTypedArray()).get(QUIT_SECONDS, TimeUnit.SECONDS) }
     }
 
-    fun tick(game: Game, report: Boolean, now: Long) {
+    fun tick(now: Long) {
+        val report = reportGameData.feature.runs
         if ((game.metrics.onUnparsed != null) != report) game.metrics.onUnparsed = if (report) hear else null
         if (report) game.metrics.time("item-sights") { sights.poll(Minecraft.getInstance()) } else sights.reset()
         flush(game, unknowns.batch, report, now, "contribute.unknowns") { unknowns(it) }

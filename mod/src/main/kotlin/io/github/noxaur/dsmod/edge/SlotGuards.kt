@@ -30,11 +30,15 @@ object SlotGuards {
     private const val FLASH_MILLIS = 300L
     private const val RESULT_WAIT = 5
 
-    private val feature get() = DsModClient.feature<SlotLock>()
+    private lateinit var feature: SlotLock
+
+    fun bind(slotLock: SlotLock) {
+        feature = slotLock
+    }
     private val slotKey: Int get() = feature.slotLockKey.value
     private val itemKey: Int get() = feature.itemLockKey.value
 
-    private val on: Boolean get() = DsModClient.runs<SlotLock>()
+    private val on: Boolean get() = feature.feature.runs
     private val locks: SlotLocks get() = feature.locks
 
     private var from: Int? = null
