@@ -1,7 +1,8 @@
 package io.github.noxaur.dsmod.debug
 
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
+import io.github.noxaur.dsmod.edge.ScreenHooks
 import net.fabricmc.fabric.api.client.screen.v1.Screens
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.screens.ConnectScreen
 import net.minecraft.client.gui.screens.TitleScreen
@@ -16,16 +17,15 @@ object JoinDragSim {
     private const val ADDRESS = "dragsim.co"
 
     fun register() {
-        ScreenEvents.AFTER_INIT.register { client, screen, _, _ ->
-            if (screen !is TitleScreen) return@register
+        ScreenHooks.onEveryLayout<TitleScreen> { screen, _ ->
             val buttons = Screens.getWidgets(screen)
             val singleplayer = buttons.firstOrNull { (it.message.contents as? TranslatableContents)?.key == "menu.singleplayer" }
-                ?: return@register
+                ?: return@onEveryLayout
             buttons += Button.builder(Component.literal(LABEL)) {
                 // Enabled skips the resource pack prompt, and the pack runClient seeds is already on disk.
                 val server = ServerData("DragSim", ADDRESS, ServerData.Type.OTHER)
                     .apply { resourcePackStatus = ServerData.ServerPackStatus.ENABLED }
-                ConnectScreen.startConnecting(screen, client, ServerAddress.parseString(ADDRESS), server, false, null)
+                ConnectScreen.startConnecting(screen, Minecraft.getInstance(), ServerAddress.parseString(ADDRESS), server, false, null)
             }.bounds(singleplayer.x, singleplayer.y - 24, singleplayer.width, singleplayer.height).build()
         }
     }

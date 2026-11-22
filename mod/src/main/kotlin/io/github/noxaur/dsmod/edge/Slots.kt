@@ -5,7 +5,6 @@ import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
-import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import io.github.noxaur.dsmod.edge.ui.Kit
 import java.util.BitSet
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
@@ -90,9 +89,7 @@ object Slots {
                 for (i in 0 until HOTBAR_SLOTS) drawFront(graphics, Surface.HOTBAR, HOTBAR_FIRST + i, left + i * HOTBAR_PITCH, top)
             }
         }
-        // Fabric drops a screen's listeners on every init, so they are added again here.
-        ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
-            if (screen !is AbstractContainerScreen<*>) return@register
+        ScreenHooks.onEveryLayout<AbstractContainerScreen<*>> { screen, _ ->
             SlotArts.checkPacks()
             val font = Minecraft.getInstance().font
             ScreenEvents.afterBackground(screen).register { _, graphics, _, _, _ ->
@@ -202,17 +199,15 @@ object Slots {
 
     private inline fun each(screen: AbstractContainerScreen<*>, graphics: GuiGraphicsExtractor, draw: (Slot, Shown) -> Unit) {
         if (marks.isEmpty()) return
-        screen as ContainerScreenAccessor
         DsModClient.game.metrics.time("slots.draw") {
-            graphics.pose().pushMatrix()
-            graphics.pose().translate(screen.leftPos.toFloat(), screen.topPos.toFloat())
-            for (slots in marks.values) {
-                for ((index, shown) in slots) {
-                    val slot = screen.menu.slots.getOrNull(index)
-                    if (slot != null && !shown.hide) draw(slot, shown)
+            screen.drawInContainer(graphics) {
+                for (slots in marks.values) {
+                    for ((index, shown) in slots) {
+                        val slot = screen.menu.slots.getOrNull(index)
+                        if (slot != null && !shown.hide) draw(slot, shown)
+                    }
                 }
             }
-            graphics.pose().popMatrix()
         }
     }
 }

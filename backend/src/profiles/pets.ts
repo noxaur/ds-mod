@@ -1,10 +1,9 @@
 import type { Line, Span } from "../items/model.ts";
-import type { Catalog } from "../items/render/catalog.ts";
-import { named, statValues } from "../items/render/facts.ts";
-import { safeTexture } from "../items/render/policy.ts";
-import { count, flag, record, text } from "../items/render/read.ts";
-import { RARITY_COLORS } from "../items/render/tooltip.ts";
-import { titleCase } from "../items/title.ts";
+import { type Catalog, named, statValues } from "../items/render.ts";
+import { RARITY_COLORS } from "../upstream/rarity.ts";
+import { count, flag, record, text } from "../upstream/read.ts";
+import { safeTexture } from "../upstream/texture.ts";
+import { titleCase } from "../upstream/title.ts";
 import type { Pet } from "./model.ts";
 
 const GRAY = "#AAAAAA";

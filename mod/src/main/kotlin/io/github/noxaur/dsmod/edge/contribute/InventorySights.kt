@@ -2,6 +2,8 @@ package io.github.noxaur.dsmod.edge.contribute
 
 import io.github.noxaur.dsmod.core.contribute.ItemSightings
 import io.github.noxaur.dsmod.edge.remember
+import io.github.noxaur.dsmod.edge.itemId
+import io.github.noxaur.dsmod.edge.skinId
 import io.github.noxaur.dsmod.edge.skullTexture
 import io.github.noxaur.dsmod.edge.toItem
 import net.minecraft.client.Minecraft
@@ -46,10 +48,8 @@ class InventorySights(private val sightings: ItemSightings) {
     }
 
     private fun look(stack: ItemStack) {
-        val data = stack.get(DataComponents.CUSTOM_DATA)?.copyTag() ?: return
-        val entry = data.getCompoundOrEmpty("item_data").getString("item_id").orElse(null) ?: return
-        val skin = data.getCompoundOrEmpty("extra").getCompoundOrEmpty("item_skin").getString("skinId").orElse(null)
-        if (!sightings.batch.fresh(Look(entry, stack.item, stack.hasFoil(), skin, stack.skullTexture(), stack.get(DataComponents.LORE)))) return
+        val entry = stack.itemId ?: return
+        if (!sightings.batch.fresh(Look(entry, stack.item, stack.hasFoil(), stack.skinId, stack.skullTexture(), stack.get(DataComponents.LORE)))) return
         sightings.see(stack.toItem())
     }
 

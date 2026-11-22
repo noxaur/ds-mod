@@ -1,13 +1,11 @@
 package io.github.noxaur.dsmod.edge
 
-import com.google.common.collect.MapMaker
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.inventory.ShiftSlot
 import io.github.noxaur.dsmod.core.inventory.SlotLocks
 import io.github.noxaur.dsmod.core.inventory.shiftPlaces
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
-import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -18,14 +16,12 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
-import net.minecraft.core.component.DataComponents
 import net.minecraft.util.Util
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.inventory.ContainerInput
 import net.minecraft.world.inventory.InventoryMenu
 import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.component.CustomData
 
 /**
  * Slot Lock. Every way a menu moves an item goes through one method of the screen, so `SlotClickMixin` asks
@@ -52,19 +48,10 @@ object SlotGuards {
     /** While the item key is held, whether the items it passes over lock or unlock, as the first one with an ID did. */
     private var lockingItems: Boolean? = null
 
-    /** Each item's ID by its data component, which stacks share and never change. Reading one copies the whole tag. */
-    private val ids: MutableMap<CustomData, String> = MapMaker().weakKeys().makeMap()
-
-    /** The ID the server gives an item that does not stack, in `item_data.uuid`, or null. */
-    private fun id(stack: ItemStack): String? {
-        val data = stack.get(DataComponents.CUSTOM_DATA) ?: return null
-        return ids.getOrPut(data) { data.copyTag().getCompoundOrEmpty("item_data").getStringOr("uuid", "") }.ifEmpty { null }
-    }
-
     /** Whether [slot] is a locked slot of the player's inventory, or holds a locked item there. */
     private fun locked(slot: Slot): Boolean {
         val own = own(slot) ?: return false
-        return own in locks.locked || locks.items.isNotEmpty() && id(slot.item) in locks.items
+        return own in locks.locked || locks.items.isNotEmpty() && slot.item.itemUuid in locks.items
     }
     private var refused: Slot? = null
     private var refusedAt = 0L
@@ -94,9 +81,8 @@ object SlotGuards {
             pendingWaits = 0
             if (!steered(client, screen, slot)) pending = null
         }
-        // Fabric drops a screen's listeners on every init, so they are added again here.
-        ScreenEvents.AFTER_INIT.register { client, screen, _, _ ->
-            if (screen !is AbstractContainerScreen<*>) return@register
+        ScreenHooks.onEveryLayout<AbstractContainerScreen<*>> { screen, _ ->
+            val client = Minecraft.getInstance()
             pressing = false
             itemKeyDown = false
             ScreenKeyboardEvents.allowKeyPress(screen).register { _, event ->
@@ -134,7 +120,7 @@ object SlotGuards {
             ScreenEvents.afterForeground(screen).register { _, graphics, _, _, _ -> if (on) {
                     // Each frame, so a quick sweep along a row misses no item.
                     if (itemKeyDown) lockItem(screen, first = false)
-                    placed(screen, graphics) {
+                    if (locks.locked.isNotEmpty() || locks.items.isNotEmpty() || pressing) screen.drawInContainer(graphics) {
                         padlocks(screen, graphics)
                         link(screen, graphics)
                     }
@@ -150,7 +136,7 @@ object SlotGuards {
 
     private fun press(screen: AbstractContainerScreen<*>) {
         pressing = true
-        from = own((screen as ContainerScreenAccessor).hoveredSlot)
+        from = own(screen.slotUnderMouse)
     }
 
     private fun pressItem(screen: AbstractContainerScreen<*>) {
@@ -164,9 +150,9 @@ object SlotGuards {
      * which, and every item after it gets the same. An item that stacks has no ID of its own to lock.
      */
     private fun lockItem(screen: AbstractContainerScreen<*>, first: Boolean) {
-        val slot = (screen as ContainerScreenAccessor).hoveredSlot ?: return
+        val slot = screen.slotUnderMouse ?: return
         if (own(slot) == null || !slot.hasItem()) return
-        val id = id(slot.item)
+        val id = slot.item.itemUuid
         if (id == null) {
             // Only where the key went down, since a sweep crosses stacks on its way.
             if (first) Chat.notice(feature.feature.title, text { bad("An item that stacks cannot be locked. Lock its slot instead.") })
@@ -181,7 +167,7 @@ object SlotGuards {
         if (!pressing) return
         pressing = false
         val from = from ?: return
-        val to = own((screen as ContainerScreenAccessor).hoveredSlot) ?: return
+        val to = own(screen.slotUnderMouse) ?: return
         if (!on) return
         if (from == to) {
             feature.locks = locks.toggle(from)
@@ -200,12 +186,12 @@ object SlotGuards {
         if (input == ContainerInput.QUICK_MOVE && partner != null) {
             val above = find(screen, maxOf(own, partner))
             // The click the number key sends over a slot, which the player asked for by linking the two.
-            if (above != null) client.gameMode?.handleContainerInput(screen.menu.containerId, above.index, minOf(own, partner), ContainerInput.SWAP, client.player!!)
+            if (above != null) client.gameMode?.handleContainerInput(screen.menu.containerId, above.index, minOf(own, partner), ContainerInput.SWAP, checkNotNull(client.player) { "a click over a slot comes from a player" })
             return true
         }
         val refuses = slot != null && locked(slot) ||
             // A number key or the off-hand key over another slot trades with that hotbar slot or the off hand.
-            input == ContainerInput.SWAP && (button in locks.locked || client.player?.inventory?.getItem(button)?.let(::id) in locks.items) ||
+            input == ContainerInput.SWAP && (button in locks.locked || client.player?.inventory?.getItem(button)?.itemUuid in locks.items) ||
             // A double click gathers every stack like the carried one, out of locked slots too.
             input == ContainerInput.PICKUP_ALL && screen.menu.slots.any { locked(it) && ItemStack.isSameItemSameComponents(screen.menu.carried, it.item) }
         if (refuses) {
@@ -320,16 +306,7 @@ object SlotGuards {
     /** Whether the drop key outside a menu must not drop the held item. */
     fun keepsHeld(): Boolean {
         val inventory = Minecraft.getInstance().player?.inventory ?: return false
-        return on && (inventory.selectedSlot in locks.locked || id(inventory.selectedItem) in locks.items)
-    }
-
-    private inline fun placed(screen: AbstractContainerScreen<*>, graphics: GuiGraphicsExtractor, draw: () -> Unit) {
-        if (locks.locked.isEmpty() && locks.items.isEmpty() && !pressing) return
-        screen as ContainerScreenAccessor
-        graphics.pose().pushMatrix()
-        graphics.pose().translate(screen.leftPos.toFloat(), screen.topPos.toFloat())
-        draw()
-        graphics.pose().popMatrix()
+        return on && (inventory.selectedSlot in locks.locked || inventory.selectedItem.itemUuid in locks.items)
     }
 
     /**
@@ -337,7 +314,7 @@ object SlotGuards {
      * them, over the items so no item hides it. Links at rest show only their padlocks.
      */
     private fun link(screen: AbstractContainerScreen<*>, graphics: GuiGraphicsExtractor) {
-        val over = own((screen as ContainerScreenAccessor).hoveredSlot) ?: return
+        val over = own(screen.slotUnderMouse) ?: return
         val from = from.takeIf { pressing }
         val other = if (from == null) locks.partner(over) else over.takeIf { it != from && locks.link(from, it) != null }
         val a = find(screen, from ?: over) ?: return
@@ -356,7 +333,7 @@ object SlotGuards {
             val own = own(slot)
             if (flash > 0f && slot === refused) Kit.flash(graphics, slot.x, slot.y, 16, 16, flash)
             // Yellow for a slot, blue for a linked one, and green for an item that takes its lock along.
-            val role = if (own !in locks.locked) Role.GOOD else if (locks.partner(own!!) != null) Role.ACTION else Role.WARNING
+            val role = if (own == null || own !in locks.locked) Role.GOOD else if (locks.partner(own) != null) Role.ACTION else Role.WARNING
             Kit.icon(graphics, Icon.LOCK, slot.x, slot.y, role.argb())
         }
     }

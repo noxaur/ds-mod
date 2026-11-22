@@ -19,7 +19,9 @@ import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.TextBuilder
 import io.github.noxaur.dsmod.core.text.amount
+import io.github.noxaur.dsmod.core.text.count
 import io.github.noxaur.dsmod.core.text.duration
+import io.github.noxaur.dsmod.core.text.perHour
 import kotlinx.serialization.Serializable
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
@@ -109,7 +111,7 @@ class ActivePet(config: DsModConfig) : HasFeature {
     private var block: HudBlock? = null
 
     // The minutes to the next level the block shows, so it is rebuilt when they tick down.
-    private var nextShown = -1L
+    private var nextShown: String? = null
 
     init {
         feature.on<ContainerOpened> { _, _ -> menuSlot = -1 }
@@ -123,10 +125,10 @@ class ActivePet(config: DsModConfig) : HasFeature {
             pace.gainAt = now
             if (pace.ratio != null) block = null
         }
-        feature.line("Activated ", ACTIVATED) { (level, name), _ -> summoned(name, level.toInt()) }
+        feature.line("Activated ", ACTIVATED) { (level, name), _ -> summoned(name, count(level) ?: return@line) }
         feature.line(Regex(AUTOPET), { it }) { text, _ ->
             val match = AUTOPET_LINE.matchEntire(text)
-            if (match == null) feature.unparsed(text) else match.destructured.let { (level, name) -> summoned(name, level.toInt()) }
+            if (match == null) feature.unparsed(text) else match.destructured.let { (level, name) -> count(level)?.let { summoned(name, it) } }
             if (hideAutopet.value) feature.hide()
         }
         feature.line("Equipped ", EQUIPPED) { (item, _, name), _ ->
@@ -169,9 +171,11 @@ class ActivePet(config: DsModConfig) : HasFeature {
         val progress = card.progress ?: return
         this.progress[key] = card.pet.level to progress
         if (progress.max) return
-        val xp = progress.xp != null && progress.needed != null
-        val total = if (xp) progress.needed!! else 1.0
-        val at = if (xp) progress.xp!! else progress.fraction.toDouble()
+        val read = progress.xp
+        val needed = progress.needed
+        val xp = read != null && needed != null
+        val total = needed.takeIf { xp } ?: 1.0
+        val at = read.takeIf { xp } ?: progress.fraction.toDouble()
         val pace = pace
         // Less XP than the last read is another pet of the same name, summoned in the menu.
         if (pace == null || pace.key != key || pace.level != card.pet.level || pace.total != total || pace.xp != xp || at < pace.read) {
@@ -217,11 +221,10 @@ class ActivePet(config: DsModConfig) : HasFeature {
     /** The current pet's pace, when one was read at the level it is now. */
     private fun pace(pet: Pet, key: String) = pace?.takeIf { it.key == key && it.level == pet.level }
 
-    /** Whole minutes to the next level at [pace]'s rate, or -1 with no rate to tell it. */
-    private fun minutesToNext(pace: Pace?, now: Long): Long {
-        val perMilli = pace?.perMilli?.takeIf { it > 0 } ?: return -1
+    private fun nextLevel(pace: Pace?, now: Long): String? {
+        val perMilli = pace?.perMilli?.takeIf { it > 0 } ?: return null
         val left = (pace.total - pace.live) / perMilli - (now - pace.latest)
-        return (left.coerceAtLeast(0.0) / MILLIS_PER_MINUTE).roundToLong()
+        return duration(left.coerceAtLeast(0.0).roundToLong(), nearest = true)
     }
 
     fun hud(now: Long): HudBlock? {
@@ -233,7 +236,7 @@ class ActivePet(config: DsModConfig) : HasFeature {
         val pet = pet ?: return null
         val key = keyOf(pet.name)
         val pace = pace(pet, key)
-        if (settings.next && minutesToNext(pace, now) != nextShown) block = null
+        if (settings.next && nextLevel(pace, now) != nextShown) block = null
         block?.let { return it }
         val about = known.value.pets[key]
         val icon = if (!settings.icon) {
@@ -243,7 +246,7 @@ class ActivePet(config: DsModConfig) : HasFeature {
                 ?: pets.head(pet.name)
         }
         val read = progress[key]?.takeIf { it.first == pet.level }?.second ?: PetProgress.MAX.takeIf { about?.maxLevel == pet.level }
-        nextShown = minutesToNext(pace, now)
+        nextShown = nextLevel(pace, now)
         return feature.block(headed = false, icon = icon) {
             line {
                 muted("[Lvl ${pet.level}] ")
@@ -271,11 +274,11 @@ class ActivePet(config: DsModConfig) : HasFeature {
                 } else {
                     if (settings.rate) {
                         row("XP per Hour") {
-                            val perHour = perMilli * MILLIS_PER_HOUR
+                            val perHour = perHour(pace.live - pace.from, pace.latest - pace.start)
                             if (pace.xp) value(amount(perHour, places = 0)) else value("${amount(perHour * 100, trim = true)}%")
                         }
                     }
-                    if (settings.next) row("Next Level") { if (nextShown < 0) muted(NOT_GAINING) else value(duration(nextShown * MILLIS_PER_MINUTE.toLong())) }
+                    if (settings.next) row("Next Level") { nextShown?.let { value(it) } ?: muted(NOT_GAINING) }
                 }
             }
         }.also { block = it }
@@ -299,8 +302,6 @@ class ActivePet(config: DsModConfig) : HasFeature {
         const val READ_AGAIN = "Open your Pets menu again to see a rate."
         const val NOT_GAINING = "No XP gained yet"
         const val AUTOPET = "Autopet "
-        const val MILLIS_PER_MINUTE = 60_000.0
-        const val MILLIS_PER_HOUR = 3_600_000.0
         val ACTIVATED = Regex("""Activated \[Lvl (\d+)] (.+)!""")
         val AUTOPET_LINE = Regex("""Autopet equipped your \[Lvl (\d+)] (.+?)!.*""")
         val EQUIPPED = Regex("""Equipped (.+) on \[Lvl (\d+)] (.+)!""")

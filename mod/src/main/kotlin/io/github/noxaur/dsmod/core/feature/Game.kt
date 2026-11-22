@@ -210,7 +210,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             if (handler != null) metrics.time(feature.id) { handler.handle(heard, time) }
             when (heard) {
                 is EntitySeen -> feature.heldEntities[heard.id] = heard
-                is EntityRenamed -> feature.heldEntities[heard.id] = held.after!!
+                is EntityRenamed -> feature.heldEntities[heard.id] = checkNotNull(held.after) { "a renamed entity is held after the rename" }
                 is EntityGone -> feature.heldEntities.remove(heard.id)
                 else -> Unit
             }

@@ -11,7 +11,8 @@ import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import kotlinx.serialization.Serializable
-import java.util.Locale
+import io.github.noxaur.dsmod.core.text.fixed
+import io.github.noxaur.dsmod.core.text.perHour
 
 /** Every drop the player has had, by the name the server gives it, and the zealots they have killed. */
 @Serializable
@@ -62,11 +63,11 @@ class ZealotTracker(config: DsModConfig) : HasFeature {
         val inEnd = endMillis + (endSince?.let { now - it } ?: 0)
         return feature.block {
             row("Eyes") { value(eyes.toLong()) }
-            row("Eyes per Hour") { value(if (inEnd >= MIN_RATE_MILLIS) "%.1f".format(Locale.US, eyes * MILLIS_PER_HOUR / inEnd) else "-") }
+            row("Eyes per Hour") { value(if (inEnd >= MIN_RATE_MILLIS) fixed(perHour(eyes.toDouble(), inEnd), 1) else "-") }
             row("All-Time Eyes") { value((allTime.value.drops[EYE] ?: 0).toLong()) }
             if (kills > 0) {
                 row("Kills") { value(kills.toLong()); muted(" (${allTime.value.kills} all-time)") }
-                if (eyes > 0) row("Kills per Eye") { value("%.1f".format(Locale.US, kills.toDouble() / eyes)) }
+                if (eyes > 0) row("Kills per Eye") { value(fixed(kills.toDouble() / eyes, 1)) }
             }
             for ((name, count) in session) {
                 if (name == EYE) continue
@@ -81,6 +82,5 @@ class ZealotTracker(config: DsModConfig) : HasFeature {
     private companion object {
         const val EYE = "Summoning Eye"
         const val MIN_RATE_MILLIS = 60_000L
-        const val MILLIS_PER_HOUR = 3_600_000.0
     }
 }

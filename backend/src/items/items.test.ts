@@ -1,8 +1,7 @@
 import { Effect, Schema } from "effect";
 import { expect, test } from "vite-plus/test";
 
-import { makeApp } from "../app.ts";
-import { memoryServices } from "../memory.ts";
+import { sighting, testApp } from "../../test/harness.ts";
 import { ItemAppearances } from "./model.ts";
 import { MAX_PLAYER_ITEM_ROWS, MAX_SAMPLES } from "./items.ts";
 import { type ItemStore, MIN_PLAYERS, memoryItemStore } from "./store.ts";
@@ -10,39 +9,14 @@ import { type ItemStore, MIN_PLAYERS, memoryItemStore } from "./store.ts";
 const texture = (url: string) => btoa(JSON.stringify({ textures: { SKIN: { url } } }));
 const mojang = texture("http://textures.minecraft.net/texture/abc123");
 
-const sighting = (entry: string, extra: Record<string, unknown> = {}) => ({
-  entry,
-  material: "minecraft:iron_sword",
-  name: [{ text: "Scylla", color: "#FFAA00" }],
-  lore: [],
-  glint: true,
-  data: {},
-  ...extra,
-});
-
 /** A backend whose callers are whoever the cookie names, so a test is any number of players. */
 const backend = (items: ItemStore["Service"] = memoryItemStore()) => {
-  const app = makeApp(memoryServices({ items }), (request) => ({
-    userId: request.headers.get("cookie"),
-    adminToken: "secret",
-  }));
+  const { call } = testApp({ items });
   const send = (who: string, sightings: unknown[]) =>
-    app(
-      new Request("http://backend/v1/contrib/items", {
-        method: "POST",
-        headers: { "content-type": "application/json", cookie: who },
-        body: JSON.stringify({ modVersion: "1.0.0", items: sightings }),
-      }),
-    );
-  const admin = async (query = "") => {
-    const response = await app(
-      new Request(`http://backend/v1/admin/items${query}`, { headers: { authorization: "Bearer secret" } }),
-    );
-    return { status: response.status, text: await response.text() };
-  };
+    call(who, "POST", "/v1/contrib/items", { modVersion: "1.0.0", items: sightings });
+  const admin = (query = "") => call("agent", "GET", `/v1/admin/items${query}`);
   const hints = (...entries: string[]) => Effect.runPromise(items.hints(entries));
-  const entries = async (query = "") =>
-    Schema.decodeUnknownSync(ItemAppearances)(JSON.parse((await admin(query)).text));
+  const entries = async (query = "") => Schema.decodeUnknownSync(ItemAppearances)((await admin(query)).value);
   return { send, admin, entries, hints };
 };
 
@@ -117,8 +91,9 @@ test("a texture counts when two players saw it on the same skin", async () => {
 
 test("a texture from anywhere but textures.minecraft.net refuses the sighting", async () => {
   const { send, hints, entries } = backend();
+  const evil = texture("http://evil.example/texture/abc");
   const bad = [
-    texture("http://evil.example/texture/abc"),
+    evil,
     texture("http://textures.minecraft.net.evil.example/texture/abc"),
     texture("http://evil.example/@textures.minecraft.net/texture/abc"),
     texture("http://textures.minecraft.net:8080/texture/abc123"),
@@ -137,11 +112,11 @@ test("a texture from anywhere but textures.minecraft.net refuses the sighting", 
   }
   expect([...(await hints("head"))]).toEqual([]);
   expect((await entries()).items).toEqual([]);
-  await send("ann", [sighting("head", { skullTexture: bad[0] }), sighting("good")]);
+  await send("ann", [sighting("head", { skullTexture: evil }), sighting("good")]);
   expect((await entries()).items).toMatchObject([{ entry: "good" }]);
 });
 
-const sendMany = async (send: (who: string, sightings: unknown[]) => Promise<Response>, who: string, count: number) => {
+const sendMany = async (send: ReturnType<typeof backend>["send"], who: string, count: number) => {
   // 50 a call is the API's limit.
   for (let from = 0; from < count; from += 50) {
     await send(
@@ -204,12 +179,13 @@ test("the agent's view never holds a user id", async () => {
   const bob = "user-bob-9b2e";
   await send(ann, [sighting("scylla", { skullTexture: mojang })]);
   await send(bob, [sighting("scylla", { skullTexture: mojang })]);
-  const { status, text } = await admin("?entry=scylla");
+  const { status, value } = await admin("?entry=scylla");
+  const text = JSON.stringify(value);
   expect(status).toBe(200);
   expect(text).toContain("scylla");
   expect(text).not.toContain(ann);
   expect(text).not.toContain(bob);
-  expect(JSON.parse(text)).toMatchObject({
+  expect(value).toMatchObject({
     items: [{ players: 2, glintPlayers: 2, textures: [{ skinId: "", players: 2 }] }],
   });
 });
