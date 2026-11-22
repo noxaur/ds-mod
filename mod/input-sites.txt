@@ -77,7 +77,7 @@ gate edge.SlotGuards 01bcaf19e519  SlotLock
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-gate edge.TabBar 135f59be5897  BetterUi, MenuTabs
+gate edge.TabBar 0aaaf510acda  MenuTabs
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
 gate edge.Trail d75180319c06
