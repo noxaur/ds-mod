@@ -1,10 +1,9 @@
 package io.github.noxaur.dsmod.core.game
 
 import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.core.text.count
+import io.github.noxaur.dsmod.core.text.number
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.contentOrNull
 
 /**
  * A pet as dragsim.co names it everywhere: `[Lvl 100] Black Cat`, with the name in its rarity's color. The sidebar
@@ -18,7 +17,7 @@ data class Pet(val name: String, val level: Int, val rarity: Role) {
         fun of(text: ServerText, plain: String = text.plain.trim()): Pet? {
             val (level, name) = LINE.matchEntire(plain)?.destructured ?: return null
             val color = text.spans.lastOrNull { it.text.isNotBlank() }?.color
-            return Pet(name, level.toIntOrNull() ?: return null, Role.rarity(color) ?: Role.COMMON)
+            return Pet(name, count(level) ?: return null, Role.rarity(color) ?: Role.COMMON)
         }
 
         /** The name of the pet [plain] names, without its level, which goes up in play. */
@@ -87,10 +86,10 @@ data class PetCard(
          * A pet below its max level whose lines hold neither has a null progress and those lines in [unread].
          */
         fun of(item: Item): PetCard? {
-            val lore = item.lore.map { clean(it.plain) }
+            val lore = item.cleanLore
             if (ACTIVE !in lore) return null
             val pet = item.name?.let(Pet::of) ?: return null
-            val key = uuid(item) ?: pet.name
+            val key = item.string("extra", "item_uuid", "uuid") ?: pet.name
             val category = lore.firstNotNullOfOrNull { FOOTER.matchEntire(it)?.groupValues?.get(1)?.trim() }
             val heldAt = lore.indexOf(HELD)
             val held = item.lore.getOrNull(heldAt + 1)?.takeIf { heldAt >= 0 && lore[heldAt + 1].isNotEmpty() }?.let {
@@ -103,22 +102,16 @@ data class PetCard(
                 .filter { it.isNotEmpty() }
             if (MAX_LEVEL in lines) return PetCard(pet, item, held, PetProgress.MAX, key = key, category = category)
             val xp = lines.firstNotNullOfOrNull { XP.find(it) }?.destructured?.let { (have, need) ->
-                val a = have.replace(",", "").toDoubleOrNull()
-                val b = need.replace(",", "").toDoubleOrNull()
+                val a = number(have)
+                val b = number(need)
                 if (a != null && b != null && b > 0) PetProgress((a / b).toFloat().coerceIn(0f, 1f), a, b) else null
             }
-            val percent = lines.firstNotNullOfOrNull { PERCENT.find(it) }?.groupValues?.get(1)?.toFloatOrNull()
+            val percent = lines.firstNotNullOfOrNull { PERCENT.find(it) }?.groupValues?.get(1)?.let(::number)?.toFloat()
                 ?.let { PetProgress((it / 100f).coerceIn(0f, 1f)) }
             val progress = xp ?: percent
             val unread = if (progress == null && lines.isNotEmpty()) lines.joinToString(" / ") else null
             return PetCard(pet, item, held, progress, unread, key, category)
         }
-
-        /** The uuid dragsim.co gives each pet item in `extra.item_uuid`, as on a pet in the Auction House. */
-        private fun uuid(item: Item) =
-            (((item.data["extra"] as? JsonObject)?.get("item_uuid") as? JsonObject)?.get("uuid") as? JsonPrimitive)?.contentOrNull
-
-        private fun clean(line: String) = line.filterNot { it in '\uE000'..'\uF8FF' }.trim()
     }
 }
 
@@ -131,5 +124,5 @@ object CombatXp {
     const val KILL_WINDOW_MILLIS = 20L
     private val GAIN = Regex("""\+([\d,.]+) Combat \(""")
 
-    fun gained(plain: String): Double? = GAIN.find(plain)?.groupValues?.get(1)?.replace(",", "")?.toDoubleOrNull()
+    fun gained(plain: String): Double? = GAIN.find(plain)?.groupValues?.get(1)?.let(::number)
 }

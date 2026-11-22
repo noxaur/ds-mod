@@ -5,7 +5,7 @@ import catalog from "../fixtures/catalog.json" with { type: "json" };
 import games from "../fixtures/game-items.json" with { type: "json" };
 import { makeRenderer } from "../render.ts";
 import { toUpstream } from "./fromGame.testing.ts";
-import { record } from "./read.ts";
+import { record } from "../../upstream/read.ts";
 
 const Span = Schema.Record(Schema.String, Schema.Unknown);
 type Span = typeof Span.Type;

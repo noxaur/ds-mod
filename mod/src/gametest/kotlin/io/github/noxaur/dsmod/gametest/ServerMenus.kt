@@ -60,7 +60,7 @@ object ServerMenus {
 
     inline fun <reified W : AbstractWidget> widgets(context: ClientGameTestContext, crossinline which: (W) -> Boolean = { true }) =
         context.computeOnClient<List<W>, Nothing> { client ->
-            val screen = client.gui.screen() as? AbstractContainerScreen<*> ?: return@computeOnClient emptyList()
+            val screen = client.gui.screen() ?: return@computeOnClient emptyList()
             Screens.getWidgets(screen).filterIsInstance<W>().filter { it.visible && which(it) }
         }
 
