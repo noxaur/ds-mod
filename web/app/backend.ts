@@ -1,10 +1,9 @@
 import { Effect, Schema } from "effect";
 
+import { trustedKeyHeader } from "../shared/website";
 import { backendUrl, trustedKey } from "./env";
 
 export const sessionCookie = "dsmod_session";
-
-export const trustedKeyHeader = "x-auth-trusted-key";
 
 export const backendIsUp = Effect.tryPromise(() => fetch(`${backendUrl}/healthz`, { cache: "no-store" })).pipe(
   Effect.map((response) => response.ok),

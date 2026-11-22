@@ -2,8 +2,8 @@ import { afterEach, expect, test, vi } from "vite-plus/test";
 import { Schema } from "effect";
 
 import { authRequest, testAuth } from "../../test/harness.ts";
-import { type HasJoined, mojangHasJoined, websiteRelay } from "./minecraft.ts";
-import { trustedKeyHeader } from "./trusted.ts";
+import { relayKeyHeader, trustedKeyHeader } from "../../../web/shared/website.ts";
+import { type HasJoined, mojangHasJoined } from "./minecraft.ts";
 
 const UUID = "069a79f4-44e9-4726-a5be-fca90e38aaf5";
 const OLD_SKIN = "https://textures.minecraft.net/texture/01d";
@@ -217,12 +217,23 @@ test.each([
   });
 });
 
-test("a backend with the website's key asks Mojang through the website", async () => {
+const relay = { url: "https://website.test/mojang/has-joined", key: "the-key" };
+
+test("a backend given the relay asks Mojang through it, with the relay's key", async () => {
   const fetchMock = mojangSays(new Response(null, { status: 204 }));
-  expect(await mojangHasJoined("the-key")("Notch", "ab".repeat(20))).toBeNull();
+  expect(await mojangHasJoined(relay)("Notch", "ab".repeat(20))).toBeNull();
   const [url, init] = fetchMock.mock.calls[0] ?? [];
-  expect(String(url)).toBe(`${websiteRelay}?username=Notch&serverId=${"ab".repeat(20)}`);
-  expect(new Headers(init?.headers).get(trustedKeyHeader)).toBe("the-key");
+  expect(String(url)).toBe(`${relay.url}?username=Notch&serverId=${"ab".repeat(20)}`);
+  expect(new Headers(init?.headers).get(relayKeyHeader)).toBe("the-key");
+  expect(new Headers(init?.headers).has(trustedKeyHeader)).toBe(false);
+});
+
+test("a backend with the trusted key also sends it, so a website from before the relay key still answers", async () => {
+  const fetchMock = mojangSays(new Response(null, { status: 204 }));
+  await mojangHasJoined({ ...relay, trustedKey: "the-trusted-key" })("Notch", "ab".repeat(20));
+  const headers = new Headers(fetchMock.mock.calls[0]?.[1]?.headers);
+  expect(headers.get(relayKeyHeader)).toBe("the-key");
+  expect(headers.get(trustedKeyHeader)).toBe("the-trusted-key");
 });
 
 test.each([
@@ -230,16 +241,16 @@ test.each([
   ["is unreachable", new Error("down"), "The website's Mojang relay did not answer."],
 ])("a relay that %s is named, not blamed on Mojang", async (_name, response, message) => {
   mojangSays(response);
-  await expect(mojangHasJoined("the-key")("Notch", "ab".repeat(20))).rejects.toMatchObject({
+  await expect(mojangHasJoined(relay)("Notch", "ab".repeat(20))).rejects.toMatchObject({
     statusCode: 503,
     body: { message },
   });
 });
 
-test.each([undefined, ""])("a backend without the website's key (%j) asks Mojang itself", async (key) => {
+test("a backend without a relay asks Mojang itself, and sends no key", async () => {
   const fetchMock = mojangSays(new Response(null, { status: 204 }));
-  await mojangHasJoined(key)("Notch", "ab".repeat(20));
+  await mojangHasJoined()("Notch", "ab".repeat(20));
   const [url, init] = fetchMock.mock.calls[0] ?? [];
   expect(String(url)).toMatch(/^https:\/\/sessionserver\.mojang\.com\//u);
-  expect(new Headers(init?.headers).has(trustedKeyHeader)).toBe(false);
+  expect(new Headers(init?.headers).has(relayKeyHeader)).toBe(false);
 });

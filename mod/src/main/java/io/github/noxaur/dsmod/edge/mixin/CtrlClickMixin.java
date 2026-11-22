@@ -1,7 +1,6 @@
 package io.github.noxaur.dsmod.edge.mixin;
 
-import io.github.noxaur.dsmod.core.feature.general.CtrlClick;
-import io.github.noxaur.dsmod.edge.DsModClient;
+import io.github.noxaur.dsmod.edge.Hooks;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.input.MouseButtonInfo;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,6 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 abstract class CtrlClickMixin {
     @Inject(method = "simulateRightClick", at = @At("HEAD"), cancellable = true)
     private void dsmod$keep(MouseButtonInfo button, boolean pressed, CallbackInfoReturnable<MouseButtonInfo> cir) {
-        if (pressed && DsModClient.INSTANCE.runs(CtrlClick.class)) cir.setReturnValue(button);
+        if (pressed && Hooks.ctrlClicks()) cir.setReturnValue(button);
     }
 }

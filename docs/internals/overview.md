@@ -14,6 +14,10 @@ The mod's logic imports nothing from Minecraft or Fabric, and only the edge does
 
 The features that read the server read lines in dragsim.co's own words, so on another server they can only misread them, and a wrong count is saved for good. So until the player turns DragSim Only off, the logic turns every feature off away from dragsim.co, in one place rather than once per kind of feature. The edge only reports whether the player reached dragsim.co's address, decided once per connection, and DragSim Only is the one feature that check never turns off. A hardcoded IP was rejected, because it would stop matching the day the server moves.
 
+## The edge is handed what it uses, again on every start
+
+An edge part gets the game, its features and the config from the one place that builds them, rather than looking them up, so each part shows what it depends on and the next part copies that. The game tests start the logic afresh before each test, but the edge's hooks into the game last the whole session, because the game can't drop them. So every start hands the edge its parts again. Rebuilding the edge with the logic was rejected because its hooks can't be dropped. Keeping one game for the whole session was rejected because every feature that keeps state would then need its own reset.
+
 ## The debug build runs everywhere
 
 The debug build lifts the dragsim.co gate, because the game tests and a local run play in singleplayer. Making each test turn the setting off first was rejected, because it is one more thing to forget. For the same reason the gate starts open in the logic, so a unit test or a replay never meets it.

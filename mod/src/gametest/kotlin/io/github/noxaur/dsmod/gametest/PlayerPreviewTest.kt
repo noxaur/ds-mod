@@ -21,7 +21,7 @@ class PlayerPreviewTest : FabricClientGameTest {
         val driver = SettingsDriver(context)
         fun preview() = context.computeOnClient<PlayerPreview, Nothing> { (it.gui.screen() as SettingsScreen).editor("modelPreview") as PlayerPreview }
         fun open() {
-            context.setScreen { SettingsScreen(TitleScreen(), SettingsTabs(at("General")), reveal = "modelPreview") }
+            context.setScreen { DsModClient.settingsScreen(TitleScreen(), SettingsTabs(at("General")), reveal = "modelPreview") }
             context.waitTicks(2)
         }
         fun near(got: Float, want: Float, what: String) = check(abs(got - want) < 0.5f) { "$what is $got, not $want" }

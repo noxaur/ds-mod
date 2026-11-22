@@ -83,6 +83,11 @@ class FavoritesTest {
     }
 
     @Test
+    fun `a feature that became another's part keeps its star and its rows' stars`() {
+        assertEquals(listOf("autoClickLeft", "autoClickRightKey"), SettingsTree.favorites(listOf("auto-left-click", "autoRightClickKey")))
+    }
+
+    @Test
     fun `a setting unstarred in its own category leaves Favorites at once`() {
         val view = FavoritesView()
         val after = view.toggle(listOf("general.fullbright", "loot.rareDropAlert"), "general.fullbright", here = false)

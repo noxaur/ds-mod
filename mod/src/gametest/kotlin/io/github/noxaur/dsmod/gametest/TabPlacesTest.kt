@@ -31,7 +31,7 @@ class TabPlacesTest : FabricClientGameTest {
     private fun TabsDriver.places() {
         val tabs = { context.computeOnClient<List<MenuTab>, Nothing> { DsModClient.feature<MenuTabs>().tabs.value } }
 
-        context.setScreen { SettingsScreen(null, SettingsTabs(at("Menus")), reveal = "tabs") }
+        context.setScreen { DsModClient.settingsScreen(null, SettingsTabs(at("Menus")), reveal = "tabs") }
         context.waitTicks(2)
         spot("tabs")
         context.shotInBothThemes("tab-places")

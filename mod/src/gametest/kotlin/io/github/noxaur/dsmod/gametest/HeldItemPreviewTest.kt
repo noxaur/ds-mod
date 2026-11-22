@@ -6,7 +6,6 @@ import io.github.noxaur.dsmod.core.hand.HandStyle
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.HeldItemPreview
-import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -23,7 +22,7 @@ class HeldItemPreviewTest : FabricClientGameTest {
         fun width(label: HandPreview) = context.computeOnClient<Int, Nothing> { it.font.width(label.toString()) } + 12
         try {
             HeldItemPreview.shown = HandPreview.HELD
-            context.setScreen { SettingsScreen(TitleScreen(), SettingsTabs(at("General")), reveal = "heldItemPreview") }
+            context.setScreen { DsModClient.settingsScreen(TitleScreen(), SettingsTabs(at("General")), reveal = "heldItemPreview") }
             context.waitTicks(2)
             val spot = driver.spot("heldItemPreview")
             context.shotInBothThemes("held-preview")

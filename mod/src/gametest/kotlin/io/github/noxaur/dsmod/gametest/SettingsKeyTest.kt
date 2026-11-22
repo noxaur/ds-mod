@@ -45,10 +45,10 @@ class SettingsKeyTest : FabricClientGameTest {
                 context.waitTicks(3)
                 check(open()) { "/dsmod zealot opened ${screen()}" }
                 val found = context.computeOnClient<List<String>, Nothing> { (it.gui.screen() as SettingsScreen).shown() }
-                val query = context.computeOnClient<String, Nothing> { SettingsScreen.session().current.place.query }
+                val query = context.computeOnClient<String, Nothing> { SettingsScreen.session(DsModClient.settings).current.place.query }
                 check(query == "zealot" && "zealot-tracker" in found) { "/dsmod zealot searched \"$query\" and lists $found" }
                 context.takeScreenshot("settings-search")
-                context.runOnClient<Nothing> { SettingsScreen.session().current.search("") }
+                context.runOnClient<Nothing> { SettingsScreen.session(DsModClient.settings).current.search("") }
             } finally {
                 settings.settingsKey = -1
                 close()

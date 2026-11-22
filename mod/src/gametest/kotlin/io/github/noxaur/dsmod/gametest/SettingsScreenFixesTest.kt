@@ -123,7 +123,7 @@ class SettingsScreenFixesTest : FabricClientGameTest {
     private fun TabsDriver.item() {
         val menuTabs = DsModClient.feature<MenuTabs>()
         context.runOnClient<Nothing> { menuTabs.tabs.value = TabLayout.DEFAULT }
-        context.setScreen { SettingsScreen(null, SettingsTabs(at("Menus")), reveal = "tabs") }
+        context.setScreen { DsModClient.settingsScreen(null, SettingsTabs(at("Menus")), reveal = "tabs") }
         context.waitTicks(2)
         val storage = place(TabEdge.BOTTOM, 0)
         click(storage.first, storage.second)

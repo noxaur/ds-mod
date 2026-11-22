@@ -36,8 +36,13 @@ object ForgeCrafts {
 
     private const val WAIT_MILLIS = 1000L
 
-    private val feature get() = DsModClient.feature<ForgeCraft>()
-    private val on get() = DsModClient.runs<ForgeCraft>()
+    private lateinit var feature: ForgeCraft
+
+    fun bind(forgeCraft: ForgeCraft) {
+        feature = forgeCraft
+    }
+
+    private val on get() = feature.feature.runs
 
     private var clicked: AbstractContainerMenu? = null
     private var clickedAt = 0L

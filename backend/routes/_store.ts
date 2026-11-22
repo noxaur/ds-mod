@@ -2,6 +2,7 @@ import { Effect, Option, Schema } from "effect";
 import { and, asc, db, eq, gt, inArray, sql } from "void/db";
 import { kv } from "void/kv";
 import { storage } from "void/storage";
+import { requireRuntimeBinding } from "void/_env";
 
 import { itemSamples, itemSeen, itemTextures, requests, skips, submissions, unknowns } from "../db/schema.ts";
 import { RecordingRequest, RequestSpec } from "../src/contrib/model.ts";
@@ -16,6 +17,7 @@ import {
   pageOf,
   type TextureTally,
 } from "../src/items/store.ts";
+import type { Limiter, Rate } from "../src/limiter.ts";
 import { type ProfileStore, WriteRefused } from "../src/profiles/store.ts";
 import { type Upstream, UpstreamDown } from "../src/profiles/upstream.ts";
 
@@ -300,4 +302,16 @@ export const itemStore: ItemStore["Service"] = {
       const { found, textures } = await talliesOf(entries);
       return hintsFrom(entries, found, textures);
     }),
+};
+
+// @keep void.config.ts sets each binding's limit.
+const RATE_BINDINGS: Record<Rate, string> = { player: "RATE_PLAYER", profile: "RATE_PROFILE", items: "RATE_ITEMS" };
+
+/** @keep Cloudflare counts each rate in each of its locations apart and catches up in the background, so a player who
+ * moves between locations gets a little more. */
+export const limiter: Limiter = {
+  allow: (rate, userId) =>
+    run(() => requireRuntimeBinding<RateLimit>(RATE_BINDINGS[rate]).limit({ key: userId })).pipe(
+      Effect.map(({ success }) => success),
+    ),
 };

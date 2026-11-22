@@ -42,6 +42,12 @@ import org.joml.Vector2f
 import org.lwjgl.glfw.GLFW
 
 object CopyChats {
+    private lateinit var copyChat: CopyChat
+
+    fun bind(copyChat: CopyChat) {
+        this.copyChat = copyChat
+    }
+
     enum class Format(val label: String) { TEXT("Text"), FORMATTED("Formatted"), JSON("JSON") }
 
     class Menu(val x: Int, val y: Int, val header: String, private val widths: List<Int>) {
@@ -112,7 +118,7 @@ object CopyChats {
                 selection = Selection()
                 layouts.clear()
             }
-            ScreenMouseEvents.allowMouseClick(screen).register { _, event -> !DsModClient.runs<CopyChat>() || !pressed(client, event) }
+            ScreenMouseEvents.allowMouseClick(screen).register { _, event -> !copyChat.feature.runs || !pressed(client, event) }
             ScreenMouseEvents.allowMouseRelease(screen).register { _, event ->
                 if (event.button() != 1 || drag == null) return@register true
                 drag = null

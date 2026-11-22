@@ -7,14 +7,15 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class EntityFilterTest {
-    private val pets = listOf(Pet.STANDS)
+    private val stands = EntityFilter(setOf("minecraft:armor_stand"), "[Lvl ")
+    private val pets = listOf(stands)
     private fun stand(name: String) = EntitySeen(3, "minecraft:armor_stand", text(name))
 
     @Test
     fun `a filter takes an entity by its type and the start of its name`() {
-        assertEquals(true, Pet.STANDS.matches(stand("[Lvl 100] Black Cat")))
-        assertEquals(false, Pet.STANDS.matches(stand("Click to talk")))
-        assertEquals(false, Pet.STANDS.matches(EntitySeen(3, "minecraft:zombie", text("[Lvl 100] Black Cat"))))
+        assertEquals(true, stands.matches(stand("[Lvl 100] Black Cat")))
+        assertEquals(false, stands.matches(stand("Click to talk")))
+        assertEquals(false, stands.matches(EntitySeen(3, "minecraft:zombie", text("[Lvl 100] Black Cat"))))
     }
 
     @Test

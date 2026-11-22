@@ -1,7 +1,8 @@
 import { defineConfig } from "void/config";
 
-/** @keep Void loads this file on its own, so the limits are written out here, and a test holds them to `RATES` in
- * src/limiter.ts. A namespace id names the count in the Cloudflare account, so changing one starts it afresh. */
+/** @keep Calls a signed-in player may make in a minute. The mod sends items once in 20 minutes and asks for one profile
+ * at a time, so a real player stays far under each. A namespace id names the count in the Cloudflare account, so changing
+ * one starts it afresh. */
 const rate = (name: string, namespace_id: string, limit: number) => ({
   name,
   namespace_id,

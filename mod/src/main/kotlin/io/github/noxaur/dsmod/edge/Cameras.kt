@@ -21,9 +21,15 @@ import net.minecraft.world.phys.Vec3
 object Cameras {
     private const val CLEAR = 0.2
 
-    private val camera: Camera get() = DsModClient.feature(Camera::class.java)
-    private val freeLook: FreeLook get() = DsModClient.feature(FreeLook::class.java)
-    private val shaping: Boolean get() = DsModClient.runs<Camera>()
+    private lateinit var camera: Camera
+    private lateinit var freeLook: FreeLook
+
+    fun bind(camera: Camera, freeLook: FreeLook) {
+        this.camera = camera
+        this.freeLook = freeLook
+    }
+
+    private val shaping: Boolean get() = camera.feature.runs
     private val views: Views get() = if (shaping) camera.views.value else Views.ALL
 
     private val slide = Slide()
@@ -59,7 +65,7 @@ object Cameras {
 
     fun frame(client: Minecraft) {
         val player = client.player
-        val allowed = player != null && DsModClient.runs<FreeLook>()
+        val allowed = player != null && freeLook.feature.runs
         val down = allowed && Keys.held(client, freeLook.key.value)
         val pressed = allowed && tapped && !wasDown
         val spent = armed
@@ -93,7 +99,7 @@ object Cameras {
             if (!tapped || wasDown) return false
             val client = Minecraft.getInstance()
             val player = client.player
-            if (player == null || !DsModClient.runs<FreeLook>()) return false
+            if (player == null || !freeLook.feature.runs) return false
             armed = true
             begin(client, player)
         }
