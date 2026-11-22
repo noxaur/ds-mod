@@ -75,7 +75,7 @@ gate edge.Pings 374f3f901a23  PerformanceStats
     sends through ClientPacketListener.send
 gate edge.PlayerCommands 0b1a1b5ade3a
     sends through ClientPacketListener.sendCommand
-gate edge.SlotGuards 8b36834369db  SlotLock
+gate edge.SlotGuards e030b53e5ba3  SlotLock
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick

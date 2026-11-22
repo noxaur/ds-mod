@@ -1,4 +1,4 @@
-import { ByteSize, Cause, Context, Effect, ErrorReporter, Layer, Option, Redacted } from "effect";
+import { ByteSize, Cause, Clock, Context, Effect, ErrorReporter, Layer, Option, Redacted } from "effect";
 import { HttpIncomingMessage, HttpRouter, HttpServer, HttpServerError } from "effect/http";
 import { HttpApiBuilder, HttpApiError, HttpApiMiddleware } from "effect/http-api";
 
@@ -124,6 +124,7 @@ export interface Services {
   readonly items: ItemStore["Service"];
   readonly profiles: ProfileStore["Service"];
   readonly upstream: Upstream["Service"];
+  readonly clock: Clock.Clock;
 }
 
 /**
@@ -135,6 +136,7 @@ export const makeApp = (services: Services, callerOf: (request: Request) => Call
     Context.add(ItemStore, services.items),
     Context.add(ProfileStore, services.profiles),
     Context.add(Upstream, services.upstream),
+    Context.add(Clock.Clock, services.clock),
     Context.add(ErrorReporter.CurrentErrorReporters, new Set([logFailures])),
     Context.add(HttpIncomingMessage.MaxBodySize, MAX_BODY),
   );

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { expect, test, vi } from "vite-plus/test";
 
 import { openapi, openapiFile } from "../scripts/openapi.ts";
+import { advance, testClock } from "../test/harness.ts";
 import { Effect, Schema } from "effect";
 
 import { Api } from "./api.ts";
@@ -17,6 +18,8 @@ const spec = {
   timeoutSeconds: 300,
   wanted: 2,
 };
+
+const clock = await testClock("2026-11-15T12:00:00Z");
 
 const invented = (from: number) =>
   Array.from({ length: 100 }, (_, index) => ({ kind: "chat", signature: `s${String(from + index)}`, sample: "x" }));
@@ -33,7 +36,7 @@ const Listed = Schema.decodeUnknownSync(
 /** A backend with nothing in it, and a way to call it as an agent, as a player, or as nobody. */
 function backend() {
   // Who is signed in is what Void would say: here, whoever the test's cookie names. The admin token is "secret".
-  const app = makeApp(memoryServices(), (request) => ({
+  const app = makeApp(memoryServices({ clock }), (request) => ({
     userId: request.headers.get("cookie"),
     adminToken: "secret",
   }));
@@ -54,10 +57,7 @@ function backend() {
     }
     // The store orders runs by time and then by random id, so each request starts in a later millisecond than the
     // last, and a test's runs are lettered in the order it sends them.
-    const last = Date.now();
-    while (Date.now() === last) {
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    }
+    await advance(clock, 1);
     const response = await app(new Request(`http://backend${path}`, init));
     const type = response.headers.get("content-type") ?? "";
     const value: unknown = type.includes("json") ? await response.json() : new Uint8Array(await response.arrayBuffer());
