@@ -7,6 +7,11 @@ const noVoid = {
     "src/ is the Effect API and runs without Void. Reach a Cloudflare resource through a service the route file provides.",
 };
 
+const noWebsiteInside = {
+  regex: "/web/(?!shared/[^/]+$)",
+  message: "The backend shares only web/shared/ with the website. Put what both need there, with no imports.",
+};
+
 const noRenderInside = {
   group: ["**/items/render/*"],
   message:
@@ -40,6 +45,7 @@ export default defineConfig({
       "typescript/no-floating-promises": "error",
       "dsmod/no-try": "error",
       "dsmod/no-computed-console": "error",
+      "dsmod/secret-compare": "error",
       "typescript/no-explicit-any": "error",
       // @keep An Effect generator leaves early with `return yield* failure`, which this rule reads as a missing value.
       "typescript/consistent-return": "off",
@@ -50,7 +56,7 @@ export default defineConfig({
         rules: {
           "dsmod/no-json-parse": "error",
           "dsmod/time-through-effect": "error",
-          "no-restricted-imports": ["error", { patterns: [noVoid, noRenderInside] }],
+          "no-restricted-imports": ["error", { patterns: [noVoid, noWebsiteInside, noRenderInside] }],
         },
       },
       {
@@ -61,6 +67,7 @@ export default defineConfig({
             {
               patterns: [
                 noVoid,
+                noWebsiteInside,
                 noRenderInside,
                 {
                   group: ["**/items/*", "!**/items/model.ts", "!**/items/render.ts"],

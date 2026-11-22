@@ -31,8 +31,13 @@ private const val PI = Math.PI.toFloat()
 private const val DEGREES = PI / 180
 
 object HeldItems {
-    private val settings: Animations get() = DsModClient.feature(Animations::class.java)
-    private val on: Boolean get() = DsModClient.runs<Animations>()
+    private lateinit var settings: Animations
+
+    fun bind(animations: Animations) {
+        settings = animations
+    }
+
+    private val on: Boolean get() = settings.feature.runs
     private val style: HandStyle get() = settings.style.value
 
     private val noDipAfterHit: Boolean get() = on && (settings.noEquipReset.value || style == HandStyle.V1_7)

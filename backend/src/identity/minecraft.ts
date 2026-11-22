@@ -3,8 +3,14 @@ import { APIError, createAuthEndpoint } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
 import { Schema } from "effect";
 
+import {
+  joinUrl,
+  minecraftName,
+  relayKeyHeader,
+  serverIdPattern,
+  trustedKeyHeader,
+} from "../../../web/shared/website.ts";
 import { skinUrl } from "../upstream/texture.ts";
-import { trustedKeyHeader } from "./trusted.ts";
 
 const PROVIDER = "minecraft";
 const CHALLENGE_SECONDS = 60;
@@ -24,26 +30,36 @@ const Profile = Schema.Struct({
 });
 const Verify = Schema.toStandardSchemaV1(
   Schema.Struct({
-    name: Schema.String.check(Schema.isPattern(/^\w{1,16}$/u)),
-    serverId: Schema.String.check(Schema.isPattern(/^[0-9a-f]{40}$/u)),
+    name: Schema.String.check(Schema.isPattern(minecraftName)),
+    serverId: Schema.String.check(Schema.isPattern(serverIdPattern)),
   }),
 );
 
 const unavailable = (why: string) => new APIError("SERVICE_UNAVAILABLE", { message: why });
 
 const mojang = "https://sessionserver.mojang.com/session/minecraft/hasJoined";
-export const websiteRelay = "https://ds-mod.perwko.com/mojang/has-joined";
+
+export interface MojangRelay {
+  readonly url: string;
+  readonly key: string;
+  /** @keep A website from before the relay key opens only to the trusted key. Drop this once none is deployed. */
+  readonly trustedKey?: string | undefined;
+}
 
 export const mojangHasJoined =
-  (websiteKey?: string): HasJoined =>
+  (relay?: MojangRelay): HasJoined =>
   async (name, serverId) => {
-    const relayed = websiteKey !== undefined && websiteKey !== "";
-    const url = new URL(relayed ? websiteRelay : mojang);
-    const who = relayed ? "The website's Mojang relay" : "Mojang";
-    url.searchParams.set("username", name);
-    url.searchParams.set("serverId", serverId);
+    const url = joinUrl(relay?.url ?? mojang, { username: name, serverId });
+    const who = relay === undefined ? "Mojang" : "The website's Mojang relay";
+    const headers: Record<string, string> =
+      relay === undefined
+        ? {}
+        : {
+            [relayKeyHeader]: relay.key,
+            ...(relay.trustedKey === undefined ? {} : { [trustedKeyHeader]: relay.trustedKey }),
+          };
     // @keep Only a 204 means nobody joined. Anything else is Mojang failing, which the player can retry, not a refusal.
-    const response = await fetch(url, { headers: relayed ? { [trustedKeyHeader]: websiteKey } : {} }).catch(() => {
+    const response = await fetch(url, { headers }).catch(() => {
       throw unavailable(`${who} did not answer.`);
     });
     if (response.status === 204) {

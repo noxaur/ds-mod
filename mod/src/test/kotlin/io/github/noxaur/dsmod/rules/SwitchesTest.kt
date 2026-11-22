@@ -16,8 +16,8 @@ private val readsSwitch = describe<JavaAccess<*>>("reads a feature's switch") { 
 }
 
 private fun switches(classes: DescribedPredicate<JavaClass>) = noClasses().that(classes).should().accessTargetWhere(readsSwitch).because(
-    "a feature's switch stays on off dragsim.co. Ask the feature instead: `DsModClient.runs<CopyChat>()`, or " +
-        "`DsModClient.INSTANCE.runs(CopyChat.class)` from a mixin",
+    "a feature's switch stays on off dragsim.co. Ask the feature instead: `copyChat.feature.runs`, or " +
+        "`copyChat.getFeature().getRuns()` from Java",
 )
 
 private class Enabled { fun run(feature: Feature) = feature.enabled }

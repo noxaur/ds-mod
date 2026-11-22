@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.world.BlockBox
 import io.github.noxaur.dsmod.core.world.BoxStyle
@@ -29,6 +30,12 @@ private const val FILL_ALPHA = 70
 private const val TRACER_AHEAD = 1.0
 
 object World {
+    private lateinit var game: Game
+
+    fun bind(game: Game) {
+        this.game = game
+    }
+
     private sealed interface Shown
     private class ShownBox(val box: AABB, val style: GizmoStyle) : Shown
     private class ShownPath(val points: List<Vec3>, val color: Int) : Shown
@@ -124,7 +131,7 @@ object World {
 
     fun register() {
         LevelExtractionEvents.AFTER_BLOCK_OUTLINE_EXTRACTION.register { context, _ ->
-            if (beamsShown.isNotEmpty() || tracersShown.isNotEmpty()) DsModClient.game.metrics.time("world.follow") { follow(context) }
+            if (beamsShown.isNotEmpty() || tracersShown.isNotEmpty()) game.metrics.time("world.follow") { follow(context) }
         }
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             val level = client.level ?: return@register

@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.hud.HideInF3
 import io.github.noxaur.dsmod.core.hud.BarRow
 import io.github.noxaur.dsmod.core.hud.HudBlock
@@ -54,6 +55,14 @@ private const val INDICATOR_LEFT = 22
 private const val DOCK_GAP = 7
 
 object Hud {
+    private lateinit var game: Game
+    private lateinit var hideInF3: HideInF3
+
+    fun bind(game: Game, hideInF3: HideInF3) {
+        this.game = game
+        this.hideInF3 = hideInF3
+    }
+
     private class Row(val text: Component, val bar: BarRow?, val barColor: Int, val stacks: List<ItemStack?>?, val y: Int, val slot: Int, val x: Int = 0)
 
     private class Block(
@@ -196,7 +205,7 @@ object Hud {
 
     val visible: Boolean get() = !Minecraft.getInstance().gui.hud.isHidden && !hiddenInF3()
 
-    private fun hiddenInF3() = DsModClient.runs<HideInF3>() && Minecraft.getInstance().debugOverlay.showDebugScreen()
+    private fun hiddenInF3() = hideInF3.feature.runs && Minecraft.getInstance().debugOverlay.showDebugScreen()
 
     fun at(px: Double, py: Double): Placed? {
         if (hiddenInF3()) return null
@@ -362,7 +371,7 @@ object Hud {
         HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, Identifier.fromNamespaceAndPath("dsmod", "hud")) { graphics, delta ->
             if (shown.isEmpty()) return@attachElementBefore
             if (hiddenInF3()) return@attachElementBefore
-            DsModClient.game.metrics.time("hud.draw") { draw(graphics, delta.getGameTimeDeltaPartialTick(false)) }
+            game.metrics.time("hud.draw") { draw(graphics, delta.getGameTimeDeltaPartialTick(false)) }
         }
     }
 

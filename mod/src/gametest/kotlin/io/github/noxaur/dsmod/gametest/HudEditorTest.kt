@@ -65,10 +65,10 @@ class HudEditorTest : FabricClientGameTest {
             }
             val box = context.computeOnClient<KitCheckbox, Nothing> { client -> checkNotNull(client.gui.screen()).widgets<KitCheckbox>().single() }
             context.click(box.x + 5, box.y + 5)
-            check(!DsModClient.runs<HudBackground>()) { "The checkbox did not turn the background off" }
+            check(!DsModClient.feature<HudBackground>().feature.runs) { "The checkbox did not turn the background off" }
             context.input.pressMouse(0)
             context.waitTick()
-            check(DsModClient.runs<HudBackground>()) { "The checkbox did not turn the background on" }
+            check(DsModClient.feature<HudBackground>().feature.runs) { "The checkbox did not turn the background on" }
             context.waitTicks(2)
             context.takeScreenshot("hud-editor-after")
             context.inTheme(Theme.VANILLA) { context.takeScreenshot("hud-editor-vanilla") }

@@ -8,7 +8,11 @@ import net.minecraft.client.Minecraft
 object InventoryKey {
     private const val ID = "inventory-hud"
 
-    private val settings get() = DsModClient.feature<InventoryHud>()
+    private lateinit var settings: InventoryHud
+
+    fun bind(inventoryHud: InventoryHud) {
+        settings = inventoryHud
+    }
 
     private var tapped = false
 
@@ -22,8 +26,8 @@ object InventoryKey {
     }
 
     fun tick(client: Minecraft) {
-        val on = DsModClient.runs<InventoryHud>()
         val settings = settings
+        val on = settings.feature.runs
         val key = settings.key.value
         val down = Keys.held(client, key)
         val pressed = tapped && !wasDown
