@@ -63,7 +63,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | Every feature has a section in the player docs | `RulesTest` |
 | Every feature has a one-line entry in the README | `RulesTest` |
 | Every saved setting, a feature's saved key included, has exactly one row in the settings tree, or is listed as stored only with a reason, and every row has its own id, a Title Case name of three words or fewer and a one-sentence description | `SettingsTreeTest` |
-| The kit gallery shows every kind of settings row and every look a pick draws | `KitTest` |
+| The kit gallery shows every kind of settings row and every look a pick draws | `KitRowsTest` |
 | A setting's description in `SettingsTree` is short enough that the settings screen shows it at full size | `RulesTest` |
 | A saved setting keeps its key in the config file, so a player who updates keeps what they set | `ConfigFileTest` loads a file 0.1.0 wrote and checks every value |
 | A feature's saved state is immutable and has a default for every field, so a change is written and an older save loads | `SavedStateTest` walks every feature's `state` |
