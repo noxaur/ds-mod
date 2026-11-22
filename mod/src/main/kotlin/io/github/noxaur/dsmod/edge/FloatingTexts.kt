@@ -13,6 +13,9 @@ object FloatingTexts {
     @JvmField
     val HIDDEN: Component = Component.empty()
 
+    @JvmStatic
+    fun hidden(text: Component?) = text === HIDDEN
+
     /** What to show in place of [text]: [HIDDEN], a replacement, or null to show it as the server sent it. */
     @JvmStatic
     fun edit(text: Component): Component? {

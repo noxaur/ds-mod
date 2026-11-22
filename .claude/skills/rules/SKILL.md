@@ -9,7 +9,7 @@ Every rule is a check, and its failure prints the file, the line and the fix. Pr
 
 1. Change the structure so the mistake cannot be written, as the source sets do.
 2. Use a type that rejects it.
-3. Add a lint rule. In `mod/` that is `src/test/kotlin/io/github/noxaur/dsmod/rules/Rules.kt`: a pattern that must not appear in some files, a `fix` that says what to write instead, an `example` line it must catch, and `counterExamples` it must pass where legitimate code sits close. In `web/` it is `eslint.config.mjs`, and in `backend/` it is `lint/dsmod.js`, each with a message that says what to write instead.
+3. Add a lint rule. In `mod/` that is an instance in `detekt.yml`, named `<Rule>/<id>`: a built-in such as `ForbiddenMethodCall`, or one of ours in `mod/lint/` (`ForbiddenReference`, `ForbiddenText` and the rest), with the files it covers, a `reason` that says what to write instead, `examples` it must flag and `counterExamples` it must pass where legitimate code sits close. A rule on what compiled classes may call is an ArchUnit test in `src/test/…/rules/`, with a fixture class it must flag. In `web/` it is `eslint.config.mjs`, and in `backend/` it is `lint/dsmod.js`, each with a message that says what to write instead.
 4. Add a test, whose failure says what to write instead.
 5. Write it in an `AGENTS.md` or a skill, only for a judgment call that no check can make.
 
@@ -17,7 +17,7 @@ Then add a row to the table below. If a row has nothing enforcing it, enforce it
 
 ## Exceptions
 
-Only for an exception the user agreed to, end the line with a comment: `rule:<id> <reason>` in `mod/`, or `eslint-disable-next-line <rule> -- <reason>` in `web/`. A comment the user agreed to keep starts with `@keep `.
+Only for an exception the user agreed to: `@Suppress("<Rule>/<id>")` on the declaration in `mod/`, `rule:clone <reason>` at the end of the line for `ClonesTest`, or `eslint-disable-next-line <rule> -- <reason>` in `web/`. A comment the user agreed to keep starts with `@keep `.
 
 ## The rules
 
@@ -31,32 +31,33 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | Each place the release build sends or refuses input for the player is approved | `InputSitesTest` against `mod/input-sites.txt`, and the agent asks the user before it keeps a site that sends, refuses or triggers anything new |
 | The release build runs only on dragsim.co, unless the player turns DragSim Only off | `Game` gates every feature in `core`, `SwitchesTest` makes the edge ask `Feature.runs`, and `GameTest`, `DragSimTest` and the game test `DragSimOnlyTest` |
 | A feature fires only in the area it names | `Feature` takes an `Area` and `Game` gates on it. `FeatureReplayTest` replays each fixture outside the area |
-| A feature reads no area for itself, from the tab list or the sidebar, and sits in its area's folder | `InfoRows` hands a feature no place and refuses an area row, `area-by-declaration` in `mod/…/Rules.kt` for a place named in a feature, and `RulesTest` |
-| A feature tells the player's own kills through one part | `OwnKills`, and `kills-by-own-kills` in `mod/…/Rules.kt` for Combat XP read anywhere else |
-| A feature marks slots and reads a container again after a change through one layer | `SlotMarks` and `ContainerReader`, and `container-by-reader` in `mod/…/Rules.kt` for a handler that only sets a flag |
-| A feature never calls into a part from its own handler of an event the part hears for itself | `Feature.on` runs every handler of a type, so a part subscribes itself, and `part-by-itself` in `mod/…/Rules.kt` |
-| A feature follows the player's active pet through one part | `CurrentPet`, and `pet-by-current-pet` in `mod/…/Rules.kt` for a pet read anywhere else |
-| The mod's text and colors come from its text layer | `TextLayerTest` reads the compiled classes, and `text-by-role` in `mod/…/Rules.kt` for a hex color or a `§` |
-| A feature writes a number, a rate or a time, and reads a number the server wrote, through `core.text` | `number-by-helper`, `rate-by-helper` and `count-by-helper` in `mod/…/Rules.kt` |
-| A feature reads a chat line by its start, and a line that starts right and fails to parse is counted | `line` in `Feature`, and `chat-by-line` in `mod/…/Rules.kt` for a chat handler written by hand |
-| A mod test builds server text, reads a readout and reads a test resource through the harness in `mod/src/test/…/harness/` | `server-text-by-harness`, `readout-by-harness` and `resource-by-harness` in `mod/…/Rules.kt` |
-| A feature reads a slayer boss line and the Protector's stage through their parsers in `core/game` | `SlayerLine` and `ProtectorStage`, and `slayer-by-line` and `protector-by-stage` in `mod/…/Rules.kt` |
-| Which slots of an open container are the player's, and where the inventory holds them, is named once | `ContainerState`'s `menuSlots`, `playerSlots` and inventory slots, and `player-slots-by-container` and `player-rows-by-container` in `mod/…/Rules.kt` |
-| The mod holds no `!!`, so each null is said as a `?: return`, a smart cast or a `checkNotNull` that gives its reason | `no-bang-bang` in `mod/…/Rules.kt` |
-| A feature reads time from the `now` its handler receives, never the wall clock | `no-wall-clock-in-core` in `mod/…/Rules.kt` |
-| No catch block is empty | `no-swallowed-catch` in `mod/…/Rules.kt` |
-| The edge reads a stack's SkyBlock data in one place, which reads each item's tag once | `item-data-by-hand` in `mod/…/Rules.kt` |
-| The edge looks up an item or an entity type by its registry id in one place | `registry-by-hand` in `mod/…/Rules.kt` |
-| Core reads an item's lore and data through `Item`, which strips the server's glyphs once per item | `lore-glyphs-by-hand` and `item-json-by-hand` in `mod/…/Rules.kt` |
-| Every command and chat line the mod sends for the player goes through one sender | `send-through-player-commands` in `mod/…/Rules.kt` |
+| A feature reads no area for itself, from the tab list or the sidebar, and sits in its area's folder | `InfoRows` hands a feature no place and refuses an area row, `area-by-declaration` in `mod/detekt.yml` for a place named in a feature, and `RulesTest` |
+| A feature tells the player's own kills through one part | `OwnKills`, and `kills-by-own-kills` in `mod/detekt.yml` for Combat XP read anywhere else |
+| A feature marks slots and reads a container again after a change through one layer | `SlotMarks` and `ContainerReader`, and `container-by-reader` in `mod/detekt.yml` for a handler that only sets a flag |
+| A feature never calls into a part from its own handler of an event the part hears for itself | `Feature.on` runs every handler of a type, so a part subscribes itself, and `part-by-itself` in `mod/detekt.yml` |
+| A feature follows the player's active pet through one part | `CurrentPet`, and `pet-by-current-pet` in `mod/detekt.yml` for a pet read anywhere else |
+| The mod's text and colors come from its text layer | `TextLayerTest` reads the compiled classes, and `text-by-role` in `mod/detekt.yml` for a hex color or a `§` |
+| A feature writes a number, a rate or a time, and reads a number the server wrote, through `core.text` | `number-by-helper`, `rate-by-helper` and `count-by-helper` in `mod/detekt.yml` |
+| A feature reads a chat line by its start, and a line that starts right and fails to parse is counted | `line` in `Feature`, and `chat-by-line` in `mod/detekt.yml` for a chat handler written by hand |
+| A mod test builds server text, reads a readout and reads a test resource through the harness in `mod/src/test/…/harness/` | `server-text-by-harness`, `readout-by-harness` and `resource-by-harness` in `mod/detekt.yml` |
+| A feature reads a slayer boss line and the Protector's stage through their parsers in `core/game` | `SlayerLine` and `ProtectorStage`, and `slayer-by-line` and `protector-by-stage` in `mod/detekt.yml` |
+| Which slots of an open container are the player's, and where the inventory holds them, is named once | `ContainerState`'s `menuSlots`, `playerSlots` and inventory slots, and `player-slots-by-container` and `player-rows-by-container` in `mod/detekt.yml` |
+| The mod holds no `!!`, so each null is said as a `?: return`, a smart cast or a `checkNotNull` that gives its reason | `no-bang-bang` in `mod/detekt.yml` |
+| A feature reads time from the `now` its handler receives, never the wall clock | `no-wall-clock-in-core` in `mod/detekt.yml` |
+| No catch block is empty | `no-swallowed-catch` in `mod/detekt.yml` |
+| The edge reads a stack's SkyBlock data in one place, which reads each item's tag once | `item-data-by-hand` in `mod/detekt.yml` |
+| The edge looks up an item or an entity type by its registry id in one place | `registry-by-hand` in `mod/detekt.yml` |
+| Core reads an item's lore and data through `Item`, which strips the server's glyphs once per item | `lore-glyphs-by-hand` and `item-json-by-hand` in `mod/detekt.yml` |
+| Every command and chat line the mod sends for the player goes through one sender | `send-through-player-commands` in `mod/detekt.yml` |
 | The mod's shapes are drawn by its kit, in the player's theme | `KitTest` reads the compiled classes |
+| Each lint rule in `mod/detekt.yml` flags its examples and passes its counter-examples | `DetektConfigTest` in `mod/lint/` |
 | The mod's code and its tests are not copied with a value or two changed | `ClonesTest` in `mod/…/rules/` finds a repeated block and a near-identical line in every source set |
 | Release code cannot use debug tools | The `main` and `debug` source sets |
 | Raw captures stay out of git | They are written to `mod/run/`, which is git-ignored |
 | A fixture holds no player name from a capture on this machine, and an alias wherever a player's name stands | `FixtureLeakTest`, and `cutFixture` refuses such a fixture while the captures are still there |
 | Every feature shows what its transcript says | `FeatureReplayTest` replays each feature's fixtures |
 | A feature that reads nothing from the server has a game test | `FeatureReplayTest` |
-| A feature inside a group runs only while its group is on, and asks only for itself | `Feature` reads the switch above it in the tree, and `group-by-tree` in `mod/…/Rules.kt` |
+| A feature inside a group runs only while its group is on, and asks only for itself | `Feature` reads the switch above it in the tree, and `group-by-tree` in `mod/detekt.yml` |
 | Every feature class is placed in `SettingsTree` | `FeaturesListedTest` reads the compiled classes |
 | Every on/off setting is a feature | `SettingsTree` refuses a switch outside a feature when it is built |
 | Every feature has a section in the player docs | `RulesTest` |
@@ -72,12 +73,12 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | A unit test run takes at most 30 seconds | `timeout` on `tasks.test` in `mod/build.gradle.kts`, and `scripts/test-time-limit.ts`, the global setup of the tests in `backend/vite.config.ts` and `web/vite.config.ts` |
 | A game test passes whichever tests ran before it | `FreshStart` in `mod/src/gametest/` starts the mod afresh before each test |
 | A game test takes at most 20 seconds, its world included | `TestClock` in `mod/src/gametest/` |
-| A game test moves the mouse, clicks and opens the inventory through `Pointer.kt`, in GUI pixels | `gametest-point-by-pointer` and `gametest-inventory-by-pointer` in `mod/…/Rules.kt` |
-| A game test switches the theme through `Themes.kt`, which puts it back, and reads a screenshot's pixels through `Pixels.kt` | `gametest-theme-by-intheme` and `gametest-pixels-by-pixels` in `mod/…/Rules.kt` |
+| A game test moves the mouse, clicks and opens the inventory through `Pointer.kt`, in GUI pixels | `gametest-point-by-pointer` and `gametest-inventory-by-pointer` in `mod/detekt.yml` |
+| A game test switches the theme through `Themes.kt`, which puts it back, and reads a screenshot's pixels through `Pixels.kt` | `gametest-theme-by-intheme` and `gametest-pixels-by-pixels` in `mod/detekt.yml` |
 | A game test reads the clicks a step sent only from that step | `ClickSpy.during` in `mod/src/gametest/`, which keeps the record private |
-| A game test's wait fails the test when it times out | `gametest-no-swallowed-wait` and `gametest-poll-by-waitfor` in `mod/…/Rules.kt`, and `waitUntil` in `mod/src/gametest/Waits.kt` |
-| A game test finds a widget through `ServerMenus` | `gametest-widget-by-servermenus` and `gametest-children-by-screenwidgets` in `mod/…/Rules.kt` |
-| A game test builds its player, a still world and the dragon timer from shared scenes | `gametest-player-by-scenes`, `gametest-frozen-by-scenes` and `gametest-egg-by-the-end` in `mod/…/Rules.kt` |
+| A game test's wait fails the test when it times out | `gametest-no-swallowed-wait` and `gametest-poll-by-waitfor` in `mod/detekt.yml`, and `waitUntil` in `mod/src/gametest/Waits.kt` |
+| A game test finds a widget through `ServerMenus` | `gametest-widget-by-servermenus` and `gametest-children-by-screenwidgets` in `mod/detekt.yml` |
+| A game test builds its player, a still world and the dragon timer from shared scenes | `gametest-player-by-scenes`, `gametest-frozen-by-scenes` and `gametest-egg-by-the-end` in `mod/detekt.yml` |
 | A commit passes every project's checks | `.githooks/pre-commit`, which `mise install` installs |
 | A pull request runs the game tests its change reaches | CI's `gametests` job, and `GameTestPick.kt` in `mod/src/debug/` |
 | Every file of `edge` and `debug` reaches a game test | `GameTestPickTest` |

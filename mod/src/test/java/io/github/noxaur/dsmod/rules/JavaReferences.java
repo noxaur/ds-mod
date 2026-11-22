@@ -1,0 +1,44 @@
+package io.github.noxaur.dsmod.rules;
+
+import io.github.noxaur.dsmod.core.feature.Feature;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+
+final class JavaLiteralReference {
+    Function<String, MutableComponent> run() {
+        return Component::literal;
+    }
+}
+
+final class JavaFillReference {
+    Runnable run(GuiGraphicsExtractor g) {
+        return () -> g.fill(0, 0, 1, 1, 0);
+    }
+}
+
+final class JavaEnabledReference {
+    BooleanSupplier run(Feature feature) {
+        return feature::getEnabled;
+    }
+}
+
+final class JavaHooksScreen {
+    Object run() {
+        return net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT;
+    }
+}
+
+final class JavaAsksGroup {
+    boolean run() {
+        return io.github.noxaur.dsmod.edge.DsModClient.INSTANCE.runs(io.github.noxaur.dsmod.core.feature.inventory.BetterUi.class);
+    }
+}
+
+final class JavaRefersSend {
+    java.util.function.Consumer<String> run(net.minecraft.client.multiplayer.ClientPacketListener connection) {
+        return connection::sendChat;
+    }
+}

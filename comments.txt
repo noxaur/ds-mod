@@ -519,7 +519,6 @@ mod/build.gradle.kts: // One TLC run per specs/<Name>.tla that has a specs/<Name
 mod/build.gradle.kts: // PerfTest weighs the jar a player installs.
 mod/build.gradle.kts: // Print the whole failure, so a broken rule shows its fix in the terminal.
 mod/build.gradle.kts: // Release build: build/libs/dsmod-<version>.jar
-mod/build.gradle.kts: // RulesTest reads the sources and the docs that list features, so a change to either must rerun it.
 mod/build.gradle.kts: // SettingsScreenTest presses Mod Menu's config button, so both game test runs load Mod Menu.
 mod/build.gradle.kts: // TLC unpacks Naturals.tla and the other standard modules into java.io.tmpdir. The specs run in
 mod/build.gradle.kts: // The backend's answers that the unit tests read, so the game test draws the same profile.
@@ -3050,7 +3049,6 @@ mod/src/test/kotlin/io/github/noxaur/dsmod/rules/ClonesTest.kt: /** Each copy in
 mod/src/test/kotlin/io/github/noxaur/dsmod/rules/ClonesTest.kt: /** The token edit distance from [a] to [b], or any number above [cap] once it passes it. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/rules/ClonesTest.kt: /** The tokens of a Kotlin [source], each with its line. A declaration's parameter list becomes one `()` token. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/rules/ClonesTest.kt: /** Where a copy sits: a [file] and a 1-based [line]. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/FeaturesListedTest.kt: /** Each class in [classes] that is a feature, one that implements [HasFeature], and is not in [listed]. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/rules/FixtureLeakTest.kt: /** * A fixture is cut from a capture of real players, and the repository is public. The first test reads every capture * on this machine for player names and fails when a fixture or a transcript still holds one, which finds a name * anywhere but needs the captures. The second needs none, so it holds in CI: wherever [PlayerNames] knows a player's * name stands, a fixture holds an alias, even for a name the server also writes as its own. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/rules/FixtureLeakTest.kt: // PlayerNames reads a line's type from its text, without parsing the line, so a type written any other way is unread.
 mod/src/test/kotlin/io/github/noxaur/dsmod/rules/InputSitesTest.kt: /** * A gate as Kotlin compiles it: [line] is where its call is, [inlined] the line of `DsModClient.runs` its source * map points at, and the debug data that names both is written as attributes and as annotations. */
@@ -3108,37 +3106,8 @@ mod/src/test/kotlin/io/github/noxaur/dsmod/rules/InputSitesTest.kt: // `this$0` 
 mod/src/test/kotlin/io/github/noxaur/dsmod/rules/InputSitesTest.kt: // into one from outside counts. Following the paths inside the class would miss the next new way.
 mod/src/test/kotlin/io/github/noxaur/dsmod/rules/InputSitesTest.kt: // only a subclass of a container screen makes one, and forwarding to it is how that subclass would act.
 mod/src/test/kotlin/io/github/noxaur/dsmod/rules/InputSitesTest.kt: // reach a private member. The caller is already outside the gate, so the member is listed either way.
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/KitTest.kt: /** Every place in [classes] outside `Kit` that draws a shape on the graphics itself, as `file:line`. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/KitTest.kt: /** The calls that draw a shape. Text and items are drawn with `Text` and the item layers. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/KitTest.kt: // A call through a mod class that extends the graphics names that class as its owner.
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/KitTest.kt: // A method reference such as `graphics::fill` is a handle among the bootstrap arguments.
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/PurityTest.kt: /** Every outside class a class in `core` names, in a descriptor, signature, annotation or instruction, as `Core -> Outside`. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/PurityTest.kt: /** What `core` may not name: it runs in plain JVM tests, so it holds no Minecraft, Fabric or Mojang library, and nothing from `edge`. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/ReleaseClasses.kt: /** Every class the release source set compiled to, for a test that checks what the code does and not how it reads. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/Rules.kt: /** * A line of source that must not exist. [files] is a glob under the repo root, [fix] tells the * author what to write instead, and [example] is a line the rule must catch. [except] is a glob for * the shared layer that the rule sends everyone else to. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/Rules.kt: /** Forms beside [example] that the rule must catch, including ones split over lines. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/Rules.kt: // A `_` between hex digits is still one literal, and eight digits are a color with alpha.
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/Rules.kt: // A color in a call is caught in the bytecode by TextLayerTest. A hex literal could be any int there, and a `§` char
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/Rules.kt: // Every old shape, `plain.startsWith`, `in plain` and a regex with or without `^`, sat inside this handler.
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/Rules.kt: // InfoRows keeps the area rows from a feature, but a TabList or Sidebar event still carries every line.
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/Rules.kt: // PlayerNames strips the `§` codes of an older capture's raw text and reads them to tell an NPC's label. It colors nothing.
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/Rules.kt: // Whitespace and a line break are legal around the type argument and `::class`, and both still subscribe.
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/Rules.kt: // compiles to one, so both are read in the source.
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/RulesTest.kt: /** A line breaks [rule] unless it carries `rule:<id> <reason>`. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/RulesTest.kt: /** Names each id that appears twice, and says to give the new rule its own id. Null when every id is unique. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/RulesTest.kt: /** [text] breaks [rule] unless an exception comment covers the match. A [Span.FILE] rule may match across lines. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/rules/SavedStateTest.kt: /** * What in the state whose default is [default], named [path], a save could lose: a value that changes in place, * which `Saved` never writes because only replacing its `value` marks it changed, and a field with no default, * which a save written before the field existed lacks, so it would not load. A default that is one case of a sealed * state stands for all of them. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/rules/SavedStateTest.kt: // Values that cannot change, and the read-only collections, whose elements are checked in turn.
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/SwitchesTest.kt: /** * Every place in [classes] outside `core` that reads a feature's switch itself, as `file:line`. `Game` keeps the mod to * dragsim.co for code in `core`, and nothing does for the edge, so the edge asks the feature whether it [Feature.runs]. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/SwitchesTest.kt: /** The getters that read a feature's switch: its value, and the switch row itself, whose value the edge could then read. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/SwitchesTest.kt: // A method reference such as Java's `feature::getEnabled` is a handle among the bootstrap arguments.
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/SwitchesTest.kt: // What javac emits for `BooleanSupplier on = feature::getEnabled`.
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/TextLayerTest.kt: /** * The classes that make colored text. `Text` describes it, `Chat` prints it and `Theme` owns the colors. `PlayerNames` * and `Redactor` only read the `§` codes of an older capture's raw text to strip them. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/TextLayerTest.kt: /** Every place in [classes] outside the text layer that colors or styles text, as `file:line`. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/TextLayerTest.kt: /** Whether [insn] gives text a color, a style or a `§` code, which only the text layer may do. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/TextLayerTest.kt: /** Whether [name] is one of the text layer's classes, or a class nested in one, and not a class that only starts like one. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/TextLayerTest.kt: // A method reference such as `Component::literal` is a handle among the bootstrap arguments.
-mod/src/test/kotlin/io/github/noxaur/dsmod/rules/TextLayerTest.kt: // What javac emits for `Function<String, MutableComponent> f = Component::literal`.
 specs/Contribute.tla: (*                                                                         *)
 specs/Contribute.tla: (*                                                                         *)
 specs/Contribute.tla: (*         and sealing a finished one (raw -> .part -> .gz, raw deleted).  *)

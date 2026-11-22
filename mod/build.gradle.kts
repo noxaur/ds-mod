@@ -12,11 +12,14 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
+import net.ltgt.gradle.errorprone.errorprone
 
 plugins {
     id("net.fabricmc.fabric-loom")
     kotlin("jvm")
     kotlin("plugin.serialization")
+    id("dev.detekt")
+    id("net.ltgt.errorprone")
 }
 
 val tla = configurations.create("tla")
@@ -102,8 +105,10 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("com.tngtech.archunit:archunit:${property("archunit_version")}")
 
     tla("org.lamport:tla2tools:${property("tla_version")}@jar")
+    errorprone("com.google.errorprone:error_prone_core:${property("errorprone_version")}")
 }
 
 kotlin {
@@ -282,7 +287,6 @@ tasks.test {
     useJUnitPlatform()
     // The unit tests are the fast loop. One that needs longer belongs in a game test.
     timeout = Duration.ofSeconds(30)
-    // RulesTest reads the sources and the docs that list features, so a change to either must rerun it.
     inputs.dir("src")
     inputs.file("input-sites.txt")
     inputs.files("../README.md", "../docs/user/features.md")
@@ -324,3 +328,45 @@ specs.forEach { cfg ->
     tlc.configure { dependsOn(run) }
 }
 tasks.check { dependsOn(tlc) }
+
+dependencies {
+    detektPlugins(project(":lint"))
+}
+
+detekt {
+    config.setFrom("detekt.yml")
+    buildUponDefaultConfig = false
+}
+val mixinHandlers = listOf(
+    "org.spongepowered.asm.mixin.Overwrite",
+    "org.spongepowered.asm.mixin.injection.Inject",
+    "org.spongepowered.asm.mixin.injection.ModifyArg",
+    "org.spongepowered.asm.mixin.injection.ModifyArgs",
+    "org.spongepowered.asm.mixin.injection.ModifyConstant",
+    "org.spongepowered.asm.mixin.injection.ModifyVariable",
+    "org.spongepowered.asm.mixin.injection.Redirect",
+    "com.llamalad7.mixinextras.injector.ModifyExpressionValue",
+    "com.llamalad7.mixinextras.injector.ModifyReceiver",
+    "com.llamalad7.mixinextras.injector.ModifyReturnValue",
+    "com.llamalad7.mixinextras.injector.v2.WrapWithCondition",
+    "com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod",
+    "com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation",
+).joinToString(",")
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-Werror")
+    options.errorprone {
+        disableWarningsInGeneratedCode = true
+        option("UnusedMethod:ExemptingMethodAnnotations", mixinHandlers)
+        option("Unused:methodAnnotationsExemptingParameters", mixinHandlers)
+    }
+}
+tasks.register("lintClasspath") {
+    description = "Writes the classpath that DetektConfigTest in lint/ compiles each rule's examples against."
+    val classpath = sourceSets.test.get().runtimeClasspath
+    val out = layout.buildDirectory.file("lint/classpath")
+    inputs.files(classpath)
+    outputs.file(out)
+    doLast { out.get().asFile.writeText(classpath.asPath) }
+}
+tasks.named("detekt") { onlyIf("it resolves no types, so the lint rules run in detektMain, detektDebug, detektTest and detektGametest") { false } }
+tasks.check { dependsOn("detektMain", "detektDebug", "detektTest", "detektGametest") }
