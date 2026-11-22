@@ -22,9 +22,8 @@ object MenuBack {
     private val enabled get() = DsModClient.runs<BetterUi>() && DsModClient.runs<BackButtons>()
 
     fun register() {
-        ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
-            if (screen !is ContainerScreen) return@register
-            val command = Trail.back(screen) ?: return@register
+        ScreenHooks.onEveryLayout<ContainerScreen> { screen, _ ->
+            val command = Trail.back(screen) ?: return@onEveryLayout
             val chest = screen.menu.slots.subList(0, screen.menu.rowCount * 9)
             SlotControls.add(screen, chest[chest.size - 6], { enabled && chest.none { it.item.plainName == GO_BACK } }) { x, y ->
                 KitButton(x, y, Icon.BACK, GO_BACK) { PlayerCommands.send(command) }.apply {

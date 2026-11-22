@@ -1,9 +1,5 @@
 import { Option, Schema } from "effect";
 
-/**
- * Decodes one field of dragsim.co's data, and gives undefined for a field of the wrong type instead of failing the
- * item, because an item with one odd field still draws.
- */
 export const lenient = <A>(schema: Schema.Decoder<A>): ((value: unknown) => A | undefined) => {
   const decode = Schema.decodeUnknownOption(schema);
   return (value) => Option.getOrUndefined(decode(value));
@@ -16,13 +12,11 @@ export const strings = lenient(Schema.Array(Schema.String));
 export const lists = lenient(Schema.Array(Schema.Unknown));
 export const numbers = lenient(Schema.Record(Schema.String, Schema.Finite));
 
-/** The object's entries that are finite numbers, each read alone, so one odd entry does not lose the rest. */
 export const numberEntries = (value: unknown): Readonly<Record<string, number>> =>
   Object.fromEntries(
     Object.entries(record(value)).filter((entry): entry is [string, number] => Number.isFinite(entry[1])),
   );
 
-/** The object's entries that are strings, finite numbers or booleans, each read alone. */
 export const scalarEntries = (value: unknown): Readonly<Record<string, string | number | boolean>> =>
   Object.fromEntries(
     Object.entries(record(value)).filter(
@@ -32,10 +26,8 @@ export const scalarEntries = (value: unknown): Readonly<Record<string, string | 
   );
 const records = lenient(Schema.Record(Schema.String, Schema.Unknown));
 
-/** The object's fields, or none for a value that is not an object. */
 export const record = (value: unknown): Readonly<Record<string, unknown>> => records(value) ?? {};
 
-/** `0xRRGGBB` for `#RRGGBB`, for the `r,g,b` the catalog uses, or for a number that is one already. */
 export const parseColor = (value: unknown): number | undefined => {
   if (typeof value === "number") {
     return Number.isInteger(value) && value >= 0 && value <= 0xffffff ? value : undefined;
@@ -55,4 +47,23 @@ export const parseColor = (value: unknown): number | undefined => {
   return [r, g, b].every((channel) => Number.isInteger(channel) && channel >= 0 && channel <= 255)
     ? (r << 16) | (g << 8) | b
     : undefined;
+};
+
+type Stats = Readonly<Record<string, number>>;
+
+export interface StatSet {
+  readonly base: Stats;
+  readonly additive: Stats;
+  readonly multiplicative: Stats;
+  readonly increaseMax: Stats;
+}
+
+export const statSet = (raw: unknown): StatSet => {
+  const set = record(raw);
+  return {
+    base: numberEntries(set["base"]),
+    additive: numberEntries(set["additive"]),
+    multiplicative: numberEntries(set["multiplicative"]),
+    increaseMax: numberEntries(set["increase_max"]),
+  };
 };

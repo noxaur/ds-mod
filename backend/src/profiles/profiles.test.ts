@@ -1,11 +1,11 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-
 import { Effect, Schema } from "effect";
-import { afterEach, beforeEach, expect, test, vi } from "vite-plus/test";
+import { beforeEach, expect, test, vi } from "vite-plus/test";
 
-import { makeApp } from "../app.ts";
-import { memoryServices } from "../memory.ts";
+import { advance, testApp, testClock } from "../../test/harness.ts";
+import type { Services } from "../app.ts";
+import catalog from "./fixtures/catalog.json" with { type: "json" };
+import player from "./fixtures/player.json" with { type: "json" };
+import REAL_PATHS from "./fixtures/real-paths.json" with { type: "json" };
 import { CATALOG_FRESH_MS, CATALOG_RETRY_MS, FRESH_MS } from "./cache.ts";
 import { Container, Profile } from "./model.ts";
 import { layoutsOf } from "./layout.ts";
@@ -13,12 +13,14 @@ import { unmappedPaths } from "./wire.ts";
 import { memoryProfileStore, WriteRefused } from "./store.ts";
 import { UpstreamDown } from "./upstream.ts";
 
-const fixture = (name: string): any => JSON.parse(readFileSync(join(import.meta.dirname, "fixtures", name), "utf8"));
-const player = fixture("player.json");
-const catalog = fixture("catalog.json");
-const OTHER_PROFILE: string = player.profiles[0].id;
+const OTHER_PROFILE = player.profiles[0]?.id ?? "";
 
 type Answer = { status: number; body: unknown } | "down";
+
+const ann = (overrides: Partial<Services>) => {
+  const { call } = testApp({ clock, ...overrides });
+  return { get: (path: string) => call("ann", "GET", path) };
+};
 
 /** dragsim.co as the fixtures say it is, counting what it was asked, and failing on demand. */
 function backend() {
@@ -27,7 +29,7 @@ function backend() {
     player: { status: 200, body: player },
     catalog: { status: 200, body: catalog },
   };
-  const services = memoryServices({
+  const { get } = ann({
     upstream: {
       get: (path) => {
         asked.push(path);
@@ -36,20 +38,15 @@ function backend() {
       },
     },
   });
-  const app = makeApp(services, () => ({ userId: "ann", adminToken: undefined }));
-  const get = async (path: string) => {
-    const response = await app(new Request(`http://backend${path}`));
-    const body: unknown = await response.json().catch(() => null);
-    return { status: response.status, body };
-  };
   /** A profile as the contract says it is, so an answer that drifts from it fails here. */
   const profile = async (path = "/v1/players/Testwyrm/profile") =>
-    Schema.decodeUnknownSync(Profile)((await get(path)).body);
-  const container = async (path: string) => Schema.decodeUnknownSync(Container)((await get(path)).body);
+    Schema.decodeUnknownSync(Profile)((await get(path)).value);
+  const container = async (path: string) => Schema.decodeUnknownSync(Container)((await get(path)).value);
   /** The status and the `_tag` of a failure, which is how a client tells the 404s apart. */
   const failure = async (path: string) => {
-    const { status, body } = await get(path);
-    return { status, tag: Reflect.get(Object(body), "_tag") as unknown };
+    const { status, value } = await get(path);
+    const tag: unknown = Reflect.get(Object(value), "_tag");
+    return { status, tag };
   };
   return {
     asked,
@@ -62,11 +59,9 @@ function backend() {
   };
 }
 
-beforeEach(() => {
-  vi.useFakeTimers({ toFake: ["Date"] });
-  vi.setSystemTime(new Date("2026-11-15T12:00:00Z"));
-});
-afterEach(() => vi.useRealTimers());
+const START = "2026-11-15T12:00:00Z";
+const clock = await testClock(START);
+beforeEach(() => Effect.runPromise(clock.setTime(Date.parse(START))));
 
 test("a profile is the player's, with levels worked out from the catalog", async () => {
   const { profile } = backend();
@@ -205,7 +200,7 @@ test("a hidden profile lists its containers with no items, and no equipment", as
 test("a hidden player's items are kept nowhere", async () => {
   const kept: string[] = [];
   const store = memoryProfileStore();
-  const services = memoryServices({
+  const { get } = ann({
     profiles: {
       get: store.get,
       put: (key, value, ttl) => {
@@ -223,8 +218,7 @@ test("a hidden player's items are kept nowhere", async () => {
         }),
     },
   });
-  const app = makeApp(services, () => ({ userId: "ann", adminToken: undefined }));
-  expect((await app(new Request("http://backend/v1/players/Testwyrm/profile"))).status).toBe(200);
+  expect((await get("/v1/players/Testwyrm/profile")).status).toBe(200);
   expect(kept.some((value) => value.includes("Testwyrm"))).toBe(true);
   expect(kept.join()).not.toContain("scylla");
 });
@@ -233,7 +227,7 @@ test("a copy the store refuses costs the lookup nothing, and the name is written
   // KV takes one write per key a second. This store refuses every write to a key it already holds.
   const store = memoryProfileStore();
   const written: string[] = [];
-  const services = memoryServices({
+  const { get } = ann({
     profiles: {
       get: store.get,
       put: (key, value, ttl) => {
@@ -248,14 +242,11 @@ test("a copy the store refuses costs the lookup nothing, and the name is written
       get: (path) => Effect.succeed({ status: 200, body: path.startsWith("/data/catalog") ? catalog : player }),
     },
   });
-  const app = makeApp(services, () => ({ userId: "ann", adminToken: undefined }));
   // Another lookup of this profile wrote it a moment ago, so this one's copy is refused.
   written.push("profile:11111111-2222-4333-8444-555555555555:selected");
-  expect((await app(new Request("http://backend/v1/players/Testwyrm/profile"))).status).toBe(200);
+  expect((await get("/v1/players/Testwyrm/profile")).status).toBe(200);
   // Picking the other profile at once fetches again, which must not write the name a second time.
-  expect((await app(new Request(`http://backend/v1/players/Testwyrm/profile?profile=${OTHER_PROFILE}`))).status).toBe(
-    200,
-  );
+  expect((await get(`/v1/players/Testwyrm/profile?profile=${OTHER_PROFILE}`)).status).toBe(200);
   expect(written.filter((key) => key.startsWith("name:"))).toHaveLength(1);
 });
 
@@ -266,7 +257,7 @@ test("asking again soon reaches dragsim.co once, whatever the name's case", asyn
   await get("/v1/players/TESTWYRM/profile");
   expect(playerCalls()).toBe(1);
   expect(asked.filter((path) => path.startsWith("/data/catalog"))).toHaveLength(1);
-  vi.setSystemTime(Date.now() + FRESH_MS + 1);
+  await advance(clock, FRESH_MS + 1);
   await get("/v1/players/Testwyrm/profile");
   expect(playerCalls()).toBe(2);
 });
@@ -283,7 +274,7 @@ test("each profile of a player has a copy of its own", async () => {
 test("the catalog is fetched again after an hour", async () => {
   const { get, asked } = backend();
   await get("/v1/players/Testwyrm/profile");
-  vi.setSystemTime(Date.now() + CATALOG_FRESH_MS + 1);
+  await advance(clock, CATALOG_FRESH_MS + 1);
   await get("/v1/players/Testwyrm/profile");
   expect(asked.filter((path) => path.startsWith("/data/catalog"))).toHaveLength(2);
 });
@@ -292,7 +283,7 @@ test("a copy answers as stale when dragsim.co is down, however old", async () =>
   const { get, profile, state } = backend();
   await get("/v1/players/Testwyrm/profile");
   state.player = "down";
-  vi.setSystemTime(Date.now() + 5 * 60 * 60 * 1000);
+  await advance(clock, 5 * 60 * 60 * 1000);
   const value = await profile();
   expect(value.stale).toBe(true);
   expect(value.fetchedAt).toBe("2026-11-15T12:00:00.000Z");
@@ -302,14 +293,15 @@ test("a name outlives the first day, so a later copy still answers when dragsim.
   // A store that forgets each value when its time is up, as KV does.
   const values = new Map<string, { value: unknown; until: number }>();
   const state: { player: Answer } = { player: { status: 200, body: player } };
-  const services = memoryServices({
+  const { get } = ann({
     profiles: {
       get: (key) =>
         Effect.sync(() => {
           const kept = values.get(key);
-          return kept !== undefined && kept.until > Date.now() ? kept.value : null;
+          return kept !== undefined && kept.until > clock.currentTimeMillisUnsafe() ? kept.value : null;
         }),
-      put: (key, value, ttl) => Effect.sync(() => void values.set(key, { value, until: Date.now() + ttl * 1000 })),
+      put: (key, value, ttl) =>
+        Effect.sync(() => void values.set(key, { value, until: clock.currentTimeMillisUnsafe() + ttl * 1000 })),
     },
     upstream: {
       get: (path) => {
@@ -318,29 +310,28 @@ test("a name outlives the first day, so a later copy still answers when dragsim.
       },
     },
   });
-  const app = makeApp(services, () => ({ userId: "ann", adminToken: undefined }));
-  const lookUp = () => app(new Request("http://backend/v1/players/Testwyrm/profile"));
+  const lookUp = () => get("/v1/players/Testwyrm/profile");
   const hour = 60 * 60 * 1000;
   const stale = async (fetchedAt: string) => {
     const response = await lookUp();
     expect(response.status).toBe(200);
-    expect(Schema.decodeUnknownSync(Profile)(await response.json())).toMatchObject({ stale: true, fetchedAt });
+    expect(Schema.decodeUnknownSync(Profile)(response.value)).toMatchObject({ stale: true, fetchedAt });
   };
   // A refresh late in the day renews the name.
   expect((await lookUp()).status).toBe(200);
-  vi.setSystemTime(Date.now() + 23 * hour);
+  await advance(clock, 23 * hour);
   expect((await lookUp()).status).toBe(200);
   state.player = "down";
-  vi.setSystemTime(Date.now() + 2 * hour);
+  await advance(clock, 2 * hour);
   await stale("2026-11-16T11:00:00.000Z");
   // A refresh too soon after the name was written does not renew it, and the name still outlives that copy.
   state.player = { status: 200, body: player };
-  vi.setSystemTime(Date.now() + 2 * hour);
+  await advance(clock, 2 * hour);
   expect((await lookUp()).status).toBe(200);
-  vi.setSystemTime(Date.now() + 30 * 60 * 1000);
+  await advance(clock, 30 * 60 * 1000);
   expect((await lookUp()).status).toBe(200);
   state.player = "down";
-  vi.setSystemTime(Date.now() + 24 * hour - 15 * 60 * 1000);
+  await advance(clock, 24 * hour - 15 * 60 * 1000);
   await stale("2026-11-16T15:30:00.000Z");
 });
 
@@ -361,7 +352,7 @@ test("an answer that no longer decodes falls back on the last copy", async () =>
   const { get, profile, state } = backend();
   await get("/v1/players/Testwyrm/profile");
   state.player = { status: 200, body: { player: "changed" } };
-  vi.setSystemTime(Date.now() + FRESH_MS + 1);
+  await advance(clock, FRESH_MS + 1);
   expect((await profile()).stale).toBe(true);
 });
 
@@ -375,7 +366,7 @@ test("a 404 without the server's words for a missing player falls back on the la
   const { get, profile, state, playerCalls } = backend();
   await get("/v1/players/Testwyrm/profile");
   state.player = { status: 404, body: { error: "Not Found" } };
-  vi.setSystemTime(Date.now() + FRESH_MS + 1);
+  await advance(clock, FRESH_MS + 1);
   expect((await profile()).stale).toBe(true);
   expect((await profile()).stale).toBe(true);
   expect(playerCalls()).toBe(3);
@@ -394,7 +385,7 @@ test("a name that was known and is now missing stops reaching dragsim.co", async
   await get("/v1/players/Testwyrm/profile");
   expect(playerCalls()).toBe(1);
   state.player = { status: 404, body: { error: "No DragSim player found by that name.", status: 404 } };
-  vi.setSystemTime(Date.now() + FRESH_MS + 1);
+  await advance(clock, FRESH_MS + 1);
   expect((await failure("/v1/players/Testwyrm/profile")).status).toBe(404);
   expect((await failure("/v1/players/Testwyrm/profile")).status).toBe(404);
   expect((await failure("/v1/players/testwyrm/profile")).status).toBe(404);
@@ -406,18 +397,18 @@ test("a stale catalog is kept for a minute when dragsim.co is down, then tried a
   const catalogCalls = () => asked.filter((path) => path.startsWith("/data/catalog")).length;
   await get("/v1/players/Testwyrm/profile");
   state.catalog = "down";
-  vi.setSystemTime(Date.now() + CATALOG_FRESH_MS + 1);
+  await advance(clock, CATALOG_FRESH_MS + 1);
   expect((await get("/v1/players/Testwyrm/profile")).status).toBe(200);
   expect(catalogCalls()).toBe(2);
   for (let call = 0; call < 5; call++) {
     expect((await get("/v1/players/Testwyrm/profile")).status).toBe(200);
   }
   expect(catalogCalls()).toBe(2);
-  vi.setSystemTime(Date.now() + CATALOG_RETRY_MS + 1);
+  await advance(clock, CATALOG_RETRY_MS + 1);
   expect((await get("/v1/players/Testwyrm/profile")).status).toBe(200);
   expect(catalogCalls()).toBe(3);
   state.catalog = { status: 200, body: catalog };
-  vi.setSystemTime(Date.now() + CATALOG_RETRY_MS + 1);
+  await advance(clock, CATALOG_RETRY_MS + 1);
   await get("/v1/players/Testwyrm/profile");
   expect(catalogCalls()).toBe(4);
   await get("/v1/players/Testwyrm/profile");
@@ -471,7 +462,6 @@ test("a profile answer is quick once cached", async () => {
  * Every field path of a real player's answer, with no values: `*` stands for any key of an open map, and `[]` for a
  * list's element. A skeleton is built from them, so a field the real data has and the shape misses fails here.
  */
-const REAL_PATHS: readonly string[] = fixture("real-paths.json");
 
 /** A value with every path, `1` at each leaf. An empty map in one item is a leaf here and fuller elsewhere, and the fuller wins. */
 const build = (paths: readonly (readonly string[])[]): unknown => {
@@ -504,7 +494,7 @@ test("a profile names itself, with or without the list of profiles", async () =>
     profileMode: "IRONMAN",
   });
   state.player = { status: 200, body: { ...player, profiles: undefined } };
-  const alone = await profile("/v1/players/Testwyrm/profile?profile=" + String(player.profile.id));
+  const alone = await profile(`/v1/players/Testwyrm/profile?profile=${player.profile.id}`);
   expect(alone).toMatchObject({ profileName: [{ text: "Superior", color: "#AA00AA" }], profileMode: "IRONMAN" });
 });
 
@@ -770,7 +760,7 @@ test("an item with no place is never dropped, and its container is listed only t
       },
     },
   };
-  vi.setSystemTime(Date.now() + FRESH_MS + 1);
+  await advance(clock, FRESH_MS + 1);
   const value = await profile();
   const others = value.containers.filter((box) => box.id.endsWith(":other"));
   expect(others.map((box) => [box.id, box.slots])).toEqual([

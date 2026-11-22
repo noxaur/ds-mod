@@ -4,8 +4,6 @@ import io.github.noxaur.dsmod.core.ui.MenuTrail
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
-import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen
-import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.world.inventory.AbstractContainerMenu
 
 object Trail {
@@ -15,9 +13,9 @@ object Trail {
 
     fun register() {
         ClientSendMessageEvents.COMMAND.register(::sent)
-        ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
-            if (screen !is AbstractContainerScreen<*> || screen is InventoryScreen || screen is CreativeModeInventoryScreen) return@register
-            if (screen.menu !== menu) {
+        ScreenHooks.onEveryLayout<AbstractContainerScreen<*>> { screen, opened ->
+            if (!screen.openedByServer) return@onEveryLayout
+            if (opened) {
                 menu = screen.menu
                 back = trail.opened(System.currentTimeMillis(), screen.title.string)
             }

@@ -5,8 +5,10 @@ import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
+import io.github.noxaur.dsmod.core.game.SlayerLine
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.clock
+import io.github.noxaur.dsmod.core.text.count
 import kotlinx.serialization.Serializable
 
 /** Every slayer boss the player has slain. */
@@ -44,12 +46,12 @@ class SlayerTracker(config: DsModConfig) : HasFeature {
             }
         }
         feature.line(Regex("""   .+ Slayer LVL """), Regex("""   (.+ Slayer) LVL (\d+) - Next LVL in ([\d,]+) XP!""")) { (slayer, at, left), _ ->
+            toNext = count(left)?.toLong() ?: return@line
             level = "$slayer $at"
-            toNext = left.replace(",", "").toLong()
         }
-        feature.line(Regex("""☠ .*SLAYER BOSS"""), Regex("""☠ (?:NICE! )?SLAYER BOSS (SPAWNING|SLAIN)!""")) { (event), now ->
+        feature.line(SlayerLine.head, SlayerLine::parse) { event, now ->
             seen = true
-            if (event == "SPAWNING") {
+            if (event == SlayerLine.SPAWNING) {
                 spawnedAt = now
                 return@line
             }

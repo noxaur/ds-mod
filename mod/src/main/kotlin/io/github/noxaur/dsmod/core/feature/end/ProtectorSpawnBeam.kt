@@ -7,6 +7,7 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.HeadPlaced
 import io.github.noxaur.dsmod.core.game.ProtectorRow
+import io.github.noxaur.dsmod.core.game.ProtectorStage
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.Sections
 import io.github.noxaur.dsmod.core.world.Mark
@@ -47,7 +48,7 @@ class ProtectorSpawnBeam(config: DsModConfig) : HasFeature {
     fun marks(now: Long): List<Mark> {
         val row = feature.tab.info("Protector")?.let(ProtectorRow::parse) ?: return beam
         val shows = when {
-            row.stage == "Spawned" -> inFight.value
+            row.stage == ProtectorStage.SPAWNED -> inFight.value
             row.killsLeft == null -> true
             else -> Sections.contains(sections.value, (ProtectorRow.CYCLE_KILLS - row.killsLeft).coerceIn(0, ProtectorRow.CYCLE_KILLS))
         }
