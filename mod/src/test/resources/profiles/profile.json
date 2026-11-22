@@ -467,7 +467,7 @@
    "type": "GOLDEN_DRAGON",
    "name": "Golden Dragon",
    "rarity": "LEGENDARY",
-   "totalXp": 1798563928,
+   "totalXp": 10000000,
    "xpCurve": 2,
    "candiesUsed": 3,
    "active": true,
@@ -479,10 +479,10 @@
     "id": "pet_skin_golden_dragon_ancient",
     "name": "Ancient Golden Dragon Skin"
    },
-   "level": 200,
+   "level": 150,
    "maxLevel": 200,
-   "xpIntoLevel": 1778563928,
-   "xpForNextLevel": null,
+   "xpIntoLevel": 203750,
+   "xpForNextLevel": 204075,
    "category": "Combat",
    "perks": [
     {
@@ -512,7 +512,7 @@
     "count": 1,
     "name": [
      {
-      "text": "[Lvl 200] ",
+      "text": "[Lvl 150] ",
       "color": "#AAAAAA"
      },
      {
@@ -534,7 +534,7 @@
        "color": "#AAAAAA"
       },
       {
-       "text": "1,798,563,928",
+       "text": "10,000,000",
        "color": "#FFFFFF"
       }
      ],

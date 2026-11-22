@@ -23,6 +23,7 @@ import io.github.noxaur.dsmod.core.profile.StatValue
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.TextBuilder
 import io.github.noxaur.dsmod.core.text.amount
+import io.github.noxaur.dsmod.core.text.fixed
 import io.github.noxaur.dsmod.core.text.grouped
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.TabEdge
@@ -661,8 +662,11 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         return listOfNotNull(
             Row({ w -> (if (rarity != null) text { rarity(fit(pet.name, w), rarity) } else text { body(fit(pet.name, w)) }).toComponent() }, emptyList()),
             pet.category?.let { fact("Category", it) },
-            fact("Level", "${pet.level} / ${pet.maxLevel}"),
-            pet.xpForNextLevel?.let { next -> fact("Progress", "${grouped(pet.xpIntoLevel.toLong())} / ${grouped(next.toLong())}") },
+            fact("Level", pet.level?.let { "$it / ${pet.maxLevel ?: "?"}" } ?: "Unknown"),
+            pet.xpForNextLevel?.takeIf { it > 0 }?.let { next ->
+                val exact = text { muted("Progress: "); value("${grouped(pet.xpIntoLevel.toLong())} / ${grouped(next.toLong())}") }.toComponent()
+                Row(muted("Progress"), listOf(text { value("${fixed(pet.xpIntoLevel / next * 100, 1)}%") }.toComponent()), listOf(exact))
+            },
             Row(muted("Total XP"), listOf(text { value(amount(pet.totalXp)) }.toComponent())),
             pet.heldItem?.let { fact("Held", it.name) },
             pet.skinOverride?.let { fact("Skin", it.name.removeSuffix(" Skin")) },
