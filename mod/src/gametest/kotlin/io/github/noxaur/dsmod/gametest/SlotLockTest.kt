@@ -15,7 +15,6 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.Slots], [io.github.noxaur.dsmod.edge.mixin.EnchantmentOfferMixin], [io.github.noxaur.dsmod.edge.mixin.HudHotbarMixin], [io.github.noxaur.dsmod.edge.mixin.MenuBackdropMixin], [io.github.noxaur.dsmod.edge.mixin.MenuLabelMixin]. */
 class SlotLockTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val slotLock = DsModClient.feature<SlotLock>()
