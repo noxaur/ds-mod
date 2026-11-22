@@ -10,7 +10,6 @@ import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
-import io.github.noxaur.dsmod.edge.TabPlacesEditor
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
@@ -166,10 +165,3 @@ class SettingsScreenFixesTest : FabricClientGameTest {
 }
 
 /** Drives Menu Tabs' form, at GUI scale 2. */
-internal class TabsDriver(context: ClientGameTestContext) : SettingsDriver(context) {
-    private fun editor() = context.computeOnClient<TabPlacesEditor, Nothing> { (it.gui.screen() as SettingsScreen).editor("tabs") as TabPlacesEditor }
-
-    fun place(edge: TabEdge, slot: Int) = context.computeOnClient<Pair<Int, Int>, Nothing> { editor().placeAt(edge, slot) }
-
-    fun field(which: Int) = context.computeOnClient<IntArray, Nothing> { editor().fieldSpot(which) }
-}

@@ -11,7 +11,6 @@ import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
-import io.github.noxaur.dsmod.gametest.SettingsSteps.theme
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.loader.api.FabricLoader
@@ -39,10 +38,7 @@ class BeamTimingTest : FabricClientGameTest {
             context.takeScreenshot("beam-timing-default")
 
             // Window pixels of a value on the track, at the middle of the track's height.
-            fun move(value: Int) {
-                context.input.setCursorPos((span.sliderX + 1 + value * (span.sliderWidth - 2) / 200.0) * 2, (span.sliderY + 8.0) * 2)
-                context.waitTick()
-            }
+            fun move(value: Int) = context.point(span.sliderX + 1 + value * (span.sliderWidth - 2) / 200.0, span.sliderY + 8.0)
             fun sections(vararg expected: Section, step: String) =
                 check(protectorSpawnBeam.sections.value == expected.toList()) { "$step gave ${protectorSpawnBeam.sections.value}, not ${expected.toList()}" }
 
@@ -82,9 +78,7 @@ class BeamTimingTest : FabricClientGameTest {
             move(150)
             context.waitTicks(2)
             context.takeScreenshot("beam-timing-merged")
-            theme(context, Theme.VANILLA)
-            context.takeScreenshot("beam-timing-vanilla")
-            theme(context, Theme.CHARCOAL)
+            context.inTheme(Theme.VANILLA) { context.takeScreenshot("beam-timing-vanilla") }
 
             move(60)
             context.input.pressMouse(1)

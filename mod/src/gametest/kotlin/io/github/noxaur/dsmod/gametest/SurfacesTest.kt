@@ -61,8 +61,8 @@ class SurfacesTest : FabricClientGameTest {
             context.waitTicks(30)
             context.takeScreenshot("surfaces")
 
-            context.setScreen { InventoryScreen(context.computeOnClient<net.minecraft.world.entity.player.Player, Nothing> { it.player!! }) }
-            val cursor = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
+            context.openInventory()
+            val diamondSlot = context.computeOnClient<Int, Nothing> { client ->
                 val screen = client.gui.screen() as InventoryScreen
                 val diamond = screen.menu.slots.first { it.item.item == Items.DIAMOND }
                 Slots.mark(
@@ -74,12 +74,9 @@ class SurfacesTest : FabricClientGameTest {
                         diamond.index + 1 to SlotMark(Role.ACTION, outline = true),
                     ),
                 )
-                val scale = client.window.guiScale
-                val accessor = screen as io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
-                (accessor.leftPos + diamond.x + 8) * scale.toDouble() to (accessor.topPos + diamond.y + 8) * scale.toDouble()
+                diamond.index
             }
-            context.input.setCursorPos(cursor.first, cursor.second)
-            context.waitTicks(10)
+            context.hoverSlot(diamondSlot, settle = 10)
             context.takeScreenshot("container")
 
             context.runOnClient<Nothing> {
@@ -90,8 +87,7 @@ class SurfacesTest : FabricClientGameTest {
             }
 
             // At GUI scale 2 a HUD scale of 1.3 snaps to 1.5, three screen pixels per HUD pixel, so every edge stays whole.
-            context.enterTheEnd()
-            world.server.runCommand("""tellraw @a "§5✦ §dThe Egg has Spawned!"""")
+            context.showDragonTimer(world)
             context.runOnClient<Nothing> { client ->
                 client.options.guiScale().set(2)
                 client.resizeGui()
@@ -99,7 +95,7 @@ class SurfacesTest : FabricClientGameTest {
             }
             context.waitTicks(5)
             context.runOnClient<Nothing> {
-                val scale = Hud.find("dragon-timer")?.scale
+                val scale = Hud.find(DRAGON_TIMER)?.scale
                 check(scale == 1.5f) { "The HUD scale snapped to $scale, not 1.5" }
             }
             context.takeScreenshot("hud-scale-1.5")

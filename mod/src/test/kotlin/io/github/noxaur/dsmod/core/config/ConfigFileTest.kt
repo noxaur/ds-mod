@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.config
 
+import io.github.noxaur.dsmod.harness.resource
 import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.container.MarkStyle
@@ -62,7 +63,6 @@ import io.github.noxaur.dsmod.core.world.BoxStyle
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import java.nio.file.Files
-import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.readText
@@ -84,7 +84,7 @@ class ConfigFileTest {
      */
     @Test
     fun `a file the MoulConfig build wrote loads every value`() {
-        Files.copy(Path.of(javaClass.getResource("/config/moulconfig.json")!!.toURI()), path)
+        path.writeText(resource("config/moulconfig.json"))
         val c = ConfigFile(path).load()
         val tree = SettingsTree(c)
         assertEquals(listOf("general.fullbright", "loot.lootAlerts", "hud.scale", "end.editBeam", "general.resetAnimations"), c.favorites)
@@ -165,8 +165,6 @@ class ConfigFileTest {
 
         tree.feature<ItemRarity>().run {
             assertFalse(feature.enabled)
-            // MoulConfig's Gson wrote a look as {}, since its fields had no @Expose, so Custom showed the Gilded look,
-            // and that carries over as a Frame.
             assertEquals(SlotStyle(MarkStyle.FRAME), inventoryStyle.value)
             assertEquals(SlotStyle(MarkStyle.FRAME), hotbarStyle.value)
             assertFalse(hotbarMatches.value || hotbarMarks.value)
@@ -185,7 +183,7 @@ class ConfigFileTest {
         }
         assertTrue(tree.feature<ArmorSwapGuard>().feature.enabled)
 
-        assertFalse(tree.feature<BetterUi>().feature.enabled || tree.feature<BackButtons>().feature.enabled || tree.feature<MenuTabs>().feature.enabled)
+        assertFalse(tree.feature<BetterUi>().feature.switch.value || tree.feature<BackButtons>().feature.switch.value || tree.feature<MenuTabs>().feature.switch.value)
         assertEquals(
             listOf(MenuTab(TabEdge.TOP, 2, "bazaar", "minecraft:gold_ingot", "Bazaar"), MenuTab(TabEdge.BOTTOM, 6, item = "", tooltip = "Search", search = true)),
             tree.feature<MenuTabs>().tabs.value,
@@ -242,7 +240,6 @@ class ConfigFileTest {
             val rarity = SettingsTree(c).feature<ItemRarity>()
             assertEquals(SlotStyle(mark), rarity.inventoryStyle.value, old)
             assertEquals(SlotStyle(MarkStyle.UNDERGLOW), rarity.hotbarStyle.value, old)
-            // A tree built again on the same config, as the game tests restart the mod, keeps what the player set since.
             rarity.inventoryStyle.value = SlotStyle(MarkStyle.UNDERGLOW, opacity = 50)
             assertEquals(SlotStyle(MarkStyle.UNDERGLOW, opacity = 50), SettingsTree(c).feature<ItemRarity>().inventoryStyle.value, old)
             ConfigFile(path).save(c)

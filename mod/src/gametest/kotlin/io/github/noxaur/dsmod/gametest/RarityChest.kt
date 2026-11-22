@@ -15,7 +15,6 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.CustomData
 
-/** A chest titled Test Chest that holds a sword of every rarity, as dragsim.co builds them, and a stone with none. */
 object RarityChest {
     fun open(context: ClientGameTestContext, server: TestServerContext) {
         server.runOnServer<Nothing> { s ->
@@ -30,7 +29,7 @@ object RarityChest {
                 it.setItem(23, item("Special Sword", "SPECIAL"))
                 it.setItem(25, ItemStack(Items.STONE))
             }
-            s.playerList.players.first().openMenu(
+            s.player.openMenu(
                 SimpleMenuProvider({ id, inventory, _ -> ChestMenu.sixRows(id, inventory, chest) }, Component.literal("Test Chest")),
             )
         }

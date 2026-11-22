@@ -24,15 +24,6 @@ import kotlin.math.ceil
 private const val HOTBAR_PITCH = 20
 private const val FILL_ALPHA = 110
 
-/**
- * Marks on the slots of the open container. They go away when the container closes. With no menu open the
- * container is the player's own inventory, and the marks on its last nine slots are drawn on the hotbar.
- * A hidden or covered slot draws nothing here: `ContainerScreenMixin` asks [hides] and skips its item, highlight and
- * tooltip.
- *
- * A mark is drawn behind the item, and a cooldown over it. A rarity mark is the player's style for that surface, in
- * the sparkle placement its slot's index picks.
- */
 object Slots {
     /**
      * [rarity] is the mark's role when the player's rarity style draws it, or null for a plain fill in [color], and a
@@ -81,7 +72,6 @@ object Slots {
     fun rarity(index: Int): Role? = marks.values.firstNotNullOfOrNull { it[index]?.rarity }
 
     fun register() {
-        // The backs go under the items from `HudHotbarMixin`. This draws the cooldowns, after vanilla drew the items.
         HudElementRegistry.attachElementAfter(VanillaHudElements.HOTBAR, Identifier.fromNamespaceAndPath("dsmod", "hotbar")) { graphics, _ ->
             if (!onHotbar() || !cooldowns) return@attachElementAfter
             DsModClient.game.metrics.time("slots.draw") {
@@ -128,7 +118,6 @@ object Slots {
         for (slots in marks.values) slots[index]?.takeUnless { it.hide }?.let { back(graphics, surface, it, index, x, y) }
     }
 
-    /** Draws what goes over the item in slot [index]: a cooldown, which follows its feature's own switch, on the hotbar as well. */
     fun drawFront(graphics: GuiGraphicsExtractor, index: Int, x: Int, y: Int) {
         for (slots in marks.values) slots[index]?.takeUnless { it.hide }?.cooldown?.let { cooldown(graphics, it, x, y) }
     }
@@ -153,10 +142,6 @@ object Slots {
      */
     fun marks(rarity: Role?) = rarity != null && DsModClient.runs<ItemRarity>() && (rarity != Role.COMMON || settings.markCommon.value)
 
-    /**
-     * Draws [rarity]'s mark behind an item at [x], [y] that the mod draws itself, in the player's style for menus. [index]
-     * is the slot's place in its grid, which picks the sparkles' placement.
-     */
     fun rarityBack(graphics: GuiGraphicsExtractor, rarity: Role, index: Int, x: Int, y: Int) {
         art(graphics, Surface.CONTAINER, rarity, index, x, y)
     }

@@ -16,10 +16,6 @@ enum class MarkStyle(private val label: String) {
     override fun toString() = label
 }
 
-/**
- * How a rarity mark looks: its [mark], how solid it is as an [opacity] from 10 to 100 percent, and whether
- * [sparkles] glint inside the colored area, behind the item.
- */
 @Serializable
 data class SlotStyle(
     val mark: MarkStyle = MarkStyle.FRAME,

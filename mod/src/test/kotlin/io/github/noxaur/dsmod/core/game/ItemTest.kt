@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.game
 
+import io.github.noxaur.dsmod.harness.lines
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlin.test.Test
@@ -8,7 +9,7 @@ import kotlin.test.assertNull
 
 class ItemTest {
     private fun item(vararg lore: String, data: String = "{}") =
-        Item("minecraft:paper", 1, lore = lore.map { ServerText(ServerSpan(it)) }, data = Json.parseToJsonElement(data).jsonObject)
+        Item("minecraft:paper", 1, lore = lines(*lore), data = Json.parseToJsonElement(data).jsonObject)
 
     @Test
     fun `clean lore drops the resource pack's glyphs and trims each line`() {

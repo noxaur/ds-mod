@@ -16,13 +16,6 @@ import org.slf4j.LoggerFactory
 /** Where a rarity mark is drawn. Each has its own style, and the hotbar's sits over the world, so it is always dark. */
 enum class Surface { CONTAINER, HOTBAR }
 
-/**
- * Bakes the player's rarity style into one atlas per [Surface]: 18x18 backs, one column per [Role] and one row per
- * sparkle placement. A slot then costs one blit, and its index picks the row. The atlas is painted again only when
- * the style's mark or sparkles change or the resource packs make a chest's slots dark or light, and that paint waits
- * for the end of the client tick: a texture uploaded while a frame is being built breaks every frame after it. The
- * opacity is the blit's, so it needs no paint.
- */
 object SlotArts {
     private class Baked(val texture: DynamicTexture, val atlas: Atlas)
 
@@ -40,7 +33,6 @@ object SlotArts {
     private var packs: List<String>? = null
     private var packDark = false
 
-    /** Whether a container's slots are drawn dark, as [checkSlots] last read it. */
     var containerDark = false
         private set
 
@@ -66,7 +58,6 @@ object SlotArts {
             val style = wantedStyle[surface.ordinal] ?: continue
             val dark = wantedDark[surface.ordinal]
             val have = ready[surface]
-            // The opacity is the blit's, so a change of it alone keeps the atlas.
             if (have != null && have.style.mark == style.mark && have.style.sparkles == style.sparkles && have.dark == dark) continue
             ready[surface] = Ready(bake(surface, style, dark), style, dark)
         }
@@ -82,11 +73,6 @@ object SlotArts {
         ready.clear()
     }
 
-    /**
-     * Reads again whether a container's slots are dark. Call it as a container screen opens. While Menu Theme draws the
-     * menus the slots are the theme's, or glass over the world, which is dark. Otherwise they are the resource packs',
-     * read from the pixel inside a chest's first slot when the selected packs changed.
-     */
     fun checkSlots() {
         val client = Minecraft.getInstance()
         val selected = client.resourcePackRepository.selectedIds.toList()

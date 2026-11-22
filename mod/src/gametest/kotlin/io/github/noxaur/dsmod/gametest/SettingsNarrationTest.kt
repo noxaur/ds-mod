@@ -2,16 +2,13 @@ package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
-import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
-import io.github.noxaur.dsmod.edge.ui.SettingRows
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import io.github.noxaur.dsmod.gametest.SettingsSteps.hear
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
-import io.github.noxaur.dsmod.gametest.SettingsSteps.theme
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.TitleScreen
@@ -20,7 +17,7 @@ import net.minecraft.client.gui.screens.TitleScreen
 class SettingsNarrationTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = setUp(context)
-        context.input.setCursorPos(0.0, 0.0)
+        context.point(0, 0, settle = 0)
         SettingsDriver(context).narration()
         context.setScreen { TitleScreen() }
         restore(context, window)
@@ -92,13 +89,9 @@ class SettingsNarrationTest : FabricClientGameTest {
         move(120 + 30, 9)
         hear(context, "General, tab, selected", "Over the tab")
 
-        // A search paints the words it matched: in a switch's name that opens to show a hit, in a description, and in a dropdown's value.
         open(context, SettingsTabs(at("General")))
         context.input.typeChars("frame hotbar")
         context.waitTicks(2)
-        context.takeScreenshot("own-settings-search-marks")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("own-settings-search-marks-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("own-settings-search-marks")
     }
 }

@@ -172,7 +172,6 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
         ),
     )
 
-
     private fun slotLook(mark: MarkStyle) = Look.Slots(SlotStyle(mark))
 
     private val listsPage = listOf(
@@ -244,7 +243,6 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
     private val opened = hashSetOf("openSwitch", "openFold", "openOrder")
     private val settingRows = SettingRows(opened, ::layout, { _, _ -> })
 
-    /** Rows as a search for "frame look" shows them, with the words it matched painted, drawn apart from the rows above. */
     private val found = "Found by a search: frame look" to rows {
         pick(Bind.of(v::foundPreset), "Style", "Pick a look for the marks.", MarkStyle.entries, id = "foundStyle") { slotLook(it) }
         fold("foundFold", "Hotbar Look", "Give the hotbar its own look.") { switch(Bind.of(v::foundSparkles), "Sparkles", "Add glints.", id = "foundSparkles") }

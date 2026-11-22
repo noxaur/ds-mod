@@ -12,7 +12,7 @@ Every setting is a row of one kind, and the screen builds everything a row does 
 
 ## A feature is declared in one place, and the tree keeps only the shape
 
-A feature's switch, its settings and their defaults are declared in its own class, and the tree only places the feature. Four places that had to agree were rejected: a feature left out of one compiled and then silently had no row, no save or never ran. The tree still holds the shape, because where a feature sits among the sections is a choice about the screen, not about the feature.
+A feature's switch, its settings and their defaults are declared in its own class, and the tree only places the feature. Four places that had to agree were rejected: a feature left out of one compiled and then silently had no row, no save or never ran. The tree still holds the shape, because where a feature sits among the sections is a choice about the screen, not about the feature. A feature placed under another's switch runs only while that switch is on, as its row dims, so a group's children never each check the group.
 
 ## A default lives beside the value it belongs to
 

@@ -10,8 +10,6 @@ import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
-import io.github.noxaur.dsmod.core.game.ContainerOpened
-import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Look
 import kotlinx.serialization.Serializable
@@ -24,17 +22,14 @@ import kotlin.math.roundToInt
 class ItemRarity(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "item-rarity", Area.ANYWHERE, Store.INVENTORY, "Mark each item's slot in the color of its rarity.", formerly = listOf("rarityMarks"), slots = ::slots)
 
-    /** The look of the marks in every container, the player's inventory included. */
     val inventoryStyle = feature.stored("inventoryLook", SlotStyle())
 
-    /** The hotbar's own look, which shows once the player unlinks it from [inventoryStyle]. */
     val hotbarStyle = feature.stored("hotbarLook", SlotStyle())
 
     /** While true the hotbar is drawn in [inventoryStyle], and [hotbarStyle] waits for the player to unlink them. */
     val hotbarMatches = feature.stored("hotbarMatches", true)
 
     init {
-        // Older versions picked a preset, or built a look from a border, a fill and a floor. Each becomes the nearest style.
         feature.former<String>("rarityPreset")?.let { preset ->
             val mark = PRESETS[preset] ?: feature.former<OldLook>("inventoryStyle")?.mark() ?: MarkStyle.FRAME
             inventoryStyle.value = SlotStyle(mark)
@@ -64,8 +59,6 @@ class ItemRarity(config: DsModConfig) : HasFeature {
             hotbarMatches.value = it
         }
         switch(match, "Match Inventory", "Mark the hotbar in the same look as your inventory.")
-        // A row shows the hotbar's look as it is, and a change makes it the hotbar's own. While the hotbar matches,
-        // the row's default is the look on screen, so a reset writes that back and leaves Match Inventory on.
         looks(
             field = hotbarStyle.bind.field,
             idPrefix = "hotbar",
@@ -81,48 +74,31 @@ class ItemRarity(config: DsModConfig) : HasFeature {
         )
     }
 
-    /** The style containers show. */
     fun containerStyle(): SlotStyle = inventoryStyle.value
 
     /** The look the hotbar's marks are drawn in: the inventory's while they match, or the hotbar's own. */
     fun hotbarLook(): SlotStyle = if (hotbarMatches.value) containerStyle() else hotbarStyle.value
 
-    private var marks = emptyMap<Int, SlotMark>()
-    private var changed = false
     private var common = markCommon.value
 
     private val byRarity = Role.RARITIES.associate { it.name to SlotMark(it, rarity = true) }
 
-    init {
-        feature.on<ContainerOpened> { _, _ -> changed = true }
-        feature.on<SlotChanged> { _, _ -> changed = true }
+    private val marks = SlotMarks(feature) { _, item, _ ->
+        val rarity = item.rarity ?: return@SlotMarks null
+        val mark = byRarity[rarity]
+        if (mark == null) feature.unparsed(rarity)
+        mark?.takeIf { it.role != Role.COMMON || common }
     }
 
     fun slots(now: Long): Map<Int, SlotMark> {
         if (common != markCommon.value) {
             common = !common
-            changed = true
+            marks.invalidate()
         }
-        if (!changed) return marks
-        changed = false
-        val next = HashMap<Int, SlotMark>()
-        feature.container.slots.forEachIndexed { slot, item ->
-            val rarity = item?.rarity ?: return@forEachIndexed
-            val mark = byRarity[rarity]
-            when {
-                mark == null -> feature.unparsed(rarity)
-                mark.role != Role.COMMON || common -> next[slot] = mark
-            }
-        }
-        marks = next
-        return marks
+        return marks.marks(now)
     }
 }
 
-/**
- * The Style, Opacity and Sparkles rows of a slot look, saved under [field]. Each shows [look] as it is, a change goes
- * to [write], and a reset returns to the [follows] look while there is one. A row's id is its part, after [idPrefix].
- */
 private fun Rows.looks(
     field: String, idPrefix: String, look: () -> SlotStyle, follows: () -> SlotStyle?, write: (SlotStyle) -> Unit,
     style: String, opacity: String, sparkles: String,
@@ -143,13 +119,10 @@ private const val OPACITY_MIN = 10f
 private const val OPACITY_MAX = 100f
 private const val OPACITY_STEP = 5f
 
-/** The preset an older version saved, by name, as the style nearest it. Custom is missing: its look was built from parts. */
 private val PRESETS = mapOf("GILDED" to MarkStyle.FRAME, "SHOWCASE" to MarkStyle.AURA, "MINIMAL" to MarkStyle.UNDERGLOW)
 
-/** A look as an older version saved it, from parts, read only to carry it over. Its defaults were the Gilded preset's. */
 @Serializable
 private class OldLook(val border: String = "GILDED", val fill: String = "GLOW") {
-    /** The style nearest it: a round look is an Aura, one with a border or a fill across the slot a Frame, and the rest an Underglow. */
     fun mark() = when {
         fill == "HALO" || border == "ROUNDED" -> MarkStyle.AURA
         border != "NONE" || fill == "GLOW" || fill == "WASH" -> MarkStyle.FRAME

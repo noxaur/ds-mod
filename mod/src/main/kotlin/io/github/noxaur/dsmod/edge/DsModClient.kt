@@ -182,6 +182,7 @@ object DsModClient : ClientModInitializer {
         MenuSkin.register()
         ForgeCrafts.register()
         AutoClicks.register()
+        Trail.register()
         MenuBack.register()
         TabBar.register()
         HotdShortcut.register()

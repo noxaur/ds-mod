@@ -109,7 +109,7 @@ Times every item ability you use, such as Giant's Slam, the Tuba's Howl, a katan
 
 ### Equipment Display
 
-Shows the armor you wear and your pet as a row of icons on the HUD, with each head's skin and each leather piece's dye. Your pet's head joins the row once you open the Pets menu or it floats near you, and until then the pet shows as its name under the row. Open the chat and point at a piece to read its tooltip. The pet's tooltip from the Pets menu names its held item.
+Shows the armor you wear and your pet as a row of icons on the HUD, with each head's skin and each leather piece's dye. Your pet's head joins the row once you open the Pets menu or it floats near you, and until then the pet shows as its name under the row. Open the chat and point at a piece to read its tooltip. The pet's tooltip from the Pets menu names its held item. A dungeon's sidebar names no pet, so there the row keeps the pet you had out.
 
 | Setting | Does |
 | --- | --- |
@@ -188,6 +188,8 @@ Left clicks 9.9 times a second while you hold its key and walk. It stops the mom
 - **Key:** any key or mouse button. It starts as the left mouse button, and can't be Auto Right Click's key.
 - **Mode:** Hold, or Toggle to press once to start and again to stop. A toggled click still runs only while you walk.
 
+While it's on, your own left clicks share the same 9.9 a second, so left clicking never goes faster.
+
 <sub>Off by default.</sub>
 
 ### Auto Right Click
@@ -196,6 +198,8 @@ Right clicks the same way, 9.9 times a second while you hold its key and walk, s
 
 - **Key:** any key or mouse button. It starts as the right mouse button, and can't be Auto Left Click's key.
 - **Mode:** Hold, or Toggle.
+
+While it's on, your own right clicks share the same 9.9 a second, so right clicking never goes faster.
 
 <sub>Off by default.</sub>
 

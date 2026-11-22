@@ -991,7 +991,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         }
     }
 
-    /** Slot [index] of a grid the screen draws: the frame, the rarity mark behind the item, and the hover. */
     private fun slot(graphics: GuiGraphicsExtractor, shown: Shown?, index: Int, x: Int, y: Int, mouseX: Int, mouseY: Int, hover: (DrawnItem, ItemStack) -> Unit) {
         Kit.slot(graphics, x, y)
         shown ?: return

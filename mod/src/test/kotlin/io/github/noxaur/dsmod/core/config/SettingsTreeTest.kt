@@ -5,6 +5,8 @@ import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
+import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
+import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import kotlinx.serialization.descriptors.StructureKind
@@ -44,6 +46,19 @@ class SettingsTreeTest {
             assertTrue(listOf(whole, parts > 0, stored).count { it } == 1, "$field: reached $whole, by $parts parts, stored only $stored")
         }
         for (field in reached + SettingsTree.STORED.keys) assertTrue(saved.any { field == it || field.startsWith("$it.") }, "$field is not a saved field")
+    }
+
+    @Test
+    fun `a feature in a group runs only while the group is on, and keeps its own switch`() {
+        val tree = SettingsTree()
+        val group = tree.feature<BetterUi>().feature
+        val back = tree.feature<BackButtons>().feature
+        assertTrue(back.on)
+        group.enabled = false
+        assertFalse(back.enabled || back.on)
+        assertTrue(back.switch.value)
+        group.enabled = true
+        assertTrue(back.on)
     }
 
     @Test

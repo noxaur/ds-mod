@@ -5,7 +5,6 @@ import io.github.noxaur.dsmod.core.feature.general.Fullbright
 import io.github.noxaur.dsmod.core.feature.loot.RareDropAlert
 import io.github.noxaur.dsmod.core.ui.Place
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
-import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
@@ -13,7 +12,6 @@ import io.github.noxaur.dsmod.gametest.SettingsSteps.hear
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
-import io.github.noxaur.dsmod.gametest.SettingsSteps.theme
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.loader.api.FabricLoader
@@ -119,10 +117,7 @@ class FavoritesTest : FabricClientGameTest {
             context.runOnClient<Nothing> { tabs.current.go(SettingsScreen.FAVORITES) }
             open(context, tabs)
             check(shown() == listOf("fullbright", "hide-explosions", "rare-drop-alert")) { "Favorites lists ${shown()}" }
-            context.takeScreenshot("settings-favorites")
-            theme(context, Theme.VANILLA)
-            context.takeScreenshot("settings-favorites-vanilla")
-            theme(context, Theme.CHARCOAL)
+            context.shotInBothThemes("settings-favorites")
 
             // A row unstarred here stays, so a second press lands on it and stars it again.
             star("fullbright")

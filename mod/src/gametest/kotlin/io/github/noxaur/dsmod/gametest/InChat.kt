@@ -2,12 +2,12 @@ package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.edge.Hud
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.screens.ChatScreen
 
 /** The real mouse and keyboard on the open chat, in GUI pixels, for the tests that drag HUD blocks from it. */
 class InChat(private val context: ClientGameTestContext) {
-    private val scale = context.computeOnClient<Int, Nothing> { it.window.guiScale }.toDouble()
     val width = context.computeOnClient<Int, Nothing> { it.window.guiScaledWidth }
     val height = context.computeOnClient<Int, Nothing> { it.window.guiScaledHeight }
 
@@ -21,16 +21,17 @@ class InChat(private val context: ClientGameTestContext) {
         context.waitTick()
     }
 
-    fun move(x: Double, y: Double) {
-        context.input.setCursorPos(x * scale, y * scale)
-        context.waitTick()
-    }
+    fun move(x: Double, y: Double) = context.point(x, y)
 
     fun block(id: String) = context.computeOnClient<Hud.Placed, Nothing> { checkNotNull(Hud.find(id)) { "$id is not on the HUD" } }
 
-    fun input() = context.computeOnClient<String, Nothing> { client ->
-        (client.gui.screen() as? ChatScreen)?.children()?.filterIsInstance<EditBox>()?.single()?.value ?: error("The chat closed")
-    }
+    private fun box(client: Minecraft) = (client.gui.screen() as? ChatScreen)?.widgets<EditBox>()?.singleOrNull() ?: error("The chat closed")
+
+    fun input() = context.computeOnClient<String, Nothing> { box(it).value }
+
+    fun cursor() = context.computeOnClient<Int, Nothing> { box(it).cursorPosition }
+
+    fun clearInput() = context.runOnClient<Nothing> { box(it).value = "" }
 
     /** Presses on [id] 5 in from its corner, drags the mouse until the corner would be at [x], [y], runs [during] and lets go. */
     fun drag(id: String, x: Number, y: Number, during: () -> Unit = {}) {

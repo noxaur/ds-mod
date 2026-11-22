@@ -5,7 +5,6 @@ import io.github.noxaur.dsmod.core.ui.Look
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.debug.KitGalleryScreen
 import io.github.noxaur.dsmod.debug.SettingsGalleryScreen
-import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.ui.SettingRows
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -26,10 +25,7 @@ class KitTest : FabricClientGameTest {
             context.setScreen { KitGalleryScreen() }
             guiScale(context, 2)
             context.takeScreenshot("kit-charcoal")
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
-            context.waitTicks(2)
-            context.takeScreenshot("kit-vanilla")
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
+            context.inTheme(Theme.VANILLA) { context.takeScreenshot("kit-vanilla") }
             guiScale(context, 1)
             context.takeScreenshot("kit-charcoal-gui1")
             guiScale(context, 2)
@@ -48,14 +44,10 @@ class KitTest : FabricClientGameTest {
         for (page in listOf(SettingsGalleryScreen.Page.LISTS, SettingsGalleryScreen.Page.PANELS)) {
             context.setScreen { SettingsGalleryScreen(page) }
             context.waitTicks(2)
-            context.input.setCursorPos(0.0, 0.0)
-            context.waitTicks(2)
+            context.point(0, 0, settle = 2)
             val name = page.name.lowercase()
             context.takeScreenshot("kit-$name-charcoal")
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
-            context.waitTicks(2)
-            context.takeScreenshot("kit-$name-vanilla")
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
+            context.inTheme(Theme.VANILLA) { context.takeScreenshot("kit-$name-vanilla") }
             context.runOnClient<Nothing> { client -> (client.gui.screen() as SettingsGalleryScreen).let { kinds += it.kinds; looks += it.looks } }
         }
         context.setScreen { SettingsGalleryScreen() }
@@ -65,29 +57,18 @@ class KitTest : FabricClientGameTest {
         check(missing.isEmpty()) { "No page of the gallery of settings rows shows $missing" }
         fun press(id: String) {
             val spot = context.computeOnClient<SettingRows.Spot?, Nothing> { (it.gui.screen() as SettingsGalleryScreen).spot(id) } ?: error("No row $id")
-            context.input.setCursorPos((spot.controlX + 8) * 2.0, (spot.controlY + 8) * 2.0)
-            context.waitTick()
-            context.input.pressMouse(0)
-            context.waitTicks(2)
+            context.click(spot.controlX + 8, spot.controlY + 8, settle = 2)
         }
         val distance = context.computeOnClient<SettingRows.Spot?, Nothing> { (it.gui.screen() as SettingsGalleryScreen).spot("distance") }!!
-        context.input.setCursorPos((distance.x + 20) * 2.0, (distance.y + 6) * 2.0)
-        context.waitTicks(2)
+        context.point(distance.x + 20, distance.y + 6, settle = 2)
         context.takeScreenshot("kit-rows-charcoal")
-        context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
-        context.waitTicks(2)
-        context.takeScreenshot("kit-rows-vanilla")
-        context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
+        context.inTheme(Theme.VANILLA) { context.takeScreenshot("kit-rows-vanilla") }
         press("tier")
         context.takeScreenshot("kit-rows-choice-menu")
         context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
         context.waitTicks(2)
         press("preset")
-        context.takeScreenshot("kit-rows-pick-menu")
-        context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
-        context.waitTicks(2)
-        context.takeScreenshot("kit-rows-pick-menu-vanilla")
-        context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
+        context.shotInBothThemes("kit-rows-pick-menu")
         context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
         context.waitTicks(2)
     }

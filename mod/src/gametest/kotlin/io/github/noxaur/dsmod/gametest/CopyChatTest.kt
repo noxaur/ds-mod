@@ -1,7 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.feature.chat.CopyChat
-import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.CopyChats
 import io.github.noxaur.dsmod.edge.CopyChats.Format
 import io.github.noxaur.dsmod.edge.DsModClient
@@ -49,16 +48,11 @@ class CopyChatTest : FabricClientGameTest {
                 context.waitForScreen(ChatScreen::class.java)
                 context.waitTicks(2)
 
-                fun move(x: Int, y: Int) {
-                    val scale = context.computeOnClient<Int, Nothing> { it.window.guiScale }
-                    context.input.setCursorPos(x * scale.toDouble(), y * scale.toDouble())
-                    context.waitTick()
-                }
                 // The chat's rows are 9 tall and end 40 above the screen's bottom. Row 0 is the newest line.
-                fun row(row: Int, x: Int = 60) = move(x, context.computeOnClient<Int, Nothing> { it.window.guiScaledHeight } - 40 - row * 9 - 4)
+                fun row(row: Int, x: Int = 60) = context.point(x, context.computeOnClient<Int, Nothing> { it.window.guiScaledHeight } - 40 - row * 9 - 4)
                 fun press(format: Format) {
                     val menu = checkNotNull(CopyChats.menu) { "No menu is open to press $format in" }
-                    move(menu.buttonX(format) + menu.buttonWidth(format) / 2, menu.buttonY + 8)
+                    context.point(menu.buttonX(format) + menu.buttonWidth(format) / 2, menu.buttonY + 8)
                     context.input.pressMouse(0)
                     context.waitTick()
                 }
@@ -96,11 +90,7 @@ class CopyChatTest : FabricClientGameTest {
                 context.input.releaseMouse(1)
                 context.waitTick()
                 check(CopyChats.menu?.header == "Copy 3 Messages") { "The drag opened ${CopyChats.menu?.header}" }
-                context.takeScreenshot("copy-chat-menu")
-                DsModClient.settings.hud.theme = Theme.VANILLA
-                context.waitTick()
-                context.takeScreenshot("copy-chat-menu-vanilla")
-                DsModClient.settings.hud.theme = Theme.CHARCOAL
+                context.shotInBothThemes("copy-chat-menu", settle = 1)
                 press(Format.FORMATTED)
                 copied("&6&lRARE DROP! &#12ab34Summoning Eye\n$long\nThe last message.", "Formatted, for three messages")
 
@@ -269,7 +259,7 @@ class CopyChatTest : FabricClientGameTest {
                 // Held above the chat, the drag scrolls it and keeps selecting.
                 row(0)
                 context.input.holdMouse(1)
-                move(60, 5)
+                context.point(60, 5)
                 context.waitTicks(20)
                 context.input.releaseMouse(1)
                 context.waitTick()
@@ -291,7 +281,7 @@ class CopyChatTest : FabricClientGameTest {
                 row(0)
                 context.input.pressMouse(1)
                 context.waitTick()
-                move(400, 20)
+                context.point(400, 20)
                 context.input.pressMouse(0)
                 context.waitTick()
                 check(CopyChats.menu == null && copies.isEmpty()) { "A click beside the menu left it open or copied $copies" }
@@ -317,7 +307,6 @@ class CopyChatTest : FabricClientGameTest {
             }
         } finally {
             DsModClient.feature<CopyChat>().feature.enabled = true
-            DsModClient.settings.hud.theme = Theme.CHARCOAL
             CopyChats.clipboard = clipboard
         }
     }

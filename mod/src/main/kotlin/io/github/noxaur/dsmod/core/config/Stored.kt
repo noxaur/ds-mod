@@ -48,7 +48,6 @@ class Stored(val store: Store) {
     /** Set by `ConfigFile` while the file is read, and read by each slot made after. */
     internal var pending: ((Slot<*>) -> Unit)? = null
 
-    /** Set by `ConfigFile` with [pending]: the file's value under a key, decoded, or null when it holds none it can read. */
     internal var held: ((String, KSerializer<*>) -> Any?)? = null
 
     /** Every slot made so far, in the order they were made. */
@@ -59,10 +58,6 @@ class Stored(val store: Store) {
     fun <T> slot(key: String, default: T, serializer: KSerializer<T>, formerly: List<String>): Slot<T> =
         slots.getOrPut(key) { Slot(store, key, default, serializer, formerly).also { pending?.invoke(it) } } as Slot<T>
 
-    /**
-     * What the file held under [key], a key no slot saves any more, or null. A feature reads it once to carry an older
-     * shape of its settings over, and the next save drops the key.
-     */
     @Suppress("UNCHECKED_CAST")
     fun <T> former(key: String, serializer: KSerializer<T>): T? = held?.invoke(key, serializer) as T?
 

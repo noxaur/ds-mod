@@ -12,11 +12,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.resources.Identifier
 
-/**
- * Draws each [Look] a pick shows, [HEIGHT] tall. A slot look is drawn from one atlas that holds every mark, with and
- * without sparkles, for three rarities on a dark and a light slot, painted once. The opacity is the blit's, as on a
- * real slot, so any style costs one blit a slot.
- */
 object Looks {
     const val HEIGHT = Kit.SLOT_SIZE
 
@@ -63,7 +58,6 @@ object Looks {
                 val top = (r * 2 + dark) * SlotArt.SIZE
                 for (mark in MarkStyle.entries) {
                     for (sparkles in 0..1) {
-                        // Each slot of a look takes its own placement of the sparkles, as a container's slots do.
                         val art = SlotArt.back(SlotStyle(mark, sparkles = sparkles == 1), role.rgb, dark == 1, variant = r)
                         blit(image, (mark.ordinal * 2 + sparkles) * SlotArt.SIZE, top, SlotArt.SIZE, art)
                     }

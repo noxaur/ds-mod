@@ -77,7 +77,6 @@ class ConfigFile(private val file: Path) {
             for (store in Store.entries) {
                 val section = tree[store.key] as? JsonObject ?: continue
                 config.stored(store).pending = { slot -> read(slot, section) }
-                // A former key is read once, so a feature built again on this config keeps what the player set since.
                 val former = HashMap(section)
                 config.stored(store).held = { key, serializer -> former.remove(key)?.let { decode(serializer, it) } }
             }

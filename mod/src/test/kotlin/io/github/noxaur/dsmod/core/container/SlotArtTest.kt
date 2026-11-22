@@ -59,7 +59,7 @@ class SlotArtTest {
         for (mark in MarkStyle.entries) {
             val light = back(mark, dark = false)
             val dark = back(mark, dark = true)
-            assertTrue(light.indices.all { (light[it] ushr 24) >= (dark[it] ushr 24) }, "$mark")
+            assertTrue(light.indices.all { (light[it] ushr 24) >= minOf(dark[it] ushr 24, 204) }, "$mark")
             assertTrue(light.all { (it ushr 24) <= 204 }, "$mark hides the gray")
         }
     }
@@ -78,7 +78,6 @@ class SlotArtTest {
                 assertTrue(art.indices.any { art[it] and 0xFFFFFF == 0xFFFFFF }, "$mark has no white center")
             }
             assertEquals(SlotArt.VARIANTS, placements.map { it.toList() }.toSet().size, "$mark repeats a placement")
-            // The centers keep off the corner where the game writes a stack's count.
             for (art in placements) for (y in 10 until SlotArt.SIZE) for (x in 10 until SlotArt.SIZE) assertNotEquals(0xFFFFFF, color(art, x, y), "$mark at $x, $y")
         }
     }

@@ -37,7 +37,7 @@ private const val BUDGET_NANOS = 500_000L
  * around the player, including what was there before the capture started. A pass over the chunks nearest
  * first takes at most [BUDGET_NANOS] a tick, and a new pass starts [PERIOD_TICKS] after the last one ended.
  */
-class BlockScan(private val changes: ChangeLog) {
+class BlockScan(private val changes: ChangeLog, private val nanoTime: () -> Long = System::nanoTime) {
     private val queue = ArrayDeque<ChunkPos>()
     private val states = HashMap<String, JsonElement>()
     private val skulls = HashMap<String, JsonElement>()
@@ -65,8 +65,8 @@ class BlockScan(private val changes: ChangeLog) {
             skulls.clear()
             complete = false
         }
-        val deadline = System.nanoTime() + BUDGET_NANOS
-        do scan(level, queue.removeFirst()) while (queue.isNotEmpty() && System.nanoTime() < deadline)
+        val deadline = nanoTime() + BUDGET_NANOS
+        do scan(level, queue.removeFirst()) while (queue.isNotEmpty() && nanoTime() < deadline)
         if (queue.isEmpty()) {
             complete = true
             offer()

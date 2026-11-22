@@ -5,16 +5,14 @@ import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
+import io.github.noxaur.dsmod.core.feature.inventory.SlotMarks
 import io.github.noxaur.dsmod.core.game.Abilities
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.Area
-import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState.Companion.INVENTORY
 import io.github.noxaur.dsmod.core.game.Hit
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.SetCharge
-import io.github.noxaur.dsmod.core.game.SlotChanged
-import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.fixed
 import io.github.noxaur.dsmod.core.text.secondsLeft
@@ -73,21 +71,15 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     /** The ability in the last action bar's mana part, lower case, so a part that stays up counts once. */
     private var lastCast: String? by feature.world { null }
 
-    // Whether the container changed since its items were read, and whether a timer changed since the marks were built.
-    private var stale = true
-    private var marked = true
-    private var marks = emptyMap<Int, SlotMark>()
-    private var marksUntil = Long.MAX_VALUE
+    private val items = ContainerReader(feature)
+    private val marks = SlotMarks(feature, ::mark)
     private var marksClock = -1
+    private var markAt = 0L
+
+    private var quiet = true
+    private var quietClock = -1
 
     init {
-        feature.on<ContainerOpened> { _, _ -> stale = true }
-        feature.on<SlotChanged> { _, _ -> stale = true }
-        // Also run when the feature is switched off, which stops the container events, so it reads the items again.
-        feature.on<WorldChanged> { _, now ->
-            stale = true
-            clock.clear(now)
-        }
         feature.on<ActionBar> { bar, now ->
             val plain = bar.text.plain
             val cast = Abilities.cast(plain)
@@ -109,7 +101,7 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
             val at = clock.millis(now)
             if (running != null && at < running.end) return@on
             timers[key] = Timer(key, bonus.name, bonus.millis, at, at + bonus.millis)
-            marked = true
+            moved()
         }
     }
 
@@ -125,7 +117,7 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
         if (running != null && at - running.start < SAME_USE_MILLIS && at < running.end) return
         val length = learned[key]?.takeIf { it.lore == ability.millis }?.millis ?: ability.millis
         timers[key] = Timer(key, ability.name, ability.millis, at, at + length)
-        marked = true
+        moved()
     }
 
     /**
@@ -148,7 +140,20 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
             learned[timer.key] = Learned(timer.lore, ran)
         }
         if (at < end) timer.alerted = false
-        marked = true
+        moved()
+    }
+
+    private fun moved() {
+        quiet = false
+        marks.invalidate()
+    }
+
+    private fun live(now: Long): Long? {
+        if (quiet && clock.updates == quietClock) return null
+        val at = clock.millis(now)
+        quiet = timers.values.none { at - it.end < READY_MILLIS }
+        quietClock = clock.updates
+        return at.takeUnless { quiet }
     }
 
     private fun ready(now: Long) {
@@ -182,9 +187,8 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
 
     /** Reads the open container's items, once after it changes, and the worn set's charge from the player's own. */
     private fun read() {
-        if (!stale) return
-        stale = false
-        marked = true
+        if (!items.changed()) return
+        marks.invalidate()
         val slots = feature.container.slots
         for (i in feature.container.playerSlots) {
             val item = slots[i] ?: continue
@@ -210,8 +214,8 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     fun hud(now: Long): HudBlock? {
         read()
         if (!list.value) return null
+        val at = live(now) ?: return null
         val from = (shortest.value * 1000).toLong()
-        val at = clock.millis(now)
         val shown = timers.values.filter { it.lore >= from && at - it.end < READY_MILLIS }.sortedBy { it.end }
         if (shown.isEmpty()) return null
         return feature.block {
@@ -229,33 +233,31 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     fun slots(now: Long): Map<Int, SlotMark> {
         read()
         if (!onItems.value) return emptyMap()
-        if (!marked && clock.updates == marksClock && now < marksUntil) return marks
-        marked = false
-        marksClock = clock.updates
-        val at = clock.millis(now)
-        val next = HashMap<Int, SlotMark>()
-        var until = Long.MAX_VALUE
-        val slots = feature.container.slots
-        for (slot in feature.container.playerSlots) {
-            val item = slots[slot] ?: continue
-            var timer: Timer? = null
-            for (key in read(item).keys) {
-                val t = timers[key] ?: continue
-                if (at < t.end && (timer == null || t.end > timer.end)) timer = t
-            }
-            for (key in loreNamed) {
-                val t = timers[key] ?: continue
-                if (at >= t.end || timer != null && t.end <= timer.end || item.lore.none { it.plain.contains(t.name, ignoreCase = true) }) continue
-                timer = t
-            }
-            timer ?: continue
-            val end = now + clock.wall(timer.end - at)
-            next[slot] = SlotMark.cooldown(end - clock.wall(timer.end - timer.start), end)
-            until = minOf(until, end)
+        markAt = live(now) ?: return emptyMap()
+        if (clock.updates != marksClock) {
+            marksClock = clock.updates
+            marks.invalidate()
         }
-        marks = next
-        marksUntil = until
-        return marks
+        return marks.marks(now)
+    }
+
+    private fun mark(slot: Int, item: Item, now: Long): SlotMark? {
+        if (slot !in feature.container.playerSlots) return null
+        val at = markAt
+        var timer: Timer? = null
+        for (key in read(item).keys) {
+            val t = timers[key] ?: continue
+            if (at < t.end && (timer == null || t.end > timer.end)) timer = t
+        }
+        for (key in loreNamed) {
+            val t = timers[key] ?: continue
+            if (at >= t.end || timer != null && t.end <= timer.end || item.lore.none { it.plain.contains(t.name, ignoreCase = true) }) continue
+            timer = t
+        }
+        timer ?: return null
+        val end = now + clock.wall(timer.end - at)
+        marks.invalidateAt(end)
+        return SlotMark.cooldown(end - clock.wall(timer.end - timer.start), end)
     }
 
     private companion object {

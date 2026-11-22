@@ -9,19 +9,20 @@
 #     approved by github.com/<login> <time>  the user approved this site, as it is here, in the conversation. It
 #                                           goes when the site changes, and an agent's own approval has none.
 
+call edge.CommandKeys.send -> edge.PlayerCommands.chat
+call edge.CommandKeys.send -> edge.PlayerCommands.send
 call edge.DsModClient.onInitializeClient -> edge.AutoClicks.register
     approved by github.com/noxaur 2026-11-21T23:19:00Z
-call edge.DsModClient.onInitializeClient -> edge.CommandKeys.register
-    approved by github.com/noxaur 2026-11-16T01:17:00Z
 call edge.DsModClient.onInitializeClient -> edge.ForgeCrafts.register
     approved by github.com/noxaur 2026-11-21T20:37:00Z
-call edge.DsModClient.onInitializeClient -> edge.MenuBack.register
-    approved by github.com/noxaur 2026-11-16T01:17:00Z
 call edge.DsModClient.onInitializeClient -> edge.Pings.register
     approved by github.com/noxaur 2026-11-16T19:47:00Z
 call edge.DsModClient.onInitializeClient -> edge.SlotGuards.register
     approved by github.com/noxaur 2026-11-16T08:42:00Z
+call edge.DsModClient.onInitializeClient -> edge.Trail.register
 call edge.HotdShortcut.register -> edge.PlayerCommands.send
+call edge.MenuBack.register -> edge.PlayerCommands.send
+call edge.MenuBack.register -> edge.Trail.back
 call edge.SkyBlockMenuClicks.opens -> edge.PlayerCommands.send
 call edge.profile.ProfileScreen.dress -> edge.profile.ProfileModel.<init>
     approved by github.com/noxaur 2026-11-16T08:42:00Z
@@ -39,9 +40,9 @@ gate aw/dsmod.accesswidener 4f33ddcbbdf7
 gate edge.ArmorSwapGuards b388417355d2  ArmorSwapGuard
     can refuse the player's actions through UseItemCallback.EVENT
     approved by github.com/noxaur 2026-11-16T08:42:00Z
-gate edge.AutoClicks 7ab079ee48b8  AutoLeftClick, AutoRightClick
+gate edge.AutoClicks e48a91449451  AutoLeftClick, AutoRightClick
     presses a key through KeyMapping.click
-    approved by github.com/noxaur 2026-11-21T23:19:00Z
+    approved by github.com/noxaur 2026-11-22T01:15:00Z
 gate edge.Chat 7c62093eb80b
     builds text that runs a command when the player clicks it
     approved by github.com/noxaur 2026-11-16T01:17:00Z
@@ -51,9 +52,6 @@ gate edge.ChatDrags 2ebeede0f190  ChatHudEditor
     can refuse the player's input through ScreenMouseEvents.allowMouseDrag
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
     can refuse the player's input through ScreenMouseEvents.allowMouseScroll
-gate edge.CommandKeys c28dd763de35  CommandBinds
-    sends through ClientPacketListener.sendChat
-    sends through ClientPacketListener.sendCommand
 gate edge.CopyChats b36f25f03dcf  CopyChat
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
@@ -68,21 +66,22 @@ gate edge.ForgeCrafts 48abe9f0c882  ForgeCraft
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
 gate edge.Hits 974696179054
     can refuse the player's actions through AttackEntityCallback.EVENT
-gate edge.MenuBack 304a93b46faa  BackButtons, BetterUi
-    can refuse or change sent chat through ClientSendMessageEvents.COMMAND
 gate edge.Pings 374f3f901a23  PerformanceStats
     builds the packet ServerboundPingRequestPacket
     sends through ClientPacketListener.send
-gate edge.PlayerCommands 0b1a1b5ade3a
+gate edge.PlayerCommands 7a2042275b07
+    sends through ClientPacketListener.sendChat
     sends through ClientPacketListener.sendCommand
 gate edge.SlotGuards 01bcaf19e519  SlotLock
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-gate edge.TabBar 6b32afcf7385  BetterUi, MenuTabs
+gate edge.TabBar 0aaaf510acda  MenuTabs
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
+gate edge.Trail d75180319c06
+    can refuse or change sent chat through ClientSendMessageEvents.COMMAND
 gate edge.capture.Recording ed76355333a5
     takes the player's key presses through KeyMapping.consumeClick
 gate edge.mixin.BlockingArmMixin 08d619328bcc
@@ -104,6 +103,9 @@ gate edge.mixin.CapturePacketsMixin df3c170949d4
     approved by github.com/noxaur 2026-11-16T01:17:00Z
 gate edge.mixin.ChestScreenMixin draws
     hooks ContainerScreen.extractBackground
+gate edge.mixin.ClickCapMixin b34761e0477d
+    hooks Minecraft.handleKeybinds
+    approved by github.com/noxaur 2026-11-22T01:15:00Z
 gate edge.mixin.ContainerScreenMixin 5147eddf96ea
     hooks AbstractContainerScreen.extractSlot
     hooks AbstractContainerScreen.extractSlotHighlightBack

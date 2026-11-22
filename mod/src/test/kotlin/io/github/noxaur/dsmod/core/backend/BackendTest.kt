@@ -1,10 +1,11 @@
 package io.github.noxaur.dsmod.core.backend
 
+import io.github.noxaur.dsmod.harness.resource
 import com.sun.net.httpserver.HttpExchange
+import io.github.noxaur.dsmod.harness.text
 import com.sun.net.httpserver.HttpServer
 import io.github.noxaur.dsmod.core.brief.Brief
 import io.github.noxaur.dsmod.core.game.ServerSpan
-import io.github.noxaur.dsmod.core.game.ServerText
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.net.InetSocketAddress
@@ -141,7 +142,7 @@ class BackendTest {
 
     @Test
     fun `a profile is asked for by name, and another of the player's by its id`() {
-        val body = checkNotNull(javaClass.getResource("/profiles/profile.json")).readText()
+        val body = resource("profiles/profile.json")
         answers["/v1/players/Testwyrm/profile"] = { 200 to body }
 
         assertEquals("Testwyrm", backend.profile("Testwyrm", null).player.name)
@@ -155,7 +156,7 @@ class BackendTest {
 
     @Test
     fun `a container is asked for from its snapshot, colon and all`() {
-        val body = checkNotNull(javaClass.getResource("/profiles/containers/inventory.json")).readText()
+        val body = resource("profiles/containers/inventory.json")
         answers["/v1/snapshots/s1/containers/storage:2"] = { 200 to body }
 
         assertEquals(36, backend.container("s1", "storage:2").items.size)
@@ -279,7 +280,7 @@ class BackendTest {
         backend.items(
             listOf(
                 ItemSighting(
-                    "scylla", "minecraft:iron_sword", null, "gold", ServerText(listOf(span)), listOf(ServerText(emptyList()), ServerText(listOf(ServerSpan("Damage")))),
+                    "scylla", "minecraft:iron_sword", null, "gold", text(span), listOf(text(), text("Damage")),
                     true, null, 0x112233, buildJsonObject { put("item_data", buildJsonObject { put("item_id", "scylla") }) },
                 ),
             ),

@@ -12,8 +12,6 @@ import io.github.noxaur.dsmod.core.world.Tracer
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
-import java.nio.file.Path
-import javax.imageio.ImageIO
 
 /**
  * An iron golem named as dragsim.co names the Endstone Protector stands 12 blocks north, and a zombie named as a
@@ -27,18 +25,6 @@ class BossMarksTest : FabricClientGameTest {
         DsModClient.game.readouts.single { it.feature.id == id }.marks
     }
 
-    /** How many pixels of [screenshot] are near [rgb]. */
-    private fun near(screenshot: Path, rgb: Int): Int {
-        val image = ImageIO.read(screenshot.toFile())
-        var count = 0
-        for (y in 0 until image.height) for (x in 0 until image.width) {
-            val pixel = image.getRGB(x, y)
-            val distance = Math.abs((pixel shr 16 and 0xFF) - (rgb shr 16 and 0xFF)) +
-                Math.abs((pixel shr 8 and 0xFF) - (rgb shr 8 and 0xFF)) + Math.abs((pixel and 0xFF) - (rgb and 0xFF))
-            if (distance < 60) count++
-        }
-        return count
-    }
 
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
@@ -68,7 +54,7 @@ class BossMarksTest : FabricClientGameTest {
             context.waitTicks(5)
             val away = context.screenshot("boss-tracer")
             val color = Role.BAD.rgb
-            check(near(away, color) > 200) { "Looking away, the screenshot shows no tracer" }
+            check(countNear(away, color) > 200) { "Looking away, the screenshot shows no tracer" }
 
             // Another player's slayer boss is left out unless the player asks for it.
             world.server.runCommand("""execute at @a run summon zombie ~-12 ~ ~ {NoAI:1b,CustomName:"☠ Atoned Horror V 50M/50M❤"}""")

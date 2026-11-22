@@ -4,13 +4,12 @@ import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.inventory.SlotLocks
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SlotGuards
-import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
-import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.inventory.ContainerInput
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -24,23 +23,10 @@ class SlotLockShiftTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val feature = DsModClient.feature<SlotLock>()
 
-        fun item(slot: Int) = context.computeOnClient<Pair<Any, Int>, Nothing> { it.player!!.inventory.getItem(slot).let { stack -> stack.item to stack.count } }
-        fun carried() = context.computeOnClient<Int, Nothing> { it.player!!.containerMenu.carried.count }
-        fun menuIndex(slot: Int) = context.computeOnClient<Int, Nothing> { client ->
-            val screen = client.gui.screen() as AbstractContainerScreen<*>
-            screen.menu.slots.first { it.container === client.player!!.inventory && it.containerSlot == slot }.index
-        }
-        fun hoverMenu(index: Int) {
-            val (x, y) = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
-                val screen = client.gui.screen() as AbstractContainerScreen<*>
-                val at = screen.menu.getSlot(index)
-                val scale = client.window.guiScale.toDouble()
-                screen as ContainerScreenAccessor
-                (screen.leftPos + at.x + 8) * scale to (screen.topPos + at.y + 8) * scale
-            }
-            context.input.setCursorPos(x, y)
-            context.waitTicks(2)
-        }
+        fun item(slot: Int) = context.ownItem(slot)
+        fun carried() = context.carried()
+        fun menuIndex(slot: Int) = context.ownSlot(slot)
+        fun hoverMenu(index: Int) = context.hoverSlot(index, settle = 2)
         fun click(slot: Int) {
             hoverMenu(menuIndex(slot))
             context.input.pressMouse(0)
@@ -48,16 +34,17 @@ class SlotLockShiftTest : FabricClientGameTest {
         }
         /** The Shift click, and every container packet from it through the next ticks, while a result may refill. */
         fun shift(index: Int, settle: Int = 2): List<Click> {
-            context.runOnClient<Nothing> { ClickSpy.clear() }
-            val refused = context.computeOnClient<Boolean, Nothing> { client ->
-                val screen = client.gui.screen() as AbstractContainerScreen<*>
-                val at = screen.menu.getSlot(index)
-                val taken = SlotGuards.refuses(screen, at, 0, ContainerInput.QUICK_MOVE)
-                if (!taken) client.gameMode!!.handleContainerInput(screen.menu.containerId, at.index, 0, ContainerInput.QUICK_MOVE, client.player!!)
-                taken
+            var refused = false
+            val clicks = ClickSpy.during(context) {
+                refused = context.computeOnClient<Boolean, Nothing> { client ->
+                    val screen = client.gui.screen() as AbstractContainerScreen<*>
+                    val at = screen.menu.getSlot(index)
+                    val taken = SlotGuards.refuses(screen, at, 0, ContainerInput.QUICK_MOVE)
+                    if (!taken) client.gameMode!!.handleContainerInput(screen.menu.containerId, at.index, 0, ContainerInput.QUICK_MOVE, client.player!!)
+                    taken
+                }
+                context.waitTicks(settle)
             }
-            context.waitTicks(settle)
-            val clicks = context.computeOnClient<List<Click>, Nothing> { ClickSpy.snapshot() }
             check(refused) { "The Shift click was handed to vanilla: $clicks, slot9=${item(9)}, slot0=${item(0)}, slot1=${item(1)}, slot2=${item(2)}" }
             return clicks
         }
@@ -76,12 +63,7 @@ class SlotLockShiftTest : FabricClientGameTest {
             check(clicks.size <= cap) { "${clicks.size} packets for $destinations destinations (parked=$parked), cap $cap: $clicks" }
         }
         fun give(world: TestSingleplayerContext, stacks: Map<Int, ItemStack>) {
-            world.server.runOnServer<Nothing> { server ->
-                val player = server.playerList.players.single()
-                player.inventory.clearContent()
-                for ((slot, stack) in stacks) player.inventory.setItem(slot, stack.copy())
-                player.containerMenu.broadcastChanges()
-            }
+            world.give(stacks)
             context.waitTicks(5)
             context.runOnClient<Nothing> { client ->
                 val inventory = client.player!!.inventory
@@ -93,7 +75,7 @@ class SlotLockShiftTest : FabricClientGameTest {
 
         context.worldBuilder().create().use { world ->
             try {
-                context.runOnClient<Nothing> { it.gui.setScreen(InventoryScreen(it.player!!)) }
+                context.openInventory()
                 context.waitForScreen(InventoryScreen::class.java)
 
                 // One left click per unlocked slot. 32 cobble, hotbar 0 holds 40, hotbar 1 locked.
@@ -184,28 +166,30 @@ class SlotLockShiftTest : FabricClientGameTest {
                 // The mode or the player is missing. The click is cancelled and nothing is sent.
                 give(world, mapOf(9 to ItemStack(Items.COBBLESTONE, 32)))
                 lock(setOf(0))
-                context.runOnClient<Nothing> { client ->
-                    ClickSpy.clear()
+                fun refusesShift(client: Minecraft, what: String, without: () -> Unit, back: () -> Unit) {
                     val screen = client.gui.screen() as AbstractContainerScreen<*>
                     val at = screen.menu.slots.first { it.container === client.player!!.inventory && it.containerSlot == 9 }
-                    val mode = client.gameMode
-                    client.gameMode = null
+                    without()
                     try {
-                        check(SlotGuards.refuses(screen, at, 0, ContainerInput.QUICK_MOVE)) { "A missing game mode was not cancelled" }
+                        check(SlotGuards.refuses(screen, at, 0, ContainerInput.QUICK_MOVE)) { "A missing $what was not cancelled" }
                     } finally {
-                        client.gameMode = mode
+                        back()
                     }
-                    check(ClickSpy.snapshot().isEmpty()) { "A missing game mode sent ${ClickSpy.snapshot()}" }
-                    ClickSpy.clear()
-                    val player = client.player
-                    client.player = null
-                    try {
-                        check(SlotGuards.refuses(screen, at, 0, ContainerInput.QUICK_MOVE)) { "A missing player was not cancelled" }
-                    } finally {
-                        client.player = player
-                    }
-                    check(ClickSpy.snapshot().isEmpty()) { "A missing player sent ${ClickSpy.snapshot()}" }
                 }
+                val noMode = ClickSpy.during(context) {
+                    context.runOnClient<Nothing> { client ->
+                        val mode = client.gameMode
+                        refusesShift(client, "game mode", { client.gameMode = null }, { client.gameMode = mode })
+                    }
+                }
+                check(noMode.isEmpty()) { "A missing game mode sent $noMode" }
+                val noPlayer = ClickSpy.during(context) {
+                    context.runOnClient<Nothing> { client ->
+                        val player = client.player
+                        refusesShift(client, "player", { client.player = null }, { client.player = player })
+                    }
+                }
+                check(noPlayer.isEmpty()) { "A missing player sent $noPlayer" }
                 check(item(9).second == 32 && item(0).second == 0) { "A missing mode moved the stack to ${item(0)} and left ${item(9)}" }
             } finally {
                 context.runOnClient<Nothing> {
@@ -220,7 +204,7 @@ class SlotLockShiftTest : FabricClientGameTest {
     /** One log in the craft grid and [planks] already in the only slot that can hold more. The result is 4. */
     private fun resultThatDoesNotFit(context: ClientGameTestContext, world: TestSingleplayerContext, planks: Int, freeAfter: Boolean = false): ResultAttempt {
         world.server.runOnServer<Nothing> { server ->
-            val player = server.playerList.players.single()
+            val player = server.player
             player.inventory.clearContent()
             for (slot in 0..35) player.inventory.setItem(slot, ItemStack(Items.COBBLESTONE, 64))
             player.inventory.setItem(0, ItemStack(Items.OAK_PLANKS, planks))
@@ -242,53 +226,40 @@ class SlotLockShiftTest : FabricClientGameTest {
             val feature = DsModClient.feature<SlotLock>()
             feature.locks = SlotLocks(setOf(1))
         }
-        val source = context.computeOnClient<Int, Nothing> { client ->
-            (client.gui.screen() as AbstractContainerScreen<*>).menu.slots.first { it.container === client.player!!.inventory && it.containerSlot == 9 }.index
-        }
-        hover(context, source)
+        context.hoverOwnSlot(9, settle = 2)
         context.input.pressMouse(0)
         context.waitTicks(2)
-        hover(context, 1)
+        context.hoverSlot(1, settle = 2)
         context.input.pressMouse(0)
         context.waitTicks(2)
         world.server.runOnServer<Nothing> { server ->
-            server.playerList.players.single().inventory.setItem(9, ItemStack(Items.COBBLESTONE, 64))
-            server.playerList.players.single().containerMenu.broadcastChanges()
+            server.player.inventory.setItem(9, ItemStack(Items.COBBLESTONE, 64))
+            server.player.containerMenu.broadcastChanges()
         }
         context.waitTicks(3)
-        context.runOnClient<Nothing> { ClickSpy.clear() }
-        val refused = context.computeOnClient<Boolean, Nothing> { client ->
-            val screen = client.gui.screen() as AbstractContainerScreen<*>
-            SlotGuards.refuses(screen, screen.menu.getSlot(0), 0, ContainerInput.QUICK_MOVE)
-        }
-        context.waitTicks(10)
-        if (freeAfter) {
-            // Room opens after the cancel. A click still pending would now take the result by itself.
-            world.server.runOnServer<Nothing> { server ->
-                server.playerList.players.single().inventory.setItem(2, ItemStack.EMPTY)
-                server.playerList.players.single().containerMenu.broadcastChanges()
+        var refused = false
+        val clicks = ClickSpy.during(context) {
+            refused = context.computeOnClient<Boolean, Nothing> { client ->
+                val screen = client.gui.screen() as AbstractContainerScreen<*>
+                SlotGuards.refuses(screen, screen.menu.getSlot(0), 0, ContainerInput.QUICK_MOVE)
             }
             context.waitTicks(10)
+            if (freeAfter) {
+                // Room opens after the cancel. A click still pending would now take the result by itself.
+                world.server.runOnServer<Nothing> { server ->
+                    server.player.inventory.setItem(2, ItemStack.EMPTY)
+                    server.player.containerMenu.broadcastChanges()
+                }
+                context.waitTicks(10)
+            }
         }
         return context.computeOnClient<ResultAttempt, Nothing> { client ->
             val screen = client.gui.screen() as AbstractContainerScreen<*>
             val result = screen.menu.getSlot(0).item.count
             val have = client.player!!.inventory.getItem(0).count
             val log = screen.menu.getSlot(1).item.`is`(Items.OAK_LOG)
-            ResultAttempt(ClickSpy.snapshot(), result, have, log && refused)
+            ResultAttempt(clicks, result, have, log && refused)
         }
-    }
-
-    private fun hover(context: ClientGameTestContext, index: Int) {
-        val (x, y) = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
-            val screen = client.gui.screen() as AbstractContainerScreen<*>
-            val at = screen.menu.getSlot(index)
-            val scale = client.window.guiScale.toDouble()
-            screen as ContainerScreenAccessor
-            (screen.leftPos + at.x + 8) * scale to (screen.topPos + at.y + 8) * scale
-        }
-        context.input.setCursorPos(x, y)
-        context.waitTicks(2)
     }
 }
 
