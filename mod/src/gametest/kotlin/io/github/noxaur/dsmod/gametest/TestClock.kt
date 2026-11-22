@@ -19,6 +19,20 @@ object TestClock : ClientModInitializer {
     val slow = mutableListOf<String>()
 
     override fun onInitializeClient() {
+        Thread {
+            var dumped: Any? = null
+            while (true) {
+                Thread.sleep(5000)
+                val test = running
+                if (test != null && test !== dumped && (System.nanoTime() - startedAt) / 1e9 > 60 && test.definition.substringAfterLast('.') !in LONG_BY_DESIGN) {
+                    dumped = test
+                    for ((thread, stack) in Thread.getAllStackTraces()) {
+                        System.err.println("DUMP ${thread.name} ${thread.state}")
+                        for (frame in stack.take(40)) System.err.println("DUMP    at $frame")
+                    }
+                }
+            }
+        }.apply { isDaemon = true }.start()
         ClientTickEvents.START_CLIENT_TICK.register { lap(FabricClientGameTestRunner.currentlyRunningGameTest) }
         ClientLifecycleEvents.CLIENT_STOPPING.register {
             lap(null)
