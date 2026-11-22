@@ -3,9 +3,10 @@ package io.github.noxaur.dsmod.edge.input
 import io.github.noxaur.dsmod.core.input.ClickBudget
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.KeyMapping
+import net.minecraft.client.Minecraft
 import java.util.IdentityHashMap
 
-@InputApproved(by = "noxaur", hash = "444335ca4adb")
+@InputApproved(by = "noxaur", hash = "b3174d5adc2f")
 object Clicks {
     private class Button {
         val budget = ClickBudget()
@@ -17,10 +18,10 @@ object Clicks {
     private fun button(mapping: KeyMapping) = buttons.getOrPut(mapping, ::Button)
 
     fun press(mapping: KeyMapping) {
-        val button = button(mapping)
-        if (mapping.isUnbound || !button.budget.admits(System.nanoTime())) return
-        button.pressed++
-        KeyMapping.click(KeyMappingHelper.getBoundKeyOf(mapping))
+        if (mapping.isUnbound || !button(mapping).budget.admits(System.nanoTime())) return
+        val key = KeyMappingHelper.getBoundKeyOf(mapping)
+        for (bound in Minecraft.getInstance().options.keyMappings) if (KeyMappingHelper.getBoundKeyOf(bound) == key) button(bound).pressed++
+        KeyMapping.click(key)
     }
 
     fun allows(mapping: KeyMapping): Boolean {

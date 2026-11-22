@@ -23,7 +23,8 @@ class AutoLeftClickTest : FabricClientGameTest {
                 left.feature.enabled = true
                 context.autoClicks(walk = true, key = key).let { (attacks, uses) -> check(attacks in 9..11 && uses == 0) { "AutoClicks attacked $attacks and used $uses times in a second of walking with the key held" } }
                 attacked(context.autoClicks(walk = false, key = key), 0..0) { "AutoClicks attacked $it times standing still" }
-                attacked(context.ownClicks(0), 9..11) { "ClickCapMixin let $it of 20 left clicks in a second through" }
+                attacked(context.ownClicks(0), 20..20) { "Auto Left Click dropped the player's own left clicks: $it of 20 went through" }
+                context.waitTicks(30)
 
                 left.click.key.value = 0
                 left.click.mode.value = KeyMode.TOGGLE

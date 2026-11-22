@@ -31,8 +31,8 @@ fun pickGameTests(sources: Map<String, String>, tests: Set<String>, changed: Col
     val names = files.mapValues { (path, text) -> DECLARED.findAll(text).map { it.groupValues[1] }.toSet() + stem(path) }
     val words = files.mapValues { (_, text) -> WORD.findAll(text).map { it.value }.toSet() }
     val testFiles = files.keys.filter { stem(it) in tests }
-    val hubs = files.keys.filter { path -> testFiles.count { it != path && words.getValue(it).any(names.getValue(path)::contains) } > HUB }.toSet()
-    fun namers(path: String) = files.keys.filter { it != path && words.getValue(it).any(names.getValue(path)::contains) }
+    val hubs = files.keys.filter { path -> testFiles.count { it != path && names.getValue(path).any(words.getValue(it)::contains) } > HUB }.toSet()
+    fun namers(path: String) = files.keys.filter { it != path && names.getValue(path).any(words.getValue(it)::contains) }
 
     fun walkUp(start: String): Set<String> {
         var level = setOf(start)
@@ -67,7 +67,7 @@ fun pickGameTests(sources: Map<String, String>, tests: Set<String>, changed: Col
         }
         val reached = when {
             path in hubs -> setOf(SMOKE_TEST)
-            namers(path).isEmpty() -> files.keys.filter { it != path && it !in hubs && words.getValue(path).any(names.getValue(it)::contains) }
+            namers(path).isEmpty() -> files.keys.filter { it != path && it !in hubs && names.getValue(it).any(words.getValue(path)::contains) }
                 .flatMap { if (stem(it) in tests) setOf(stem(it)) else walkUp(it) }.toSet()
             else -> walkUp(path)
         }
