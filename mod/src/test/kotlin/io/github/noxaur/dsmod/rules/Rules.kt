@@ -63,6 +63,16 @@ val rules = listOf(
         examples = listOf("val glass = 0xFF_AA_00_FF", "val gold = 0xFFAA00"),
     ),
     Rule(
+        id = "item-data-by-hand",
+        files = "src/main/kotlin/**/edge/**.kt",
+        except = "src/main/kotlin/**/edge/Items.kt",
+        forbid = Regex(""""(?:item_data|item_skin)""""),
+        fix = "Read a stack's SkyBlock id with `stack.itemId`, its uuid with `stack.itemUuid` and its skin with `stack.skinId`, " +
+            "from edge/Items.kt, which copies the tag once per item. For another field, add it there.",
+        example = """val id = stack.get(DataComponents.CUSTOM_DATA)?.copyTag()?.getCompoundOrEmpty("item_data")?.getStringOr("item_id", "")""",
+        examples = listOf("""tag.getCompoundOrEmpty("extra").getCompoundOrEmpty("item_skin").getStringOr("skinId", "")"""),
+    ),
+    Rule(
         id = "number-by-helper",
         files = "src/main/kotlin/**/core/feature/**.kt",
         forbid = Regex("""\.format\("""),
