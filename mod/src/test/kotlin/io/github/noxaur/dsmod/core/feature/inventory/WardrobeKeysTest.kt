@@ -52,6 +52,17 @@ class WardrobeKeysTest : Harness(alone = WardrobeKeys::class) {
     }
 
     @Test
+    fun `a press before the buttons arrive is outlined once they do`() {
+        post(ContainerOpened(id++, text(WardrobeKeys.TITLE), 90))
+        assertNull(feature.press(key(1), time))
+        assertTrue(feature.feature.slots!!(time).isEmpty())
+        post(SlotChanged(36, Item("minecraft:pink_dye", 1, text("Slot 1"), lines("Click to equip!"))))
+        assertEquals(setOf(36), feature.feature.slots!!(time).keys)
+        pass(WardrobeKeys.WAIT_MILLIS)
+        assertEquals(36, feature.due(time))
+    }
+
+    @Test
     fun `a new menu drops a held press and starts the second again`() {
         open(WardrobeKeys.TITLE)
         feature.press(key(2), time)

@@ -8,6 +8,7 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState
+import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.text.Role
 
 class WardrobeKeys(config: DsModConfig) : HasFeature {
@@ -25,6 +26,10 @@ class WardrobeKeys(config: DsModConfig) : HasFeature {
         feature.on<ContainerOpened> { _, now ->
             openedAt = now
             hold(null)
+        }
+        feature.on<SlotChanged> { changed, _ ->
+            val index = queued ?: return@on
+            if (changed.slot == slot(index)) hold(index)
         }
     }
 
@@ -53,7 +58,9 @@ class WardrobeKeys(config: DsModConfig) : HasFeature {
         marks = index?.let(::button)?.let { mapOf(it to SlotMark(Role.ACTION, outline = true)) } ?: emptyMap()
     }
 
-    private fun button(index: Int): Int? = (BUTTON_ROW * ContainerState.ROW_SLOTS + index).takeIf { slot ->
+    private fun slot(index: Int) = BUTTON_ROW * ContainerState.ROW_SLOTS + index
+
+    private fun button(index: Int): Int? = slot(index).takeIf { slot ->
         slot in feature.container.menuSlots && feature.container.slots[slot]?.name?.plain?.let(BUTTON::matches) == true
     }
 
