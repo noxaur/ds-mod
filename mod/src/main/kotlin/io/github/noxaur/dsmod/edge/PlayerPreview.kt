@@ -20,12 +20,10 @@ import kotlin.math.sqrt
 class PlayerPreview : BoxEditor {
     override val box = Box()
 
-    private val turntable = Turntable(speed = 0f).apply { turn(START_YAW, 0f, 0L) }
+    internal val turntable = Turntable(speed = 0f).apply { turn(START_YAW, 0f, 0L) }
 
     override val capturing get() = turntable.dragging
 
-    val yaw get() = turntable.yaw(0L)
-    val pitch get() = turntable.pitch
 
     override fun layout(x: Int, y: Int, width: Int): Int {
         box.place(x, y, width)

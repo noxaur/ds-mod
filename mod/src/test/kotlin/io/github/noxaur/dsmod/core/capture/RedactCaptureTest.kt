@@ -193,7 +193,7 @@ class RedactCaptureTest {
 
         assertEquals(setOf("DragSim", "Frank"), PlayerNames.of(withSeller))
         assertEquals(setOf("Frank"), PlayerNames.of(withTitle, withSeller))
-        assertEquals(setOf("DragSim", "Frank"), PlayerNames.found(withTitle, withSeller))
+        assertEquals(setOf("DragSim", "Frank"), PlayerNames.learn(withTitle, withSeller).first)
     }
 
     @Test

@@ -115,6 +115,3 @@ fun readCaptureLine(line: String): Captured? {
     val tick = (json["tick"] as? JsonPrimitive)?.intOrNull
     return Captured(json.getValue("t").jsonPrimitive.long, Json.decodeFromJsonElement(GameEvent.serializer(), event), tick)
 }
-
-fun readCapture(file: Path): List<Captured> =
-    Files.readAllLines(file).filter { it.isNotBlank() }.mapNotNull(::readCaptureLine)

@@ -36,9 +36,9 @@ A feature lives in `core` and cannot call a layer. It returns its HUD block from
 | --- | --- | --- |
 | Chat | `text { }` | `Chat.send`, `Chat.notice` |
 | HUD | `HudBlock`, which a feature builds with `block { row(..); bar(..); items(..) }`, in a `HudGroup` | `Hud.show`, `Hud.hide` |
-| Alert | `text { }` | `Alerts.title`, `Alerts.actionBar`, `Alerts.sound` |
+| Alert | `text { }` | `Alerts.title`, `Alerts.sound` |
 | Container overlay | `SlotMark` | `Slots.mark`, `Slots.clear` |
-| World | `Waypoint`, `BlockBox`, `Path`, `Ring` | `World.show`, `World.hide` |
+| World | `Waypoint`, `EntityBeam`, `Tracer` | `World.show`, `World.hide` |
 | The server's floating text | A `FloatingText` handler's `hide()` or `replace(..)` | `FloatingTexts`, through `FloatingTextMixin` |
 | Own screen | `Theme` | The kit in `edge/ui` |
 

@@ -57,7 +57,7 @@ class HeldItemTest {
     @Test
     fun `an item moved to the top left shows the whole screen, and one in the left hand its own corner`() {
         val frame = ScreenView.frame(Frame(0.01f, 0.01f, 0.3f, 0.4f), right = true, shape = 1f)
-        assertEquals(Frame.SCREEN, frame)
+        assertEquals(Frame(0f, 0f, 1f, 1f), frame)
         val left = ScreenView.frame(Frame(0.15f, 0.55f, 0.4f, 1f), right = false, shape = 1.5f)
         assertEquals(0f, left.left, 1e-5f)
         assertEquals(1f, left.bottom, 1e-5f)

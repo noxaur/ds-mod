@@ -23,10 +23,10 @@ class KitRowsTest : FabricClientGameTest {
         val missing = Kind.entries.filter { it !in kinds } + Look::class.sealedSubclasses.filter { it !in looks }.map { it.simpleName }
         check(missing.isEmpty()) { "No page of the gallery of settings rows shows $missing" }
         fun press(id: String) {
-            val spot = context.computeOnClient<SettingRows.Spot?, Nothing> { (it.gui.screen() as SettingsGalleryScreen).spot(id) } ?: error("No row $id")
+            val spot = context.computeOnClient<Spot?, Nothing> { (it.gui.screen() as SettingsGalleryScreen).settingRows.spot(id) } ?: error("No row $id")
             context.click(spot.controlX + 8, spot.controlY + 8, settle = 2)
         }
-        val distance = context.computeOnClient<SettingRows.Spot?, Nothing> { (it.gui.screen() as SettingsGalleryScreen).spot("distance") }!!
+        val distance = context.computeOnClient<Spot?, Nothing> { (it.gui.screen() as SettingsGalleryScreen).settingRows.spot("distance") }!!
         context.point(distance.x + 20, distance.y + 6, settle = 2)
         context.takeScreenshot("kit-rows-charcoal")
         context.inTheme(Theme.VANILLA) { context.takeScreenshot("kit-rows-vanilla") }

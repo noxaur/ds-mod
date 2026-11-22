@@ -2,8 +2,6 @@ package io.github.noxaur.dsmod.core.config
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class FavoritesTest {
     private val all = listOf("general.fullbright", "end.zealotTracker", "loot.rareDropAlert", "slayer.slayerTracker")
@@ -24,13 +22,6 @@ class FavoritesTest {
     @Test
     fun `a starred setting that no longer exists is passed over`() {
         assertEquals(listOf("general.fullbright"), Favorites.pick(all, listOf("general.gone", "general.fullbright")) { it })
-    }
-
-    @Test
-    fun `a search hides Favorites, so each match shows once in its own category`() {
-        assertTrue(Favorites.listed(""))
-        assertTrue(Favorites.listed("  "))
-        assertFalse(Favorites.listed("zealot"))
     }
 
     @Test

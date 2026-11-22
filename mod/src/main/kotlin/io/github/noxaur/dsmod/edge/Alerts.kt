@@ -12,10 +12,6 @@ object Alerts {
         sound()
     }
 
-    fun actionBar(text: Text) {
-        Minecraft.getInstance().gui.hud.setOverlayMessage(text.toComponent(), false)
-    }
-
     fun sound() {
         Minecraft.getInstance().soundManager.play(SimpleSoundInstance.forUI(SoundEvents.EXPERIENCE_ORB_PICKUP, 1f))
     }

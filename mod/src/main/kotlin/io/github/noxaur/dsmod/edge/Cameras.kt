@@ -34,9 +34,9 @@ object Cameras {
 
     private val slide = Slide()
 
-    private class Look(val orbit: Orbit, val looker: LocalPlayer, val before: CameraType)
+    internal class Look(val orbit: Orbit, val looker: LocalPlayer, val before: CameraType)
 
-    private var look: Look? = null
+    internal var look: Look? = null
 
     private var tapped = false
 
@@ -44,8 +44,6 @@ object Cameras {
     private var armed = false
 
     private var wasDown = false
-
-    val looking: Boolean get() = look != null
 
     private fun type(view: View) = CameraType.entries[view.ordinal]
 

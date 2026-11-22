@@ -27,6 +27,5 @@ data class SlotLocks(val locked: Set<Int> = emptySet(), val links: Map<Int, Int>
     companion object {
         val HOTBAR = 0..8
         val ABOVE = 9..35
-        const val OFF_HAND = 40
     }
 }

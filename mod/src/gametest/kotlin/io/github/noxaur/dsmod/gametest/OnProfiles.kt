@@ -59,12 +59,11 @@ class OnProfiles(private val context: ClientGameTestContext) : AutoCloseable {
         context.click(context.computeOnClient<KitButton, Nothing> { client -> pageButtons(client).first { it.message.string == page } })
     }
 
-    fun hoverItem(contentX: Int, viewY: Int): String? {
+    fun hoverItem(contentX: Int, viewY: Int, tooltips: List<String>): String? {
         for (row in 0 until 4) {
             for (x in contentX until contentX + 296 step 9) {
                 move(x, viewY + 9 + row * 18)
-                val entry = context.computeOnClient<String?, Nothing> { screen(it).hovered?.entry }
-                if (entry != null) return entry
+                tooltips.lastOrNull()?.let { return it }
             }
         }
         return null
