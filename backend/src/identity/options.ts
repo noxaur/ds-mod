@@ -5,7 +5,7 @@ import { oneTimeToken } from "better-auth/plugins/one-time-token";
 import { type HasJoined, minecraft, mojangHasJoined } from "./minecraft.ts";
 
 /** How Better Auth signs a player in. `auth.ts` adds Void's database and secret, and the tests add their own. */
-export const signInOptions = (hasJoined: HasJoined = mojangHasJoined) =>
+export const signInOptions = (hasJoined: HasJoined = mojangHasJoined()) =>
   ({
     // A player is their Minecraft account. No other way in exists, so nobody can make an account Mojang did not vouch for.
     emailAndPassword: { enabled: false },
