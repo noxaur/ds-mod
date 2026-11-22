@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.container.RarityPreset
 import io.github.noxaur.dsmod.core.container.SlotStyle
+import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.feature.chat.CopyChat
 import io.github.noxaur.dsmod.core.feature.chat.HideCooldownMessages
 import io.github.noxaur.dsmod.core.feature.contribute.ReportGameData
@@ -73,6 +74,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
+private fun SettingsTree.assertOff(vararg types: Class<out HasFeature>) = types.forEach { assertFalse(feature(it).feature.enabled, "${it.simpleName} loads off") }
+
 class ConfigFileTest {
     private val dir = Files.createTempDirectory("dsmod-config")
     private val path = dir.resolve("config.json")
@@ -94,10 +97,7 @@ class ConfigFileTest {
         assertFalse(tree.feature<HideCooldownMessages>().feature.enabled)
         assertFalse(tree.feature<CopyChat>().feature.enabled)
 
-        assertFalse(
-            tree.feature<ZealotTracker>().feature.enabled || tree.feature<EyeGuard>().feature.enabled || tree.feature<DragonTimer>().feature.enabled ||
-                tree.feature<FireballAlert>().feature.enabled || tree.feature<ProtectorStatus>().feature.enabled || tree.feature<BossFightTracker>().feature.enabled,
-        )
+        tree.assertOff(ZealotTracker::class.java, EyeGuard::class.java, DragonTimer::class.java, FireballAlert::class.java, ProtectorStatus::class.java, BossFightTracker::class.java)
         tree.feature<ProtectorSpawnBeam>().run {
             assertFalse(feature.enabled)
             assertEquals(listOf(Section(20, 60), Section(150, 200)), sections.value)
@@ -177,7 +177,7 @@ class ConfigFileTest {
             assertEquals(MenuLook.GLASS, menuLook.value)
             assertEquals(35f, glassOpacity.value)
         }
-        assertFalse(tree.feature<FixedMenuLayout>().feature.enabled || tree.feature<HideGlassPanes>().feature.enabled || tree.feature<KeepCursor>().feature.enabled)
+        tree.assertOff(FixedMenuLayout::class.java, HideGlassPanes::class.java, KeepCursor::class.java)
         tree.feature<SlotLock>().run {
             assertFalse(feature.enabled)
             assertEquals(74, slotLockKey.value)
@@ -195,14 +195,14 @@ class ConfigFileTest {
             assertFalse(feature.enabled)
             assertEquals(RareDropAlert.LootTier.RNGESUS, least.value)
         }
-        assertFalse(tree.feature<SlayerTracker>().feature.enabled || tree.feature<SlayerBossAlert>().feature.enabled)
+        tree.assertOff(SlayerTracker::class.java, SlayerBossAlert::class.java)
 
         c.hud.run {
             assertEquals(mapOf("zealot-tracker" to DsModConfig.Position(0.25f, 0.5f, 1.5f), "dragon-timer" to DsModConfig.Position(0.75f, 0.125f, 0.75f)), positions)
             assertEquals(Theme.VANILLA, theme)
             assertEquals(1.75f, scale)
         }
-        assertFalse(tree.feature<ChatHudEditor>().feature.enabled || tree.feature<HudBackground>().feature.enabled)
+        tree.assertOff(ChatHudEditor::class.java, HudBackground::class.java)
 
         assertTrue(tree.feature<ReportGameData>().feature.enabled)
     }

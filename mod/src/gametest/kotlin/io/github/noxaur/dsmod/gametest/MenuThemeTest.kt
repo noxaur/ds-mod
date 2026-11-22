@@ -70,14 +70,10 @@ class MenuThemeTest : FabricClientGameTest {
             context.takeScreenshot("themed-chest-filler-hovered")
             context.hoverSlot(6 * 9 - 5)
             context.takeScreenshot("themed-chest-button-hovered")
-            context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().feature.enabled = false }
-            try {
-                context.waitTicks(2)
+            ThemedMenus.themeOff(context) {
                 val (bx, by) = context.slotCorner(6 * 9 - 6)
                 val face = ThemedMenus.pixel(context, context.takeScreenshot("themed-chest-off"), bx + 3, by + 3)
                 check(face != Theme.CHARCOAL.raised and 0xFFFFFF) { "The server's Go Back stayed a kit button with Menu Theme off" }
-            } finally {
-                context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().feature.enabled = true }
             }
             context.waitTicks(2)
 
@@ -148,15 +144,7 @@ class MenuThemeTest : FabricClientGameTest {
             context.waitTicks(5)
             checkPanel(context, context.takeScreenshot("themed-hopper"), Theme.CHARCOAL)
 
-            context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().feature.enabled = false }
-            try {
-                context.waitTicks(2)
-                val (left, top) = context.menuCorner()
-                val plain = context.takeScreenshot("themed-hopper-off")
-                check(ThemedMenus.pixel(context, plain, left + 3, top + 3) != Theme.CHARCOAL.panel and 0xFFFFFF) { "The hopper stayed themed with Menu Theme off" }
-            } finally {
-                context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().feature.enabled = true }
-            }
+            ThemedMenus.checkOff(context, "hopper", "hopper")
             check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() is AbstractContainerScreen<*> })
             context.runOnClient<Nothing> { it.player!!.closeContainer() }
         }

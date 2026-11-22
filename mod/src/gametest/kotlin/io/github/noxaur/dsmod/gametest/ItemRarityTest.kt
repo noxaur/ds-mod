@@ -52,10 +52,9 @@ class ItemRarityTest : FabricClientGameTest {
      */
     private fun hotbarLook(context: ClientGameTestContext) {
         val itemRarity = DsModClient.feature<ItemRarity>()
-        val window = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.screenWidth to it.window.screenHeight }
+        val window = SettingsSteps.windowSize(context)
         val scale = context.computeOnClient<Int, Nothing> { it.options.guiScale().get() }
-        context.input.resizeWindow(1280, 720)
-        SettingsSteps.guiScale(context, 2)
+        SettingsSteps.fit(context, 2)
         val driver = SettingsDriver(context)
         context.setScreen { SettingsScreen(null, SettingsTabs(SettingsSteps.at("Inventory")), reveal = "hotbarMatches") }
         context.waitTicks(2)

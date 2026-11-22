@@ -94,9 +94,7 @@ class PerfTest : FabricClientGameTest {
                 val group = HudGroup("perf", 6, 6, background = true)
                 repeat(HUD_BLOCKS) { block ->
                     Hud.show("perf-$block", group, hud("Tracker $block") {
-                        row("Sold") { value(1204) }
-                        row("Rate") { value(310); muted("/h") }
-                        bar("Storage", 0.8f, Role.WARNING) { warning("80%") }
+                        scaleRows()
                     })
                 }
             }
@@ -109,13 +107,11 @@ class PerfTest : FabricClientGameTest {
             context.waitTicks(WARM_UP_TICKS)
 
             repeat(WINDOWS) {
-                context.runOnClient<Nothing> { DsModClient.game.metrics.flush() }
-                context.waitTicks(WINDOW_TICKS)
-                val timers = context.computeOnClient<Map<String, Metrics.Timer>, Nothing> { DsModClient.game.metrics.snapshot().timers }
+                val timers = timers(context) { context.waitTicks(WINDOW_TICKS) }
                 check(timers.keys.none { it.startsWith("capture-") }) { "The recorder ran before anything started it: ${timers.keys}" }
                 var features = 0L
                 for ((name, timer) in timers) {
-                    if (name in budgets.rows) samples.getOrPut(name, ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
+                    if (name in budgets.rows) samples.add(name, timer)
                     else features += timer.totalNanos
                 }
                 samples.getOrPut("features", ::ArrayList) += features / 1000.0 / WINDOW_TICKS
@@ -221,10 +217,8 @@ class PerfTest : FabricClientGameTest {
         val session = context.computeOnClient<CaptureSession, Nothing> { Recorder.start(it.gameDirectory.toPath().resolve("dsmod/captures")) }
         context.waitTicks(RECORDING_WARM_UP_TICKS)
         repeat(WINDOWS) {
-            context.runOnClient<Nothing> { DsModClient.game.metrics.flush() }
-            context.waitTicks(WINDOW_TICKS)
-            val timers = context.computeOnClient<Map<String, Metrics.Timer>, Nothing> { DsModClient.game.metrics.snapshot().timers }
-            for ((name, timer) in timers) if (name.startsWith("capture-")) samples.getOrPut(name, ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
+            val timers = timers(context) { context.waitTicks(WINDOW_TICKS) }
+            for ((name, timer) in timers) if (name.startsWith("capture-")) samples.add(name, timer)
         }
         context.runOnClient<Nothing> { Recorder.stop(session) }
     }
@@ -256,17 +250,24 @@ class PerfTest : FabricClientGameTest {
             context.waitTick()
         }
         repeat(WINDOWS) { window ->
-            context.runOnClient<Nothing> { DsModClient.game.metrics.flush() }
-            repeat(WINDOW_TICKS) { tick ->
-                fight(window * WINDOW_TICKS + tick)
-                context.waitTick()
+            val timers = timers(context) {
+                repeat(WINDOW_TICKS) { tick ->
+                    fight(window * WINDOW_TICKS + tick)
+                    context.waitTick()
+                }
             }
-            val timers = context.computeOnClient<Map<String, Metrics.Timer>, Nothing> { DsModClient.game.metrics.snapshot().timers }
-            for (name in listOf("entities", "world.follow")) {
-                val timer = checkNotNull(timers[name]) { "No $name timer ran" }
-                samples.getOrPut(name, ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
-            }
+            for (name in listOf("entities", "world.follow")) samples.add(name, checkNotNull(timers[name]) { "No $name timer ran" })
         }
+    }
+
+    private fun timers(context: ClientGameTestContext, wait: () -> Unit): Map<String, Metrics.Timer> {
+        context.runOnClient<Nothing> { DsModClient.game.metrics.flush() }
+        wait()
+        return context.computeOnClient<Map<String, Metrics.Timer>, Nothing> { DsModClient.game.metrics.snapshot().timers }
+    }
+
+    private fun HashMap<String, MutableList<Double>>.add(name: String, timer: Metrics.Timer) {
+        getOrPut(name, ::ArrayList) += timer.totalNanos / 1000.0 / timer.count
     }
 
     /** A fixed amount of work for one core, in ms. */

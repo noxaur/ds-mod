@@ -15,10 +15,12 @@ import net.minecraft.world.level.block.LeverBlock
  */
 class EyeGuardTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
-        context.worldBuilder().create().use { world ->
-            world.server.runCommand("clear @a")
-            world.server.runCommand("""item replace entity @a weapon.mainhand with stick[custom_name="§5Summoning Eye"]""")
-            world.server.runCommand("execute at @a run setblock ~ ~ ~2 minecraft:lever[face=floor]")
+        context.inWorld { world ->
+            world.commands(
+                "clear @a",
+                """item replace entity @a weapon.mainhand with stick[custom_name="§5Summoning Eye"]""",
+                "execute at @a run setblock ~ ~ ~2 minecraft:lever[face=floor]",
+            )
             context.waitTicks(10)
             val lever = world.server.computeOnServer<BlockPos, Nothing> { it.player.blockPosition().offset(0, 0, 2) }
             fun on() = world.server.computeOnServer<Boolean, Nothing> { it.overworld().getBlockState(lever).getValue(LeverBlock.POWERED) }

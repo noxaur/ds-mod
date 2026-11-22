@@ -7,7 +7,6 @@ import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.CameraType
-import net.minecraft.client.gui.screens.ChatScreen
 import org.lwjgl.glfw.GLFW
 
 /**
@@ -81,8 +80,7 @@ class FreeLookTest : FabricClientGameTest {
                 freeLook.mode.value = KeyMode.HOLD
 
                 // A key typed into a screen is not a press.
-                context.runOnClient<Nothing> { it.gui.setScreen(ChatScreen("", false)) }
-                context.waitForScreen(ChatScreen::class.java)
+                context.openChat()
                 context.input.holdKey(key)
                 context.waitTicks(3)
                 check(!Cameras.looking) { "The key started Free Look with the chat open" }

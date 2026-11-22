@@ -35,8 +35,8 @@ class TabListTest : FabricClientGameTest {
         override fun gameMode() = mode
     }
 
-    private fun readout(context: ClientGameTestContext, id: String) = context.computeOnClient<List<String>, Nothing> {
-        DsModClient.game.readouts.single { it.feature.id == id }.hud?.rows?.map { row -> row.text.plain } ?: emptyList()
+    private fun checkStage(context: ClientGameTestContext, stage: String, last: String) = context.readout("protector-status").let {
+        check(it.first() == "Stage: $stage" && it.last().startsWith(last)) { "Got $it" }
     }
 
     override fun runTest(context: ClientGameTestContext) {
@@ -81,7 +81,7 @@ class TabListTest : FabricClientGameTest {
             val count = posted.size
             context.waitTicks(20)
             check(posted.size == count) { "The tab list did not change, but ${posted.size - count} more were posted" }
-            check(readout(context, "protector-status") == listOf("Stage: Rising 3/5", "Kills Left: 97")) { "Got ${readout(context, "protector-status")}" }
+            check(context.readout("protector-status") == listOf("Stage: Rising 3/5", "Kills Left: 97")) { "Got ${context.readout("protector-status")}" }
             context.takeScreenshot("protector-status")
 
             protector.display = " Protector: Spawned"
@@ -89,19 +89,19 @@ class TabListTest : FabricClientGameTest {
             world.eggSpawns()
             world.server.runCommand("""tellraw @a "☠ The Endstone Protector has emerged from the ground! (Tier 5/5)"""")
             context.waitTicks(20)
-            check(readout(context, "protector-status").let { it.first() == "Stage: Spawned" && it.last().startsWith("Alive: 0:") }) { "Got ${readout(context, "protector-status")}" }
-            check(readout(context, DRAGON_TIMER) == listOf("Eyes: 0/8")) { "Got ${readout(context, DRAGON_TIMER)}" }
+            checkStage(context, "Spawned", "Alive: 0:")
+            check(context.readout(DRAGON_TIMER) == listOf("Eyes: 0/8")) { "Got ${context.readout(DRAGON_TIMER)}" }
 
             world.server.runCommand("""tellraw @a "The Endstone Protector has been defeated!"""")
             context.waitTicks(5)
-            check(readout(context, "protector-status").let { it.first() == "Stage: Defeated" && it.last().startsWith("Fight: 0:") }) { "Got ${readout(context, "protector-status")}" }
+            checkStage(context, "Defeated", "Fight: 0:")
 
             // Outside the End neither feature shows anything, even with the Protector row still listed.
             area.display = "Area: Village"
             world.server.runOnServer<Nothing> { it.playerList.broadcastAll(ClientboundPlayerInfoUpdatePacket(Action.UPDATE_DISPLAY_NAME, area)) }
             context.waitTicks(20)
-            check(readout(context, "protector-status").isEmpty()) { "Got ${readout(context, "protector-status")}" }
-            check(readout(context, DRAGON_TIMER).isEmpty()) { "Got ${readout(context, DRAGON_TIMER)}" }
+            check(context.readout("protector-status").isEmpty()) { "Got ${context.readout("protector-status")}" }
+            check(context.readout(DRAGON_TIMER).isEmpty()) { "Got ${context.readout(DRAGON_TIMER)}" }
             context.runOnClient<Nothing> { DsModClient.game.tap = null }
         }
     }

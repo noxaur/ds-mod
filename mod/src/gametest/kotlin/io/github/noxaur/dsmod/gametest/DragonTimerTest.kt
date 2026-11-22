@@ -9,17 +9,13 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 
 /** The server sends system messages, and the Dragon Timer shows what the player would read. */
 class DragonTimerTest : FabricClientGameTest {
-    private fun readout(context: ClientGameTestContext) = context.computeOnClient<List<String>, Nothing> {
-        DsModClient.game.readouts.single { it.feature.id == DRAGON_TIMER }.hud?.rows?.map { row -> row.text.plain } ?: emptyList()
-    }
-
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
             val seen = ArrayList<GameEvent>()
             context.runOnClient<Nothing> { DsModClient.game.tap = { _, event -> seen += event } }
             context.showDragonTimer(world)
             context.waitTicks(5)
-            check(readout(context) == listOf("Eyes: 0/8")) { "Expected Eyes: 0/8, got ${readout(context)}" }
+            check(context.readout(DRAGON_TIMER) == listOf("Eyes: 0/8")) { "Expected Eyes: 0/8, got ${context.readout(DRAGON_TIMER)}" }
 
             world.server.runCommand(
                 """tellraw @a {"text":"§5» ","extra":[{"text":"[VIP] ","extra":[{"text":"Dlnzs","color":"green"}],"color":"green"}," §dplaced a Summoning Eye! §7(§e1§7/§a8§7)"]}""",
@@ -40,7 +36,7 @@ class DragonTimerTest : FabricClientGameTest {
             )
             val eye = seen.filterIsInstance<SystemMessage>().last().text.spans
             check(eye == expected) { "Spans differ.\nExpected: $expected\nGot:      $eye" }
-            check(readout(context) == listOf("Eyes: 1/8")) { "Expected Eyes: 1/8, got ${readout(context)}" }
+            check(context.readout(DRAGON_TIMER) == listOf("Eyes: 1/8")) { "Expected Eyes: 1/8, got ${context.readout(DRAGON_TIMER)}" }
             context.takeScreenshot("dragon-timer")
         }
     }

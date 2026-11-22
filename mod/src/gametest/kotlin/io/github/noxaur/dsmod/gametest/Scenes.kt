@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMultimap
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
 import com.mojang.authlib.properties.PropertyMap
+import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
 import net.minecraft.core.component.DataComponents
 import net.minecraft.server.MinecraftServer
@@ -14,6 +15,10 @@ import java.util.Base64
 import java.util.UUID
 
 val MinecraftServer.player: ServerPlayer get() = playerList.players.single()
+
+fun ClientGameTestContext.inWorld(body: (TestSingleplayerContext) -> Unit) = worldBuilder().create().use(body)
+
+fun TestSingleplayerContext.commands(vararg lines: String) = lines.forEach(server::runCommand)
 
 fun TestSingleplayerContext.freezeTime(noon: Boolean = true) {
     server.runCommand("gamerule advance_time false")

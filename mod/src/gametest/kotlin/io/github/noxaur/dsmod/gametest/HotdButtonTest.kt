@@ -15,8 +15,7 @@ class HotdButtonTest : FabricClientGameTest {
     private fun egg(context: ClientGameTestContext) = ServerMenus.widget<KitSlotButton>(context)?.let { it.x + 1 to it.y + 1 }
 
     override fun runTest(context: ClientGameTestContext) {
-        context.worldBuilder().create().use { world ->
-            ServerMenus.command(world, "hotd", 6, "Heart of the Dragon")
+        context.withCommandMenu("hotd", 6, "Heart of the Dragon") { world ->
             ServerMenus.open(context, world, 6, "Dragon Sim Menu") { it.setItem(HotdShortcut.SLOT, ServerMenus.named(Items.DIAMOND_SWORD, "Your Skills")) }
             check(egg(context) == null) { "The egg covered an item" }
 

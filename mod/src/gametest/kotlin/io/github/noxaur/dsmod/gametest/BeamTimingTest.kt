@@ -1,21 +1,18 @@
 package io.github.noxaur.dsmod.gametest
 
-import com.google.gson.JsonParser
 import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
-import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
+import io.github.noxaur.dsmod.gametest.SettingsSteps.savedConfig
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
-import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.gui.screens.TitleScreen
-import kotlin.io.path.readText
 
 /**
  * Works Protector Spawn Beam's Beam Timing row with the real mouse: a click adds a section, a press and drag draws one, a
@@ -32,13 +29,18 @@ class BeamTimingTest : FabricClientGameTest {
             open(context, SettingsTabs(at("The End")))
             // Protector Spawn Beam's button opens its settings, unless an earlier test left them open.
             val beacon = driver.spot("protector-spawn-beam")
-            if (context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).spot("beamSections") == null }) driver.click(beacon.extraX + 7, beacon.controlY + 6)
+            if (!driver.shows("beamSections")) driver.click(beacon.extraX + 7, beacon.controlY + 6)
             check(protectorSpawnBeam.sections.value == listOf(Section(175, 200))) { "The settings start with ${protectorSpawnBeam.sections.value}" }
             val span = driver.spot("beamSections")
             context.takeScreenshot("beam-timing-default")
 
             // Window pixels of a value on the track, at the middle of the track's height.
             fun move(value: Int) = context.point(span.sliderX + 1 + value * (span.sliderWidth - 2) / 200.0, span.sliderY + 8.0)
+            fun release(value: Int) {
+                move(value)
+                context.input.releaseMouse(0)
+                context.waitTick()
+            }
             fun sections(vararg expected: Section, step: String) =
                 check(protectorSpawnBeam.sections.value == expected.toList()) { "$step gave ${protectorSpawnBeam.sections.value}, not ${expected.toList()}" }
 
@@ -49,9 +51,7 @@ class BeamTimingTest : FabricClientGameTest {
 
             move(100)
             context.input.holdMouse(0)
-            move(130)
-            context.input.releaseMouse(0)
-            context.waitTick()
+            release(130)
             sections(Section(48, 73), Section(100, 130), Section(175, 200), step = "A drag from 100 to 130")
             context.waitTicks(2)
             context.takeScreenshot("beam-timing-drawn")
@@ -63,17 +63,13 @@ class BeamTimingTest : FabricClientGameTest {
             sections(Section(48, 73), Section(100, 130), Section(140, 200), step = "Drawing from 140 to 172")
             move(160)
             sections(Section(48, 73), Section(100, 130), Section(140, 160), Section(175, 200), step = "Backing off to 160")
-            move(185)
-            context.input.releaseMouse(0)
-            context.waitTick()
+            release(185)
             sections(Section(48, 73), Section(100, 130), Section(140, 200), step = "Releasing inside the last section")
 
             // An end stretched to beside its neighbor joins it too.
             move(129)
             context.input.holdMouse(0)
-            move(137)
-            context.input.releaseMouse(0)
-            context.waitTick()
+            release(137)
             sections(Section(48, 73), Section(100, 200), step = "Stretching the end from 130 to 137")
             move(150)
             context.waitTicks(2)
@@ -90,7 +86,7 @@ class BeamTimingTest : FabricClientGameTest {
             check(protectorSpawnBeam.inFight.value) { "A press on During the Fight did not turn it on" }
 
             context.setScreen { TitleScreen() }
-            val saved = JsonParser.parseString(FabricLoader.getInstance().configDir.resolve("dsmod/config.json").readText()).asJsonObject["end"].asJsonObject
+            val saved = savedConfig()["end"].asJsonObject
             check(saved["beamSections"].toString() == """[{"from":100,"to":200}]""" && saved["beamInFight"].asBoolean) { "The timing was not saved: $saved" }
 
             // The changed marker puts each back to its default.

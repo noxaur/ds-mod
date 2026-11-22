@@ -22,9 +22,8 @@ private const val TRACKER = "zealot-tracker"
  */
 class ChatHudEditorPriorityTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
-        context.worldBuilder().create().use { world ->
-            DsModClient.settings.hud.positions.remove(DRAGON_TIMER)
-            DsModClient.settings.hud.positions.remove(TRACKER)
+        context.inWorldWithoutTimerPlace { world ->
+            forgetHudPlace(TRACKER)
             context.showDragonTimer(world)
             context.waitFor { Hud.find(DRAGON_TIMER) != null && Hud.find(TRACKER) != null }
             val chat = InChat(context)
@@ -74,7 +73,7 @@ class ChatHudEditorPriorityTest : FabricClientGameTest {
             context.input.pressMouse(0)
             context.waitTick()
             check(chat.input().length > 1) { "The press on the suggestions picked nothing: '${chat.input()}'" }
-            chat.block(TRACKER).let { check(it.x == moved.x && it.y == moved.y) { "The press on the suggestions moved the block" } }
+            chat.checkAt(TRACKER, moved.x, moved.y) { "The press on the suggestions moved the block" }
             chat.clearInput()
 
             // With the HUD hidden or the switch off, a drag moves nothing.
@@ -82,17 +81,17 @@ class ChatHudEditorPriorityTest : FabricClientGameTest {
             context.runOnClient<Nothing> { it.gui.hud.toggle() }
             chat.drag(DRAGON_TIMER, still.x + 60, still.y - 60)
             context.runOnClient<Nothing> { it.gui.hud.toggle() }
-            chat.block(DRAGON_TIMER).let { check(it.x == still.x && it.y == still.y) { "A drag with F1 moved the block" } }
+            chat.checkAt(DRAGON_TIMER, still.x, still.y) { "A drag with F1 moved the block" }
             DsModClient.feature<ChatHudEditor>().feature.enabled = false
             try {
                 chat.drag(DRAGON_TIMER, still.x + 60, still.y - 60)
-                chat.block(DRAGON_TIMER).let { check(it.x == still.x && it.y == still.y) { "A drag with the switch off moved the block" } }
+                chat.checkAt(DRAGON_TIMER, still.x, still.y) { "A drag with the switch off moved the block" }
             } finally {
                 DsModClient.feature<ChatHudEditor>().feature.enabled = true
             }
             context.setScreen { null }
-            DsModClient.settings.hud.positions.remove(DRAGON_TIMER)
-            DsModClient.settings.hud.positions.remove(TRACKER)
+            forgetHudPlace(DRAGON_TIMER)
+            forgetHudPlace(TRACKER)
         }
     }
 }

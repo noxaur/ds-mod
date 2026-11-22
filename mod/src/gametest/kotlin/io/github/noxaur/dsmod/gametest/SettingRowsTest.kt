@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.gametest
 
-import com.google.gson.JsonParser
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.container.Border
 import io.github.noxaur.dsmod.core.container.RarityPreset
@@ -17,13 +16,12 @@ import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import io.github.noxaur.dsmod.gametest.SettingsSteps.hear
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
+import io.github.noxaur.dsmod.gametest.SettingsSteps.savedConfig
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
-import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.gui.screens.TitleScreen
 import org.lwjgl.glfw.GLFW
-import kotlin.io.path.readText
 
 /**
  * Drives every kind of row of ds-mod's own settings screen against the config, as [rows] says. `OwnSettingsTest`
@@ -191,19 +189,16 @@ class SettingRowsTest : FabricClientGameTest {
         expect("A press anywhere on a switch's row", true) { DsModClient.feature<ItemRarity>().inventoryStyle.value.gem }
         context.shotInBothThemes("own-settings-custom-look")
         // A switch's own settings open under it from its button, and close to a summary.
-        val lock = spot("slot-lock")
-        click(lock.extraX + 7, lock.controlY + 6)
-        check(context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).spot("slotLockKey") != null }) { "Slot Lock's button did not open its settings" }
+        toggle("slot-lock")
+        check(shows("slotLockKey")) { "Slot Lock's button did not open its settings" }
         spot("itemLockKey")
         context.takeScreenshot("own-settings-switch-open")
-        val shut = spot("slot-lock")
-        click(shut.extraX + 7, shut.controlY + 6)
-        check(context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).spot("slotLockKey") == null }) { "Slot Lock's button did not close its settings" }
+        toggle("slot-lock")
+        check(!shows("slotLockKey")) { "Slot Lock's button did not close its settings" }
 
         // The End: a span under Protector Spawn Beam, drawn by a press and drag on its empty track.
         open(context, SettingsTabs(at("The End")))
-        val beacon = spot("protector-spawn-beam")
-        click(beacon.extraX + 7, beacon.controlY + 6)
+        toggle("protector-spawn-beam")
         val span = spot("beamSections")
         val trackX = span.x + SettingRows.PAD
         val trackY = span.y + span.height - 4 - 8
@@ -222,7 +217,7 @@ class SettingRowsTest : FabricClientGameTest {
         open(context, SettingsTabs(at("General")))
         context.input.typeChars("rngesus")
         context.waitTicks(2)
-        check(context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).spot("lootAlertTier") != null }) { "The search for a choice's value shows no Alert Tier" }
+        check(shows("lootAlertTier")) { "The search for a choice's value shows no Alert Tier" }
         context.takeScreenshot("own-settings-search-option")
 
         // A link to a row opens the settings there, over the screen shown now, and Escape goes back to it.
@@ -230,9 +225,8 @@ class SettingRowsTest : FabricClientGameTest {
         context.runOnClient<Nothing> { DsModClient.openSettings("binds") }
         context.waitTicks(2)
         check(context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as? SettingsScreen)?.spot("binds") != null }) { "A link to the binds did not open the settings at the list" }
-        context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
-        context.waitTicks(2)
-        check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() is TitleScreen }) { "Escape from the settings did not go back to the title screen" }
+        key(GLFW.GLFW_KEY_ESCAPE)
+        context.checkClient("Escape from the settings did not go back to the title screen") { it.gui.screen() is TitleScreen }
         context.setScreen { null }
 
         // An action opens its screen, which returns to the settings.
@@ -240,9 +234,8 @@ class SettingRowsTest : FabricClientGameTest {
         val requests = spot("requests")
         click(requests.controlX + 4, requests.controlY + 8)
         check(context.computeOnClient<Boolean, Nothing> { it.gui.screen()?.javaClass?.simpleName == "ContributeScreen" }) { "Requests did not open the Contribute screen" }
-        context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
-        context.waitTicks(2)
-        check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() is SettingsScreen }) { "The Contribute screen did not return to the settings" }
+        key(GLFW.GLFW_KEY_ESCAPE)
+        context.checkClient("The Contribute screen did not return to the settings") { it.gui.screen() is SettingsScreen }
 
         // A change is written when the screen closes, and is there when it opens again.
         open(context, SettingsTabs(at("General")))
@@ -258,8 +251,8 @@ class SettingRowsTest : FabricClientGameTest {
         context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
         context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
         context.waitTicks(2)
-        check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() is TitleScreen }) { "Two Escapes did not close the settings" }
-        val saved = JsonParser.parseString(FabricLoader.getInstance().configDir.resolve("dsmod/config.json").readText()).asJsonObject
+        context.checkClient("Two Escapes did not close the settings") { it.gui.screen() is TitleScreen }
+        val saved = savedConfig()
         check(saved["general"].asJsonObject["fullbright"].asBoolean) { "Fullbright was not written to the config file" }
         open(context, SettingsTabs(at("General")))
         context.takeScreenshot("own-settings-reopened")

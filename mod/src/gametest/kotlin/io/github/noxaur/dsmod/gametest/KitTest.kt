@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.debug.KitGalleryScreen
 import io.github.noxaur.dsmod.debug.SettingsGalleryScreen
 import io.github.noxaur.dsmod.edge.ui.SettingRows
+import io.github.noxaur.dsmod.gametest.SettingsSteps.guiScale
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import org.lwjgl.glfw.GLFW
@@ -17,7 +18,7 @@ import kotlin.reflect.KClass
  */
 class KitTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
-        val window = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.screenWidth to it.window.screenHeight }
+        val window = SettingsSteps.windowSize(context)
         // The gallery is 575x335 GUI pixels with a glass strip 47 below it, which needs more room than the test window has at GUI scale 2.
         context.input.resizeWindow(1280, 800)
         // An item needs a world's registries, and the gallery shows items in its slots.
@@ -32,15 +33,14 @@ class KitTest : FabricClientGameTest {
             rows(context)
             context.setScreen { null }
         }
-        context.restoreDefaultGameOptions()
-        context.runOnClient<Nothing> { it.resizeGui() }
-        context.input.resizeWindow(window.first, window.second)
+        SettingsSteps.restore(context, window)
     }
 
     /** The settings rows' page: every kind and every look, in both themes, with a choice's and a pick's menu open. */
     private fun rows(context: ClientGameTestContext) {
         val kinds = HashSet<Kind>()
         val looks = HashSet<KClass<out Look>>()
+        fun collect() = context.runOnClient<Nothing> { client -> (client.gui.screen() as SettingsGalleryScreen).let { kinds += it.kinds; looks += it.looks } }
         for (page in listOf(SettingsGalleryScreen.Page.LISTS, SettingsGalleryScreen.Page.PANELS)) {
             context.setScreen { SettingsGalleryScreen(page) }
             context.waitTicks(2)
@@ -48,11 +48,11 @@ class KitTest : FabricClientGameTest {
             val name = page.name.lowercase()
             context.takeScreenshot("kit-$name-charcoal")
             context.inTheme(Theme.VANILLA) { context.takeScreenshot("kit-$name-vanilla") }
-            context.runOnClient<Nothing> { client -> (client.gui.screen() as SettingsGalleryScreen).let { kinds += it.kinds; looks += it.looks } }
+            collect()
         }
         context.setScreen { SettingsGalleryScreen() }
         context.waitTicks(2)
-        context.runOnClient<Nothing> { client -> (client.gui.screen() as SettingsGalleryScreen).let { kinds += it.kinds; looks += it.looks } }
+        collect()
         val missing = Kind.entries.filter { it !in kinds } + Look::class.sealedSubclasses.filter { it !in looks }.map { it.simpleName }
         check(missing.isEmpty()) { "No page of the gallery of settings rows shows $missing" }
         fun press(id: String) {
@@ -70,14 +70,6 @@ class KitTest : FabricClientGameTest {
         press("preset")
         context.shotInBothThemes("kit-rows-pick-menu")
         context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
-        context.waitTicks(2)
-    }
-
-    private fun guiScale(context: ClientGameTestContext, scale: Int) {
-        context.runOnClient<Nothing> { client ->
-            client.options.guiScale().set(scale)
-            client.resizeGui()
-        }
         context.waitTicks(2)
     }
 }

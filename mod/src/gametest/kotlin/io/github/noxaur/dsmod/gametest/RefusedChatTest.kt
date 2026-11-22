@@ -12,8 +12,6 @@ import java.util.concurrent.CopyOnWriteArrayList
 class RefusedChatTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val seen = CopyOnWriteArrayList<String>()
-        val kept = CopyOnWriteArrayList<String>()
-        val hidden = CopyOnWriteArrayList<String>()
         val refused = "Refused by another mod: counted once"
         val cooldown = "This ability is on cooldown for 4.35s"
         val refusedCooldown = "This ability is on cooldown for 9.99s"
@@ -21,8 +19,7 @@ class RefusedChatTest : FabricClientGameTest {
         val other = Identifier.fromNamespaceAndPath("dsmod_test", "other_mod")
         ClientReceiveMessageEvents.ALLOW_GAME.addPhaseOrdering(other, Event.DEFAULT_PHASE)
         ClientReceiveMessageEvents.ALLOW_GAME.register(other) { message, _ -> message.string != refused && message.string != refusedCooldown }
-        ClientReceiveMessageEvents.GAME.register { message, _ -> kept += message.string }
-        ClientReceiveMessageEvents.GAME_CANCELED.register { message, _ -> hidden += message.string }
+        val (kept, hidden) = watchChat()
         context.worldBuilder().create().use { world ->
             context.runOnClient<Nothing> {
                 DsModClient.game.tap = { _, event -> if (event is SystemMessage) seen += event.text.plain }

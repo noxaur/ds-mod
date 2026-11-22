@@ -5,6 +5,15 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.screens.ChatScreen
+import org.lwjgl.glfw.GLFW
+import kotlin.math.abs
+
+fun Minecraft.showChat() = gui.setScreen(ChatScreen("", false))
+
+fun ClientGameTestContext.openChat() {
+    runOnClient<Nothing> { it.showChat() }
+    waitForScreen(ChatScreen::class.java)
+}
 
 /** The real mouse and keyboard on the open chat, in GUI pixels, for the tests that drag HUD blocks from it. */
 class InChat(private val context: ClientGameTestContext) {
@@ -15,7 +24,7 @@ class InChat(private val context: ClientGameTestContext) {
     fun open() {
         context.runOnClient<Nothing> { client ->
             client.gui.hud.chat.clearMessages(false)
-            client.gui.setScreen(ChatScreen("", false))
+            client.showChat()
         }
         context.waitForScreen(ChatScreen::class.java)
         context.waitTick()
@@ -32,6 +41,16 @@ class InChat(private val context: ClientGameTestContext) {
     fun cursor() = context.computeOnClient<Int, Nothing> { box(it).cursorPosition }
 
     fun clearInput() = context.runOnClient<Nothing> { box(it).value = "" }
+
+    fun checkAt(id: String, x: Float, y: Float, message: (Hud.Placed) -> String) = block(id).let { check(it.x == x && it.y == y) { message(it) } }
+
+    fun checkNear(id: String, x: Double, y: Double, message: (Hud.Placed) -> String) =
+        block(id).let { check(abs(it.x - x) < 0.6 && abs(it.y - y) < 0.6) { message(it) } }
+
+    fun dragEscaped(id: String, x: Number, y: Number) = drag(id, x, y) {
+        context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
+        context.waitTick()
+    }
 
     /** Presses on [id] 5 in from its corner, drags the mouse until the corner would be at [x], [y], runs [during] and lets go. */
     fun drag(id: String, x: Number, y: Number, during: () -> Unit = {}) {

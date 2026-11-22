@@ -57,9 +57,7 @@ class PlayerPreviewTest : FabricClientGameTest {
                 val cx = spot.controlX + spot.controlWidth / 2
                 val cy = spot.controlY + spot.controlHeight / 2
                 val start = preview().yaw
-                driver.move(cx, cy)
-                context.input.holdMouse(0)
-                context.waitTick()
+                driver.hold(cx, cy)
                 driver.move(cx + 20, cy + 5)
                 context.takeScreenshot("player-preview-drag")
                 context.input.releaseMouse(0)
@@ -69,16 +67,11 @@ class PlayerPreviewTest : FabricClientGameTest {
                 val dropped = preview().yaw
 
                 // Escape during a drag puts it back and keeps the settings open.
-                driver.move(cx, cy)
-                context.input.holdMouse(0)
-                context.waitTick()
+                driver.hold(cx, cy)
                 driver.move(cx - 30, cy)
-                context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
-                context.waitTicks(2)
-                context.input.releaseMouse(0)
-                context.waitTicks(2)
+                driver.escapeHeld()
                 near(preview().yaw, dropped, "The yaw after Escape during a drag")
-                check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() is SettingsScreen }) { "Escape during a drag closed the settings" }
+                driver.keptOpen()
 
                 // With the keys on the row, Left and Right turn it a step, and Down goes on to the next row.
                 driver.key(GLFW.GLFW_KEY_RIGHT)

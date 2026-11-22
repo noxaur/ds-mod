@@ -46,11 +46,7 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         click(d.extraX + 4, d.controlY + 6)
         context.input.typeChars("42")
         context.waitTicks(2)
-        context.runOnClient<Nothing> {
-            val screen = it.gui.screen() as SettingsScreen
-            screen.resize(screen.width, screen.height)
-        }
-        context.waitTicks(2)
+        relayout()
         check(distance() == 42f) { "Resizing dropped the typed distance, leaving ${distance()}" }
 
         val again = spot("cameraDistance")
@@ -123,13 +119,10 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         press(foot(), "Export")
         val copied = context.computeOnClient<String, Nothing> { Minecraft.getInstance().keyboardHandler.clipboard }
         check(copied.startsWith("dsmod-binds:")) { "Export copied \"$copied\" instead of the Dungeons bind" }
-        context.runOnClient<Nothing> {
-            val screen = it.gui.screen() as SettingsScreen
-            screen.resize(screen.width, screen.height)
+        relayout {
             // An empty clipboard does not replace the previous copy, so the marker has to be text.
             Minecraft.getInstance().keyboardHandler.clipboard = "none"
         }
-        context.waitTicks(2)
         press(foot(), "Export")
         val again = context.computeOnClient<String, Nothing> { Minecraft.getInstance().keyboardHandler.clipboard }
         check(again.startsWith("dsmod-binds:")) { "After a relayout Export copied \"$again\" instead of the Dungeons bind" }
@@ -150,11 +143,7 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         click(itemField[0] + itemField[2] / 2, itemField[1] + itemField[3] / 2)
         key(GLFW.GLFW_KEY_END)
         repeat(16) { key(GLFW.GLFW_KEY_BACKSPACE) }
-        context.runOnClient<Nothing> {
-            val screen = it.gui.screen() as SettingsScreen
-            screen.resize(screen.width, screen.height)
-        }
-        context.waitTicks(2)
+        relayout()
         val item = context.computeOnClient<String, Nothing> { menuTabs.tabs.value.first { it.command == "storage" }.item }
         check(item.isEmpty()) { "Clearing the item left \"$item\"" }
         context.runOnClient<Nothing> {

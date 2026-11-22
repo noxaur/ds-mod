@@ -44,9 +44,7 @@ class TabPlacesTest : FabricClientGameTest {
         // Storage dragged from the bottom-left to the top-left follows the mouse, and lands there.
         val from = place(TabEdge.BOTTOM, 0)
         val to = place(TabEdge.TOP, 0)
-        move(from.first, from.second)
-        context.input.holdMouse(0)
-        context.waitTick()
+        hold(from.first, from.second)
         for (step in 1..4) move(from.first + (to.first - from.first) * step / 4, from.second + (to.second - from.second) * step / 4)
         context.shotInBothThemes("tab-places-drag")
         context.input.releaseMouse(0)
@@ -56,15 +54,10 @@ class TabPlacesTest : FabricClientGameTest {
 
         // Escape during a drag puts the tab back, and leaves the screen open.
         val ec = place(TabEdge.BOTTOM, 1)
-        move(ec.first, ec.second)
-        context.input.holdMouse(0)
-        context.waitTick()
+        hold(ec.first, ec.second)
         place(TabEdge.BOTTOM, 4).let { move(it.first, it.second) }
-        context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
-        context.waitTicks(2)
-        context.input.releaseMouse(0)
-        context.waitTicks(2)
-        check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() is SettingsScreen }) { "Escape during a drag closed the settings" }
+        escapeHeld()
+        keptOpen()
         check(tabs().first { it.command == "ec" }.slot == 1) { "Escape did not put the dragged tab back" }
 
         // A press on an empty place adds a tab there with its command to type, and the item, reached with Tab, is typed by its name.

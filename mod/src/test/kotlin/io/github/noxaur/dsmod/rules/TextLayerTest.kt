@@ -5,12 +5,9 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.AbstractInsnNode
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldInsnNode
-import org.objectweb.asm.tree.InsnNode
 import org.objectweb.asm.tree.InvokeDynamicInsnNode
 import org.objectweb.asm.tree.LdcInsnNode
-import org.objectweb.asm.tree.LineNumberNode
 import org.objectweb.asm.tree.MethodInsnNode
-import org.objectweb.asm.tree.MethodNode
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -56,56 +53,28 @@ private fun inTextLayer(name: String): Boolean {
 }
 
 /** Every place in [classes] outside the text layer that colors or styles text, as `file:line`. */
-fun stylings(classes: List<ClassNode>): List<String> = classes.filter { node -> !inTextLayer(node.name) }.flatMap { node ->
-    node.methods.flatMap { method ->
-        var line = 0
-        method.instructions.mapNotNull { insn ->
-            if (insn is LineNumberNode) line = insn.line
-            if (styling(insn)) "${node.name.substringBeforeLast('/')}/${node.sourceFile}:$line" else null
-        }
-    }
-}.distinct()
+fun stylings(classes: List<ClassNode>): List<String> = placesWhere(classes.filter { node -> !inTextLayer(node.name) }, ::styling)
 
 class TextLayerTest {
     @Test
     fun `only the text layer colors or styles text`() {
-        val found = stylings(releaseClasses())
-        assertEquals(
-            emptyList(),
-            found,
+        assertNoPlaces(
+            stylings(releaseClasses()),
             "Say what the text means and let the text layer color it: build it with `text { body(..); value(..) }` " +
-                "from core.text and print it with `Chat.send`. If no role fits, add one to `Role`.\n" + found.joinToString("\n") + "\n",
+                "from core.text and print it with `Chat.send`. If no role fits, add one to `Role`.",
         )
     }
 
     @Test
     fun `the scan catches a color however the code spells it`() {
-        fun calling(name: String, insn: AbstractInsnNode) = ClassNode().apply {
-            this.name = "${MOD}edge/$name"
-            sourceFile = "$name.kt"
-            methods.add(
-                MethodNode(Opcodes.ACC_PUBLIC, "run", "()V", null, null).apply {
-                    instructions.add(LineNumberNode(7, org.objectweb.asm.tree.LabelNode()))
-                    instructions.add(insn)
-                    instructions.add(InsnNode(Opcodes.RETURN))
-                },
-            )
-        }
+        fun calling(name: String, insn: AbstractInsnNode) = edgeClass(name, 7, insn)
         // What javac emits for `Function<String, MutableComponent> f = Component::literal`.
-        fun reference(target: Handle) = InvokeDynamicInsnNode(
+        fun reference(target: Handle) = lambdaReference(
             "apply",
             "()Ljava/util/function/Function;",
-            Handle(
-                Opcodes.H_INVOKESTATIC,
-                "java/lang/invoke/LambdaMetafactory",
-                "metafactory",
-                "(Ljava/lang/invoke/MethodHandles\$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;" +
-                    "Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;",
-                false,
-            ),
-            org.objectweb.asm.Type.getMethodType("(Ljava/lang/Object;)Ljava/lang/Object;"),
+            "(Ljava/lang/Object;)Ljava/lang/Object;",
             target,
-            org.objectweb.asm.Type.getMethodType("(Ljava/lang/String;)L${CHAT}MutableComponent;"),
+            "(Ljava/lang/String;)L${CHAT}MutableComponent;",
         )
         val found = stylings(
             listOf(

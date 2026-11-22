@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.gametest
 
-import com.google.gson.JsonParser
 import io.github.noxaur.dsmod.core.feature.general.Fullbright
 import io.github.noxaur.dsmod.core.feature.loot.RareDropAlert
 import io.github.noxaur.dsmod.core.ui.Place
@@ -11,13 +10,12 @@ import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import io.github.noxaur.dsmod.gametest.SettingsSteps.hear
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
+import io.github.noxaur.dsmod.gametest.SettingsSteps.savedConfig
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
-import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.gui.screens.TitleScreen
 import org.lwjgl.glfw.GLFW
-import kotlin.io.path.readText
 
 /**
  * Stars settings with the real mouse and keyboard: a press on the star, the Favorite Key over a row or on the row
@@ -136,7 +134,7 @@ class FavoritesTest : FabricClientGameTest {
 
             // Closing saves the stars.
             context.setScreen { TitleScreen() }
-            val saved = JsonParser.parseString(FabricLoader.getInstance().configDir.resolve("dsmod/config.json").readText()).asJsonObject
+            val saved = savedConfig()
             check(saved["favorites"].asJsonArray.map { it.asString } == listOf("hide-explosions", "rare-drop-alert")) { "The file holds ${saved["favorites"]}" }
         } finally {
             context.runOnClient<Nothing> {

@@ -71,8 +71,7 @@ object InventoryGrid {
      * into its panel, with [gaps] rows standing apart before it. In [columns] each row runs down.
      */
     fun cell(context: ClientGameTestContext, row: Int, column: Int, inventory: Boolean = true, gaps: Int = 0, columns: Boolean = false): Pair<Double, Double> =
-        context.computeOnClient<Pair<Double, Double>, Nothing> {
-            val block = checkNotNull(Hud.find(ID)) { "The inventory is not on the HUD" }
+        context.placed(ID).let { block ->
             val inset = if (inventory) 7 + 1 else 0
             val pitch = if (inventory) 18 else 17
             val along = column * pitch
@@ -81,6 +80,11 @@ object InventoryGrid {
             val y = (4 + inset + (if (columns) along else between) + 8) * block.scale
             block.x + x.toDouble() to block.y + y.toDouble()
         }
+
+    fun showHotbar(context: ClientGameTestContext) {
+        DsModClient.feature<InventoryHud>().shownRows.value = listOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM, InventoryRow.HOTBAR)
+        waitForItem(context, "Item 0") { cell(context, 3, 0, gaps = 1) }
+    }
 
     fun stackAt(context: ClientGameTestContext, point: Pair<Double, Double>) =
         context.computeOnClient<ItemStack?, Nothing> { Hud.itemAt(point.first, point.second) }
@@ -106,7 +110,7 @@ object InventoryGrid {
 
     /** The color of the grid's panel in [shot], a few pixels in from its corner, between the edge and the first slot. */
     fun panelColor(context: ClientGameTestContext, shot: Path): Int {
-        val block = context.computeOnClient<Hud.Placed, Nothing> { checkNotNull(Hud.find(ID)) }
+        val block = context.placed(ID)
         return context.guiPixel(shot, block.x + (4 + 5) * block.scale, block.y + (4 + 5) * block.scale)
     }
 

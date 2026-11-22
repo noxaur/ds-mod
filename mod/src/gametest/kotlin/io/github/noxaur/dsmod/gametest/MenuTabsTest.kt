@@ -37,12 +37,14 @@ class MenuTabsTest : FabricClientGameTest {
         context.click(shown.x + shown.width / 2, shown.y + 10, settle = 2)
     }
 
+    private fun defaultTabs(context: ClientGameTestContext) = context.runOnClient<Nothing> { DsModClient.feature<MenuTabs>().tabs.value = TabLayout.DEFAULT }
+
     private fun screenIs(context: ClientGameTestContext, title: String) =
         context.computeOnClient<Boolean, Nothing> { ServerMenus.title(it) == title }
 
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
-            context.runOnClient<Nothing> { DsModClient.feature<MenuTabs>().tabs.value = TabLayout.DEFAULT }
+            defaultTabs(context)
             ServerMenus.command(world, "storage", 6, "Storage", goBack = false) { chest ->
                 chest.setItem(11, ServerMenus.named(Items.DIAMOND_SWORD, "Dragon Blade").also { s -> s.set(DataComponents.LORE, ItemLore(listOf(Component.literal("LEGENDARY SWORD")))) })
                 chest.setItem(13, ServerMenus.named(Items.ENDER_PEARL, "Ender Pearl"))
@@ -98,7 +100,7 @@ class MenuTabsTest : FabricClientGameTest {
                 check(tabs(context).none { it.name in listOf("Ender Chest", "Crafting Table", "Forge") }) { "The bar did not cover the tabs beside it" }
                 context.takeScreenshot("menu-tabs-search-bottom")
                 context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
-                context.runOnClient<Nothing> { DsModClient.feature<MenuTabs>().tabs.value = TabLayout.DEFAULT }
+                defaultTabs(context)
 
                 context.runOnClient<Nothing> { it.player!!.closeContainer() }
                 context.openInventory()

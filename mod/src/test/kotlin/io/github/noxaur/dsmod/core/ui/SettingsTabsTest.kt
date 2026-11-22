@@ -8,6 +8,8 @@ import kotlin.test.assertTrue
 class SettingsTabsTest {
     private val names = listOf("The End", "Combat", "Inventory", "Menus")
 
+    private fun tabsOf(vararg opened: Int) = SettingsTabs(Place(0)).also { tabs -> opened.forEach { tabs.open(Place(it)) } }
+
     /** Each tab's title, with the selected one in brackets. */
     private fun SettingsTabs.titles() = tabs.mapIndexed { i, tab -> tab.title(names).let { if (i == selected) "[$it]" else it } }.joinToString(" ")
 
@@ -102,8 +104,7 @@ class SettingsTabsTest {
 
     @Test
     fun `a new tab is blank, after the selected one, and selected`() {
-        val tabs = SettingsTabs(Place(0))
-        tabs.open(Place(1))
+        val tabs = tabsOf(1)
         tabs.new()
         assertEquals("The End [New Tab] Combat", tabs.titles())
         assertEquals(Place.BLANK, tabs.current.place)
@@ -111,10 +112,7 @@ class SettingsTabsTest {
 
     @Test
     fun `closing the selected tab selects the one that takes its place, or the one before it at the end`() {
-        val tabs = SettingsTabs(Place(0))
-        tabs.open(Place(3))
-        tabs.open(Place(2))
-        tabs.open(Place(1))
+        val tabs = tabsOf(3, 2, 1)
         tabs.select(1)
         assertEquals("The End [Combat] Inventory Menus", tabs.titles())
         tabs.close(1)
@@ -126,9 +124,7 @@ class SettingsTabsTest {
 
     @Test
     fun `closing another tab keeps the selected one`() {
-        val tabs = SettingsTabs(Place(0))
-        tabs.open(Place(2))
-        tabs.open(Place(1))
+        val tabs = tabsOf(2, 1)
         tabs.select(2)
         tabs.close(0)
         assertEquals("Combat [Inventory]", tabs.titles())
@@ -146,9 +142,7 @@ class SettingsTabsTest {
 
     @Test
     fun `a closed tab reopens where it was, selected, with its history`() {
-        val tabs = SettingsTabs(Place(0))
-        tabs.open(Place(2))
-        tabs.open(Place(1))
+        val tabs = tabsOf(2, 1)
         tabs.select(1)
         tabs.current.go(3)
         tabs.close(1)
@@ -165,10 +159,7 @@ class SettingsTabsTest {
 
     @Test
     fun `a tab moved by dragging keeps the same tab selected`() {
-        val tabs = SettingsTabs(Place(0))
-        tabs.open(Place(3))
-        tabs.open(Place(2))
-        tabs.open(Place(1))
+        val tabs = tabsOf(3, 2, 1)
         tabs.select(1)
         tabs.move(1, 3)
         assertEquals("The End Inventory Menus [Combat]", tabs.titles())
@@ -180,10 +171,7 @@ class SettingsTabsTest {
 
     @Test
     fun `ctrl tab cycles past either end, and ctrl and a digit picks a tab, with 9 the last`() {
-        val tabs = SettingsTabs(Place(0))
-        tabs.open(Place(3))
-        tabs.open(Place(2))
-        tabs.open(Place(1))
+        val tabs = tabsOf(3, 2, 1)
         tabs.cycle(-1)
         assertEquals(3, tabs.selected)
         tabs.cycle(1)

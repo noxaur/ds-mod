@@ -10,9 +10,11 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
  */
 class RareDropAlertTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
-        context.worldBuilder().create().use { world ->
-            world.server.runCommand("""tellraw @a "§6§lRARE DROP! §7(§5Summoning Eye§7) (§b✯ 90%§7)"""")
-            world.server.runCommand("""tellraw @a "§5§lEPIC DROP! §6Golden Eye"""")
+        context.inWorld { world ->
+            world.commands(
+                """tellraw @a "§6§lRARE DROP! §7(§5Summoning Eye§7) (§b✯ 90%§7)"""",
+                """tellraw @a "§5§lEPIC DROP! §6Golden Eye"""",
+            )
             context.waitTicks(15)
             val shown = context.computeOnClient<Pair<String?, List<String>>, Nothing> { client ->
                 val title = client.gui.hud.title?.string

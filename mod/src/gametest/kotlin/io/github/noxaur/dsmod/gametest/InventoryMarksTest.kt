@@ -2,20 +2,20 @@ package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.feature.general.InventoryHud
 import io.github.noxaur.dsmod.core.feature.general.InventoryLook
-import io.github.noxaur.dsmod.core.feature.general.InventoryRow
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
+import java.nio.file.Path
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.gametest.InventoryGrid.ID
 import io.github.noxaur.dsmod.gametest.InventoryGrid.cell
 import io.github.noxaur.dsmod.gametest.InventoryGrid.pixel
+import io.github.noxaur.dsmod.gametest.InventoryGrid.showHotbar
 import io.github.noxaur.dsmod.gametest.InventoryGrid.waitForItem
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
-import net.minecraft.client.gui.screens.ChatScreen
 
 /**
  * What the grid marks and where it goes: the held slot ringed, a Legendary item's slot painted by Item Rarity, a
@@ -26,16 +26,16 @@ class InventoryMarksTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = InventoryGrid.with(context) { world ->
         val inventoryHud = DsModClient.feature<InventoryHud>()
         val menuTheme = DsModClient.feature<MenuTheme>()
-        inventoryHud.shownRows.value = listOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM, InventoryRow.HOTBAR)
-        waitForItem(context, "Item 0") { cell(context, 3, 0, gaps = 1) }
+        showHotbar(context)
 
         // The hotbar row marks the slot the player holds, as the hotbar does, and moves with it.
         context.runOnClient<Nothing> { it.player!!.inventory.selectedSlot = 2 }
         context.waitTick()
         val heldShot = context.takeScreenshot("inventory-hud-held")
         val ring = Theme.CHARCOAL.accent and 0xFFFFFF
-        check(pixel(context, heldShot, cell(context, 3, 2, gaps = 1), 0, -9) == ring) { "The held slot has no ring" }
-        check(pixel(context, heldShot, cell(context, 3, 3, gaps = 1), 0, -9) != ring) { "A slot the player does not hold has a ring" }
+        fun ringed(column: Int) = pixel(context, heldShot, cell(context, 3, column, gaps = 1), 0, -9) == ring
+        check(ringed(2)) { "The held slot has no ring" }
+        check(!ringed(3)) { "A slot the player does not hold has a ring" }
 
         // Item Rarity paints a Legendary item's slot as it does in the inventory, and leaves a plain one alone.
         check(pixel(context, heldShot, cell(context, 0, 6), -7, -7) != pixel(context, heldShot, cell(context, 1, 2), -7, -7)) {
@@ -58,6 +58,14 @@ class InventoryMarksTest : FabricClientGameTest {
         inventoryHud.pickup.value = false
 
         // A menu shows the inventory itself, so the grid steps aside, under glass where the HUD would show through too.
+        fun menuShot(name: String): Path {
+            ServerMenus.open(context, world, 1, "Small Chest")
+            return context.takeScreenshot(name)
+        }
+        fun closeMenu() {
+            context.runOnClient<Nothing> { it.player!!.closeContainer() }
+            context.waitFor { it.gui.screen() == null }
+        }
         val menuLookBefore = menuTheme.menuLook.value
         val glassBefore = menuTheme.glassOpacity.value
         menuTheme.menuLook.value = MenuLook.GLASS
@@ -66,26 +74,19 @@ class InventoryMarksTest : FabricClientGameTest {
             // Glass menus neither dim nor blur, so the head in the grid's first slot shows plainly until the grid steps aside.
             val head = cell(context, 0, 0)
             val open = context.takeScreenshot("inventory-hud-before-menu")
-            ServerMenus.open(context, world, 1, "Small Chest")
-            val behind = context.takeScreenshot("inventory-hud-menu-open")
+            val behind = menuShot("inventory-hud-menu-open")
             check(pixel(context, behind, head, 0, 0) != pixel(context, open, head, 0, 0)) { "The grid still shows under an open menu" }
-            context.runOnClient<Nothing> { it.player!!.closeContainer() }
-            context.waitFor { it.gui.screen() == null }
+            closeMenu()
 
             // On the HUD's plate, the plate steps aside with the icons.
             inventoryHud.look.value = InventoryLook.PLATE
             waitForItem(context, "Item 0") { cell(context, 3, 0, inventory = false, gaps = 1) }
-            val margin = context.computeOnClient<Pair<Double, Double>, Nothing> {
-                val block = checkNotNull(Hud.find(ID))
-                block.x + 2.0 * block.scale to block.y + block.height / 2.0 * block.scale
-            }
+            val margin = context.placed(ID).let { block -> block.x + 2.0 * block.scale to block.y + block.height / 2.0 * block.scale }
             val plated = context.takeScreenshot("inventory-hud-plate-before-menu")
-            ServerMenus.open(context, world, 1, "Small Chest")
-            val unplated = context.takeScreenshot("inventory-hud-plate-menu-open")
+            val unplated = menuShot("inventory-hud-plate-menu-open")
             // The plate darkens the world behind it, so the same pixel without it is lighter.
             check(pixel(context, unplated, margin, 0, 0) != pixel(context, plated, margin, 0, 0)) { "The grid's plate stays under an open menu" }
-            context.runOnClient<Nothing> { it.player!!.closeContainer() }
-            context.waitFor { it.gui.screen() == null }
+            closeMenu()
             inventoryHud.look.value = InventoryLook.INVENTORY
         } finally {
             menuTheme.menuLook.value = menuLookBefore
@@ -95,7 +96,7 @@ class InventoryMarksTest : FabricClientGameTest {
         // Docked, the grid sits right of the hotbar past the hotbar's own gap, scaled down to the room there.
         inventoryHud.placement.value = HudDock.RIGHT_OF_HOTBAR
         context.waitFor { Hud.find(ID)?.dock == HudDock.RIGHT_OF_HOTBAR }
-        val (width, height) = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.guiScaledWidth to it.window.guiScaledHeight }
+        val (width, height) = context.guiSize()
         context.waitFor { dockedRow(width, height) != null }
         val (first, last) = checkNotNull(context.computeOnClient<Pair<Pair<Int, Int>, Pair<Int, Int>>?, Nothing> { dockedRow(width, height) }) {
             "The docked grid's hotbar row is not on the screen"
@@ -107,14 +108,13 @@ class InventoryMarksTest : FabricClientGameTest {
         // A wheel step grows the grid from the size it shows docked, and it leaves the dock at that size. The chat's
         // lines and input lie left of and below the spot, so the wheel turns over the grid's top right.
         val guiScale = context.computeOnClient<Int, Nothing> { it.window.guiScale }
-        val docked = context.computeOnClient<Hud.Placed, Nothing> { checkNotNull(Hud.find(ID)) }
+        val docked = context.placed(ID)
         check(docked.scale < 1f) { "The docked grid did not shrink to the room beside the hotbar: ${docked.scale}" }
-        context.runOnClient<Nothing> { it.gui.setScreen(ChatScreen("", false)) }
-        context.waitForScreen(ChatScreen::class.java)
+        context.openChat()
         context.point(docked.x + docked.width * docked.scale - 3.0, docked.y + 3.0, settle = 0)
         context.input.scroll(1.0)
         context.waitFor { Hud.find(ID)?.dock == HudDock.FREE }
-        val grown = context.computeOnClient<Float, Nothing> { checkNotNull(Hud.find(ID)).scale }
+        val grown = context.placed(ID).scale
         check(grown == docked.scale + 1f / guiScale) { "A step up from a docked grid drawn at ${docked.scale} drew it at $grown, not ${docked.scale + 1f / guiScale}" }
         context.setScreen { null }
         DsModClient.settings.hud.positions.remove(ID)

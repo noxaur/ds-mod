@@ -94,7 +94,7 @@ class ForgeCraftTest : FabricClientGameTest {
             context.takeScreenshot("forge-craft-listening")
             context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
             context.waitTicks(2)
-            check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() is ContainerScreen }) { "Escape closed the menu while the key button listened" }
+            context.checkClient("Escape closed the menu while the key button listened") { it.gui.screen() is ContainerScreen }
             context.click(keys, settle = 2)
             context.input.pressKey(GLFW.GLFW_KEY_K)
             context.waitTicks(2)

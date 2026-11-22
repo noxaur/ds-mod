@@ -16,6 +16,16 @@ private const val W = 87
 class CommandBindTest {
     private val everywhere: (Area) -> Boolean = { true }
 
+    private fun BindMatcher.pressSequence(binds: List<CommandBind>, at: Long, where: Where?) {
+        press(F6, at, binds, where, everywhere)
+        press(F7, at + 100, binds, where, everywhere)
+    }
+
+    private fun sequencePair() = listOf(
+        CommandBind(command = "/a", keys = listOf(F6, F7), inOrder = true),
+        CommandBind(command = "/b", keys = listOf(F6, F7, F6), inOrder = true),
+    )
+
     @Test
     fun `a slash sends a command and anything else a chat line`() {
         assertEquals(Message.Command("warp end"), CommandBind(command = " /warp end ").message)
@@ -89,21 +99,19 @@ class CommandBindTest {
 
     @Test
     fun `a sequence fires at once when nothing longer could follow, or after the gap`() {
-        val short = CommandBind(command = "/a", keys = listOf(F6, F7), inOrder = true)
-        val long = CommandBind(command = "/b", keys = listOf(F6, F7, F6), inOrder = true)
+        val both = sequencePair()
+        val (short, long) = both
         val matcher = BindMatcher()
         assertNull(matcher.press(F6, 0, listOf(short), Where.WORLD, everywhere))
         assertEquals(short, matcher.press(F7, 100, listOf(short), Where.WORLD, everywhere))
 
-        val both = listOf(short, long)
         assertNull(matcher.press(F6, 1000, both, Where.WORLD, everywhere))
         assertNull(matcher.press(F7, 1100, both, Where.WORLD, everywhere), "F6 F7 could still become F6 F7 F6")
         assertNull(matcher.idle(1200, 250, both, Where.WORLD, everywhere))
         assertEquals(short, matcher.idle(1350, 250, both, Where.WORLD, everywhere))
         assertNull(matcher.idle(2000, 250, both, Where.WORLD, everywhere), "it fired once")
 
-        matcher.press(F6, 3000, both, Where.WORLD, everywhere)
-        matcher.press(F7, 3100, both, Where.WORLD, everywhere)
+        matcher.pressSequence(both, 3000, Where.WORLD)
         assertEquals(long, matcher.press(F6, 3200, both, Where.WORLD, everywhere))
     }
 
@@ -121,34 +129,27 @@ class CommandBindTest {
 
     @Test
     fun `a sequence still waiting is dropped when the place no longer covers where it was typed`() {
-        val short = CommandBind(command = "/a", keys = listOf(F6, F7), inOrder = true)
-        val long = CommandBind(command = "/b", keys = listOf(F6, F7, F6), inOrder = true)
-        val both = listOf(short, long)
+        val both = sequencePair()
         val matcher = BindMatcher()
-        matcher.press(F6, 1000, both, Where.WORLD, everywhere)
-        matcher.press(F7, 1100, both, Where.WORLD, everywhere)
+        matcher.pressSequence(both, 1000, Where.WORLD)
         assertNull(matcher.idle(1350, 250, both, null, everywhere), "chat, a focused field, F3, or Command Binds off")
         assertNull(matcher.idle(2000, 250, both, Where.WORLD, everywhere), "the pending sequence was cleared")
 
-        matcher.press(F6, 3000, both, Where.WORLD, everywhere)
-        matcher.press(F7, 3100, both, Where.WORLD, everywhere)
+        matcher.pressSequence(both, 3000, Where.WORLD)
         assertNull(matcher.idle(3200, 250, both, Where.MENUS, everywhere), "a menu does not cover the world")
         assertNull(matcher.idle(4000, 250, both, Where.WORLD, everywhere))
 
-        matcher.press(F6, 5000, both, Where.MENUS, everywhere)
-        matcher.press(F7, 5100, both, Where.MENUS, everywhere)
+        matcher.pressSequence(both, 5000, Where.MENUS)
         assertNull(matcher.idle(5200, 250, both, null, everywhere), "dropped before the gap ends")
         assertNull(matcher.idle(6000, 250, both, Where.MENUS, everywhere))
     }
 
     @Test
     fun `a both bind typed in one place fires after the player moves to the other`() {
-        val short = CommandBind(command = "/a", keys = listOf(F6, F7), inOrder = true, where = Where.BOTH)
-        val long = CommandBind(command = "/b", keys = listOf(F6, F7, F6), inOrder = true, where = Where.BOTH)
-        val both = listOf(short, long)
+        val both = sequencePair().map { it.copy(where = Where.BOTH) }
+        val (short, long) = both
         val matcher = BindMatcher()
-        matcher.press(F6, 1000, both, Where.WORLD, everywhere)
-        matcher.press(F7, 1100, both, Where.WORLD, everywhere)
+        matcher.pressSequence(both, 1000, Where.WORLD)
         assertNull(matcher.idle(1200, 250, both, Where.MENUS, everywhere), "the gap has not elapsed")
         assertEquals(short, matcher.idle(1350, 250, both, Where.MENUS, everywhere))
 

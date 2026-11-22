@@ -7,7 +7,6 @@ import io.github.noxaur.dsmod.edge.HudEditorScreen
 import io.github.noxaur.dsmod.edge.HudLayoutEditor
 import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
-import io.github.noxaur.dsmod.gametest.SettingsSteps.guiScale
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import org.lwjgl.glfw.GLFW
@@ -22,9 +21,8 @@ import org.lwjgl.glfw.GLFW
 class HudLayoutTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
-            val window = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.screenWidth to it.window.screenHeight }
-            context.input.resizeWindow(1280, 720)
-            guiScale(context, 2)
+            val window = SettingsSteps.windowSize(context)
+            SettingsSteps.fit(context, 2)
             context.showDragonTimer(world)
             context.waitTicks(5)
             SettingsDriver(context).layout()
@@ -33,9 +31,7 @@ class HudLayoutTest : FabricClientGameTest {
                 DsModClient.saveSettings()
             }
             context.setScreen { null }
-            context.restoreDefaultGameOptions()
-            context.runOnClient<Nothing> { it.resizeGui() }
-            context.input.resizeWindow(window.first, window.second)
+            SettingsSteps.restore(context, window)
         }
     }
 
@@ -53,9 +49,7 @@ class HudLayoutTest : FabricClientGameTest {
 
         // A drag moves the block, by the map's scale, and the place is kept.
         val start = point()
-        move(start.first, start.second)
-        context.input.holdMouse(0)
-        context.waitTick()
+        hold(start.first, start.second)
         for (step in 1..4) move(start.first + step * 12, start.second + step * 6)
         context.shotInBothThemes("hud-layout-drag")
         context.input.releaseMouse(0)
@@ -64,29 +58,22 @@ class HudLayoutTest : FabricClientGameTest {
         val dropped = placed()
 
         // Dragged far past the corner, it stops with its far edges on the screen's.
-        move(point().first, point().second)
-        context.input.holdMouse(0)
-        context.waitTick()
+        hold(point().first, point().second)
         move(point().first + 400, point().second + 400)
         context.input.releaseMouse(0)
         context.waitTicks(2)
         val corner = placed()
-        val screen = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.guiScaledWidth to it.window.guiScaledHeight }
+        val screen = context.guiSize()
         check(corner.x + corner.width * corner.scale <= screen.first + 0.5 && corner.y + corner.height * corner.scale <= screen.second + 0.5) {
             "The block left the screen: ${corner.x}, ${corner.y} on ${screen.first}x${screen.second}"
         }
 
         // Escape during a drag puts it back where the drag began.
-        move(point().first, point().second)
-        context.input.holdMouse(0)
-        context.waitTick()
+        hold(point().first, point().second)
         move(point().first - 60, point().second - 30)
-        context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
-        context.waitTicks(2)
-        context.input.releaseMouse(0)
-        context.waitTicks(2)
+        escapeHeld()
         check(placed().x == corner.x && placed().y == corner.y) { "Escape left the block at ${placed().x}, ${placed().y}, not ${corner.x}, ${corner.y}" }
-        check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() is SettingsScreen }) { "Escape during a drag closed the settings" }
+        keptOpen()
 
         // The wheel over the block and + make it bigger, by whole screen pixels.
         val scale = placed().scale
@@ -124,8 +111,7 @@ class HudLayoutTest : FabricClientGameTest {
         click(moveHud.controlX + 4, moveHud.controlY + 8)
         context.waitForScreen(HudEditorScreen::class.java)
         context.takeScreenshot("hud-layout-full-editor")
-        context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
-        context.waitTicks(2)
-        check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() is SettingsScreen }) { "The full editor did not return to the settings" }
+        key(GLFW.GLFW_KEY_ESCAPE)
+        context.checkClient("The full editor did not return to the settings") { it.gui.screen() is SettingsScreen }
     }
 }

@@ -1,16 +1,23 @@
 package io.github.noxaur.dsmod.gametest
 
+import com.google.gson.JsonParser
 import io.github.noxaur.dsmod.core.config.DsModConfig
+import io.github.noxaur.dsmod.core.feature.general.CommandBinds
+import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.ui.Place
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.TabEdge
+import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.edge.TabPlacesEditor
 import io.github.noxaur.dsmod.edge.ui.ItemsEditor
 import io.github.noxaur.dsmod.edge.ui.SettingRows
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.TitleScreen
+import org.lwjgl.glfw.GLFW
+import kotlin.io.path.readText
 
 /** Steps the game tests of ds-mod's own settings screen share. */
 internal object SettingsSteps {
@@ -22,10 +29,14 @@ internal object SettingsSteps {
     /** Makes the window 1280x720 at GUI scale 2 over the title screen, and returns its size before, for [restore]. */
     fun setUp(context: ClientGameTestContext): Pair<Int, Int> {
         context.waitForScreen(TitleScreen::class.java)
-        val window = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.screenWidth to it.window.screenHeight }
-        context.input.resizeWindow(1280, 720)
-        guiScale(context, 2)
-        return window
+        return windowSize(context).also { fit(context, 2) }
+    }
+
+    fun windowSize(context: ClientGameTestContext) = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.screenWidth to it.window.screenHeight }
+
+    fun fit(context: ClientGameTestContext, scale: Int, width: Int = 1280, height: Int = 720) {
+        context.input.resizeWindow(width, height)
+        guiScale(context, scale)
     }
 
     fun restore(context: ClientGameTestContext, window: Pair<Int, Int>) {
@@ -53,6 +64,13 @@ internal object SettingsSteps {
         check(shown == titles) { "$step: the tabs are $shown, not $titles" }
     }
 
+    fun savedConfig() = JsonParser.parseString(FabricLoader.getInstance().configDir.resolve("dsmod/config.json").readText()).asJsonObject
+
+    fun clearBinds(context: ClientGameTestContext) = context.runOnClient<Nothing> {
+        DsModClient.feature<CommandBinds>().fill()
+        DsModClient.saveSettings()
+    }
+
     fun guiScale(context: ClientGameTestContext, scale: Int) {
         context.runOnClient<Nothing> { client ->
             client.options.guiScale().set(scale)
@@ -76,6 +94,45 @@ internal open class SettingsDriver(val context: ClientGameTestContext) {
         if (alt) context.input.releaseAlt()
         if (shift) context.input.releaseShift()
         if (control) context.input.releaseControl()
+        context.waitTicks(2)
+    }
+
+    fun relayout(also: () -> Unit = {}) {
+        context.runOnClient<Nothing> {
+            val screen = it.gui.screen() as SettingsScreen
+            screen.resize(screen.width, screen.height)
+            also()
+        }
+        context.waitTicks(2)
+    }
+
+    fun hold(x: Int, y: Int) {
+        move(x, y)
+        context.input.holdMouse(0)
+        context.waitTick()
+    }
+
+    fun escapeHeld() {
+        context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
+        context.waitTicks(2)
+        context.input.releaseMouse(0)
+        context.waitTicks(2)
+    }
+
+    fun keptOpen() = context.checkClient("Escape during a drag closed the settings") { it.gui.screen() is SettingsScreen }
+
+    fun shows(id: String, entry: Int = -1) = context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).spot(id, entry) != null }
+
+    fun toggle(id: String) {
+        val row = spot(id)
+        click(row.extraX + 7, row.controlY + 6)
+    }
+
+    fun unfold(id: String, opener: String, entry: Int = -1, press: (SettingRows.Spot) -> Pair<Int, Int>) {
+        if (shows(id, entry)) return
+        val (x, y) = press(spot(opener))
+        move(x, y)
+        context.input.pressMouse(0)
         context.waitTicks(2)
     }
 
@@ -112,6 +169,13 @@ internal class BindsDriver(context: ClientGameTestContext) : SettingsDriver(cont
         val (x, y, w, h) = at(line, control).let { listOf(it[0], it[1], it[2], it[3]) }
         click(x + if (dx >= 0) dx else w / 2, y + h / 2, button)
     }
+}
+
+internal fun CommandBinds.fill(binds: List<CommandBind> = emptyList(), groups: List<String> = emptyList(), collapsed: List<String> = emptyList()) {
+    this.binds.value = binds
+    this.groups.value = groups
+    collapsedGroups.value = collapsed
+    offGroups.value = emptyList()
 }
 
 internal class TabsDriver(context: ClientGameTestContext) : SettingsDriver(context) {

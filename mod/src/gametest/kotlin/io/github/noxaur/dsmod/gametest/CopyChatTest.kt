@@ -43,7 +43,7 @@ class CopyChatTest : FabricClientGameTest {
                     )
                     chat.addClientSystemMessage(Component.literal(long))
                     chat.addClientSystemMessage(Component.literal("The last message."))
-                    client.gui.setScreen(ChatScreen("", false))
+                    client.showChat()
                 }
                 context.waitForScreen(ChatScreen::class.java)
                 context.waitTicks(2)

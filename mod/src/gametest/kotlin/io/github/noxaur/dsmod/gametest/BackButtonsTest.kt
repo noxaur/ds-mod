@@ -3,7 +3,6 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
-import io.github.noxaur.dsmod.edge.ui.KitButton
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
@@ -19,17 +18,15 @@ import org.lwjgl.glfw.GLFW
  */
 class BackButtonsTest : FabricClientGameTest {
     /** Where the open menu's visible Back button sits, or null when it has none. */
-    private fun button(context: ClientGameTestContext) = ServerMenus.widget<KitButton>(context) { it.message.string == "Go Back" }?.let { it.x to it.y }
+    private fun button(context: ClientGameTestContext) = context.goBackButton()?.let { it.x to it.y }
 
     /** Opens the menu titled [title] from the open one, as a click in a server menu does. */
     private fun from(context: ClientGameTestContext, world: TestSingleplayerContext, title: String, goBack: Boolean, fill: (net.minecraft.world.SimpleContainer) -> Unit = {}) =
         ServerMenus.open(context, world, 4, title, goBack, fill)
 
     override fun runTest(context: ClientGameTestContext) {
-        context.worldBuilder().create().use { world ->
-            ServerMenus.command(world, "storage", 6, "Storage", goBack = false)
-            context.runOnClient<Nothing> { it.connection!!.sendCommand("storage") }
-            ServerMenus.shows(context, "Storage")
+        context.withCommandMenu("storage", 6, "Storage", goBack = false) { world ->
+            context.sendMenuCommand("storage", "Storage")
             check(button(context) == null) { "The command's own menu got a Back button" }
 
             from(context, world, "Backpack", goBack = true)
@@ -47,7 +44,7 @@ class BackButtonsTest : FabricClientGameTest {
             val at = button(context)
             check(at == context.slotCorner(4 * 9 - 6)) { "The Back button is at $at, not where Go Back sits" }
             context.takeScreenshot("back-button-charcoal")
-            val window = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.screenWidth to it.window.screenHeight }
+            val window = SettingsSteps.windowSize(context)
             context.input.resizeWindow(window.first + 200, window.second + 100)
             context.waitTicks(2)
             check(button(context) == context.slotCorner(4 * 9 - 6)) { "A resize lost the Back button or left it where Go Back was" }
