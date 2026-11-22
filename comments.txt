@@ -92,12 +92,10 @@ backend/src/api.ts: // A version is a few characters, and it is stored with ever
 backend/src/api.ts: // can fix its request. The mod parses a brief strictly, so a key it does not know, such as `secs` for `seconds`, is
 backend/src/api.ts: // refused here instead of being dropped and costing a step its timer.
 backend/src/app.test.ts: /** A backend with nothing in it, and a way to call it as an agent, as a player, or as nobody. */
-backend/src/app.test.ts: /** Bytes that start as gzip does, which is all the backend checks of a capture. */
 backend/src/app.test.ts: /** The 400 a request that does not decode gets: the one problem at [path], and what was expected there. */
 backend/src/app.test.ts: // A refusal the endpoint declares is answered as before.
 backend/src/app.test.ts: // Every endpoint of each group, from the API itself, so a new one is checked without being listed here.
 backend/src/app.test.ts: // The store orders runs by time and then by random id, so each request starts in a later millisecond than the
-backend/src/app.test.ts: // Who is signed in is what Void would say: here, whoever the test's cookie names. The admin token is "secret".
 backend/src/app.test.ts: // last, and a test's runs are lettered in the order it sends them.
 backend/src/app.ts: /** * The API as a function from request to response, keeping what it keeps in [services]. [callerOf] says who a request * is from, and is the only thing that can. */
 backend/src/app.ts: /** * The largest body any endpoint reads, a capture of half an hour in a busy place being under it once gzipped. A body is read * against it as it arrives, so a client cannot make the Worker hold more than this, whatever it claims to send. */
