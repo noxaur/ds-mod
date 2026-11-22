@@ -161,7 +161,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                     }
                     group("Settings") {
                         keys(g::settingsKey, "Settings Key", "Pick a key that opens these settings, as /dsmod does.")
-                        keys(g::favoriteKey, "Favorite Key", "Pick a key that stars the setting under your mouse.")
+                        keys(g::favoriteKey, "Favorite Key", "Pick a key that stars the setting under your mouse.", clicks = false)
                     }
                     if (mac) group("Mouse") {
                         feature(ctrlClick)

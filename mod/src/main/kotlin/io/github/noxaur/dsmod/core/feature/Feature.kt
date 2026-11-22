@@ -171,9 +171,11 @@ class Feature(
     @PublishedApi
     internal inline fun <reified E : Enum<E>> enumList(): List<E> = enumValues<E>().toList()
 
-    fun keys(key: String, name: String, description: String, default: Int, dependsOn: Switch? = null, refuses: (Int) -> Boolean = { false }): KeyBind {
+    fun keys(
+        key: String, name: String, description: String, default: Int, dependsOn: Switch? = null, clicks: Boolean = true, refuses: (Int) -> Boolean = { false },
+    ): KeyBind {
         val bind = stored(key, default).bind
-        return settings.keys(Bind(bind.field, bind.get) { if (!refuses(it)) bind.set(it) }, name, description, key, dependsOn)
+        return settings.keys(Bind(bind.field, bind.get) { if (!refuses(it)) bind.set(it) }, name, description, key, dependsOn, clicks)
     }
 
     fun span(key: String, name: String, description: String, default: List<Section>, max: Int, ticks: List<Int> = emptyList()): Span =

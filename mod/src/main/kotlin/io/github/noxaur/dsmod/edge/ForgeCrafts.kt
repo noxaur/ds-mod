@@ -67,7 +67,7 @@ object ForgeCrafts {
                 val button = event.button()
                 val background = panel.background(event.x(), event.y())
                 val allowed = when {
-                    panel.keys.recording -> !(panel.keys.capture(button, mouse = true) || panel.keys.isMouseOver(event.x(), event.y()))
+                    panel.keys.recording -> !(panel.keys.capture(event) || panel.keys.isMouseOver(event.x(), event.y()))
                     Keys.isMouse(feature.key.value) && button == feature.key.value -> false.also { press(client, screen) }
                     else -> !background
                 }
@@ -136,6 +136,7 @@ object ForgeCrafts {
             feature.key.value = keys.firstOrNull() ?: KeyBind.NONE
         }.also {
             it.prompt = "?"
+            it.clicks = feature.key.clicks
             it.glass = ::glass
             it.setTooltip(tip("Craft Key", "\nEach press clicks the outlined button.", "\nClick, then press a key."))
         }

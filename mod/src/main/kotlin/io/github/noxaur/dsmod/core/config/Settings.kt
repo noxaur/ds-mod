@@ -238,7 +238,7 @@ class Pick<T>(
     fun lookAt(index: Int = this.index) = look(values[index])
 }
 
-class KeyBind(id: String, name: String, description: String, bind: Bind<Int>) : Valued<Int>(id, name, description, Kind.KEYS, bind) {
+class KeyBind(id: String, name: String, description: String, bind: Bind<Int>, val clicks: Boolean = true) : Valued<Int>(id, name, description, Kind.KEYS, bind) {
     fun clear() {
         value = NONE
     }
@@ -387,11 +387,11 @@ class Rows {
         label: (T) -> String = { it.toString() }, look: (T) -> Look,
     ) = add(Pick(id, name, description, bind, values, look, label), dependsOn)
 
-    fun keys(property: KMutableProperty0<Int>, name: String, description: String, id: String = property.name, dependsOn: Switch? = null) =
-        keys(Bind.of(property), name, description, id, dependsOn)
+    fun keys(property: KMutableProperty0<Int>, name: String, description: String, id: String = property.name, dependsOn: Switch? = null, clicks: Boolean = true) =
+        keys(Bind.of(property), name, description, id, dependsOn, clicks)
 
-    fun keys(bind: Bind<Int>, name: String, description: String, id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null) =
-        add(KeyBind(id, name, description, bind), dependsOn)
+    fun keys(bind: Bind<Int>, name: String, description: String, id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null, clicks: Boolean = true) =
+        add(KeyBind(id, name, description, bind, clicks), dependsOn)
 
     fun span(
         bind: Bind<List<Section>>, name: String, description: String, max: Int, ticks: List<Int> = emptyList(),

@@ -7,6 +7,7 @@ import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.FreeLook
 import io.github.noxaur.dsmod.core.feature.general.Fullbright
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
+import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
@@ -125,6 +126,14 @@ class SettingRowsTest : FabricClientGameTest {
         context.waitTicks(2)
         expect("A press then K", GLFW.GLFW_KEY_K) { DsModClient.feature<FreeLook>().key.value }
         check(searched().isEmpty()) { "The K that set the key also searched for \"${searched()}\"" }
+        val left = GLFW.GLFW_MOUSE_BUTTON_LEFT
+        val right = GLFW.GLFW_MOUSE_BUTTON_RIGHT
+        for ((button, onKey, bound) in listOf(Triple(left, true, left), Triple(right, true, right), Triple(left, false, right))) {
+            click(k.controlX + 8, k.controlY + 8)
+            val (x, y) = if (onKey) k.controlX + 8 to k.controlY + 8 else k.x + 20 to k.y + k.height / 2
+            click(x, y, button)
+            expect("Mouse button $button ${if (onKey) "on" else "off"} the listening key", bound) { DsModClient.feature<FreeLook>().key.value }
+        }
         click(k.controlX + 8, k.controlY + 8, GLFW.GLFW_MOUSE_BUTTON_RIGHT)
         expect("A right press clears", -1) { DsModClient.feature<FreeLook>().key.value }
         key(GLFW.GLFW_KEY_BACKSPACE)
@@ -161,6 +170,10 @@ class SettingRowsTest : FabricClientGameTest {
         context.shotInBothThemes("own-settings-rarity-look")
         toggle("slot-lock")
         check(shows("slotLockKey")) { "Slot Lock's button did not open its settings" }
+        val slotKey = spot("slotLockKey")
+        click(slotKey.controlX + 8, slotKey.controlY + 8)
+        click(slotKey.controlX + 8, slotKey.controlY + 8)
+        expect("A left click on the listening Slot Key", GLFW.GLFW_KEY_L) { DsModClient.feature<SlotLock>().slotLockKey.value }
         spot("itemLockKey")
         context.takeScreenshot("own-settings-switch-open")
         toggle("slot-lock")
