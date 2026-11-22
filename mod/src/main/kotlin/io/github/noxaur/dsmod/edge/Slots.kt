@@ -15,11 +15,11 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
+import net.minecraft.world.entity.player.Inventory
+import net.minecraft.world.inventory.InventoryMenu
 import net.minecraft.world.inventory.Slot
 import kotlin.math.ceil
 
-private const val HOTBAR_FIRST = 36
-private const val HOTBAR_SLOTS = 9
 private const val HOTBAR_PITCH = 20
 private const val FILL_ALPHA = 110
 
@@ -86,7 +86,7 @@ object Slots {
             DsModClient.game.metrics.time("slots.draw") {
                 val left = graphics.guiWidth() / 2 - 88
                 val top = graphics.guiHeight() - 19
-                for (i in 0 until HOTBAR_SLOTS) drawFront(graphics, Surface.HOTBAR, HOTBAR_FIRST + i, left + i * HOTBAR_PITCH, top)
+                for (i in 0 until Inventory.SELECTION_SIZE) drawFront(graphics, Surface.HOTBAR, InventoryMenu.USE_ROW_SLOT_START + i, left + i * HOTBAR_PITCH, top)
             }
         }
         ScreenHooks.onEveryLayout<AbstractContainerScreen<*>> { screen, _ ->
@@ -119,8 +119,8 @@ object Slots {
         val from = x - (graphics.guiWidth() / 2 - 88)
         val i = from / HOTBAR_PITCH
         // The offhand slot comes through here too, left of the first slot.
-        if (from < 0 || from % HOTBAR_PITCH != 0 || i >= HOTBAR_SLOTS || y != graphics.guiHeight() - 19) return
-        drawBack(graphics, Surface.HOTBAR, HOTBAR_FIRST + i, x, y)
+        if (from < 0 || from % HOTBAR_PITCH != 0 || i >= Inventory.SELECTION_SIZE || y != graphics.guiHeight() - 19) return
+        drawBack(graphics, Surface.HOTBAR, InventoryMenu.USE_ROW_SLOT_START + i, x, y)
     }
 
     /** Draws what goes behind the item in slot [index] of the open menu, whose 16x16 starts at [x], [y]. */

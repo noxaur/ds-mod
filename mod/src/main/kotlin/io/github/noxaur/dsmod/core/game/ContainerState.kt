@@ -13,6 +13,10 @@ class ContainerState {
         private set
     var slots: List<Item?> = items.asList()
         private set
+    var menuSlots = 0 until 0
+        private set
+    var playerSlots = 0 until 0
+        private set
 
     fun opened(event: ContainerOpened) {
         if (id == INVENTORY) inventory = items
@@ -20,6 +24,9 @@ class ContainerState {
         title = event.title
         items = if (event.kept && event.id == INVENTORY && inventory.size == event.size) inventory else arrayOfNulls(event.size)
         slots = items.asList()
+        val menu = if (id == INVENTORY) 0 else maxOf(0, items.size - PLAYER_SLOTS)
+        menuSlots = 0 until menu
+        playerSlots = menu until items.size
     }
 
     fun changed(event: SlotChanged) {
@@ -29,5 +36,6 @@ class ContainerState {
     companion object {
         /** The player's own inventory, which the client always numbers 0. */
         const val INVENTORY = 0
+        private const val PLAYER_SLOTS = 36
     }
 }

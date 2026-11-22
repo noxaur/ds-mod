@@ -21,6 +21,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.world.entity.HumanoidArm
+import net.minecraft.world.inventory.InventoryMenu
 import net.minecraft.world.item.ItemStack
 import java.util.IdentityHashMap
 import kotlin.math.roundToInt
@@ -38,13 +39,6 @@ private const val ICON_GAP = 4
 
 // The inventory leaves this much between its rows and the hotbar.
 private const val ROWS_GAP = 4
-
-// The inventory menu's number for the hotbar's first slot.
-private const val HOTBAR_FIRST = 36
-
-// The inventory menu's first main slot, and its offhand slot, which ends the slots that hold a picked-up stack.
-private const val MAIN_FIRST = 9
-private const val OFFHAND_SLOT = 45
 
 // Vanilla's hotbar squashes a stack that lands about a point 12px down it, over a span of 5 ticks per unit of growth.
 private const val POP_FOOT = 12f
@@ -450,7 +444,7 @@ object Hud {
         val menu = client.gui.screen() is AbstractContainerScreen<*>
         // The hotbar slot the player holds, numbered as the inventory menu numbers it.
         val player = client.player
-        val held = player?.let { HOTBAR_FIRST + it.inventory.selectedSlot } ?: -1
+        val held = player?.let { InventoryMenu.USE_ROW_SLOT_START + it.inventory.selectedSlot } ?: -1
         val pose = graphics.pose()
         for (g in shown.indices) {
             val group = shown[g]
@@ -500,8 +494,8 @@ object Hud {
                             if (stack != null) {
                                 if (slot >= 0) Slots.drawBack(graphics, surface, slot, x, itemY)
                                 // The hotbar bobs a stack as it lands, from the inventory's own stack, which counts the bob down.
-                                val pop = if (block.pops && player != null && slot in MAIN_FIRST until OFFHAND_SLOT) {
-                                    player.inventory.getItem(if (slot >= HOTBAR_FIRST) slot - HOTBAR_FIRST else slot).popTime - partial
+                                val pop = if (block.pops && player != null && slot in InventoryMenu.INV_SLOT_START until InventoryMenu.SHIELD_SLOT) {
+                                    player.inventory.getItem(if (slot >= InventoryMenu.USE_ROW_SLOT_START) slot - InventoryMenu.USE_ROW_SLOT_START else slot).popTime - partial
                                 } else {
                                     0f
                                 }
