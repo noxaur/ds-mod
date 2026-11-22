@@ -12,7 +12,7 @@ A body that no longer decodes is dragsim.co's change and not the client's mistak
 
 ## Containers come from a snapshot, not a fresh lookup
 
-A profile is answered without its containers, and each answer keeps a snapshot of them for ten minutes. Rebuilding every tooltip of thirty storage pages is wasted when a player opens one tab, and fetching a container fresh would show a tab from a later moment than the overview beside it. When the player hid their inventory, the items are dropped before anything is kept.
+A profile is answered without its containers, and each fetch from dragsim.co keeps one snapshot of them, which every fresh answer from that copy shares and which lasts ten minutes past the copy's last fresh answer. Rebuilding every tooltip of thirty storage pages is wasted when a player opens one tab, a container fetched fresh would show a later moment than the overview, and a snapshot per answer cost a slow, rate-limited write per view. When the player hid their inventory, the items are dropped before anything is kept.
 
 ## The backend drops nothing dragsim.co sends
 

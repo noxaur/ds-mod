@@ -1,4 +1,5 @@
-import { Context, Effect } from "effect";
+import type { Effect } from "effect";
+import { Context } from "effect";
 
 import type { ItemAppearance, ItemSighting } from "./model.ts";
 
@@ -73,21 +74,6 @@ export const fold = (observations: readonly Observation[]): readonly Folded[] =>
   return [...byEntry].map(([entry, folded]) => ({ entry, ...folded }));
 };
 
-export const roomFor = (limits: ItemLimits, playerRows: number, totalRows: number): number =>
-  Math.max(0, Math.min(limits.maxPlayerRows - playerRows, limits.maxRows - totalRows));
-
-export const admit = <T>(items: readonly T[], hasRow: (item: T) => boolean, room: number): T[] => {
-  let left = room;
-  return items.filter((item) => hasRow(item) || left-- > 0);
-};
-
-export const admitSamples = (
-  kept: readonly Folded[],
-  samplesOf: (entry: string) => number,
-  maxSamples: number,
-): { readonly entry: string; readonly sample: ItemSighting }[] =>
-  kept.flatMap(({ entry, sample }) => (sample !== null && samplesOf(entry) < maxSamples ? [{ entry, sample }] : []));
-
 // @keep The sorted list holds one more than `limit` when there is a next page.
 export const pageOf = (entries: readonly string[], limit: number) => ({
   entries: entries.slice(0, limit),
@@ -100,7 +86,6 @@ export interface AppearanceQuery {
   readonly limit: number;
 }
 
-// @keep The one place the threshold is applied, so the in-memory store and D1 cannot disagree on it.
 export const hintsFrom = (
   entries: readonly string[],
   tallies: readonly EntryTally[],
@@ -170,97 +155,3 @@ export const appearancesFrom = (
       .map(({ skinId, texture, players: seen }) => ({ skinId, texture, players: seen })),
     samples: samples.get(entry) ?? [],
   }));
-
-const rowsOf = (rows: ReadonlyMap<string, { readonly userId: string }>, userId: string) =>
-  [...rows.values()].filter((row) => row.userId === userId).length;
-
-export const memoryItemStore = (): ItemStore["Service"] => {
-  interface Seen {
-    readonly entry: string;
-    readonly userId: string;
-    glint: boolean;
-    plain: boolean;
-  }
-  const seen = new Map<string, Seen>();
-  const textures = new Map<string, TextureTally & { readonly userId: string }>();
-  const samples = new Map<string, Map<string, ItemSighting>>();
-
-  const tallies = (): EntryTally[] => {
-    const byEntry = new Map<string, { players: number; glintPlayers: number; alwaysGlintPlayers: number }>();
-    for (const row of seen.values()) {
-      const tally = byEntry.get(row.entry) ?? { players: 0, glintPlayers: 0, alwaysGlintPlayers: 0 };
-      tally.players += 1;
-      tally.glintPlayers += row.glint ? 1 : 0;
-      tally.alwaysGlintPlayers += row.glint && !row.plain ? 1 : 0;
-      byEntry.set(row.entry, tally);
-    }
-    return [...byEntry].map(([entry, tally]) => ({ entry, ...tally }));
-  };
-
-  const textureTallies = (): TextureTally[] => {
-    const byKey = new Map<string, TextureTally>();
-    for (const row of textures.values()) {
-      const key = `${row.entry}\n${row.skinId}\n${row.texture}`;
-      byKey.set(key, { ...row, players: (byKey.get(key)?.players ?? 0) + 1 });
-    }
-    return [...byKey.values()].map(({ entry, skinId, texture, players }) => ({ entry, skinId, texture, players }));
-  };
-
-  return {
-    record: (userId, _modVersion, observations, limits) =>
-      Effect.sync(() => {
-        const rowKey = (entry: string) => `${entry}\n${userId}`;
-        const kept = admit(
-          fold(observations),
-          ({ entry }) => seen.has(rowKey(entry)),
-          roomFor(limits, rowsOf(seen, userId), seen.size),
-        );
-        for (const { entry, glint, plain } of kept) {
-          const row = seen.get(rowKey(entry)) ?? { entry, userId, glint: false, plain: false };
-          row.glint ||= glint;
-          row.plain ||= plain;
-          seen.set(rowKey(entry), row);
-        }
-        const wanted = kept.flatMap(({ entry, textures: byskin }) =>
-          [...byskin].map(([skinId, texture]) => ({ key: `${rowKey(entry)}\n${skinId}`, entry, skinId, texture })),
-        );
-        for (const { key, entry, skinId, texture } of admit(
-          wanted,
-          (row) => textures.has(row.key),
-          roomFor(limits, rowsOf(textures, userId), textures.size),
-        )) {
-          textures.set(key, { entry, skinId, texture, players: 1, userId });
-        }
-        for (const { entry, sample } of admitSamples(kept, (name) => samples.get(name)?.size ?? 0, limits.maxSamples)) {
-          const byPlayer = samples.get(entry) ?? new Map<string, ItemSighting>();
-          if (!byPlayer.has(userId)) {
-            byPlayer.set(userId, sample);
-            samples.set(entry, byPlayer);
-          }
-        }
-      }),
-    appearances: ({ entry, after, limit }) =>
-      Effect.sync(() => {
-        const all = tallies().toSorted((a, b) => (a.entry < b.entry ? -1 : 1));
-        if (entry !== undefined) {
-          const only = all.filter((tally) => tally.entry === entry);
-          const kept = new Map([[entry, [...(samples.get(entry)?.values() ?? [])]]]);
-          return { items: appearancesFrom(only, textureTallies(), kept), next: null };
-        }
-        const { entries, next } = pageOf(
-          all.map((tally) => tally.entry).filter((name) => after === undefined || name > after),
-          limit,
-        );
-        const wanted = new Set(entries);
-        return {
-          items: appearancesFrom(
-            all.filter((tally) => wanted.has(tally.entry)),
-            textureTallies(),
-            new Map(),
-          ),
-          next,
-        };
-      }),
-    hints: (entries) => Effect.sync(() => hintsFrom(entries, tallies(), textureTallies())),
-  };
-};

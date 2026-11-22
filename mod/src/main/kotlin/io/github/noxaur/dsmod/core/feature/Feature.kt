@@ -20,6 +20,7 @@ import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.game.EntityFilter
 import io.github.noxaur.dsmod.core.game.EntitySeen
+import io.github.noxaur.dsmod.core.game.FeatureEvent
 import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Metrics
@@ -101,7 +102,9 @@ class Feature(
 
     internal var gate: () -> Boolean = { true }
 
-    internal val handlers = HashMap<Class<out GameEvent>, Handler<GameEvent>>()
+    private val byType = HashMap<Class<out GameEvent>, Handler<GameEvent>>()
+
+    internal val handlers: Map<Class<out GameEvent>, Handler<GameEvent>> get() = byType
     internal lateinit var metrics: Metrics
     internal lateinit var tab: InfoRows
 
@@ -151,31 +154,39 @@ class Feature(
     @PublishedApi
     internal fun <T> former(key: String, serializer: KSerializer<T>): T? = stored.former(key, serializer)
 
-    fun switch(key: String, name: String, description: String, default: Boolean, dependsOn: Switch? = null, settings: (Rows.() -> Unit)? = null): Switch =
-        this.settings.switch(stored(key, default).bind, name, description, key, dependsOn, settings)
+    // @keep `under` takes rows declared before the switch from their place to open under it, as a fold does
+    fun switch(
+        key: String, name: String, description: String, default: Boolean, dependsOn: Switch? = null, formerly: List<String> = emptyList(),
+        under: List<Setting> = emptyList(), settings: (Rows.() -> Unit)? = null,
+    ): Switch {
+        this.settings.take(under)
+        val rows: (Rows.() -> Unit)? = if (under.isEmpty()) settings else ({ for (row in under) row(row); settings?.invoke(this) })
+        return this.settings.switch(slot(key, default, serializer(), formerly).bind, name, description, key, dependsOn, rows)
+    }
 
     fun number(
         key: String, name: String, description: String, default: Float, range: ClosedFloatingPointRange<Float>, step: Float, unit: String = "",
         dependsOn: Switch? = null,
     ): Number = settings.number(stored(key, default).bind, name, description, range, step, unit, key, dependsOn)
 
-    inline fun <reified E : Enum<E>> choice(key: String, name: String, description: String, default: E, dependsOn: Switch? = null): Choice<E> =
-        settings.choice(enumBind(key, default), name, description, enumList<E>(), key, dependsOn)
+    inline fun <reified E : Enum<E>> choice(key: String, name: String, description: String, default: E, dependsOn: Switch? = null, formerly: List<String> = emptyList()): Choice<E> =
+        settings.choice(enumBind(key, default, formerly), name, description, enumList<E>(), key, dependsOn)
 
     inline fun <reified E : Enum<E>> pick(key: String, name: String, description: String, default: E, noinline look: (E) -> Look): Pick<E> =
         settings.pick(enumBind(key, default), name, description, enumList<E>(), key, look = look)
 
     @PublishedApi
-    internal inline fun <reified E : Enum<E>> enumBind(key: String, default: E): Bind<E> = slot(key, default, serializer<E>(), emptyList()).bind
+    internal inline fun <reified E : Enum<E>> enumBind(key: String, default: E, formerly: List<String> = emptyList()): Bind<E> = slot(key, default, serializer<E>(), formerly).bind
 
     @PublishedApi
     internal inline fun <reified E : Enum<E>> enumList(): List<E> = enumValues<E>().toList()
 
     fun keys(
-        key: String, name: String, description: String, default: Int, dependsOn: Switch? = null, clicks: Boolean = true, refuses: (Int) -> Boolean = { false },
+        key: String, name: String, description: String, default: Int, dependsOn: Switch? = null, clicks: Boolean = true, formerly: List<String> = emptyList(),
+        refuses: (Int) -> Boolean = { false },
     ): KeyBind {
-        val bind = stored(key, default).bind
-        return settings.keys(Bind(bind.field, bind.get) { if (!refuses(it)) bind.set(it) }, name, description, key, dependsOn, clicks)
+        val bind = slot(key, default, serializer(), formerly).bind
+        return settings.keys(Bind(bind.field, bind.get) { if (!refuses(it)) bind.set(it) }.formerly(*formerly.toTypedArray()), name, description, key, dependsOn, clicks)
     }
 
     fun span(key: String, name: String, description: String, default: List<Section>, max: Int, ticks: List<Int> = emptyList()): Span =
@@ -214,12 +225,14 @@ class Feature(
         entityFilters = filters.toList()
     }
 
-    inline fun <reified E : GameEvent> on(handler: Handler<E>) = on(E::class.java, handler)
+    inline fun <reified E : FeatureEvent> on(handler: Handler<E>) = on(E::class.java, handler)
 
     @PublishedApi
-    internal fun <E : GameEvent> on(type: Class<E>, handler: Handler<E>) {
+    internal fun <E : FeatureEvent> on(type: Class<E>, handler: Handler<E>) = subscribe(type, handler)
+
+    private fun <E : GameEvent> subscribe(type: Class<E>, handler: Handler<E>) {
         @Suppress("UNCHECKED_CAST")
-        handlers.merge(type, handler as Handler<GameEvent>) { first, then ->
+        byType.merge(type, handler as Handler<GameEvent>) { first, then ->
             Handler { event, now ->
                 first.handle(event, now)
                 then.handle(event, now)
@@ -246,7 +259,7 @@ class Feature(
 
     private fun <T : Any> line(head: (String) -> Boolean, parse: (String) -> T?, handler: (T, Long) -> Unit) {
         if (lines.isEmpty()) {
-            on<SystemMessage> { message, now ->
+            subscribe(SystemMessage::class.java) { message, now ->
                 val text = message.text.plain
                 lines.firstOrNull { it.head(text) }?.let { if (!it.read(text, now)) unparsed(text) }
             }
@@ -300,7 +313,7 @@ class Feature(
 
     private companion object {
         val WORDS = mapOf("hud" to "HUD", "ui" to "UI", "dragsim" to "DragSim", "skyblock" to "SkyBlock", "hotd" to "HOTD")
-
-        fun camel(id: String) = id.split('-').withIndex().joinToString("") { (i, word) -> if (i == 0) word else word.replaceFirstChar(Char::uppercase) }
     }
 }
+
+internal fun camel(id: String) = id.split('-').withIndex().joinToString("") { (i, word) -> if (i == 0) word else word.replaceFirstChar(Char::uppercase) }
