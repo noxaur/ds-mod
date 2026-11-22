@@ -2487,8 +2487,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotGuards.kt: /** * Slot Lock. 
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotGuards.kt: /** * The link of the slot under the mouse, or the one being made: a frame around both slots and a line between * them, over the items so no item hides it. Links at rest show only their padlocks. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotGuards.kt: /** A press and release over one slot locks or unlocks it, and a release over another slot links the two. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotGuards.kt: /** An empty unlocked slot of the player's inventory, not a destination, where [carried] can sit out this move. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotGuards.kt: /** Each item's ID by its data component, which stacks share and never change. Reading one copies the whole tag. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotGuards.kt: /** The ID the server gives an item that does not stack, in `item_data.uuid`, or null. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotGuards.kt: /** The result slot still being emptied, and how many ticks it has been empty since the last craft. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotGuards.kt: /** The slot the key went down over, while [pressing]. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotGuards.kt: /** The slot's index in the player's own inventory, or null for a slot of the menu's. */
