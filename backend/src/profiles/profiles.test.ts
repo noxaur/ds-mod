@@ -15,10 +15,35 @@ import { unmappedPaths } from "./wire.ts";
 import { memoryProfileStore, WriteRefused } from "./store.ts";
 import { UpstreamDown } from "./upstream.ts";
 
-const fixture = (name: string): any => JSON.parse(readFileSync(join(import.meta.dirname, "fixtures", name), "utf8"));
-const player = fixture("player.json");
-const catalog = fixture("catalog.json");
-const OTHER_PROFILE: string = player.profiles[0].id;
+type Section = Record<string, unknown>;
+
+interface PlayerFixture {
+  player: { uuid: string };
+  profiles: { id: string }[];
+  profile: {
+    id: string;
+    inventory: Record<string, Section>;
+    collections: Section;
+    dungeons: { essence: Section } & Section;
+    pets: Section[];
+    ender_chest: Section;
+    storage: Record<string, Section>;
+    accessory_bag: Section;
+    wardrobe: { slots: Record<string, Section> } & Section;
+    skills: Section;
+    slayer: Section;
+    bestiary: Section;
+  } & Section;
+}
+
+interface CatalogFixture {
+  pets: { golden_dragon: { skin: { value: string } } };
+}
+
+const fixture = (name: string) => readFileSync(join(import.meta.dirname, "fixtures", name), "utf8");
+const player: PlayerFixture = JSON.parse(fixture("player.json"));
+const catalog: CatalogFixture = JSON.parse(fixture("catalog.json"));
+const OTHER_PROFILE = player.profiles[0]?.id ?? "";
 
 type Answer = { status: number; body: unknown } | "down";
 
@@ -476,7 +501,7 @@ test("a profile answer is quick once cached", async () => {
  * Every field path of a real player's answer, with no values: `*` stands for any key of an open map, and `[]` for a
  * list's element. A skeleton is built from them, so a field the real data has and the shape misses fails here.
  */
-const REAL_PATHS: readonly string[] = fixture("real-paths.json");
+const REAL_PATHS: readonly string[] = JSON.parse(fixture("real-paths.json"));
 
 /** A value with every path, `1` at each leaf. An empty map in one item is a leaf here and fuller elsewhere, and the fuller wins. */
 const build = (paths: readonly (readonly string[])[]): unknown => {
@@ -509,7 +534,7 @@ test("a profile names itself, with or without the list of profiles", async () =>
     profileMode: "IRONMAN",
   });
   state.player = { status: 200, body: { ...player, profiles: undefined } };
-  const alone = await profile("/v1/players/Testwyrm/profile?profile=" + String(player.profile.id));
+  const alone = await profile("/v1/players/Testwyrm/profile?profile=" + player.profile.id);
   expect(alone).toMatchObject({ profileName: [{ text: "Superior", color: "#AA00AA" }], profileMode: "IRONMAN" });
 });
 

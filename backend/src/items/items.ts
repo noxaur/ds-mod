@@ -1,7 +1,7 @@
 import { Effect } from "effect";
 
 import type { ItemSighting } from "./model.ts";
-import { safeTexture } from "./render/policy.ts";
+import { safeTexture } from "../upstream/texture.ts";
 import { type AppearanceQuery, ItemStore, type Observation } from "./store.ts";
 
 /**

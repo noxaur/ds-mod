@@ -1,11 +1,23 @@
 import { voidPlugin } from "void";
 import { defineConfig } from "vite-plus";
 
+const noVoid = {
+  group: ["void", "void/*"],
+  message:
+    "src/ is the Effect API and runs without Void. Reach a Cloudflare resource through a service the route file provides.",
+};
+
+const noRenderInside = {
+  group: ["**/items/render/*"],
+  message:
+    "items/render/ is the item renderer's inside. Import a reader of dragsim.co's data from src/upstream/, and the renderer from items/render.ts.",
+};
+
 export default defineConfig({
   // The tests call the Effect API directly, and Void's plugin would start a second server inside the test runner.
   plugins: process.env["VITEST"] === undefined ? [voidPlugin()] : [],
   test: {
-    globalSetup: ["./scripts/test-time-limit.ts"],
+    globalSetup: ["../scripts/test-time-limit.ts"],
     // Threads end with the process, so a test stuck in a loop dies with the run that the time limit ends.
     pool: "threads",
   },
@@ -28,6 +40,8 @@ export default defineConfig({
       "typescript/switch-exhaustiveness-check": "error",
       "typescript/no-floating-promises": "error",
       "dsmod/no-try": "error",
+      "dsmod/no-computed-console": "error",
+      "typescript/no-explicit-any": "error",
       // An Effect generator leaves early with `return yield* failure`, which this rule reads as a missing value.
       // TypeScript's noImplicitReturns still catches a function that forgets to return.
       "typescript/consistent-return": "off",
@@ -36,21 +50,31 @@ export default defineConfig({
       {
         files: ["src/**"],
         rules: {
+          "dsmod/no-json-parse": "error",
           "dsmod/time-through-effect": "error",
+          "no-restricted-imports": ["error", { patterns: [noVoid, noRenderInside] }],
+        },
+      },
+      {
+        files: ["src/profiles/**"],
+        rules: {
           "no-restricted-imports": [
             "error",
             {
               patterns: [
+                noVoid,
+                noRenderInside,
                 {
-                  group: ["void", "void/*"],
+                  group: ["**/items/*", "!**/items/model.ts", "!**/items/render.ts"],
                   message:
-                    "src/ is the Effect API and runs without Void. Reach a Cloudflare resource through a service the route file provides.",
+                    "Profiles draws items only through items/model.ts and items/render.ts. Read dragsim.co's data with src/upstream/.",
                 },
               ],
             },
           ],
         },
       },
+      { files: ["src/**/*.test.ts"], rules: { "dsmod/no-json-parse": "off" } },
       {
         files: ["src/**/*.test.ts", "src/ids.ts", "src/identity/minecraft.ts"],
         rules: { "dsmod/time-through-effect": "off" },

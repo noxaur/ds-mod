@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.core.game
 
+import io.github.noxaur.dsmod.core.text.count
+
 /**
  * The tab list's `Protector` row, such as `Rising (Tier 2/5, 149)`, `Resting (200)` or `Spawned`. [tier] is
  * `2/5` or empty, and [killsLeft] is the zealot kills the lobby still needs before the Protector emerges, or
@@ -15,7 +17,7 @@ data class ProtectorRow(val stage: String, val tier: String, val killsLeft: Int?
         /** The row's parts, or null when it has another shape. */
         fun parse(value: String): ProtectorRow? {
             val (stage, tier, left) = row.find(value)?.destructured ?: return null
-            return ProtectorRow(stage, tier, left.toIntOrNull())
+            return ProtectorRow(stage, tier, count(left))
         }
     }
 }

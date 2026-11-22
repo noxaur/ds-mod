@@ -17,6 +17,16 @@ fun amount(value: Double, places: Int = 1, trim: Boolean = false): String {
     return if (trim) shown.withoutTrailingZeros() else shown
 }
 
+fun fixed(value: Double, places: Int): String = String.format(Locale.US, "%.${places}f", value)
+
+fun count(text: String): Int? = text.replace(",", "").toIntOrNull()
+
+fun number(text: String): Double? = text.replace(",", "").toDoubleOrNull()
+
+fun perHour(count: Double, millis: Long): Double = count * HOUR_MILLIS / millis
+
+private const val HOUR_MILLIS = 3_600_000.0
+
 private fun String.withoutTrailingZeros() = trimEnd('0').trimEnd('.')
 
 private val SUFFIXES = arrayOf("", "k", "M", "B", "T")
@@ -37,9 +47,11 @@ fun short(value: Double, places: Int): String {
     return (if (places > 0) digits.withoutTrailingZeros() else digits) + SUFFIXES[tier]
 }
 
+fun secondsLeft(millis: Long): Long = ((millis + 999) / 1000).coerceAtLeast(0)
+
 /** A wait of [millis], in whole minutes rounded up, as `45m`, `3h 5m` or `2d 4h`, or `<1m` for none left. */
-fun duration(millis: Long): String {
-    val minutes = (millis + 59_999) / 60_000
+fun duration(millis: Long, nearest: Boolean = false): String {
+    val minutes = (millis + if (nearest) 30_000 else 59_999) / 60_000
     val hours = minutes / 60
     return when {
         hours >= 24 -> "${hours / 24}d ${hours % 24}h"

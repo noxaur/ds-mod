@@ -86,7 +86,7 @@ class HudLayoutEditor(
             seen = now
             if (grabbed == null) readouts.replace()
         }
-        if (selected != null && Hud.find(selected!!) == null) selected = null
+        selected?.let { if (Hud.find(it) == null) selected = null }
         val id = selected
         name = id?.let { "${readouts.title(it)} · ${HudScale.label(readouts.scale(it))}" } ?: ""
         nameText = text { body(fit(name, buttons.x(0) - box.x - Kit.GAP)) }.toComponent()
@@ -256,7 +256,7 @@ class HudLayoutEditor(
     override fun keyPressed(event: KeyEvent): Boolean {
         if (grabbed != null) {
             // Escape during a drag puts the block back where it was, an arrow nudges it, and the drag keeps every other key.
-            if (event.isEscape && mover.cancel() || Hud.find(grabbed!!)?.let { mover.nudge(it, event) } == true) changed()
+            if (event.isEscape && mover.cancel() || grabbed?.let(Hud::find)?.let { mover.nudge(it, event) } == true) changed()
             return true
         }
         if (!entered) {

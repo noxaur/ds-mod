@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.hand
 
+import io.github.noxaur.dsmod.core.text.count
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -40,7 +41,7 @@ object Etherwarp {
         if (header < 0) return 0
         for (i in header until lore.size) {
             if (lore[i].isBlank()) break
-            RANGE.find(lore[i])?.let { return it.groupValues[1].toInt() }
+            RANGE.find(lore[i])?.let { return count(it.groupValues[1]) ?: 0 }
         }
         return 0
     }

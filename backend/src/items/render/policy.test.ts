@@ -1,8 +1,7 @@
 import { expect, test } from "vite-plus/test";
 
 import type { ItemHints } from "../store.ts";
-import { glints, safeTexture, skullTexture } from "./policy.ts";
-import { parseColor } from "./read.ts";
+import { glints, skullTexture } from "./policy.ts";
 
 const texture = (url: string): string => btoa(JSON.stringify({ textures: { SKIN: { url } } }));
 const skin = (hex: string): string => texture(`http://textures.minecraft.net/texture/${hex}`);
@@ -51,56 +50,6 @@ test("a glowing catalog entry on a self-glinting material still glints against a
   expect(glints("minecraft:nether_star", true, "never")).toBe(true);
 });
 
-test("a texture on Mojang's texture server is accepted, over http or https", () => {
-  const plain = skin("78bd1889bf8a635ec71fc05b1ed548763778e3d371926d39a62c29d350c48b49");
-  expect(safeTexture(plain)).toBe(plain);
-  const secure = texture("https://textures.minecraft.net/texture/ABCDEF0123");
-  expect(safeTexture(secure)).toBe(secure);
-});
-
-test("a texture is dropped unless it decodes and names only Mojang's texture server", () => {
-  const rejected: unknown[] = [
-    undefined,
-    null,
-    42,
-    "",
-    "not base64 at all",
-    btoa("not json"),
-    btoa(JSON.stringify({ textures: {} })),
-    btoa(JSON.stringify({ nothing: true })),
-    btoa(JSON.stringify({ textures: { SKIN: {} } })),
-    btoa(JSON.stringify({ textures: { SKIN: { url: 5 } } })),
-    texture("http://evil.example/texture/abc123"),
-    texture("http://textures.minecraft.net.evil.example/texture/abc123"),
-    texture("http://textures.minecraft.net@evil.example/texture/abc123"),
-    texture("http://evil.example/?http://textures.minecraft.net/texture/abc123"),
-    texture("http://textures.minecraft.net/texture/abc123/../../x"),
-    texture("http://textures.minecraft.net/texture/"),
-    texture("http://textures.minecraft.net/texture/xyz"),
-    texture("http://textures.minecraft.net/texture/abc123?x=1"),
-    texture("ftp://textures.minecraft.net/texture/abc123"),
-    texture("file:///etc/passwd"),
-    texture("//textures.minecraft.net/texture/abc123"),
-    texture("http://textures.minecraft.net/texture/abc123\nhttp://evil.example"),
-    "a".repeat(9000),
-  ];
-  for (const value of rejected) {
-    expect(safeTexture(value)).toBeUndefined();
-  }
-});
-
-test("one bad URL among good ones drops the whole texture", () => {
-  const mixed = btoa(
-    JSON.stringify({
-      textures: {
-        SKIN: { url: "http://textures.minecraft.net/texture/abc123" },
-        CAPE: { url: "http://evil.example/cape" },
-      },
-    }),
-  );
-  expect(safeTexture(mixed)).toBeUndefined();
-});
-
 test("the skull's texture is the item's own first", () => {
   const own = skin("aa");
   expect(skullTexture(own, "superior_baby", hints({ superior_baby: skin("bb"), "": skin("cc") }), skin("dd"))).toBe(
@@ -131,14 +80,4 @@ test("a texture that fails the check falls through to the next", () => {
   const bad = texture("http://evil.example/texture/aa");
   expect(skullTexture(bad, "s", hints({ s: bad, "": skin("cc") }), skin("dd"))).toBe(skin("cc"));
   expect(skullTexture(bad, "s", hints({ s: bad, "": bad }), bad)).toBeUndefined();
-});
-
-test("a color is read from #RRGGBB, from the catalog's r,g,b, or from a number", () => {
-  expect(parseColor("#1589B6")).toBe(0x1589b6);
-  expect(parseColor("21,137,182")).toBe(0x1589b6);
-  expect(parseColor(" 255, 255 ,255 ")).toBe(0xffffff);
-  expect(parseColor(0x123456)).toBe(0x123456);
-  for (const bad of ["", "#12345", "#GGGGGG", "256,0,0", "1,2", "1,2,3,4", "a,b,c", -1, 0x1000000, 1.5, null, {}]) {
-    expect(parseColor(bad)).toBeUndefined();
-  }
 });
