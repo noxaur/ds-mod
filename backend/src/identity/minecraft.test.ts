@@ -6,6 +6,8 @@ import { type HasJoined, mojangHasJoined, websiteRelay } from "./minecraft.ts";
 import { trustedKeyHeader } from "./trusted.ts";
 
 const UUID = "069a79f4-44e9-4726-a5be-fca90e38aaf5";
+const OLD_SKIN = "https://textures.minecraft.net/texture/01d";
+const NEW_SKIN = "https://textures.minecraft.net/texture/4e4";
 const Signed = Schema.decodeUnknownSync(Schema.Struct({ token: Schema.String, uuid: Schema.String }));
 const Challenge = Schema.decodeUnknownSync(Schema.Struct({ serverId: Schema.String }));
 
@@ -14,10 +16,14 @@ afterEach(() => {
 });
 
 /** @keep Like Mojang, it matches the name whatever its case, and answers its own spelling. */
-function backend(joins: string[]) {
+function backend(joins: string[], wearing: { skin: string | undefined } = { skin: undefined }) {
   const hasJoined: HasJoined = (name, serverId) => {
     const join = joins.find((seen) => seen.toLowerCase() === `${name} ${serverId}`.toLowerCase());
-    return Promise.resolve(join === undefined ? null : { uuid: UUID, name: join.split(" ")[0] ?? "" });
+    if (join === undefined) {
+      return Promise.resolve(null);
+    }
+    const joined = { uuid: UUID, name: join.split(" ")[0] ?? "" };
+    return Promise.resolve(wearing.skin === undefined ? joined : { ...joined, skin: wearing.skin });
   };
   const auth = testAuth({ enabled: false }, hasJoined);
   const post = (path: string, body: unknown = {}, headers: Record<string, string> = {}) =>
@@ -99,6 +105,21 @@ test("the same account signs in to the same user twice, under its new name", asy
   expect(users[0]).toBe(users[1]);
 });
 
+test("a sign-in keeps the player's skin, and a new skin replaces the old one", async () => {
+  const joins: string[] = [];
+  const wearing: { skin: string | undefined } = { skin: undefined };
+  const { post, challenge, sessionOf } = backend(joins, wearing);
+  const images: (string | null | undefined)[] = [];
+  for (const skin of [OLD_SKIN, NEW_SKIN, undefined]) {
+    wearing.skin = skin;
+    const serverId = await challenge();
+    joins.push(`Notch ${serverId}`);
+    const { token } = Signed(await (await post("/minecraft/verify", { name: "Notch", serverId })).json());
+    images.push((await sessionOf(token))?.user.image);
+  }
+  expect(images).toEqual([OLD_SKIN, NEW_SKIN, null]);
+});
+
 test("a player whose first sign-in made their user but not its link signs in to that user", async () => {
   const joins: string[] = [];
   const { auth, post, challenge, sessionOf } = backend(joins);
@@ -157,6 +178,25 @@ const mojangSays = (response: Response | Error) => {
 
 test("Mojang's profile is read with the UUID dashed", async () => {
   mojangSays(Response.json({ id: UUID.replaceAll("-", ""), name: "Notch" }));
+  expect(await mojangHasJoined()("notch", "ab".repeat(20))).toEqual({ uuid: UUID, name: "Notch" });
+});
+
+const textures = (url: string) =>
+  btoa(JSON.stringify({ profileId: UUID.replaceAll("-", ""), textures: { SKIN: { url }, CAPE: { url } } }));
+
+test("the skin in Mojang's profile is read, over https", async () => {
+  const properties = [{ name: "textures", value: textures("http://textures.minecraft.net/texture/5c1") }];
+  mojangSays(Response.json({ id: UUID.replaceAll("-", ""), name: "Notch", properties }));
+  expect(await mojangHasJoined()("notch", "ab".repeat(20))).toEqual({
+    uuid: UUID,
+    name: "Notch",
+    skin: "https://textures.minecraft.net/texture/5c1",
+  });
+});
+
+test("a skin anywhere but on Mojang's texture host is dropped", async () => {
+  const properties = [{ name: "textures", value: textures("https://example.com/texture/5c1") }];
+  mojangSays(Response.json({ id: UUID.replaceAll("-", ""), name: "Notch", properties }));
   expect(await mojangHasJoined()("notch", "ab".repeat(20))).toEqual({ uuid: UUID, name: "Notch" });
 });
 

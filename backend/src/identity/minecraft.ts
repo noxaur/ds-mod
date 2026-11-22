@@ -3,6 +3,7 @@ import { APIError, createAuthEndpoint } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
 import { Schema } from "effect";
 
+import { skinUrl } from "../upstream/texture.ts";
 import { trustedKeyHeader } from "./trusted.ts";
 
 const PROVIDER = "minecraft";
@@ -11,11 +12,16 @@ const CHALLENGE_SECONDS = 60;
 export interface Joined {
   readonly uuid: string;
   readonly name: string;
+  readonly skin?: string;
 }
 
 export type HasJoined = (name: string, serverId: string) => Promise<Joined | null>;
 
-const Profile = Schema.Struct({ id: Schema.String.check(Schema.isPattern(/^[0-9a-f]{32}$/u)), name: Schema.String });
+const Profile = Schema.Struct({
+  id: Schema.String.check(Schema.isPattern(/^[0-9a-f]{32}$/u)),
+  name: Schema.String,
+  properties: Schema.optionalKey(Schema.Array(Schema.Struct({ name: Schema.String, value: Schema.String }))),
+});
 const Verify = Schema.toStandardSchemaV1(
   Schema.Struct({
     name: Schema.String.check(Schema.isPattern(/^\w{1,16}$/u)),
@@ -47,7 +53,10 @@ export const mojangHasJoined =
       throw unavailable(`${who} answered ${String(response.status)}.`);
     }
     const profile = Schema.decodeUnknownSync(Profile)(await response.json());
-    return { uuid: profile.id.replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, "$1-$2-$3-$4-$5"), name: profile.name };
+    const uuid = profile.id.replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, "$1-$2-$3-$4-$5");
+    const textures = profile.properties?.find((property) => property.name === "textures");
+    const skin = textures === undefined ? undefined : skinUrl(textures.value);
+    return skin === undefined ? { uuid, name: profile.name } : { uuid, name: profile.name, skin };
   };
 
 /** @keep Nothing the client sends is believed. The backend picks a random server id, the client tells Mojang it is
@@ -106,7 +115,7 @@ export const minecraft = (hasJoined: HasJoined) =>
             user =
               (await ctx.context.internalAdapter.findUserByEmail(email))?.user ??
               (await ctx.context.internalAdapter.createUser(
-                { name: joined.name, email, emailVerified: false },
+                { name: joined.name, email, emailVerified: false, image: joined.skin ?? null },
                 { method: PROVIDER },
               ));
             await ctx.context.internalAdapter.createAccount({
@@ -115,8 +124,9 @@ export const minecraft = (hasJoined: HasJoined) =>
               accountId: joined.uuid,
             });
           }
-          if (user.name !== joined.name) {
-            user = await ctx.context.internalAdapter.updateUser(user.id, { name: joined.name });
+          const image = joined.skin ?? null;
+          if (user.name !== joined.name || (user.image ?? null) !== image) {
+            user = await ctx.context.internalAdapter.updateUser(user.id, { name: joined.name, image });
           }
           const session = await ctx.context.internalAdapter.createSession(user.id);
           await setSessionCookie(ctx, { session, user });

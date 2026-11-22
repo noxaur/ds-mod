@@ -21,7 +21,8 @@ const jarWith = (sent: Record<string, string> = {}) => {
 };
 
 const pending = { dsmod_pending: "session-secret" };
-const steve = { user: "steve-id", name: "Steve" };
+const steve = { user: "steve-id", name: "Steve", skin: null };
+const skin = "https://textures.minecraft.net/texture/5c1";
 
 beforeEach(() => vi.useFakeTimers({ now: new Date("2029-06-01T00:00:00.000Z") }));
 
@@ -46,6 +47,11 @@ describe("begin", () => {
     const [url, init] = vi.mocked(fetch).mock.calls[0] ?? [];
     expect(url).toBe("http://127.0.0.1:16385/api/auth/one-time-token/verify");
     expect(init?.body).toBe(JSON.stringify({ token: "one-time-secret" }));
+  });
+
+  it("shows the skin the backend has for the player", async () => {
+    backendSays(200, { ...verified, user: { ...verified.user, image: skin } });
+    expect(await Effect.runPromise(begin("one-time-secret", jarWith().jar))).toEqual({ ...steve, skin });
   });
 
   it("never keeps the pending cookie past the session's own end", async () => {

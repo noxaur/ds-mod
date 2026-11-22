@@ -22,6 +22,7 @@ export interface Jar {
 export interface Asked {
   readonly user: string;
   readonly name: string;
+  readonly skin: string | null;
 }
 
 const put = (jar: Jar, name: string, value: string, expires: Date, path: string) =>
@@ -41,7 +42,7 @@ export const begin = (token: string, jar: Jar): Effect.Effect<Asked | null> => {
     pending === undefined
       ? Effect.succeed(null)
       : sessionOf(pending).pipe(
-          Effect.map((s) => s && { user: s.id, name: s.name }),
+          Effect.map((s) => s && { user: s.id, name: s.name, skin: s.image ?? null }),
           Effect.orElseSucceed(() => null),
         );
   if (token === "") {
@@ -51,7 +52,7 @@ export const begin = (token: string, jar: Jar): Effect.Effect<Asked | null> => {
     Effect.map(({ session, user }) => {
       const expires = new Date(Math.min(Date.now() + pendingMs, session.expiresAt.getTime()));
       put(jar, pendingCookie, session.token, expires, "/login");
-      return { user: user.id, name: user.name };
+      return { user: user.id, name: user.name, skin: user.image ?? null };
     }),
     Effect.catch(() => held),
   );

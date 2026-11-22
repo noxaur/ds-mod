@@ -11,14 +11,21 @@ const Textures = Schema.Struct({
 });
 const texturesOf = lenient(Schema.fromJsonString(Textures));
 
-export const safeTexture = (value: unknown): string | undefined => {
-  if (typeof value !== "string" || value === "" || value.length > MAX_TEXTURE) {
+const texturesIn = (value: string) => {
+  if (value === "" || value.length > MAX_TEXTURE) {
     return undefined;
   }
   const json = Base64.decodeString(value);
   if (Result.isFailure(json)) {
     return undefined;
   }
-  const urls = Object.values(texturesOf(json.success)?.textures ?? {}).map((texture) => texture.url);
-  return urls.length > 0 && urls.every((url) => TEXTURE_URL.test(url)) ? value : undefined;
+  const textures = texturesOf(json.success)?.textures ?? {};
+  const urls = Object.values(textures).map((texture) => texture.url);
+  return urls.length > 0 && urls.every((url) => TEXTURE_URL.test(url)) ? textures : undefined;
 };
+
+export const safeTexture = (value: unknown): string | undefined =>
+  typeof value === "string" && texturesIn(value) !== undefined ? value : undefined;
+
+export const skinUrl = (value: string): string | undefined =>
+  texturesIn(value)?.["SKIN"]?.url.replace(/^http:/u, "https:");
