@@ -82,8 +82,6 @@ backend/scripts/dsctl.ts: // The client sends only a typed spec, so the file is 
 backend/scripts/dsctl.ts: // The request's id keeps two briefs with the same name, pulled into one directory, from overwriting each other.
 backend/scripts/placeholder-tsconfig.ts: // `void prepare` writes .void/tsconfig.json as its last step, but first loads auth.ts through tsconfig.json, which
 backend/scripts/placeholder-tsconfig.ts: // extends that file, so on a fresh checkout it stops at "Tsconfig not found". An empty one lets it start.
-backend/scripts/test-time-limit.ts: // It runs in the main process, which stays free while the tests run in workers, so a test stuck in a loop cannot stop it.
-backend/scripts/test-time-limit.ts: // Vitest bounds each test but not a whole run, so this global setup ends the run once it passes the limit.
 backend/src/api.ts: /** * Lets a request through only when Void's session names a player, and gives the handler that player. The mod sends * the session token sign-in gave it as a bearer token. Void checks it before the API runs, so the scheme is here for * the contract and the middleware reads the player Void found. */
 backend/src/api.ts: /** * Who a request is from, as the entry point that verified it says: the player whose session Void found, and the * admin token an agent must match. `makeApp` adds it to each request's context, where a client cannot reach. */
 backend/src/api.ts: /** Every REST endpoint but sign-in. `api/openapi.json` is generated from this, so the mod and the website read the same contract. */
@@ -3421,8 +3419,6 @@ web/next.config.ts: // A page cannot set its own headers, so the login page gets
 web/next.config.ts: // No other site may frame a page, so none can overlay the login's confirm button.
 web/next.config.ts: // The dev server would print each action with its arguments, and the login's argument is the token.
 web/pnpm-workspace.yaml: # Refuse packages published less than 14 days ago. ui-sdk is in beta and only has fresh releases.
-web/scripts/test-time-limit.ts: // It runs in the main process, which stays free while the tests run in workers, so a test stuck in a loop cannot stop it.
-web/scripts/test-time-limit.ts: // Vitest bounds each test but not a whole run, so this global setup ends the run once it passes the limit.
 web/scripts/vercel-ignore.sh: # A diff needs only the two trees, so a base older than the clone is fetched alone.
 web/scripts/vercel-ignore.sh: # Any git failure exits non-zero, so a commit this cannot judge is built.
 web/scripts/vercel-ignore.sh: # The branch's last built commit, or, on its first build, where it left main.
