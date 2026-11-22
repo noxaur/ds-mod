@@ -233,7 +233,7 @@ class SettingsGalleryScreen(private val hud: DsModConfig.Hud, private val page: 
     val looks: Set<KClass<out Look>> = all.filterIsInstance<Pick<*>>().flatMap { pick -> pick.values.indices.map { pick.lookAt(it)::class } }.toSet()
 
     private val opened = hashSetOf("openSwitch", "openFold", "openOrder")
-    private val settingRows = SettingRows(opened, ::layout, { _, _ -> })
+    val settingRows = SettingRows(opened, ::layout, { _, _ -> })
 
     private val found = "Found by a search: frame look" to rows {
         pick(v.foundPreset.bind, "Style", "Pick a look for the marks.", MarkStyle.entries, id = "foundStyle") { slotLook(it) }
@@ -244,7 +244,6 @@ class SettingsGalleryScreen(private val hud: DsModConfig.Hud, private val page: 
     private var ox = 0
     private var oy = 0
 
-    fun spot(id: String) = settingRows.spot(id)
 
     private fun rows(block: Rows.() -> Unit) = Rows().apply(block).rows.also { SettingsTree.link(it, null) }
 

@@ -10,7 +10,6 @@ import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Opens
 import io.github.noxaur.dsmod.core.config.Panel
 import io.github.noxaur.dsmod.core.config.SettingsTree
-import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.LeftServer
@@ -51,7 +50,7 @@ object DsModClient : ClientModInitializer {
 
     lateinit var settings: DsModConfig
         private set
-    private lateinit var tree: SettingsTree
+    internal lateinit var tree: SettingsTree
     lateinit var game: Game
         private set
     private lateinit var readouts: Readouts
@@ -84,10 +83,6 @@ object DsModClient : ClientModInitializer {
 
     var anyServer = FabricLoader.getInstance().isModLoaded("dsmod_debug")
 
-    fun <F : HasFeature> feature(type: Class<F>): F = tree.feature(type)
-
-    inline fun <reified F : HasFeature> feature(): F = feature(F::class.java)
-
     fun settingsScreen(parent: Screen?, tabs: SettingsTabs = SettingsScreen.session(settings), reveal: String? = null, query: String? = null) =
         SettingsScreen(parent, settings, ::saveSettings, tabs, reveal, query)
 
@@ -118,7 +113,7 @@ object DsModClient : ClientModInitializer {
         }
     }
 
-    private fun start() {
+    internal fun start() {
         SettingsScreen.forget()
         tree = SettingsTree(settings)
         game = Game(tree.features) { anyServer || onDragSim }
@@ -160,12 +155,6 @@ object DsModClient : ClientModInitializer {
         SlotGuards.bind(tree.feature())
         TabBar.bind(tree.feature())
         Profiles.bind(game, tree.feature())
-    }
-
-    fun restart(between: () -> Unit = {}) {
-        saved.close()
-        between()
-        start()
     }
 
     override fun onInitializeClient() {

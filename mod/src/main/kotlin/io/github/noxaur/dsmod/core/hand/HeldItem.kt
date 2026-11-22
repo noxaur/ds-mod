@@ -72,10 +72,6 @@ data class Frame(val left: Float, val top: Float, val right: Float, val bottom: 
     )
 
     val onScreen get() = left >= 0f && top >= 0f && right <= 1f && bottom <= 1f
-
-    companion object {
-        val SCREEN = Frame(0f, 0f, 1f, 1f)
-    }
 }
 
 object ScreenView {

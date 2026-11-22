@@ -15,8 +15,6 @@ object Sections {
 
     fun contains(sections: List<Section>, value: Int) = at(sections, value) >= 0
 
-    fun covered(sections: List<Section>) = sections.sumOf { it.to - it.from }
-
     fun at(sections: List<Section>, value: Int) = sections.indexOfFirst { value >= it.from && value <= it.to }
 
     fun merged(sections: List<Section>): List<Section> {

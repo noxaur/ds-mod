@@ -10,7 +10,8 @@
     "FreshStartMixin",
     "HandAccessor",
     "HudAccessor",
-    "MouseButtonInvoker"
+    "MouseButtonInvoker",
+    "NarrationInvoker"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -497,12 +497,6 @@ class KitKeysButton(
         if (!inOrder && down.isEmpty() && recorded.isNotEmpty()) finish()
     }
 
-    fun clear() {
-        recording = false
-        keys = emptyList()
-        onChange(keys)
-    }
-
     private fun finish() {
         recording = false
         if (recorded.isEmpty()) return

@@ -2,7 +2,6 @@ package io.github.noxaur.dsmod.debug.capture
 
 import io.github.noxaur.dsmod.core.capture.Captured
 import io.github.noxaur.dsmod.core.capture.captureLine
-import io.github.noxaur.dsmod.core.capture.readCapture
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.Boss
 import io.github.noxaur.dsmod.core.game.EntityFilter
@@ -19,6 +18,7 @@ import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.WorldChanged
+import io.github.noxaur.dsmod.harness.readCapture
 import io.github.noxaur.dsmod.harness.chat
 import io.github.noxaur.dsmod.harness.text
 import kotlinx.serialization.json.JsonNull

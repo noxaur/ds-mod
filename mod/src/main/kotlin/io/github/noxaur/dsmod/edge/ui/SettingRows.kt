@@ -49,15 +49,7 @@ class SettingRows(
 
     class Stars(val on: (String) -> Boolean, val toggle: (String) -> Unit, val key: () -> Int)
 
-    class Spot(
-        val x: Int, val y: Int, val width: Int, val height: Int,
-        val controlX: Int, val controlY: Int, val controlWidth: Int, val controlHeight: Int,
-        val extraX: Int, val extraWidth: Int, val markerX: Int, val markerY: Int,
-        val starX: Int, val starY: Int,
-        val sliderX: Int = -1, val sliderY: Int = -1, val sliderWidth: Int = 0,
-    )
-
-    private class Line(val setting: Setting, val x: Int, val y: Int, val width: Int, val heading: Boolean, val rule: Boolean, val entry: Int = -1) {
+    internal class Line(val setting: Setting, val x: Int, val y: Int, val width: Int, val heading: Boolean, val rule: Boolean, val entry: Int = -1) {
         var height = 0
         var nameX = 0
         var name: Component = Component.empty()
@@ -109,16 +101,16 @@ class SettingRows(
         val key get() = if (entry < 0) setting.id else "${setting.id}#$entry"
     }
 
-    private val lines = ArrayList<Line>()
+    internal val lines = ArrayList<Line>()
     private val font get() = Kit.font
 
-    private val made = HashMap<String, Editor>()
+    internal val made = HashMap<String, Editor>()
     private val conditional = HashMap<Setting, Boolean>()
 
     private val host = Editor.Host({ relayout() }, { top, bottom -> scrollTo(top, bottom) }, { refresh() }, { words })
 
     private var pressed: Editor? = null
-    private var origin = 0
+    internal var origin = 0
     private var clipTop = 0
     private var clipBottom = 0
     private var screenWidth = 0
@@ -479,7 +471,7 @@ class SettingRows(
         if (conditional.any { (setting, shown) -> setting.visible != shown }) relayout() else refresh()
     }
 
-    private fun top(line: Line) = origin + line.y
+    internal fun top(line: Line) = origin + line.y
 
     private fun over(line: Line, mouseX: Double, mouseY: Double): Boolean {
         val top = top(line)
@@ -497,7 +489,7 @@ class SettingRows(
 
     private fun overGrip(line: Line, mouseX: Double) = line.entry >= 0 && mouseX < line.nameX - 1
 
-    private fun markerY(line: Line) = top(line) + if (line.setting is Fold) 2 + (FOLD_HEIGHT - 3) / 2 else if (line.heading) 2 + 2 else NAME_TOP + 2
+    internal fun markerY(line: Line) = top(line) + if (line.setting is Fold) 2 + (FOLD_HEIGHT - 3) / 2 else if (line.heading) 2 + 2 else NAME_TOP + 2
 
     private fun overMarker(line: Line, mouseX: Double, mouseY: Double) = line.changed && inside(mouseX, mouseY, line.nameX - 6, markerY(line) - 3, 6, 9)
 
@@ -515,21 +507,6 @@ class SettingRows(
         }
         return -1
     }
-
-    fun spot(id: String, entry: Int = -1): Spot? {
-        val l = lines.firstOrNull { it.setting.id == id && it.entry == entry } ?: return null
-        val slider = l.slider
-        return Spot(
-            l.x, top(l), l.width, l.height, l.cx, origin + l.cy, l.cw, l.ch, l.ex, l.ew, l.nameX - 5, markerY(l),
-            l.starX, if (l.starX < 0) -1 else origin + l.starY, slider?.x ?: -1, slider?.y ?: -1, slider?.width ?: 0,
-        )
-    }
-
-    fun ids() = lines.filter { !it.heading && it.entry < 0 }.map { it.setting.id }
-
-    fun marked(id: String) = lines.firstOrNull { it.setting.id == id && it.entry < 0 }?.changed == true
-
-    fun editor(id: String): Editor? = made[id]
 
     fun reveal(id: String) {
         lines.firstOrNull { it.setting.id == id }?.let { reveal(it) }
