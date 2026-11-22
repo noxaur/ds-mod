@@ -764,7 +764,8 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         val y = top + SECTION
         val bottom = top + t.height(limit) - Kit.GAP
         Kit.well(graphics, x, y, t.width, bottom - y)
-        val header = if (t.header != null) 1 else 0
+        val head = t.header
+        val header = if (head != null) 1 else 0
         val shown = t.rows.size.coerceAtMost(limit)
         for (line in 0 until header + shown) {
             val lineY = y + 3 + line * ROW
@@ -773,7 +774,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
                 Kit.bone(graphics, x + t.width - 34, lineY, 30, 7)
                 continue
             }
-            val cells = if (line < header) t.header!! else t.rows[line - header]
+            val cells = if (head != null && line < header) head else t.rows[line - header]
             graphics.text(font, cells[0], x + 4, lineY, -1, true)
             var right = x + t.width - 4 - t.columns.sum() - t.gap * (t.columns.size - 1)
             for (c in t.columns.indices) {

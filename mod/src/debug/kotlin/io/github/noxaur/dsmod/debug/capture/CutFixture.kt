@@ -99,7 +99,7 @@ fun cutFixture(
             val type = line.substringAfter("\"type\":\"").substringBefore('"')
             val read = when {
                 type == "entities" && legacy != null -> floating(line, legacy)
-                type in kept -> listOf(readCaptureLine(line)!!)
+                type in kept -> listOf(checkNotNull(readCaptureLine(line)) { "A line of a kept type did not read: $line" })
                 else -> continue
             }
             val second = (time - origin) / 1000.0
@@ -115,7 +115,7 @@ fun cutFixture(
                     slots.clear()
                     if (event.kept) slots.putAll(inventory)
                 }
-                if (event is SlotChanged) if (event.item == null) slots.remove(event.slot) else slots[event.slot] = event.item!!
+                if (event is SlotChanged) event.item.let { item -> if (item == null) slots.remove(event.slot) else slots[event.slot] = item }
                 if (held.apply(event)) {
                     if (!before) entities.view(held.before, held.after, event)?.let { events += Captured(time, it, tick) }
                     continue
@@ -154,7 +154,7 @@ fun cutFixture(
         }
     }
     if (start == null) begin()
-    val state = listOfNotNull(tab, sidebar, container) + start!!.map { (slot, item) -> SlotChanged(slot, item) } + heldAtStart
+    val state = listOfNotNull(tab, sidebar, container) + checkNotNull(start) { "begin sets the slots the window starts with" }.map { (slot, item) -> SlotChanged(slot, item) } + heldAtStart
     // The carried state was posted on earlier ticks the window does not keep, so it has no tick of its own.
     val lines = (state.map { Captured(origin + (seconds.start * 1000).toLong(), it) } + events)
         .map { captureLine(it.time, redactor.redact(it.event), it.tick) }
