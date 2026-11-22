@@ -48,6 +48,8 @@ class Stored(val store: Store) {
     /** Set by `ConfigFile` while the file is read, and read by each slot made after. */
     internal var pending: ((Slot<*>) -> Unit)? = null
 
+    internal var held: ((String, KSerializer<*>) -> Any?)? = null
+
     /** Every slot made so far, in the order they were made. */
     val all: Collection<Slot<*>> get() = slots.values
 
@@ -55,6 +57,9 @@ class Stored(val store: Store) {
     @Suppress("UNCHECKED_CAST")
     fun <T> slot(key: String, default: T, serializer: KSerializer<T>, formerly: List<String>): Slot<T> =
         slots.getOrPut(key) { Slot(store, key, default, serializer, formerly).also { pending?.invoke(it) } } as Slot<T>
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T> former(key: String, serializer: KSerializer<T>): T? = held?.invoke(key, serializer) as T?
 
     fun reset() = slots.values.forEach { it.reset() }
 }

@@ -1,9 +1,7 @@
 package io.github.noxaur.dsmod.core.config
 
-import io.github.noxaur.dsmod.core.container.Border
-import io.github.noxaur.dsmod.core.container.Fill
-import io.github.noxaur.dsmod.core.container.Floor
-import io.github.noxaur.dsmod.core.container.RarityPreset
+import io.github.noxaur.dsmod.core.container.MarkStyle
+import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
@@ -70,37 +68,48 @@ class SettingsTreeTest {
     }
 
     @Test
-    fun `resetting a look part under a preset keeps that preset and the rest of its look`() {
-        rarity.preset.value = RarityPreset.SHOWCASE
-        val border = rows.single { it.id == "border" } as Pick<*>
-        assertEquals(Border.ROUNDED, border.value)
-        assertFalse(border.changed, "a preset's border reads as changed from the Gilded default")
-        border.reset()
-        assertEquals(RarityPreset.SHOWCASE, rarity.preset.value, "resetting the border forced Custom")
-        assertEquals(Border.ROUNDED, rarity.containerStyle().border)
-        assertEquals(Fill.HALO, rarity.containerStyle().fill, "resetting the border wrote a Gilded fill into the look")
-        assertEquals(Floor.PEDESTAL, rarity.containerStyle().floor)
+    fun `a look's rows show its parts, and a change to one keeps the rest`() {
+        rarity.inventoryStyle.value = SlotStyle(MarkStyle.AURA, opacity = 60, sparkles = true)
+        @Suppress("UNCHECKED_CAST")
+        val style = rows.single { it.id == "style" } as Pick<MarkStyle>
+        val opacity = rows.single { it.id == "opacity" } as Number
+        assertEquals(MarkStyle.AURA, style.value)
+        assertEquals(60f, opacity.value)
+        style.value = MarkStyle.UNDERGLOW
+        opacity.value = 42f
+        assertEquals(SlotStyle(MarkStyle.UNDERGLOW, opacity = 40, sparkles = true), rarity.containerStyle(), "the opacity steps by 5")
+        opacity.reset()
+        assertEquals(SlotStyle(MarkStyle.UNDERGLOW, sparkles = true), rarity.containerStyle())
     }
 
     @Test
-    fun `resetting a hotbar part under a preset leaves the hotbar matching the inventory`() {
-        rarity.preset.value = RarityPreset.SHOWCASE
-        val border = rows.filterIsInstance<Choice<*>>().single { it.id == "hotbarBorder" }
-        assertEquals(Border.ROUNDED, border.value)
-        assertFalse(border.changed, "a matching hotbar border reads as changed from the Gilded default")
-        border.reset()
-        assertTrue(rarity.hotbarMatches.value, "resetting the border turned Match Inventory off")
-        assertEquals(Border.ROUNDED, rarity.hotbarLook().border)
-        assertEquals(Fill.HALO, rarity.hotbarLook().fill, "resetting the border stored a hybrid hotbar look")
+    fun `resetting a hotbar row while it matches leaves the hotbar matching the inventory`() {
+        rarity.inventoryStyle.value = SlotStyle(MarkStyle.AURA, opacity = 60)
+        val style = rows.single { it.id == "hotbarStyle" } as Pick<*>
+        assertEquals(MarkStyle.AURA, style.value)
+        assertFalse(style.changed, "a matching hotbar style reads as changed from the Frame default")
+        style.reset()
+        assertTrue(rarity.hotbarMatches.value, "resetting the style turned Match Inventory off")
+        assertEquals(SlotStyle(MarkStyle.AURA, opacity = 60), rarity.hotbarLook(), "resetting the style stored a hybrid hotbar look")
     }
 
     @Test
-    fun `a hotbar part set to another look makes it the hotbar's own`() {
-        val border = rows.filterIsInstance<Choice<*>>().single { it.id == "hotbarBorder" }
-        border.reset()
-        assertTrue(rarity.hotbarMatches.value, "the border set to what it shows unmatched the hotbar")
-        border.step(1)
-        assertFalse(rarity.hotbarMatches.value, "a new border left the hotbar matching")
+    fun `the hotbar's own look shows only while it does not match the inventory`() {
+        val own = listOf("hotbarStyle", "hotbarOpacity", "hotbarSparkles").map { id -> rows.single { it.id == id } }
+        assertTrue(own.none { it.visible })
+        rarity.hotbarMatches.value = false
+        assertTrue(own.all { it.visible })
+    }
+
+    @Test
+    fun `a hotbar row set to another look makes it the hotbar's own`() {
+        val sparkles = rows.single { it.id == "hotbarSparkles" } as Switch
+        sparkles.reset()
+        assertTrue(rarity.hotbarMatches.value, "the sparkles set to what they show unmatched the hotbar")
+        sparkles.toggle()
+        assertFalse(rarity.hotbarMatches.value, "new sparkles left the hotbar matching")
+        assertEquals(SlotStyle(sparkles = true), rarity.hotbarLook())
+        assertEquals(SlotStyle(), rarity.containerStyle())
     }
 
     @Test
@@ -152,18 +161,6 @@ class SettingsTreeTest {
     }
 
     @Test
-    fun `a part of the custom look changes the look shown and switches the style to Custom`() {
-        rarity.preset.value = RarityPreset.SHOWCASE
-        val border = rows.single { it.id == "border" } as Pick<*>
-        assertEquals(Border.ROUNDED, border.value, "the part shows the preset's own")
-        @Suppress("UNCHECKED_CAST")
-        (border as Pick<Border>).value = Border.FLAT
-        assertEquals(RarityPreset.CUSTOM, rarity.preset.value)
-        assertEquals(Border.FLAT, rarity.inventoryStyle.value.border)
-        assertEquals(RarityPreset.SHOWCASE.style!!.fill, rarity.inventoryStyle.value.fill, "the rest of the look stays as it was shown")
-    }
-
-    @Test
     fun `rows dim under their switch, the group's switch, and what they depend on`() {
         val byId = rows.associateBy { it.id }
         settings.feature<ProtectorSpawnBeam>().feature.enabled = false
@@ -173,7 +170,7 @@ class SettingsTreeTest {
         settings.feature<Camera>().feature.enabled = false
         assertTrue(byId.getValue("cameraTilt").dimmed)
         rarity.feature.enabled = false
-        assertTrue(byId.getValue("border").dimmed, "a fold's rows dim with the group around it")
+        assertTrue(byId.getValue("style").dimmed, "a feature's rows dim with the group around it")
         settings.feature<CommandBinds>().feature.enabled = false
         assertTrue(byId.getValue("sequenceGap").dimmed)
         assertFalse(byId.getValue("command-binds").dimmed)
@@ -183,7 +180,10 @@ class SettingsTreeTest {
     fun `a closed switch sums up its settings`() {
         val slotLock = rows.single { it.id == "slot-lock" } as Switch
         assertEquals("L, K", slotLock.closed { mapOf(76 to "L", 75 to "K")[it] ?: "?" })
-        assertEquals("Gilded · Glow · None", rows.single { it.id == "customLook" }.summary { "" })
+        val hotbar = rows.single { it.id == "hotbarMarks" } as Switch
+        assertEquals("", hotbar.closed { "" })
+        rarity.hotbarMatches.value = false
+        assertEquals("Frame, 100%", hotbar.closed { "" })
     }
 
     @Test

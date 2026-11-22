@@ -7,6 +7,7 @@ import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
+import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.text.Role
 import kotlin.test.Test
@@ -106,10 +107,15 @@ class SettingsSearchTest {
 
     @Test
     fun `the settings tree finds a feature by its own name, and an option inside a fold`() {
-        val tree = SettingsTree().sections
+        val settings = SettingsTree()
+        val tree = settings.sections
         assertTrue(SettingsSearch.hits(tree, "rarity").any { hit -> hit.group.name == "Item Rarity" })
-        val halo = SettingsSearch.hits(tree, "halo").single()
-        assertEquals(setOf("customLook", "hotbarMarks"), halo.open, "both the inventory's own look and the hotbar's have the fill")
+        assertEquals(setOf("swingOptions"), SettingsSearch.hits(tree, "fatigue").single().open)
+        assertEquals(listOf("style"), SettingsSearch.hits(tree, "underglow").single().rows.map { it.id }, "a hidden row is not found")
+        settings.feature<ItemRarity>().hotbarMatches.value = false
+        val underglow = SettingsSearch.hits(tree, "underglow").single()
+        assertEquals(listOf("style", "hotbarMarks"), underglow.rows.map { it.id })
+        assertEquals(setOf("hotbarMarks"), underglow.open)
     }
 
     private fun marked(text: String, query: String) =

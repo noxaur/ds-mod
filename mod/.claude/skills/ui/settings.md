@@ -8,7 +8,7 @@ A feature's setting is one line in the feature's class, as `val inFight = switch
 
 A setting of no feature, which is never an on/off one because each of those is a feature, is a field in its class of `DsModConfig` with a default, and one line in `SettingsTree` in its section and group. The field's name is its key, and its default is read from a fresh `DsModConfig()`, so write it nowhere else.
 
-A saved value that no row should edit is `stored("inventoryStyle", SlotStyle())` in its feature, for a row that reads and writes several, or goes on `SettingsTree.STORED` with the reason when it is a field. `STORED` is empty, because every field the player sets has a row: a list of things the player made is an Items row, and a canvas is a Panel row. A row that edits several slots at once names the rest with `Bind.spanning`.
+A saved value that no row should edit is `stored("inventoryLook", SlotStyle())` in its feature, for a row that reads and writes several, or goes on `SettingsTree.STORED` with the reason when it is a field. `STORED` is empty, because every field the player sets has a row: a list of things the player made is an Items row, and a canvas is a Panel row. A row that edits several slots at once names the rest with `Bind.spanning`. Rows that only matter in one state, such as the hotbar's own look while it does not match the inventory, go in `shownWhile({ .. }) { .. }`: the screen, search and a closed parent's summary leave them out until the condition holds. A row that only needs another switch on dims with `dependsOn` instead. A key that an older version saved in a shape the feature no longer has is read once with `former<T>(key)` while the feature is built, and the next save drops it, as `ItemRarity` carries its old presets over.
 
 | Kind | Declare it with | For |
 | --- | --- | --- |
@@ -16,10 +16,10 @@ A saved value that no row should edit is `stored("inventoryStyle", SlotStyle())`
 | Switch with settings | `switch("hotbarMarks", "Hotbar", "Mark your hotbar as well.", default = true) { switch(..); pick(..) }` | Rows of the feature's that open under one of its switches, declared with `Rows` calls over `Bind`s, and dim while it is off |
 | Number | `number("cameraDistance", "Distance", "Set how far the camera sits.", 4f, 1f..50f, step = 0.5f, unit = "°")` | A number in a range, stepped from its minimum |
 | Choice | `choice("lootAlertTier", "Alert Tier", "Pick the lowest tier that alerts you.", LootTier.EPIC)` | One value of an enum, labeled by its `toString` |
-| Pick | `pick("rarityPreset", "Style", "Pick a look for the marks.", RarityPreset.GILDED) { Look.Slots(it.style) }`, or `pick(hud::theme, ..) { Look.Swatch(it) }` in the tree | A value chosen by how it looks |
+| Pick | `pick("style", "Style", "Pick a look for the marks.", MarkStyle.FRAME) { Look.Slots(SlotStyle(it)) }`, or `pick(hud::theme, ..) { Look.Swatch(it) }` in the tree | A value chosen by how it looks |
 | Keys | `keys("freeLookKey", "Key", "Pick the key for Free Look.", 342)`, or `keys(g::settingsKey, ..)` in the tree | One key or mouse button, as a GLFW code or `KeyBind.NONE` |
 | Span | `span("beamSections", "Beam Timing", "Pick when the beam shows.", listOf(Section(175, 200)), max = 200)` | Stretches of a scale, by `Sections`' rules |
-| Fold | `fold("customLook", "Custom Look", "Build your own look.", border, fill, floor)` | Rows the player rarely needs, under a bar. The rows are declared before it, and the fold takes them from their place to its own |
+| Fold | `fold("swingOptions", "Swing", "Set how fast and how far your held item swings.", swingSpeed, turn, reach)` | Rows the player rarely needs, under a bar. The rows are declared before it, and the fold takes them from their place to its own |
 | Action | `action("resetAnimations", "Reset Animations", "Put every Animations setting back.", button = "Reset") { .. }`, or `action(Opens.HUD_EDITOR, "Move HUD", "..", button = "Move", id = "moveHud")` in the tree | A button: a reset of the rows around it, or a screen of the edge's that `DsModClient` registers for its `Opens`, only for an editor that needs the game behind it or a screen that is not a setting, such as Contribute's requests |
 | Items | `rows { items(binds, "Binds", "Name each bind, pick its keys and choose where it works.", CommandBinds) }` | A list of things the player made, in groups, each a line of cells with details under it, by an `ItemKind` in `core`. Its value is a `Grouped`, bound across `stored(..)` slots with `Bind.spanning` |
 | Panel | `rows { panel(tabs.bind, "Tabs", "Press a place to add a tab there, and drag a tab to move it.", Canvas.MENU_TABS, id = "tabs") { .. } }` | A canvas the player edits by pointing, such as the HUD layout or the menu tabs, over a `stored(..)` slot, drawn by the `Editor` that `DsModClient` registers for its `Canvas` |
@@ -30,7 +30,7 @@ The tree places a feature as a group of its own, `group(FreeLook(c))` or `group(
 
 A feature's switch row has the feature's id, and every other row's id is its key, or the id a fold, action or preview is given. Never change an id once it ships, because a link to the setting and a favorite name it.
 
-A row bound to part of a value, such as one part of a rarity style, takes a `Bind` with a `get` and a `set` and names the part it reaches, as `Inventory.inventoryStyle.border`. Its `set` does what the existing editor does to the whole, such as switching the style to Custom. `ItemRarity` is the example.
+A row bound to part of a value, such as one part of a rarity style, takes a `Bind` with a `get` and a `set` and names the part it reaches, as `Inventory.hotbarLook.mark`. Its `set` does what the existing editor does to the whole, such as unlinking the hotbar from the inventory. `ItemRarity` is the example.
 
 ## Wording
 

@@ -511,7 +511,7 @@ object Hud {
                                     graphics.item(stack, x, itemY)
                                 }
                                 graphics.itemDecorations(font, stack, x, itemY)
-                                if (slot >= 0) Slots.drawFront(graphics, surface, slot, x, itemY)
+                                if (slot >= 0) Slots.drawFront(graphics, slot, x, itemY)
                             }
                             if (slot == held) Kit.held(graphics, x, itemY, inventory && glass < 0 && !themed)
                         }
