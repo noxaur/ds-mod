@@ -14,7 +14,7 @@ The addresses are fixed: a jar keeps the ones it was built with, so moving eithe
 
 ## Deploy the backend
 
-The `deploy` workflow runs `void deploy --platform cloudflare` after each green `ci` run on `main`, with the repository secret `CLOUDFLARE_API_TOKEN`. That token is scoped to the user's account and to `perwko.com`, with Workers Scripts, D1 and R2 edit, Workers Routes edit, and account settings and zone read. The flag is needed because the saved target lives in the git-ignored `backend/.void/`, so a fresh checkout has none.
+The `deploy` workflow runs `void deploy --platform cloudflare` after each green `ci` run on `main`, with the repository secret `CLOUDFLARE_API_TOKEN`. That token is scoped to the user's account and to `perwko.com`, with Workers Scripts, Workers KV Storage, D1 and R2 edit, Workers Routes edit, and account settings and zone read. The flag is needed because the saved target lives in the git-ignored `backend/.void/`, so a fresh checkout has none.
 
 To deploy by hand from a checkout that the user has signed in to Cloudflare:
 
