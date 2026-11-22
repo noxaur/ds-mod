@@ -33,6 +33,7 @@ export interface Ability {
 export interface CatalogPet {
   readonly display: string;
   readonly maxLevel: number | undefined;
+  readonly levels: boolean;
   readonly category: string | undefined;
   /** The base64 skull texture. */
   readonly skin: string | undefined;
@@ -101,6 +102,7 @@ const readPet = (raw: unknown): CatalogPet | undefined => {
   return {
     display,
     maxLevel: count(pet["max_level"]),
+    levels: flag(pet["levels"]) ?? false,
     category: text(pet["category"]),
     skin: skin(pet["skin"])?.value,
     perks,

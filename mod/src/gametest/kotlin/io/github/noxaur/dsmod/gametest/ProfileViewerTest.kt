@@ -79,6 +79,11 @@ class ProfileViewerTest : FabricClientGameTest {
                 check(item == "reinforced_plating") { "The first item hovered is $item" }
                 check("reinforced_plating" in hooked) { "Another mod's tooltip hook saw only $hooked" }
 
+                profiles.tab("Pets")
+                context.waitTicks(2)
+                profiles.move(contentX + 200, gridY + 45)
+                context.takeScreenshot("profile-pet-progress-tooltip")
+
                 profiles.tab("Storage")
                 context.waitTicks(5)
                 profiles.press("2")
