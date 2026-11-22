@@ -1,10 +1,9 @@
 package io.github.noxaur.dsmod.core.contribute
 
 import io.github.noxaur.dsmod.core.backend.Request
+import io.github.noxaur.dsmod.harness.text
 import io.github.noxaur.dsmod.core.backend.Requirement
 import io.github.noxaur.dsmod.core.brief.Brief
-import io.github.noxaur.dsmod.core.game.ServerSpan
-import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SidebarState
 import io.github.noxaur.dsmod.core.game.TabState
@@ -18,7 +17,6 @@ class RequirementsTest {
     private fun request(vararg requirements: Requirement) =
         Request("r", Brief("A", listOf(Brief.Step("B"))), requirements.toList(), 60)
 
-    private fun text(line: String) = ServerText(listOf(ServerSpan(line)))
 
     @Test
     fun `an area is met when the player has been there`() {

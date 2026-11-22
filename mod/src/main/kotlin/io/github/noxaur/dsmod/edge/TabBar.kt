@@ -7,7 +7,6 @@ import io.github.noxaur.dsmod.core.ui.ItemSearch
 import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.core.ui.TabLayout
-import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitButton
@@ -21,12 +20,8 @@ import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
-import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen
 import net.minecraft.core.component.DataComponents
-import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.resources.Identifier
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 
 /**
@@ -47,10 +42,6 @@ object TabBar {
     private var stacks = arrayOfNulls<ItemStack>(0)
     private val dimmed = BitSet()
 
-    /** The item a tab shows: [id] from the game's items, or a barrier when there is no such item. */
-    fun icon(id: String): ItemStack =
-        Identifier.tryParse(id)?.let { BuiltInRegistries.ITEM.getOptional(it).orElse(null) }?.let(::ItemStack) ?: ItemStack(Items.BARRIER)
-
     /** What a tab's tooltip says: its name, the command it sends and the click hint. */
     fun tooltip(tab: MenuTab) = text {
         if (tab.search) {
@@ -65,20 +56,20 @@ object TabBar {
     }.toComponent()
 
     fun register() {
-        // Fabric drops a screen's listeners on every init, so they are added again here.
-        ScreenEvents.AFTER_INIT.register { _, screen, _, height ->
-            if (screen !is AbstractContainerScreen<*> || screen is CreativeModeInventoryScreen) return@register
-            screen as ContainerScreenAccessor
-            stacks = arrayOfNulls(0)
-            searched = null
-            dimmed.clear()
-            val left = screen.leftPos
-            val menuWidth = screen.imageWidth
-            fun edgeY(edge: TabEdge) = if (edge == TabEdge.TOP) screen.topPos else screen.topPos + screen.imageHeight
+        ScreenHooks.onEveryLayout<AbstractContainerScreen<*>> { screen, opened ->
+            if (screen.creative) return@onEveryLayout
+            if (opened) {
+                stacks = arrayOfNulls(0)
+                searched = null
+                dimmed.clear()
+            }
+            val left = screen.containerLeft
+            val menuWidth = screen.containerWidth
+            fun edgeY(edge: TabEdge) = if (edge == TabEdge.TOP) screen.containerTop else screen.containerBottom
 
             val widgets = Screens.getWidgets(screen)
             val tabs = DsModClient.feature<MenuTabs>().tabs.value.filter { it.slot in 0 until TabLayout.PER_EDGE }
-            val selected = TabLayout.selected(tabs, MenuBack.opener(screen))
+            val selected = TabLayout.selected(tabs, Trail.opener(screen))
             val made = ArrayList<Pair<MenuTab, KitTab>>()
             val glass = { MenuSkin.glass(screen) }
             var search: MenuTab? = null
@@ -89,7 +80,7 @@ object TabBar {
                     search = tab
                     KitTab(x, edgeY(tab.edge), tab.edge, "Search", null, Icon.SEARCH, glass) { openSearch() }
                 } else {
-                    KitTab(x, edgeY(tab.edge), tab.edge, tab.tooltip.ifBlank { "/${tab.command}" }, icon(tab.item), null, glass) { PlayerCommands.send(tab.command) }
+                    KitTab(x, edgeY(tab.edge), tab.edge, tab.tooltip.ifBlank { "/${tab.command}" }, stackOf(tab.item), null, glass) { PlayerCommands.send(tab.command) }
                 }
                 widget.selected = i == selected
                 widget.setTooltip(Tooltip.create(tooltip(tab)))
@@ -100,18 +91,18 @@ object TabBar {
             val ours = ArrayList<AbstractWidget>(made.map { it.second })
             var laidOut = left
             ScreenEvents.beforeExtract(screen).register { _, _, _, _, _ ->
-                val dx = screen.leftPos - laidOut
+                val dx = screen.containerLeft - laidOut
                 if (dx == 0) return@register
-                laidOut = screen.leftPos
+                laidOut = screen.containerLeft
                 for (widget in ours) widget.x += dx
             }
-            val bar = search ?: return@register
+            val bar = search ?: return@onEveryLayout
 
             // The bar is a wide joined tab holding the field and a close button, laid over the tabs it covers.
             val (barLeft, barWidth) = TabLayout.searchBar(bar.slot, menuWidth)
-            fun barX() = screen.leftPos + barLeft
+            fun barX() = screen.containerLeft + barLeft
             // On a short screen an edge's tabs run off it. The bar stays on it, over the menu's edge, so its text shows.
-            val barY = if (bar.edge == TabEdge.TOP) maxOf(edgeY(bar.edge), Kit.TAB_HEIGHT - 2) else minOf(edgeY(bar.edge), height - Kit.TAB_HEIGHT + 2)
+            val barY = if (bar.edge == TabEdge.TOP) maxOf(edgeY(bar.edge), Kit.TAB_HEIGHT - 2) else minOf(edgeY(bar.edge), screen.height - Kit.TAB_HEIGHT + 2)
             val covered = made.filter { (tab, _) -> tab.edge == bar.edge && TabLayout.x(tab.slot) < barLeft + barWidth && TabLayout.x(tab.slot) + Kit.TAB_WIDTH > barLeft }
             val contentY = if (bar.edge == TabEdge.TOP) barY - Kit.TAB_HEIGHT + 3 else barY
             val field = KitTextField(barX() + 3, contentY, barWidth - 6 - Kit.BUTTON_HEIGHT - 2, "Search", query, SEARCH_LENGTH) {
@@ -159,7 +150,7 @@ object TabBar {
             ScreenEvents.afterForeground(screen).register { _, graphics, _, _, _ ->
                 if (!field.visible) return@register
                 for (slot in screen.menu.slots) {
-                    if (dims(slot.index) && slot.isActive) Kit.slotDim(graphics, screen.leftPos + slot.x, screen.topPos + slot.y)
+                    if (dims(slot.index) && slot.isActive) Kit.slotDim(graphics, screen.screenX(slot), screen.screenY(slot))
                 }
             }
             ScreenKeyboardEvents.allowKeyPress(screen).register { _, event ->

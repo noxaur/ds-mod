@@ -9,12 +9,9 @@ import io.github.noxaur.dsmod.edge.mixin.CommandSuggestionsAccessor
 import io.github.noxaur.dsmod.edge.mixin.SuggestionsListAccessor
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
-import net.minecraft.client.gui.components.EditBox
-import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 
-private const val TIMER = "dragon-timer"
 private const val TRACKER = "zealot-tracker"
 
 /**
@@ -26,17 +23,16 @@ private const val TRACKER = "zealot-tracker"
 class ChatHudEditorPriorityTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
-            DsModClient.settings.hud.positions.remove(TIMER)
+            DsModClient.settings.hud.positions.remove(DRAGON_TIMER)
             DsModClient.settings.hud.positions.remove(TRACKER)
-            context.enterTheEnd()
-            world.server.runCommand("""tellraw @a "§5✦ §dThe Egg has Spawned!"""")
-            context.waitFor { Hud.find(TIMER) != null && Hud.find(TRACKER) != null }
+            context.showDragonTimer(world)
+            context.waitFor { Hud.find(DRAGON_TIMER) != null && Hud.find(TRACKER) != null }
             val chat = InChat(context)
             chat.open()
 
             // Under a row of chat, the chat takes the press and the wheel: a link fills the input, and nothing moves.
-            chat.drag(TIMER, 2.0, chat.height - 40.0 - 9 - 2)
-            val under = chat.block(TIMER)
+            chat.drag(DRAGON_TIMER, 2.0, chat.height - 40.0 - 9 - 2)
+            val under = chat.block(DRAGON_TIMER)
             context.runOnClient<Nothing> { client ->
                 val messages = client.gui.hud.chat
                 for (i in 1..40) messages.addClientSystemMessage(Component.literal("Filler $i"))
@@ -50,18 +46,18 @@ class ChatHudEditorPriorityTest : FabricClientGameTest {
             context.input.scroll(1.0)
             context.waitTick()
             check(context.computeOnClient<Int, Nothing> { (it.gui.hud.chat as ChatComponentAccessor).chatScrollbarPos } > 0) { "The wheel over the chat did not scroll it" }
-            chat.block(TIMER).let { check(it.x == under.x && it.y == under.y && it.scale == under.scale) { "The chat's press or wheel moved the block" } }
+            chat.block(DRAGON_TIMER).let { check(it.x == under.x && it.y == under.y && it.scale == under.scale) { "The chat's press or wheel moved the block" } }
             context.runOnClient<Nothing> { it.gui.hud.chat.clearMessages(false) }
 
             // Typing still goes to the input, also with the mouse on a block.
-            context.runOnClient<Nothing> { (it.gui.screen() as ChatScreen).children().filterIsInstance<EditBox>().single().value = "" }
+            chat.clearInput()
             chat.move(under.x + 5.0, under.y + 5.0)
             context.input.typeChars("hi")
             context.waitTick()
             check(chat.input() == "hi") { "Typing over a block gave '${chat.input()}'" }
 
             // With the suggestions open, a block outside their list drags into it, and a press on the list there picks a command.
-            context.runOnClient<Nothing> { (it.gui.screen() as ChatScreen).children().filterIsInstance<EditBox>().single().value = "" }
+            chat.clearInput()
             context.input.typeChars("/")
             context.waitFor { client -> ((client.gui.screen() as ChatScreenAccessor).commandSuggestions as CommandSuggestionsAccessor).suggestions != null }
             val list = context.computeOnClient<IntArray, Nothing> { client ->
@@ -79,23 +75,23 @@ class ChatHudEditorPriorityTest : FabricClientGameTest {
             context.waitTick()
             check(chat.input().length > 1) { "The press on the suggestions picked nothing: '${chat.input()}'" }
             chat.block(TRACKER).let { check(it.x == moved.x && it.y == moved.y) { "The press on the suggestions moved the block" } }
-            context.runOnClient<Nothing> { (it.gui.screen() as ChatScreen).children().filterIsInstance<EditBox>().single().value = "" }
+            chat.clearInput()
 
             // With the HUD hidden or the switch off, a drag moves nothing.
-            val still = chat.block(TIMER)
+            val still = chat.block(DRAGON_TIMER)
             context.runOnClient<Nothing> { it.gui.hud.toggle() }
-            chat.drag(TIMER, still.x + 60, still.y - 60)
+            chat.drag(DRAGON_TIMER, still.x + 60, still.y - 60)
             context.runOnClient<Nothing> { it.gui.hud.toggle() }
-            chat.block(TIMER).let { check(it.x == still.x && it.y == still.y) { "A drag with F1 moved the block" } }
+            chat.block(DRAGON_TIMER).let { check(it.x == still.x && it.y == still.y) { "A drag with F1 moved the block" } }
             DsModClient.feature<ChatHudEditor>().feature.enabled = false
             try {
-                chat.drag(TIMER, still.x + 60, still.y - 60)
-                chat.block(TIMER).let { check(it.x == still.x && it.y == still.y) { "A drag with the switch off moved the block" } }
+                chat.drag(DRAGON_TIMER, still.x + 60, still.y - 60)
+                chat.block(DRAGON_TIMER).let { check(it.x == still.x && it.y == still.y) { "A drag with the switch off moved the block" } }
             } finally {
                 DsModClient.feature<ChatHudEditor>().feature.enabled = true
             }
             context.setScreen { null }
-            DsModClient.settings.hud.positions.remove(TIMER)
+            DsModClient.settings.hud.positions.remove(DRAGON_TIMER)
             DsModClient.settings.hud.positions.remove(TRACKER)
         }
     }

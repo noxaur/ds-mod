@@ -25,9 +25,7 @@ class InventoryLookTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = InventoryGrid.with(context) {
         val inventoryHud = DsModClient.feature<InventoryHud>()
         val menuTheme = DsModClient.feature<MenuTheme>()
-        val hud = DsModClient.settings.hud
         val themedBefore = menuTheme.feature.enabled
-        val themeBefore = hud.theme
         val menuLookBefore = menuTheme.menuLook.value
         fun opacity(percent: Float) {
             inventoryHud.opacity.value = percent
@@ -46,34 +44,33 @@ class InventoryLookTest : FabricClientGameTest {
             for ((themed, theme, menuLook) in states) {
                 menuTheme.feature.enabled = themed
                 menuTheme.menuLook.value = menuLook
-                hud.theme = theme
-                context.waitTicks(2)
-                val name = when {
-                    !themed -> "vanilla-texture"
-                    menuLook == MenuLook.GLASS -> "glass"
-                    else -> theme.name.lowercase()
+                context.inTheme(theme) {
+                    val name = when {
+                        !themed -> "vanilla-texture"
+                        menuLook == MenuLook.GLASS -> "glass"
+                        else -> theme.name.lowercase()
+                    }
+                    val shot = context.takeScreenshot("inventory-hud-inventory-look-$name")
+                    // Glass shows the world through it, so only a solid panel has one color to check.
+                    if (menuLook == MenuLook.SOLID) {
+                        val expected = if (themed) theme.panel and 0xFFFFFF else InventoryGrid.VANILLA_PANEL
+                        val panel = panelColor(context, shot)
+                        check(panel == expected) { "The panel is %06X with Menu Theme %s in %s, not %06X".format(panel, themed, theme, expected) }
+                        // Opacity lets the world through the panel and its slots.
+                        opacity(0f)
+                        val clear = panelColor(context, context.takeScreenshot("inventory-hud-inventory-look-$name-clear"))
+                        check(clear != expected) { "At an opacity of 0 the panel still shows, %06X, with Menu Theme %s in %s".format(clear, themed, theme) }
+                        opacity(50f)
+                        val half = panelColor(context, context.takeScreenshot("inventory-hud-inventory-look-$name-half"))
+                        check(half != expected && half != clear) { "At an opacity of 50 the panel is %06X, between %06X and %06X".format(half, clear, expected) }
+                        opacity(100f)
+                    }
+                    println("InventoryLookTest: the HUD drew the Inventory look in ${drawMicros(context)}µs a frame, Menu Theme $themed, $theme, $menuLook")
                 }
-                val shot = context.takeScreenshot("inventory-hud-inventory-look-$name")
-                // Glass shows the world through it, so only a solid panel has one color to check.
-                if (menuLook == MenuLook.SOLID) {
-                    val expected = if (themed) theme.panel and 0xFFFFFF else InventoryGrid.VANILLA_PANEL
-                    val panel = panelColor(context, shot)
-                    check(panel == expected) { "The panel is %06X with Menu Theme %s in %s, not %06X".format(panel, themed, theme, expected) }
-                    // Opacity lets the world through the panel and its slots.
-                    opacity(0f)
-                    val clear = panelColor(context, context.takeScreenshot("inventory-hud-inventory-look-$name-clear"))
-                    check(clear != expected) { "At an opacity of 0 the panel still shows, %06X, with Menu Theme %s in %s".format(clear, themed, theme) }
-                    opacity(50f)
-                    val half = panelColor(context, context.takeScreenshot("inventory-hud-inventory-look-$name-half"))
-                    check(half != expected && half != clear) { "At an opacity of 50 the panel is %06X, between %06X and %06X".format(half, clear, expected) }
-                    opacity(100f)
-                }
-                println("InventoryLookTest: the HUD drew the Inventory look in ${drawMicros(context)}µs a frame, Menu Theme $themed, $theme, $menuLook")
             }
         } finally {
             menuTheme.feature.enabled = themedBefore
             menuTheme.menuLook.value = menuLookBefore
-            hud.theme = themeBefore
         }
 
         // In columns each row runs down, the hotbar apart to the right.

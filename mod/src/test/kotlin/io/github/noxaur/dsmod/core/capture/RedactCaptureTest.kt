@@ -1,8 +1,9 @@
 package io.github.noxaur.dsmod.core.capture
 
 import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.harness.chat
+import io.github.noxaur.dsmod.harness.text
 import io.github.noxaur.dsmod.core.game.ServerSpan
-import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.SystemMessage
@@ -18,7 +19,6 @@ import kotlin.test.assertTrue
 class RedactCaptureTest {
     private val dir = Files.createTempDirectory("redact")
 
-    private fun text(line: String) = ServerText(listOf(ServerSpan(line)))
 
     private fun redact(vararg lines: String, own: Set<String> = emptySet()): List<String> {
         val raw = dir.resolve("capture.jsonl").also { it.writeLines(lines.toList()) }
@@ -31,8 +31,8 @@ class RedactCaptureTest {
     fun `names, typed chat and skins are gone from events and raw records alike, and the file is gzipped`() {
         val out = redact(
             captureLine(1, TabList(listOf(text("The End"), text("[MVP+] Alice [IRON]"), text("Info"), text("Area: The End")))),
-            captureLine(2, SystemMessage(text("[MVP+] Alice: my password is hunter2"))),
-            captureLine(3, SystemMessage(text("Bob has obtained a thing"))),
+            captureLine(2, chat("[MVP+] Alice: my password is hunter2")),
+            captureLine(3, chat("Bob has obtained a thing")),
             """{"t":4,"type":"chat","data":{"sender":"Alice","text":"Alice: my password is hunter2"}}""",
             """{"t":5,"type":"entities","data":{"full":true,"entries":{"7":{"entity":"minecraft:player","name":{"text":"Dave"}}}}}""",
             """{"t":6,"type":"skulls","data":{"entries":{"1,2,3":{"profile":{"name":"Alice","id":[1,2],"properties":[{"name":"textures","value":"aGVsbG8=","signature":"c2ln"}]}}}}}""",
@@ -54,7 +54,7 @@ class RedactCaptureTest {
     fun `an NPC's colored label is not a player name`() {
         val out = redact(
             """{"t":1,"type":"entities","data":{"full":true,"entries":{"7":{"entity":"minecraft:player","name":{"text":"§e§lCLICK"}},"8":{"entity":"minecraft:player","name":{"text":"[VIP] Dave"}}}}}""",
-            captureLine(2, SystemMessage(text("CLICK to open, Dave"))),
+            captureLine(2, chat("CLICK to open, Dave")),
             own = setOf("Steve"),
         )
 
@@ -66,7 +66,7 @@ class RedactCaptureTest {
         val out = redact(
             """{"t":1,"type":"entities","data":{"full":true,"entries":{"7":{"entity":"minecraft:player","name":{"text":"Dungeons","component":{"text":"Dungeons"}}},"8":{"entity":"minecraft:player","name":{"text":"Dqwerty"}}}}}""",
             """{"t":2,"type":"swing","data":{"target":{"entity":"minecraft:player","name":"Dqwerty","x":1.0}}}""",
-            captureLine(3, SystemMessage(text("Dungeons Booster (3 Hours) by [OWNER] Erin"))),
+            captureLine(3, chat("Dungeons Booster (3 Hours) by [OWNER] Erin")),
         )
         val all = out.joinToString("\n")
 
@@ -78,9 +78,9 @@ class RedactCaptureTest {
     @Test
     fun `what the server's characters say is not typed, and their names are not players'`() {
         val out = redact(
-            captureLine(1, SystemMessage(text("[NPC] Mort: Good luck."))),
-            captureLine(2, SystemMessage(text("[BOSS] Kuudra: You will never catch me!"))),
-            captureLine(3, SystemMessage(text("Mort and Kuudra wait"))),
+            captureLine(1, chat("[NPC] Mort: Good luck.")),
+            captureLine(2, chat("[BOSS] Kuudra: You will never catch me!")),
+            captureLine(3, chat("Mort and Kuudra wait")),
         )
 
         assertEquals(listOf("[NPC] Mort: Good luck.", "[BOSS] Kuudra: You will never catch me!", "Mort and Kuudra wait"), plains(out).map { it.plain })
@@ -89,10 +89,10 @@ class RedactCaptureTest {
     @Test
     fun `a speaker whom no other line names loses both their name and their words`() {
         val out = redact(
-            captureLine(1, SystemMessage(text("[DRAGON] Zed: meet me at spawn"))),
-            captureLine(2, SystemMessage(text("Quill: 3/2/2"))),
-            captureLine(3, SystemMessage(ServerText(ServerSpan("[VIP] Yara: ", 0x55FF55), ServerSpan("Void Upgrade Stone", 0xFFAA00), ServerSpan(" selling", 0xFFFFFF)))),
-            captureLine(4, SystemMessage(text("Party members (2)\nGuild > Wren [OFFICER]: on my way"))),
+            captureLine(1, chat("[DRAGON] Zed: meet me at spawn")),
+            captureLine(2, chat("Quill: 3/2/2")),
+            captureLine(3, SystemMessage(text(ServerSpan("[VIP] Yara: ", 0x55FF55), ServerSpan("Void Upgrade Stone", 0xFFAA00), ServerSpan(" selling", 0xFFFFFF)))),
+            captureLine(4, chat("Party members (2)\nGuild > Wren [OFFICER]: on my way")),
         )
         val all = out.joinToString("\n")
 
@@ -106,10 +106,10 @@ class RedactCaptureTest {
     @Test
     fun `a line of a shape no capture shows loses its words and every word before them`() {
         val out = redact(
-            captureLine(1, SystemMessage(text("Alice whispers to you: secret123"))),
-            captureLine(2, SystemMessage(ServerText(ServerSpan("From "), ServerSpan("[MVP+] Bob", 0x55FFFF), ServerSpan(": "), ServerSpan("meet me at ", italic = true), ServerSpan("spawn")))),
-            captureLine(3, SystemMessage(text("Co-op > Carol: psst"))),
-            captureLine(4, SystemMessage(ServerText(ServerSpan("The run failed: Everyone died. Returning to the Dungeon Hub in 20s.", 0xFF5555)))),
+            captureLine(1, chat("Alice whispers to you: secret123")),
+            captureLine(2, SystemMessage(text(ServerSpan("From "), ServerSpan("[MVP+] Bob", 0x55FFFF), ServerSpan(": "), ServerSpan("meet me at ", italic = true), ServerSpan("spawn")))),
+            captureLine(3, chat("Co-op > Carol: psst")),
+            captureLine(4, SystemMessage(text("The run failed: Everyone died. Returning to the Dungeon Hub in 20s.", 0xFF5555))),
         )
         val all = out.joinToString("\n")
 
@@ -125,9 +125,9 @@ class RedactCaptureTest {
     fun `the server's own lines keep their words, though a player is called what they start with`() {
         val out = redact(
             captureLine(1, TabList(listOf(text("The End"), text("[VIP] Everyone"), text("Info")))),
-            captureLine(2, SystemMessage(text("                    Everyone: +50% dungeon drops."))),
-            captureLine(3, SystemMessage(text("[BOSS] Old Dragon: I call upon the god of thunder.. Kill them all!"))),
-            captureLine(4, SystemMessage(text("Auto-Slayer disabled."))),
+            captureLine(2, chat("                    Everyone: +50% dungeon drops.")),
+            captureLine(3, chat("[BOSS] Old Dragon: I call upon the god of thunder.. Kill them all!")),
+            captureLine(4, chat("Auto-Slayer disabled.")),
         )
 
         assertEquals(
@@ -157,9 +157,9 @@ class RedactCaptureTest {
             captureLine(1, TabList(listOf(text("     End Island (64) 1/4     "), text("[VIP] Island"), text("End"), text("Info")))),
             captureLine(2, Sidebar(text("DragSim"), listOf(text("⏣ Dragon's Den")))),
             captureLine(3, SlotChanged(3, Item("minecraft:stick", 1, text("Stick"), listOf(text("Seller: [MOD] DragSim"))))),
-            captureLine(4, SystemMessage(text("[MOD] DragSim: welcome, End"))),
-            captureLine(5, SystemMessage(text("Warping to End Island on DragSim…"))),
-            captureLine(6, SystemMessage(text("» End placed a Summoning Eye! (1/8)"))),
+            captureLine(4, chat("[MOD] DragSim: welcome, End")),
+            captureLine(5, chat("Warping to End Island on DragSim…")),
+            captureLine(6, chat("» End placed a Summoning Eye! (1/8)")),
         )
 
         assertEquals(
@@ -211,8 +211,8 @@ class RedactCaptureTest {
     fun `an NPC that shares a player's name says what it said, and a player called like an alias is renamed`() {
         val out = redact(
             captureLine(1, TabList(listOf(text("The End"), text("Mort"), text("Player1"), text("Info")))),
-            captureLine(2, SystemMessage(text("[NPC] Mort: Good luck."))),
-            captureLine(3, SystemMessage(text("Player1: my secret"))),
+            captureLine(2, chat("[NPC] Mort: Good luck.")),
+            captureLine(3, chat("Player1: my secret")),
         )
 
         assertEquals(listOf("[NPC] Player1: Good luck.", "Player2: hello"), plains(out).map { it.plain })
@@ -254,9 +254,9 @@ class RedactCaptureTest {
         val summary = "                1st Damager [VIP] Alice - 80.8M\n                2nd Damager [MVP+] Bob - 33.8M\n\n                   Your Damage: 33.8M (Position #2)"
         val out = redact(
             captureLine(1, TabList(listOf(text("The End"), text("[VIP] Alice"), text("[MVP+] Bob"), text("Info")))),
-            captureLine(2, SystemMessage(text(summary))),
-            captureLine(3, SystemMessage(text("[VIP] Alice [IRON]: hello there"))),
-            captureLine(4, SystemMessage(text("Bob \u272F: nice"))),
+            captureLine(2, chat(summary)),
+            captureLine(3, chat("[VIP] Alice [IRON]: hello there")),
+            captureLine(4, chat("Bob \u272F: nice")),
             own = setOf("Steve"),
         )
 

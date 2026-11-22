@@ -9,13 +9,10 @@ import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
-import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
-import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.core.component.DataComponents
@@ -28,7 +25,6 @@ import net.minecraft.world.inventory.ChestMenu
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.CustomData
-import org.lwjgl.glfw.GLFW
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
@@ -47,19 +43,6 @@ class ItemRarityTest : FabricClientGameTest {
     private fun chestItem(name: String, rarity: String): ItemStack = ItemStack(Items.DIAMOND_SWORD).also {
         it.set(DataComponents.CUSTOM_NAME, Component.literal(name))
         it.set(DataComponents.CUSTOM_DATA, CustomData.of(CompoundTag().apply { put("item_data", CompoundTag().apply { putString("rarity", rarity) }) }))
-    }
-
-    /** Puts the cursor over the middle of a slot, in window pixels. */
-    private fun hover(context: ClientGameTestContext, slot: Int) {
-        val (x, y) = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
-            val screen = client.gui.screen() as AbstractContainerScreen<*>
-            val corner = screen as ContainerScreenAccessor
-            val at = screen.menu.slots[slot]
-            val scale = client.window.guiScale.toDouble()
-            (corner.leftPos + at.x + 8) * scale to (corner.topPos + at.y + 8) * scale
-        }
-        context.input.setCursorPos(x, y)
-        context.waitTicks(5)
     }
 
     /**
@@ -88,10 +71,7 @@ class ItemRarityTest : FabricClientGameTest {
         check(itemRarity.hotbarStyle.value.floor != itemRarity.containerStyle().floor) {
             "The hotbar's Floor set ${itemRarity.hotbarStyle.value.floor}, and the inventory's is ${itemRarity.containerStyle().floor}"
         }
-        context.takeScreenshot("rarity-hotbar-own")
-        SettingsSteps.theme(context, Theme.VANILLA)
-        context.takeScreenshot("rarity-hotbar-own-vanilla")
-        SettingsSteps.theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("rarity-hotbar-own")
         context.setScreen { null }
         context.waitTicks(5)
         context.takeScreenshot("rarity-hotbar-in-game")
@@ -142,9 +122,9 @@ class ItemRarityTest : FabricClientGameTest {
             val expected = marked(9 to Role.LEGENDARY, 10 to Role.RARE)
             check(marks(context) == expected) { "Marked ${marks(context)}" }
 
-            context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }
+            context.openInventory()
             context.waitTicks(5)
-            hover(context, 10)
+            context.hoverSlot(10, settle = 5)
             context.takeScreenshot("rarity-inventory")
 
             world.server.runOnServer<Nothing> { server ->
@@ -159,7 +139,7 @@ class ItemRarityTest : FabricClientGameTest {
                     it.setItem(23, chestItem("Special Sword", "SPECIAL"))
                     it.setItem(25, ItemStack(Items.STONE))
                 }
-                server.playerList.players.first().openMenu(
+                server.player.openMenu(
                     SimpleMenuProvider({ id, inventory, _ -> ChestMenu.sixRows(id, inventory, chest) }, Component.literal("Test Chest")),
                 )
             }
@@ -174,7 +154,7 @@ class ItemRarityTest : FabricClientGameTest {
                 21 to Role.DIVINE, 23 to Role.SPECIAL, 54 + 0 to Role.LEGENDARY, 54 + 1 to Role.RARE,
             )
             check(chestMarks == inChest) { "Marked $chestMarks" }
-            hover(context, 4)
+            context.hoverSlot(4, settle = 5)
             context.takeScreenshot("rarity-chest")
 
             // The feature guide's picture: the Minimal preset in a chest, with no tooltip or toast over it.
@@ -182,8 +162,7 @@ class ItemRarityTest : FabricClientGameTest {
                 DsModClient.feature<ItemRarity>().preset.value = RarityPreset.MINIMAL
                 it.gui.toastManager().clear()
             }
-            context.input.setCursorPos(0.0, 0.0)
-            context.waitTicks(5)
+            context.point(0, 0, settle = 5)
             context.takeScreenshot("rarity-chest-minimal")
             context.runOnClient<Nothing> { DsModClient.feature<ItemRarity>().preset.value = RarityPreset.GILDED }
 

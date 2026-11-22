@@ -1,19 +1,20 @@
 package io.github.noxaur.dsmod.core.game
 
 import kotlin.test.Test
+import io.github.noxaur.dsmod.harness.text
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class EntityFilterTest {
     private val pets = listOf(Pet.STANDS)
-    private fun stand(name: String) = EntitySeen(3, "minecraft:armor_stand", ServerText(ServerSpan(name)))
+    private fun stand(name: String) = EntitySeen(3, "minecraft:armor_stand", text(name))
 
     @Test
     fun `a filter takes an entity by its type and the start of its name`() {
         assertEquals(true, Pet.STANDS.matches(stand("[Lvl 100] Black Cat")))
         assertEquals(false, Pet.STANDS.matches(stand("Click to talk")))
-        assertEquals(false, Pet.STANDS.matches(EntitySeen(3, "minecraft:zombie", ServerText(ServerSpan("[Lvl 100] Black Cat")))))
+        assertEquals(false, Pet.STANDS.matches(EntitySeen(3, "minecraft:zombie", text("[Lvl 100] Black Cat"))))
     }
 
     @Test
@@ -27,7 +28,7 @@ class EntityFilterTest {
         val sign = stand("Click to talk")
         assertEquals(cat, pets.view(null, cat, cat))
         assertNull(pets.view(null, sign, sign))
-        val renamed = EntityRenamed(3, ServerText(ServerSpan("[Lvl 100] Black Cat")))
+        val renamed = EntityRenamed(3, text("[Lvl 100] Black Cat"))
         assertEquals(renamed, pets.view(cat, cat, renamed))
         assertEquals(cat, pets.view(sign, cat, renamed))
         assertEquals(EntityGone(3), pets.view(cat, sign, EntityRenamed(3, sign.name)))
@@ -40,7 +41,7 @@ class EntityFilterTest {
         val table = EntityTable()
         val cat = stand("[Lvl 99] Black Cat")
         assertEquals(true, table.apply(cat))
-        val renamed = EntityRenamed(3, ServerText(ServerSpan("[Lvl 100] Black Cat")))
+        val renamed = EntityRenamed(3, text("[Lvl 100] Black Cat"))
         table.apply(renamed)
         assertEquals(cat, table.before)
         assertEquals(listOf(cat.copy(name = renamed.name)), table.values.toList())

@@ -25,7 +25,6 @@ import net.minecraft.world.InteractionHand
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
-import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import java.io.File
 import java.lang.management.ManagementFactory
 import java.util.Locale
@@ -101,7 +100,7 @@ class PerfTest : FabricClientGameTest {
                     })
                 }
             }
-            context.setScreen { InventoryScreen(context.computeOnClient<net.minecraft.world.entity.player.Player, Nothing> { it.player!! }) }
+            context.openInventory()
             context.runOnClient<Nothing> {
                 Slots.mark("perf", (0 until MARKED_SLOTS).associate { slot ->
                     FIRST_MARKED_SLOT + slot to SlotMark(Role.GOOD, text { good("$slot") }, rarity = slot % 2 == 0)
@@ -176,7 +175,7 @@ class PerfTest : FabricClientGameTest {
     private fun etherwarp(context: ClientGameTestContext, world: TestSingleplayerContext, samples: HashMap<String, MutableList<Double>>) {
         context.runOnClient<Nothing> { it.gui.setScreen(null) }
         world.server.runOnServer<Nothing> { server ->
-            server.playerList.players.first().setItemInHand(InteractionHand.MAIN_HAND, ItemStack(Items.DIAMOND_SHOVEL).also { stack ->
+            server.player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack(Items.DIAMOND_SHOVEL).also { stack ->
                 stack.set(DataComponents.LORE, ItemLore(listOf("Etherwarp", "looking at, up to 57 blocks away.").map(Component::literal)))
             })
         }
@@ -201,15 +200,14 @@ class PerfTest : FabricClientGameTest {
 
     /** Adds a sample for each `capture-` timer a pass ran under, per pass. A pass runs on one tick in five. */
     private fun recording(context: ClientGameTestContext, world: TestSingleplayerContext, samples: HashMap<String, MutableList<Double>>) {
-        world.server.runOnServer<Nothing> { server ->
-            val inventory = server.playerList.players.first().inventory
-            for (slot in 0 until inventory.containerSize) {
-                inventory.setItem(slot, ItemStack(Items.DIAMOND_SWORD).also { stack ->
+        world.give(
+            (0 until world.server.computeOnServer<Int, Nothing> { it.player.inventory.containerSize }).associateWith { slot ->
+                ItemStack(Items.DIAMOND_SWORD).also { stack ->
                     stack.set(DataComponents.CUSTOM_NAME, Component.literal("Sword $slot"))
                     stack.set(DataComponents.LORE, ItemLore((1..20).map { Component.literal("Line $it of the lore of sword $slot") }))
-                })
-            }
-        }
+                }
+            },
+        )
         repeat(ARMORED_MOBS) { i ->
             world.server.runCommand(
                 "execute at @a run summon zombie ~${i % 8 - 4} ~ ~${3 + i / 8} {NoAI:1b,Silent:1b,PersistenceRequired:1b,Tags:[\"perf\"],CustomName:\"Mob $i\"," +

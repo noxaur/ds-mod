@@ -5,27 +5,33 @@ import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
+import kotlin.math.abs
 
 /**
  * Opens one menu from another, as the server does with a close and an open in one tick, and checks where the cursor
  * ends up. The game takes and releases the mouse only while its window has focus, which Fabric gives every test.
  */
 class KeepCursorTest : FabricClientGameTest {
-    private fun cursorAfterNext(context: ClientGameTestContext, world: TestSingleplayerContext): Pair<Double, Double> {
+    private fun cursor(context: ClientGameTestContext) = context.computeOnClient<Pair<Double, Double>, Nothing> { it.mouseHandler.xpos() to it.mouseHandler.ypos() }
+
+    private fun cursorAfterNext(context: ClientGameTestContext, world: TestSingleplayerContext): Pair<Pair<Double, Double>, Pair<Double, Double>> {
         ServerMenus.open(context, world, 6, "First")
-        context.input.setCursorPos(40.0, 50.0)
-        context.waitTicks(2)
+        context.point(20, 25, settle = 2)
+        val before = cursor(context)
+        val gui = context.computeOnClient<Pair<Double, Double>, Nothing> { before.first * it.window.guiScaledWidth / it.window.screenWidth to before.second * it.window.guiScaledHeight / it.window.screenHeight }
+        check(abs(gui.first - 20) < 0.01 && abs(gui.second - 25) < 0.01) { "The cursor went to $gui in GUI pixels, not 20, 25" }
         ServerMenus.open(context, world, 4, "Second")
-        return context.computeOnClient<Pair<Double, Double>, Nothing> { it.mouseHandler.xpos() to it.mouseHandler.ypos() }
+        return before to cursor(context)
     }
 
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
             try {
-                check(cursorAfterNext(context, world) == 40.0 to 50.0) { "Keep Cursor let the cursor move" }
+                val (before, after) = cursorAfterNext(context, world)
+                check(after == before) { "Keep Cursor let the cursor move" }
 
                 context.runOnClient<Nothing> { DsModClient.feature<KeepCursor>().feature.enabled = false }
-                val centered = cursorAfterNext(context, world)
+                val centered = cursorAfterNext(context, world).second
                 val middle = context.computeOnClient<Pair<Double, Double>, Nothing> {
                     (it.window.screenWidth / 2).toDouble() to (it.window.screenHeight / 2).toDouble()
                 }

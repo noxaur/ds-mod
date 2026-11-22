@@ -4,13 +4,11 @@ import io.github.noxaur.dsmod.core.feature.general.CommandBinds
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.Where
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
-import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
-import io.github.noxaur.dsmod.gametest.SettingsSteps.theme
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.TitleScreen
@@ -65,10 +63,7 @@ class CommandBindGroupsTest : FabricClientGameTest {
         context.input.holdMouse(0)
         context.waitTick()
         for (y in listOf(from[1] + 12, from[1] + 20, empty[1] + 4, empty[1] + 9)) move(from[0] + 13, y)
-        context.takeScreenshot("command-binds-drag")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("command-binds-drag-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("command-binds-drag")
         context.input.releaseMouse(0)
         context.waitTicks(2)
         check(commandBinds.binds.value.single { it.command == "/me end" }.group == "Dungeons") { "Dragging under Dungeons left ${commandBinds.binds.value}" }
@@ -163,8 +158,7 @@ class CommandBindGroupsTest : FabricClientGameTest {
         }
         open(context, SettingsTabs(at("Binds")))
         list()
-        context.input.setCursorPos(0.0, 0.0)
-        context.waitTicks(2)
+        context.point(0, 0, settle = 2)
         context.takeScreenshot("command-binds-guide")
     }
 }

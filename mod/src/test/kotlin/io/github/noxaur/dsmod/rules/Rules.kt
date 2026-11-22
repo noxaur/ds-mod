@@ -49,6 +49,60 @@ val rules = listOf(
         span = Span.FILE,
     ),
     Rule(
+        id = "kills-by-own-kills",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        except = "src/main/kotlin/**/core/feature/general/OwnKills.kt",
+        forbid = Regex("""\bCombatXp\b"""),
+        fix = "Count the player's own kills with `OwnKills(feature, { death -> .. }) { count, xp, now -> .. }`, which " +
+            "matches each death to the Combat XP action bar behind it and reads the XP.",
+        example = "if (CombatXp.MARK !in bar.text.plain) return@on",
+        examples = listOf("bar.text.plain.let(CombatXp::gained)"),
+    ),
+    Rule(
+        id = "container-by-reader",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        except = "src/main/kotlin/**/core/feature/general/ContainerReader.kt",
+        forbid = Regex("""on<\s*(ContainerOpened|SlotChanged|WorldChanged)\s*>\s*\{\s*\w+\s*,\s*\w+\s*->\s*\w+\s*=\s*true\s*\}"""),
+        fix = "Mark slots with `SlotMarks(feature) { slot, item, now -> .. }`, which rebuilds the marks only when the " +
+            "container changed or `invalidate()` says so. To read a container's items again after it changed, ask " +
+            "`ContainerReader(feature).changed()`.",
+        example = "feature.on<SlotChanged> { _, _ -> changed = true }",
+        examples = listOf("feature.on<ContainerOpened> { event, _ -> stale = true }", "feature.on< WorldChanged > {\n    _, _ -> stale = true\n}"),
+        span = Span.FILE,
+    ),
+    Rule(
+        id = "pet-by-current-pet",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        except = "src/main/kotlin/**/core/feature/general/CurrentPet.kt",
+        forbid = Regex("""\b(Pet\s*(\.|::)\s*(STANDS|worn)|PetCard\s*(\.|::)\s*of)\b|"Pet:""""),
+        fix = "Follow the pet the player has out with `CurrentPet(feature, { before -> .. })`, which reads the sidebar, " +
+            "the Pets menu's card and the heads of pets nearby, and forgets the pet when the player leaves.",
+        example = "val card = event.item?.let(PetCard::of)",
+        examples = listOf("feature.readEntities(Pet.STANDS)", "val (name, head) = Pet.worn(seen)", """startsWith("Pet:")"""),
+    ),
+    Rule(
+        id = "container-by-reads",
+        files = "src/{main,debug}/**.{kt,java}",
+        except = "src/main/{kotlin/**/edge/ContainerScreens.kt,java/**/edge/mixin/ContainerScreenAccessor.java}",
+        forbid = Regex("""\bContainerScreenAccessor\b"""),
+        fix = "Read a container screen's place from `ContainerScreens.kt`: `containerLeft`, `containerTop`, `containerWidth`, " +
+            "`containerHeight`, `slotUnderMouse`, `screenX(slot)` and `screenY(slot)`, and draw at a slot's own x and y inside " +
+            "`screen.drawInContainer(graphics) { .. }`. If a read is missing, add it there.",
+        example = "val left = (screen as ContainerScreenAccessor).leftPos",
+        examples = listOf("import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor", "ContainerScreenAccessor at = (ContainerScreenAccessor) screen;"),
+    ),
+    Rule(
+        id = "screen-by-hook",
+        files = "src/{main,debug}/**.{kt,java}",
+        except = "src/main/kotlin/**/edge/ScreenHooks.kt",
+        forbid = Regex("""\bAFTER_INIT\b"""),
+        fix = "Add to a screen with `ScreenHooks.onEveryLayout<ScreenType> { screen, opened -> .. }`. It runs on every layout, " +
+            "because Fabric drops a screen's listeners on each one, and `opened` is true only on the first, so state for one " +
+            "menu survives a resize. For a container screen, `openedByServer` and `creative` in `ContainerScreens.kt` name which ones.",
+        example = "ScreenEvents.AFTER_INIT.register { _, screen, _, _ -> }",
+        examples = listOf("ScreenEvents\n    .AFTER_INIT", "FabricScreens.AFTER_INIT.register((client, screen, w, h) -> {});"),
+    ),
+    Rule(
         id = "text-by-role",
         files = "src/main/**.{kt,java}",
         // PlayerNames strips the `§` codes of an older capture's raw text and reads them to tell an NPC's label. It colors nothing.
@@ -63,6 +117,37 @@ val rules = listOf(
         examples = listOf("val glass = 0xFF_AA_00_FF", "val gold = 0xFFAA00"),
     ),
     Rule(
+        id = "server-text-by-harness",
+        files = "src/test/kotlin/**.kt",
+        except = "src/test/kotlin/**/{harness/Harness,rules/Rules}.kt",
+        forbid = Regex("""\bServerText\s*\("""),
+        fix = "Build what the server sends with the harness: `text(plain)` or `text(plain, color)` for a line, " +
+            "`text(ServerSpan(..), ServerSpan(..))` for a line in several spans, `text()` for an empty one, `lines(..)` for several lines and `chat(line)` for a chat line.",
+        example = """val line = SystemMessage(ServerText(ServerSpan("RARE DROP!")))""",
+        examples = listOf("ServerText(listOf(ServerSpan(line)))", "ServerText(spans.map { (text, color) -> ServerSpan(text, color) })", "ServerText(emptyList())"),
+        span = Span.FILE,
+    ),
+    Rule(
+        id = "readout-by-harness",
+        files = "src/test/kotlin/**.kt",
+        except = "src/test/kotlin/**/{harness/Harness,rules/Rules}.kt",
+        forbid = Regex("""readouts\s*\.\s*(single|first|last|find)"""),
+        fix = "Extend `Harness` and read a feature's readout with `readout(feature)`, `hud(feature)` or `rows(feature)`, " +
+            "or the one feature's with no argument when the harness runs it `alone`.",
+        example = """private fun hud() = game.readouts.single { it.feature.id == "inventory-hud" }.hud""",
+        examples = listOf("game.readouts.first { it.feature.id == id }", "game.readouts\n    .single()", "game.readouts.singleOrNull()?.hud"),
+        span = Span.FILE,
+    ),
+    Rule(
+        id = "resource-by-harness",
+        files = "src/test/kotlin/**.kt",
+        except = "src/test/kotlin/**/{harness/Harness,rules/Rules}.kt",
+        forbid = Regex("""\bgetResource(AsStream)?\s*\(\s*"/"""),
+        fix = "Read a file under `src/test/resources` with the harness's `resource(path)`.",
+        example = """checkNotNull(javaClass.getResource("/profiles/profile.json")).readText()""",
+        examples = listOf("""javaClass.getResourceAsStream("/profiles/profile.json")"""),
+    ),
+    Rule(
         id = "item-data-by-hand",
         files = "src/main/kotlin/**/edge/**.kt",
         except = "src/main/kotlin/**/edge/Items.kt",
@@ -71,6 +156,27 @@ val rules = listOf(
             "from edge/Items.kt, which copies the tag once per item. For another field, add it there.",
         example = """val id = stack.get(DataComponents.CUSTOM_DATA)?.copyTag()?.getCompoundOrEmpty("item_data")?.getStringOr("item_id", "")""",
         examples = listOf("""tag.getCompoundOrEmpty("extra").getCompoundOrEmpty("item_skin").getStringOr("skinId", "")"""),
+    ),
+    Rule(
+        id = "lore-glyphs-by-hand",
+        files = "src/main/kotlin/**/core/**.kt",
+        except = "src/main/kotlin/**/core/game/Item.kt",
+        forbid = Regex("""[\uE000-\uF8FF]|\\u(?:[Ee][0-9A-Fa-f]{3}|[Ff][0-8][0-9A-Fa-f]{2})"""),
+        fix = "Read lore as `item.cleanLore`, which drops the glyphs of the server's resource pack and trims each line once per " +
+            "item, and the lines under a header with `item.section(header)`, or `item.sections(regex) { heading, lines -> .. }`.",
+        example = """line.filterNot { it in '\uE000'..'\uF8FF' }""",
+        examples = listOf("line.filterNot { it in '\uE000'..'\uF8FF' }", "val glyph = '\uE001'"),
+    ),
+    Rule(
+        id = "item-json-by-hand",
+        files = "src/main/kotlin/**/core/{game,feature,contribute}/**.kt",
+        except = "src/main/kotlin/**/core/game/Item.kt",
+        forbid = Regex("""as\?\s*JsonObject|\bdata\s*\[\s*"(?:item_data|extra)""""),
+        fix = "Read an item's data with `item.string(\"item_data\", \"rarity\")`, or `item.objectAt(..)` for an object. " +
+            "Other JSON reads with `jsonObject` and `jsonPrimitive` inside a `runCatching`.",
+        example = """((item.data["item_data"] as? JsonObject)?.get("rarity") as? JsonPrimitive)?.contentOrNull""",
+        examples = listOf("(data[\"extra\"] as?\n    JsonObject)", """item.data["item_data"]?.jsonObject?.get("rarity")"""),
+        span = Span.FILE,
     ),
     Rule(
         id = "number-by-helper",
@@ -140,14 +246,6 @@ val rules = listOf(
         span = Span.FILE,
     ),
     Rule(
-        id = "item-id-by-items",
-        files = "src/main/kotlin/**/edge/**.kt",
-        except = "src/main/kotlin/**/edge/Items.kt",
-        forbid = Regex("""BuiltInRegistries\.ITEM\.getKey"""),
-        fix = "Read a stack's id with `stack.id` from `edge/Items.kt`, so every id is spelled the same way.",
-        example = "val id = BuiltInRegistries.ITEM.getKey(stack.item)",
-    ),
-    Rule(
         id = "gametest-no-swallowed-wait",
         files = "src/gametest/**.kt",
         forbid = Regex("""runCatching\s*\{[^}]*\bwait(?:For|Until)"""),
@@ -174,6 +272,125 @@ val rules = listOf(
         example = "repeat(100) { if (done()) return@repeat else context.waitTicks(1) }",
         examples = listOf("repeat(200) {\n    if (done()) return\n    context.waitTicks(1)\n}"),
         span = Span.FILE,
+    ),
+    Rule(
+        id = "registry-by-hand",
+        files = "src/main/kotlin/**/edge/**.kt",
+        except = "src/main/kotlin/**/edge/{Items,Entities}.kt",
+        forbid = Regex("""BuiltInRegistries\s*\.\s*(ITEM|ENTITY_TYPE)\b"""),
+        fix = "Look an item up with `stackOf(id)`, a barrier when the game has no such item, or `isItem(id)`, and read a " +
+            "stack's id with `stack.id`, from edge/Items.kt. Read an entity's type id with `entity.typeId`, and find a type " +
+            "with `entityType(id)`, from edge/Entities.kt.",
+        example = """Hit(BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString())""",
+        examples = listOf("val id = BuiltInRegistries.ITEM.getKey(stack.item)", """Identifier.tryParse(id)?.let(BuiltInRegistries.ITEM::containsKey)""", "BuiltInRegistries\n    .ITEM.getKey(item)"),
+        span = Span.FILE,
+    ),
+    Rule(
+        id = "player-slots-by-container",
+        files = "src/main/**.{kt,java}",
+        except = "src/main/kotlin/**/core/game/ContainerState.kt",
+        forbid = Regex("""const\s+val\s+\w+\s*(:\s*Int\s*)?=\s*36(?![\w.])"""),
+        fix = "In core, the open container's `menuSlots` and `playerSlots` from `ContainerState` say which slots are the menu's " +
+            "and which the player's. In the edge, name a slot with Minecraft's own number, as `InventoryMenu.USE_ROW_SLOT_START`.",
+        example = "private const val HOTBAR_FIRST = 36",
+        examples = listOf("const val PLAYER_SLOTS=36", "const val PLAYER_SLOTS: Int = 36"),
+    ),
+    Rule(
+        id = "protector-by-stage",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        forbid = Regex(""""(Spawned|Resting|Rising)\b"""),
+        fix = "Read the Protector's stage with `ProtectorRow.parse` and compare its `ProtectorStage`. Show a stage by its `label`.",
+        example = """if (row.stage == "Spawned") return""",
+        examples = listOf("""killsLeft("Rising " + tier)"""),
+    ),
+    Rule(
+        id = "slayer-by-line",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        forbid = Regex(""""[^"\n]*SLAYER BOSS"""),
+        fix = "Read the player's own spawn line with `line(SlayerLine.SPAWNED) { .. }`, and every slayer boss line with " +
+            "`line(SlayerLine.head, SlayerLine::parse) { event, now -> .. }`. If the server sends a new one, add it to `SlayerLine` in core/game.",
+        example = """feature.line("☠ SLAYER BOSS SPAWNING!") { alert() }""",
+    ),
+    Rule(
+        id = "gametest-point-by-pointer",
+        files = "src/gametest/**.{kt,java}",
+        except = "src/gametest/**/Pointer.kt",
+        forbid = Regex("""\bsetCursorPos\s*\("""),
+        fix = "Move the mouse in GUI pixels with `context.point(x, y)`, `context.click(x, y)` or `context.click(widget)`, " +
+            "and over a slot with `context.hoverSlot(index)` or `context.hoverOwnSlot(slot)`, from Pointer.kt, which scale by the real GUI scale.",
+        example = "context.input.setCursorPos(x * scale, y * scale)",
+    ),
+    Rule(
+        id = "gametest-inventory-by-pointer",
+        files = "src/gametest/**.{kt,java}",
+        except = "src/gametest/**/Pointer.kt",
+        forbid = Regex("""\bInventoryScreen\s*\("""),
+        fix = "Open the player's inventory with `context.openInventory()` from Pointer.kt.",
+        example = "context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }",
+    ),
+    Rule(
+        id = "gametest-theme-by-intheme",
+        files = "src/gametest/**.{kt,java}",
+        except = "src/gametest/**/Themes.kt",
+        forbid = Regex("""\bhud\s*\.\s*theme\s*=(?!=)"""),
+        fix = "Run a step in a theme with `context.inTheme(Theme.VANILLA) { .. }`, which puts the theme back after it, or take a " +
+            "screenshot in both themes with `context.shotInBothThemes(name)`, from Themes.kt.",
+        example = "context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }",
+        examples = listOf("hud.theme = theme"),
+    ),
+    Rule(
+        id = "gametest-pixels-by-pixels",
+        files = "src/gametest/**.{kt,java}",
+        except = "src/gametest/**/Pixels.kt",
+        forbid = Regex("""\bImageIO\s*\.\s*read\b"""),
+        fix = "Read a screenshot with `image(shot)`, a GUI pixel with `context.guiPixel(shot, x, y)`, and compare with " +
+            "`countNear`, `brightness`, `distance` and `diff`, from Pixels.kt.",
+        example = "val image = ImageIO.read(shot.toFile())",
+    ),
+    Rule(
+        id = "gametest-player-by-scenes",
+        files = "src/gametest/**.{kt,java}",
+        except = "src/gametest/**/Scenes.kt",
+        forbid = Regex("""\bplayerList\s*\.\s*players\b"""),
+        fix = "Read the server's player with `server.player` from Scenes.kt, and give it items with `world.give(mapOf(slot to stack))`.",
+        example = "server.playerList.players.first().inventory.setItem(9, stack)",
+        examples = listOf("server.playerList.players[0]"),
+    ),
+    Rule(
+        id = "gametest-frozen-by-scenes",
+        files = "src/gametest/**.{kt,java}",
+        except = "src/gametest/**/Scenes.kt",
+        forbid = Regex(""""gamerule advance_(time|weather)"""),
+        fix = "Stop time and the weather with `world.freezeTime()` from Scenes.kt, which sets noon unless `noon = false`.",
+        example = """listOf("gamerule advance_time false", "time set noon").forEach(world.server::runCommand)""",
+    ),
+    Rule(
+        id = "gametest-egg-by-the-end",
+        files = "src/gametest/**.{kt,java}",
+        except = "src/gametest/**/InTheEnd.kt",
+        forbid = Regex("""Egg has Spawned"""),
+        fix = "Show the dragon timer with `context.showDragonTimer(world)`, or send the line alone with `world.eggSpawns()`, from InTheEnd.kt.",
+        example = """world.server.runCommand("tellraw @a \"The Egg has Spawned!\"")""",
+    ),
+    Rule(
+        id = "gametest-children-by-screenwidgets",
+        files = "src/gametest/**.{kt,java}",
+        except = "src/gametest/**/ServerMenus.kt",
+        forbid = Regex("""\.\s*children\s*\(\s*\)"""),
+        fix = "Find a widget on the client thread with `screen.widgets<W>()`, or from the test with `ServerMenus.widgets<W>(context)`, " +
+            "both in ServerMenus.kt. The chat's input is `InChat.input()`, `cursor()` and `clearInput()`.",
+        example = "(it.gui.screen() as ChatScreen).children().filterIsInstance<EditBox>().single().value = \"\"",
+        examples = listOf("screen.children ()"),
+    ),
+    Rule(
+        id = "send-through-player-commands",
+        files = "{src/main/**/edge/**,src/debug/**}",
+        except = "src/main/kotlin/**/edge/PlayerCommands.kt",
+        forbid = Regex("""(\.|::)\s*send(Command|Chat|UnattendedCommand)\b"""),
+        fix = "Send a command for the player with `PlayerCommands.send(command)`, and a chat line with `PlayerCommands.chat(line)`, " +
+            "so every command and chat line the mod sends for the player leaves from one place.",
+        example = "connection.sendCommand(message.text)",
+        examples = listOf("connection.sendChat(message.text)", "Minecraft.getInstance().connection!!::sendCommand", "connection.sendUnattendedCommand(command, null)"),
     ),
     Rule(
         id = "group-by-tree",

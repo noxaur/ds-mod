@@ -11,7 +11,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ChatScreen
-import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import org.lwjgl.glfw.GLFW
 
 /**
@@ -75,7 +74,7 @@ class CommandKeysTest : FabricClientGameTest {
                 context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
                 echo("other", 1)
                 check(said("other") == 1) { "The middle button said other ${said("other")} times in the world" }
-                context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }
+                context.openInventory()
                 context.waitTicks(2)
                 context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
                 context.waitTicks(2)

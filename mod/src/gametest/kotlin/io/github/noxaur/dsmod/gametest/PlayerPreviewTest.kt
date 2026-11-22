@@ -3,13 +3,11 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.core.feature.general.PlayerModel
 import io.github.noxaur.dsmod.core.player.ModelPose
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
-import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.core.ui.Turntable
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.PlayerPreview
 import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
-import io.github.noxaur.dsmod.gametest.SettingsSteps.theme
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.TitleScreen
@@ -49,10 +47,7 @@ class PlayerPreviewTest : FabricClientGameTest {
                 context.waitTicks(20)
                 open()
                 val spot = driver.spot("modelPreview")
-                context.takeScreenshot("player-preview")
-                theme(context, Theme.VANILLA)
-                context.takeScreenshot("player-preview-vanilla")
-                theme(context, Theme.CHARCOAL)
+                context.shotInBothThemes("player-preview")
                 playerModel.size.value = 2.5f
                 context.waitTicks(2)
                 context.takeScreenshot("player-preview-big")

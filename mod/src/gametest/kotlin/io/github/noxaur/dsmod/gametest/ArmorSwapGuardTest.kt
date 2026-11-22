@@ -15,7 +15,7 @@ class ArmorSwapGuardTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
             fun worn() = world.server.computeOnServer<Boolean, Nothing> { server ->
-                server.playerList.players.first().getItemBySlot(EquipmentSlot.CHEST).`is`(Items.DIAMOND_CHESTPLATE)
+                server.player.getItemBySlot(EquipmentSlot.CHEST).`is`(Items.DIAMOND_CHESTPLATE)
             }
             fun hold() {
                 world.server.runCommand("clear @a")

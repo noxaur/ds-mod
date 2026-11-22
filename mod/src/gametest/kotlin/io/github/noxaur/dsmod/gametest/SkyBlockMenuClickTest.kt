@@ -2,34 +2,23 @@ package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.feature.inventory.SkyBlockMenuClick
 import io.github.noxaur.dsmod.edge.DsModClient
-import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
-import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.item.Items
 
 class SkyBlockMenuClickTest : FabricClientGameTest {
     private val menuItem = "nether_star[custom_data={item_data:{item_id:\"skyblock_menu\"}}]"
 
     override fun runTest(context: ClientGameTestContext) {
-        fun carried() = context.computeOnClient<Int, Nothing> { it.player!!.containerMenu.carried.count }
+        fun carried() = context.carried()
         fun open() {
-            context.runOnClient<Nothing> { it.gui.setScreen(InventoryScreen(it.player!!)) }
+            context.openInventory()
             context.waitForScreen(InventoryScreen::class.java)
             context.waitTicks(3)
         }
         fun click(slot: Int) {
-            val (x, y) = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
-                val screen = client.gui.screen() as AbstractContainerScreen<*>
-                val at = screen.menu.slots.first { it.container is Inventory && it.containerSlot == slot }
-                val scale = client.window.guiScale.toDouble()
-                screen as ContainerScreenAccessor
-                (screen.leftPos + at.x + 8) * scale to (screen.topPos + at.y + 8) * scale
-            }
-            context.input.setCursorPos(x, y)
-            context.waitTicks(3)
+            context.hoverOwnSlot(slot)
             context.input.pressMouse(0)
             context.waitTicks(3)
         }
@@ -46,12 +35,10 @@ class SkyBlockMenuClickTest : FabricClientGameTest {
             context.waitTicks(20)
 
             open()
-            context.runOnClient<Nothing> { ClickSpy.clear() }
-            click(8)
-            val sent = context.computeOnClient<List<Click>, Nothing> { ClickSpy.snapshot() }
+            val sent = ClickSpy.during(context) { click(8) }
             check(sent.isEmpty()) { "The click on the SkyBlock Menu item reached the slot: $sent" }
             ServerMenus.shows(context, "SkyBlock Menu")
-            val kept = world.server.computeOnServer<Boolean, Nothing> { server -> server.playerList.players.first().inventory.getItem(8).`is`(Items.NETHER_STAR) }
+            val kept = world.server.computeOnServer<Boolean, Nothing> { server -> server.player.inventory.getItem(8).`is`(Items.NETHER_STAR) }
             check(kept) { "The SkyBlock Menu item left the ninth hotbar slot" }
             context.runOnClient<Nothing> { it.player!!.closeContainer() }
             context.waitTicks(5)

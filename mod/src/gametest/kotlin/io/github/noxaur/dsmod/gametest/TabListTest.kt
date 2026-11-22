@@ -25,7 +25,7 @@ class TabListTest : FabricClientGameTest {
     private class Listed(server: MinecraftServer, name: String, var display: String?, private val order: Int = 0, private val mode: GameType = GameType.SURVIVAL) :
         ServerPlayer(server, server.overworld(), GameProfile(UUID.randomUUID(), name), ClientInformation.createDefault()) {
         init {
-            connection = server.playerList.players.first().connection
+            connection = server.player.connection
         }
 
         override fun getTabListDisplayName(): Component? = display?.let(Component::literal)
@@ -86,11 +86,11 @@ class TabListTest : FabricClientGameTest {
 
             protector.display = " Protector: Spawned"
             world.server.runOnServer<Nothing> { it.playerList.broadcastAll(ClientboundPlayerInfoUpdatePacket(Action.UPDATE_DISPLAY_NAME, protector)) }
-            world.server.runCommand("""tellraw @a "§5✦ §dThe Egg has Spawned!"""")
+            world.eggSpawns()
             world.server.runCommand("""tellraw @a "☠ The Endstone Protector has emerged from the ground! (Tier 5/5)"""")
             context.waitTicks(20)
             check(readout(context, "protector-status").let { it.first() == "Stage: Spawned" && it.last().startsWith("Alive: 0:") }) { "Got ${readout(context, "protector-status")}" }
-            check(readout(context, "dragon-timer") == listOf("Eyes: 0/8")) { "Got ${readout(context, "dragon-timer")}" }
+            check(readout(context, DRAGON_TIMER) == listOf("Eyes: 0/8")) { "Got ${readout(context, DRAGON_TIMER)}" }
 
             world.server.runCommand("""tellraw @a "The Endstone Protector has been defeated!"""")
             context.waitTicks(5)
@@ -101,7 +101,7 @@ class TabListTest : FabricClientGameTest {
             world.server.runOnServer<Nothing> { it.playerList.broadcastAll(ClientboundPlayerInfoUpdatePacket(Action.UPDATE_DISPLAY_NAME, area)) }
             context.waitTicks(20)
             check(readout(context, "protector-status").isEmpty()) { "Got ${readout(context, "protector-status")}" }
-            check(readout(context, "dragon-timer").isEmpty()) { "Got ${readout(context, "dragon-timer")}" }
+            check(readout(context, DRAGON_TIMER).isEmpty()) { "Got ${readout(context, DRAGON_TIMER)}" }
             context.runOnClient<Nothing> { DsModClient.game.tap = null }
         }
     }

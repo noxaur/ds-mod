@@ -111,7 +111,7 @@ class InventoryMarksTest : FabricClientGameTest {
         check(docked.scale < 1f) { "The docked grid did not shrink to the room beside the hotbar: ${docked.scale}" }
         context.runOnClient<Nothing> { it.gui.setScreen(ChatScreen("", false)) }
         context.waitForScreen(ChatScreen::class.java)
-        context.input.setCursorPos((docked.x + docked.width * docked.scale - 3.0) * guiScale, (docked.y + 3.0) * guiScale)
+        context.point(docked.x + docked.width * docked.scale - 3.0, docked.y + 3.0, settle = 0)
         context.input.scroll(1.0)
         context.waitFor { Hud.find(ID)?.dock == HudDock.FREE }
         val grown = context.computeOnClient<Float, Nothing> { checkNotNull(Hud.find(ID)).scale }

@@ -7,7 +7,6 @@ import io.github.noxaur.dsmod.edge.ui.KitKeysButton
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
-import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
@@ -44,28 +43,14 @@ class ForgeCraftTest : FabricClientGameTest {
             it.setItem(20, named(if (ready) Items.DYED_TERRACOTTA.green() else Items.DYED_TERRACOTTA.gray(), "Confirm", if (ready) 0x55FF55 else 0xAAAAAA))
         }
 
-    private fun carry(world: TestSingleplayerContext, count: Int) = world.server.runOnServer<Nothing> { server ->
-        val inventory = server.playerList.players.first().inventory
-        inventory.clearContent()
-        inventory.setItem(9, named(Items.OBSIDIAN, "Enchanted Obsidian", 0x55FF55, minOf(count, 64)))
-    }
+    private fun carry(world: TestSingleplayerContext, count: Int) = world.give(mapOf(9 to named(Items.OBSIDIAN, "Enchanted Obsidian", 0x55FF55, minOf(count, 64))))
 
     private fun forging(world: TestSingleplayerContext) = world.server.runOnServer<Nothing> { server ->
-        server.playerList.players.first().sendSystemMessage(Component.literal("Forging Refined Obsidian! Ready in 49m 12s."))
+        server.player.sendSystemMessage(Component.literal("Forging Refined Obsidian! Ready in 49m 12s."))
     }
 
-    private fun press(context: ClientGameTestContext): List<Click> {
-        ClickSpy.clear()
+    private fun press(context: ClientGameTestContext) = ClickSpy.during(context) {
         context.input.pressKey(GLFW.GLFW_KEY_R)
-        context.waitTicks(2)
-        return ClickSpy.snapshot()
-    }
-
-    private fun clickAt(context: ClientGameTestContext, widget: AbstractWidget, button: Int = GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-        val scale = context.computeOnClient<Double, Nothing> { it.window.guiScale.toDouble() }
-        context.input.setCursorPos((widget.x + widget.width / 2) * scale, (widget.y + widget.height / 2) * scale)
-        context.waitTicks(2)
-        context.input.pressMouse(button)
         context.waitTicks(2)
     }
 
@@ -104,32 +89,27 @@ class ForgeCraftTest : FabricClientGameTest {
             check(press(context) == listOf(Click(20, 0, ContainerInput.PICKUP))) { "The key did not click Confirm" }
 
             val keys = ServerMenus.widget<KitKeysButton>(context)!!
-            clickAt(context, keys)
+            context.click(keys, settle = 2)
             check(context.computeOnClient<Boolean, Nothing> { keys.recording }) { "A click on the key button did not start recording" }
             context.takeScreenshot("forge-craft-listening")
             context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
             context.waitTicks(2)
             check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() is ContainerScreen }) { "Escape closed the menu while the key button listened" }
-            clickAt(context, keys)
+            context.click(keys, settle = 2)
             context.input.pressKey(GLFW.GLFW_KEY_K)
             context.waitTicks(2)
             check(context.computeOnClient<Int, Nothing> { feature.key.value } == GLFW.GLFW_KEY_K) { "The key button did not bind K" }
             context.runOnClient<Nothing> { feature.key.value = GLFW.GLFW_KEY_R }
 
             forge(context, world, 2)
-            ServerMenus.hover(context, 6 * 9)
+            context.hoverSlot(6 * 9)
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
             context.waitTicks(2)
-            val scale = context.computeOnClient<Double, Nothing> { it.window.guiScale.toDouble() }
             val corner = ServerMenus.widget<KitKeysButton>(context)!!
-            ClickSpy.clear()
-            context.input.setCursorPos((corner.x - 20) * scale, (corner.y + 48) * scale)
-            context.waitTicks(2)
-            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
-            context.waitTicks(2)
-            check(ClickSpy.snapshot().isEmpty()) { "A click on the panel reached the menu: ${ClickSpy.snapshot()}" }
+            val onPanel = ClickSpy.during(context) { context.click(corner.x - 20, corner.y + 48, settle = 2) }
+            check(onPanel.isEmpty()) { "A click on the panel reached the menu: $onPanel" }
             check(context.computeOnClient<Boolean, Nothing> { !it.player!!.containerMenu.carried.isEmpty }) { "A click on the panel dropped the carried stack" }
-            ServerMenus.hover(context, 6 * 9)
+            context.hoverSlot(6 * 9)
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
             context.waitTicks(2)
 
@@ -138,14 +118,14 @@ class ForgeCraftTest : FabricClientGameTest {
             check(press(context).isEmpty()) { "The key clicked Forge Queue with the forge full" }
             context.takeScreenshot("forge-craft-full")
 
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
-            carry(world, 4)
-            confirm(context, world, ready = false)
-            context.takeScreenshot("forge-craft-vanilla-missing")
-            carry(world, 34)
-            forge(context, world, 3)
-            context.takeScreenshot("forge-craft-vanilla")
-            context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
+            context.inTheme(Theme.VANILLA, settle = 0) {
+                carry(world, 4)
+                confirm(context, world, ready = false)
+                context.takeScreenshot("forge-craft-vanilla-missing")
+                carry(world, 34)
+                forge(context, world, 3)
+                context.takeScreenshot("forge-craft-vanilla")
+            }
         }
     }
 }

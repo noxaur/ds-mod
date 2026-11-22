@@ -12,7 +12,6 @@ import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.gametest.InventoryGrid.FILLED
 import io.github.noxaur.dsmod.gametest.InventoryGrid.ID
 import io.github.noxaur.dsmod.gametest.InventoryGrid.cell
-import io.github.noxaur.dsmod.gametest.InventoryGrid.skin
 import io.github.noxaur.dsmod.gametest.InventoryGrid.stackAt
 import io.github.noxaur.dsmod.gametest.InventoryGrid.waitForItem
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -32,7 +31,7 @@ import net.minecraft.world.item.Items
 class InventoryHudTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = InventoryGrid.with(context) { world ->
         val inventoryHud = DsModClient.feature<InventoryHud>()
-        check(skin(stackAt(context, cell(context, 0, 0)))) { "The first item's icon lost its skin" }
+        check(HeadSkin.worn(stackAt(context, cell(context, 0, 0)))) { "The first item's icon lost its skin" }
         check(stackAt(context, cell(context, 0, 1))?.get(DataComponents.DYED_COLOR)?.rgb() == InventoryGrid.DYE) { "The leather lost its dye" }
         check(stackAt(context, cell(context, 1, 4))?.count == 13) { "The middle row's fifth stack is not 13 strong" }
         check(stackAt(context, cell(context, 2, 8))?.hoverName?.string == "Item 35") { "The last cell is not the bottom row's last slot" }
@@ -42,15 +41,13 @@ class InventoryHudTest : FabricClientGameTest {
         context.runOnClient<Nothing> { it.gui.setScreen(ChatScreen("", false)) }
         context.waitForScreen(ChatScreen::class.java)
         val dyed = cell(context, 0, 1)
-        val scale = context.computeOnClient<Int, Nothing> { it.window.guiScale }
-        context.input.setCursorPos(dyed.first * scale, dyed.second * scale)
-        context.waitTicks(2)
+        context.point(dyed.first, dyed.second, settle = 2)
         context.takeScreenshot("inventory-hud-tooltip")
         context.runOnClient<Nothing> { it.gui.setScreen(null) }
 
         // Every row, each that is not the inventory's own standing apart: the hotbar, then the armor, then the offhand.
         world.server.runOnServer<Nothing> { server ->
-            val player = server.playerList.players.first()
+            val player = server.player
             player.setItemSlot(EquipmentSlot.HEAD, ServerMenus.named(Items.LEATHER_HELMET, "Helmet"))
             player.setItemSlot(EquipmentSlot.OFFHAND, ServerMenus.named(Items.SHIELD, "Shield"))
         }

@@ -30,6 +30,10 @@ The server closes a menu and opens the next in one tick, and in between the game
 
 Back Buttons resend the player's own command, unchanged, on the player's click, so the mod never acts in the player's place. A menu with no command earlier in its run gets no button, because a menu from an NPC needs a click on the NPC. The button covers Go Back's slot only while it holds filler, because an empty slot is one the player can put an item in.
 
+## The menu trail hears each command as the game sends it
+
+The menu trail notes every command the player sends, typed, clicked on a tab or a button, or fired by a bind, at the one place the game sends commands, so no sender has to tell it. A client command never reaches the server, so it opens no menu the trail follows, and missing one is right. Telling the trail from each of the mod's senders as well was rejected, because it could only note a client command and offer a Go Back that reopens nothing.
+
 ## SkyBlock Menu Click follows the ninth hotbar slot
 
 SkyBlock Menu Click opens the menu only for a click on the SkyBlock Menu item in the ninth hotbar slot, because the server keeps the item there, and a player who hides the item gets the slot back for their own. Matching the item in any slot was rejected, so that a click on any other slot always behaves as the game's own.

@@ -5,7 +5,6 @@ import io.github.noxaur.dsmod.core.feature.inventory.ForgeCraft
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
-import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitKeysButton
 import io.github.noxaur.dsmod.edge.ui.fit
@@ -45,8 +44,8 @@ object ForgeCrafts {
     private val swallowed = HashSet<Int>()
 
     fun register() {
-        ScreenEvents.AFTER_INIT.register { client, screen, _, _ ->
-            if (screen !is ContainerScreen) return@register
+        ScreenHooks.onEveryLayout<ContainerScreen> { screen, _ ->
+            val client = Minecraft.getInstance()
             val panel = Panel(screen)
             val widgets = Screens.getWidgets(screen)
             widgets += panel.keys
@@ -123,7 +122,6 @@ object ForgeCrafts {
     }
 
     private class Panel(private val screen: ContainerScreen) {
-        private val accessor = screen as ContainerScreenAccessor
         var shown = false
             private set
         private var x = 0
@@ -160,8 +158,8 @@ object ForgeCrafts {
         }
 
         fun place() {
-            x = accessor.leftPos - width - 2
-            y = accessor.topPos
+            x = screen.containerLeft - width - 2
+            y = screen.containerTop
             val right = x + width - Kit.INSET
             keys.x = right - KEY_WIDTH
             keys.y = y + 3
@@ -212,7 +210,7 @@ object ForgeCrafts {
                 feature.icon(material)?.let { g.item(stack(it), sx + 1, row + 1) }
                 val count = "${material.count}"
                 val short = feature.has(material.name) < material.count
-                g.text(font, count, sx + 18 - font.width(count), row + 10, (if (short) Role.BAD else Role.COMMON).argb(), true)
+                g.text(font, count, sx + Kit.SLOT_SIZE - font.width(count), row + 10, (if (short) Role.BAD else Role.COMMON).argb(), true)
             }
             if (drawn.size < materials.size) {
                 val more = "+${materials.size - drawn.size}"
@@ -221,7 +219,7 @@ object ForgeCrafts {
             }
 
             val tip = when {
-                over(mouseX, mouseY, ix, top, 18, 18) -> null.also { g.setTooltipForNextFrame(font, stack(recipe.item), mouseX, mouseY) }
+                over(mouseX, mouseY, ix, top, Kit.SLOT_SIZE, Kit.SLOT_SIZE) -> null.also { g.setTooltipForNextFrame(font, stack(recipe.item), mouseX, mouseY) }
                 shownName != name && itemName != null && over(mouseX, mouseY, nameX, top, inner - ITEM_ROW, 9) -> text { server(name, itemName) }
                 over(mouseX, mouseY, nameX, top + 9, inner - ITEM_ROW, 10) -> text {
                     body("Can craft")
@@ -229,7 +227,7 @@ object ForgeCrafts {
                     if (covered > 0) muted("\nMaterials cover $covered.") else bad("\nMaterials cover none.")
                     if (feature.free > 0) muted("\nForge queue has ${feature.free} free.") else bad("\nForge queue is full.")
                 }
-                over(mouseX, mouseY, ix, row, inner, 18) -> text {
+                over(mouseX, mouseY, ix, row, inner, Kit.SLOT_SIZE) -> text {
                     body("Each craft takes")
                     for (material in materials) {
                         val have = feature.has(material.name)
