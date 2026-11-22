@@ -52,6 +52,12 @@
       "unit": "µs",
       "cap": 50
     },
+    "container-read": {
+      "group": "Tick",
+      "label": "Menu packets, 54 slots swapped at once",
+      "unit": "µs",
+      "cap": 1000
+    },
     "item-sights": {
       "group": "Tick",
       "label": "Item sightings, 36 inventory slots",

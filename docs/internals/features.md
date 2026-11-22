@@ -28,11 +28,15 @@ A feature declares what lasts one world and what lasts one session, and the mod 
 
 ## A big menu is read over several ticks
 
-Reading an item out of Minecraft is the costly part of a menu, and a chest of long-lored items took 5.5 ms in one tick. So the mod reads a menu for at most a millisecond a tick, and a big menu arrives over a few ticks. The player's own inventory is kept while another menu is open, because the HUD shows it after every menu closes, and reading it again from nothing made the HUD empty and refill.
+Reading an item out of Minecraft is the costly part of a menu, and a chest of long-lored items took 5.5 ms in one tick. So the mod reads a menu for at most a millisecond a tick, shared between the reads the server's packets start and the tick's own, and a big menu arrives over a few ticks. The player's own inventory is kept while another menu is open, because the HUD shows it after every menu closes, and reading it again from nothing made the HUD empty and refill.
 
 ## Packets that leave no state are posted as they arrive
 
-The tab list and the open container are client state, so the edge polls them. An action bar, a death or a chat line leaves nothing to poll, and their order carries meaning: the Combat XP the server shows right after a death is the only sign of whose kill it was. So each is posted as it arrives. A chat line is read before Fabric asks whether it may show, because Fabric stops asking at the first refusal, and a line another mod hid would never reach a feature. A feature still hides a line through that question.
+The tab list is client state, so the edge polls it. An action bar, a death or a chat line leaves nothing to poll, and their order carries meaning: the Combat XP the server shows right after a death is the only sign of whose kill it was. So each is posted as it arrives. A chat line is read before Fabric asks whether it may show, because Fabric stops asking at the first refusal, and a line another mod hid would never reach a feature. A feature still hides a line through that question.
+
+## The open menu is read when the server changes it
+
+Minecraft draws a menu packet on the next frame, and a copy read only on the tick lagged it by up to 50 ms. A key pressed in that gap reached the game as a hotbar swap, or clicked a slot from the page before. So a packet that opens a menu or changes its slots starts a read, which runs after the rest of that batch of packets, since the server sends one packet per slot. A read per packet was rejected, because a burst would compare the whole menu once for each slot. The tick still reads the menu, because the client changes slots itself through predicted clicks, and no packet says so.
 
 ## Ping is asked for, and TPS is read from the server's clock
 

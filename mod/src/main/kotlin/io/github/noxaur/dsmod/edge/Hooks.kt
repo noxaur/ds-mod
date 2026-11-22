@@ -13,6 +13,7 @@ object Hooks {
     private lateinit var hideExplosions: HideExplosions
     private lateinit var keys: (InputConstants.Key) -> Unit
     private lateinit var settings: (Screen?) -> Screen
+    private lateinit var menu: () -> Unit
 
     lateinit var hud: DsModConfig.Hud
         private set
@@ -23,9 +24,10 @@ object Hooks {
         this.hideExplosions = hideExplosions
     }
 
-    fun register(hud: DsModConfig.Hud, pressed: (InputConstants.Key) -> Unit, settingsScreen: (Screen?) -> Screen) {
+    fun register(hud: DsModConfig.Hud, pressed: (InputConstants.Key) -> Unit, menuChanged: () -> Unit, settingsScreen: (Screen?) -> Screen) {
         this.hud = hud
         keys = pressed
+        menu = menuChanged
         settings = settingsScreen
     }
 
@@ -40,6 +42,9 @@ object Hooks {
 
     @JvmStatic
     fun pressed(key: InputConstants.Key) = keys(key)
+
+    @JvmStatic
+    fun menuChanged() = menu()
 
     fun settingsScreen(parent: Screen?) = settings(parent)
 }

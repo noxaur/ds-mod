@@ -163,7 +163,7 @@ object DsModClient : ClientModInitializer {
         settings = file.load().apply { favorites = SettingsTree.favorites(favorites) }
         warnUnreadable()
         start()
-        Hooks.register(settings.hud, ::pressed) { parent -> settingsScreen(parent) }
+        Hooks.register(settings.hud, ::pressed, { containers.changed(Minecraft.getInstance()) }) { parent -> settingsScreen(parent) }
         Kit.register(settings.hud)
         Looks.register()
         SlotArts.register()

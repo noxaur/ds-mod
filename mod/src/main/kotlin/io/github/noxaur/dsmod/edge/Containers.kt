@@ -31,8 +31,25 @@ class ContainerPoller(private val game: Game) {
     private var items = arrayOfNulls<Item>(0)
     private var tapped = game.tap
     private var inventory: Read? = null
+    private var scheduled = false
+    private var left = BUDGET_NANOS
 
     fun poll(client: Minecraft) {
+        read(client)
+        left = BUDGET_NANOS
+        scheduled = false
+    }
+
+    fun changed(client: Minecraft) {
+        if (scheduled) return
+        scheduled = true
+        client.schedule {
+            scheduled = false
+            game.metrics.time("container-read") { read(client) }
+        }
+    }
+
+    private fun read(client: Minecraft) {
         if (!game.wants(ContainerOpened::class.java) && !game.wants(SlotChanged::class.java)) return
         val player = client.player ?: return
         val open = player.containerMenu
@@ -51,7 +68,8 @@ class ContainerPoller(private val game: Game) {
             items = kept?.items ?: arrayOfNulls(slots.size)
             game.post(System.currentTimeMillis(), ContainerOpened(open.containerId, openTitle?.toText(), slots.size, kept != null))
         }
-        val deadline = System.nanoTime() + BUDGET_NANOS
+        val start = System.nanoTime()
+        val deadline = start + left
         for (i in stacks.indices) {
             val stack = slots[i].item
             if (stack === stacks[i] && stack.count == counts[i]) continue
@@ -62,6 +80,7 @@ class ContainerPoller(private val game: Game) {
             items[i] = item
             game.post(System.currentTimeMillis(), SlotChanged(i, item))
         }
+        left -= System.nanoTime() - start
     }
 
     private companion object {
