@@ -1,9 +1,10 @@
 import { Clock, Effect, Option, Schema } from "effect";
 
-import { PlayerNotFound, ProfileNotFound, UpstreamUnavailable } from "./model.ts";
+import { newId } from "../ids.ts";
+import { PlayerNotFound, ProfileId, ProfileNotFound, UpstreamUnavailable } from "./model.ts";
 import { ProfileStore, type WriteRefused } from "./store.ts";
 import { Upstream, UpstreamDown } from "./upstream.ts";
-import { decodeAnswer, decodeCatalog, decodeFound, NotFoundBody, unmappedPaths } from "./wire.ts";
+import { decodeAnswer, decodeCatalog, decodeFound, NotFoundBody, Sections, sectionsOf, unmappedPaths } from "./wire.ts";
 import type { Found, Progression } from "./wire.ts";
 
 export const FRESH_MS = 2 * 60 * 1000;
@@ -15,16 +16,31 @@ const NAME_KEEP_SECONDS = KEEP_SECONDS + NAME_RENEW_MS / 1000;
 export const MISSING_SECONDS = 60;
 export const CATALOG_FRESH_MS = 60 * 60 * 1000;
 export const CATALOG_RETRY_MS = 60 * 1000;
+/** @keep A copy is served fresh for FRESH_MS and its snapshot is reused, so the snapshot outlives that window by a
+ * full SNAPSHOT_SECONDS: a profile viewed at the window's end still has its containers for that long. */
+export const SNAPSHOT_SECONDS = 10 * 60;
+const SNAPSHOT_KEEP_SECONDS = SNAPSHOT_SECONDS + FRESH_MS / 1000;
 
 // @keep Each KV key has one purpose, and a client chooses none of its parts but the name, which is lowercase and validated.
 const nameKey = (lower: string) => `name:${lower}`;
 const missingKey = (lower: string) => `missing:${lower}`;
 const profileKey = (uuid: string, profileId: string | undefined) => `profile:${uuid}:${profileId ?? "selected"}`;
+const snapshotKey = (id: string) => `snapshot:${id}`;
 const CATALOG_KEY = "catalog";
 
 // @keep The body is read again each time, so a change of ours never trusts a copy.
 const Entry = Schema.Struct({ fetchedAt: Schema.Number, body: Schema.Unknown });
 const decodeEntry = Schema.decodeUnknownOption(Entry);
+
+// @keep A copy kept before snapshots were reused has none, and is still a copy.
+const ProfileEntry = Schema.Struct({ ...Entry.fields, snapshot: Schema.optional(Schema.String) });
+const decodeProfileEntry = Schema.decodeUnknownOption(ProfileEntry);
+
+const Snapshot = Schema.Struct({ hidden: Schema.Boolean, sections: Sections });
+const decodeSnapshot = Schema.decodeUnknownOption(Snapshot);
+
+// @keep A snapshot id comes from the client and is a KV key, so only the shape this backend makes reaches the store.
+const isSnapshotId = Schema.is(ProfileId);
 
 const Name = Schema.Struct({ uuid: Schema.String, writtenAt: Schema.Number });
 const decodeName = Schema.decodeUnknownOption(Name);
@@ -33,13 +49,26 @@ export interface Lookup {
   readonly fetchedAt: number;
   readonly stale: boolean;
   readonly found: Found;
+  readonly snapshot: string;
 }
 
 const readEntry = Effect.fn(function* (store: ProfileStore["Service"], key: string) {
-  const entry = decodeEntry(yield* store.get(key));
-  return Option.flatMap(entry, ({ fetchedAt, body }) =>
-    Option.map(decodeFound(body), (found) => ({ fetchedAt, found })),
+  const entry = decodeProfileEntry(yield* store.get(key));
+  return Option.flatMap(entry, ({ fetchedAt, body, snapshot }) =>
+    Option.map(decodeFound(body), (found) => ({ fetchedAt, found, snapshot })),
   );
+});
+
+const putSnapshot = Effect.fn(function* (store: ProfileStore["Service"], found: Found) {
+  const id = yield* newId;
+  const kept = { hidden: found.profile.inventory_hidden === true, sections: sectionsOf(found.profile) };
+  // @keep A snapshot's key is new each time, so a refusal is the store failing, which no client can fix.
+  yield* Effect.orDie(store.put(snapshotKey(id), kept, SNAPSHOT_KEEP_SECONDS));
+  return id;
+});
+
+export const readSnapshot = Effect.fn(function* (id: string) {
+  return isSnapshotId(id) ? decodeSnapshot(yield* (yield* ProfileStore).get(snapshotKey(id))) : Option.none();
 });
 
 /** @keep The player hid the items, so no copy of them is made, in a snapshot or here. */
@@ -103,7 +132,8 @@ const fetchPlayer = Effect.fn(function* (name: string, profileId: string | undef
 const keep = (write: Effect.Effect<void, WriteRefused>) =>
   write.pipe(Effect.catchTag("WriteRefused", () => Effect.logWarning("The store refused a copy of a lookup")));
 
-/** @keep When dragsim.co cannot be reached the last copy answers as stale, however old: a day-old profile beats none. */
+/** @keep When dragsim.co cannot be reached the last copy answers as stale, however old: a day-old profile beats none.
+ * A snapshot is written once per fetch and reused while the copy is fresh. A stale copy's snapshot may be gone. */
 export const lookup = Effect.fn(function* (name: string, profileId: string | undefined) {
   const store = yield* ProfileStore;
   const lower = name.toLowerCase();
@@ -113,26 +143,37 @@ export const lookup = Effect.fn(function* (name: string, profileId: string | und
     ? yield* readEntry(store, profileKey(named.value.uuid, profileId))
     : Option.none();
   if (Option.isSome(cached) && now - cached.value.fetchedAt < FRESH_MS) {
-    return { ...cached.value, stale: false };
+    const { snapshot = yield* putSnapshot(store, cached.value.found) } = cached.value;
+    return { ...cached.value, stale: false, snapshot };
   }
   // @keep Checked even for a name once known, which dragsim.co answers 404 for after a rename or a ban.
   if ((yield* store.get(missingKey(lower))) !== null) {
     return yield* new PlayerNotFound();
   }
   return yield* fetchPlayer(name, profileId).pipe(
-    Effect.tap(({ found }) =>
-      Effect.all([
-        Option.isSome(named) && named.value.uuid === found.player.uuid && now - named.value.writtenAt < NAME_RENEW_MS
-          ? Effect.void
-          : keep(store.put(nameKey(lower), { uuid: found.player.uuid, writtenAt: now }, NAME_KEEP_SECONDS)),
-        keep(store.put(profileKey(found.player.uuid, profileId), { fetchedAt: now, body: found }, KEEP_SECONDS)),
-      ]),
+    Effect.flatMap(({ found }) =>
+      Effect.gen(function* () {
+        const snapshot = yield* putSnapshot(store, found);
+        yield* Effect.all([
+          Option.isSome(named) && named.value.uuid === found.player.uuid && now - named.value.writtenAt < NAME_RENEW_MS
+            ? Effect.void
+            : keep(store.put(nameKey(lower), { uuid: found.player.uuid, writtenAt: now }, NAME_KEEP_SECONDS)),
+          keep(
+            store.put(
+              profileKey(found.player.uuid, profileId),
+              { fetchedAt: now, body: found, snapshot },
+              KEEP_SECONDS,
+            ),
+          ),
+        ]);
+        return { fetchedAt: now, stale: false, found, snapshot };
+      }),
     ),
-    Effect.map(({ found }) => ({ fetchedAt: now, stale: false, found })),
     Effect.catchTag("UpstreamDown", () =>
       Option.match(cached, {
         onNone: () => Effect.fail(new UpstreamUnavailable()),
-        onSome: (copy) => Effect.succeed({ ...copy, stale: true }),
+        onSome: (copy) =>
+          Effect.map(putSnapshot(store, copy.found), (snapshot) => ({ ...copy, stale: true, snapshot })),
       }),
     ),
     Effect.tapErrorTag("PlayerNotFound", () => keep(store.put(missingKey(lower), 1, MISSING_SECONDS))),

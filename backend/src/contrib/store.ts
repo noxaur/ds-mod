@@ -1,4 +1,5 @@
-import { Context, Effect } from "effect";
+import type { Effect } from "effect";
+import { Context } from "effect";
 
 import type { RecordingRequest, Unknown } from "./model.ts";
 
@@ -34,67 +35,3 @@ export class Store extends Context.Service<
     readonly unknowns: Effect.Effect<readonly Unknown[]>;
   }
 >()("dsmod/contrib/Store") {}
-
-export const roomForUnknown = (rows: number, maxRows: number): boolean => rows < maxRows;
-
-const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
-
-const oldestFirst = (a: SubmissionRow, b: SubmissionRow) => compare(a.createdAt, b.createdAt) || compare(a.id, b.id);
-
-export const memoryStore = (): Store["Service"] => {
-  const requests: RecordingRequest[] = [];
-  const skips: { requestId: string; userId: string }[] = [];
-  const submissions: SubmissionRow[] = [];
-  const captures = new Map<string, Uint8Array>();
-  const unknowns = new Map<string, Unknown>();
-  const setStatus = (id: string, status: RecordingRequest["status"], from?: RecordingRequest["status"]) =>
-    Effect.sync(() => {
-      const index = requests.findIndex((request) => request.id === id);
-      const found = requests[index];
-      if (found !== undefined && (from === undefined || found.status === from)) {
-        requests[index] = { ...found, status };
-      }
-    });
-  return {
-    insertRequest: (request) => Effect.sync(() => void requests.push(request)),
-    requests: Effect.sync(() => requests.toSorted((a, b) => compare(a.createdAt, b.createdAt))),
-    request: (id) => Effect.sync(() => requests.find((request) => request.id === id) ?? null),
-    fill: (id) => setStatus(id, "filled", "open"),
-    close: (id) => setStatus(id, "closed"),
-    insertSkip: (requestId, userId) =>
-      Effect.sync(() => {
-        if (!skips.some((skip) => skip.requestId === requestId && skip.userId === userId)) {
-          skips.push({ requestId, userId });
-        }
-      }),
-    skips: Effect.sync(() => [...skips]),
-    doneBy: (userId) =>
-      Effect.sync(() => [...skips, ...submissions].filter((row) => row.userId === userId).map((row) => row.requestId)),
-    insertSubmission: (row, capture, maxRuns) =>
-      Effect.sync(() => {
-        const runs = submissions.filter((other) => other.requestId === row.requestId);
-        const closed = requests.some((request) => request.id === row.requestId && request.status === "closed");
-        if (closed || runs.length >= maxRuns || runs.some((other) => other.userId === row.userId)) {
-          return false;
-        }
-        submissions.push(row);
-        captures.set(row.id, capture);
-        return true;
-      }),
-    submissions: Effect.sync(() => submissions.toSorted(oldestFirst)),
-    submissionsOf: (requestId) =>
-      Effect.sync(() => submissions.filter((row) => row.requestId === requestId).toSorted(oldestFirst)),
-    capture: (id) => Effect.sync(() => captures.get(id) ?? null),
-    countUnknown: (unknown, maxRows) =>
-      Effect.sync(() => {
-        const key = `${unknown.kind}\n${unknown.signature}`;
-        const known = unknowns.get(key);
-        if (known !== undefined) {
-          unknowns.set(key, { ...known, count: known.count + 1 });
-        } else if (roomForUnknown(unknowns.size, maxRows)) {
-          unknowns.set(key, { ...unknown, count: 1 });
-        }
-      }),
-    unknowns: Effect.sync(() => [...unknowns.values()]),
-  };
-};

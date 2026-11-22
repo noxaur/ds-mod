@@ -8,7 +8,7 @@ Void deploys the backend to Cloudflare Workers and owns the database, the file s
 
 ## One file touches the database and the file store
 
-Void binds the database only to a file that imports it, and the API must stay free of Void. So one file outside the API reads and writes storage, and each domain keeps its rules behind a store interface with an in-memory twin. One contract suite runs against both stores, so they cannot disagree without a test failing. A rule two stores both need is one function in the API, so only what must be atomic stays in SQL.
+Void binds the database only to a file that imports it, and the API must stay free of Void. So one file outside the API reads and writes storage, behind a store interface each domain declares, and a rule that need not be atomic is a function in the API, so a new store keeps it. Tests run that file itself, over the real migrations. An in-memory twin with a contract suite to keep it honest was rejected, because it wrote the SQL's caps, its one run per player and its ordering a second time in JavaScript.
 
 ## The database runs in tests as SQLite with the real migrations
 
