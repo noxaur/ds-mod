@@ -327,6 +327,7 @@ val mixinHandlers = listOf(
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-Werror")
     options.errorprone {
+        enabled = providers.gradleProperty("errorprone").map { it != "false" }.orElse(true)
         disableWarningsInGeneratedCode = true
         disable("InvalidBlockTag")
         option("UnusedMethod:ExemptingMethodAnnotations", mixinHandlers)

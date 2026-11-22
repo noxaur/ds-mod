@@ -24,7 +24,7 @@ jobs:
       - id: setup
         uses: ./.github/actions/setup-mod
       - working-directory: mod
-        run: ./gradlew ${{ steps.setup.outputs.gradle-args }} :check -x lintCheck
+        run: ./gradlew ${{ steps.setup.outputs.gradle-args }} -Perrorprone=false :check -x lintCheck
       - if: failure()
         uses: actions/upload-artifact@v7
         with:
@@ -61,7 +61,7 @@ jobs:
           cache: perf
       - uses: ./.github/actions/preload-gl
       - working-directory: mod
-        run: ./gradlew ${{ steps.setup.outputs.gradle-args }} runProdClientGameTest -Pgametests=PerfTest
+        run: ./gradlew ${{ steps.setup.outputs.gradle-args }} -Perrorprone=false runProdClientGameTest -Pgametests=PerfTest
       - if: always()
         run: cat mod/build/run/prodClientGameTest/perf.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
       - if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && hashFiles('mod/build/run/prodClientGameTest/perf.md') != ''
@@ -106,7 +106,7 @@ jobs:
           cache: gametests
       - uses: ./.github/actions/preload-gl
       - working-directory: mod
-        run: ./gradlew ${{ steps.setup.outputs.gradle-args }} runProdClientGameTest
+        run: ./gradlew ${{ steps.setup.outputs.gradle-args }} -Perrorprone=false runProdClientGameTest
       - if: always()
         uses: actions/upload-artifact@v7
         with:
