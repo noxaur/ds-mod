@@ -13,12 +13,6 @@ import kotlin.io.path.moveTo
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-/**
- * Keeps each feature's [io.github.noxaur.dsmod.core.feature.Saved] state in `<dir>/<feature id>.json`, and the game's
- * own in `places.json`, the places the player has been, and `hidden.json`, the features that told them they hide a
- * line. [load] reads the files once at start. [flush] hands the changed ones to a writer thread, which writes a temporary file and
- * renames it over the old one, so the client thread never waits on the disk and a crash cannot leave half a file.
- */
 class SavedFiles(
     private val dir: Path,
     private val game: Game,
@@ -29,7 +23,6 @@ class SavedFiles(
     private val writer = lazy(startWriter)
     private val failures = ConcurrentLinkedQueue<Pair<String, Exception>>()
 
-    /** A file that does not parse is renamed `<id>.json.corrupt-<time>`, and its feature starts from its default. */
     fun load() {
         for ((id, state) in states) {
             val file = dir.resolve("$id.json")
@@ -45,7 +38,6 @@ class SavedFiles(
         }
     }
 
-    /** Writes every state that changed since the last call. A write that failed earlier reaches `Metrics` here and is tried again. */
     fun flush() {
         generateSequence(failures::poll).forEach { (id, error) ->
             game.metrics.fail("$id.save", error)
@@ -66,7 +58,6 @@ class SavedFiles(
         }
     }
 
-    /** Flushes, then waits briefly for the writer, because the game is closing and nothing flushes after. */
     fun close() {
         flush()
         if (!writer.isInitialized()) return

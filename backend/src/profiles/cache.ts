@@ -6,41 +6,30 @@ import { Upstream, UpstreamDown } from "./upstream.ts";
 import { decodeAnswer, decodeCatalog, decodeFound, NotFoundBody, unmappedPaths } from "./wire.ts";
 import type { Found, Progression } from "./wire.ts";
 
-/** How long a copy of a player's answer is served without asking dragsim.co again. A player's profile changes slowly. */
 export const FRESH_MS = 2 * 60 * 1000;
-/** How long a copy is kept as the answer for when dragsim.co is down, and how long a name is remembered. */
 export const KEEP_SECONDS = 24 * 60 * 60;
-/**
- * How old a name's uuid may be before a lookup writes it again. It must be renewed well inside [KEEP_SECONDS], or it
- * expires while the copies it leads to are kept, and dragsim.co being down then finds none. Renewing it on every
- * lookup instead would write one key twice in a second whenever two players look at the same player.
- */
+/** @keep Renewed well inside KEEP_SECONDS, or the name expires while the copies it leads to are kept, and dragsim.co
+ * being down then finds none. Renewing on every lookup would write one key twice in a second. */
 export const NAME_RENEW_MS = 60 * 60 * 1000;
-/** A name is kept one renewal longer than a copy, so it outlives every copy written before it is renewed. */
 const NAME_KEEP_SECONDS = KEEP_SECONDS + NAME_RENEW_MS / 1000;
-/** How long a name dragsim.co does not know is remembered, so a mistyped name asked again does not reach it. */
 export const MISSING_SECONDS = 60;
-/** How long the catalog is used before it is fetched again. It changes with the server's releases, not by the minute. */
 export const CATALOG_FRESH_MS = 60 * 60 * 1000;
-/** How long a stale catalog is used without asking dragsim.co again after it could not be fetched. */
 export const CATALOG_RETRY_MS = 60 * 1000;
 
-// Each KV key has one purpose, and a client chooses none of its parts but the name, which is lowercase and validated.
+// @keep Each KV key has one purpose, and a client chooses none of its parts but the name, which is lowercase and validated.
 const nameKey = (lower: string) => `name:${lower}`;
 const missingKey = (lower: string) => `missing:${lower}`;
 const profileKey = (uuid: string, profileId: string | undefined) => `profile:${uuid}:${profileId ?? "selected"}`;
 const CATALOG_KEY = "catalog";
 
-/** A copy of what dragsim.co answered, and when. The body is read again each time, so a change of ours never trusts it. */
+// @keep The body is read again each time, so a change of ours never trusts a copy.
 const Entry = Schema.Struct({ fetchedAt: Schema.Number, body: Schema.Unknown });
 const decodeEntry = Schema.decodeUnknownOption(Entry);
 
-/** Which player a name is, and when that was written. */
 const Name = Schema.Struct({ uuid: Schema.String, writtenAt: Schema.Number });
 const decodeName = Schema.decodeUnknownOption(Name);
 
 export interface Lookup {
-  /** When the backend read it from dragsim.co, in epoch milliseconds. */
   readonly fetchedAt: number;
   readonly stale: boolean;
   readonly found: Found;
@@ -48,16 +37,12 @@ export interface Lookup {
 
 const readEntry = Effect.fn(function* (store: ProfileStore["Service"], key: string) {
   const entry = decodeEntry(yield* store.get(key));
-  // A copy that no longer reads, such as from before a change of ours, is as good as none.
   return Option.flatMap(entry, ({ fetchedAt, body }) =>
     Option.map(decodeFound(body), (found) => ({ fetchedAt, found })),
   );
 });
 
-/**
- * What a hidden profile keeps: its numbers, and the names of its storage pages so the containers can be listed. The
- * player hid the items, so no copy of them is made, in a snapshot or here.
- */
+/** @keep The player hid the items, so no copy of them is made, in a snapshot or here. */
 const hide = (found: Found): Found => {
   const { profile } = found;
   if (profile.inventory_hidden !== true) {
@@ -70,7 +55,6 @@ const hide = (found: Found): Found => {
       ...profile,
       inventory: undefined,
       ender_chest: undefined,
-      // Which slot is worn is not an item, so it stays.
       wardrobe: profile.wardrobe?.equipped === undefined ? undefined : { equipped: profile.wardrobe.equipped },
       accessory_bag: undefined,
       storage: pages,
@@ -80,7 +64,6 @@ const hide = (found: Found): Found => {
 
 const MISSING_PLAYER = /^No DragSim player/u;
 
-/** Asks dragsim.co for the player. Anything but its word that the player or profile is missing is it being down. */
 const fetchPlayer = Effect.fn(function* (name: string, profileId: string | undefined) {
   const { status, body } = yield* (yield* Upstream).get(
     `/api/player/${name}?mode=main${profileId === undefined ? "" : `&profile=${profileId}`}`,
@@ -90,7 +73,7 @@ const fetchPlayer = Effect.fn(function* (name: string, profileId: string | undef
       onNone: () => "",
       onSome: (decoded) => decoded.error,
     });
-    // Asked for a profile, a 404 says either. Only the server's own words for a missing player mean that.
+    // @keep Asked for a profile, a 404 says either. Only the server's own words for a missing player mean that.
     if (MISSING_PLAYER.test(message)) {
       return yield* new PlayerNotFound();
     }
@@ -102,8 +85,7 @@ const fetchPlayer = Effect.fn(function* (name: string, profileId: string | undef
     yield* Effect.logWarning(`dragsim.co answered ${String(status)} for a player`);
     return yield* new UpstreamDown();
   }
-  // An answer we cannot read is dragsim.co's change and not the client's mistake. It is logged and treated as down,
-  // so a copy from before the change still serves, and nothing unreadable is ever kept.
+  // @keep An answer we cannot read is dragsim.co's change, not the client's mistake: it counts as down, so an older copy serves.
   const answer = yield* decodeAnswer(body).pipe(
     Effect.tapError((error) => Effect.logError(`dragsim.co's player answer did not decode: ${error.message}`)),
     Effect.mapError(() => new UpstreamDown()),
@@ -118,17 +100,10 @@ const fetchPlayer = Effect.fn(function* (name: string, profileId: string | undef
   return { found: hide({ ...answer, profile: answer.profile }) };
 });
 
-/**
- * A player's answer, from the backend's copy while it is fresh, else from dragsim.co. When dragsim.co cannot be
- * reached the last copy it sent answers as stale, however old, because a profile a day old beats no profile.
- */
-/**
- * Keeps a copy when the store will. A copy the store refused is only fetched again later, so it never costs the lookup
- * that already has its answer.
- */
 const keep = (write: Effect.Effect<void, WriteRefused>) =>
   write.pipe(Effect.catchTag("WriteRefused", () => Effect.logWarning("The store refused a copy of a lookup")));
 
+/** @keep When dragsim.co cannot be reached the last copy answers as stale, however old: a day-old profile beats none. */
 export const lookup = Effect.fn(function* (name: string, profileId: string | undefined) {
   const store = yield* ProfileStore;
   const lower = name.toLowerCase();
@@ -140,7 +115,7 @@ export const lookup = Effect.fn(function* (name: string, profileId: string | und
   if (Option.isSome(cached) && now - cached.value.fetchedAt < FRESH_MS) {
     return { ...cached.value, stale: false };
   }
-  // Checked even for a name once known, which dragsim.co answers 404 for after a rename or a ban.
+  // @keep Checked even for a name once known, which dragsim.co answers 404 for after a rename or a ban.
   if ((yield* store.get(missingKey(lower))) !== null) {
     return yield* new PlayerNotFound();
   }
@@ -164,16 +139,14 @@ export const lookup = Effect.fn(function* (name: string, profileId: string | und
   );
 });
 
-/** `catalog.json`, kept raw for the renderer, with the part the backend reads itself. */
 export interface Catalog {
   readonly fetchedAt: number;
   readonly raw: unknown;
   readonly progression: Progression;
 }
 
-// One parse of 2.3 MB per Worker isolate and hour. The store is the key, so each test's store has a catalog of its own.
+// @keep One parse of 2.3 MB per Worker isolate and hour.
 const parsed = new WeakMap<object, Catalog>();
-/** When each store's stale catalog may be fetched again, so dragsim.co being down is not asked about on every request. */
 const retryAt = new WeakMap<object, number>();
 
 const readCatalog = Effect.fn(function* (store: ProfileStore["Service"]) {
@@ -192,12 +165,8 @@ const fetchCatalog = Effect.gen(function* () {
   return { raw: body, progression: decoded.value.progression };
 });
 
-/**
- * The catalog the renderer and the level tables need. It is used while it is an hour old at most, from this isolate's
- * parse or else the one in the store, and fetched again after that. A catalog that cannot be fetched is replaced by an
- * older copy, kept in memory for a minute before the next try, because the tables change rarely, and without any copy
- * the lookup is unavailable.
- */
+/** @keep A catalog that cannot be fetched is replaced by an older copy, with a minute before the next try, because the
+ * tables change rarely. Without any copy the lookup is unavailable. */
 export const catalog = Effect.gen(function* () {
   const store = yield* ProfileStore;
   const now = yield* Clock.currentTimeMillis;

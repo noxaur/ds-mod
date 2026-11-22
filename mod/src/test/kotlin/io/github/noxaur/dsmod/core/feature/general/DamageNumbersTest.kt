@@ -15,7 +15,6 @@ class DamageNumbersTest : Harness(alone = DamageNumbers::class) {
     private val hit = text("74,540,375", GRAY)
     private val crit = text(ServerSpan("✧1,", WHITE), ServerSpan("461", YELLOW), ServerSpan(",8", RED), ServerSpan("45✧", WHITE))
 
-    /** What the player sees in place of [text]: null when it is hidden, else the text shown. */
     private fun seen(text: ServerText): String? = if (post(FloatingText(text))) (game.replaced?.plain ?: text.plain) else null
 
     @Test

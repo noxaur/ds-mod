@@ -7,7 +7,6 @@ import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.screens.TitleScreen
 import net.minecraft.network.chat.contents.TranslatableContents
 
-/** The debug build's title screen has Join DragSim in Singleplayer's column, one row above it. It is not pressed, since that joins the live server. */
 class JoinDragSimTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.setScreen { TitleScreen() }

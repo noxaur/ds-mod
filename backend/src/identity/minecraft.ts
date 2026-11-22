@@ -9,14 +9,12 @@ import { trustedKeyHeader } from "./trusted.ts";
 const PROVIDER = "minecraft";
 const CHALLENGE_SECONDS = 60;
 
-/** The account Mojang says joined, with the UUID in its dashed form. */
 export interface Joined {
   readonly uuid: string;
   readonly name: string;
   readonly skin?: string;
 }
 
-/** Asks Mojang whether [name] joined with [serverId]. Null when it did not, and an error when Mojang cannot say. */
 export type HasJoined = (name: string, serverId: string) => Promise<Joined | null>;
 
 const Profile = Schema.Struct({
@@ -44,7 +42,7 @@ export const mojangHasJoined =
     const who = relayed ? "The website's Mojang relay" : "Mojang";
     url.searchParams.set("username", name);
     url.searchParams.set("serverId", serverId);
-    // Only a 204 means nobody joined. Anything else is Mojang failing, which the player can retry, not a refusal.
+    // @keep Only a 204 means nobody joined. Anything else is Mojang failing, which the player can retry, not a refusal.
     const response = await fetch(url, { headers: relayed ? { [trustedKeyHeader]: websiteKey } : {} }).catch(() => {
       throw unavailable(`${who} did not answer.`);
     });
@@ -61,13 +59,9 @@ export const mojangHasJoined =
     return skin === undefined ? { uuid, name: profile.name } : { uuid, name: profile.name, skin };
   };
 
-/**
- * Signs a player in as the Minecraft account they are playing on.
- *
- * Nothing the client sends is believed. The backend picks a random server id, the client tells Mojang it is joining
- * that server, which only the holder of the account's Minecraft session can do, and the backend asks Mojang who
- * joined. A modified client can therefore sign in as its own account and as no other.
- */
+/** @keep Nothing the client sends is believed. The backend picks a random server id, the client tells Mojang it is
+ * joining that server, which only the holder of the account's Minecraft session can do, and the backend asks Mojang
+ * who joined. A modified client can therefore sign in as its own account and as no other. */
 export const minecraft = (hasJoined: HasJoined) =>
   ({
     id: PROVIDER,
@@ -76,7 +70,7 @@ export const minecraft = (hasJoined: HasJoined) =>
         const serverId = Array.from(crypto.getRandomValues(new Uint8Array(20)), (byte) =>
           byte.toString(16).padStart(2, "0"),
         ).join("");
-        // Nothing else removes a challenge or a login link nobody used, so each new challenge clears the expired ones.
+        // @keep Nothing else removes a challenge or a login link nobody used, so each new challenge clears the expired ones.
         await ctx.context.adapter.deleteMany({
           model: "verification",
           where: [{ field: "expiresAt", operator: "lt", value: new Date() }],
@@ -95,7 +89,7 @@ export const minecraft = (hasJoined: HasJoined) =>
           body: Verify,
         },
         async (ctx) => {
-          // Consumed before Mojang is asked, so one challenge buys one question.
+          // @keep Consumed before Mojang is asked, so one challenge buys one question.
           const challenge = await ctx.context.internalAdapter.consumeVerificationValue(
             `${PROVIDER}:${ctx.body.serverId}`,
           );
@@ -115,10 +109,9 @@ export const minecraft = (hasJoined: HasJoined) =>
           });
           let user = account === null ? null : await ctx.context.internalAdapter.findUserById(account.userId);
           if (user === null) {
-            // Better Auth needs an email, and a player has none. This one can never receive mail.
+            // @keep Better Auth needs an email, and a player has none. This one can never receive mail.
             const email = `${joined.uuid}@minecraft.invalid`;
-            // D1 has no transactions, so a sign-in can make the user and fail before the link. Only this plugin makes
-            // users, so the next sign-in links the user its email names instead of failing on that email forever.
+            // @keep D1 has no transactions, so a sign-in can make the user and fail before the link; the next one finds it.
             user =
               (await ctx.context.internalAdapter.findUserByEmail(email))?.user ??
               (await ctx.context.internalAdapter.createUser(

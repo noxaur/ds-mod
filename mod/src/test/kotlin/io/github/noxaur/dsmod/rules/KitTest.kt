@@ -12,18 +12,15 @@ import kotlin.test.assertEquals
 private const val GRAPHICS = "net/minecraft/client/gui/GuiGraphicsExtractor"
 private const val UI = "io/github/noxaur/dsmod/edge/ui/"
 
-/** The calls that draw a shape. Text and items are drawn with `Text` and the item layers. */
 private val shapes = setOf("fill", "fillGradient", "outline", "blit", "blitSprite", "horizontalLine", "verticalLine", "textHighlight", "textWithBackdrop")
 
-/** Every place in [classes] outside `Kit` that draws a shape on the graphics itself, as `file:line`. */
 fun shapesOutsideKit(classes: List<ClassNode>): List<String> {
     val supers = classes.associate { it.name to it.superName }
-    // A call through a mod class that extends the graphics names that class as its owner.
+    // @keep A call through a mod class that extends the graphics names that class as its owner.
     fun graphics(owner: String): Boolean = owner == GRAPHICS || supers[owner]?.let(::graphics) == true
     return placesWhere(classes.filter { !(it.name.startsWith(UI) && it.sourceFile == "Kit.kt") }) { insn ->
-        // A method reference such as `graphics::fill` is a handle among the bootstrap arguments.
         insn is MethodInsnNode && graphics(insn.owner) && insn.name in shapes ||
-            insn is InvokeDynamicInsnNode && insn.bsmArgs.filterIsInstance<Handle>().any { graphics(it.owner) && it.name in shapes }
+            handlesOf(insn).any { graphics(it.owner) && it.name in shapes }
     }
 }
 

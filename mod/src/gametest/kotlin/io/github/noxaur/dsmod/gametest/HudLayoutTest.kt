@@ -11,13 +11,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import org.lwjgl.glfw.GLFW
 
-
-/**
- * Drives the HUD's layout in the settings over a live block: a drag moves it and keeps it on the screen, Escape
- * during a drag puts it back, the wheel and + resize it, the arrows nudge it, Backspace stacks it again, a right
- * press stacks it again, and Move HUD opens the full editor over the game, which returns to the settings. Read the
- * screenshots in both themes, mid-drag among them.
- */
 class HudLayoutTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
@@ -47,7 +40,6 @@ class HudLayoutTest : FabricClientGameTest {
         context.waitTicks(2)
         context.shotInBothThemes("hud-layout")
 
-        // A drag moves the block, by the map's scale, and the place is kept.
         val start = point()
         hold(start.first, start.second)
         for (step in 1..4) move(start.first + step * 12, start.second + step * 6)
@@ -57,7 +49,6 @@ class HudLayoutTest : FabricClientGameTest {
         check(DRAGON_TIMER in hud.positions) { "A drag on the layout did not place the block" }
         val dropped = placed()
 
-        // Dragged far past the corner, it stops with its far edges on the screen's.
         hold(point().first, point().second)
         move(point().first + 400, point().second + 400)
         context.input.releaseMouse(0)
@@ -68,14 +59,12 @@ class HudLayoutTest : FabricClientGameTest {
             "The block left the screen: ${corner.x}, ${corner.y} on ${screen.first}x${screen.second}"
         }
 
-        // Escape during a drag puts it back where the drag began.
         hold(point().first, point().second)
         move(point().first - 60, point().second - 30)
         escapeHeld()
         check(placed().x == corner.x && placed().y == corner.y) { "Escape left the block at ${placed().x}, ${placed().y}, not ${corner.x}, ${corner.y}" }
         keptOpen()
 
-        // The wheel over the block and + make it bigger, by whole screen pixels.
         val scale = placed().scale
         move(point().first, point().second)
         context.input.scroll(1.0)
@@ -84,10 +73,8 @@ class HudLayoutTest : FabricClientGameTest {
         val wheeled = placed().scale
         key(GLFW.GLFW_KEY_EQUAL)
         check(placed().scale > wheeled) { "+ did not resize the block: ${placed().scale}" }
-        // Grown in the corner, it moves in rather than past the screen's edge.
         placed().let { check(it.x + it.width * it.scale <= screen.first + 0.5 && it.y + it.height * it.scale <= screen.second + 0.5) { "The grown block left the screen at ${it.x}, ${it.y}" } }
 
-        // The arrows nudge it a pixel, and ten with Shift.
         move(point().first, point().second)
         val x = placed().x
         key(GLFW.GLFW_KEY_LEFT)
@@ -97,7 +84,6 @@ class HudLayoutTest : FabricClientGameTest {
 
         context.takeScreenshot("hud-layout-picked")
 
-        // A right press stacks it again, as in the HUD editor and the chat. An arrow places it once more, and Backspace stacks it.
         click(point().first, point().second, GLFW.GLFW_MOUSE_BUTTON_RIGHT)
         check(DRAGON_TIMER !in hud.positions) { "A right press kept the block's place" }
         key(GLFW.GLFW_KEY_RIGHT)
@@ -106,7 +92,6 @@ class HudLayoutTest : FabricClientGameTest {
         check(DRAGON_TIMER !in hud.positions) { "Backspace kept the block's place" }
         key(GLFW.GLFW_KEY_ESCAPE)
 
-        // Move HUD opens the full editor over the game, which returns to the settings.
         val moveHud = spot("moveHud")
         click(moveHud.controlX + 4, moveHud.controlY + 8)
         context.waitForScreen(HudEditorScreen::class.java)

@@ -18,11 +18,6 @@ import org.lwjgl.glfw.GLFW
 import kotlin.io.path.readText
 import kotlin.math.roundToInt
 
-
-/**
- * Opens the editor with nothing on the HUD, then over a live block. Moves and resizes the block, works every
- * control on the panel, drags the block under the panel and resets it from there, and checks the place is saved.
- */
 class HudEditorTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
@@ -36,7 +31,6 @@ class HudEditorTest : FabricClientGameTest {
             openEditor(context)
             context.takeScreenshot("hud-editor-before")
 
-            // The block's drawn scale, in screen pixels per HUD pixel.
             fun pixels(client: Minecraft) = (Hud.find(DRAGON_TIMER)!!.scale * client.window.guiScale).roundToInt()
 
             val start = onBlock(context) { client, screen, block ->
@@ -49,7 +43,6 @@ class HudEditorTest : FabricClientGameTest {
             val moved = DsModClient.settings.hud.positions.getValue(DRAGON_TIMER)
             check(moved.x > 0.05f && moved.y > 0.05f && moved.scale > 1f) { "Not moved and scaled: $moved" }
 
-            // The panel works on the block clicked last: one step up by real mouse, on the stepper's plus.
             val plus = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
                 val stepper = steppers(client).first()
                 stepper.right - 4.0 to stepper.y + 8.0
@@ -80,9 +73,7 @@ class HudEditorTest : FabricClientGameTest {
             context.takeScreenshot("hud-editor-after")
             context.inTheme(Theme.VANILLA) { context.takeScreenshot("hud-editor-vanilla") }
 
-            // A drag that starts on the block carries on over the panel, and Reset still reaches the block there.
             onBlock(context) { _, screen, block ->
-                // Grabbed 5 in, so the block's bottom lands on the screen's, where it stays whole.
                 val to = screen.width / 2.0 to screen.height - block.height * block.scale - 2.0 + 5.0
                 grab(screen, block)
                 release(screen, to.first, to.second, 0.0, 0.0)
@@ -94,8 +85,6 @@ class HudEditorTest : FabricClientGameTest {
             context.clickScreenButton("Reset")
             check(DRAGON_TIMER !in DsModClient.settings.hud.positions) { "Reset kept the position" }
 
-
-            // Let go three pixels off the middle of the screen, the block centers itself. With Shift it stays where it was dropped.
             fun dragTo(screen: net.minecraft.client.gui.screens.Screen, x: Double, y: Double): Hud.Placed {
                 val block = Hud.find(DRAGON_TIMER)!!
                 grab(screen, block)
@@ -107,14 +96,11 @@ class HudEditorTest : FabricClientGameTest {
                 val size = Hud.find(DRAGON_TIMER)!!.let { it.width * it.scale to it.height * it.scale }
                 val centered = (screen.width - size.first) / 2.0
                 val middle = (screen.height - size.second) / 2.0
-                // Every other feature's placeholder stacks down from the top-left, and grows with each feature until one of its
-                // edges is nearer the drop than the middle is. Those blocks come back when Done closes the editor.
                 Hud.placed().filter { it.id != DRAGON_TIMER }.forEach { Hud.hide(it.id) }
                 val snapped = dragTo(screen, centered + 3, middle - 3)
                 check(Math.abs(snapped.x - centered) < 0.6 && Math.abs(snapped.y - middle) < 0.6) { "The block did not center: ${snapped.x}, ${snapped.y}, wanted $centered, $middle on ${screen.width}x${screen.height} with $size" }
                 centered to middle
             }
-            // Shift is read from the keyboard, so one pressed after the press still frees the drag.
             context.input.holdShift()
             context.runOnClient<Nothing> { client ->
                 val free = dragTo(client.gui.screen()!!, centered + 3, middle - 3)
@@ -122,7 +108,6 @@ class HudEditorTest : FabricClientGameTest {
             }
             context.input.releaseShift()
 
-            // Escape during a drag puts the block back and leaves the editor open. Without a drag it closes the editor.
             onBlock(context) { client, screen, before ->
                 grab(screen, before)
                 screen.mouseDragged(press(before.x + 45.0, before.y + 35.0), 40.0, 30.0)
@@ -132,7 +117,6 @@ class HudEditorTest : FabricClientGameTest {
                 check(after.x == before.x && after.y == before.y && client.gui.screen() === screen) { "Escape left the block at ${after.x}, ${after.y}, not ${before.x}, ${before.y}" }
             }
 
-            // The arrows nudge the block picked last, a pixel or ten with Shift.
             val picked = context.computeOnClient<Pair<Float, Float>, Nothing> { Hud.find(DRAGON_TIMER)!!.let { it.x to it.y } }
             context.input.pressKey(GLFW.GLFW_KEY_LEFT)
             context.input.holdShift()
@@ -144,7 +128,6 @@ class HudEditorTest : FabricClientGameTest {
                 check(block.x == picked.first - 1 && block.y == picked.second - 10) { "The arrows put the block at ${block.x}, ${block.y}, not ${picked.first - 1}, ${picked.second - 10}" }
             }
 
-            // A right press on a block resets it.
             onBlock(context) { _, screen, block ->
                 check(screen.mouseClicked(MouseButtonEvent(block.x + 5.0, block.y + 5.0, MouseButtonInfo(1, 0)), false)) { "The right press was not taken" }
                 screen.mouseReleased(MouseButtonEvent(block.x + 5.0, block.y + 5.0, MouseButtonInfo(1, 0)))

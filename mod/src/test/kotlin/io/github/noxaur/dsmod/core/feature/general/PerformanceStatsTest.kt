@@ -10,7 +10,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-/** What the replay of a local server cannot show: a lagging dragsim.co's colors, a clock that goes back, and the settings. */
 class PerformanceStatsTest : Harness(alone = PerformanceStats::class) {
     private val feature = tree.feature<PerformanceStats>().also { it.feature.enabled = true }
 
@@ -18,14 +17,12 @@ class PerformanceStatsTest : Harness(alone = PerformanceStats::class) {
 
     private fun shown() = styled().joinToString(" / ") { it.plain }
 
-    /** The role of the value after [label], read from its color. */
     private fun role(label: String): Role {
         val spans = styled().single().spans
         val value = spans[spans.indexOfFirst { it.text.trim() == "$label:" } + 1]
         return Role.entries.first { it.rgb == value.rgb }
     }
 
-    /** One time packet a second for [seconds], each carrying [ticks] more than the last. */
     private fun clock(seconds: Int, ticks: Long, from: Long = 0) {
         for (i in 0..seconds) {
             if (i > 0) time += 1_000

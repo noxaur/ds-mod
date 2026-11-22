@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Slot Lock: a pick up, a Shift click, a number key, a throw and a double click all arrive here, before anything is sent. */
 @Mixin(AbstractContainerScreen.class)
 abstract class SlotClickMixin {
     @Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true)

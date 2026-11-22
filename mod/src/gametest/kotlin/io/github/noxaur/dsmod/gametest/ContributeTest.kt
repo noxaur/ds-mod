@@ -18,12 +18,7 @@ import java.util.zip.GZIPInputStream
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 
-/**
- * Plays the player's side of a request against a stub that answers as `api/openapi.json` says, on a loopback port
- * of its own: the offers shown and filtered, Skip, Accept, the HUD with its time left, the redacted upload, a failed
- * upload kept and sent again by `/dsmod submit`, a refused one deleted, and runs that time out, are cancelled or
- * leave the world, which send nothing and leave nothing. Mojang is the one part it stands in for.
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.CaptureInputMixin]. */
 class ContributeTest : FabricClientGameTest {
     private class Upload(val path: String, val type: String?, val bytes: ByteArray)
 
@@ -72,7 +67,6 @@ class ContributeTest : FabricClientGameTest {
             check(lines.count { "\"type\":\"step\"" in it } == 4) { "The upload's steps are ${lines.filter { "\"type\":\"step\"" in it }}" }
             check(lines.none { "\"type\":\"chat\"" in it }) { "The upload holds chat" }
             check(lines.none { name in it }) { "The upload names the player $name" }
-            // Kept in the run folder, so the bytes can be sent through the real backend and pulled with dsctl.
             java.nio.file.Files.write(dir.resolveSibling("contribute-upload.jsonl.gz"), upload.bytes)
 
             keptAndResent(context, dir)
@@ -82,7 +76,6 @@ class ContributeTest : FabricClientGameTest {
             start(context, request("left"))
             press(context)
         }
-        // Leaving the world is leaving the server, which ends the run and deletes its capture.
         context.waitUntil("the run that left the world was deleted") { files(dir).isEmpty() && !Recorder.running }
         check(uploads.none { "/left/" in it.path }) { "A run that left the world was sent" }
     }
@@ -95,14 +88,12 @@ class ContributeTest : FabricClientGameTest {
         context.waitUntil("the offers arrived") { buttons().size == 3 }
         context.inTheme(Theme.VANILLA) { context.takeScreenshot("contribute-offer-vanilla") }
         context.takeScreenshot("contribute-offer-charcoal")
-        // The End is offered first, since the player has been there, and the Crimson Isle never, since they have not.
         click(context, "Skip")
         context.waitUntil("the skip reached the backend") { skips == listOf("/v1/contrib/requests/end/skip") }
         click(context, "Accept")
         check(context.computeOnClient<Boolean, Nothing> { it.gui.screen() == null && Recording.busy }) { "Accept did not start the run" }
     }
 
-    /** A brief far longer than a window at Minecraft's smallest GUI height, 240, shows what fits and keeps its buttons on screen. */
     private fun longBrief(context: ClientGameTestContext) {
         val long = Request("long", Brief("Every tier", (1..30).map { Brief.Step("Do the thing for tier $it and wait for the next one", if (it % 3 == 0) "Do not hit it." else null) }), emptyList(), 600)
         for (theme in listOf(Theme.CHARCOAL, Theme.VANILLA)) context.inTheme(theme) {
@@ -120,7 +111,6 @@ class ContributeTest : FabricClientGameTest {
         context.runOnClient<Nothing> { client -> check(client.gui.screen() == null) { "Close left ${client.gui.screen()} open instead of the game" } }
     }
 
-    /** Plays the accepted run through with the key, shows the HUD, and returns what reached the backend. */
     private fun recorded(context: ClientGameTestContext, dir: Path): Upload {
         press(context)
         context.takeScreenshot("contribute-recording")

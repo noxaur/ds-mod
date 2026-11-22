@@ -6,7 +6,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class NavTreeTest {
-    /** Three sections: one with three subsections, one with none, one with two. */
     private fun tree() = NavTree(listOf(3, 0, 2))
 
     private fun NavTree.lines() = rows.joinToString(" ") { if (it.isSection) "${it.section}" else "${it.section}.${it.sub}" }

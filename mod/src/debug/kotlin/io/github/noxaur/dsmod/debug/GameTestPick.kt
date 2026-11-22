@@ -7,16 +7,11 @@ import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-/** The game test that a change to the build, or to a file most tests reach, runs. The beta pipeline runs the rest. */
 const val SMOKE_TEST = "SettingsScreenTest"
 
-/** More game tests than this reaching a file make it a hub, which a walk does not cross. */
 private const val HUB = 12
 
-/**
- * The most game tests a pick runs. A test takes 8 seconds on a CI runner, and the boot leaves the job about 70 of its
- * 180, so a change that reaches more runs [SMOKE_TEST], as a hub does.
- */
+/** @keep A test takes 8 seconds on a CI runner, and the boot leaves the job about 70 of its 180. */
 const val MOST_PICKED = 8
 
 private val BUILD = listOf("build.gradle.kts", "settings.gradle.kts", "gradle.properties", "gradle/", "src/main/resources/", "src/debug/resources/", "src/gametest/resources/")
@@ -28,18 +23,9 @@ private val DECLARED = Regex(
 )
 private val WORD = Regex("""\w+""")
 
-/** The game tests a change reaches, and each changed file under `edge` or `debug` that reaches none. */
 data class Picked(val tests: Set<String>, val unreached: List<String>)
 
-/**
- * Picks the game tests that the files in [changed] reach, each a path under `mod/`. [sources] holds every Kotlin
- * and Java file of `main`, `debug` and `gametest` by its path, and [tests] the name of every game test.
- *
- * A changed file reaches the game tests that name it, or, failing that, the tests that name the files that name it,
- * and so on up, through `core` too. A file nothing names, such as a mixin, reaches what the files it names reach. A
- * change to `core` is left to the unit tests, so it reaches nothing and is never unreached. A test that names a class
- * only in its KDoc reaches it too, which is how a test claims a file the walk misses.
- */
+/** @keep A test that names a class only in its KDoc reaches it too, which is how a test claims a file the walk misses. */
 fun pickGameTests(sources: Map<String, String>, tests: Set<String>, changed: Collection<String>): Picked {
     val files = sources
     val names = files.mapValues { (path, text) -> DECLARED.findAll(text).map { it.groupValues[1] }.toSet() + stem(path) }
@@ -66,7 +52,7 @@ fun pickGameTests(sources: Map<String, String>, tests: Set<String>, changed: Col
         if (BUILD.any { path == it || it.endsWith('/') && path.startsWith(it) }) picked += SMOKE_TEST
         if ("/core/" in path) continue
         if (path !in files && SOURCE_ROOTS.any(path::startsWith) && (path.endsWith(".kt") || path.endsWith(".java"))) {
-            // A deleted file breaks what named it at compile time, or a mixin list at boot, which any test boots through.
+            // @keep A deleted file breaks what named it at compile time, or a mixin list at boot, which any test boots through.
             picked += SMOKE_TEST
             continue
         }
@@ -93,26 +79,19 @@ fun pickGameTests(sources: Map<String, String>, tests: Set<String>, changed: Col
 
 private fun stem(path: String) = path.substringAfterLast('/').substringBeforeLast('.')
 
-/** Every Kotlin and Java file of `main`, `debug` and `gametest` under [mod], by its path under it. */
 fun gameTestSources(mod: File): Map<String, String> = SOURCE_ROOTS.flatMap { root ->
     mod.resolve(root).walkTopDown().filter { it.extension == "kt" || it.extension == "java" }.map { it.relativeTo(mod).invariantSeparatorsPath to it.readText() }
 }.toMap()
 
-/** The name of every game test the game test mod lists. */
 fun gameTestNames(mod: File): Set<String> =
     Json.parseToJsonElement(mod.resolve("src/gametest/resources/fabric.mod.json").readText()).jsonObject
         .getValue("entrypoints").jsonObject.getValue("fabric-client-gametest").jsonArray
         .map { it.jsonObject.getValue("value").jsonPrimitive.content.substringAfterLast('.') }.toSet()
 
-/**
- * `./gradlew pickGameTests`, which a game test run with no `-Pgametests` runs first. Writes to [args]`[1]` the game
- * tests that the change since the branch left `main` reaches, the working copy's included.
- */
 fun main(args: Array<String>) {
     val mod = File(args[0])
     val out = File(args[1]).apply { parentFile.mkdirs() }
     val top = File(git(mod, "rev-parse", "--show-toplevel"))
-    // A tree of the working copy, untracked files included, built in a copy of the index so the real one is untouched.
     val index = out.resolveSibling("index")
     File(git(top, "rev-parse", "--path-format=absolute", "--git-path", "index")).takeIf { it.exists() }?.copyTo(index, overwrite = true)
     val env = mapOf("GIT_INDEX_FILE" to index.path)

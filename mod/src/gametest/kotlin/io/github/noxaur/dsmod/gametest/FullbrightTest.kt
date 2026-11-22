@@ -6,9 +6,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import java.nio.file.Path
 
-/** At midnight the ground is dark, and with Fullbright on it is as bright as at noon. Read both screenshots. */
 class FullbrightTest : FabricClientGameTest {
-    /** The mean brightness of the lower half of the image, where the ground is, from 0 to 255. */
     private fun ground(screenshot: Path): Double {
         val image = image(screenshot)
         var sum = 0L

@@ -14,15 +14,14 @@ const noRenderInside = {
 };
 
 export default defineConfig({
-  // The tests call the Effect API directly, and Void's plugin would start a second server inside the test runner.
+  // @keep The tests call the Effect API directly, and Void's plugin would start a second server inside the test runner.
   plugins: process.env["VITEST"] === undefined ? [voidPlugin()] : [],
   test: {
     globalSetup: ["../scripts/test-time-limit.ts"],
-    // Threads end with the process, so a test stuck in a loop dies with the run that the time limit ends.
+    // @keep Threads end with the process, so a test stuck in a loop dies with the run that the time limit ends.
     pool: "threads",
   },
-  // Void writes the migrations, so formatting them would only make its next one differ. The item fixtures are the
-  // server's data as it sent it, in one line each, and formatting would triple their size.
+  // @keep Void writes the migrations, and the item fixtures are the server's data in one line each; formatting breaks both.
   fmt: { ignorePatterns: [".void/**", "db/migrations/**", "src/items/fixtures/**"], printWidth: 120 },
   lint: {
     ignorePatterns: [".void/**"],
@@ -42,8 +41,7 @@ export default defineConfig({
       "dsmod/no-try": "error",
       "dsmod/no-computed-console": "error",
       "typescript/no-explicit-any": "error",
-      // An Effect generator leaves early with `return yield* failure`, which this rule reads as a missing value.
-      // TypeScript's noImplicitReturns still catches a function that forgets to return.
+      // @keep An Effect generator leaves early with `return yield* failure`, which this rule reads as a missing value.
       "typescript/consistent-return": "off",
     },
     overrides: [

@@ -14,7 +14,6 @@ const backendSays = (status: number, body: unknown) =>
     vi.fn(() => Promise.resolve(new Response(JSON.stringify(body), { status }))),
   );
 
-/** A browser's cookies: what it sent, and what the login set in answer. */
 const jarWith = (sent: Record<string, string> = {}) => {
   const set = vi.fn();
   const jar: Jar = { get: (name) => (name in sent ? { value: sent[name] ?? "" } : undefined), set };

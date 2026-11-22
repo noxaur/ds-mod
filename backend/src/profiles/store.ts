@@ -1,12 +1,8 @@
-import { Context, Effect, Schema } from "effect";
+import { Clock, Context, Effect, Schema } from "effect";
 
-/**
- * The store would not keep a value. Cloudflare's KV takes one write per key a second, so two lookups of one player at
- * the same moment refuse the second write, though both have the answer.
- */
+/** @keep Cloudflare's KV takes one write per key a second, so two lookups of one player at the same moment refuse the second. */
 export class WriteRefused extends Schema.TaggedError<WriteRefused>()("WriteRefused", {}) {}
 
-/** Copies of what dragsim.co sent, and the snapshots made from them, which expire by themselves. */
 export class ProfileStore extends Context.Service<
   ProfileStore,
   {
@@ -15,11 +11,15 @@ export class ProfileStore extends Context.Service<
   }
 >()("dsmod/profiles/ProfileStore") {}
 
-/** A store that forgets everything when the process ends, for the tests. It does not expire, which a test does not need. */
 export const memoryProfileStore = (): ProfileStore["Service"] => {
-  const values = new Map<string, unknown>();
+  const values = new Map<string, { value: unknown; until: number }>();
   return {
-    get: (key) => Effect.sync(() => values.get(key) ?? null),
-    put: (key, value) => Effect.sync(() => void values.set(key, value)),
+    get: (key) =>
+      Effect.map(Clock.currentTimeMillis, (now) => {
+        const entry = values.get(key);
+        return entry !== undefined && now < entry.until ? entry.value : null;
+      }),
+    put: (key, value, ttlSeconds) =>
+      Effect.map(Clock.currentTimeMillis, (now) => void values.set(key, { value, until: now + ttlSeconds * 1000 })),
   };
 };

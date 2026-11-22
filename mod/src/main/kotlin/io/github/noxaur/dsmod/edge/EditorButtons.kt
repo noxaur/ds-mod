@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.cursor.CursorTypes
 import io.github.noxaur.dsmod.edge.ui.Kit
 import net.minecraft.client.gui.GuiGraphicsExtractor
 
-/** The buttons under a settings editor: where each sits, how one is drawn for the mouse, and which one a point is on. */
 class EditorButtons(private val labels: List<String>) {
     private val spots = IntArray(labels.size * 2)
 
@@ -19,7 +18,6 @@ class EditorButtons(private val labels: List<String>) {
 
     fun middle(i: Int) = x(i) + width(i) / 2
 
-    /** Whether the point is on button [i], whose top is [y]. */
     fun at(i: Int, y: Int, px: Double, py: Double) = px >= x(i) && px < x(i) + width(i) && py >= y && py < y + Kit.BUTTON_HEIGHT
 
     fun draw(g: GuiGraphicsExtractor, i: Int, y: Int, mouseX: Double, mouseY: Double, active: Boolean) {

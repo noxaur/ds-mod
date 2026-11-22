@@ -15,10 +15,6 @@ import io.github.noxaur.dsmod.core.ui.Look
 import kotlinx.serialization.Serializable
 import kotlin.math.roundToInt
 
-/**
- * Marks each item's slot in the color the server gives that rarity's item names, unless [markCommon] is off for Common.
- * The look of a mark is the edge's: `Slots` draws [containerStyle] in containers and [hotbarLook] on the hotbar.
- */
 class ItemRarity(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "item-rarity", Area.ANYWHERE, Store.INVENTORY, "Mark each item's slot in the color of its rarity.", formerly = listOf("rarityMarks"), slots = ::slots)
 
@@ -26,7 +22,6 @@ class ItemRarity(config: DsModConfig) : HasFeature {
 
     val hotbarStyle = feature.stored("hotbarLook", SlotStyle())
 
-    /** While true the hotbar is drawn in [inventoryStyle], and [hotbarStyle] waits for the player to unlink them. */
     val hotbarMatches = feature.stored("hotbarMatches", true)
 
     init {
@@ -53,7 +48,6 @@ class ItemRarity(config: DsModConfig) : HasFeature {
     val markCommon = feature.switch("markCommon", "Common Items", "Mark common items too.", default = false)
 
     val hotbarMarks = feature.switch("hotbarMarks", "Hotbar", "Mark your hotbar as well.", default = true) {
-        // Unmatching starts the hotbar's own look from what it showed, so nothing jumps.
         val match = Bind(hotbarMatches.bind.field, { hotbarMatches.value }) {
             if (!it && hotbarMatches.value) hotbarStyle.value = containerStyle()
             hotbarMatches.value = it
@@ -78,7 +72,6 @@ class ItemRarity(config: DsModConfig) : HasFeature {
 
     fun containerStyle(): SlotStyle = inventoryStyle.value
 
-    /** The look the hotbar's marks are drawn in: the inventory's while they match, or the hotbar's own. */
     fun hotbarLook(): SlotStyle = if (hotbarMatches.value) containerStyle() else hotbarStyle.value
 
     private var common = markCommon.value

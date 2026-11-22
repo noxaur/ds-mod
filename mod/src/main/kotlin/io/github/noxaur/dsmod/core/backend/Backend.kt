@@ -31,34 +31,21 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
 import java.util.concurrent.Executors
 
-/**
- * What a call to the backend failed on. [status] is the HTTP status, or null when the backend could not be reached or
- * something else answers at its address.
- * [tag] is the `_tag` of the error's body, which tells apart failures that share a status, and is null when the body
- * had none, as when a proxy answered.
- */
 class BackendException(val status: Int?, message: String, cause: Throwable? = null, val tag: String? = null) : Exception(message, cause)
 
-/** The error a future's stage failed with, without the [CompletionException] that wraps it. */
 fun Throwable.unwrapped(): Throwable = (this as? CompletionException)?.cause ?: this
 
-/** The Minecraft session the game already holds, which is the only proof of who the player is. */
 interface Identity {
-    /** The account's username. */
     val name: String
 
-    /** Tells Mojang this account is joining the server [serverId], as the vanilla client does when it connects. */
     fun join(serverId: String)
 }
 
 @Serializable
 data class Requirement(val kind: String, val value: String)
 
-/**
- * Something an agent asked players to record. The backend may add a field here and an older mod ignores it, but the
- * [brief] is read as strictly as [Brief.read] reads one, so a step can't silently lose its timer to a key the mod
- * does not know.
- */
+/** @keep The backend may add a field and an older mod ignores it, but the brief is read strictly, so a step can't silently
+ * lose its timer to a key the mod does not know. */
 @Serializable
 data class Request(
     val id: String,
@@ -66,7 +53,7 @@ data class Request(
     val requirements: List<Requirement>,
     val timeoutSeconds: Int,
 ) {
-    // The id names a file on the player's disk and a path on the backend, so it may hold nothing that leaves either.
+    /** @keep The id names a file on the player's disk and a path on the backend, so it may hold nothing that leaves either. */
     init {
         require(id.matches(Regex("[A-Za-z0-9-]{1,64}"))) { "A request's id is up to 64 letters, digits and dashes: $id" }
     }
@@ -77,17 +64,11 @@ private object StrictBrief : KSerializer<Brief> by Brief.serializer() {
         Json.decodeFromJsonElement(Brief.serializer(), (decoder as JsonDecoder).decodeJsonElement())
 }
 
-/** How an upload ended, when the backend answered it. Every answer but [SENT] means sending it again would fail again. */
 enum class Upload { SENT, UNKNOWN, CLOSED, TOO_BIG }
 
-/** A line, or an item, that reached a feature and failed to parse. */
 @Serializable
 data class Sighting(val kind: String, val signature: String, val sample: String)
 
-/**
- * An item from the player's own inventory, as the backend's `ItemSighting` has it. [entry] is the server's id for the
- * item, and [data] is the part of its `custom_data` that says how it is built.
- */
 data class ItemSighting(
     val entry: String,
     val material: String,
@@ -103,7 +84,6 @@ data class ItemSighting(
 
 private val json = Json { ignoreUnknownKeys = true }
 
-/** A line of text as the contract's spans: `#RRGGBB` colors, and a flag only when it is set. */
 private fun ServerText.toJson() = buildJsonArray {
     for (span in spans) {
         add(
@@ -120,32 +100,24 @@ private fun ServerText.toJson() = buildJsonArray {
     }
 }
 
-/**
- * Talks to the backend as the signed-in player. Every call blocks, so a caller runs it with [async], which has one
- * thread of its own. Nothing connects until the first call. The session token lives in [token] and nowhere else: the
- * mod is open source and the backend believes nothing the mod says, so the token is never written, logged or shown.
- * A session ends after 24 hours, so a 401 signs in again once and repeats the call. [modVersion] goes with every
- * upload and report, so an agent can tell which mod recorded what.
- */
+/** @keep The session token lives in `token` and nowhere else: the mod is open source and the backend believes nothing the mod
+ * says, so the token is never written, logged or shown. A session ends after 24 hours. */
 class Backend(private val url: String, private val identity: Identity, private val modVersion: String) {
     @Volatile
     private var token: String? = null
 
-    /** Whether the next call can skip signing in, which is the slow part: Mojang must confirm the account first. */
     val signedIn get() = token != null
 
-    // Built on the first call, on the worker, because building one may read the trust store from disk.
-    // HTTP/1.1, because over plain http Java asks to upgrade to HTTP/2 in a header, and a server that does not know
-    // the upgrade (Vite's, in development) drops the connection, which reads as an unreachable backend.
+    /** @keep Built on the first call, on the worker, because building one may read the trust store from disk. HTTP/1.1,
+     * because over plain http Java asks to upgrade to HTTP/2 in a header, and a server that does not know the upgrade
+     * (Vite's, in development) drops the connection, which reads as an unreachable backend. */
     private val http by lazy { HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).connectTimeout(Duration.ofSeconds(10)).build() }
 
     private val worker = Executors.newSingleThreadExecutor { Thread(it, "dsmod-backend").apply { isDaemon = true } }
     private val origin = URI.create(url).let { "${it.scheme}://${it.authority}" }
 
-    /** Runs [call] on the backend's own thread, never the client thread. */
     fun <T> async(call: Backend.() -> T): CompletableFuture<T> = CompletableFuture.supplyAsync({ call() }, worker)
 
-    /** The open requests this player has neither recorded nor skipped. One the mod cannot read is left out. */
     fun requests(): List<Request> {
         val body = send { get("/v1/contrib/requests", it) }
         return json.parseToJsonElement(body.body()).let { it as JsonArray }.mapNotNull { element ->
@@ -153,14 +125,12 @@ class Backend(private val url: String, private val identity: Identity, private v
         }
     }
 
-    /** [name]'s profile, the one they play now unless [profile] names another of theirs. */
     fun profile(name: String, profile: String?): Profile {
         require(Profile.validName(name)) { "Not a Minecraft name: $name" }
         val query = profile?.let { "?profile=" + URLEncoder.encode(it, Charsets.UTF_8) }.orEmpty()
         return Profile.parse(send { get("/v1/players/$name/profile$query", it) }.body())
     }
 
-    /** One of a profile's containers, as it was when [snapshot] was taken. */
     fun container(snapshot: String, id: String): Container =
         Profile.parseContainer(send { get("/v1/snapshots/${segment(snapshot)}/containers/${segment(id)}", it) }.body())
 
@@ -168,11 +138,6 @@ class Backend(private val url: String, private val identity: Identity, private v
         send { post("/v1/contrib/requests/$id/skip", BodyPublishers.noBody(), null, it) }
     }
 
-    /**
-     * Uploads the gzipped capture at [file] for request [id], and says whether the backend kept it or refused it for
-     * good. Any other failure, sign-in's included, throws, and the recording may be sent again. The backend takes at
-     * most [MAX_UPLOAD] bytes.
-     */
     fun submit(id: String, file: Path): Upload {
         val query = "?modVersion=" + URLEncoder.encode(modVersion, Charsets.UTF_8)
         val response = send(REFUSED) { post("/v1/contrib/requests/$id/submissions$query", BodyPublishers.ofFile(file), "application/octet-stream", it, UPLOAD_TIMEOUT) }
@@ -209,7 +174,6 @@ class Backend(private val url: String, private val identity: Identity, private v
         },
     )
 
-    /** Posts [entries] under [key] with the mod's version, the shape of every report the backend takes. */
     private fun report(path: String, key: String, entries: List<JsonObject>) {
         val body = buildJsonObject {
             put("modVersion", modVersion)
@@ -218,7 +182,6 @@ class Backend(private val url: String, private val identity: Identity, private v
         send { post(path, BodyPublishers.ofString(body.toString()), "application/json", it) }
     }
 
-    /** A code that the website trades for a session once, within a minute. */
     fun oneTimeToken(): String = field(send { get("/api/auth/one-time-token/generate", it) }.body(), "token")
 
     private fun get(path: String, token: String) = exchange(builder(path, token).GET().build())
@@ -236,10 +199,6 @@ class Backend(private val url: String, private val identity: Identity, private v
 
     private fun builder(path: String, token: String, timeout: Duration = TIMEOUT) = request(path, timeout).header("Authorization", "Bearer $token")
 
-    /**
-     * Sends with the session, signs in first when there is none, and signs in again once when the backend says it
-     * ended. A status in [answers] is returned as an answer the caller reads, and any other failure throws.
-     */
     private fun send(answers: Set<Int> = emptySet(), call: (token: String) -> HttpResponse<String>): HttpResponse<String> {
         var response = reach { call(token ?: signIn()) }
         if (response.statusCode() == 401) {
@@ -255,13 +214,13 @@ class Backend(private val url: String, private val identity: Identity, private v
         (json.parseToJsonElement(body.orEmpty()) as? JsonObject)?.get("_tag")?.jsonPrimitive?.content
     }.getOrNull()
 
-    // A path segment the backend reads back whole: its ids are letters, digits, dashes, underscores and colons.
+    // @keep A path segment the backend reads back whole: its ids are letters, digits, dashes, underscores and colons.
     private fun segment(value: String) = value.also { require(it.matches(Regex("[A-Za-z0-9_:-]{1,64}"))) { "Not an id: $it" } }
 
     private fun signIn(): String {
         val challenge = reach { exchange(auth("/api/auth/minecraft/challenge", "{}")) }
-        // Every ds-mod backend has this route, so a 404 means something else holds the address, such as another
-        // project's dev server on the port. Read as a status, it would blame a request the player never made.
+        /** @keep Every ds-mod backend has this route, so a 404 means something else holds the address, such as another
+         * project's dev server on the port. Read as a status, it would blame a request the player never made. */
         if (challenge.statusCode() == 404) throw BackendException(null, "Nothing at $origin answers as the ds-mod backend.")
         challenge.requireOk("a sign-in")
         val serverId = field(challenge.body(), "serverId")
@@ -294,12 +253,10 @@ class Backend(private val url: String, private val identity: Identity, private v
     }
 
     companion object {
-        /** The largest capture the backend keeps, which answers 413 above it. */
         const val MAX_UPLOAD = 50_000_000L
 
         const val MOJANG_DOWN = "The backend could not ask Mojang."
 
-        /** What the submissions route answers when it will never take this recording. */
         private val REFUSED = setOf(404, 409, 413)
         private val TIMEOUT: Duration = Duration.ofSeconds(20)
         private val UPLOAD_TIMEOUT: Duration = Duration.ofSeconds(120)

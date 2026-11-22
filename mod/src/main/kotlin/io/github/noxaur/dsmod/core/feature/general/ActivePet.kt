@@ -26,14 +26,9 @@ import kotlinx.serialization.Serializable
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
-/** How a pet's head looks, to draw it again in a later session: its item, a head's skin, and its model. */
 @Serializable
 data class PetIcon(val id: String = "minecraft:player_head", val skin: String? = null, val model: String? = null)
 
-/**
- * What the Pets menu last showed of one pet: its icon, the item it holds, its rarity, the level it maxed at, and its
- * category, such as `COMBAT`.
- */
 @Serializable
 data class KnownPet(
     val icon: PetIcon? = null,
@@ -43,27 +38,14 @@ data class KnownPet(
     val category: String? = null,
 )
 
-/** Each pet by its key, a uuid or its name, and the key of the pet of each name that was last active. */
 @Serializable
 data class KnownPets(val pets: Map<String, KnownPet> = emptyMap(), val latest: Map<String, String> = emptyMap())
 
-/**
- * Shows the pet the player has out: its head, `[Lvl 100] Black Cat` in its rarity, the item it holds, how far it is to
- * its next level, how fast it gets there, and when it will.
- *
- * The sidebar's `Pet:` line says which pet is out and its level, live, and `Pet: None` that none is, as does the
- * `Selected Pet:` line of the Pets button in the Dragon Sim Menu. A dungeon's sidebar has no such line, so there the
- * pet follows chat and the Pets menu. The Pets menu shows the active pet's item, which gives the icon, the held item
- * and the XP. Chat follows a summon (`Activated [Lvl 100] Black Cat!`), Autopet's swap and a new held item (`Equipped
- * Gold Claws on [Lvl 100] Black Cat!`). Until the menu was opened, the icon is the head of a pet of that name floating
- * near the player. What the menu showed is kept by pet between sessions, keyed by the item's uuid when the server
- * sends one and else by the pet's name, so two pets of one name share it.
- *
- * Each read of the menu is an exact XP point in time. Two reads at one level give the rate, and from it the time to
- * the next level. A combat pet gains XP as the player gains Combat XP, which the action bar shows behind each kill, so
- * from the second read on the Combat XP since the last read moves the XP live, at the rate of pet XP per Combat XP the
- * reads showed, and each read sets it right again. A switch of pet and a level up start over.
- */
+/** @keep The sidebar's `Pet:` line says which pet is out and its level, live, and `Pet: None` that none is. A
+ * dungeon's sidebar has no such line, so there the pet follows chat and the Pets menu. Chat follows a summon
+ * (`Activated [Lvl 100] Black Cat!`), Autopet's swap and a new held item (`Equipped Gold Claws on [Lvl 100]
+ * Black Cat!`). A combat pet gains XP as the player gains Combat XP, which the action bar shows behind each
+ * kill, so from the second read on the Combat XP since the last read moves the XP live */
 class ActivePet(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "active-pet", Area.ANYWHERE, Store.GENERAL, "Show your pet, its level, held item and XP on the HUD.", default = false, hud = ::hud, slots = ::slots)
 
@@ -80,11 +62,6 @@ class ActivePet(config: DsModConfig) : HasFeature {
     private val pets = CurrentPet(feature, ::changed, ::menuSlot) { if (it == pet?.name) block = null }
     private val pet: Pet? get() = pets.pet
 
-    /**
-     * The XP of the pet [key] at [level] since its first read: [from] at [start], and the last read, [read] at [readAt].
-     * [total] is the XP the level needs, or 1 when the menu writes only a percent. [combat] is the Combat XP since the
-     * last read and [before] the Combat XP between the first and the last, which give [ratio], the pet XP per Combat XP.
-     */
     private class Pace(val key: String, val level: Int, val total: Double, val xp: Boolean, val start: Long, val from: Double) {
         var readAt = start
         var read = from
@@ -96,7 +73,6 @@ class ActivePet(config: DsModConfig) : HasFeature {
         val live: Double get() = minOf(total, read + (ratio ?: 0.0) * combat)
         val latest: Long get() = if (ratio != null && combat > 0) maxOf(readAt, gainAt) else readAt
 
-        /** XP per millisecond, once a second read or a live gain is in. */
         val perMilli: Double? get() = (latest - start).takeIf { it > 0 }?.let { (live - from) / it }
     }
 
@@ -110,7 +86,6 @@ class ActivePet(config: DsModConfig) : HasFeature {
     private var shown: Shown? = null
     private var block: HudBlock? = null
 
-    // The minutes to the next level the block shows, so it is rebuilt when they tick down.
     private var nextShown: String? = null
 
     init {
@@ -136,14 +111,13 @@ class ActivePet(config: DsModConfig) : HasFeature {
         }
     }
 
-    /** The key of the pet of [name] that was last active. */
     private fun keyOf(name: String) = known.value.latest[name] ?: name
 
     private fun menuSlot(event: SlotChanged, card: PetCard?, now: Long) {
         if (event.slot == menuSlot && card == null) {
             menuSlot = -1
-            // The active pet's item turning into a summon button is a despawn, which a dungeon's sidebar would not say.
-            // Another pet's item there is the menu turning a page.
+            /** @keep The active pet's item turning into a summon button is a despawn, which a dungeon's sidebar would not say.
+             * Another pet's item there is the menu turning a page */
             if (event.item?.name?.plain?.let(Pet::nameOf) == pet?.name) pets.set(null)
         }
         if (card != null) read(card, event.slot, now)
@@ -165,7 +139,6 @@ class ActivePet(config: DsModConfig) : HasFeature {
                 category = card.category ?: it.category,
             )
         }
-        // The menu is as live as the sidebar, and the only word on the level where a dungeon's sidebar names no pet.
         pets.set(card.pet)
         block = null
         val progress = card.progress ?: return
@@ -177,7 +150,7 @@ class ActivePet(config: DsModConfig) : HasFeature {
         val total = needed.takeIf { xp } ?: 1.0
         val at = read.takeIf { xp } ?: progress.fraction.toDouble()
         val pace = pace
-        // Less XP than the last read is another pet of the same name, summoned in the menu.
+        // @keep Less XP than the last read is another pet of the same name, summoned in the menu
         if (pace == null || pace.key != key || pace.level != card.pet.level || pace.total != total || pace.xp != xp || at < pace.read) {
             this.pace = Pace(key, card.pet.level, total, xp, now, at)
             return
@@ -189,10 +162,6 @@ class ActivePet(config: DsModConfig) : HasFeature {
         pace.readAt = now
     }
 
-    /**
-     * A summon in chat, or Autopet's. A pet of the same name and level may be another one, so its XP is read again and
-     * its rate starts over.
-     */
     private fun summoned(name: String, level: Int) {
         pace = null
         progress.remove(keyOf(name))
@@ -204,7 +173,7 @@ class ActivePet(config: DsModConfig) : HasFeature {
         val next = pet
         if (next?.name != before?.name || next?.level != before?.level) pace = null
         block = null
-        // A summon in chat names no rarity, so each pet's is kept from where it was last seen in color.
+        // @keep A summon in chat names no rarity, so each pet's is kept from where it was last seen in color
         if (next != null) remember(keyOf(next.name)) { it.copy(rarity = next.rarity) }
     }
 
@@ -218,7 +187,6 @@ class ActivePet(config: DsModConfig) : HasFeature {
     fun slots(now: Long): Map<Int, SlotMark> =
         if (markInMenu.value && menuSlot >= 0 && feature.container.title?.plain == PetCard.MENU) mapOf(menuSlot to MARK) else emptyMap()
 
-    /** The current pet's pace, when one was read at the level it is now. */
     private fun pace(pet: Pet, key: String) = pace?.takeIf { it.key == key && it.level == pet.level }
 
     private fun nextLevel(pace: Pace?, now: Long): String? {

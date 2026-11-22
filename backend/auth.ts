@@ -9,9 +9,8 @@ export default defineAuth(({ defaults, env }) => {
   return {
     ...defaults,
     ...signInOptions(mojangHasJoined(typeof key === "string" ? key : undefined)),
-    // A sign-in is two requests, and the mod repeats it once a day. Anyone can ask for a challenge without signing in,
-    // and each one is a row until it expires, so one address gets few. The count is kept in each Worker's memory, so
-    // it slows one client down and is no bound across the deployment.
+    /** @keep Challenges need no sign-in and each is a row until it expires, so one address gets few. The count lives
+     * in each Worker's memory: it slows one client down and bounds nothing across the deployment. */
     rateLimit: {
       ...defaults.rateLimit,
       customRules: {

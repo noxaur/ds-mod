@@ -82,7 +82,6 @@ class BriefTest {
         val run = BriefRun(brief, 1_000, 600)
         assertFalse(run.timedOut(600_999))
         assertTrue(run.timedOut(601_000))
-        // A run that never started still times out, because a player who walked away leaves nothing on screen forever.
         run.finish(10_000)
         assertFalse(run.timedOut(900_000))
         assertFalse(BriefRun(brief, 0, null).timedOut(Long.MAX_VALUE))
@@ -106,7 +105,6 @@ class BriefTest {
             run.step(1_000, presses = 2).map { it.toString() },
         )
         assertEquals(emptyList(), run.step(2_000, presses = 0))
-        // The timer runs out in the tick the player also presses, which ends the run.
         assertEquals(listOf("""{"index":3,"do":"Kill it"}""", """{"done":true}"""), run.step(91_000, presses = 1).map { it.toString() })
         assertEquals(emptyList(), run.step(92_000, presses = 3))
     }

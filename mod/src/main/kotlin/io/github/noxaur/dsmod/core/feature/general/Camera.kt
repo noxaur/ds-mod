@@ -8,10 +8,6 @@ import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 
-/**
- * Shapes the third-person view. It reads nothing from the server, so all of it is `Cameras` in the edge, with
- * the rules in `core.camera`. The edge reads these settings each frame.
- */
 class Camera(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "camera", Area.ANYWHERE, Store.GENERAL, "Shape the third-person view with the settings below.")
 

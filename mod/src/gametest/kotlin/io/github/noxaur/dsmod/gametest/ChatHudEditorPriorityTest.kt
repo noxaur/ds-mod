@@ -14,12 +14,7 @@ import net.minecraft.network.chat.Component
 
 private const val TRACKER = "zealot-tracker"
 
-/**
- * Where the chat is drawn over a block, the chat keeps the mouse: a link under a block fills the input and the wheel
- * scrolls the chat. The command suggestions keep only their own list, so a block elsewhere still drags while they are
- * open. Typing reaches the input over a block, and F1 and the switch turn Chat HUD Editor off. Read the screenshots for
- * a block under the chat and one under the suggestions.
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.Chat], [io.github.noxaur.dsmod.edge.ChatDrags], [io.github.noxaur.dsmod.edge.ui.Editor], [io.github.noxaur.dsmod.edge.ui.ItemsEditor]. */
 class ChatHudEditorPriorityTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.inWorldWithoutTimerPlace { world ->
@@ -29,7 +24,6 @@ class ChatHudEditorPriorityTest : FabricClientGameTest {
             val chat = InChat(context)
             chat.open()
 
-            // Under a row of chat, the chat takes the press and the wheel: a link fills the input, and nothing moves.
             chat.drag(DRAGON_TIMER, 2.0, chat.height - 40.0 - 9 - 2)
             val under = chat.block(DRAGON_TIMER)
             context.runOnClient<Nothing> { client ->
@@ -48,14 +42,12 @@ class ChatHudEditorPriorityTest : FabricClientGameTest {
             chat.block(DRAGON_TIMER).let { check(it.x == under.x && it.y == under.y && it.scale == under.scale) { "The chat's press or wheel moved the block" } }
             context.runOnClient<Nothing> { it.gui.hud.chat.clearMessages(false) }
 
-            // Typing still goes to the input, also with the mouse on a block.
             chat.clearInput()
             chat.move(under.x + 5.0, under.y + 5.0)
             context.input.typeChars("hi")
             context.waitTick()
             check(chat.input() == "hi") { "Typing over a block gave '${chat.input()}'" }
 
-            // With the suggestions open, a block outside their list drags into it, and a press on the list there picks a command.
             chat.clearInput()
             context.input.typeChars("/")
             context.waitFor { client -> ((client.gui.screen() as ChatScreenAccessor).commandSuggestions as CommandSuggestionsAccessor).suggestions != null }
@@ -76,7 +68,6 @@ class ChatHudEditorPriorityTest : FabricClientGameTest {
             chat.checkAt(TRACKER, moved.x, moved.y) { "The press on the suggestions moved the block" }
             chat.clearInput()
 
-            // With the HUD hidden or the switch off, a drag moves nothing.
             val still = chat.block(DRAGON_TIMER)
             context.runOnClient<Nothing> { it.gui.hud.toggle() }
             chat.drag(DRAGON_TIMER, still.x + 60, still.y - 60)

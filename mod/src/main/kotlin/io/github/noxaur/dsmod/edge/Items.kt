@@ -65,7 +65,7 @@ private val ItemStack.skyBlockData: SkyBlockData?
 
 private fun CompoundTag.string(key: String) = getStringOr(key, "").ifEmpty { null }
 
-/** Walks the components and the NBT directly, because the codecs are slow and this runs on the client thread. */
+/** @keep The codecs are slow and this runs on the client thread, so it walks the components and the NBT directly. */
 fun ItemStack.toItem(): Item {
     val key = id
     return Item(
@@ -83,15 +83,12 @@ fun ItemStack.toItem(): Item {
     )
 }
 
-/** The `textures` property of a player head's profile, as the server wrote it. */
 fun ItemStack.skullTexture(): String? =
     get(DataComponents.PROFILE)?.partialProfile()?.properties()?.get(TEXTURES)?.firstOrNull()?.value()
 
-/**
- * A stack that draws as the [Item] and shows its tooltip. A head's skin goes back without the signature the server
- * sent, which the game accepts for a head, as it does for a head a command gives. dragsim.co strips the vanilla
- * attributes from its items and writes their stats in the lore, so the stack has none, or its tooltip would add armor.
- */
+/** @keep A head's skin goes back without the signature the server sent, which the game accepts for a head. dragsim.co strips
+ * the vanilla attributes from its items and writes their stats in the lore, so the stack has none, or its tooltip
+ * would add armor. */
 fun Item.toStack(): ItemStack {
     val stack = stackOf(id, count)
     stack.remove(DataComponents.ATTRIBUTE_MODIFIERS)
@@ -110,7 +107,6 @@ fun Item.toStack(): ItemStack {
 private const val TEXTURES = "textures"
 private val SKIN = Regex("""textures\.minecraft\.net/texture/([0-9a-f]+)""")
 
-/** The skin's part of a `textures` property's value, which is base64 of JSON naming the skin's address. */
 private fun skin(value: String) = runCatching { SKIN.find(String(Base64.getDecoder().decode(value)))?.groupValues?.get(1) }.getOrNull()
 
 private fun CompoundTag.toJson() = JsonObject(entrySet().associate { (key, tag) -> key to tag.toJson() })

@@ -10,7 +10,6 @@ import { lore, name } from "./render/tooltip.ts";
 import { readItem } from "./render/upstream.ts";
 import { type ItemHints, ItemStore } from "./store.ts";
 
-/** The entries upstream slots hold, as dragsim.co's player API sends them, to ask the store for hints about. */
 export const entriesOf = (items: readonly unknown[]): readonly string[] => {
   const entries = new Set<string>();
   for (const item of items) {
@@ -22,15 +21,12 @@ export const entriesOf = (items: readonly unknown[]): readonly string[] => {
   return [...entries];
 };
 
-/** Draws dragsim.co's items as the game does. */
 export interface Renderer {
-  /** The item one upstream slot holds, as dragsim.co's player API sends it, or null when it holds none. */
   readonly render: (item: unknown) => DrawnItem | null;
 }
 
 const MAX_COUNT = 99;
 
-/** How many worn pieces list each ability. One piece counts once, even if its ability list repeats a key. */
 const wornAbilities = (worn: readonly unknown[]): ReadonlyMap<string, number> => {
   const abilities = new Map<string, number>();
   for (const raw of worn) {
@@ -41,10 +37,6 @@ const wornAbilities = (worn: readonly unknown[]): ReadonlyMap<string, number> =>
   return abilities;
 };
 
-/**
- * A renderer for dragsim.co's `catalog.json` and the hints players agree on. `worn` is the armor from
- * `equipmentCells`, and a full-set header counts how many of those pieces share the ability. Make one per request.
- */
 export const makeRenderer = (
   catalogJson: unknown,
   hints: ReadonlyMap<string, ItemHints>,

@@ -17,7 +17,6 @@ import kotlin.test.assertTrue
 
 private fun exception(rule: Rule) = Regex("""rule:${Regex.escape(rule.id)} \S""")
 
-/** [text] breaks [rule] unless an exception comment covers the match. A [Span.FILE] rule may match across lines. */
 fun violations(rule: Rule, text: String): List<Int> {
     val lines = text.lines()
     if (rule.span == Span.LINE) {
@@ -33,7 +32,6 @@ fun violations(rule: Rule, text: String): List<Int> {
     }.distinct().toList()
 }
 
-/** A line breaks [rule] unless it carries `rule:<id> <reason>`. */
 fun breaks(rule: Rule, line: String) = violations(rule, line).isNotEmpty()
 
 class RulesTest {
@@ -117,7 +115,6 @@ class RulesTest {
         )
     }
 
-    /** Names each id that appears twice, and says to give the new rule its own id. Null when every id is unique. */
     fun ruleIdFailure(ids: List<String>): String? {
         val repeated = ids.groupingBy { it }.eachCount().filter { it.value > 1 }.keys
         if (repeated.isEmpty()) return null

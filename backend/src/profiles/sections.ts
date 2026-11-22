@@ -6,14 +6,11 @@ import { mobName } from "./names.ts";
 import { skillProgress } from "./progress.ts";
 import type { Progression } from "./wire.ts";
 
-/*
- * The sections dragsim.co sends as plain data. Each is read leniently, so a section that changes shape costs only
- * itself: a value that is missing or of the wrong type is left out, and a section that is no object is empty.
- */
+/* @keep Each section is read leniently, so a section that changes shape costs only itself: a value that is missing or
+ * of the wrong type is left out, and a section that is no object is empty. */
 
 export const playerStats = (catalog: Catalog, raw: unknown): Profile["playerStats"] => statSheet(catalog, statSet(raw));
 
-/** Every mob of the bestiary, most kills first, including the ones with none. A bad kills value drops that mob. */
 export const bestiary = (raw: unknown): Profile["bestiary"] =>
   Object.entries(record(raw))
     .flatMap(([id, entry]) => {
@@ -21,7 +18,7 @@ export const bestiary = (raw: unknown): Profile["bestiary"] =>
         return [];
       }
       const kills = record(entry)["kills"];
-      // Null is how the server leaves a count out. Anything else that is not finite is a shape change.
+      // @keep Null is how the server leaves a count out. Anything else that is not finite is a shape change.
       if (kills !== undefined && kills !== null && !Number.isFinite(kills)) {
         return [];
       }
@@ -39,7 +36,6 @@ export const rngMeters = (raw: unknown): Profile["rngMeters"] =>
     progress: count(record(meter)["kills"]) ?? 0,
   }));
 
-/** `F7` is `Floor 7`, `M3` is `Master Mode 3`, and anything else is its id in title case. */
 const floorName = (id: string): string => {
   const [, kind, number] = /^([FM])(\d+)$/u.exec(id) ?? [];
   return kind === undefined ? titleCase(id) : `${kind === "F" ? "Floor" : "Master Mode"} ${number ?? ""}`;

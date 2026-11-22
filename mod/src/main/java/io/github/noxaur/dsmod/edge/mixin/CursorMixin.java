@@ -13,10 +13,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Keep Cursor: the server closes a menu before it opens the next, so the game takes the mouse back for a moment and
- * then lets it go at the middle of the window. The cursor goes back to where the closed screen left it instead.
- */
+/** @keep The server closes a menu before it opens the next, so the game takes the mouse back for a moment and then lets it
+ * go at the middle of the window. */
 @Mixin(MouseHandler.class)
 abstract class CursorMixin {
     @Shadow

@@ -7,7 +7,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Slot Lock: the drop key outside a menu drops the held item without any click on a slot. */
 @Mixin(LocalPlayer.class)
 abstract class DropKeyMixin {
     @Inject(method = "drop", at = @At("HEAD"), cancellable = true)

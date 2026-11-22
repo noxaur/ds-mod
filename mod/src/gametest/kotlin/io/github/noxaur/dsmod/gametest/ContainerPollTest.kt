@@ -15,10 +15,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
 
-/**
- * Opens a chest of 54 items with long lore, which is more than one tick may spend reading. The edge must read
- * it over several ticks and still deliver every slot.
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.EnchantmentOfferMixin], [io.github.noxaur.dsmod.edge.mixin.MenuBackdropMixin], [io.github.noxaur.dsmod.edge.mixin.MenuLabelMixin]. */
 class ContainerPollTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         var tick = 0

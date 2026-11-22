@@ -20,7 +20,6 @@ class DragSimTest {
         }
     }
 
-    // Literals, so the test looks nothing up.
     private val dragSimAt = setOf(InetAddress.getByName("144.217.180.49"))
 
     @Test

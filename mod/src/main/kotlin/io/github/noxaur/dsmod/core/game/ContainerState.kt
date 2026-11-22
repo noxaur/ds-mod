@@ -1,10 +1,8 @@
 package io.github.noxaur.dsmod.core.game
 
-/** The open container, kept up to date by [ContainerOpened] and [SlotChanged]. A slot nothing has filled is null. */
 class ContainerState {
     private var items = arrayOfNulls<Item>(0)
 
-    // The player's own inventory as it was when another menu opened, for a [ContainerOpened] that keeps it.
     private var inventory = arrayOfNulls<Item>(0)
 
     var id = 0
@@ -34,7 +32,6 @@ class ContainerState {
     }
 
     companion object {
-        /** The player's own inventory, which the client always numbers 0. */
         const val INVENTORY = 0
         private const val PLAYER_SLOTS = 36
         const val ROW_SLOTS = 9

@@ -13,16 +13,9 @@ import kotlin.reflect.full.superclasses
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-// Values that cannot change, and the read-only collections, whose elements are checked in turn.
 private val leaves = setOf(String::class, Boolean::class, Char::class, Byte::class, Short::class, Int::class, Long::class, Float::class, Double::class)
 private val readOnly = setOf(List::class, Set::class, Map::class, Collection::class, Pair::class, Triple::class)
 
-/**
- * What in the state whose default is [default], named [path], a save could lose: a value that changes in place,
- * which `Saved` never writes because only replacing its `value` marks it changed, and a field with no default,
- * which a save written before the field existed lacks, so it would not load. A default that is one case of a sealed
- * state stands for all of them.
- */
 fun savedProblems(default: Any, path: String): List<String> =
     problems(generateSequence(default::class) { it.superclasses.firstOrNull(KClass<*>::isSealed) }.last().starProjectedType, path, mutableSetOf())
 

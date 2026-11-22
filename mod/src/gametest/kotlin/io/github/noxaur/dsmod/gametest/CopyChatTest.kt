@@ -12,12 +12,6 @@ import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
 import org.lwjgl.glfw.GLFW
 
-/**
- * Works Copy Chat in the open chat with the real mouse and keyboard. A right click selects a message and opens
- * the menu beside the mouse, a right drag selects all between, Shift extends, Ctrl adds and removes,
- * the keys a menu and a selection take work, and a drag held past the chat's edge scrolls it. Each button copies
- * its form. Read the screenshots for the selection, the menu in both themes and the flash.
- */
 class CopyChatTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val long = "A message long enough to run over two rows of the chat, so that a click on either row has to find all of it."
@@ -30,9 +24,7 @@ class CopyChatTest : FabricClientGameTest {
                     val chat = client.gui.hud.chat
                     chat.clearMessages(false)
                     for (i in 1..30) chat.addClientSystemMessage(Component.literal("Filler $i"))
-                    // A block as dragsim.co sends one: a message per line, with empty messages between.
                     for (line in listOf("Top", "", "Middle", "", "Bottom")) chat.addClientSystemMessage(Component.literal(line))
-                    // A block sent the other way: several lines in one message, one empty and one centered with spaces.
                     chat.addClientSystemMessage(
                         Component.literal("ACTIVE BOOSTERS\n\n      Everyone: +50% drops.\n").withStyle(ChatFormatting.GOLD)
                             .append(Component.literal("Expires in 1h").withStyle(ChatFormatting.GRAY)),
@@ -48,7 +40,6 @@ class CopyChatTest : FabricClientGameTest {
                 context.waitForScreen(ChatScreen::class.java)
                 context.waitTicks(2)
 
-                // The chat's rows are 9 tall and end 40 above the screen's bottom. Row 0 is the newest line.
                 fun row(row: Int, x: Int = 60) = context.point(x, context.computeOnClient<Int, Nothing> { it.window.guiScaledHeight } - 40 - row * 9 - 4)
                 fun press(format: Format) {
                     val menu = checkNotNull(CopyChats.menu) { "No menu is open to press $format in" }
@@ -68,7 +59,6 @@ class CopyChatTest : FabricClientGameTest {
                 check(CopyChats.menu?.header == "Copy Message") { "A right click opened ${CopyChats.menu?.header}" }
                 check(copies.isEmpty()) { "A right click alone copied $copies" }
                 context.takeScreenshot("copy-chat-beside")
-                // The menu is beside the mouse, so the row under it is still there to press: one down is the next message.
                 row(0)
                 context.input.pressMouse(1)
                 context.waitTick()
@@ -81,7 +71,6 @@ class CopyChatTest : FabricClientGameTest {
                 copied(long, "A right click on the message's first row")
                 context.takeScreenshot("copy-chat-copied")
 
-                // Dragged from the newest line up to the drop, over the wrapped message.
                 row(0)
                 context.input.holdMouse(1)
                 row(3)
@@ -94,7 +83,6 @@ class CopyChatTest : FabricClientGameTest {
                 press(Format.FORMATTED)
                 copied("&6&lRARE DROP! &#12ab34Summoning Eye\n$long\nThe last message.", "Formatted, for three messages")
 
-                // Dragged downward gives the same order, oldest first.
                 row(3)
                 context.input.holdMouse(1)
                 row(1)
@@ -120,7 +108,6 @@ class CopyChatTest : FabricClientGameTest {
                 check(copies.single().startsWith("[") && copies.single().endsWith("]")) { "JSON for two messages was ${copies.single()}" }
                 copies.clear()
 
-                // One line of a block is one press, without the spaces that centered it.
                 row(5)
                 context.input.pressMouse(1)
                 context.waitTick()
@@ -132,7 +119,6 @@ class CopyChatTest : FabricClientGameTest {
                 context.input.pressMouse(1)
                 context.waitTick()
                 check(CopyChats.menu == null) { "A right click on a block's empty line opened the menu" }
-                // Dragged over the whole block and the message under it.
                 row(7)
                 context.input.holdMouse(1)
                 row(3)
@@ -156,7 +142,6 @@ class CopyChatTest : FabricClientGameTest {
                 check("ACTIVE BOOSTERS" in copies.single() && "Everyone" !in copies.single()) { "JSON for a block's first line was ${copies.single()}" }
                 copies.clear()
 
-                // Empty messages are all the same to look at, and each still belongs to its own place in the drag.
                 row(10)
                 context.input.pressMouse(1)
                 context.waitTick()
@@ -173,7 +158,6 @@ class CopyChatTest : FabricClientGameTest {
                 press(Format.TEXT)
                 copied("Top\n\nMiddle\n\nBottom", "A block of five messages, two of them empty")
 
-                // Let go on the empty message under Middle: the drag ends there, and the copy leaves the empty edge out.
                 row(12)
                 context.input.holdMouse(1)
                 row(9)
@@ -195,13 +179,11 @@ class CopyChatTest : FabricClientGameTest {
                 fun header(expected: String, step: String) = check(CopyChats.menu?.header == expected) { "$step opened ${CopyChats.menu?.header}, not $expected" }
                 val drop = "RARE DROP! Summoning Eye"
 
-                // Shift extends from the first press, and the anchor outlives the copy.
                 click(0)
                 context.input.holdShift()
                 click(3)
                 header("Copy 3 Messages", "A Shift press three messages up")
                 context.input.releaseShift()
-                // Ctrl+C is Text.
                 context.input.holdControl()
                 key(GLFW.GLFW_KEY_C)
                 context.input.releaseControl()
@@ -212,7 +194,6 @@ class CopyChatTest : FabricClientGameTest {
                 header("Copy 2 Messages", "A Shift press after a copy")
                 key(GLFW.GLFW_KEY_ESCAPE)
 
-                // Ctrl adds a message that is not next to the first, and takes one out again.
                 click(0)
                 context.input.holdControl()
                 click(3)
@@ -231,7 +212,6 @@ class CopyChatTest : FabricClientGameTest {
                 key(GLFW.GLFW_KEY_ENTER)
                 copied(drop, "Enter with the menu just opened")
 
-                // A press inside a selection of several keeps it.
                 row(0)
                 context.input.holdMouse(1)
                 row(3)
@@ -241,7 +221,6 @@ class CopyChatTest : FabricClientGameTest {
                 header("Copy 3 Messages", "A press inside a selection of three")
                 key(GLFW.GLFW_KEY_ESCAPE)
 
-                // Shift with an arrow moves the end, and Ctrl+A takes everything.
                 click(0)
                 context.input.holdShift()
                 key(GLFW.GLFW_KEY_UP)
@@ -256,7 +235,6 @@ class CopyChatTest : FabricClientGameTest {
                 header("Copy 39 Lines", "Ctrl+A")
                 key(GLFW.GLFW_KEY_ESCAPE)
 
-                // Held above the chat, the drag scrolls it and keeps selecting.
                 row(0)
                 context.input.holdMouse(1)
                 context.point(60, 5)
@@ -270,7 +248,6 @@ class CopyChatTest : FabricClientGameTest {
                 context.runOnClient<Nothing> { it.gui.hud.chat.resetChatScroll() }
                 context.waitTick()
 
-                // Escape and a click elsewhere put the menu away, copy nothing and leave the chat open.
                 row(0)
                 context.input.pressMouse(1)
                 context.waitTick()

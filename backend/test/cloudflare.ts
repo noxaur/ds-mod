@@ -5,15 +5,12 @@ import { DatabaseSync, type SQLInputValue } from "node:sqlite";
 import { Effect, Exit } from "effect";
 import { withRuntimeEnv } from "void/_env";
 
-/** D1 refuses a statement with more bound values than this, and `routes/_store.ts` chunks its queries to stay under. */
+// @keep D1 refuses a statement with more bound values than this.
 const MAX_BOUND_VALUES = 100;
 
 type Row = Record<string, unknown>;
 
-/**
- * The D1 binding as `drizzle-orm/d1` calls it, over Node's own SQLite. D1 is SQLite, so the SQL runs on a real engine
- * with the real migrations. What it does not model is Cloudflare's network, read replicas and statement timing.
- */
+/** @keep D1 over Node's SQLite runs the real SQL. It does not model Cloudflare's network, read replicas or timing. */
 class Statement {
   constructor(
     private readonly sqlite: DatabaseSync,
@@ -55,7 +52,6 @@ class D1 {
     return new Statement(this.sqlite, text);
   }
 
-  /** All the statements or none, as D1 runs a batch. */
   batch(statements: Statement[]) {
     return Effect.runPromise(
       Effect.acquireUseRelease(
@@ -75,7 +71,6 @@ class D1 {
   }
 }
 
-/** The migrations Void would apply, in the order of Drizzle's journal. */
 const migrate = (sqlite: DatabaseSync) => {
   const directory = join(import.meta.dirname, "..", "db", "migrations");
   const journal: { entries: { tag: string }[] } = JSON.parse(
@@ -108,14 +103,12 @@ const kvNamespace = () => {
   };
 };
 
-/** A fresh database with the real migrations, and a way to run code the way a Void request would see it. */
 export const localCloudflare = () => {
   const sqlite = new DatabaseSync(":memory:");
   migrate(sqlite);
   const env = { DB: new D1(sqlite), STORAGE: r2(), KV: kvNamespace() };
   return {
     sqlite,
-    /** Runs `body` with the bindings Void's `db`, `kv` and `storage` read from the request. */
     within: <A>(body: () => Promise<A>): Promise<A> => withRuntimeEnv(env, body),
   };
 };

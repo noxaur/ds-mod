@@ -16,12 +16,7 @@ import kotlin.streams.asSequence
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/**
- * A fixture is cut from a capture of real players, and the repository is public. The first test reads every capture
- * on this machine for player names and fails when a fixture or a transcript still holds one, which finds a name
- * anywhere but needs the captures. The second needs none, so it holds in CI: wherever [PlayerNames] knows a player's
- * name stands, a fixture holds an alias, even for a name the server also writes as its own.
- */
+/** @keep The repository is public and a fixture is cut from a capture of real players, so wherever [PlayerNames] knows a name stands, a fixture holds an alias, even for a name the server also writes as its own. */
 class FixtureLeakTest {
     @Test
     fun `no fixture holds a player name from a capture on this machine`() {
@@ -37,7 +32,7 @@ class FixtureLeakTest {
     @Test
     fun `every name a fixture holds where a player's name stands is an alias`() {
         val fixtures = Files.walk(Path.of("src/test/resources/features")).asSequence().filter { it.toString().endsWith(".jsonl") }.toList()
-        // PlayerNames reads a line's type from its text, without parsing the line, so a type written any other way is unread.
+        // @keep PlayerNames reads a line's type from its text, so a line written any other way would go unread.
         val reformatted = fixtures.flatMap { file ->
             file.readLines().withIndex().filter { (_, line) ->
                 line.substringAfter("\"type\":\"", "").substringBefore('"') != Json.parseToJsonElement(line).jsonObject["type"]?.jsonPrimitive?.content

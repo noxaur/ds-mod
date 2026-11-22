@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Window hints last only until the next window is created, so they are set here, after the game's own. */
+/** @keep Window hints last only until the next window is created, so they are set here, after the game's own. */
 @Mixin(Window.class)
 abstract class BackgroundWindowMixin {
     @Inject(

@@ -48,34 +48,19 @@ private const val GAP = 6
 private const val EMPTY_TOP = 24
 private const val TIP_DELAY = 350L
 
-/** A section that a page of the pane scrolls to sits this far under the pane's top. */
 private const val JUMP_MARGIN = 4
 
-/** The pane starts under the tab bar. */
 private const val BAR = Kit.TAB_BAR_HEIGHT
 
 private const val MOUSE_BACK = 3
 private const val MOUSE_FORWARD = 4
 
-/**
- * ds-mod's own settings screen, filling the window: a sidebar of sections with a search field, Done, and a button
- * that collapses or expands every section, and beside it a pane under a bar of browser tabs. Each tab is one place
- * of [tabs], a section or a search, with its own scroll and history, and the pane shows the selected one. Each
- * named subsection has a heading, with the subsection's switch when the subsection is one feature, and its rows sit
- * in a well, each with the control of its kind from [SettingRows]. Typing searches every section from the selected
- * tab, and the pane lists what matched under "Section › Subsection" headings, with the rows that hold a match open.
- * Favorites, the first section, lists the rows the player starred under the same headings, in the tree's order.
- *
- * A change applies to [config] at once, and [save] writes it when the screen goes.
- */
 class SettingsScreen(
     private val parent: Screen?,
     private val tabs: SettingsTabs = session(),
     private val config: DsModConfig = DsModClient.settings,
     private val save: () -> Unit = DsModClient::saveSettings,
-    /** A row to open at, as a link elsewhere does that names the setting it edits. */
     private var reveal: String? = null,
-    /** Words to search for on open, as `/dsmod <words>` does. */
     private var query: String? = null,
 ) : Screen(text { body("ds-mod") }.toComponent()) {
     private sealed class Item(val y: Int, val height: Int)
@@ -106,19 +91,15 @@ class SettingsScreen(
     private var spiedAt = -1
     private var thumbGrab = -1.0
 
-    /** The query whose hits [SettingRows.found] opened. */
     private var foundFor: String? = null
     private var hovered: SettingRows.Tip? = null
     private var hoveredSince = 0L
     private var lastFrame = 0L
 
-    /** Whether the pane has shown a tab yet, so there is a scroll to keep. */
     private var shown = false
 
-    /** The plus focuses the search field, which the press's own focus on the bar would take back. */
     private var focusSearch = false
 
-    /** A press of the Favorite Key is followed by its character, which would start a search. */
     private var eatChar = false
     private var mouseX = 0.0
     private var mouseY = 0.0
@@ -129,7 +110,6 @@ class SettingsScreen(
     override fun init() {
         keep()
         side = if (width < 460) 92 else if (width < 600) 100 else 116
-        // The sidebar's outline is its right edge, so its content keeps the same gap from that as from the window's.
         val inner = side - 1 - Kit.GAP * 2
         val footY = height - Kit.GAP - Kit.BUTTON_HEIGHT
         val navY = Kit.GAP + Kit.BUTTON_HEIGHT + Kit.GAP
@@ -141,8 +121,7 @@ class SettingsScreen(
                 ::select, ::jump, ::folded, ::openTab, icons,
             ),
         )
-        // Vanilla narrates the first focused entry it did not narrate last, so two entries that both claim focus take
-        // turns. Only the part that has the keys claims it: the rows, the search field, or else the sidebar.
+        /* @keep Vanilla narrates the first focused entry it did not narrate last, so two entries that both claim focus take turns. Only the part that has the keys claims it: the rows, the search field, or else the sidebar. */
         nav.hasKeys = { !rows.keys && !rows.capturing && (focused == null || focused === nav) }
         addWidget(rows.narration)
         bar = addRenderableWidget(
@@ -165,7 +144,6 @@ class SettingsScreen(
         reveal = null
     }
 
-    /** Takes the selected tab to the section that holds the row [id], with the rows above it opened. */
     private fun goTo(id: String) {
         val section = sections.indexOfFirst { s -> s.walk().any { it.id == id } }.takeIf { it >= 0 } ?: return
         fun path(rows: List<Setting>): List<String>? {
@@ -180,21 +158,18 @@ class SettingsScreen(
         if (tabs.current.place.section != section || tabs.current.place.searching) tabs.current.go(section)
     }
 
-    /** Keeps where the selected tab's pane is, before the tab changes or the screen goes. */
     private fun keep() {
         if (!shown) return
         tabs.current.scroll = pane.offset
         tabs.current.current = tree.current
     }
 
-    /** Shows the selected tab: its place in the sidebar and the search field, and the pane where it was. */
     private fun show() {
         val tab = tabs.current
         val place = tab.place
         if (place.section != FAVORITES || place.searching) view.left()
         if (search.value != place.query) search.value = place.query
         tree.searching = place.searching
-        // Selecting a section again would reopen it after the player closed it with its arrow.
         if (place.section < 0) tree.deselect() else if (place.section != tree.selected) tree.select(place.section)
         nav.refresh()
         build()
@@ -205,21 +180,18 @@ class SettingsScreen(
         }
         pane.to(tab.scroll)
         tree.current = tab.current
-        // The pane takes the mark back only once it has scrolled, so a subsection a jump marked stays marked, even
-        // one whose heading can't reach the top near the end of a short section.
+        /* @keep The pane takes the mark back only once it has scrolled, so a subsection a jump marked stays marked, even one whose heading can't reach the top near the end of a short section. */
         spiedAt = pane.offset
         folded()
         bar.layout()
         shown = true
     }
 
-    /** Typing searches from the selected tab, which becomes that search. */
     private fun onSearch(text: String) {
         if (text == tabs.current.place.query) return
         retab { tabs.current.search(text) }
     }
 
-    /** A press on a section takes the selected tab there, and opens it again if its arrow had closed it. */
     private fun select(section: Int) {
         retab {
             tabs.current.go(section)
@@ -227,7 +199,6 @@ class SettingsScreen(
         }
     }
 
-    /** Opens [section] at its subsection [sub]: the pane jumps there from another section, and glides within one. */
     private fun jump(section: Int, sub: Int) {
         val tab = tabs.current
         if (tab.place.searching || section != tab.place.section) {
@@ -244,7 +215,6 @@ class SettingsScreen(
         folded()
     }
 
-    /** A Ctrl or middle press on a section, or on a subsection [sub], opens it in a tab after the selected one. */
     private fun openTab(section: Int, sub: Int) {
         tabs.open(Place(section), sub)
         bar.layout()
@@ -260,7 +230,6 @@ class SettingsScreen(
         if (tabs.close(index)) show()
     }
 
-    /** Opens a blank tab, selected, with the keyboard in the search field. */
     private fun newTab() {
         retab { tabs.new() }
         setFocused(search)
@@ -276,7 +245,6 @@ class SettingsScreen(
         if (if (back) tabs.current.back() else tabs.current.forward()) show()
     }
 
-    /** Runs a tab's change from the keyboard: keeps where the pane was, changes the tabs, and shows the selected one. */
     private inline fun retab(change: () -> Unit) {
         keep()
         change()
@@ -289,13 +257,11 @@ class SettingsScreen(
         folded()
     }
 
-    /** The fold button collapses while any section shows its subsections, and expands once none does. */
     private fun folded() {
         if (tree.anyShown) fold.show(Icon.UP, "Collapse All") else fold.show(Icon.DOWN, "Expand All")
         fold.active = !tree.searching
     }
 
-    /** Lays the pane out for the selected tab: its section, what its search found, or a line when it is blank. */
     private fun build() {
         val items = ArrayList<Item>()
         val tops = ArrayList<Int>()
@@ -313,8 +279,6 @@ class SettingsScreen(
         if (place.searching) {
             val hits = SettingsSearch.hits(sections, place.query)
             nav.counts(SettingsSearch.counts(hits, sections.size))
-            // A hit inside a row opens it, so the search shows where the match is. A row the player closes stays
-            // closed until the query changes.
             if (place.query != foundFor) rows.found = hits.flatMapTo(HashSet()) { it.open }
             foundFor = place.query
             if (hits.isEmpty()) {
@@ -356,7 +320,6 @@ class SettingsScreen(
             foundFor = null
             rows.found = HashSet()
             nav.counts(null)
-            // No title: the sidebar and the tab name the section.
             for (group in sections[place.section].groups) {
                 if (group.name != null) {
                     y += above
@@ -378,10 +341,6 @@ class SettingsScreen(
         spiedAt = -1
     }
 
-    /**
-     * Lays [hits] out from [y] under "Section › Subsection" headings, the group's switch beside each when [switches],
-     * and returns the content y under them.
-     */
     private fun list(items: MutableList<Item>, hits: List<SettingHit>, top: Int, switches: Boolean): Int {
         var y = top
         var above = FIRST_ABOVE
@@ -395,15 +354,12 @@ class SettingsScreen(
         return y
     }
 
-    /** Stars or unstars the row [id]. One unstarred in Favorites stays there until the player leaves. */
     private fun star(id: String) {
         config.favorites = view.toggle(config.favorites, id, here = tabs.current.place.let { it.section == FAVORITES && !it.searching })
     }
 
-    /** Whether the Favorite Key may act: not while the search has the keys, nor with Ctrl or Alt held, so typing and Ctrl+F work. */
     private fun favoriteFree(event: InputWithModifiers) = focused !== search && !Keys.control(event) && !Keys.alt(event)
 
-    /** Adds a heading at [y] with [settings] in a well under it, and returns the y under them. */
     private fun headed(items: MutableList<Item>, y: Int, prefix: String?, name: String, switch: Switch?, settings: List<Setting>): Int {
         items += heading(y, prefix, name, switch)
         val well = group(y + HEADING + BELOW, settings)
@@ -417,53 +373,42 @@ class SettingsScreen(
         val end = nameX + font.width(name) + GAP
         if (switch != null) rows.heading(switch, end, y, contentX)
         val lineX = if (switch == null) end else end + Kit.SWITCH_WIDTH + SettingRows.HEADING_STAR + GAP
-        // A heading's words find its rows, so a search paints them there too.
         return Heading(y, prefix, separatorX, name, Kit.Marked.of(name, rows.words), nameX, switch, lineX)
     }
 
-    /** A well holding [settings], one row each with the control of its kind. */
     private fun group(y: Int, settings: List<Setting>): Group {
         val bottom = rows.add(settings, contentX + 1, y + 1, contentWidth - 2)
         return Group(y, bottom - y + 1)
     }
 
-    /** Scrolls the pane so that the content from [top] to [bottom] shows, as the keyboard moves through the rows. */
     private fun scrollTo(top: Int, bottom: Int) {
         val view = pane.view
         if (top < pane.offset) pane.to(top) else if (bottom > pane.offset + view) pane.to(bottom - view)
         sync()
     }
 
-    /** Where the row [id], or its ordered list's [entry], is on the screen, if the pane shows it, so a link or a test can find it. */
     fun spot(id: String, entry: Int = -1): SettingRows.Spot? {
         sync()
         return rows.spot(id, entry)
     }
 
-    /** How far down the screen the middle of the sidebar's line for [section] is, if the sidebar shows it, so a test can find it. */
     fun line(section: String): Int? = nav.middle(NavRow(sections.indexOfFirst { it.name == section }))
 
-    /** The ids of the rows the pane lists now, in order, so a test can read a page. */
     fun shown() = rows.ids()
 
-    /** Whether the row [id] paints its changed marker. */
     fun marked(id: String) = rows.marked(id)
 
-    /** The editor of the row [id], told where the pane is, so a test can find its controls. */
     fun editor(id: String): Editor? {
         sync()
         return rows.editor(id)
     }
 
-    /** Scrolls the pane to the row [id]. */
     fun reveal(id: String) {
         rows.reveal(id)
     }
 
-    /** Tells the rows where the pane is, before they draw or take input. */
     private fun sync() = rows.view(BAR - pane.offset, BAR, height, width, height)
 
-    /** Marks the subsection whose heading is at the pane's top, once the pane has stopped moving. */
     private fun spy() {
         if (tree.searching || pane.gliding || pane.offset == spiedAt) return
         spiedAt = pane.offset
@@ -473,21 +418,17 @@ class SettingsScreen(
     override fun keyPressed(event: KeyEvent): Boolean {
         val key = event.key()
         eatChar = false
-        // An open menu, a number's field or a key button being set takes every key, Escape included.
         if (rows.capturing) return rows.keyPressed(event)
         val favorite = config.general.favoriteKey
         if (key == favorite && !Keys.isMouse(favorite) && favoriteFree(event) && rows.starAt(mouseX, mouseY, keyboard = true)) return true.also { eatChar = true }
-        // The tabs' keys are a browser's, and work in the search field too.
         if (Keys.control(event) && controlKey(event)) return true
         if (Keys.alt(event) && (event.isLeft || event.isRight)) return true.also { history(event.isLeft) }
         if (event.isEscape && bar.cancelDrag()) return true
         if (focused === search) {
-            // Escape leaves the field before it closes the screen, and Enter keeps what was typed.
             if (event.isEscape || key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER) return true.also { setFocused(null) }
             if (event.isUp || event.isDown) return nav.key(event)
             return super.keyPressed(event)
         }
-        // Tab moves the keys between the sidebar and the rows.
         if (event.isCycleFocus && (focused == null || focused === nav)) {
             rows.keys = !rows.keys
             if (rows.keys) rows.showFocus()
@@ -507,7 +448,6 @@ class SettingsScreen(
 
     override fun keyReleased(event: KeyEvent) = rows.keyReleased(event) || super.keyReleased(event)
 
-    /** Ctrl+F goes to the search field, and the rest are a browser's keys for its tabs. Returns whether [event] was one. */
     private fun controlKey(event: KeyEvent): Boolean {
         val key = event.key()
         when {
@@ -527,7 +467,6 @@ class SettingsScreen(
         return true
     }
 
-    /** Typing anywhere searches, unless it goes into a number's field or an open menu. */
     override fun charTyped(event: CharacterEvent): Boolean {
         if (eatChar) return true.also { eatChar = false }
         if ((rows.capturing || focused !== search) && rows.charTyped(event)) return true
@@ -541,9 +480,7 @@ class SettingsScreen(
 
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
         sync()
-        // The mouse's back and forward buttons walk the selected tab's history, wherever the mouse is, unless a key is being recorded.
         if (!rows.recordingKeys && (event.button() == MOUSE_BACK || event.button() == MOUSE_FORWARD)) return true.also { history(event.button() == MOUSE_BACK) }
-        // A mouse button bound as the Favorite Key stars the row under the mouse.
         val favorite = config.general.favoriteKey
         val inPane = event.x >= side && event.y >= BAR
         if (!rows.capturing && Keys.isMouse(favorite) && event.button() == favorite && favoriteFree(event) && inPane && rows.starAt(event.x, event.y, keyboard = false)) return true
@@ -584,7 +521,6 @@ class SettingsScreen(
         thumbGrab = -1.0
         if (rows.mouseReleased(event)) return true
         val handled = super.mouseReleased(event)
-        // A tab takes focus for its drag only, so the keys go back to the sidebar after it.
         if (focused === bar) setFocused(null)
         return handled
     }
@@ -592,23 +528,19 @@ class SettingsScreen(
     override fun mouseScrolled(mouseX: Double, mouseY: Double, scrollX: Double, scrollY: Double): Boolean {
         if (mouseX < side || mouseY < BAR) return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY)
         sync()
-        // Some systems turn the wheel with Shift held into a sideways scroll.
+        // @keep Some systems turn the wheel with Shift held into a sideways scroll.
         val amount = if (scrollY != 0.0) scrollY else scrollX
         if (rows.mouseScrolled(mouseX, mouseY, amount, minecraft.hasShiftDown())) return true
         if (scrollY != 0.0) pane.by(if (scrollY > 0) -ROW else ROW)
         return true
     }
 
-    /** What the narrator would say now, collected the way vanilla collects it, so a test can check it. */
     fun narration(): String = ScreenNarrationCollector().apply { update(::updateNarrationState) }.collectNarrationText(true)
 
-    // The keys work the sidebar until the player picks a control, so nothing takes focus on open.
     override fun setInitialFocus() = setFocused(null)
 
     override fun onClose() = minecraft.gui.setScreen(parent)
 
-    // The tabs outlive the screen, so reopening it brings back where each pane was. A change is written as the
-    // screen goes, which is also when it opens an editor.
     override fun removed() {
         keep()
         view.left()
@@ -619,7 +551,6 @@ class SettingsScreen(
     override fun extractBackground(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) = Unit
 
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
-        // The Favorite Key acts on the row under the mouse, and a key event carries no mouse.
         this.mouseX = mouseX.toDouble()
         this.mouseY = mouseY.toDouble()
         val now = Util.getMillis()
@@ -637,7 +568,6 @@ class SettingsScreen(
             when (item) {
                 is Heading -> {
                     val y = top + 2
-                    // A heading whose switch is off reads as off, as its rows dim.
                     val ink = if (item.switch?.value == false) Kit.Ink.MUTED else Kit.Ink.NORMAL
                     if (item.prefix != null) {
                         Kit.label(graphics, item.prefix, contentX, y, ink)
@@ -656,7 +586,6 @@ class SettingsScreen(
         if (pane.overflows) Kit.scrollbar(graphics, barX, BAR + 2, track, pane.thumbY(track - 2), pane.thumb(track - 2))
         super.extractRenderState(graphics, mouseX, mouseY, partialTick)
         rows.drawMenu(graphics, mouseX, mouseY, partialTick)
-        // A description waits for a short hover, as the game's own tooltips do, so moving across rows shows none.
         if (tip !== hovered) {
             hovered = tip
             hoveredSince = now
@@ -667,25 +596,17 @@ class SettingsScreen(
     companion object {
         private const val SEPARATOR = " › "
 
-        /** Favorites' place among the sections. */
         const val FAVORITES = 0
 
-        /** The sections the screen lists: Favorites, which holds no groups of its own, and then the tree bound to [config]. */
         fun sections(config: DsModConfig) = listOf(SettingSection("Favorites", Role.ACTION, emptyList())) + SettingsTree(config).sections
 
         private var tabs: SettingsTabs? = null
 
-        /**
-         * The tabs, kept until the game closes, as a browser keeps its session. The first open has one, on Favorites, or
-         * on the first section of the tree while nothing is starred, so it does not open on an empty page.
-         */
         fun session(): SettingsTabs =
             tabs ?: SettingsTabs(Place(if (DsModClient.settings.favorites.isEmpty()) FAVORITES + 1 else FAVORITES)).also { tabs = it }
 
-        /** The rows the player opened, kept with the tabs. */
         private val opened = HashSet<String>()
 
-        /** Favorites as the player looks at it, kept with the tabs. */
         private val view = FavoritesView()
     }
 }

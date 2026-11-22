@@ -5,12 +5,6 @@ import io.github.noxaur.dsmod.core.game.Boss
 import io.github.noxaur.dsmod.core.game.BossKind
 import io.github.noxaur.dsmod.core.world.Mark
 
-/**
- * The part of a [feature] that marks each boss the client holds that the player picks, as `Boss.parse` reads each
- * entity, with [mark]. [claim] tells the player's own slayer boss from the others.
- *
- * [key] starts each pick's key, as `beaconDragons`, and [verb] each pick's description, as `Mark the End's dragons.`
- */
 class BossMarks(private val feature: Feature, private val claim: SlayerClaim, key: String, verb: String, private val mark: (Boss) -> Mark) {
     val dragons = feature.switch("${key}Dragons", "Dragons", "$verb the End's dragons.", default = true)
     val protector = feature.switch("${key}Protector", "Endstone Protector", "$verb the Endstone Protector.", default = true)
@@ -22,7 +16,6 @@ class BossMarks(private val feature: Feature, private val claim: SlayerClaim, ke
         claim.follow(feature)
     }
 
-    /** The marks on the bosses the player picks, which the feature passes as its `marks`. */
     fun marks(): List<Mark> = feature.entities.mapNotNull(Boss::parse).filter { boss ->
         when (boss.kind) {
             BossKind.DRAGON -> dragons.value

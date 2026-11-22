@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.edge.capture
 
-import io.github.noxaur.dsmod.core.capture.ChangeLog
 import io.github.noxaur.dsmod.edge.typeId
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -24,14 +23,11 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.saveddata.maps.MapId
 
-/** Unnamed, unequipped mobs that a puzzle still reads. */
 private fun watched(entity: Entity) = entity is Silverfish || entity is Creeper
 
-/** The entity's equipment slots, then the one item it shows. */
 private val slots = EquipmentSlot.VALUES
 private val shown = slots.size
 
-/** What an entry says besides its text and items, compared whole to tell whether the entry changed. */
 private data class Shape(
     val type: EntityType<*>,
     val x: Int,
@@ -43,13 +39,8 @@ private data class Shape(
     val facing: Direction?,
 )
 
-/**
- * The encodings of the stacks that entities changed to most recently, by value. Mobs of one kind wear the same gear
- * and it changes the same way, as helmets that burn in daylight do, so a stack one mob changed to is likely another
- * one's soon. Encoding a stack costs tens of µs, because the codec runs too rarely for the JIT to compile it.
- */
+/** @keep Encoding a stack costs tens of µs, because the codec runs too rarely for the JIT to compile it. */
 private class ItemEncodings {
-    /** A stack nothing changes any more, compared by value. */
     private class Key(val stack: ItemStack) {
         private val hash = (31 * stack.item.hashCode() + stack.count) * 31 + stack.componentsPatch.hashCode()
 
@@ -62,24 +53,15 @@ private class ItemEncodings {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Key, JsonElement>) = size > 256
     }
 
-    /** Encodes [stack], which the caller never changes. */
+    /** @keep [stack] must be a copy nothing changes: a stack can change in place, and its key would then no longer match its hash. */
     fun encode(stack: ItemStack): JsonElement = encodings.getOrPut(Key(stack)) { stack.toCaptureJson() }
 }
 
-/**
- * The entries of the `entities` record: players, named entities and anything holding or wearing an item, which
- * servers build mobs and holograms from, and glowing entities, displays, item frames and the puzzle mobs, with what
- * each one shows.
- *
- * Each entity keeps what its entry was built from, and a pass rebuilds the entry only when one of those changed,
- * then hands [ChangeLog] only the entries that changed. Building, encoding and comparing every entry cost a recording
- * near a millisecond a pass with 40 armored mobs in view.
- */
+/** @keep Building, encoding and comparing every entry cost a recording near a millisecond a pass with 40 armored mobs in view. */
 class EntityRecorder {
     private val encodings = ItemEncodings()
 
     private inner class Entry {
-        // Copies, because the next pass compares against them and a stack can change in place.
         val stacks = arrayOfNulls<ItemStack>(slots.size + 1)
         val encoded = arrayOfNulls<JsonElement>(slots.size + 1)
         var shape: Shape? = null
@@ -89,7 +71,6 @@ class EntityRecorder {
         var text: JsonElement? = null
         var json: JsonObject? = null
 
-        /** Keeps [stack] in [index] and encodes it when it changed, and tells whether it did. Null is no stack. */
         fun stack(index: Int, stack: ItemStack?): Boolean {
             val kept = stacks[index]
             if (stack == null) {
@@ -106,15 +87,9 @@ class EntityRecorder {
         }
     }
 
-    // In the order of the pass, which is the order a removed entry is recorded in.
     private var last = LinkedHashMap<Int, Entry>()
     private var seen = LinkedHashMap<Int, Entry>()
 
-    /**
-     * The entries of the entities in view but [player] that are new or changed since the last pass, keyed by id, and
-     * [JsonNull] for one no longer recorded, for [ChangeLog.offerChanges]. The maps that frames and displays show go to
-     * [mapIds].
-     */
     fun pass(level: ClientLevel, player: Player, mapIds: MutableSet<MapId>): Map<String, JsonElement> {
         val changed = LinkedHashMap<String, JsonElement>()
         for (entity in level.entitiesForRendering()) {
@@ -127,11 +102,7 @@ class EntityRecorder {
         return changed
     }
 
-    /**
-     * Keeps the entity's entry for the next pass when it is recorded, and returns it when it is new or changed. It is
-     * one call per entity rather than a loop body so that the JIT compiles it within a few passes: [pass] runs only
-     * four times a second, which leaves a loop inside it interpreted for the first minute of a recording.
-     */
+    /** @keep One call per entity rather than a loop body so that the JIT compiles it within a few passes: [pass] runs only four times a second, which leaves a loop inside it interpreted for the first minute of a recording. */
     private fun entry(entity: Entity, mapIds: MutableSet<MapId>): JsonObject? {
         val living = entity as? LivingEntity
         val equipped = living != null && slots.any { !living.getItemBySlot(it).isEmpty }
@@ -153,7 +124,6 @@ class EntityRecorder {
         if (entry.stack(shown, item)) changed = true
         val shape = Shape(
             entity.type,
-            // Whole blocks, so an entity that stands still records nothing new.
             entity.blockX,
             entity.blockY,
             entity.blockZ,
@@ -166,7 +136,6 @@ class EntityRecorder {
             entry.shape = shape
             changed = true
         }
-        // The type already says what an entity recorded only for its glow, item or text is.
         val nameText = if (named) entity.displayName else null
         if (nameText != entry.nameText) {
             entry.nameText = nameText
@@ -195,7 +164,7 @@ class EntityRecorder {
             }
             entry.text?.let { put("text", it) }
         }
-        // An input can change and leave the entry the same, as a name's hover can.
+        // @keep An input can change and leave the entry the same, as a name's hover can.
         if (json == entry.json) return null
         entry.json = json
         return json

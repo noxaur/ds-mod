@@ -14,19 +14,14 @@ import kotlinx.serialization.Serializable
 import io.github.noxaur.dsmod.core.text.fixed
 import io.github.noxaur.dsmod.core.text.perHour
 
-/** Every drop the player has had, by the name the server gives it, and the zealots they have killed. */
 @Serializable
 data class ZealotDrops(val drops: Map<String, Int> = emptyMap(), val kills: Int = 0)
 
-/**
- * Counts the player's own drop lines, such as `RARE DROP!`, `EPIC DROP!` and `RNGESUS DROP!`, and estimates their zealot kills.
- * The server names no killer, but it sends the action bar with the Combat XP gained right behind the death event of
- * the mob the player killed: in a capture of 430 kills in a crowd, all but five came within 5 ms. So a zealot's death
- * followed that closely by such an action bar counts as a kill. The action bar repeats the last gain for about a second,
- * so another player's zealot that dies just ahead of a repeat is counted too, which the short window keeps rare.
- * A Zealot Bruiser is another mob and is left out. Eyes per hour divide by the time the player has spent in The End, which a stretch
- * in the hub does not dilute, and show only after a minute there, when one eye would give an absurd rate.
- */
+/** @keep The server names no killer, but sends the Combat XP action bar right behind the death event of the mob the
+ * player killed: in a capture of 430 kills in a crowd, all but five came within 5 ms. The bar repeats the last
+ * gain for about a second, so another player's zealot dying just ahead of a repeat is counted too, which the
+ * short window keeps rare. A Zealot Bruiser is another mob. Eyes per hour show only after a minute in The End,
+ * when one eye would give an absurd rate */
 class ZealotTracker(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "zealot-tracker", Area.END, Store.END, "Count your Summoning Eyes and zealot kills, per hour and all-time.", hud = ::hud)
 

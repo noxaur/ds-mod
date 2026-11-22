@@ -11,10 +11,6 @@ import java.io.ByteArrayOutputStream
 import java.util.Base64
 import java.util.zip.DeflaterOutputStream
 
-/**
- * Records a `map` line when the pixels or the markers of a map change. A line carries `colors` only
- * when the pixels changed, because markers move far more often than the picture does.
- */
 class MapRecorder(private val writer: CaptureWriter) {
     private class Seen(val colors: ByteArray, val decorations: JsonArray)
 
@@ -37,7 +33,7 @@ class MapRecorder(private val writer: CaptureWriter) {
             val last = seen[id.id()]
             val pixelsChanged = last == null || !last.colors.contentEquals(map.colors)
             if (!pixelsChanged && last?.decorations == decorations) continue
-            // The map's array is rewritten in place, so keep a copy for the writer thread and the next comparison.
+            // @keep The map's array is rewritten in place, so keep a copy for the writer thread and the next comparison.
             val colors = if (last == null || pixelsChanged) map.colors.clone() else last.colors
             seen[id.id()] = Seen(colors, decorations)
             val scale = map.scale.toInt()

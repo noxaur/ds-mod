@@ -41,20 +41,9 @@ import org.joml.Matrix3x2fc
 import org.joml.Vector2f
 import org.lwjgl.glfw.GLFW
 
-/**
- * Copy Chat. The right button selects messages of the open chat the way a file manager selects files: a press
- * takes one, a drag takes the range, Shift extends from the anchor, Ctrl adds or removes, and `Selection` in
- * `core` holds those rules. On release a small menu beside the mouse asks how to copy them: as text, with format
- * codes, or as JSON. It leaves the column under the mouse free, so the next press can fix a selection that missed.
- *
- * A message the server wrote with line breaks in it is selected a line at a time, so one press never takes a
- * whole block. Minecraft is asked where it draws each row, through the pass it uses to find a clicked link, so
- * the rows follow the player's chat scale, width, spacing and scroll.
- */
 object CopyChats {
     enum class Format(val label: String) { TEXT("Text"), FORMATTED("Formatted"), JSON("JSON") }
 
-    /** The menu's panel at [x], [y]: a header line, then one button for each [Format] in a row. */
     class Menu(val x: Int, val y: Int, val header: String, private val widths: List<Int>) {
         val width = 2 * Kit.INSET + widths.sum() + (widths.size - 1) * Kit.GAP
         val height = HEADER_HEIGHT + Kit.BUTTON_HEIGHT + Kit.INSET
@@ -73,26 +62,19 @@ object CopyChats {
 
     private const val HEADER_HEIGHT = 18
 
-    /** How far from the mouse the menu opens, so the rows above and below the press stay in reach. */
     private const val BESIDE = 8
     private const val FLASH_MS = 700L
     private const val SCROLL_MS = 50L
     private const val SELECTED = 0.28f
     private const val FLASH = 0.55f
 
-    /** Where a copy goes. A game test swaps it, so a run leaves the user's clipboard alone. */
     var clipboard: (String) -> Unit = { Minecraft.getInstance().keyboardHandler.clipboard = it }
 
-    /** The open menu, for a game test to find its buttons. */
     var menu: Menu? = null
         private set
 
     private val copiedLabel: Component by lazy { text { good("Copied") }.toComponent() }
 
-    /**
-     * What one press selects: a message, or one line of a message the server wrote with line breaks in it.
-     * [pieces] is that line's text in its styles, and [alone] is true when the message has no other line.
-     */
     private class Part(val message: GuiMessage, val index: Int, val pieces: List<Pair<Style, String>>, val alone: Boolean) {
         val blank get() = pieces.all { it.second.isBlank() }
 
@@ -101,16 +83,13 @@ object CopyChats {
         override fun hashCode() = System.identityHashCode(message) * 31 + index
     }
 
-    /** A message's parts, and which of them each of its rows on screen belongs to. */
     private class Layout(val width: Int, val parts: List<Part>, val partOfRow: List<Int>)
 
     private val layouts = IdentityHashMap<GuiMessage, Layout>()
     private var selection = Selection<Part>()
 
-    /** The right button's press, while it is held. */
     private var drag: Selection.Drag<Part>? = null
 
-    /** The menu's button the keyboard is on. */
     private var chosen = Format.TEXT
     private var menuX = 0
     private var menuY = 0
@@ -122,7 +101,6 @@ object CopyChats {
     private var copiedX = 0
     private var copiedY = 0
 
-    /** One row of chat as Minecraft lays it out: [top] and [bottom] are in the space [pose] maps to the screen. */
     private class Row(val part: Part, val pose: Matrix3x2f, val top: Int, val bottom: Int)
 
     fun register() {
@@ -143,7 +121,7 @@ object CopyChats {
                 false
             }
             ScreenKeyboardEvents.allowKeyPress(screen).register { _, event -> !key(client, event) }
-            // Minecraft draws the frame's tooltip at the end of the screen's own pass, so the label is set before it.
+            // @keep Minecraft draws the frame's tooltip at the end of the screen's own pass, so the label is set before it.
             ScreenEvents.beforeExtract(screen).register { _, graphics, _, _, _ ->
                 if (Util.getMillis() - copiedAt < FLASH_MS) graphics.setTooltipForNextFrame(client.font, copiedLabel, copiedX, copiedY)
             }
@@ -151,17 +129,14 @@ object CopyChats {
         }
     }
 
-    /** Puts the menu and the selection away. The anchor stays, so a Shift press still extends from it. */
     private fun dismiss() {
         drag = null
         menu = null
         selection = selection.cleared()
     }
 
-    /** Every part in the chat, oldest first. */
     private fun all(client: Minecraft) = (client.gui.hud.chat as ChatComponentAccessor).allMessages.asReversed().flatMap { layout(client, it).parts }
 
-    /** A mouse button went down. True when the press was Copy Chat's, so the screen must not see it. */
     private fun pressed(client: Minecraft, event: MouseButtonEvent): Boolean {
         menu?.let { open ->
             if (open.holds(event.x(), event.y())) {
@@ -169,11 +144,9 @@ object CopyChats {
                 return true
             }
         }
-        // Asked of the keyboard, as the chat screen asks for Shift on a link. Ctrl adds on macOS too, as `Keys.control` does.
         val extend = client.hasShiftDown()
         val toggle = Keys.command(client) || client.hasControlDown()
         val hit = if (event.button() == 1) under(client, rows(client), event.x(), event.y()) else null
-        // An empty line is nothing to copy, so a plain press on it selects nothing. A range may still end on it.
         if (hit == null || (hit.blank && !extend && !toggle)) {
             dismiss()
             return false
@@ -185,7 +158,6 @@ object CopyChats {
         return true
     }
 
-    /** A key went down. True when it was Copy Chat's. Only an open menu takes keys, so typing is never in the way. */
     private fun key(client: Minecraft, event: KeyEvent): Boolean {
         if (menu == null) return false
         when {
@@ -208,7 +180,6 @@ object CopyChats {
         return true
     }
 
-    /** Scrolls the chat until the selection's moving end is on screen. */
     private fun reveal(client: Minecraft) {
         val focus = selection.focus ?: return
         val all = all(client)
@@ -216,12 +187,11 @@ object CopyChats {
         repeat(chat.linesPerPage + (chat as ChatComponentAccessor).trimmedMessages.size) {
             val rows = rows(client)
             if (rows.isEmpty() || rows.any { it.part == focus }) return
-            // The first row drawn is the top one, which is the oldest on screen.
+            // @keep The first row drawn is the top one, which is the oldest on screen.
             chat.scrollChat(if (all.indexOf(focus) < all.indexOf(rows[0].part)) 1 else -1)
         }
     }
 
-    /** Opens the menu for the selection just right of [x], [y], level with it, or left of it when the screen's edge is in the way. */
     private fun open(client: Minecraft, x: Int, y: Int) {
         val parts = selection.ordered(all(client)).filter { !it.blank }
         if (parts.isEmpty()) return dismiss()
@@ -240,20 +210,17 @@ object CopyChats {
     }
 
     private fun copy(client: Minecraft, format: Format) {
-        // A selection that starts or ends on an empty line takes it along, and it means nothing at the edge of a copy.
         val parts = selection.ordered(all(client)).dropWhile { it.blank }.dropLastWhile { it.blank }
         dismiss()
         if (parts.isEmpty()) return
         clipboard(
             when (format) {
-                // A server centers a line with spaces, which mean nothing once it is pasted.
                 Format.TEXT -> parts.joinToString("\n") { part -> part.pieces.joinToString("") { it.second }.trim() }
                 Format.FORMATTED -> parts.joinToString("\n") { FormatCodes.write(runs(trimmed(it.pieces))) }
                 Format.JSON -> {
                     val ops = (client.level?.registryAccess() ?: RegistryAccess.EMPTY).createSerializationContext(JsonOps.INSTANCE)
                     val byMessage = ArrayList<MutableList<Part>>()
                     for (part in parts) if (byMessage.lastOrNull()?.last()?.message === part.message) byMessage.last() += part else byMessage += mutableListOf(part)
-                    // A message selected whole is the component the server sent, and a line of one is built from its pieces.
                     val components = byMessage.flatMap { of ->
                         if (of.size == layout(client, of[0].message).parts.size) listOf(of[0].message.content())
                         else of.filter { !it.blank }.map { part ->
@@ -261,7 +228,6 @@ object CopyChats {
                         }
                     }
                     val json = components.map { ComponentSerialization.CODEC.encodeStart(ops, it).getOrThrow() }
-                    // One is its own value, and several are a list, so the paste is always valid JSON.
                     (json.singleOrNull() ?: JsonArray().also { list -> json.forEach(list::add) }).toString()
                 }
             },
@@ -285,11 +251,6 @@ object CopyChats {
         StyledRun(piece, style.color?.serialize(), style.isBold, style.isItalic, style.isUnderlined, style.isStrikethrough, style.isObfuscated)
     }
 
-    /**
-     * Splits [message] where the server broke its lines, and replays Minecraft's own wrapping to learn which of
-     * its rows each line fills. When the rows on screen are not the ones the replay gives, as with another mod
-     * that lays chat out itself, the message stays one part.
-     */
     private fun layout(client: Minecraft, message: GuiMessage): Layout {
         var width = floor(ChatComponent.getWidth(client.options.chatWidth().get()) / client.options.chatScale().get()).toInt()
         message.tag()?.icon()?.let { width -= it.width + 6 }
@@ -326,7 +287,6 @@ object CopyChats {
         if (drag == null && menu == null && flashed.isEmpty()) return
         var rows = rows(client)
         drag?.let { held ->
-            // Read each frame and not on a drag event, so the selection also follows the chat as it scrolls under the mouse.
             if (rows.isEmpty()) return@let
             val local = rows[0].pose.invert(Matrix3x2f()).transformPosition(x.toFloat(), y.toFloat(), Vector2f())
             val above = local.y < rows.minOf { it.top }
@@ -336,7 +296,6 @@ object CopyChats {
                 client.gui.hud.chat.scrollChat(if (above) 1 else -1)
                 rows = rows(client)
             }
-            // Past the chat's edge the drag still reaches the row nearest the mouse.
             val to = rows.minBy { maxOf(it.top - local.y, local.y - it.bottom + 1, 0f) }.part
             selection = held.over(all(client), to)
         }
@@ -352,7 +311,6 @@ object CopyChats {
         graphics.nextStratum()
         Kit.panel(graphics, open.x, open.y, open.width, open.height)
         Kit.label(graphics, open.header, open.x + Kit.INSET, open.y + 6, Kit.Ink.MUTED)
-        // The mouse says which button the next press takes, and the keyboard's choice shows when it is on none.
         val marked = open.at(x.toDouble(), y.toDouble()) ?: chosen
         for (format in Format.entries) {
             val buttonWidth = open.buttonWidth(format)
@@ -361,11 +319,12 @@ object CopyChats {
         }
     }
 
-    // The numbers below are `ChatComponent`'s own: its backing runs from 4 left of the text to 8 past the chat's width.
-    private const val LEFT = -4
+    private const val BACKING_BEFORE = 4
+    private const val BACKING_AFTER = 8
+    private const val LEFT = -BACKING_BEFORE
 
     private fun width(client: Minecraft) =
-        ceil(ChatComponent.getWidth(client.options.chatWidth().get()) / client.options.chatScale().get()).toInt() + 12
+        ceil(ChatComponent.getWidth(client.options.chatWidth().get()) / client.options.chatScale().get()).toInt() + BACKING_BEFORE + BACKING_AFTER
 
     private fun under(client: Minecraft, rows: List<Row>, x: Double, y: Double): Part? {
         val width = width(client)
@@ -382,7 +341,7 @@ object CopyChats {
     private fun rows(client: Minecraft): List<Row> {
         val chat = client.gui.hud.chat
         val lines = (chat as ChatComponentAccessor).trimmedMessages
-        // The chat keeps its rows newest first, so a message's last row comes before its first.
+        // @keep The chat keeps its rows newest first, so a message's last row comes before its first.
         val rowsOf = IdentityHashMap<GuiMessage, Int>()
         for (line in lines) rowsOf.merge(line.parent(), 1, Int::plus)
         val seen = IdentityHashMap<GuiMessage, Int>()
@@ -394,8 +353,7 @@ object CopyChats {
             var layout = layout(client, message)
             val shown = rowsOf.getValue(message)
             val full = layout.partOfRow.size
-            // The chat drops the oldest rows once a message no longer fits in its 100. Those missing rows are a
-            // prefix of the replay. A count the replay never produced is another mod's layout, and stays one part.
+            /* @keep The chat drops the oldest rows once a message no longer fits in its 100. Those missing rows are a prefix of the replay. A count the replay never produced is another mod's layout, and stays one part. */
             if (layout.parts.size > 1 && full != shown) {
                 if (full > shown) {
                     layout.parts[layout.partOfRow[full - shown + row]]
@@ -413,7 +371,6 @@ object CopyChats {
         return rows
     }
 
-    /** Whether a point in GUI pixels is on a row of the open chat, which Minecraft draws over the HUD. */
     fun covers(client: Minecraft, x: Double, y: Double): Boolean {
         val width = width(client)
         val inverse = Matrix3x2f()
@@ -425,15 +382,10 @@ object CopyChats {
         return hit
     }
 
-    /**
-     * Calls [row] for each row of chat on screen, from the top one down, with the index of its line in the chat's
-     * wrapped lines, and its [top] and [bottom] in the space its pose maps to the screen.
-     */
     private inline fun visible(client: Minecraft, crossinline row: (line: Int, pose: Matrix3x2fc, top: Int, bottom: Int) -> Unit) {
         val chat = client.gui.hud.chat
         val lines = (chat as ChatComponentAccessor).trimmedMessages
-        // Minecraft draws the rows on screen from the top one down to the newest, and then lines that belong to no
-        // message. A row is told by that order and not by its text, because every empty line is the same object.
+        /* @keep Minecraft draws the rows on screen from the top one down to the newest, and then lines that belong to no message. A row is told by that order and not by its text, because every empty line is the same object. */
         val scrolled = chat.chatScrollbarPos
         var next = minOf(lines.size - scrolled, chat.linesPerPage) - 1
         val spacing = client.options.chatLineSpacing().get()

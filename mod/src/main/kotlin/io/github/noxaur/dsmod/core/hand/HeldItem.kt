@@ -25,7 +25,6 @@ enum class HandStyle(private val label: String) {
     override fun toString() = label
 }
 
-/** What Animations' preview shows. */
 enum class HandPreview(private val label: String) {
     HELD("Held"),
     SWINGING("Swinging"),
@@ -38,10 +37,6 @@ enum class HandPreview(private val label: String) {
 }
 
 object HeldItem {
-    /**
-     * How many ticks a swing of [ticks] lasts at [speed], where 1 is the game's own. Never under one tick, or the
-     * swing would end before it is drawn.
-     */
     fun swingTicks(ticks: Int, speed: Float): Int = if (speed == 1f) ticks else (ticks / speed).roundToInt().coerceAtLeast(1)
 
     const val PREVIEW_REST = 10

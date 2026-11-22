@@ -25,20 +25,18 @@ const USAGE = `dsctl asks players for captures and reads them back.
 DSMOD_BACKEND is the backend's address (http://127.0.0.1:16385 by default) and DSMOD_ADMIN_TOKEN its admin token.
 Without --json, each line is one item. A failure goes to stderr with exit code 1.`;
 
-/** A capture is a few hundred megabytes at most once unpacked, so a file that unpacks past this is not one. */
+// @keep A capture is a few hundred megabytes at most once unpacked.
 const MAX_CAPTURE = 1024 * 1024 * 1024;
 
 class Failed extends Data.TaggedError("Failed")<{ readonly message: string }> {}
 class Unreadable extends Data.TaggedError("Unreadable") {}
 
-/** What dsctl runs against: the backend's address, the admin token, and the fetch that reaches it. */
 export interface Target {
   readonly backend: string;
   readonly token: string;
   readonly fetch: typeof globalThis.fetch;
 }
 
-/** What a command prints: [out] on stdout, and [problems] on stderr, which make dsctl exit 1. */
 export interface Printed {
   readonly out: readonly string[];
   readonly problems: readonly string[];
@@ -46,14 +44,12 @@ export interface Printed {
 
 const printed = (out: readonly string[], problems: readonly string[] = []): Printed => ({ out, problems });
 
-/** A file name from a brief's name: lowercase words joined by hyphens. */
 const slug = (name: string) =>
   name
     .toLowerCase()
     .replaceAll(/[^a-z0-9]+/g, "-")
     .replaceAll(/^-|-$/g, "") || "brief";
 
-/** Runs one dsctl command. */
 export const dsctl = (args: readonly string[], target: Target) =>
   Effect.gen(function* () {
     const { positionals, values } = yield* Effect.try({
@@ -81,7 +77,6 @@ export const dsctl = (args: readonly string[], target: Target) =>
         try: () => JSON.parse(readFileSync(first, "utf8")) as unknown,
         catch: (cause) => new Failed({ message: `Could not read ${first}: ${String(cause)}` }),
       });
-      // The client sends only a typed spec, so the file is decoded here, which names a mistake before anything is sent.
       const spec = yield* Schema.decodeUnknownEffect(RequestSpec)(
         {
           brief,
@@ -121,7 +116,6 @@ export const dsctl = (args: readonly string[], target: Target) =>
         try: () => mkdirSync(second, { recursive: true }),
         catch: (cause) => new Failed({ message: `Could not make ${second}: ${String(cause)}` }),
       });
-      // The request's id keeps two briefs with the same name, pulled into one directory, from overwriting each other.
       const stem = `${slug(request.brief.name)}-${request.id}`;
       const runs = yield* Effect.forEach(request.submissions, (submission) => {
         const file = join(second, `${stem}-${submission.contributor.toLowerCase()}.jsonl`);
@@ -139,7 +133,6 @@ export const dsctl = (args: readonly string[], target: Target) =>
             }),
           ),
           Effect.as({ file }),
-          // One lost or broken run should not cost the agent the others.
           Effect.catchTags({
             NotFound: () =>
               Effect.succeed({ problem: `Run ${submission.contributor} (${submission.id}) has no file.` }),

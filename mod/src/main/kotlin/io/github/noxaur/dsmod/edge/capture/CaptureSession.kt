@@ -38,16 +38,13 @@ import net.minecraft.world.phys.HitResult
 import net.minecraft.world.level.block.state.BlockState
 import java.nio.file.Path
 
-/** The item components that the `slot` event already carries. */
 private val eventComponents = setOf("minecraft:custom_name", "minecraft:lore", "minecraft:custom_data")
+
+private const val OFFER_PERIOD_TICKS = 5
 
 private fun Double.round2() = Math.round(this * 100) / 100.0
 
-/**
- * Encodes a menu's items with Minecraft's codec only when they changed since the last pass. Encoding every item on
- * every pass cost a recording over a millisecond a pass, and almost none of them change. The stacks are copies,
- * because a stack can change in place.
- */
+/** @keep The cached stacks are copies, because a stack can change in place. */
 private class ItemCache {
     private var last = HashMap<Int, Pair<ItemStack, JsonElement>>()
     private var seen = HashMap<Int, Pair<ItemStack, JsonElement>>()
@@ -58,7 +55,6 @@ private class ItemCache {
         return entry.second
     }
 
-    /** Ends a pass, and forgets every slot it did not see. */
     fun pass() {
         last = seen.also { seen = last }
         seen.clear()
@@ -72,11 +68,6 @@ private fun JsonObjectBuilder.entityFields(entity: Entity) {
     position(entity.x.round2(), entity.y.round2(), entity.z.round2())
 }
 
-/**
- * One running capture: the events [game] posts go straight to [writer], and [tick] adds what only exists as client
- * state, plus what the mod showed (`hud`) and how long it took (`metrics`). It ends with [detach] on the client
- * thread, then [close] on a thread that may wait.
- */
 class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
     private val writer = CaptureWriter(dir)
     private val metricsSink = { snapshot: Metrics.Snapshot ->
@@ -99,13 +90,11 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
 
     fun record(type: RawRecord, data: () -> JsonObject) = writer.record(type, data)
 
-    /** Builds the record now, on the calling thread, and hands the writer the finished object. */
     private inline fun recordNow(type: RawRecord, build: JsonObjectBuilder.() -> Unit) {
         val data = buildJsonObject(build)
         writer.record(type) { data }
     }
 
-    /** The client tick finished. See [io.github.noxaur.dsmod.core.capture.CaptureWriter.endTick]. */
     fun endedClientTick() = writer.endTick()
 
     fun tick(client: Minecraft) {
@@ -113,20 +102,19 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
         val level = client.level ?: return
         val hud = client.gui.hud
 
-        // A timer that jumped up means the server sent the text again, even if it is the same text.
+        val retitled = hud.titleTime > titleTime
         if (hud.titleTime > 0) {
             val title = buildJsonObject {
                 hud.title?.let { put("title", it.toCaptureJson()) }
                 hud.subtitle?.let { put("subtitle", it.toCaptureJson()) }
             }
-            changes.offer(RawRecord.TITLE, title, force = hud.titleTime > titleTime)
+            changes.offer(RawRecord.TITLE, title, force = retitled)
         }
         titleTime = hud.titleTime
 
         blockScan.tick(level, player)
 
-        // The rest is compared four times a second, which is enough to catch every visible change.
-        if (ticks++ % 5 != 0) return
+        if (ticks++ % OFFER_PERIOD_TICKS != 0) return
 
         changes.offer(
             RawRecord.BOSSBARS,
@@ -146,7 +134,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
             },
         )
 
-        // The rows are the `tablist` event. The header and footer are private to the client and no feature reads them.
+        // @keep The tablist event carries the rows. The header and footer are client-only, so they are recorded here.
         changes.offer(
             RawRecord.TABHEADER,
             buildJsonObject {
@@ -155,16 +143,13 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
             },
         )
 
-        // The `container` and `slot` events carry the id, count, name, lore and custom data. This is the rest.
         val menu = player.containerMenu
-        // Both passes below run Minecraft's item codec on this thread, so a capture's `metrics` say what they cost.
         game.metrics.time("capture-items") {
             changes.offerEntries(
                 RawRecord.ITEMCOMPONENTS,
                 buildJsonObject {
                     put("id", menu.containerId)
-                    // The player's own inventory has no menu type.
-                    put("menu", runCatching { BuiltInRegistries.MENU.getKey(menu.type).toString() }.getOrDefault("inventory"))
+                    put("menu", menu.menuType?.let(BuiltInRegistries.MENU::getKey)?.toString() ?: "inventory")
                 },
                 buildMap<String, JsonElement> {
                     menu.slots.forEachIndexed { index, slot ->
@@ -209,7 +194,6 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
         )
     }
 
-    /** Server packets that leave nothing behind for [tick] to read. */
     fun packet(packet: Packet<*>) {
         when (packet) {
             is ClientboundSoundPacket -> {
@@ -234,10 +218,6 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
         }
     }
 
-    /**
-     * The player's click, before the game decides what it does: `swing` for the attack button, `use` for
-     * the use button, each with the held item and what the crosshair is on.
-     */
     fun input(client: Minecraft, type: RawRecord) {
         val player = client.player ?: return
         val held = player.mainHandItem
@@ -257,7 +237,6 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
         }
     }
 
-    /** A living entity the client dropped. The [Entity.getRemovalReason] says whether it died here, or the server removed it. */
     fun unload(entity: Entity) {
         if (entity !is LivingEntity || entity is Player) return
         recordNow(RawRecord.UNLOAD) {
@@ -268,14 +247,13 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
     }
 
     private fun block(pos: BlockPos, state: BlockState) {
-        // The section packet reuses one mutable position, so read it now.
+        // @keep The section packet reuses one mutable position, so read it now.
         recordNow(RawRecord.BLOCK) {
             position(pos.x, pos.y, pos.z)
             put("state", BlockStateParser.serialize(state))
         }
     }
 
-    /** Stops recording what the game posts and measures. Call it on the client thread, where [Game] runs. */
     fun detach() {
         game.tap = null
         game.metrics.flush()
@@ -283,6 +261,5 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
         blockScan.detach()
     }
 
-    /** Finishes the file, waiting for the writer thread. Throws when the file is not whole, as [CaptureWriter.close] does. */
     override fun close() = writer.close()
 }

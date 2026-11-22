@@ -15,7 +15,7 @@ class MenusTest {
     @Test
     fun `every menu's bottom row sits where a six-row menu's does`() {
         for (screen in listOf(200, 240, 251, 480)) {
-            // The bottom row of a chest menu starts 18 above its inventory label, which is 94 above the menu's bottom.
+            // @keep The bottom row of a chest menu starts 18 above its inventory label, which is 94 above the menu's bottom.
             val bottomRows = (1..6).map { n -> Menus.top(screen, rows(n)) + 18 + (n - 1) * 18 }
             assertEquals(1, bottomRows.distinct().size, "on a screen $screen tall: $bottomRows")
             val bottoms = (1..6).map { n -> Menus.top(screen, rows(n)) + rows(n) }

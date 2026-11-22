@@ -14,11 +14,6 @@ import net.minecraft.client.gui.screens.TitleScreen
 import org.lwjgl.glfw.GLFW
 import kotlin.math.abs
 
-/**
- * Player Model's Preview row: outside a world it says why it is empty, and in one it draws the player with the settings
- * on, which a drag turns and tips, Escape during the drag puts back, and Left and Right turn a step. Read the
- * screenshots, in both themes.
- */
 class PlayerPreviewTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val playerModel = DsModClient.feature<PlayerModel>()
@@ -34,7 +29,6 @@ class PlayerPreviewTest : FabricClientGameTest {
             open()
             val empty = driver.spot("modelPreview")
             context.takeScreenshot("player-preview-no-world")
-            // With no player to draw, a press there turns nothing.
             val before = preview().yaw
             driver.click(empty.controlX + empty.controlWidth / 2, empty.controlY + empty.controlHeight / 2)
             near(preview().yaw, before, "The yaw after a press with no world")
@@ -53,7 +47,6 @@ class PlayerPreviewTest : FabricClientGameTest {
                 context.takeScreenshot("player-preview-big")
                 playerModel.size.value = 1f
 
-                // A drag turns the model around and tips it, and on release it stays where it was let go.
                 val cx = spot.controlX + spot.controlWidth / 2
                 val cy = spot.controlY + spot.controlHeight / 2
                 val start = preview().yaw
@@ -66,14 +59,12 @@ class PlayerPreviewTest : FabricClientGameTest {
                 near(preview().pitch, 5 * Turntable.DEGREES_PER_PIXEL.toFloat(), "The pitch after a drag")
                 val dropped = preview().yaw
 
-                // Escape during a drag puts it back and keeps the settings open.
                 driver.hold(cx, cy)
                 driver.move(cx - 30, cy)
                 driver.escapeHeld()
                 near(preview().yaw, dropped, "The yaw after Escape during a drag")
                 driver.keptOpen()
 
-                // With the keys on the row, Left and Right turn it a step, and Down goes on to the next row.
                 driver.key(GLFW.GLFW_KEY_RIGHT)
                 near(preview().yaw, dropped + Turntable.KEY_YAW, "The yaw after Right")
                 driver.key(GLFW.GLFW_KEY_LEFT)

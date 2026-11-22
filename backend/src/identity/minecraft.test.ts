@@ -15,10 +15,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-/**
- * A backend where Mojang saw [joins], each "name serverId" with the name as Mojang spells it, and nothing else.
- * Like Mojang, it matches the name whatever its case, and answers its own spelling.
- */
+/** @keep Like Mojang, it matches the name whatever its case, and answers its own spelling. */
 function backend(joins: string[], wearing: { skin: string | undefined } = { skin: undefined }) {
   const hasJoined: HasJoined = (name, serverId) => {
     const join = joins.find((seen) => seen.toLowerCase() === `${name} ${serverId}`.toLowerCase());

@@ -13,7 +13,6 @@ import io.github.noxaur.dsmod.core.text.TextBuilder
 import io.github.noxaur.dsmod.core.text.fixed
 import io.github.noxaur.dsmod.core.text.grouped
 
-/** A value Performance Stats can show. */
 enum class Stat(private val label: String) {
     FPS("FPS"),
     PING("Ping"),
@@ -23,7 +22,6 @@ enum class Stat(private val label: String) {
     override fun toString() = label
 }
 
-/** How Performance Stats lines its values up. */
 enum class StatsLayout(private val label: String) {
     ROW("Row"),
     COLUMN("Column"),
@@ -32,7 +30,6 @@ enum class StatsLayout(private val label: String) {
     override fun toString() = label
 }
 
-/** What Performance Stats sits on. */
 enum class StatsLook(private val label: String, val hud: HudLook) {
     PLATE("Plate", HudLook.PLATE),
     CLEAR("Clear", HudLook.CLEAR),
@@ -41,18 +38,10 @@ enum class StatsLook(private val label: String, val hud: HudLook) {
     override fun toString() = label
 }
 
-/**
- * Shows the client's frames per second, the round trip to the server and the server's ticks per second. dragsim.co
- * writes 0 for every player's ping in the tab list, so `Pings` in the edge asks the server once a second, with the
- * request the F3 network chart sends, and only while Ping is shown. Ping is the mean of the last few answers, so one
- * slow answer moves it without making it jump.
- *
- * The server sends its world's tick count about once a second. The ticks between the oldest and the newest of the last
- * ten seconds, over the time between them, are its rate, which a few milliseconds of network jitter moves by less than
- * a tenth of a tick. A server that stops ticking stops sending, so once the newest is a few seconds old the wait counts
- * as time with no ticks, and the rate falls for as long as the server stands still. Each world has its own clock, so a
- * change of world starts the window again.
- */
+/** @keep dragsim.co writes 0 for every player's ping in the tab list, so `Pings` in the edge asks the server once a
+ * second, with the request the F3 network chart sends. The server sends its world's tick count about once a
+ * second, and a server that stops ticking stops sending, so once the newest is a few seconds old the wait
+ * counts as time with no ticks. Each world has its own clock */
 class PerformanceStats(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "performance-stats", Area.ANYWHERE, Store.GENERAL, "Show your FPS, your ping and the server's TPS on the HUD.", default = false, hud = ::hud)
 

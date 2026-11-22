@@ -19,14 +19,11 @@ import net.minecraft.client.gui.screens.TitleScreen
 import org.lwjgl.glfw.GLFW
 import kotlin.io.path.readText
 
-/** Steps the game tests of ds-mod's own settings screen share. */
 internal object SettingsSteps {
     val names = SettingsScreen.sections(DsModConfig()).map { it.name }
 
-    /** The place of the section [name], so a step names the section it means and survives a new order of sections. */
     fun at(name: String, query: String = "") = Place(names.indexOf(name).also { check(it >= 0) { "No section $name" } }, query)
 
-    /** Makes the window 1280x720 at GUI scale 2 over the title screen, and returns its size before, for [restore]. */
     fun setUp(context: ClientGameTestContext): Pair<Int, Int> {
         context.waitForScreen(TitleScreen::class.java)
         return windowSize(context).also { fit(context, 2) }
@@ -45,7 +42,6 @@ internal object SettingsSteps {
         context.input.resizeWindow(window.first, window.second)
     }
 
-    /** Checks that the narrator would say [want] now, as vanilla collects what the screen narrates. */
     fun hear(context: ClientGameTestContext, want: String, step: String) {
         val said = context.computeOnClient<String, Nothing> { (it.gui.screen() as SettingsScreen).narration() }
         check(want in said) { "$step, the narrator says \"$said\", not \"$want\"" }
@@ -56,7 +52,6 @@ internal object SettingsSteps {
         context.waitTicks(2)
     }
 
-    /** Checks the tabs' titles from the left, with the selected one in brackets. */
     fun expect(context: ClientGameTestContext, tabs: SettingsTabs, titles: String, step: String) {
         val shown = context.computeOnClient<String, Nothing> {
             tabs.tabs.withIndex().joinToString(" ") { (i, tab) -> tab.title(names).let { if (i == tabs.selected) "[$it]" else it } }
@@ -80,7 +75,6 @@ internal object SettingsSteps {
     }
 }
 
-/** Drives the settings screen as the player's mouse and keys would, in GUI pixels at GUI scale 2. */
 internal open class SettingsDriver(val context: ClientGameTestContext) {
     fun move(x: Int, y: Int) = context.point(x, y)
 
@@ -136,7 +130,6 @@ internal open class SettingsDriver(val context: ClientGameTestContext) {
         context.waitTicks(2)
     }
 
-    /** Scrolls the row [id], or its ordered list's [entry], into view, and says where it is. */
     fun spot(id: String, entry: Int = -1): SettingRows.Spot {
         context.runOnClient<Nothing> { (it.gui.screen() as SettingsScreen).reveal(id) }
         context.waitTicks(2)

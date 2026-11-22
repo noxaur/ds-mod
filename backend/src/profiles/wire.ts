@@ -1,22 +1,18 @@
 import { Schema } from "effect";
 
-/*
- * What dragsim.co sends, read leniently: a key we do not know is ignored, and a section it leaves out, or sends as
- * null, is none. Only what a profile cannot be drawn without is required. The items stay `unknown`, because the
- * renderer in `items/` is the one that reads them.
- */
+/* @keep Read leniently: a key we do not know is ignored, and a section dragsim.co leaves out, or sends as null, is
+ * none. Only what a profile cannot be drawn without is required. The items stay `unknown`, because the renderer in
+ * `items/` is the one that reads them. */
 
 const optional = <S extends Schema.Top>(schema: S) => Schema.optional(Schema.NullOr(schema));
 
-/** Items by slot number, as a string key. A slot with no item has no key. */
 const Slots = Schema.Record(Schema.String, Schema.Unknown);
 
-/** The sections a container is made of, which a snapshot keeps. */
 export const Sections = Schema.Struct({
   inventory: optional(Slots),
   ender_chest: optional(Slots),
   storage: optional(Schema.Record(Schema.String, Slots)),
-  /** A wardrobe slot holds up to a helmet, a chestplate, leggings and boots. The worn slot is not in `slots`. */
+  // @keep The worn wardrobe slot is not in `slots`.
   wardrobe: optional(
     Schema.Struct({
       equipped: optional(Schema.Number),
@@ -24,7 +20,6 @@ export const Sections = Schema.Struct({
     }),
   ),
   accessory_bag: optional(Slots),
-  /** Each pet as the server sends it. They are read leniently by `pets.ts`. */
   pets: optional(Schema.Array(Schema.Unknown)),
 });
 export type Sections = typeof Sections.Type;
@@ -41,37 +36,24 @@ export const WireProfile = Schema.Struct({
   accessory_power: optional(Schema.String),
   haunted_candy_earned: optional(Schema.Number),
   draconic_experience: optional(Schema.Number),
-  /** When the server saved the profile, in epoch milliseconds. */
   updated_at: optional(Schema.Number),
   inventory_hidden: optional(Schema.Boolean),
-  /*
-   * The sections below are kept as the server sends them and read leniently by `sections.ts`, so a change to one of
-   * them costs that section and never the whole profile.
-   */
-  /** `{ base, additive, multiplicative, increase_max }`, each a record of stat to number. */
   stats: optional(Schema.Unknown),
   collections: optional(Schema.Unknown),
   rng_meters: optional(Schema.Unknown),
   dungeons: optional(Schema.Unknown),
   hotd: optional(Schema.Unknown),
   forge: optional(Schema.Unknown),
-  /*
-   * Plain numbers, read one entry at a time. A value that is not a finite number is skipped, so it costs that entry
-   * and never the profile.
-   */
-  /** Total XP by skill. */
   skills: optional(Schema.Unknown),
-  /** `zombie_xp` and `zombie_level` for each slayer. */
   slayer: optional(Schema.Unknown),
-  /** Each mob is `{ kills }`. A kills value that is not a finite number drops that mob. */
   bestiary: optional(Schema.Unknown),
 });
 export type WireProfile = typeof WireProfile.Type;
 
 const Answer = Schema.Struct({
-  /** The `mode` the backend asked for, which is always `main`, so it says nothing the request did not. Not passed on. */
+  // @keep `mode` is always the `main` the backend asked for, so it is not passed on.
   mode: optional(Schema.String),
-  /** When the server built this answer, in epoch milliseconds. `fetchedAt` is when the backend read it, so this is not passed on. */
+  // @keep `fetchedAt` is when the backend read the answer, so the server's own time is not passed on.
   fetched_at: optional(Schema.Number),
   player: Schema.Struct({
     uuid: Schema.String,
@@ -88,16 +70,12 @@ const Answer = Schema.Struct({
       }),
     ),
   ),
-  /** Missing when the player has no profile. */
   profile: optional(WireProfile),
 });
 
-/**
- * What the backend reads of an answer, down to every field, so a field dragsim.co adds at any depth shows in the log
- * instead of vanishing. A leaf is a string, number or boolean the backend passes on, so a map or a list where one was
- * expected is named too, since the backend would drop it. An open map takes any key, such as a slot
- * number or a mob's id, and reads each value with one shape.
- */
+/** @keep What the backend reads of an answer, down to every field, so a field dragsim.co adds at any depth shows in the
+ * log. A leaf is a string, number or boolean the backend passes on, so a map or a list where one was expected is named
+ * too. An open map takes any key, such as a slot number or a mob's id, and reads each value with one shape. */
 type Shape = true | { readonly open: Shape } | { readonly list: Shape } | { readonly [key: string]: Shape };
 const LEAF = true;
 const open = (shape: Shape): Shape => ({ open: shape });
@@ -138,7 +116,7 @@ const ITEM: Shape = {
     item_dye: { dyeId: LEAF },
     item_skin: { skinId: LEAF },
     drill: { fuel: LEAF, engine: LEAF, tank: LEAF, module: LEAF, coated: LEAF },
-    // Passed on whole, as `facts`.
+    // @keep Passed on whole, as `facts`.
     dungeon_upgrade: open(LEAF),
     wither_scrolls: open(LEAF),
     coating: open(LEAF),
@@ -148,7 +126,7 @@ const ITEM: Shape = {
 const KILLS: Shape = { kills: LEAF };
 
 export const ANSWER_SHAPE: Shape = {
-  // Our own request echoed back, and a time older than ours: read, and not passed on.
+  // @keep Our own request echoed back, and a time older than ours: read, and not passed on.
   mode: LEAF,
   fetched_at: LEAF,
   player: { uuid: LEAF, player: LEAF, rank: LEAF },
@@ -171,7 +149,7 @@ export const ANSWER_SHAPE: Shape = {
     bestiary: open(KILLS),
     collections: open(LEAF),
     rng_meters: open(KILLS),
-    // `<boss>_xp` and `<boss>_level` for each boss, so any key is a boss.
+    // @keep `<boss>_xp` and `<boss>_level` for each boss, so any key is a boss.
     slayer: open(LEAF),
     dungeons: {
       class: LEAF,
@@ -213,10 +191,8 @@ export const ANSWER_SHAPE: Shape = {
   },
 };
 
-/**
- * The paths in [value] that [shape] does not read, as `profile.dungeons.new_section`. An open map's key is `*` and a
- * list's element is `[]`, so a path is named once however many slots or mobs have it.
- */
+/** @keep Paths look like `profile.dungeons.new_section`. An open map's key is `*` and a list's element is `[]`, so a
+ * path is named once however many slots or mobs have it. */
 export const unmappedPaths = (value: unknown, shape: Shape = ANSWER_SHAPE, path = ""): readonly string[] => {
   if (value === null || typeof value !== "object") {
     return [];
@@ -227,7 +203,7 @@ export const unmappedPaths = (value: unknown, shape: Shape = ANSWER_SHAPE, path 
   const found = new Set<string>();
   const add = (paths: readonly string[]) => paths.forEach((each) => found.add(each));
   if (isList(shape)) {
-    // A map where a list was expected is read as none, so it is named.
+    // @keep A map where a list was expected is read as none, so it is named.
     if (!Array.isArray(value)) {
       return [path];
     }
@@ -250,21 +226,17 @@ export const unmappedPaths = (value: unknown, shape: Shape = ANSWER_SHAPE, path 
   return [...found];
 };
 
-/** An answer that has a profile, which is the only kind the backend keeps. */
 export const Found = Schema.Struct({ ...Answer.fields, profile: WireProfile });
 export type Found = typeof Found.Type;
 export const decodeAnswer = Schema.decodeUnknownEffect(Answer);
 export const decodeFound = Schema.decodeUnknownOption(Found);
 
-/** The error text a 404 carries, which tells a missing player from a missing profile. */
 export const NotFoundBody = Schema.Struct({ error: Schema.String });
 
-/** The cumulative XP to reach each level, from level 1. */
 const Table = Schema.Array(Schema.Number);
 
 export const Progression = Schema.Struct({ default: Table, combat: Table, catacombs: Table });
 export type Progression = typeof Progression.Type;
 
-/** The part of `catalog.json` the backend reads itself. The renderer gets the rest as it is. */
 export const CatalogShape = Schema.Struct({ progression: Progression });
 export const decodeCatalog = Schema.decodeUnknownOption(CatalogShape);

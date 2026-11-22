@@ -9,11 +9,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * Ctrl Click: on macOS the game turns a left press with Ctrl held into a right press, as macOS does. The press stays
- * a left press with Ctrl, as on every other system. A release is left to the game, which turns it into a right
- * release only for a press it turned, so a switch flipped between the two cannot leave a button held.
- */
+/** @keep On macOS the game turns a left press with Ctrl held into a right press. A release is left to the game, which turns
+ * it into a right release only for a press it turned, so a switch flipped between the two cannot leave a button held. */
 @Mixin(MouseHandler.class)
 abstract class CtrlClickMixin {
     @Inject(method = "simulateRightClick", at = @At("HEAD"), cancellable = true)

@@ -31,21 +31,15 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.fileSize
 import kotlin.io.path.name
 
-/**
- * What a player does for ds-mod's developers: record the requests they qualify for, and, when they switch it on,
- * report the game data the mod has not seen before, today the lines it could not read and how the items in their own inventory look. Nothing here contacts the backend until the player does one of these.
- * Network calls run on [Account.backend]'s thread, disk work on [Background.io], and what the player is told is
- * sent from the client thread. `specs/Contribute.tla` is the life of a run, and the code follows its names.
- */
+/** @keep Network calls run on [Account.backend]'s thread, disk work on [Background.io], and chat lines go out from the client thread. `specs/Contribute.tla` is the life of a run, and the code follows its names. */
 object Contribute {
     private const val QUIT_SECONDS = 4L
     private val log = LoggerFactory.getLogger("dsmod")
 
-    /** Kept files an upload holds, so a resend leaves them alone. */
     private val claimed = ConcurrentHashMap.newKeySet<Path>()
     private val uploads = ConcurrentHashMap.newKeySet<CompletableFuture<*>>()
 
-    /** The startup sweep. Offers are fetched only after it, so it never deletes a capture a run is writing. */
+    /** @keep Offers are fetched only after the startup sweep, so it never deletes a capture a run is writing. */
     private lateinit var swept: CompletableFuture<Unit>
 
     private val names = { DsModClient.game.tabPlayers + Account.name }
@@ -56,16 +50,14 @@ object Contribute {
 
     private fun tell(build: TextBuilder.() -> Unit) = text(build).let { line -> Minecraft.getInstance().execute { Chat.send(line) } }
 
-    /** The folder a request's run records into, and where a redacted recording waits to be sent. */
     fun dir(): Path = FabricLoader.getInstance().gameDir.resolve("dsmod/contributions")
 
     fun register() {
-        // What a run left when the game stopped holds names and chat, and is never sent.
+        // @keep What a run left when the game stopped holds names and chat, and is never sent.
         swept = CompletableFuture.supplyAsync({ Kept.sweep(dir()) }, Background.io)
             .exceptionally { log.error("Could not clear what an earlier recording left in {}", dir(), it) }
     }
 
-    /** Opens the screen of offers, and fills it in when the backend answers. */
     fun open() {
         val client = Minecraft.getInstance()
         val screen = ContributeScreen(signingIn = !Account.backend.signedIn, parent = client.gui.screen())
@@ -76,12 +68,10 @@ object Contribute {
         }
     }
 
-    /** Tells the backend this player does not want [request], so that it is not offered to them again. */
     fun skip(request: Request) {
         Account.backend.async { skip(request.id) }.whenComplete { _, error -> if (error != null) tell { bad("Could not hide that request. " + Account.why(error)) } }
     }
 
-    /** Starts the brief of [request], which the player works through with the HUD. False when a run is already on. */
     fun accept(request: Request): Boolean {
         if (Recording.busy || Recorder.running) {
             Chat.send(text { bad("Finish the recording you have first, or type "); action("/dsmod cancel"); bad(".") })
@@ -97,7 +87,6 @@ object Contribute {
         return true
     }
 
-    /** `/dsmod submit`: ends the run and sends it, or sends what earlier uploads kept. */
     fun submit() {
         when {
             Recording.submit() -> {}
@@ -106,16 +95,10 @@ object Contribute {
         }
     }
 
-    /** `/dsmod cancel`. */
     fun cancel() {
         Chat.send(if (Recording.cancel()) text { body("Recording cancelled. Nothing was sent.") } else text { bad("No recording to cancel.") })
     }
 
-    /**
-     * What to do with [raw] once the recorder has finished it, for a run of [request]. Call it on the client thread
-     * and hand the result to `Recorder.stop`, which calls it on the io thread: a whole capture is redacted into a
-     * `.part`, claimed, renamed into place and uploaded, and the raw file is deleted either way.
-     */
     fun seal(request: Request, raw: Path): (whole: Boolean) -> Unit {
         val own = setOf(Account.name)
         val gz = raw.resolveSibling(Kept.name(request.id, raw.name))
@@ -143,11 +126,7 @@ object Contribute {
         }
     }
 
-    /**
-     * Deletes [gz] after the backend's final answer and says whether the claim may be released. A sent run is told
-     * before the delete, so a delete that throws cannot hide that it went out. A delete that throws keeps the claim,
-     * so this start does not upload the file again.
-     */
+    /** @keep A sent run is told before the delete, so a delete that throws cannot hide that it went out, and one that throws keeps the claim, so this start does not upload the file again. */
     internal fun settle(answer: Upload, gz: Path, tell: (Upload) -> Unit): Boolean {
         if (answer == Upload.SENT) tell(answer)
         val deleted = try {
@@ -161,11 +140,7 @@ object Contribute {
         return deleted
     }
 
-    /**
-     * Sends a claimed [gz] and says how it went. A recording the backend refuses for good is deleted, and any other
-     * failure keeps it. The answer is handled on the backend's thread, as the upload is, so a resend queued behind it
-     * sees the file and its claim as this upload left them.
-     */
+    /** @keep The answer is handled on the backend's thread, as the upload is, so a resend queued behind it sees the file and its claim as this upload left them. */
     private fun upload(requestId: String, gz: Path) {
         val upload = Account.backend.async {
             var release = true
@@ -193,7 +168,6 @@ object Contribute {
         upload.whenComplete { _, _ -> uploads.remove(upload) }
     }
 
-    /** Sends the recordings earlier uploads kept, except one an upload already holds. */
     private fun resend() {
         Account.backend.async { Kept.waiting(dir()).filter { claimed.add(it) } }.whenComplete { files, error ->
             when {
@@ -207,15 +181,10 @@ object Contribute {
         }
     }
 
-    /** Quitting, once the io thread is done: gives an upload in progress a few seconds. One that does not finish is kept for a resend. */
     fun quit() {
         runCatching { CompletableFuture.allOf(*uploads.toTypedArray()).get(QUIT_SECONDS, TimeUnit.SECONDS) }
     }
 
-    /**
-     * Called every tick. While the player allows it, listens for lines the mod could not read and reads their own
-     * inventory, and sends each rarely. Both go on one switch, so a player who turns it off is collected from at once.
-     */
     fun tick(game: Game, report: Boolean, now: Long) {
         if ((game.metrics.onUnparsed != null) != report) game.metrics.onUnparsed = if (report) hear else null
         if (report) game.metrics.time("item-sights") { sights.poll(Minecraft.getInstance()) } else sights.reset()

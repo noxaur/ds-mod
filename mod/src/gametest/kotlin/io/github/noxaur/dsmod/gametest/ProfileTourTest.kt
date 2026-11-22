@@ -4,11 +4,6 @@ import io.github.noxaur.dsmod.core.ui.Theme
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 
-/**
- * Every tab and every page of the profile viewer in [theme], with the mouse off the panel, for reading the whole
- * screen. Checks too that the pets come with the profile, so their tab fetches nothing. One test per theme keeps
- * each under the game test cap.
- */
 abstract class ProfileTour(private val theme: Theme) : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         OnProfiles(context).use { profiles ->

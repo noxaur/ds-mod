@@ -8,10 +8,8 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-/**
- * Text the server sent, as the player sees it. The edge resolves legacy color codes and inherited styles before it builds
- * one, so [plain] holds no formatting codes and every [ServerSpan] carries its final style.
- */
+/** @keep The edge resolves legacy color codes and inherited styles before it builds one, so plain holds no formatting
+ * codes and every ServerSpan carries its final style */
 @Serializable(with = TextSerializer::class)
 data class ServerText(val spans: List<ServerSpan>) {
     constructor(vararg spans: ServerSpan) : this(spans.asList())
@@ -33,7 +31,6 @@ data class ServerSpan(
 @Serializable
 private class TextJson(val plain: String, val spans: List<ServerSpan>)
 
-/** Writes [ServerText.plain] beside the spans, so a capture can be searched for what the player read. */
 internal object TextSerializer : KSerializer<ServerText> {
     override val descriptor: SerialDescriptor = SerialDescriptor("io.github.noxaur.dsmod.Text", TextJson.serializer().descriptor)
 

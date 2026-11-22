@@ -9,7 +9,6 @@ import { type ItemStore, MIN_PLAYERS, memoryItemStore } from "./store.ts";
 const texture = (url: string) => btoa(JSON.stringify({ textures: { SKIN: { url } } }));
 const mojang = texture("http://textures.minecraft.net/texture/abc123");
 
-/** A backend whose callers are whoever the cookie names, so a test is any number of players. */
 const backend = (items: ItemStore["Service"] = memoryItemStore()) => {
   const { call } = testApp({ items });
   const send = (who: string, sightings: unknown[]) =>
@@ -58,7 +57,6 @@ test("glint is always, never or mixed by what the players saw", async () => {
   ] as const) {
     await send(who, [sighting(entry, { glint })]);
   }
-  // Bob saw a second copy of "both" with no glint, so not every player saw it glint every time.
   await send("bob", [sighting("both", { glint: false })]);
   const found = await hints("always", "never", "mixed", "both");
   expect([...found].map(([entry, hint]) => [entry, hint.glint])).toEqual([
@@ -117,7 +115,7 @@ test("a texture from anywhere but textures.minecraft.net refuses the sighting", 
 });
 
 const sendMany = async (send: ReturnType<typeof backend>["send"], who: string, count: number) => {
-  // 50 a call is the API's limit.
+  // @keep 50 a call is the API's limit.
   for (let from = 0; from < count; from += 50) {
     await send(
       who,

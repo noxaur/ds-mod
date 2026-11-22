@@ -37,18 +37,10 @@ import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.useLines
 
-/**
- * Cuts the events of one window out of [capture] into [fixture], redacted. [types] are the event types to keep,
- * and `container` keeps `slot` too. The tab list and the sidebar that tell [area], and each change of world, are kept
- * whatever [types] says, because a fixture without them replays as if the player never left. The fixture begins with the state at the
- * window's start: the last tab list and sidebar before it and the open container. A return to the player's inventory
- * that keeps its slots is written with every slot it kept, so a fixture never needs what came before it. A tab list
- * inside the window is kept only when one of the [info] rows or the area's row changed, and every one is kept when
- * `tablist` is a type and there are no [info] rows. A sidebar inside the window is kept when `sidebar` is a type, and
- * otherwise only when its place changed. A system line is kept when it matches [system], or always without one.
- * With [entities], the feature's filters, the entity events are kept as the feature hears them, starting with each
- * entity it reads that the client held at the window's start, so the fixture holds only the entities it reads.
- * Returns the number of lines written and of players renamed.
+/** @keep The tab list and the sidebar that tell the area, and each change of world, are kept whatever the types say,
+ * because a fixture without them replays as if the player never left. The fixture begins with the state at the window's
+ * start, and a return to the player's inventory that keeps its slots is written with every slot it kept, so a fixture
+ * never needs what came before it.
  */
 fun cutFixture(
     capture: Path,
@@ -75,8 +67,6 @@ fun cutFixture(
     var sidebar: Sidebar? = null
     var shown: List<String?>? = null
     var place: String? = null
-    // The open container and its slots, the player's own inventory as it was when another menu opened, and the
-    // container and slots as the window starts.
     var open: ContainerOpened? = null
     val slots = sortedMapOf<Int, Item>()
     var inventory = emptyMap<Int, Item>()
@@ -90,7 +80,6 @@ fun cutFixture(
         heldAtStart = held.values.filter { seen -> entities.any { it.matches(seen) } }
     }
     val events = ArrayList<Captured>()
-    // A capture from before `floating` was an event has its text displays only in `entities`.
     val legacy = if ("floating" in types && capture.useLines { lines -> lines.none { "\"type\":\"floating\"" in it } }) HashMap<String, String>() else null
     capture.useLines { lines ->
         for (line in lines.filter(String::isNotBlank)) {
@@ -120,9 +109,8 @@ fun cutFixture(
                     if (!before) entities.view(held.before, held.after, event)?.let { events += Captured(time, it, tick) }
                     continue
                 }
-                // `Game` forgets the entities with the world and the server, since the next one numbers them again.
                 if (event == WorldChanged || event == LeftServer) held.clear()
-                // `Game` forgets the tab list and the sidebar with the world, so the next world's rows must be written again.
+                // @keep `Game` forgets the tab list and the sidebar with the world, so the next world's rows must be written again.
                 if (event == WorldChanged) {
                     if (before) {
                         tab = null
@@ -155,10 +143,9 @@ fun cutFixture(
     }
     if (start == null) begin()
     val state = listOfNotNull(tab, sidebar, container) + checkNotNull(start) { "begin sets the slots the window starts with" }.map { (slot, item) -> SlotChanged(slot, item) } + heldAtStart
-    // The carried state was posted on earlier ticks the window does not keep, so it has no tick of its own.
+    // @keep The carried state was posted on earlier ticks the window does not keep, so it has no tick of its own.
     val lines = (state.map { Captured(origin + (seconds.start * 1000).toLong(), it) } + events)
         .map { captureLine(it.time, redactor.redact(it.event), it.tick) }
-    // A name the redactor did not know here, but another capture beside this one shows, is caught before the captures go.
     val others = capture.toAbsolutePath().parent.listDirectoryEntries("*.jsonl")
     val leaked = PlayerNames.leaked(PlayerNames.of(capture, *others.toTypedArray()), lines.joinToString("\n"))
     check(leaked.isEmpty()) {
@@ -170,11 +157,9 @@ fun cutFixture(
     return lines.size to redactor.count
 }
 
-/**
- * `cutFixture <capture> <feature id> <name> <from>-<to> [--types a,b] [--info Key,Key] [--system regex]`
- * writes `src/test/resources/features/<feature id>/<name>.jsonl`, keeping the rows that tell the feature's area and
- * the entities it reads. The window is in seconds from the capture's first line, and `--types` defaults to
- * `system,tablist`.
+/** @keep `cutFixture <capture> <feature id> <name> <from>-<to> [--types a,b] [--info Key,Key] [--system regex]` writes
+ * `src/test/resources/features/<feature id>/<name>.jsonl`. The window is in seconds from the capture's first line, and
+ * `--types` defaults to `system,tablist`.
  */
 fun main(args: Array<String>) {
     val (capture, feature, name, window) = args
@@ -194,11 +179,7 @@ fun main(args: Array<String>) {
     println("Wrote $written lines for $feature/$name, with $players players renamed.")
 }
 
-/**
- * The [FloatingText] of each text display in an older capture's `entities` line whose text is new: the server's
- * text, read the way the edge reads it, and [shown] is each display's text so far. The line is the recorder's sample,
- * so the text arrives up to a few ticks after the client had it.
- */
+/** @keep The line is the recorder's sample, so the text arrives up to a few ticks after the client had it. */
 private fun floating(line: String, shown: MutableMap<String, String>): List<Captured> {
     val json = Json.parseToJsonElement(line).jsonObject
     val time = json.getValue("t").jsonPrimitive.long

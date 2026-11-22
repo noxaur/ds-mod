@@ -20,11 +20,6 @@ private const val SCALE = "Scale"
 private const val HUD_SCALE = "HUD Scale"
 private const val VALUE_WIDTH = 30
 
-/**
- * Drag a block or nudge it with the arrows to move it, into or out of a dock beside the hotbar, scroll over it to
- * resize it and right-click it to reset it, by [HudMover]'s rules, which the chat screen shares. The panel at the bottom works on the last block clicked or scrolled, and on the whole HUD.
- * Closing saves through [onSave] and goes back to [parent].
- */
 class HudEditorScreen(
     private val readouts: Readouts,
     private val settings: DsModConfig.Hud,
@@ -82,7 +77,6 @@ class HudEditorScreen(
         super.removed()
     }
 
-    // The HUD under this screen is what the player is editing, so nothing dims or blurs it.
     override fun extractBackground(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) = Unit
 
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
@@ -124,9 +118,6 @@ class HudEditorScreen(
         return super.mouseReleased(event)
     }
 
-    // Escape during a drag puts the block back, and otherwise closes the editor. The arrows nudge the block held, or
-    // else the one picked last, and + and - resize it, and the arrows move between the panel's controls when there is
-    // none. The chat leaves + and - out, since they type there.
     override fun keyPressed(event: KeyEvent): Boolean {
         if (event.isEscape && mover.cancel()) {
             refresh()
