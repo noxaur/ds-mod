@@ -60,7 +60,7 @@ gate edge.CopyChats d2120e05f873  CopyChat
 gate edge.EyeGuards d497c96d3e10  EyeGuard
     can refuse the player's actions through UseBlockCallback.EVENT
     approved by github.com/noxaur 2026-11-16T18:38:00Z
-gate edge.ForgeCrafts 48abe9f0c882  ForgeCraft
+gate edge.ForgeCrafts 710dfe1b4df7  ForgeCraft
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
@@ -133,9 +133,8 @@ gate edge.mixin.DropKeyMixin 1b430b670807
 gate edge.mixin.EnchantmentOfferMixin draws
     hooks EnchantmentScreen.extractBackground
     approved by github.com/noxaur 2026-11-21T00:09:00Z
-gate edge.mixin.ExplosionParticleMixin 816e0ac1bb3c  HideExplosions
+gate edge.mixin.ExplosionParticleMixin 0530b12366cc  HideExplosions
     hooks ParticleEngine.createParticle
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate edge.mixin.FloatingTextMixin 1178eba96f0a
     hooks Display.TextDisplay.getText
     hooks Display.TextDisplay.onSyncedDataUpdated
@@ -153,7 +152,7 @@ gate edge.mixin.HeldItemMixin 68ce469876e1
 gate edge.mixin.HeldItemModelMixin 305583a74354
     hooks ItemStackRenderState.LayerRenderState.applyTransform
     hooks ItemStackRenderState.LayerRenderState.submit
-gate edge.mixin.HiddenTextMixin a90e72dc5f00
+gate edge.mixin.HiddenTextMixin d7de7ed952c5
     hooks EntityRenderer.shouldRender
 gate edge.mixin.HudHotbarMixin draws
     hooks Hud.extractSlot

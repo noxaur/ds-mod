@@ -36,7 +36,7 @@ import kotlin.io.path.useLines
 
 class Redactor(private val names: Set<String>) {
     private val aliases = HashMap<String, String>()
-    private val code = Regex("§.") // rule:text-by-role It strips the color codes of an older capture's raw text.
+    private val code = Regex("§.")
 
     val count get() = aliases.size
 

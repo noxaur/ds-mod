@@ -19,6 +19,6 @@ abstract class RecipeButtonMixin {
 
     @Inject(method = "extractContents", at = @At("HEAD"), cancellable = true)
     private void dsmod$theme(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
-        if (sprites == RecipeBookComponent.RECIPE_BUTTON_SPRITES && MenuSkin.INSTANCE.recipeButton(graphics, (AbstractWidget) (Object) this)) ci.cancel();
+        if (RecipeBookComponent.RECIPE_BUTTON_SPRITES.equals(sprites) && MenuSkin.INSTANCE.recipeButton(graphics, (AbstractWidget) (Object) this)) ci.cancel();
     }
 }

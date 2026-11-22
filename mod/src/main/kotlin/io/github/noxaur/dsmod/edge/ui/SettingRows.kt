@@ -1097,6 +1097,7 @@ class SettingRows(
         val keys = KitKeysButton(line.cx, origin + line.cy, line.cw, s.name, listOf(s.value).filter { it >= 0 }, 1, line.ch) { keys ->
             change { s.value = keys.firstOrNull() ?: KeyBind.NONE }
         }
+        keys.clicks = s.clicks
         keys.onPress(KeyEvent(GLFW.GLFW_KEY_ENTER, 0, 0))
         mode = Mode.Recording(keys, line)
     }
@@ -1191,7 +1192,7 @@ internal fun AbstractWidget.takesPress(event: MouseButtonEvent, doubleClick: Boo
 }
 
 internal inline fun KitKeysButton.pressed(event: MouseButtonEvent, finish: () -> Unit): Boolean {
-    val took = capture(event.button(), mouse = true)
+    val took = capture(event)
     if (!recording) finish()
     return took || isMouseOver(event.x, event.y)
 }

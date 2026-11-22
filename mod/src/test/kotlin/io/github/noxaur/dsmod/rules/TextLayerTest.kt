@@ -1,89 +1,69 @@
 package io.github.noxaur.dsmod.rules
 
-import org.objectweb.asm.Handle
-import org.objectweb.asm.Opcodes
-import org.objectweb.asm.tree.AbstractInsnNode
-import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.FieldInsnNode
-import org.objectweb.asm.tree.InvokeDynamicInsnNode
-import org.objectweb.asm.tree.LdcInsnNode
-import org.objectweb.asm.tree.MethodInsnNode
+import com.tngtech.archunit.base.DescribedPredicate
+import com.tngtech.archunit.base.DescribedPredicate.describe
+import com.tngtech.archunit.core.domain.JavaAccess
+import com.tngtech.archunit.core.domain.JavaClass
+import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.Style
+import net.minecraft.network.chat.TextColor
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-private const val CHAT = "net/minecraft/network/chat/"
-private const val MOD = "io/github/noxaur/dsmod/"
+private const val CHAT = "net.minecraft.network.chat."
 
-/** @keep `PlayerNames` and `Redactor` only read the `§` codes of an older capture's raw text, to strip them. */
-private val textLayer = listOf("core/text/", "core/ui/Theme", "edge/Chat", "core/capture/PlayerNames", "core/capture/Redactor").map { MOD + it }
+private val textLayer = listOf("core.text.", "core.ui.Theme", "edge.Chat", "core.capture.PlayerNames", "core.capture.Redactor")
+    .map { "io.github.noxaur.dsmod.$it" }
 
 private val styled = setOf("literal", "translatable", "translatableWithFallback", "keybind", "nbt", "score", "selector", "nullToEmpty")
 private val looks = setOf(
     "withColor", "withShadowColor", "withBold", "withItalic", "withUnderlined", "withStrikethrough", "withObfuscated", "withFont",
     "applyFormat", "applyFormats", "applyLegacyFormat",
 )
-private val colors =setOf("fromRgb", "fromLegacyFormat", "parseColor")
+private val colors = setOf("fromRgb", "fromLegacyFormat", "parseColor")
 
-private fun styles(owner: String, name: String, static: Boolean) = when (owner) {
-    "net/minecraft/ChatFormatting" -> true
-    "${CHAT}Component" -> static && name in styled
-    "${CHAT}MutableComponent" -> name == "withColor"
-    "${CHAT}Style" -> name in looks
-    "${CHAT}TextColor" -> name in colors
-    else -> false
+private val outsideTextLayer = describe<JavaClass>("outside the text layer") { type ->
+    val top = type.name.substringBefore('$').removeSuffix("Kt")
+    textLayer.none { if (it.endsWith('.')) top.startsWith(it) else top == it }
 }
 
-private fun styling(insn: AbstractInsnNode) = when (insn) {
-    is LdcInsnNode -> (insn.cst as? String)?.contains('§') == true
-    is FieldInsnNode -> insn.owner == "net/minecraft/ChatFormatting"
-    is MethodInsnNode -> styles(insn.owner, insn.name, insn.opcode == Opcodes.INVOKESTATIC)
-    is InvokeDynamicInsnNode -> handlesOf(insn).any { styles(it.owner, it.name, it.tag == Opcodes.H_INVOKESTATIC) }
-    else -> false
+private val stylesText = describe<JavaAccess<*>>("gives text a color or a style") { access ->
+    val target = access.target
+    when (target.owner.name) {
+        "net.minecraft.ChatFormatting" -> true
+        "${CHAT}Component" -> target.name in styled
+        "${CHAT}MutableComponent" -> target.name == "withColor"
+        "${CHAT}Style" -> target.name in looks
+        "${CHAT}TextColor" -> target.name in colors
+        else -> false
+    }
 }
 
-private fun inTextLayer(name: String): Boolean {
-    val top = name.substringBefore('$').removeSuffix("Kt")
-    return textLayer.any { if (it.endsWith('/')) top.startsWith(it) else top == it }
-}
+private fun textLayer(classes: DescribedPredicate<JavaClass>) = noClasses().that(classes).should().accessTargetWhere(stylesText).because(
+    "the text layer colors text. Say what the text means: build it with `text { body(..); value(..) }` from core.text and " +
+        "print it with `Chat.send`. If no role fits, add one to `Role`",
+)
 
-fun stylings(classes: List<ClassNode>): List<String> = placesWhere(classes.filter { node -> !inTextLayer(node.name) }, ::styling)
+private class Literal { fun run() = Component.literal("Sold 5 scales!") }
+private class Colored { fun run() = Component.empty().withColor(0) }
+private class Bold { fun run() = Style.EMPTY.withBold(true) }
+private class Rgb { fun run() = TextColor.fromRgb(0) }
+private class Format { fun run() = ChatFormatting.GOLD }
+private class Reference { fun run(): (String) -> Component = Component::literal }
+private class NoText { fun run() = Component.empty() }
+private class PlainStyle { fun run() = Style.EMPTY }
 
 class TextLayerTest {
     @Test
     fun `only the text layer colors or styles text`() {
-        assertNoPlaces(
-            stylings(releaseClasses()),
-            "Say what the text means and let the text layer color it: build it with `text { body(..); value(..) }` " +
-                "from core.text and print it with `Chat.send`. If no role fits, add one to `Role`.",
-        )
+        textLayer(outsideTextLayer).check(releaseClasses)
     }
 
     @Test
-    fun `the scan catches a color however the code spells it`() {
-        fun calling(name: String, insn: AbstractInsnNode) = edgeClass(name, 7, insn)
-        fun reference(target: Handle) = lambdaReference(
-            "apply",
-            "()Ljava/util/function/Function;",
-            "(Ljava/lang/Object;)Ljava/lang/Object;",
-            target,
-            "(Ljava/lang/String;)L${CHAT}MutableComponent;",
-        )
-        val found = stylings(
-            listOf(
-                calling("Literal", MethodInsnNode(Opcodes.INVOKESTATIC, "${CHAT}Component", "literal", "(Ljava/lang/String;)L${CHAT}MutableComponent;")),
-                calling("Color", MethodInsnNode(Opcodes.INVOKEVIRTUAL, "${CHAT}MutableComponent", "withColor", "(I)L${CHAT}MutableComponent;")),
-                calling("Style", MethodInsnNode(Opcodes.INVOKEVIRTUAL, "${CHAT}Style", "withBold", "(Ljava/lang/Boolean;)L${CHAT}Style;")),
-                calling("Rgb", MethodInsnNode(Opcodes.INVOKESTATIC, "${CHAT}TextColor", "fromRgb", "(I)L${CHAT}TextColor;")),
-                calling("Format", FieldInsnNode(Opcodes.GETSTATIC, "net/minecraft/ChatFormatting", "GOLD", "Lnet/minecraft/ChatFormatting;")),
-                calling("Escape", LdcInsnNode("§eSold 5 scales!")),
-                calling("Empty", MethodInsnNode(Opcodes.INVOKESTATIC, "${CHAT}Component", "empty", "()L${CHAT}MutableComponent;")),
-                calling("Read", FieldInsnNode(Opcodes.GETSTATIC, "${CHAT}Style", "EMPTY", "L${CHAT}Style;")),
-                calling("Reference", reference(Handle(Opcodes.H_INVOKESTATIC, "${CHAT}Component", "literal", "(Ljava/lang/String;)L${CHAT}MutableComponent;", true))),
-                calling("ChatDrags", LdcInsnNode("§c")),
-                calling("Chat", LdcInsnNode("§c")),
-                calling("Chat\$Line", LdcInsnNode("§c")),
-            ),
-        )
-        assertEquals(listOf("Literal", "Color", "Style", "Rgb", "Format", "Escape", "Reference", "ChatDrags").map { "${MOD}edge/$it.kt:7" }, found)
+    fun `the rule catches a color however the code spells it`() {
+        val styling = flags(::textLayer, Literal::class.java, Colored::class.java, Bold::class.java, Rgb::class.java, Format::class.java, Reference::class.java, JavaLiteralReference::class.java, NoText::class.java, PlainStyle::class.java)
+        assertEquals(listOf(Literal::class, Colored::class, Bold::class, Rgb::class, Format::class, Reference::class, JavaLiteralReference::class).map { it.java }, styling)
     }
 }

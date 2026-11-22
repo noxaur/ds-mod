@@ -422,7 +422,7 @@ A padlock marks each one: yellow for a slot, blue for a linked slot and green fo
 - **Which items:** only an item that does not stack, such as a weapon or armor, can be locked by itself. For a stack, lock its slot.
 - **Armor and the off hand** can be locked too.
 
-Slot Lock Key and Item Lock Key take any key or mouse button. The server can still move a locked item itself, as when you sell it.
+Slot Lock Key and Item Lock Key take any key or mouse button but left and right click, which the menu needs. The server can still move a locked item itself, as when you sell it.
 
 ### Armor Swap Guard
 

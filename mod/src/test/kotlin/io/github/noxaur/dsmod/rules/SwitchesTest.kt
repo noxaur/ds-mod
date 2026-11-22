@@ -1,53 +1,39 @@
 package io.github.noxaur.dsmod.rules
 
+import com.tngtech.archunit.base.DescribedPredicate
+import com.tngtech.archunit.base.DescribedPredicate.describe
+import com.tngtech.archunit.core.domain.JavaAccess
+import com.tngtech.archunit.core.domain.JavaClass
+import com.tngtech.archunit.core.domain.JavaClass.Predicates.resideOutsideOfPackage
+import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses
 import io.github.noxaur.dsmod.core.feature.Feature
-import org.objectweb.asm.Handle
-import org.objectweb.asm.Opcodes
-import org.objectweb.asm.Type
-import org.objectweb.asm.tree.AbstractInsnNode
-import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.InsnNode
-import org.objectweb.asm.tree.MethodInsnNode
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-private val FEATURE = Type.getInternalName(Feature::class.java)
-
-private val SWITCH_GETTERS = setOf("getEnabled", "getSwitch")
-
-fun switchReads(classes: List<ClassNode>): List<String> = placesWhere(classes.filter { "/core/" !in it.name }) { insn ->
-    fun getter(owner: String, name: String) = name in SWITCH_GETTERS && owner == FEATURE
-    val handles = handlesOf(insn)
-    insn is MethodInsnNode && getter(insn.owner, insn.name) || handles.any { getter(it.owner, it.name) }
+private val readsSwitch = describe<JavaAccess<*>>("reads a feature's switch") { access ->
+    val target = access.target
+    target.owner.isEquivalentTo(Feature::class.java) && target.name in setOf("getEnabled", "getSwitch")
 }
+
+private fun switches(classes: DescribedPredicate<JavaClass>) = noClasses().that(classes).should().accessTargetWhere(readsSwitch).because(
+    "a feature's switch stays on off dragsim.co. Ask the feature instead: `DsModClient.runs<CopyChat>()`, or " +
+        "`DsModClient.INSTANCE.runs(CopyChat.class)` from a mixin",
+)
+
+private class Enabled { fun run(feature: Feature) = feature.enabled }
+private class SwitchRow { fun run(feature: Feature) = feature.switch }
+private class EnabledReference { fun run(feature: Feature): () -> Boolean = feature::enabled }
+private class Runs { fun run(feature: Feature) = feature.runs }
 
 class SwitchesTest {
     @Test
     fun `outside core a feature's switch is read only through the feature`() {
-        assertNoPlaces(
-            switchReads(releaseClasses()),
-            "Each line reads a feature's switch, which stays on off dragsim.co. Ask the feature instead: " +
-                "`DsModClient.runs<CopyChat>()`, or `DsModClient.INSTANCE.runs(CopyChat.class)` from a mixin.",
-        )
+        switches(resideOutsideOfPackage("io.github.noxaur.dsmod.core..")).check(releaseClasses)
     }
 
     @Test
-    fun `the scan catches a read of enabled, of the switch row and a reference to either`() {
-        fun reading(name: String, insn: AbstractInsnNode) = edgeClass(name, 7, InsnNode(Opcodes.ACONST_NULL), insn)
-        fun reference(target: Handle) =
-            lambdaReference("getAsBoolean", "(L$FEATURE;)Ljava/util/function/BooleanSupplier;", "()Z", target, "()Z")
-        val reads = switchReads(
-            listOf(
-                reading("Switch", MethodInsnNode(Opcodes.INVOKEVIRTUAL, FEATURE, "getSwitch", "()Lio/github/noxaur/dsmod/core/config/Switch;")),
-                reading("Enabled", MethodInsnNode(Opcodes.INVOKEVIRTUAL, FEATURE, "getEnabled", "()Z")),
-                reading("Runs", MethodInsnNode(Opcodes.INVOKEVIRTUAL, FEATURE, "getRuns", "()Z")),
-                reading("Reference", reference(Handle(Opcodes.H_INVOKEVIRTUAL, FEATURE, "getEnabled", "()Z", false))),
-                reading("RunsReference", reference(Handle(Opcodes.H_INVOKEVIRTUAL, FEATURE, "getRuns", "()Z", false))),
-            ),
-        )
-        assertEquals(
-            listOf("Switch", "Enabled", "Reference").map { "io/github/noxaur/dsmod/edge/$it.kt:7" },
-            reads,
-        )
+    fun `the rule catches a read of enabled, of the switch row and a reference to either`() {
+        val reads = flags(::switches, Enabled::class.java, SwitchRow::class.java, EnabledReference::class.java, JavaEnabledReference::class.java, Runs::class.java)
+        assertEquals(listOf(Enabled::class.java, SwitchRow::class.java, EnabledReference::class.java, JavaEnabledReference::class.java), reads)
     }
 }

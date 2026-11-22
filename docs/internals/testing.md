@@ -6,6 +6,10 @@ Why the checks are shaped the way they are. Running them is in [operations/devel
 
 Every feature has a fixture cut from a capture, replayed through the same game logic the player runs into a transcript. A test that built its own events was rejected, because it would test the author's idea of a closed server that changes without notice. The run that writes a transcript fails once, so that someone reads it before keeping it. A feature that reads nothing from the server has a game test instead.
 
+## The mod's lint rules run on its parsed code
+
+Each rule the mod enforces in its source is a detekt rule, and each rule about what the compiled classes may call is an ArchUnit rule. Both read the code as the compiler does, so a line break, a full name or a method reference cannot slip past them, and each rule's examples prove it still fires. Regular expressions over the source were rejected, because they matched text and missed every spelling they did not foresee. A linter of our own was rejected too, because following each Kotlin release is lasting work.
+
 ## CI measures the mod in a real game
 
 Fast and smooth is checked, not promised. A perf test boots the jars a player installs and reads the mod's own timers, so the numbers are the ones play produces. A unit benchmark was rejected, because it would miss the draw cost, which exists only inside Minecraft's renderer. Every time is scaled to a reference device, and each cap gates the median of twelve windows, because one window on a shared runner can be several times slower.
