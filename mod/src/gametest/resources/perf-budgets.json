@@ -1,97 +1,36 @@
 {
-  "device": {
-    "name": "Ryzen 7 3700X",
-    "calibrate": 58
-  },
+  "calibrate": 58,
   "rows": {
-    "hud.draw": {
-      "group": "Frame",
-      "label": "HUD draw, 8 blocks",
-      "unit": "µs",
-      "cap": 300
-    },
-    "slots.draw": {
-      "group": "Frame",
-      "label": "Slot marks pass, 36 slots",
-      "unit": "µs",
-      "cap": 120
-    },
-    "menus.draw": {
-      "group": "Frame",
-      "label": "Themed inventory background, 46 slots",
-      "unit": "µs",
-      "cap": 60
+    "inventory.frame": {
+      "label": "Inventory open, 8 HUD blocks and 36 marked slots",
+      "cap": 480
     },
     "etherwarp.frame": {
-      "group": "Frame",
-      "label": "Etherwarp Outline, 121 blocks of line",
-      "unit": "µs",
-      "cap": 25
+      "label": "Etherwarp Outline, 121 blocks of line, and the HUD",
+      "cap": 325
     },
-    "world.follow": {
-      "group": "Frame",
-      "label": "Boss marks, 3 beams and 3 tracers",
-      "unit": "µs",
-      "cap": 30
+    "bosses.frame": {
+      "label": "Boss marks, 3 beams and 3 tracers, and the HUD",
+      "cap": 330
     },
-    "tab-poll": {
-      "group": "Tick",
-      "label": "Tab list poll",
-      "unit": "µs",
-      "cap": 150
-    },
-    "sidebar-poll": {
-      "group": "Tick",
-      "label": "Sidebar poll, 15 lines",
-      "unit": "µs",
-      "cap": 150
-    },
-    "container-poll": {
-      "group": "Tick",
-      "label": "Container poll",
-      "unit": "µs",
-      "cap": 50
-    },
-    "container-read": {
-      "group": "Tick",
-      "label": "Menu packets, 54 slots swapped at once",
-      "unit": "µs",
-      "cap": 1000
-    },
-    "item-sights": {
-      "group": "Tick",
-      "label": "Item sightings, 36 inventory slots",
-      "unit": "µs",
-      "cap": 15
-    },
-    "entities": {
-      "group": "Tick",
-      "label": "Entity tracker, 40 mobs hit each tick and 3 bosses",
-      "unit": "µs",
-      "cap": 40
-    },
-    "features": {
-      "group": "Tick",
-      "label": "Feature handlers and readouts per tick",
-      "unit": "µs",
-      "cap": 16
-    },
-    "capture-items": {
-      "group": "Recording",
-      "label": "Item pass, 46 slots of named items with lore",
-      "unit": "µs",
+    "inventory.tick": {
+      "label": "Inventory open, 15 sidebar lines and 36 items sighted",
       "cap": 300
     },
-    "capture-entities": {
-      "group": "Recording",
-      "label": "Entity pass, 40 named, armored mobs",
-      "unit": "µs",
+    "bosses.tick": {
+      "label": "40 mobs renamed each tick and 3 bosses",
+      "cap": 300
+    },
+    "recording.tick": {
+      "label": "Recording 46 lored items and 40 armored mobs",
+      "cap": 600
+    },
+    "menu.packets": {
+      "label": "54 menu slots swapped at once",
       "cap": 1000
     },
     "jar": {
-      "group": "Size",
       "label": "Release jar",
-      "unit": "KB",
       "cap": 5120
     }
   }

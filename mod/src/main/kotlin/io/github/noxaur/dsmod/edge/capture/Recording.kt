@@ -8,8 +8,8 @@ import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.Chat
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
+import io.github.noxaur.dsmod.edge.Ticks
 import io.github.noxaur.dsmod.edge.contribute.Contribute
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
@@ -158,6 +158,6 @@ object Recording {
 
     fun register() {
         nextStep = KeyMappingHelper.registerKeyMapping(KeyMapping("key.dsmod.next_step", GLFW.GLFW_KEY_RIGHT_BRACKET, KeyMapping.Category.MISC))
-        ClientTickEvents.END_CLIENT_TICK.register(::tick)
+        Ticks.end(::tick)
     }
 }

@@ -5,7 +5,6 @@ import io.github.noxaur.dsmod.core.input.BindMatcher
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.CommandBind.Message
 import io.github.noxaur.dsmod.core.input.Where
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
@@ -22,7 +21,7 @@ object CommandKeys {
 
     fun register() {
         registered = true
-        ClientTickEvents.END_CLIENT_TICK.register { client ->
+        Ticks.end { client ->
             matcher.forget { Keys.held(client, it) }
             val here = if (on) where(client) else null
             matcher.idle(System.currentTimeMillis(), settings.sequenceGap.value.toLong(), settings.live(), here, DsModClient.game::isIn)?.let(::send)

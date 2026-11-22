@@ -83,7 +83,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | A pull request runs the game tests its change reaches | CI's `gametests` job, and `GameTestPick.kt` in `mod/src/debug/` |
 | Every file of `edge` and `debug` reaches a game test | `GameTestPickTest` |
 | A CI job takes at most 3 minutes | `.github/actions/time-limit`, the last step of every job in `ci.yml` |
-| The mod stays inside its frame, tick and size caps | `PerfTest` against `mod/src/gametest/resources/perf-budgets.json`, in CI's `perf` job |
+| The mod stays inside its frame, tick, packet and size caps | `PerfTest` against `mod/src/gametest/resources/perf-budgets.json`, in CI's `perf` job, and `tick-by-ticks` in `mod/detekt.yml` for a tick handler the tick cap would miss |
 | A beta ships only when every check and game test passes | `.github/workflows/beta.yml` |
 | Every capture type reaches the file | `CaptureTest`, and `BriefTest` for `step` |
 | A redacted capture holds no player name the mod knows, and no typed chat | `RedactCaptureTest` |

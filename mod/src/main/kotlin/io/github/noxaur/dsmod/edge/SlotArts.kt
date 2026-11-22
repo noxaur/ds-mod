@@ -7,7 +7,6 @@ import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.edge.ui.Atlas
 import io.github.noxaur.dsmod.edge.ui.Kit
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.resources.Identifier
@@ -58,7 +57,7 @@ object SlotArts {
     }
 
     fun register() {
-        ClientTickEvents.END_CLIENT_TICK.register { client ->
+        Ticks.end { client ->
             checkSlots(client)
             tick()
         }

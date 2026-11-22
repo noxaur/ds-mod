@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.InputConstants
 import io.github.noxaur.dsmod.core.feature.general.AutoClick
 import io.github.noxaur.dsmod.core.feature.general.AutoLeftClick
 import io.github.noxaur.dsmod.core.feature.general.AutoRightClick
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
@@ -31,7 +30,7 @@ object AutoClicks {
     }
 
     fun register() {
-        ClientTickEvents.START_CLIENT_TICK.register { client ->
+        Ticks.start { client ->
             val walking = client.player != null && client.gui.overlay() == null && client.gui.screen() == null &&
                 client.options.let { it.keyUp.isDown || it.keyDown.isDown || it.keyLeft.isDown || it.keyRight.isDown }
             val clicks = buttons(client).mapNotNull { button ->

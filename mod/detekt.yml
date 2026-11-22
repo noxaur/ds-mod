@@ -228,6 +228,25 @@ dsmod:
         import net.minecraft.core.registries.BuiltInRegistries
         val blocks = BuiltInRegistries.BLOCK
 
+  ForbiddenReference/tick-by-ticks:
+    active: true
+    includes: ['**/src/main/kotlin/**/edge/**']
+    excludes: ['**/edge/Ticks.kt']
+    symbols:
+      - 'net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents'
+    reason: 'Run code each tick with `Ticks.start { client -> }` or `Ticks.end { client -> }` from edge/Ticks.kt, which counts it in the tick the perf test caps.'
+    examples:
+      - |
+        import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+        fun example() = ClientTickEvents.END_CLIENT_TICK.register { }
+      - |
+        import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.START_CLIENT_TICK
+        fun example() = START_CLIENT_TICK.register { }
+    counterExamples:
+      - |
+        import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
+        fun example() = ClientLifecycleEvents.CLIENT_STARTED.register { }
+
   ForbiddenConstant/player-slots-by-container:
     active: true
     includes: ['**/src/main/**']

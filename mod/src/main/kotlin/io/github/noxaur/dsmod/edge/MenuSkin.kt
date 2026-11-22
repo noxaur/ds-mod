@@ -1,9 +1,10 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.container.MenuButton
-import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
 import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
+import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
+import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.CursorMemory
 import io.github.noxaur.dsmod.core.ui.MenuLook
@@ -231,7 +232,7 @@ object MenuSkin {
         return DRAWN
     }
 
-    private fun background(g: GuiGraphicsExtractor, screen: AbstractContainerScreen<*>, texture: Identifier) = DsModClient.game.metrics.time("menus.draw") {
+    private fun background(g: GuiGraphicsExtractor, screen: AbstractContainerScreen<*>, texture: Identifier) = DsModClient.game.metrics.time("menus.draw", Metrics.FRAME) {
         val glass = paintGlass
         val solid = glass < 0
         val left = screen.containerLeft

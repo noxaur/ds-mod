@@ -6,6 +6,7 @@
     "ActionSpyMixin",
     "BackgroundWindowMixin",
     "ClickSpyMixin",
+    "DrawnFramesMixin",
     "FocusEachTestMixin",
     "FreshStartMixin",
     "HandAccessor",

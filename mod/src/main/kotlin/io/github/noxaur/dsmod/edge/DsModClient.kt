@@ -29,7 +29,6 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommands
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLevelEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.rendering.v1.PictureInPictureRendererRegistry
@@ -203,8 +202,8 @@ object DsModClient : ClientModInitializer {
             sidebars.forget()
         }
         ClientChunkEvents.CHUNK_LOAD.register { _, chunk -> Packets.chunk(chunk) }
-        ClientTickEvents.START_CLIENT_TICK.register { leave() }
-        ClientTickEvents.END_CLIENT_TICK.register {
+        Ticks.start { leave() }
+        Ticks.end {
             if (ticks % TAB_POLL_TICKS == 0) {
                 game.metrics.time("tab-poll") { tabs.poll(it) }
                 game.metrics.time("sidebar-poll") { sidebars.poll(it) }
