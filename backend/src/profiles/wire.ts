@@ -96,6 +96,15 @@ export const Sections = Schema.Struct({
 });
 export type Sections = typeof Sections.Type;
 
+export const sectionsOf = (profile: Sections): Sections => ({
+  inventory: profile.inventory,
+  ender_chest: profile.ender_chest,
+  storage: profile.storage,
+  wardrobe: profile.wardrobe,
+  accessory_bag: profile.accessory_bag,
+  pets: profile.pets,
+});
+
 export const WireProfile = Schema.Struct({
   ...Sections.fields,
   id: Schema.String,
