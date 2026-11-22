@@ -6,7 +6,7 @@ import { advance, testApp, testClock } from "../../test/harness.ts";
 import type { Services } from "../app.ts";
 import catalog from "./fixtures/catalog.json" with { type: "json" };
 import player from "./fixtures/player.json" with { type: "json" };
-import { CATALOG_FRESH_MS, CATALOG_RETRY_MS, FRESH_MS, MISSING_SECONDS } from "./cache.ts";
+import { CATALOG_FRESH_MS, CATALOG_RETRY_MS, FRESH_MS, MISSING_SECONDS, SNAPSHOT_SECONDS } from "./cache.ts";
 import { Container, Profile } from "./model.ts";
 import { layoutsOf } from "./layout.ts";
 import { unmappedPaths } from "./wire.ts";
@@ -249,6 +249,31 @@ test("asking again soon reaches dragsim.co once, whatever the name's case", asyn
   await advance(clock, FRESH_MS + 1);
   await get("/v1/players/Testwyrm/profile");
   expect(playerCalls()).toBe(2);
+});
+
+test("a view inside the fresh window writes nothing, and its snapshot lasts as long as a new one would", async () => {
+  const written: string[] = [];
+  const { get } = ann({
+    profiles: {
+      get: profileStore.get,
+      put: (key, value, ttl) => {
+        written.push(key);
+        return profileStore.put(key, value, ttl);
+      },
+    },
+    upstream: {
+      get: (path) => Effect.succeed({ status: 200, body: path.startsWith("/data/catalog") ? catalog : player }),
+    },
+  });
+  const view = async () => Schema.decodeUnknownSync(Profile)((await get("/v1/players/Testwyrm/profile")).value);
+  const first = await view();
+  const writes = written.length;
+  await advance(clock, FRESH_MS - 1);
+  const second = await view();
+  expect(written).toHaveLength(writes);
+  expect(second.snapshot).toBe(first.snapshot);
+  await advance(clock, SNAPSHOT_SECONDS * 1000 - 1);
+  expect((await get(`/v1/snapshots/${second.snapshot}/containers/inventory`)).status).toBe(200);
 });
 
 test("each profile of a player has a copy of its own", async () => {
