@@ -38,7 +38,7 @@ class MapRecorder(private val writer: CaptureWriter) {
             val pixelsChanged = last == null || !last.colors.contentEquals(map.colors)
             if (!pixelsChanged && last?.decorations == decorations) continue
             // The map's array is rewritten in place, so keep a copy for the writer thread and the next comparison.
-            val colors = if (pixelsChanged) map.colors.clone() else last!!.colors
+            val colors = if (last == null || pixelsChanged) map.colors.clone() else last.colors
             seen[id.id()] = Seen(colors, decorations)
             val scale = map.scale.toInt()
             val locked = map.locked

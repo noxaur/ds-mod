@@ -220,7 +220,7 @@ object TabBar {
             dimmed[i] = !stack.isEmpty && !Slots.hides(i) && !matches(stack)
         }
         searched = query
-        val any = slots.indices.any { !stacks[it]!!.isEmpty && !dimmed[it] && !Slots.hides(it) }
+        val any = slots.indices.any { stacks[it]?.isEmpty == false && !dimmed[it] && !Slots.hides(it) }
         field.setTextColor(if (any) Role.BODY.argb() else Role.BAD.argb())
     }
 

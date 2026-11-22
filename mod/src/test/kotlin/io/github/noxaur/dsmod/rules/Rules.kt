@@ -84,4 +84,67 @@ val rules = listOf(
         example = "val gold = 0xFF_AA_00",
         examples = listOf("val glass = 0xFF_AA_00_FF", "val gold = 0xFFAA00"),
     ),
+    Rule(
+        id = "no-bang-bang",
+        files = "src/{main,debug}/**.kt",
+        forbid = Regex("""!!(?![$"=])"""),
+        fix = "Say what a null means here: `?: return` when it can't happen in play, a local `val` for a smart cast, " +
+            "or `checkNotNull(x) { \"why\" }` when null is a bug.",
+        example = "val id = held.after!!.id",
+        examples = listOf("run(items[0]!!)", "slots[it]!!.isEmpty"),
+    ),
+    Rule(
+        id = "no-wall-clock-in-core",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        forbid = Regex("""System\.currentTimeMillis|System\.nanoTime|Instant\.now\("""),
+        fix = "A feature reads time from the `now` its handler receives, so a replay and a game test see the same clock.",
+        example = "val at = System.currentTimeMillis()",
+        examples = listOf("val at = System.nanoTime()", "val at = Instant.now()"),
+    ),
+    Rule(
+        id = "no-swallowed-catch",
+        files = "src/{main,debug}/**.kt",
+        forbid = Regex("""catch\s*\([^)]*\)\s*\{\s*\}"""),
+        fix = "A catch that does nothing hides the failure. Log it with `log.error(..)`, return what the failure means, " +
+            "or use `runCatching { .. }.getOrNull()` where a failure is an expected answer.",
+        example = "try { save() } catch (e: IOException) { }",
+        examples = listOf("try { save() } catch (e: IOException) {}", "catch (e: Exception) {\n    }"),
+        span = Span.FILE,
+    ),
+    Rule(
+        id = "item-id-by-items",
+        files = "src/main/kotlin/**/edge/**.kt",
+        except = "src/main/kotlin/**/edge/Items.kt",
+        forbid = Regex("""BuiltInRegistries\.ITEM\.getKey"""),
+        fix = "Read a stack's id with `stack.id` from `edge/Items.kt`, so every id is spelled the same way.",
+        example = "val id = BuiltInRegistries.ITEM.getKey(stack.item)",
+    ),
+    Rule(
+        id = "gametest-no-swallowed-wait",
+        files = "src/gametest/**.kt",
+        forbid = Regex("""runCatching\s*\{[^}]*\bwait(?:For|Until)"""),
+        fix = "A wait that times out is a failed test, so let it throw. To check that something does not happen, " +
+            "`waitTicks(n)` for as long as it would take and then assert the count.",
+        example = "runCatching { context.waitFor({ count(it, word) >= times }, ROUND_TRIP) }",
+        examples = listOf("runCatching { context.waitUntil(\"it came\") { done() } }"),
+    ),
+    Rule(
+        id = "gametest-widget-by-servermenus",
+        files = "src/gametest/**.kt",
+        except = "src/gametest/**/ServerMenus.kt",
+        forbid = Regex("""Screens\.getWidgets\("""),
+        fix = "Find a widget on the open screen with `ServerMenus.widget<W>(context) { .. }` or `ServerMenus.widgets<W>(context)`, " +
+            "which read it on the client thread and skip a hidden one.",
+        example = "Screens.getWidgets(screen).filterIsInstance<ImageButton>().single()",
+    ),
+    Rule(
+        id = "gametest-poll-by-waitfor",
+        files = "src/gametest/**.kt",
+        forbid = Regex("""repeat\(\d+\)\s*\{(?:(?!\n\s*\}\n)[\s\S]){0,250}?waitTicks\(1\)"""),
+        fix = "Wait for a condition with `context.waitFor({ .. }, ticks)`, or `context.waitUntil(\"what\") { .. }` from Waits.kt, " +
+            "which throws when the time is up. A loop of `waitTicks(1)` ends quietly and the test goes on.",
+        example = "repeat(100) { if (done()) return@repeat else context.waitTicks(1) }",
+        examples = listOf("repeat(200) {\n    if (done()) return\n    context.waitTicks(1)\n}"),
+        span = Span.FILE,
+    ),
 )

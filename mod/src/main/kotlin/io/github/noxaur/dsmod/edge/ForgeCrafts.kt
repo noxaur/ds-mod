@@ -148,8 +148,8 @@ object ForgeCrafts {
             val recipe = feature.recipe
             shown = on && recipe != null && feature.forge(screen.title.string)
             keys.visible = shown
-            if (!shown) return
-            if (name != recipe!!.name) {
+            if (!shown || recipe == null) return
+            if (name != recipe.name) {
                 name = recipe.name
                 width = (Kit.INSET + ITEM_ROW + Kit.font.width(name) + Kit.INSET).coerceIn(MIN_WIDTH, MAX_WIDTH)
                 shownName = fit(name, width - Kit.INSET * 2 - ITEM_ROW)
@@ -187,7 +187,8 @@ object ForgeCrafts {
             slot(ix, top)
             g.item(stack(recipe.item), ix + 1, top + 1)
             val nameX = ix + ITEM_ROW
-            val nameRgb = recipe.item.name?.spans?.firstOrNull { it.color != null }?.color ?: Role.COMMON.rgb
+            val itemName = recipe.item.name
+            val nameRgb = itemName?.spans?.firstOrNull { it.color != null }?.color ?: Role.COMMON.rgb
             line(shownName, nameX, top, nameRgb, Role.rarity(nameRgb).takeIf { it == Role.COMMON })
             val can = feature.canCraft()
             if (feature.full) {
@@ -219,7 +220,7 @@ object ForgeCrafts {
 
             val tip = when {
                 over(mouseX, mouseY, ix, top, Kit.SLOT_SIZE, Kit.SLOT_SIZE) -> null.also { g.setTooltipForNextFrame(font, stack(recipe.item), mouseX, mouseY) }
-                shownName != name && over(mouseX, mouseY, nameX, top, inner - ITEM_ROW, 9) -> text { server(name, recipe.item.name!!) }
+                shownName != name && itemName != null && over(mouseX, mouseY, nameX, top, inner - ITEM_ROW, 9) -> text { server(name, itemName) }
                 over(mouseX, mouseY, nameX, top + 9, inner - ITEM_ROW, 10) -> text {
                     body("Can craft")
                     val covered = feature.covered()

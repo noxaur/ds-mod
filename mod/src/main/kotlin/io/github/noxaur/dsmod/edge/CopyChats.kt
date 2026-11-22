@@ -388,7 +388,9 @@ object CopyChats {
         val seen = IdentityHashMap<GuiMessage, Int>()
         val partOf = lines.map { line ->
             val message = line.parent()
-            val row = rowsOf.getValue(message) - 1 - (seen.merge(message, 1, Int::plus)!! - 1)
+            val earlier = seen.getOrDefault(message, 0)
+            seen[message] = earlier + 1
+            val row = rowsOf.getValue(message) - 1 - earlier
             var layout = layout(client, message)
             val shown = rowsOf.getValue(message)
             val full = layout.partOfRow.size

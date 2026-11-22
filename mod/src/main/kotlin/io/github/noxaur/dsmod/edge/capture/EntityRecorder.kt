@@ -191,7 +191,7 @@ class EntityRecorder {
             entry.encoded[shown]?.let { put("item", it) }
             if (frame != null) {
                 put("rotation", shape.rotation)
-                put("facing", shape.facing!!.getName())
+                put("facing", frame.direction.getName())
             }
             entry.text?.let { put("text", it) }
         }

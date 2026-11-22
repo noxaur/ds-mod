@@ -73,7 +73,7 @@ class OnProfiles(private val context: ClientGameTestContext) : AutoCloseable {
         context.setScreen { null }
         command("pv $name")
         context.waitForScreen(ProfileScreen::class.java)
-        waitUntil("the profile of $name loaded") { screen(it).children().any { w -> w is KitTab } }
+        context.waitUntil("the profile of $name loaded") { screen(it).children().any { w -> w is KitTab } }
     }
 
     fun move(x: Int, y: Int) {
@@ -118,14 +118,6 @@ class OnProfiles(private val context: ClientGameTestContext) : AutoCloseable {
             }
         }
         return null
-    }
-
-    fun waitUntil(what: String, done: (Minecraft) -> Boolean) {
-        repeat(200) {
-            if (context.computeOnClient<Boolean, Nothing> { done(it) }) return
-            context.waitTicks(1)
-        }
-        error("Timed out waiting until $what")
     }
 
     private companion object {
