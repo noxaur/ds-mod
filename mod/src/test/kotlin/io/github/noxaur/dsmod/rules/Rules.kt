@@ -62,4 +62,25 @@ val rules = listOf(
         example = "val gold = 0xFF_AA_00",
         examples = listOf("val glass = 0xFF_AA_00_FF", "val gold = 0xFFAA00"),
     ),
+    Rule(
+        id = "lore-glyphs-by-hand",
+        files = "src/main/kotlin/**/core/**.kt",
+        except = "src/main/kotlin/**/core/game/Item.kt",
+        forbid = Regex("""[-]|\\u(?:[Ee][0-9A-Fa-f]{3}|[Ff][0-8][0-9A-Fa-f]{2})"""),
+        fix = "Read lore as `item.cleanLore`, which drops the glyphs of the server's resource pack and trims each line once per " +
+            "item, and the lines under a header with `item.section(header)`, or `item.sections(regex) { heading, lines -> .. }`.",
+        example = """line.filterNot { it in ''..'' }""",
+        examples = listOf("line.filterNot { it in ''..'' }"),
+    ),
+    Rule(
+        id = "item-json-by-hand",
+        files = "src/main/kotlin/**/core/{game,feature,contribute}/**.kt",
+        except = "src/main/kotlin/**/core/game/Item.kt",
+        forbid = Regex("""as\?\s*JsonObject|\bdata\s*\[\s*"(?:item_data|extra)""""),
+        fix = "Read an item's data with `item.string(\"item_data\", \"rarity\")`, or `item.objectAt(..)` for an object. " +
+            "Other JSON reads with `jsonObject` and `jsonPrimitive` inside a `runCatching`.",
+        example = """((item.data["item_data"] as? JsonObject)?.get("rarity") as? JsonPrimitive)?.contentOrNull""",
+        examples = listOf("(data[\"extra\"] as?\n    JsonObject)", """item.data["item_data"]?.jsonObject?.get("rarity")"""),
+        span = Span.FILE,
+    ),
 )

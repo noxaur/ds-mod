@@ -11,7 +11,6 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.contentOrNull
 
 /**
  * Collects how the player's own items look, for the player who agreed to send it. A sighting is one look of one item
@@ -44,17 +43,11 @@ class ItemSightings(private val own: () -> Set<String>) {
             item.foil,
             item.skin?.let(Skulls::property),
             item.dye?.and(RGB),
-            allowed(item.data),
+            allowed(item),
         )
         val fits = listOfNotNull(sighting.entry, sighting.material, sighting.itemModel, sighting.skinId).all { it.length <= MAX_ID } &&
             (sighting.skullTexture?.length ?: 0) <= MAX_TEXTURE
         return sighting.takeIf { fits }
-    }
-
-    private fun Item.string(vararg path: String): String? {
-        var at: JsonElement? = data
-        for (key in path) at = (at as? JsonObject)?.get(key)
-        return (at as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull
     }
 
     private fun withoutUuids(text: ServerText) = ServerText(text.spans.map { it.copy(text = UUID.replace(it.text, "")) })
@@ -70,18 +63,18 @@ class ItemSightings(private val own: () -> Set<String>) {
      * keys listed in [ITEM_DATA] and [EXTRA]. The ids of the copy and anything else the server keeps there, now or
      * added later, stay on the player's machine.
      */
-    private fun allowed(data: JsonObject): JsonObject {
+    private fun allowed(item: Item): JsonObject {
         val kept = HashMap<String, JsonElement>()
-        (data["item_data"] as? JsonObject)?.let { kept["item_data"] = JsonObject(it.filterKeys { key -> key in ITEM_DATA }) }
-        (data["extra"] as? JsonObject)?.let { kept["extra"] = extra(it) }
-        for (key in ALLOWED) data[key]?.let { kept[key] = it }
+        item.objectAt("item_data")?.let { kept["item_data"] = JsonObject(it.filterKeys { key -> key in ITEM_DATA }) }
+        item.objectAt("extra")?.let { kept["extra"] = extra(it, item.objectAt("extra", "item_skin")) }
+        for (key in ALLOWED) item.data[key]?.let { kept[key] = it }
         return withoutUuids(JsonObject(kept)) as JsonObject
     }
 
     /** `extra` keeps the building blocks the renderer reads. A skin is only its `skinId`. */
-    private fun extra(extra: JsonObject): JsonObject {
+    private fun extra(extra: JsonObject, skin: JsonObject?): JsonObject {
         val kept = extra.filterKeys { it in EXTRA }.toMutableMap()
-        (extra["item_skin"] as? JsonObject)?.get("skinId")?.let { kept["item_skin"] = JsonObject(mapOf("skinId" to it)) } ?: kept.remove("item_skin")
+        skin?.get("skinId")?.let { kept["item_skin"] = JsonObject(mapOf("skinId" to it)) } ?: kept.remove("item_skin")
         return JsonObject(kept)
     }
 

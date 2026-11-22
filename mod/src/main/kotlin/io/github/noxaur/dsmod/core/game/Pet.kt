@@ -2,9 +2,6 @@ package io.github.noxaur.dsmod.core.game
 
 import io.github.noxaur.dsmod.core.text.Role
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.contentOrNull
 
 /**
  * A pet as dragsim.co names it everywhere: `[Lvl 100] Black Cat`, with the name in its rarity's color. The sidebar
@@ -87,10 +84,10 @@ data class PetCard(
          * A pet below its max level whose lines hold neither has a null progress and those lines in [unread].
          */
         fun of(item: Item): PetCard? {
-            val lore = item.lore.map { clean(it.plain) }
+            val lore = item.cleanLore
             if (ACTIVE !in lore) return null
             val pet = item.name?.let(Pet::of) ?: return null
-            val key = uuid(item) ?: pet.name
+            val key = item.string("extra", "item_uuid", "uuid") ?: pet.name
             val category = lore.firstNotNullOfOrNull { FOOTER.matchEntire(it)?.groupValues?.get(1)?.trim() }
             val heldAt = lore.indexOf(HELD)
             val held = item.lore.getOrNull(heldAt + 1)?.takeIf { heldAt >= 0 && lore[heldAt + 1].isNotEmpty() }?.let {
@@ -113,12 +110,6 @@ data class PetCard(
             val unread = if (progress == null && lines.isNotEmpty()) lines.joinToString(" / ") else null
             return PetCard(pet, item, held, progress, unread, key, category)
         }
-
-        /** The uuid dragsim.co gives each pet item in `extra.item_uuid`, as on a pet in the Auction House. */
-        private fun uuid(item: Item) =
-            (((item.data["extra"] as? JsonObject)?.get("item_uuid") as? JsonObject)?.get("uuid") as? JsonPrimitive)?.contentOrNull
-
-        private fun clean(line: String) = line.filterNot { it in '\uE000'..'\uF8FF' }.trim()
     }
 }
 
