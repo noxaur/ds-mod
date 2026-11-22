@@ -8,10 +8,10 @@ import com.mojang.authlib.properties.PropertyMap
 import com.mojang.serialization.JsonOps
 import io.github.noxaur.dsmod.core.game.Skulls
 import io.github.noxaur.dsmod.core.profile.DrawnItem
+import io.github.noxaur.dsmod.edge.stackOf
 import io.github.noxaur.dsmod.edge.toComponent
 import net.minecraft.client.Minecraft
 import net.minecraft.core.component.DataComponents
-import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.NbtOps
 import net.minecraft.resources.Identifier
@@ -33,8 +33,7 @@ import java.util.UUID
  * menu and another mod that reads or adds to a real item's tooltip does the same here.
  */
 fun DrawnItem.toStack(): ItemStack {
-    val item = Identifier.tryParse(material)?.let { BuiltInRegistries.ITEM.getOptional(it).orElse(null) } ?: Items.BARRIER
-    val stack = ItemStack(item, count.coerceIn(1, 99))
+    val stack = stackOf(material, count.coerceIn(1, 99))
     stack.set(DataComponents.CUSTOM_NAME, name.toComponent())
     stack.set(DataComponents.LORE, ItemLore(lore.map { it.toComponent() }))
     stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, glint)
@@ -47,7 +46,7 @@ fun DrawnItem.toStack(): ItemStack {
     }
     rarity?.let(::tooltipStyle)?.let { stack.set(DataComponents.TOOLTIP_STYLE, it) }
     // The backend lets only Mojang's skins through, and the game is asked to fetch nothing that is not one either.
-    skullTexture?.takeIf { item == Items.PLAYER_HEAD && Skulls.onMojang(it) }?.let { texture ->
+    skullTexture?.takeIf { stack.item == Items.PLAYER_HEAD && Skulls.onMojang(it) }?.let { texture ->
         val properties = PropertyMap(ImmutableMultimap.of("textures", Property("textures", texture)))
         stack.set(DataComponents.PROFILE, ResolvableProfile.createResolved(GameProfile(UUID.nameUUIDFromBytes(texture.toByteArray()), "", properties)))
     }

@@ -9,7 +9,6 @@ import io.github.noxaur.dsmod.core.game.ServerTime
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import net.minecraft.client.Minecraft
 import net.minecraft.core.BlockPos
-import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket
 import net.minecraft.util.Util
@@ -147,7 +146,7 @@ object Packets {
         if (entity is Player) return
         game.post(
             System.currentTimeMillis(),
-            EntityDied(BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString(), entity.name.toText(), entity.x, entity.y, entity.z),
+            EntityDied(entity.typeId, entity.name.toText(), entity.x, entity.y, entity.z),
         )
     }
 }

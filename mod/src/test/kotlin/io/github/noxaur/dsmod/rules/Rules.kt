@@ -183,14 +183,6 @@ val rules = listOf(
         span = Span.FILE,
     ),
     Rule(
-        id = "item-id-by-items",
-        files = "src/main/kotlin/**/edge/**.kt",
-        except = "src/main/kotlin/**/edge/Items.kt",
-        forbid = Regex("""BuiltInRegistries\.ITEM\.getKey"""),
-        fix = "Read a stack's id with `stack.id` from `edge/Items.kt`, so every id is spelled the same way.",
-        example = "val id = BuiltInRegistries.ITEM.getKey(stack.item)",
-    ),
-    Rule(
         id = "gametest-no-swallowed-wait",
         files = "src/gametest/**.kt",
         forbid = Regex("""runCatching\s*\{[^}]*\bwait(?:For|Until)"""),
@@ -216,6 +208,18 @@ val rules = listOf(
             "which throws when the time is up. A loop of `waitTicks(1)` ends quietly and the test goes on.",
         example = "repeat(100) { if (done()) return@repeat else context.waitTicks(1) }",
         examples = listOf("repeat(200) {\n    if (done()) return\n    context.waitTicks(1)\n}"),
+        span = Span.FILE,
+    ),
+    Rule(
+        id = "registry-by-hand",
+        files = "src/main/kotlin/**/edge/**.kt",
+        except = "src/main/kotlin/**/edge/{Items,Entities}.kt",
+        forbid = Regex("""BuiltInRegistries\s*\.\s*(ITEM|ENTITY_TYPE)\b"""),
+        fix = "Look an item up with `stackOf(id)`, a barrier when the game has no such item, or `isItem(id)`, and read a " +
+            "stack's id with `stack.id`, from edge/Items.kt. Read an entity's type id with `entity.typeId`, and find a type " +
+            "with `entityType(id)`, from edge/Entities.kt.",
+        example = """Hit(BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString())""",
+        examples = listOf("val id = BuiltInRegistries.ITEM.getKey(stack.item)", """Identifier.tryParse(id)?.let(BuiltInRegistries.ITEM::containsKey)""", "BuiltInRegistries\n    .ITEM.getKey(item)"),
         span = Span.FILE,
     ),
     Rule(

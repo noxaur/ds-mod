@@ -2502,7 +2502,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: // Over the item, wher
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: // The backs go under the items from `HudHotbarMixin`. This draws the gems and the cooldowns, after vanilla drew the items.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: // The offhand slot comes through here too, left of the first slot.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/TabBar.kt: /** * Menu Tabs, under Better UI: the player's tabs along the top and bottom of every menu and of the inventory, as * the settings' `TabPlacesEditor` sets them up. A command tab sends its command, and the one whose command opened the menu shown * now joins the panel. The search tab opens a bar along its edge toward the middle of the menu, drawn over the tabs * it covers, which dims every item whose name and lore lack a word of the query. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/TabBar.kt: /** The item a tab shows: [id] from the game's items, or a barrier when there is no such item. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/TabBar.kt: /** What a tab's tooltip says: its name, the command it sends and the click hint. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/TabBar.kt: /** Whether the search dims the open menu's slot at [index], because its item does not match. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/TabBar.kt: /** Works out which slots to dim, looking again only at a slot whose stack changed since the last tick. */
