@@ -52,7 +52,7 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
             val item = changed.item ?: return@on
             val name = item.name?.plain?.ifEmpty { null } ?: return@on
             seen.putIfAbsent(name, item)
-            if (changed.slot >= top()) return@on
+            if (changed.slot !in feature.container.menuSlots) return@on
             val menu = menu
             when {
                 menu == FORGE -> QUEUE.matchEntire(name)?.destructured?.let { (busy, size) ->
@@ -77,11 +77,9 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
         recipe = Recipe(from, item, materials)
     }
 
-    private fun top() = (feature.container.slots.size - INVENTORY_SLOTS).coerceAtLeast(0)
-
     private fun find(name: (String) -> Boolean): Int? {
         val slots = feature.container.slots
-        for (i in 0 until top()) if (slots[i]?.name?.plain?.let(name) == true) return i
+        for (i in feature.container.menuSlots) if (slots[i]?.name?.plain?.let(name) == true) return i
         return null
     }
 
@@ -102,7 +100,7 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
     fun has(name: String): Int {
         val slots = feature.container.slots
         var total = 0
-        for (i in top() until slots.size) slots[i]?.takeIf { it.name?.plain == name }?.let { total += it.count }
+        for (i in feature.container.playerSlots) slots[i]?.takeIf { it.name?.plain == name }?.let { total += it.count }
         return total
     }
 
@@ -124,7 +122,6 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
     companion object {
         private const val KEY_R = 82
         private const val QUEUE_SIZE = 10
-        private const val INVENTORY_SLOTS = 36
         private const val CONFIRM_ITEM = 4
 
         const val FORGE = "The Forge"

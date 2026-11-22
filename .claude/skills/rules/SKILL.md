@@ -35,6 +35,8 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | The mod's text and colors come from its text layer | `TextLayerTest` reads the compiled classes, and `text-by-role` in `mod/…/Rules.kt` for a hex color or a `§` |
 | A feature writes a number, a rate or a time, and reads a number the server wrote, through `core.text` | `number-by-helper`, `rate-by-helper` and `count-by-helper` in `mod/…/Rules.kt` |
 | A feature reads a chat line by its start, and a line that starts right and fails to parse is counted | `line` in `Feature`, and `chat-by-line` in `mod/…/Rules.kt` for a chat handler written by hand |
+| A feature reads a slayer boss line and the Protector's stage through their parsers in `core/game` | `SlayerLine` and `ProtectorStage`, and `slayer-by-line` and `protector-by-stage` in `mod/…/Rules.kt` |
+| Which slots of an open container are the player's is named once | `ContainerState`'s `menuSlots` and `playerSlots`, and `player-slots-by-container` in `mod/…/Rules.kt` |
 | The mod holds no `!!`, so each null is said as a `?: return`, a smart cast or a `checkNotNull` that gives its reason | `no-bang-bang` in `mod/…/Rules.kt` |
 | A feature reads time from the `now` its handler receives, never the wall clock | `no-wall-clock-in-core` in `mod/…/Rules.kt` |
 | No catch block is empty | `no-swallowed-catch` in `mod/…/Rules.kt` |
