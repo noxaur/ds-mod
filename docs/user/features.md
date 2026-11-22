@@ -476,7 +476,7 @@ The button your next press clicks has a thin outline. It turns red when the clic
 
 A panel beside the forge's menus shows the item, how many you can craft now, and what one craft takes. Point at the materials to see what you have of each. Once the forge and its queue are full, the panel says Slots full.
 
-Click the key in the panel's corner, then press a key or a side mouse button, to change it without opening the settings.
+Click the key in the panel's corner, then press a key or click a mouse button on it, to change it without opening the settings.
 
 ## Combat
 

@@ -471,9 +471,15 @@ class KitKeysButton(
         down.clear()
     }
 
+    /** @keep Left and right click record only on the button itself, so a click anywhere else still stops recording. */
+    fun capture(event: MouseButtonEvent): Boolean {
+        if (recording && event.button() <= 1 && !isMouseOver(event.x, event.y)) finish()
+        return capture(event.button(), mouse = true)
+    }
+
     fun capture(bound: Int, mouse: Boolean = false): Boolean {
         if (!recording) return false
-        if (mouse && (bound == 0 || bound == 1) || !mouse && bound == ESCAPE) {
+        if (!mouse && bound == ESCAPE) {
             finish()
             return false
         }

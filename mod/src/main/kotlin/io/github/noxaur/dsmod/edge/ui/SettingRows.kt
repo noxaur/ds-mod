@@ -1191,7 +1191,7 @@ internal fun AbstractWidget.takesPress(event: MouseButtonEvent, doubleClick: Boo
 }
 
 internal inline fun KitKeysButton.pressed(event: MouseButtonEvent, finish: () -> Unit): Boolean {
-    val took = capture(event.button(), mouse = true)
+    val took = capture(event)
     if (!recording) finish()
     return took || isMouseOver(event.x, event.y)
 }

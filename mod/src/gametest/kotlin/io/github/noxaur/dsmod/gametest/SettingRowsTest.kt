@@ -125,6 +125,14 @@ class SettingRowsTest : FabricClientGameTest {
         context.waitTicks(2)
         expect("A press then K", GLFW.GLFW_KEY_K) { DsModClient.feature<FreeLook>().key.value }
         check(searched().isEmpty()) { "The K that set the key also searched for \"${searched()}\"" }
+        val left = GLFW.GLFW_MOUSE_BUTTON_LEFT
+        val right = GLFW.GLFW_MOUSE_BUTTON_RIGHT
+        for ((button, onKey, bound) in listOf(Triple(left, true, left), Triple(right, true, right), Triple(left, false, right))) {
+            click(k.controlX + 8, k.controlY + 8)
+            val (x, y) = if (onKey) k.controlX + 8 to k.controlY + 8 else k.x + 4 to k.y + 4
+            click(x, y, button)
+            expect("Mouse button $button ${if (onKey) "on" else "off"} the listening key", bound) { DsModClient.feature<FreeLook>().key.value }
+        }
         click(k.controlX + 8, k.controlY + 8, GLFW.GLFW_MOUSE_BUTTON_RIGHT)
         expect("A right press clears", -1) { DsModClient.feature<FreeLook>().key.value }
         key(GLFW.GLFW_KEY_BACKSPACE)
