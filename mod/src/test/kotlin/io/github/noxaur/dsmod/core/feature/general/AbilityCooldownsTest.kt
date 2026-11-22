@@ -1,7 +1,6 @@
 package io.github.noxaur.dsmod.core.feature.general
 
 import io.github.noxaur.dsmod.harness.Harness
-import io.github.noxaur.dsmod.harness.feature
 import io.github.noxaur.dsmod.harness.ownInventory
 import io.github.noxaur.dsmod.harness.chat
 import io.github.noxaur.dsmod.harness.text

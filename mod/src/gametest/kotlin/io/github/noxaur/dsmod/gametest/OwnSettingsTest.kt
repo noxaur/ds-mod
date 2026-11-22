@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.core.ui.Place
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.Theme
@@ -17,7 +18,6 @@ import net.minecraft.client.gui.screens.TitleScreen
 import net.minecraft.client.input.MouseButtonInfo
 import org.lwjgl.glfw.GLFW
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.ui.KitTabBar], [io.github.noxaur.dsmod.edge.Browser], [io.github.noxaur.dsmod.edge.mixin.PerspectiveKeyMixin]. */
 class OwnSettingsTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = SettingsDriver(context).screen()
 
@@ -145,16 +145,16 @@ class OwnSettingsTest : FabricClientGameTest {
         context.waitTicks(2)
         context.takeScreenshot("own-settings-tab-overflow-wheel")
 
-        val before = context.computeOnClient<Int, Nothing> { SettingsScreen.session().size }
-        context.setScreen { SettingsScreen(TitleScreen()) }
+        val before = context.computeOnClient<Int, Nothing> { SettingsScreen.session(DsModClient.settings).size }
+        context.setScreen { DsModClient.settingsScreen(TitleScreen()) }
         context.waitTicks(2)
         key(GLFW.GLFW_KEY_T, control = true)
         context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
         context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
         context.waitTicks(2)
-        context.setScreen { SettingsScreen(TitleScreen()) }
+        context.setScreen { DsModClient.settingsScreen(TitleScreen()) }
         context.waitTicks(2)
-        val after = context.computeOnClient<Int, Nothing> { SettingsScreen.session().size }
+        val after = context.computeOnClient<Int, Nothing> { SettingsScreen.session(DsModClient.settings).size }
         check(after == before + 1) { "The settings opened again with $after tabs, not the ${before + 1} they closed with" }
 
         // @keep 854x480 is the smallest window the game allows.

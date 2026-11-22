@@ -48,7 +48,7 @@ internal object SettingsSteps {
     }
 
     fun open(context: ClientGameTestContext, tabs: SettingsTabs) {
-        context.setScreen { SettingsScreen(TitleScreen(), tabs) }
+        context.setScreen { DsModClient.settingsScreen(TitleScreen(), tabs) }
         context.waitTicks(2)
     }
 

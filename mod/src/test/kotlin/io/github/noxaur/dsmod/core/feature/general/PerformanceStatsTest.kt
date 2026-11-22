@@ -6,7 +6,6 @@ import io.github.noxaur.dsmod.core.game.ServerTime
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.Text
-import io.github.noxaur.dsmod.harness.feature
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

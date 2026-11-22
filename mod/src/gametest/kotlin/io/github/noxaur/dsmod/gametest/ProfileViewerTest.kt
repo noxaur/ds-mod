@@ -12,7 +12,6 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import java.util.concurrent.CopyOnWriteArrayList
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.profile.Profiles], [io.github.noxaur.dsmod.edge.ui.Looks]. */
 class ProfileViewerTest : FabricClientGameTest {
     private val hooked = CopyOnWriteArrayList<String>()
 

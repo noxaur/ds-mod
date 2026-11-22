@@ -19,7 +19,6 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
 import org.lwjgl.glfw.GLFW
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.MenuSkin], [io.github.noxaur.dsmod.edge.TabPlacesEditor], [io.github.noxaur.dsmod.edge.mixin.EnchantmentOfferMixin], [io.github.noxaur.dsmod.edge.mixin.MenuArtMixin], [io.github.noxaur.dsmod.edge.mixin.MenuBackdropMixin], [io.github.noxaur.dsmod.edge.mixin.MenuLabelMixin], [io.github.noxaur.dsmod.edge.mixin.MenuPaintMixin], [io.github.noxaur.dsmod.edge.mixin.RecipeButtonMixin], [io.github.noxaur.dsmod.edge.mixin.TooltipMixin]. */
 class MenuTabsTest : FabricClientGameTest {
     private class Shown(val name: String, val x: Int, val y: Int, val width: Int, val selected: Boolean)
 

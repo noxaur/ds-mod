@@ -1,7 +1,6 @@
 package io.github.noxaur.dsmod.edge.mixin;
 
-import io.github.noxaur.dsmod.core.feature.general.Fullbright;
-import io.github.noxaur.dsmod.edge.DsModClient;
+import io.github.noxaur.dsmod.edge.Hooks;
 import net.minecraft.client.renderer.LightmapRenderStateExtractor;
 import net.minecraft.client.renderer.state.LightmapRenderState;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,6 +12,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 abstract class FullbrightMixin {
     @Inject(method = "extract", at = @At("RETURN"))
     private void dsmod$fullbright(LightmapRenderState state, float partialTick, CallbackInfo ci) {
-        if (DsModClient.INSTANCE.runs(Fullbright.class)) state.ambientColor = LightmapRenderStateExtractor.WHITE;
+        if (Hooks.fullbright()) state.ambientColor = LightmapRenderStateExtractor.WHITE;
     }
 }

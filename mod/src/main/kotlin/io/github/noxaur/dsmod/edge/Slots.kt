@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.container.SlotCooldown
 import io.github.noxaur.dsmod.core.container.SlotMark
@@ -34,7 +35,13 @@ object Slots {
 
     private val counts = HashMap<String, Component>()
     private val covered = BitSet()
-    private val settings get() = DsModClient.feature<ItemRarity>()
+    private lateinit var game: Game
+    private lateinit var settings: ItemRarity
+
+    fun bind(game: Game, itemRarity: ItemRarity) {
+        this.game = game
+        settings = itemRarity
+    }
 
     fun mark(id: String, slots: Map<Int, SlotMark>) {
         marks[id] = slots.mapValues { (_, mark) ->
@@ -63,7 +70,7 @@ object Slots {
     fun register() {
         HudElementRegistry.attachElementAfter(VanillaHudElements.HOTBAR, Identifier.fromNamespaceAndPath("dsmod", "hotbar")) { graphics, _ ->
             if (!onHotbar() || !cooldowns) return@attachElementAfter
-            DsModClient.game.metrics.time("slots.draw") {
+            game.metrics.time("slots.draw") {
                 val left = graphics.guiWidth() / 2 - 88
                 val top = graphics.guiHeight() - 19
                 for (i in 0 until Inventory.SELECTION_SIZE) drawFront(graphics, InventoryMenu.USE_ROW_SLOT_START + i, left + i * HOTBAR_PITCH, top)
@@ -120,7 +127,7 @@ object Slots {
         graphics.text(font, text, x + 17 - font.width(text), y + 9, -1, true)
     }
 
-    fun marks(rarity: Role?) = rarity != null && DsModClient.runs<ItemRarity>() && (rarity != Role.COMMON || settings.markCommon.value)
+    fun marks(rarity: Role?) = rarity != null && settings.feature.runs && (rarity != Role.COMMON || settings.markCommon.value)
 
     fun rarityBack(graphics: GuiGraphicsExtractor, rarity: Role, index: Int, x: Int, y: Int) {
         art(graphics, Surface.CONTAINER, rarity, index, x, y)
@@ -146,7 +153,7 @@ object Slots {
 
     private inline fun each(screen: AbstractContainerScreen<*>, graphics: GuiGraphicsExtractor, draw: (Int, Slot, Shown) -> Unit) {
         if (marks.isEmpty()) return
-        DsModClient.game.metrics.time("slots.draw") {
+        game.metrics.time("slots.draw") {
             screen.drawInContainer(graphics) {
                 for (slots in marks.values) {
                     for ((index, shown) in slots) {

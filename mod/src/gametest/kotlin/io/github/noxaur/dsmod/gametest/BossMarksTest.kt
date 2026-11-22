@@ -13,7 +13,6 @@ import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.Entities]. */
 class BossMarksTest : FabricClientGameTest {
     private fun marks(context: ClientGameTestContext, id: String) = context.computeOnClient<List<Mark>, Nothing> {
         DsModClient.game.readouts.single { it.feature.id == id }.marks

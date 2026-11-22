@@ -3,7 +3,6 @@ package io.github.noxaur.dsmod.edge
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.harness.chat
 import io.github.noxaur.dsmod.harness.Harness
-import io.github.noxaur.dsmod.harness.feature
 import io.github.noxaur.dsmod.harness.lines
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.end.ZealotTracker

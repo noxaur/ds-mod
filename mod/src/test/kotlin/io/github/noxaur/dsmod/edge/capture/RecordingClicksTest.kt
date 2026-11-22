@@ -12,6 +12,7 @@ class RecordingClicksTest {
         clicks.setInt(key, 4)
         val next = Recording::class.java.getDeclaredField("nextStep").apply { isAccessible = true }
         next.set(Recording, key)
+        Recording::class.java.getDeclaredField("leave").apply { isAccessible = true }.set(Recording, {})
 
         val tick = Recording::class.java.getDeclaredMethod("tick", net.minecraft.client.Minecraft::class.java).apply { isAccessible = true }
         tick.invoke(Recording, null)

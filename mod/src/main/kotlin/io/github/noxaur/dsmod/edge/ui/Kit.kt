@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge.ui
 
+import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Piece
@@ -9,7 +10,6 @@ import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.core.ui.TabStrip
 import io.github.noxaur.dsmod.core.ui.GameScreenColors
 import io.github.noxaur.dsmod.core.ui.Theme
-import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
@@ -98,7 +98,9 @@ object Kit {
     private const val PAGE_TAB_LEAD_UP = 12
     private const val PAGE_TAB_TEXT_UP = 11
 
-    val theme: Theme get() = DsModClient.settings.hud.theme
+    private lateinit var hud: DsModConfig.Hud
+
+    val theme: Theme get() = hud.theme
     val font: Font get() = Minecraft.getInstance().font
 
     fun state(active: Boolean, hovered: Boolean, pressed: Boolean) = when {
@@ -152,7 +154,8 @@ object Kit {
     }
 
     // @keep A texture made or uploaded while a frame is being built breaks every frame after it, so paint at the end of a tick.
-    fun register() {
+    fun register(hud: DsModConfig.Hud) {
+        this.hud = hud
         ClientTickEvents.END_CLIENT_TICK.register {
             val t = theme
             if (t === slotTheme) return@register

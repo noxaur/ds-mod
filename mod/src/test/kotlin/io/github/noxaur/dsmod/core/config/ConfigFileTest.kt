@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.core.config
 
-import io.github.noxaur.dsmod.harness.feature
 import io.github.noxaur.dsmod.harness.resource
 import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.camera.Views
@@ -41,7 +40,6 @@ import io.github.noxaur.dsmod.core.feature.hud.ChatHudEditor
 import io.github.noxaur.dsmod.core.feature.hud.HudBackground
 import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
 import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
-import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
 import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
 import io.github.noxaur.dsmod.core.feature.inventory.HideGlassPanes
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
@@ -181,7 +179,7 @@ class ConfigFileTest {
         }
         assertTrue(tree.feature<ArmorSwapGuard>().feature.enabled)
 
-        assertFalse(tree.feature<BetterUi>().feature.switch.value || tree.feature<BackButtons>().feature.switch.value || tree.feature<MenuTabs>().feature.switch.value)
+        assertFalse(tree.features.single { it.id == "better-ui" }.switch.value || tree.feature<BackButtons>().feature.switch.value || tree.feature<MenuTabs>().feature.switch.value)
         assertEquals(
             listOf(MenuTab(TabEdge.TOP, 2, "bazaar", "minecraft:gold_ingot", "Bazaar"), MenuTab(TabEdge.BOTTOM, 6, item = "", tooltip = "Search", search = true)),
             tree.feature<MenuTabs>().tabs.value,

@@ -71,7 +71,3 @@ fun ownInventory(vararg slots: Pair<Int, Item?>): Array<GameEvent> =
 fun resource(path: String) = checkNotNull(Harness::class.java.getResource("/$path")) { "No test resource /$path" }.readText()
 
 fun readCapture(file: Path): List<Captured> = Files.readAllLines(file).filter { it.isNotBlank() }.mapNotNull(::readCaptureLine)
-
-fun <F : HasFeature> SettingsTree.feature(type: Class<F>): F = type.cast(owners.first { it.javaClass == type })
-
-inline fun <reified F : HasFeature> SettingsTree.feature(): F = feature(F::class.java)

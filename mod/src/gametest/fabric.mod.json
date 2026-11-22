@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "dsmod_gametest",
+  "version": "${version}",
+  "name": "ds-mod game tests",
+  "environment": "client",
+  "mixins": [
+    "dsmod_gametest.mixins.json"
+  ],
+  "entrypoints": {
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.NoVsync"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.HardExit"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.TestClock"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.DarkChestPack"
+      }
+    ]
+  }
+}

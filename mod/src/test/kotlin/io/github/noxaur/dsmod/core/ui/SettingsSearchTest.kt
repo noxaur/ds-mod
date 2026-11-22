@@ -10,7 +10,6 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.text.Role
-import io.github.noxaur.dsmod.harness.feature
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

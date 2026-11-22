@@ -2,7 +2,6 @@ package io.github.noxaur.dsmod.core.feature
 
 import io.github.noxaur.dsmod.harness.Harness
 import io.github.noxaur.dsmod.harness.chat
-import io.github.noxaur.dsmod.harness.feature
 import io.github.noxaur.dsmod.harness.text
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.config.Store
@@ -11,12 +10,12 @@ import io.github.noxaur.dsmod.core.feature.boss.BossTracer
 import io.github.noxaur.dsmod.core.feature.end.DragonTimer
 import io.github.noxaur.dsmod.core.feature.end.EyeGuard
 import io.github.noxaur.dsmod.core.feature.end.ProtectorStatus
+import io.github.noxaur.dsmod.core.feature.general.ActivePet
 import io.github.noxaur.dsmod.core.feature.general.DragSimOnly
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.Boss
 import io.github.noxaur.dsmod.core.game.EntityGone
 import io.github.noxaur.dsmod.core.game.EntitySeen
-import io.github.noxaur.dsmod.core.game.Pet
 import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SystemMessage
@@ -44,19 +43,20 @@ class GameTest : Harness() {
     private fun marks(feature: HasFeature) = readout(feature).marks
 
     private val protector = EntitySeen(36339, "minecraft:iron_golem", text("[Lv100] Endstone Protector 10M/10M"))
+    private val stands = tree.feature<ActivePet>().feature.entityFilters
     private val pet = EntitySeen(12, "minecraft:armor_stand", text("[Lvl 100] Black Cat"))
 
     @Test
     fun `the tracker reads only what a feature that is on reads, and every feature's while a capture records`() {
         tree.feature<BossBeacon>().feature.enabled = false
-        assertEquals(listOf(Pet.STANDS), game.entityFilters())
+        assertEquals(stands, game.entityFilters())
         tree.feature<BossBeacon>().feature.enabled = true
-        assertEquals(listOf(Pet.STANDS) + Boss.FILTERS, game.entityFilters())
+        assertEquals(stands + Boss.FILTERS, game.entityFilters())
         assertSame(game.entityFilters(), game.entityFilters())
         tree.features.forEach { it.enabled = false }
         assertEquals(emptyList(), game.entityFilters())
         game.tap = { _, _ -> }
-        assertEquals(listOf(Pet.STANDS) + Boss.FILTERS, game.entityFilters())
+        assertEquals(stands + Boss.FILTERS, game.entityFilters())
     }
 
     @Test
@@ -105,7 +105,7 @@ class GameTest : Harness() {
             var inSession by feature.session { 0 }
 
             init {
-                feature.on<SystemMessage> { _, _ ->
+                feature.line("") { _ ->
                     inWorld++
                     inSession++
                 }
@@ -337,7 +337,7 @@ class GameTest : Harness() {
     @Test
     fun `a feature the player turned on hides without telling them`() {
         val hider = Feature(config, "hider", Area.ANYWHERE, Store.GENERAL, "Hides every line in a test.", default = false).apply {
-            on<SystemMessage> { _, _ -> hide() }
+            line("") { _ -> hide() }
         }
         hider.enabled = true
         val game = Game(listOf(hider))

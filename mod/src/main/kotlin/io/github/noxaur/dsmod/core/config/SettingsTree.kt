@@ -39,7 +39,7 @@ import io.github.noxaur.dsmod.core.feature.hud.HideInF3
 import io.github.noxaur.dsmod.core.feature.hud.HudBackground
 import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
 import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
-import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
+import io.github.noxaur.dsmod.core.feature.inventory.betterUi
 import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
 import io.github.noxaur.dsmod.core.feature.inventory.HideGlassPanes
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
@@ -102,6 +102,10 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
         val repeated = features.groupBy { it.id }.filterValues { it.size > 1 }.keys
         check(repeated.isEmpty()) { "A feature is placed twice in SettingsTree, or two features share an id: $repeated" }
     }
+
+    fun <F : HasFeature> feature(type: Class<F>): F = type.cast(owners.first { it.javaClass == type })
+
+    inline fun <reified F : HasFeature> feature(): F = feature(F::class.java)
 
     companion object {
         val MAC = "mac" in System.getProperty("os.name").lowercase()
@@ -223,7 +227,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                         feature(HideGlassPanes(c))
                         feature(KeepCursor(c))
                     }
-                    group(BetterUi(c)) {
+                    group(betterUi(c)) {
                         feature(BackButtons(c))
                         feature(MenuTabs(c))
                         feature(SkyBlockMenuClick(c))

@@ -4,6 +4,7 @@ import io.github.noxaur.dsmod.core.brief.Brief
 import io.github.noxaur.dsmod.core.config.Items.Entry
 import io.github.noxaur.dsmod.core.config.Slot
 import io.github.noxaur.dsmod.core.config.Stored
+import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.text.Text
 import io.github.noxaur.dsmod.core.ui.NavRow
 import io.github.noxaur.dsmod.core.ui.TabEdge
@@ -109,6 +110,10 @@ val PlayerPreview.pitch get() = turntable.pitch
 val ProfileScreen.overflows get() = maxScroll() > 0
 
 val Cameras.looking get() = look != null
+
+fun <F : HasFeature> DsModClient.feature(type: Class<F>): F = tree.feature(type)
+
+inline fun <reified F : HasFeature> DsModClient.feature(): F = feature(F::class.java)
 
 fun DsModClient.restart(between: () -> Unit = {}) {
     saved.close()

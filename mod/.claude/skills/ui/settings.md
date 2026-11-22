@@ -4,7 +4,7 @@ ds-mod's settings screen draws every setting from one tree, `SettingsTree` in `c
 
 ## Add a setting
 
-A feature's setting is one line in the feature's class, as `val inFight = switch("beamInFight", "During the Fight", "Keep the beam while the Protector is up.", default = false)`, with a kind from the table below. Its first argument is its key in the player's config file, under the feature's `Store`, so never rename one that shipped: a key that has to change names the old one as `formerly`. Its default is written there and nowhere else. The feature reads it as `inFight.value`, and the edge as `DsModClient.feature<ProtectorSpawnBeam>().inFight.value`. Write no drawing or input code. A new class of values needs `@Serializable`.
+A feature's setting is one line in the feature's class, as `val inFight = switch("beamInFight", "During the Fight", "Keep the beam while the Protector is up.", default = false)`, with a kind from the table below. Its first argument is its key in the player's config file, under the feature's `Store`, so never rename one that shipped: a key that has to change names the old one as `formerly`. Its default is written there and nowhere else. The feature reads it as `inFight.value`, and the edge as `beam.inFight.value`, from the feature `DsModClient` hands it. Write no drawing or input code. A new class of values needs `@Serializable`.
 
 A setting of no feature, which is never an on/off one because each of those is a feature, is a field in its class of `DsModConfig` with a default, and one line in `SettingsTree` in its section and group. The field's name is its key, and its default is read from a fresh `DsModConfig()`, so write it nowhere else.
 
