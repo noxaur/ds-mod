@@ -233,7 +233,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
     private fun nameOf(profile: Profile?) = profile?.player?.name ?: lookup.name
 
     override fun init() {
-        SlotArts.checkSlots()
         panelX = (width - PANEL_WIDTH) / 2
         panelY = (height - PANEL_HEIGHT + Kit.TAB_HEIGHT) / 2
         left = panelX + Kit.INSET

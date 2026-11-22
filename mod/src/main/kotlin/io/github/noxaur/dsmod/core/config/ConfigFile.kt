@@ -88,7 +88,11 @@ class ConfigFile(private val file: Path) {
         /** Sets [slot] from [section] under its key, or a key it was formerly saved under. A value its type no longer has keeps the default. */
         private fun <T> read(slot: Slot<T>, section: JsonObject) {
             val element = (listOf(slot.key) + slot.formerly).firstNotNullOfOrNull(section::get) ?: return
-            slot.value = decode(slot.serializer, element) ?: slot.default
+            slot.value = try {
+                json.decodeFromJsonElement(slot.serializer, element)
+            } catch (e: IllegalArgumentException) {
+                slot.default
+            }
         }
 
         private fun <T> decode(serializer: DeserializationStrategy<T>, element: JsonElement): T? = try {

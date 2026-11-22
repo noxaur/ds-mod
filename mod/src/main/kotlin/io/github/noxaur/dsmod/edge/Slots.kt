@@ -81,7 +81,6 @@ object Slots {
             }
         }
         ScreenHooks.onEveryLayout<AbstractContainerScreen<*>> { screen, _ ->
-            SlotArts.checkSlots()
             val font = Minecraft.getInstance().font
             ScreenEvents.afterBackground(screen).register { _, graphics, _, _, _ ->
                 each(screen, graphics) { index, slot, shown -> back(graphics, Surface.CONTAINER, shown, index, slot.x, slot.y) }

@@ -64,7 +64,10 @@ object SlotArts {
     }
 
     fun register() {
-        ClientTickEvents.END_CLIENT_TICK.register { tick() }
+        ClientTickEvents.END_CLIENT_TICK.register { client ->
+            checkSlots(client)
+            tick()
+        }
     }
 
     /** Drops a remembered atlas. Tests start from nothing; the game never calls this. */
@@ -73,10 +76,9 @@ object SlotArts {
         ready.clear()
     }
 
-    fun checkSlots() {
-        val client = Minecraft.getInstance()
+    private fun checkSlots(client: Minecraft) {
         val selected = client.resourcePackRepository.selectedIds.toList()
-        if (selected != packs) {
+        if (selected != packs && client.gui.overlay() == null) {
             packs = selected
             packDark = runCatching {
                 client.resourceManager.getResource(chest).map { resource ->
