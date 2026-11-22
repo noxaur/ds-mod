@@ -9,7 +9,7 @@ Every rule is a check, and its failure prints the file, the line and the fix. Pr
 
 1. Change the structure so the mistake cannot be written, as the source sets do.
 2. Use a type that rejects it.
-3. Add a lint rule. In `mod/` that is `src/test/kotlin/io/github/noxaur/dsmod/rules/Rules.kt`: a pattern that must not appear in some files, a `fix` that says what to write instead, and an `example` line it must catch. In `web/` it is `eslint.config.mjs`, and in `backend/` it is `lint/dsmod.js`, each with a message that says what to write instead.
+3. Add a lint rule. In `mod/` that is `src/test/kotlin/io/github/noxaur/dsmod/rules/Rules.kt`: a pattern that must not appear in some files, a `fix` that says what to write instead, an `example` line it must catch, and `counterExamples` it must pass where legitimate code sits close. In `web/` it is `eslint.config.mjs`, and in `backend/` it is `lint/dsmod.js`, each with a message that says what to write instead.
 4. Add a test, whose failure says what to write instead.
 5. Write it in an `AGENTS.md` or a skill, only for a judgment call that no check can make.
 
@@ -34,13 +34,14 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | A feature reads no area for itself, from the tab list or the sidebar, and sits in its area's folder | `InfoRows` hands a feature no place and refuses an area row, `area-by-declaration` in `mod/…/Rules.kt` for a place named in a feature, and `RulesTest` |
 | A feature tells the player's own kills through one part | `OwnKills`, and `kills-by-own-kills` in `mod/…/Rules.kt` for Combat XP read anywhere else |
 | A feature marks slots and reads a container again after a change through one layer | `SlotMarks` and `ContainerReader`, and `container-by-reader` in `mod/…/Rules.kt` for a handler that only sets a flag |
+| A feature never calls into a part from its own handler of an event the part hears for itself | `Feature.on` runs every handler of a type, so a part subscribes itself, and `part-by-itself` in `mod/…/Rules.kt` |
 | A feature follows the player's active pet through one part | `CurrentPet`, and `pet-by-current-pet` in `mod/…/Rules.kt` for a pet read anywhere else |
 | The mod's text and colors come from its text layer | `TextLayerTest` reads the compiled classes, and `text-by-role` in `mod/…/Rules.kt` for a hex color or a `§` |
 | A feature writes a number, a rate or a time, and reads a number the server wrote, through `core.text` | `number-by-helper`, `rate-by-helper` and `count-by-helper` in `mod/…/Rules.kt` |
 | A feature reads a chat line by its start, and a line that starts right and fails to parse is counted | `line` in `Feature`, and `chat-by-line` in `mod/…/Rules.kt` for a chat handler written by hand |
 | A mod test builds server text, reads a readout and reads a test resource through the harness in `mod/src/test/…/harness/` | `server-text-by-harness`, `readout-by-harness` and `resource-by-harness` in `mod/…/Rules.kt` |
 | A feature reads a slayer boss line and the Protector's stage through their parsers in `core/game` | `SlayerLine` and `ProtectorStage`, and `slayer-by-line` and `protector-by-stage` in `mod/…/Rules.kt` |
-| Which slots of an open container are the player's is named once | `ContainerState`'s `menuSlots` and `playerSlots`, and `player-slots-by-container` in `mod/…/Rules.kt` |
+| Which slots of an open container are the player's, and where the inventory holds them, is named once | `ContainerState`'s `menuSlots`, `playerSlots` and inventory slots, and `player-slots-by-container` and `player-rows-by-container` in `mod/…/Rules.kt` |
 | The mod holds no `!!`, so each null is said as a `?: return`, a smart cast or a `checkNotNull` that gives its reason | `no-bang-bang` in `mod/…/Rules.kt` |
 | A feature reads time from the `now` its handler receives, never the wall clock | `no-wall-clock-in-core` in `mod/…/Rules.kt` |
 | No catch block is empty | `no-swallowed-catch` in `mod/…/Rules.kt` |

@@ -28,7 +28,8 @@ fun violations(rule: Rule, text: String): List<Int> {
     return rule.forbid.findAll(text).mapNotNull { match ->
         val start = text.substring(0, match.range.first).count { it == '\n' }
         val end = start + match.value.count { it == '\n' }
-        if (lines.subList(start, end + 1).any { exception(rule).containsMatchIn(it) }) null else start + 1
+        val excused = lines.subList(start, end + 1).any { exception(rule).containsMatchIn(it) }
+        if (excused) null else if (rule.span == Span.FILE_REPORTING_LAST_LINE) end + 1 else start + 1
     }.distinct().toList()
 }
 
@@ -62,6 +63,15 @@ class RulesTest {
         rules.forEach { rule ->
             (listOf(rule.example) + rule.examples).forEach { sample ->
                 assertTrue(breaks(rule, sample), "${rule.id} does not catch: $sample")
+            }
+        }
+    }
+
+    @Test
+    fun `every rule passes its own counter-examples`() {
+        rules.forEach { rule ->
+            rule.counterExamples.forEach { sample ->
+                assertTrue(!breaks(rule, sample), "${rule.id} catches what it must pass: $sample")
             }
         }
     }

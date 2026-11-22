@@ -1562,7 +1562,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/AbilityCooldowns
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/AbilityCooldowns.kt: /** The abilities found by [unheaded], whose items name them anywhere in the lore rather than under a heading. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/AbilityCooldowns.kt: /** The ability in the last action bar's mana part, lower case, so a part that stays up counts once. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/AbilityCooldowns.kt: /** The charging bonus the worn set has now, or null. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/AbilityCooldowns.kt: /** The inventory's helmet, chestplate, leggings and boots slots. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/AbilityCooldowns.kt: /** What an item's lore says, worked out once per stack: the keys of its abilities, its charge and whether it is any set's helmet. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/AbilityCooldowns.kt: /** `3.2s` under ten seconds, `45s` under a minute, then `1m 48s`, each rounded up so Ready is never early. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/AbilityCooldowns.kt: // A heading's length is read again with the items, and a loose one only here, so look it up from the items now.

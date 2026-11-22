@@ -7,6 +7,10 @@ import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.KeyBind
+import io.github.noxaur.dsmod.core.game.ContainerState.Companion.CARRIED_SLOTS
+import io.github.noxaur.dsmod.core.game.ContainerState.Companion.OFFHAND_SLOT
+import io.github.noxaur.dsmod.core.game.ContainerState.Companion.ROW_SLOTS
+import io.github.noxaur.dsmod.core.game.ContainerState.Companion.WORN_SLOTS
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudDock
@@ -16,17 +20,19 @@ import io.github.noxaur.dsmod.core.hud.HudLook
  * A row the grid can show: its first slot in the inventory menu and how many slots it has. The three rows of the
  * inventory belong together, and the hotbar, the armor and the offhand each stand apart from the rows beside them.
  */
-enum class InventoryRow(private val label: String, val first: Int, val width: Int, val main: Boolean) {
-    TOP("Top Row", 9, 9, true),
-    MIDDLE("Middle Row", 18, 9, true),
-    BOTTOM("Bottom Row", 27, 9, true),
-    HOTBAR("Hotbar", 36, 9, false),
-    ARMOR("Armor", 5, 4, false),
-    OFFHAND("Offhand", 45, 1, false),
+enum class InventoryRow(private val label: String, val slots: IntRange, val main: Boolean) {
+    TOP("Top Row", carriedRow(0), true),
+    MIDDLE("Middle Row", carriedRow(1), true),
+    BOTTOM("Bottom Row", carriedRow(2), true),
+    HOTBAR("Hotbar", carriedRow(3), false),
+    ARMOR("Armor", WORN_SLOTS, false),
+    OFFHAND("Offhand", OFFHAND_SLOT..OFFHAND_SLOT, false),
     ;
 
     override fun toString() = label
 }
+
+private fun carriedRow(row: Int) = (CARRIED_SLOTS.first + row * ROW_SLOTS).let { it until it + ROW_SLOTS }
 
 /** How the grid shows: on the HUD's plate, on nothing, or as the player's inventory screen draws it. */
 enum class InventoryLook(private val label: String, val hud: HudLook) {
@@ -94,7 +100,7 @@ class InventoryHud(config: DsModConfig) : HasFeature {
         if (changed) shown = settings()
         // A slot the grid does not show, such as armor the player put on, leaves the block as it was.
         if (read || changed) {
-            val next = picked().map { row -> items.subList(row.first - FIRST, row.first - FIRST + row.width) }
+            val next = picked().map { row -> items.subList(row.slots.first - FIRST, row.slots.last - FIRST + 1) }
             if (changed || next != slots) {
                 slots = next
                 block = build()
@@ -123,13 +129,13 @@ class InventoryHud(config: DsModConfig) : HasFeature {
             slots.forEachIndexed { i, row ->
                 // Rows of the inventory run on together, and any other row stands apart from what is beside it.
                 val apart = i > 0 && !(picked[i].main && picked[i - 1].main)
-                items(row, apart = apart, slot = picked[i].first)
+                items(row, apart = apart, slot = picked[i].slots.first)
             }
         }
     }
 
     private companion object {
-        val FIRST = InventoryRow.entries.minOf { it.first }
-        val LAST = InventoryRow.entries.maxOf { it.first + it.width - 1 }
+        val FIRST = InventoryRow.entries.minOf { it.slots.first }
+        val LAST = InventoryRow.entries.maxOf { it.slots.last }
     }
 }
