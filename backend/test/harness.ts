@@ -6,7 +6,7 @@ import { Effect } from "effect";
 import { TestClock } from "effect/testing";
 
 import type { Caller } from "../src/api.ts";
-import { makeApp, type Services } from "../src/app.ts";
+import { MAX_BODY, makeApp, type Services } from "../src/app.ts";
 import type { RequestSpec } from "../src/contrib/model.ts";
 import type { HasJoined } from "../src/identity/minecraft.ts";
 import { signInOptions } from "../src/identity/options.ts";
@@ -26,6 +26,8 @@ export const cookieCaller = (request: Request): Caller["Service"] => ({
   userId: request.headers.get("cookie"),
   adminToken: ADMIN_TOKEN,
 });
+
+export const signedOutCaller = (): Caller["Service"] => ({ userId: null, adminToken: undefined });
 
 export const testApp = (overrides: Partial<Services> = {}, callerOf = cookieCaller) => {
   const app = makeApp(memoryServices(overrides), callerOf);
@@ -72,6 +74,14 @@ export const authRequest = (
   });
 
 export const gzipped = (...bytes: number[]) => new Uint8Array(gzipSync(Uint8Array.from(bytes)));
+
+export const truncatedGzip = () => gzipped(1).subarray(0, 4);
+
+export const gzippedOverLimit = () => {
+  const body = new Uint8Array(Number(MAX_BODY) + 1);
+  body.set(gzipped(1));
+  return body;
+};
 
 export const sighting = (entry: string, extra: Partial<ItemSighting> = {}): ItemSighting => ({
   entry,
