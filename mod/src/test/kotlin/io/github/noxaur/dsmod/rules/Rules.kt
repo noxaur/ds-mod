@@ -49,6 +49,28 @@ val rules = listOf(
         span = Span.FILE,
     ),
     Rule(
+        id = "container-by-reads",
+        files = "src/{main,debug}/**.{kt,java}",
+        except = "src/main/{kotlin/**/edge/ContainerScreens.kt,java/**/edge/mixin/ContainerScreenAccessor.java}",
+        forbid = Regex("""\bContainerScreenAccessor\b"""),
+        fix = "Read a container screen's place from `ContainerScreens.kt`: `containerLeft`, `containerTop`, `containerWidth`, " +
+            "`containerHeight`, `slotUnderMouse`, `screenX(slot)` and `screenY(slot)`, and draw at a slot's own x and y inside " +
+            "`screen.drawInContainer(graphics) { .. }`. If a read is missing, add it there.",
+        example = "val left = (screen as ContainerScreenAccessor).leftPos",
+        examples = listOf("import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor", "ContainerScreenAccessor at = (ContainerScreenAccessor) screen;"),
+    ),
+    Rule(
+        id = "screen-by-hook",
+        files = "src/{main,debug}/**.{kt,java}",
+        except = "src/main/kotlin/**/edge/ScreenHooks.kt",
+        forbid = Regex("""\bAFTER_INIT\b"""),
+        fix = "Add to a screen with `ScreenHooks.onEveryLayout<ScreenType> { screen, opened -> .. }`. It runs on every layout, " +
+            "because Fabric drops a screen's listeners on each one, and `opened` is true only on the first, so state for one " +
+            "menu survives a resize. For a container screen, `openedByServer` and `creative` in `ContainerScreens.kt` name which ones.",
+        example = "ScreenEvents.AFTER_INIT.register { _, screen, _, _ -> }",
+        examples = listOf("ScreenEvents\n    .AFTER_INIT", "FabricScreens.AFTER_INIT.register((client, screen, w, h) -> {});"),
+    ),
+    Rule(
         id = "text-by-role",
         files = "src/main/**.{kt,java}",
         // PlayerNames strips the `§` codes of an older capture's raw text and reads them to tell an NPC's label. It colors nothing.

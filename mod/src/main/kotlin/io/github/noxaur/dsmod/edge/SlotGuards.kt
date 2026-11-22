@@ -6,7 +6,6 @@ import io.github.noxaur.dsmod.core.inventory.SlotLocks
 import io.github.noxaur.dsmod.core.inventory.shiftPlaces
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
-import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -82,9 +81,8 @@ object SlotGuards {
             pendingWaits = 0
             if (!steered(client, screen, slot)) pending = null
         }
-        // Fabric drops a screen's listeners on every init, so they are added again here.
-        ScreenEvents.AFTER_INIT.register { client, screen, _, _ ->
-            if (screen !is AbstractContainerScreen<*>) return@register
+        ScreenHooks.onEveryLayout<AbstractContainerScreen<*>> { screen, _ ->
+            val client = Minecraft.getInstance()
             pressing = false
             itemKeyDown = false
             ScreenKeyboardEvents.allowKeyPress(screen).register { _, event ->
@@ -122,7 +120,7 @@ object SlotGuards {
             ScreenEvents.afterForeground(screen).register { _, graphics, _, _, _ -> if (on) {
                     // Each frame, so a quick sweep along a row misses no item.
                     if (itemKeyDown) lockItem(screen, first = false)
-                    placed(screen, graphics) {
+                    if (locks.locked.isNotEmpty() || locks.items.isNotEmpty() || pressing) screen.drawInContainer(graphics) {
                         padlocks(screen, graphics)
                         link(screen, graphics)
                     }
@@ -138,7 +136,7 @@ object SlotGuards {
 
     private fun press(screen: AbstractContainerScreen<*>) {
         pressing = true
-        from = own((screen as ContainerScreenAccessor).hoveredSlot)
+        from = own(screen.slotUnderMouse)
     }
 
     private fun pressItem(screen: AbstractContainerScreen<*>) {
@@ -152,7 +150,7 @@ object SlotGuards {
      * which, and every item after it gets the same. An item that stacks has no ID of its own to lock.
      */
     private fun lockItem(screen: AbstractContainerScreen<*>, first: Boolean) {
-        val slot = (screen as ContainerScreenAccessor).hoveredSlot ?: return
+        val slot = screen.slotUnderMouse ?: return
         if (own(slot) == null || !slot.hasItem()) return
         val id = slot.item.itemUuid
         if (id == null) {
@@ -169,7 +167,7 @@ object SlotGuards {
         if (!pressing) return
         pressing = false
         val from = from ?: return
-        val to = own((screen as ContainerScreenAccessor).hoveredSlot) ?: return
+        val to = own(screen.slotUnderMouse) ?: return
         if (!on) return
         if (from == to) {
             feature.locks = locks.toggle(from)
@@ -311,21 +309,12 @@ object SlotGuards {
         return on && (inventory.selectedSlot in locks.locked || inventory.selectedItem.itemUuid in locks.items)
     }
 
-    private inline fun placed(screen: AbstractContainerScreen<*>, graphics: GuiGraphicsExtractor, draw: () -> Unit) {
-        if (locks.locked.isEmpty() && locks.items.isEmpty() && !pressing) return
-        screen as ContainerScreenAccessor
-        graphics.pose().pushMatrix()
-        graphics.pose().translate(screen.leftPos.toFloat(), screen.topPos.toFloat())
-        draw()
-        graphics.pose().popMatrix()
-    }
-
     /**
      * The link of the slot under the mouse, or the one being made: a frame around both slots and a line between
      * them, over the items so no item hides it. Links at rest show only their padlocks.
      */
     private fun link(screen: AbstractContainerScreen<*>, graphics: GuiGraphicsExtractor) {
-        val over = own((screen as ContainerScreenAccessor).hoveredSlot) ?: return
+        val over = own(screen.slotUnderMouse) ?: return
         val from = from.takeIf { pressing }
         val other = if (from == null) locks.partner(over) else over.takeIf { it != from && locks.link(from, it) != null }
         val a = find(screen, from ?: over) ?: return
