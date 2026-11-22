@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.edge.mixin;
 
 import io.github.noxaur.dsmod.core.feature.general.Fullbright;
 import io.github.noxaur.dsmod.edge.DsModClient;
+import io.github.noxaur.dsmod.edge.input.InputApproved;
 import net.minecraft.client.renderer.LightmapRenderStateExtractor;
 import net.minecraft.client.renderer.state.LightmapRenderState;
 import org.spongepowered.asm.mixin.Mixin;
@@ -9,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+@InputApproved(by = "noxaur", hash = "4c8ba0a85eab")
 @Mixin(LightmapRenderStateExtractor.class)
 abstract class FullbrightMixin {
     @Inject(method = "extract", at = @At("RETURN"))

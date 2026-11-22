@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.edge.mixin;
 
 import io.github.noxaur.dsmod.core.feature.general.HideExplosions;
 import io.github.noxaur.dsmod.edge.DsModClient;
+import io.github.noxaur.dsmod.edge.input.InputApproved;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.core.particles.ParticleOptions;
@@ -11,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+@InputApproved(hash = "0530b12366cc")
 @Mixin(ParticleEngine.class)
 abstract class ExplosionParticleMixin {
     @Inject(method = "createParticle", at = @At("HEAD"), cancellable = true)

@@ -2,6 +2,8 @@ package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.inventory.HotdButton
 import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.edge.input.InputApproved
+import io.github.noxaur.dsmod.edge.input.PlayerCommands
 import io.github.noxaur.dsmod.edge.ui.KitSlotButton
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
@@ -16,6 +18,7 @@ object HotdShortcut {
 
     private val shown get() = DsModClient.runs<HotdButton>()
 
+    @InputApproved(reaches = ["PlayerCommands.send"])
     fun register() {
         ScreenHooks.onEveryLayout<ContainerScreen> { screen, _ ->
             if (screen.menu.rowCount != ROWS || screen.title.string != MENU) return@onEveryLayout

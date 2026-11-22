@@ -6,12 +6,14 @@ import io.github.noxaur.dsmod.core.inventory.SlotLocks
 import io.github.noxaur.dsmod.core.inventory.shiftPlaces
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.edge.input.ContainerClicks
+import io.github.noxaur.dsmod.edge.input.InputApproved
+import io.github.noxaur.dsmod.edge.input.Refusals
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
-import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.EditBox
@@ -54,6 +56,7 @@ object SlotGuards {
     private var pending: Pair<AbstractContainerScreen<*>, Int>? = null
     private var pendingWaits = 0
 
+    @InputApproved(by = "noxaur", reaches = ["Refusals.allowKeyPress", "Refusals.allowMouseClick", "Refusals.allowMouseRelease"])
     fun register() {
         // @keep The server refills a crafting result after the click, so the next craft waits for that packet.
         ClientTickEvents.END_CLIENT_TICK.register { client ->
@@ -74,7 +77,7 @@ object SlotGuards {
             val client = Minecraft.getInstance()
             pressing = false
             itemKeyDown = false
-            ScreenKeyboardEvents.allowKeyPress(screen).register { _, event ->
+            Refusals.allowKeyPress(screen).register { _, event ->
                 if (!on || screen.focused is EditBox) return@register true
                 // @keep A held key repeats, and a repeat is not a press.
                 when (event.key()) {
@@ -88,7 +91,7 @@ object SlotGuards {
                 if (event.key() == slotKey) release(client, screen)
                 if (event.key() == itemKey) itemKeyDown = false
             }
-            ScreenMouseEvents.allowMouseClick(screen).register { _, event ->
+            Refusals.allowMouseClick(screen).register { _, event ->
                 if (!on) return@register true
                 when (event.button()) {
                     slotKey.takeIf(Keys::isMouse) -> press(screen)
@@ -97,7 +100,7 @@ object SlotGuards {
                 }
                 false
             }
-            ScreenMouseEvents.allowMouseRelease(screen).register { _, event ->
+            Refusals.allowMouseRelease(screen).register { _, event ->
                 when {
                     pressing && Keys.isMouse(slotKey) && event.button() == slotKey -> release(client, screen)
                     itemKeyDown && Keys.isMouse(itemKey) && event.button() == itemKey -> itemKeyDown = false
@@ -158,6 +161,7 @@ object SlotGuards {
         if (linked == null) Chat.notice(feature.feature.title, text { bad("Link a hotbar slot with a slot in the rows above it.") }) else feature.locks = linked
     }
 
+    @InputApproved(by = "noxaur", reaches = ["ContainerClicks.click"])
     fun refuses(screen: AbstractContainerScreen<*>, slot: Slot?, button: Int, input: ContainerInput): Boolean {
         if (!on) return false
         val client = Minecraft.getInstance()
@@ -165,7 +169,7 @@ object SlotGuards {
         val partner = own?.let(locks::partner)
         if (input == ContainerInput.QUICK_MOVE && partner != null) {
             val above = find(screen, maxOf(own, partner))
-            if (above != null) client.gameMode?.handleContainerInput(screen.menu.containerId, above.index, minOf(own, partner), ContainerInput.SWAP, checkNotNull(client.player) { "a click over a slot comes from a player" })
+            if (above != null) ContainerClicks.click(screen.menu, above.index, minOf(own, partner), ContainerInput.SWAP)
             return true
         }
         fun swapsWithLocked() = input == ContainerInput.SWAP && (button in locks.locked || client.player?.inventory?.getItem(button)?.itemUuid in locks.items)
@@ -179,6 +183,7 @@ object SlotGuards {
         return input == ContainerInput.QUICK_MOVE && slot != null && slot.hasItem() && steered(client, screen, slot)
     }
 
+    @InputApproved(by = "noxaur", reaches = ["ContainerClicks.click"])
     private fun steered(client: Minecraft, screen: AbstractContainerScreen<*>, slot: Slot): Boolean {
         val stack = slot.item
         val into = destinations(client, screen, slot) ?: return false
@@ -206,15 +211,11 @@ object SlotGuards {
             pending = null
             return true
         }
-        val mode = client.gameMode
-        val player = client.player
-        if (mode == null || player == null) {
+        if (client.gameMode == null || client.player == null) {
             pending = null
             return true
         }
-        fun click(index: Int) {
-            mode.handleContainerInput(screen.menu.containerId, index, 0, ContainerInput.PICKUP, player)
-        }
+        fun click(index: Int) = ContainerClicks.click(screen.menu, index, 0, ContainerInput.PICKUP)
         if (park != null) click(park.index)
         click(slot.index)
         // @keep A left click inserts min(cursor, room), which is the amount this slot was planned to take.

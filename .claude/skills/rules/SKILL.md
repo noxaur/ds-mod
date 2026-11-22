@@ -28,7 +28,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | No code, config or spec holds a comment, but an exception the user agreed to | `scripts/comments.ts` against `comments.txt`, in `check:comments` |
 | `docs/internals/` names no code, and holds one short paragraph per decision | `check:docs` in `mise.toml` |
 | `core` names nothing from Minecraft, Fabric, Mojang or `edge`, even by full name | `PurityTest` reads the compiled classes |
-| Each place the release build sends or refuses input for the player is approved | `InputSitesTest` against `mod/input-sites.txt`, and the agent asks the user before it keeps a site that sends, refuses or triggers anything new |
+| Each place the release build sends or refuses input for the player is approved | Only `edge/input` and mixins touch input, and `InputSitesTest` checks the `@InputApproved` on each gate and caller. The agent asks the user before it keeps a site that sends, refuses or triggers anything new |
 | The release build runs only on dragsim.co, unless the player turns DragSim Only off | `Game` gates every feature in `core`, `SwitchesTest` makes the edge ask `Feature.runs`, and `GameTest`, `DragSimTest` and the game test `DragSimOnlyTest` |
 | A feature fires only in the area it names | `Feature` takes an `Area` and `Game` gates on it. `FeatureReplayTest` replays each fixture outside the area |
 | A feature reads no area for itself, from the tab list or the sidebar, and sits in its area's folder | `InfoRows` hands a feature no place and refuses an area row, `area-by-declaration` in `mod/detekt.yml` for a place named in a feature, and `RulesTest` |

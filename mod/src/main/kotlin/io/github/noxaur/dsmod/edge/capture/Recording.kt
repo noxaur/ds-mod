@@ -9,6 +9,8 @@ import io.github.noxaur.dsmod.edge.Chat
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.edge.contribute.Contribute
+import io.github.noxaur.dsmod.edge.input.InputApproved
+import io.github.noxaur.dsmod.edge.input.KeyPresses
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.KeyMapping
@@ -52,8 +54,9 @@ object Recording {
         Minecraft.getInstance().updateTitle()
     }
 
+    @InputApproved(reaches = ["KeyPresses.take"])
     private fun drainNextStep() {
-        if (::nextStep.isInitialized) while (nextStep.consumeClick()) Unit
+        if (::nextStep.isInitialized) KeyPresses.take(nextStep)
     }
 
     fun cancel(): Boolean {
@@ -115,6 +118,7 @@ object Recording {
         return true
     }
 
+    @InputApproved(reaches = ["KeyPresses.take"])
     private fun tick(client: Minecraft) {
         // @keep A run that lost its connection during this tick must not finish and send now.
         DsModClient.leave()
@@ -131,8 +135,7 @@ object Recording {
             drainNextStep()
             return
         }
-        var presses = 0
-        while (nextStep.consumeClick()) presses++
+        val presses = KeyPresses.take(nextStep)
         val steps = run.step(now, presses)
         if (steps.isNotEmpty()) {
             // @keep A request's run always has a capture of its own, which only Contribute may hand out.

@@ -3,13 +3,13 @@ package io.github.noxaur.dsmod.edge
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.hud.ChatHudEditor
 import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.edge.input.InputApproved
+import io.github.noxaur.dsmod.edge.input.Refusals
 import io.github.noxaur.dsmod.edge.mixin.ChatScreenAccessor
 import io.github.noxaur.dsmod.edge.mixin.CommandSuggestionsAccessor
 import io.github.noxaur.dsmod.edge.mixin.SuggestionsListAccessor
 import io.github.noxaur.dsmod.edge.ui.Kit
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
-import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
-import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.network.chat.Component
@@ -25,6 +25,7 @@ object ChatDrags {
     private var tipPlaced = false
     private var tip = emptyList<Component>()
 
+    @InputApproved(reaches = ["Refusals.allowKeyPress", "Refusals.allowMouseClick", "Refusals.allowMouseDrag", "Refusals.allowMouseRelease", "Refusals.allowMouseScroll"])
     fun register(settings: DsModConfig.Hud, save: () -> Unit) {
         this.settings = settings
         ScreenHooks.onEveryLayout<ChatScreen> { screen, _ ->
@@ -37,7 +38,7 @@ object ChatDrags {
                 if (changed) save()
                 changed = false
             }
-            ScreenMouseEvents.allowMouseClick(screen).register { _, event ->
+            Refusals.allowMouseClick(screen).register { _, event ->
                 val block = under(client, screen, event.x(), event.y()) ?: return@register true
                 when (event.button()) {
                     0 -> mover.grab(block, event.x(), event.y())
@@ -49,19 +50,19 @@ object ChatDrags {
                 }
                 false
             }
-            ScreenMouseEvents.allowMouseDrag(screen).register { _, event, _, _ ->
+            Refusals.allowMouseDrag(screen).register { _, event, _, _ ->
                 if (event.button() != 0 || !mover.drag(event.x(), event.y())) return@register true
                 changed = true
                 false
             }
-            ScreenMouseEvents.allowMouseRelease(screen).register { _, event -> event.button() != 0 || !mover.release() }
-            ScreenMouseEvents.allowMouseScroll(screen).register { _, x, y, _, vertical ->
+            Refusals.allowMouseRelease(screen).register { _, event -> event.button() != 0 || !mover.release() }
+            Refusals.allowMouseScroll(screen).register { _, x, y, _, vertical ->
                 val block = under(client, screen, x, y) ?: return@register true
                 mover.scroll(block, vertical)
                 changed = true
                 false
             }
-            ScreenKeyboardEvents.allowKeyPress(screen).register { _, event ->
+            Refusals.allowKeyPress(screen).register { _, event ->
                 val held = mover.held?.let(Hud::find)
                 when {
                     event.isEscape -> !mover.cancel()

@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.edge.mixin;
 
 import io.github.noxaur.dsmod.edge.EditedText;
 import io.github.noxaur.dsmod.edge.FloatingTexts;
+import io.github.noxaur.dsmod.edge.input.InputApproved;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.world.entity.Display;
@@ -16,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /** @keep The server's text reaches a text display through its synced data, and the display reads it back through `getText`
  * only to rebuild what it draws, so the edit is asked for once per text. */
+@InputApproved(by = "noxaur", hash = "1178eba96f0a")
 @Mixin(Display.TextDisplay.class)
 abstract class FloatingTextMixin implements EditedText {
     @Shadow

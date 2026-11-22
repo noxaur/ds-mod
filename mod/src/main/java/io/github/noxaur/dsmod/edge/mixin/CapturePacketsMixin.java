@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge.mixin;
 
 import io.github.noxaur.dsmod.edge.capture.Recorder;
+import io.github.noxaur.dsmod.edge.input.InputApproved;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
@@ -12,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /** @keep Each handler runs twice, and only the client-thread pass reaches TAIL. */
+@InputApproved(by = "noxaur", hash = "df3c170949d4")
 @Mixin(ClientPacketListener.class)
 abstract class CapturePacketsMixin {
     @Inject(method = "handleParticleEvent", at = @At("TAIL"))
