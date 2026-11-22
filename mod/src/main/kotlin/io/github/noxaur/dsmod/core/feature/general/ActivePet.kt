@@ -203,9 +203,11 @@ class ActivePet(config: DsModConfig) : HasFeature {
         val progress = card.progress ?: return
         this.progress[key] = card.pet.level to progress
         if (progress.max) return
-        val xp = progress.xp != null && progress.needed != null
-        val total = if (xp) progress.needed!! else 1.0
-        val at = if (xp) progress.xp!! else progress.fraction.toDouble()
+        val read = progress.xp
+        val needed = progress.needed
+        val xp = read != null && needed != null
+        val total = needed.takeIf { xp } ?: 1.0
+        val at = read.takeIf { xp } ?: progress.fraction.toDouble()
         val pace = pace
         // Less XP than the last read is another pet of the same name, summoned in the menu.
         if (pace == null || pace.key != key || pace.level != card.pet.level || pace.total != total || pace.xp != xp || at < pace.read) {
