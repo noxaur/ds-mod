@@ -73,6 +73,8 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     private val items = ContainerReader(feature)
     private val marks = SlotMarks(feature, ::mark)
     private var marksClock = -1
+    private var markAt = 0L
+    private var markFrom = 0
 
     init {
         feature.on<ActionBar> { bar, now ->
@@ -225,12 +227,14 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
             marksClock = clock.updates
             marks.invalidate()
         }
+        markAt = clock.millis(now)
+        markFrom = own()
         return marks.marks(now)
     }
 
     private fun mark(slot: Int, item: Item, now: Long): SlotMark? {
-        if (slot < own()) return null
-        val at = clock.millis(now)
+        if (slot < markFrom) return null
+        val at = markAt
         var timer: Timer? = null
         for (key in read(item).keys) {
             val t = timers[key] ?: continue
