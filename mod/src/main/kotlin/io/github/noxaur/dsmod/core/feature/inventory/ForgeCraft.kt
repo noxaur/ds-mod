@@ -10,6 +10,7 @@ import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.core.text.count
 
 class ForgeCraft(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "forge-craft", Area.ANYWHERE, Store.INVENTORY, "Repeat your last forge craft, one click per key press.", slots = ::slots)
@@ -54,9 +55,9 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
             if (changed.slot >= top()) return@on
             val menu = menu
             when {
-                menu == FORGE -> QUEUE.matchEntire(name)?.destructured?.let { (count, size) ->
-                    queued = count.toInt()
-                    queueSize = size.toInt()
+                menu == FORGE -> QUEUE.matchEntire(name)?.destructured?.let { (busy, size) ->
+                    queued = count(busy) ?: return@on
+                    queueSize = count(size) ?: return@on
                 }
                 menu == SELECT -> if (item.lore.any { it.plain == BROWSE }) categories += name
                 menu == category -> if (item.lore.any { it.plain == REQUIRED }) offered[name] = item
@@ -136,13 +137,8 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
         private val QUEUE = Regex("Forge Queue \\((\\d+)/(\\d+)\\)")
         private val MATERIAL = Regex("(.+?)(?: x(\\d+))?")
 
-        fun materials(item: Item): List<Pair<String, Int>> {
-            val lines = item.lore.map { it.plain }
-            val start = lines.indexOf(REQUIRED)
-            if (start < 0) return emptyList()
-            return lines.drop(start + 1).takeWhile { it.isNotBlank() }.mapNotNull { line ->
-                MATERIAL.matchEntire(line.trim())?.destructured?.let { (name, count) -> name to (count.toIntOrNull() ?: 1) }
-            }
+        fun materials(item: Item): List<Pair<String, Int>> = item.section(REQUIRED).mapNotNull { line ->
+            MATERIAL.matchEntire(line)?.destructured?.let { (name, amount) -> name to (count(amount) ?: 1) }
         }
     }
 }

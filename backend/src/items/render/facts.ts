@@ -1,11 +1,11 @@
 import { Schema } from "effect";
 
-import { colorOf } from "../legacy.ts";
+import { colorOf } from "../../upstream/legacy.ts";
 import type { ItemFacts, Named, StatSheet, StatValue } from "../model.ts";
-import { titleCase } from "../title.ts";
+import { titleCase } from "../../upstream/title.ts";
 import type { Catalog } from "./catalog.ts";
-import { count, flag, lenient, numberEntries, record, scalarEntries, text } from "./read.ts";
-import type { StatSet, UpstreamItem } from "./upstream.ts";
+import { count, flag, lenient, numberEntries, record, scalarEntries, type StatSet, text } from "../../upstream/read.ts";
+import type { UpstreamItem } from "./upstream.ts";
 
 const GRAY = "#AAAAAA";
 

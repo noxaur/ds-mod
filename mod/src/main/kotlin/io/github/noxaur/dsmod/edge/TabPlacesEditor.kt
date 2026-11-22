@@ -22,9 +22,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.input.CharacterEvent
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
-import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.Identifier
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
@@ -73,7 +71,7 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
     private val command = KitTextField(0, 0, 0, "Command", "", COMMAND_LENGTH) { typed -> change { it.copy(command = TabLayout.command(typed)) } }.hint("warp end")
     private val item: KitTextField = KitTextField(0, 0, 0, "Item", "", COMMAND_LENGTH) { typed ->
         val id = TabLayout.itemId(typed)
-        val known = Identifier.tryParse(id)?.let(BuiltInRegistries.ITEM::containsKey) == true
+        val known = isItem(id)
         item.setTextColor(if (known || typed.isBlank()) Role.BODY.argb() else Role.BAD.argb())
         when {
             known -> change { it.copy(item = id) }
@@ -242,7 +240,7 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
      */
     private fun icon(id: String): ItemStack? {
         if (!Items.PAPER.builtInRegistryHolder().areComponentsBound()) return null
-        return icons.getOrPut(id) { TabBar.icon(id) }
+        return icons.getOrPut(id) { stackOf(id) }
     }
 
     private fun edgeY(edge: TabEdge) = if (edge == TabEdge.TOP) menuTop() else menuTop() + MENU_HEIGHT

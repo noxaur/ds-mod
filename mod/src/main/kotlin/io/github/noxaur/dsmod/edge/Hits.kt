@@ -3,7 +3,6 @@ package io.github.noxaur.dsmod.edge
 import io.github.noxaur.dsmod.core.game.Hit
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback
 import net.minecraft.client.Minecraft
-import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.decoration.ArmorStand
@@ -21,7 +20,7 @@ object Hits {
             if (level.isClientSide && player === Minecraft.getInstance().player && entity is LivingEntity && entity !is ArmorStand &&
                 game.wants(Hit::class.java)
             ) {
-                game.post(System.currentTimeMillis(), Hit(BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString()))
+                game.post(System.currentTimeMillis(), Hit(entity.typeId))
             }
             InteractionResult.PASS
         }
