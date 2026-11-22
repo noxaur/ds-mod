@@ -17,6 +17,7 @@ import kotlin.io.path.readLines
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 
 class CaptureWriterTest {
     private val dir = Files.createTempDirectory("dsmod-capture")
@@ -88,8 +89,12 @@ class CaptureWriterTest {
 
         val closing = FutureTask { writer.close() }
         val closer = Thread(closing).apply { start() }
-        while (closer.state != Thread.State.TIMED_WAITING && !closing.isDone) Thread.onSpinWait()
-        release.countDown()
+        try {
+            while (closer.state != Thread.State.TIMED_WAITING && !closing.isDone) Thread.onSpinWait()
+            assertFalse(closing.isDone, "close returned while a record was still being written")
+        } finally {
+            release.countDown()
+        }
         closing.get()
 
         assertEquals(101, writer.file.readLines().size)
