@@ -311,4 +311,21 @@ val rules = listOf(
             "`line(SlayerLine.head, SlayerLine::parse) { event, now -> .. }`. If the server sends a new one, add it to `SlayerLine` in core/game.",
         example = """feature.line("☠ SLAYER BOSS SPAWNING!") { alert() }""",
     ),
+    Rule(
+        id = "gametest-point-by-pointer",
+        files = "src/gametest/**.{kt,java}",
+        except = "src/gametest/**/Pointer.kt",
+        forbid = Regex("""\bsetCursorPos\s*\("""),
+        fix = "Move the mouse in GUI pixels with `context.point(x, y)`, `context.click(x, y)` or `context.click(widget)`, " +
+            "and over a slot with `context.hoverSlot(index)` or `context.hoverOwnSlot(slot)`, from Pointer.kt, which scale by the real GUI scale.",
+        example = "context.input.setCursorPos(x * scale, y * scale)",
+    ),
+    Rule(
+        id = "gametest-inventory-by-pointer",
+        files = "src/gametest/**.{kt,java}",
+        except = "src/gametest/**/Pointer.kt",
+        forbid = Regex("""\bInventoryScreen\s*\("""),
+        fix = "Open the player's inventory with `context.openInventory()` from Pointer.kt.",
+        example = "context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }",
+    ),
 )

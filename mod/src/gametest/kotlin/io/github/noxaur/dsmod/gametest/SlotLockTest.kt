@@ -27,17 +27,10 @@ class SlotLockTest : FabricClientGameTest {
         val key = GLFW.GLFW_KEY_L
         val itemKey = GLFW.GLFW_KEY_K
 
-        fun item(slot: Int) = context.computeOnClient<Pair<Any, Int>, Nothing> { it.player!!.inventory.getItem(slot).let { stack -> stack.item to stack.count } }
-        fun carried() = context.computeOnClient<Int, Nothing> { it.player!!.containerMenu.carried.count }
+        fun item(slot: Int) = context.ownItem(slot)
+        fun carried() = context.carried()
         fun hover(slot: Int) {
-            val (x, y) = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
-                val screen = client.gui.screen() as AbstractContainerScreen<*>
-                val at = screen.menu.slots.first { it.container is Inventory && it.containerSlot == slot }
-                val scale = client.window.guiScale.toDouble()
-                screen as ContainerScreenAccessor
-                (screen.leftPos + at.x + 8) * scale to (screen.topPos + at.y + 8) * scale
-            }
-            context.input.setCursorPos(x, y)
+            context.hoverOwnSlot(slot, settle = 0)
             context.waitFor { client ->
                 val hovered = ((client.gui.screen() as? ContainerScreenAccessor) ?: return@waitFor false).hoveredSlot
                 hovered != null && hovered.container is Inventory && hovered.containerSlot == slot
@@ -55,7 +48,7 @@ class SlotLockTest : FabricClientGameTest {
             context.waitTicks(3)
         }
         fun open() {
-            context.runOnClient<Nothing> { it.gui.setScreen(InventoryScreen(it.player!!)) }
+            context.openInventory()
             context.waitForScreen(InventoryScreen::class.java)
             context.waitTicks(3)
         }

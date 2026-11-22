@@ -2,9 +2,7 @@ package io.github.noxaur.dsmod.gametest
 
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen
-import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.world.level.GameType
 
 class CreativeThemeTest : FabricClientGameTest {
@@ -12,7 +10,7 @@ class CreativeThemeTest : FabricClientGameTest {
         context.worldBuilder().create().use { world ->
             ThemedMenus.onServer(world) { it.setGameMode(GameType.CREATIVE) }
             context.waitFor { it.player?.hasInfiniteMaterials() == true }
-            context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }
+            context.openInventory()
             context.waitFor { it.gui.screen() is CreativeModeInventoryScreen }
             context.waitTicks(5)
             val title = context.computeOnClient<String, Nothing> { it.gui.screen()!!.title.string }

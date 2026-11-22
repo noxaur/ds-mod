@@ -7,11 +7,9 @@ import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.ImageButton
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.HopperScreen
-import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.network.chat.Component
 import net.minecraft.world.SimpleMenuProvider
 import net.minecraft.world.inventory.HopperMenu
@@ -84,26 +82,26 @@ class MenuThemeTest : FabricClientGameTest {
                 it.setItem(13, ItemStack(Items.ENDER_PEARL))
                 it.setItem(15, ServerMenus.named(Items.COBWEB, "Tarantula Broodfather"))
             }
-            ServerMenus.hover(context, 13)
+            context.hoverSlot(13)
             val charcoal = context.takeScreenshot("themed-chest-charcoal")
             checkPanel(context, charcoal, Theme.CHARCOAL)
-            val (fx, fy) = ServerMenus.corner(context, 0)
+            val (fx, fy) = context.slotCorner(0)
             val filler = pixel(context, charcoal, fx + 8, fy + 8)
             check(filler == Theme.CHARCOAL.panel and 0xFFFFFF) { "A filler pane's slot is %06X, not bare panel".format(filler) }
             for (slot in listOf(6 * 9 - 6, 6 * 9 - 5)) {
-                val (bx, by) = ServerMenus.corner(context, slot)
+                val (bx, by) = context.slotCorner(slot)
                 val face = pixel(context, charcoal, bx + 3, by + 3)
                 check(face == Theme.CHARCOAL.raised and 0xFFFFFF) { "The server's button in slot $slot is %06X, not a kit button".format(face) }
             }
 
-            ServerMenus.hover(context, 1)
+            context.hoverSlot(1)
             context.takeScreenshot("themed-chest-filler-hovered")
-            ServerMenus.hover(context, 6 * 9 - 5)
+            context.hoverSlot(6 * 9 - 5)
             context.takeScreenshot("themed-chest-button-hovered")
             context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().feature.enabled = false }
             try {
                 context.waitTicks(2)
-                val (bx, by) = ServerMenus.corner(context, 6 * 9 - 6)
+                val (bx, by) = context.slotCorner(6 * 9 - 6)
                 val face = pixel(context, context.takeScreenshot("themed-chest-off"), bx + 3, by + 3)
                 check(face != Theme.CHARCOAL.raised and 0xFFFFFF) { "The server's Go Back stayed a kit button with Menu Theme off" }
             } finally {
@@ -112,7 +110,7 @@ class MenuThemeTest : FabricClientGameTest {
             context.waitTicks(2)
 
             theme(context, Theme.VANILLA)
-            ServerMenus.hover(context, 13)
+            context.hoverSlot(13)
             val vanilla = context.takeScreenshot("themed-chest-vanilla")
             checkPanel(context, vanilla, Theme.VANILLA)
 
@@ -123,10 +121,10 @@ class MenuThemeTest : FabricClientGameTest {
                 theme(context, Theme.CHARCOAL)
                 val glass = context.takeScreenshot("glass-chest-charcoal")
                 checkUndimmed(context, glass, charcoal)
-                val (bx, by) = ServerMenus.corner(context, 6 * 9 - 6)
+                val (bx, by) = context.slotCorner(6 * 9 - 6)
                 val face = pixel(context, glass, bx + 3, by + 3)
                 check(face != Theme.CHARCOAL.raised and 0xFFFFFF) { "The server's Go Back on glass is the solid button's %06X".format(face) }
-                ServerMenus.hover(context, 6 * 9 - 5)
+                context.hoverSlot(6 * 9 - 5)
                 context.takeScreenshot("glass-chest-button-hovered")
                 checkFullGlass(context, "glass-chest-full-charcoal", Theme.CHARCOAL)
                 look(context, MenuLook.GLASS, 0f)
@@ -141,7 +139,7 @@ class MenuThemeTest : FabricClientGameTest {
                 look(context, MenuLook.SOLID)
             }
             theme(context, Theme.CHARCOAL)
-            ServerMenus.hover(context, 6 * 9 - 5)
+            context.hoverSlot(6 * 9 - 5)
             // Only the drawing changes, so a click on Close still picks up the server's item.
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
             context.waitTicks(3)
@@ -150,7 +148,7 @@ class MenuThemeTest : FabricClientGameTest {
             context.runOnClient<Nothing> { it.player!!.containerMenu.carried = ItemStack.EMPTY }
 
             context.runOnClient<Nothing> { it.player!!.closeContainer() }
-            context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }
+            context.openInventory()
             context.waitTicks(5)
             val solid = HashMap<Theme, Path>()
             for (theme in listOf(Theme.CHARCOAL, Theme.VANILLA)) {

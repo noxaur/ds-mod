@@ -205,12 +205,7 @@ class ContributeTest : FabricClientGameTest {
     private fun buttons() = (net.minecraft.client.Minecraft.getInstance().gui.screen() as? ContributeScreen)?.children()?.filterIsInstance<KitButton>().orEmpty()
 
     private fun click(context: ClientGameTestContext, label: String) {
-        val at = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
-            val button = buttons().single { it.message.string == label }
-            (button.x + button.width / 2.0) * client.window.guiScale to (button.y + button.height / 2.0) * client.window.guiScale
-        }
-        context.input.setCursorPos(at.first, at.second)
-        context.input.pressMouse(0)
+        context.click(context.computeOnClient<KitButton, Nothing> { buttons().single { it.message.string == label } }, settle = 0)
         context.waitTicks(2)
     }
 

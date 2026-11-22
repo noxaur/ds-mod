@@ -12,8 +12,6 @@ import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.CameraType
-import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.client.renderer.entity.player.AvatarRenderer
 import net.minecraft.client.renderer.entity.state.AvatarRenderState
 import net.minecraft.util.Mth
@@ -169,7 +167,7 @@ class PlayerModelTest : FabricClientGameTest {
                 playerModel.size.value = 1f
                 playerModel.pose.value = ModelPose.STAR
                 playerModel.tiltSideways.value = 20f
-                context.setScreen { InventoryScreen(Minecraft.getInstance().player!!) }
+                context.openInventory()
                 context.waitTicks(2)
                 context.takeScreenshot("player-model-inventory")
                 // The inventory turns the model toward the mouse, and a spin still turns it there. The mouse stays put.

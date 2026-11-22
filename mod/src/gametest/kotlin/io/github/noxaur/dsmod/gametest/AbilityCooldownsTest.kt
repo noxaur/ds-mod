@@ -50,7 +50,7 @@ class AbilityCooldownsTest : FabricClientGameTest {
             check(marked.keys == setOf(5, 6, 7, 8, 36, 37) && marked.values.all { it.cooldown != null }) { "Marked $marked" }
             context.takeScreenshot("ability-cooldowns")
 
-            context.runOnClient<Nothing> { it.gui.setScreen(InventoryScreen(it.player!!)) }
+            context.openInventory()
             context.waitForScreen(InventoryScreen::class.java)
             context.waitTicks(5)
             context.takeScreenshot("ability-cooldowns-inventory")

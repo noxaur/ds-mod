@@ -25,7 +25,6 @@ import net.minecraft.world.InteractionHand
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
-import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import java.io.File
 import java.lang.management.ManagementFactory
 import java.util.Locale
@@ -101,7 +100,7 @@ class PerfTest : FabricClientGameTest {
                     })
                 }
             }
-            context.setScreen { InventoryScreen(context.computeOnClient<net.minecraft.world.entity.player.Player, Nothing> { it.player!! }) }
+            context.openInventory()
             context.runOnClient<Nothing> {
                 Slots.mark("perf", (0 until MARKED_SLOTS).associate { slot ->
                     FIRST_MARKED_SLOT + slot to SlotMark(Role.GOOD, text { good("$slot") }, rarity = slot % 2 == 0)
