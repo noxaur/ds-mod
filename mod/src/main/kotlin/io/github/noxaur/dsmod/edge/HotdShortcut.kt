@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
 import io.github.noxaur.dsmod.core.feature.inventory.HotdButton
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.ui.KitSlotButton
@@ -16,7 +15,7 @@ object HotdShortcut {
     private const val ROWS = 6
     private const val NAME = "Open Heart of the Dragon"
 
-    private val shown get() = DsModClient.runs<BetterUi>() && DsModClient.runs<HotdButton>()
+    private val shown get() = DsModClient.runs<HotdButton>()
 
     fun register() {
         ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->

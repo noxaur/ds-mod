@@ -1,7 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
-import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.MenuTrail
 import io.github.noxaur.dsmod.edge.ui.Icon
@@ -28,7 +27,7 @@ object MenuBack {
     private var menu: AbstractContainerMenu? = null
     private var back: String? = null
 
-    private val enabled get() = DsModClient.runs<BetterUi>() && DsModClient.runs<BackButtons>()
+    private val enabled get() = DsModClient.runs<BackButtons>()
 
     fun register() {
         ClientSendMessageEvents.COMMAND.register { trail.sent(System.currentTimeMillis(), it) }

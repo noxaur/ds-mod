@@ -41,6 +41,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | A fixture holds no player name from a capture on this machine, and an alias wherever a player's name stands | `FixtureLeakTest`, and `cutFixture` refuses such a fixture while the captures are still there |
 | Every feature shows what its transcript says | `FeatureReplayTest` replays each feature's fixtures |
 | A feature that reads nothing from the server has a game test | `FeatureReplayTest` |
+| A feature inside a group runs only while its group is on, and asks only for itself | `Feature` reads the switch above it in the tree, and `group-by-tree` in `mod/…/Rules.kt` |
 | Every feature class is placed in `SettingsTree` | `FeaturesListedTest` reads the compiled classes |
 | Every on/off setting is a feature | `SettingsTree` refuses a switch outside a feature when it is built |
 | Every feature has a section in the player docs | `RulesTest` |

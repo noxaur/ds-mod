@@ -62,4 +62,15 @@ val rules = listOf(
         example = "val gold = 0xFF_AA_00",
         examples = listOf("val glass = 0xFF_AA_00_FF", "val gold = 0xFFAA00"),
     ),
+    Rule(
+        id = "group-by-tree",
+        files = "src/main/**.{kt,java}",
+        except = "src/main/kotlin/**/core/config/SettingsTree.kt",
+        forbid = Regex("""runs\s*(<\s*BetterUi\s*>|\(\s*BetterUi\b)"""),
+        fix = "Ask only for the feature itself, as `DsModClient.runs<BackButtons>()`. A feature placed inside a group in " +
+            "`SettingsTree` is on only while its group is.",
+        example = "private val shown get() = DsModClient.runs<BetterUi>() && DsModClient.runs<MenuTabs>()",
+        examples = listOf("DsModClient.INSTANCE.runs(BetterUi.class)", "runs< BetterUi >()", "DsModClient.INSTANCE.runs(\n    BetterUi.class)"),
+        span = Span.FILE,
+    ),
 )
