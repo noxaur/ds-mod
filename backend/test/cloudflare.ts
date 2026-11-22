@@ -95,20 +95,21 @@ const r2 = () => {
   };
 };
 
-const kvNamespace = () => {
-  const values = new Map<string, string>();
+const kvNamespace = (now: () => number) => {
+  const values = new Map<string, { value: string; until: number }>();
   return {
-    get: (key: string) => Promise.resolve(values.get(key) ?? null),
-    put: (key: string, value: string) => Promise.resolve(void values.set(key, value)),
+    get: (key: string) => {
+      const kept = values.get(key);
+      return Promise.resolve(kept !== undefined && now() < kept.until ? kept.value : null);
+    },
+    put: (key: string, value: string, options: { expirationTtl?: number } = {}) =>
+      Promise.resolve(void values.set(key, { value, until: now() + (options.expirationTtl ?? Infinity) * 1000 })),
   };
 };
 
-export const localCloudflare = () => {
+export const localCloudflare = (now: () => number = Date.now) => {
   const sqlite = new DatabaseSync(":memory:");
   migrate(sqlite);
-  const env = { DB: new D1(sqlite), STORAGE: r2(), KV: kvNamespace() };
-  return {
-    sqlite,
-    within: <A>(body: () => Promise<A>): Promise<A> => withRuntimeEnv(env, body),
-  };
+  const env = { DB: new D1(sqlite), STORAGE: r2(), KV: kvNamespace(now) };
+  return <A>(body: () => Promise<A>): Promise<A> => withRuntimeEnv(env, body);
 };
