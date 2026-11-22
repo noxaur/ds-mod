@@ -6,13 +6,12 @@ import { gzipSync } from "node:zlib";
 import { Effect } from "effect";
 import { expect, onTestFinished, test, vi } from "vite-plus/test";
 
-import { makeApp } from "../src/app.ts";
-import { memoryServices } from "../src/memory.ts";
+import { spec, testApp } from "../test/harness.ts";
 import { dsctl } from "./dsctl.ts";
 
 /** A backend with nothing in it, dsctl pointed at it with [token], and a way to call it as a player. */
 function backend(token = "secret") {
-  const app = makeApp(memoryServices(), (request) => ({ userId: request.headers.get("cookie"), adminToken: "secret" }));
+  const { app, call } = testApp();
   const fetch = (input: RequestInfo | URL, init?: RequestInit) => app(new Request(input, init));
   /** What dsctl prints, or the message it fails with, which the real command prints on stderr. */
   const run = (...args: string[]) =>
@@ -30,15 +29,10 @@ function backend(token = "secret") {
     const result = await run(...args);
     return "failed" in result ? result.failed : "succeeded";
   };
-  const asPlayer = (player: string, path: string, body: BodyInit, type: string) =>
-    app(
-      new Request(`http://backend${path}`, { method: "POST", headers: { cookie: player, "content-type": type }, body }),
-    );
   const upload = (player: string, id: string, capture: Uint8Array) =>
-    asPlayer(player, `/v1/contrib/requests/${id}/submissions?modVersion=1.0.0`, capture, "application/octet-stream");
-  const offers = async (player: string) =>
-    (await app(new Request("http://backend/v1/contrib/requests", { headers: { cookie: player } }))).json();
-  return { run, lines, failure, asPlayer, upload, offers };
+    call(player, "POST", `/v1/contrib/requests/${id}/submissions?modVersion=1.0.0`, capture);
+  const offers = async (player: string) => (await call(player, "GET", "/v1/contrib/requests")).value;
+  return { run, lines, failure, call, upload, offers };
 }
 
 const directory = () => mkdtempSync(join(tmpdir(), "dsctl-"));
@@ -49,7 +43,7 @@ function briefFile(brief: unknown) {
   return file;
 }
 
-const golem = { name: "Golem tiers", steps: [{ do: "Warp to the End" }, { do: "Stand still", seconds: 60 }] };
+const golem = spec.brief;
 
 test("an agent publishes a brief, players record it, and pull writes one file per player", async () => {
   const { lines, upload, offers } = backend();
@@ -124,17 +118,12 @@ test("close stops a request being offered and prints its id", async () => {
 });
 
 test("unknowns lists the most seen first, one line each", async () => {
-  const { lines, asPlayer } = backend();
+  const { lines, call } = backend();
   const report = (sample: string) =>
-    asPlayer(
-      "ann",
-      "/v1/contrib/unknowns",
-      JSON.stringify({
-        modVersion: "1.0.0",
-        sightings: [{ kind: "chat", signature: sample, sample: `${sample}\nmore` }],
-      }),
-      "application/json",
-    );
+    call("ann", "POST", "/v1/contrib/unknowns", {
+      modVersion: "1.0.0",
+      sightings: [{ kind: "chat", signature: sample, sample: `${sample}\nmore` }],
+    });
   await report("rare");
   await report("common");
   await report("common");
@@ -144,7 +133,7 @@ test("unknowns lists the most seen first, one line each", async () => {
 test("a run that cannot be read is named as a problem, and the others are still written", async () => {
   const { run, lines, upload } = backend();
   const [id = ""] = await lines("create", briefFile(golem));
-  const broken: unknown = await (await upload("ann", id, new Uint8Array([0x1f, 0x8b, 1, 2]))).json();
+  const broken = (await upload("ann", id, new Uint8Array([0x1f, 0x8b, 1, 2]))).value;
   await upload("bob", id, gzipSync("{}\n"));
   const out = directory();
   // Two uploads in the same millisecond are ordered by id, so either run can be A.
@@ -172,7 +161,7 @@ test("a wrong token, an unknown id and a bad command each say what went wrong", 
 });
 
 test("a body the backend refuses is named by where and what it expected", async () => {
-  const app = makeApp(memoryServices(), () => ({ userId: null, adminToken: "secret" }));
+  const { app } = testApp();
   // A dsctl from another version than the backend's: its brief carries a key the backend does not know.
   const fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const body: unknown = await new Request(input, init).json();
