@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.core.feature.general
 import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.config.KeyBind
 import io.github.noxaur.dsmod.core.config.SettingsTree
+import io.github.noxaur.dsmod.harness.feature
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals

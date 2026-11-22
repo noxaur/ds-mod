@@ -22,7 +22,7 @@ class SlotLocksTest {
         assertNull(SlotLocks().link(3, 4), "Two hotbar slots")
         assertNull(SlotLocks().link(20, 21), "Two slots above")
         assertNull(SlotLocks().link(3, 38), "Armor")
-        assertNull(SlotLocks().link(3, SlotLocks.OFF_HAND), "The off hand")
+        assertNull(SlotLocks().link(3, 40), "The off hand")
     }
 
     @Test

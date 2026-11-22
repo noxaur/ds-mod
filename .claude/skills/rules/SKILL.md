@@ -51,6 +51,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | Every command and chat line the mod sends for the player goes through one sender | `send-through-player-commands` in `mod/detekt.yml` |
 | The mod's shapes are drawn by its kit, in the player's theme | `KitTest` reads the compiled classes |
 | Each lint rule in `mod/detekt.yml` flags its examples and passes its counter-examples | `DetektConfigTest` in `mod/lint/` |
+| Every public release member has a caller in the release or debug code, so the jar carries no dead code and no game-test hook | `CallersTest` in `mod/…/rules/` reads the compiled classes |
 | The mod's code and its tests are not copied with a value or two changed | `ClonesTest` in `mod/…/rules/` finds a repeated block and a near-identical line in every source set |
 | Release code cannot use debug tools | The `main` and `debug` source sets |
 | Raw captures stay out of git | They are written to `mod/run/`, which is git-ignored |

@@ -6,10 +6,10 @@ import io.github.noxaur.dsmod.core.config.ItemKind
 import io.github.noxaur.dsmod.core.game.Area
 import kotlinx.serialization.Serializable
 
-enum class Where(val title: String, val short: String) {
-    WORLD("In the World", "World"),
-    MENUS("In Menus", "Menus"),
-    BOTH("In Both", "Both"),
+enum class Where(val short: String) {
+    WORLD("World"),
+    MENUS("Menus"),
+    BOTH("Both"),
     ;
 
     fun covers(at: Where) = this == BOTH || this == at

@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.container.MarkStyle
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.edge.ui.Atlas
+import io.github.noxaur.dsmod.harness.feature
 import net.minecraft.resources.Identifier
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -20,7 +21,10 @@ class SlotArtsTest {
     }
 
     @BeforeEach
-    fun clear() = SlotArts.reset()
+    fun clear() {
+        SlotArts.wantedStyle.fill(null)
+        SlotArts.ready.clear()
+    }
 
     @Test
     fun `asking for an atlas does not create or upload it`() {

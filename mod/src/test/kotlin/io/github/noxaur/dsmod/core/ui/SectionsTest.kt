@@ -28,7 +28,6 @@ class SectionsTest {
         listOf(40 to true, 80 to true, 200 to true, 39 to false, 100 to false).forEach { (value, on) ->
             assertEquals(on, Sections.contains(two, value), "contains $value")
         }
-        assertEquals(90, Sections.covered(two))
         assertEquals(1, Sections.at(two, 160))
         assertEquals(-1, Sections.at(two, 100))
     }

@@ -61,7 +61,8 @@ class ProfileViewerTest : FabricClientGameTest {
                 context.waitUntil("the inventory loaded") { profiles.asked.any { "/containers/inventory" in it } }
                 context.waitTicks(5)
                 val gridY = context.computeOnClient<Int, Nothing> { profiles.screen(it).viewY }
-                val item = profiles.hoverItem(contentX, gridY)
+                hooked.clear()
+                val item = profiles.hoverItem(contentX, gridY, hooked)
                 context.takeScreenshot("profile-inventory-tooltip")
                 check(item == "reinforced_plating") { "The first item hovered is $item" }
                 check("reinforced_plating" in hooked) { "Another mod's tooltip hook saw only $hooked" }

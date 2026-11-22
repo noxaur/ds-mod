@@ -26,7 +26,6 @@ import io.github.noxaur.dsmod.edge.ui.KitTextField
 import io.github.noxaur.dsmod.edge.ui.SettingRows
 import io.github.noxaur.dsmod.edge.ui.fit
 import net.minecraft.client.gui.GuiGraphicsExtractor
-import net.minecraft.client.gui.narration.ScreenNarrationCollector
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.CharacterEvent
 import net.minecraft.client.input.InputWithModifiers
@@ -70,15 +69,15 @@ class SettingsScreen(
     private class Group(y: Int, height: Int) : Item(y, height)
     private class Empty(y: Int, val line: String, val x: Int, val ink: Kit.Ink) : Item(y, 8)
 
-    private val sections = sections(config)
+    internal val sections = sections(config)
     private val every = sections.flatMap { it.walk() }
     private val icons = List(sections.size) { if (it == FAVORITES) Icon.STAR else null }
     private val tree = NavTree(sections.map { it.named.size })
     private val pane = Scroll()
-    private val rows = SettingRows(opened, ::build, ::scrollTo, stars = SettingRows.Stars({ it in config.favorites }, ::star, { config.general.favoriteKey }))
+    internal val rows = SettingRows(opened, ::build, ::scrollTo, stars = SettingRows.Stars({ it in config.favorites }, ::star, { config.general.favoriteKey }))
 
     private lateinit var search: KitTextField
-    private lateinit var nav: KitNavTree
+    internal lateinit var nav: KitNavTree
     private lateinit var bar: KitTabBar
     private lateinit var fold: KitButton
     private var clear: KitButton? = null
@@ -387,27 +386,7 @@ class SettingsScreen(
         sync()
     }
 
-    fun spot(id: String, entry: Int = -1): SettingRows.Spot? {
-        sync()
-        return rows.spot(id, entry)
-    }
-
-    fun line(section: String): Int? = nav.middle(NavRow(sections.indexOfFirst { it.name == section }))
-
-    fun shown() = rows.ids()
-
-    fun marked(id: String) = rows.marked(id)
-
-    fun editor(id: String): Editor? {
-        sync()
-        return rows.editor(id)
-    }
-
-    fun reveal(id: String) {
-        rows.reveal(id)
-    }
-
-    private fun sync() = rows.view(BAR - pane.offset, BAR, height, width, height)
+    internal fun sync() = rows.view(BAR - pane.offset, BAR, height, width, height)
 
     private fun spy() {
         if (tree.searching || pane.gliding || pane.offset == spiedAt) return
@@ -534,8 +513,6 @@ class SettingsScreen(
         if (scrollY != 0.0) pane.by(if (scrollY > 0) -ROW else ROW)
         return true
     }
-
-    fun narration(): String = ScreenNarrationCollector().apply { update(::updateNarrationState) }.collectNarrationText(true)
 
     override fun setInitialFocus() = setFocused(null)
 

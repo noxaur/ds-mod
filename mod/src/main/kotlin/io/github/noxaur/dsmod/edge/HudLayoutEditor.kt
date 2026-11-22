@@ -31,8 +31,8 @@ class HudLayoutEditor(
 ) : BoxEditor {
     override val box = Box()
 
-    private var map = HudMap(1, 1, 1, 1)
-    private var mapX = 0
+    internal var map = HudMap(1, 1, 1, 1)
+    internal var mapX = 0
     private var footY = 0
     private val buttons = EditorButtons(BUTTONS)
 
@@ -94,18 +94,6 @@ class HudLayoutEditor(
     private fun blockAt(mouseX: Double, mouseY: Double): Hud.Placed? {
         if (!overMap(mouseX, mouseY)) return null
         return Hud.at(map.screen(mouseX - mapX).toDouble(), map.screen(mouseY - (box.origin + box.top)).toDouble())
-    }
-
-    fun pointOf(id: String): Pair<Int, Int>? {
-        val block = Hud.find(id) ?: return null
-        return (mapX + (block.x + block.width * block.scale / 2) * map.scale).toInt() to (box.origin + box.top + (block.y + block.height * block.scale / 2) * map.scale).toInt()
-    }
-
-    val scale get() = 1 / map.scale
-
-    fun buttonAt(name: String): Pair<Int, Int> {
-        val i = BUTTONS.indexOf(name)
-        return buttons.middle(i) to box.origin + footY + Kit.BUTTON_HEIGHT / 2
     }
 
     override fun draw(g: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, keys: Boolean): SettingRows.Tip? {

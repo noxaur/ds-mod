@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.config
 
+import io.github.noxaur.dsmod.harness.feature
 import io.github.noxaur.dsmod.harness.resource
 import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.camera.Views

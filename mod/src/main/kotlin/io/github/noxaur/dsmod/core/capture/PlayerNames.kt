@@ -132,7 +132,7 @@ object PlayerNames {
     /** @keep A plain name on a player entity may be an NPC's, and a player may be called what the server calls itself or a
      * place, as a staff account is named after the server, so a name the sidebar's title, its `⏣` place, the tab
      * list's area or its header also shows is left out. */
-    fun of(vararg captures: Path): Set<String> = learn(captures).let { (names, server) -> names.filterTo(HashSet()) { it !in server } }
+    fun of(vararg captures: Path): Set<String> = learn(*captures).let { (names, server) -> names.filterTo(HashSet()) { it !in server } }
 
     fun leaked(names: Set<String>, text: String): Set<String> {
         val (plain, other) = names.filterNot { it.matches(alias) }.partition { it.matches(word) }
@@ -143,9 +143,7 @@ object PlayerNames {
 
     val alias = Regex("""Player\d+""")
 
-    fun found(vararg captures: Path): Set<String> = learn(captures).first
-
-    private fun learn(captures: Array<out Path>): Pair<Set<String>, Set<String>> {
+    internal fun learn(vararg captures: Path): Pair<Set<String>, Set<String>> {
         val names = HashSet<String>()
         val server = HashSet<String>()
         for (capture in captures) capture.useLines { lines ->

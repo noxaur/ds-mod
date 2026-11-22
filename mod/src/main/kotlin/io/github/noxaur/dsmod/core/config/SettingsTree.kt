@@ -104,13 +104,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
         check(repeated.isEmpty()) { "A feature is placed twice in SettingsTree, or two features share an id: $repeated" }
     }
 
-    fun <F : HasFeature> feature(type: Class<F>): F = type.cast(owners.first { it.javaClass == type })
-
-    inline fun <reified F : HasFeature> feature(): F = feature(F::class.java)
-
     companion object {
-        val STORED = emptyMap<String, String>()
-
         val MAC = "mac" in System.getProperty("os.name").lowercase()
 
         private val fresh by lazy { declare(DsModConfig(), mac = true) }

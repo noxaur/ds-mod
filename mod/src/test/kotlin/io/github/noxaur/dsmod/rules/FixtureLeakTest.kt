@@ -40,7 +40,7 @@ class FixtureLeakTest {
         }
         assertEquals(emptyList(), reformatted, reformatted.joinToString("\n", postfix = "\n"))
         val leaks = fixtures.flatMap { file ->
-            PlayerNames.found(file).filterNot { it.matches(PlayerNames.alias) }.sorted().map {
+            PlayerNames.learn(file).first.filterNot { it.matches(PlayerNames.alias) }.sorted().map {
                 "${file.invariantSeparatorsPathString}: holds $it where a player's name stands. Cut the fixture again with " +
                     "cutFixture, which replaces it with Player1, Player2 and so on."
             }

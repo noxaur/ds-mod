@@ -10,6 +10,10 @@ Every feature has a fixture cut from a capture, replayed through the same game l
 
 Each rule the mod enforces in its source is a detekt rule, and each rule about what the compiled classes may call is an ArchUnit rule. Both read the code as the compiler does, so a line break, a full name or a method reference cannot slip past them, and each rule's examples prove it still fires. Regular expressions over the source were rejected, because they matched text and missed every spelling they did not foresee. A linter of our own was rejected too, because following each Kotlin release is lasting work.
 
+## The release jar carries no test hook
+
+A release member needs a caller in the release or debug code, and a game test's call does not count, because the jar would carry the hook for every player. So a game test writes its own reads of a screen and reaches the state the screen keeps from other modules. Hooks in the release code were rejected, because nothing told them apart from code that had lost its last caller.
+
 ## CI measures the mod in a real game
 
 Fast and smooth is checked, not promised. A perf test boots the jars a player installs and reads the mod's own timers, so the numbers are the ones play produces. A unit benchmark was rejected, because it would miss the draw cost, which exists only inside Minecraft's renderer. Every time is scaled to a reference device, and each cap gates the median of twelve windows, because one window on a shared runner can be several times slower.

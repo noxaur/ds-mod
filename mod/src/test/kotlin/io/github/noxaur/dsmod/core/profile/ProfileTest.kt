@@ -30,7 +30,6 @@ class ProfileTest {
         assertEquals(10, profile.topKills.size)
         assertEquals("Storm Helmet", profile.equipment.helmet?.name?.plain)
         assertEquals("minecraft:iron_sword", profile.equipment.held?.material)
-        assertFalse(profile.hidden)
     }
 
     @Test
@@ -67,10 +66,6 @@ class ProfileTest {
         assertEquals("Lucky Clover", pet.heldItem?.name)
         assertEquals("[Lvl 150] Golden Dragon", pet.item.name.plain)
         assertEquals(150, pet.level)
-        val forge = profile.forge.first { it.stage == "RUNNING" }
-        assertEquals(0f, forge.done(forge.startedAt))
-        assertEquals(0.5f, forge.done(forge.startedAt + forge.durationMs / 2))
-        assertEquals(1f, forge.done(forge.finishesAt + 1))
     }
 
     @Test

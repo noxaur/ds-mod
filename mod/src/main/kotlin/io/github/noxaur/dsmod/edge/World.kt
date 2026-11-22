@@ -1,13 +1,10 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.text.Role
-import io.github.noxaur.dsmod.core.world.BlockBox
 import io.github.noxaur.dsmod.core.world.BoxStyle
 import io.github.noxaur.dsmod.core.world.EntityBeam
 import io.github.noxaur.dsmod.core.world.Mark
-import io.github.noxaur.dsmod.core.world.Path
 import io.github.noxaur.dsmod.core.world.Point
-import io.github.noxaur.dsmod.core.world.Ring
 import io.github.noxaur.dsmod.core.world.Tracer
 import io.github.noxaur.dsmod.core.world.Waypoint
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -29,20 +26,18 @@ private const val FILL_ALPHA = 70
 private const val TRACER_AHEAD = 1.0
 
 object World {
-    private sealed interface Shown
-    private class ShownBox(val box: AABB, val style: GizmoStyle) : Shown
-    private class ShownPath(val points: List<Vec3>, val color: Int) : Shown
-    private class ShownRing(val center: Vec3, val radius: Float, val style: GizmoStyle) : Shown
-    private abstract class Follow(val entity: Int) {
+    internal sealed interface Shown
+    internal class ShownBox(val box: AABB, val style: GizmoStyle) : Shown
+    internal abstract class Follow(val entity: Int) {
         var found: Entity? = null
     }
-    private class ShownBeam(entity: Int, val label: BeamLabel) : Follow(entity)
-    private class ShownTracer(entity: Int, val color: Int) : Follow(entity)
-    private class ShownWaypoint(val at: Vec3, val top: Vec3, val label: BeamLabel, val box: ShownBox) : Shown {
+    internal class ShownBeam(entity: Int, val label: BeamLabel) : Follow(entity)
+    internal class ShownTracer(entity: Int, val color: Int) : Follow(entity)
+    internal class ShownWaypoint(val at: Vec3, val top: Vec3, val label: BeamLabel, val box: ShownBox) : Shown {
         var labelAt = at
     }
 
-    private class BeamLabel(val name: String, val color: Int) {
+    internal class BeamLabel(val name: String, val color: Int) {
         var meters = -1
         var text = name
         var style: TextGizmo.Style = TextGizmo.Style.forColorAndCentered(color)
@@ -72,11 +67,11 @@ object World {
     }
 
     private val marks = LinkedHashMap<String, List<Shown>>()
-    private var shown = emptyList<Shown>()
+    internal var shown = emptyList<Shown>()
     private val beams = LinkedHashMap<String, List<ShownBeam>>()
-    private var beamsShown = emptyList<ShownBeam>()
+    internal var beamsShown = emptyList<ShownBeam>()
     private val tracers = LinkedHashMap<String, List<ShownTracer>>()
-    private var tracersShown = emptyList<ShownTracer>()
+    internal var tracersShown = emptyList<ShownTracer>()
 
     fun show(id: String, marks: List<Mark>) {
         beams[id] = marks.filterIsInstance<EntityBeam>().map { ShownBeam(it.entity, BeamLabel(it.label, it.role.argb())) }
@@ -84,9 +79,6 @@ object World {
         this.marks[id] = marks.mapNotNull { mark ->
             val color = mark.role.argb()
             when (mark) {
-                is BlockBox -> box(mark.x.toDouble(), mark.y.toDouble(), mark.z.toDouble(), mark)
-                is Path -> ShownPath(mark.points.map { it.vec() }, color)
-                is Ring -> ShownRing(mark.center.vec(), mark.radius, GizmoStyle.stroke(color, LINE_WIDTH))
                 is Waypoint -> ShownWaypoint(
                     mark.at.vec(),
                     mark.at.vec().add(0.0, BEAM_HEIGHT, 0.0),
@@ -113,8 +105,6 @@ object World {
         tracersShown = tracers.values.flatten()
     }
 
-    fun marksQueued() = shown.size + beamsShown.size + tracersShown.size
-
     fun worldChanged() {
         marks.clear()
         beams.clear()
@@ -133,10 +123,6 @@ object World {
             for (i in shown.indices) {
                 when (val mark = shown[i]) {
                     is ShownBox -> Gizmos.cuboid(mark.box, mark.style)
-                    is ShownRing -> Gizmos.circle(mark.center, mark.radius, mark.style)
-                    is ShownPath -> for (j in 1 until mark.points.size) {
-                        Gizmos.line(mark.points[j - 1], mark.points[j], mark.color, LINE_WIDTH)
-                    }
                     is ShownWaypoint -> {
                         if (mark.label.at(camera.distanceTo(mark.at).toInt())) mark.labelAt = labelAt(mark.at, mark.label)
                         Gizmos.cuboid(mark.box.box, mark.box.style).setAlwaysOnTop()

@@ -12,16 +12,11 @@ import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KProperty0
 
 class Bind<T>(val field: String, val get: () -> T, val set: (T) -> Unit) {
-    var also: List<String> = emptyList()
-        private set
-
     var follows: (() -> T?)? = null
         private set
 
     var formerly: List<String> = emptyList()
         private set
-
-    fun spanning(vararg fields: String) = apply { also = fields.toList() }
 
     fun formerly(vararg keys: String) = apply { formerly = keys.toList() }
 
@@ -93,18 +88,12 @@ sealed class Setting(val id: String, val name: String, val description: String, 
         yield(this@Setting)
         for (child in children) yieldAll(child.walk())
     }
-
-    companion object {
-        const val DESCRIPTION_MAX = 67
-    }
 }
 
 sealed class Valued<T>(id: String, name: String, description: String, kind: Kind, private val bind: Bind<T>) : Setting(id, name, description, kind) {
     val field get() = bind.field
 
     val formerly get() = bind.formerly
-
-    val fields get() = listOf(bind.field) + bind.also
 
     var value: T
         get() = bind.get()

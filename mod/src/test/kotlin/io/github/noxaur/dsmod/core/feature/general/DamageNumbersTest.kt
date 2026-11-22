@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.feature.general
 
 import io.github.noxaur.dsmod.harness.Harness
+import io.github.noxaur.dsmod.harness.feature
 import io.github.noxaur.dsmod.harness.text
 import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.ServerSpan

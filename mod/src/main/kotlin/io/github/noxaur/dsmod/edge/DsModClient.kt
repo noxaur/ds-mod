@@ -119,7 +119,7 @@ object DsModClient : ClientModInitializer {
         }
     }
 
-    private fun start() {
+    internal fun start() {
         val tree = SettingsTree(settings)
         game = Game(tree.features) { anyServer || onDragSim }
         byType = tree.owners.associateBy { it.javaClass }
@@ -132,12 +132,6 @@ object DsModClient : ClientModInitializer {
         game.metrics.sinks += { snapshot ->
             snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }
         }
-    }
-
-    fun restart(between: () -> Unit = {}) {
-        saved.close()
-        between()
-        start()
     }
 
     override fun onInitializeClient() {

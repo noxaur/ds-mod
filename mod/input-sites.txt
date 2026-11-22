@@ -81,7 +81,7 @@ gate edge.TabBar 0aaaf510acda  MenuTabs
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
 gate edge.Trail d75180319c06
     can refuse or change sent chat through ClientSendMessageEvents.COMMAND
-gate edge.capture.Recording 5b736e1b983a
+gate edge.capture.Recording 51b5fdb2edea
     takes the player's key presses through KeyMapping.consumeClick
 gate edge.mixin.BlockingArmMixin 08d619328bcc
     hooks AvatarRenderer.getArmPose

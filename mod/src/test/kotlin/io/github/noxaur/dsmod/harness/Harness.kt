@@ -1,5 +1,7 @@
 package io.github.noxaur.dsmod.harness
 
+import io.github.noxaur.dsmod.core.capture.Captured
+import io.github.noxaur.dsmod.core.capture.readCaptureLine
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.HasFeature
@@ -12,6 +14,8 @@ import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.SystemMessage
+import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.reflect.KClass
 
 abstract class Harness(
@@ -65,3 +69,9 @@ fun ownInventory(vararg slots: Pair<Int, Item?>): Array<GameEvent> =
     arrayOf<GameEvent>(ContainerOpened(0, null, 46)) + slots.map { (slot, item) -> SlotChanged(slot, item) }
 
 fun resource(path: String) = checkNotNull(Harness::class.java.getResource("/$path")) { "No test resource /$path" }.readText()
+
+fun readCapture(file: Path): List<Captured> = Files.readAllLines(file).filter { it.isNotBlank() }.mapNotNull(::readCaptureLine)
+
+fun <F : HasFeature> SettingsTree.feature(type: Class<F>): F = type.cast(owners.first { it.javaClass == type })
+
+inline fun <reified F : HasFeature> SettingsTree.feature(): F = feature(F::class.java)

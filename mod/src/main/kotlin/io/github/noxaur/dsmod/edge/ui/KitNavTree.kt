@@ -22,7 +22,7 @@ class KitNavTree(
     y: Int,
     width: Int,
     height: Int,
-    private val tree: NavTree,
+    internal val tree: NavTree,
     private val names: List<String>,
     private val colors: List<Int>,
     private val subNames: List<List<String>>,
@@ -32,9 +32,9 @@ class KitNavTree(
     private val onOpen: (Int, Int) -> Unit,
     private val icons: List<Icon?> = emptyList(),
 ) : AbstractWidget(x, y, width, height, text { body("Sections") }.toComponent()) {
-    private val scroll = Scroll()
+    internal val scroll = Scroll()
     private val fullNames = names.map { text { body(it) }.toComponent() }
-    private var tops = IntArray(1)
+    internal var tops = IntArray(1)
     private var labels = emptyArray<String>()
     private var cut = BooleanArray(0)
     private var countLabels: Array<String>? = null
@@ -82,11 +82,6 @@ class KitNavTree(
     fun reveal(row: NavRow) {
         val i = tree.rows.indexOf(row).takeIf { it >= 0 } ?: return
         if (tops[i] < scroll.offset) scroll.to(tops[i]) else if (tops[i + 1] > scroll.offset + height) scroll.to(tops[i + 1] - height)
-    }
-
-    fun middle(row: NavRow): Int? {
-        val i = tree.rows.indexOf(row).takeIf { it >= 0 } ?: return null
-        return y + (tops[i] + tops[i + 1]) / 2 - scroll.offset
     }
 
     fun key(event: KeyEvent): Boolean {

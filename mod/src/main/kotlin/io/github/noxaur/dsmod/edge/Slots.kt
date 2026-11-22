@@ -60,8 +60,6 @@ object Slots {
         for (slots in marks.values) for ((index, shown) in slots) if (shown.hide) hidden.set(index)
     }
 
-    fun rarity(index: Int): Role? = marks.values.firstNotNullOfOrNull { it[index]?.rarity }
-
     fun register() {
         HudElementRegistry.attachElementAfter(VanillaHudElements.HOTBAR, Identifier.fromNamespaceAndPath("dsmod", "hotbar")) { graphics, _ ->
             if (!onHotbar() || !cooldowns) return@attachElementAfter

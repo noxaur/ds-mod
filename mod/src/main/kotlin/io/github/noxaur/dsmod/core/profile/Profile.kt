@@ -183,9 +183,7 @@ data class ForgeSlot(
     val durationMs: Long,
     val finishesAt: Long,
     val stage: String,
-) {
-    fun done(now: Long) = if (durationMs <= 0) 1f else ((now - startedAt).toFloat() / durationMs).coerceIn(0f, 1f)
-}
+)
 
 @Serializable
 data class Meter(val id: String, val name: String, val progress: Double)
@@ -236,8 +234,6 @@ data class Profile(
     val choice get() = profiles.firstOrNull { it.id == profileId } ?: ProfileChoice(profileId, profileName, profileMode, true)
 
     val choices get() = if (profiles.any { it.id == profileId }) profiles else profiles + choice
-
-    val hidden get() = containers.any { it.hidden }
 
     companion object {
         private val json = Json { ignoreUnknownKeys = true }

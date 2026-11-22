@@ -50,7 +50,6 @@ object Kit {
     enum class Ink { NORMAL, MUTED, OFF, MATCH }
 
     class Marked(pieces: List<Piece>) {
-        val text = pieces.joinToString("") { it.text }
         internal val parts = Array(pieces.size) { pieces[it].text }
         internal val matches = BooleanArray(pieces.size) { pieces[it].match }
         internal val offsets = IntArray(pieces.size)
@@ -77,7 +76,6 @@ object Kit {
     const val TAB_WIDTH = TabLayout.TAB_WIDTH
     const val TAB_HEIGHT = 21
     const val CHECKBOX_SIZE = 10
-    const val DIVIDER_HEIGHT = 2
 
     const val LABEL_HEIGHT = 8
     const val GAP = 4
@@ -657,9 +655,6 @@ object Kit {
         RenderPipelines.GUI_TEXTURED, atlas.id, x - 1, y - 1, (cell * SlotArt.SIZE).toFloat(), (row * SlotArt.SIZE).toFloat(), SlotArt.SIZE, SlotArt.SIZE,
         atlas.width, atlas.height, ARGB.white((opacity.coerceIn(0, 100) * 255 + 50) / 100),
     )
-
-    fun inventory(g: GuiGraphicsExtractor, x: Int, y: Int) =
-        g.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, x, y, 0f, 0f, INVENTORY_WIDTH, INVENTORY_HEIGHT, 256, 256)
 
     fun slotAt(g: GuiGraphicsExtractor, x: Int, y: Int, alpha: Int = OPAQUE) {
         if (alpha > 0) g.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, x, y, EMPTY_SLOT_U, EMPTY_SLOT_V, SLOT_SIZE, SLOT_SIZE, 256, 256, ARGB.white(alpha))

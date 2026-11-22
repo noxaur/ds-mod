@@ -22,10 +22,6 @@ class Slot<T>(val store: Store, val key: String, val default: T, val serializer:
     var value: T = default
 
     val bind: Bind<T> = Bind("${store.className}.$key", { value }, { value = it }).formerly(*formerly.toTypedArray())
-
-    fun reset() {
-        value = default
-    }
 }
 
 class Stored(val store: Store) {
@@ -43,6 +39,4 @@ class Stored(val store: Store) {
 
     @Suppress("UNCHECKED_CAST")
     fun <T> former(key: String, serializer: KSerializer<T>): T? = held?.invoke(key, serializer) as T?
-
-    fun reset() = slots.values.forEach { it.reset() }
 }

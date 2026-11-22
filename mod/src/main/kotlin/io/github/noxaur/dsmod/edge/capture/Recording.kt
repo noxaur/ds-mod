@@ -35,11 +35,6 @@ object Recording {
 
     val busy get() = run?.done == false
 
-    fun start(brief: Brief) {
-        startAtLaunch(brief)
-        Minecraft.getInstance().updateTitle()
-    }
-
     fun startAtLaunch(brief: Brief) {
         cancel()
         run = BriefRun(brief)

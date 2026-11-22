@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.core.feature.inventory
 
 import io.github.noxaur.dsmod.harness.Harness
 import io.github.noxaur.dsmod.harness.chat
+import io.github.noxaur.dsmod.harness.feature
 import io.github.noxaur.dsmod.harness.lines
 import io.github.noxaur.dsmod.harness.text
 import io.github.noxaur.dsmod.core.game.ContainerOpened

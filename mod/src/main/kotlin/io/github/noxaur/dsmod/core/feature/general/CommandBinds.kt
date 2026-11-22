@@ -34,7 +34,7 @@ class CommandBinds(config: DsModConfig) : HasFeature {
                     collapsedGroups.value = it.folded
                     offGroups.value = it.off
                 },
-            ).spanning(groups.bind.field, collapsedGroups.bind.field, offGroups.bind.field)
+            )
             items(list, "Binds", "Name each bind, pick its keys and choose where it works.", BindKind)
         }
     }

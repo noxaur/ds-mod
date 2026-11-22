@@ -67,7 +67,7 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         }
     }.hint("chest")
     private val name = KitTextField(0, 0, 0, "Name", "", COMMAND_LENGTH) { typed -> change { it.copy(tooltip = typed.trim()) } }.hint("Optional")
-    private val fields = listOf(command, item, name)
+    internal val fields = listOf(command, item, name)
     private val icons = HashMap<String, ItemStack>()
     private var focused: KitTextField? = null
 
@@ -187,23 +187,6 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
         return null
     }
 
-    fun fieldSpot(which: Int): IntArray {
-        val field = fields[which]
-        return intArrayOf(field.x, field.y, field.width, field.height)
-    }
-
-    fun placeAt(edge: TabEdge, slot: Int): Pair<Int, Int> {
-        val y = tabY(edge)
-        return box.x + TabLayout.x(slot) + Kit.TAB_WIDTH / 2 to y + Kit.TAB_HEIGHT / 2
-    }
-
-    fun controlAt(name: String): Pair<Int, Int> {
-        val field = fields.getOrNull(LABELS.indexOf(name))
-        if (field != null) return field.x + field.width / 2 to field.y + 4
-        val i = BUTTONS.indexOf(name)
-        return buttons.middle(i) to box.origin + buttonY(i) + Kit.BUTTON_HEIGHT / 2
-    }
-
     private fun buttonY(i: Int) = buttonsY + (i / 2) * FIELD_STEP
 
     private fun drawTab(g: GuiGraphicsExtractor, tab: MenuTab, tx: Int, edgeY: Int, hovered: Boolean) {
@@ -223,7 +206,7 @@ class TabPlacesEditor(private val panel: Panel<List<MenuTab>>, private val host:
 
     private fun edgeY(edge: TabEdge) = if (edge == TabEdge.TOP) menuTop() else menuTop() + MENU_HEIGHT
 
-    private fun tabY(edge: TabEdge) = edgeY(edge) + if (edge == TabEdge.TOP) 2 - Kit.TAB_HEIGHT else -2
+    internal fun tabY(edge: TabEdge) = edgeY(edge) + if (edge == TabEdge.TOP) 2 - Kit.TAB_HEIGHT else -2
 
     private fun code(edge: TabEdge, slot: Int) = edge.ordinal * TabLayout.PER_EDGE + slot
 

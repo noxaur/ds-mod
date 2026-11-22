@@ -1,11 +1,11 @@
 package io.github.noxaur.dsmod.core.feature
 
 import io.github.noxaur.dsmod.core.capture.Captured
+import io.github.noxaur.dsmod.harness.readCapture
 import io.github.noxaur.dsmod.harness.chat
 import io.github.noxaur.dsmod.harness.Harness
 import io.github.noxaur.dsmod.harness.lines
 import io.github.noxaur.dsmod.harness.text
-import io.github.noxaur.dsmod.core.capture.readCapture
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.game.ActionBar
@@ -110,8 +110,8 @@ class FeatureReplayTest {
     private fun events(feature: Feature, fixture: Path): List<Captured> {
         val events = readCapture(fixture)
         val start = events.first().time
-        val row = feature.area.row?.takeIf { events.none { it.event is TabList } }
-        val line = feature.area.line?.takeIf { events.none { it.event is Sidebar } }
+        val row = feature.area.key?.let { "$it: ${feature.area.value}" }?.takeIf { events.none { it.event is TabList } }
+        val line = feature.area.place?.let { "⏣ $it" }?.takeIf { events.none { it.event is Sidebar } }
         return listOfNotNull(row?.let { Captured(start, TabList(lines(it))) }, line?.let { Captured(start, Sidebar(lines = lines(it))) }) + events
     }
 
