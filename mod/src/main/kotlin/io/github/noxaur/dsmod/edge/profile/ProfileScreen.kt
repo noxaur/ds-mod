@@ -54,6 +54,7 @@ import java.time.Instant
 import java.util.IdentityHashMap
 import java.util.Locale
 import java.util.UUID
+import kotlin.math.floor
 import kotlin.math.roundToInt
 
 // The panel is 423 wide, so it fits a screen 854 pixels wide at GUI scale 2.
@@ -461,7 +462,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
             }
             graphics.disableScissor()
         } else {
-            contentHeight = container(graphics, profile, mx, vy) { drawn, stack ->
+            contentHeight = container(graphics, profile, mx, vy, hover) { drawn, stack ->
                 hovered = drawn
                 item = stack
             }
@@ -665,7 +666,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
             fact("Level", pet.level?.let { "$it / ${pet.maxLevel ?: "?"}" } ?: "Unknown"),
             pet.xpForNextLevel?.takeIf { it > 0 }?.let { next ->
                 val exact = text { muted("Progress: "); value("${grouped(pet.xpIntoLevel.toLong())} / ${grouped(next.toLong())}") }.toComponent()
-                Row(muted("Progress"), listOf(text { value("${fixed(pet.xpIntoLevel / next * 100, 1)}%") }.toComponent()), listOf(exact))
+                Row(muted("Progress"), listOf(text { value("${fixed(floor(pet.xpIntoLevel / next * 1000) / 10, 1)}%") }.toComponent()), listOf(exact))
             },
             Row(muted("Total XP"), listOf(text { value(amount(pet.totalXp)) }.toComponent())),
             pet.heldItem?.let { fact("Held", it.name) },
@@ -900,7 +901,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
      * inventory, the active pet when it is the pets, and a count of what it holds. A grid still loading, failed or
      * hidden is drawn empty for its notice.
      */
-    private fun container(graphics: GuiGraphicsExtractor, profile: Profile?, mouseX: Int, mouseY: Int, item: (DrawnItem, ItemStack) -> Unit): Int {
+    private fun container(graphics: GuiGraphicsExtractor, profile: Profile?, mouseX: Int, mouseY: Int, hover: (List<Component>) -> Unit, item: (DrawnItem, ItemStack) -> Unit): Int {
         val summary = shownSummary() ?: return 0
         val texts = texts(profile)
         val pets = summary.id == PETS
@@ -967,7 +968,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
             for ((i, w) in equipment.withIndex()) slot(graphics, w.takeUnless { summary.hidden }, sx + i * Kit.SLOT_SIZE, y, mouseX, mouseY, item)
             y += Kit.SLOT_SIZE + Kit.GAP * 2
         }
-        if (pets) y = draw(graphics, texts.activePet, sx, y)
+        if (pets) y = draw(graphics, texts.activePet, sx, y, mouseX, mouseY, hover = hover)
         if (items != null) y = draw(graphics, contents(summary, items, worn), sx, y)
         graphics.disableScissor()
         return maxOf(height, y - sideTop)
