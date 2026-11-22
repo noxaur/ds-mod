@@ -15,7 +15,6 @@ import net.minecraft.world.level.GameType
 import java.util.EnumSet
 import java.util.UUID
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.TabListPoller]. */
 class TabListTest : FabricClientGameTest {
     /** @keep A tab list entry borrows a real connection, because the packet reads the latency from it. */
     private class Listed(server: MinecraftServer, name: String, var display: String?, private val order: Int = 0, private val mode: GameType = GameType.SURVIVAL) :

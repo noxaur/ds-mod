@@ -7,7 +7,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.ChestScreenMixin], [io.github.noxaur.dsmod.edge.mixin.ContainerScreenMixin]. */
 class FixedMenuLayoutTest : FabricClientGameTest {
     private fun walk(context: ClientGameTestContext, world: TestSingleplayerContext, shot: String) =
         listOf(6, 4, 3).map { rows ->

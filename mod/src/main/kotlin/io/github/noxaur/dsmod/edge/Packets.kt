@@ -20,8 +20,13 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.chunk.LevelChunk
 
 object Packets {
+    private lateinit var game: Game
+
+    fun bind(game: Game) {
+        this.game = game
+    }
+
     fun actionBar(text: Component) {
-        val game = DsModClient.game
         if (game.wants(ActionBar::class.java)) game.post(System.currentTimeMillis(), ActionBar(text.toText()))
     }
 
@@ -29,7 +34,6 @@ object Packets {
 
     fun systemChat(text: Component, overlay: Boolean) {
         if (overlay) return actionBar(text)
-        val game = DsModClient.game
         shown = !game.wants(SystemMessage::class.java) || game.post(System.currentTimeMillis(), SystemMessage(text.toText()))
     }
 
@@ -40,7 +44,6 @@ object Packets {
     }
 
     fun time(gameTime: Long) {
-        val game = DsModClient.game
         if (game.wants(ServerTime::class.java)) game.post(System.currentTimeMillis(), ServerTime(gameTime))
     }
 
@@ -49,7 +52,6 @@ object Packets {
     fun pong(sent: Long) {
         val ping = PingMeasured(Util.getMillis() - sent)
         Minecraft.getInstance().execute {
-            val game = DsModClient.game
             if (game.wants(PingMeasured::class.java)) game.post(System.currentTimeMillis(), ping)
         }
     }
@@ -74,7 +76,6 @@ object Packets {
             head(pos)
             return
         }
-        val game = DsModClient.game
         if (game.seesHeads() || game.wants(HeadPlaced::class.java)) waiting.putIfAbsent(pos, 0)
     }
 
@@ -88,14 +89,12 @@ object Packets {
     }
 
     private fun head(pos: BlockPos) {
-        val game = DsModClient.game
         if (game.seesHeads()) postHead(game, pos)
         if (!game.reaches(HeadPlaced::class.java) && game.wants(HeadPlaced::class.java)) waiting[pos] = 0
     }
 
     fun tick(client: Minecraft) {
         if (waiting.isEmpty()) return
-        val game = DsModClient.game
         val level = client.level
         val each = waiting.entries.iterator()
         while (each.hasNext()) {
@@ -122,7 +121,6 @@ object Packets {
     private fun postHead(game: Game, pos: BlockPos) = game.post(System.currentTimeMillis(), HeadPlaced(pos.x, pos.y, pos.z))
 
     fun entityEvent(packet: ClientboundEntityEventPacket) {
-        val game = DsModClient.game
         if (packet.eventId != EntityEvent.DEATH || !game.wants(EntityDied::class.java)) return
         val entity = Minecraft.getInstance().level?.let(packet::getEntity) ?: return
         if (entity is Player) return

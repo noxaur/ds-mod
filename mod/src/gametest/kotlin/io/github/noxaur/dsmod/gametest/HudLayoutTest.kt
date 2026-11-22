@@ -20,7 +20,7 @@ class HudLayoutTest : FabricClientGameTest {
             context.waitTicks(5)
             SettingsDriver(context).layout()
             context.runOnClient<Nothing> {
-                DsModClient.settings.hud.positions.clear()
+                DsModClient.settings.hud.positions.value = emptyMap()
                 DsModClient.saveSettings()
             }
             context.setScreen { null }
@@ -34,7 +34,7 @@ class HudLayoutTest : FabricClientGameTest {
         fun point() = context.computeOnClient<Pair<Int, Int>?, Nothing> { editor(it).pointOf(DRAGON_TIMER) } ?: error("The layout does not show $DRAGON_TIMER")
         fun placed() = context.computeOnClient<Hud.Placed, Nothing> { Hud.find(DRAGON_TIMER)!! }
 
-        context.setScreen { SettingsScreen(null, SettingsTabs(at("Interface")), reveal = "hudLayout") }
+        context.setScreen { DsModClient.settingsScreen(null, SettingsTabs(at("Interface")), reveal = "hudLayout") }
         context.waitTicks(2)
         spot("hudLayout")
         context.waitTicks(2)
@@ -46,7 +46,7 @@ class HudLayoutTest : FabricClientGameTest {
         context.shotInBothThemes("hud-layout-drag")
         context.input.releaseMouse(0)
         context.waitTicks(2)
-        check(DRAGON_TIMER in hud.positions) { "A drag on the layout did not place the block" }
+        check(DRAGON_TIMER in hud.positions.value) { "A drag on the layout did not place the block" }
         val dropped = placed()
 
         hold(point().first, point().second)
@@ -85,11 +85,11 @@ class HudLayoutTest : FabricClientGameTest {
         context.takeScreenshot("hud-layout-picked")
 
         click(point().first, point().second, GLFW.GLFW_MOUSE_BUTTON_RIGHT)
-        check(DRAGON_TIMER !in hud.positions) { "A right press kept the block's place" }
+        check(DRAGON_TIMER !in hud.positions.value) { "A right press kept the block's place" }
         key(GLFW.GLFW_KEY_RIGHT)
-        check(DRAGON_TIMER in hud.positions) { "Right did not place the stacked block" }
+        check(DRAGON_TIMER in hud.positions.value) { "Right did not place the stacked block" }
         key(GLFW.GLFW_KEY_BACKSPACE)
-        check(DRAGON_TIMER !in hud.positions) { "Backspace kept the block's place" }
+        check(DRAGON_TIMER !in hud.positions.value) { "Backspace kept the block's place" }
         key(GLFW.GLFW_KEY_ESCAPE)
 
         val moveHud = spot("moveHud")

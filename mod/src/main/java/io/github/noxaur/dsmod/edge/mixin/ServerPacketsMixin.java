@@ -1,7 +1,8 @@
 package io.github.noxaur.dsmod.edge.mixin;
 
-import io.github.noxaur.dsmod.edge.DsModClient;
 import io.github.noxaur.dsmod.edge.Packets;
+import io.github.noxaur.dsmod.edge.Hooks;
+import io.github.noxaur.dsmod.edge.input.InputApproved;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
@@ -19,6 +20,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /** @keep Each handler runs twice, and only the client-thread pass reaches TAIL, except the pong's, which the game handles on the network thread alone. */
+@InputApproved(by = "noxaur", hash = "fa42ef0c8027")
 @Mixin(ClientPacketListener.class)
 abstract class ServerPacketsMixin {
     @Inject(
@@ -70,16 +72,16 @@ abstract class ServerPacketsMixin {
 
     @Inject(method = "handleOpenScreen", at = @At("TAIL"))
     private void dsmod$openScreen(ClientboundOpenScreenPacket packet, CallbackInfo ci) {
-        DsModClient.INSTANCE.menuChanged();
+        Hooks.menuChanged();
     }
 
     @Inject(method = "handleContainerContent", at = @At("TAIL"))
     private void dsmod$containerContent(ClientboundContainerSetContentPacket packet, CallbackInfo ci) {
-        DsModClient.INSTANCE.menuChanged();
+        Hooks.menuChanged();
     }
 
     @Inject(method = "handleContainerSetSlot", at = @At("TAIL"))
     private void dsmod$containerSlot(ClientboundContainerSetSlotPacket packet, CallbackInfo ci) {
-        DsModClient.INSTANCE.menuChanged();
+        Hooks.menuChanged();
     }
 }

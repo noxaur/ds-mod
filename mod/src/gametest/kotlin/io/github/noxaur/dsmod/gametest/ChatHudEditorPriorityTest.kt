@@ -14,7 +14,6 @@ import net.minecraft.network.chat.Component
 
 private const val TRACKER = "zealot-tracker"
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.Chat], [io.github.noxaur.dsmod.edge.ChatDrags], [io.github.noxaur.dsmod.edge.ui.Editor], [io.github.noxaur.dsmod.edge.ui.ItemsEditor]. */
 class ChatHudEditorPriorityTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.inWorldWithoutTimerPlace { world ->

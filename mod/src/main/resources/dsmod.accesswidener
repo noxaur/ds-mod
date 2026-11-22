@@ -1,4 +1,5 @@
 accessWidener v2 official
+# @InputApproved(hash = "a1dbb206259c")
 
 accessible field net/minecraft/client/gui/Hud title Lnet/minecraft/network/chat/Component;
 accessible field net/minecraft/client/gui/Hud subtitle Lnet/minecraft/network/chat/Component;

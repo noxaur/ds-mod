@@ -7,7 +7,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.item.Items
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.ArmorSwapGuards]. */
 class ArmorSwapGuardTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->

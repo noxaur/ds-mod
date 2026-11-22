@@ -24,7 +24,7 @@ class ChatHudEditorStandInTest : FabricClientGameTest {
 
             chat.drag(DRAGON_TIMER, chat.width / 2.0 + 40, chat.height / 2.0 + 20)
             chat.block(DRAGON_TIMER).let { check(abs(it.x - (chat.width / 2.0 + 40)) < 0.6) { "The stand-in did not drag: ${it.x}, ${it.y}" } }
-            check(DRAGON_TIMER in DsModClient.settings.hud.positions) { "The stand-in's place was not kept" }
+            check(DRAGON_TIMER in DsModClient.settings.hud.positions.value) { "The stand-in's place was not kept" }
             context.takeScreenshot("chat-hud-editor-stand-in-moved")
 
             context.setScreen { null }

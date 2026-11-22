@@ -6,9 +6,10 @@ import io.github.noxaur.dsmod.core.brief.BriefRun
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.Chat
-import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.edge.contribute.Contribute
+import io.github.noxaur.dsmod.edge.input.InputApproved
+import io.github.noxaur.dsmod.edge.input.KeyPresses
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.KeyMapping
@@ -18,6 +19,8 @@ import java.nio.file.Files
 
 /** @keep `specs/Contribute.tla` is the life of a request's run. */
 object Recording {
+    private lateinit var leave: () -> Unit
+
     private const val BELOW_STATUS_EFFECTS = 54
     private const val PLATE_AND_MARGIN = 9
 
@@ -52,8 +55,9 @@ object Recording {
         Minecraft.getInstance().updateTitle()
     }
 
+    @InputApproved(reaches = ["KeyPresses.take"])
     private fun drainNextStep() {
-        if (::nextStep.isInitialized) while (nextStep.consumeClick()) Unit
+        if (::nextStep.isInitialized) KeyPresses.take(nextStep)
     }
 
     fun cancel(): Boolean {
@@ -115,9 +119,10 @@ object Recording {
         return true
     }
 
+    @InputApproved(reaches = ["KeyPresses.take"])
     private fun tick(client: Minecraft) {
         // @keep A run that lost its connection during this tick must not finish and send now.
-        DsModClient.leave()
+        leave()
         val now = System.currentTimeMillis()
         if (ended(run, now)) {
             drainNextStep()
@@ -131,8 +136,7 @@ object Recording {
             drainNextStep()
             return
         }
-        var presses = 0
-        while (nextStep.consumeClick()) presses++
+        val presses = KeyPresses.take(nextStep)
         val steps = run.step(now, presses)
         if (steps.isNotEmpty()) {
             // @keep A request's run always has a capture of its own, which only Contribute may hand out.
@@ -156,7 +160,8 @@ object Recording {
         if (request != null) cancel()
     }
 
-    fun register() {
+    fun register(leave: () -> Unit) {
+        this.leave = leave
         nextStep = KeyMappingHelper.registerKeyMapping(KeyMapping("key.dsmod.next_step", GLFW.GLFW_KEY_RIGHT_BRACKET, KeyMapping.Category.MISC))
         ClientTickEvents.END_CLIENT_TICK.register(::tick)
     }

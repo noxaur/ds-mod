@@ -9,7 +9,6 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.world.SimpleContainer
 import net.minecraft.world.item.Items
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.EnchantmentOfferMixin], [io.github.noxaur.dsmod.edge.mixin.MenuBackdropMixin], [io.github.noxaur.dsmod.edge.mixin.MenuLabelMixin]. */
 class ContainerPollTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         var tick = 0

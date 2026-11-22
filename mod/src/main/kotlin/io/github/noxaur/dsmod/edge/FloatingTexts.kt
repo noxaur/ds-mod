@@ -1,9 +1,16 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.game.FloatingText
 import net.minecraft.network.chat.Component
 
 object FloatingTexts {
+    private lateinit var game: Game
+
+    fun bind(game: Game) {
+        this.game = game
+    }
+
     @JvmField
     val HIDDEN: Component = Component.empty()
 
@@ -12,7 +19,6 @@ object FloatingTexts {
 
     @JvmStatic
     fun edit(text: Component): Component? {
-        val game = DsModClient.game
         if (!game.wants(FloatingText::class.java)) return null
         val plain = text.toText()
         if (plain.plain.isEmpty()) return null

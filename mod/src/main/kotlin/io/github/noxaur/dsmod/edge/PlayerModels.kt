@@ -14,24 +14,28 @@ import net.minecraft.client.renderer.entity.state.AvatarRenderState
 private const val RADIANS = (Math.PI / 180).toFloat()
 
 object PlayerModels {
-    private val settings: PlayerModel get() = DsModClient.feature(PlayerModel::class.java)
+    private lateinit var settings: PlayerModel
+
+    fun bind(playerModel: PlayerModel) {
+        settings = playerModel
+    }
 
     /** @keep A model a screen draws for itself, such as the profile viewer's, has an id below 1, which the world never gives, and is left alone. */
-    private fun applies(state: AvatarRenderState): Boolean = DsModClient.runs<PlayerModel>() &&
+    private fun applies(state: AvatarRenderState): Boolean = settings.feature.runs &&
         (state.id == Minecraft.getInstance().player?.id || settings.target.value == ModelTarget.EVERYONE && state.id > 0)
 
     fun facing(state: AvatarRenderState, bodyRot: Float): Float =
         if (spinning && applies(state)) ModelShape.spin(System.nanoTime(), settings.spin.value) else bodyRot
 
-    val spinning: Boolean get() = DsModClient.runs<PlayerModel>() && settings.spin.value != 0f
+    val spinning: Boolean get() = settings.feature.runs && settings.spin.value != 0f
 
     val reach: Float get() {
-        if (!DsModClient.runs<PlayerModel>()) return 1f
+        if (!settings.feature.runs) return 1f
         val s = settings
         return s.size.value * maxOf(s.width.value, s.height.value, s.depth.value)
     }
 
-    val tall: Float get() = if (DsModClient.runs<PlayerModel>()) settings.let { it.size.value * it.height.value } else 1f
+    val tall: Float get() = if (settings.feature.runs) settings.let { it.size.value * it.height.value } else 1f
 
     fun shape(state: AvatarRenderState, pose: PoseStack) {
         if (!applies(state)) return

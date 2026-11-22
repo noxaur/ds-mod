@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import io.github.noxaur.dsmod.edge.MenuSkin;
+import io.github.noxaur.dsmod.edge.input.InputApproved;
 import kotlin.Pair;
 import net.minecraft.client.MouseHandler;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /** @keep The server closes a menu before it opens the next, so the game takes the mouse back for a moment and then lets it
  * go at the middle of the window. */
+@InputApproved(by = "noxaur", hash = "ec46fb6ba006")
 @Mixin(MouseHandler.class)
 abstract class CursorMixin {
     @Shadow

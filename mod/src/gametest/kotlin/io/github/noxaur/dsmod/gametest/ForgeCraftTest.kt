@@ -16,7 +16,6 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
 import org.lwjgl.glfw.GLFW
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.MenuSkin], [io.github.noxaur.dsmod.edge.mixin.EnchantmentOfferMixin], [io.github.noxaur.dsmod.edge.mixin.MenuArtMixin], [io.github.noxaur.dsmod.edge.mixin.MenuBackdropMixin], [io.github.noxaur.dsmod.edge.mixin.MenuLabelMixin], [io.github.noxaur.dsmod.edge.mixin.MenuPaintMixin], [io.github.noxaur.dsmod.edge.mixin.RecipeButtonMixin], [io.github.noxaur.dsmod.edge.mixin.TooltipMixin]. */
 class ForgeCraftTest : FabricClientGameTest {
     private fun named(item: net.minecraft.world.item.Item, name: String, color: Int = 0xFFFFFF, count: Int = 1, vararg lore: String): ItemStack =
         ItemStack(item, count).also {

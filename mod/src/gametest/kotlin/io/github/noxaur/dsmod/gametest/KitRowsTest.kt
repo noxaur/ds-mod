@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
+import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.core.config.Kind
 import io.github.noxaur.dsmod.core.ui.Look
 import io.github.noxaur.dsmod.core.ui.Theme
@@ -15,7 +16,7 @@ class KitRowsTest : FabricClientGameTest {
         val kinds = HashSet<Kind>()
         val looks = HashSet<KClass<out Look>>()
         for (page in listOf(SettingsGalleryScreen.Page.LISTS, SettingsGalleryScreen.Page.PANELS, SettingsGalleryScreen.Page.ROWS)) {
-            context.setScreen { SettingsGalleryScreen(page) }
+            context.setScreen { SettingsGalleryScreen(DsModClient.settings.hud, page) }
             context.waitTicks(2)
             context.runOnClient<Nothing> { client -> (client.gui.screen() as SettingsGalleryScreen).let { kinds += it.kinds; looks += it.looks } }
         }
