@@ -1,8 +1,11 @@
 package io.github.noxaur.dsmod.core.feature.general
 
-import io.github.noxaur.dsmod.core.config.SettingsTree
+import io.github.noxaur.dsmod.harness.Harness
+import io.github.noxaur.dsmod.harness.chat
+import io.github.noxaur.dsmod.harness.dragSimSidebar
+import io.github.noxaur.dsmod.harness.lines
+import io.github.noxaur.dsmod.harness.text
 import io.github.noxaur.dsmod.core.container.SlotMark
-import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.EntityDied
@@ -11,58 +14,28 @@ import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.EntitySeen
 import io.github.noxaur.dsmod.core.game.ServerSpan
-import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SlotChanged
-import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.hud.BarRow
 import io.github.noxaur.dsmod.core.text.Role
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class ActivePetTest {
-    private val tree = SettingsTree()
+class ActivePetTest : Harness(alone = ActivePet::class) {
     private val feature = tree.feature<ActivePet>().also { it.feature.enabled = true }
-    private val game = Game(tree.features)
-    private var time = 0L
-
-    private fun feature() = readout().feature
-
-    @BeforeTest
-    fun quiet() {
-        // Equipment Display reads the same lines, so it is off to keep the readouts to this feature's.
-        tree.feature<EquipmentDisplay>().feature.enabled = false
-    }
-
-    private fun post(vararg events: GameEvent) {
-        for (event in events) game.post(++time, event)
-        time += 250
-        game.tick(time)
-    }
-
-    private fun readout() = game.readouts.single { it.feature.id == "active-pet" }
-    private fun hud() = readout().hud
-    private fun rows() = hud()?.rows?.map { it.text.plain }
-
-    private fun sidebar(vararg lines: ServerText) = Sidebar(ServerText(ServerSpan("DragSim")), listOf(ServerText(ServerSpan("Purse: 1,000")), *lines))
 
     private fun petLine(name: String = "Black Cat", level: Int = 100, rgb: Int = Role.LEGENDARY.rgb) =
-        ServerText(ServerSpan("Pet: ", 0xFFFFFF), ServerSpan("[Lvl $level] ", 0xAAAAAA), ServerSpan(name, rgb))
+        text(ServerSpan("Pet: ", 0xFFFFFF), ServerSpan("[Lvl $level] ", 0xAAAAAA), ServerSpan(name, rgb))
 
-    private fun pet(name: String = "Black Cat", level: Int = 100, rgb: Int = Role.LEGENDARY.rgb) = sidebar(petLine(name, level, rgb))
+    private fun pet(name: String = "Black Cat", level: Int = 100, rgb: Int = Role.LEGENDARY.rgb) = dragSimSidebar(petLine(name, level, rgb))
 
-    private fun none() = sidebar(ServerText(ServerSpan("Pet: ", 0xFFFFFF), ServerSpan("None", 0xAAAAAA)))
+    private fun none() = dragSimSidebar(text(ServerSpan("Pet: ", 0xFFFFFF), ServerSpan("None", 0xAAAAAA)))
 
-    private fun dungeon() = sidebar(ServerText(ServerSpan("⏣ The Catacombs (F1)")))
-
-    private fun chat(line: String) = SystemMessage(ServerText(ServerSpan(line)))
-
-    private fun lines(vararg lines: String) = lines.map { ServerText(ServerSpan(it)) }
+    private fun dungeon() = dragSimSidebar(text("⏣ The Catacombs (F1)"))
 
     /** The active pet's item as the Pets menu shows it, with [progress] as the lines under its level. */
     private fun card(
@@ -76,9 +49,9 @@ class ActivePetTest {
     ) = Item(
         "minecraft:player_head",
         1,
-        ServerText(ServerSpan("[Lvl $level] ", 0xAAAAAA), ServerSpan(name, Role.LEGENDARY.rgb)),
+        text(ServerSpan("[Lvl $level] ", 0xAAAAAA), ServerSpan(name, Role.LEGENDARY.rgb)),
         lines(" Speed: +25", "") +
-            (if (held != null) listOf(ServerText(ServerSpan("Held Item")), ServerText(ServerSpan(held, Role.LEGENDARY.rgb)), ServerText(ServerSpan(""))) else emptyList()) +
+            (if (held != null) listOf(text("Held Item"), text(held, Role.LEGENDARY.rgb), text("")) else emptyList()) +
             lines("LEVEL $level", *progress, "") +
             lines(*(if (active) arrayOf("ACTIVE", "Click to deactivate!") else arrayOf("Click to summon!"))) +
             lines("", "LEGENDARY${category} PET"),
@@ -86,18 +59,11 @@ class ActivePetTest {
         skin = name.lowercase().replace(" ", ""),
     )
 
-    /** Lets [millis] pass, then refreshes the readouts. */
-    private fun pass(millis: Long) {
-        time += millis
-        game.tick(time)
-    }
-
     /** A mob the player killed, and the action bar's Combat XP right behind its death. */
     private fun kill(combat: Int) {
-        game.post(++time, EntityDied("minecraft:zombie", ServerText(ServerSpan("Zombie")), 0.0, 0.0, 0.0))
-        game.post(++time, ActionBar(ServerText(ServerSpan("100/100❤     +$combat Combat (5%)     ✎ Mana 50/50"))))
-        time += 250
-        game.tick(time)
+        post(EntityDied("minecraft:zombie", text("Zombie"), 0.0, 0.0, 0.0))
+        time++
+        post(ActionBar(text("100/100❤     +$combat Combat (5%)     ✎ Mana 50/50")))
     }
 
     private fun xp(have: Int) = arrayOf("", "Progress to Level 38", "$have / 10,000 XP")
@@ -105,16 +71,16 @@ class ActivePetTest {
     private fun other(name: String = "Wolf") = Item(
         "minecraft:player_head",
         1,
-        ServerText(ServerSpan("[Lvl 100] ", 0xAAAAAA), ServerSpan(name, Role.EPIC.rgb)),
+        text(ServerSpan("[Lvl 100] ", 0xAAAAAA), ServerSpan(name, Role.EPIC.rgb)),
         lines("LEVEL 100", "", "MAX LEVEL", "", "Click to summon!"),
     )
 
     private fun menu(vararg slots: Pair<Int, Item>) =
-        arrayOf<GameEvent>(ContainerOpened(30, ServerText(ServerSpan("Pets")), 90)) + slots.map { (slot, item) -> SlotChanged(slot, item) }
+        arrayOf<GameEvent>(ContainerOpened(30, text("Pets"), 90)) + slots.map { (slot, item) -> SlotChanged(slot, item) }
 
     @Test
     fun `shows nothing until the server names a pet`() {
-        post(sidebar())
+        post(dragSimSidebar())
         assertNull(hud())
     }
 
@@ -198,7 +164,7 @@ class ActivePetTest {
         feature.feature.enabled = false
         post(LeftServer)
         feature.feature.enabled = true
-        post()
+        pass()
         assertNull(hud())
     }
 
@@ -220,7 +186,7 @@ class ActivePetTest {
     @Test
     fun `the head of a pet of that name near the player is the icon until the menu shows one`() {
         val head = Item("minecraft:player_head", 1, skin = "floating")
-        post(pet(), EntitySeen(7, "minecraft:armor_stand", ServerText(ServerSpan("[Lvl 100] Black Cat")), head))
+        post(pet(), EntitySeen(7, "minecraft:armor_stand", text("[Lvl 100] Black Cat"), head))
         assertEquals(head, hud()?.icon)
         post(*menu(13 to card()))
         assertEquals("blackcat", hud()?.icon?.skin)
@@ -232,7 +198,7 @@ class ActivePetTest {
         feature.showIcon.value = false
         feature.showItem.value = false
         feature.showXp.value = false
-        post()
+        pass()
         assertNull(hud()?.icon)
         assertEquals(listOf("[Lvl 100] Black Cat"), rows())
     }
@@ -245,19 +211,19 @@ class ActivePetTest {
         assertEquals(emptyMap(), readout().slots)
         post(SlotChanged(13, card()))
         feature.markInMenu.value = false
-        post()
+        pass()
         assertEquals(emptyMap(), readout().slots)
     }
 
     @Test
     fun `what the menu showed is kept by pet name for the next session`() {
         post(pet(), *menu(13 to card()))
-        val saved = feature().state!!.encode()
-        val next = Game(SettingsTree().also { it.feature<ActivePet>().feature.enabled = true; it.feature<EquipmentDisplay>().feature.enabled = false }.features)
-        next.readouts.single { it.feature.id == "active-pet" }.feature.state!!.load(saved)
-        next.post(1, pet())
-        next.tick(300)
-        val hud = next.readouts.single { it.feature.id == "active-pet" }.hud
+        val saved = feature.feature.state!!.encode()
+        val next = object : Harness(alone = ActivePet::class) {}
+        next.tree.feature<ActivePet>().feature.enabled = true
+        next.readout().feature.state!!.load(saved)
+        next.post(pet())
+        val hud = next.hud()
         assertEquals("blackcat", hud?.icon?.skin)
         assertEquals(listOf("[Lvl 100] Black Cat", "Item: Gold Claws", "XP: MAX LEVEL"), hud?.rows?.map { it.text.plain })
     }
@@ -304,7 +270,7 @@ class ActivePetTest {
         kill(200)
         assertEquals("XP: 1,020 / 10,000 (10%)", rows()?.get(2))
         post(pet(), *menu(13 to card(level = 37, progress = xp(1000))))
-        post(ActionBar(ServerText(ServerSpan("+500 Combat (5%)"))))
+        post(ActionBar(text("+500 Combat (5%)")))
         pass(60_000L)
         post(*menu(13 to card(level = 37, progress = xp(1020))))
         kill(200)
@@ -344,21 +310,19 @@ class ActivePetTest {
         post(pet(level = 37), *menu(13 to card(level = 37, progress = xp(1000))))
         feature.showRate.value = false
         feature.showNext.value = false
-        post()
+        pass()
         assertEquals(listOf("[Lvl 37] Black Cat", "Item: Gold Claws", "XP: 1,000 / 10,000 (10%)"), rows())
     }
 
     @Test
     fun `Autopet's swap switches the pet, and its line is hidden when the player asks`() {
         post(pet(), pet("Wolf", rgb = Role.EPIC.rgb), dungeon())
-        assertEquals(true, game.post(++time, chat("Autopet equipped your [Lvl 100] Black Cat! VIEW RULE")))
-        game.tick(time)
+        assertEquals(true, post(chat("Autopet equipped your [Lvl 100] Black Cat! VIEW RULE")))
         assertEquals("[Lvl 100] Black Cat", rows()?.first())
         feature.hideAutopet.value = true
-        assertEquals(false, game.post(++time, chat("Autopet equipped your [Lvl 100] Wolf! VIEW RULE")))
-        game.tick(time)
+        assertEquals(false, post(chat("Autopet equipped your [Lvl 100] Wolf! VIEW RULE")))
         assertEquals("[Lvl 100] Wolf", rows()?.first())
-        assertEquals(false, game.post(++time, chat("Autopet swapped something new")))
+        assertEquals(false, post(chat("Autopet swapped something new")))
     }
 
     @Test
@@ -367,10 +331,10 @@ class ActivePetTest {
         val button = Item(
             "minecraft:bone",
             1,
-            ServerText(ServerSpan("Pets")),
-            listOf(ServerText(ServerSpan("View and manage your pets.")), ServerText(ServerSpan("Selected Pet: ", 0xAAAAAA), ServerSpan("[Lvl 100] ", 0xAAAAAA), ServerSpan("Wolf", Role.EPIC.rgb))),
+            text("Pets"),
+            listOf(text("View and manage your pets."), text(ServerSpan("Selected Pet: ", 0xAAAAAA), ServerSpan("[Lvl 100] ", 0xAAAAAA), ServerSpan("Wolf", Role.EPIC.rgb))),
         )
-        post(ContainerOpened(31, ServerText(ServerSpan("Dragon Sim Menu")), 90), SlotChanged(20, button))
+        post(ContainerOpened(31, text("Dragon Sim Menu"), 90), SlotChanged(20, button))
         assertEquals("[Lvl 100] Wolf", rows()?.first())
         assertEquals(Role.EPIC.rgb, hud()!!.rows[0].text.spans.last().rgb)
     }

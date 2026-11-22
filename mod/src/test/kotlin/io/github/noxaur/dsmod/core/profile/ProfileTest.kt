@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.core.profile
 
-import io.github.noxaur.dsmod.core.game.ServerSpan
-import io.github.noxaur.dsmod.core.game.ServerText
+import io.github.noxaur.dsmod.harness.resource
+import io.github.noxaur.dsmod.harness.text
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
@@ -17,9 +17,7 @@ import kotlin.test.assertTrue
  * from their synthetic player, so the mod's reading follows the contract and not a copy of it.
  */
 class ProfileTest {
-    private fun resource(name: String) = checkNotNull(javaClass.getResource("/profiles/$name")).readText()
-
-    private val profile = Profile.parse(resource("profile.json"))
+    private val profile = Profile.parse(resource("profiles/profile.json"))
 
     @Test
     fun `a profile reads whole`() {
@@ -31,7 +29,7 @@ class ProfileTest {
         assertEquals("Superior", profile.choice.name.plain)
         assertEquals(listOf("combat", "mining", "taming", "catacombs", "dragon_slaying"), profile.skills.map { it.id })
         assertEquals("Revenant Horror", profile.slayers[0].name)
-        assertEquals(ServerText(ServerSpan("35,124,030,742", 0xFFAA00)), profile.stats.first { it.id == "coins" }.value)
+        assertEquals(text("35,124,030,742", 0xFFAA00), profile.stats.first { it.id == "coins" }.value)
         assertEquals(10, profile.topKills.size)
         assertEquals("Storm Helmet", profile.equipment.helmet?.name?.plain)
         assertEquals("minecraft:iron_sword", profile.equipment.held?.material)
@@ -55,7 +53,7 @@ class ProfileTest {
 
     @Test
     fun `a backend that sends no dungeons reads as none`() {
-        val body = JsonObject(Json.parseToJsonElement(resource("profile.json")).jsonObject - "dungeons")
+        val body = JsonObject(Json.parseToJsonElement(resource("profiles/profile.json")).jsonObject - "dungeons")
         assertNull(Profile.parse(body.toString()).dungeons)
     }
 
@@ -89,12 +87,12 @@ class ProfileTest {
     @Test
     fun `one tab holds every page of a kind`() {
         assertEquals(listOf("inventory", "ender_chest", "storage", "storage", "storage", "wardrobe", "accessories", "pets"), profile.containers.map { it.kind })
-        assertEquals("inventory", ContainerSummary("inventory:other", ServerText(emptyList()), 9, 5, false).kind)
+        assertEquals("inventory", ContainerSummary("inventory:other", text(), 9, 5, false).kind)
     }
 
     @Test
     fun `a container has an entry for every slot, null where it is empty`() {
-        val inventory = Profile.parseContainer(resource("containers/inventory.json"))
+        val inventory = Profile.parseContainer(resource("profiles/containers/inventory.json"))
         assertEquals(36, inventory.items.size)
         assertEquals(inventory.slots, inventory.items.size)
         assertEquals(6, inventory.items.count { it != null })
@@ -104,7 +102,7 @@ class ProfileTest {
 
     @Test
     fun `a field the mod does not know is passed over`() {
-        val body = resource("profile.json").replaceFirst("\"stale\"", "\"newField\": [1, 2], \"stale\"")
+        val body = resource("profiles/profile.json").replaceFirst("\"stale\"", "\"newField\": [1, 2], \"stale\"")
         assertEquals(profile, Profile.parse(body))
     }
 

@@ -1,21 +1,20 @@
 package io.github.noxaur.dsmod.core.game
 
 import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.harness.text
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class PetTest {
-    private fun text(vararg spans: Pair<String, Int?>) = ServerText(spans.map { (text, color) -> ServerSpan(text, color) })
-
-    private fun card(vararg lore: String, name: ServerText = text("[Lvl 37] " to 0xAAAAAA, "Wolf" to Role.EPIC.rgb)) =
-        PetCard.of(Item("minecraft:player_head", 1, name, lore.map { ServerText(ServerSpan(it)) }))
+    private fun card(vararg lore: String, name: ServerText = text(ServerSpan("[Lvl 37] ", 0xAAAAAA), ServerSpan("Wolf", Role.EPIC.rgb))) =
+        PetCard.of(Item("minecraft:player_head", 1, name, lore.map { text(it) }))
 
     @Test
     fun `a pet's rarity is the color of its name, and an unknown color is Common`() {
-        assertEquals(Pet("Black Cat", 100, Role.LEGENDARY), Pet.of(text("[Lvl 100] " to 0xAAAAAA, "Black Cat" to Role.LEGENDARY.rgb, " " to null)))
-        assertEquals(Pet("Goop", 1, Role.COMMON), Pet.of(text("[Lvl 1] Goop" to 0x123456)))
-        assertNull(Pet.of(text("None" to null)))
+        assertEquals(Pet("Black Cat", 100, Role.LEGENDARY), Pet.of(text(ServerSpan("[Lvl 100] ", 0xAAAAAA), ServerSpan("Black Cat", Role.LEGENDARY.rgb), ServerSpan(" "))))
+        assertEquals(Pet("Goop", 1, Role.COMMON), Pet.of(text("[Lvl 1] Goop", 0x123456)))
+        assertNull(Pet.of(text("None")))
         assertEquals("Ender Dragon", Pet.nameOf(" [Lvl 100] Ender Dragon "))
     }
 

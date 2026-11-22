@@ -117,6 +117,37 @@ val rules = listOf(
         examples = listOf("val glass = 0xFF_AA_00_FF", "val gold = 0xFFAA00"),
     ),
     Rule(
+        id = "server-text-by-harness",
+        files = "src/test/kotlin/**.kt",
+        except = "src/test/kotlin/**/{harness/Harness,rules/Rules}.kt",
+        forbid = Regex("""\bServerText\s*\("""),
+        fix = "Build what the server sends with the harness: `text(plain)` or `text(plain, color)` for a line, " +
+            "`text(ServerSpan(..), ServerSpan(..))` for a line in several spans, `text()` for an empty one, `lines(..)` for several lines and `chat(line)` for a chat line.",
+        example = """val line = SystemMessage(ServerText(ServerSpan("RARE DROP!")))""",
+        examples = listOf("ServerText(listOf(ServerSpan(line)))", "ServerText(spans.map { (text, color) -> ServerSpan(text, color) })", "ServerText(emptyList())"),
+        span = Span.FILE,
+    ),
+    Rule(
+        id = "readout-by-harness",
+        files = "src/test/kotlin/**.kt",
+        except = "src/test/kotlin/**/{harness/Harness,rules/Rules}.kt",
+        forbid = Regex("""readouts\s*\.\s*(single|first|last|find)"""),
+        fix = "Extend `Harness` and read a feature's readout with `readout(feature)`, `hud(feature)` or `rows(feature)`, " +
+            "or the one feature's with no argument when the harness runs it `alone`.",
+        example = """private fun hud() = game.readouts.single { it.feature.id == "inventory-hud" }.hud""",
+        examples = listOf("game.readouts.first { it.feature.id == id }", "game.readouts\n    .single()", "game.readouts.singleOrNull()?.hud"),
+        span = Span.FILE,
+    ),
+    Rule(
+        id = "resource-by-harness",
+        files = "src/test/kotlin/**.kt",
+        except = "src/test/kotlin/**/{harness/Harness,rules/Rules}.kt",
+        forbid = Regex("""\bgetResource(AsStream)?\s*\(\s*"/"""),
+        fix = "Read a file under `src/test/resources` with the harness's `resource(path)`.",
+        example = """checkNotNull(javaClass.getResource("/profiles/profile.json")).readText()""",
+        examples = listOf("""javaClass.getResourceAsStream("/profiles/profile.json")"""),
+    ),
+    Rule(
         id = "item-data-by-hand",
         files = "src/main/kotlin/**/edge/**.kt",
         except = "src/main/kotlin/**/edge/Items.kt",

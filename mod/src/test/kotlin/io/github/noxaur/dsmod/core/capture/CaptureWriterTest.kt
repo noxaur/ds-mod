@@ -1,9 +1,9 @@
 package io.github.noxaur.dsmod.core.capture
 
 import io.github.noxaur.dsmod.core.game.ActionBar
+import io.github.noxaur.dsmod.harness.text
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.SystemMessage
-import io.github.noxaur.dsmod.core.game.ServerText
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.int
@@ -19,7 +19,7 @@ import kotlin.test.assertFailsWith
 
 class CaptureWriterTest {
     private val dir = Files.createTempDirectory("dsmod-capture")
-    private val drop = SystemMessage(ServerText(ServerSpan("RARE DROP! ", 0xFFAA00, bold = true), ServerSpan("Summoning Eye")))
+    private val drop = SystemMessage(text(ServerSpan("RARE DROP! ", 0xFFAA00, bold = true), ServerSpan("Summoning Eye")))
 
     @Test
     fun `writes one JSON line per record in order`() {
@@ -55,7 +55,7 @@ class CaptureWriterTest {
     @Test
     fun `stamps the client tick on each record and advances it when the tick ends`() {
         val writer = CaptureWriter(dir) { 1_000L }
-        val bar = ActionBar(ServerText(ServerSpan("Kills: 4")))
+        val bar = ActionBar(text("Kills: 4"))
         writer.record(1_000L, drop)
         writer.record(RawRecord.SOUND) { buildJsonObject { put("sound", "minecraft:entity.player.hurt") } }
         writer.endTick()
