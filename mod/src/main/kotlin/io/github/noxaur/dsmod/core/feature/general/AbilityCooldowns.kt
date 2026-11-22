@@ -76,6 +76,9 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     private var marksClock = -1
     private var markAt = 0L
 
+    private var quiet = true
+    private var quietClock = -1
+
     init {
         feature.on<ActionBar> { bar, now ->
             val plain = bar.text.plain
@@ -98,7 +101,7 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
             val at = clock.millis(now)
             if (running != null && at < running.end) return@on
             timers[key] = Timer(key, bonus.name, bonus.millis, at, at + bonus.millis)
-            marks.invalidate()
+            moved()
         }
     }
 
@@ -114,7 +117,7 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
         if (running != null && at - running.start < SAME_USE_MILLIS && at < running.end) return
         val length = learned[key]?.takeIf { it.lore == ability.millis }?.millis ?: ability.millis
         timers[key] = Timer(key, ability.name, ability.millis, at, at + length)
-        marks.invalidate()
+        moved()
     }
 
     /**
@@ -137,7 +140,20 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
             learned[timer.key] = Learned(timer.lore, ran)
         }
         if (at < end) timer.alerted = false
+        moved()
+    }
+
+    private fun moved() {
+        quiet = false
         marks.invalidate()
+    }
+
+    private fun live(now: Long): Long? {
+        if (quiet && clock.updates == quietClock) return null
+        val at = clock.millis(now)
+        quiet = timers.values.none { at - it.end < READY_MILLIS }
+        quietClock = clock.updates
+        return at.takeUnless { quiet }
     }
 
     private fun ready(now: Long) {
@@ -198,8 +214,8 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     fun hud(now: Long): HudBlock? {
         read()
         if (!list.value) return null
+        val at = live(now) ?: return null
         val from = (shortest.value * 1000).toLong()
-        val at = clock.millis(now)
         val shown = timers.values.filter { it.lore >= from && at - it.end < READY_MILLIS }.sortedBy { it.end }
         if (shown.isEmpty()) return null
         return feature.block {
@@ -217,11 +233,11 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     fun slots(now: Long): Map<Int, SlotMark> {
         read()
         if (!onItems.value) return emptyMap()
+        markAt = live(now) ?: return emptyMap()
         if (clock.updates != marksClock) {
             marksClock = clock.updates
             marks.invalidate()
         }
-        markAt = clock.millis(now)
         return marks.marks(now)
     }
 
