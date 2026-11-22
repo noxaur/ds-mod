@@ -1,15 +1,6 @@
 import { Schema } from "effect";
 
-import { count, flag, lenient, numberEntries, record, strings, text } from "./read.ts";
-
-type Stats = Readonly<Record<string, number>>;
-
-export interface StatSet {
-  readonly base: Stats;
-  readonly additive: Stats;
-  readonly multiplicative: Stats;
-  readonly increaseMax: Stats;
-}
+import { count, flag, lenient, record, type StatSet, statSet, strings, text } from "../../upstream/read.ts";
 
 /** An item as dragsim.co's player API sends it, with every field that is missing or of the wrong type left out. */
 export interface UpstreamItem {
@@ -44,17 +35,6 @@ export interface UpstreamItem {
   readonly skin: unknown;
   readonly abilities: readonly string[];
 }
-
-/** The four groups of stats the server sends for an item or a player, with a missing or odd one left empty. */
-export const statSet = (raw: unknown): StatSet => {
-  const set = record(raw);
-  return {
-    base: numberEntries(set["base"]),
-    additive: numberEntries(set["additive"]),
-    multiplicative: numberEntries(set["multiplicative"]),
-    increaseMax: numberEntries(set["increase_max"]),
-  };
-};
 
 const Stars = lenient(Schema.Struct({ stars: Schema.Finite }));
 const SkinId = lenient(Schema.Struct({ skinId: Schema.String }));
