@@ -137,7 +137,7 @@ class SettingsScreen(
         nav = addRenderableWidget(
             KitNavTree(
                 Kit.GAP, navY, inner, footY - Kit.GAP - navY, tree,
-                sections.map { it.name }, sections.map { it.icon.argb() }, sections.map { s -> s.named.map { it.name!! } },
+                sections.map { it.name }, sections.map { it.icon.argb() }, sections.map { s -> s.named.mapNotNull { it.name } },
                 ::select, ::jump, ::folded, ::openTab, icons,
             ),
         )

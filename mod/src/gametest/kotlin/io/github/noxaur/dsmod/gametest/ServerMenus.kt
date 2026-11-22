@@ -5,7 +5,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.gui.components.AbstractWidget
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.commands.Commands
 import net.minecraft.core.component.DataComponents
@@ -75,7 +74,7 @@ object ServerMenus {
 
     inline fun <reified W : AbstractWidget> widgets(context: ClientGameTestContext, crossinline which: (W) -> Boolean = { true }) =
         context.computeOnClient<List<W>, Nothing> { client ->
-            val screen = client.gui.screen() as? AbstractContainerScreen<*> ?: return@computeOnClient emptyList()
+            val screen = client.gui.screen() ?: return@computeOnClient emptyList()
             Screens.getWidgets(screen).filterIsInstance<W>().filter { it.visible && which(it) }
         }
 

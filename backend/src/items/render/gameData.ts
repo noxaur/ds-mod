@@ -1,4 +1,4 @@
-import { record } from "./read.ts";
+import { record } from "../../upstream/read.ts";
 
 /** A stat group's keys as the game holds them: the API's `base` is the game's `stats`. */
 const stats = (raw: unknown): Record<string, unknown> => {
