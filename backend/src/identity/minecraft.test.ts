@@ -3,6 +3,7 @@ import { Schema } from "effect";
 
 import { authRequest, testAuth } from "../../test/harness.ts";
 import { type HasJoined, mojangHasJoined } from "./minecraft.ts";
+import { trustedKeyHeader } from "./trusted.ts";
 
 const UUID = "069a79f4-44e9-4726-a5be-fca90e38aaf5";
 const Signed = Schema.decodeUnknownSync(Schema.Struct({ token: Schema.String, uuid: Schema.String }));
@@ -149,27 +150,41 @@ test("a challenge or login link nobody used is removed once it has expired", asy
   expect(await rows()).toBe(1);
 });
 
-const mojangSays = (response: Response | Error) =>
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(() => (response instanceof Error ? Promise.reject(response) : Promise.resolve(response))),
+const mojangSays = (response: Response | Error) => {
+  const fetchMock = vi.fn((_url: URL, _init: RequestInit) =>
+    response instanceof Error ? Promise.reject(response) : Promise.resolve(response),
   );
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+};
 
 test("Mojang's profile is read with the UUID dashed", async () => {
   mojangSays(Response.json({ id: UUID.replaceAll("-", ""), name: "Notch" }));
-  expect(await mojangHasJoined("notch", "ab".repeat(20))).toEqual({ uuid: UUID, name: "Notch" });
+  expect(await mojangHasJoined()("notch", "ab".repeat(20))).toEqual({ uuid: UUID, name: "Notch" });
 });
 
 test("only Mojang's 204 means nobody joined", async () => {
   mojangSays(new Response(null, { status: 204 }));
-  expect(await mojangHasJoined("Notch", "ab".repeat(20))).toBeNull();
+  expect(await mojangHasJoined()("Notch", "ab".repeat(20))).toBeNull();
 });
 
 test.each([
-  ["answers 500", new Response(null, { status: 500 })],
-  ["rate-limits", new Response(null, { status: 429 })],
-  ["is unreachable", new Error("down")],
-])("a Mojang that %s is unavailable, not a refusal", async (_name, response) => {
+  ["answers 500", new Response(null, { status: 500 }), "Mojang answered 500."],
+  ["rate-limits", new Response(null, { status: 429 }), "Mojang answered 429."],
+  ["is unreachable", new Error("down"), "Mojang did not answer."],
+])("a Mojang that %s is unavailable, not a refusal, and says why", async (_name, response, message) => {
   mojangSays(response);
-  await expect(mojangHasJoined("Notch", "ab".repeat(20))).rejects.toMatchObject({ statusCode: 503 });
+  await expect(mojangHasJoined()("Notch", "ab".repeat(20))).rejects.toMatchObject({
+    statusCode: 503,
+    body: { message },
+  });
+});
+
+test("with a relay, the question goes to the relay with the trusted key", async () => {
+  const fetchMock = mojangSays(new Response(null, { status: 204 }));
+  const relay = { url: "https://website.test/mojang/has-joined", key: "the-key" };
+  expect(await mojangHasJoined(relay)("Notch", "ab".repeat(20))).toBeNull();
+  const [url, init] = fetchMock.mock.calls[0] ?? [];
+  expect(String(url)).toBe(`${relay.url}?username=Notch&serverId=${"ab".repeat(20)}`);
+  expect(new Headers(init?.headers).get(trustedKeyHeader)).toBe("the-key");
 });

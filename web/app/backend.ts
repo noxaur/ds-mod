@@ -4,6 +4,8 @@ import { backendUrl, trustedKey } from "./env";
 
 export const sessionCookie = "dsmod_session";
 
+export const trustedKeyHeader = "x-auth-trusted-key";
+
 export const backendIsUp = Effect.tryPromise(() => fetch(`${backendUrl}/healthz`, { cache: "no-store" })).pipe(
   Effect.map((response) => response.ok),
   Effect.timeout("2 seconds"),
@@ -23,7 +25,7 @@ const Current = Schema.NullOr(
 
 const withTrustedKey = (headers: Record<string, string>) => {
   const key = trustedKey();
-  return key === undefined || key === "" ? headers : { ...headers, "x-auth-trusted-key": key };
+  return key === undefined || key === "" ? headers : { ...headers, [trustedKeyHeader]: key };
 };
 
 const call = (path: string, init: RequestInit & { headers: Record<string, string> }) =>

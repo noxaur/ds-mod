@@ -273,6 +273,7 @@ class Backend(private val url: String, private val identity: Identity, private v
         val verify = reach {
             exchange(auth("/api/auth/minecraft/verify", buildJsonObject { put("name", identity.name); put("serverId", serverId) }.toString()))
         }
+        if (verify.statusCode() == 503) throw BackendException(503, MOJANG_DOWN)
         verify.requireOk("the account's proof")
         return field(verify.body(), "token").also { token = it }
     }
@@ -295,6 +296,8 @@ class Backend(private val url: String, private val identity: Identity, private v
     companion object {
         /** The largest capture the backend keeps, which answers 413 above it. */
         const val MAX_UPLOAD = 50_000_000L
+
+        const val MOJANG_DOWN = "The backend could not ask Mojang."
 
         /** What the submissions route answers when it will never take this recording. */
         private val REFUSED = setOf(404, 409, 413)

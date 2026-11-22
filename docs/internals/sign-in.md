@@ -6,6 +6,10 @@ How a player proves who they are to the backend, from the mod and on the website
 
 The mod is open source, so anyone can build a client that sends anything. So the backend issues a single-use server id, the client tells Mojang it is joining that server, and the backend asks Mojang who joined. Only the holder of an account's session can make that call. A secret in the mod was rejected, because a secret in an open jar is public. This proves who asks, not what they send, which is why a request is recorded by several players and a sighting needs two.
 
+## The website asks Mojang for the backend
+
+Mojang refuses the addresses that Cloudflare Workers share, so a Worker cannot ask who joined. The backend sends the question to a route on the website, which runs on Vercel and asks Mojang for it, with the key the two already share, so nobody else reaches Mojang through it. A proxy of our own was rejected, because it would be a third service to run and pay for. Without the relay set, as in development, the backend asks Mojang itself.
+
 ## Only Mojang vouches for an account
 
 Email and password sign-in is off, so no account exists that Mojang did not vouch for. A session ends 24 hours after it began and is never extended, so a stolen token dies by itself. The mod pays nothing for it, because it repeats the proof without the player noticing.

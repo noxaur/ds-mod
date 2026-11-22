@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.backend.Backend
 import io.github.noxaur.dsmod.core.backend.BackendException
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -9,7 +10,7 @@ class AccountWhyTest {
     fun `a 503 is Mojang only when sign-in was refused`() {
         assertEquals(
             "Mojang did not answer. Try again in a moment.",
-            Account.why(BackendException(503, "The backend did not accept the sign-in.")),
+            Account.why(BackendException(503, Backend.MOJANG_DOWN)),
         )
         assertEquals(
             "The backend did not answer. Try again in a moment.",

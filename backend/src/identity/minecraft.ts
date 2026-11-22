@@ -3,6 +3,8 @@ import { APIError, createAuthEndpoint } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
 import { Schema } from "effect";
 
+import { trustedKeyHeader } from "./trusted.ts";
+
 const PROVIDER = "minecraft";
 const CHALLENGE_SECONDS = 60;
 
@@ -23,25 +25,32 @@ const Verify = Schema.toStandardSchemaV1(
   }),
 );
 
-const unavailable = () => new APIError("SERVICE_UNAVAILABLE", { message: "Mojang did not answer." });
+const unavailable = (why: string) => new APIError("SERVICE_UNAVAILABLE", { message: why });
 
-export const mojangHasJoined: HasJoined = async (name, serverId) => {
-  const url = new URL("https://sessionserver.mojang.com/session/minecraft/hasJoined");
-  url.searchParams.set("username", name);
-  url.searchParams.set("serverId", serverId);
-  // Only a 204 means nobody joined. Anything else is Mojang failing, which the player can retry, not a refusal.
-  const response = await fetch(url).catch(() => {
-    throw unavailable();
-  });
-  if (response.status === 204) {
-    return null;
-  }
-  if (response.status !== 200) {
-    throw unavailable();
-  }
-  const profile = Schema.decodeUnknownSync(Profile)(await response.json());
-  return { uuid: profile.id.replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, "$1-$2-$3-$4-$5"), name: profile.name };
-};
+export interface MojangRelay {
+  readonly url: string;
+  readonly key: string;
+}
+
+export const mojangHasJoined =
+  (relay?: MojangRelay): HasJoined =>
+  async (name, serverId) => {
+    const url = new URL(relay?.url ?? "https://sessionserver.mojang.com/session/minecraft/hasJoined");
+    url.searchParams.set("username", name);
+    url.searchParams.set("serverId", serverId);
+    // Only a 204 means nobody joined. Anything else is Mojang failing, which the player can retry, not a refusal.
+    const response = await fetch(url, { headers: relay ? { [trustedKeyHeader]: relay.key } : {} }).catch(() => {
+      throw unavailable("Mojang did not answer.");
+    });
+    if (response.status === 204) {
+      return null;
+    }
+    if (response.status !== 200) {
+      throw unavailable(`Mojang answered ${String(response.status)}.`);
+    }
+    const profile = Schema.decodeUnknownSync(Profile)(await response.json());
+    return { uuid: profile.id.replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, "$1-$2-$3-$4-$5"), name: profile.name };
+  };
 
 /**
  * Signs a player in as the Minecraft account they are playing on.
@@ -50,7 +59,7 @@ export const mojangHasJoined: HasJoined = async (name, serverId) => {
  * that server, which only the holder of the account's Minecraft session can do, and the backend asks Mojang who
  * joined. A modified client can therefore sign in as its own account and as no other.
  */
-export const minecraft = (hasJoined: HasJoined = mojangHasJoined) =>
+export const minecraft = (hasJoined: HasJoined) =>
   ({
     id: PROVIDER,
     endpoints: {

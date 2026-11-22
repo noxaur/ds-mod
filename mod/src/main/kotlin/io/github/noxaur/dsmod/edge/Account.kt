@@ -62,7 +62,7 @@ object Account {
             401 -> "The backend would not sign you in."
             404 -> "The backend does not know that request."
             503 -> when (e.message) {
-                "The backend did not accept the sign-in." -> "Mojang did not answer. Try again in a moment."
+                Backend.MOJANG_DOWN -> "Mojang did not answer. Try again in a moment."
                 else -> "The backend did not answer. Try again in a moment."
             }
             else -> "The backend answered ${e.status}."
