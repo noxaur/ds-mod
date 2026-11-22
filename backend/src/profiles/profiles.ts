@@ -1,40 +1,20 @@
-import { Effect, Option, Schema } from "effect";
+import { Effect, Option } from "effect";
 
 import { decodeCatalog, rendererFor } from "../items/render.ts";
 import { parseLegacy } from "../upstream/legacy.ts";
 import { numberEntries } from "../upstream/read.ts";
-import { newId } from "../ids.ts";
-import { catalog, lookup } from "./cache.ts";
+import { catalog, lookup, readSnapshot } from "./cache.ts";
 import { equipmentCells, layoutsOf, PETS_ID } from "./layout.ts";
 import type { Layout } from "./layout.ts";
-import { ContainerNotFound, ProfileId, SnapshotExpired } from "./model.ts";
+import { ContainerNotFound, SnapshotExpired } from "./model.ts";
 import { rankPrefix, titleCase } from "./names.ts";
 import { petOf } from "./pets.ts";
 import { skillProgress, slayerProgress } from "./progress.ts";
 import * as section from "./sections.ts";
-import { ProfileStore } from "./store.ts";
-import { Sections } from "./wire.ts";
-import type { WireProfile } from "./wire.ts";
+import { sectionsOf } from "./wire.ts";
+import type { Sections, WireProfile } from "./wire.ts";
 
-export const SNAPSHOT_SECONDS = 10 * 60;
 const TOP_KILLS = 10;
-
-const Snapshot = Schema.Struct({ hidden: Schema.Boolean, sections: Sections });
-const decodeSnapshot = Schema.decodeUnknownOption(Snapshot);
-
-const snapshotKey = (id: string) => `snapshot:${id}`;
-
-// @keep A snapshot id comes from the client and is a KV key, so only the shape this backend makes reaches the store.
-const isSnapshotId = Schema.is(ProfileId);
-
-const sectionsOf = (profile: WireProfile): Sections => ({
-  inventory: profile.inventory,
-  ender_chest: profile.ender_chest,
-  storage: profile.storage,
-  wardrobe: profile.wardrobe,
-  accessory_bag: profile.accessory_bag,
-  pets: profile.pets,
-});
 
 const draw = Effect.fn(function* (items: readonly unknown[], inventory: Sections["inventory"]) {
   const present = items.filter((item) => item !== null && item !== undefined);
@@ -86,7 +66,7 @@ const statsOf = (profile: WireProfile) => [
 ];
 
 export const profile = Effect.fn(function* (name: string, profileId: string | undefined) {
-  const { fetchedAt, stale, found } = yield* lookup(name, profileId);
+  const { fetchedAt, stale, found, snapshot } = yield* lookup(name, profileId);
   const { progression, raw } = yield* catalog;
   const { player, profile: current } = found;
   const items = decodeCatalog(raw);
@@ -95,10 +75,6 @@ export const profile = Effect.fn(function* (name: string, profileId: string | un
   const hidden = current.inventory_hidden === true;
   const sections = sectionsOf(current);
 
-  const id = yield* newId;
-  // @keep A snapshot's key is new each time, so a refusal is the store failing, which no client can fix.
-  yield* Effect.orDie((yield* ProfileStore).put(snapshotKey(id), { hidden, sections }, SNAPSHOT_SECONDS));
-
   const worn = equipmentCells(current.inventory);
   const [helmet = null, chestplate = null, leggings = null, boots = null, held = null] = yield* draw(
     [worn.helmet, worn.chestplate, worn.leggings, worn.boots, worn.held],
@@ -106,7 +82,7 @@ export const profile = Effect.fn(function* (name: string, profileId: string | un
   );
 
   return {
-    snapshot: id,
+    snapshot,
     fetchedAt: new Date(fetchedAt).toISOString(),
     stale,
     player: {
@@ -146,8 +122,7 @@ export const profile = Effect.fn(function* (name: string, profileId: string | un
 });
 
 export const container = Effect.fn(function* (snapshot: string, containerId: string) {
-  const stored = isSnapshotId(snapshot) ? yield* (yield* ProfileStore).get(snapshotKey(snapshot)) : null;
-  const kept = decodeSnapshot(stored);
+  const kept = yield* readSnapshot(snapshot);
   if (Option.isNone(kept)) {
     return yield* new SnapshotExpired();
   }

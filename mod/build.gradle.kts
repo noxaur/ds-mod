@@ -263,6 +263,7 @@ tasks.register<JavaExec>("cutFixture") {
 
 tasks.test {
     useJUnitPlatform()
+    maxParallelForks = 2
     timeout = Duration.ofSeconds(30)
     inputs.dir("src")
     inputs.files(sourceSets["gametest"].output.classesDirs)

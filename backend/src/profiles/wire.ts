@@ -1,12 +1,69 @@
-import { Schema } from "effect";
+import { Schema, SchemaAST } from "effect";
 
 /* @keep Read leniently: a key we do not know is ignored, and a section dragsim.co leaves out, or sends as null, is
- * none. Only what a profile cannot be drawn without is required. The items stay `unknown`, because the renderer in
- * `items/` is the one that reads them. */
+ * none. Only what a profile cannot be drawn without is required. */
 
 const optional = <S extends Schema.Top>(schema: S) => Schema.optional(Schema.NullOr(schema));
 
-const Slots = Schema.Record(Schema.String, Schema.Unknown);
+/* @keep A part a reader in sections.ts, pets.ts or items/ reads leniently on its own decodes as it came, so a part that
+ * changed shape costs only itself. It carries the schema of every field the reader maps, which only `unmappedPaths`
+ * reads. A scalar is a string, number, boolean or null, so a map or a list where one was expected is named too. */
+const MAPPED = "dsmod/mapped";
+const readApart = (shape: Schema.Top) => Schema.Unknown.annotate({ [MAPPED]: shape.ast });
+const Scalar = Schema.Union([Schema.String, Schema.Number, Schema.Boolean, Schema.Null]);
+const open = (shape: Schema.Top) => Schema.Record(Schema.String, shape);
+
+const Sheet = Schema.Struct({
+  base: open(Scalar),
+  additive: open(Scalar),
+  multiplicative: open(Scalar),
+  increase_max: open(Scalar),
+});
+const Kills = open(Schema.Struct({ kills: Scalar }));
+const Item = readApart(
+  Schema.Struct({
+    entry: Scalar,
+    count: Scalar,
+    material: Scalar,
+    abilities: Schema.Array(Scalar),
+    item_skin: Schema.Struct({ value: Scalar }),
+    item_stats: Sheet,
+    item_data: Schema.Struct({
+      item_name: Scalar,
+      item_type: Scalar,
+      rarity: Scalar,
+      reforge: Scalar,
+      npc_sell_price: Scalar,
+      skull: Scalar,
+      color: Scalar,
+      reforge_stats: Sheet,
+    }),
+    item_modifiers: Schema.Struct({
+      hot_potato_books: Scalar,
+      golden_hot_potato_books: Scalar,
+      final_synchronizers: Scalar,
+      art_of_war: Scalar,
+      recombobulated: Scalar,
+      star_level: Scalar,
+      rune_id: Scalar,
+      enrichment: Scalar,
+      kills: Scalar,
+    }),
+    extra: Schema.Struct({
+      item_dye: Schema.Struct({ dyeId: Scalar }),
+      item_skin: Schema.Struct({ skinId: Scalar }),
+      drill: Schema.Struct({ fuel: Scalar, engine: Scalar, tank: Scalar, module: Scalar, coated: Scalar }),
+      // @keep Passed on whole, as `facts`.
+      dungeon_upgrade: open(Scalar),
+      wither_scrolls: open(Scalar),
+      coating: open(Scalar),
+      attunement: open(Scalar),
+    }),
+  }),
+);
+
+const Slots = Schema.Record(Schema.String, Item);
+const WardrobeParts = Schema.Struct({ helmet: Item, chestplate: Item, leggings: Item, boots: Item });
 
 export const Sections = Schema.Struct({
   inventory: optional(Slots),
@@ -16,13 +73,37 @@ export const Sections = Schema.Struct({
   wardrobe: optional(
     Schema.Struct({
       equipped: optional(Schema.Number),
-      slots: optional(Schema.Record(Schema.String, Schema.Record(Schema.String, Schema.Unknown))),
+      slots: optional(Schema.Record(Schema.String, Slots.annotate({ [MAPPED]: WardrobeParts.ast }))),
     }),
   ),
   accessory_bag: optional(Slots),
-  pets: optional(Schema.Array(Schema.Unknown)),
+  pets: optional(
+    Schema.Array(
+      readApart(
+        Schema.Struct({
+          type: Scalar,
+          rarity: Scalar,
+          totalXp: Scalar,
+          xpCurve: Scalar,
+          candiesUsed: Scalar,
+          active: Scalar,
+          equippedItem: Scalar,
+          skinOverride: Scalar,
+        }),
+      ),
+    ),
+  ),
 });
 export type Sections = typeof Sections.Type;
+
+export const sectionsOf = (profile: Sections): Sections => ({
+  inventory: profile.inventory,
+  ender_chest: profile.ender_chest,
+  storage: profile.storage,
+  wardrobe: profile.wardrobe,
+  accessory_bag: profile.accessory_bag,
+  pets: profile.pets,
+});
 
 export const WireProfile = Schema.Struct({
   ...Sections.fields,
@@ -38,15 +119,47 @@ export const WireProfile = Schema.Struct({
   draconic_experience: optional(Schema.Number),
   updated_at: optional(Schema.Number),
   inventory_hidden: optional(Schema.Boolean),
-  stats: optional(Schema.Unknown),
-  collections: optional(Schema.Unknown),
-  rng_meters: optional(Schema.Unknown),
-  dungeons: optional(Schema.Unknown),
-  hotd: optional(Schema.Unknown),
-  forge: optional(Schema.Unknown),
-  skills: optional(Schema.Unknown),
-  slayer: optional(Schema.Unknown),
-  bestiary: optional(Schema.Unknown),
+  stats: optional(readApart(Sheet)),
+  collections: optional(readApart(open(Scalar))),
+  rng_meters: optional(readApart(Kills)),
+  dungeons: optional(
+    readApart(
+      Schema.Struct({
+        class: Scalar,
+        secrets: Scalar,
+        zombie_kills: Scalar,
+        skeletor_kills: Scalar,
+        class_xp: open(Scalar),
+        completions: open(Scalar),
+        best_score: open(Scalar),
+        essence: open(Scalar),
+      }),
+    ),
+  ),
+  hotd: optional(
+    readApart(
+      Schema.Struct({
+        tier: Scalar,
+        exp: Scalar,
+        core: Scalar,
+        ender: Scalar,
+        void: Scalar,
+        resets: Scalar,
+        ability: Scalar,
+        tokens: Scalar,
+        nodes: open(Scalar),
+      }),
+    ),
+  ),
+  forge: optional(
+    readApart(
+      Schema.Array(Schema.Struct({ slot: Scalar, recipe: Scalar, started: Scalar, duration: Scalar, stage: Scalar })),
+    ),
+  ),
+  skills: optional(readApart(open(Scalar))),
+  // @keep `<boss>_xp` and `<boss>_level` for each boss, so any key is a boss.
+  slayer: optional(readApart(open(Scalar))),
+  bestiary: optional(readApart(Kills)),
 });
 export type WireProfile = typeof WireProfile.Type;
 
@@ -73,154 +186,47 @@ const Answer = Schema.Struct({
   profile: optional(WireProfile),
 });
 
-/** @keep What the backend reads of an answer, down to every field, so a field dragsim.co adds at any depth shows in the
- * log. A leaf is a string, number or boolean the backend passes on, so a map or a list where one was expected is named
- * too. An open map takes any key, such as a slot number or a mob's id, and reads each value with one shape. */
-type Shape = true | { readonly open: Shape } | { readonly list: Shape } | { readonly [key: string]: Shape };
-const LEAF = true;
-const open = (shape: Shape): Shape => ({ open: shape });
-const list = (shape: Shape): Shape => ({ list: shape });
-const isOpen = (shape: Shape): shape is { readonly open: Shape } => shape !== true && "open" in shape;
-const isList = (shape: Shape): shape is { readonly list: Shape } => shape !== true && "list" in shape;
+const members = (ast: SchemaAST.AST): readonly SchemaAST.AST[] =>
+  SchemaAST.isUnion(ast) ? ast.types.flatMap(members) : [ast];
 
-const SHEET: Shape = { base: open(LEAF), additive: open(LEAF), multiplicative: open(LEAF), increase_max: open(LEAF) };
-const ITEM: Shape = {
-  entry: LEAF,
-  count: LEAF,
-  material: LEAF,
-  abilities: list(LEAF),
-  item_skin: { value: LEAF },
-  item_stats: SHEET,
-  item_data: {
-    item_name: LEAF,
-    item_type: LEAF,
-    rarity: LEAF,
-    reforge: LEAF,
-    npc_sell_price: LEAF,
-    skull: LEAF,
-    color: LEAF,
-    reforge_stats: SHEET,
-  },
-  item_modifiers: {
-    hot_potato_books: LEAF,
-    golden_hot_potato_books: LEAF,
-    final_synchronizers: LEAF,
-    art_of_war: LEAF,
-    recombobulated: LEAF,
-    star_level: LEAF,
-    rune_id: LEAF,
-    enrichment: LEAF,
-    kills: LEAF,
-  },
-  extra: {
-    item_dye: { dyeId: LEAF },
-    item_skin: { skinId: LEAF },
-    drill: { fuel: LEAF, engine: LEAF, tank: LEAF, module: LEAF, coated: LEAF },
-    // @keep Passed on whole, as `facts`.
-    dungeon_upgrade: open(LEAF),
-    wither_scrolls: open(LEAF),
-    coating: open(LEAF),
-    attunement: open(LEAF),
-  },
-};
-const KILLS: Shape = { kills: LEAF };
-
-export const ANSWER_SHAPE: Shape = {
-  // @keep Our own request echoed back, and a time older than ours: read, and not passed on.
-  mode: LEAF,
-  fetched_at: LEAF,
-  player: { uuid: LEAF, player: LEAF, rank: LEAF },
-  profiles: list({ id: LEAF, name: LEAF, mode: LEAF, selected: LEAF }),
-  profile: {
-    id: LEAF,
-    profile_name: LEAF,
-    profile_mode: LEAF,
-    coins: LEAF,
-    motes: LEAF,
-    bits: LEAF,
-    haunted_candy_earned: LEAF,
-    dragon_essence: LEAF,
-    draconic_experience: LEAF,
-    accessory_power: LEAF,
-    updated_at: LEAF,
-    inventory_hidden: LEAF,
-    stats: SHEET,
-    skills: open(LEAF),
-    bestiary: open(KILLS),
-    collections: open(LEAF),
-    rng_meters: open(KILLS),
-    // @keep `<boss>_xp` and `<boss>_level` for each boss, so any key is a boss.
-    slayer: open(LEAF),
-    dungeons: {
-      class: LEAF,
-      secrets: LEAF,
-      zombie_kills: LEAF,
-      skeletor_kills: LEAF,
-      class_xp: open(LEAF),
-      completions: open(LEAF),
-      best_score: open(LEAF),
-      essence: open(LEAF),
-    },
-    hotd: {
-      tier: LEAF,
-      exp: LEAF,
-      core: LEAF,
-      ender: LEAF,
-      void: LEAF,
-      resets: LEAF,
-      ability: LEAF,
-      tokens: LEAF,
-      nodes: open(LEAF),
-    },
-    inventory: open(ITEM),
-    ender_chest: open(ITEM),
-    accessory_bag: open(ITEM),
-    storage: open(open(ITEM)),
-    wardrobe: { equipped: LEAF, slots: open({ helmet: ITEM, chestplate: ITEM, leggings: ITEM, boots: ITEM }) },
-    pets: list({
-      type: LEAF,
-      rarity: LEAF,
-      totalXp: LEAF,
-      xpCurve: LEAF,
-      candiesUsed: LEAF,
-      active: LEAF,
-      equippedItem: LEAF,
-      skinOverride: LEAF,
-    }),
-    forge: list({ slot: LEAF, recipe: LEAF, started: LEAF, duration: LEAF, stage: LEAF }),
-  },
-};
-
-/** @keep Paths look like `profile.dungeons.new_section`. An open map's key is `*` and a list's element is `[]`, so a
- * path is named once however many slots or mobs have it. */
-export const unmappedPaths = (value: unknown, shape: Shape = ANSWER_SHAPE, path = ""): readonly string[] => {
-  if (value === null || typeof value !== "object") {
+/** @keep Paths look like `profile.dungeons.new_section`. A map's key is `*` and a list's element is `[]`, so a path is
+ * named once however many slots or mobs have it. A part the schema leaves `Unknown` takes anything. */
+export const unmappedPaths = (value: unknown, ast: SchemaAST.AST = Answer.ast, path = ""): readonly string[] => {
+  const mapped = ast.annotations?.[MAPPED];
+  if (SchemaAST.isAST(mapped)) {
+    return unmappedPaths(value, mapped, path);
+  }
+  if (value === null || typeof value !== "object" || SchemaAST.isUnknown(ast)) {
     return [];
   }
-  if (shape === true) {
-    return [path];
+  if (SchemaAST.isUnion(ast)) {
+    const fits = Array.isArray(value) ? SchemaAST.isArrays : SchemaAST.isObjects;
+    const member = members(ast).find((type) => fits(type) || SchemaAST.isUnknown(type));
+    return member === undefined ? [path] : unmappedPaths(value, member, path);
   }
   const found = new Set<string>();
   const add = (paths: readonly string[]) => paths.forEach((each) => found.add(each));
-  if (isList(shape)) {
+  if (SchemaAST.isArrays(ast)) {
+    const element = ast.rest[0];
     // @keep A map where a list was expected is read as none, so it is named.
-    if (!Array.isArray(value)) {
+    if (!Array.isArray(value) || element === undefined) {
       return [path];
     }
-    value.forEach((element) => add(unmappedPaths(element, shape.list, `${path}[]`)));
+    value.forEach((each) => add(unmappedPaths(each, element, `${path}[]`)));
     return [...found];
   }
+  if (!SchemaAST.isObjects(ast) || Array.isArray(value)) {
+    return [path];
+  }
+  const index = ast.indexSignatures[0]?.type;
   for (const [key, child] of Object.entries(value)) {
-    if (isOpen(shape)) {
-      add(unmappedPaths(child, shape.open, `${path}.*`));
-      continue;
-    }
-    const known = Object.hasOwn(shape, key) ? shape[key] : undefined;
-    const at = path === "" ? key : `${path}.${key}`;
-    if (known === undefined) {
-      found.add(at);
+    const known = ast.propertySignatures.find((property) => property.name === key)?.type;
+    if (known !== undefined) {
+      add(unmappedPaths(child, known, path === "" ? key : `${path}.${key}`));
+    } else if (index !== undefined) {
+      add(unmappedPaths(child, index, `${path}.*`));
     } else {
-      add(unmappedPaths(child, known, at));
+      found.add(path === "" ? key : `${path}.${key}`);
     }
   }
   return [...found];
