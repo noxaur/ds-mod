@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.hud.HudBlock
+import io.github.noxaur.dsmod.core.text.count
 import kotlinx.serialization.Serializable
 
 /** One boss's history: the fights the player did damage in, how many they topped, and the loot they were given. */
@@ -50,6 +51,7 @@ class BossFightTracker(config: DsModConfig) : HasFeature {
             lootAt = null
             // The summary reaches everyone nearby, and one without this line is for a fight the player did no damage in.
             val (dealt, place) = yours?.destructured ?: return@line
+            val at = count(place) ?: return@line
             val name = boss.lowercase().split(' ').joinToString(" ") { it.replaceFirstChar(Char::uppercase) }
             last = name
             if (name.endsWith(" Dragon")) {
@@ -59,7 +61,7 @@ class BossFightTracker(config: DsModConfig) : HasFeature {
                 dropStale(now)
             }
             damage = dealt
-            position = place.toInt()
+            position = at
             fights++
             loot = emptyList()
             record(name) { it.copy(fights = it.fights + 1, first = it.first + if (position == 1) 1 else 0) }
@@ -71,12 +73,13 @@ class BossFightTracker(config: DsModConfig) : HasFeature {
             lootDragon = awaitingLoot.removeFirstOrNull()?.first ?: lastDragon?.takeIf { now - lastDragonAt <= LOOT_WINDOW_MILLIS }
             if (last == lastDragon) loot = emptyList()
         }
-        feature.line(Regex(""" - \d+x """), Regex(""" - (\d+)x (.+)""")) { (amount, item), now ->
+        feature.line(Regex(""" - \d+x """), Regex(""" - (\d+)x (.+)""")) { (written, item), now ->
             // The rows arrive in the same tick as their header, so a row long after it belongs to some other list.
             if (now - (lootAt ?: return@line) > LOOT_MILLIS) return@line
             val dragon = lootDragon ?: return@line
-            if (last == dragon) loot = loot + (amount.toInt() to item)
-            record(dragon) { it.copy(loot = it.loot + (item to (it.loot[item] ?: 0) + amount.toInt())) }
+            val amount = count(written) ?: return@line
+            if (last == dragon) loot = loot + (amount to item)
+            record(dragon) { it.copy(loot = it.loot + (item to (it.loot[item] ?: 0) + amount)) }
         }
     }
 

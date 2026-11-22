@@ -1,12 +1,14 @@
+import { Effect } from "effect";
+
 import type { DrawnItem } from "./model.ts";
 import { decodeCatalog } from "./render/catalog.ts";
 import { factsOf } from "./render/facts.ts";
 import { gameData } from "./render/gameData.ts";
 import { glints, skullTexture } from "./render/policy.ts";
-import { parseColor, record, text } from "./render/read.ts";
+import { parseColor, record, text } from "../upstream/read.ts";
 import { lore, name } from "./render/tooltip.ts";
 import { readItem } from "./render/upstream.ts";
-import type { ItemHints } from "./store.ts";
+import { type ItemHints, ItemStore } from "./store.ts";
 
 /** The entries upstream slots hold, as dragsim.co's player API sends them, to ask the store for hints about. */
 export const entriesOf = (items: readonly unknown[]): readonly string[] => {
@@ -80,4 +82,15 @@ export const makeRenderer = (
   };
 };
 
+export const rendererFor = Effect.fn(function* (
+  catalogJson: unknown,
+  items: readonly unknown[],
+  worn: readonly unknown[] = [],
+) {
+  const hints = yield* (yield* ItemStore).hints(entriesOf(items));
+  return makeRenderer(catalogJson, hints, worn);
+});
+
+export type { Catalog } from "./render/catalog.ts";
+export { named, statSheet, statValues } from "./render/facts.ts";
 export { decodeCatalog };

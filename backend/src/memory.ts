@@ -1,4 +1,4 @@
-import { Effect } from "effect";
+import { Clock, Effect } from "effect";
 
 import type { Services } from "./app.ts";
 import { memoryStore } from "./contrib/store.ts";
@@ -11,5 +11,6 @@ export const memoryServices = (overrides: Partial<Services> = {}): Services => (
   items: memoryItemStore(),
   profiles: memoryProfileStore(),
   upstream: { get: () => Effect.die("This test does not answer for dragsim.co") },
+  clock: Clock.Clock.defaultValue(),
   ...overrides,
 });

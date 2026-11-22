@@ -1,6 +1,7 @@
 import { Effect } from "effect";
 import { HttpApiError } from "effect/http-api";
 
+import { newId, nowIso } from "../ids.ts";
 import type { RequestSpec } from "./model.ts";
 import { Store } from "./store.ts";
 
@@ -10,12 +11,9 @@ import { Store } from "./store.ts";
  */
 export const MAX_UNKNOWNS = 5000;
 
-const now = Effect.sync(() => new Date().toISOString());
-const newId = Effect.sync(() => crypto.randomUUID());
-
 export const createRequest = Effect.fn(function* (spec: RequestSpec) {
   const store = yield* Store;
-  const request = { ...spec, id: yield* newId, status: "open" as const, createdAt: yield* now };
+  const request = { ...spec, id: yield* newId, status: "open" as const, createdAt: yield* nowIso };
   yield* store.insertRequest(request);
   return request;
 });
@@ -69,7 +67,7 @@ export const submit = Effect.fn(function* (requestId: string, userId: string, mo
   }
   const id = yield* newId;
   const kept = yield* store.insertSubmission(
-    { id, requestId, userId, modVersion, bytes: capture.byteLength, createdAt: yield* now },
+    { id, requestId, userId, modVersion, bytes: capture.byteLength, createdAt: yield* nowIso },
     capture,
     maxRuns,
   );
@@ -125,7 +123,7 @@ export const report = Effect.fn(function* (
   sightings: readonly { readonly kind: string; readonly signature: string; readonly sample: string }[],
 ) {
   const store = yield* Store;
-  const firstSeen = yield* now;
+  const firstSeen = yield* nowIso;
   return yield* Effect.forEach(
     sightings,
     (sighting) => store.countUnknown({ ...sighting, modVersion, firstSeen }, MAX_UNKNOWNS),
