@@ -40,7 +40,7 @@ private const val FIRST_MARKED_SLOT = 9
 private const val MARKED_SLOTS = 36
 private const val SIDEBAR_LINES = 15
 private const val ARMORED_MOBS = 40
-private const val RECORDING_WARM_UP_TICKS = 100
+private const val RECORDING_WARM_UP_TICKS = 40
 private const val MENU_SLOTS = 54
 private const val JAR = "jar"
 
