@@ -33,6 +33,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | A feature fires only in the area it names | `Feature` takes an `Area` and `Game` gates on it. `FeatureReplayTest` replays each fixture outside the area |
 | A feature reads no area for itself, from the tab list or the sidebar, and sits in its area's folder | `InfoRows` hands a feature no place and refuses an area row, `area-by-declaration` in `mod/…/Rules.kt` for a place named in a feature, and `RulesTest` |
 | The mod's text and colors come from its text layer | `TextLayerTest` reads the compiled classes, and `text-by-role` in `mod/…/Rules.kt` for a hex color or a `§` |
+| A feature writes a number, a rate or a time, and reads a number the server wrote, through `core.text` | `number-by-helper`, `rate-by-helper` and `count-by-helper` in `mod/…/Rules.kt` |
 | A feature reads a chat line by its start, and a line that starts right and fails to parse is counted | `line` in `Feature`, and `chat-by-line` in `mod/…/Rules.kt` for a chat handler written by hand |
 | The mod holds no `!!`, so each null is said as a `?: return`, a smart cast or a `checkNotNull` that gives its reason | `no-bang-bang` in `mod/…/Rules.kt` |
 | A feature reads time from the `now` its handler receives, never the wall clock | `no-wall-clock-in-core` in `mod/…/Rules.kt` |

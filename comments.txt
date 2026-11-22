@@ -1181,7 +1181,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/core/brief/Brief.kt: /** The index of
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/brief/Brief.kt: /** The seconds left before the pass times out, or null when it has no limit. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/brief/Brief.kt: /** The seconds left on a timed step, or null when the current step has no timer. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/brief/Brief.kt: /** Whether the run has taken longer than it may and is not done. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/brief/Brief.kt: /** Whole seconds left of [seconds] counted from [since], rounded up, and never below zero. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/camera/ThirdPerson.kt: /** * Slides the camera out to its distance. It never slides in, because a wall that comes between the player and * the camera has to win in the same frame, or the camera shows what is behind the wall. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/camera/ThirdPerson.kt: /** At 100 the camera covers two thirds of the way in each 0.15 seconds. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/camera/ThirdPerson.kt: /** Back at the head, where the next slide starts. */
@@ -1630,7 +1629,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePet.kt: /*
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePet.kt: /** Reads a `Pet:` or `Selected Pet:` line: a pet, or `None`. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePet.kt: /** The current pet's pace, when one was read at the level it is now. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePet.kt: /** The key of the pet of [name] that was last active. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePet.kt: /** Whole minutes to the next level at [pace]'s rate, or -1 with no rate to tell it. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePet.kt: /** XP per millisecond, once a second read or a live gain is in. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePet.kt: // A summon in chat names no rarity, so each pet's is kept from where it was last seen in color.
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/general/ActivePet.kt: // Another pet's item there is the menu turning a page.
