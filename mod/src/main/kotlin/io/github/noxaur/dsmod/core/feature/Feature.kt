@@ -20,6 +20,7 @@ import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.game.EntityFilter
 import io.github.noxaur.dsmod.core.game.EntitySeen
+import io.github.noxaur.dsmod.core.game.FeatureEvent
 import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Metrics
@@ -101,7 +102,9 @@ class Feature(
 
     internal var gate: () -> Boolean = { true }
 
-    internal val handlers = HashMap<Class<out GameEvent>, Handler<GameEvent>>()
+    private val byType = HashMap<Class<out GameEvent>, Handler<GameEvent>>()
+
+    internal val handlers: Map<Class<out GameEvent>, Handler<GameEvent>> get() = byType
     internal lateinit var metrics: Metrics
     internal lateinit var tab: InfoRows
 
@@ -222,12 +225,14 @@ class Feature(
         entityFilters = filters.toList()
     }
 
-    inline fun <reified E : GameEvent> on(handler: Handler<E>) = on(E::class.java, handler)
+    inline fun <reified E : FeatureEvent> on(handler: Handler<E>) = on(E::class.java, handler)
 
     @PublishedApi
-    internal fun <E : GameEvent> on(type: Class<E>, handler: Handler<E>) {
+    internal fun <E : FeatureEvent> on(type: Class<E>, handler: Handler<E>) = subscribe(type, handler)
+
+    private fun <E : GameEvent> subscribe(type: Class<E>, handler: Handler<E>) {
         @Suppress("UNCHECKED_CAST")
-        handlers.merge(type, handler as Handler<GameEvent>) { first, then ->
+        byType.merge(type, handler as Handler<GameEvent>) { first, then ->
             Handler { event, now ->
                 first.handle(event, now)
                 then.handle(event, now)
@@ -254,7 +259,7 @@ class Feature(
 
     private fun <T : Any> line(head: (String) -> Boolean, parse: (String) -> T?, handler: (T, Long) -> Unit) {
         if (lines.isEmpty()) {
-            on<SystemMessage> { message, now ->
+            subscribe(SystemMessage::class.java) { message, now ->
                 val text = message.text.plain
                 lines.firstOrNull { it.head(text) }?.let { if (!it.read(text, now)) unparsed(text) }
             }
