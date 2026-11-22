@@ -181,14 +181,13 @@ private fun subsectionLiftsUnderTheMouse(context: ClientGameTestContext) {
         }
     }
     context.waitTick()
-    val spot = context.computeOnClient<Pair<Int, Int>, Nothing> {
+    val (at, scale) = context.computeOnClient<Pair<Pair<Int, Int>, Int>, Nothing> {
         val tree = (it.gui.screen() as Screen).children().filterIsInstance<KitNavTree>().single() as AbstractWidget
-        val scale = it.window.guiScale
         // A subsection is 13px under the 16px section, and the side's face shows through until hover lifts it.
-        (tree.x + 4) * scale to (tree.y + 16 + 6) * scale
+        (tree.x + 4 to tree.y + 16 + 6) to it.window.guiScale
     }
-    context.input.setCursorPos(spot.first.toDouble(), spot.second.toDouble())
-    context.waitTick()
+    context.point(at.first, at.second)
+    val spot = at.first * scale to at.second * scale
     val shot = context.takeScreenshot("nav-subsection-hover")
     val image = ImageIO.read(shot.toFile())
     val pixel = image.getRGB(spot.first.coerceIn(0, image.width - 1), spot.second.coerceIn(0, image.height - 1))
@@ -252,15 +251,10 @@ private fun profileShowsThePetAndScrollsStorage(context: ClientGameTestContext) 
         val containers = ProfileLookup::class.java.getDeclaredField("containers").apply { isAccessible = true }.get(lookup) as MutableMap<String, Load<Container>>
         containers["storage:0"] = Load.Loaded(page)
     }
-    val tab = context.computeOnClient<Pair<Int, Int>, Nothing> { client ->
-        val widget = (client.gui.screen() as ProfileScreen).children().filterIsInstance<KitTab>().first { it.message.string == "Storage" } as AbstractWidget
-        widget.x + widget.width / 2 to widget.y + widget.height / 2
-    }
-    val scale = context.computeOnClient<Int, Nothing> { it.window.guiScale }
-    context.input.setCursorPos(tab.first * scale.toDouble(), tab.second * scale.toDouble())
-    context.waitTick()
-    context.input.pressMouse(0)
-    context.waitTicks(3)
+    context.click(context.computeOnClient<AbstractWidget, Nothing> { client ->
+        (client.gui.screen() as ProfileScreen).children().filterIsInstance<KitTab>().first { it.message.string == "Storage" } as AbstractWidget
+    })
+    context.waitTicks(2)
     val report = context.computeOnClient<String, Nothing> { client ->
         val screen = client.gui.screen() as ProfileScreen
         val pages = screen.children().filterIsInstance<io.github.noxaur.dsmod.edge.ui.KitButton>().map { it.message.string }
@@ -282,22 +276,12 @@ private fun trimmedChatCopiesTheRowsStillShown(context: ClientGameTestContext, c
     }
     context.waitForScreen(ChatScreen::class.java)
     context.waitTick()
-    val spot = context.computeOnClient<Pair<Int, Int>, Nothing> {
-        val lines = it.gui.hud.chat.linesPerPage
-        it.window.guiScale to it.window.guiScaledHeight - 40 - (lines - 1) * 9 - 4
-    }
+    val row = context.computeOnClient<Int, Nothing> { it.window.guiScaledHeight - 40 - (it.gui.hud.chat.linesPerPage - 1) * 9 - 4 }
     // The oldest row still drawn, which is the first row of the message the chat did not trim.
-    context.input.setCursorPos(40.0 * spot.first, spot.second.toDouble() * spot.first)
-    context.waitTick()
-    context.input.pressMouse(1)
-    context.waitTick()
+    context.click(40, row, button = 1)
     check(CopyChats.menu?.header == "Copy Line") { "The remaining row opened ${CopyChats.menu?.header}" }
     val menu = checkNotNull(CopyChats.menu)
-    val scale = spot.first
-    context.input.setCursorPos((menu.buttonX(Format.TEXT) + 4).toDouble() * scale, (menu.buttonY + 4).toDouble() * scale)
-    context.waitTick()
-    context.input.pressMouse(0)
-    context.waitTick()
+    context.click(menu.buttonX(Format.TEXT) + 4, menu.buttonY + 4)
     check(copies.singleOrNull()?.contains("DROPPED HEADER") != true) { "The copy included the trimmed row: $copies" }
     check(copies.singleOrNull() == "Kept middle") { "The copy was $copies" }
 }

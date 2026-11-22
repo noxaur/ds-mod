@@ -61,8 +61,8 @@ class SurfacesTest : FabricClientGameTest {
             context.waitTicks(30)
             context.takeScreenshot("surfaces")
 
-            context.setScreen { InventoryScreen(context.computeOnClient<net.minecraft.world.entity.player.Player, Nothing> { it.player!! }) }
-            val cursor = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
+            context.openInventory()
+            val diamondSlot = context.computeOnClient<Int, Nothing> { client ->
                 val screen = client.gui.screen() as InventoryScreen
                 val diamond = screen.menu.slots.first { it.item.item == Items.DIAMOND }
                 Slots.mark(
@@ -74,12 +74,9 @@ class SurfacesTest : FabricClientGameTest {
                         diamond.index + 1 to SlotMark(Role.ACTION, outline = true),
                     ),
                 )
-                val scale = client.window.guiScale
-                val accessor = screen as io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
-                (accessor.leftPos + diamond.x + 8) * scale.toDouble() to (accessor.topPos + diamond.y + 8) * scale.toDouble()
+                diamond.index
             }
-            context.input.setCursorPos(cursor.first, cursor.second)
-            context.waitTicks(10)
+            context.hoverSlot(diamondSlot, settle = 10)
             context.takeScreenshot("container")
 
             context.runOnClient<Nothing> {

@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
 import net.fabricmc.fabric.api.client.screen.v1.Screens
@@ -54,22 +53,6 @@ object ServerMenus {
     fun shows(context: ClientGameTestContext, title: String) {
         context.waitFor { (it.gui.screen() as? ContainerScreen)?.title?.string == title }
         context.waitTicks(5)
-    }
-
-    /** Where the open menu's slot [slot] has its top-left corner, in GUI pixels. */
-    fun corner(context: ClientGameTestContext, slot: Int) = context.computeOnClient<Pair<Int, Int>, Nothing> { client ->
-        val screen = client.gui.screen() as ContainerScreen
-        val at = screen as ContainerScreenAccessor
-        val s = screen.menu.slots[slot]
-        at.leftPos + s.x to at.topPos + s.y
-    }
-
-    /** Puts the cursor over the middle of the open menu's slot [slot]. */
-    fun hover(context: ClientGameTestContext, slot: Int) {
-        val (x, y) = corner(context, slot)
-        val scale = context.computeOnClient<Double, Nothing> { it.window.guiScale.toDouble() }
-        context.input.setCursorPos((x + 8) * scale, (y + 8) * scale)
-        context.waitTicks(3)
     }
 
     inline fun <reified W : AbstractWidget> widgets(context: ClientGameTestContext, crossinline which: (W) -> Boolean = { true }) =

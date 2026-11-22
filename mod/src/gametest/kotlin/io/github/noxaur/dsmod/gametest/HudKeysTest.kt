@@ -21,9 +21,7 @@ class HudKeysTest : FabricClientGameTest {
 
             // A click picks the grid, and + and - resize it a screen pixel per HUD pixel at a time.
             val block = context.computeOnClient<Hud.Placed, Nothing> { checkNotNull(Hud.find(ID)) }
-            context.input.setCursorPos((block.x + 5.0) * guiScale, (block.y + 5.0) * guiScale)
-            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
-            context.waitTick()
+            context.click(block.x + 5.0, block.y + 5.0)
             val before = pixels()
             context.input.pressKey(GLFW.GLFW_KEY_EQUAL)
             context.waitTick()
