@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
 import io.github.noxaur.dsmod.core.input.BindMatcher
 import io.github.noxaur.dsmod.core.input.CommandBind
@@ -16,8 +17,15 @@ object CommandKeys {
 
     private val matcher = BindMatcher()
 
-    private val settings: CommandBinds get() = DsModClient.feature(CommandBinds::class.java)
-    private val on: Boolean get() = DsModClient.runs<CommandBinds>()
+    private lateinit var game: Game
+    private lateinit var settings: CommandBinds
+
+    fun bind(game: Game, commandBinds: CommandBinds) {
+        this.game = game
+        settings = commandBinds
+    }
+
+    private val on: Boolean get() = settings.feature.runs
     private var registered = false
 
     fun register() {
@@ -25,7 +33,7 @@ object CommandKeys {
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             matcher.forget { Keys.held(client, it) }
             val here = if (on) where(client) else null
-            matcher.idle(System.currentTimeMillis(), settings.sequenceGap.value.toLong(), settings.live(), here, DsModClient.game::isIn)?.let(::send)
+            matcher.idle(System.currentTimeMillis(), settings.sequenceGap.value.toLong(), settings.live(), here, game::isIn)?.let(::send)
         }
     }
 
@@ -35,7 +43,7 @@ object CommandKeys {
             RELEASE -> matcher.release(key)
             PRESS -> {
                 val at = if (on) where(Minecraft.getInstance()) else null
-                matcher.press(key, System.currentTimeMillis(), settings.live(), at, DsModClient.game::isIn)?.let(::send)
+                matcher.press(key, System.currentTimeMillis(), settings.live(), at, game::isIn)?.let(::send)
             }
         }
     }

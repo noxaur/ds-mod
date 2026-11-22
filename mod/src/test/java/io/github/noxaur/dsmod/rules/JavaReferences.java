@@ -31,6 +31,12 @@ final class JavaHooksScreen {
     }
 }
 
+final class JavaLooksUp {
+    Object run() {
+        return io.github.noxaur.dsmod.edge.DsModClient.INSTANCE.getGame();
+    }
+}
+
 final class JavaRefersSend {
     java.util.function.Consumer<String> run(net.minecraft.client.multiplayer.ClientPacketListener connection) {
         return connection::sendChat;

@@ -34,7 +34,7 @@ class HudLayoutTest : FabricClientGameTest {
         fun point() = context.computeOnClient<Pair<Int, Int>?, Nothing> { editor(it).pointOf(DRAGON_TIMER) } ?: error("The layout does not show $DRAGON_TIMER")
         fun placed() = context.computeOnClient<Hud.Placed, Nothing> { Hud.find(DRAGON_TIMER)!! }
 
-        context.setScreen { SettingsScreen(null, SettingsTabs(at("Interface")), reveal = "hudLayout") }
+        context.setScreen { DsModClient.settingsScreen(null, SettingsTabs(at("Interface")), reveal = "hudLayout") }
         context.waitTicks(2)
         spot("hudLayout")
         context.waitTicks(2)
