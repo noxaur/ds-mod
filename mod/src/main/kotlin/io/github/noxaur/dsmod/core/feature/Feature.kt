@@ -212,6 +212,11 @@ class Feature(
     @PublishedApi
     internal fun <T> slot(key: String, default: T, serializer: KSerializer<T>, formerly: List<String>): Slot<T> = stored.slot(key, default, serializer, formerly)
 
+    inline fun <reified T> former(key: String): T? = former(key, serializer<T>())
+
+    @PublishedApi
+    internal fun <T> former(key: String, serializer: KSerializer<T>): T? = stored.former(key, serializer)
+
     /** An on-off setting saved under [key]. Rows declared in [settings] open under it. */
     fun switch(key: String, name: String, description: String, default: Boolean, dependsOn: Switch? = null, settings: (Rows.() -> Unit)? = null): Switch =
         this.settings.switch(stored(key, default).bind, name, description, key, dependsOn, settings)

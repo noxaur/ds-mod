@@ -4,10 +4,7 @@ import io.github.noxaur.dsmod.core.config.Bind
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Rows
 import io.github.noxaur.dsmod.core.config.Store
-import io.github.noxaur.dsmod.core.container.Border
-import io.github.noxaur.dsmod.core.container.Fill
-import io.github.noxaur.dsmod.core.container.Floor
-import io.github.noxaur.dsmod.core.container.RarityPreset
+import io.github.noxaur.dsmod.core.container.MarkStyle
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.Feature
@@ -15,6 +12,8 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Look
+import kotlinx.serialization.Serializable
+import kotlin.math.roundToInt
 
 /**
  * Marks each item's slot in the color the server gives that rarity's item names, unless [markCommon] is off for Common.
@@ -23,35 +22,31 @@ import io.github.noxaur.dsmod.core.ui.Look
 class ItemRarity(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "item-rarity", Area.ANYWHERE, Store.INVENTORY, "Mark each item's slot in the color of its rarity.", formerly = listOf("rarityMarks"), slots = ::slots)
 
-    /** The player's own style for every container, their inventory included, shown while [preset] is Custom. */
-    val inventoryStyle = feature.stored("inventoryStyle", SlotStyle())
-    val hotbarStyle = feature.stored("hotbarStyle", SlotStyle())
+    val inventoryStyle = feature.stored("inventoryLook", SlotStyle())
+
+    val hotbarStyle = feature.stored("hotbarLook", SlotStyle())
 
     /** While true the hotbar is drawn in [inventoryStyle], and [hotbarStyle] waits for the player to unlink them. */
     val hotbarMatches = feature.stored("hotbarMatches", true)
 
-    val preset = feature.pick("rarityPreset", "Style", "Pick a look for the marks, or Custom for your own.", RarityPreset.GILDED) { Look.Slots(it.style ?: inventoryStyle.value) }
-
     init {
+        feature.former<String>("rarityPreset")?.let { preset ->
+            val mark = PRESETS[preset] ?: feature.former<OldLook>("inventoryStyle")?.mark() ?: MarkStyle.FRAME
+            inventoryStyle.value = SlotStyle(mark)
+        }
+        feature.former<OldLook>("hotbarStyle")?.let { hotbarStyle.value = SlotStyle(it.mark()) }
+
         feature.rows {
-            fold("customLook", "Custom Look", "Build your own look from its parts, which switches Style to Custom.") {
-                // A part shows the look on screen. Writing a different one makes that look the player's own.
-                // While a preset is active the part's default is that preset, so a reset leaves it in place.
-                slotParts(
-                    field = inventoryStyle.bind.field,
-                    idPrefix = "",
-                    look = ::containerStyle,
-                    preset = { preset.value.style },
-                    write = {
-                        inventoryStyle.value = it
-                        preset.value = RarityPreset.CUSTOM
-                    },
-                    border = "Pick the ring around the slot.",
-                    fill = "Pick the color inside the slot, behind the item.",
-                    floor = "Pick what the item stands on.",
-                    gem = "Put a small gem over the item's top-left corner.",
-                )
-            }
+            looks(
+                field = inventoryStyle.bind.field,
+                idPrefix = "",
+                look = ::containerStyle,
+                follows = { null },
+                write = { inventoryStyle.value = it },
+                style = "Pick how the rarity's color fills each slot.",
+                opacity = "Set how solid the marks are.",
+                sparkles = "Add a few glints to each mark, placed differently per slot.",
+            )
         }
     }
 
@@ -64,27 +59,24 @@ class ItemRarity(config: DsModConfig) : HasFeature {
             hotbarMatches.value = it
         }
         switch(match, "Match Inventory", "Mark the hotbar in the same look as your inventory.")
-        // A part shows the hotbar's look as it is, and a change makes it the hotbar's own, as Custom Look does
-        // for Style. While the hotbar matches, the part's default is the look on screen, so a reset
-        // writes that part back and leaves Match Inventory on.
-        slotParts(
-            field = hotbarStyle.bind.field,
-            idPrefix = "hotbar",
-            look = ::hotbarLook,
-            preset = { if (hotbarMatches.value) hotbarLook() else null },
-            write = {
-                hotbarStyle.value = it
-                hotbarMatches.value = false
-            },
-            border = "Pick the ring around each hotbar slot.",
-            fill = "Pick the color inside each hotbar slot.",
-            floor = "Pick what each hotbar item stands on.",
-            gem = "Put a small gem over each hotbar item's corner.",
-        )
+        shownWhile({ !hotbarMatches.value }) {
+            looks(
+                field = hotbarStyle.bind.field,
+                idPrefix = "hotbar",
+                look = ::hotbarLook,
+                follows = { if (hotbarMatches.value) hotbarLook() else null },
+                write = {
+                    hotbarStyle.value = it
+                    hotbarMatches.value = false
+                },
+                style = "Pick how the color fills each hotbar slot.",
+                opacity = "Set how solid the hotbar's marks are.",
+                sparkles = "Add a few glints to each hotbar mark.",
+            )
+        }
     }
 
-    /** The style containers show: the preset's, or the player's own under Custom. */
-    fun containerStyle(): SlotStyle = preset.value.style ?: inventoryStyle.value
+    fun containerStyle(): SlotStyle = inventoryStyle.value
 
     /** The look the hotbar's marks are drawn in: the inventory's while they match, or the hotbar's own. */
     fun hotbarLook(): SlotStyle = if (hotbarMatches.value) containerStyle() else hotbarStyle.value
@@ -109,23 +101,33 @@ class ItemRarity(config: DsModConfig) : HasFeature {
     }
 }
 
-/**
- * The Border, Fill, Floor and Gem rows of a slot look, saved under [field]. Each shows [look] as it is, a change goes
- * to [write], and a reset leaves the [preset] look in place while there is one. A row's id is its part, after [idPrefix].
- */
-private fun Rows.slotParts(
-    field: String, idPrefix: String, look: () -> SlotStyle, preset: () -> SlotStyle?, write: (SlotStyle) -> Unit,
-    border: String, fill: String, floor: String, gem: String,
+private fun Rows.looks(
+    field: String, idPrefix: String, look: () -> SlotStyle, follows: () -> SlotStyle?, write: (SlotStyle) -> Unit,
+    style: String, opacity: String, sparkles: String,
 ) {
     fun id(part: String) = if (idPrefix.isEmpty()) part else idPrefix + part.replaceFirstChar { it.uppercase() }
     fun <T> part(part: String, get: (SlotStyle) -> T, with: SlotStyle.(T) -> SlotStyle) =
         Bind("$field.$part", { get(look()) }) {
             if (it != get(look())) write(look().with(it))
-        }.follows { preset()?.let(get) }
-    fun <T> choose(part: String, name: String, description: String, values: List<T>, label: (T) -> String, get: (SlotStyle) -> T, with: SlotStyle.(T) -> SlotStyle) =
-        pick(part(part, get, with), name, description, values, id(part), label = label) { Look.Slots(look().with(it), 1) }
-    choose("border", "Border", border, Border.entries, { it.label }, { it.border }) { copy(border = it) }
-    choose("fill", "Fill", fill, Fill.entries, { it.label }, { it.fill }) { copy(fill = it) }
-    choose("floor", "Floor", floor, Floor.entries, { it.label }, { it.floor }) { copy(floor = it) }
-    switch(part("gem", { it.gem }) { copy(gem = it) }, "Gem", gem, id("gem"))
+        }.follows { follows()?.let(get) }
+    pick(part("mark", { it.mark }) { copy(mark = it) }.also { if (idPrefix.isEmpty()) it.formerly("rarityPreset") }, "Style", style, MarkStyle.entries, id("style")) {
+        Look.Slots(look().copy(mark = it))
+    }
+    number(part("opacity", { it.opacity.toFloat() }) { copy(opacity = it.roundToInt()) }, "Opacity", opacity, OPACITY_MIN..OPACITY_MAX, OPACITY_STEP, "%", id("opacity"))
+    switch(part("sparkles", { it.sparkles }) { copy(sparkles = it) }, "Sparkles", sparkles, id("sparkles"))
+}
+
+private const val OPACITY_MIN = 10f
+private const val OPACITY_MAX = 100f
+private const val OPACITY_STEP = 5f
+
+private val PRESETS = mapOf("GILDED" to MarkStyle.FRAME, "SHOWCASE" to MarkStyle.AURA, "MINIMAL" to MarkStyle.UNDERGLOW)
+
+@Serializable
+private class OldLook(val border: String = "GILDED", val fill: String = "GLOW") {
+    fun mark() = when {
+        fill == "HALO" || border == "ROUNDED" -> MarkStyle.AURA
+        border != "NONE" || fill == "GLOW" || fill == "WASH" -> MarkStyle.FRAME
+        else -> MarkStyle.UNDERGLOW
+    }
 }

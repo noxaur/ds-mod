@@ -36,7 +36,7 @@ World marks are submitted once per tick, and Minecraft replays them every frame,
 
 ## Rarity marks are baked once
 
-A rarity style's glows change opacity pixel by pixel, which as fills would be thousands of rectangles per chest every frame. So each rarity's art is painted once into one texture, at the end of a tick and only when the style changes, and a marked slot costs one blit. The art is matched to the slot under it, read from the player's resource packs, because a faint tint vanishes on gray and a dim one sinks into black.
+A mark's alpha varies pixel by pixel, which as fills would be thousands of rectangles per chest every frame. So each rarity's art, with a row per sparkle placement that a slot's index picks, is painted once into a texture and a slot costs one blit. Opacity is the blit's color, so its slider repaints nothing. The art matches the slot under it, Menu Theme's or the resource pack's, because a faint tint vanishes on gray and a dim one sinks into black.
 
 ## A cooldown is drawn from its start and end
 

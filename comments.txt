@@ -580,7 +580,6 @@ mod/src/debug/kotlin/io/github/noxaur/dsmod/debug/KitGalleryScreen.kt: // The gl
 mod/src/debug/kotlin/io/github/noxaur/dsmod/debug/KitGalleryScreen.kt: // The last one records, as after a press.
 mod/src/debug/kotlin/io/github/noxaur/dsmod/debug/KitGalleryScreen.kt: // The storage window's search field, below its slot grid.
 mod/src/debug/kotlin/io/github/noxaur/dsmod/debug/SettingsGalleryScreen.kt: /** * The kit gallery's pages of settings rows: every [Kind] of row, idle, changed and open, and each again dimmed under * an off switch, with every [Look] a pick shows. `/dskit rows` opens the rows, `/dskit lists` a list the player * builds, full, empty and dimmed, and `/dskit panels` each panel. The rows work, so a press opens a menu. [kinds] * and [looks] say what a page shows, and `KitTest` fails on a kind or a look that no page shows. */
-mod/src/debug/kotlin/io/github/noxaur/dsmod/debug/SettingsGalleryScreen.kt: /** Rows as a search for "gilded look" shows them, with the words it matched painted, drawn apart from the rows above. */
 mod/src/debug/kotlin/io/github/noxaur/dsmod/debug/SettingsGalleryScreen.kt: /** The kinds of look the page's picks show. */
 mod/src/debug/kotlin/io/github/noxaur/dsmod/debug/SettingsGalleryScreen.kt: /** The kinds of row the page shows. */
 mod/src/debug/kotlin/io/github/noxaur/dsmod/debug/SettingsGalleryScreen.kt: /** Where the row [id] is, so a test can press it. */
@@ -878,13 +877,9 @@ mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/InventoryMarksTest.kt: /
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/InventoryMarksTest.kt: // The plate darkens the world behind it, so the same pixel without it is lighter.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/InventoryMarksTest.kt: // lines and input lie left of and below the spot, so the wheel turns over the grid's top right.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/InventoryMarksTest.kt: // obsidian in the hotbar's second slot fills its cell, so its left edge is slot behind it while it bobs.
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ItemRarityTest.kt: /** * Gives the player items the way dragsim.co builds them, checks the `Item` the edge reads from them, then opens * the inventory and a chest and checks the marks. Read the screenshots: the default gilded frame must sit around * the slot of each item but the Common one, and the tooltip must sit over a frame. Then the hotbar, and its own look in the settings. */
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ItemRarityTest.kt: /** * Works the hotbar's own look in the settings, under Item Rarity: Match Inventory off starts the hotbar from the * inventory's look, and a part changes the hotbar alone, which the real hotbar shows. Read the screenshots: the * rows in each theme, and the hotbar with a floor the inventory lacks. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ItemRarityTest.kt: // Match Inventory on again draws the hotbar in the inventory's look, and keeps the hotbar's own for later.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ItemRarityTest.kt: // Slot 36 is the first hotbar slot, which `container.0` fills with a Common item, unmarked until Mark Common is on.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ItemRarityTest.kt: // The chest's 54 slots, then the player's 27 and 9 that it shows.
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ItemRarityTest.kt: // The feature guide's picture: the Minimal preset in a chest, with no tooltip or toast over it.
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ItemRarityTest.kt: // The wheel over a pick steps it, here to the floor after None.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ItemRarityTest.kt: // With no menu open the hotbar carries the marks. Read the screenshot: white, blue and gold behind the first three items.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/JoinDragSimTest.kt: /** The debug build's title screen has Join DragSim in Singleplayer's column, one row above it. It is not pressed, since that joins the live server. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/KeepCursorTest.kt: /** * Opens one menu from another, as the server does with a close and an open in one tick, and checks where the cursor * ends up. The game takes and releases the mouse only while its window has focus, which Fabric gives every test. */
@@ -1000,16 +995,12 @@ mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // A
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // A switch's own settings open under it from its button, and close to a summary.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // An action opens its screen, which returns to the settings.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // Camera: numbers, a signed one, a choice, keys and two heading switches.
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // Inventory: the Style pick's menu of looks, and the Custom Look fold.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // Keys: a press records the next key, a right press clears, Backspace resets.
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // Resetting a part of the custom look switches Style to Custom, so the style is put back after its parts.
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // Showcase is the first tile, and the menu opened lit on Gilded, the current one.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // The End: a span under Protector Spawn Beam, drawn by a press and drag on its empty track.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // The keyboard: the press above gave the rows the keys, and Right and Left step.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // The press gave the rows the keys, so the first Escape takes them back and the second closes.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // The press gave the rows the keys: Space and Enter press the row the keyboard is on.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // The rows put back what they changed, for the tests after this one.
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // The tiles run None, Flat: the menu opened on Rounded, Showcase's own.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // The track runs 70 pixels inside its edge, from 1 to 50.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // Typing in the open menu lights the next value that starts with the letter, and starts no search.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingRowsTest.kt: // Typing lights a tile by its name, and Escape leaves the style as it was.
@@ -1019,9 +1010,7 @@ mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingsKeyTest.kt: // A
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingsNarrationTest.kt: /** * Hovers a row of each kind and checks what the narrator says of it: its name, kind and value, that it is changed * from its default, that a switch dims it, and its new value after a change. The sidebar and the tab bar say * what is under the mouse too. Then a search paints the words it matched, in both themes. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingsNarrationTest.kt: /** What the narrator says of ds-mod's own settings screen, as [narration] says. `SettingRowsTest` drives the rows. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingsNarrationTest.kt: // A change is said with the row: the wheel over the number's field steps it.
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingsNarrationTest.kt: // A search paints the words it matched: in names and descriptions, in a fold's name, and in a dropdown's value.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingsNarrationTest.kt: // The bar's first tab is 4 in from the sidebar's 116.
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingsNarrationTest.kt: // What is open lasts as long as the tabs do, so a test before this one may have opened it.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingsScreenFixesTest.kt: /** * The settings screen keeps a number typed into an open field across a resize, a digit typed after a click on a * number, a wheel that must not step an open field, and a button that writes other settings. Menu Tabs stores a * cleared item. The binds list puts a cancelled drag's selection back and exports the group that was picked. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingsScreenFixesTest.kt: /** Drives Menu Tabs' form, at GUI scale 2. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/SettingsScreenFixesTest.kt: // An empty clipboard does not replace the previous copy, so the marker has to be text.
@@ -1404,20 +1393,10 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/core/config/Stored.kt: /** This value
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/Filler.kt: /** * The glass panes the server fills a menu's empty slots with: a pane with a blank name, black in most menus and white * in a player's profile. A colored pane is not filler, because a dungeon terminal is played on red, lime and magenta ones. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/Filler.kt: /** Whether an item [id] with the custom [name] is filler. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/MenuButton.kt: /** The button an item [id] with the custom [name] is, or null when it is anything else. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/SlotArt.kt: /** * Paints a [SlotStyle] from one color, as ARGB pixels that the edge uploads once and blits per slot. Every tone is * the color, a light tone mixed toward white or a shade mixed toward black. * * A dark slot and Minecraft's gray one need different art. On dark, a glow leans toward white so it reads as light, * where a dim blue or purple would sink into the black. On gray, a glow keeps the pure color at more strength, * because the gray washes a faint tint out, but never full strength: a glow that hides the gray turns a full chest * into a wall of solid color. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/SlotArt.kt: /** A 1px ring around the whole art, with its four corner pixels left out. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/SlotArt.kt: /** A cut gem lit from the top-left, with a dark outline that keeps it apart from any item under it. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/SlotArt.kt: /** How many pixels the item-area pixel lies in from the nearest edge, so no corner glows more than a side. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/SlotArt.kt: /** Straight-alpha pixels, painted back to front. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/SlotArt.kt: /** The art covers the slot's whole 18x18, one pixel around the item. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/SlotArt.kt: /** The gem with its outline, drawn from the item's top-left pixel. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/SlotArt.kt: // Single motes, and a small cross around (12, 5).
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/SlotArt.kt: // The kit's frame in the rarity's color. A shade outline vanishes on a dark slot, so there it takes the color.
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/SlotArt.kt: // Within the item's 16x16, which starts at (1, 1).
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/SlotMark.kt: /** * A highlight on one slot of the open container, with an optional label in its corner. It fills the slot * behind the item, or with [rarity] it is drawn in the player's [SlotStyle] for that surface, for a mark that most * slots carry. With [hide] the slot looks empty instead: no item, no hover highlight and no tooltip. A click still goes * to the server. With [cooldown] it fills nothing, and the layer drains the game's own cooldown wash over the item and * counts down its seconds, on the hotbar as well. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/SlotMark.kt: /** A wait that began at [start] and ends at [end], in epoch milliseconds, so the layer can draw each frame of it. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/SlotStyle.kt: /** * How a rarity mark looks, built from the rarity's one color. [gem] puts a small gem over the item's top-left * corner, where no stack count or durability bar sits. The defaults are the Gilded preset's. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/container/SlotStyle.kt: /** The entry [by] places on, wrapping at either end, for a stepper. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/contribute/Batch.kt: /** * Ends what [take] began for [batch], with the [error] that stopped it, or null when it was delivered. A delivered * batch is not collected again this session, and neither is one the backend refused for good, because sending it * again can only fail again. Any other failure, such as a sign-in, a busy backend or no network, leaves it * waiting for the next report, as far as a batch has room, and the rest may be seen again. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/contribute/Batch.kt: /** * What a player agreed to send, collected until it is time to send it: a batch of at most [MAX_BATCH] things, each * told apart by [key]. A thing is not collected again while it waits, is on its way, or was delivered, and a report * goes out rarely, so a player who agreed to it is asked for little. Call it on the client thread. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/contribute/Batch.kt: /** * Whether a report should go at [now], and if so counts it as sent. The first goes [FIRST_MILLIS] after something * began to wait, so a short session still reports, and each later one [SPACING_MILLIS] after the one before. */
@@ -1644,17 +1623,9 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/FixedMenuLayou
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/HideGlassPanes.kt: /** Hides the [Filler] panes in a menu, so the items that do something stand out. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/HideGlassPanes.kt: /** Whether the player has been told that filler panes are hidden. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/ItemRarity.kt: /** * Marks each item's slot in the color the server gives that rarity's item names, unless [markCommon] is off for Common. * The look of a mark is the edge's: `Slots` draws [containerStyle] in containers and [hotbarLook] on the hotbar. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/ItemRarity.kt: /** * The Border, Fill, Floor and Gem rows of a slot look, saved under [field]. Each shows [look] as it is, a change goes * to [write], and a reset leaves the [preset] look in place while there is one. A row's id is its part, after [idPrefix]. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/ItemRarity.kt: /** The look the hotbar's marks are drawn in: the inventory's while they match, or the hotbar's own. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/ItemRarity.kt: /** The player's own style for every container, their inventory included, shown while [preset] is Custom. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/ItemRarity.kt: /** The style containers show: the preset's, or the player's own under Custom. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/ItemRarity.kt: /** While true the hotbar is drawn in [inventoryStyle], and [hotbarStyle] waits for the player to unlink them. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/ItemRarity.kt: // A part shows the hotbar's look as it is, and a change makes it the hotbar's own, as Custom Look does
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/ItemRarity.kt: // A part shows the look on screen. Writing a different one makes that look the player's own.
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/ItemRarity.kt: // Unmatching starts the hotbar's own look from what it showed, so nothing jumps.
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/ItemRarity.kt: // While a preset is active the part's default is that preset, so a reset leaves it in place.
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/ItemRarity.kt: // for Style. While the hotbar matches, the part's default is the look on screen, so a reset
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/ItemRarity.kt: // writes that part back and leaves Match Inventory on.
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/KeepCursor.kt: /** * Keeps the cursor where it was when the server closes one menu and opens the next. It reads nothing from the * server, so all of it is `CursorMixin` in the edge, with the rule in `CursorMemory`. This class puts it in the * list that the settings, the docs check and the tests go through. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/MenuTabs.kt: /** * Tabs along the top and bottom of menus that send the player's commands, and a search tab that dims the items that * do not match. It reads only the player's setup and the open menu's items, so all of it is `TabBar` and * the [tabs] panel's editor in the edge, with the rules in `TabLayout` and `ItemSearch`. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/feature/inventory/MenuTabs.kt: /** The tabs the player set up, in the editor. */
@@ -2403,11 +2374,8 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Sidebars.kt: /** * Reads the sid
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Sidebars.kt: /** Posts the sidebar at the next poll even when no line changed, after [Game] forgot it with the old world. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Sidebars.kt: /** The client sorts and cuts the sidebar inside `Gui`, so this repeats it: the highest score on top, then by owner, 15 lines. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Sidebars.kt: // The title is first, so one comparison covers it and the lines.
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotArts.kt: /** * Bakes the player's rarity style into one atlas per [Surface]: a row of 18x18 backs, one cell per [Role], and a row * of gems under it. A slot then costs one blit. The atlas is painted again only when its style changes or the * resource packs make a chest's slots dark or light, and that paint waits for the end of the client tick: a texture * uploaded while a frame is being built breaks every frame after it. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotArts.kt: /** * The atlas to draw for [surface], or null when none has been uploaded yet. Records what the next tick should * paint. A restyle keeps returning the previous atlas until that paint has been uploaded. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotArts.kt: /** Drops a remembered atlas. Tests start from nothing; the game never calls this. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotArts.kt: /** Reads the chest's slot again when the selected resource packs changed. Call it as a container screen opens. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotArts.kt: /** Whether the resource packs draw a chest's slots dark, read from the pixel inside its first slot. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotArts.kt: // A texture made or uploaded while a frame is being built broke every frame after it in the game tests, so the
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotArts.kt: // What the next tick should paint, by surface. Plain arrays, because a draw asks for every marked slot.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotArts.kt: // paint happens at the end of a tick, between frames. [bake] is the real upload; a test passes its own.
@@ -2443,13 +2411,9 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotGuards.kt: // The click the 
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotGuards.kt: // The client does not refill a result slot; the server sends it. One craft per tick, while the grid has ingredients.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotGuards.kt: // The server refills a crafting result after the click, so the next craft waits for that packet.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/SlotGuards.kt: // Yellow for a slot, blue for a linked one, and green for an item that takes its lock along.
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** * Draws what goes over the item in slot [index]: the gem of a rarity mark, when the style has one, and a cooldown. * On the hotbar the gem follows the player's switch for marks there, and a cooldown its feature's own. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** * Marks on the slots of the open container. They go away when the container closes. With no menu open the * container is the player's own inventory, and the marks on its last nine slots are drawn on the hotbar. * A hidden or covered slot draws nothing here: `ContainerScreenMixin` asks [hides] and skips its item, highlight and * tooltip. * * A mark is drawn in two parts: its back behind the item, and for a rarity mark with a gem, the gem over it. * A hidden slot draws nothing here: `ContainerScreenMixin` asks [hides] and skips its item, highlight and tooltip. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** * Whether a slot the mod draws itself, such as the profile viewer's, marks [rarity] as Item Rarity marks a menu's, * by the same switches. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** * [rarity] is the mark's role when the player's rarity style draws it, or null for a plain fill in [color], and a * [cooldown] draws neither. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** Called by `HudHotbarMixin` as vanilla is about to draw the hotbar item at [x], [y]. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** Draws [rarity]'s gem over that item, when the player's style has one. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** Draws [rarity]'s mark behind an item at [x], [y] that the mod draws itself, in the player's style for menus. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** Draws what goes behind the item in slot [index] of the open menu, whose 16x16 starts at [x], [y]. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** Marks slots by their index in the open container's menu, replacing what [id] marked before. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** The rarity that marks slot [index] of the open menu, if one does. */
@@ -2459,7 +2423,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** Whether any mark i
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: /** Whether the slot at [index] in the open menu is hidden, asked for each slot each frame. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: // A mark's slot is an index in the open menu, which is the inventory's only while no other menu is open.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: // Over the item, where the game writes a stack's count.
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: // The backs go under the items from `HudHotbarMixin`. This draws the gems and the cooldowns, after vanilla drew the items.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/Slots.kt: // The offhand slot comes through here too, left of the first slot.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/TabBar.kt: /** * Menu Tabs, under Better UI: the player's tabs along the top and bottom of every menu and of the inventory, as * the settings' `TabPlacesEditor` sets them up. A command tab sends its command, and the one whose command opened the menu shown * now joins the panel. The search tab opens a bar along its edge toward the middle of the menu, drawn over the tabs * it covers, which dims every item whose name and lore lack a word of the query. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/TabBar.kt: /** What a tab's tooltip says: its name, the command it sends and the click hint. */
@@ -2647,7 +2610,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/edge/profile/ProfileScreen.kt: /** Ho
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/profile/ProfileScreen.kt: /** How many slots hold something, and how many items of each rarity, with the worn wardrobe slot. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/profile/ProfileScreen.kt: /** How tall the table stands with [limit] of its rows, the gap under it included. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/profile/ProfileScreen.kt: /** How tall what was drawn from [top] down to [bottom] stands, without the gap that each drawing leaves under itself. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/profile/ProfileScreen.kt: /** One slot of a grid the screen draws: the frame, the rarity mark behind and over the item, and the hover. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/profile/ProfileScreen.kt: /** Puts the thumb's middle under the mouse. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/profile/ProfileScreen.kt: /** Tables side by side from [x], each as wide as it was built. Returns the y below the tallest. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/profile/ProfileScreen.kt: /** The Catacombs level over each class, as the Dungeons tab bars them. */
@@ -2830,8 +2792,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/Kit.kt: /** A wash in the pan
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/Kit.kt: /** A wash in the well's color over something dimmed, such as a setting under a switch that is off. It stays editable. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/Kit.kt: /** A white wash over something the player just acted on, fading as [strength] goes from 1 to 0. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/Kit.kt: /** Darkens the item at [x], [y], drawn over it. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/Kit.kt: /** Draws cell [cell] of row [row] of a rarity atlas behind the 16x16 item area at [x], [y], covering the slot's whole 18x18. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/Kit.kt: /** Draws cell [cell]'s gem over the item at [x], [y], from the item's top-left pixel, in an atlas whose gems are [rows] slots down. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/Kit.kt: /** Fills the 16x16 item area at [x], [y] behind the item. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/Kit.kt: /** Frames the 16x16 item area at [x], [y] with a full 18x18 square, such as the two slots of a link. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/Kit.kt: /** How wide a [dropdown] must be to hold a [label] wide label after a [lead] wide preview. */
@@ -2883,7 +2843,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/KitTabBar.kt: // A middle cli
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/KitTabBar.kt: // A tooltip above the mouse would leave the window here, so the bar's open below it, at the mouse.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/KitTabBar.kt: // The tabs start as far in from the bar's left as the brand ends from its right.
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/KitTabBar.kt: // Too narrow for a letter, a tab shows its icon alone, as a browser's does, rather than a lone ellipsis.
-mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/Looks.kt: /** * Draws each [Look] a pick shows, [HEIGHT] tall. A slot look is drawn from one atlas that holds every border, fill * and floor alone, for three rarities on a dark and a light slot. `SlotArt` paints a style back to front with * straight alpha, so blitting its parts in that order gives the same pixels as painting the style whole, and any * style costs three blits a slot with one texture painted once. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/Looks.kt: /** The rarities a slot look shows, rarest first. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/Looks.kt: // As with the kit's slot, a texture made while a frame is being built breaks the frames after it, so it is
 mod/src/main/kotlin/io/github/noxaur/dsmod/edge/ui/Looks.kt: // The art for a light slot keeps more of the color, as on a chest's gray slot.
@@ -3019,15 +2978,12 @@ mod/src/test/kotlin/io/github/noxaur/dsmod/core/config/ConfigFileTest.kt: /** Th
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/config/ConfigFileTest.kt: // A save writes a new file and leaves the kept one alone.
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/config/ConfigFileTest.kt: // A slot is written once its feature is built, so both sides are read through a tree.
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/config/ConfigFileTest.kt: // Loot Alerts became Rare Drop Alert, and its star followed its former key to the feature's row.
-mod/src/test/kotlin/io/github/noxaur/dsmod/core/config/ConfigFileTest.kt: // MoulConfig's Gson wrote a style as {}, since its fields had no @Expose, so the old file holds no custom look.
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/config/FavoritesTest.kt: // The row stays in place, so a quick second press lands on it and stars it again.
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/config/ItemsTest.kt: /** The rules of a list the player builds, on the list of command binds, which the edge's face only draws. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/config/SettingsTest.kt: /** The rules of each kind of row, which the edge's faces only draw. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/config/SettingsTreeTest.kt: /** * `Class.field` of every field in each category of `DsModConfig` that the config file saves, and of every slot the * features declared while the tree was built. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/config/SettingsTreeTest.kt: /** The tree is the schema of the settings, so these keep it one system: every saved field has one row, worded alike. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/config/SettingsTreeTest.kt: /** Words Title Case leaves small after the first. */
-mod/src/test/kotlin/io/github/noxaur/dsmod/core/container/SlotArtTest.kt: // On dark the glow leans toward white, so a dim color still reads as light.
-mod/src/test/kotlin/io/github/noxaur/dsmod/core/container/SlotArtTest.kt: // The gilded bevel's bottom row lies on the pedestal's shaded one.
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/FeatureReplayTest.kt: /** * A fixture's events. One cut without the tab list or the sidebar says nothing of where the player was, so it * replays inside the feature's own area. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/FeatureReplayTest.kt: /** * Posts every event as it arrives. When the capture recorded client ticks, ticks once after each tick's events, * at the time of the last of them. A capture with no tick on any event ticks after every event, which is how * those transcripts were written. [posted] runs after each post, [ticked] after each tick. */
 mod/src/test/kotlin/io/github/noxaur/dsmod/core/feature/FeatureReplayTest.kt: /** * Replays capture excerpts through each feature. `features/<id>/<name>.jsonl` is the excerpt, and * `<name>.txt` beside it is the transcript: every event, whether the feature hid it, what the feature said, and * the HUD block, the slot marks and the marks in the world each time they changed. */

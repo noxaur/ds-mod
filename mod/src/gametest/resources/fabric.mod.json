@@ -20,6 +20,10 @@
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.TestClock"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.DarkChestPack"
       }
     ],
     "fabric-client-gametest": [
@@ -122,6 +126,10 @@
       {
         "adapter": "kotlin",
         "value": "io.github.noxaur.dsmod.gametest.ItemRarityTest"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dsmod.gametest.RarityStylesTest"
       },
       {
         "adapter": "kotlin",

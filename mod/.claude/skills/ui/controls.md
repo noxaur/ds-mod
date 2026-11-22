@@ -111,7 +111,7 @@ A dropdown whose values are told apart by how they look, such as a rarity style 
 More rows the player rarely needs, under a raised bar with an arrow, as MoulConfig's accordion is.
 
 - A press on the bar, Enter or Space opens and closes it, and Right and Left do with the keyboard.
-- Closed, the bar sums up what is under it in muted text, such as `Gilded · Glow · None`.
+- Closed, the bar sums up what is under it in muted text, with each value joined by ` · `.
 - Its changed marker shows when any row in it differs from its default, and a press on it resets them all.
 
 ## Ordered list
