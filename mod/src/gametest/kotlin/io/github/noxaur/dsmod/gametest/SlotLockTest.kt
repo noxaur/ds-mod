@@ -27,8 +27,6 @@ class SlotLockTest : FabricClientGameTest {
         val key = GLFW.GLFW_KEY_L
         val itemKey = GLFW.GLFW_KEY_K
 
-        fun item(slot: Int) = context.ownItem(slot)
-        fun carried() = context.carried()
         fun hover(slot: Int) {
             context.hoverOwnSlot(slot, settle = 0)
             context.waitFor { client ->
@@ -86,23 +84,23 @@ class SlotLockTest : FabricClientGameTest {
                 open()
 
                 click(0)
-                check(carried() == 1) { "A click on an unlocked slot picked nothing up, so this test proves nothing" }
+                check(context.carried() == 1) { "A click on an unlocked slot picked nothing up, so this test proves nothing" }
                 click(0)
 
                 tap(0)
                 check(slotLock.locks == SlotLocks(setOf(0))) { "The key over the first hotbar slot left ${slotLock.locks}" }
                 click(0)
-                check(carried() == 0 && item(0).first == Items.DIAMOND_SWORD) { "A click took the locked sword" }
+                check(context.carried() == 0 && context.ownItem(0).first == Items.DIAMOND_SWORD) { "A click took the locked sword" }
                 click(0, 1)
-                check(carried() == 0) { "A right click took the locked sword" }
+                check(context.carried() == 0) { "A right click took the locked sword" }
                 hover(10)
                 context.input.pressKey(GLFW.GLFW_KEY_1)
                 context.waitTicks(3)
-                check(item(0).first == Items.DIAMOND_SWORD && item(10).first == Items.STONE) { "The 1 key over another slot traded with the locked slot" }
+                check(context.ownItem(0).first == Items.DIAMOND_SWORD && context.ownItem(10).first == Items.STONE) { "The 1 key over another slot traded with the locked slot" }
                 hover(0)
                 context.input.pressKey { it.keyDrop }
                 context.waitTicks(3)
-                check(item(0).first == Items.DIAMOND_SWORD) { "The drop key over the locked slot dropped the sword" }
+                check(context.ownItem(0).first == Items.DIAMOND_SWORD) { "The drop key over the locked slot dropped the sword" }
 
                 // The key is a mouse button too.
                 slotLock.slotLockKey.value = 2
@@ -111,7 +109,7 @@ class SlotLockTest : FabricClientGameTest {
                 slotLock.slotLockKey.value = key
                 click(1)
                 doubleClick(12)
-                check(carried() == 5 && item(10).second == 5) { "A double click gathered from the locked stack: carrying ${carried()}, and ${item(10)} is left" }
+                check(context.carried() == 5 && context.ownItem(10).second == 5) { "A double click gathered from the locked stack: carrying ${context.carried()}, and ${context.ownItem(10)} is left" }
                 click(1)
 
                 // Two hotbar slots cannot be linked.
@@ -130,13 +128,13 @@ class SlotLockTest : FabricClientGameTest {
                 context.waitTicks(3)
                 check(slotLock.locks == SlotLocks(setOf(0, 10, 9), mapOf(0 to 9))) { "Holding the key from the hotbar to the slot above left ${slotLock.locks}" }
                 click(9)
-                check(carried() == 0) { "A click took the linked pickaxe" }
+                check(context.carried() == 0) { "A click took the linked pickaxe" }
                 context.takeScreenshot("slot-lock")
                 hover(20)
                 context.takeScreenshot("slot-lock-rest")
 
                 shiftClick(9)
-                check(item(0).first == Items.DIAMOND_PICKAXE && item(9).first == Items.DIAMOND_SWORD) { "A Shift click did not trade the pair: ${item(0)} and ${item(9)}" }
+                check(context.ownItem(0).first == Items.DIAMOND_PICKAXE && context.ownItem(9).first == Items.DIAMOND_SWORD) { "A Shift click did not trade the pair: ${context.ownItem(0)} and ${context.ownItem(9)}" }
 
                 tap(9)
                 check(slotLock.locks == SlotLocks(setOf(0, 10))) { "Unlocking one end of the link left ${slotLock.locks}" }
@@ -150,19 +148,19 @@ class SlotLockTest : FabricClientGameTest {
                 context.waitTicks(3)
                 check(slotLock.locks == SlotLocks(items = setOf("an-axe"))) { "The item key over the axe left ${slotLock.locks}" }
                 click(11)
-                check(carried() == 0) { "A click took the locked axe" }
+                check(context.carried() == 0) { "A click took the locked axe" }
                 context.takeScreenshot("slot-lock-item")
                 hover(11)
                 context.input.pressKey(itemKey)
                 context.waitTicks(3)
                 click(11)
-                check(carried() == 1) { "The unlocked axe did not come up" }
+                check(context.carried() == 1) { "The unlocked axe did not come up" }
                 click(13)
                 hover(13)
                 context.input.pressKey(itemKey)
                 context.waitTicks(3)
                 click(13)
-                check(carried() == 0 && item(13).first == Items.DIAMOND_AXE) { "The lock did not follow the axe to its new slot" }
+                check(context.carried() == 0 && context.ownItem(13).first == Items.DIAMOND_AXE) { "The lock did not follow the axe to its new slot" }
                 hover(13)
                 context.input.pressKey(itemKey)
                 hover(1)
@@ -186,16 +184,16 @@ class SlotLockTest : FabricClientGameTest {
                 // A Shift click on the axe would land in the first empty hotbar slot, which is locked, so it goes to the next.
                 tap(2)
                 shiftClick(13)
-                check(item(2).second == 0 && item(3).first == Items.DIAMOND_AXE && item(13).second == 0) {
-                    "The Shift click left ${item(2)} in the locked slot, ${item(3)} beside it and ${item(13)} behind"
+                check(context.ownItem(2).second == 0 && context.ownItem(3).first == Items.DIAMOND_AXE && context.ownItem(13).second == 0) {
+                    "The Shift click left ${context.ownItem(2)} in the locked slot, ${context.ownItem(3)} beside it and ${context.ownItem(13)} behind"
                 }
                 tap(2)
                 shiftClick(3)
-                check(item(3).second == 0 && item(11).first == Items.DIAMOND_AXE) { "With nothing locked a Shift click is the game's own, and left ${item(11)}" }
+                check(context.ownItem(3).second == 0 && context.ownItem(11).first == Items.DIAMOND_AXE) { "With nothing locked a Shift click is the game's own, and left ${context.ownItem(11)}" }
 
                 click(1)
                 doubleClick(12)
-                check(carried() == 10) { "With nothing locked a double click gathered ${carried()}, so the check above proves nothing" }
+                check(context.carried() == 10) { "With nothing locked a double click gathered ${context.carried()}, so the check above proves nothing" }
                 click(1)
                 tap(1)
                 context.runOnClient<Nothing> { it.gui.setScreen(null) }
@@ -205,11 +203,11 @@ class SlotLockTest : FabricClientGameTest {
                 context.waitTicks(3)
                 context.input.pressKey { it.keyDrop }
                 context.waitTicks(5)
-                check(item(1).second == 10) { "The drop key dropped from the locked slot in hand, leaving ${item(1)}" }
+                check(context.ownItem(1).second == 10) { "The drop key dropped from the locked slot in hand, leaving ${context.ownItem(1)}" }
                 slotLock.feature.enabled = false
                 context.input.pressKey { it.keyDrop }
                 context.waitTicks(5)
-                check(item(1).second == 9) { "With Slot Lock off the drop key left ${item(1)}" }
+                check(context.ownItem(1).second == 9) { "With Slot Lock off the drop key left ${context.ownItem(1)}" }
             } finally {
                 slotLock.feature.enabled = true
                 slotLock.slotLockKey.value = key

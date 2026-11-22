@@ -93,7 +93,7 @@ class HeldItemScene private constructor(private val context: ClientGameTestConte
             val animations = DsModClient.feature<Animations>()
             context.worldBuilder().create().use { world ->
                 val scene = HeldItemScene(context, world)
-                world.freezeTime(noon = false)
+                world.freezeTime(at = null)
                 scene.command("clear @a")
                 context.input.lookAt(0f, 90f)
                 // The vignette eases toward the light where the player stands for half a minute and shades the whole

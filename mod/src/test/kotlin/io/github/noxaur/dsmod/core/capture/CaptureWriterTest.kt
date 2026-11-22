@@ -12,10 +12,12 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import java.nio.file.Files
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.FutureTask
 import kotlin.io.path.readLines
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 
 class CaptureWriterTest {
     private val dir = Files.createTempDirectory("dsmod-capture")
@@ -74,14 +76,26 @@ class CaptureWriterTest {
 
     @Test
     fun `close waits for every record, however long the writer takes`() {
+        val started = CountDownLatch(1)
+        val release = CountDownLatch(1)
         val writer = CaptureWriter(dir)
         writer.record(RawRecord.BOSSBARS) {
-            Thread.sleep(300)
+            started.countDown()
+            release.await()
             buildJsonObject { put("title", "slow") }
         }
         repeat(100) { writer.record(it.toLong(), drop) }
+        started.await()
 
-        writer.close()
+        val closing = FutureTask { writer.close() }
+        val closer = Thread(closing).apply { start() }
+        try {
+            while (closer.state != Thread.State.TIMED_WAITING && !closing.isDone) Thread.onSpinWait()
+            assertFalse(closing.isDone, "close returned while a record was still being written")
+        } finally {
+            release.countDown()
+        }
+        closing.get()
 
         assertEquals(101, writer.file.readLines().size)
     }
