@@ -33,8 +33,6 @@ import kotlin.test.assertSame
 class GameTest : Harness() {
     private val config = tree.config
 
-    private fun say(time: Long, line: String) = game.post(time, chat(line))
-
     private fun marks(feature: HasFeature) = readout(feature).marks
 
     private val protector = EntitySeen(36339, "minecraft:iron_golem", text("[Lv100] Endstone Protector 10M/10M"))
