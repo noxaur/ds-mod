@@ -102,7 +102,7 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         open(context, SettingsTabs(at("Binds")))
         list()
         press(headingOf("Dungeons"))
-        context.runOnClient<Nothing> { Minecraft.getInstance().keyboardHandler.clipboard = "" }
+        context.runOnClient<Nothing> { Minecraft.getInstance().keyboardHandler.clipboard = "none" }
         press(foot(), "Export")
         val copied = context.computeOnClient<String, Nothing> { Minecraft.getInstance().keyboardHandler.clipboard }
         check(copied.startsWith("dsmod-binds:")) { "Export copied \"$copied\" instead of the Dungeons bind" }

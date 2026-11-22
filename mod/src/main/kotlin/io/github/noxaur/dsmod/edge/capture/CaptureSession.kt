@@ -149,7 +149,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
                 RawRecord.ITEMCOMPONENTS,
                 buildJsonObject {
                     put("id", menu.containerId)
-                    put("menu", if (menu === player.inventoryMenu) "inventory" else BuiltInRegistries.MENU.getKey(menu.type).toString())
+                    put("menu", menu.menuType?.let(BuiltInRegistries.MENU::getKey)?.toString() ?: "inventory")
                 },
                 buildMap<String, JsonElement> {
                     menu.slots.forEachIndexed { index, slot ->

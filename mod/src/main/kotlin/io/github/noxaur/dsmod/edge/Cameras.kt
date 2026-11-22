@@ -34,6 +34,7 @@ object Cameras {
 
     private var tapped = false
 
+    // @keep turn already built the orbit for this press. Toggle reads a press while an orbit exists as the press that stops it, so this one must not.
     private var armed = false
 
     private var wasDown = false
@@ -86,6 +87,7 @@ object Cameras {
         return started.orbit
     }
 
+    /** @keep The orbit has to exist here: the mouse is applied before [frame], and a delta that misses it turns the head the server sees. */
     fun turn(x: Double, y: Double): Boolean {
         val current = look?.orbit ?: run {
             if (!tapped || wasDown) return false

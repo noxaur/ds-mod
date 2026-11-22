@@ -168,9 +168,9 @@ object SlotGuards {
             if (above != null) client.gameMode?.handleContainerInput(screen.menu.containerId, above.index, minOf(own, partner), ContainerInput.SWAP, checkNotNull(client.player) { "a click over a slot comes from a player" })
             return true
         }
-        val swapsWithLocked = input == ContainerInput.SWAP && (button in locks.locked || client.player?.inventory?.getItem(button)?.itemUuid in locks.items)
-        val gathersFromLocked = input == ContainerInput.PICKUP_ALL && screen.menu.slots.any { locked(it) && ItemStack.isSameItemSameComponents(screen.menu.carried, it.item) }
-        val refuses = slot != null && locked(slot) || swapsWithLocked || gathersFromLocked
+        fun swapsWithLocked() = input == ContainerInput.SWAP && (button in locks.locked || client.player?.inventory?.getItem(button)?.itemUuid in locks.items)
+        fun gathersFromLocked() = input == ContainerInput.PICKUP_ALL && screen.menu.slots.any { locked(it) && ItemStack.isSameItemSameComponents(screen.menu.carried, it.item) }
+        val refuses = slot != null && locked(slot) || swapsWithLocked() || gathersFromLocked()
         if (refuses) {
             refused = slot ?: screen.menu.slots.firstOrNull { own(it) == button }
             refusedAt = Util.getMillis()

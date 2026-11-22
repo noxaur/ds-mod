@@ -34,7 +34,7 @@ call edge.profile.ProfileScreen.extractRenderState -> edge.profile.ProfileModel.
     approved by github.com/noxaur 2026-11-16T08:42:00Z
 call edge.profile.ProfileScreen.ghost_delegate -> edge.profile.ProfileModel.<init>
     approved by github.com/noxaur 2026-11-16T08:42:00Z
-gate aw/dsmod.accesswidener 868b2f0a96ec
+gate aw/dsmod.accesswidener c5a601581b2a
     opens Minecraft's private code
 gate edge.ArmorSwapGuards b388417355d2  ArmorSwapGuard
     can refuse the player's actions through UseItemCallback.EVENT
@@ -71,7 +71,7 @@ gate edge.Pings 374f3f901a23  PerformanceStats
 gate edge.PlayerCommands 7a2042275b07
     sends through ClientPacketListener.sendChat
     sends through ClientPacketListener.sendCommand
-gate edge.SlotGuards 9f03d883badd  SlotLock
+gate edge.SlotGuards b35bed01973a  SlotLock
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick

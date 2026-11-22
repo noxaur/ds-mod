@@ -53,6 +53,7 @@ private class ItemEncodings {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Key, JsonElement>) = size > 256
     }
 
+    /** @keep [stack] must be a copy nothing changes: a stack can change in place, and its key would then no longer match its hash. */
     fun encode(stack: ItemStack): JsonElement = encodings.getOrPut(Key(stack)) { stack.toCaptureJson() }
 }
 
