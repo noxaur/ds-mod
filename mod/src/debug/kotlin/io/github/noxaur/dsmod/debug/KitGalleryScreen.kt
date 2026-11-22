@@ -31,12 +31,10 @@ import org.lwjgl.glfw.GLFW
 private const val WIDTH = 575
 private const val HEIGHT = 335
 
-/** The glass strip under the panel: its gap, the strip, and its bottom tabs. */
 private const val GLASS_BELOW = 2 + 26 + 19
 private const val MIDDLE = 271
 private const val RIGHT = 396
 
-/** Every shape, state, widget and icon of the kit on one screen, in the player's theme. `/dskit` opens it. */
 class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
     private class Line(val icon: Icon, val color: Int, val depth: Int, val text: Component)
     private class Mark(val item: ItemStack, val role: Role, val color: Int, val style: Char)
@@ -80,7 +78,6 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
 
     override fun init() {
         ox = (width - WIDTH) / 2
-        // The glass strip hangs below the panel over the world, so the two are centered together.
         oy = (height - HEIGHT - GLASS_BELOW) / 2
         val y = oy + 51
         val done = addRenderableWidget(KitButton(ox + Kit.INSET, y, "Done", ::onClose))
@@ -89,7 +86,6 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         val icon = addRenderableWidget(KitButton(stepper.right + Kit.GAP, y, Icon.SEARCH, "Search") {})
         val rate = addRenderableWidget(KitCheckbox(icon.right + Kit.GAP, y + 3, "Rate", true) {})
         addRenderableWidget(KitCheckbox(rate.right + Kit.GAP * 2, y + 3, "Bar", false) {})
-        // The storage window's search field, below its slot grid.
         addRenderableWidget(KitTextField(ox + MIDDLE + 7, oy + 133, 99, "Search", "", 64) {}.hint("Search...").icon(Icon.SEARCH))
         addRenderableWidget(KitRangeSlider(ox + Kit.INSET, oy + 192, 252, "Range", 200, listOf(50, 100, 150), listOf(Section(20, 70), Section(175, 200))) {})
         val field = addRenderableWidget(KitTextField(ox + Kit.INSET, oy + 226, 96, "Command", "/warp end", 256) {})
@@ -101,10 +97,8 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
             keys.inOrder = i == 3
             keyX += 70 + Kit.GAP
         }
-        // The last one records, as after a press.
         children().filterIsInstance<KitKeysButton>().last().onPress(KeyEvent(GLFW.GLFW_KEY_ENTER, 0, 0))
         addRenderableWidget(KitCycleButton(keyX, oy + 226, 70, "Where", listOf("In the World", "In Menus"), "In the World", { it }) {})
-        // A context menu, as a right press beside the cycle button would open it.
         addRenderableWidget(KitMenu(keyX + 70 + Kit.GAP - 2, oy + 214, width, height, listOf("Duplicate" to {}, "Delete" to {}), {}))
     }
 
@@ -177,11 +171,9 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         super.extractRenderState(graphics, mouseX, mouseY, partialTick)
     }
 
-    /** Tabs, a slot grid with every mark and a scrollbar, as a storage screen would have them. Its search field is a widget. */
     private fun window(g: GuiGraphicsExtractor, x: Int, y: Int) {
         caption(g, "Tabs, slots, marks", x, y - 33)
         for (i in 1 until tabs.size) g.item(tabs[i], x + 4 + i * 23 + 3, Kit.tab(g, x + 4 + i * 23, y, false))
-        // Tabs on the bottom edge too: one under the mouse, then the selected one after the panel.
         g.item(tabs[2], x + 31, Kit.tab(g, x + 28, y + 118, false, TabEdge.BOTTOM, hovered = true))
         Kit.panel(g, x, y, 113, 118)
         g.item(tabs[0], x + 7, Kit.tab(g, x + 4, y, true))
@@ -208,10 +200,8 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         Kit.scrollbar(g, gx + 93, gy, 72, 6, 30)
     }
 
-    /** A settings sidebar's rows on its side strip, color swatches, and the rules on a panel and between a well's rows. */
     private fun nav(g: GuiGraphicsExtractor, x: Int, y: Int) {
         caption(g, "Nav rows: idle, hover, selected", x, y)
-        // Laid out as the settings screen's sidebar is: rows a gap in from the strip's edges, each arrow mirroring its swatch.
         val rowX = x + Kit.GAP
         val rowWidth = 128 - 1 - Kit.GAP * 2
         val arrowX = rowX + rowWidth - KitNavTree.PAD - KitNavTree.ICON
@@ -247,10 +237,6 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         g.text(font, wellRows[1], rx + 7, y + 64, -1, true)
     }
 
-    /**
-     * Browser tabs on their bar: idle, hover with its ×, the × under the mouse, selected, a search, and the plus idle.
-     * Then a lone tab, which has no ×, the plus under the mouse and the brand, and last a tab dragged over its neighbor.
-     */
     private fun tabBar(g: GuiGraphicsExtractor, x: Int, y: Int) {
         caption(g, "Tab bar: idle, hover, ×, selected, search", x, y)
         val w = 52
@@ -281,7 +267,6 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
 
     private fun barAt(g: GuiGraphicsExtractor, x: Int, line: Int) = Kit.tabBar(g, x, line - Kit.TAB_BAR_HEIGHT + 1, 278)
 
-    /** A strip of glass below the gallery, over the world as a glass menu is: slots, a well, buttons and tabs in each state. */
     private fun glass(g: GuiGraphicsExtractor, x: Int, y: Int) {
         val alpha = 153
         Kit.glass(g, x, y, 240, 26, alpha)
@@ -293,13 +278,11 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         for (i in 0 until 3) g.item(tabs[i], x + 4 + i * 23, Kit.glassTab(g, x + 1 + i * 23, y + 26, i == 0, alpha, TabEdge.BOTTOM, hovered = i == 2))
     }
 
-    /** A plain tooltip over the slot grid, drawn last as the game draws one. */
     private fun tooltip(g: GuiGraphicsExtractor, x: Int, y: Int) {
         Kit.tooltip(g, x, y, tooltip.maxOf(font::width), tooltip.size * 10 - 2)
         for (i in tooltip.indices) g.text(font, tooltip[i], x, y + i * 10, -1, true)
     }
 
-    /** Role text belongs on a dark well, as in a crafting tree. */
     private fun list(g: GuiGraphicsExtractor, x: Int, y: Int) {
         caption(g, "Well with role text, one line flashed", x, y)
         Kit.well(g, x, y + 12, 172, 122)
@@ -321,7 +304,6 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         Kit.bar(g, x + 4, y + 44, 80, 0.8f, Role.WARNING.argb())
     }
 
-    /** Bones where a loading screen's words will be, and the veil a notice sits on, over the lower half. */
     private fun skeleton(g: GuiGraphicsExtractor, x: Int, y: Int) {
         caption(g, "Veil", x, y - 12)
         Kit.bone(g, x, y, 16, 16)

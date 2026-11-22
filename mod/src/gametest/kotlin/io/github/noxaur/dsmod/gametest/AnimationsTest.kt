@@ -33,7 +33,6 @@ class AnimationsTest : FabricClientGameTest {
         check(changed(oldSwing, midSwing("animations-1.7-dip", ::swingAtAir)) == 0) { "1.7 lowered the sword after a swing at the air" }
         animations.style.value = HandStyle.MODERN
 
-        // Slowed to half, so the swing lasts 12 ticks and the frame 4 ticks in is a third of the way.
         animations.swingSpeed.value = 0.5f
         val poses = HandStyle.entries.map { style ->
             animations.style.value = style

@@ -13,11 +13,6 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ChatScreen
 import org.lwjgl.glfw.GLFW
 
-/**
- * In a world, each of Command Binds' binds sends where it should and nowhere else: Shift + F6 and not F6 alone or a
- * held key's repeat, F7 then F8 in order, F9 only in The End, the middle button in a menu too, nothing from the chat
- * box, and nothing with its group or the feature off. The binds are the ones [CommandBindsTest] builds on the screen.
- */
 class CommandKeysTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val commandBinds = DsModClient.feature<CommandBinds>()
@@ -33,8 +28,8 @@ class CommandKeysTest : FabricClientGameTest {
                 (client.gui.hud.chat as ChatComponentAccessor).allMessages.count { it.content().string.endsWith(word) }
             fun said(word: String) = context.computeOnClient<Int, Nothing> { count(it, word) }
             fun echo(word: String, expected: Int) {
-                if (expected > 0) context.waitFor({ count(it, word) >= expected }, ROUND_TRIP)
-                context.waitTicks(ROUND_TRIP)
+                if (expected > 0) context.waitFor({ count(it, word) >= expected }, ROUND_TRIP_TICKS)
+                context.waitTicks(ROUND_TRIP_TICKS)
             }
             fun shiftF6() {
                 context.input.holdKey(GLFW.GLFW_KEY_LEFT_SHIFT)
@@ -49,7 +44,6 @@ class CommandKeysTest : FabricClientGameTest {
                 context.input.pressKey(GLFW.GLFW_KEY_F6)
                 echo("bound", 1)
                 check(said("bound") == 1) { "F6 without Shift sent /me bound" }
-                // A held key's repeat is not a press.
                 context.input.holdKey(GLFW.GLFW_KEY_LEFT_SHIFT)
                 context.input.holdKey(GLFW.GLFW_KEY_F6)
                 context.runOnClient<Nothing> { CommandKeys.input(GLFW.GLFW_KEY_F6, GLFW.GLFW_REPEAT) }
@@ -88,7 +82,6 @@ class CommandKeysTest : FabricClientGameTest {
                 echo("bound", 2)
                 check(said("bound") == 2) { "Shift + F6 in the chat box sent /me bound" }
 
-                // Shift + F6 is in Dungeons now, so turning the group off quiets it.
                 commandBinds.offGroups.value = listOf("Dungeons")
                 shiftF6()
                 echo("bound", 2)
@@ -111,7 +104,6 @@ class CommandKeysTest : FabricClientGameTest {
     }
 
     private companion object {
-        /** Ticks for a command to reach the integrated server and its echo to come back, with room to spare. */
-        const val ROUND_TRIP = 10
+        const val ROUND_TRIP_TICKS = 10
     }
 }

@@ -1,0 +1,302 @@
+.page {
+  --u: 3px;
+  --outline: #0a0a0a;
+  --panel: #262626;
+  --panel-light: #363636;
+  --panel-shade: #161616;
+  --side: #1b1b1b;
+  --raised: #363636;
+  --raised-light: #505050;
+  --raised-shade: #161616;
+  --hover: #505050;
+  --hover-light: #747474;
+  --hover-outline: #dbe6fb;
+  --down: #161616;
+  --well: #161616;
+  --well-light: #363636;
+  --well-shade: #0a0a0a;
+  --ink: #dbe6fb;
+  --ink-muted: #8791a8;
+  --ink-off: #505050;
+  --ink-bad: #ff5555;
+  --ink-shadow: var(--u) var(--u) 0 #36393e;
+  --ink-muted-shadow: var(--u) var(--u) 0 #21242a;
+  --ink-bad-shadow: var(--u) var(--u) 0 #3f1515;
+  --icon-shadow: drop-shadow(var(--u) var(--u) 0 rgb(0 0 0 / 75%));
+
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  font-size: calc(var(--u) * 8);
+  line-height: calc(var(--u) * 10);
+  -webkit-font-smoothing: none;
+}
+
+@media (prefers-color-scheme: light) {
+  .page {
+    --outline: #000;
+    --panel: #c6c6c6;
+    --panel-light: #fff;
+    --panel-shade: #555;
+    --side: #b2b2b2;
+    --raised: #c6c6c6;
+    --raised-light: #fff;
+    --raised-shade: #7b7b7b;
+    --hover: #d5dbf0;
+    --hover-light: #fff;
+    --hover-outline: #fff;
+    --down: #a0a0a0;
+    --well: #2a2a2a;
+    --well-light: #fff;
+    --well-shade: #373737;
+    --ink: #3f3f3f;
+    --ink-muted: #636363;
+    --ink-off: #8b8b8b;
+    --ink-bad: #b3261e;
+    --ink-shadow: none;
+    --ink-muted-shadow: none;
+    --ink-bad-shadow: none;
+    --icon-shadow: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    --u: 2px;
+  }
+}
+
+.bar {
+  height: calc(var(--u) * 18);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 calc(var(--u) * 6);
+  background: var(--side);
+  border-bottom: var(--u) solid var(--outline);
+}
+
+.brand {
+  white-space: pre;
+}
+
+.stage {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: calc(var(--u) * 12) calc(var(--u) * 6);
+}
+
+.panel,
+.button {
+  --notch: polygon(
+    var(--u) 0,
+    calc(100% - var(--u)) 0,
+    calc(100% - var(--u)) var(--u),
+    100% var(--u),
+    100% calc(100% - var(--u)),
+    calc(100% - var(--u)) calc(100% - var(--u)),
+    calc(100% - var(--u)) 100%,
+    var(--u) 100%,
+    var(--u) calc(100% - var(--u)),
+    0 calc(100% - var(--u)),
+    0 var(--u),
+    var(--u) var(--u)
+  );
+
+  padding: var(--u);
+  background: var(--outline);
+  clip-path: var(--notch);
+}
+
+.panel {
+  width: min(100%, calc(var(--u) * 212));
+}
+
+.face {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 4);
+  padding: calc(var(--u) * 6);
+  background: var(--panel);
+  box-shadow:
+    inset var(--u) var(--u) 0 var(--panel-light),
+    inset calc(var(--u) * -1) calc(var(--u) * -1) 0 var(--panel-shade);
+}
+
+.face p {
+  margin: 0;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 4);
+  margin: 0;
+  font: inherit;
+  color: var(--ink);
+  text-shadow: var(--ink-shadow);
+}
+
+.rule {
+  height: var(--u);
+  margin: 0;
+  border: 0;
+  background: color-mix(in srgb, var(--panel), var(--ink) 12%);
+}
+
+.muted {
+  color: var(--ink-muted);
+  text-shadow: var(--ink-muted-shadow);
+}
+
+.bad {
+  color: var(--ink-bad);
+  text-shadow: var(--ink-bad-shadow);
+}
+
+.well {
+  min-height: calc(var(--u) * 20);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 4);
+  padding: calc(var(--u) * 5);
+  background: var(--well);
+  box-shadow:
+    inset var(--u) var(--u) 0 var(--well-shade),
+    inset calc(var(--u) * -1) calc(var(--u) * -1) 0 var(--well-light);
+}
+
+.value {
+  color: #aadcf8;
+  text-shadow: var(--u) var(--u) 0 #2a373e;
+}
+
+.good {
+  color: #55ff55;
+}
+
+.head {
+  flex: none;
+  width: calc(var(--u) * 8);
+  height: calc(var(--u) * 8);
+  image-rendering: pixelated;
+}
+
+.bone {
+  width: calc(var(--u) * 52);
+  height: calc(var(--u) * 8);
+  background: color-mix(in srgb, var(--ink-muted) 35%, transparent);
+}
+
+.headBone {
+  width: calc(var(--u) * 8);
+}
+
+.command {
+  display: inline-block;
+  padding: 0 calc(var(--u) * 3);
+  font: inherit;
+  line-height: calc(var(--u) * 11);
+  white-space: nowrap;
+  color: #aadcf8;
+  text-shadow: var(--u) var(--u) 0 #2a373e;
+  background: var(--well);
+  box-shadow:
+    inset var(--u) var(--u) 0 var(--well-shade),
+    inset calc(var(--u) * -1) calc(var(--u) * -1) 0 var(--well-light);
+}
+
+p:has(.command) {
+  line-height: calc(var(--u) * 13);
+}
+
+.icon {
+  flex: none;
+  background: currentcolor;
+  mask: var(--sprite) no-repeat 0 0 / 100% 100%;
+  filter: var(--icon-shadow);
+}
+
+.well .icon {
+  filter: drop-shadow(var(--u) var(--u) 0 rgb(0 0 0 / 75%));
+}
+
+.check {
+  --sprite: url("./icons/check.png");
+
+  width: calc(var(--u) * 7);
+  height: calc(var(--u) * 6);
+}
+
+.warn {
+  --sprite: url("./icons/warn.png");
+
+  width: calc(var(--u) * 7);
+  height: calc(var(--u) * 7);
+}
+
+.title > .warn {
+  color: var(--ink-bad);
+}
+
+.cross {
+  --sprite: url("./icons/cross.png");
+
+  width: calc(var(--u) * 7);
+  height: calc(var(--u) * 5);
+}
+
+.title > .cross {
+  color: var(--ink-muted);
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(var(--u) * 4);
+}
+
+.button {
+  height: calc(var(--u) * 20);
+  border: 0;
+  font: inherit;
+  color: var(--ink);
+  text-shadow: var(--ink-shadow);
+  cursor: pointer;
+}
+
+.button > span {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: var(--raised);
+  box-shadow:
+    inset var(--u) var(--u) 0 var(--raised-light),
+    inset calc(var(--u) * -1) calc(var(--u) * -1) 0 var(--raised-shade);
+}
+
+.button:not([data-disabled]):is(:hover, :focus-visible) {
+  outline: none;
+  background: var(--hover-outline);
+}
+
+.button:not([data-disabled]):is(:hover, :focus-visible) > span {
+  background: var(--hover);
+  box-shadow:
+    inset var(--u) var(--u) 0 var(--hover-light),
+    inset calc(var(--u) * -1) calc(var(--u) * -1) 0 var(--raised-shade);
+}
+
+.button:not([data-disabled]):active > span {
+  padding-top: var(--u);
+  background: var(--down);
+  box-shadow: inset var(--u) var(--u) 0 var(--well-shade);
+}
+
+.button[data-disabled] {
+  cursor: default;
+  color: var(--ink-off);
+  text-shadow: none;
+}

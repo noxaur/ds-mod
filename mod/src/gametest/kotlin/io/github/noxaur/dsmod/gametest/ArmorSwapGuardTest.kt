@@ -7,10 +7,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.item.Items
 
-/**
- * The player holds a chestplate and right clicks. Without the guard it goes on. With the guard it stays in the
- * hand until the player sneaks, and the server never hears of the click that was stopped.
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.ArmorSwapGuards]. */
 class ArmorSwapGuardTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
@@ -22,7 +19,6 @@ class ArmorSwapGuardTest : FabricClientGameTest {
                 world.server.runCommand("item replace entity @a weapon.mainhand with diamond_chestplate")
                 context.waitTicks(10)
             }
-            // Looking up, so the click lands on no block.
             context.input.lookAt(0f, -80f)
             hold()
             context.input.pressMouse(1)

@@ -8,7 +8,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** The rules of each kind of row, which the edge's faces only draw. */
 class SettingsTest {
     private class Values {
         var on = true

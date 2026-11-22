@@ -9,11 +9,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
-/**
- * Menu Theme: a themed menu's title and inventory label are chrome, so they take the theme's ink. Vanilla's dark gray
- * stays the default, so a color the server gives the title still wins. The inventory screen draws its own labels.
- * Glass is dark in both themes, so a glass menu's labels take the light ink.
- */
+/** @keep Vanilla's dark gray stays the default, so a color the server gives the title still wins. The inventory screen
+ * draws its own labels. */
 @Mixin({AbstractContainerScreen.class, InventoryScreen.class, MerchantScreen.class, CreativeModeInventoryScreen.class})
 abstract class MenuLabelMixin {
     @ModifyArg(method = "extractLabels", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"), index = 4)

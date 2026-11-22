@@ -12,7 +12,11 @@ export const backendIsUp = Effect.tryPromise(() => fetch(`${backendUrl}/healthz`
   Effect.orElseSucceed(() => false),
 );
 
-const User = Schema.Struct({ id: Schema.String, name: Schema.String });
+const User = Schema.Struct({
+  id: Schema.String,
+  name: Schema.String,
+  image: Schema.optionalKey(Schema.NullOr(Schema.String)),
+});
 
 const Verified = Schema.Struct({
   session: Schema.Struct({ token: Schema.String, expiresAt: Schema.DateFromString }),
@@ -34,11 +38,10 @@ const call = (path: string, init: RequestInit & { headers: Record<string, string
   ).pipe(
     Effect.filterOrFail((response) => response.ok),
     Effect.flatMap((response) => Effect.tryPromise(() => response.json() as Promise<unknown>)),
-    // Around the body too, which can stall after the headers arrived.
+    // @keep The body can stall after the headers arrived, so the timeout covers it too.
     Effect.timeout("5 seconds"),
   );
 
-/** Trades a one-time token for the session it stands for. Fails when the backend refuses it. */
 export const verifyOneTimeToken = (token: string) =>
   call("one-time-token/verify", {
     method: "POST",
@@ -46,7 +49,6 @@ export const verifyOneTimeToken = (token: string) =>
     body: JSON.stringify({ token }),
   }).pipe(Effect.flatMap(Schema.decodeUnknownEffect(Verified)));
 
-/** Whose session a token is and when it ends, or null when the backend does not know it. Fails when it cannot say. */
 export const sessionOf = (sessionToken: string) =>
   call("get-session", { headers: { authorization: `Bearer ${sessionToken}` } }).pipe(
     Effect.flatMap(Schema.decodeUnknownEffect(Current)),

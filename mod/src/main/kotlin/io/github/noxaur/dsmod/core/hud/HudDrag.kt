@@ -2,27 +2,15 @@ package io.github.noxaur.dsmod.core.hud
 
 import kotlin.math.abs
 
-/** A HUD block as it is drawn, in GUI pixels. */
 data class HudBox(val id: String, val x: Float, val y: Float, val width: Float, val height: Float)
 
-/** Where a dragged block comes to rest: its corner in GUI pixels, or beside the hotbar when [dock] is not [HudDock.FREE]. */
 data class HudDrop(val x: Float, val y: Float, val dock: HudDock = HudDock.FREE)
 
-/**
- * A HUD block the mouse holds, in the HUD editor or on the chat screen. It moves from where it was grabbed, lines
- * up with the screen's edges and center and with the other blocks when it comes near one, docks beside the hotbar
- * when it comes near a spot it can dock in, and stays on the screen.
- */
 class HudDrag(block: HudBox, mouseX: Float, mouseY: Float) {
     val id = block.id
     private var grabX = mouseX - block.x
     private var grabY = mouseY - block.y
 
-    /**
-     * Where [block], as it is drawn now, goes with the mouse at [mouseX], [mouseY] on a screen [width] by [height].
-     * [docks] are the boxes it would fill beside the hotbar, for a block that can dock. [free] skips the lining up
-     * and the docking, as Shift does.
-     */
     fun to(
         block: HudBox,
         mouseX: Float,
@@ -54,27 +42,21 @@ class HudDrag(block: HudBox, mouseX: Float, mouseY: Float) {
         return HudDrop(onScreen(x, block.width, width), onScreen(y, block.height, height))
     }
 
-    /** Moves the block [dx], [dy] off the mouse, so it stays that far from where the mouse would put it. */
     fun nudge(dx: Float, dy: Float) {
         grabX -= dx
         grabY -= dy
     }
 
     companion object {
-        /** How near a line pulls a block onto it, in GUI pixels. */
         private const val REACH = 5f
 
-        /** How near a dock spot pulls a block into it, on both axes. Wider than a line, since it takes a corner. */
         private const val DOCK_REACH = 8f
 
-        /** How far in from the screen's edge a block lines up. */
         private const val MARGIN = 2f
 
-        /** How far an arrow key nudges a block, in GUI pixels, and with Shift. */
         const val NUDGE = 1f
         const val NUDGE_FAR = 10f
 
-        /** Where an arrow nudges [block] by [dx], [dy], kept on a screen [width] by [height]. */
         fun nudged(block: HudBox, dx: Float, dy: Float, width: Float, height: Float) = HudDrop(
             onScreen(block.x + dx, block.width, width),
             onScreen(block.y + dy, block.height, height),

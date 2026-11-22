@@ -8,7 +8,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Where Fabric sets the game up for each test, the mod starts afresh too. See [FreshStart]. */
 @Mixin(value = FabricClientGameTestRunner.class, remap = false)
 abstract class FreshStartMixin {
     @Inject(method = "setupInitialGameTestState", at = @At("TAIL"))

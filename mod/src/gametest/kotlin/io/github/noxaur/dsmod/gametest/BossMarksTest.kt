@@ -13,18 +13,11 @@ import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 
-/**
- * An iron golem named as dragsim.co names the Endstone Protector stands 12 blocks north, and a zombie named as a
- * slayer boss 12 blocks east. The zombie comes right after `☠ SLAYER BOSS SPAWNING!`, so it is the player's own. The
- * `EntityTracker` reports both, and the golem's death, as the client holds them. Boss Beacon puts a beam on both,
- * which follow them, and Boss Tracer a line to each, which still shows with the player turned away. Read the screenshots: two labeled beams with their distances, two lines from the crosshair, one off
- * each edge of the screen, and the settings with the bosses each feature marks.
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.Entities]. */
 class BossMarksTest : FabricClientGameTest {
     private fun marks(context: ClientGameTestContext, id: String) = context.computeOnClient<List<Mark>, Nothing> {
         DsModClient.game.readouts.single { it.feature.id == id }.marks
     }
-
 
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
@@ -44,7 +37,6 @@ class BossMarksTest : FabricClientGameTest {
             check(beams.map { (it as EntityBeam).label }.sorted() == listOf("Endstone Protector", "Revenant Horror I")) { "The beams are $beams" }
             check(marks(context, "boss-tracer").size == 2 && marks(context, "boss-tracer").all { it is Tracer }) { "The tracers are ${marks(context, "boss-tracer")}" }
 
-            // Halfway between the two, so both beams are in view.
             context.input.lookAt(-135f, 0f)
             context.waitTicks(5)
             context.screenshot("boss-beacon")
@@ -56,7 +48,6 @@ class BossMarksTest : FabricClientGameTest {
             val color = Role.BAD.rgb
             check(countNear(away, color) > 200) { "Looking away, the screenshot shows no tracer" }
 
-            // Another player's slayer boss is left out unless the player asks for it.
             world.server.runCommand("""execute at @a run summon zombie ~-12 ~ ~ {NoAI:1b,CustomName:"☠ Atoned Horror V 50M/50M❤"}""")
             context.waitTicks(10)
             check(marks(context, "boss-tracer").size == 2) { "Another player's slayer boss is traced: ${marks(context, "boss-tracer")}" }

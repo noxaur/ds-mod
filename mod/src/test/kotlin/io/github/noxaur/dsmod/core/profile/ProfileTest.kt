@@ -12,10 +12,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/**
- * Reads what the backend answers, from `profile.json` and `inventory.json`, which the backend's own tests produced
- * from their synthetic player, so the mod's reading follows the contract and not a copy of it.
- */
+/** @keep `profile.json` and `inventory.json` come from the backend's own tests, so the mod's reading follows the contract and not a copy of it. */
 class ProfileTest {
     private val profile = Profile.parse(resource("profiles/profile.json"))
 
@@ -41,7 +38,7 @@ class ProfileTest {
         val dungeons = checkNotNull(profile.dungeons)
         assertEquals(Named("TANK", "Tank"), dungeons.selectedClass)
         assertEquals(listOf("MAGE", "TANK"), dungeons.classes.map { it.id })
-        // The server sends only the classes with XP, so the rest stand at level 0 in their places.
+        // @keep The server sends only the classes with XP, so the rest stand at level 0 in their places.
         assertEquals(listOf("HEALER", "MAGE", "BERSERK", "ARCHER", "TANK"), dungeons.allClasses.map { it.id })
         assertEquals(listOf(0, 14, 0, 0, 18), dungeons.allClasses.map { it.level })
         assertEquals(listOf("TANK"), dungeons.allClasses.filter(dungeons::picked).map { it.id })

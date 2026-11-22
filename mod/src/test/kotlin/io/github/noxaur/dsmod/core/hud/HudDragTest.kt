@@ -7,7 +7,6 @@ class HudDragTest {
     private val block = HudBox("timer", 50f, 50f, 40f, 20f)
     private val other = HudBox("tracker", 200f, 100f, 60f, 30f)
 
-    // Grabbed 10 right and 5 down of its corner.
     private fun drag(to: Pair<Float, Float>, free: Boolean = false, others: List<HudBox> = listOf(other)) =
         HudDrag(block, 60f, 55f).to(block, to.first, to.second, others, 320f, 240f, free).let { it.x to it.y }
 

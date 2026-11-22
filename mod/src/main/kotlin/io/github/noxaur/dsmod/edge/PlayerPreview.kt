@@ -17,12 +17,6 @@ import org.joml.Vector3f
 import kotlin.math.PI
 import kotlin.math.sqrt
 
-/**
- * Player Model's preview: the player drawn as the inventory draws them, so every setting shows on it as it does in the
- * world, on a turntable. It holds still, since Spin is one of the settings it shows, and starts turned a little so a
- * tilt either way reads. A drag turns it around and tips it, Escape during the drag puts it back, and Left and Right
- * turn it a step while the keys are on the row. Outside a world there is no player to draw, and it says so.
- */
 class PlayerPreview : BoxEditor {
     override val box = Box()
 
@@ -30,7 +24,6 @@ class PlayerPreview : BoxEditor {
 
     override val capturing get() = turntable.dragging
 
-    /** Degrees around and tipped, so a test can see a drag or a key turn it. */
     val yaw get() = turntable.yaw(0L)
     val pitch get() = turntable.pitch
 
@@ -52,10 +45,7 @@ class PlayerPreview : BoxEditor {
             g.text(Kit.font, line, box.x + (box.width - Kit.font.width(line)) / 2, y + (HEIGHT - 8) / 2, -1, false)
             return null
         }
-        // Facing the viewer. A spin turns it from there as it is drawn.
         val state = InventoryModel.state(player, 0f)
-        // The game's own size takes a little over half the box, and a bigger model grows toward the box's full height,
-        // which the largest Size reaches, so a bigger Size still looks bigger. A model stretched past that shrinks to fit.
         val room = (HEIGHT - 4) / (state.boundingBoxHeight * MARGIN)
         val reach = maxOf(1f, PlayerModels.reach)
         val scale = minOf(room / sqrt(LARGEST * reach), room / reach)
@@ -93,7 +83,6 @@ class PlayerPreview : BoxEditor {
         event.isEscape -> turntable.cancel(0L)
         event.isLeft -> true.also { turntable.turn(-Turntable.KEY_YAW, 0f, 0L) }
         event.isRight -> true.also { turntable.turn(Turntable.KEY_YAW, 0f, 0L) }
-        // Up and Down go on to the next row, as on every row.
         else -> false
     }
 
@@ -108,7 +97,6 @@ class PlayerPreview : BoxEditor {
         const val START_YAW = -30f
         const val MARGIN = 1.1f
 
-        /** The largest Size, which fits the box at its full height. */
         const val LARGEST = 3f
         const val DEGREES = (PI / 180).toFloat()
         const val OUTSIDE = "Join a world to see your model here."

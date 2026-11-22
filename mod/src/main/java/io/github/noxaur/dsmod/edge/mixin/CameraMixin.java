@@ -16,11 +16,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Camera and Free Look: the third-person camera's angle, where it starts from and how far it backs out. The
- * angle and the start are set after the game has put the camera at the player's eyes and before it backs the
- * camera out along that angle, so a tilt also moves the camera and the wall check runs from the lifted start.
- */
+/** @keep The angle and the start are set after the game has put the camera at the player's eyes and before it backs the
+ * camera out along that angle, so a tilt also moves the camera and the wall check runs from the lifted start. */
 @Mixin(Camera.class)
 abstract class CameraMixin {
     @Shadow @Final private Minecraft minecraft;

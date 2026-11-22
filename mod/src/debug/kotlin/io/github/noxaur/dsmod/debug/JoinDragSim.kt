@@ -11,7 +11,6 @@ import net.minecraft.client.multiplayer.resolver.ServerAddress
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.contents.TranslatableContents
 
-/** A Join DragSim button above Singleplayer on the title screen, so a developer reaches the server in one click. */
 object JoinDragSim {
     const val LABEL = "Join DragSim"
     private const val ADDRESS = "dragsim.co"
@@ -22,7 +21,7 @@ object JoinDragSim {
             val singleplayer = buttons.firstOrNull { (it.message.contents as? TranslatableContents)?.key == "menu.singleplayer" }
                 ?: return@onEveryLayout
             buttons += Button.builder(Component.literal(LABEL)) {
-                // Enabled skips the resource pack prompt, and the pack runClient seeds is already on disk.
+                // @keep Enabled skips the resource pack prompt, and the pack runClient seeds is already on disk.
                 val server = ServerData("DragSim", ADDRESS, ServerData.Type.OTHER)
                     .apply { resourcePackStatus = ServerData.ServerPackStatus.ENABLED }
                 ConnectScreen.startConnecting(screen, Minecraft.getInstance(), ServerAddress.parseString(ADDRESS), server, false, null)

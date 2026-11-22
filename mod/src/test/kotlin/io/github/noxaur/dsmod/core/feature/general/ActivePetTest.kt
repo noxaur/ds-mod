@@ -37,7 +37,6 @@ class ActivePetTest : Harness(alone = ActivePet::class) {
 
     private fun dungeon() = dragSimSidebar(text("⏣ The Catacombs (F1)"))
 
-    /** The active pet's item as the Pets menu shows it, with [progress] as the lines under its level. */
     private fun card(
         name: String = "Black Cat",
         level: Int = 100,
@@ -59,7 +58,6 @@ class ActivePetTest : Harness(alone = ActivePet::class) {
         skin = name.lowercase().replace(" ", ""),
     )
 
-    /** A mob the player killed, and the action bar's Combat XP right behind its death. */
     private fun kill(combat: Int) {
         post(EntityDied("minecraft:zombie", text("Zombie"), 0.0, 0.0, 0.0))
         time++
@@ -243,7 +241,6 @@ class ActivePetTest : Harness(alone = ActivePet::class) {
         assertEquals("Open your Pets menu again to see a rate.", rows()?.last())
         pass(30 * 60_000L)
         read(37, xp(2000))
-        // 1,000 XP in half an hour is 2,000 an hour, so the 8,000 left take four hours.
         assertEquals(listOf("XP per Hour: 2,000", "Next Level: 4h 0m"), rows()?.takeLast(2))
         pass(60 * 60_000L)
         assertEquals("Next Level: 3h 0m", rows()?.last())
@@ -263,7 +260,6 @@ class ActivePetTest : Harness(alone = ActivePet::class) {
         kill(100)
         pass(60_000L)
         read(37, xp(1050))
-        // 100 Combat XP gave 50 pet XP, so each Combat XP is half a pet XP.
         kill(300)
         assertEquals("XP: 1,200 / 10,000 (12%)", rows()?.get(2))
         read(37, xp(1120))
@@ -356,7 +352,6 @@ class ActivePetTest : Harness(alone = ActivePet::class) {
         post(chat("Equipped Spooky Cupcake on [Lvl 100] Enderman!"))
         post(SlotChanged(14, enderman("Spooky Cupcake", "b", active = false)), SlotChanged(10, enderman("Gold Claws", "a")))
         assertEquals("Item: Gold Claws", rows()?.get(1))
-        // With no uuid, the menu's last read of either is what shows.
         post(*menu(10 to card("Enderman", held = "Iron Claws")))
         assertEquals("Item: Iron Claws", rows()?.get(1))
     }

@@ -42,7 +42,6 @@ class CutFixtureTest {
 
     private fun tab(vararg info: String) = TabList(listOf(text("End Island"), text("[MVP+] Alice [IRON]"), text("Info")) + info.map { text(it) })
 
-    /** Writes a capture with [sidebar] first, then each event at its second. */
     private fun capture(vararg events: Pair<Int, GameEvent>): Path = dir.resolve("capture.jsonl").also { file ->
         file.writeLines(listOf(sidebar) + events.map { (second, event) -> captureLine(second * 1000L, event) })
     }
@@ -193,7 +192,6 @@ class CutFixtureTest {
             listOf(ContainerOpened(5, text("Shop"), 63), SlotChanged(0, Item("minecraft:emerald", 1)), ContainerOpened(0, null, 46), SlotChanged(9, stone), SlotChanged(10, dirt)),
             events(5.5..6.5),
         )
-        // Opened before the window, the kept inventory is its state, and the slot emptied since stays empty.
         assertEquals(listOf(ContainerOpened(0, null, 46), SlotChanged(9, stone)), events(8.5..9.5).filter { it !is ContainerOpened || it.id == 0 }.takeLast(2))
     }
 
@@ -247,10 +245,8 @@ class CutFixtureTest {
         )
         val out = cutRead(capture, 0.0..4.5, setOf("system"), area = Area.END)
         assertKinds(out, TabList::class, WorldChanged::class, TabList::class, SystemMessage::class)
-        // A hop inside the window keeps the tab list the window started with.
         val hop = cutRead(capture, 3.5..6.0, setOf("system"), area = Area.END)
         assertKinds(hop, TabList::class, SystemMessage::class, WorldChanged::class)
-        // A cut that starts after the hop and before the new tab list starts nowhere.
         val late = cutRead(capture, 6.0..9.0, setOf("system"), area = Area.END)
         assertKinds(late, TabList::class)
         assertEquals(7000L, late.single().time)

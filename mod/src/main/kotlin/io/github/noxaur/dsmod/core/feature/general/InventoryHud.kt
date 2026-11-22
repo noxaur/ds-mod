@@ -16,10 +16,6 @@ import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudLook
 
-/**
- * A row the grid can show: its first slot in the inventory menu and how many slots it has. The three rows of the
- * inventory belong together, and the hotbar, the armor and the offhand each stand apart from the rows beside them.
- */
 enum class InventoryRow(private val label: String, val slots: IntRange, val main: Boolean) {
     TOP("Top Row", carriedRow(0), true),
     MIDDLE("Middle Row", carriedRow(1), true),
@@ -34,7 +30,6 @@ enum class InventoryRow(private val label: String, val slots: IntRange, val main
 
 private fun carriedRow(row: Int) = (CARRIED_SLOTS.first + row * ROW_SLOTS).let { it until it + ROW_SLOTS }
 
-/** How the grid shows: on the HUD's plate, on nothing, or as the player's inventory screen draws it. */
 enum class InventoryLook(private val label: String, val hud: HudLook) {
     PLATE("Plate", HudLook.PLATE),
     CLEAR("Clear", HudLook.CLEAR),
@@ -44,7 +39,6 @@ enum class InventoryLook(private val label: String, val hud: HudLook) {
     override fun toString() = label
 }
 
-/** How each row lies: across, as the inventory holds it, or down, so the grid stands tall beside the screen's edge. */
 enum class InventoryLayout(private val label: String) {
     ROWS("Rows"),
     COLUMNS("Columns"),
@@ -53,13 +47,6 @@ enum class InventoryLayout(private val label: String) {
     override fun toString() = label
 }
 
-/**
- * Shows the [shownRows] of the player's inventory they picked, in their order, as a grid of icons with no header, nine to a
- * row as the inventory holds them. An empty cell stands for an empty slot, and the hotbar, armor and offhand sit apart
- * from the rows beside them, as the hotbar does in the inventory. Each row carries its slots' rarity marks, and the
- * hotbar the slot the player holds. The grid hides while a menu is open, which shows the inventory itself, and while
- * every slot picked is empty.
- */
 class InventoryHud(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "inventory-hud", Area.ANYWHERE, Store.GENERAL, "Show a grid of the items in your inventory on the HUD.", default = false, formerly = listOf("inventoryPreview"), hud = ::hud)
     private val inventory = ContainerReader(feature, FIRST..LAST)
@@ -70,12 +57,10 @@ class InventoryHud(config: DsModConfig) : HasFeature {
     val placement = feature.placement("inventoryPlacement", "Keep the grid where you put it, or beside your hotbar.")
     val opacity = feature.number("inventoryOpacity", "Opacity", "Set how solid the Inventory look's panel is.", 100f, 0f..100f, step = 5f, unit = "%")
 
-    /** The key that shows or hides the grid, and how, which `InventoryKey` in the edge reads. None always shows it. */
     val key = feature.keys("inventoryKey", "Key", "Pick a key that shows or hides the grid, or none to always show it.", KeyBind.NONE)
     val keyMode = feature.choice("inventoryKeyMode", "Key Mode", "Pick Hold to show the grid while the key is down, or Toggle.", KeyMode.TOGGLE)
     val pickup = feature.switch("inventoryPickup", "Pickup Animation", "Bob an item in the grid as it lands, as the hotbar does.", default = false)
 
-    /** The settings the block was built with, so a refresh rebuilds it only when one changed. */
     private data class Shown(
         val rows: List<InventoryRow>,
         val look: InventoryLook,
@@ -85,7 +70,6 @@ class InventoryHud(config: DsModConfig) : HasFeature {
         val pickup: Boolean,
     )
 
-    // The inventory menu's slots, from the helmet's to the offhand's, and the rows the block shows of them.
     private var items = emptyList<Item?>()
     private var slots = emptyList<List<Item?>>()
     private var shown = settings()
@@ -98,7 +82,6 @@ class InventoryHud(config: DsModConfig) : HasFeature {
         }
         val changed = shown != settings()
         if (changed) shown = settings()
-        // A slot the grid does not show, such as armor the player put on, leaves the block as it was.
         if (read || changed) {
             val next = picked().map { row -> items.subList(row.slots.first - FIRST, row.slots.last - FIRST + 1) }
             if (changed || next != slots) {
@@ -127,7 +110,6 @@ class InventoryHud(config: DsModConfig) : HasFeature {
             pops = shown.pickup,
         ) {
             slots.forEachIndexed { i, row ->
-                // Rows of the inventory run on together, and any other row stands apart from what is beside it.
                 val apart = i > 0 && !(picked[i].main && picked[i - 1].main)
                 items(row, apart = apart, slot = picked[i].slots.first)
             }

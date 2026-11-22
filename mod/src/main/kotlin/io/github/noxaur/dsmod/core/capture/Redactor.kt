@@ -34,28 +34,18 @@ import java.nio.file.Path
 import java.util.zip.GZIPOutputStream
 import kotlin.io.path.useLines
 
-/**
- * Rewrites a capture's lines so they hold no player name, no typed message and no skin. Each of [names] becomes
- * `Player1`, `Player2` and so on wherever it stands as a whole word, because a name turns up in places no rule
- * knows, such as a head's item name. Any other name is replaced in a text where a [PlayerNames] rule finds it.
- */
 class Redactor(private val names: Set<String>) {
     private val aliases = HashMap<String, String>()
     private val code = Regex("§.")
 
-    /** How many names it has replaced so far. */
     val count get() = aliases.size
 
     private fun alias(name: String) = aliases.getOrPut(name) { "Player${aliases.size + 1}" }
 
-    /** Where [text] holds one of [names], one of [here], the names around it, or a name at a range in [at], which a rule found. */
     private fun hits(text: String, here: Set<String> = emptySet(), at: List<IntRange> = emptyList()) =
         PlayerNames.word.findAll(text).filter { it.value in names || it.value in here || it.range in at }.map { it.range to alias(it.value) }.toList()
 
-    /**
-     * [text] with each name replaced. An older capture's raw text carries color codes, which can stand right before a
-     * name or between its letters, so a text that names someone loses its codes.
-     */
+    /** @keep An older capture's raw text carries color codes, which can stand right before a name or between its letters. */
     private fun names(text: String, here: Set<String>): String {
         val shown = text.replace(code, "")
         val hits = hits(shown, here, listOfNotNull(PlayerNames.inLore(shown))).ifEmpty { return text }
@@ -69,10 +59,6 @@ class Redactor(private val names: Set<String>) {
         }
     }
 
-    /**
-     * Replaces each range of the plain text, which [hits] hold in order without overlap. The replacement goes in the
-     * span where its range starts, and what the range covered in the other spans is dropped.
-     */
     private fun ServerText.replacing(hits: List<Pair<IntRange, String>>): ServerText {
         if (hits.isEmpty()) return this
         var at = 0
@@ -94,7 +80,6 @@ class Redactor(private val names: Set<String>) {
 
     private fun ServerText.named(at: List<IntRange> = emptyList()) = replacing(hits(plain, at = at))
 
-    /** [text] with each name replaced and what a player typed in it replaced by `hello`. */
     private fun typed(text: ServerText): ServerText {
         val chat = PlayerNames.typed(text.plain)
         val at = PlayerNames.inText(text.plain) + chat.flatMap { it.names }
@@ -103,7 +88,6 @@ class Redactor(private val names: Set<String>) {
         return text.replacing((typed + named).sortedBy { it.first.first })
     }
 
-    /** What a text component in Minecraft's JSON shows: its own text, then each piece in `extra`. */
     private fun shown(component: JsonElement?): String = when (component) {
         is JsonObject -> shown(component["text"] as? JsonPrimitive) + shown(component["extra"] as? JsonArray)
         is JsonArray -> component.joinToString("") { shown(it) }
@@ -111,35 +95,31 @@ class Redactor(private val names: Set<String>) {
         null -> ""
     }
 
-    /** [json] redacted, where [key] is the key it sits under and [here] the names a rule found around it. */
     private fun scrub(json: JsonElement, key: String, here: Set<String>): JsonElement = when (json) {
         is JsonObject -> {
-            // A profile's `id` is the player's UUID, as an int array in a skull and a string elsewhere.
+            // @keep A profile's `id` is the player's UUID, as an int array in a skull and a string elsewhere.
             val profile = key.substringAfterLast(':') == "profile"
             val inside = here + listOfNotNull(PlayerNames.onEntity(json)?.groupValues?.get(2), if (profile) PlayerNames.inProfile(json) else null)
             val scrubbed = JsonObject(json.mapValues { (k, v) -> if (profile && k == "id") (if (v is JsonArray) JsonArray(emptyList()) else JsonPrimitive("")) else scrub(v, k, inside) })
-            // A name drawn one color per letter is one piece per letter, so no single string holds it. The pieces
-            // become one plain piece, which loses the line's colors and keeps the name on the player's machine.
+            /** @keep A name drawn one color per letter is one piece per letter, so no single string holds it. The pieces
+             * become one plain piece, which loses the line's colors and keeps the name on the player's machine. */
             val whole = if (scrubbed["extra"] is JsonArray) shown(scrubbed) else ""
             val named = names(whole, inside)
             if (named != whole) JsonPrimitive(named) else scrubbed
         }
-        // An entity's `uuid`, as in a hover event, can be a player's, and an item's can be looked up on the server's
-        // public profiles. Both come as a string or as an int array.
+        /** @keep An entity's `uuid`, as in a hover event, can be a player's, and an item's can be looked up on the server's
+         * public profiles. Both come as a string or as an int array. */
         is JsonArray -> if (key.lowercase() == "uuid") JsonArray(emptyList()) else JsonArray(json.map { scrub(it, key, here) })
         is JsonPrimitive -> when {
             !json.isString -> json
-            // `value` and `signature` hold a skin.
+            // @keep `value` and `signature` hold a skin.
             key.lowercase() in setOf("uuid", "signature", "value") -> JsonPrimitive("")
             else -> JsonPrimitive(names(json.content, here))
         }
     }
 
-    /**
-     * A capture [line] redacted, or null for a line that is dropped. Typed text is found only in a `system` event, so
-     * a raw `chat` record, whose event says the same, is dropped, and so is a `system` line of an older capture that
-     * does not read as today's event. Any other event of an older shape is redacted as raw data.
-     */
+    /** @keep Typed text is found only in a `system` event, so a raw `chat` record, whose event says the same, is dropped, and
+     * so is a `system` line of an older capture that does not read as today's event. */
     fun line(line: String): String? {
         val json = Json.parseToJsonElement(line).jsonObject
         val type = json.getValue("type").jsonPrimitive.content
@@ -178,11 +158,6 @@ class Redactor(private val names: Set<String>) {
     )
 }
 
-/**
- * Writes [capture] to [to] gzipped and redacted by a [Redactor] that knows every player name in it and [own], names
- * the capture may not show. It reads the capture twice, a line at a time, so a long one never sits in memory.
- * Returns the number of names replaced.
- */
 fun redactCapture(capture: Path, to: Path, own: Set<String> = emptySet()): Int {
     val redactor = Redactor(PlayerNames.of(capture) + own)
     GZIPOutputStream(Files.newOutputStream(to)).bufferedWriter().use { out ->

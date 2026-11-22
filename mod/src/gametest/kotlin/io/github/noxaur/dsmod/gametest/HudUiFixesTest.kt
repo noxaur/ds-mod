@@ -40,12 +40,7 @@ import net.minecraft.network.chat.Component
 import java.util.concurrent.CompletableFuture
 import kotlin.math.abs
 
-/**
- * The HUD stays on screen when the GUI shrinks, a chat tooltip names the icon on top, a menu's padding
- * is not its first item, a subsection lifts under the mouse, a right-click delete survives the drag that
- * was already down, the active pet shows its description, a long storage tab can scroll to its contents,
- * and a trimmed chat line copies only the rows still shown.
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.Frames], [io.github.noxaur.dsmod.edge.mixin.TooltipMixin]. */
 class HudUiFixesTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = SettingsSteps.windowSize(context)
@@ -75,7 +70,6 @@ class HudUiFixesTest : FabricClientGameTest {
     }
 }
 
-
 private fun freeBlockStaysOnScreen(context: ClientGameTestContext, world: net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext) {
     context.showDragonTimer(world)
     context.waitTicks(5)
@@ -90,7 +84,7 @@ private fun freeBlockStaysOnScreen(context: ClientGameTestContext, world: net.fa
     )
     context.runOnClient<Nothing> {
         hud.positions[DRAGON_TIMER] = fraction
-        // A watched HUD setting is what makes the next tick place the block again.
+        // @keep A watched HUD setting is what makes the next tick place the block again.
         DsModClient.feature<HudBackground>().feature.enabled = false
     }
     context.waitTicks(2)
@@ -177,7 +171,6 @@ private fun subsectionLiftsUnderTheMouse(context: ClientGameTestContext) {
     context.waitTick()
     val at = context.computeOnClient<Pair<Int, Int>, Nothing> {
         val tree = checkNotNull(it.gui.screen()).widgets<KitNavTree>().single() as AbstractWidget
-        // A subsection is 13px under the 16px section, and the side's face shows through until hover lifts it.
         tree.x + 4 to tree.y + 16 + 6
     }
     context.point(at.first, at.second)
@@ -263,7 +256,6 @@ private fun trimmedChatCopiesTheRowsStillShown(context: ClientGameTestContext, c
     context.waitForScreen(ChatScreen::class.java)
     context.waitTick()
     val row = context.computeOnClient<Int, Nothing> { it.window.guiScaledHeight - 40 - (it.gui.hud.chat.linesPerPage - 1) * 9 - 4 }
-    // The oldest row still drawn, which is the first row of the message the chat did not trim.
     context.click(40, row, button = 1)
     check(CopyChats.menu?.header == "Copy Line") { "The remaining row opened ${CopyChats.menu?.header}" }
     val menu = checkNotNull(CopyChats.menu)

@@ -11,7 +11,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Hide Explosions: every particle is made here, so an explosion's cloud and its emitter end before they exist. */
 @Mixin(ParticleEngine.class)
 abstract class ExplosionParticleMixin {
     @Inject(method = "createParticle", at = @At("HEAD"), cancellable = true)

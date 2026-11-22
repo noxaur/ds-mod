@@ -58,22 +58,14 @@ import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Look
 
-/**
- * A run of settings under one heading. A group with no [name] sits straight under the section's title. [switch] is
- * the setting that turns the whole group on, shown beside the heading, when the group is one feature.
- */
 class SettingGroup(val name: String?, val rows: List<Setting>, val switch: Switch? = null)
 
-/** A page of the settings screen. [icon] colors its placeholder icon until sections get icons of their own. */
 class SettingSection(val name: String, val icon: Role, val groups: List<SettingGroup>) {
-    /** The groups the sidebar lists under the section, which are the ones with a heading. */
     val named: List<SettingGroup> = groups.filter { it.name != null }
 
-    /** Every row of the section, nested ones and heading switches included. */
     fun walk(): Sequence<Setting> = groups.asSequence().flatMap { group -> listOfNotNull(group.switch).asSequence() + group.rows.asSequence().flatMap { it.walk() } }
 }
 
-/** Declares the sections of the tree, each with its groups. */
 @SettingsDsl
 class Sections {
     internal val sections = ArrayList<SettingSection>()
@@ -97,26 +89,12 @@ class Groups {
     }
 }
 
-/**
- * Every setting of ds-mod, in the order the settings screen shows them, bound to a [config]. The tree is the only
- * schema of the settings. A feature declares its own rows, and the tree places it once, as a group of its own or a
- * row among others, which is also what lists it in [features]: a feature placed nowhere never runs. A setting that
- * belongs to no feature is a field of `DsModConfig` and one line here with an existing kind. `SettingsTreeTest` fails
- * on a saved field that no row reaches and that [STORED] does not name. A row for macOS alone is in the tree only
- * when [mac] is true.
- */
 class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) {
-    /** The sections, with each row's default taken from the same row of a tree on a fresh config. */
     val sections: List<SettingSection> = declare(config, mac)
 
-    /**
-     * Every feature, the class that holds its [Feature], in the order the HUD stacks their blocks in: the features of one area first, since
-     * their blocks are what the player is there for, then the ones that show everywhere, each in the tree's order.
-     */
     val owners: List<HasFeature> = sections.asSequence().flatMap { it.walk() }.filterIsInstance<Switch>().mapNotNull { it.feature }
         .sortedBy { it.feature.area == Area.ANYWHERE }.toList()
 
-    /** The [Feature] each of [owners] holds, in the same order, which `Game` runs. */
     val features: List<Feature> = owners.map { it.feature }
 
     init {
@@ -126,30 +104,21 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
         check(repeated.isEmpty()) { "A feature is placed twice in SettingsTree, or two features share an id: $repeated" }
     }
 
-    /** The feature of [type]. */
     fun <F : HasFeature> feature(type: Class<F>): F = type.cast(owners.first { it.javaClass == type })
 
     inline fun <reified F : HasFeature> feature(): F = feature(F::class.java)
 
     companion object {
-        /** Saved fields that no row edits, each with the reason. Every saved field has a row now. */
         val STORED = emptyMap<String, String>()
 
-        /** Whether the game runs on macOS, as Minecraft's own check reads it. */
         val MAC = "mac" in System.getProperty("os.name").lowercase()
 
-        /** Every row of every system, so a row for one system finds its default, its home and its favorite. */
         private val fresh by lazy { declare(DsModConfig(), mac = true) }
 
-        /** The section that holds [switch], such as a feature's, or null for one the tree does not place, as a test's feature. */
         fun home(switch: Switch): SettingSection? = fresh.firstOrNull { section -> section.walk().any { it is Switch && it.field == switch.field } }
 
-        /**
-         * [saved] favorites as row ids. A feature's switch was starred under its field's name, as `fullbright`, before
-         * the row took the feature's id, and versions up to 0.1.0 starred MoulConfig's options by path, as
-         * `general.fullbright`. Either becomes the id of the row that edits that field, by its current or a former
-         * key, or of the row that took over a button's job.
-         */
+        /** @keep Versions up to 0.1.0 starred MoulConfig's options by path, as general.fullbright, and a feature's switch by
+         * its field's name. */
         fun favorites(saved: List<String>): List<String> {
             val rows = fresh.flatMap { it.walk() }
             val ids = rows.mapTo(HashSet()) { it.id }
@@ -164,7 +133,6 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
             return saved.mapNotNull { if (it in ids) it else byField[it] ?: BUTTONS[it] }.distinct()
         }
 
-        /** MoulConfig's buttons, by path, to the row that does their job now. */
         private val BUTTONS = mapOf(
             "general.editBinds" to "binds",
             "general.resetAnimations" to "resetAnimations",
@@ -175,7 +143,6 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
             "contribute.open" to "requests",
         )
 
-        /** Sets each row's [Setting.gate]: the switch it sits under. */
         fun link(rows: List<Setting>, gate: Switch?) {
             for (row in rows) {
                 row.gate = gate
@@ -188,7 +155,6 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
             val claim = SlayerClaim()
             val ctrlClick = CtrlClick(c)
             val sections = Sections().apply {
-                // What applies everywhere comes first, then each area of the game, and Contribute last.
                 section("General", Role.VALUE) {
                     group("Server") {
                         feature(DragSimOnly(c))

@@ -26,21 +26,13 @@ private const val BEAM_HEIGHT = 64.0
 private const val LINE_WIDTH = 2f
 private const val FILL_ALPHA = 70
 
-/** How far in front of the camera a tracer starts, in blocks, so it starts at the crosshair and not behind the view. */
 private const val TRACER_AHEAD = 1.0
 
-/**
- * Marks drawn in the world. Positions are converted once when shown. They are handed to Minecraft once
- * per tick, and it replays them every frame, so a mark costs nothing in the frame loop. A mark that follows an
- * entity, and a [FrameBox], which follows the view, are drawn on each frame instead, because one handed over
- * once a tick trails what it follows by up to 50 ms. A [FrameBox]'s owner hands it over with [draw].
- */
 object World {
     private sealed interface Shown
     private class ShownBox(val box: AABB, val style: GizmoStyle) : Shown
     private class ShownPath(val points: List<Vec3>, val color: Int) : Shown
     private class ShownRing(val center: Vec3, val radius: Float, val style: GizmoStyle) : Shown
-    /** A mark on the entity with id [entity], which [find] looks up once a tick so a frame only places it. */
     private abstract class Follow(val entity: Int) {
         var found: Entity? = null
     }
@@ -50,13 +42,11 @@ object World {
         var labelAt = at
     }
 
-    /** A beam's [name] and the distance to it, built again only when the whole meters change. */
     private class BeamLabel(val name: String, val color: Int) {
         var meters = -1
         var text = name
         var style: TextGizmo.Style = TextGizmo.Style.forColorAndCentered(color)
 
-        /** Builds the label for [meters] away, and returns whether it changed. */
         fun at(meters: Int): Boolean {
             if (meters == this.meters) return false
             this.meters = meters
@@ -66,12 +56,8 @@ object World {
         }
     }
 
-    /**
-     * A box drawn for one frame at a time, built once while it stays the same: in [style], with edges [width] wide,
-     * in front of what hides it when [onTop], and with a [label] above it.
-     */
     class FrameBox(box: AABB, role: Role, style: BoxStyle, width: Float, internal val onTop: Boolean, internal val label: String?) {
-        // A box drawn behind the world lies on the block's faces, and would flicker against them.
+        // @keep A box drawn behind the world lies on the block's faces, and would flicker against them.
         val box: AABB = if (onTop) box else box.inflate(0.002)
         internal val style: GizmoStyle = when (style) {
             BoxStyle.OUTLINE -> GizmoStyle.stroke(role.argb(), width)
@@ -92,7 +78,6 @@ object World {
     private val tracers = LinkedHashMap<String, List<ShownTracer>>()
     private var tracersShown = emptyList<ShownTracer>()
 
-    /** Draws [marks] until [hide], replacing what [id] showed before. */
     fun show(id: String, marks: List<Mark>) {
         beams[id] = marks.filterIsInstance<EntityBeam>().map { ShownBeam(it.entity, BeamLabel(it.label, it.role.argb())) }
         tracers[id] = marks.filterIsInstance<Tracer>().map { ShownTracer(it.entity, it.role.argb()) }
@@ -128,10 +113,8 @@ object World {
         tracersShown = tracers.values.flatten()
     }
 
-    /** Marks the next end-of-tick draw will submit. A world change has to drop these before that draw. */
     fun marksQueued() = shown.size + beamsShown.size + tracersShown.size
 
-    /** Drops every mark. The level-change path calls this, because the next draw runs before the new world's readouts. */
     fun worldChanged() {
         marks.clear()
         beams.clear()
@@ -164,13 +147,11 @@ object World {
         }
     }
 
-    /** Finds the entity each followed mark is on. It runs once a tick, and when the marks change, so a frame need not. */
     private fun find(level: ClientLevel) {
         for (i in beamsShown.indices) beamsShown[i].let { it.found = level.getEntity(it.entity) }
         for (i in tracersShown.indices) tracersShown[i].let { it.found = level.getEntity(it.entity) }
     }
 
-    /** Draws the marks that follow an entity where this frame shows it, between the last tick's place and the next. */
     private fun follow(context: LevelExtractionContext) {
         val camera = context.camera()
         val eye = camera.position()
@@ -195,10 +176,8 @@ object World {
         }
     }
 
-    /**
-     * Draws [mark] on this frame only. Call it on each frame while the game gathers the frame's shapes, from Fabric's
-     * `AFTER_BLOCK_OUTLINE_EXTRACTION`, which runs on the client thread before they are handed to the renderer.
-     */
+    /** @keep Call it on each frame while the game gathers the frame's shapes, from Fabric's `AFTER_BLOCK_OUTLINE_EXTRACTION`,
+     * which runs on the client thread before they are handed to the renderer. */
     fun draw(mark: FrameBox) {
         val box = Gizmos.cuboid(mark.box, mark.style)
         if (mark.onTop) box.setAlwaysOnTop()
@@ -212,16 +191,13 @@ object World {
         Gizmos.billboardText(label, mark.labelAt, mark.labelStyle).setAlwaysOnTop()
     }
 
-    /** A beam from [from] up to [to], seen through walls, with its [label] at [labelAt]. */
     private fun beam(from: Vec3, to: Vec3, label: BeamLabel, labelAt: Vec3) {
         Gizmos.line(from, to, label.color, LINE_WIDTH * 2).setAlwaysOnTop()
         Gizmos.billboardText(label.text, labelAt, label.style).setAlwaysOnTop()
     }
 
-    /** Where a beam's [label] floats over [base]: higher the farther it is, so the growing text clears what it names. */
     private fun labelAt(base: Vec3, label: BeamLabel) = base.add(0.0, 1.5 + label.meters / 12.0, 0.0)
 
-    /** Text is sized in blocks, so it grows with distance, [grown] at least [least], to stay the same size on screen. */
     private fun labelStyle(color: Int, grown: Float, least: Float) =
         TextGizmo.Style.forColorAndCentered(color).withScale(TextGizmo.Style.DEFAULT_SCALE * grown.coerceAtLeast(least))
 

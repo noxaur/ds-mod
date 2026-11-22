@@ -16,11 +16,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.TitleScreen
 import org.lwjgl.glfw.GLFW
 
-/**
- * Drives an ordered list on ds-mod's own settings screen, Equipment Display's pieces: it opens under its row, and an
- * entry hides and shows in its place, moves by a drag of its grip and by Alt with Up or Down, and goes back on Escape
- * during a drag. Screenshots show it closed, open, mid-drag and changed, in both themes.
- */
 class SettingOrderTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = setUp(context)
@@ -77,6 +72,5 @@ class SettingOrderTest : FabricClientGameTest {
         move(entry(0).x + 30, entry(0).y + 8)
         hear(context, "Chestplate, switch, on, 1 of 5", "Over the first entry")
         context.shotInBothThemes("own-settings-order-changed")
-
     }
 }

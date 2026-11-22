@@ -21,12 +21,6 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.item.Items
 
-/**
- * The inventory shows on the HUD as a grid, nine to a row, so a head keeps its skin, dyed leather its color and a stack
- * its count, and the chat's free mouse reads an item's tooltip. The hotbar, the armor and the offhand join it each a
- * little apart, and the grid never empties while the inventory is read again after a menu, which takes a few ticks for
- * items with long lore as dragsim.co's have. Read the screenshots: the grid, the tooltip, and every row.
- */
 class InventoryHudTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = InventoryGrid.with(context) { world ->
         val inventoryHud = DsModClient.feature<InventoryHud>()
@@ -43,7 +37,6 @@ class InventoryHudTest : FabricClientGameTest {
         context.takeScreenshot("inventory-hud-tooltip")
         context.runOnClient<Nothing> { it.gui.setScreen(null) }
 
-        // Every row, each that is not the inventory's own standing apart: the hotbar, then the armor, then the offhand.
         world.server.runOnServer<Nothing> { server ->
             val player = server.player
             player.setItemSlot(EquipmentSlot.HEAD, ServerMenus.named(Items.LEATHER_HELMET, "Helmet"))
@@ -56,7 +49,6 @@ class InventoryHudTest : FabricClientGameTest {
         check(stackAt(context, cell(context, 4, 1, gaps = 2)) == null) { "The armor row shows a chestplate the player does not wear" }
         context.takeScreenshot("inventory-hud-every-row")
 
-        // A slot that changes hands the whole grid to the HUD again, which rebuilds each stack once.
         val (fresh, again) = context.computeOnClient<Pair<Long, Long>, Nothing> {
             val block = checkNotNull(DsModClient.game.readouts.first { readout -> readout.feature.id == ID }.hud)
             val group = HudGroup("probe", 0, 0)
@@ -73,7 +65,6 @@ class InventoryHudTest : FabricClientGameTest {
         }
         println("InventoryHudTest: handing the HUD a grid of ${FILLED + 2} items took ${fresh}µs new and ${again}µs again")
 
-        // Back in the inventory after a menu, the long-lored items are read again over a few ticks, and the grid keeps them all.
         var sampling = false
         val shown = ArrayList<Int>()
         ClientTickEvents.END_CLIENT_TICK.register {
@@ -90,11 +81,9 @@ class InventoryHudTest : FabricClientGameTest {
         context.runOnClient<Nothing> { sampling = false }
         check(shown.isNotEmpty() && shown.all { it == FILLED + 2 }) { "The grid did not hold all ${FILLED + 2} items as the inventory was read again: $shown" }
 
-        // A capture that starts inside a menu has seen none of the inventory, so going back must send it whole.
         ServerMenus.open(context, world, 6, "Big Chest")
         val tapped = ArrayList<GameEvent>()
         context.runOnClient<Nothing> { DsModClient.game.tap = { _, event -> tapped += event } }
-        // The items sent since the last menu opened, which once back in the inventory are the inventory's.
         fun since() = tapped.drop(tapped.indexOfLast { it is ContainerOpened }).count { it is SlotChanged && it.item != null }
         try {
             context.waitTick()

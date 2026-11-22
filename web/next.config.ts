@@ -2,11 +2,10 @@ import type { NextConfig } from "next";
 
 const config: NextConfig = {
   reactStrictMode: true,
-  // The dev server would print each action with its arguments, and the login's argument is the token.
+  // @keep The dev server would print each action with its arguments, and the login's argument is the token.
   logging: { serverFunctions: false },
-  // A page cannot set its own headers, so the login page gets them here.
   headers: () => [
-    // No other site may frame a page, so none can overlay the login's confirm button.
+    // @keep No other site may frame a page, so none can overlay the login's confirm button.
     {
       source: "/:path*",
       headers: [

@@ -10,7 +10,6 @@ import io.github.noxaur.dsmod.core.text.clock
 import io.github.noxaur.dsmod.core.text.count
 import io.github.noxaur.dsmod.core.text.secondsLeft
 
-/** Follows the dragon fight in the End: the egg's return, the eyes placed and the dragon's time alive. */
 class DragonTimer(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "dragon-timer", Area.END, Store.END, "Show the egg timer, the eyes placed and the dragon's time alive.", hud = ::hud)
 
@@ -28,7 +27,7 @@ class DragonTimer(config: DsModConfig) : HasFeature {
     private var eyesNeeded = 8
 
     init {
-        // `☠ The ` also starts the Endstone Protector's lines, so the head names a dragon.
+        // @keep `☠ The ` also starts the Endstone Protector's lines, so the head names a dragon
         feature.line(Regex("""☠ The .+ Dragon has """), Regex("""☠ The (\w+) Dragon has (spawned!|de-spawned\.)""")) { (name, news), now ->
             phase = if (news == "spawned!") Phase.Alive(name, now) else Phase.Unknown
         }

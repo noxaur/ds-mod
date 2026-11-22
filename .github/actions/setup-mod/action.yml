@@ -14,13 +14,11 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
+    - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # @keep v5.2.9
       with:
         install_args: java
-    # Gradle runs on mise's JDK, which is the toolchain the build asks for. Left on, auto-detection starts each
-    # of the runner's five other JDKs to read its version, which takes 10 seconds of every configuration.
-    # A runner's Kotlin daemon compiles once and exits, so the optimising JIT only competes with it for the
-    # four cores. A developer's daemon lives long enough to gain from it, so this is CI's alone.
+    # @keep Auto-detection starts each of the runner's five other JDKs to read its version, 10 seconds of every configuration.
+    # @keep A runner's Kotlin daemon compiles once and exits, so the optimising JIT only competes with it for the four cores.
     - shell: bash
       run: |
         mkdir -p ~/.gradle
@@ -28,10 +26,7 @@ runs:
         org.gradle.java.installations.auto-detect=false
         kotlin.daemon.jvmargs=-XX:TieredStopAtLevel=1
         EOF
-    # One cache for the dependencies, the Gradle distribution, Minecraft and its remapped jars. The key is
-    # every file that decides what gets downloaded, so a hit means the build needs no network. Every version,
-    # the plugins' included, lives in gradle.properties, so an edit to the build scripts keeps the cache and
-    # stays under the time limit.
+    # @keep The plugins' versions live in gradle.properties, so an edit to the build scripts keeps the cache.
     - id: key
       shell: bash
       run: echo "key=${{ inputs.cache }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('mise.toml', 'mod/gradle.properties', 'mod/gradle/wrapper/gradle-wrapper.properties') }}" >> "$GITHUB_OUTPUT"
@@ -43,8 +38,7 @@ runs:
           ~/.gradle/wrapper
           mod/.gradle/loom-cache
         key: ${{ steps.key.outputs.key }}
-    # The newest configuration cache, for the reason in docs/internals/testing.md. It is saved on every run,
-    # and its key starts with the cache's, because Gradle encrypts it with a key that lives in ~/.gradle/caches.
+    # @keep Gradle encrypts the configuration cache with a key in ~/.gradle/caches, so its key starts with the cache's.
     - uses: actions/cache@v6
       with:
         path: mod/.gradle/configuration-cache

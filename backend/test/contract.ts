@@ -13,7 +13,6 @@ export interface Stores {
   readonly profiles: ProfileStore["Service"];
 }
 
-/** A set of empty stores, and how to run a test body the way the stores need it. */
 export interface Implementation {
   readonly stores: Stores;
   readonly within: <A>(body: () => Promise<A>) => Promise<A>;
@@ -77,10 +76,8 @@ const insertRuns = async (contrib: Stores["contrib"]) => {
   }
 };
 
-/** A store's cases by the method each is about, so a method with no case fails to compile. */
 type Cases<S> = { readonly [Method in keyof S]: Readonly<Record<string, (stores: Stores) => Promise<void>>> };
 
-/** What every store must do, whatever it keeps its rows in. */
 const suites: { readonly [Name in keyof Stores]: Cases<Stores[Name]> } = {
   contrib: {
     insertRequest: {
@@ -454,10 +451,6 @@ const suites: { readonly [Name in keyof Stores]: Cases<Stores[Name]> } = {
   },
 };
 
-/**
- * Runs every case against one implementation. The memory stores run it in every test run, and D1 runs the same cases
- * against the real migrations, so the two cannot disagree on a rule without a test failing.
- */
 export const storeContract = (implementation: string, make: () => Promise<Implementation>) => {
   for (const [name, methods] of Object.entries(suites)) {
     for (const [method, cases] of Object.entries(methods)) {

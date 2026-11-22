@@ -13,12 +13,6 @@ import kotlin.math.abs
 
 private const val ID = "equipment-display"
 
-/**
- * A block docked beside the hotbar, Equipment Display's, drags out of its dock at the size it had there and its
- * Placement turns Free. Dropped near either dock spot it docks there again. Escape puts it back in its dock, the wheel
- * resizes it out of the dock, and a right press undocks it into the stack. The HUD editor docks it the same way.
- * Read the screenshots for the block lifted out of its dock and back in it.
- */
 class HudDockTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val equipmentDisplay = DsModClient.feature<EquipmentDisplay>()
@@ -34,25 +28,21 @@ class HudDockTest : FabricClientGameTest {
                 val docked = chat.block(ID)
                 val spot = { dock: HudDock -> context.computeOnClient<Pair<Float, Float>, Nothing> { client -> Hud.dockSpot(ID, dock, HudScale.snap(1f, client.window.guiScale))!!.let { it.x to it.y } } }
 
-                // Out of the dock, at the size it had there.
                 chat.drag(ID, docked.x, docked.y - 60) { context.takeScreenshot("hud-dock-lifted") }
                 val lifted = chat.block(ID)
                 check(equipmentDisplay.placement.value == HudDock.FREE) { "The drag left the placement at ${equipmentDisplay.placement.value}" }
                 check(lifted.dock == HudDock.FREE && abs(lifted.y - (docked.y - 60)) < 0.6) { "The block is at ${lifted.x}, ${lifted.y}, ${lifted.dock}" }
                 check(abs(lifted.width * lifted.scale - docked.width * docked.scale) < 0.01f) { "The block changed size leaving the dock: ${lifted.scale} from ${docked.scale}" }
 
-                // Dropped a few pixels off the right dock spot, it docks there.
                 val right = spot(HudDock.RIGHT_OF_HOTBAR)
                 chat.drag(ID, right.first + 4, right.second - 3)
                 check(equipmentDisplay.placement.value == HudDock.RIGHT_OF_HOTBAR) { "Dropped by the right spot, the placement is ${equipmentDisplay.placement.value}" }
                 chat.block(ID).let { check(it.x == right.first && it.y == right.second) { "The docked block is at ${it.x}, ${it.y}, not $right" } }
                 context.takeScreenshot("hud-dock-right")
 
-                // Escape during a drag out of the dock puts it back in the dock.
                 chat.drag(ID, right.first - 80, right.second - 80) { context.input.pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitTick() }
                 check(equipmentDisplay.placement.value == HudDock.RIGHT_OF_HOTBAR) { "Escape left the placement at ${equipmentDisplay.placement.value}" }
 
-                // Under a HUD scale of 3 the dock draws below the smallest size, so a notch down leaves it docked as it was.
                 val hudScale = DsModClient.settings.hud.scale
                 DsModClient.settings.hud.scale = 3f
                 try {
@@ -68,14 +58,12 @@ class HudDockTest : FabricClientGameTest {
                 }
                 context.waitTick()
 
-                // The wheel resizes it out of the dock, where it can take another size.
                 val before = chat.block(ID)
                 chat.move(before.x + 5.0, before.y + 5.0)
                 context.input.scroll(1.0)
                 context.waitTick()
                 check(equipmentDisplay.placement.value == HudDock.FREE && chat.block(ID).scale > before.scale) { "The wheel left the block ${equipmentDisplay.placement.value} at ${chat.block(ID).scale}" }
 
-                // A right press undocks it into the stack.
                 equipmentDisplay.placement.value = HudDock.LEFT_OF_HOTBAR
                 context.waitFor { Hud.find(ID)?.dock == HudDock.LEFT_OF_HOTBAR }
                 val again = chat.block(ID)
@@ -85,7 +73,6 @@ class HudDockTest : FabricClientGameTest {
                 check(equipmentDisplay.placement.value == HudDock.FREE && ID !in DsModClient.settings.hud.positions) { "The right press left ${equipmentDisplay.placement.value}" }
                 context.setScreen { null }
 
-                // The editor docks it the same way: dropped by the left spot.
                 context.runOnClient<Nothing> { DsModClient.openHudEditor() }
                 context.waitForScreen(HudEditorScreen::class.java)
                 val left = spot(HudDock.LEFT_OF_HOTBAR)

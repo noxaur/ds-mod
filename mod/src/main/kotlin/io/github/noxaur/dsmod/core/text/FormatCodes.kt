@@ -1,9 +1,5 @@
 package io.github.noxaur.dsmod.core.text
 
-/**
- * A stretch of a chat message in one style. [color] is as Minecraft names it: `gold` for one of the sixteen named
- * colors and `#12AB34` for any other, or null for the chat's own.
- */
 data class StyledRun(
     val text: String,
     val color: String? = null,
@@ -14,10 +10,6 @@ data class StyledRun(
     val obfuscated: Boolean = false,
 )
 
-/**
- * Writes styled text with `&` codes, the form a player can type and most servers and tools read. A color
- * outside the sixteen named ones is written as `&#rrggbb`.
- */
 object FormatCodes {
     private val NAMED = listOf(
         "black", "dark_blue", "dark_green", "dark_aqua", "dark_red", "dark_purple", "gold", "gray",
@@ -29,7 +21,8 @@ object FormatCodes {
         for (run in runs) {
             if (run.text.isEmpty()) continue
             val flags = flags(run)
-            // A code can only add, so a color or a format that ends takes a reset first. A new color ends the formats itself.
+            /** @keep A code can only add, so a color or a format that ends takes a reset first. A new color ends the formats
+             * itself */
             val recolored = run.color != null && run.color != last.color
             if ((last.color != null && run.color == null) || (!recolored && flags(last).any { it !in flags })) {
                 append("&r")
@@ -38,7 +31,7 @@ object FormatCodes {
             val color = run.color
             if (color != null && color != last.color) {
                 append('&').append(NAMED[color]?.toString() ?: color.lowercase())
-                // A color code clears the formats before it, as it does in the game.
+                // @keep A color code clears the formats before it, as it does in the game
                 for (flag in flags) append('&').append(flag)
             } else {
                 for (flag in flags) if (flag !in flags(last)) append('&').append(flag)

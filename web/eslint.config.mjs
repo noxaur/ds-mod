@@ -6,7 +6,6 @@ import tseslint from "typescript-eslint";
 const uiSdk =
   "ds-mod builds every interactive control from ui-sdk, so focus, keyboard and ARIA behave the same everywhere.";
 
-// Each element ui-sdk has a component for, mapped to its entry.
 const uiSdkElements = {
   button: "@ui-sdk/react/button",
   input: "@ui-sdk/react/input, checkbox, radio, switch, slider or another input component",

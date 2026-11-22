@@ -22,19 +22,13 @@ import java.util.IdentityHashMap
 import kotlin.math.abs
 import kotlin.math.ceil
 
-/**
- * Times every item ability the player uses, and Riftwalker's charging hit, as a HUD list and a wash over the item.
- *
- * A use is the action bar's mana part appearing, `-100 Mana (Giant's Slam)`, which stays up for a few of the server's
- * half-second updates, so only its arrival counts. Abilities without one say so in chat: `HOWL!` for the Tuba, `Soulcry! +`
- * for a katana, and `You used Void Infusion!` for the drill. Each names an ability whose length is the `Cooldown` line
- * under its heading in the lore of an item the player carries, so any ability is timed without a list of them. A press
- * too early is refused with what is left, which puts the timer where the server has it, and when the server's length is
- * not the lore's, such as under a Sky Mall cut, the measured one stands in while the lore stays the same.
- *
- * A charging set bonus, `(4) Every 8s your next hit blinks you`, starts on the player's own hit while the set is worn, and
- * a hit while it charges does not restart it, so the server sends nothing for it.
- */
+/** @keep A use is the action bar's mana part appearing, `-100 Mana (Giant's Slam)`, which stays up for a few of the
+ * server's half-second updates, so only its arrival counts. Abilities without one say so in chat: `HOWL!` for
+ * the Tuba, `Soulcry! +` for a katana, and `You used Void Infusion!` for the drill. A press too early is
+ * refused with what is left, which puts the timer where the server has it. When the server's length is not the
+ * lore's, such as under a Sky Mall cut, the measured one stands in. A charging set bonus, `(4) Every 8s your
+ * next hit blinks you`, starts on the player's own hit while the set is worn, and a hit while it charges does
+ * not restart it, so the server sends nothing for it */
 class AbilityCooldowns(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "ability-cooldowns", Area.ANYWHERE, Store.GENERAL, "Time your item abilities and Riftwalker's charged hit.", hud = ::hud, slots = ::slots)
 
@@ -44,17 +38,14 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     val readyAlert = feature.switch("cooldownReadyAlert", "Ready Alert", "Alert you when a long cooldown is over.", default = false)
     val alertFrom = feature.number("cooldownAlertFrom", "Alert From", "Alert only for cooldowns at least this many seconds long.", 20f, 1f..120f, step = 1f, unit = "s")
 
-    /** An ability the lore gave a length, by its name in lower case. */
     private class Known(val name: String, val millis: Long)
 
     private class Timer(val key: String, val name: String, val lore: Long, val start: Long, var end: Long) {
         var alerted = false
     }
 
-    /** A length the server ran in place of the lore's [lore]. */
     private class Learned(val lore: Long, val millis: Long)
 
-    /** What an item's lore says, worked out once per stack: the keys of its abilities, its charge and whether it is any set's helmet. */
     private class Read(val keys: List<String>, val abilities: List<Known>, val charge: SetCharge?, val anySet: Boolean)
 
     private val clock = ServerClock(feature)
@@ -63,13 +54,10 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
     private val timers = HashMap<String, Timer>()
     private val learned = HashMap<String, Learned>()
 
-    /** The abilities found by [unheaded], whose items name them anywhere in the lore rather than under a heading. */
     private val loreNamed = HashSet<String>()
 
-    /** The charging bonus the worn set has now, or null. */
     private var charge: SetCharge? by feature.world { null }
 
-    /** The ability in the last action bar's mana part, lower case, so a part that stays up counts once. */
     private var lastCast: String? by feature.world { null }
 
     private val items = ContainerReader(feature)
@@ -91,7 +79,6 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
         }
         feature.line(Regex.fromLiteral(Abilities.REFUSAL), Abilities::refusalMillis) { left, now -> refused(left, now) }
         feature.line("HOWL!") { now -> start("Howl", now) }
-        // `☠ Soulcry! +250 ⫽ Ferocity against Endermen for 4s.`
         feature.line(SOULCRY, SOULCRY) { _, now -> start("Soulcry", now) }
         feature.line(USED, USED_LINE) { (ability), now -> start(ability, now) }
         feature.on<Hit> { _, now ->
@@ -106,26 +93,21 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
         }
     }
 
-    /** Starts the timer of the ability the server named [name], if an item the player carries gives its length. */
     private fun start(name: String, now: Long) {
         read()
         val key = name.lowercase()
-        // A heading's length is read again with the items, and a loose one only here, so look it up from the items now.
         val ability = (if (key in loreNamed) unheaded(name) else null) ?: known[key] ?: unheaded(name) ?: return
         val running = timers[key]
         val at = clock.millis(now)
-        // Soulcry's chat line and its action bar part tell of one use a tick or two apart.
+        // @keep Soulcry's chat line and its action bar part tell of one use a tick or two apart
         if (running != null && at - running.start < SAME_USE_MILLIS && at < running.end) return
         val length = learned[key]?.takeIf { it.lore == ability.millis }?.millis ?: ability.millis
         timers[key] = Timer(key, ability.name, ability.millis, at, at + length)
         moved()
     }
 
-    /**
-     * Puts the timer the refusal is for where the server says it ends. The line names no ability, so it is the timer whose
-     * end is nearest the server's, among those it could be: one used lately, whose length is not far under what is left.
-     * Two that close together are left alone.
-     */
+    /** @keep The refusal names no ability, so it is the timer whose end is nearest the server's among those used lately
+     * whose length is not far under what is left. Two that close together are left alone */
     private fun refused(left: Long, now: Long) {
         val at = clock.millis(now)
         val end = at + left
@@ -135,7 +117,6 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
         val timer = near.firstOrNull() ?: return
         if (near.size > 1 && abs(near[1].end - end) - abs(timer.end - end) < SLACK_MILLIS / 2) return
         timer.end = end
-        // After a missed use, start to end spans two cooldowns and the gap, which is outside half to one and a half.
         val ran = end - timer.start
         if (ran in timer.lore / 2..timer.lore * 3 / 2 && abs(ran - timer.lore) >= maxOf(LEARN_MILLIS, timer.lore / 10)) {
             learned[timer.key] = Learned(timer.lore, ran)
@@ -164,16 +145,12 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
         for (timer in timers.values) {
             if (timer.alerted || at < timer.end || timer.lore < from) continue
             timer.alerted = true
-            // Only a cooldown that ended just now is news.
             if (at - timer.end > READY_MILLIS) continue
             feature.alert(text { good("${timer.name} Ready!") }, text { value(timer.name); body(" is ready.") })
         }
     }
 
-    /**
-     * The length of an ability whose lore gives it no heading, from the `Cooldown` line of the item the player carries
-     * that names it anywhere in its lore. A drill's ability is the one picked in its menu, so it may be written so.
-     */
+    // @keep A drill's ability is the one picked in its menu, so its name may be written anywhere in the lore
     private fun unheaded(name: String): Known? {
         val slots = feature.container.slots
         for (i in feature.container.playerSlots) {
@@ -186,7 +163,6 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
         return null
     }
 
-    /** Reads the open container's items, once after it changes, and the worn set's charge from the player's own. */
     private fun read() {
         if (!items.changed()) return
         marks.invalidate()
@@ -198,7 +174,6 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
         if (feature.container.id != INVENTORY || slots.size <= WORN_SLOTS.last) return
         val worn = WORN_SLOTS.map { slots[it]?.let(::read) }
         val bonus = worn.firstNotNullOfOrNull { it?.charge }
-        // The server's count of worn pieces is the lore's, and a helmet that counts as any set's stands in for the set's own.
         charge = bonus?.takeIf { b ->
             val pieces = worn.count { it?.charge?.name == b.name } + if (worn[0]?.let { it.anySet && it.charge == null } == true) 1 else 0
             b.worn >= b.pieces || pieces >= b.pieces
@@ -269,11 +244,9 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
         const val SLACK_MILLIS = 1000L
         const val LEARN_MILLIS = 300L
 
-        /** How long a ready ability stays on the list, and how late a ready alert may still come. */
         const val READY_MILLIS = 2000L
         const val MAX_READS = 512
 
-        /** `3.2s` under ten seconds, `45s` under a minute, then `1m 48s`, each rounded up so Ready is never early. */
         fun seconds(millis: Long): String {
             if (millis < 10_000) return "${fixed(ceil(millis / 100.0) / 10, 1)}s"
             val whole = secondsLeft(millis)

@@ -22,7 +22,6 @@ class HudScaleTest {
     fun `a step changes the drawn size by one screen pixel`() {
         assertEquals(1.5f, HudScale.step(1f, 1, 1f, 2, 0.5f, 3f))
         assertEquals(0.5f, HudScale.step(1f, -1, 1f, 2, 0.5f, 3f))
-        // Under a global scale of 1.5 at GUI scale 2, a block of scale 1 is 3 pixels per HUD pixel, and one step makes it 4.
         val next = HudScale.step(1f, 1, 1.5f, 2, 0.5f, 4f)
         assertEquals(4, Math.round(HudScale.snap(next * 1.5f, 2) * 2))
     }
@@ -31,13 +30,11 @@ class HudScaleTest {
     fun `a step stops at the bounds`() {
         assertEquals(3f, HudScale.step(3f, 1, 1f, 2, 0.5f, 3f))
         assertEquals(0.5f, HudScale.step(0.5f, -1, 1f, 2, 0.5f, 3f))
-        // At GUI scale 1 a scale of 0.5 already draws one pixel, so a smaller step leaves it alone.
         assertEquals(0.5f, HudScale.step(0.5f, -1, 1f, 1, 0.5f, 3f))
     }
 
     @Test
     fun `a scale past a bound never steps the wrong way`() {
-        // A docked block under a HUD scale of 3 has its own scale at 1/3, below the 0.5 floor: a step down leaves it.
         assertEquals(1f / 3, HudScale.step(1f / 3, -1, 3f, 2, 0.5f, 4f))
         assertEquals(0.5f, HudScale.step(1f / 3, 1, 3f, 2, 0.5f, 4f))
     }

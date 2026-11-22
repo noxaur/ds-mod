@@ -13,7 +13,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.TitleScreen
 
-/** What the narrator says of ds-mod's own settings screen, as [narration] says. `SettingRowsTest` drives the rows. */
+/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.PerspectiveKeyMixin]. */
 class SettingsNarrationTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = setUp(context)
@@ -23,11 +23,6 @@ class SettingsNarrationTest : FabricClientGameTest {
         restore(context, window)
     }
 
-    /**
-     * Hovers a row of each kind and checks what the narrator says of it: its name, kind and value, that it is changed
-     * from its default, that a switch dims it, and its new value after a change. The sidebar and the tab bar say
-     * what is under the mouse too. Then a search paints the words it matched, in both themes.
-     */
     private fun SettingsDriver.narration() {
         fun over(id: String, want: String) {
             val at = spot(id)
@@ -42,7 +37,6 @@ class SettingsNarrationTest : FabricClientGameTest {
         over("freeLookKey", "Key, key bind, Left Alt")
         over("freeLookMode", "Mode, choice, Hold, 1 of 2")
         over("camera", "Camera, switch, on")
-        // A change is said with the row: the wheel over the number's field steps it.
         val distance = spot("cameraDistance")
         move(distance.extraX + 4, distance.controlY + 6)
         context.input.scroll(1.0)
@@ -73,7 +67,6 @@ class SettingsNarrationTest : FabricClientGameTest {
         over("equipmentPieces", "Pieces, list, Helmet, Chestplate, Leggings, Boots, Pet, 5 of 5 shown, expanded")
         open(context, SettingsTabs(at("General")))
         over("fullbright", "Fullbright, switch, off")
-        // The bar's first tab is 4 in from the sidebar's 116.
         move(30, context.computeOnClient<Int?, Nothing> { (it.gui.screen() as SettingsScreen).line("The End") } ?: error("The sidebar does not show The End"))
         hear(context, "The End, section, collapsed", "Over The End in the sidebar")
         move(120 + 30, 9)

@@ -1,10 +1,5 @@
 import { numberEntries, record } from "../../upstream/read.ts";
 
-/**
- * An item as the mod sees it in the game: its `id`, its tooltip and the server's `custom_data`. The tests turn one into
- * what dragsim.co's player API would have sent for it, to render it and compare the result with the tooltip the game
- * drew.
- */
 export interface GameItem {
   readonly id: string;
   readonly count: number;
@@ -13,7 +8,7 @@ export interface GameItem {
   readonly data: Readonly<Record<string, unknown>>;
 }
 
-/** The game's stat set, whose base stats are `stats`, in the API's shape, whose base stats are `base`. */
+// @keep The game's `stats` is the API's `base`.
 const statSet = (value: unknown) => {
   const set = record(value);
   return {
@@ -24,7 +19,6 @@ const statSet = (value: unknown) => {
   };
 };
 
-/** What the player API sends for a game item. */
 export const toUpstream = (game: GameItem): Record<string, unknown> => {
   const data = record(game.data);
   const itemData = record(data["item_data"]);

@@ -19,14 +19,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/**
- * The signals no capture holds yet, from what DragSim Utils reads: the Tuba's `HOWL!`, a katana's `Soulcry!` line, the
- * drill's `You used`, and Riftwalker's charged hit. The action bar and the refusal are proven by the replay.
- */
+/** @keep These signals are from what DragSim Utils reads, because no capture holds them yet: the Tuba's `HOWL!`, a katana's `Soulcry!` line, the
+ * drill's `You used`, and Riftwalker's charged hit. */
 class AbilityCooldownsTest : Harness(alone = AbilityCooldowns::class) {
     private val feature = tree.feature<AbilityCooldowns>()
 
-    /** An item as dragsim.co writes one: the heading's name, the server's glyphs, then the button. */
     private fun weapon(name: String, ability: String, cooldown: String) = Item(
         "minecraft:diamond_sword",
         1,
@@ -124,7 +121,6 @@ class AbilityCooldownsTest : Harness(alone = AbilityCooldowns::class) {
         post(chat("You used Void Infusion!"))
         assertEquals(listOf("Void Infusion: 1m 48s"), rows())
         assertEquals(setOf(38), readout().slots.keys)
-        // An upgrade rewrites the drill's lore, and the next use follows it.
         pass(110_000)
         post(SlotChanged(38, drill.copy(lore = listOf(text("Selected Ability: Void Infusion"), text("Cooldown: 60s")))))
         post(chat("You used Void Infusion!"))
@@ -143,7 +139,7 @@ class AbilityCooldownsTest : Harness(alone = AbilityCooldowns::class) {
         post(*ownInventory(36 to weapon("Giant's Sword", "Giant's Slam", "10s")))
         post(ActionBar(text("-100 Mana (Giant's Slam)")))
         pass(1_000)
-        // The server's cooldown is 8s, as under a Sky Mall cut: 7s are left, not 9.
+        // @keep The server's cooldown is 8s, as under a Sky Mall cut: 7s are left, not 9.
         post(chat("This ability is on cooldown for 7s"))
         assertEquals(listOf("Giant's Slam: 7.0s"), rows())
         pass(8_000)
@@ -175,11 +171,9 @@ class AbilityCooldownsTest : Harness(alone = AbilityCooldowns::class) {
         val set = ownInventory(5 to riftwalker("helmet", 4), 6 to riftwalker("chestplate", 4), 7 to riftwalker("leggings", 4), 8 to riftwalker("boots", 4))
         post(*set)
         post(Hit("minecraft:enderman"))
-        // Past the charge and the two seconds its Ready stays on the list.
         pass(11_000)
         feature.feature.enabled = false
         pass(1)
-        // The container state follows the slots while the feature is off, and the feature sees none of it.
         post(SlotChanged(5, null), SlotChanged(6, null), SlotChanged(7, null), SlotChanged(8, null))
         feature.feature.enabled = true
         pass(1)

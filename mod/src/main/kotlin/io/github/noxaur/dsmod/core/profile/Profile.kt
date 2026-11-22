@@ -10,12 +10,6 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 
-/*
- * A player's profile as the backend's `profiles` routes answer it. The backend owns the contract in
- * `backend/src/profiles/model.ts`, and may add a field, so an unknown key is ignored.
- */
-
-/** A line of styled text, which the contract sends as a bare list of spans. */
 internal object LineSerializer : KSerializer<ServerText> {
     private val spans = ListSerializer(ServerSpan.serializer())
     override val descriptor = spans.descriptor
@@ -27,7 +21,6 @@ internal object LineSerializer : KSerializer<ServerText> {
 
 private typealias Line = @Serializable(with = LineSerializer::class) ServerText
 
-/** An item as the game would draw it in a slot, with the tooltip the backend rebuilt for it. */
 @Serializable
 data class DrawnItem(
     val entry: String? = null,
@@ -40,24 +33,18 @@ data class DrawnItem(
     val glint: Boolean = false,
     val skullTexture: String? = null,
     val color: Int? = null,
-    /** The data behind the tooltip, such as the reforge, stars and stat sheet, for a panel or a search of the mod's own. */
     val facts: JsonObject? = null,
-    /** The item's data as a real item of the game carries it in `custom_data`, for the stack, so other mods read it too. */
     val customData: JsonObject? = null,
 )
 
-/** Something the server names by an id, with the name the backend gives it. */
 @Serializable
 data class Named(val id: String, val name: String)
 
-/** One stat number, named and colored as the game shows the stat. */
 @Serializable
 data class StatValue(val id: String, val name: String, val color: String, val value: Double) {
-    /** [color] as an RGB number, or null when it is not one, which the screen draws muted. */
     val rgb get() = color.removePrefix("#").toIntOrNull(16)
 }
 
-/** The player's stats in the four groups the server keeps them in. */
 @Serializable
 data class StatSheet(
     val base: List<StatValue> = emptyList(),
@@ -66,10 +53,6 @@ data class StatSheet(
     val increaseMax: List<StatValue> = emptyList(),
 )
 
-/**
- * A skill or a slayer. [xpForNextLevel] is what the whole current level takes, and is null at the cap or when the
- * backend does not know the table.
- */
 @Serializable
 data class Progress(
     val id: String,
@@ -82,7 +65,6 @@ data class Progress(
 ) {
     val maxed get() = level >= maxLevel
 
-    /** How full the level's bar is: full at the cap, empty when the next level's size is unknown. */
     val fraction: Float
         get() {
             val next = xpForNextLevel
@@ -118,20 +100,14 @@ data class Equipment(
     val held: DrawnItem? = null,
 )
 
-/** One floor of the Catacombs, such as `F7` or `M3`: the runs finished, and the best score, null when none is known. */
 @Serializable
 data class Floor(val id: String, val name: String = id, val completions: Long, val bestScore: Long? = null) {
-    /** Master floors are listed apart from the rest, as the game lists them. */
     val master get() = id.startsWith("M")
 }
 
 @Serializable
 data class Amount(val id: String, val name: String, val amount: Double)
 
-/**
- * The player's Catacombs: the class they picked, the classes they played on the Catacombs table, each floor's runs,
- * and their essence. The Catacombs level itself is among the skills.
- */
 @Serializable
 data class Dungeons(
     val selectedClass: Named? = null,
@@ -144,10 +120,7 @@ data class Dungeons(
 ) {
     val completions get() = floors.sumOf { it.completions }
 
-    /**
-     * All five classes in the game's order, at level 0 for one never played, since the server sends only the ones
-     * with XP. A class the mod does not know comes after them.
-     */
+    // @keep The server sends only the classes with XP, so a class never played is at level 0.
     val allClasses: List<Progress>
         get() {
             val cap = classes.firstOrNull()?.maxLevel ?: CLASS_CAP
@@ -155,7 +128,6 @@ data class Dungeons(
             return known + classes.filter { c -> CLASSES.none { it.equals(c.id, true) } }
         }
 
-    /** Whether [progress] is the class the player picked. */
     fun picked(progress: Progress) = selectedClass?.id.equals(progress.id, ignoreCase = true)
 
     private companion object {
@@ -202,7 +174,6 @@ data class Pet(
     val item: DrawnItem,
 )
 
-/** One slot of the forge. Times are epoch milliseconds. */
 @Serializable
 data class ForgeSlot(
     val slot: Int,
@@ -213,20 +184,15 @@ data class ForgeSlot(
     val finishesAt: Long,
     val stage: String,
 ) {
-    /** How far along it is at [now], from 0 to 1. */
     fun done(now: Long) = if (durationMs <= 0) 1f else ((now - startedAt).toFloat() / durationMs).coerceIn(0f, 1f)
 }
 
 @Serializable
 data class Meter(val id: String, val name: String, val progress: Double)
 
-/** A grid the profile has, listed in the order its tabs go. [hidden] when the player hid their inventory. */
 @Serializable
 data class ContainerSummary(val id: String, val title: Line, val columns: Int, val slots: Int, val hidden: Boolean) {
-    /**
-     * The kind of grid, such as `storage` for `storage:3`, which one tab holds every page of. Items the backend could
-     * not place, `inventory:other`, are a last page of their kind's tab.
-     */
+    // @keep Items the backend could not place, `inventory:other`, are a last page of their kind's tab.
     val kind get() = id.removeSuffix(":other").substringBefore(':')
 }
 
@@ -248,7 +214,6 @@ data class Profile(
     val player: Player,
     val profiles: List<ProfileChoice> = emptyList(),
     val profileId: String,
-    /** This profile's name and mode from the profile itself, which `profiles` may not list. */
     val profileName: Line = ServerText(emptyList()),
     val profileMode: String = "NORMAL",
     val skills: List<Progress> = emptyList(),
@@ -268,13 +233,10 @@ data class Profile(
     val equipment: Equipment = Equipment(),
     val containers: List<ContainerSummary> = emptyList(),
 ) {
-    /** The profile this answer is, as the picker lists it. */
     val choice get() = profiles.firstOrNull { it.id == profileId } ?: ProfileChoice(profileId, profileName, profileMode, true)
 
-    /** The profiles to pick from, with this one among them even when `profiles` leaves it out. */
     val choices get() = if (profiles.any { it.id == profileId }) profiles else profiles + choice
 
-    /** Whether the player hid their inventory, which hides its containers and what they wear. Pets still show. */
     val hidden get() = containers.any { it.hidden }
 
     companion object {
@@ -284,12 +246,12 @@ data class Profile(
 
         fun parseContainer(body: String): Container = json.decodeFromString(Container.serializer(), body)
 
-        /** The names the backend takes: dragsim.co looks players up by their Minecraft name. */
+        // @keep dragsim.co looks players up by their Minecraft name.
         private val NAME = Regex("[A-Za-z0-9_]{1,16}")
 
         fun validName(name: String) = NAME.matches(name)
 
-        /** Whether `/pv [argument]` is the server's own `/pv <vault>`, which opens one of the player's vaults. */
+        // @keep `/pv <vault>` is the server's own command, which opens one of the player's vaults.
         fun vault(argument: String) = argument.length in 1..2 && argument.all { it in '0'..'9' }
     }
 }

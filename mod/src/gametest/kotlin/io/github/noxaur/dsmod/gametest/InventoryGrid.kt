@@ -20,32 +20,22 @@ import net.minecraft.world.item.component.DyedItemColor
 import net.minecraft.world.item.component.ItemLore
 import java.nio.file.Path
 
-/**
- * The world the Inventory HUD game tests share: an inventory of named items with lore as long as dragsim.co's, a
- * head with a skin, dyed leather, a stack of 13 and a Legendary sword, and the grid switched on over it.
- */
 object InventoryGrid {
     const val ID = "inventory-hud"
     const val DYE = 0x3366CC
 
-    /** The face of the inventory texture's panel. */
     const val VANILLA_PANEL = 0xC6C6C6
 
-    /** The items in the three rows and the hotbar. */
     const val FILLED = 34
 
     private val ITEMS = listOf(Items.DIAMOND_SWORD, Items.OBSIDIAN, Items.BOW, Items.GOLDEN_HOE, Items.NETHER_STAR)
 
-    /** Slots left empty: one in the top row, and one in the hotbar. */
     private val EMPTY = setOf(12, 4)
 
-    /** Fills the inventory, turns the grid on and runs [test] with it showing, then puts every setting back. */
     fun with(context: ClientGameTestContext, test: (TestSingleplayerContext) -> Unit) {
         val inventoryHud = DsModClient.feature<InventoryHud>()
         context.worldBuilder().create().use { world ->
-            // The player's inventory holds the hotbar in 0 to 8 and the three rows from 9.
             world.give((0 until 36).associateWith(::item))
-            // The poller reads long-lored items over a few ticks, so the test starts once every one has arrived.
             context.waitFor { DsModClient.game.container.slots.let { slots -> slots.size > 44 && slots.subList(9, 45).count { it != null } == FILLED } }
             inventoryHud.feature.enabled = true
             try {
@@ -66,10 +56,6 @@ object InventoryGrid {
         }
     }
 
-    /**
-     * The middle of the cell in [row] and [column], in GUI pixels, on the plate or in the inventory's 18px slots 7px
-     * into its panel, with [gaps] rows standing apart before it. In [columns] each row runs down.
-     */
     fun cell(context: ClientGameTestContext, row: Int, column: Int, inventory: Boolean = true, gaps: Int = 0, columns: Boolean = false): Pair<Double, Double> =
         context.placed(ID).let { block ->
             val inset = if (inventory) 7 + 1 else 0
@@ -89,12 +75,10 @@ object InventoryGrid {
     fun stackAt(context: ClientGameTestContext, point: Pair<Double, Double>) =
         context.computeOnClient<ItemStack?, Nothing> { Hud.itemAt(point.first, point.second) }
 
-    /** Waits until the grid draws the item named [name] at [point], as it does once a changed setting reaches the HUD. */
     fun waitForItem(context: ClientGameTestContext, name: String, point: () -> Pair<Double, Double>) {
         context.waitFor { Hud.find(ID) != null && point().let { p -> Hud.itemAt(p.first, p.second)?.hoverName?.string == name } }
     }
 
-    /** The HUD's average draw over half a second, in µs a frame. */
     fun drawMicros(context: ClientGameTestContext): Long {
         context.runOnClient<Nothing> { DsModClient.game.metrics.flush() }
         context.waitTicks(10)
@@ -103,24 +87,20 @@ object InventoryGrid {
         }
     }
 
-    /** The color in [shot] at [dx], [dy] GUI pixels from [point], without its alpha. */
     fun pixel(context: ClientGameTestContext, shot: Path, point: Pair<Double, Double>, dx: Int, dy: Int): Int {
         return context.guiPixel(shot, point.first + dx, point.second + dy)
     }
 
-    /** The color of the grid's panel in [shot], a few pixels in from its corner, between the edge and the first slot. */
     fun panelColor(context: ClientGameTestContext, shot: Path): Int {
         val block = context.placed(ID)
         return context.guiPixel(shot, block.x + (4 + 5) * block.scale, block.y + (4 + 5) * block.scale)
     }
 
-    /** The item for inventory [index], named after it and with lore as long as dragsim.co's, or none in a few slots. */
     fun item(index: Int): ItemStack {
         if (index in EMPTY) return ItemStack.EMPTY
         val stack = when (index) {
             9 -> ItemStack(Items.PLAYER_HEAD).also { it.set(DataComponents.PROFILE, HeadSkin.profile()) }
             10 -> ItemStack(Items.LEATHER_CHESTPLATE).also { it.set(DataComponents.DYED_COLOR, DyedItemColor(DYE)) }
-            // A diamond sword as dragsim.co marks a Legendary one, beside the plain ones at 20 and 25.
             15 -> ItemStack(Items.DIAMOND_SWORD).also {
                 it.set(DataComponents.CUSTOM_DATA, CustomData.of(CompoundTag().apply { put("item_data", CompoundTag().apply { putString("rarity", "LEGENDARY") }) }))
             }

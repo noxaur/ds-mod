@@ -8,12 +8,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import org.lwjgl.glfw.GLFW
 
-/**
- * The signals no capture holds yet, sent by a real server: the Tuba's `HOWL!` in chat, the action bar's mana part, and
- * the player's own hit while wearing Riftwalker, which the edge posts from the attack. Read the screenshots: the list
- * with three timers, the wash over the sword and the Tuba on the hotbar with their seconds, and in the inventory the
- * wash over the four armor pieces as well. Covers [io.github.noxaur.dsmod.edge.Hits].
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.Hits]. */
 class AbilityCooldownsTest : FabricClientGameTest {
     private fun readout(context: ClientGameTestContext) = context.computeOnClient<Pair<HudBlock?, Map<Int, SlotMark>>, Nothing> {
         val readout = DsModClient.game.readouts.single { it.feature.id == "ability-cooldowns" }
@@ -34,7 +29,6 @@ class AbilityCooldownsTest : FabricClientGameTest {
                         """lore=["Tiered Bonus: Between Worlds (4/4)","(4) Every 8s your next hit blinks you"]]""",
                 )
             }
-            // A mob just ahead of the crosshair, for the player's hit to land on.
             world.server.runCommand("execute as @a at @s anchored eyes positioned ^ ^ ^2 run summon husk ~ ~-1 ~ {NoAI:1b,Silent:1b}")
             context.waitTicks(20)
 
@@ -45,7 +39,6 @@ class AbilityCooldownsTest : FabricClientGameTest {
 
             val shown = rows(context)
             check(shown.map { it.substringBefore(':') } == listOf("Giant's Slam", "Between Worlds", "Howl")) { "The list shows $shown" }
-            // The sword and the Tuba sit in the first two hotbar slots, and the worn set in the armor slots.
             val marked = readout(context).second
             check(marked.keys == setOf(5, 6, 7, 8, 36, 37) && marked.values.all { it.cooldown != null }) { "Marked $marked" }
             context.takeScreenshot("ability-cooldowns")

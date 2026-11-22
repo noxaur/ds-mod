@@ -7,11 +7,6 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.world.BoxStyle
 
-/**
- * Boxes the block an Etherwarp would land on. The box follows the crosshair, so it is found and drawn on each frame
- * by `Etherwarps` in the edge, from the rules in `core/hand/Etherwarp`. This class declares its settings and puts it
- * in the settings, the docs check and the tests.
- */
 class EtherwarpOutline(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "etherwarp-outline", Area.ANYWHERE, Store.GENERAL, "Box the block Etherwarp will take you to while you sneak.")
 

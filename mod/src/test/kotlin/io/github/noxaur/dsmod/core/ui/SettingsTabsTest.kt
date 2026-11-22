@@ -10,7 +10,6 @@ class SettingsTabsTest {
 
     private fun tabsOf(vararg opened: Int) = SettingsTabs(Place(0)).also { tabs -> opened.forEach { tabs.open(Place(it)) } }
 
-    /** Each tab's title, with the selected one in brackets. */
     private fun SettingsTabs.titles() = tabs.mapIndexed { i, tab -> tab.title(names).let { if (i == selected) "[$it]" else it } }.joinToString(" ")
 
     @Test

@@ -9,7 +9,6 @@ import type { UpstreamItem } from "./upstream.ts";
 
 const GRAY = "#AAAAAA";
 
-/** An id and the catalog item's name for it, or the id in title case. */
 export const named = (catalog: Catalog, id: string): Named => ({
   id,
   name: catalog.items.get(id)?.name ?? titleCase(id),
@@ -34,7 +33,6 @@ export const statValues = (catalog: Catalog, stats: Readonly<Record<string, numb
     });
 };
 
-/** The four groups of a player's or an item's stats, each named and colored from the catalog. */
 export const statSheet = (catalog: Catalog, set: StatSet): StatSheet => ({
   base: statValues(catalog, set.base),
   additive: statValues(catalog, set.additive),
@@ -47,7 +45,6 @@ const empty = (set: StatSet): boolean =>
 
 const Part = lenient(Schema.String);
 
-/** A part's id, such as the drill's engine, with its name. */
 const part = (catalog: Catalog, raw: unknown): Named | undefined => {
   const id = Part(raw);
   return id === undefined || id === "" ? undefined : named(catalog, id);
@@ -72,10 +69,6 @@ const readDrill = (catalog: Catalog, raw: unknown): NonNullable<ItemFacts["drill
   return Object.keys(found).length === 0 ? undefined : found;
 };
 
-/**
- * What the item's data says, as the tooltip's numbers come from it. Everything is read from what `readItem` and the
- * catalog already have, and a key is left out when the item has none of it.
- */
 export const factsOf = (catalog: Catalog, item: UpstreamItem): ItemFacts | undefined => {
   const abilities = item.abilities.map((key): Named => {
     const ability =

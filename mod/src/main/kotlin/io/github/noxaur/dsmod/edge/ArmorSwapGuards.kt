@@ -5,17 +5,13 @@ import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.core.component.DataComponents
 import net.minecraft.world.InteractionResult
 
-/**
- * Armor Swap Guard. A right click on a block and the use of the held item reach the server as two messages, and
- * only the second swaps armor, so only that one is dropped: a click on the altar still places the eye. Sneaking
- * lets it through, because some armor has an ability on sneak and right click.
- */
+/** @keep A right click on a block and the use of the held item reach the server as two messages, and only the second swaps armor. */
 object ArmorSwapGuards {
     fun register() {
         UseItemCallback.EVENT.register { player, level, hand ->
             val swaps = level.isClientSide && DsModClient.runs<ArmorSwapGuard>() && !player.isShiftKeyDown &&
                 player.getItemInHand(hand).get(DataComponents.EQUIPPABLE)?.swappable == true
-            // Fabric sends nothing to the server for a failed use.
+            // @keep Fabric sends nothing to the server for a failed use.
             if (swaps) InteractionResult.FAIL else InteractionResult.PASS
         }
     }

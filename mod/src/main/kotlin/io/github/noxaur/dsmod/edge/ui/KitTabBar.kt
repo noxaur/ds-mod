@@ -17,13 +17,6 @@ import net.minecraft.util.FormattedCharSequence
 import org.joml.Vector2i
 import kotlin.math.abs
 
-/**
- * Browser tabs across the top of a pane, as the tab bar section of `controls.md` says: one per tab of [tabs], each
- * with its section's color from [colors] or the search icon and its title from [names], then the New Tab button, and
- * `[ ds-mod ]` at the right end. [tabs] and [TabStrip] hold the rules, and the screen makes each change through the
- * callbacks: a press selects a tab, a press on its × or a middle press closes it, a press on the plus opens a new
- * one, and a sideways drag moves it. Call [layout] after the tabs change.
- */
 class KitTabBar(
     x: Int,
     y: Int,
@@ -35,22 +28,18 @@ class KitTabBar(
     private val onClose: (Int) -> Unit,
     private val onNew: () -> Unit,
     private val onMove: (Int, Int) -> Unit,
-    /** An icon in place of a section's swatch, such as Favorites' star, by section. */
     private val icons: List<Icon?> = emptyList(),
 ) : AbstractWidget(x, y, width, Kit.TAB_BAR_HEIGHT, text { body("Tabs") }.toComponent()) {
     private val strip = TabStrip()
     private val brandWidth = Kit.font.width(BRAND)
     private var labels = emptyArray<String>()
 
-    /** Each tab's whole title as a tooltip, where its label was cut short. */
     private var cut = emptyArray<List<FormattedCharSequence>?>()
 
-    // A tooltip above the mouse would leave the window here, so the bar's open below it, at the mouse.
     private val below = ClientTooltipPositioner { screenWidth, _, mouseX, _, tipWidth, _ ->
         Vector2i((mouseX + TIP_X).coerceAtMost(screenWidth - tipWidth - TIP_X), y + height + TIP_Y)
     }
 
-    /** A tab held down, [grab] pixels from its left edge. It is [Moving] once the mouse has moved a few pixels. */
     private sealed interface Held {
         val tab: Int
         val grab: Int
@@ -58,12 +47,10 @@ class KitTabBar(
 
     private data class Pressed(override val tab: Int, override val grab: Int, val pressX: Double) : Held
 
-    /** A tab dragged to [tab] from [origin], with the mouse at [x] in the strip. */
     private data class Moving(override val tab: Int, override val grab: Int, val origin: Int, val x: Int) : Held
 
     private var held: Held? = null
 
-    /** What is under the mouse, kept from the last frame for narration: a tab, its ×, or the New Tab button. */
     private var overTab = -1
     private var overClose = false
     private var overNewTab = false
@@ -76,12 +63,10 @@ class KitTabBar(
     fun layout() {
         strip.layout(tabs.size, brandX - BRAND_GAP - stripX, tabs.selected)
         val close = tabs.canClose
-        // Too narrow for a letter, a tab shows its icon alone, as a browser's does, rather than a lone ellipsis.
         labels = Array(tabs.size) { i -> fit(tabs.tabs[i].title(names), Kit.pageTabLabel(strip.width, lead(i), close)).takeUnless { it == "..." && lead(i) } ?: "" }
         cut = Array(tabs.size) { i -> tabs.tabs[i].title(names).let { if (it == labels[i]) null else listOf(text { body(it) }.toComponent().visualOrderText) } }
     }
 
-    /** Puts a dragged tab back where the drag started. Returns whether a drag was on. */
     fun cancelDrag(): Boolean {
         val moving = held as? Moving ?: return false
         if (moving.tab != moving.origin) onMove(moving.tab, moving.origin)
@@ -104,7 +89,6 @@ class KitTabBar(
     override fun isValidClickButton(button: MouseButtonInfo) = button.button() == 0 || button.button() == MIDDLE
 
     override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
-        // A middle click while a tab is held would close a tab under it and leave the held index on another tab.
         if (event.button() != 0 && held != null) return
         if (onNew(event.x)) {
             if (event.button() == 0) onNew()
@@ -177,7 +161,6 @@ class KitTabBar(
         Kit.pageTab(graphics, tabX, lineY, strip.width, state, selected, labels[i], swatch, icon, close)
     }
 
-    /** The tab, × or plus under the mouse, or else the selected tab. */
     override fun updateWidgetNarration(output: NarrationElementOutput) {
         val tab = overTab.takeIf { isHovered && it in tabs.tabs.indices }
         val said = when {
@@ -189,7 +172,6 @@ class KitTabBar(
     }
 
     private companion object {
-        // The tabs start as far in from the bar's left as the brand ends from its right.
         const val START = Kit.GAP
         const val END = Kit.GAP
         const val BRAND_GAP = 8

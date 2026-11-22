@@ -22,10 +22,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.TitleScreen
 import org.lwjgl.glfw.GLFW
 
-/**
- * Drives every kind of row of ds-mod's own settings screen against the config, as [rows] says. `OwnSettingsTest`
- * covers the screen around the rows, and `SettingsNarrationTest` what the narrator says of them.
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.Keys], [io.github.noxaur.dsmod.edge.mixin.PerspectiveKeyMixin]. */
 class SettingRowsTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = setUp(context)
@@ -34,18 +31,12 @@ class SettingRowsTest : FabricClientGameTest {
         restore(context, window)
     }
 
-    /**
-     * Drives each kind of row against the config: a press, a drag and the wheel on a number, its field, the keyboard,
-     * the changed marker, a choice's menu and steps, a pick's menu of looks, keys, a group's switch, a fold, a span,
-     * and a search that finds an option inside a choice. Then a change survives closing and reopening the screen.
-     */
     private fun SettingsDriver.rows() {
         fun <T> expect(what: String, want: T, read: () -> T) {
             val got = context.computeOnClient<T, Nothing> { read() }
             check(got == want) { "$what: $got, not $want" }
         }
 
-        // Camera: numbers, a signed one, a choice, keys and two heading switches.
         context.runOnClient<Nothing> { DsModClient.feature<Camera>().tilt.value = -12f }
         val cameraTabs = SettingsTabs(at("Camera"))
         open(context, cameraTabs)
@@ -53,7 +44,6 @@ class SettingRowsTest : FabricClientGameTest {
         context.shotInBothThemes("own-settings-camera")
 
         var d = spot("cameraDistance")
-        // The track runs 70 pixels inside its edge, from 1 to 50.
         click(d.controlX + 1 + 35, d.controlY + 6)
         expect("A press halfway along the track", 25.5f) { DsModClient.feature<Camera>().distance.value }
         move(d.controlX + 2, d.controlY + 6)
@@ -83,7 +73,6 @@ class SettingRowsTest : FabricClientGameTest {
         context.input.typeChars("x")
         key(GLFW.GLFW_KEY_ENTER)
         expect("Enter on what is not a number keeps the value", 12f) { DsModClient.feature<Camera>().distance.value }
-        // The keyboard: the press above gave the rows the keys, and Right and Left step.
         key(GLFW.GLFW_KEY_RIGHT)
         expect("Right steps", 12.5f) { DsModClient.feature<Camera>().distance.value }
         key(GLFW.GLFW_KEY_LEFT, shift = true)
@@ -105,7 +94,6 @@ class SettingRowsTest : FabricClientGameTest {
         key(GLFW.GLFW_KEY_ENTER)
         expect("A digit typed on a number opens its field with it", -30f) { DsModClient.feature<Camera>().tilt.value }
 
-        // A choice: a right press steps, the wheel steps, and a press opens its menu.
         val views = spot("cameraViews")
         val viewsAt = { context.computeOnClient<Int, Nothing> { DsModClient.feature<Camera>().views.value.ordinal } }
         val first = viewsAt()
@@ -120,7 +108,6 @@ class SettingRowsTest : FabricClientGameTest {
         key(GLFW.GLFW_KEY_DOWN)
         key(GLFW.GLFW_KEY_ENTER)
         check(viewsAt() == first + 1) { "Down and Enter in the menu did not pick the next view" }
-        // Typing in the open menu lights the next value that starts with the letter, and starts no search.
         click(views.controlX + 8, views.controlY + 8)
         context.input.typeChars("s")
         context.waitTicks(2)
@@ -130,12 +117,10 @@ class SettingRowsTest : FabricClientGameTest {
         check(viewsAt() == 2) { "S and Enter in the menu did not pick Skip Back" }
         check(searched().isEmpty()) { "Typing in the open menu searched for \"${searched()}\"" }
 
-        // Keys: a press records the next key, a right press clears, Backspace resets.
         var k = spot("freeLookKey")
         click(k.controlX + 8, k.controlY + 8)
         context.takeScreenshot("own-settings-keys-recording")
         key(GLFW.GLFW_KEY_K)
-        // A real K also types its character after the key, which must not start a search.
         context.input.typeChars("k")
         context.waitTicks(2)
         expect("A press then K", GLFW.GLFW_KEY_K) { DsModClient.feature<FreeLook>().key.value }
@@ -145,7 +130,6 @@ class SettingRowsTest : FabricClientGameTest {
         key(GLFW.GLFW_KEY_BACKSPACE)
         expect("Backspace resets", GLFW.GLFW_KEY_LEFT_ALT) { DsModClient.feature<FreeLook>().key.value }
 
-        // A group's heading switch turns the group off, and its rows dim and stay editable.
         val camera = spot("camera")
         click(camera.controlX + 11, camera.controlY + 6)
         expect("The heading switch", false) { DsModClient.feature<Camera>().feature.enabled }
@@ -163,7 +147,6 @@ class SettingRowsTest : FabricClientGameTest {
         key(GLFW.GLFW_KEY_RIGHT)
         key(GLFW.GLFW_KEY_ENTER)
         expect("Right and Enter in the pick's menu", MarkStyle.AURA) { DsModClient.feature<ItemRarity>().inventoryStyle.value.mark }
-        // Typing lights a tile by its name, and Escape leaves the style as it was.
         click(style.controlX + 8, style.controlY + 8)
         context.input.typeChars("u")
         context.waitTicks(2)
@@ -176,7 +159,6 @@ class SettingRowsTest : FabricClientGameTest {
         expect("A press anywhere on a switch's row", true) { DsModClient.feature<ItemRarity>().inventoryStyle.value.sparkles }
         expect("A row of the look keeps the rest of it", MarkStyle.AURA) { DsModClient.feature<ItemRarity>().inventoryStyle.value.mark }
         context.shotInBothThemes("own-settings-rarity-look")
-        // A switch's own settings open under it from its button, and close to a summary.
         toggle("slot-lock")
         check(shows("slotLockKey")) { "Slot Lock's button did not open its settings" }
         spot("itemLockKey")
@@ -184,7 +166,6 @@ class SettingRowsTest : FabricClientGameTest {
         toggle("slot-lock")
         check(!shows("slotLockKey")) { "Slot Lock's button did not close its settings" }
 
-        // The End: a span under Protector Spawn Beam, drawn by a press and drag on its empty track.
         open(context, SettingsTabs(at("The End")))
         toggle("protector-spawn-beam")
         val span = spot("beamSections")
@@ -201,14 +182,12 @@ class SettingRowsTest : FabricClientGameTest {
         check(sections == 2) { "A drag on the span's empty track did not draw a second stretch: $sections" }
         context.shotInBothThemes("own-settings-span")
 
-        // A search finds an option inside a choice, and opens the switch that holds it.
         open(context, SettingsTabs(at("General")))
         context.input.typeChars("rngesus")
         context.waitTicks(2)
         check(shows("lootAlertTier")) { "The search for a choice's value shows no Alert Tier" }
         context.takeScreenshot("own-settings-search-option")
 
-        // A link to a row opens the settings there, over the screen shown now, and Escape goes back to it.
         context.setScreen { TitleScreen() }
         context.runOnClient<Nothing> { DsModClient.openSettings("binds") }
         context.waitTicks(2)
@@ -217,7 +196,6 @@ class SettingRowsTest : FabricClientGameTest {
         context.checkClient("Escape from the settings did not go back to the title screen") { it.gui.screen() is TitleScreen }
         context.setScreen { null }
 
-        // An action opens its screen, which returns to the settings.
         open(context, SettingsTabs(at("Contribute")))
         val requests = spot("requests")
         click(requests.controlX + 4, requests.controlY + 8)
@@ -225,17 +203,14 @@ class SettingRowsTest : FabricClientGameTest {
         key(GLFW.GLFW_KEY_ESCAPE)
         context.checkClient("The Contribute screen did not return to the settings") { it.gui.screen() is SettingsScreen }
 
-        // A change is written when the screen closes, and is there when it opens again.
         open(context, SettingsTabs(at("General")))
         val bright = spot("fullbright")
         click(bright.x + 20, bright.y + bright.height / 2)
         expect("A press on a switch's row", true) { DsModClient.feature<Fullbright>().feature.enabled }
-        // The press gave the rows the keys: Space and Enter press the row the keyboard is on.
         key(GLFW.GLFW_KEY_SPACE)
         expect("Space on a switch", false) { DsModClient.feature<Fullbright>().feature.enabled }
         key(GLFW.GLFW_KEY_ENTER)
         expect("Enter on a switch", true) { DsModClient.feature<Fullbright>().feature.enabled }
-        // The press gave the rows the keys, so the first Escape takes them back and the second closes.
         context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
         context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
         context.waitTicks(2)
@@ -246,7 +221,6 @@ class SettingRowsTest : FabricClientGameTest {
         context.takeScreenshot("own-settings-reopened")
         check(DsModClient.feature<Fullbright>().feature.enabled) { "Fullbright is off after reopening" }
 
-        // The rows put back what they changed, for the tests after this one.
         context.runOnClient<Nothing> {
             for (setting in SettingsTree(DsModClient.settings).sections.flatMap { it.walk() }) setting.reset()
             DsModClient.feature<ProtectorSpawnBeam>().sections.reset()

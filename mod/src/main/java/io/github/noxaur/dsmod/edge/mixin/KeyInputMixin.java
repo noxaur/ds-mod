@@ -9,7 +9,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Command Binds: every press, repeat and release of a key, with a screen open or not, before the game acts on it. */
 @Mixin(KeyboardHandler.class)
 abstract class KeyInputMixin {
     @Inject(method = "keyPress", at = @At("HEAD"))

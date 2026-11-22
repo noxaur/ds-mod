@@ -11,11 +11,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Player Model: the spin's facing, handed to the game's own turn as the model is drawn, after a screen such as the
- * inventory has set a facing of its own, then the size and tilt, after the game's own turns and before its scale and
- * the model's offset.
- */
+/** @keep The spin's facing is handed to the game's own turn after a screen such as the inventory has set a facing of its own.
+ * The size and tilt come after the game's own turns and before its scale and the model's offset. */
 @Mixin(AvatarRenderer.class)
 abstract class PlayerShapeMixin {
     @ModifyArg(

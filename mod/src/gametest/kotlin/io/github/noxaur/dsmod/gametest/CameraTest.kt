@@ -9,12 +9,8 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.CameraType
 import kotlin.math.abs
 
-/**
- * Sets each Camera setting and measures where the game's own camera ends up: how far from the player, how high,
- * at what angle, and which views F5 lands on. Read the screenshots for the far, raised and tilted views.
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.PerspectiveKeyMixin]. */
 class CameraTest : FabricClientGameTest {
-    /** Where the camera is against the player's eyes. */
     private class Shot(val distance: Double, val rise: Double, val pitch: Float, val head: Float)
 
     override fun runTest(context: ClientGameTestContext) {
@@ -59,7 +55,6 @@ class CameraTest : FabricClientGameTest {
                 near(shot().rise, 2.0, "The rise set to 2")
                 context.takeScreenshot("camera-height")
 
-                // A block three above the feet: the camera stops under it instead of starting inside it.
                 camera.height.value = 3f
                 world.server.runCommand("execute at @a run setblock ~ ~3 ~ stone")
                 context.waitTicks(10)

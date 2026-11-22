@@ -15,12 +15,10 @@ fun ClientGameTestContext.openChat() {
     waitForScreen(ChatScreen::class.java)
 }
 
-/** The real mouse and keyboard on the open chat, in GUI pixels, for the tests that drag HUD blocks from it. */
 class InChat(private val context: ClientGameTestContext) {
     val width = context.computeOnClient<Int, Nothing> { it.window.guiScaledWidth }
     val height = context.computeOnClient<Int, Nothing> { it.window.guiScaledHeight }
 
-    /** Opens an empty chat over a cleared chat history. */
     fun open() {
         context.runOnClient<Nothing> { client ->
             client.gui.hud.chat.clearMessages(false)
@@ -52,7 +50,6 @@ class InChat(private val context: ClientGameTestContext) {
         context.waitTick()
     }
 
-    /** Presses on [id] 5 in from its corner, drags the mouse until the corner would be at [x], [y], runs [during] and lets go. */
     fun drag(id: String, x: Number, y: Number, during: () -> Unit = {}) {
         val toX = x.toDouble()
         val toY = y.toDouble()

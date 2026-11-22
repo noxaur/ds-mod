@@ -18,19 +18,11 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 
-/**
- * Opens chest menus the way dragsim.co builds them: blank-named black panes around the items, and Go Back and Close in
- * the middle of the bottom row. The server closes the open menu before it opens the next, as dragsim.co's does.
- */
 object ServerMenus {
     private val TYPES = listOf(MenuType.GENERIC_9x1, MenuType.GENERIC_9x2, MenuType.GENERIC_9x3, MenuType.GENERIC_9x4, MenuType.GENERIC_9x5, MenuType.GENERIC_9x6)
 
     fun named(item: Item, name: String): ItemStack = ItemStack(item).also { it.set(DataComponents.CUSTOM_NAME, Component.literal(name)) }
 
-    /**
-     * A menu [rows] tall titled [title], filled with blank panes, with Go Back unless [goBack] is false and Close beside
-     * it. [fill] puts the items in. Build it on the server thread.
-     */
     fun menu(rows: Int, title: String, goBack: Boolean = true, fill: (SimpleContainer) -> Unit = {}): SimpleMenuProvider {
         val chest = SimpleContainer(rows * 9)
         for (i in 0 until rows * 9) chest.setItem(i, named(Items.STAINED_GLASS_PANE.black(), ""))
@@ -40,7 +32,6 @@ object ServerMenus {
         return SimpleMenuProvider({ id, inventory, _ -> ChestMenu(TYPES[rows - 1], id, inventory, chest, rows) }, Component.literal(title))
     }
 
-    /** Opens a menu [rows] tall titled [title], as [menu] builds it, and waits until the client shows it. */
     fun open(context: ClientGameTestContext, world: TestSingleplayerContext, rows: Int, title: String, goBack: Boolean = true, fill: (SimpleContainer) -> Unit = {}) {
         world.server.runOnServer<Nothing> { server -> server.player.openMenu(menu(rows, title, goBack, fill)) }
         shows(context, title)
@@ -53,7 +44,6 @@ object ServerMenus {
 
     fun title(client: Minecraft) = (client.gui.screen() as? AbstractContainerScreen<*>)?.title?.string
 
-    /** Waits until the client shows the menu titled [title], and its slots have arrived. */
     fun shows(context: ClientGameTestContext, title: String) {
         context.waitFor { title(it) == title }
         context.waitTicks(5)

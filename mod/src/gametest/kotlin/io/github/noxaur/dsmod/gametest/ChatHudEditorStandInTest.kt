@@ -9,11 +9,6 @@ import kotlin.math.abs
 
 private const val EQUIPMENT = "equipment-display"
 
-/**
- * Away from The End the Dragon Timer has nothing to show, so with the chat open it stands in as its outlined title,
- * and drags to a place it keeps. A feature that is off stands in for nothing, and closing the chat takes the stand-ins
- * away. Read the screenshot for the outlines.
- */
 class ChatHudEditorStandInTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.inWorldWithoutTimerPlace { world ->
@@ -37,7 +32,6 @@ class ChatHudEditorStandInTest : FabricClientGameTest {
             check(context.computeOnClient<Boolean, Nothing> { Hud.find(DRAGON_TIMER) == null }) { "The stand-in stayed after the chat closed" }
             forgetHudPlace(DRAGON_TIMER)
 
-            // A live block that runs out of things to show with the chat open moves behind the live ones, as a stand-in.
             world.server.runCommand("item replace entity @a armor.chest with minecraft:iron_chestplate")
             context.showDragonTimer(world)
             context.waitFor { Hud.find(DRAGON_TIMER) != null && Hud.find(EQUIPMENT) != null }

@@ -14,20 +14,13 @@ import io.github.noxaur.dsmod.core.world.Mark
 import io.github.noxaur.dsmod.core.world.Point
 import io.github.noxaur.dsmod.core.world.Waypoint
 
-/**
- * A beam where the Endstone Protector will emerge. The server marks the spot with a head: it appears the moment
- * the last Protector falls, climbs one block with each tier the next one rises, and gives way to the Protector
- * itself. So the newest head is the spot, from one fight's end through the next. The beam stays on the lowest
- * block the head was seen on, while the head climbs.
- *
- * The player picks when the beam shows, as [sections] of the cycle's 200 zealot kills and [inFight] for the fight.
- * The tab list's `Protector` row says how far the cycle is. Without that row the beam shows, because a beam the
- * player did not ask for is a smaller fault than a missing one.
- */
+/** @keep The server marks the spot with a head: it appears the moment the last Protector falls, climbs one block with
+ * each tier the next one rises, and gives way to the Protector itself, so the newest head is the spot. The
+ * beam stays on the lowest block the head was seen on. Without the tab list's `Protector` row the beam shows,
+ * because a beam the player did not ask for is a smaller fault than a missing one */
 class ProtectorSpawnBeam(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "protector-spawn-beam", Area.END, Store.END, "Show a beam where the Endstone Protector will emerge.", formerly = listOf("bossBeacon"), marks = ::marks)
 
-    /** The parts of the Protector's cycle that show the beam, in zealots killed since the last defeat, out of 200. */
     val sections = feature.span("beamSections", "Beam Timing", "Pick when the beam shows, in zealots killed out of 200.", listOf(Section(175, 200)), max = 200, ticks = listOf(50, 100, 150))
     val inFight = feature.switch("beamInFight", "During the Fight", "Keep the beam while the Protector is up.", default = false)
     private var beam by feature.world { emptyList<Mark>() }

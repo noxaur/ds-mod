@@ -16,17 +16,15 @@ import { ProfileStore } from "./store.ts";
 import { Sections } from "./wire.ts";
 import type { WireProfile } from "./wire.ts";
 
-/** How long a client may keep asking for containers of one profile before it must fetch the profile again. */
 export const SNAPSHOT_SECONDS = 10 * 60;
 const TOP_KILLS = 10;
 
-/** What a snapshot keeps of a profile: its containers, or only their pages when the player hid them. */
 const Snapshot = Schema.Struct({ hidden: Schema.Boolean, sections: Sections });
 const decodeSnapshot = Schema.decodeUnknownOption(Snapshot);
 
 const snapshotKey = (id: string) => `snapshot:${id}`;
 
-// A snapshot id comes from the client and is a KV key, so only the shape this backend makes reaches the store.
+// @keep A snapshot id comes from the client and is a KV key, so only the shape this backend makes reaches the store.
 const isSnapshotId = Schema.is(ProfileId);
 
 const sectionsOf = (profile: WireProfile): Sections => ({
@@ -38,7 +36,6 @@ const sectionsOf = (profile: WireProfile): Sections => ({
   pets: profile.pets,
 });
 
-/** Draws the items of one answer, which may hold nulls where a slot is empty. */
 const draw = Effect.fn(function* (items: readonly unknown[], inventory: Sections["inventory"]) {
   const present = items.filter((item) => item !== null && item !== undefined);
   const worn = equipmentCells(inventory);
@@ -51,7 +48,7 @@ const draw = Effect.fn(function* (items: readonly unknown[], inventory: Sections
   return items.map((item) => (item === null || item === undefined ? null : renderer.render(item)));
 });
 
-/** The player hides their items, and a pet is not one: the pets stay as the profile lists them. */
+// @keep The player hides their items, and a pet is not one: the pets stay as the profile lists them.
 const summaryOf = (layout: Layout, hiddenItems: boolean) => {
   const hidden = hiddenItems && layout.id !== PETS_ID;
   return { id: layout.id, title: layout.title, columns: layout.columns, slots: hidden ? 0 : layout.slots, hidden };
@@ -88,10 +85,6 @@ const statsOf = (profile: WireProfile) => [
   ...stat("draconic_experience", "Draconic Experience", DRACONIC_EXPERIENCE, number(profile.draconic_experience)),
 ];
 
-/**
- * A player's profile for the overview. The answer comes from the backend's copy of dragsim.co's while it is fresh,
- * and a snapshot of the containers is kept for the client's next requests.
- */
 export const profile = Effect.fn(function* (name: string, profileId: string | undefined) {
   const { fetchedAt, stale, found } = yield* lookup(name, profileId);
   const { progression, raw } = yield* catalog;
@@ -103,7 +96,7 @@ export const profile = Effect.fn(function* (name: string, profileId: string | un
   const sections = sectionsOf(current);
 
   const id = yield* newId;
-  // A snapshot's key is new each time, so a refusal is the store failing, which no client can fix.
+  // @keep A snapshot's key is new each time, so a refusal is the store failing, which no client can fix.
   yield* Effect.orDie((yield* ProfileStore).put(snapshotKey(id), { hidden, sections }, SNAPSHOT_SECONDS));
 
   const worn = equipmentCells(current.inventory);
@@ -152,11 +145,9 @@ export const profile = Effect.fn(function* (name: string, profileId: string | un
   };
 });
 
-/** One container of the profile a snapshot was taken of. */
 export const container = Effect.fn(function* (snapshot: string, containerId: string) {
   const stored = isSnapshotId(snapshot) ? yield* (yield* ProfileStore).get(snapshotKey(snapshot)) : null;
   const kept = decodeSnapshot(stored);
-  // A snapshot of a shape this backend no longer writes is as good as gone: the client fetches the profile again.
   if (Option.isNone(kept)) {
     return yield* new SnapshotExpired();
   }

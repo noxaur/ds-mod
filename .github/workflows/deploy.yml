@@ -1,7 +1,6 @@
 name: deploy
 
-# The backend goes live once ci has passed on a commit to main. A separate workflow, because ci cancels a run
-# when a newer push arrives, and a deploy cut off mid-migration would leave D1 half-applied.
+# @keep A separate workflow from ci, which cancels a run when a newer push arrives, and a deploy cut off mid-migration would leave D1 half-applied.
 on:
   workflow_run:
     workflows: [ci]
@@ -12,8 +11,7 @@ permissions:
   contents: read
   actions: read
 
-# One deploy at a time, never one cut off by the next, and none dropped from the queue. By default a newly
-# queued run cancels the one already waiting, so a stale rerun could push out the deploy of main's tip.
+# @keep By default a newly queued run cancels the one already waiting, so a stale rerun could push out the deploy of main's tip.
 concurrency:
   group: deploy-backend
   cancel-in-progress: false
@@ -28,7 +26,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
-      - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
+      - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # @keep v5.2.9
         with:
           install_args: node pnpm
       - id: store
@@ -43,13 +41,13 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
-          # A rerun of ci on an older commit must not deploy it over a newer one, whose migrations stay applied.
+          # @keep A rerun of ci on an older commit must not deploy it over a newer one, whose migrations stay applied.
           if [ "$(git ls-remote origin refs/heads/main | cut -f1)" != "$HEAD_SHA" ]; then
             echo "deploy: skipped, $HEAD_SHA is no longer the tip of main." >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           pnpm install --frozen-lockfile
-          # The saved target lives in the git-ignored .void/, so a fresh checkout must name it.
+          # @keep The saved target lives in the git-ignored .void/, so a fresh checkout must name it.
           pnpm exec void deploy --platform cloudflare
       - run: test "$(curl -sS -o /dev/null -w '%{http_code}' https://api.ds-mod.perwko.com/healthz)" = 204
       - uses: ./.github/actions/time-limit

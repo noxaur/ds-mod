@@ -16,11 +16,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Fixed Menu Layout places a chest menu by its bottom edge, Hide Glass Panes leaves a hidden slot looking empty, and Menu Theme
- * draws the server's buttons with the kit. A click on any of these slots still reaches the server, because only the
- * drawing changes.
- */
 @Mixin(AbstractContainerScreen.class)
 abstract class ContainerScreenMixin {
     @Shadow
@@ -33,7 +28,7 @@ abstract class ContainerScreenMixin {
     @Shadow
     protected Slot hoveredSlot;
 
-    // A subclass adds its widgets after this, so they follow the new top.
+    // @keep A subclass adds its widgets after this, so they follow the new top.
     @Inject(method = "init", at = @At("TAIL"))
     private void dsmod$stable(CallbackInfo ci) {
         if ((Object) this instanceof ContainerScreen && MenuSkin.INSTANCE.getStable()) {
@@ -55,7 +50,6 @@ abstract class ContainerScreenMixin {
         }
     }
 
-    // A button lights up itself, and keeps the server's tooltip.
     @Inject(method = {"extractSlotHighlightBack", "extractSlotHighlightFront"}, at = @At("HEAD"), cancellable = true)
     private void dsmod$buttonHover(CallbackInfo ci) {
         if (hoveredSlot != null && MenuSkin.INSTANCE.button((AbstractContainerScreen<?>) (Object) this, hoveredSlot.index) != null) ci.cancel();

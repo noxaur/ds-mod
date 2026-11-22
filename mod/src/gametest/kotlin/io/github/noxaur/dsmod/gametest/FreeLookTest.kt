@@ -9,11 +9,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.CameraType
 import org.lwjgl.glfw.GLFW
 
-/**
- * Works Free Look with the real key and mouse. The mouse turns the player until the key is down, then turns only
- * the camera, and the release puts back the view and leaves the player facing where they were. Toggle mode, an
- * open screen, F5 during the look and the switch are each driven too. Read the screenshot for the view from the side.
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.KeyPressMixin], [io.github.noxaur.dsmod.edge.mixin.MouseTurnMixin], [io.github.noxaur.dsmod.edge.mixin.PerspectiveKeyMixin]. */
 class FreeLookTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val freeLook = DsModClient.feature<FreeLook>()
@@ -32,14 +28,13 @@ class FreeLookTest : FabricClientGameTest {
                 context.waitTicks(40)
                 context.input.lookAt(0f, 0f)
                 context.waitTicks(3)
-                // The game turns the player only while it holds the mouse, and it drops the first move after taking it.
+                // @keep The game turns the player only while it holds the mouse, and it drops the first move after taking it.
                 context.runOnClient<Nothing> { it.mouseHandler.grabMouse() }
                 mouse(10.0, 0.0)
                 mouse(100.0, 0.0)
                 val facing = head()
                 check(facing.first != 0f) { "The mouse does not turn the player in this test, so it proves nothing" }
 
-                // The key and the mouse both land before the next tick, so that tick is the frame that arms Free Look.
                 context.input.holdKey(key)
                 context.input.moveCursor(400.0, 100.0)
                 context.waitTicks(1)
@@ -54,12 +49,10 @@ class FreeLookTest : FabricClientGameTest {
                 check(!Cameras.looking && view() == CameraType.FIRST_PERSON) { "The release left ${view()}, looking ${Cameras.looking}" }
                 check(head() == facing && camera() == facing) { "After the release the player faces ${head()} and the camera ${camera()}" }
 
-                // From third person it goes back to third person.
                 context.runOnClient<Nothing> { it.options.cameraType = CameraType.THIRD_PERSON_FRONT }
                 context.input.holdKey(key)
                 context.waitTicks(3)
                 check(Cameras.looking && view() == CameraType.THIRD_PERSON_FRONT) { "From the front view the key gave ${view()}" }
-                // F5 round to first person ends the look, and the key still down does not start it again.
                 context.input.pressKey { it.keyTogglePerspective }
                 context.waitTicks(3)
                 check(!Cameras.looking && view() == CameraType.FIRST_PERSON) { "F5 to first person left looking ${Cameras.looking} in ${view()}" }
@@ -79,7 +72,6 @@ class FreeLookTest : FabricClientGameTest {
                 check(!Cameras.looking && view() == CameraType.FIRST_PERSON) { "A second press left looking ${Cameras.looking} in ${view()}" }
                 freeLook.mode.value = KeyMode.HOLD
 
-                // A key typed into a screen is not a press.
                 context.openChat()
                 context.input.holdKey(key)
                 context.waitTicks(3)

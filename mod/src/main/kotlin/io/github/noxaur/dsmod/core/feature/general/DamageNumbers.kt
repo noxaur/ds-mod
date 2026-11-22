@@ -10,7 +10,6 @@ import io.github.noxaur.dsmod.core.text.number
 import io.github.noxaur.dsmod.core.text.short
 import io.github.noxaur.dsmod.core.text.text
 
-/** Which damage numbers the player sees. */
 enum class DamageShown(private val label: String) {
     ALL("All"),
     CRITS("Crits Only"),
@@ -20,11 +19,8 @@ enum class DamageShown(private val label: String) {
     override fun toString() = label
 }
 
-/**
- * Shortens the damage numbers that pop up over a mob the player or anyone near them hits, or hides them. The server
- * floats each as a text display for about a second: a hit reads `74,540,375` in gray, and a crit `✧1,461,845✧` with a
- * gradient across it. A shortened number keeps that gradient.
- */
+/** @keep The server floats each damage number as a text display for about a second: a hit reads `74,540,375` in gray,
+ * and a crit `✧1,461,845✧` with a gradient across it */
 class DamageNumbers(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "damage-numbers", Area.ANYWHERE, Store.GENERAL, "Shorten or hide the damage numbers that pop up on a hit.", default = false)
 
@@ -56,7 +52,7 @@ class DamageNumbers(config: DsModConfig) : HasFeature {
     private companion object {
         const val CRIT = '✧'
 
-        /** A number, and only symbols around it: no letter, which names a mob, and no `/`, which a health bar has. */
+        // @keep A number, and only symbols around it: no letter, which names a mob, and no `/`, which a health bar has
         val SPLASH = Regex("""([^\p{L}\p{N}/\s]*)(\d[\d,]*(?:\.\d+)?)([^\p{L}\p{N}/\s]*)""")
     }
 }

@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Menu Theme: the recipe book's button on a themed menu is drawn by the kit. Its clicks stay the game's. */
 @Mixin(ImageButton.class)
 abstract class RecipeButtonMixin {
     @Shadow @Final protected WidgetSprites sprites;

@@ -14,10 +14,6 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import java.awt.image.BufferedImage
 
-/**
- * A sword held over still ground, for the Animations tests to compare frames of. Time and weather stand still and the
- * player looks straight down, so a frame changes only where the held item does.
- */
 class HeldItemScene private constructor(private val context: ClientGameTestContext, private val world: TestSingleplayerContext) {
     fun shot(name: String): BufferedImage = image(context.takeScreenshot(name))
 
@@ -27,17 +23,11 @@ class HeldItemScene private constructor(private val context: ClientGameTestConte
 
     fun swinging() = context.computeOnClient<Boolean, Nothing> { it.player!!.swinging }
 
-    /** What the game does on a swing at the air: the swing, and the cooldown that lowers the item after it. */
     fun swingAtAir() = context.runOnClient<Nothing> {
         it.player!!.resetAttackStrengthTicker()
         it.player!!.swing(InteractionHand.MAIN_HAND)
     }
 
-    /**
-     * Waits until each hand draws the item the player holds, the swing has ended, the cooldown has run out, the items
-     * are fully raised again and the arm has caught up with the camera's last turn, then clears the item's name over
-     * the hotbar and the recipe toast a new item brings, so only the items can differ between two frames.
-     */
     fun settle() {
         context.waitFor { client ->
             val player = client.player!!
@@ -53,21 +43,18 @@ class HeldItemScene private constructor(private val context: ClientGameTestConte
         }
     }
 
-    /** Puts [item] in the main hand, or the [off] hand, and waits for the client to have it. */
     fun hold(item: Item, off: Boolean = false) {
         command("item replace entity @a weapon.${if (off) "offhand" else "mainhand"} with ${BuiltInRegistries.ITEM.getKey(item).path}")
         context.waitFor { (if (off) it.player!!.offhandItem else it.player!!.mainHandItem).`is`(item) }
         settle()
     }
 
-    /** The frame two ticks into a swing, which is mid-swing at the game's own speed. */
     fun midSwing(name: String, swingAt: () -> Unit = ::swing): BufferedImage {
         swingAt()
         context.waitTicks(2)
         return shot(name).also { settle() }
     }
 
-    /** Ends a slowed swing at once, since the rest of it shows nothing new. */
     fun endSwing() {
         context.runOnClient<Nothing> {
             it.player!!.swinging = false
@@ -77,7 +64,6 @@ class HeldItemScene private constructor(private val context: ClientGameTestConte
     }
 
     companion object {
-        /** How many pixels differ between two frames, in the whole frame or only its left half. */
         fun changed(a: BufferedImage, b: BufferedImage, right: Boolean = true) = diff(a, b) { x, _ -> right || x < a.width / 2 }
 
         fun runVanilla(context: ClientGameTestContext, test: HeldItemScene.(Animations, BufferedImage, BufferedImage) -> Unit) = run(context) {
@@ -88,7 +74,6 @@ class HeldItemScene private constructor(private val context: ClientGameTestConte
             test(animations, vanilla, vanillaSwing)
         }
 
-        /** Opens a world with a sword in the hand, runs [test], and puts every Animations setting back after it. */
         fun run(context: ClientGameTestContext, test: HeldItemScene.() -> Unit) {
             val animations = DsModClient.feature<Animations>()
             context.worldBuilder().create().use { world ->
@@ -96,8 +81,7 @@ class HeldItemScene private constructor(private val context: ClientGameTestConte
                 world.freezeTime(at = null)
                 scene.command("clear @a")
                 context.input.lookAt(0f, 90f)
-                // The vignette eases toward the light where the player stands for half a minute and shades the whole
-                // frame, and the attack indicator shows the cooldown a swing at the air starts. Neither is the item.
+                // @keep The vignette eases toward the light where the player stands for half a minute and shades the whole frame, and the attack indicator shows the cooldown a swing at the air starts.
                 val vignette = context.computeOnClient<Boolean, Nothing> { it.options.vignette().get() }
                 val indicator = context.computeOnClient<AttackIndicatorStatus, Nothing> { it.options.attackIndicator().get() }
                 context.runOnClient<Nothing> {

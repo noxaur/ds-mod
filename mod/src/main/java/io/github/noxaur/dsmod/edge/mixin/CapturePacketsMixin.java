@@ -11,10 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Hands packets that leave no readable client state to the recorder. Each handler runs twice, and
- * only the client-thread pass reaches TAIL.
- */
+/** @keep Each handler runs twice, and only the client-thread pass reaches TAIL. */
 @Mixin(ClientPacketListener.class)
 abstract class CapturePacketsMixin {
     @Inject(method = "handleParticleEvent", at = @At("TAIL"))

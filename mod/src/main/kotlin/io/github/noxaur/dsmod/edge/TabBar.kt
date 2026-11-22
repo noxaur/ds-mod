@@ -24,25 +24,17 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.ItemStack
 import org.lwjgl.glfw.GLFW
 
-/**
- * Menu Tabs, under Better UI: the player's tabs along the top and bottom of every menu and of the inventory, as
- * the settings' `TabPlacesEditor` sets them up. A command tab sends its command, and the one whose command opened the menu shown
- * now joins the panel. The search tab opens a bar along its edge toward the middle of the menu, drawn over the tabs
- * it covers, which dims every item whose name and lore lack a word of the query.
- */
 object TabBar {
     private val shown get() = DsModClient.runs<MenuTabs>()
 
     private const val SEARCH_LENGTH = 64
 
-    // The query stays from menu to menu until the player closes the bar, so it can follow them through storage pages.
     private var query = ""
     private var words = emptyList<String>()
     private var searched: String? = null
     private var stacks = arrayOfNulls<ItemStack>(0)
     private val dimmed = BitSet()
 
-    /** What a tab's tooltip says: its name, the command it sends and the click hint. */
     fun tooltip(tab: MenuTab) = text {
         if (tab.search) {
             body("Search")
@@ -87,7 +79,7 @@ object TabBar {
                 made += tab to widget
                 widgets.add(widget)
             }
-            // The recipe book moves the inventory and the crafting table sideways without laying them out again.
+            // @keep The recipe book moves the inventory and the crafting table sideways without laying them out again.
             val ours = ArrayList<AbstractWidget>(made.map { it.second })
             var laidOut = left
             ScreenEvents.beforeExtract(screen).register { _, _, _, _, _ ->
@@ -98,10 +90,8 @@ object TabBar {
             }
             val bar = search ?: return@onEveryLayout
 
-            // The bar is a wide joined tab holding the field and a close button, laid over the tabs it covers.
             val (barLeft, barWidth) = TabLayout.searchBar(bar.slot, menuWidth)
             fun barX() = screen.containerLeft + barLeft
-            // On a short screen an edge's tabs run off it. The bar stays on it, over the menu's edge, so its text shows.
             val barY = if (bar.edge == TabEdge.TOP) maxOf(edgeY(bar.edge), Kit.TAB_HEIGHT - 2) else minOf(edgeY(bar.edge), screen.height - Kit.TAB_HEIGHT + 2)
             val covered = made.filter { (tab, _) -> tab.edge == bar.edge && TabLayout.x(tab.slot) < barLeft + barWidth && TabLayout.x(tab.slot) + Kit.TAB_WIDTH > barLeft }
             val contentY = if (bar.edge == TabEdge.TOP) barY - Kit.TAB_HEIGHT + 3 else barY
@@ -156,7 +146,6 @@ object TabBar {
             ScreenKeyboardEvents.allowKeyPress(screen).register { _, event ->
                 when {
                     !shown -> true
-                    // A focused field takes every key, so E, Q and the number keys type instead of closing or moving items.
                     field.isFocused -> {
                         if (event.isEscape || event.isConfirmation) {
                             if (query.isEmpty()) shut() else screen.focused = null
@@ -172,7 +161,7 @@ object TabBar {
                     else -> true
                 }
             }
-            // The screen focuses a clicked tab after its press, so the field takes focus back once the click is done.
+            // @keep The screen focuses a clicked tab after its press, so the field takes focus back once the click is done.
             ScreenMouseEvents.afterMouseClick(screen).register { _, _, _ ->
                 if (field.visible && screen.focused is KitTab) screen.focused = field
                 true
@@ -193,10 +182,8 @@ object TabBar {
         }
     }
 
-    /** Whether the search dims the open menu's slot at [index], because its item does not match. */
     fun dims(index: Int) = words.isNotEmpty() && dimmed[index]
 
-    /** Works out which slots to dim, looking again only at a slot whose stack changed since the last tick. */
     private fun search(screen: AbstractContainerScreen<*>, field: KitTextField) {
         if (!field.visible || words.isEmpty()) {
             field.setTextColor(Role.BODY.argb())

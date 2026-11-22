@@ -12,12 +12,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.world.entity.Display
 
-/**
- * The server floats a hit and a crit as dragsim.co does, as text displays with `§` codes, once for each setting. The
- * check reads what each display shows on the client, and the screenshots show it. Read all four.
- */
 class DamageNumbersTest : FabricClientGameTest {
-    /** What each display on the client shows in place of the server's text, by the server's text: null for its own. */
     private fun shown(context: ClientGameTestContext) = context.computeOnClient<Map<String, String?>, Nothing> { client ->
         client.level!!.entitiesForRendering().filterIsInstance<Display.TextDisplay>().associate { display ->
             val edit = (display as EditedText).`dsmod$edit`()

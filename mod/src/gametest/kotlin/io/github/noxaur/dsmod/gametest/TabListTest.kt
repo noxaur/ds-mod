@@ -15,13 +15,9 @@ import net.minecraft.world.level.GameType
 import java.util.EnumSet
 import java.util.UUID
 
-/**
- * A server lists fake players the way dragsim.co builds its tab list, and the real client sorts and draws them.
- * The mod's rows must match the order of the client's own private method, and the readouts must match the rows.
- * Covers [io.github.noxaur.dsmod.edge.TabListPoller].
- */
+/** @keep Covers [io.github.noxaur.dsmod.edge.TabListPoller]. */
 class TabListTest : FabricClientGameTest {
-    /** A tab list entry that is not a player. It borrows a real connection, because the packet reads the latency from it. */
+    /** @keep A tab list entry borrows a real connection, because the packet reads the latency from it. */
     private class Listed(server: MinecraftServer, name: String, var display: String?, private val order: Int = 0, private val mode: GameType = GameType.SURVIVAL) :
         ServerPlayer(server, server.overworld(), GameProfile(UUID.randomUUID(), name), ClientInformation.createDefault()) {
         init {
@@ -63,7 +59,6 @@ class TabListTest : FabricClientGameTest {
             world.server.runOnServer<Nothing> { it.playerList.broadcastAll(ClientboundPlayerInfoUpdatePacket(adding, others + area + protector)) }
             context.waitTicks(20)
 
-            // The client's own order, from the private method that draws the list.
             val drawn = context.computeOnClient<List<String>, Nothing> { client ->
                 val tab = client.gui.hud.tabList
                 tab.getPlayerInfos().map { tab.getNameForDisplay(it).string }
@@ -96,7 +91,6 @@ class TabListTest : FabricClientGameTest {
             context.waitTicks(5)
             checkStage(context, "Defeated", "Fight: 0:")
 
-            // Outside the End neither feature shows anything, even with the Protector row still listed.
             area.display = "Area: Village"
             world.server.runOnServer<Nothing> { it.playerList.broadcastAll(ClientboundPlayerInfoUpdatePacket(Action.UPDATE_DISPLAY_NAME, area)) }
             context.waitTicks(20)

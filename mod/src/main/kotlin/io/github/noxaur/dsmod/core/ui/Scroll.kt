@@ -4,10 +4,6 @@ import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.roundToInt
 
-/**
- * A view [view] pixels tall onto content [content] tall, scrolled [offset] pixels down, and the scrollbar beside
- * it. [to] and [by] jump, and [glide] moves there over a few frames as each [step] is called.
- */
 class Scroll {
     var content = 0
         set(value) {
@@ -37,14 +33,12 @@ class Scroll {
         position = target.toDouble()
     }
 
-    /** Moves [dy] from where a glide is heading, so a wheel turn during one adds to it. */
     fun by(dy: Int) = to(target + dy)
 
     fun glide(y: Int) {
         target = y.coerceIn(0, max)
     }
 
-    /** Moves a glide on by [ms] milliseconds, and returns whether the offset changed. */
     fun step(ms: Long): Boolean {
         if (!gliding) return false
         val before = offset
@@ -53,13 +47,10 @@ class Scroll {
         return offset != before
     }
 
-    /** The thumb's height on a track [track] tall. */
     fun thumb(track: Int) = if (!overflows) track else (track.toLong() * view / content).toInt().coerceIn(MIN_THUMB.coerceAtMost(track), track)
 
-    /** How far the thumb sits below the top of a track [track] tall. */
     fun thumbY(track: Int) = if (max == 0) 0 else ((track - thumb(track)).toLong() * offset / max).toInt()
 
-    /** Scrolls so the thumb's top is [y] below the track's top, as a drag of the thumb does. */
     fun drag(y: Double, track: Int) {
         val room = track - thumb(track)
         if (room > 0) to((y / room * max).roundToInt())

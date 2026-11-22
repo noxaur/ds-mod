@@ -11,44 +11,29 @@ import kotlin.math.roundToLong
 import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KProperty0
 
-/**
- * How a row reads and writes its value in `DsModConfig`. [field] names what it reaches, as `Class.field`, or
- * `Class.field.part` for a part of a value, and [also] any more fields one value spans, such as a list's groups, so
- * a test can check that every saved field has exactly one row.
- */
 class Bind<T>(val field: String, val get: () -> T, val set: (T) -> Unit) {
     var also: List<String> = emptyList()
         private set
 
-    /**
-     * The default while the row shows a look rather than the fresh config's value, such as a preset's border.
-     * Null keeps the default taken from a fresh config.
-     */
     var follows: (() -> T?)? = null
         private set
 
-    /** The keys older versions saved [field] under, which a favorite saved by one of them still finds. */
     var formerly: List<String> = emptyList()
         private set
 
-    /** Names the other saved [fields] this one value spans. */
     fun spanning(vararg fields: String) = apply { also = fields.toList() }
 
-    /** Names the [keys] older versions saved this field under. */
     fun formerly(vararg keys: String) = apply { formerly = keys.toList() }
 
-    /** The changed marker and a reset use [read] while it has a value, and the fresh config's otherwise. */
     fun follows(read: () -> T?) = apply { follows = read }
 
     companion object {
         fun <T> of(property: KMutableProperty0<T>) = Bind(field(property), property::get, property::set)
 
-        /** `Class.field` of a property bound to its object, such as `config.end::dragonTimer`. */
         fun field(property: KProperty0<*>) = "${(property as CallableReference).boundReceiver.javaClass.simpleName}.${property.name}"
     }
 }
 
-/** The kinds of row, each with the word the narrator calls it. The edge has one face per kind, and the kit gallery shows every one. */
 enum class Kind(val spoken: String) {
     SWITCH("switch"),
     NUMBER("number"),
@@ -64,20 +49,12 @@ enum class Kind(val spoken: String) {
     PREVIEW("preview"),
 }
 
-/**
- * One row of the settings screen. Every row has a stable [id], a [name] and a [description], and gets the same
- * behaviors whatever its kind: a changed marker that resets, dimming under an off switch, a summary when its parent
- * is closed, search text, and the keyboard. `settings.md` beside the ui skill says how to add one.
- */
 sealed class Setting(val id: String, val name: String, val description: String, val kind: Kind) {
-    /** The rows that open under this one: a switch's own settings, or a fold's. */
     open val children: List<Setting> get() = emptyList()
 
-    /** The switch this row sits under: its parent's, or its group's heading switch. The tree sets it. */
     var gate: Switch? = null
         internal set
 
-    /** A switch elsewhere that this row needs, which dims it while off. */
     var dependsOn: Switch? = null
         internal set
 
@@ -86,30 +63,20 @@ sealed class Setting(val id: String, val name: String, val description: String, 
 
     val visible: Boolean get() = shownWhile?.invoke() != false
 
-    /** The switch that is off and dims this row: the one it sits under first, then the one it depends on, or a switch above either. */
     val dimmedBy: Switch? get() = gate?.let { if (!it.value) it else it.dimmedBy } ?: dependsOn?.let { if (!it.value) it else it.dimmedBy }
 
-    /** A row under an off switch dims, and stays editable so it can be set up first. */
     val dimmed: Boolean get() = dimmedBy != null
 
-    /** Whether the value differs from its default, which shows the changed marker. */
     open val changed: Boolean get() = false
 
     open fun reset() = Unit
 
-    /** The value in a few characters, for a closed parent's summary, or null to leave this row out of it. */
     open fun summary(keys: (Int) -> String): String? = null
 
-    /** The default, as the changed marker's tooltip names it, or null when the row has none of its own. */
     open fun default(keys: (Int) -> String): String? = null
 
-    /** The value as the narrator says it after the kind, such as `off` or `All, 1 of 3`. [open] is whether its rows show. */
     protected open fun spoken(keys: (Int) -> String, open: Boolean): String? = null
 
-    /**
-     * What the narrator says for this row: its name, its kind and value, then whether it differs from its default
-     * and which switch dims it, as "Distance, number, 7.5, changed from 4.0, dimmed, Camera is off".
-     */
     fun narration(keys: (Int) -> String, open: Boolean = false) = Narration.join(
         name,
         kind.spoken,
@@ -118,58 +85,41 @@ sealed class Setting(val id: String, val name: String, val description: String, 
         dimmedBy?.let { "dimmed, ${it.name} is off" },
     )
 
-    /** Words besides the name and the description that search matches, such as a choice's values. */
     open val labels: List<String> get() = emptyList()
 
-    /** Everything search matches, lowercased. */
     val searchText: String by lazy { (listOf(name, description) + labels).joinToString(" ").lowercase() }
 
-    /** This row and every row under it, in order. */
     fun walk(): Sequence<Setting> = sequence {
         yield(this@Setting)
         for (child in children) yieldAll(child.walk())
     }
 
     companion object {
-        /**
-         * The most characters a description may have, so the settings screen shows a row's two lines of it at full
-         * width and a reader takes it in at a glance. `SettingsTreeTest` holds every row to it, and the player docs
-         * hold the rest.
-         */
         const val DESCRIPTION_MAX = 67
     }
 }
 
-/** A row with a value of its own, bound to `DsModConfig`. Its default is its value in a fresh config, which the tree sets. */
 sealed class Valued<T>(id: String, name: String, description: String, kind: Kind, private val bind: Bind<T>) : Setting(id, name, description, kind) {
     val field get() = bind.field
 
-    /** The keys older versions saved the field under. */
     val formerly get() = bind.formerly
 
-    /** Every field the row reaches: its own, and the others its value spans. */
     val fields get() = listOf(bind.field) + bind.also
 
     var value: T
         get() = bind.get()
         set(next) = bind.set(normalize(next))
 
-    /**
-     * The value a reset returns to. A row that [Bind.follows] a look on screen uses that while it has one, and
-     * otherwise the value from a fresh config, which [adopt] stores.
-     */
     var default: T = bind.get()
         private set
         get() = bind.follows?.invoke() ?: field
 
-    /** [v] as the summary, the default tip and the narrator show it, or null when the row has none to show. */
     protected open fun show(v: T, keys: (Int) -> String): String? = null
 
     override fun summary(keys: (Int) -> String) = show(value, keys)
 
     override fun default(keys: (Int) -> String) = show(default, keys)
 
-    /** Takes the default from the same row of a tree built on a fresh config. */
     @Suppress("UNCHECKED_CAST")
     internal fun adopt(fresh: Setting) {
         default = (fresh as Valued<T>).value
@@ -184,16 +134,11 @@ sealed class Valued<T>(id: String, name: String, description: String, kind: Kind
     }
 }
 
-/**
- * On or off. Its [children] are its own settings, which open under it and dim while it is off. A feature's switch
- * takes the feature's rows as its children where the tree lists it among other features, see `Rows.feature`.
- */
 class Switch(id: String, name: String, description: String, bind: Bind<Boolean>, children: List<Setting> = emptyList()) :
     Valued<Boolean>(id, name, description, Kind.SWITCH, bind) {
     override var children: List<Setting> = children
         internal set
 
-    /** The feature this is the switch of, or null for a switch that is a setting of its own. */
     var feature: HasFeature? = null
         internal set
 
@@ -201,7 +146,6 @@ class Switch(id: String, name: String, description: String, bind: Bind<Boolean>,
         value = !value
     }
 
-    /** What the closed settings hold, such as `L, K`, shown before the switch. */
     fun closed(keys: (Int) -> String) = children.filter { it.visible }.mapNotNull { it.summary(keys) }.joinToString(", ")
 
     override fun default(keys: (Int) -> String) = if (default) "On" else "Off"
@@ -210,10 +154,6 @@ class Switch(id: String, name: String, description: String, bind: Bind<Boolean>,
         Narration.join(if (value) "on" else "off", if (children.isEmpty()) null else if (open) "expanded" else "collapsed")
 }
 
-/**
- * A number from [min] to [max] in steps of [step], counted from [min], shown with [unit] after it. A range that
- * runs through zero fills from zero.
- */
 class Number(
     id: String,
     name: String,
@@ -224,10 +164,8 @@ class Number(
     val step: Float,
     val unit: String = "",
 ) : Valued<Float>(id, name, description, Kind.NUMBER, bind) {
-    /** As many decimals as the step has. */
     val decimals = (0..3).first { abs(step * POWERS[it] - (step * POWERS[it]).roundToLong()) < 1e-4 || it == 3 }
 
-    /** Where the fill starts: zero for a signed range, else the minimum. */
     val zero = if (min < 0 && max > 0) 0f else min
 
     override fun normalize(next: Float): Float {
@@ -236,22 +174,18 @@ class Number(
         return (((min + steps * step) * POWERS[decimals]).roundToLong() / POWERS[decimals]).toFloat().coerceIn(min, max)
     }
 
-    /** Steps [by] steps, so Shift can take ten. */
     fun step(by: Int) {
         value += by * step
     }
 
-    /** How far along the track [v] is, from 0 to 1. */
     fun fraction(v: Float) = (v - min) / (max - min)
 
-    /** Jumps to the value [fraction] of the way along the track. */
     fun at(fraction: Double) {
         value = (min + fraction.coerceIn(0.0, 1.0) * (max - min)).toFloat()
     }
 
     fun format(v: Float = value): String = String.format(Locale.ROOT, "%.${decimals}f", v)
 
-    /** The value [text] means, such as `4.5`, `-12°` or `250 ms`, or null when it is not a number. */
     fun parse(text: String): Float? = text.trim().removeSuffix(unit.trim()).trim().replace(',', '.').toFloatOrNull()?.let(::normalize)
 
     override fun show(v: Float, keys: (Int) -> String) = format(v) + unit
@@ -263,7 +197,6 @@ class Number(
     }
 }
 
-/** One of a few [values], each shown as its [label]. Stepping wraps at either end. */
 open class Choice<T> internal constructor(
     id: String,
     name: String,
@@ -284,7 +217,6 @@ open class Choice<T> internal constructor(
         value = values[index]
     }
 
-    /** The current value's label. */
     val shown get() = label(value)
 
     override val labels: List<String> by lazy { values.map(label) }
@@ -294,7 +226,6 @@ open class Choice<T> internal constructor(
     override fun spoken(keys: (Int) -> String, open: Boolean) = Narration.join(shown, Narration.of(index, values.size))
 }
 
-/** A choice made by how each value looks: its dropdown and its menu show the [look] of each. */
 class Pick<T>(
     id: String,
     name: String,
@@ -304,11 +235,9 @@ class Pick<T>(
     val look: (T) -> Look,
     label: (T) -> String = { it.toString() },
 ) : Choice<T>(id, name, description, Kind.PICK, bind, values, label) {
-    /** The look of the value at [index], or of the current one. */
     fun lookAt(index: Int = this.index) = look(values[index])
 }
 
-/** A key or a mouse button, as a GLFW code, a mouse button from 0 to 9, or [NONE]. */
 class KeyBind(id: String, name: String, description: String, bind: Bind<Int>) : Valued<Int>(id, name, description, Kind.KEYS, bind) {
     fun clear() {
         value = NONE
@@ -323,16 +252,13 @@ class KeyBind(id: String, name: String, description: String, bind: Bind<Int>) : 
     }
 }
 
-/** Stretches of a scale from 0 to [max], with a tick at each of [ticks]. `Sections` holds the rules of a stretch. */
 class Span(id: String, name: String, description: String, bind: Bind<List<Section>>, val max: Int, val ticks: List<Int>) :
     Valued<List<Section>>(id, name, description, Kind.SPAN, bind) {
     override fun show(v: List<Section>, keys: (Int) -> String) = v.joinToString(", ") { "${it.from}–${it.to}" }.ifEmpty { "Never" }
 
-    // The en dash of a stretch is read as a word.
     override fun spoken(keys: (Int) -> String, open: Boolean) = show(value, keys).replace("–", " to ")
 }
 
-/** More rows the player rarely needs, under a bar that opens them. It is changed when any of them is, and resets them all. */
 class Fold(id: String, name: String, description: String, override val children: List<Setting>) : Setting(id, name, description, Kind.FOLD) {
     override val changed get() = children.any { it.changed }
 
@@ -343,11 +269,6 @@ class Fold(id: String, name: String, description: String, override val children:
     override fun spoken(keys: (Int) -> String, open: Boolean) = if (open) "expanded" else "collapsed"
 }
 
-/**
- * Which of [values] show, and in what order: the value is the shown ones in order. The list the player sees holds
- * every value, and a hidden one keeps the place it was given while this row lives, so showing it again puts it back
- * where it was. At least [least] stay shown.
- */
 class Order<T>(
     id: String,
     name: String,
@@ -359,11 +280,9 @@ class Order<T>(
 ) : Valued<List<T>>(id, name, description, Kind.ORDER, bind) {
     private var all = arrange(value)
 
-    /** Every value in the order the list shows: the shown ones in their order, the hidden ones where they were left. */
     val entries: List<T>
         get() {
             val shown = value
-            // A change from outside, such as a reset, rebuilds the list around it.
             if (all.filter { it in shown } != shown) all = arrange(shown)
             return all
         }
@@ -374,10 +293,8 @@ class Order<T>(
 
     fun shown(index: Int) = entries[index] in value
 
-    /** Whether the entry at [index] can be switched now: a hidden one always, a shown one while more than [least] show. */
     fun canSwitch(index: Int) = !shown(index) || value.size > least
 
-    /** Shows or hides the entry at [index] without moving it. */
     fun switch(index: Int) {
         if (!canSwitch(index)) return
         val entry = entries[index]
@@ -385,7 +302,6 @@ class Order<T>(
         value = if (entry in shown) shown - entry else entries.filter { it in shown || it == entry }
     }
 
-    /** Moves the entry at [from] to [to], kept within the list, and returns where it went. */
     fun move(from: Int, to: Int): Int {
         val list = entries.toMutableList()
         val at = to.coerceIn(0, list.lastIndex)
@@ -397,7 +313,6 @@ class Order<T>(
         return at
     }
 
-    /** Puts the list back as [before] held it, as Escape does after a drag. */
     fun restore(before: List<T>, shown: List<T>) {
         all = before
         value = shown
@@ -410,11 +325,9 @@ class Order<T>(
     override fun spoken(keys: (Int) -> String, open: Boolean) =
         Narration.join(show(value, keys), "${value.size} of ${values.size} shown", if (open) "expanded" else "collapsed")
 
-    /** What the narrator says for the entry at [index]: its name, its switch, and its place in the list. */
     fun entryNarration(index: Int) = Narration.join(label(entries[index]), Kind.SWITCH.spoken, if (shown(index)) "on" else "off", Narration.of(index, entries.size))
 }
 
-/** A button that runs [run], such as opening an editor screen that returns to the settings. [button] is its label. */
 class Action(id: String, name: String, description: String, val button: String, val run: () -> Unit) : Setting(id, name, description, Kind.ACTION) {
     override fun spoken(keys: (Int) -> String, open: Boolean) = button
 }
@@ -422,12 +335,10 @@ class Action(id: String, name: String, description: String, val button: String, 
 @DslMarker
 annotation class SettingsDsl
 
-/** Declares rows. Each call adds one row in order, and a row's own settings are declared in its trailing block. */
 @SettingsDsl
 class Rows {
     private val added = ArrayList<Setting>()
 
-    /** The rows declared so far, in order. */
     val rows: List<Setting> get() = added
 
     private fun <S : Setting> add(setting: S, dependsOn: Switch?) = setting.also {
@@ -437,15 +348,12 @@ class Rows {
 
     private fun nested(block: (Rows.() -> Unit)?) = if (block == null) emptyList() else Rows().apply(block).rows
 
-    /** Adds [setting], declared elsewhere, as the next row. */
     fun row(setting: Setting) = add(setting, null)
 
-    /** Takes [rows] declared here out of this list, for a fold that gathers rows declared before it. */
     internal fun take(rows: List<Setting>) {
         for (row in rows) check(added.remove(row)) { "${row.id} is not a row here" }
     }
 
-    /** [feature]'s switch, with the feature's own rows under it, among other rows. A feature with a group of its own is `group(feature)`. */
     fun feature(feature: HasFeature): Switch = add(feature.feature.switch.also { it.feature = feature; it.children = feature.feature.rows }, null)
 
     fun switch(
@@ -490,7 +398,6 @@ class Rows {
         id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null,
     ) = add(Span(id, name, description, bind, max, ticks), dependsOn)
 
-    /** An ordered list of [E]'s values that the player shows, hides and drags into order. */
     inline fun <reified E : Enum<E>> order(
         property: KMutableProperty0<MutableList<E>>, name: String, description: String, id: String = property.name, dependsOn: Switch? = null,
     ) = order(Bind(Bind.field(property), { property.get().toList() }) { property.set(it.toMutableList()) }, name, description, enumValues<E>().toList(), id, dependsOn)
@@ -508,32 +415,22 @@ class Rows {
     fun fold(id: String, name: String, description: String, dependsOn: Switch? = null, rows: Rows.() -> Unit) =
         add(Fold(id, name, description, nested(rows)), dependsOn)
 
-    /** A list the player builds of [kind]'s items, under groups, edited inline. */
     fun <T> items(bind: Bind<Grouped<T>>, name: String, description: String, kind: ItemKind<T>, id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null) =
         add(Items(id, name, description, bind, kind), dependsOn)
 
-    /** An editor drawn as a picture of what it edits, on the edge's [canvas], summed up by [describe]. */
     fun <T> panel(bind: Bind<T>, name: String, description: String, canvas: Canvas, id: String, dependsOn: Switch? = null, describe: (T) -> String) =
         add(Panel(id, name, description, bind, canvas, describe), dependsOn)
 
-    /** A picture on [canvas] of what the rows around it do, which holds no value. */
     fun preview(id: String, name: String, description: String, canvas: Canvas, dependsOn: Switch? = null) =
         add(Preview(id, name, description, canvas), dependsOn)
 
-    /** A button that runs [run], such as a reset of a group. */
     fun action(id: String, name: String, description: String, button: String, dependsOn: Switch? = null, run: () -> Unit) =
         add(Action(id, name, description, button, run), dependsOn)
 
-    /** A button that opens the edge's screen [opens], so the tree needs no Minecraft. */
     fun action(opens: Opens, name: String, description: String, button: String = "Open", id: String, dependsOn: Switch? = null) =
         add(Action(id, name, description, button) { Opens.open(opens) }, dependsOn)
 }
 
-/**
- * A screen of the edge's that an action row opens: one that needs the game behind it, such as Move HUD, or one that
- * is not a setting, such as Contribute's requests. `DsModClient` registers what opens each, as it gives each [Canvas]
- * its face.
- */
 enum class Opens {
     HUD_EDITOR,
     REQUESTS,
