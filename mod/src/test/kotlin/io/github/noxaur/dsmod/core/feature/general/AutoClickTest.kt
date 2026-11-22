@@ -3,18 +3,30 @@ package io.github.noxaur.dsmod.core.feature.general
 import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.config.KeyBind
 import io.github.noxaur.dsmod.core.config.SettingsTree
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class AutoClickTest {
+    private companion object {
+        const val TICK = 50_000_000L
+    }
+
     private val tree = SettingsTree()
     private val trigger = tree.feature<AutoLeftClick>().click
     private val right = tree.feature<AutoRightClick>().click
 
     private data class Tick(val walking: Boolean = true, val pressed: Boolean = false, val down: Boolean = true, val on: Boolean = true)
 
-    private fun clicks(ticks: List<Tick>) = ticks.indices.filter { ticks[it].let { t -> trigger.tick(t.on, t.walking, t.pressed, t.down) } }
+    private var nanos = 0L
+
+    private fun step(t: Tick): Boolean {
+        nanos += TICK
+        return trigger.tick(t.on, t.walking, t.pressed, t.down, nanos) && trigger.spend(nanos)
+    }
+
+    private fun clicks(ticks: List<Tick>) = ticks.indices.filter { step(ticks[it]) }
 
     private fun held(count: Int, walking: Boolean = true) = listOf(Tick(walking, pressed = true)) + List(count - 1) { Tick(walking) }
 
@@ -28,6 +40,32 @@ class AutoClickTest {
         val ticks = clicks(held(20 * 10))
         assertEquals(0, ticks.first())
         assertTrue(ticks.zipWithNext().all { (a, b) -> b - a in 2..3 })
+    }
+
+    @Test
+    fun `the player's own clicks spend the same 9 point 9 a second`() {
+        assertEquals(990, (0 until 20 * 100).count { step(Tick(walking = false)); trigger.spend(nanos) })
+    }
+
+    @Test
+    fun `the player's own clicks on top of auto clicks stay at 9 point 9 a second`() {
+        assertEquals(990, held(20 * 100).sumOf { t -> listOf(step(t), trigger.spend(nanos)).count { it } })
+    }
+
+    @Test
+    fun `ticks the game catches up on after a freeze release no burst`() {
+        clicks(held(20))
+        nanos += 500_000_000L
+        assertEquals(1, (0 until 10).count { trigger.tick(true, true, false, true, nanos) && trigger.spend(nanos) })
+    }
+
+    @Test
+    fun `uneven ticks never fit 11 clicks in a second`() {
+        val random = Random(1)
+        val at = (0 until 20 * 30).map { it * TICK + random.nextLong(-20_000_000L, 20_000_000L) }
+        val admitted = at.filter { trigger.tick(true, true, false, true, it) && trigger.spend(it) }
+        assertTrue(admitted.size > 280)
+        assertTrue(admitted.windowed(11).all { it.last() - it.first() >= 1_000_000_000L })
     }
 
     @Test

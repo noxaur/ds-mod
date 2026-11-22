@@ -25,6 +25,11 @@ object AutoClicks {
         for (button in buttons(Minecraft.getInstance())) if (Keys.matches(key, button.click.key.value)) tapped += button.click
     }
 
+    fun allows(attack: Boolean): Boolean {
+        val button = buttons(Minecraft.getInstance())[if (attack) 0 else 1]
+        return !button.on || button.click.spend(System.nanoTime())
+    }
+
     fun register() {
         ClientTickEvents.START_CLIENT_TICK.register { client ->
             val walking = client.player != null && client.gui.overlay() == null && client.gui.screen() == null &&
@@ -32,9 +37,8 @@ object AutoClicks {
             val clicks = buttons(client).mapNotNull { button ->
                 val click = button.click
                 val pressed = click in tapped
-                val bound = KeyMappingHelper.getBoundKeyOf(button.mapping)
-                val due = click.tick(button.on, walking && button.on, pressed, Keys.held(client, click.key.value))
-                bound.takeIf { due && !button.mapping.isUnbound && !(pressed && Keys.matches(it, click.key.value)) }
+                val due = click.tick(button.on, walking && button.on, pressed, Keys.held(client, click.key.value), System.nanoTime())
+                KeyMappingHelper.getBoundKeyOf(button.mapping).takeIf { due && !button.mapping.isUnbound && !(pressed && Keys.matches(it, click.key.value)) }
             }
             tapped.clear()
             clicking = true
