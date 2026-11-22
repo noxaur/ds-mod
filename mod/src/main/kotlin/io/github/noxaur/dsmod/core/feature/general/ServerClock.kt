@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.core.feature.general
 
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.ServerTime
+import io.github.noxaur.dsmod.core.game.WorldChanged
 
 class ServerClock(feature: Feature) {
     private val arrived = ArrayDeque<Long>()
@@ -14,6 +15,7 @@ class ServerClock(feature: Feature) {
 
     init {
         feature.on<ServerTime> { time, now -> record(now, time.gameTime) }
+        feature.on<WorldChanged> { _, now -> clear(now) }
     }
 
     private fun record(now: Long, gameTime: Long) {
@@ -28,7 +30,7 @@ class ServerClock(feature: Feature) {
         updates++
     }
 
-    fun clear(now: Long) {
+    private fun clear(now: Long) {
         shift = millis(now) - now
         arrived.clear()
         ticks.clear()

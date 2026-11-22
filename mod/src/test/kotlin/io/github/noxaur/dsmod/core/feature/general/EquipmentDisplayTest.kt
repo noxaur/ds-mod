@@ -205,10 +205,10 @@ class EquipmentDisplayTest : Harness() {
     }
 
     @Test
-    fun `no pet line, or Pet None, shows no pet`() {
+    fun `a sidebar with no pet line, as a dungeon's, keeps the pet, and Pet None shows none`() {
         post(pet())
         post(dragSimSidebar(text("Booster: Whale Booster")))
-        assertNull(shown())
+        assertEquals(listOf("[Lvl 100] Ender Dragon"), shown())
         post(dragSimSidebar(text("Pet: None")))
         assertNull(shown())
         assertEquals(null, game.metrics.snapshot().counters["equipment-display.unparsed"])

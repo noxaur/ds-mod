@@ -49,6 +49,38 @@ val rules = listOf(
         span = Span.FILE,
     ),
     Rule(
+        id = "kills-by-own-kills",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        except = "src/main/kotlin/**/core/feature/general/OwnKills.kt",
+        forbid = Regex("""\bCombatXp\b"""),
+        fix = "Count the player's own kills with `OwnKills(feature, { death -> .. }) { count, xp, now -> .. }`, which " +
+            "matches each death to the Combat XP action bar behind it and reads the XP.",
+        example = "if (CombatXp.MARK !in bar.text.plain) return@on",
+        examples = listOf("bar.text.plain.let(CombatXp::gained)"),
+    ),
+    Rule(
+        id = "container-by-reader",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        except = "src/main/kotlin/**/core/feature/general/ContainerReader.kt",
+        forbid = Regex("""on<\s*(ContainerOpened|SlotChanged|WorldChanged)\s*>\s*\{\s*\w+\s*,\s*\w+\s*->\s*\w+\s*=\s*true\s*\}"""),
+        fix = "Mark slots with `SlotMarks(feature) { slot, item, now -> .. }`, which rebuilds the marks only when the " +
+            "container changed or `invalidate()` says so. To read a container's items again after it changed, ask " +
+            "`ContainerReader(feature).changed()`.",
+        example = "feature.on<SlotChanged> { _, _ -> changed = true }",
+        examples = listOf("feature.on<ContainerOpened> { event, _ -> stale = true }", "feature.on< WorldChanged > {\n    _, _ -> stale = true\n}"),
+        span = Span.FILE,
+    ),
+    Rule(
+        id = "pet-by-current-pet",
+        files = "src/main/kotlin/**/core/feature/**.kt",
+        except = "src/main/kotlin/**/core/feature/general/CurrentPet.kt",
+        forbid = Regex("""\b(Pet\s*(\.|::)\s*(STANDS|worn)|PetCard\s*(\.|::)\s*of)\b|"Pet:""""),
+        fix = "Follow the pet the player has out with `CurrentPet(feature, { before -> .. })`, which reads the sidebar, " +
+            "the Pets menu's card and the heads of pets nearby, and forgets the pet when the player leaves.",
+        example = "val card = event.item?.let(PetCard::of)",
+        examples = listOf("feature.readEntities(Pet.STANDS)", "val (name, head) = Pet.worn(seen)", """startsWith("Pet:")"""),
+    ),
+    Rule(
         id = "container-by-reads",
         files = "src/{main,debug}/**.{kt,java}",
         except = "src/main/{kotlin/**/edge/ContainerScreens.kt,java/**/edge/mixin/ContainerScreenAccessor.java}",

@@ -5,21 +5,15 @@ import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
-import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.Area
-import io.github.noxaur.dsmod.core.game.CombatXp
 import io.github.noxaur.dsmod.core.game.ContainerOpened
-import io.github.noxaur.dsmod.core.game.EntityDied
-import io.github.noxaur.dsmod.core.game.EntitySeen
 import io.github.noxaur.dsmod.core.game.Item
-import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.Pet
 import io.github.noxaur.dsmod.core.game.PetCard
 import io.github.noxaur.dsmod.core.game.PetItem
 import io.github.noxaur.dsmod.core.game.PetProgress
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
-import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.Role
@@ -83,7 +77,8 @@ class ActivePet(config: DsModConfig) : HasFeature {
 
     private val known = feature.saved(KnownPets())
 
-    private var pet: Pet? = null
+    private val pets = CurrentPet(feature, ::changed, ::menuSlot) { if (it == pet?.name) block = null }
+    private val pet: Pet? get() = pets.pet
 
     /**
      * The XP of the pet [key] at [level] since its first read: [from] at [start], and the last read, [read] at [readAt].
@@ -105,15 +100,10 @@ class ActivePet(config: DsModConfig) : HasFeature {
         val perMilli: Double? get() = (latest - start).takeIf { it > 0 }?.let { (live - from) / it }
     }
 
-    // This session only: the XP each pet had at the level it was read at, its item in the Pets menu, whose tooltip the
-    // HUD's icon shows, the head of each pet the client held, the open Pets menu's slot of the active pet, the
-    // current pet's pace, and when the last mob died.
     private val progress = HashMap<String, Pair<Int, PetProgress>>()
     private val cards = HashMap<String, Item>()
-    private val heads = HashMap<String, Item>()
     private var menuSlot = -1
     private var pace: Pace? = null
-    private var died = -1L
 
     private data class Shown(val icon: Boolean, val item: Boolean, val xp: Boolean, val rate: Boolean, val next: Boolean, val known: KnownPets)
 
@@ -124,40 +114,14 @@ class ActivePet(config: DsModConfig) : HasFeature {
     private var nextShown: String? = null
 
     init {
-        feature.on<Sidebar> { event, _ ->
-            // Between worlds the sidebar is empty until the new one arrives, and the pet is still out.
-            if (event.lines.all { it.plain.isBlank() }) return@on
-            event.lines.firstOrNull { it.plain.trimStart().startsWith(SIDEBAR) }?.let { read(it, SIDEBAR) }
-        }
         feature.on<ContainerOpened> { _, _ -> menuSlot = -1 }
-        // The next session may bring another pet, and the sidebar names it only when it arrives.
-        feature.on<LeftServer> { _, _ -> set(null) }
-        feature.on<SlotChanged> { event, now ->
+        feature.on<SlotChanged> { event, _ ->
             val item = event.item
-            if (item?.name?.plain == PetCard.MENU) item.lore.firstOrNull { it.plain.startsWith(SELECTED) }?.let { read(it, SELECTED) }
-            if (feature.container.title?.plain != PetCard.MENU) return@on
-            val card = item?.let(PetCard::of)
-            if (event.slot == menuSlot && card == null) {
-                menuSlot = -1
-                // The active pet's item turning into a summon button is a despawn, which a dungeon's sidebar would not say.
-                // Another pet's item there is the menu turning a page.
-                if (item?.name?.plain?.let(Pet::nameOf) == pet?.name) set(null)
-            }
-            if (card != null) read(card, event.slot, now)
+            if (item?.name?.plain == PetCard.MENU) item.lore.firstOrNull { it.plain.startsWith(SELECTED) }?.let { pets.read(it, SELECTED) }
         }
-        feature.readEntities(Pet.STANDS)
-        feature.on<EntitySeen> { seen, _ ->
-            val (name, head) = Pet.worn(seen) ?: return@on
-            if (heads.put(name, head) != head && name == pet?.name) block = null
-        }
-        feature.on<EntityDied> { _, now -> died = now }
-        feature.on<ActionBar> { bar, now ->
-            val text = bar.text.plain
-            if (CombatXp.MARK !in text || died < 0 || now - died !in 0..CombatXp.KILL_WINDOW_MILLIS) return@on
-            died = -1
-            val pace = pace?.takeIf { known.value.pets[it.key]?.category == COMBAT } ?: return@on
-            val gain = CombatXp.gained(text) ?: return@on feature.unparsed(text)
-            pace.combat += gain
+        OwnKills(feature, { true }) { _, xp, now ->
+            val pace = pace?.takeIf { known.value.pets[it.key]?.category == COMBAT } ?: return@OwnKills
+            pace.combat += xp ?: return@OwnKills
             pace.gainAt = now
             if (pace.ratio != null) block = null
         }
@@ -175,12 +139,14 @@ class ActivePet(config: DsModConfig) : HasFeature {
     /** The key of the pet of [name] that was last active. */
     private fun keyOf(name: String) = known.value.latest[name] ?: name
 
-    /** Reads a `Pet:` or `Selected Pet:` line: a pet, or `None`. */
-    private fun read(line: ServerText, prefix: String) {
-        val value = line.plain.trim().removePrefix(prefix).trim()
-        if (value == NONE) return set(null)
-        val read = Pet.of(line, value)
-        if (read == null) feature.unparsed(line.plain) else set(read)
+    private fun menuSlot(event: SlotChanged, card: PetCard?, now: Long) {
+        if (event.slot == menuSlot && card == null) {
+            menuSlot = -1
+            // The active pet's item turning into a summon button is a despawn, which a dungeon's sidebar would not say.
+            // Another pet's item there is the menu turning a page.
+            if (event.item?.name?.plain?.let(Pet::nameOf) == pet?.name) pets.set(null)
+        }
+        if (card != null) read(card, event.slot, now)
     }
 
     private fun read(card: PetCard, slot: Int, now: Long) {
@@ -200,7 +166,7 @@ class ActivePet(config: DsModConfig) : HasFeature {
             )
         }
         // The menu is as live as the sidebar, and the only word on the level where a dungeon's sidebar names no pet.
-        set(card.pet)
+        pets.set(card.pet)
         block = null
         val progress = card.progress ?: return
         this.progress[key] = card.pet.level to progress
@@ -231,13 +197,12 @@ class ActivePet(config: DsModConfig) : HasFeature {
         pace = null
         progress.remove(keyOf(name))
         block = null
-        set(Pet(name, level, known.value.pets[keyOf(name)]?.rarity ?: pet?.takeIf { it.name == name }?.rarity ?: Role.COMMON))
+        pets.set(Pet(name, level, known.value.pets[keyOf(name)]?.rarity ?: pet?.takeIf { it.name == name }?.rarity ?: Role.COMMON))
     }
 
-    private fun set(next: Pet?) {
-        if (next == pet) return
-        if (next?.name != pet?.name || next?.level != pet?.level) pace = null
-        pet = next
+    private fun changed(before: Pet?) {
+        val next = pet
+        if (next?.name != before?.name || next?.level != before?.level) pace = null
         block = null
         // A summon in chat names no rarity, so each pet's is kept from where it was last seen in color.
         if (next != null) remember(keyOf(next.name)) { it.copy(rarity = next.rarity) }
@@ -278,7 +243,7 @@ class ActivePet(config: DsModConfig) : HasFeature {
             null
         } else {
             cards[key] ?: about?.icon?.let { Item(it.id, 1, ServerText(ServerSpan(pet.name, pet.rarity.rgb)), skin = it.skin, model = it.model) }
-                ?: heads[pet.name]
+                ?: pets.head(pet.name)
         }
         val read = progress[key]?.takeIf { it.first == pet.level }?.second ?: PetProgress.MAX.takeIf { about?.maxLevel == pet.level }
         nextShown = nextLevel(pace, now)
@@ -330,9 +295,7 @@ class ActivePet(config: DsModConfig) : HasFeature {
     }
 
     private companion object {
-        const val SIDEBAR = "Pet:"
         const val SELECTED = "Selected Pet:"
-        const val NONE = "None"
         const val COMBAT = "COMBAT"
         const val MAX_LEVEL = "MAX LEVEL"
         const val OPEN_MENU = "Open your Pets menu to read its XP."
