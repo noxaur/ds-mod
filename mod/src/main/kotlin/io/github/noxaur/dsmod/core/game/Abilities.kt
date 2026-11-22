@@ -43,51 +43,29 @@ object Abilities {
 
     /** The abilities in [item]'s lore that have a cooldown, each with the heading above its `Cooldown` line. */
     fun of(item: Item): List<Ability> {
-        var heading: String? = null
         var found: MutableList<Ability>? = null
-        for (line in item.lore) {
-            val plain = clean(line.plain)
-            if (plain.isBlank()) {
-                heading = null
-                continue
+        item.sections(HEADING) { heading, lines ->
+            for (line in lines) {
+                val cooldown = COOLDOWN.seconds(line) ?: continue
+                if (cooldown > 0) (found ?: ArrayList<Ability>(1).also { found = it }) += Ability(heading.groupValues[1].trim(), cooldown)
             }
-            val titled = HEADING.matchEntire(plain)
-            if (titled != null) {
-                heading = titled.groupValues[1].trim()
-                continue
-            }
-            val name = heading ?: continue
-            val cooldown = COOLDOWN.seconds(plain) ?: continue
-            if (cooldown > 0) (found ?: ArrayList<Ability>(1).also { found = it }) += Ability(name, cooldown)
         }
         return found ?: emptyList()
     }
 
     /** The first `Cooldown` line anywhere in [item]'s lore, for an ability that has no heading, or null when it has none. */
-    fun cooldown(item: Item): Long? = item.lore.firstNotNullOfOrNull { line ->
-        COOLDOWN.seconds(line.plain.trim())?.takeIf { it > 0 }
-    }
+    fun cooldown(item: Item): Long? = item.cleanLore.firstNotNullOfOrNull { line -> COOLDOWN.seconds(line)?.takeIf { it > 0 } }
 
     /** The charging set bonus in a worn piece's lore, or null when it has none. */
     fun charge(item: Item): SetCharge? {
-        var tiered: MatchResult? = null
-        for (line in item.lore) {
-            val plain = line.plain.trim()
-            if (plain.isEmpty()) {
-                tiered = null
-                continue
+        item.sections(TIERED) { bonus, lines ->
+            val worn = count(bonus.groupValues[2]) ?: return@sections
+            for (line in lines) {
+                val charge = CHARGE.matchEntire(line) ?: continue
+                val pieces = count(charge.groupValues[1]) ?: continue
+                val every = millis(charge.groupValues[2]) ?: continue
+                return SetCharge(bonus.groupValues[1], worn, pieces, every)
             }
-            val header = TIERED.matchEntire(plain)
-            if (header != null) {
-                tiered = header
-                continue
-            }
-            val bonus = tiered ?: continue
-            val charge = CHARGE.matchEntire(plain) ?: continue
-            val worn = count(bonus.groupValues[2]) ?: continue
-            val pieces = count(charge.groupValues[1]) ?: continue
-            val every = millis(charge.groupValues[2]) ?: continue
-            return SetCharge(bonus.groupValues[1], worn, pieces, every)
         }
         return null
     }
@@ -95,16 +73,10 @@ object Abilities {
     /** Whether [item] is a helmet that stands in for any set's, as the Warden Helmet's Chameleon does. */
     fun anySetHelmet(item: Item): Boolean {
         if (item.name?.plain?.contains("Warden Helmet") == true) return true
-        return item.lore.joinToString(" ") { it.plain.trim() }.lowercase().replace(WHITESPACE, " ").contains(ANY_SET)
+        return item.cleanLore.joinToString(" ").lowercase().replace(WHITESPACE, " ").contains(ANY_SET)
     }
 
     private val WHITESPACE = Regex("""\s+""")
-
-    /** [plain] without the glyphs of the server's resource pack, which sit in Unicode's private use area. */
-    private fun clean(plain: String): String {
-        if (plain.none { it in ''..'' }) return plain.trim()
-        return plain.filterNot { it in ''..'' }.trim()
-    }
 
     /** The milliseconds a whole [plain] line names in its first group, or null when the line is not this regex's. */
     private fun Regex.seconds(plain: String) = matchEntire(plain)?.groupValues?.get(1)?.let(::millis)

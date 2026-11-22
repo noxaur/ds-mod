@@ -1719,7 +1719,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/core/game/Abilities.kt: /** The first
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/game/Abilities.kt: /** The milliseconds a whole [plain] line names in its first group, or null when the line is not this regex's. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/game/Abilities.kt: /** Whether [item] is a helmet that stands in for any set's, as the Warden Helmet's Chameleon does. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/game/Abilities.kt: /** Whether an action bar has a mana part that [cast] could not read. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/game/Abilities.kt: /** [plain] without the glyphs of the server's resource pack, which sit in Unicode's private use area. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/game/Area.kt: /** * A dungeon run. The sidebar adds the floor, as in `The Catacombs (F1)`, and says so with the new world. The * tab list's `Dungeon: Catacombs` row came 1.5 s later in a capture, after the run's first lines. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/game/Area.kt: /** Its tab list has no info row, so only the sidebar tells it. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/game/Area.kt: /** The part of The End around the Voidgloom altar. The tab list still reads `Area: The End` there. */
@@ -1790,7 +1789,6 @@ mod/src/main/kotlin/io/github/noxaur/dsmod/core/game/Pet.kt: /** The name of the
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/game/Pet.kt: /** The pet [text] names, its rarity from the color of the last span with text, which is the name's. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/game/Pet.kt: /** The pet item a pet holds, such as Gold Claws, in its rarity when the server gave one. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/game/Pet.kt: /** The pets that float beside players, for a feature's `readEntities`. [worn] reads each one. */
-mod/src/main/kotlin/io/github/noxaur/dsmod/core/game/Pet.kt: /** The uuid dragsim.co gives each pet item in `extra.item_uuid`, as on a pet in the Auction House. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/game/ProtectorRow.kt: /** * The tab list's `Protector` row, such as `Rising (Tier 2/5, 149)`, `Resting (200)` or `Spawned`. [tier] is * `2/5` or empty, and [killsLeft] is the zealot kills the lobby still needs before the Protector emerges, or * null when the row gives none. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/game/ProtectorRow.kt: /** The kills one cycle takes, which is what the row reads right after a defeat: `Resting (200)`. */
 mod/src/main/kotlin/io/github/noxaur/dsmod/core/game/ProtectorRow.kt: /** The row's parts, or null when it has another shape. */
