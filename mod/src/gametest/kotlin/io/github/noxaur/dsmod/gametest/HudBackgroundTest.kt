@@ -11,15 +11,14 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 class HudBackgroundTest : FabricClientGameTest {
     private fun cornerBrightness(context: ClientGameTestContext, name: String): Int {
         val shot = context.screenshot(name)
-        val block = context.computeOnClient<Hud.Placed, Nothing> { checkNotNull(Hud.find(TIMER)) { "The dragon timer is not on the HUD" } }
+        val block = context.computeOnClient<Hud.Placed, Nothing> { checkNotNull(Hud.find(DRAGON_TIMER)) { "The dragon timer is not on the HUD" } }
         return brightness(context.guiPixel(shot, block.x + 2 * block.scale, block.y + 2 * block.scale))
     }
 
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
-            listOf("gamerule advance_time false", "gamerule advance_weather false", "time set noon").forEach { world.server.runCommand(it) }
-            context.enterTheEnd()
-            world.server.runCommand("""tellraw @a "§5✦ §dThe Egg has Spawned!"""")
+            world.freezeTime()
+            context.showDragonTimer(world)
             context.waitTicks(5)
             val plated = cornerBrightness(context, "hud-background-on")
             val bare = try {
@@ -40,7 +39,7 @@ class HudBackgroundTest : FabricClientGameTest {
                     DsModClient.openHudEditor()
                 }
                 context.waitForScreen(HudEditorScreen::class.java)
-                val box = context.computeOnClient<KitCheckbox, Nothing> { it.gui.screen()!!.children().filterIsInstance<KitCheckbox>().single() }
+                val box = context.computeOnClient<KitCheckbox, Nothing> { checkNotNull(it.gui.screen()).widgets<KitCheckbox>().single() }
                 check(context.computeOnClient<Boolean, Nothing> { !box.active }) { "The Background box can be clicked off dragsim.co, where the HUD draws no plate" }
                 context.click(box.x + 5, box.y + 5)
                 check(context.computeOnClient<Boolean, Nothing> { DsModClient.feature<HudBackground>().feature.enabled }) {
@@ -54,7 +53,6 @@ class HudBackgroundTest : FabricClientGameTest {
     }
 
     private companion object {
-        const val TIMER = "dragon-timer"
         const val DARKER = 60
     }
 }

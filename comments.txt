@@ -630,7 +630,6 @@ mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/AbilityCooldownsTest.kt:
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ActivePetTest.kt: /** * Active Pet's block on the HUD, with its icon left of its rows. The sidebar names the pet, a pet floating beside the * player gives its head, and the Pets menu its held item and XP, with the active pet marked. A held item in chat and a * level up in the sidebar follow. Read the screenshots: the name in Epic purple with the hint, the head beside it, the * mark in the menu, the bar at 40%, the rate after a second read, and after the level up the new item and the hint again. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ActivePetTest.kt: /** The Ender Dragon as the Pets menu shows it, holding Gold Claws, with [progress] under its level. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ActivePetTest.kt: /** The middle of the block's icon in GUI pixels, and the item there. */
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ActivePetTest.kt: /** Whether [stack] wears [SKIN]. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ActivePetTest.kt: // A second read of the menu, a few seconds on, gives the rate and the time to the next level.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/ActivePetTest.kt: // The menu's head wears the same skin as the floating one, taken from a head the server gave the player.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/AnimationsPoseTest.kt: // A smaller sword swings a shorter way with Scale Swing, and the game's full way without it, and so does a stab.
@@ -721,10 +720,6 @@ mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/CommandBindGroupsTest.kt
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/CommandBindGroupsTest.kt: // The heading's switch turns the whole group off, and Space on the heading back on.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/CommandBindsTest.kt: /** * Drives the list of command binds where it sits in the settings: an empty list says what to do, Add Bind opens its * command to type, keys are recorded held together, where it works cycles, its details open under it, a copy clashes * and is ringed, and Delete asks twice. `CommandBindGroupsTest` drives the groups, and [CommandKeysTest] sends the * binds in a world. Read the screenshots. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/CommandBindsTest.kt: /** Drives the list of binds in the settings, by its lines and the names of their controls, at GUI scale 2. */
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/CommandBindsTest.kt: /** Scrolls the list into view. */
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/CommandBindsTest.kt: /** The line of [group]'s heading, or of its details. */
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/CommandBindsTest.kt: /** The line of bind [index], or of its details. */
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/CommandBindsTest.kt: /** Where line [line]'s control named [control] is, or the line itself. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/CommandBindsTest.kt: // Add Bind opens the new bind's command to type into.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/CommandBindsTest.kt: // Delete asks twice, and a press elsewhere calls it off.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/CommandBindsTest.kt: // Duplicate adds a copy that starts off, after the original. Once on, it clashes, and both keys are ringed.
@@ -770,9 +765,7 @@ mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/EndTrackerEdgeTest.kt: /
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/EndTrackerEdgeTest.kt: // The profile packet can land two or more ticks after the block update, with no second block() call.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/EndTrackerEdgeTest.kt: // The skull has no public setter. The server sends the profile on the block entity, which is this field.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/EquipmentDisplayTest.kt: /** * The worn armor shows on the HUD as the player wears it, so a head keeps its skin and dyed leather its color, and the * chat's free mouse reads a piece's tooltip. The pet shows by name until its head floats beside the player, and then as that * head at the end of the row. Read the screenshots: the row with a gap for the missing leggings, the tooltip over the * chestplate, the column, the pet's name under the row, and the pet's head in it. */
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/EquipmentDisplayTest.kt: /** A head's skin as dragsim.co's armor and pets wear one: a texture on Mojang's server, named in base64 JSON. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/EquipmentDisplayTest.kt: /** The middle of piece [index] in GUI pixels, counted along the row or down the column, in plate or hotbar slots. */
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/EquipmentDisplayTest.kt: /** Whether [stack] wears [SKIN], which the HUD rebuilt from the mod's own record of the item. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/EquipmentDisplayTest.kt: // Docked, a slot lines up with the hotbar's: its item 3px into a strip 7px past the hotbar's right end.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/EquipmentDisplayTest.kt: // Left of the hotbar it leaves the offhand slot's 29px, and the pet sits on a row of its own above the armor.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/EquipmentDisplayTest.kt: // The sidebar's pet line, here an Epic pet as dragsim.co writes it. With no head seen yet, the name shows under the row.
@@ -877,7 +870,6 @@ mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/InventoryGrid.kt: /** Th
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/InventoryGrid.kt: /** The item for inventory [index], named after it and with lore as long as dragsim.co's, or none in a few slots. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/InventoryGrid.kt: /** The items in the three rows and the hotbar. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/InventoryGrid.kt: /** Waits until the grid draws the item named [name] at [point], as it does once a changed setting reaches the HUD. */
-mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/InventoryGrid.kt: /** Whether [stack] wears the head's skin, which the HUD rebuilt from the mod's own record of the item. */
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/InventoryGrid.kt: // A diamond sword as dragsim.co marks a Legendary one, beside the plain ones at 20 and 25.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/InventoryGrid.kt: // The player's inventory holds the hotbar in 0 to 8 and the three rows from 9.
 mod/src/gametest/kotlin/io/github/noxaur/dsmod/gametest/InventoryGrid.kt: // The poller reads long-lored items over a few ticks, so the test starts once every one has arrived.

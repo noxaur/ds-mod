@@ -139,7 +139,7 @@ class ItemRarityTest : FabricClientGameTest {
                     it.setItem(23, chestItem("Special Sword", "SPECIAL"))
                     it.setItem(25, ItemStack(Items.STONE))
                 }
-                server.playerList.players.first().openMenu(
+                server.player.openMenu(
                     SimpleMenuProvider({ id, inventory, _ -> ChestMenu.sixRows(id, inventory, chest) }, Component.literal("Test Chest")),
                 )
             }

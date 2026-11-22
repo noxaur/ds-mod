@@ -43,14 +43,10 @@ class ForgeCraftTest : FabricClientGameTest {
             it.setItem(20, named(if (ready) Items.DYED_TERRACOTTA.green() else Items.DYED_TERRACOTTA.gray(), "Confirm", if (ready) 0x55FF55 else 0xAAAAAA))
         }
 
-    private fun carry(world: TestSingleplayerContext, count: Int) = world.server.runOnServer<Nothing> { server ->
-        val inventory = server.playerList.players.first().inventory
-        inventory.clearContent()
-        inventory.setItem(9, named(Items.OBSIDIAN, "Enchanted Obsidian", 0x55FF55, minOf(count, 64)))
-    }
+    private fun carry(world: TestSingleplayerContext, count: Int) = world.give(mapOf(9 to named(Items.OBSIDIAN, "Enchanted Obsidian", 0x55FF55, minOf(count, 64))))
 
     private fun forging(world: TestSingleplayerContext) = world.server.runOnServer<Nothing> { server ->
-        server.playerList.players.first().sendSystemMessage(Component.literal("Forging Refined Obsidian! Ready in 49m 12s."))
+        server.player.sendSystemMessage(Component.literal("Forging Refined Obsidian! Ready in 49m 12s."))
     }
 
     private fun press(context: ClientGameTestContext) = ClickSpy.during(context) {

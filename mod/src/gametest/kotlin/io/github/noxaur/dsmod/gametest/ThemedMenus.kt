@@ -34,7 +34,7 @@ object ThemedMenus {
     }
 
     fun onServer(world: TestSingleplayerContext, block: (ServerPlayer) -> Unit) =
-        world.server.runOnServer<Nothing> { server -> block(server.playerList.players.first()) }
+        world.server.runOnServer<Nothing> { server -> block(server.player) }
 
     fun check(context: ClientGameTestContext, title: String, parts: List<Part>) {
         val name = title.lowercase().replace(' ', '-')

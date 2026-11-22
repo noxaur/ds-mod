@@ -34,10 +34,8 @@ class PlayerModelTest : FabricClientGameTest {
         val vignette = context.computeOnClient<Boolean, Nothing> { it.options.vignette().get() }
         context.worldBuilder().create().use { world ->
             try {
+                world.freezeTime()
                 listOf(
-                    "gamerule advance_time false",
-                    "gamerule advance_weather false",
-                    "time set noon",
                     "clear @a",
                     "execute at @a run summon mannequin ~2.5 ~ ~1 {Rotation:[0f,0f]}",
                 ).forEach(world.server::runCommand)

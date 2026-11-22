@@ -1,17 +1,8 @@
 package io.github.noxaur.dsmod.gametest
 
-import com.sun.net.httpserver.HttpExchange
-import com.sun.net.httpserver.HttpServer
-import io.github.noxaur.dsmod.core.backend.Backend
-import io.github.noxaur.dsmod.core.backend.Identity
 import io.github.noxaur.dsmod.core.backend.Request
 import io.github.noxaur.dsmod.core.brief.Brief
-import io.github.noxaur.dsmod.core.game.ServerSpan
-import io.github.noxaur.dsmod.core.game.ServerText
-import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.ui.Theme
-import io.github.noxaur.dsmod.edge.Account
-import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
 import io.github.noxaur.dsmod.edge.contribute.Contribute
@@ -20,7 +11,6 @@ import io.github.noxaur.dsmod.edge.ui.KitButton
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import org.lwjgl.glfw.GLFW
-import java.net.InetSocketAddress
 import java.nio.file.Path
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
@@ -56,66 +46,45 @@ class ContributeTest : FabricClientGameTest {
     @Volatile
     private var uploadStatus = 200
 
-    private val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
-        createContext("/") { exchange -> respond(exchange) }
-        start()
-    }
-
-    private fun respond(exchange: HttpExchange) {
-        val path = exchange.requestURI.path
-        val body = exchange.requestBody.readBytes()
-        val signedIn = exchange.requestHeaders.getFirst("Authorization") == "Bearer s1"
-        val (status, answer) = when {
-            path == "/api/auth/minecraft/challenge" -> 200.also { signIn.await() } to """{"serverId":"${"0".repeat(40)}"}"""
-            path == "/api/auth/minecraft/verify" -> 200 to """{"token":"s1"}"""
-            !signedIn -> 401 to ""
+    private fun answer(call: FakeBackend.Request): Pair<Int, String> {
+        val path = call.path
+        return when {
+            !call.signedIn -> 401 to ""
             path == "/v1/contrib/requests" -> 200 to "[${request("end", 600, "The End")},${request("elsewhere", 600, "Crimson Isle")},${request("free")}]"
             path.endsWith("/skip") -> 204.also { skips += path } to ""
             path.endsWith("/submissions") -> uploadStatus.also {
-                uploads += Upload(exchange.requestURI.toString(), exchange.requestHeaders.getFirst("Content-Type"), body)
+                uploads += Upload(call.exchange.requestURI.toString(), call.exchange.requestHeaders.getFirst("Content-Type"), call.body)
             } to (if (uploadStatus == 200) """{"id":"s"}""" else "")
             else -> 404 to ""
         }
-        val bytes = answer.toByteArray()
-        exchange.sendResponseHeaders(status, if (bytes.isEmpty()) -1 else bytes.size.toLong())
-        if (bytes.isNotEmpty()) exchange.responseBody.use { it.write(bytes) }
-        exchange.close()
     }
 
-    override fun runTest(context: ClientGameTestContext) {
-        Account.backend = Backend("http://127.0.0.1:${server.address.port}", object : Identity {
-            override val name = "Steve"
-            override fun join(serverId: String) {}
-        }, "test")
+    override fun runTest(context: ClientGameTestContext) = FakeBackend("Steve", signIn::await, ::answer).use {
         val dir = Contribute.dir()
         val name = context.computeOnClient<String, Nothing> { it.user.name }
-        try {
-            context.worldBuilder().create().use {
-                context.runOnClient<Nothing> { DsModClient.game.post(0, TabList(listOf(ServerText(listOf(ServerSpan("Area: The End")))))) }
-                offers(context)
-                longBrief(context)
-                val upload = recorded(context, dir)
-                check(upload.path == "/v1/contrib/requests/free/submissions?modVersion=test" && upload.type == "application/octet-stream") { "Uploaded to ${upload.path} as ${upload.type}" }
-                val lines = GZIPInputStream(upload.bytes.inputStream()).bufferedReader().readLines()
-                check(lines.count { "\"type\":\"step\"" in it } == 4) { "The upload's steps are ${lines.filter { "\"type\":\"step\"" in it }}" }
-                check(lines.none { "\"type\":\"chat\"" in it }) { "The upload holds chat" }
-                check(lines.none { name in it }) { "The upload names the player $name" }
-                // Kept in the run folder, so the bytes can be sent through the real backend and pulled with dsctl.
-                java.nio.file.Files.write(dir.resolveSibling("contribute-upload.jsonl.gz"), upload.bytes)
+        context.worldBuilder().create().use {
+            context.enterTheEnd()
+            offers(context)
+            longBrief(context)
+            val upload = recorded(context, dir)
+            check(upload.path == "/v1/contrib/requests/free/submissions?modVersion=test" && upload.type == "application/octet-stream") { "Uploaded to ${upload.path} as ${upload.type}" }
+            val lines = GZIPInputStream(upload.bytes.inputStream()).bufferedReader().readLines()
+            check(lines.count { "\"type\":\"step\"" in it } == 4) { "The upload's steps are ${lines.filter { "\"type\":\"step\"" in it }}" }
+            check(lines.none { "\"type\":\"chat\"" in it }) { "The upload holds chat" }
+            check(lines.none { name in it }) { "The upload names the player $name" }
+            // Kept in the run folder, so the bytes can be sent through the real backend and pulled with dsctl.
+            java.nio.file.Files.write(dir.resolveSibling("contribute-upload.jsonl.gz"), upload.bytes)
 
-                keptAndResent(context, dir)
-                refused(context, dir)
-                discarded(context, dir, "timed out") { context.waitTicks(60) }
-                discarded(context, dir, "cancelled") { context.runOnClient<Nothing> { Contribute.cancel() } }
-                start(context, request("left"))
-                press(context)
-            }
-            // Leaving the world is leaving the server, which ends the run and deletes its capture.
-            context.waitUntil("the run that left the world was deleted") { files(dir).isEmpty() && !Recorder.running }
-            check(uploads.none { "/left/" in it.path }) { "A run that left the world was sent" }
-        } finally {
-            server.stop(0)
+            keptAndResent(context, dir)
+            refused(context, dir)
+            discarded(context, dir, "timed out") { context.waitTicks(60) }
+            discarded(context, dir, "cancelled") { context.runOnClient<Nothing> { Contribute.cancel() } }
+            start(context, request("left"))
+            press(context)
         }
+        // Leaving the world is leaving the server, which ends the run and deletes its capture.
+        context.waitUntil("the run that left the world was deleted") { files(dir).isEmpty() && !Recorder.running }
+        check(uploads.none { "/left/" in it.path }) { "A run that left the world was sent" }
     }
 
     private fun offers(context: ClientGameTestContext) {
@@ -197,7 +166,7 @@ class ContributeTest : FabricClientGameTest {
         check(context.computeOnClient<Boolean, Nothing> { Contribute.accept(request) }) { "${request.id} was not accepted" }
     }
 
-    private fun buttons() = (net.minecraft.client.Minecraft.getInstance().gui.screen() as? ContributeScreen)?.children()?.filterIsInstance<KitButton>().orEmpty()
+    private fun buttons() = (net.minecraft.client.Minecraft.getInstance().gui.screen() as? ContributeScreen)?.widgets<KitButton>().orEmpty()
 
     private fun click(context: ClientGameTestContext, label: String) {
         context.click(context.computeOnClient<KitButton, Nothing> { buttons().single { it.message.string == label } }, settle = 0)

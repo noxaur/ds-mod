@@ -1,9 +1,5 @@
 package io.github.noxaur.dsmod.gametest
 
-import com.google.common.collect.ImmutableMultimap
-import com.mojang.authlib.GameProfile
-import com.mojang.authlib.properties.Property
-import com.mojang.authlib.properties.PropertyMap
 import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.feature.general.InventoryHud
 import io.github.noxaur.dsmod.core.feature.general.InventoryLayout
@@ -22,10 +18,7 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.CustomData
 import net.minecraft.world.item.component.DyedItemColor
 import net.minecraft.world.item.component.ItemLore
-import net.minecraft.world.item.component.ResolvableProfile
 import java.nio.file.Path
-import java.util.Base64
-import java.util.UUID
 
 /**
  * The world the Inventory HUD game tests share: an inventory of named items with lore as long as dragsim.co's, a
@@ -46,18 +39,12 @@ object InventoryGrid {
     /** Slots left empty: one in the top row, and one in the hotbar. */
     private val EMPTY = setOf(12, 4)
 
-    private const val SKIN = "f83159c5bb7d80454d2d646b15774b7116aabcb3af5b6777a27573fc45f7854f"
-    private val TEXTURES: String = Base64.getEncoder().encodeToString("{\"textures\":{\"SKIN\":{\"url\":\"http://textures.minecraft.net/texture/$SKIN\"}}}".toByteArray())
-
     /** Fills the inventory, turns the grid on and runs [test] with it showing, then puts every setting back. */
     fun with(context: ClientGameTestContext, test: (TestSingleplayerContext) -> Unit) {
         val inventoryHud = DsModClient.feature<InventoryHud>()
         context.worldBuilder().create().use { world ->
-            world.server.runOnServer<Nothing> { server ->
-                val inventory = server.playerList.players.first().inventory
-                // The player's inventory holds the hotbar in 0 to 8 and the three rows from 9.
-                for (index in 0 until 36) inventory.setItem(index, item(index))
-            }
+            // The player's inventory holds the hotbar in 0 to 8 and the three rows from 9.
+            world.give((0 until 36).associateWith(::item))
             // The poller reads long-lored items over a few ticks, so the test starts once every one has arrived.
             context.waitFor { DsModClient.game.container.slots.let { slots -> slots.size > 44 && slots.subList(9, 45).count { it != null } == FILLED } }
             inventoryHud.feature.enabled = true
@@ -123,17 +110,11 @@ object InventoryGrid {
         return context.guiPixel(shot, block.x + (4 + 5) * block.scale, block.y + (4 + 5) * block.scale)
     }
 
-    /** Whether [stack] wears the head's skin, which the HUD rebuilt from the mod's own record of the item. */
-    fun skin(stack: ItemStack?): Boolean {
-        val value = stack?.get(DataComponents.PROFILE)?.partialProfile()?.properties()?.get("textures")?.firstOrNull()?.value() ?: return false
-        return SKIN in String(Base64.getDecoder().decode(value))
-    }
-
     /** The item for inventory [index], named after it and with lore as long as dragsim.co's, or none in a few slots. */
     fun item(index: Int): ItemStack {
         if (index in EMPTY) return ItemStack.EMPTY
         val stack = when (index) {
-            9 -> ItemStack(Items.PLAYER_HEAD).also { it.set(DataComponents.PROFILE, profile()) }
+            9 -> ItemStack(Items.PLAYER_HEAD).also { it.set(DataComponents.PROFILE, HeadSkin.profile()) }
             10 -> ItemStack(Items.LEATHER_CHESTPLATE).also { it.set(DataComponents.DYED_COLOR, DyedItemColor(DYE)) }
             // A diamond sword as dragsim.co marks a Legendary one, beside the plain ones at 20 and 25.
             15 -> ItemStack(Items.DIAMOND_SWORD).also {
@@ -145,9 +126,4 @@ object InventoryGrid {
         stack.set(DataComponents.CUSTOM_NAME, Component.literal("Item $index"))
         stack.set(DataComponents.LORE, ItemLore((1..30).map { Component.literal("Line $it of the lore of item $index") }))
         return stack
-    }
-
-    private fun profile() = ResolvableProfile.createResolved(
-        GameProfile(UUID.nameUUIDFromBytes(SKIN.toByteArray()), "", PropertyMap(ImmutableMultimap.of("textures", Property("textures", TEXTURES)))),
-    )
-}
+    }}

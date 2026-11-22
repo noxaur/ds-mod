@@ -125,8 +125,8 @@ class CaptureTest : FabricClientGameTest {
                 """execute at @a run summon zombie ~ ~ ~-6 {CustomName:"☠ Test Horror I 3M/3M❤",NoAI:1b,Silent:1b}""",
                 """tellraw @a "RARE DROP!"""",
                 "say Hello from the server",
-                """tellraw @a "§5✦ §dThe Egg has Spawned!"""",
             ).forEach(world.server::runCommand)
+            world.eggSpawns()
             context.waitTicks(20)
             // One mob dies and one is carried far away, which the server reports as a removal without a death. The
             // slayer boss is hit, which renames it.

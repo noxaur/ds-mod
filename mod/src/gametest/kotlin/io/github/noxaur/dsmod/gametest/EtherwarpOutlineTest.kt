@@ -43,7 +43,7 @@ class EtherwarpOutlineTest : FabricClientGameTest {
                 it.set(DataComponents.CUSTOM_NAME, Component.literal("Aspect of the Void"))
                 it.set(DataComponents.LORE, ItemLore(lore.map(Component::literal)))
             }
-            server.playerList.players.first().setItemInHand(InteractionHand.MAIN_HAND, stack)
+            server.player.setItemInHand(InteractionHand.MAIN_HAND, stack)
         }
         context.waitTicks(3)
     }
@@ -56,7 +56,8 @@ class EtherwarpOutlineTest : FabricClientGameTest {
 
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
-            set(context, world, "fill -1 99 -1 1 99 1 stone", "tp @a 0.5 100 0.5 -90 0", "setblock 10 101 0 stone")
+            world.standOnStone()
+            set(context, world, "setblock 10 101 0 stone")
             context.input.lookAt(-90f, 0f)
             context.input.holdKey { it.keyShift }
             context.waitTicks(10)
