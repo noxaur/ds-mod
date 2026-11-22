@@ -23,6 +23,7 @@ import net.minecraft.nbt.StringTag
 import net.minecraft.nbt.Tag
 import net.minecraft.resources.Identifier
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.CustomData
 import net.minecraft.world.item.component.DyedItemColor
 import net.minecraft.world.item.component.ItemLore
@@ -31,6 +32,12 @@ import java.util.Base64
 import java.util.UUID
 
 val ItemStack.id: String get() = BuiltInRegistries.ITEM.getKey(item).toString()
+
+fun stackOf(id: String, count: Int = 1): ItemStack = ItemStack(itemOf(id) ?: Items.BARRIER, count)
+
+fun isItem(id: String) = itemOf(id) != null
+
+private fun itemOf(id: String) = Identifier.tryParse(id)?.let { BuiltInRegistries.ITEM.getOptional(it).orElse(null) }
 
 val ItemStack.plainName: String? get() = get(DataComponents.CUSTOM_NAME)?.string
 
@@ -86,7 +93,7 @@ fun ItemStack.skullTexture(): String? =
  * attributes from its items and writes their stats in the lore, so the stack has none, or its tooltip would add armor.
  */
 fun Item.toStack(): ItemStack {
-    val stack = ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(id)), count)
+    val stack = stackOf(id, count)
     stack.remove(DataComponents.ATTRIBUTE_MODIFIERS)
     name?.let { stack.set(DataComponents.CUSTOM_NAME, it.toComponent()) }
     if (lore.isNotEmpty()) stack.set(DataComponents.LORE, ItemLore(lore.map { it.toComponent() }))
