@@ -5,6 +5,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption.ATOMIC_MOVE
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.exists
@@ -18,10 +19,14 @@ import kotlin.io.path.writeText
  * line. [load] reads the files once at start. [flush] hands the changed ones to a writer thread, which writes a temporary file and
  * renames it over the old one, so the client thread never waits on the disk and a crash cannot leave half a file.
  */
-class SavedFiles(private val dir: Path, private val game: Game) {
+class SavedFiles(
+    private val dir: Path,
+    private val game: Game,
+    startWriter: () -> ExecutorService = { Executors.newSingleThreadExecutor { Thread(it, "dsmod-save").apply { isDaemon = true } } },
+) {
     private val states = game.readouts.mapNotNull { readout -> readout.feature.state?.let { readout.feature.id to it } } +
         ("places" to game.places) + ("hidden" to game.hidden)
-    private val writer = lazy { Executors.newSingleThreadExecutor { Thread(it, "dsmod-save").apply { isDaemon = true } } }
+    private val writer = lazy(startWriter)
     private val failures = ConcurrentLinkedQueue<Pair<String, Exception>>()
 
     /** A file that does not parse is renamed `<id>.json.corrupt-<time>`, and its feature starts from its default. */

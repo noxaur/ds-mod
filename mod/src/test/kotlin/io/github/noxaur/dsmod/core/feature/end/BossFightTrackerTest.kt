@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.core.feature.end
 
-import io.github.noxaur.dsmod.harness.chat
 import io.github.noxaur.dsmod.harness.Harness
 import io.github.noxaur.dsmod.harness.lines
 import io.github.noxaur.dsmod.core.feature.Saved
@@ -10,8 +9,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BossFightTrackerTest : Harness() {
-
-    private fun say(time: Long, line: String) = game.post(time, chat(line))
 
     private fun down(time: Long, name: String) = say(
         time,

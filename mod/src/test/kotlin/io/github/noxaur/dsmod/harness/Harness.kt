@@ -27,6 +27,8 @@ abstract class Harness(
         return shown
     }
 
+    fun say(time: Long, line: String) = game.post(time, chat(line))
+
     fun pass(millis: Long = Game.REFRESH_MILLIS) {
         time += millis
         game.tick(time)

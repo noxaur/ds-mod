@@ -32,7 +32,7 @@ class BossMarksTest : FabricClientGameTest {
                 DsModClient.feature<BossBeacon>().feature.enabled = true
                 DsModClient.feature<BossTracer>().feature.enabled = true
             }
-            world.server.runCommand("time set noon")
+            world.freezeTime()
             world.server.runCommand("""execute at @a run summon iron_golem ~ ~ ~-12 {NoAI:1b,CustomName:"[Lv100] Endstone Protector 10M/10M"}""")
             context.runOnClient<Nothing> {
                 DsModClient.game.post(System.currentTimeMillis(), SystemMessage(ServerText(ServerSpan("☠ SLAYER BOSS SPAWNING!"))))
