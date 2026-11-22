@@ -12,7 +12,11 @@ export const backendIsUp = Effect.tryPromise(() => fetch(`${backendUrl}/healthz`
   Effect.orElseSucceed(() => false),
 );
 
-const User = Schema.Struct({ id: Schema.String, name: Schema.String });
+const User = Schema.Struct({
+  id: Schema.String,
+  name: Schema.String,
+  image: Schema.optionalKey(Schema.NullOr(Schema.String)),
+});
 
 const Verified = Schema.Struct({
   session: Schema.Struct({ token: Schema.String, expiresAt: Schema.DateFromString }),
