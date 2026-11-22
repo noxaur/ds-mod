@@ -22,10 +22,7 @@ import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.core.component.DataComponents
-import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.resources.Identifier
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 
 /**
@@ -45,10 +42,6 @@ object TabBar {
     private var searched: String? = null
     private var stacks = arrayOfNulls<ItemStack>(0)
     private val dimmed = BitSet()
-
-    /** The item a tab shows: [id] from the game's items, or a barrier when there is no such item. */
-    fun icon(id: String): ItemStack =
-        Identifier.tryParse(id)?.let { BuiltInRegistries.ITEM.getOptional(it).orElse(null) }?.let(::ItemStack) ?: ItemStack(Items.BARRIER)
 
     /** What a tab's tooltip says: its name, the command it sends and the click hint. */
     fun tooltip(tab: MenuTab) = text {
@@ -88,7 +81,7 @@ object TabBar {
                     search = tab
                     KitTab(x, edgeY(tab.edge), tab.edge, "Search", null, Icon.SEARCH, glass) { openSearch() }
                 } else {
-                    KitTab(x, edgeY(tab.edge), tab.edge, tab.tooltip.ifBlank { "/${tab.command}" }, icon(tab.item), null, glass) { PlayerCommands.send(tab.command) }
+                    KitTab(x, edgeY(tab.edge), tab.edge, tab.tooltip.ifBlank { "/${tab.command}" }, stackOf(tab.item), null, glass) { PlayerCommands.send(tab.command) }
                 }
                 widget.selected = i == selected
                 widget.setTooltip(Tooltip.create(tooltip(tab)))
