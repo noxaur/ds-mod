@@ -47,11 +47,17 @@ export default defineConfig({
       "typescript/consistent-return": "off",
     },
     overrides: [
-      { files: ["src/**"], rules: { "no-restricted-imports": ["error", { patterns: [noVoid, noRenderInside] }] } },
+      {
+        files: ["src/**"],
+        rules: {
+          "dsmod/no-json-parse": "error",
+          "dsmod/time-through-effect": "error",
+          "no-restricted-imports": ["error", { patterns: [noVoid, noRenderInside] }],
+        },
+      },
       {
         files: ["src/profiles/**"],
         rules: {
-          "dsmod/no-json-parse": "error",
           "no-restricted-imports": [
             "error",
             {
@@ -69,6 +75,10 @@ export default defineConfig({
         },
       },
       { files: ["src/**/*.test.ts"], rules: { "dsmod/no-json-parse": "off" } },
+      {
+        files: ["src/**/*.test.ts", "src/ids.ts", "src/identity/minecraft.ts"],
+        rules: { "dsmod/time-through-effect": "off" },
+      },
     ],
   },
 });
