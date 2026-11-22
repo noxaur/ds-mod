@@ -89,6 +89,26 @@ const timeThroughEffect = defineRule({
   },
 });
 
+const builtByHarness = new Set(["makeApp", "memoryServices", "betterAuth", "memoryAdapter"]);
+
+const testHarness = defineRule({
+  meta: {
+    messages: {
+      harness:
+        "Build the app with testApp and sign-in with testAuth from test/harness.ts, so every test calls them the same way.",
+    },
+  },
+  create(context) {
+    return {
+      ImportSpecifier(node) {
+        if (node.imported.type === "Identifier" && builtByHarness.has(node.imported.name)) {
+          context.report({ node, messageId: "harness" });
+        }
+      },
+    };
+  },
+});
+
 export default definePlugin({
   meta: { name: "dsmod" },
   rules: {
@@ -96,5 +116,6 @@ export default definePlugin({
     "no-computed-console": noComputedConsole,
     "no-json-parse": noJsonParse,
     "time-through-effect": timeThroughEffect,
+    "test-harness": testHarness,
   },
 });
