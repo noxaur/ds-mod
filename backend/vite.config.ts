@@ -1,6 +1,18 @@
 import { voidPlugin } from "void";
 import { defineConfig } from "vite-plus";
 
+const noVoid = {
+  group: ["void", "void/*"],
+  message:
+    "src/ is the Effect API and runs without Void. Reach a Cloudflare resource through a service the route file provides.",
+};
+
+const noRenderInside = {
+  group: ["**/items/render/*"],
+  message:
+    "items/render/ is the item renderer's inside. Import a reader of dragsim.co's data from src/upstream/, and the renderer from items/render.ts.",
+};
+
 export default defineConfig({
   // The tests call the Effect API directly, and Void's plugin would start a second server inside the test runner.
   plugins: process.env["VITEST"] === undefined ? [voidPlugin()] : [],
@@ -35,18 +47,21 @@ export default defineConfig({
       "typescript/consistent-return": "off",
     },
     overrides: [
+      { files: ["src/**"], rules: { "no-restricted-imports": ["error", { patterns: [noVoid, noRenderInside] }] } },
       {
-        files: ["src/**"],
+        files: ["src/profiles/**"],
         rules: {
           "dsmod/no-json-parse": "error",
           "no-restricted-imports": [
             "error",
             {
               patterns: [
+                noVoid,
+                noRenderInside,
                 {
-                  group: ["void", "void/*"],
+                  group: ["**/items/*", "!**/items/model.ts", "!**/items/render.ts"],
                   message:
-                    "src/ is the Effect API and runs without Void. Reach a Cloudflare resource through a service the route file provides.",
+                    "Profiles draws items only through items/model.ts and items/render.ts. Read dragsim.co's data with src/upstream/.",
                 },
               ],
             },

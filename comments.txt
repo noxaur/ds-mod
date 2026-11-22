@@ -172,11 +172,6 @@ backend/src/items/items.ts: /** Examples kept per item, one per player, for an a
 backend/src/items/items.ts: /** Keeps what a player saw. A sighting with a texture from anywhere but Mojang is dropped whole. */
 backend/src/items/items.ts: /** Most entries in one page of the agent's view. */
 backend/src/items/items.ts: /** One account's share of the table, so a single player cannot fill it. A real player sees fewer different items. */
-backend/src/items/legacy.ts: /** * A style code: `§`, or the `&` the server's catalog also writes in some descriptions, then the code. `§x` and six * `§` digits is the form that names a color the sixteen codes cannot. */
-backend/src/items/legacy.ts: /** * Reads the server's `§` text into a line. A color code clears the styles before it, and `§r` clears everything back * to `color`, which is what text with no code in front of it is drawn in. A flag that is false is left out. */
-backend/src/items/legacy.ts: /** Appends text in a style, joining it to the span before when the style is the same. */
-backend/src/items/legacy.ts: /** The `#RRGGBB` for a `§` color code such as `6`, or undefined for one that is not a color. */
-backend/src/items/legacy.ts: /** What `§` followed by each color code means, as the `#RRGGBB` a span carries. */
 backend/src/items/model.ts: /** * A run of text in one style. A client draws a style it does not know as plain, so a flag can be added here without * breaking an older mod. Colors are `#RRGGBB`, because the server's text uses colors that `§` codes cannot name. */
 backend/src/items/model.ts: /** * An item a player saw in the game, sent by a mod whose player agreed to report what it has not seen. Any signed-in * client can send anything, so nothing here is drawn until enough different players agree on it. Fields are only ever * added, never removed, because the payload is read strictly and an older backend never runs against a newer mod. */
 backend/src/items/model.ts: /** * An item as the game would draw it in a slot, with its tooltip. The backend rebuilds the tooltip, because the * server's API sends an item's data but no lore. `material` alone must always draw something, so a client that does * not know a newer field such as `itemModel` still shows an item. */
@@ -258,14 +253,8 @@ backend/src/items/render/gameData.ts: /** * The item's data in the shape dragsim
 backend/src/items/render/gameData.ts: /** A stat group's keys as the game holds them: the API's `base` is the game's `stats`. */
 backend/src/items/render/policy.test.ts: // Some copies were seen plain, and the contract draws an item that glints only sometimes without it.
 backend/src/items/render/policy.ts: /** * Items the game draws with a glint whatever the server sends, so the mod, which sets the glint explicitly, has to be * told they glint. */
-backend/src/items/render/policy.ts: /** * The texture when it is the base64 `textures` property of a skin that lives on Mojang's texture server, and * undefined otherwise. A client fetches what the texture names, so nothing else may get through, however it is sent. */
 backend/src/items/render/policy.ts: /** * Whether the item glints. The API sends no enchantments, so this is the best knowledge there is, in this order: * the catalog says it glows, a material the game glints by itself does unless enough players saw a copy without, and * otherwise what enough players agree on. `mixed` means the glint comes from enchantments the API does not send, * which is not something to draw on every copy, and null means too few players saw it to say. */
 backend/src/items/render/policy.ts: /** The skull's texture: the item's own, what players saw for its skin, what they saw for it plain, then the catalog's. */
-backend/src/items/render/read.ts: /** * Decodes one field of dragsim.co's data, and gives undefined for a field of the wrong type instead of failing the * item, because an item with one odd field still draws. */
-backend/src/items/render/read.ts: /** The object's entries that are finite numbers, each read alone, so one odd entry does not lose the rest. */
-backend/src/items/render/read.ts: /** The object's entries that are strings, finite numbers or booleans, each read alone. */
-backend/src/items/render/read.ts: /** The object's fields, or none for a value that is not an object. */
-backend/src/items/render/read.ts: /** `0xRRGGBB` for `#RRGGBB`, for the `r,g,b` the catalog uses, or for a number that is one already. */
 backend/src/items/render/tooltip.ts: /** * Most plain items, the ones with no type and no ability, have a recipe, which the server says in a line of its own. * Nothing the API sends says which do, so this is a guess that is right for most of them. */
 backend/src/items/render/tooltip.ts: /** The header above an ability's text, laid out to the width `wide` of the widest line of the tooltip. */
 backend/src/items/render/tooltip.ts: /** The icon the server draws before a stat, which the catalog does not carry. The ones past `speed` are guesses. */
@@ -276,7 +265,6 @@ backend/src/items/render/tooltip.ts: /** The stats a dungeon scales. The rest, s
 backend/src/items/render/tooltip.ts: /** Whole numbers stay whole, and the rest keep up to two decimals, so `19.999999999999996` reads `20`. */
 backend/src/items/render/upstream.ts: /** An item as dragsim.co's player API sends it, with every field that is missing or of the wrong type left out. */
 backend/src/items/render/upstream.ts: /** The base64 skull texture the item carries. */
-backend/src/items/render/upstream.ts: /** The four groups of stats the server sends for an item or a player, with a missing or odd one left empty. */
 backend/src/items/render/upstream.ts: /** The item a slot holds, or undefined for a slot that is empty or holds something that is not an item. */
 backend/src/items/render/upstream.ts: /** `extra`, whose keys are the item's own modifiers, such as `drill`. */
 backend/src/items/render/upstream.ts: /** `item_data.skull`, when the server says. */
@@ -313,7 +301,6 @@ backend/src/items/store.ts: /** What one player saw of one item in one sighting,
 backend/src/items/store.ts: /** What one request says of one entry, every observation of it folded into one. */
 backend/src/items/store.ts: /** Which entries an agent asks about: one with its samples, or a page of all of them without. */
 backend/src/items/store.ts: // Two textures for one skin cannot both be right: the one more players saw wins, and the first of equals.
-backend/src/items/title.ts: /** `NEST_ZEALOT` and `nest zealot` are both `Nest Zealot`. */
 backend/src/memory.ts: /** Services that keep everything in memory, for the tests. dragsim.co is unreachable unless a test answers for it. */
 backend/src/profiles/cache.ts: /** * A player's answer, from the backend's copy while it is fresh, else from dragsim.co. When dragsim.co cannot be * reached the last copy it sent answers as stale, however old, because a profile a day old beats no profile. */
 backend/src/profiles/cache.ts: /** * How old a name's uuid may be before a lookup writes it again. It must be renewed well inside [KEEP_SECONDS], or it * expires while the copies it leads to are kept, and dragsim.co being down then finds none. Renewing it on every * lookup instead would write one key twice in a second whenever two players look at the same player. */
