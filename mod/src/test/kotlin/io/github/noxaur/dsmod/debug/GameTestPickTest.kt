@@ -39,6 +39,8 @@ class GameTestPickTest {
 
     private fun pick(vararg changed: String) = pickGameTests(sources, changed.toList())
 
+    private fun with(vararg more: Pair<String, List<String>>) = sources(*sources.names.map { it.key to it.value.toList() }.toTypedArray(), *more)
+
     @Test
     fun `a file reaches the tests that name its classes, and the tests that name what names them, nearest first`() {
         assertEquals(Picked(setOf(test("gametest/ChatTest")), emptyList()), pick(path("edge/Chat")))
@@ -70,7 +72,7 @@ class GameTestPickTest {
         assertEquals(Picked(emptySet(), emptyList()), pick(path("core/Counter")))
         assertEquals(Picked(emptySet(), emptyList()), pick("src/test/kotlin/io/github/noxaur/dsmod/ChatTest.kt"))
         assertEquals(Picked(emptySet(), emptyList()), pick(path("debug/Tool")))
-        val lonely = sources(*sources.names.map { it.key to it.value.toList() }.toTypedArray(), "edge/Alone" to emptyList())
+        val lonely = with("edge/Alone" to emptyList())
         assertEquals(Picked(emptySet(), listOf(path("edge/Alone"))), pickGameTests(lonely, listOf(path("edge/Alone"))))
     }
 
@@ -94,6 +96,14 @@ class GameTestPickTest {
         val apart = sources(*each.toTypedArray())
         assertEquals(setOf(SMOKE_TEST), pickGameTests(apart, (1..MOST_PICKED + 1).map { path("edge/E$it") }).tests)
         assertEquals(MOST_PICKED, pickGameTests(apart, (1..MOST_PICKED).map { path("edge/E$it") }).tests.size)
+    }
+
+    @Test
+    fun `a pick leaves out the perf test, which CI's perf job runs on every pull request`() {
+        val timed = with("gametest/PerfTest" to listOf("edge/Chat"))
+        assertEquals(PERF_TEST, test("gametest/PerfTest"))
+        assertEquals(Picked(setOf(test("gametest/ChatTest")), emptyList()), pickGameTests(timed, listOf(path("edge/Chat"))))
+        assertEquals(Picked(emptySet(), emptyList()), pickGameTests(timed, listOf(path("gametest/PerfTest"))))
     }
 
     private val real by lazy { readSources(File(".")) }

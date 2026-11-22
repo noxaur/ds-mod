@@ -83,7 +83,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | A game test finds a widget through `ServerMenus` | `gametest-widget-by-servermenus` and `gametest-children-by-screenwidgets` in `mod/detekt.yml` |
 | A game test builds its player, a still world and the dragon timer from shared scenes | `gametest-player-by-scenes`, `gametest-frozen-by-scenes` and `gametest-egg-by-the-end` in `mod/detekt.yml` |
 | A commit passes every project's checks | `.githooks/pre-commit`, which `mise install` installs |
-| A pull request runs the game tests its change reaches | CI's `gametests` job, and `GameTestPick.kt` in `mod/src/debug/` |
+| A pull request runs the game tests its change reaches | CI's `gametests` job, and `GameTestPick.kt` in `mod/src/debug/`, which leaves `PerfTest` to CI's `perf` job |
 | Every file of `edge` and `debug` reaches a game test | `GameTestPickTest` |
 | A CI job takes at most 3 minutes | `.github/actions/time-limit`, the last step of every job in `ci.yml` |
 | The mod stays inside its frame, tick, packet and size caps | `PerfTest` against `mod/src/gametest/resources/perf-budgets.json`, in CI's `perf` job, and `tick-by-ticks` in `mod/detekt.yml` for a tick handler the tick cap would miss |
