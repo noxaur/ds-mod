@@ -87,7 +87,7 @@ dsmod:
     active: true
     includes: ['**/src/main/**']
     excludes: ['**/core/text/Text.kt', '**/edge/Chat.kt', '**/core/ui/Theme.kt', '**/core/capture/PlayerNames.kt', '**/core/capture/Redactor.kt']
-    pattern: '§|\b0x[0-9A-Fa-f](?:_?[0-9A-Fa-f]){5}(?:(?:_?[0-9A-Fa-f]){2})?\b'
+    pattern: '§|\\u00[Aa]7|\b0x[0-9A-Fa-f](?:_?[0-9A-Fa-f]){5}(?:(?:_?[0-9A-Fa-f]){2})?\b'
     reason: 'Say what the text means and let the text layer color it: build it with `text { body(..); value(..) }` from core.text and print it with `Chat.send`. If no role fits, add one to `Role`.'
     examples:
       - 'val gold = 0xFF_AA_00'
@@ -95,6 +95,8 @@ dsmod:
       - 'val gold = 0xFFAA00'
       - 'val line = "§eSold!"'
       - 'val code = ''§'''
+      - 'val line = "\u00A7eSold!"'
+      - 'val code = ''\u00a7'''
     counterExamples:
       - 'val mask = 0xFF'
       - 'val shift = 0xFFFF'
@@ -130,6 +132,7 @@ dsmod:
       - |
         (data["extra"] as?
             JsonObject)
+      - 'value as? JsonObject?'
       - 'item.data["item_data"]?.jsonObject?.get("rarity")'
     counterExamples:
       - 'kept["item_data"] = JsonObject(it)'
@@ -366,6 +369,13 @@ dsmod:
                 }
             }
         }
+      - |
+        class Example {
+            private val marks = SlotMarks(feature, ::mark)
+            init {
+                feature.on<ContainerOpened> { _, _ -> this.marks.invalidate() }
+            }
+        }
     counterExamples:
       - |
         class Example {
@@ -469,6 +479,10 @@ style:
         reason: &number 'Write a number with `fixed`, `amount`, `grouped` or `short`, and a time with `clock`, `duration` or `secondsLeft`, from core.text. If none fits, add one to `core/text/Numbers.kt`.'
       - value: 'java.lang.String.format'
         reason: *number
+      - value: 'java.text.Format.format'
+        reason: *number
+      - value: 'java.text.NumberFormat.format'
+        reason: *number
     examples:
       - |
         import java.util.Locale
@@ -476,6 +490,9 @@ style:
       - |
         import java.util.Locale
         fun example(seconds: Double) = String.format(Locale.US, "%.1fs", seconds)
+      - |
+        import java.text.DecimalFormat
+        fun example(n: Double) = DecimalFormat("0.0").format(n)
 
   ForbiddenMethodCall/count-by-helper:
     active: true

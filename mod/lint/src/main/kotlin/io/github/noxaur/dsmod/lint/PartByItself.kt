@@ -36,7 +36,7 @@ class PartByItself(config: Config) :
         super.visitCallExpression(expression)
         if (owned.isEmpty()) return
         expression.lambdaBodies().flatMap { it.collectDescendantsOfType<KtDotQualifiedExpression>() }.forEach { access ->
-            val part = owned[access.receiverExpression.text] ?: return@forEach
+            val part = owned[access.receiverExpression.text.removePrefix("this.")] ?: return@forEach
             val call = access.selectorExpression as? KtCallExpression ?: return@forEach
             if (expression.handles(part.events) && part.forbidden(call)) report(Finding(Entity.from(call), reason))
         }

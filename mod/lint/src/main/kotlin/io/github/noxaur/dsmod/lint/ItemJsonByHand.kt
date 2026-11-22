@@ -15,7 +15,7 @@ class ItemJsonByHand(config: Config) : Rule(config, "A safe cast to `JsonObject`
 
     override fun visitBinaryWithTypeRHSExpression(expression: KtBinaryExpressionWithTypeRHS) {
         super.visitBinaryWithTypeRHSExpression(expression)
-        if (expression.operationReference.getReferencedNameElementType() == KtTokens.AS_SAFE && expression.right?.text == "JsonObject") {
+        if (expression.operationReference.getReferencedNameElementType() == KtTokens.AS_SAFE && expression.right?.text?.removeSuffix("?") == "JsonObject") {
             report(Finding(Entity.from(expression), reason))
         }
     }

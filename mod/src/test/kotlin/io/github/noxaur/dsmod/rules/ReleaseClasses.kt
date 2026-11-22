@@ -14,7 +14,7 @@ val modClasses: JavaClasses by lazy {
 }
 
 val releaseClasses: JavaClasses by lazy {
-    modClasses.that(describe("in the release source set") { type -> type.source.map { "/main/" in it.uri.path }.orElse(false) })
+    modClasses.that(describe("in the release source set") { type -> type.source.map { Regex("/build/classes/(kotlin|java)/main/") in it.uri.path }.orElse(false) })
 }
 
 fun fixture(type: Class<*>): JavaClasses = ClassFileImporter()

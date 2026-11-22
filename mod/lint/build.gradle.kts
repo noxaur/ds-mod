@@ -23,8 +23,10 @@ kotlin {
 
 tasks.test {
     useJUnitPlatform()
+    filter { isFailOnNoMatchingTests = false }
     timeout = Duration.ofSeconds(30)
     dependsOn(":lintClasspath")
+    mustRunAfter(":test")
     val config = rootProject.file("detekt.yml")
     val classpath = rootProject.layout.buildDirectory.file("lint/classpath").get().asFile
     inputs.file(config)

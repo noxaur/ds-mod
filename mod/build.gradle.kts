@@ -370,3 +370,4 @@ tasks.register("lintClasspath") {
 }
 tasks.named("detekt") { onlyIf("it resolves no types, so the lint rules run in detektMain, detektDebug, detektTest and detektGametest") { false } }
 tasks.check { dependsOn("detektMain", "detektDebug", "detektTest", "detektGametest") }
+tasks.matching { it.name.startsWith("detekt") }.configureEach { mustRunAfter(tasks.test) }
