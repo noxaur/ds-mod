@@ -24,6 +24,8 @@ class WardrobeKeysTest : Harness(alone = WardrobeKeys::class) {
 
     private fun key(n: Int) = feature.index(48 + n)!!
 
+    private fun marks() = feature.feature.slots!!(time)
+
     @Test
     fun `each number key clicks its slot button once the second is up`() {
         val menu = open(WardrobeKeys.TITLE)
@@ -41,23 +43,23 @@ class WardrobeKeysTest : Harness(alone = WardrobeKeys::class) {
         assertNull(feature.press(key(1), time))
         pass(400)
         assertNull(feature.press(key(3), time))
-        assertEquals(setOf(38), feature.feature.slots!!(time).keys)
+        assertEquals(setOf(38), marks().keys)
         assertEquals(600, feature.wait(time))
         pass(599)
         assertNull(feature.due(time))
         pass(1)
         assertEquals(38, feature.due(time))
         assertNull(feature.due(time))
-        assertTrue(feature.feature.slots!!(time).isEmpty())
+        assertTrue(marks().isEmpty())
     }
 
     @Test
     fun `a press before the buttons arrive is outlined once they do`() {
         post(ContainerOpened(id++, text(WardrobeKeys.TITLE), 90))
         assertNull(feature.press(key(1), time))
-        assertTrue(feature.feature.slots!!(time).isEmpty())
+        assertTrue(marks().isEmpty())
         post(SlotChanged(36, Item("minecraft:pink_dye", 1, text("Slot 1"), lines("Click to equip!"))))
-        assertEquals(setOf(36), feature.feature.slots!!(time).keys)
+        assertEquals(setOf(36), marks().keys)
         pass(WardrobeKeys.WAIT_MILLIS)
         assertEquals(36, feature.due(time))
     }
