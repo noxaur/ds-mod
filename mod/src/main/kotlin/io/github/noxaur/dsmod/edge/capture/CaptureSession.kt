@@ -7,6 +7,7 @@ import io.github.noxaur.dsmod.core.capture.RawRecord
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.edge.id
 import io.github.noxaur.dsmod.edge.itemId
+import io.github.noxaur.dsmod.edge.typeId
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -66,7 +67,7 @@ private class ItemCache {
 
 private fun JsonObjectBuilder.entityFields(entity: Entity) {
     put("id", entity.id)
-    put("entity", BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString())
+    put("entity", entity.typeId)
     put("name", entity.name.string)
     position(entity.x.round2(), entity.y.round2(), entity.z.round2())
 }
