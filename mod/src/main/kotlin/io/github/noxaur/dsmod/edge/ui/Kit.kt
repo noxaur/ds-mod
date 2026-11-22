@@ -102,7 +102,7 @@ object Kit {
 
     private lateinit var hud: DsModConfig.Hud
 
-    val theme: Theme get() = hud.theme
+    val theme: Theme get() = hud.theme.value
     val font: Font get() = Minecraft.getInstance().font
 
     fun state(active: Boolean, hovered: Boolean, pressed: Boolean) = when {

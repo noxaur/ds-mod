@@ -5,11 +5,8 @@ import io.github.noxaur.dsmod.core.ui.Look
 import io.github.noxaur.dsmod.core.ui.Narration
 import io.github.noxaur.dsmod.core.ui.Section
 import java.util.Locale
-import kotlin.jvm.internal.CallableReference
 import kotlin.math.abs
 import kotlin.math.roundToLong
-import kotlin.reflect.KMutableProperty0
-import kotlin.reflect.KProperty0
 
 class Bind<T>(val field: String, val get: () -> T, val set: (T) -> Unit) {
     var also: List<String> = emptyList()
@@ -26,12 +23,6 @@ class Bind<T>(val field: String, val get: () -> T, val set: (T) -> Unit) {
     fun formerly(vararg keys: String) = apply { formerly = keys.toList() }
 
     fun follows(read: () -> T?) = apply { follows = read }
-
-    companion object {
-        fun <T> of(property: KMutableProperty0<T>) = Bind(field(property), property::get, property::set)
-
-        fun field(property: KProperty0<*>) = "${(property as CallableReference).boundReceiver.javaClass.simpleName}.${property.name}"
-    }
 }
 
 enum class Kind(val spoken: String) {
@@ -362,33 +353,17 @@ class Rows {
     ) = add(Switch(id, name, description, bind, nested(settings)), dependsOn)
 
     fun number(
-        property: KMutableProperty0<Float>, name: String, description: String, range: ClosedFloatingPointRange<Float>, step: Float,
-        unit: String = "", id: String = property.name, dependsOn: Switch? = null,
-    ) = number(Bind.of(property), name, description, range, step, unit, id, dependsOn)
-
-    fun number(
         bind: Bind<Float>, name: String, description: String, range: ClosedFloatingPointRange<Float>, step: Float,
         unit: String = "", id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null,
     ) = add(Number(id, name, description, bind, range.start, range.endInclusive, step, unit), dependsOn)
 
-    inline fun <reified E : Enum<E>> choice(
-        property: KMutableProperty0<E>, name: String, description: String, id: String = property.name, dependsOn: Switch? = null,
-    ) = choice(Bind.of(property), name, description, enumValues<E>().toList(), id, dependsOn)
-
     fun <T> choice(bind: Bind<T>, name: String, description: String, values: List<T>, id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null) =
         add(Choice(id, name, description, bind, values), dependsOn)
-
-    inline fun <reified E : Enum<E>> pick(
-        property: KMutableProperty0<E>, name: String, description: String, id: String = property.name, noinline look: (E) -> Look,
-    ) = pick(Bind.of(property), name, description, enumValues<E>().toList(), id, label = { it.toString() }, look = look)
 
     fun <T> pick(
         bind: Bind<T>, name: String, description: String, values: List<T>, id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null,
         label: (T) -> String = { it.toString() }, look: (T) -> Look,
     ) = add(Pick(id, name, description, bind, values, look, label), dependsOn)
-
-    fun keys(property: KMutableProperty0<Int>, name: String, description: String, id: String = property.name, dependsOn: Switch? = null, clicks: Boolean = true) =
-        keys(Bind.of(property), name, description, id, dependsOn, clicks)
 
     fun keys(bind: Bind<Int>, name: String, description: String, id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null, clicks: Boolean = true) =
         add(KeyBind(id, name, description, bind, clicks), dependsOn)
@@ -397,10 +372,6 @@ class Rows {
         bind: Bind<List<Section>>, name: String, description: String, max: Int, ticks: List<Int> = emptyList(),
         id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null,
     ) = add(Span(id, name, description, bind, max, ticks), dependsOn)
-
-    inline fun <reified E : Enum<E>> order(
-        property: KMutableProperty0<MutableList<E>>, name: String, description: String, id: String = property.name, dependsOn: Switch? = null,
-    ) = order(Bind(Bind.field(property), { property.get().toList() }) { property.set(it.toMutableList()) }, name, description, enumValues<E>().toList(), id, dependsOn)
 
     fun <T> order(bind: Bind<List<T>>, name: String, description: String, values: List<T>, id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null) =
         add(Order(id, name, description, bind, values), dependsOn)

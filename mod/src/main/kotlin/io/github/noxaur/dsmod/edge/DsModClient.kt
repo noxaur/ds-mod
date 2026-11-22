@@ -100,8 +100,8 @@ object DsModClient : ClientModInitializer {
 
     /** @keep The settings open on the next tick, after the game has handed out the typed character, or the search would take it. */
     private fun pressed(key: InputConstants.Key) {
-        if (Keys.matches(key, settings.general.settingsKey)) Minecraft.getInstance().schedule { openSettings() }
-        if (Keys.matches(key, settings.hud.editKey)) Minecraft.getInstance().schedule { openHudEditor() }
+        if (Keys.matches(key, settings.general.settingsKey.value)) Minecraft.getInstance().schedule { openSettings() }
+        if (Keys.matches(key, settings.hud.editKey.value)) Minecraft.getInstance().schedule { openHudEditor() }
     }
 
     fun openHudEditor() =

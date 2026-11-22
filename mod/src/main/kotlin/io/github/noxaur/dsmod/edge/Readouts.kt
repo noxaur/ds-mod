@@ -70,7 +70,7 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud, pr
         val window = client.window
         val plated = hudBackground.feature.runs
         if (window.guiScaledWidth != width || window.guiScaledHeight != height || window.guiScale != guiScale ||
-            settings.scale != hudScale || plated != background ||
+            settings.scale.value != hudScale || plated != background ||
             client.options.mainHand().get() !== mainHand || client.options.attackIndicator().get() !== indicator
         ) {
             mainHand = client.options.mainHand().get()
@@ -78,7 +78,7 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud, pr
             width = window.guiScaledWidth
             height = window.guiScaledHeight
             guiScale = window.guiScale
-            hudScale = settings.scale
+            hudScale = settings.scale.value
             background = plated
             handed.fill(-1)
         }
@@ -105,9 +105,9 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud, pr
 
     fun resize(block: Hud.Placed, by: Int) {
         val scale = scale(block.id)
-        val next = HudScale.step(scale, by, settings.scale, guiScale, MIN_SCALE, MAX_SCALE)
+        val next = HudScale.step(scale, by, settings.scale.value, guiScale, MIN_SCALE, MAX_SCALE)
         if (next == scale) return
-        val drawn = HudScale.snap(next * settings.scale, guiScale)
+        val drawn = HudScale.snap(next * settings.scale.value, guiScale)
         save(block.id, minOf(block.x, width - block.width * drawn), minOf(block.y, height - block.height * drawn), next)
     }
 
@@ -127,33 +127,33 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud, pr
     }
 
     fun resizeAll(by: Int) {
-        settings.scale = HudScale.step(settings.scale, by, 1f, guiScale, MIN_HUD_SCALE, MAX_HUD_SCALE)
+        settings.scale.value = HudScale.step(settings.scale.value, by, 1f, guiScale, MIN_HUD_SCALE, MAX_HUD_SCALE)
         push()
     }
 
     fun reset(id: String) = restore(id, null, HudDock.FREE)
 
-    fun position(id: String): Position? = settings.positions[id]
+    fun position(id: String): Position? = settings.positions.value[id]
 
     fun restore(id: String, position: Position?, dock: HudDock) {
-        if (position == null) settings.positions.remove(id) else settings.positions[id] = position
+        settings.positions.value = if (position == null) settings.positions.value - id else settings.positions.value + (id to position)
         feature(id).placement?.value = dock
         repaint()
     }
 
     fun replace() = repaint()
 
-    fun isPlaced(id: String) = id in settings.positions || dockOf(id) != HudDock.FREE
+    fun isPlaced(id: String) = id in settings.positions.value || dockOf(id) != HudDock.FREE
 
     fun scale(id: String) =
-        if (dockOf(id) != HudDock.FREE) (Hud.find(id)?.scale ?: 1f) / settings.scale else settings.positions[id]?.scale ?: 1f
+        if (dockOf(id) != HudDock.FREE) (Hud.find(id)?.scale ?: 1f) / settings.scale.value else settings.positions.value[id]?.scale ?: 1f
 
     fun title(id: String) = feature(id).title
 
     private fun feature(id: String) = game.readouts.first { it.feature.id == id }.feature
 
     private fun save(id: String, x: Float, y: Float, scale: Float) {
-        settings.positions[id] = Position(x.coerceIn(0f, width.toFloat()) / width, y.coerceIn(0f, height.toFloat()) / height, scale)
+        settings.positions.value += id to Position(x.coerceIn(0f, width.toFloat()) / width, y.coerceIn(0f, height.toFloat()) / height, scale)
         feature(id).placement?.value = HudDock.FREE
         repaint()
     }
@@ -165,8 +165,8 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud, pr
 
     private fun group(id: String, dock: HudDock): HudGroup {
         if (dock != HudDock.FREE) return HudGroup(id, 0, 0, background, HudScale.snap(1f, guiScale), dock)
-        val saved = settings.positions[id] ?: return HudGroup("stack", MARGIN, MARGIN, background, HudScale.snap(settings.scale, guiScale))
-        val scale = HudScale.snap(saved.scale * settings.scale, guiScale)
+        val saved = settings.positions.value[id] ?: return HudGroup("stack", MARGIN, MARGIN, background, HudScale.snap(settings.scale.value, guiScale))
+        val scale = HudScale.snap(saved.scale * settings.scale.value, guiScale)
         return HudGroup(id, (saved.x * width).roundToInt(), (saved.y * height).roundToInt(), background, scale)
     }
 }

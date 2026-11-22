@@ -66,7 +66,8 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | Every saved setting, a feature's saved key included, has exactly one row in the settings tree, or is listed as stored only with a reason, and every row has its own id, a Title Case name of three words or fewer and a one-sentence description | `SettingsTreeTest` |
 | The kit gallery shows every kind of settings row and every look a pick draws | `KitRowsTest` |
 | A setting's description in `SettingsTree` is short enough that the settings screen shows it at full size | `RulesTest` |
-| A saved setting keeps its key in the config file, so a player who updates keeps what they set | `ConfigFileTest` loads a file 0.1.0 wrote and checks every value |
+| A saved setting keeps its key in the config file, so a player who updates keeps what they set | `ConfigFileTest` loads a file 0.1.0 wrote and checks every value, and loads a file main wrote with every row changed and saves it again unchanged |
+| Every setting is saved in a slot of a store, under a key written where it is declared | A row takes only a `Bind`, which a `Slot` makes, and `SettingsTreeTest` refuses a field of `DsModConfig` besides favorites |
 | A feature's saved state is immutable and has a default for every field, so a change is written and an older save loads | `SavedStateTest` walks every feature's `state` |
 | A feature's handler and readout average under 20µs | `FeatureReplayTest` |
 | A capture type has one producer | `CaptureWriter` rejects a raw record with an event's type |
