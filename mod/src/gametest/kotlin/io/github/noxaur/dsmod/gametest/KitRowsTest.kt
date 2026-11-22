@@ -14,19 +14,11 @@ class KitRowsTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = KitTest.inKit(context) {
         val kinds = HashSet<Kind>()
         val looks = HashSet<KClass<out Look>>()
-        fun collect() = context.runOnClient<Nothing> { client -> (client.gui.screen() as SettingsGalleryScreen).let { kinds += it.kinds; looks += it.looks } }
-        for (page in listOf(SettingsGalleryScreen.Page.LISTS, SettingsGalleryScreen.Page.PANELS)) {
+        for (page in listOf(SettingsGalleryScreen.Page.LISTS, SettingsGalleryScreen.Page.PANELS, SettingsGalleryScreen.Page.ROWS)) {
             context.setScreen { SettingsGalleryScreen(page) }
             context.waitTicks(2)
-            context.point(0, 0, settle = 2)
-            val name = page.name.lowercase()
-            context.takeScreenshot("kit-$name-charcoal")
-            context.inTheme(Theme.VANILLA) { context.takeScreenshot("kit-$name-vanilla") }
-            collect()
+            context.runOnClient<Nothing> { client -> (client.gui.screen() as SettingsGalleryScreen).let { kinds += it.kinds; looks += it.looks } }
         }
-        context.setScreen { SettingsGalleryScreen() }
-        context.waitTicks(2)
-        collect()
         val missing = Kind.entries.filter { it !in kinds } + Look::class.sealedSubclasses.filter { it !in looks }.map { it.simpleName }
         check(missing.isEmpty()) { "No page of the gallery of settings rows shows $missing" }
         fun press(id: String) {
