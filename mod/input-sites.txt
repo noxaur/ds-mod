@@ -20,6 +20,10 @@ call edge.DsModClient.onInitializeClient -> edge.Pings.register
 call edge.DsModClient.onInitializeClient -> edge.SlotGuards.register
     approved by github.com/noxaur 2026-11-16T08:42:00Z
 call edge.DsModClient.onInitializeClient -> edge.Trail.register
+call edge.DsModClient.start -> edge.AutoClicks.bind
+call edge.DsModClient.start -> edge.ForgeCrafts.bind
+call edge.DsModClient.start -> edge.Pings.bind
+call edge.DsModClient.start -> edge.SlotGuards.bind
 call edge.HotdShortcut.register -> edge.PlayerCommands.send
 call edge.MenuBack.register -> edge.PlayerCommands.send
 call edge.MenuBack.register -> edge.Trail.back
@@ -36,52 +40,49 @@ call edge.profile.ProfileScreen.ghost_delegate -> edge.profile.ProfileModel.<ini
     approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate aw/dsmod.accesswidener c5a601581b2a
     opens Minecraft's private code
-gate edge.ArmorSwapGuards b388417355d2  ArmorSwapGuard
+gate edge.ArmorSwapGuards 68a3c0c83d2e
     can refuse the player's actions through UseItemCallback.EVENT
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
-gate edge.AutoClicks e48a91449451  AutoLeftClick, AutoRightClick
+gate edge.AutoClicks 7cde8f879876
     presses a key through KeyMapping.click
-    approved by github.com/noxaur 2026-11-22T01:15:00Z
 gate edge.Chat 7c62093eb80b
     builds text that runs a command when the player clicks it
     approved by github.com/noxaur 2026-11-16T01:17:00Z
-gate edge.ChatDrags 2ebeede0f190  ChatHudEditor
+gate edge.ChatDrags 2a8fe5198d30
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseDrag
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
     can refuse the player's input through ScreenMouseEvents.allowMouseScroll
-gate edge.CopyChats d2120e05f873  CopyChat
+gate edge.CopyChats 98e67d15863f
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-gate edge.EyeGuards d497c96d3e10  EyeGuard
+gate edge.EyeGuards 6fcea64bab3d
     can refuse the player's actions through UseBlockCallback.EVENT
-    approved by github.com/noxaur 2026-11-16T18:38:00Z
-gate edge.ForgeCrafts 710dfe1b4df7  ForgeCraft
+gate edge.ForgeCrafts 4356186fa6a7
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-gate edge.Hits 974696179054
+gate edge.Hits 0a2b55519d6f
     can refuse the player's actions through AttackEntityCallback.EVENT
-gate edge.Pings 374f3f901a23  PerformanceStats
+gate edge.Pings cffa2fc1e1c1
     builds the packet ServerboundPingRequestPacket
     sends through ClientPacketListener.send
 gate edge.PlayerCommands 7a2042275b07
     sends through ClientPacketListener.sendChat
     sends through ClientPacketListener.sendCommand
-gate edge.SlotGuards b35bed01973a  SlotLock
+gate edge.SlotGuards 66c12037cfb8
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-gate edge.TabBar 0aaaf510acda  MenuTabs
+gate edge.TabBar 07ce61614d3d
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
 gate edge.Trail d75180319c06
     can refuse or change sent chat through ClientSendMessageEvents.COMMAND
-gate edge.capture.Recording 5b736e1b983a
+gate edge.capture.Recording 065e7e7cdeed
     takes the player's key presses through KeyMapping.consumeClick
 gate edge.mixin.BlockingArmMixin 08d619328bcc
     hooks AvatarRenderer.getArmPose
@@ -112,9 +113,8 @@ gate edge.mixin.ContainerScreenMixin 5147eddf96ea
     hooks AbstractContainerScreen.extractTooltip
     hooks AbstractContainerScreen.init
     approved by github.com/noxaur 2026-11-16T01:17:00Z
-gate edge.mixin.CtrlClickMixin 9d50fab45112  CtrlClick
+gate edge.mixin.CtrlClickMixin 0385679625f2
     hooks MouseHandler.simulateRightClick
-    approved by github.com/noxaur 2026-11-21T14:19:00Z
 gate edge.mixin.CursorMixin ec46fb6ba006
     hooks MouseHandler.grabMouse
     hooks MouseHandler.releaseMouse
@@ -125,15 +125,14 @@ gate edge.mixin.DropKeyMixin 1b430b670807
 gate edge.mixin.EnchantmentOfferMixin draws
     hooks EnchantmentScreen.extractBackground
     approved by github.com/noxaur 2026-11-21T00:09:00Z
-gate edge.mixin.ExplosionParticleMixin 0530b12366cc  HideExplosions
+gate edge.mixin.ExplosionParticleMixin b5a93a356de0
     hooks ParticleEngine.createParticle
 gate edge.mixin.FloatingTextMixin 1178eba96f0a
     hooks Display.TextDisplay.getText
     hooks Display.TextDisplay.onSyncedDataUpdated
     approved by github.com/noxaur 2026-11-16T18:38:00Z
-gate edge.mixin.FullbrightMixin 4c8ba0a85eab  Fullbright
+gate edge.mixin.FullbrightMixin c5e6281a5531
     hooks LightmapRenderStateExtractor.extract
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate edge.mixin.HeldItemMixin 68ce469876e1
     hooks ItemInHandRenderer.itemUsed
     hooks ItemInHandRenderer.shouldInstantlyReplaceVisibleItem
@@ -154,9 +153,8 @@ gate edge.mixin.ItemLayerAccessor 44bd4cac718b
 gate edge.mixin.KeyInputMixin 5e38927bfe13
     hooks KeyboardHandler.keyPress
     approved by github.com/noxaur 2026-11-21T20:37:00Z
-gate edge.mixin.KeyPressMixin d715b502c2ad
+gate edge.mixin.KeyPressMixin 8ed9d9fed544
     hooks KeyMapping.click
-    approved by github.com/noxaur 2026-11-21T23:19:00Z
 gate edge.mixin.MenuArtMixin draws
     hooks GuiGraphicsExtractor.blit
     hooks GuiGraphicsExtractor.blitSprite
@@ -210,5 +208,5 @@ gate edge.mixin.TooltipMixin draws
 gate edge.profile.ProfileModel b326cc5227a6
     changes the player through AbstractClientPlayer.setId
     changes the player through AbstractClientPlayer.setItemSlot
-gate edge.profile.Profiles 2ad9fd309aa2  ProfileViewer
+gate edge.profile.Profiles 4c53324559a2
     builds text that runs a command when the player clicks it

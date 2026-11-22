@@ -12,12 +12,20 @@ import net.minecraft.client.Minecraft
 object AutoClicks {
     private class Button(val click: AutoClick, val on: Boolean, val mapping: KeyMapping)
 
+    private lateinit var left: AutoLeftClick
+    private lateinit var right: AutoRightClick
+
+    fun bind(left: AutoLeftClick, right: AutoRightClick) {
+        this.left = left
+        this.right = right
+    }
+
     private var clicking = false
     private val tapped = HashSet<AutoClick>()
 
     private fun buttons(client: Minecraft) = listOf(
-        Button(DsModClient.feature<AutoLeftClick>().click, DsModClient.runs<AutoLeftClick>(), client.options.keyAttack),
-        Button(DsModClient.feature<AutoRightClick>().click, DsModClient.runs<AutoRightClick>(), client.options.keyUse),
+        Button(left.click, left.feature.runs, client.options.keyAttack),
+        Button(right.click, right.feature.runs, client.options.keyUse),
     )
 
     fun pressed(key: InputConstants.Key) {

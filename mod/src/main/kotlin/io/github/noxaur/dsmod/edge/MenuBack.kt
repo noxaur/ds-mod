@@ -14,7 +14,13 @@ import net.minecraft.client.gui.screens.inventory.ContainerScreen
 object MenuBack {
     private const val GO_BACK = "Go Back"
 
-    private val enabled get() = DsModClient.runs<BackButtons>()
+    private lateinit var buttons: BackButtons
+
+    fun bind(buttons: BackButtons) {
+        this.buttons = buttons
+    }
+
+    private val enabled get() = buttons.feature.runs
 
     fun register() {
         ScreenHooks.onEveryLayout<ContainerScreen> { screen, _ ->

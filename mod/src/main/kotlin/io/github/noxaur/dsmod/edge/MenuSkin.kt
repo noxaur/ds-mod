@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.container.MenuButton
 import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
 import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
@@ -47,11 +48,23 @@ import net.minecraft.world.item.ItemStack
 object MenuSkin {
     val cursor = CursorMemory()
 
-    val themed: Boolean get() = DsModClient.runs<MenuTheme>()
+    private lateinit var game: Game
+    private lateinit var theme: MenuTheme
+    private lateinit var fixedLayout: FixedMenuLayout
+    private lateinit var keepCursor: KeepCursor
 
-    val stable: Boolean get() = DsModClient.runs<FixedMenuLayout>()
+    fun bind(game: Game, theme: MenuTheme, fixedLayout: FixedMenuLayout, keepCursor: KeepCursor) {
+        this.game = game
+        this.theme = theme
+        this.fixedLayout = fixedLayout
+        this.keepCursor = keepCursor
+    }
 
-    val keepsCursor: Boolean get() = DsModClient.runs<KeepCursor>()
+    val themed: Boolean get() = theme.feature.runs
+
+    val stable: Boolean get() = fixedLayout.feature.runs
+
+    val keepsCursor: Boolean get() = keepCursor.feature.runs
 
     private var buttonMenu: AbstractContainerMenu? = null
     private var buttonStacks = arrayOfNulls<ItemStack>(0)
@@ -184,7 +197,6 @@ object MenuSkin {
     val glassAlpha: Int
         get() {
             if (!themed) return -1
-            val theme = DsModClient.feature<MenuTheme>()
             return if (theme.menuLook.value == MenuLook.GLASS) Menus.glassAlpha(theme.glassOpacity.value) else -1
         }
 
@@ -231,7 +243,7 @@ object MenuSkin {
         return DRAWN
     }
 
-    private fun background(g: GuiGraphicsExtractor, screen: AbstractContainerScreen<*>, texture: Identifier) = DsModClient.game.metrics.time("menus.draw") {
+    private fun background(g: GuiGraphicsExtractor, screen: AbstractContainerScreen<*>, texture: Identifier) = game.metrics.time("menus.draw") {
         val glass = paintGlass
         val solid = glass < 0
         val left = screen.containerLeft
