@@ -10,15 +10,7 @@ import { ItemStore } from "./items/store.ts";
 import * as Profiles from "./profiles/profiles.ts";
 import { ProfileStore } from "./profiles/store.ts";
 import { Upstream } from "./profiles/upstream.ts";
-
-// @keep Constant time, so the admin token cannot be guessed a letter at a time.
-function same(given: string, expected: string) {
-  let difference = given.length ^ expected.length;
-  for (let index = 0; index < given.length; index++) {
-    difference |= given.charCodeAt(index) ^ expected.charCodeAt(index % Math.max(expected.length, 1));
-  }
-  return difference === 0;
-}
+import { sameSecret } from "../../web/shared/secret.ts";
 
 // @keep A middleware may only require services the app is built with, and Caller comes with each request.
 const caller = Effect.map(
@@ -41,7 +33,7 @@ const AgentLive = Layer.succeed(Agent)({
   adminToken: (handler, { credential }) =>
     Effect.gen(function* () {
       const { adminToken } = yield* caller;
-      if (adminToken === undefined || adminToken === "" || !same(Redacted.value(credential), adminToken)) {
+      if (!sameSecret(Redacted.value(credential), adminToken)) {
         return yield* new HttpApiError.Unauthorized();
       }
       return yield* handler;
