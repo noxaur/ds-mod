@@ -9,8 +9,6 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
 import net.minecraft.world.Container
 import net.minecraft.world.SimpleContainer
-import net.minecraft.world.SimpleMenuProvider
-import net.minecraft.world.inventory.ChestMenu
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.CustomData
@@ -29,9 +27,7 @@ object RarityChest {
                 it.setItem(23, item("Special Sword", "SPECIAL"))
                 it.setItem(25, ItemStack(Items.STONE))
             }
-            s.player.openMenu(
-                SimpleMenuProvider({ id, inventory, _ -> ChestMenu.sixRows(id, inventory, chest) }, Component.literal("Test Chest")),
-            )
+            s.player.openMenu(ServerMenus.sixRows(chest, "Test Chest"))
         }
         context.waitFor { it.gui.screen() is AbstractContainerScreen<*> && it.gui.screen() !is InventoryScreen }
         context.waitTicks(10)

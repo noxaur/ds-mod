@@ -134,6 +134,8 @@ object DsModClient : ClientModInitializer {
         }
     }
 
+    fun menuChanged() = containers.changed(Minecraft.getInstance())
+
     fun restart(between: () -> Unit = {}) {
         saved.close()
         between()

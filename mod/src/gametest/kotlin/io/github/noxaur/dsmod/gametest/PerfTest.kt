@@ -22,6 +22,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContex
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionHand
+import net.minecraft.world.SimpleContainer
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
@@ -43,6 +44,7 @@ private const val MARKED_SLOTS = 36
 private const val SIDEBAR_LINES = 15
 private const val ARMORED_MOBS = 40
 private const val RECORDING_WARM_UP_TICKS = 100
+private const val MENU_SLOTS = 54
 
 /** @keep Covers [io.github.noxaur.dsmod.edge.capture.BlockScan], [io.github.noxaur.dsmod.edge.mixin.CaptureInputMixin], [io.github.noxaur.dsmod.edge.mixin.HudHotbarMixin]. */
 class PerfTest : FabricClientGameTest {
@@ -105,6 +107,7 @@ class PerfTest : FabricClientGameTest {
             etherwarp(context, world, samples)
             recording(context, world, samples)
             bosses(context, world, samples)
+            menuBurst(context, world, samples)
             val calibrate = context.computeOnClient<Double, Nothing> {
                 repeat(3) { spin() }
                 List(7) { spin() }.sorted()[3]
@@ -177,10 +180,7 @@ class PerfTest : FabricClientGameTest {
     private fun recording(context: ClientGameTestContext, world: TestSingleplayerContext, samples: HashMap<String, MutableList<Double>>) {
         world.give(
             (0 until world.server.computeOnServer<Int, Nothing> { it.player.inventory.containerSize }).associateWith { slot ->
-                ItemStack(Items.DIAMOND_SWORD).also { stack ->
-                    stack.set(DataComponents.CUSTOM_NAME, Component.literal("Sword $slot"))
-                    stack.set(DataComponents.LORE, ItemLore((1..20).map { Component.literal("Line $it of the lore of sword $slot") }))
-                }
+                ServerMenus.lored(Items.DIAMOND_SWORD, "Sword $slot", (1..20).map { "Line $it of the lore of sword $slot" })
             },
         )
         repeat(ARMORED_MOBS) { i ->
@@ -229,6 +229,28 @@ class PerfTest : FabricClientGameTest {
             }
             for (name in listOf("entities", "world.follow")) samples.add(name, checkNotNull(timers[name]) { "No $name timer ran" })
         }
+    }
+
+    private fun menuBurst(context: ClientGameTestContext, world: TestSingleplayerContext, samples: HashMap<String, MutableList<Double>>) {
+        val chest = SimpleContainer(MENU_SLOTS)
+        val fill = { page: Int ->
+            for (slot in 0 until MENU_SLOTS) {
+                chest.setItem(slot, ServerMenus.lored(Items.DIAMOND_SWORD, "Page $page Sword $slot", listOf("Damage: +$slot", "LEGENDARY SWORD")))
+            }
+        }
+        world.server.runOnServer<Nothing> { server ->
+            fill(0)
+            server.player.openMenu(ServerMenus.sixRows(chest, "Perf Menu"))
+        }
+        context.waitTicks(20)
+        repeat(WINDOWS) { window ->
+            val timers = timers(context) {
+                world.server.runOnServer<Nothing> { fill(window + 1) }
+                context.waitTicks(WINDOW_TICKS)
+            }
+            samples.add("container-read", checkNotNull(timers["container-read"]) { "The swapped menu was not read from its packets" })
+        }
+        context.runOnClient<Nothing> { it.player!!.closeContainer() }
     }
 
     private fun timers(context: ClientGameTestContext, wait: () -> Unit): Map<String, Metrics.Timer> {

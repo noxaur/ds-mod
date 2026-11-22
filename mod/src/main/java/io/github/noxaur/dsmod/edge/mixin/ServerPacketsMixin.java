@@ -1,9 +1,13 @@
 package io.github.noxaur.dsmod.edge.mixin;
 
+import io.github.noxaur.dsmod.edge.DsModClient;
 import io.github.noxaur.dsmod.edge.Packets;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
+import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
+import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
@@ -62,5 +66,20 @@ abstract class ServerPacketsMixin {
     @Inject(method = "handlePongResponse", at = @At("TAIL"))
     private void dsmod$pong(ClientboundPongResponsePacket packet, CallbackInfo ci) {
         Packets.INSTANCE.pong(packet.time());
+    }
+
+    @Inject(method = "handleOpenScreen", at = @At("TAIL"))
+    private void dsmod$openScreen(ClientboundOpenScreenPacket packet, CallbackInfo ci) {
+        DsModClient.INSTANCE.menuChanged();
+    }
+
+    @Inject(method = "handleContainerContent", at = @At("TAIL"))
+    private void dsmod$containerContent(ClientboundContainerSetContentPacket packet, CallbackInfo ci) {
+        DsModClient.INSTANCE.menuChanged();
+    }
+
+    @Inject(method = "handleContainerSetSlot", at = @At("TAIL"))
+    private void dsmod$containerSlot(ClientboundContainerSetSlotPacket packet, CallbackInfo ci) {
+        DsModClient.INSTANCE.menuChanged();
     }
 }

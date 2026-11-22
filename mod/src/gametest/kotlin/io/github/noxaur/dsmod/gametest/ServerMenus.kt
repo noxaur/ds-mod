@@ -10,6 +10,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.commands.Commands
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
+import net.minecraft.world.Container
 import net.minecraft.world.SimpleContainer
 import net.minecraft.world.SimpleMenuProvider
 import net.minecraft.world.inventory.ChestMenu
@@ -17,11 +18,14 @@ import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import net.minecraft.world.item.component.ItemLore
 
 object ServerMenus {
     private val TYPES = listOf(MenuType.GENERIC_9x1, MenuType.GENERIC_9x2, MenuType.GENERIC_9x3, MenuType.GENERIC_9x4, MenuType.GENERIC_9x5, MenuType.GENERIC_9x6)
 
     fun named(item: Item, name: String): ItemStack = ItemStack(item).also { it.set(DataComponents.CUSTOM_NAME, Component.literal(name)) }
+
+    fun lored(item: Item, name: String, lore: List<String>): ItemStack = named(item, name).also { it.set(DataComponents.LORE, ItemLore(lore.map(Component::literal))) }
 
     fun menu(rows: Int, title: String, goBack: Boolean = true, fill: (SimpleContainer) -> Unit = {}): SimpleMenuProvider {
         val chest = SimpleContainer(rows * 9)
@@ -31,6 +35,9 @@ object ServerMenus {
         fill(chest)
         return SimpleMenuProvider({ id, inventory, _ -> ChestMenu(TYPES[rows - 1], id, inventory, chest, rows) }, Component.literal(title))
     }
+
+    fun sixRows(chest: Container, title: String) =
+        SimpleMenuProvider({ id, inventory, _ -> ChestMenu.sixRows(id, inventory, chest) }, Component.literal(title))
 
     fun open(context: ClientGameTestContext, world: TestSingleplayerContext, rows: Int, title: String, goBack: Boolean = true, fill: (SimpleContainer) -> Unit = {}) {
         world.server.runOnServer<Nothing> { server -> server.player.openMenu(menu(rows, title, goBack, fill)) }

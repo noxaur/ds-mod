@@ -9,6 +9,7 @@
     "FocusEachTestMixin",
     "FreshStartMixin",
     "HandAccessor",
+    "HoveredSlotAccessor",
     "HudAccessor",
     "MouseButtonInvoker"
   ],

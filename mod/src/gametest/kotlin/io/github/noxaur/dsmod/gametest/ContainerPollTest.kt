@@ -6,14 +6,8 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
-import net.minecraft.core.component.DataComponents
-import net.minecraft.network.chat.Component
 import net.minecraft.world.SimpleContainer
-import net.minecraft.world.SimpleMenuProvider
-import net.minecraft.world.inventory.ChestMenu
-import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
-import net.minecraft.world.item.component.ItemLore
 
 /** @keep Covers [io.github.noxaur.dsmod.edge.mixin.EnchantmentOfferMixin], [io.github.noxaur.dsmod.edge.mixin.MenuBackdropMixin], [io.github.noxaur.dsmod.edge.mixin.MenuLabelMixin]. */
 class ContainerPollTest : FabricClientGameTest {
@@ -31,14 +25,9 @@ class ContainerPollTest : FabricClientGameTest {
                 world.server.runOnServer<Nothing> { server ->
                     val chest = SimpleContainer(54)
                     for (slot in 0 until 54) {
-                        chest.setItem(slot, ItemStack(Items.DIAMOND_SWORD).also { stack ->
-                            stack.set(DataComponents.CUSTOM_NAME, Component.literal("Sword $slot"))
-                            stack.set(DataComponents.LORE, ItemLore((1..40).map { Component.literal("Line $it of the lore of sword $slot") }))
-                        })
+                        chest.setItem(slot, ServerMenus.lored(Items.DIAMOND_SWORD, "Sword $slot", (1..40).map { "Line $it of the lore of sword $slot" }))
                     }
-                    server.player.openMenu(
-                        SimpleMenuProvider({ id, inventory, _ -> ChestMenu.sixRows(id, inventory, chest) }, Component.literal("Big Chest")),
-                    )
+                    server.player.openMenu(ServerMenus.sixRows(chest, "Big Chest"))
                 }
                 context.waitFor { it.gui.screen() is AbstractContainerScreen<*> }
                 context.waitTicks(20)
