@@ -91,11 +91,20 @@ const timeThroughEffect = defineRule({
 
 const builtByHarness = new Set(["makeApp", "memoryServices", "betterAuth", "memoryAdapter"]);
 
+const keyName = (property) =>
+  property.type === "Property" && property.computed === false && property.key.type === "Identifier"
+    ? property.key.name
+    : null;
+
+const isNumber = (node, value) => node?.type === "Literal" && node.value === value;
+
 const testHarness = defineRule({
   meta: {
     messages: {
       harness:
         "Build the app with testApp and sign-in with testAuth from test/harness.ts, so every test calls them the same way.",
+      caller: "Take a caller from test/harness.ts, such as cookieCaller or signedOutCaller, instead of writing one.",
+      gzip: "Make a capture with gzipped, truncatedGzip or gzippedOverLimit from test/harness.ts instead of writing the gzip header.",
     },
   },
   create(context) {
@@ -103,6 +112,19 @@ const testHarness = defineRule({
       ImportSpecifier(node) {
         if (node.imported.type === "Identifier" && builtByHarness.has(node.imported.name)) {
           context.report({ node, messageId: "harness" });
+        }
+      },
+      ObjectExpression(node) {
+        const keys = new Set(node.properties.map(keyName));
+        if (keys.has("userId") && keys.has("adminToken")) {
+          context.report({ node, messageId: "caller" });
+        }
+      },
+      ArrayExpression(node) {
+        if (
+          node.elements.some((element, index) => isNumber(element, 0x1f) && isNumber(node.elements[index + 1], 0x8b))
+        ) {
+          context.report({ node, messageId: "gzip" });
         }
       },
     };

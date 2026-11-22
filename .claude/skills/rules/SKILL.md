@@ -95,7 +95,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | The backend logs through a named `console` call, never `console[level]` | `dsmod/no-computed-console` in `backend/lint/dsmod.js` |
 | The backend has no `any`, and reads JSON through a `Schema` outside its tests | `typescript/no-explicit-any` in `backend/vite.config.ts`, and `dsmod/no-json-parse` in `backend/lint/dsmod.js` |
 | Backend code reads the time through Effect's `Clock` and makes ids with `src/ids.ts`, so a test sets the time with `TestClock` | `dsmod/time-through-effect` in `backend/lint/dsmod.js` |
-| Backend tests build the app and sign-in from one harness | `dsmod/test-harness` in `backend/lint/dsmod.js`, which sends a test to `backend/test/harness.ts` |
+| Backend tests build the app, sign-in, a caller and a gzipped capture from one harness | `dsmod/test-harness` in `backend/lint/dsmod.js`, which sends a test to `backend/test/harness.ts` |
 | `vite` is the Vite+ core of `vite-plus`'s version, so Void and Vite+ share one Vite | `vite.test.ts` in `backend/test/` |
 | `backend/src/` imports nothing from Void | `no-restricted-imports` in `backend/vite.config.ts` |
 | Backend code outside `items/` reads dragsim.co's data through `src/upstream/` and the item renderer only through `items/render.ts`, and profiles reaches items only through its model and that entry | `no-restricted-imports` in `backend/vite.config.ts` |
