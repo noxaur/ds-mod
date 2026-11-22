@@ -1,10 +1,10 @@
 package io.github.noxaur.dsmod.core.ui
 
-import io.github.noxaur.dsmod.core.config.Bind
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Sections
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.config.Store
+import io.github.noxaur.dsmod.core.config.Stored
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
@@ -16,12 +16,14 @@ import kotlin.test.assertTrue
 
 class SettingsSearchTest {
     private class Values {
-        var a = true
-        var b = true
-        var c = true
-        var e = true
-        var f = 0
-        var mode = Mode.HOLD
+        private val s = Stored(Store.GENERAL)
+
+        val a = s.slot("a", true)
+        val b = s.slot("b", true)
+        val c = s.slot("c", true)
+        val e = s.slot("e", true)
+        val f = s.slot("f", 0)
+        val mode = s.slot("mode", Mode.HOLD)
     }
 
     private enum class Mode(private val label: String) {
@@ -39,21 +41,21 @@ class SettingsSearchTest {
     private val sections = Sections().apply {
         section("The End", Role.EPIC) {
             group("Dragon") {
-                switch(Bind.of(v::a), "Dragon Timer", "Show when the egg returns.", id = "timer")
-                switch(Bind.of(v::b), "Protect Eyes", "Ignore a second click.", id = "eyes")
+                switch(v.a.bind, "Dragon Timer", "Show when the egg returns.", id = "timer")
+                switch(v.b.bind, "Protect Eyes", "Ignore a second click.", id = "eyes")
             }
-            group("Drops") { switch(Bind.of(v::c), "Zealot Tracker", "Count your Summoning Eyes.", id = "zealot") }
+            group("Drops") { switch(v.c.bind, "Zealot Tracker", "Count your Summoning Eyes.", id = "zealot") }
         }
         section("Camera", Role.ACTION) {
             group(look) {
-                keys(v::f, "Key", "The key.", id = "key")
-                choice(v::mode, "Mode", "Hold or press.", id = "mode")
+                keys(v.f.bind, "Key", "The key.", id = "key")
+                choice(v.mode.bind, "Mode", "Hold or press.", Mode.entries, id = "mode")
             }
         }
         section("Chat", Role.WARNING) {
             group(null) {
-                switch(Bind.of(v::e), "Copy Chat", "Copy messages.", id = "copy") {
-                    choice(v::mode, "Copy Mode", "Pick what a copy takes.", id = "copyMode")
+                switch(v.e.bind, "Copy Chat", "Copy messages.", id = "copy") {
+                    choice(v.mode.bind, "Copy Mode", "Pick what a copy takes.", Mode.entries, id = "copyMode")
                 }
             }
         }

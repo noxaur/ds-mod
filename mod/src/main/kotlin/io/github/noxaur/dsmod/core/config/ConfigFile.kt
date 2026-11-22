@@ -51,9 +51,7 @@ class ConfigFile(private val file: Path) {
             for (store in Store.entries) {
                 val slots = config.stored(store).all
                 if (slots.isEmpty()) continue
-                val section = LinkedHashMap<String, JsonElement>((fields[store.key] as? JsonObject).orEmpty())
-                for (slot in slots) section[slot.key] = write(slot)
-                sections[store.key] = JsonObject(section)
+                sections[store.key] = JsonObject(slots.associate { it.key to write(it) })
             }
             return json.encodeToString(JsonObject.serializer(), JsonObject(sections))
         }
@@ -63,7 +61,7 @@ class ConfigFile(private val file: Path) {
             val config = json.decodeFromJsonElement(DsModConfig.serializer(), tree)
             for (store in Store.entries) {
                 val section = tree[store.key] as? JsonObject ?: continue
-                config.stored(store).pending = { slot -> read(slot, section) }
+                config.stored(store).load { slot -> read(slot, section) }
                 val former = HashMap(section)
                 config.stored(store).held = { key, serializer -> former.remove(key)?.let { decode(serializer, it) } }
             }

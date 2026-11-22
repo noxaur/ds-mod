@@ -4,6 +4,7 @@ import io.github.noxaur.dsmod.core.container.MenuButton;
 import io.github.noxaur.dsmod.core.ui.Menus;
 import io.github.noxaur.dsmod.edge.MenuSkin;
 import io.github.noxaur.dsmod.edge.Slots;
+import io.github.noxaur.dsmod.edge.input.InputApproved;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -16,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+@InputApproved(by = "noxaur", hash = "5147eddf96ea")
 @Mixin(AbstractContainerScreen.class)
 abstract class ContainerScreenMixin {
     @Shadow

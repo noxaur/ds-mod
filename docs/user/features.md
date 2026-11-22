@@ -192,7 +192,7 @@ Clicks 9.9 times a second while you hold a key and walk. It stops the moment you
 | Key | Any key or mouse button. Left Click starts on the left mouse button and Right Click on the right, and the two can't share a key |
 | Mode | Hold, or Toggle to press once to start and again to stop. A toggled click still runs only while you walk |
 
-While a part is on, your own clicks of that button share the same 9.9 a second, so clicking never goes faster.
+Your own clicks always go through. They count toward the 9.9 a second, so Auto Click skips one of its clicks rather than take the two of you past it.
 
 <sub>Off by default.</sub>
 

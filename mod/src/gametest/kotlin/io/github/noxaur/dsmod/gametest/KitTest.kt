@@ -6,7 +6,6 @@ import io.github.noxaur.dsmod.gametest.SettingsSteps.guiScale
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.Browser], [io.github.noxaur.dsmod.edge.mixin.MouseTurnMixin]. */
 class KitTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) = inKit(context) {
         context.setScreen { KitGalleryScreen() }

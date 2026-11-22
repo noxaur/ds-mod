@@ -31,9 +31,9 @@ final class JavaHooksScreen {
     }
 }
 
-final class JavaAsksGroup {
-    boolean run() {
-        return io.github.noxaur.dsmod.edge.DsModClient.INSTANCE.runs(io.github.noxaur.dsmod.core.feature.inventory.BetterUi.class);
+final class JavaLooksUp {
+    Object run() {
+        return io.github.noxaur.dsmod.edge.DsModClient.INSTANCE.getGame();
     }
 }
 

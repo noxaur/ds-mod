@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.contribute
 
 import io.github.noxaur.dsmod.core.backend.ItemSighting
+import io.github.noxaur.dsmod.core.backend.toJson
 import io.github.noxaur.dsmod.core.capture.Redactor
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.ServerText
@@ -38,7 +39,9 @@ class ItemSightings(private val own: () -> Set<String>) {
             allowed(item),
         )
         val fits = listOfNotNull(sighting.entry, sighting.material, sighting.itemModel, sighting.skinId).all { it.length <= MAX_ID } &&
-            (sighting.skullTexture?.length ?: 0) <= MAX_TEXTURE
+            (sighting.skullTexture?.length ?: 0) <= MAX_TEXTURE &&
+            (sighting.lore + sighting.name).all { line -> line.spans.size <= MAX_LINE_SPANS && line.spans.all { it.text.length <= MAX_SPAN_TEXT } } &&
+            sighting.toJson().toString().toByteArray().size <= MAX_SIGHTING_BYTES
         return sighting.takeIf { fits }
     }
 
@@ -66,14 +69,19 @@ class ItemSightings(private val own: () -> Set<String>) {
         return JsonObject(kept)
     }
 
-    private companion object {
+    internal companion object {
         const val MAX_LORE = 80
         const val MAX_ID = 128
         const val MAX_TEXTURE = 4096
-        const val RGB = (1 shl 24) - 1
-        val ITEM_DATA = setOf("npc_sell_price", "reforge_stats", "color", "item_id", "reforge", "item_type", "item_name", "skull", "rarity")
-        val EXTRA = setOf("item_dye", "item_skin", "dungeon_upgrade", "wither_scrolls", "coating", "attunement", "drill", "enrichment")
-        val ALLOWED = listOf("item_stats", "item_modifiers", "abilities")
-        val UUID = Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
+        const val MAX_SPAN_TEXT = 1024
+        const val MAX_LINE_SPANS = 64
+
+        /** @keep A batch of 50 sightings this size is under the backend's 1 MiB for the items it is sent with. */
+        const val MAX_SIGHTING_BYTES = 16_384
+        private const val RGB = (1 shl 24) - 1
+        private val ITEM_DATA = setOf("npc_sell_price", "reforge_stats", "color", "item_id", "reforge", "item_type", "item_name", "skull", "rarity")
+        private val EXTRA = setOf("item_dye", "item_skin", "dungeon_upgrade", "wither_scrolls", "coating", "attunement", "drill", "enrichment")
+        private val ALLOWED = listOf("item_stats", "item_modifiers", "abilities")
+        private val UUID = Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
     }
 }

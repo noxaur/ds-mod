@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.edge.mixin;
 
 import io.github.noxaur.dsmod.edge.EditedText;
 import io.github.noxaur.dsmod.edge.FloatingTexts;
+import io.github.noxaur.dsmod.edge.input.InputApproved;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.world.entity.Entity;
@@ -10,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+@InputApproved(hash = "d7de7ed952c5")
 @Mixin(EntityRenderer.class)
 abstract class HiddenTextMixin {
     @Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true)

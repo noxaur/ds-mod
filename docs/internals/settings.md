@@ -20,7 +20,7 @@ A setting's default is declared in the one line that names its key, or read from
 
 ## The config file keeps its keys
 
-The config file keeps the keys and sections MoulConfig wrote, so a player who updates keeps every setting. Renaming a shipped key loses what players set, so a key that has to change names its old one. A file that does not parse is moved aside and the player is told where, because overwriting it would lose the settings without a word.
+The config file keeps the keys and sections MoulConfig wrote, so a player who updates keeps every setting. Renaming a shipped key loses what players set, so a key that has to change names its old one. Each key is written beside the setting it saves, never derived from the code's names, because renaming code would then lose a setting without a word. A file that does not parse is moved aside and the player is told where, because overwriting it would lose the settings without a word.
 
 ## The rows are drawn by one painter
 

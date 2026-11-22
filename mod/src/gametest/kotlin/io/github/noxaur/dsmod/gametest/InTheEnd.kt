@@ -22,7 +22,7 @@ fun ClientGameTestContext.enterTheEnd() {
 const val DRAGON_TIMER = "dragon-timer"
 
 fun forgetHudPlace(id: String) {
-    DsModClient.settings.hud.positions.remove(id)
+    DsModClient.settings.hud.positions.value -= id
 }
 
 fun ClientGameTestContext.inWorldWithoutTimerPlace(test: (TestSingleplayerContext) -> Unit) = worldBuilder().create().use { world ->

@@ -22,7 +22,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.world.item.Items
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.HudHotbarMixin]. */
 class SurfacesTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.inWorld { world ->
@@ -88,7 +87,7 @@ class SurfacesTest : FabricClientGameTest {
             context.runOnClient<Nothing> { client ->
                 client.options.guiScale().set(2)
                 client.resizeGui()
-                DsModClient.settings.hud.scale = 1.3f
+                DsModClient.settings.hud.scale.value = 1.3f
             }
             context.waitTicks(5)
             context.runOnClient<Nothing> {
@@ -96,7 +95,7 @@ class SurfacesTest : FabricClientGameTest {
                 check(scale == 1.5f) { "The HUD scale snapped to $scale, not 1.5" }
             }
             context.takeScreenshot("hud-scale-1.5")
-            context.runOnClient<Nothing> { DsModClient.settings.hud.scale = 1f }
+            context.runOnClient<Nothing> { DsModClient.settings.hud.scale.value = 1f }
             context.restoreDefaultGameOptions()
             context.runOnClient<Nothing> { it.resizeGui() }
         }

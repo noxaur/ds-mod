@@ -5,13 +5,14 @@ import { memoryAdapter } from "better-auth/adapters/memory";
 import { Clock, Effect } from "effect";
 import { TestClock } from "effect/testing";
 
-import type { Caller } from "../src/api.ts";
-import { MAX_BODY, makeApp, type Services } from "../src/app.ts";
+import { type Caller, MAX_CAPTURE } from "../src/api.ts";
+import { makeApp, type Services } from "../src/app.ts";
 import type { RequestSpec } from "../src/contrib/model.ts";
 import type { HasJoined } from "../src/identity/minecraft.ts";
 import { signInOptions } from "../src/identity/options.ts";
 import type { ItemSighting } from "../src/items/model.ts";
-import { contribStore, itemStore, profileStore } from "../routes/_store.ts";
+import type { Limiter } from "../src/limiter.ts";
+import { contribStore, itemStore, limiter, profileStore } from "../routes/_store.ts";
 import { localCloudflare } from "./cloudflare.ts";
 
 const BACKEND = "http://backend";
@@ -30,6 +31,9 @@ export const cookieCaller = (request: Request): Caller["Service"] => ({
 
 export const signedOutCaller = (): Caller["Service"] => ({ userId: null, adminToken: undefined });
 
+// @keep For a test of a cap that takes more calls than a player's rate allows in a minute.
+export const unlimited: Limiter = { allow: () => Effect.succeed(true) };
+
 export const testApp = (overrides: Partial<Services> = {}, callerOf = cookieCaller) => {
   const services: Services = {
     contrib: contribStore,
@@ -37,6 +41,7 @@ export const testApp = (overrides: Partial<Services> = {}, callerOf = cookieCall
     // @keep cache.ts keeps the parsed catalog per store object, so each app has its own, as each Worker isolate does.
     profiles: { ...profileStore },
     upstream: { get: () => Effect.die("This test does not answer for dragsim.co") },
+    limiter,
     clock: Clock.Clock.defaultValue(),
     ...overrides,
   };
@@ -91,7 +96,7 @@ export const gzipped = (...bytes: number[]) => new Uint8Array(gzipSync(Uint8Arra
 export const truncatedGzip = () => gzipped(1).subarray(0, 4);
 
 export const gzippedOverLimit = () => {
-  const body = new Uint8Array(Number(MAX_BODY) + 1);
+  const body = new Uint8Array(Number(MAX_CAPTURE) + 1);
   body.set(gzipped(1));
   return body;
 };

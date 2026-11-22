@@ -1,6 +1,6 @@
 import { afterEach, expect, test, vi } from "vite-plus/test";
 
-import { trustedKeyHeader } from "../../backend";
+import { relayKeyHeader, trustedKeyHeader } from "../../../shared/website";
 import { GET } from "./route";
 
 afterEach(() => {
@@ -21,10 +21,10 @@ const mojangSays = (answer: Response | Error) => {
 };
 
 test("the backend's question reaches Mojang, and Mojang's answer comes back unchanged", async () => {
-  vi.stubEnv("AUTH_TRUSTED_KEY", "the-key");
+  vi.stubEnv("MOJANG_RELAY_KEY", "the-key");
   const profile = { id: "069a79f444e94726a5befca90e38aaf5", name: "Notch" };
   const fetchMock = mojangSays(Response.json(profile));
-  const answer = await ask({ [trustedKeyHeader]: "the-key" });
+  const answer = await ask({ [relayKeyHeader]: "the-key" });
   expect(answer.status).toBe(200);
   expect(await answer.json()).toEqual(profile);
   expect(fetchMock.mock.calls[0]?.[0]).toEqual(
@@ -32,23 +32,55 @@ test("the backend's question reaches Mojang, and Mojang's answer comes back unch
   );
 
   mojangSays(new Response(null, { status: 429 }));
-  expect((await ask({ [trustedKeyHeader]: "the-key" })).status).toBe(429);
+  expect((await ask({ [relayKeyHeader]: "the-key" })).status).toBe(429);
 });
 
 test.each([
-  ["no key", "the-key", {}],
-  ["the wrong key", "the-key", { [trustedKeyHeader]: "wrong" }],
-  ["a key the website does not have", "", { [trustedKeyHeader]: "" }],
-])("a caller with %s is not answered", async (_name, key, headers) => {
-  vi.stubEnv("AUTH_TRUSTED_KEY", key);
+  ["no key", {}],
+  ["the wrong key", { [relayKeyHeader]: "wrong" }],
+  ["the trusted key in the relay key's header", { [relayKeyHeader]: "the-trusted-key" }],
+  ["an empty key", { [relayKeyHeader]: "" }],
+])("a caller with %s is not answered", async (_name, headers) => {
+  vi.stubEnv("MOJANG_RELAY_KEY", "the-key");
+  vi.stubEnv("AUTH_TRUSTED_KEY", "the-trusted-key");
   const fetchMock = mojangSays(new Response(null, { status: 204 }));
   expect((await ask(headers)).status).toBe(404);
   expect(fetchMock).not.toHaveBeenCalled();
 });
 
+test("a website without a relay key answers nobody", async () => {
+  vi.stubEnv("MOJANG_RELAY_KEY", "");
+  vi.stubEnv("AUTH_TRUSTED_KEY", "");
+  const fetchMock = mojangSays(new Response(null, { status: 204 }));
+  expect((await ask({ [relayKeyHeader]: "" })).status).toBe(404);
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test("the trusted key does not open the relay", async () => {
+  vi.stubEnv("MOJANG_RELAY_KEY", "the-key");
+  vi.stubEnv("AUTH_TRUSTED_KEY", "the-trusted-key");
+  const fetchMock = mojangSays(new Response(null, { status: 204 }));
+  expect((await ask({ [trustedKeyHeader]: "the-trusted-key" })).status).toBe(404);
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test.each([
+  ["a name Mojang never gives", `username=No%20tch&serverId=${serverId}`],
+  ["a server id the backend never makes", "username=Notch&serverId=abc"],
+  ["a question with nothing in it", ""],
+])("%s is refused before it reaches Mojang", async (_name, query) => {
+  vi.stubEnv("MOJANG_RELAY_KEY", "the-key");
+  const fetchMock = mojangSays(new Response(null, { status: 204 }));
+  const answer = await GET(
+    new Request(`https://website.test/mojang/has-joined?${query}`, { headers: { [relayKeyHeader]: "the-key" } }),
+  );
+  expect(answer.status).toBe(400);
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
 test("a Mojang that does not answer in time is a 502, and its request is cancelled", async () => {
   vi.useFakeTimers();
-  vi.stubEnv("AUTH_TRUSTED_KEY", "the-key");
+  vi.stubEnv("MOJANG_RELAY_KEY", "the-key");
   let cancelled = false;
   vi.stubGlobal(
     "fetch",
@@ -62,7 +94,7 @@ test("a Mojang that does not answer in time is a 502, and its request is cancell
         }),
     ),
   );
-  const answer = ask({ [trustedKeyHeader]: "the-key" });
+  const answer = ask({ [relayKeyHeader]: "the-key" });
   await vi.advanceTimersByTimeAsync(5_000);
   expect((await answer).status).toBe(502);
   expect(cancelled).toBe(true);
@@ -71,7 +103,7 @@ test("a Mojang that does not answer in time is a 502, and its request is cancell
 
 test("a Mojang that stalls partway through its answer is a 502, and its request is cancelled", async () => {
   vi.useFakeTimers();
-  vi.stubEnv("AUTH_TRUSTED_KEY", "the-key");
+  vi.stubEnv("MOJANG_RELAY_KEY", "the-key");
   let cancelled = false;
   vi.stubGlobal(
     "fetch",
@@ -88,7 +120,7 @@ test("a Mojang that stalls partway through its answer is a 502, and its request 
       return Promise.resolve(new Response(body, { status: 200 }));
     }),
   );
-  const answer = ask({ [trustedKeyHeader]: "the-key" });
+  const answer = ask({ [relayKeyHeader]: "the-key" });
   await vi.advanceTimersByTimeAsync(5_000);
   expect((await answer).status).toBe(502);
   expect(cancelled).toBe(true);
@@ -96,7 +128,7 @@ test("a Mojang that stalls partway through its answer is a 502, and its request 
 });
 
 test("a Mojang that cannot be reached is a 502, which the backend reads as Mojang failing", async () => {
-  vi.stubEnv("AUTH_TRUSTED_KEY", "the-key");
+  vi.stubEnv("MOJANG_RELAY_KEY", "the-key");
   mojangSays(new Error("down"));
-  expect((await ask({ [trustedKeyHeader]: "the-key" })).status).toBe(502);
+  expect((await ask({ [relayKeyHeader]: "the-key" })).status).toBe(502);
 });

@@ -21,12 +21,12 @@ class Unknowns(private val own: () -> Set<String>) {
         batch.add(Sighting(kind.take(MAX_KIND), signature, sample))
     }
 
-    private companion object {
+    internal companion object {
         const val MAX_KIND = 64
         const val MAX_SIGNATURE = 256
         const val MAX_SAMPLE = 4096
-        val SIGNATURE_DIGITS = Regex("""\d+(?:[.,]\d+)*""")
-        val NAME_ALIAS = Regex("""Player\d+""")
-        val SPACES = Regex("""\s+""")
+        private val SIGNATURE_DIGITS = Regex("""\d+(?:[.,]\d+)*""")
+        private val NAME_ALIAS = Regex("""Player\d+""")
+        private val SPACES = Regex("""\s+""")
     }
 }

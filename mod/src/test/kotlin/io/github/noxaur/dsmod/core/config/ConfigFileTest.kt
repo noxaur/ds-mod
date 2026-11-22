@@ -40,7 +40,6 @@ import io.github.noxaur.dsmod.core.feature.hud.ChatHudEditor
 import io.github.noxaur.dsmod.core.feature.hud.HudBackground
 import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
 import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
-import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
 import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
 import io.github.noxaur.dsmod.core.feature.inventory.HideGlassPanes
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
@@ -103,8 +102,8 @@ class ConfigFileTest {
 
         assertFalse(tree.feature<DragSimOnly>().feature.enabled)
         c.general.run {
-            assertEquals(344, settingsKey)
-            assertEquals(71, favoriteKey)
+            assertEquals(344, settingsKey.value)
+            assertEquals(71, favoriteKey.value)
         }
         assertTrue(tree.feature<Fullbright>().feature.enabled && tree.feature<HideExplosions>().feature.enabled)
         tree.feature<Animations>().run {
@@ -180,7 +179,7 @@ class ConfigFileTest {
         }
         assertTrue(tree.feature<ArmorSwapGuard>().feature.enabled)
 
-        assertFalse(tree.feature<BetterUi>().feature.switch.value || tree.feature<BackButtons>().feature.switch.value || tree.feature<MenuTabs>().feature.switch.value)
+        assertFalse(tree.features.single { it.id == "better-ui" }.switch.value || tree.feature<BackButtons>().feature.switch.value || tree.feature<MenuTabs>().feature.switch.value)
         assertEquals(
             listOf(MenuTab(TabEdge.TOP, 2, "bazaar", "minecraft:gold_ingot", "Bazaar"), MenuTab(TabEdge.BOTTOM, 6, item = "", tooltip = "Search", search = true)),
             tree.feature<MenuTabs>().tabs.value,
@@ -193,13 +192,25 @@ class ConfigFileTest {
         tree.assertOff(SlayerTracker::class.java, SlayerBossAlert::class.java)
 
         c.hud.run {
-            assertEquals(mapOf("zealot-tracker" to DsModConfig.Position(0.25f, 0.5f, 1.5f), "dragon-timer" to DsModConfig.Position(0.75f, 0.125f, 0.75f)), positions)
-            assertEquals(Theme.VANILLA, theme)
-            assertEquals(1.75f, scale)
+            assertEquals(mapOf("zealot-tracker" to DsModConfig.Position(0.25f, 0.5f, 1.5f), "dragon-timer" to DsModConfig.Position(0.75f, 0.125f, 0.75f)), positions.value)
+            assertEquals(Theme.VANILLA, theme.value)
+            assertEquals(1.75f, scale.value)
         }
         tree.assertOff(ChatHudEditor::class.java, HudBackground::class.java)
 
         assertTrue(tree.feature<ReportGameData>().feature.enabled)
+    }
+
+    /** @keep `config/main.json` was written by main at aebc7effe with every row changed from its default, on a Mac so
+     * Ctrl Click has its row. Write it again only to add a setting, never to change a key that shipped. */
+    @Test
+    fun `a file this version's main wrote loads every value, and saves again unchanged`() {
+        val written = resource("config/main.json")
+        path.writeText(written)
+        val c = ConfigFile(path).load()
+        val rows = SettingsTree(c, mac = true).sections.flatMap { it.walk() }.filterIsInstance<Valued<*>>()
+        assertEquals(emptyList(), rows.filter { it.value == it.default }.map { it.id }, "rows that loaded their default")
+        assertEquals(Json.parseToJsonElement(written), Json.parseToJsonElement(ConfigFile.encode(c)))
     }
 
     @Test
@@ -208,7 +219,7 @@ class ConfigFileTest {
         val tree = SettingsTree(c)
         tree.feature<Camera>().distance.value = 9f
         tree.feature<ItemRarity>().inventoryStyle.value = SlotStyle(MarkStyle.AURA, opacity = 45, sparkles = true)
-        c.hud.positions["boss-fight-tracker"] = DsModConfig.Position(0.5f, 0.5f, 2f)
+        c.hud.positions.value += "boss-fight-tracker" to DsModConfig.Position(0.5f, 0.5f, 2f)
         ConfigFile(path).save(c)
         val back = ConfigFile(path).load()
         val loaded = SettingsTree(back)

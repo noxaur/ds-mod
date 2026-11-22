@@ -10,7 +10,6 @@ import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.Frames]. */
 class PerformanceStatsTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val performanceStats = DsModClient.feature<PerformanceStats>()

@@ -10,7 +10,6 @@ import org.lwjgl.glfw.GLFW
 import kotlin.io.path.readText
 import kotlin.math.roundToInt
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.ChatDrags], [io.github.noxaur.dsmod.edge.Chat], [io.github.noxaur.dsmod.edge.ui.Editor], [io.github.noxaur.dsmod.edge.ui.ItemsEditor]. */
 class ChatHudEditorTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.inWorldWithoutTimerPlace { world ->
@@ -28,7 +27,7 @@ class ChatHudEditorTest : FabricClientGameTest {
             chat.dragEscaped(DRAGON_TIMER, start.x + 80, start.y + 60)
             context.runOnClient<Nothing> { check(Hud.placed().map { it.x to it.y } == stack) { "Escape left the stack at ${Hud.placed().map { it.x to it.y }}, not $stack" } }
             context.runOnClient<Nothing> { check(it.gui.screen() is ChatScreen) { "Escape during a drag closed the chat" } }
-            check(DRAGON_TIMER !in DsModClient.settings.hud.positions) { "Escape kept a position for a block from the stack" }
+            check(DRAGON_TIMER !in DsModClient.settings.hud.positions.value) { "Escape kept a position for a block from the stack" }
 
             val centered = (chat.width - start.width * start.scale) / 2.0
             val middle = (chat.height * 3 / 4).toDouble()
@@ -72,7 +71,7 @@ class ChatHudEditorTest : FabricClientGameTest {
             context.waitTick()
             check(pixels() == small) { "A notch back drew ${pixels()} pixels, not $small" }
 
-            val kept = DsModClient.settings.hud.positions.getValue(DRAGON_TIMER)
+            val kept = DsModClient.settings.hud.positions.value.getValue(DRAGON_TIMER)
             context.setScreen { null }
             context.waitFor { FabricLoader.getInstance().configDir.resolve("dsmod/config.json").readText().contains(""""$DRAGON_TIMER":{"x":${kept.x},"y":${kept.y},"scale":${kept.scale}}""") }
 
@@ -80,7 +79,7 @@ class ChatHudEditorTest : FabricClientGameTest {
             chat.move(nudged.x + 5.0, nudged.y + 5.0)
             context.input.pressMouse(1)
             context.waitTick()
-            check(DRAGON_TIMER !in DsModClient.settings.hud.positions) { "The right press kept the position" }
+            check(DRAGON_TIMER !in DsModClient.settings.hud.positions.value) { "The right press kept the position" }
             chat.checkAt(DRAGON_TIMER, start.x, start.y) { "The reset block is at ${it.x}, ${it.y}, not ${start.x}, ${start.y}" }
             context.setScreen { null }
         }
