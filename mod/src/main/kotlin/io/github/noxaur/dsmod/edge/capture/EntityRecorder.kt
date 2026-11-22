@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge.capture
 
 import io.github.noxaur.dsmod.core.capture.ChangeLog
+import io.github.noxaur.dsmod.edge.typeId
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
@@ -9,7 +10,6 @@ import kotlinx.serialization.json.put
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.core.Direction
 import net.minecraft.core.component.DataComponents
-import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.Display
 import net.minecraft.world.entity.Entity
@@ -182,7 +182,7 @@ class EntityRecorder {
         if (!changed) return null
 
         val json = buildJsonObject {
-            put("entity", BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString())
+            put("entity", entity.typeId)
             position(shape.x, shape.y, shape.z)
             put("nameVisible", shape.nameVisible)
             entry.name?.let { put("name", it) }
