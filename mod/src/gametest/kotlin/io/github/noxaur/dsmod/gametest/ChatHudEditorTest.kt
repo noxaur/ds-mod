@@ -8,7 +8,6 @@ import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.gui.screens.ChatScreen
 import org.lwjgl.glfw.GLFW
 import kotlin.io.path.readText
-import kotlin.math.abs
 import kotlin.math.roundToInt
 
 
@@ -20,8 +19,7 @@ import kotlin.math.roundToInt
  */
 class ChatHudEditorTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
-        context.worldBuilder().create().use { world ->
-            DsModClient.settings.hud.positions.remove(DRAGON_TIMER)
+        context.inWorldWithoutTimerPlace { world ->
             context.showDragonTimer(world)
             context.waitFor { Hud.find(DRAGON_TIMER) != null && Hud.placed().size > 1 }
             val chat = InChat(context)
@@ -35,7 +33,7 @@ class ChatHudEditorTest : FabricClientGameTest {
             val stack = context.computeOnClient<List<Pair<Float, Float>>, Nothing> { Hud.placed().map { it.x to it.y } }
             // The stack follows the features' order, so the Dragon Timer tops it although the Zealot Tracker showed first.
             context.runOnClient<Nothing> { check(Hud.placed().first().id == DRAGON_TIMER) { "The stack starts with ${Hud.placed().first().id}" } }
-            chat.drag(DRAGON_TIMER, start.x + 80, start.y + 60) { context.input.pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitTick() }
+            chat.dragEscaped(DRAGON_TIMER, start.x + 80, start.y + 60)
             context.runOnClient<Nothing> { check(Hud.placed().map { it.x to it.y } == stack) { "Escape left the stack at ${Hud.placed().map { it.x to it.y }}, not $stack" } }
             context.runOnClient<Nothing> { check(it.gui.screen() is ChatScreen) { "Escape during a drag closed the chat" } }
             check(DRAGON_TIMER !in DsModClient.settings.hud.positions) { "Escape kept a position for a block from the stack" }
@@ -45,17 +43,17 @@ class ChatHudEditorTest : FabricClientGameTest {
             val centered = (chat.width - start.width * start.scale) / 2.0
             val middle = (chat.height * 3 / 4).toDouble()
             chat.drag(DRAGON_TIMER, centered + 3, middle) { context.takeScreenshot("chat-hud-editor-dragging") }
-            chat.block(DRAGON_TIMER).let { check(abs(it.x - centered) < 0.6 && abs(it.y - middle) < 0.6) { "The block did not center: ${it.x}, ${it.y}, wanted $centered, $middle" } }
+            chat.checkNear(DRAGON_TIMER, centered, middle) { "The block did not center: ${it.x}, ${it.y}, wanted $centered, $middle" }
 
             // Shift pressed after the press still skips the lining up.
             chat.drag(DRAGON_TIMER, centered + 4, middle) { context.input.holdShift(); chat.move(centered + 8.0, middle + 5.0) }
             context.input.releaseShift()
-            chat.block(DRAGON_TIMER).let { check(abs(it.x - (centered + 3)) < 0.6 && abs(it.y - middle) < 0.6) { "Shift did not skip the snap: ${it.x}, ${it.y}" } }
+            chat.checkNear(DRAGON_TIMER, centered + 3, middle) { "Shift did not skip the snap: ${it.x}, ${it.y}" }
 
             // Escape during a drag of a placed block puts it back where it was.
             val placed = chat.block(DRAGON_TIMER)
-            chat.drag(DRAGON_TIMER, placed.x + 40, placed.y + 30) { context.input.pressKey(GLFW.GLFW_KEY_ESCAPE); context.waitTick() }
-            chat.block(DRAGON_TIMER).let { check(it.x == placed.x && it.y == placed.y) { "Escape left the block at ${it.x}, ${it.y}, not ${placed.x}, ${placed.y}" } }
+            chat.dragEscaped(DRAGON_TIMER, placed.x + 40, placed.y + 30)
+            chat.checkAt(DRAGON_TIMER, placed.x, placed.y) { "Escape left the block at ${it.x}, ${it.y}, not ${placed.x}, ${placed.y}" }
 
             // While the block is held, the arrows nudge it a pixel, and ten with Shift, and the input stays empty.
             chat.drag(DRAGON_TIMER, placed.x, placed.y) {
@@ -65,7 +63,7 @@ class ChatHudEditorTest : FabricClientGameTest {
                 context.input.releaseShift()
                 context.waitTick()
             }
-            chat.block(DRAGON_TIMER).let { check(it.x == placed.x + 1 && it.y == placed.y + 10) { "The arrows put the block at ${it.x}, ${it.y}, not ${placed.x + 1}, ${placed.y + 10}" } }
+            chat.checkAt(DRAGON_TIMER, placed.x + 1, placed.y + 10) { "The arrows put the block at ${it.x}, ${it.y}, not ${placed.x + 1}, ${placed.y + 10}" }
             check(chat.input().isEmpty()) { "Dragging and nudging put '${chat.input()}' in the input" }
 
             // With nothing held, the arrows are the input's, even with the mouse on the block.
@@ -76,7 +74,7 @@ class ChatHudEditorTest : FabricClientGameTest {
             context.waitTick()
             val cursor = chat.cursor()
             check(chat.input() == "ab" && cursor == 1) { "Left with nothing held gave '${chat.input()}' with the cursor at $cursor" }
-            chat.block(DRAGON_TIMER).let { check(it.x == nudged.x && it.y == nudged.y) { "Left with nothing held moved the block" } }
+            chat.checkAt(DRAGON_TIMER, nudged.x, nudged.y) { "Left with nothing held moved the block" }
 
             // One notch of the wheel is one screen pixel more per HUD pixel.
             val guiScale = context.computeOnClient<Int, Nothing> { it.window.guiScale }
@@ -100,7 +98,7 @@ class ChatHudEditorTest : FabricClientGameTest {
             context.input.pressMouse(1)
             context.waitTick()
             check(DRAGON_TIMER !in DsModClient.settings.hud.positions) { "The right press kept the position" }
-            chat.block(DRAGON_TIMER).let { check(it.x == start.x && it.y == start.y) { "The reset block is at ${it.x}, ${it.y}, not ${start.x}, ${start.y}" } }
+            chat.checkAt(DRAGON_TIMER, start.x, start.y) { "The reset block is at ${it.x}, ${it.y}, not ${start.x}, ${start.y}" }
             context.setScreen { null }
         }
     }

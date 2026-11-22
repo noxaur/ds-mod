@@ -27,10 +27,12 @@ class RedactCaptureTest {
         return GZIPInputStream(Files.newInputStream(gz)).bufferedReader().readLines()
     }
 
+    private fun tab(vararg lines: String) = captureLine(1, TabList(lines.map(::text)))
+
     @Test
     fun `names, typed chat and skins are gone from events and raw records alike, and the file is gzipped`() {
         val out = redact(
-            captureLine(1, TabList(listOf(text("The End"), text("[MVP+] Alice [IRON]"), text("Info"), text("Area: The End")))),
+            tab("The End", "[MVP+] Alice [IRON]", "Info", "Area: The End"),
             captureLine(2, chat("[MVP+] Alice: my password is hunter2")),
             captureLine(3, chat("Bob has obtained a thing")),
             """{"t":4,"type":"chat","data":{"sender":"Alice","text":"Alice: my password is hunter2"}}""",
@@ -124,7 +126,7 @@ class RedactCaptureTest {
     @Test
     fun `the server's own lines keep their words, though a player is called what they start with`() {
         val out = redact(
-            captureLine(1, TabList(listOf(text("The End"), text("[VIP] Everyone"), text("Info")))),
+            tab("The End", "[VIP] Everyone", "Info"),
             captureLine(2, chat("                    Everyone: +50% dungeon drops.")),
             captureLine(3, chat("[BOSS] Old Dragon: I call upon the god of thunder.. Kill them all!")),
             captureLine(4, chat("Auto-Slayer disabled.")),
@@ -154,7 +156,7 @@ class RedactCaptureTest {
     @Test
     fun `a player named what the server calls itself or a place is replaced only where a name sits`() {
         val out = redact(
-            captureLine(1, TabList(listOf(text("     End Island (64) 1/4     "), text("[VIP] Island"), text("End"), text("Info")))),
+            tab("     End Island (64) 1/4     ", "[VIP] Island", "End", "Info"),
             captureLine(2, Sidebar(text("DragSim"), listOf(text("⏣ Dragon's Den")))),
             captureLine(3, SlotChanged(3, Item("minecraft:stick", 1, text("Stick"), listOf(text("Seller: [MOD] DragSim"))))),
             captureLine(4, chat("[MOD] DragSim: welcome, End")),
@@ -173,7 +175,7 @@ class RedactCaptureTest {
     @Test
     fun `an older capture's chat line is dropped, and its other old events are redacted as raw data`() {
         val out = redact(
-            captureLine(1, TabList(listOf(text("The End"), text("Alice"), text("Info")))),
+            tab("The End", "Alice", "Info"),
             """{"t":2,"type":"system","data":{"text":"§7Alice§f: my secret"}}""",
             """{"t":3,"type":"death","data":{"entity":"minecraft:zombie","name":{"text":"Alice's Zombie"}}}""",
         )
@@ -198,7 +200,7 @@ class RedactCaptureTest {
     @Test
     fun `an entity's uuid goes in either form, and so does a split name with a color code in front`() {
         val out = redact(
-            captureLine(1, TabList(listOf(text("The End"), text("Alice"), text("Info")))),
+            tab("The End", "Alice", "Info"),
             """{"t":2,"type":"title","data":{"title":{"text":"x","component":{"text":"§aAli","extra":["ce"],"hover_event":{"id":"minecraft:player","uuid":[5,6,7,8]}}}}}""",
             """{"t":3,"type":"title","data":{"title":{"text":"x","component":{"text":"","hover_event":{"uuid":"0-1-2"}}}}}""",
         )
@@ -210,7 +212,7 @@ class RedactCaptureTest {
     @Test
     fun `an NPC that shares a player's name says what it said, and a player called like an alias is renamed`() {
         val out = redact(
-            captureLine(1, TabList(listOf(text("The End"), text("Mort"), text("Player1"), text("Info")))),
+            tab("The End", "Mort", "Player1", "Info"),
             captureLine(2, chat("[NPC] Mort: Good luck.")),
             captureLine(3, chat("Player1: my secret")),
         )
@@ -230,7 +232,7 @@ class RedactCaptureTest {
     @Test
     fun `a name split across the pieces of a component is gone from the component too`() {
         val out = redact(
-            captureLine(1, TabList(listOf(text("The End"), text("Alice"), text("Info")))),
+            tab("The End", "Alice", "Info"),
             """{"t":2,"type":"title","data":{"title":{"text":"Alice wins","component":{"text":"Ali","color":"red","extra":[{"text":"ce","color":"gold"},{"text":" wins"}]}}}}""",
             """{"t":3,"type":"entities","data":{"full":true,"entries":{"7":{"entity":"minecraft:armor_stand","equipment":{"head":{"components":{"minecraft:custom_name":{"text":"","extra":[{"text":"A"},{"text":"lic","extra":[{"text":"e"}]},"'s head"]}}}}}}}}""",
             """{"t":4,"type":"title","data":{"title":{"text":"Fight","component":{"text":"Fi","extra":[{"text":"ght","bold":true}]}}}}""",
@@ -253,7 +255,7 @@ class RedactCaptureTest {
     fun `a damage summary keeps its figures, and only the names go`() {
         val summary = "                1st Damager [VIP] Alice - 80.8M\n                2nd Damager [MVP+] Bob - 33.8M\n\n                   Your Damage: 33.8M (Position #2)"
         val out = redact(
-            captureLine(1, TabList(listOf(text("The End"), text("[VIP] Alice"), text("[MVP+] Bob"), text("Info")))),
+            tab("The End", "[VIP] Alice", "[MVP+] Bob", "Info"),
             captureLine(2, chat(summary)),
             captureLine(3, chat("[VIP] Alice [IRON]: hello there")),
             captureLine(4, chat("Bob \u272F: nice")),

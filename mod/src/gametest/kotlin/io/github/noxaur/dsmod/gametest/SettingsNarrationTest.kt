@@ -63,23 +63,13 @@ class SettingsNarrationTest : FabricClientGameTest {
         over("slot-lock", "Slot Lock, switch, on, collapsed")
 
         open(context, SettingsTabs(at("The End")))
-        if (context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).spot("beamSections") == null }) {
-            val beacon = spot("protector-spawn-beam")
-            move(beacon.extraX + 7, beacon.controlY + 6)
-            context.input.pressMouse(0)
-            context.waitTicks(2)
-        }
+        unfold("beamSections", "protector-spawn-beam") { it.extraX + 7 to it.controlY + 6 }
         over("protector-spawn-beam", "Protector Spawn Beam, switch, on, expanded")
         over("beamSections", "Beam Timing, span, 175 to 200")
 
         open(context, SettingsTabs(at("Interface")))
         over("moveHud", "Move HUD, button, Move")
-        if (context.computeOnClient<Boolean, Nothing> { (it.gui.screen() as SettingsScreen).spot("equipmentPieces", 0) == null }) {
-            val list = spot("equipmentPieces")
-            move(list.x + 20, list.y + list.height / 2)
-            context.input.pressMouse(0)
-            context.waitTicks(2)
-        }
+        unfold("equipmentPieces", "equipmentPieces", entry = 0) { it.x + 20 to it.y + it.height / 2 }
         over("equipmentPieces", "Pieces, list, Helmet, Chestplate, Leggings, Boots, Pet, 5 of 5 shown, expanded")
         open(context, SettingsTabs(at("General")))
         over("fullbright", "Fullbright, switch, off")

@@ -1,8 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.core.hand.HandStyle
-import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.gametest.HeldItemScene.Companion.changed
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -12,11 +10,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 
 class AnimationsTest : FabricClientGameTest {
-    override fun runTest(context: ClientGameTestContext) = HeldItemScene.run(context) {
-        val animations = DsModClient.feature<Animations>()
-        animations.feature.enabled = false
-        val vanilla = shot("animations-vanilla")
-        val vanillaSwing = midSwing("animations-vanilla-swing")
+    override fun runTest(context: ClientGameTestContext) = HeldItemScene.runVanilla(context) { animations, vanilla, vanillaSwing ->
         val vanillaDip = midSwing("animations-vanilla-dip", ::swingAtAir)
         check(changed(vanilla, vanillaSwing) > 1000) { "The swing did not move the sword" }
 

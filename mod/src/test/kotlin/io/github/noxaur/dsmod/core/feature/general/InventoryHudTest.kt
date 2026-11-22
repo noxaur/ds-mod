@@ -25,20 +25,22 @@ class InventoryHudTest : Harness() {
 
     private fun row(vararg items: Pair<Int, Item>) = List(9) { column -> items.firstOrNull { it.first == column }?.second }
 
+    private fun assertRows(items: List<List<Item?>>, apart: List<Boolean>, vararg inventory: Pair<Int, Item>) {
+        post(*ownInventory(*inventory))
+        assertEquals(items, itemRows()?.map { it.items })
+        assertEquals(apart, itemRows()?.map { it.apart })
+    }
+
     @Test
     fun `the three rows show nine to a row with no header, a gap for each empty slot, and the hotbar left out`() {
-        post(*ownInventory(9 to eyes, 26 to arrow, 36 to sword))
+        assertRows(listOf(row(0 to eyes), row(8 to arrow), row()), listOf(false, false, false), 9 to eyes, 26 to arrow, 36 to sword)
         assertEquals("", hud(feature)?.header?.plain)
-        assertEquals(listOf(row(0 to eyes), row(8 to arrow), row()), itemRows()?.map { it.items })
-        assertEquals(listOf(false, false, false), itemRows()?.map { it.apart })
     }
 
     @Test
     fun `the hotbar sits apart from the rows beside it, in the order the player dragged them`() {
         feature.shownRows.value = listOf(InventoryRow.HOTBAR, InventoryRow.TOP, InventoryRow.BOTTOM)
-        post(*ownInventory(9 to eyes, 36 to sword))
-        assertEquals(listOf(row(0 to sword), row(0 to eyes), row()), itemRows()?.map { it.items })
-        assertEquals(listOf(false, true, false), itemRows()?.map { it.apart })
+        assertRows(listOf(row(0 to sword), row(0 to eyes), row()), listOf(false, true, false), 9 to eyes, 36 to sword)
     }
 
     @Test
@@ -56,9 +58,7 @@ class InventoryHudTest : Harness() {
         val helmet = Item("minecraft:leather_helmet", 1)
         val shield = Item("minecraft:shield", 1)
         feature.shownRows.value = listOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.ARMOR, InventoryRow.OFFHAND)
-        post(*ownInventory(5 to helmet, 9 to eyes, 45 to shield))
-        assertEquals(listOf(row(0 to eyes), row(), listOf(helmet, null, null, null), listOf(shield)), itemRows()?.map { it.items })
-        assertEquals(listOf(false, false, true, true), itemRows()?.map { it.apart })
+        assertRows(listOf(row(0 to eyes), row(), listOf(helmet, null, null, null), listOf(shield)), listOf(false, false, true, true), 5 to helmet, 9 to eyes, 45 to shield)
         assertEquals(listOf(9, 18, 5, 45), itemRows()?.map { it.slot })
     }
 

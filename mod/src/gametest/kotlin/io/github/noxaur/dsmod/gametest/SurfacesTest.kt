@@ -25,8 +25,8 @@ import net.minecraft.world.item.Items
 /** Shows every surface once, so the screenshots show each layer as the player sees it. */
 class SurfacesTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
-        context.worldBuilder().create().use { world ->
-            world.server.runCommand("give @a diamond 3")
+        context.inWorld { world ->
+            world.commands("give @a diamond 3")
             context.waitTicks(20)
 
             context.runOnClient<Nothing> { client ->
@@ -36,9 +36,7 @@ class SurfacesTest : FabricClientGameTest {
                     Point(player.x + look.x * forward - look.z * right, player.y + up, player.z + look.z * forward + look.x * right)
                 val stats = HudGroup("stats", 6, 6, background = true)
                 Hud.show("scales", stats, hud("Scale Tracker") {
-                    row("Sold") { value(1204) }
-                    row("Rate") { value(310); muted("/h") }
-                    bar("Storage", 0.8f, Role.WARNING) { warning("80%") }
+                    scaleRows()
                     items(listOf(Item("minecraft:prismarine_shard", 12), null, Item("minecraft:dragon_breath", 1)))
                 })
                 Hud.show("boss", stats, hud("Boss Timer") {

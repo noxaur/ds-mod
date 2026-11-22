@@ -80,14 +80,11 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
         var rows = mutableListOf(Row.TOP, Row.HOTBAR)
         var dimPieces = mutableListOf(EquipmentPiece.HELMET, EquipmentPiece.PET)
         var binds = Grouped(
-            listOf(
-                CommandBind("Warp End", "/warp end", listOf(GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_F6)),
-                CommandBind("Stash", "/viewstash", listOf(GLFW.GLFW_KEY_F7), where = Where.BOTH),
-                CommandBind("", "/sbmenu", listOf(GLFW.GLFW_KEY_F8, GLFW.GLFW_KEY_F9), inOrder = true),
+            sampleBinds("/sbmenu") + listOf(
                 CommandBind("Pets", "/pets", listOf(GLFW.GLFW_KEY_E)),
                 CommandBind("Hub", "/warp hub", listOf(GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_F6), group = "Warps"),
                 CommandBind("Dragon", "/warp drag", emptyList(), enabled = false, group = "Warps"),
-                CommandBind("Shared", "/warp end", listOf(GLFW.GLFW_KEY_KP_1), group = "From a Friend", enabled = false),
+                friendBind(),
             ),
             listOf("Warps", "Dungeons", "From a Friend"),
             folded = listOf("From a Friend"),
@@ -335,3 +332,11 @@ class SettingsGalleryScreen(private val page: Page = Page.ROWS) : Screen(text { 
         tip?.let { graphics.setTooltipForNextFrame(font, it.lines, mouseX, mouseY) }
     }
 }
+
+fun sampleBinds(menuCommand: String) = listOf(
+    CommandBind("Warp End", "/warp end", listOf(GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_F6)),
+    CommandBind("Stash", "/viewstash", listOf(GLFW.GLFW_KEY_F7), where = Where.BOTH),
+    CommandBind("", menuCommand, listOf(GLFW.GLFW_KEY_F8, GLFW.GLFW_KEY_F9), inOrder = true),
+)
+
+fun friendBind() = CommandBind("Shared", "/warp end", listOf(GLFW.GLFW_KEY_KP_1), group = "From a Friend", enabled = false)

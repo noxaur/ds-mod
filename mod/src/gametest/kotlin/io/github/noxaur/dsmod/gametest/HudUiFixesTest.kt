@@ -48,14 +48,13 @@ import kotlin.math.abs
  */
 class HudUiFixesTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
-        val window = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.screenWidth to it.window.screenHeight }
+        val window = SettingsSteps.windowSize(context)
         val copies = ArrayList<String>()
         val clipboard = CopyChats.clipboard
         CopyChats.clipboard = { copies += it }
         try {
             context.worldBuilder().create().use { world ->
-                context.input.resizeWindow(1280, 720)
-                guiScale(context, 1)
+                SettingsSteps.fit(context, 1)
                 freeBlockStaysOnScreen(context, world)
                 topIconIsNamed(context)
                 menuPaddingDoesNotRunTheFirstItem(context)
@@ -71,9 +70,7 @@ class HudUiFixesTest : FabricClientGameTest {
                 Hud.hide("over")
                 DsModClient.settings.hud.positions.clear()
             }
-            context.restoreDefaultGameOptions()
-            context.runOnClient<Nothing> { it.resizeGui() }
-            context.input.resizeWindow(window.first, window.second)
+            SettingsSteps.restore(context, window)
         }
     }
 }
@@ -84,7 +81,7 @@ private fun freeBlockStaysOnScreen(context: ClientGameTestContext, world: net.fa
     context.waitTicks(5)
     val hud = DsModClient.settings.hud
     val placed = context.computeOnClient<Hud.Placed, Nothing> { Hud.find(DRAGON_TIMER) ?: error("The dragon timer is not on the HUD") }
-    val size = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.guiScaledWidth to it.window.guiScaledHeight }
+    val size = context.guiSize()
     val margin = 8f
     val fraction = DsModConfig.Position(
         (size.first - placed.width * placed.scale - margin) / size.first,

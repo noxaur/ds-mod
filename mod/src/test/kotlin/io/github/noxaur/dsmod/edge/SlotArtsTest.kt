@@ -13,6 +13,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class SlotArtsTest {
+    private var uploads = 0
+    private val paint = { _: Surface, _: SlotStyle, _: Boolean ->
+        uploads++
+        Atlas(Identifier.fromNamespaceAndPath("dsmod", "rarity/test-$uploads"), 1, 1)
+    }
+
     @BeforeEach
     fun clear() = SlotArts.reset()
 
@@ -23,11 +29,6 @@ class SlotArtsTest {
 
     @Test
     fun `a restyle keeps the previous atlas until the tick uploads the next`() {
-        var uploads = 0
-        val paint = { _: Surface, _: SlotStyle, _: Boolean ->
-            uploads++
-            Atlas(Identifier.fromNamespaceAndPath("dsmod", "rarity/test-$uploads"), 1, 1)
-        }
         val inventory = SettingsTree().feature<ItemRarity>()
         inventory.hotbarMatches.value = false
         assertNull(SlotArts.atlas(inventory, Surface.HOTBAR))
@@ -50,11 +51,6 @@ class SlotArtsTest {
 
     @Test
     fun `a change of opacity alone paints nothing, since the blit draws it`() {
-        var uploads = 0
-        val paint = { _: Surface, _: SlotStyle, _: Boolean ->
-            uploads++
-            Atlas(Identifier.fromNamespaceAndPath("dsmod", "rarity/test-$uploads"), 1, 1)
-        }
         val inventory = SettingsTree().feature<ItemRarity>()
         SlotArts.atlas(inventory, Surface.CONTAINER)
         SlotArts.tick(paint)

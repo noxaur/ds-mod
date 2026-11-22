@@ -52,16 +52,24 @@ object ThemedMenus {
         } finally {
             look(context, MenuLook.SOLID)
         }
+        checkOff(context, name, title)
+        context.waitTicks(2)
+    }
+
+    fun checkOff(context: ClientGameTestContext, name: String, title: String) = themeOff(context) {
+        val (left, top) = context.menuCorner()
+        val shot = context.takeScreenshot("themed-$name-off")
+        check(pixel(context, shot, left + 3, top + 3) != Theme.CHARCOAL.panel and RGB) { "The $title stayed themed with Menu Theme off in $shot" }
+    }
+
+    fun themeOff(context: ClientGameTestContext, test: () -> Unit) {
         context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().feature.enabled = false }
         try {
             context.waitTicks(2)
-            val (left, top) = context.menuCorner()
-            val shot = context.takeScreenshot("themed-$name-off")
-            check(pixel(context, shot, left + 3, top + 3) != Theme.CHARCOAL.panel and RGB) { "The $title stayed themed with Menu Theme off in $shot" }
+            test()
         } finally {
             context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().feature.enabled = true }
         }
-        context.waitTicks(2)
     }
 
     private fun expect(context: ClientGameTestContext, shot: Path, x: Int, y: Int, color: Int, what: String) {

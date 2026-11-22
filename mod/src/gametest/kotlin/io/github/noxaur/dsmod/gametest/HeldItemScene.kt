@@ -80,6 +80,14 @@ class HeldItemScene private constructor(private val context: ClientGameTestConte
         /** How many pixels differ between two frames, in the whole frame or only its left half. */
         fun changed(a: BufferedImage, b: BufferedImage, right: Boolean = true) = diff(a, b) { x, _ -> right || x < a.width / 2 }
 
+        fun runVanilla(context: ClientGameTestContext, test: HeldItemScene.(Animations, BufferedImage, BufferedImage) -> Unit) = run(context) {
+            val animations = DsModClient.feature<Animations>()
+            animations.feature.enabled = false
+            val vanilla = shot("animations-vanilla")
+            val vanillaSwing = midSwing("animations-vanilla-swing")
+            test(animations, vanilla, vanillaSwing)
+        }
+
         /** Opens a world with a sword in the hand, runs [test], and puts every Animations setting back after it. */
         fun run(context: ClientGameTestContext, test: HeldItemScene.() -> Unit) {
             val animations = DsModClient.feature<Animations>()

@@ -7,9 +7,11 @@ import kotlin.test.assertTrue
 class ThirdPersonTest {
     @Test
     fun `F5 steps past the skipped view and never past first person`() {
-        assertEquals(listOf(View.FIRST, View.BACK, View.FRONT), View.entries.map(Views.ALL::land))
-        assertEquals(listOf(View.FIRST, View.BACK, View.FIRST), View.entries.map(Views.SKIP_FRONT::land))
-        assertEquals(listOf(View.FIRST, View.FRONT, View.FRONT), View.entries.map(Views.SKIP_BACK::land))
+        listOf(
+            Views.ALL to listOf(View.FIRST, View.BACK, View.FRONT),
+            Views.SKIP_FRONT to listOf(View.FIRST, View.BACK, View.FIRST),
+            Views.SKIP_BACK to listOf(View.FIRST, View.FRONT, View.FRONT),
+        ).forEach { (views, landings) -> assertEquals(landings, View.entries.map(views::land), "F5 from each view with $views") }
         assertEquals(View.FRONT, Views.SKIP_BACK.third)
         assertEquals(View.BACK, Views.SKIP_FRONT.third)
     }

@@ -51,6 +51,8 @@ class SettingsTest {
 
     private fun number(name: String) = byName.getValue(name) as Number
 
+    private fun heightFold() = Rows().apply { fold("f", "Fold", "More.") { number(v::height, "Height", "Set it.", -2f..3f, step = 0.1f) } }.rows.single()
+
     @Test
     fun `a number clamps, keeps to its steps from the minimum, and has the step's decimals`() {
         val distance = number("Distance")
@@ -146,7 +148,7 @@ class SettingsTest {
 
     @Test
     fun `a fold is changed when a row in it is, and resets them all`() {
-        val fold = Rows().apply { fold("f", "Fold", "More.") { number(v::height, "Height", "Set it.", -2f..3f, step = 0.1f) } }.rows.single()
+        val fold = heightFold()
         assertFalse(fold.changed)
         v.height = 1f
         assertTrue(fold.changed)
@@ -182,7 +184,7 @@ class SettingsTest {
         v.on = false
         assertEquals("Distance, number, 7.5, changed from 4.0, dimmed, Feature is off", byName.getValue("Distance").narration(keys))
         assertEquals("Feature, switch, off, collapsed, changed from On", byName.getValue("Feature").narration(keys))
-        val fold = Rows().apply { fold("f", "Fold", "More.") { number(v::height, "Height", "Set it.", -2f..3f, step = 0.1f) } }.rows.single()
+        val fold = heightFold()
         v.height = 1f
         assertEquals("Fold, fold, expanded, changed", fold.narration(keys, open = true), "a fold has no default of its own to name")
     }

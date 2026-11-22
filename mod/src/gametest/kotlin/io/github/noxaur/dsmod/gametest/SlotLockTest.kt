@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.inventory.ContainerInput
+import net.minecraft.world.item.Item
 import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 
@@ -70,6 +71,16 @@ class SlotLockTest : FabricClientGameTest {
             context.waitTicks(5)
         }
 
+        fun holds(vararg slots: Pair<Int, Item>) = slots.all { (slot, item) -> context.ownItem(slot).first == item }
+        fun link(from: Int, to: Int, screenshot: String? = null) {
+            hover(from)
+            context.input.holdKey(key)
+            hover(to)
+            screenshot?.let { context.takeScreenshot(it) }
+            context.input.releaseKey(key)
+            context.waitTicks(3)
+        }
+
         context.worldBuilder().create().use { world ->
             try {
                 for ((slot, give) in listOf(
@@ -96,7 +107,7 @@ class SlotLockTest : FabricClientGameTest {
                 hover(10)
                 context.input.pressKey(GLFW.GLFW_KEY_1)
                 context.waitTicks(3)
-                check(context.ownItem(0).first == Items.DIAMOND_SWORD && context.ownItem(10).first == Items.STONE) { "The 1 key over another slot traded with the locked slot" }
+                check(holds(0 to Items.DIAMOND_SWORD, 10 to Items.STONE)) { "The 1 key over another slot traded with the locked slot" }
                 hover(0)
                 context.input.pressKey { it.keyDrop }
                 context.waitTicks(3)
@@ -113,19 +124,10 @@ class SlotLockTest : FabricClientGameTest {
                 click(1)
 
                 // Two hotbar slots cannot be linked.
-                hover(0)
-                context.input.holdKey(key)
-                hover(1)
-                context.input.releaseKey(key)
-                context.waitTicks(3)
+                link(0, 1)
                 check(slotLock.locks.links.isEmpty() && slotLock.locks.locked == setOf(0, 10)) { "A drag between two hotbar slots left ${slotLock.locks}" }
 
-                hover(0)
-                context.input.holdKey(key)
-                hover(9)
-                context.takeScreenshot("slot-lock-linking")
-                context.input.releaseKey(key)
-                context.waitTicks(3)
+                link(0, 9, "slot-lock-linking")
                 check(slotLock.locks == SlotLocks(setOf(0, 10, 9), mapOf(0 to 9))) { "Holding the key from the hotbar to the slot above left ${slotLock.locks}" }
                 click(9)
                 check(context.carried() == 0) { "A click took the linked pickaxe" }
@@ -134,7 +136,7 @@ class SlotLockTest : FabricClientGameTest {
                 context.takeScreenshot("slot-lock-rest")
 
                 shiftClick(9)
-                check(context.ownItem(0).first == Items.DIAMOND_PICKAXE && context.ownItem(9).first == Items.DIAMOND_SWORD) { "A Shift click did not trade the pair: ${context.ownItem(0)} and ${context.ownItem(9)}" }
+                check(holds(0 to Items.DIAMOND_PICKAXE, 9 to Items.DIAMOND_SWORD)) { "A Shift click did not trade the pair: ${context.ownItem(0)} and ${context.ownItem(9)}" }
 
                 tap(9)
                 check(slotLock.locks == SlotLocks(setOf(0, 10))) { "Unlocking one end of the link left ${slotLock.locks}" }

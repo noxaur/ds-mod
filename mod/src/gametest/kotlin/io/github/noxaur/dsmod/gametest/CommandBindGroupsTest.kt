@@ -2,10 +2,12 @@ package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
 import io.github.noxaur.dsmod.core.input.CommandBind
-import io.github.noxaur.dsmod.core.input.Where
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
+import io.github.noxaur.dsmod.debug.friendBind
+import io.github.noxaur.dsmod.debug.sampleBinds
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
+import io.github.noxaur.dsmod.gametest.SettingsSteps.clearBinds
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
@@ -25,14 +27,7 @@ class CommandBindGroupsTest : FabricClientGameTest {
         val window = setUp(context)
         BindsDriver(context).groups()
         BindsDriver(context).guide()
-        context.runOnClient<Nothing> {
-            val commandBinds = DsModClient.feature<CommandBinds>()
-            commandBinds.binds.value = emptyList()
-            commandBinds.groups.value = emptyList()
-            commandBinds.collapsedGroups.value = emptyList()
-            commandBinds.offGroups.value = emptyList()
-            DsModClient.saveSettings()
-        }
+        clearBinds(context)
         context.setScreen { TitleScreen() }
         restore(context, window)
     }
@@ -40,12 +35,7 @@ class CommandBindGroupsTest : FabricClientGameTest {
     private fun BindsDriver.groups() {
         val commandBinds = DsModClient.feature<CommandBinds>()
         val commands = { context.computeOnClient<List<String>, Nothing> { commandBinds.binds.value.map { it.command } } }
-        context.runOnClient<Nothing> {
-            commandBinds.binds.value = listOf("other", "/me bound", "/me seq", "/me end").map { CommandBind(command = it) }
-            commandBinds.groups.value = emptyList()
-            commandBinds.collapsedGroups.value = emptyList()
-            commandBinds.offGroups.value = emptyList()
-        }
+        context.runOnClient<Nothing> { commandBinds.fill(listOf("other", "/me bound", "/me seq", "/me end").map { CommandBind(command = it) }) }
         open(context, SettingsTabs(at("Binds")))
         list()
 
@@ -59,9 +49,7 @@ class CommandBindGroupsTest : FabricClientGameTest {
         // A bind dragged by its grip under the Dungeons heading joins it, and the lines make room as it passes.
         val from = at(lineOf(3))
         val empty = at(headingOf("Dungeons") + 1)
-        move(from[0] + 13, from[1] + 9)
-        context.input.holdMouse(0)
-        context.waitTick()
+        hold(from[0] + 13, from[1] + 9)
         for (y in listOf(from[1] + 12, from[1] + 20, empty[1] + 4, empty[1] + 9)) move(from[0] + 13, y)
         context.shotInBothThemes("command-binds-drag")
         context.input.releaseMouse(0)
@@ -70,14 +58,9 @@ class CommandBindGroupsTest : FabricClientGameTest {
 
         // Escape during a drag puts the list back.
         val first = at(lineOf(0))
-        move(first[0] + 13, first[1] + 9)
-        context.input.holdMouse(0)
-        context.waitTick()
+        hold(first[0] + 13, first[1] + 9)
         for (dy in listOf(12, 24, 40)) move(first[0] + 13, first[1] + dy)
-        context.input.pressKey(GLFW.GLFW_KEY_ESCAPE)
-        context.waitTicks(2)
-        context.input.releaseMouse(0)
-        context.waitTicks(2)
+        escapeHeld()
         check(commands() == listOf("other", "/me bound", "/me seq", "/me end")) { "Escape during a drag left ${commands()}" }
 
         // A right press opens the bind's menu, which the keys work. The first bind cannot go up, so the third item is Move Down.
@@ -145,17 +128,7 @@ class CommandBindGroupsTest : FabricClientGameTest {
     /** The feature guide's picture: a few binds with the server's own commands, one group folded, the mouse away. */
     private fun BindsDriver.guide() {
         val commandBinds = DsModClient.feature<CommandBinds>()
-        context.runOnClient<Nothing> {
-            commandBinds.binds.value = listOf(
-                CommandBind("Warp End", "/warp end", listOf(GLFW.GLFW_KEY_LEFT_SHIFT, GLFW.GLFW_KEY_F6)),
-                CommandBind("Stash", "/viewstash", listOf(GLFW.GLFW_KEY_F7), where = Where.BOTH),
-                CommandBind("", "/sbmenu on", listOf(GLFW.GLFW_KEY_F8, GLFW.GLFW_KEY_F9), inOrder = true),
-                CommandBind("Shared", "/warp end", listOf(GLFW.GLFW_KEY_KP_1), group = "From a Friend", enabled = false),
-            )
-            commandBinds.groups.value = listOf("From a Friend")
-            commandBinds.collapsedGroups.value = listOf("From a Friend")
-            commandBinds.offGroups.value = emptyList()
-        }
+        context.runOnClient<Nothing> { commandBinds.fill(sampleBinds("/sbmenu on") + friendBind(), listOf("From a Friend"), listOf("From a Friend")) }
         open(context, SettingsTabs(at("Binds")))
         list()
         context.point(0, 0, settle = 2)

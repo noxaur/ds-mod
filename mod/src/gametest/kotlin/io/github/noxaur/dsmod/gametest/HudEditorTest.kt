@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.input.MouseButtonInfo
 import org.lwjgl.glfw.GLFW
@@ -25,28 +26,22 @@ import kotlin.math.roundToInt
 class HudEditorTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
-            context.runOnClient<Nothing> { DsModClient.openHudEditor() }
-            context.waitForScreen(HudEditorScreen::class.java)
+            openEditor(context)
             context.waitTicks(2)
             context.takeScreenshot("hud-editor-empty")
             context.setScreen { null }
 
             context.showDragonTimer(world)
             context.waitTicks(5)
-            context.runOnClient<Nothing> { DsModClient.openHudEditor() }
-            context.waitForScreen(HudEditorScreen::class.java)
+            openEditor(context)
             context.takeScreenshot("hud-editor-before")
 
             // The block's drawn scale, in screen pixels per HUD pixel.
             fun pixels(client: Minecraft) = (Hud.find(DRAGON_TIMER)!!.scale * client.window.guiScale).roundToInt()
 
-            val start = context.computeOnClient<Int, Nothing> { client ->
-                val screen = client.gui.screen()!!
-                val block = Hud.find(DRAGON_TIMER)!!
+            val start = onBlock(context) { client, screen, block ->
                 val start = pixels(client)
-                check(screen.mouseClicked(press(block.x + 5.0, block.y + 5.0), false)) { "The block was not under the mouse" }
-                screen.mouseDragged(press(block.x + 105.0, block.y + 65.0), 100.0, 60.0)
-                screen.mouseReleased(press(block.x + 105.0, block.y + 65.0))
+                dragAway(screen, block)
                 check(screen.mouseScrolled(block.x + 110.0, block.y + 70.0, 0.0, 1.0)) { "The block did not scale" }
                 check(pixels(client) == start + 1) { "A scroll step drew ${pixels(client)} pixels, not ${start + 1}" }
                 start
@@ -86,14 +81,11 @@ class HudEditorTest : FabricClientGameTest {
             context.inTheme(Theme.VANILLA) { context.takeScreenshot("hud-editor-vanilla") }
 
             // A drag that starts on the block carries on over the panel, and Reset still reaches the block there.
-            context.runOnClient<Nothing> { client ->
-                val screen = client.gui.screen()!!
-                val block = Hud.find(DRAGON_TIMER)!!
+            onBlock(context) { _, screen, block ->
                 // Grabbed 5 in, so the block's bottom lands on the screen's, where it stays whole.
                 val to = screen.width / 2.0 to screen.height - block.height * block.scale - 2.0 + 5.0
-                check(screen.mouseClicked(press(block.x + 5.0, block.y + 5.0), false)) { "The block was not under the mouse" }
-                screen.mouseDragged(press(to.first, to.second), 0.0, 0.0)
-                screen.mouseReleased(press(to.first, to.second))
+                grab(screen, block)
+                release(screen, to.first, to.second, 0.0, 0.0)
                 val under = Hud.find(DRAGON_TIMER)!!
                 check(Math.abs(under.x + 5.0 - to.first) <= 1 && Math.abs(under.y + 5.0 - to.second) <= 1) { "The drag stopped at the panel: ${under.x}, ${under.y}" }
             }
@@ -106,9 +98,8 @@ class HudEditorTest : FabricClientGameTest {
             // Let go three pixels off the middle of the screen, the block centers itself. With Shift it stays where it was dropped.
             fun dragTo(screen: net.minecraft.client.gui.screens.Screen, x: Double, y: Double): Hud.Placed {
                 val block = Hud.find(DRAGON_TIMER)!!
-                check(screen.mouseClicked(press(block.x + 5.0, block.y + 5.0), false)) { "The block was not under the mouse" }
-                screen.mouseDragged(press(x + 5.0, y + 5.0), 0.0, 0.0)
-                screen.mouseReleased(press(x + 5.0, y + 5.0))
+                grab(screen, block)
+                release(screen, x + 5.0, y + 5.0, 0.0, 0.0)
                 return Hud.find(DRAGON_TIMER)!!
             }
             val (centered, middle) = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
@@ -132,10 +123,8 @@ class HudEditorTest : FabricClientGameTest {
             context.input.releaseShift()
 
             // Escape during a drag puts the block back and leaves the editor open. Without a drag it closes the editor.
-            context.runOnClient<Nothing> { client ->
-                val screen = client.gui.screen()!!
-                val before = Hud.find(DRAGON_TIMER)!!
-                check(screen.mouseClicked(press(before.x + 5.0, before.y + 5.0), false)) { "The block was not under the mouse" }
+            onBlock(context) { client, screen, before ->
+                grab(screen, before)
                 screen.mouseDragged(press(before.x + 45.0, before.y + 35.0), 40.0, 30.0)
                 check(screen.keyPressed(net.minecraft.client.input.KeyEvent(org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE, 0, 0))) { "Escape was not taken" }
                 screen.mouseReleased(press(before.x + 45.0, before.y + 35.0))
@@ -156,21 +145,13 @@ class HudEditorTest : FabricClientGameTest {
             }
 
             // A right press on a block resets it.
-            context.runOnClient<Nothing> { client ->
-                val screen = client.gui.screen()!!
-                val block = Hud.find(DRAGON_TIMER)!!
+            onBlock(context) { _, screen, block ->
                 check(screen.mouseClicked(MouseButtonEvent(block.x + 5.0, block.y + 5.0, MouseButtonInfo(1, 0)), false)) { "The right press was not taken" }
                 screen.mouseReleased(MouseButtonEvent(block.x + 5.0, block.y + 5.0, MouseButtonInfo(1, 0)))
                 check(DRAGON_TIMER !in DsModClient.settings.hud.positions) { "The right press kept the position" }
             }
 
-            context.runOnClient<Nothing> { client ->
-                val screen = client.gui.screen()!!
-                val block = Hud.find(DRAGON_TIMER)!!
-                check(screen.mouseClicked(press(block.x + 5.0, block.y + 5.0), false)) { "The block was not under the mouse" }
-                screen.mouseDragged(press(block.x + 105.0, block.y + 65.0), 100.0, 60.0)
-                screen.mouseReleased(press(block.x + 105.0, block.y + 65.0))
-            }
+            onBlock(context) { _, screen, block -> dragAway(screen, block) }
             val placed = DsModClient.settings.hud.positions.getValue(DRAGON_TIMER)
             context.clickScreenButton("Done")
             context.waitFor { it.gui.screen() == null }
@@ -179,6 +160,28 @@ class HudEditorTest : FabricClientGameTest {
             check(""""$DRAGON_TIMER":{"x":${placed.x},"y":${placed.y},"scale":${placed.scale}}""" in saved) { "The position was not saved: $saved" }
             context.takeScreenshot("hud-moved")
         }
+    }
+
+    private fun openEditor(context: ClientGameTestContext) {
+        context.runOnClient<Nothing> { DsModClient.openHudEditor() }
+        context.waitForScreen(HudEditorScreen::class.java)
+    }
+
+    private fun <T> onBlock(context: ClientGameTestContext, act: (Minecraft, Screen, Hud.Placed) -> T) =
+        context.computeOnClient<T, Nothing> { client -> act(client, client.gui.screen()!!, Hud.find(DRAGON_TIMER)!!) }
+
+    private fun grab(screen: Screen, block: Hud.Placed) {
+        check(screen.mouseClicked(press(block.x + 5.0, block.y + 5.0), false)) { "The block was not under the mouse" }
+    }
+
+    private fun release(screen: Screen, x: Double, y: Double, dx: Double, dy: Double) {
+        screen.mouseDragged(press(x, y), dx, dy)
+        screen.mouseReleased(press(x, y))
+    }
+
+    private fun dragAway(screen: Screen, block: Hud.Placed) {
+        grab(screen, block)
+        release(screen, block.x + 105.0, block.y + 65.0, 100.0, 60.0)
     }
 
     private fun press(x: Double, y: Double) = MouseButtonEvent(x, y, MouseButtonInfo(0, 0))

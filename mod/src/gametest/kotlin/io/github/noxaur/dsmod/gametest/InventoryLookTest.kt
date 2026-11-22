@@ -3,7 +3,6 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.core.feature.general.InventoryHud
 import io.github.noxaur.dsmod.core.feature.general.InventoryLayout
 import io.github.noxaur.dsmod.core.feature.general.InventoryLook
-import io.github.noxaur.dsmod.core.feature.general.InventoryRow
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
 import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.Theme
@@ -11,6 +10,7 @@ import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.gametest.InventoryGrid.cell
 import io.github.noxaur.dsmod.gametest.InventoryGrid.drawMicros
 import io.github.noxaur.dsmod.gametest.InventoryGrid.panelColor
+import io.github.noxaur.dsmod.gametest.InventoryGrid.showHotbar
 import io.github.noxaur.dsmod.gametest.InventoryGrid.waitForItem
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -32,8 +32,7 @@ class InventoryLookTest : FabricClientGameTest {
             context.waitFor { DsModClient.game.readouts.first { it.feature.id == InventoryGrid.ID }.hud?.opacity == percent / 100f }
             context.waitTick()
         }
-        inventoryHud.shownRows.value = listOf(InventoryRow.TOP, InventoryRow.MIDDLE, InventoryRow.BOTTOM, InventoryRow.HOTBAR)
-        waitForItem(context, "Item 0") { cell(context, 3, 0, gaps = 1) }
+        showHotbar(context)
         try {
             val states = listOf(
                 Triple(true, Theme.CHARCOAL, MenuLook.SOLID),

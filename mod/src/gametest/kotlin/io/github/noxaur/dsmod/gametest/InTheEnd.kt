@@ -21,10 +21,23 @@ fun ClientGameTestContext.enterTheEnd() {
 
 const val DRAGON_TIMER = "dragon-timer"
 
+fun forgetHudPlace(id: String) {
+    DsModClient.settings.hud.positions.remove(id)
+}
+
+fun ClientGameTestContext.inWorldWithoutTimerPlace(test: (TestSingleplayerContext) -> Unit) = worldBuilder().create().use { world ->
+    forgetHudPlace(DRAGON_TIMER)
+    test(world)
+}
+
 fun TestSingleplayerContext.eggSpawns() = server.runCommand("""tellraw @a "§5✦ §dThe Egg has Spawned!"""")
 
 fun ClientGameTestContext.showDragonTimer(world: TestSingleplayerContext) {
     enterTheEnd()
     world.eggSpawns()
     waitUntil("the dragon timer is on the HUD") { Hud.find(DRAGON_TIMER) != null }
+}
+
+fun ClientGameTestContext.readout(id: String) = computeOnClient<List<String>, Nothing> {
+    DsModClient.game.readouts.single { it.feature.id == id }.hud?.rows?.map { row -> row.text.plain } ?: emptyList()
 }

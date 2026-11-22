@@ -16,8 +16,7 @@ private const val EQUIPMENT = "equipment-display"
  */
 class ChatHudEditorStandInTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
-        context.worldBuilder().create().use { world ->
-            DsModClient.settings.hud.positions.remove(DRAGON_TIMER)
+        context.inWorldWithoutTimerPlace { world ->
             context.waitTicks(2)
             check(context.computeOnClient<Boolean, Nothing> { Hud.find(DRAGON_TIMER) == null }) { "The Dragon Timer shows outside The End" }
             val chat = InChat(context)
@@ -36,7 +35,7 @@ class ChatHudEditorStandInTest : FabricClientGameTest {
             context.setScreen { null }
             context.waitTick()
             check(context.computeOnClient<Boolean, Nothing> { Hud.find(DRAGON_TIMER) == null }) { "The stand-in stayed after the chat closed" }
-            DsModClient.settings.hud.positions.remove(DRAGON_TIMER)
+            forgetHudPlace(DRAGON_TIMER)
 
             // A live block that runs out of things to show with the chat open moves behind the live ones, as a stand-in.
             world.server.runCommand("item replace entity @a armor.chest with minecraft:iron_chestplate")

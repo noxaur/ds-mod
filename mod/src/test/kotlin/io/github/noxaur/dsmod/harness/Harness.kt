@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.Sidebar
@@ -32,6 +33,14 @@ abstract class Harness(
     fun pass(millis: Long = Game.REFRESH_MILLIS) {
         time += millis
         game.tick(time)
+    }
+
+    fun leaveWhileOff(feature: HasFeature, vararg before: GameEvent) {
+        post(*before)
+        feature.feature.enabled = false
+        post(LeftServer)
+        feature.feature.enabled = true
+        pass()
     }
 
     fun readout(feature: HasFeature? = null) =

@@ -98,6 +98,10 @@ class FeatureReplayTest {
 
     private fun fresh(id: String) = object : Harness(alone = owners.getValue(id)) {}.also { it.readout().feature.enabled = true }
 
+    private fun eachFixture(feature: Feature, body: (fixture: Path, session: Harness) -> Unit) {
+        for (fixture in fixtures(feature)) body(fixture, fresh(feature.id))
+    }
+
     /** A feature that reads nothing from the server has nothing to replay, so a game test must show it instead. */
     private fun fixtures(feature: Feature): List<Path> {
         val dir = root.resolve(feature.id)
@@ -159,8 +163,7 @@ class FeatureReplayTest {
     fun `every feature shows what its transcript says`(): List<DynamicTest> = SettingsTree().features.map { feature ->
         dynamicTest(feature.id) {
             val written = ArrayList<Path>()
-            for (fixture in fixtures(feature)) {
-                val session = fresh(feature.id)
+            eachFixture(feature) { fixture, session ->
                 val game = session.game
                 val events = events(feature, fixture)
                 val start = events.first().time
@@ -237,7 +240,7 @@ class FeatureReplayTest {
                 if (!expected.exists()) {
                     expected.writeText(transcript)
                     written.add(expected)
-                    continue
+                    return@eachFixture
                 }
                 assertEquals(
                     expected.readText(),
@@ -255,8 +258,7 @@ class FeatureReplayTest {
         SettingsTree().features.filter { it.area != Area.ANYWHERE }.map { feature ->
             dynamicTest(feature.id) {
                 val untouched = feature.state?.encode()
-                for (fixture in fixtures(feature)) {
-                    val session = fresh(feature.id)
+                eachFixture(feature) { fixture, session ->
                     val game = session.game
                     val state = session.readout().feature.state
                     game.post(0, TabList(lines("Area: Somewhere Else")))
@@ -308,8 +310,7 @@ class FeatureReplayTest {
     @TestFactory
     fun `every feature stays inside the time budget`(): List<DynamicTest> = SettingsTree().features.map { feature ->
         dynamicTest(feature.id) {
-            for (fixture in fixtures(feature)) {
-                val session = fresh(feature.id)
+            eachFixture(feature) { fixture, session ->
                 val game = session.game
                 val events = events(feature, fixture)
                 fun replay(times: Int) = repeat(times) {

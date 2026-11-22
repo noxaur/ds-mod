@@ -78,6 +78,20 @@ class ActivePetTest : Harness(alone = ActivePet::class) {
     private fun menu(vararg slots: Pair<Int, Item>) =
         arrayOf<GameEvent>(ContainerOpened(30, text("Pets"), 90)) + slots.map { (slot, item) -> SlotChanged(slot, item) }
 
+    private fun assertEpicWolf() {
+        assertEquals("[Lvl 100] Wolf", rows()?.first())
+        assertEquals(Role.EPIC.rgb, hud()!!.rows[0].text.spans.last().rgb)
+    }
+
+    private fun reopened(name: String, level: Int, progress: Array<String>) =
+        post(ContainerOpened(0, null, 46), pet(name, level), *menu(13 to card(name, level = level, progress = progress)))
+
+    private fun enderman(held: String?, uuid: String, active: Boolean = true) = card("Enderman", held = held, uuid = uuid, active = active)
+
+    private fun summoned(level: Int, progress: Array<String>) = post(pet(level = level), *menu(13 to card(level = level, progress = progress)))
+
+    private fun read(level: Int, progress: Array<String>) = post(*menu(13 to card(level = level, progress = progress)))
+
     @Test
     fun `shows nothing until the server names a pet`() {
         post(dragSimSidebar())
@@ -103,7 +117,7 @@ class ActivePetTest : Harness(alone = ActivePet::class) {
 
     @Test
     fun `a pet below its max level shows its XP as a bar`() {
-        post(pet(level = 37), *menu(13 to card(level = 37, progress = arrayOf("", "Progress to Level 38: 45%", "1,234 / 5,000 XP"))))
+        summoned(37, arrayOf("", "Progress to Level 38: 45%", "1,234 / 5,000 XP"))
         val bar = hud()!!.rows.filterIsInstance<BarRow>().single()
         assertEquals("XP: 1,234 / 5,000 (25%)", bar.text.plain)
         assertEquals(1234f / 5000f, bar.fraction)
@@ -111,13 +125,13 @@ class ActivePetTest : Harness(alone = ActivePet::class) {
 
     @Test
     fun `a percent alone is read when the menu writes no XP`() {
-        post(pet(level = 37), *menu(13 to card(level = 37, progress = arrayOf("", "Progress to Level 38: 45%"))))
+        summoned(37, arrayOf("", "Progress to Level 38: 45%"))
         assertEquals("XP: 45%", rows()?.get(2))
     }
 
     @Test
     fun `a level up drops the XP read at the old level`() {
-        post(pet(level = 37), *menu(13 to card(level = 37, progress = arrayOf("", "45%"))))
+        summoned(37, arrayOf("", "45%"))
         post(ContainerOpened(0, null, 46), pet(level = 38))
         assertEquals(listOf("[Lvl 38] Black Cat", "Item: Gold Claws", "Open your Pets menu to read its XP."), rows())
     }
@@ -160,11 +174,7 @@ class ActivePetTest : Harness(alone = ActivePet::class) {
 
     @Test
     fun `leaving the server while the feature is off forgets the pet once it is back on`() {
-        post(pet())
-        feature.feature.enabled = false
-        post(LeftServer)
-        feature.feature.enabled = true
-        pass()
+        leaveWhileOff(feature, pet())
         assertNull(hud())
     }
 
@@ -172,8 +182,7 @@ class ActivePetTest : Harness(alone = ActivePet::class) {
     fun `a summon in chat switches the pet, in the rarity it was last seen in`() {
         post(pet("Wolf", rgb = Role.EPIC.rgb), pet())
         post(dungeon(), chat("Activated [Lvl 100] Wolf!"))
-        assertEquals("[Lvl 100] Wolf", rows()?.first())
-        assertEquals(Role.EPIC.rgb, hud()!!.rows[0].text.spans.last().rgb)
+        assertEpicWolf()
     }
 
     @Test
@@ -230,10 +239,10 @@ class ActivePetTest : Harness(alone = ActivePet::class) {
 
     @Test
     fun `two reads of the menu give the XP per hour and the time to the next level, which counts down`() {
-        post(pet(level = 37), *menu(13 to card(level = 37, progress = xp(1000))))
+        summoned(37, xp(1000))
         assertEquals("Open your Pets menu again to see a rate.", rows()?.last())
         pass(30 * 60_000L)
-        post(*menu(13 to card(level = 37, progress = xp(2000))))
+        read(37, xp(2000))
         // 1,000 XP in half an hour is 2,000 an hour, so the 8,000 left take four hours.
         assertEquals(listOf("XP per Hour: 2,000", "Next Level: 4h 0m"), rows()?.takeLast(2))
         pass(60 * 60_000L)
@@ -242,22 +251,22 @@ class ActivePetTest : Harness(alone = ActivePet::class) {
 
     @Test
     fun `with a percent alone the rate is in percent`() {
-        post(pet(level = 37), *menu(13 to card(level = 37, progress = arrayOf("", "10%"))))
+        summoned(37, arrayOf("", "10%"))
         pass(60 * 60_000L)
-        post(*menu(13 to card(level = 37, progress = arrayOf("", "35%"))))
+        read(37, arrayOf("", "35%"))
         assertEquals(listOf("XP per Hour: 25%", "Next Level: 2h 36m"), rows()?.takeLast(2))
     }
 
     @Test
     fun `Combat XP moves a combat pet's XP live, at the rate the reads showed, and each read sets it right`() {
-        post(pet(level = 37), *menu(13 to card(level = 37, progress = xp(1000))))
+        summoned(37, xp(1000))
         kill(100)
         pass(60_000L)
-        post(*menu(13 to card(level = 37, progress = xp(1050))))
+        read(37, xp(1050))
         // 100 Combat XP gave 50 pet XP, so each Combat XP is half a pet XP.
         kill(300)
         assertEquals("XP: 1,200 / 10,000 (12%)", rows()?.get(2))
-        post(*menu(13 to card(level = 37, progress = xp(1120))))
+        read(37, xp(1120))
         assertEquals("XP: 1,120 / 10,000 (11%)", rows()?.get(2))
     }
 
@@ -272,42 +281,42 @@ class ActivePetTest : Harness(alone = ActivePet::class) {
         post(pet(), *menu(13 to card(level = 37, progress = xp(1000))))
         post(ActionBar(text("+500 Combat (5%)")))
         pass(60_000L)
-        post(*menu(13 to card(level = 37, progress = xp(1020))))
+        read(37, xp(1020))
         kill(200)
         assertEquals("XP: 1,020 / 10,000 (10%)", rows()?.get(2))
     }
 
     @Test
     fun `a level up and a switch of pet start the rate over`() {
-        post(pet(level = 37), *menu(13 to card(level = 37, progress = xp(1000))))
+        summoned(37, xp(1000))
         pass(60_000L)
-        post(*menu(13 to card(level = 37, progress = xp(2000))))
+        read(37, xp(2000))
         assertEquals(true, rows()?.get(3)?.startsWith("XP per Hour: "))
-        post(ContainerOpened(0, null, 46), pet(level = 38), *menu(13 to card(level = 38, progress = xp(100))))
+        reopened("Black Cat", 38, xp(100))
         assertEquals("Open your Pets menu again to see a rate.", rows()?.last())
         pass(60_000L)
-        post(*menu(13 to card(level = 38, progress = xp(200))))
-        post(ContainerOpened(0, null, 46), pet("Wolf", level = 38), *menu(13 to card("Wolf", level = 38, progress = xp(200))))
+        read(38, xp(200))
+        reopened("Wolf", 38, xp(200))
         assertEquals("Open your Pets menu again to see a rate.", rows()?.last())
     }
 
     @Test
     fun `a summon of another pet of the same name and level starts the rate over`() {
-        post(pet(level = 37), *menu(13 to card(level = 37, progress = xp(1000))))
+        summoned(37, xp(1000))
         pass(60_000L)
-        post(*menu(13 to card(level = 37, progress = xp(1100))))
+        read(37, xp(1100))
         post(ContainerOpened(0, null, 46), chat("Autopet equipped your [Lvl 37] Black Cat! VIEW RULE"))
         assertEquals("Open your Pets menu to read its XP.", rows()?.last())
-        post(*menu(13 to card(level = 37, progress = xp(8000))))
+        read(37, xp(8000))
         assertEquals("Open your Pets menu again to see a rate.", rows()?.last())
         pass(60_000L)
-        post(*menu(13 to card(level = 37, progress = xp(500))))
+        read(37, xp(500))
         assertEquals("Open your Pets menu again to see a rate.", rows()?.last())
     }
 
     @Test
     fun `the rate rows can be turned off`() {
-        post(pet(level = 37), *menu(13 to card(level = 37, progress = xp(1000))))
+        summoned(37, xp(1000))
         feature.showRate.value = false
         feature.showNext.value = false
         pass()
@@ -335,18 +344,17 @@ class ActivePetTest : Harness(alone = ActivePet::class) {
             listOf(text("View and manage your pets."), text(ServerSpan("Selected Pet: ", 0xAAAAAA), ServerSpan("[Lvl 100] ", 0xAAAAAA), ServerSpan("Wolf", Role.EPIC.rgb))),
         )
         post(ContainerOpened(31, text("Dragon Sim Menu"), 90), SlotChanged(20, button))
-        assertEquals("[Lvl 100] Wolf", rows()?.first())
-        assertEquals(Role.EPIC.rgb, hud()!!.rows[0].text.spans.last().rgb)
+        assertEpicWolf()
     }
 
     @Test
     fun `two pets of one name are told apart by their uuid, and share what is known without one`() {
-        post(pet("Enderman"), *menu(10 to card("Enderman", held = "Gold Claws", uuid = "a"), 14 to card("Enderman", held = null, uuid = "b", active = false)))
+        post(pet("Enderman"), *menu(10 to enderman("Gold Claws", "a"), 14 to enderman(null, "b", active = false)))
         assertEquals("Item: Gold Claws", rows()?.get(1))
-        post(SlotChanged(10, card("Enderman", held = "Gold Claws", uuid = "a", active = false)), SlotChanged(14, card("Enderman", held = "Lucky Clover", uuid = "b")))
+        post(SlotChanged(10, enderman("Gold Claws", "a", active = false)), SlotChanged(14, enderman("Lucky Clover", "b")))
         assertEquals("Item: Lucky Clover", rows()?.get(1))
         post(chat("Equipped Spooky Cupcake on [Lvl 100] Enderman!"))
-        post(SlotChanged(14, card("Enderman", held = "Spooky Cupcake", uuid = "b", active = false)), SlotChanged(10, card("Enderman", held = "Gold Claws", uuid = "a")))
+        post(SlotChanged(14, enderman("Spooky Cupcake", "b", active = false)), SlotChanged(10, enderman("Gold Claws", "a")))
         assertEquals("Item: Gold Claws", rows()?.get(1))
         // With no uuid, the menu's last read of either is what shows.
         post(*menu(10 to card("Enderman", held = "Iron Claws")))

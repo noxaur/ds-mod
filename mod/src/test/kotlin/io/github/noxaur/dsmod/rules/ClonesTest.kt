@@ -144,7 +144,7 @@ class ClonesTest {
     @Test
     fun `no code is copied with a value changed`() {
         val root = Path.of("").toAbsolutePath()
-        val sources = listOf("src/main", "src/debug").flatMap { dir ->
+        val sources = listOf("src/main", "src/debug", "src/test", "src/gametest").flatMap { dir ->
             Files.walk(root.resolve(dir)).asSequence().filter { it.isRegularFile() && it.extension == "kt" }.toList()
         }.associate { it.relativeTo(root).invariantSeparatorsPathString to it.readText() }
 

@@ -62,8 +62,9 @@ class HudDragTest {
 
     @Test
     fun `an arrow nudges a block and keeps it on the screen`() {
-        assertEquals(HudDrop(51f, 40f), HudDrag.nudged(block, 1f, -10f, 320f, 240f))
-        assertEquals(HudDrop(0f, 50f), HudDrag.nudged(block.copy(x = 0f), -1f, 0f, 320f, 240f))
-        assertEquals(HudDrop(280f, 50f), HudDrag.nudged(block.copy(x = 275f), 10f, 0f, 320f, 240f))
+        fun assertNudged(expected: HudDrop, from: HudBox, dx: Float, dy: Float) = assertEquals(expected, HudDrag.nudged(from, dx, dy, 320f, 240f))
+        assertNudged(HudDrop(51f, 40f), block, 1f, -10f)
+        assertNudged(HudDrop(0f, 50f), block.copy(x = 0f), -1f, 0f)
+        assertNudged(HudDrop(280f, 50f), block.copy(x = 275f), 10f, 0f)
     }
 }

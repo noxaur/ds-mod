@@ -11,6 +11,8 @@ import io.github.noxaur.dsmod.edge.Packets
 import io.github.noxaur.dsmod.edge.World
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.minecraft.client.Minecraft
+import net.minecraft.core.BlockPos
 import net.minecraft.world.item.component.ResolvableProfile
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.SkullBlockEntity
@@ -35,18 +37,11 @@ class EndTrackerEdgeTest : FabricClientGameTest {
             val posted = ArrayList<HeadPlaced>()
             context.runOnClient<Nothing> { client ->
                 DsModClient.game.post(System.currentTimeMillis(), TabList(listOf(ServerText(ServerSpan("Area: The End")))))
-                DsModClient.game.tap = { _, event -> if (event is HeadPlaced) posted += event }
-                val level = checkNotNull(client.level)
-                val pos = checkNotNull(client.player).blockPosition().above()
-                level.setBlock(pos, Blocks.PLAYER_HEAD.defaultBlockState(), 3)
-                Packets.block(pos, level.getBlockState(pos))
+                val pos = placeHead(client, posted, 1)
                 Packets.tick(client)
                 check(posted.isEmpty()) { "A head with no skin was posted: $posted" }
-                val skull = level.getBlockEntity(pos) as SkullBlockEntity
-                // The skull has no public setter. The server sends the profile on the block entity, which is this field.
-                SkullBlockEntity::class.java.getDeclaredField("owner").apply { isAccessible = true }
-                    .set(skull, ResolvableProfile.createUnresolved("DsHead"))
-                Packets.block(pos, level.getBlockState(pos))
+                giveSkin(client, pos)
+                Packets.block(pos, checkNotNull(client.level).getBlockState(pos))
                 Packets.tick(client)
                 check(posted.size == 1) { "A skinned head was posted ${posted.size} times" }
                 DsModClient.game.tap = null
@@ -54,18 +49,10 @@ class EndTrackerEdgeTest : FabricClientGameTest {
 
             // The profile packet can land two or more ticks after the block update, with no second block() call.
             context.runOnClient<Nothing> { client ->
-                posted.clear()
-                DsModClient.game.tap = { _, event -> if (event is HeadPlaced) posted += event }
-                val level = checkNotNull(client.level)
-                val pos = checkNotNull(client.player).blockPosition().above(2)
-                level.setBlock(pos, Blocks.PLAYER_HEAD.defaultBlockState(), 3)
-                Packets.block(pos, level.getBlockState(pos))
-                Packets.tick(client)
-                Packets.tick(client)
+                val pos = placeHead(client, posted, 2)
+                repeat(2) { Packets.tick(client) }
                 check(posted.isEmpty()) { "A head was posted before its skin arrived: $posted" }
-                val skull = level.getBlockEntity(pos) as SkullBlockEntity
-                SkullBlockEntity::class.java.getDeclaredField("owner").apply { isAccessible = true }
-                    .set(skull, ResolvableProfile.createUnresolved("DsHead"))
+                giveSkin(client, pos)
                 Packets.tick(client)
                 check(posted.size == 1) { "A skin that arrived after two ticks was posted ${posted.size} times" }
                 DsModClient.game.tap = null
@@ -73,16 +60,28 @@ class EndTrackerEdgeTest : FabricClientGameTest {
 
             // A decorative head never grows a profile, so it is never posted, including after the grace has run out.
             context.runOnClient<Nothing> { client ->
-                posted.clear()
-                DsModClient.game.tap = { _, event -> if (event is HeadPlaced) posted += event }
-                val level = checkNotNull(client.level)
-                val pos = checkNotNull(client.player).blockPosition().above(3)
-                level.setBlock(pos, Blocks.PLAYER_HEAD.defaultBlockState(), 3)
-                Packets.block(pos, level.getBlockState(pos))
+                placeHead(client, posted, 3)
                 repeat(40) { Packets.tick(client) }
                 check(posted.isEmpty()) { "A decorative head was posted: $posted" }
                 DsModClient.game.tap = null
             }
         }
+    }
+
+    private fun placeHead(client: Minecraft, posted: MutableList<HeadPlaced>, above: Int): BlockPos {
+        posted.clear()
+        DsModClient.game.tap = { _, event -> if (event is HeadPlaced) posted += event }
+        val level = checkNotNull(client.level)
+        val pos = checkNotNull(client.player).blockPosition().above(above)
+        level.setBlock(pos, Blocks.PLAYER_HEAD.defaultBlockState(), 3)
+        Packets.block(pos, level.getBlockState(pos))
+        return pos
+    }
+
+    private fun giveSkin(client: Minecraft, pos: BlockPos) {
+        val skull = checkNotNull(client.level).getBlockEntity(pos) as SkullBlockEntity
+        // The skull has no public setter. The server sends the profile on the block entity, which is this field.
+        SkullBlockEntity::class.java.getDeclaredField("owner").apply { isAccessible = true }
+            .set(skull, ResolvableProfile.createUnresolved("DsHead"))
     }
 }

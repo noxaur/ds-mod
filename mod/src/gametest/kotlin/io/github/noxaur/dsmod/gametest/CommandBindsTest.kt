@@ -6,6 +6,7 @@ import io.github.noxaur.dsmod.core.input.Where
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
+import io.github.noxaur.dsmod.gametest.SettingsSteps.clearBinds
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
@@ -23,12 +24,9 @@ import org.lwjgl.glfw.GLFW
 class CommandBindsTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = setUp(context)
-        context.runOnClient<Nothing> { clear() }
+        context.runOnClient<Nothing> { DsModClient.feature<CommandBinds>().fill() }
         BindsDriver(context).binds()
-        context.runOnClient<Nothing> {
-            clear()
-            DsModClient.saveSettings()
-        }
+        clearBinds(context)
         context.setScreen { TitleScreen() }
         restore(context, window)
     }
@@ -107,14 +105,6 @@ class CommandBindsTest : FabricClientGameTest {
         context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_4)
         context.waitTicks(2)
         check(commandBinds.binds.value.single().keys == listOf(GLFW.GLFW_MOUSE_BUTTON_4)) { "Recording the back button left ${commandBinds.binds.value.single().keys}" }
-    }
-
-    private fun clear() {
-        val commandBinds = DsModClient.feature<CommandBinds>()
-        commandBinds.binds.value = emptyList()
-        commandBinds.groups.value = emptyList()
-        commandBinds.collapsedGroups.value = emptyList()
-        commandBinds.offGroups.value = emptyList()
     }
 }
 

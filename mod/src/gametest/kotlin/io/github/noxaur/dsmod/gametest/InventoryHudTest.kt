@@ -17,7 +17,6 @@ import io.github.noxaur.dsmod.gametest.InventoryGrid.waitForItem
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
-import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.core.component.DataComponents
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.item.Items
@@ -38,8 +37,7 @@ class InventoryHudTest : FabricClientGameTest {
         check(stackAt(context, cell(context, 0, 3)) == null) { "An empty slot has an icon" }
         context.takeScreenshot("inventory-hud")
 
-        context.runOnClient<Nothing> { it.gui.setScreen(ChatScreen("", false)) }
-        context.waitForScreen(ChatScreen::class.java)
+        context.openChat()
         val dyed = cell(context, 0, 1)
         context.point(dyed.first, dyed.second, settle = 2)
         context.takeScreenshot("inventory-hud-tooltip")
