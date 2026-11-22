@@ -51,7 +51,7 @@ sed -n 's/^ADMIN_TOKEN=//p' ~/.config/dsmod/production.env | tr -d '\n' | pnpm e
 
 Vercel reads `packageManager` only from a `package.json` at the repository's root, and this repository has none, so without the install command it installs with an old pnpm that ignores the lockfile and fails. `corepack enable` run inside `web/` picks the pinned pnpm from `web/package.json` instead.
 
-`git.deploymentEnabled` in `web/vercel.json` lets only `main` deploy. A branch Vercel never deploys spends nothing, unlike a skipped build. To see a branch on Vercel before it merges, deploy it by hand with `pnpm dlx vercel deploy` from `web/`.
+`git.deploymentEnabled` in `web/vercel.json` lets only `main` deploy. A branch Vercel never deploys spends nothing, unlike a skipped build. To see a branch on Vercel before it merges, deploy it by hand with `pnpm dlx vercel deploy` from the repository root, because the project's root directory is `web/` and the CLI resolves it from where it runs.
 
 `web/scripts/vercel-ignore.sh` skips a build of `main` when nothing in `web/` changed since the last built commit, which Vercel gives as `VERCEL_GIT_PREVIOUS_SHA`. Vercel clones ten commits deep, so the script fetches an older base by its SHA, which works because the repository is public. Whatever it cannot judge, it builds, including the first build, which has no previous commit. A skipped build shows as canceled in Vercel and still counts toward the deployment quota. To build a skipped commit, redeploy it in Vercel with the project's Ignore Build Step unchecked.
 
