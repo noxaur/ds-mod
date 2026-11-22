@@ -2,7 +2,7 @@ import { gzipSync } from "node:zlib";
 
 import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { memoryAdapter } from "better-auth/adapters/memory";
-import { Effect } from "effect";
+import { Clock, Effect } from "effect";
 import { TestClock } from "effect/testing";
 
 import type { Caller } from "../src/api.ts";
@@ -11,7 +11,8 @@ import type { RequestSpec } from "../src/contrib/model.ts";
 import type { HasJoined } from "../src/identity/minecraft.ts";
 import { signInOptions } from "../src/identity/options.ts";
 import type { ItemSighting } from "../src/items/model.ts";
-import { memoryServices } from "../src/memory.ts";
+import { contribStore, itemStore, profileStore } from "../routes/_store.ts";
+import { localCloudflare } from "./cloudflare.ts";
 
 const BACKEND = "http://backend";
 export const ADMIN_TOKEN = "secret";
@@ -30,7 +31,19 @@ export const cookieCaller = (request: Request): Caller["Service"] => ({
 export const signedOutCaller = (): Caller["Service"] => ({ userId: null, adminToken: undefined });
 
 export const testApp = (overrides: Partial<Services> = {}, callerOf = cookieCaller) => {
-  const app = makeApp(memoryServices(overrides), callerOf);
+  const services: Services = {
+    contrib: contribStore,
+    items: itemStore,
+    // @keep cache.ts keeps the parsed catalog per store object, so each app has its own, as each Worker isolate does.
+    profiles: { ...profileStore },
+    upstream: { get: () => Effect.die("This test does not answer for dragsim.co") },
+    clock: Clock.Clock.defaultValue(),
+    ...overrides,
+  };
+  const within = localCloudflare(() => services.clock.currentTimeMillisUnsafe());
+  const served = makeApp(services, callerOf);
+  const app = (request: Request) => within(() => served(request));
+  const run = <A, E>(effect: Effect.Effect<A, E>) => within(() => Effect.runPromise(effect));
   const call = async (who: string | null, method: string, path: string, body?: unknown, extra: HeadersInit = {}) => {
     const headers = new Headers(extra);
     if (who === "agent") {
@@ -51,7 +64,7 @@ export const testApp = (overrides: Partial<Services> = {}, callerOf = cookieCall
     const value: unknown = type.includes("json") ? await response.json() : new Uint8Array(await response.arrayBuffer());
     return { status: response.status, value };
   };
-  return { app, call };
+  return { app, call, run };
 };
 
 export const testAuth = (rateLimit: BetterAuthOptions["rateLimit"], hasJoined?: HasJoined) =>
