@@ -1,11 +1,12 @@
 package io.github.noxaur.dsmod.core.game
 
 import kotlin.test.Test
+import io.github.noxaur.dsmod.harness.text
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class InfoRowsTest {
-    private val tab = TabState().also { it.update(listOf("Area: The End", "Dungeon: Catacombs", "Protector: Resting").map { row -> ServerText(ServerSpan(row)) }) }
+    private val tab = TabState().also { it.update(listOf("Area: The End", "Dungeon: Catacombs", "Protector: Resting").map { row -> text(row) }) }
 
     @Test
     fun `a feature reads the rows that tell nothing of the area`() {

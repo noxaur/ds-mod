@@ -1,20 +1,17 @@
 package io.github.noxaur.dsmod.core.feature.end
 
-import io.github.noxaur.dsmod.core.config.SettingsTree
-import io.github.noxaur.dsmod.core.feature.Game
+import io.github.noxaur.dsmod.harness.chat
+import io.github.noxaur.dsmod.harness.Harness
+import io.github.noxaur.dsmod.harness.lines
 import io.github.noxaur.dsmod.core.feature.Saved
-import io.github.noxaur.dsmod.core.game.ServerSpan
-import io.github.noxaur.dsmod.core.game.ServerText
-import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class BossFightTrackerTest {
-    private val game = Game(SettingsTree().features)
+class BossFightTrackerTest : Harness() {
 
-    private fun say(time: Long, line: String) = game.post(time, SystemMessage(ServerText(ServerSpan(line))))
+    private fun say(time: Long, line: String) = game.post(time, chat(line))
 
     private fun down(time: Long, name: String) = say(
         time,
@@ -29,11 +26,11 @@ class BossFightTrackerTest {
     )
 
     @Suppress("UNCHECKED_CAST")
-    private fun bosses() = (game.readouts.single { it.feature.id == "boss-fight-tracker" }.feature.state as Saved<BossLog>).value.bosses
+    private fun bosses() = (readout(tree.feature<BossFightTracker>()).feature.state as Saved<BossLog>).value.bosses
 
     @Test
     fun `loot rows stay with the dragon whose header opened them`() {
-        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+        game.post(0, TabList(lines("Area: The End")))
         down(330_500, "UNSTABLE DRAGON")
         // A second dragon can fall during the ten seconds before the first dragon's loot.
         down(335_000, "CHAOTIC DRAGON")
@@ -46,7 +43,7 @@ class BossFightTrackerTest {
 
     @Test
     fun `a header with no earlier one goes to the dragon still inside the loot window`() {
-        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+        game.post(0, TabList(lines("Area: The End")))
         down(0, "UNSTABLE DRAGON")
         // The loot header never arrives. A later dragon's header must not be recorded on this one.
         down(60_000, "CHAOTIC DRAGON")
@@ -59,11 +56,11 @@ class BossFightTrackerTest {
 
     @Test
     fun `a world change drops a dragon still waiting for its loot`() {
-        game.post(0, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+        game.post(0, TabList(lines("Area: The End")))
         down(0, "UNSTABLE DRAGON")
         game.post(1_000, WorldChanged)
         // The new world's tab list is what puts the player back in the End.
-        game.post(1_500, TabList(listOf(ServerText(ServerSpan("Area: The End")))))
+        game.post(1_500, TabList(lines("Area: The End")))
         down(2_000, "CHAOTIC DRAGON")
         say(12_000, "Here is your loot from the last dragon:")
         say(12_000, " - 8x Chaotic Dragon Fragment")
