@@ -198,7 +198,8 @@ val picked = layout.buildDirectory.dir("gametests")
 val pickGameTests = tasks.register<JavaExec>("pickGameTests") {
     group = "verification"
     description = "Lists the game tests in the test mod's manifest: those -Pgametests= names, all for -Pgametests=all, or else those the change since the branch left main reaches. See GameTestPick.kt."
-    classpath = sourceSets["debug"].runtimeClasspath
+    // @keep The compile classpath holds all the picker loads, and the runtime one adds Loom's launch libraries, which a job that only builds the jars never fetched.
+    classpath = sourceSets["debug"].let { it.output + it.compileClasspath }
     mainClass = "io.github.noxaur.dsmod.debug.GameTestPickKt"
     inputs.files(sourceSets["gametest"].output.classesDirs, gameTestManifest)
     args(listOf(projectDir.path, picked.get().asFile.path) + listOfNotNull(gametests.orNull))
