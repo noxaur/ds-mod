@@ -35,17 +35,18 @@ export const mojangHasJoined =
   async (name, serverId) => {
     const relayed = websiteKey !== undefined && websiteKey !== "";
     const url = new URL(relayed ? websiteRelay : mojang);
+    const who = relayed ? "The website's Mojang relay" : "Mojang";
     url.searchParams.set("username", name);
     url.searchParams.set("serverId", serverId);
     // Only a 204 means nobody joined. Anything else is Mojang failing, which the player can retry, not a refusal.
     const response = await fetch(url, { headers: relayed ? { [trustedKeyHeader]: websiteKey } : {} }).catch(() => {
-      throw unavailable("Mojang did not answer.");
+      throw unavailable(`${who} did not answer.`);
     });
     if (response.status === 204) {
       return null;
     }
     if (response.status !== 200) {
-      throw unavailable(`${relayed ? "The website's Mojang relay" : "Mojang"} answered ${String(response.status)}.`);
+      throw unavailable(`${who} answered ${String(response.status)}.`);
     }
     const profile = Schema.decodeUnknownSync(Profile)(await response.json());
     return { uuid: profile.id.replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, "$1-$2-$3-$4-$5"), name: profile.name };

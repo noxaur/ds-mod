@@ -188,11 +188,14 @@ test("a backend with the website's key asks Mojang through the website", async (
   expect(new Headers(init?.headers).get(trustedKeyHeader)).toBe("the-key");
 });
 
-test("a relay that refuses is named, not blamed on Mojang", async () => {
-  mojangSays(new Response(null, { status: 404 }));
-  await expect(mojangHasJoined("wrong-key")("Notch", "ab".repeat(20))).rejects.toMatchObject({
+test.each([
+  ["refuses", new Response(null, { status: 404 }), "The website's Mojang relay answered 404."],
+  ["is unreachable", new Error("down"), "The website's Mojang relay did not answer."],
+])("a relay that %s is named, not blamed on Mojang", async (_name, response, message) => {
+  mojangSays(response);
+  await expect(mojangHasJoined("the-key")("Notch", "ab".repeat(20))).rejects.toMatchObject({
     statusCode: 503,
-    body: { message: "The website's Mojang relay answered 404." },
+    body: { message },
   });
 });
 

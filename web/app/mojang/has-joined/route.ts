@@ -16,8 +16,10 @@ export async function GET(request: Request) {
     url.searchParams.set(param, asked.get(param) ?? "");
   }
   return Effect.runPromise(
-    Effect.tryPromise((signal) => fetch(url, { cache: "no-store", signal })).pipe(
-      Effect.map((answer) => new Response(answer.body, { status: answer.status })),
+    Effect.tryPromise(async (signal) => {
+      const answer = await fetch(url, { cache: "no-store", signal });
+      return new Response(answer.status === 204 ? null : await answer.text(), { status: answer.status });
+    }).pipe(
       Effect.timeout("5 seconds"),
       Effect.orElseSucceed(() => new Response(null, { status: 502 })),
     ),
