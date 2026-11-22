@@ -45,7 +45,7 @@ export const mojangHasJoined =
       return null;
     }
     if (response.status !== 200) {
-      throw unavailable(`Mojang answered ${String(response.status)}.`);
+      throw unavailable(`${relayed ? "The website's Mojang relay" : "Mojang"} answered ${String(response.status)}.`);
     }
     const profile = Schema.decodeUnknownSync(Profile)(await response.json());
     return { uuid: profile.id.replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, "$1-$2-$3-$4-$5"), name: profile.name };

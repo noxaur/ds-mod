@@ -46,6 +46,29 @@ test.each([
   expect(fetchMock).not.toHaveBeenCalled();
 });
 
+test("a Mojang that does not answer in time is a 502, and its request is cancelled", async () => {
+  vi.useFakeTimers();
+  vi.stubEnv("AUTH_TRUSTED_KEY", "the-key");
+  let cancelled = false;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn<typeof fetch>(
+      (_url, init) =>
+        new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () => {
+            cancelled = true;
+            reject(new Error("aborted"));
+          });
+        }),
+    ),
+  );
+  const answer = ask({ [trustedKeyHeader]: "the-key" });
+  await vi.advanceTimersByTimeAsync(5_000);
+  expect((await answer).status).toBe(502);
+  expect(cancelled).toBe(true);
+  vi.useRealTimers();
+});
+
 test("a Mojang that cannot be reached is a 502, which the backend reads as Mojang failing", async () => {
   vi.stubEnv("AUTH_TRUSTED_KEY", "the-key");
   mojangSays(new Error("down"));

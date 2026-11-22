@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     url.searchParams.set(param, asked.get(param) ?? "");
   }
   return Effect.runPromise(
-    Effect.tryPromise(() => fetch(url, { cache: "no-store" })).pipe(
+    Effect.tryPromise((signal) => fetch(url, { cache: "no-store", signal })).pipe(
       Effect.map((answer) => new Response(answer.body, { status: answer.status })),
       Effect.timeout("5 seconds"),
       Effect.orElseSucceed(() => new Response(null, { status: 502 })),
