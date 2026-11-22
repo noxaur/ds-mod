@@ -382,9 +382,11 @@ val rules = listOf(
         id = "gametest-frozen-by-scenes",
         files = "src/gametest/**.{kt,java}",
         except = "src/gametest/**/Scenes.kt",
-        forbid = Regex(""""gamerule advance_(time|weather)"""),
-        fix = "Stop time and the weather with `world.freezeTime()` from Scenes.kt, which sets noon unless `noon = false`.",
+        forbid = Regex(""""(gamerule advance_(time|weather)|time set )"""),
+        fix = "Stop time and the weather with `world.freezeTime()` from Scenes.kt, which sets noon, or `freezeTime(\"midnight\")` " +
+            "for another time and `freezeTime(at = null)` to keep the time it is.",
         example = """listOf("gamerule advance_time false", "time set noon").forEach(world.server::runCommand)""",
+        examples = listOf("""world.server.runCommand("time set midnight")"""),
     ),
     Rule(
         id = "gametest-egg-by-the-end",

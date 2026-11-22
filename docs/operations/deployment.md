@@ -5,7 +5,7 @@ The backend runs on the user's Cloudflare account and the website on the user's 
 | Part | Address | Where | How it deploys |
 | --- | --- | --- | --- |
 | Backend | `https://api.ds-mod.perwko.com` | Worker `dsmod-backend` on Cloudflare, with its D1 database and R2 bucket | `.github/workflows/deploy.yml`, once `ci` passes on a push to `main` |
-| Website | `https://ds-mod.perwko.com` | Vercel project `ds-mod`, root directory `web/` | On every push to `main`, through Vercel's GitHub app, when the push changes `web/`. A pull request that changes `web/` gets a preview |
+| Website | `https://ds-mod.perwko.com` | Vercel project `ds-mod`, root directory `web/` | On every push to `main`, through Vercel's GitHub app, when the push changes `web/`. No other branch or pull request deploys, so previews never spend the daily deployment limit |
 | Mod | Both, baked into the jar | `-Pbackend_url` and `-Pwebsite_url` in `.github/workflows/beta.yml` | With each beta release |
 
 The addresses are fixed: a jar keeps the ones it was built with, so moving either one strands every player on an older release.
@@ -14,7 +14,7 @@ The addresses are fixed: a jar keeps the ones it was built with, so moving eithe
 
 ## Deploy the backend
 
-The `deploy` workflow runs `void deploy --platform cloudflare` after each green `ci` run on `main`, with the repository secret `CLOUDFLARE_API_TOKEN`. That token is scoped to the user's account and to `perwko.com`, with Workers Scripts, D1 and R2 edit, Workers Routes edit, and account settings and zone read. The flag is needed because the saved target lives in the git-ignored `backend/.void/`, so a fresh checkout has none.
+The `deploy` workflow runs `void deploy --platform cloudflare` after each green `ci` run on `main`, with the repository secret `CLOUDFLARE_API_TOKEN`. That token is scoped to the user's account and to `perwko.com`, with Workers Scripts, Workers KV Storage, D1 and R2 edit, Workers Routes edit, and account settings and zone read. The flag is needed because the saved target lives in the git-ignored `backend/.void/`, so a fresh checkout has none.
 
 To deploy by hand from a checkout that the user has signed in to Cloudflare:
 
@@ -35,7 +35,7 @@ After a deploy, `https://api.ds-mod.perwko.com/healthz` answers 204, and a `POST
 | --- | --- | --- |
 | `BETTER_AUTH_SECRET` | Signs every session | Created by Void on the first deploy. Changing it signs every player out |
 | `ADMIN_TOKEN` | What `dsctl` sends to act as an agent | The Worker, and the user's `~/.config/dsmod/production.env`, readable only by the user |
-| `AUTH_TRUSTED_KEY` | Lets the website's sign-in calls skip the per-address rate limit, which would otherwise count every player who signs in on the website together. The website's `AUTH_TRUSTED_KEY` in Vercel must hold the same value | The Worker, and the Vercel project's environment variables |
+| `AUTH_TRUSTED_KEY` | Lets the website's sign-in calls skip the per-address rate limit, which would otherwise count every player who signs in on the website together, and lets the backend ask Mojang through the website, because Mojang refuses Cloudflare's addresses. Without it, every sign-in from the mod answers 503. The website's `AUTH_TRUSTED_KEY` in Vercel must hold the same value | The Worker, and the Vercel project's environment variables |
 
 To change `ADMIN_TOKEN`, edit the file and pipe the value in. `void secret sync` waits on a prompt that a non-interactive shell never answers.
 
@@ -51,6 +51,8 @@ sed -n 's/^ADMIN_TOKEN=//p' ~/.config/dsmod/production.env | tr -d '\n' | pnpm e
 
 Vercel reads `packageManager` only from a `package.json` at the repository's root, and this repository has none, so without the install command it installs with an old pnpm that ignores the lockfile and fails. `corepack enable` run inside `web/` picks the pinned pnpm from `web/package.json` instead.
 
-`web/scripts/vercel-ignore.sh` skips a build when nothing in `web/` changed since the branch's last built commit, which Vercel gives as `VERCEL_GIT_PREVIOUS_SHA`. Vercel clones ten commits deep, so the script fetches an older base by its SHA, which works because the repository is public. A branch's first build has no previous commit, so it compares with where the branch left `main`. Whatever it cannot judge, it builds. A skipped build shows as canceled in Vercel and still counts toward the deployment quota. To build a skipped commit, redeploy it in Vercel with the project's Ignore Build Step unchecked.
+`git.deploymentEnabled` in `web/vercel.json` lets only `main` deploy. A branch Vercel never deploys spends nothing, unlike a skipped build. To see a branch on Vercel before it merges, deploy it by hand with `pnpm dlx vercel deploy` from the repository root, because the project's root directory is `web/` and the CLI resolves it from where it runs.
+
+`web/scripts/vercel-ignore.sh` skips a build of `main` when nothing in `web/` changed since the last built commit, which Vercel gives as `VERCEL_GIT_PREVIOUS_SHA`. Vercel clones ten commits deep, so the script fetches an older base by its SHA, which works because the repository is public. Whatever it cannot judge, it builds, including the first build, which has no previous commit. A skipped build shows as canceled in Vercel and still counts toward the deployment quota. To build a skipped commit, redeploy it in Vercel with the project's Ignore Build Step unchecked.
 
 The project's settings in Vercel hold `BACKEND_URL=https://api.ds-mod.perwko.com`, `AUTH_TRUSTED_KEY` and Node 24. A change to either is made in Vercel and needs a redeploy.

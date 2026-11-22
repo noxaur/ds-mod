@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.core.feature
 import io.github.noxaur.dsmod.core.capture.Captured
 import io.github.noxaur.dsmod.harness.chat
 import io.github.noxaur.dsmod.harness.Harness
+import io.github.noxaur.dsmod.harness.lines
 import io.github.noxaur.dsmod.harness.text
 import io.github.noxaur.dsmod.core.capture.readCapture
 import io.github.noxaur.dsmod.core.config.SettingsTree
@@ -112,10 +113,6 @@ class FeatureReplayTest {
         return fixtures
     }
 
-    private fun tabList(vararg rows: String) = TabList(rows.map { text(it) })
-
-    private fun sidebar(vararg lines: String) = Sidebar(lines = lines.map { text(it) })
-
     /**
      * A fixture's events. One cut without the tab list or the sidebar says nothing of where the player was, so it
      * replays inside the feature's own area.
@@ -125,7 +122,7 @@ class FeatureReplayTest {
         val start = events.first().time
         val row = feature.area.row?.takeIf { events.none { it.event is TabList } }
         val line = feature.area.line?.takeIf { events.none { it.event is Sidebar } }
-        return listOfNotNull(row?.let { Captured(start, tabList(it)) }, line?.let { Captured(start, sidebar(it)) }) + events
+        return listOfNotNull(row?.let { Captured(start, TabList(lines(it))) }, line?.let { Captured(start, Sidebar(lines = lines(it))) }) + events
     }
 
     private fun name(item: Item) = item.name?.plain?.ifBlank { null } ?: item.id
@@ -262,8 +259,8 @@ class FeatureReplayTest {
                     val session = fresh(feature.id)
                     val game = session.game
                     val state = session.readout().feature.state
-                    game.post(0, tabList("Area: Somewhere Else"))
-                    game.post(0, sidebar("⏣ Somewhere Else"))
+                    game.post(0, TabList(lines("Area: Somewhere Else")))
+                    game.post(0, Sidebar(lines = lines("⏣ Somewhere Else")))
                     val outside = readCapture(fixture).filter { it.event !is TabList && it.event !is Sidebar }
                     play(game, outside, posted = { time, event, kept ->
                         val where = "outside ${feature.area}, replaying $fixture, after $event at $time"
