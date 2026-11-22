@@ -1,0 +1,679 @@
+config:
+  validation: true
+  excludes: ['.*>.*>examples', '.*>.*>counterExamples']
+
+dsmod:
+  ForbiddenText/area-by-declaration:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/feature/**']
+    pattern: '"(The End|Village|The Crypts|Catacombs|Dungeon Hub|Void Sepulture)"'
+    reason: 'A feature never asks where the player is. Pass its `Area` to `Feature(..)` and `Game` gives it events and a readout only there. For a place `Area` lacks, add an entry with the tab list row or the sidebar place a capture shows.'
+    examples:
+      - 'if (event.lines.any { "Dungeon Hub" in it.plain }) return'
+
+  ForbiddenReference/chat-by-line:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/feature/**']
+    excludes: ['**/core/feature/Feature.kt']
+    symbols: ['io.github.noxaur.dsmod.core.game.SystemMessage']
+    reason: 'Read a chat line with `line(head) { .. }`, or `line(head, pattern) { (a, b), now -> .. }` to parse it. `head` is the line''s start, a String or a Regex for a start that varies, because a player can type anything after their name. A line whose head matches and whose pattern does not counts as unparsed by itself.'
+    examples:
+      - |
+        import io.github.noxaur.dsmod.core.feature.Feature
+        import io.github.noxaur.dsmod.core.game.SystemMessage
+        fun example(feature: Feature) = feature.on<SystemMessage> { message, _ -> println(message.text.plain) }
+      - |
+        import io.github.noxaur.dsmod.core.game.SystemMessage
+        val type = SystemMessage::class
+
+  ForbiddenReference/kills-by-own-kills:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/feature/**']
+    excludes: ['**/core/feature/general/OwnKills.kt']
+    symbols: ['io.github.noxaur.dsmod.core.game.CombatXp']
+    reason: 'Count the player''s own kills with `OwnKills(feature, { death -> .. }) { count, xp, now -> .. }`, which matches each death to the Combat XP action bar behind it and reads the XP.'
+    examples:
+      - |
+        import io.github.noxaur.dsmod.core.game.CombatXp
+        fun example(plain: String) = CombatXp.MARK in plain
+      - |
+        import io.github.noxaur.dsmod.core.game.CombatXp
+        fun example(plain: String) = plain.let(CombatXp::gained)
+
+  ContainerByReader/container-by-reader:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/feature/**']
+    excludes: ['**/core/feature/general/ContainerReader.kt']
+    reason: 'Mark slots with `SlotMarks(feature) { slot, item, now -> .. }`, which rebuilds the marks only when the container changed or `invalidate()` says so. To read a container''s items again after it changed, ask `ContainerReader(feature).changed()`.'
+    examples:
+      - 'feature.on<SlotChanged> { _, _ -> changed = true }'
+      - 'feature.on<ContainerOpened> { event, _ -> stale = true }'
+      - |
+        feature.on< WorldChanged > {
+            _, _ -> stale = true
+        }
+    counterExamples:
+      - 'feature.on<SlotChanged> { _, _ -> changed = read() }'
+      - 'feature.on<ActionBar> { _, _ -> stale = true }'
+
+  ForbiddenReference/pet-by-current-pet:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/feature/**']
+    excludes: ['**/core/feature/general/CurrentPet.kt']
+    symbols:
+      - 'io.github.noxaur.dsmod.core.game.Pet.Companion.STANDS'
+      - 'io.github.noxaur.dsmod.core.game.Pet.Companion.worn'
+      - 'io.github.noxaur.dsmod.core.game.PetCard.Companion.of'
+    reason: &pet 'Follow the pet the player has out with `CurrentPet(feature, { before -> .. })`, which reads the sidebar, the Pets menu''s card and the heads of pets nearby, and forgets the pet when the player leaves.'
+    examples:
+      - |
+        import io.github.noxaur.dsmod.core.game.Item
+        import io.github.noxaur.dsmod.core.game.PetCard
+        fun example(item: Item?) = item?.let(PetCard::of)
+      - |
+        import io.github.noxaur.dsmod.core.game.Pet
+        val stands = Pet.STANDS
+
+  ForbiddenText/pet-by-current-pet:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/feature/**']
+    excludes: ['**/core/feature/general/CurrentPet.kt']
+    pattern: '"Pet:'
+    reason: *pet
+    examples:
+      - 'line.startsWith("Pet:")'
+
+  ForbiddenText/text-by-role:
+    active: true
+    includes: ['**/src/main/**']
+    excludes: ['**/core/text/Text.kt', '**/edge/Chat.kt', '**/core/ui/Theme.kt', '**/core/capture/PlayerNames.kt', '**/core/capture/Redactor.kt']
+    pattern: '§|\\u00[Aa]7|\b0x[0-9A-Fa-f](?:_?[0-9A-Fa-f]){5}(?:(?:_?[0-9A-Fa-f]){2})?\b'
+    reason: 'Say what the text means and let the text layer color it: build it with `text { body(..); value(..) }` from core.text and print it with `Chat.send`. If no role fits, add one to `Role`.'
+    examples:
+      - 'val gold = 0xFF_AA_00'
+      - 'val glass = 0xFF_AA_00_FF'
+      - 'val gold = 0xFFAA00'
+      - 'val line = "§eSold!"'
+      - 'val code = ''§'''
+      - 'val line = "\u00A7eSold!"'
+      - 'val code = ''\u00a7'''
+    counterExamples:
+      - 'val mask = 0xFF'
+      - 'val shift = 0xFFFF'
+
+  ForbiddenText/item-data-by-hand:
+    active: true
+    includes: ['**/src/main/kotlin/**/edge/**']
+    excludes: ['**/edge/Items.kt']
+    pattern: '"(?:item_data|item_skin)"'
+    reason: 'Read a stack''s SkyBlock id with `stack.itemId`, its uuid with `stack.itemUuid` and its skin with `stack.skinId`, from edge/Items.kt, which copies the tag once per item. For another field, add it there.'
+    examples:
+      - 'val id = tag.getCompoundOrEmpty("item_data").getStringOr("item_id", "")'
+      - 'tag.getCompoundOrEmpty("extra").getCompoundOrEmpty("item_skin").getStringOr("skinId", "")'
+
+  ForbiddenText/lore-glyphs-by-hand:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/**']
+    excludes: ['**/core/game/Item.kt']
+    pattern: '[-]|\\u(?:[Ee][0-9A-Fa-f]{3}|[Ff][0-8][0-9A-Fa-f]{2})'
+    reason: 'Read lore as `item.cleanLore`, which drops the glyphs of the server''s resource pack and trims each line once per item, and the lines under a header with `item.section(header)`, or `item.sections(regex) { heading, lines -> .. }`.'
+    examples:
+      - 'line.filterNot { it in ''''..'''' }'
+      - "val glyph = ''"
+      - 'val glyphs = "a"'
+
+  ItemJsonByHand/item-json-by-hand:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/{game,feature,contribute}/**']
+    excludes: ['**/core/game/Item.kt']
+    reason: 'Read an item''s data with `item.string("item_data", "rarity")`, or `item.objectAt(..)` for an object. Other JSON reads with `jsonObject` and `jsonPrimitive` inside a `runCatching`.'
+    examples:
+      - '((item.data["item_data"] as? JsonObject)?.get("rarity") as? JsonPrimitive)?.contentOrNull'
+      - |
+        (data["extra"] as?
+            JsonObject)
+      - 'value as? JsonObject?'
+      - 'value as? JsonObject ?'
+      - 'value as? kotlinx.serialization.json.JsonObject?'
+      - 'item.data["item_data"]?.jsonObject?.get("rarity")'
+    counterExamples:
+      - 'kept["item_data"] = JsonObject(it)'
+      - 'value as? com.google.gson.JsonObject?'
+      - 'return withoutUuids(JsonObject(kept)) as JsonObject'
+
+  ForbiddenText/rate-by-helper:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/feature/**']
+    pattern: 'MILLIS_PER_(HOUR|MINUTE)|\b3_?600_?000\b'
+    reason: 'Turn a count over a span into a rate with `perHour(count, millis)`, and a wait into text with `duration(millis)` or `secondsLeft(millis)`, from core.text.'
+    examples:
+      - 'val rate = eyes * 3600000 / inEnd'
+      - 'left / MILLIS_PER_MINUTE'
+      - |
+        class Example {
+            companion object {
+                const val MILLIS_PER_HOUR = 3_600_000.0
+            }
+        }
+
+  ForbiddenText/no-bang-bang:
+    active: true
+    includes: ['**/src/main/**', '**/src/debug/**']
+    pattern: '^!!$'
+    reason: 'Say what a null means here: `?: return` when it can''t happen in play, a local `val` for a smart cast, or `checkNotNull(x) { "why" }` when null is a bug.'
+    examples:
+      - 'val id = held.after!!.id'
+      - 'run(items[0]!!)'
+      - 'slots[it]!!.isEmpty'
+    counterExamples:
+      - 'val sure = "!!"'
+      - 'if (a != b) return'
+
+  ForbiddenCallInside/gametest-no-swallowed-wait:
+    active: true
+    includes: ['**/src/gametest/**']
+    outer: ['runCatching']
+    inner: '^wait(For|Until)\b'
+    reason: 'A wait that times out is a failed test, so let it throw. To check that something does not happen, `waitTicks(n)` for as long as it would take and then assert the count.'
+    examples:
+      - 'runCatching { context.waitFor({ count(it, word) >= times }, ROUND_TRIP) }'
+      - 'runCatching { context.waitUntil("it came") { done() } }'
+    counterExamples:
+      - 'runCatching { context.waitTicks(20) }'
+
+  ForbiddenCallInside/gametest-poll-by-waitfor:
+    active: true
+    includes: ['**/src/gametest/**']
+    outer: ['repeat']
+    inner: '^waitTicks\(\s*1\s*\)$'
+    reason: 'Wait for a condition with `context.waitFor({ .. }, ticks)`, or `context.waitUntil("what") { .. }` from Waits.kt, which throws when the time is up. A loop of `waitTicks(1)` ends quietly and the test goes on.'
+    examples:
+      - 'repeat(100) { if (done()) return@repeat else context.waitTicks(1) }'
+      - |
+        repeat(200) {
+            if (done()) return
+            context.waitTicks(1)
+        }
+    counterExamples:
+      - |
+        repeat(10) {
+            context.input.pressMouse(1)
+            context.waitTicks(4)
+        }
+
+  ForbiddenReference/registry-by-hand:
+    active: true
+    includes: ['**/src/main/kotlin/**/edge/**']
+    excludes: ['**/edge/Items.kt', '**/edge/Entities.kt']
+    symbols:
+      - 'net.minecraft.core.registries.BuiltInRegistries.ITEM'
+      - 'net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE'
+    reason: 'Look an item up with `stackOf(id)`, a barrier when the game has no such item, or `isItem(id)`, and read a stack''s id with `stack.id`, from edge/Items.kt. Read an entity''s type id with `entity.typeId`, and find a type with `entityType(id)`, from edge/Entities.kt.'
+    examples:
+      - |
+        import net.minecraft.core.registries.BuiltInRegistries
+        import net.minecraft.world.entity.Entity
+        fun example(entity: Entity) = BuiltInRegistries.ENTITY_TYPE.getKey(entity.type).toString()
+      - |
+        import net.minecraft.core.registries.BuiltInRegistries
+        import net.minecraft.resources.Identifier
+        fun example(id: String) = Identifier.tryParse(id)?.let(BuiltInRegistries.ITEM::containsKey)
+      - |
+        import net.minecraft.core.registries.BuiltInRegistries
+        import net.minecraft.world.item.Item
+        fun example(item: Item) = BuiltInRegistries
+            .ITEM.getKey(item)
+    counterExamples:
+      - |
+        import net.minecraft.core.registries.BuiltInRegistries
+        val blocks = BuiltInRegistries.BLOCK
+
+  ForbiddenConstant/player-slots-by-container:
+    active: true
+    includes: ['**/src/main/**']
+    excludes: ['**/core/game/ContainerState.kt']
+    values: ['36']
+    reason: &slots 'In core, the open container''s `menuSlots` and `playerSlots` from `ContainerState` say which slots are the menu''s and which the player''s, and its `CARRIED_SLOTS`, `ROW_SLOTS`, `WORN_SLOTS` and `OFFHAND_SLOT` where the inventory holds them. In the edge, name a slot with Minecraft''s own number, as `InventoryMenu.USE_ROW_SLOT_START`.'
+    examples:
+      - |
+        class Example {
+            private companion object {
+                const val HOTBAR_FIRST = 36
+            }
+        }
+      - |
+        class Example {
+            companion object {
+                const val PLAYER_SLOTS: Int = 36
+            }
+        }
+    counterExamples:
+      - |
+        class Example {
+            companion object {
+                const val SLOTS = 360
+            }
+        }
+
+  ForbiddenText/player-rows-by-container:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/feature/**']
+    pattern: '^36$'
+    reason: *slots
+    examples:
+      - 'val hotbar = slots.subList(36, 45)'
+      - 'for (slot in 36 until 45) read(slot)'
+      - 'slot in 36..44'
+      - 'slot in 36..<45'
+      - 'val all = 9..36'
+    counterExamples:
+      - 'val ratio = 0.36'
+      - 'val wide = 360'
+      - 'val late = 36.5'
+      - 'val code = "36"'
+      - 'feature.unparsed("Level 36 reward")'
+
+  ForbiddenText/protector-by-stage:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/feature/**']
+    pattern: '"(Spawned|Resting|Rising)\b'
+    reason: 'Read the Protector''s stage with `ProtectorRow.parse` and compare its `ProtectorStage`. Show a stage by its `label`.'
+    examples:
+      - 'if (row.stage == "Spawned") return'
+      - 'killsLeft("Rising " + tier)'
+
+  ForbiddenText/slayer-by-line:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/feature/**']
+    pattern: '"[^"\n]*SLAYER BOSS'
+    reason: 'Read the player''s own spawn line with `line(SlayerLine.SPAWNED) { .. }`, and every slayer boss line with `line(SlayerLine.head, SlayerLine::parse) { event, now -> .. }`. If the server sends a new one, add it to `SlayerLine` in core/game.'
+    examples:
+      - 'feature.line("☠ SLAYER BOSS SPAWNING!") { alert() }'
+
+  ForbiddenReference/readout-by-harness:
+    active: true
+    includes: ['**/src/test/**']
+    excludes: ['**/harness/Harness.kt', '**/core/feature/GameTest.kt']
+    symbols: ['io.github.noxaur.dsmod.core.feature.Game.readouts']
+    reason: 'Extend `Harness` and read a feature''s readout with `readout(feature)`, `hud(feature)` or `rows(feature)`, or the one feature''s with no argument when the harness runs it `alone`.'
+    examples:
+      - |
+        import io.github.noxaur.dsmod.core.feature.Game
+        fun example(game: Game) = game.readouts.single { it.feature.id == "inventory-hud" }.hud
+      - |
+        import io.github.noxaur.dsmod.core.feature.Game
+        fun example(game: Game) = game.readouts
+            .single()
+
+  ForbiddenText/gametest-frozen-by-scenes:
+    active: true
+    includes: ['**/src/gametest/**']
+    excludes: ['**/gametest/Scenes.kt']
+    pattern: '"(gamerule advance_(time|weather)|time set )'
+    reason: 'Stop time and the weather with `world.freezeTime()` from Scenes.kt, which sets noon, or `freezeTime("midnight")` for another time and `freezeTime(at = null)` to keep the time it is.'
+    examples:
+      - 'listOf("gamerule advance_time false", "time set noon").forEach(world.server::runCommand)'
+      - 'world.server.runCommand("time set midnight")'
+
+  ForbiddenText/gametest-egg-by-the-end:
+    active: true
+    includes: ['**/src/gametest/**']
+    excludes: ['**/gametest/InTheEnd.kt']
+    pattern: 'Egg has Spawned'
+    reason: 'Show the dragon timer with `context.showDragonTimer(world)`, or send the line alone with `world.eggSpawns()`, from InTheEnd.kt.'
+    examples:
+      - 'world.server.runCommand("tellraw @a \"The Egg has Spawned!\"")'
+
+  PartByItself/part-by-itself:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/feature/**']
+    reason: 'A part hears the events it needs for itself, because `Feature.on` runs every handler of a type in turn. `ServerClock` follows `ServerTime` and clears itself on `WorldChanged`, and `ContainerReader` and `SlotMarks` see `ContainerOpened`, `SlotChanged` and `WorldChanged` and tell the change through `changed()` and `marks(now)`. Drop this call from the handler. Reading the part there is fine.'
+    examples:
+      - |
+        class Example {
+            private val clock = ServerClock(feature)
+
+            init {
+                feature.on<WorldChanged> { _, now -> clock.clear(now) }
+            }
+        }
+      - |
+        class Example {
+            private val inventory = ContainerReader(feature, FIRST..LAST)
+            init {
+                feature.on<SlotChanged> { event, _ -> inventory.changed(event) { it in FIRST..LAST } }
+            }
+        }
+      - |
+        class Example {
+            private val marks: SlotMarks = SlotMarks(feature, ::mark)
+            init {
+                feature.on< ContainerOpened > {
+                    _, _ -> marks.invalidate()
+                }
+            }
+        }
+      - |
+        class Example {
+            private val marks = SlotMarks(feature, ::mark)
+            init {
+                feature.on<ContainerOpened> { event, _ ->
+                    if (event.id == INVENTORY) { marks.invalidate() }
+                }
+            }
+        }
+      - |
+        class Example {
+            private val clock = ServerClock(feature)
+            init {
+                feature.on<WorldChanged> { _, now ->
+                    timers.forEach { it.stop() }
+                    clock.clear(now)
+                }
+            }
+        }
+      - |
+        class Example {
+            private val marks = SlotMarks(feature, ::mark)
+            init {
+                feature.on<ContainerOpened> { _, _ -> this.marks.invalidate() }
+            }
+        }
+      - |
+        class Example {
+            private val marks = SlotMarks(feature, ::mark)
+            init {
+                feature.on<SlotChanged> { _, _ -> this .marks.invalidate() }
+            }
+        }
+    counterExamples:
+      - |
+        class Example {
+            private val clock = ServerClock(feature)
+            init {
+                feature.on<Hit> { _, now -> started = clock.millis(now) }
+            }
+        }
+      - |
+        class Example {
+            private val clock = ServerClock(feature)
+            init {
+                feature.on<SlotChanged> { _, now -> changedAt = clock.millis(now) }
+            }
+        }
+      - |
+        class Example {
+            private val clock = ServerClock(feature)
+            init {
+                feature.on<WorldChanged> { _, _ -> timers.clear() }
+                feature.on<Hit> { _, now -> started = clock.millis(now) }
+            }
+        }
+      - |
+        class Example {
+            private val marks = SlotMarks(feature, ::mark)
+            init {
+                feature.on<ActionBar> { _, _ -> marks.invalidate() }
+            }
+        }
+      - |
+        class Example {
+            private val clock = ServerClock(feature)
+            init {
+                feature.on<ServerTime> { _, now -> seenTps = clock.tps(now) }
+            }
+        }
+      - |
+        class Example {
+            private val items = ContainerReader(feature)
+            init {
+                feature.on<SlotChanged> { _, _ -> if (items.changed()) read() }
+            }
+        }
+      - |
+        class Example {
+            private val items = ContainerReader(feature)
+            init {
+                feature.on<SlotChanged> { _, _ -> if (items.changed { it.isEmpty }) read() }
+            }
+        }
+      - |
+        class Example {
+            private val pets = CurrentPet(feature, ::changed)
+            init {
+                feature.on<SlotChanged> { event, _ -> if (event.item == null) pets.set(null) }
+            }
+        }
+
+style:
+  ForbiddenMethodCall/server-text-by-harness:
+    active: true
+    includes: ['**/src/test/**']
+    excludes: ['**/harness/Harness.kt']
+    methods:
+      - value: 'io.github.noxaur.dsmod.core.game.ServerText.<init>'
+        reason: 'Build what the server sends with the harness: `text(plain)` or `text(plain, color)` for a line, `text(ServerSpan(..), ServerSpan(..))` for a line in several spans, `text()` for an empty one, `lines(..)` for several lines and `chat(line)` for a chat line.'
+    examples:
+      - |
+        import io.github.noxaur.dsmod.core.game.ServerSpan
+        import io.github.noxaur.dsmod.core.game.ServerText
+        val line = ServerText(listOf(ServerSpan("RARE DROP!")))
+      - |
+        import io.github.noxaur.dsmod.core.game.ServerText
+        val empty = ServerText(emptyList())
+
+  ForbiddenMethodCall/resource-by-harness:
+    active: true
+    includes: ['**/src/test/**']
+    excludes: ['**/harness/Harness.kt', '**/rules/InputSitesTest.kt']
+    methods:
+      - value: 'java.lang.Class.getResource'
+        reason: &resource 'Read a file under `src/test/resources` with the harness''s `resource(path)`.'
+      - value: 'java.lang.Class.getResourceAsStream'
+        reason: *resource
+    examples:
+      - |
+        class Example {
+            fun read() = checkNotNull(javaClass.getResource("/profiles/profile.json")).readText()
+        }
+      - |
+        class Example {
+            fun read() = javaClass.getResourceAsStream("/profiles/profile.json")
+        }
+
+  ForbiddenMethodCall/number-by-helper:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/feature/**']
+    methods:
+      - value: 'kotlin.text.format'
+        reason: &number 'Write a number with `fixed`, `amount`, `grouped` or `short`, and a time with `clock`, `duration` or `secondsLeft`, from core.text. If none fits, add one to `core/text/Numbers.kt`.'
+      - value: 'java.lang.String.format'
+        reason: *number
+      - value: 'java.text.Format.format'
+        reason: *number
+      - value: 'java.text.NumberFormat.format'
+        reason: *number
+      - value: 'java.util.Formatter.format'
+        reason: *number
+      - value: 'java.text.MessageFormat.format'
+        reason: *number
+    examples:
+      - |
+        import java.util.Locale
+        fun example(tps: Double) = "%.1f".format(Locale.US, tps)
+      - |
+        import java.util.Locale
+        fun example(seconds: Double) = String.format(Locale.US, "%.1fs", seconds)
+      - |
+        import java.text.DecimalFormat
+        fun example(n: Double) = DecimalFormat("0.0").format(n)
+      - |
+        import java.util.Formatter
+        fun example(n: Double) = Formatter().format("%.1f", n)
+      - |
+        import java.text.MessageFormat
+        fun example(n: Double) = MessageFormat.format("{0,number,0.0}", n)
+
+  ForbiddenMethodCall/count-by-helper:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/**']
+    excludes: ['**/core/text/**', '**/core/config/**']
+    methods:
+      - value: 'kotlin.text.toInt(kotlin.String)'
+        reason: &count 'Read a number the server wrote with `count(text)` for a whole one or `number(text)` for one with decimals, from core.text. Both take the commas and give null for text that is no number.'
+      - value: 'kotlin.text.toLong(kotlin.String)'
+        reason: *count
+      - value: 'kotlin.text.toDouble(kotlin.String)'
+        reason: *count
+      - value: 'kotlin.text.toFloat(kotlin.String)'
+        reason: *count
+      - value: 'kotlin.text.toIntOrNull(kotlin.String)'
+        reason: *count
+      - value: 'kotlin.text.toLongOrNull(kotlin.String)'
+        reason: *count
+      - value: 'kotlin.text.toDoubleOrNull(kotlin.String)'
+        reason: *count
+      - value: 'kotlin.text.toFloatOrNull(kotlin.String)'
+        reason: *count
+    examples:
+      - 'fun example(left: String) = left.replace(",", "").toLong()'
+      - 'fun example(match: MatchResult) = match.groupValues[1].toInt()'
+      - 'fun example(match: MatchResult?) = match?.groupValues?.get(1)?.toFloatOrNull()'
+      - |
+        fun example(match: MatchResult) {
+            val (level, name) = match.destructured
+            println(name + level.toIntOrNull())
+        }
+    counterExamples:
+      - 'fun example(hex: String) = hex.toInt(16)'
+      - 'fun example(x: Double) = x.toInt()'
+
+  ForbiddenMethodCall/no-wall-clock-in-core:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/feature/**']
+    methods:
+      - value: 'java.lang.System.currentTimeMillis'
+        reason: &clock 'A feature reads time from the `now` its handler receives, so a replay and a game test see the same clock.'
+      - value: 'java.lang.System.nanoTime'
+        reason: *clock
+      - value: 'java.time.Instant.now'
+        reason: *clock
+    examples:
+      - 'val at = System.currentTimeMillis()'
+      - 'val at = System.nanoTime()'
+      - |
+        import java.time.Instant
+        val at = Instant.now()
+
+  ForbiddenMethodCall/gametest-widget-by-servermenus:
+    active: true
+    includes: ['**/src/gametest/**']
+    excludes: ['**/gametest/ServerMenus.kt']
+    methods:
+      - value: 'net.fabricmc.fabric.api.client.screen.v1.Screens.getWidgets'
+        reason: 'Find a widget on the open screen with `ServerMenus.widget<W>(context) { .. }` or `ServerMenus.widgets<W>(context)`, which read it on the client thread and skip a hidden one.'
+    examples:
+      - |
+        import net.fabricmc.fabric.api.client.screen.v1.Screens
+        import net.minecraft.client.gui.components.ImageButton
+        import net.minecraft.client.gui.screens.Screen
+        fun example(screen: Screen) = Screens.getWidgets(screen).filterIsInstance<ImageButton>().single()
+
+  ForbiddenMethodCall/gametest-children-by-screenwidgets:
+    active: true
+    includes: ['**/src/gametest/**']
+    excludes: ['**/gametest/ServerMenus.kt']
+    methods:
+      - value: 'net.minecraft.client.gui.components.events.ContainerEventHandler.children'
+        reason: 'Find a widget on the client thread with `screen.widgets<W>()`, or from the test with `ServerMenus.widgets<W>(context)`, both in ServerMenus.kt. The chat''s input is `InChat.input()`, `cursor()` and `clearInput()`.'
+    examples:
+      - |
+        import net.minecraft.client.gui.components.EditBox
+        import net.minecraft.client.gui.screens.ChatScreen
+        fun example(screen: ChatScreen) = screen.children().filterIsInstance<EditBox>().single()
+
+  ForbiddenMethodCall/gametest-point-by-pointer:
+    active: true
+    includes: ['**/src/gametest/**']
+    excludes: ['**/gametest/Pointer.kt']
+    methods:
+      - value: 'net.fabricmc.fabric.api.client.gametest.v1.TestInput.setCursorPos'
+        reason: 'Move the mouse in GUI pixels with `context.point(x, y)`, `context.click(x, y)` or `context.click(widget)`, and over a slot with `context.hoverSlot(index)` or `context.hoverOwnSlot(slot)`, from Pointer.kt, which scale by the real GUI scale.'
+    examples:
+      - |
+        import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+        fun example(context: ClientGameTestContext, x: Double, y: Double) = context.input.setCursorPos(x, y)
+
+  ForbiddenMethodCall/gametest-inventory-by-pointer:
+    active: true
+    includes: ['**/src/gametest/**']
+    excludes: ['**/gametest/Pointer.kt']
+    methods:
+      - value: 'net.minecraft.client.gui.screens.inventory.InventoryScreen.<init>'
+        reason: 'Open the player''s inventory with `context.openInventory()` from Pointer.kt.'
+    examples:
+      - |
+        import net.minecraft.client.gui.screens.inventory.InventoryScreen
+        import net.minecraft.world.entity.player.Player
+        fun example(player: Player) = InventoryScreen(player)
+
+  ForbiddenMethodCall/gametest-theme-by-intheme:
+    active: true
+    includes: ['**/src/gametest/**']
+    excludes: ['**/gametest/Themes.kt']
+    methods:
+      - value: 'io.github.noxaur.dsmod.core.config.DsModConfig.Hud.setTheme'
+        reason: 'Run a step in a theme with `context.inTheme(Theme.VANILLA) { .. }`, which puts the theme back after it, or take a screenshot in both themes with `context.shotInBothThemes(name)`, from Themes.kt.'
+    examples:
+      - |
+        import io.github.noxaur.dsmod.core.config.DsModConfig
+        import io.github.noxaur.dsmod.core.ui.Theme
+        fun example(hud: DsModConfig.Hud) {
+            hud.theme = Theme.VANILLA
+        }
+    counterExamples:
+      - |
+        import io.github.noxaur.dsmod.core.config.DsModConfig
+        fun example(hud: DsModConfig.Hud) = hud.theme
+
+  ForbiddenMethodCall/gametest-pixels-by-pixels:
+    active: true
+    includes: ['**/src/gametest/**']
+    excludes: ['**/gametest/Pixels.kt']
+    methods:
+      - value: 'javax.imageio.ImageIO.read'
+        reason: 'Read a screenshot with `image(shot)`, a GUI pixel with `context.guiPixel(shot, x, y)`, and compare with `countNear`, `brightness`, `distance` and `diff`, from Pixels.kt.'
+    examples:
+      - |
+        import java.io.File
+        import javax.imageio.ImageIO
+        fun example(shot: File) = ImageIO.read(shot)
+
+  ForbiddenMethodCall/gametest-player-by-scenes:
+    active: true
+    includes: ['**/src/gametest/**']
+    excludes: ['**/gametest/Scenes.kt']
+    methods:
+      - value: 'net.minecraft.server.players.PlayerList.getPlayers'
+        reason: 'Read the server''s player with `server.player` from Scenes.kt, and give it items with `world.give(mapOf(slot to stack))`.'
+    examples:
+      - |
+        import net.minecraft.server.MinecraftServer
+        fun example(server: MinecraftServer) = server.playerList.players.first()
+      - |
+        import net.minecraft.server.MinecraftServer
+        fun example(server: MinecraftServer) = server.playerList.players[0]
+
+empty-blocks:
+  EmptyCatchBlock:
+    active: true
+    includes: ['**/src/main/**', '**/src/debug/**']
+    allowedExceptionNameRegex: '(?!)'
+    examples:
+      - 'try { save() } catch (e: IOException) { }'
+      - 'try { save() } catch (_: IOException) {}'
+      - |
+        try {
+            save()
+        } catch (e: Exception) {
+        }

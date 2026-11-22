@@ -125,9 +125,8 @@ gate edge.mixin.DropKeyMixin 1b430b670807
 gate edge.mixin.EnchantmentOfferMixin draws
     hooks EnchantmentScreen.extractBackground
     approved by github.com/noxaur 2026-11-21T00:09:00Z
-gate edge.mixin.ExplosionParticleMixin 816e0ac1bb3c  HideExplosions
+gate edge.mixin.ExplosionParticleMixin 0530b12366cc  HideExplosions
     hooks ParticleEngine.createParticle
-    approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate edge.mixin.FloatingTextMixin 1178eba96f0a
     hooks Display.TextDisplay.getText
     hooks Display.TextDisplay.onSyncedDataUpdated
@@ -145,7 +144,7 @@ gate edge.mixin.HeldItemMixin 68ce469876e1
 gate edge.mixin.HeldItemModelMixin 305583a74354
     hooks ItemStackRenderState.LayerRenderState.applyTransform
     hooks ItemStackRenderState.LayerRenderState.submit
-gate edge.mixin.HiddenTextMixin a90e72dc5f00
+gate edge.mixin.HiddenTextMixin d7de7ed952c5
     hooks EntityRenderer.shouldRender
 gate edge.mixin.HudHotbarMixin draws
     hooks Hud.extractSlot

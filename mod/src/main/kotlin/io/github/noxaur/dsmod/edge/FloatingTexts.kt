@@ -8,6 +8,9 @@ object FloatingTexts {
     val HIDDEN: Component = Component.empty()
 
     @JvmStatic
+    fun hidden(text: Component?) = text === HIDDEN
+
+    @JvmStatic
     fun edit(text: Component): Component? {
         val game = DsModClient.game
         if (!game.wants(FloatingText::class.java)) return null
