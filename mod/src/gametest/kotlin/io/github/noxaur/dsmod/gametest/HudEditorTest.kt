@@ -40,7 +40,7 @@ class HudEditorTest : FabricClientGameTest {
                 check(pixels(client) == start + 1) { "A scroll step drew ${pixels(client)} pixels, not ${start + 1}" }
                 start
             }
-            val moved = DsModClient.settings.hud.positions.getValue(DRAGON_TIMER)
+            val moved = DsModClient.settings.hud.positions.value.getValue(DRAGON_TIMER)
             check(moved.x > 0.05f && moved.y > 0.05f && moved.scale > 1f) { "Not moved and scaled: $moved" }
 
             val plus = context.computeOnClient<Pair<Double, Double>, Nothing> { client ->
@@ -53,15 +53,15 @@ class HudEditorTest : FabricClientGameTest {
             context.runOnClient<Nothing> { client ->
                 val hud = DsModClient.settings.hud
                 val global = steppers(client).last()
-                val before = hud.scale
+                val before = hud.scale.value
                 fun click(x: Double) {
                     check(global.mouseClicked(press(x, global.y + 8.0), false)) { "The HUD stepper was not under the mouse" }
                     global.mouseReleased(press(x, global.y + 8.0))
                 }
                 click(global.right - 4.0)
-                check(hud.scale > before) { "The HUD scale did not grow: ${hud.scale}" }
+                check(hud.scale.value > before) { "The HUD scale did not grow: ${hud.scale.value}" }
                 click(global.x + 4.0)
-                check(hud.scale == before) { "The HUD scale did not come back: ${hud.scale}" }
+                check(hud.scale.value == before) { "The HUD scale did not come back: ${hud.scale.value}" }
             }
             val box = context.computeOnClient<KitCheckbox, Nothing> { client -> checkNotNull(client.gui.screen()).widgets<KitCheckbox>().single() }
             context.click(box.x + 5, box.y + 5)
@@ -83,7 +83,7 @@ class HudEditorTest : FabricClientGameTest {
             context.waitTicks(2)
             context.takeScreenshot("hud-editor-under-panel")
             context.clickScreenButton("Reset")
-            check(DRAGON_TIMER !in DsModClient.settings.hud.positions) { "Reset kept the position" }
+            check(DRAGON_TIMER !in DsModClient.settings.hud.positions.value) { "Reset kept the position" }
 
             fun dragTo(screen: net.minecraft.client.gui.screens.Screen, x: Double, y: Double): Hud.Placed {
                 val block = Hud.find(DRAGON_TIMER)!!
@@ -131,11 +131,11 @@ class HudEditorTest : FabricClientGameTest {
             onBlock(context) { _, screen, block ->
                 check(screen.mouseClicked(MouseButtonEvent(block.x + 5.0, block.y + 5.0, MouseButtonInfo(1, 0)), false)) { "The right press was not taken" }
                 screen.mouseReleased(MouseButtonEvent(block.x + 5.0, block.y + 5.0, MouseButtonInfo(1, 0)))
-                check(DRAGON_TIMER !in DsModClient.settings.hud.positions) { "The right press kept the position" }
+                check(DRAGON_TIMER !in DsModClient.settings.hud.positions.value) { "The right press kept the position" }
             }
 
             onBlock(context) { _, screen, block -> dragAway(screen, block) }
-            val placed = DsModClient.settings.hud.positions.getValue(DRAGON_TIMER)
+            val placed = DsModClient.settings.hud.positions.value.getValue(DRAGON_TIMER)
             context.clickScreenButton("Done")
             context.waitFor { it.gui.screen() == null }
             context.waitTicks(20)

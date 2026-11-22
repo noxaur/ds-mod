@@ -77,7 +77,7 @@ class OwnersTest {
     @Test
     fun `the edge and debug code sends for the player only through PlayerCommands`() {
         val edgeOrDebug = resideInAPackage("io.github.noxaur.dsmod.edge..").or(resideInAPackage("io.github.noxaur.dsmod.debug.."))
-        playerCommands(edgeOrDebug.and(outside("edge/PlayerCommands.kt"))).check(modClasses)
+        playerCommands(edgeOrDebug.and(outside("edge/input/PlayerCommands.kt"))).check(modClasses)
     }
 
     @Test

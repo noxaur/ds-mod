@@ -77,7 +77,7 @@ class FavoritesTest : FabricClientGameTest {
             context.runOnClient<Nothing> { DsModClient.feature<Fullbright>().feature.enabled = false }
 
             context.runOnClient<Nothing> {
-                settings.general.favoriteKey = GLFW.GLFW_MOUSE_BUTTON_MIDDLE
+                settings.general.favoriteKey.value = GLFW.GLFW_MOUSE_BUTTON_MIDDLE
                 tabs.current.go(at("Combat").section)
             }
             open(context, tabs)
@@ -92,7 +92,7 @@ class FavoritesTest : FabricClientGameTest {
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
             context.waitTicks(2)
             check("rare-drop-alert" in starred()) { "The middle button left ${starred()}" }
-            context.runOnClient<Nothing> { settings.general.favoriteKey = GLFW.GLFW_KEY_F }
+            context.runOnClient<Nothing> { settings.general.favoriteKey.value = GLFW.GLFW_KEY_F }
 
             context.runOnClient<Nothing> { tabs.current.go(SettingsScreen.FAVORITES) }
             open(context, tabs)
@@ -118,7 +118,7 @@ class FavoritesTest : FabricClientGameTest {
         } finally {
             context.runOnClient<Nothing> {
                 settings.favorites = emptyList()
-                settings.general.favoriteKey = GLFW.GLFW_KEY_F
+                settings.general.favoriteKey.value = GLFW.GLFW_KEY_F
                 DsModClient.saveSettings()
             }
             context.setScreen { TitleScreen() }

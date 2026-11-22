@@ -1,12 +1,13 @@
-import { ByteSize, Cause, Clock, Context, Effect, ErrorReporter, Layer, Option, Redacted } from "effect";
+import { Cause, Clock, Context, Effect, ErrorReporter, Layer, Option, Redacted } from "effect";
 import { HttpIncomingMessage, HttpRouter, HttpServer, HttpServerError } from "effect/http";
 import { HttpApiBuilder, HttpApiError, HttpApiMiddleware } from "effect/http-api";
 
-import { Agent, Api, Caller, Player, SignedIn } from "./api.ts";
+import { Agent, Api, BodyLimit, Caller, Limited, MaxBody, Player, SignedIn, TooManyRequests } from "./api.ts";
 import * as Contrib from "./contrib/contrib.ts";
 import { Store } from "./contrib/store.ts";
 import * as Items from "./items/items.ts";
 import { ItemStore } from "./items/store.ts";
+import type { Limiter, Rate } from "./limiter.ts";
 import * as Profiles from "./profiles/profiles.ts";
 import { ProfileStore } from "./profiles/store.ts";
 import { Upstream } from "./profiles/upstream.ts";
@@ -18,16 +19,29 @@ const caller = Effect.map(
   Option.getOrElse(() => ({ userId: null, adminToken: undefined })),
 );
 
-const SignedInLive = Layer.succeed(SignedIn)({
-  session: (handler) =>
-    Effect.gen(function* () {
-      const { userId } = yield* caller;
-      if (userId === null || userId === "") {
-        return yield* new HttpApiError.Unauthorized();
-      }
-      return yield* Effect.provideService(handler, Player, { userId });
-    }),
-});
+const signedIn = (limiter: Limiter) =>
+  Layer.succeed(SignedIn)({
+    session: (handler, { endpoint }) =>
+      Effect.gen(function* () {
+        const { userId } = yield* caller;
+        if (userId === null || userId === "") {
+          return yield* new HttpApiError.Unauthorized();
+        }
+        const own = Context.get(endpoint.annotations, Limited);
+        const rates: Rate[] = own === null ? ["player"] : ["player", own];
+        for (const rate of rates) {
+          if (!(yield* limiter.allow(rate, userId))) {
+            return yield* new TooManyRequests();
+          }
+        }
+        return yield* Effect.provideService(handler, Player, { userId });
+      }),
+  });
+
+// @keep The endpoint reads its body inside this, so the limit is the endpoint's own.
+const BodyLimitLive = Layer.succeed(BodyLimit)((handler, { endpoint }) =>
+  Effect.provideService(handler, HttpIncomingMessage.MaxBodySize, Context.get(endpoint.annotations, MaxBody)),
+);
 
 const AgentLive = Layer.succeed(Agent)({
   adminToken: (handler, { credential }) =>
@@ -71,20 +85,22 @@ const AdminLive = HttpApiBuilder.group(Api, "admin", (handlers) =>
     .handle("unknowns", () => Contrib.unknowns),
 );
 
-const web = HttpRouter.toWebHandler(
-  HttpApiBuilder.layer(Api).pipe(
-    Layer.provide([
-      Health,
-      Layer.provide(ContribLive, SignedInLive),
-      Layer.provide(ProfilesLive, SignedInLive),
-      Layer.provide(AdminLive, AgentLive),
-    ]),
-    // @keep The client sent what the errors quote, and a refusal is never logged, so they reach only that client.
-    Layer.provide(HttpApiMiddleware.layerProblemDetails({ includeDetails: true })),
-    Layer.provide(HttpServer.layerServices),
-  ),
-  { disableLogger: true },
-);
+const webOf = (limiter: Limiter) =>
+  HttpRouter.toWebHandler(
+    HttpApiBuilder.layer(Api).pipe(
+      Layer.provide([
+        Health,
+        Layer.provide(ContribLive, signedIn(limiter)),
+        Layer.provide(ProfilesLive, signedIn(limiter)),
+        Layer.provide(AdminLive, AgentLive),
+      ]),
+      // @keep The client sent what the errors quote, and a refusal is never logged, so they reach only that client.
+      Layer.provide(HttpApiMiddleware.layerProblemDetails({ includeDetails: true })),
+      Layer.provide(BodyLimitLive),
+      Layer.provide(HttpServer.layerServices),
+    ),
+    { disableLogger: true },
+  );
 
 /** @keep A failure no handler expected answers an empty 500 so nothing internal leaks, and goes to the Worker's log
  * instead. A body Effect could not read is the client's mistake, answered 400 or 413, so it is not logged. */
@@ -100,14 +116,12 @@ const logFailures = ErrorReporter.make(({ cause, error }) => {
   }
 });
 
-/** @keep A capture of half an hour in a busy place is under this once gzipped. */
-export const MAX_BODY = ByteSize.megabytes(50);
-
 export interface Services {
   readonly contrib: Store["Service"];
   readonly items: ItemStore["Service"];
   readonly profiles: ProfileStore["Service"];
   readonly upstream: Upstream["Service"];
+  readonly limiter: Limiter;
   readonly clock: Clock.Clock;
 }
 
@@ -118,7 +132,9 @@ export const makeApp = (services: Services, callerOf: (request: Request) => Call
     Context.add(Upstream, services.upstream),
     Context.add(Clock.Clock, services.clock),
     Context.add(ErrorReporter.CurrentErrorReporters, new Set([logFailures])),
-    Context.add(HttpIncomingMessage.MaxBodySize, MAX_BODY),
+    // @keep A body read outside an endpoint gets the small limit too.
+    Context.add(HttpIncomingMessage.MaxBodySize, MaxBody.defaultValue()),
   );
+  const web = webOf(services.limiter);
   return (request: Request) => web.handler(request, Context.add(context, Caller, callerOf(request)));
 };

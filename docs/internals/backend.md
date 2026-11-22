@@ -22,6 +22,10 @@ The entry route says who is calling, a signed-in player or an agent, and puts it
 
 A failure no client can fix, such as a database that is down, is logged and answered with an empty 500. Only what the client got wrong is an error the endpoint declares, so the contract never lists a failure the client could not act on.
 
+## A player's pace is counted by Cloudflare's rate-limit binding
+
+Anyone with a Minecraft account can sign in, so each endpoint caps its body, small unless it names more, and each player's calls are counted per minute, with a tighter count where a call costs more, such as a profile from dragsim.co. The binding counts each location apart, which is enough to stop one account. KV was rejected because it takes one write a second per key, and a Durable Object because an exact worldwide count costs a round trip on every call.
+
 ## The website runs on Vercel, beside the backend
 
 Void deploys no Next.js app, so the website runs on Vercel and calls the backend from its own servers. Nothing in a browser talks to the backend, which keeps the session cookie on the website's domain and leaves the backend no other origin to trust. Reading the player's address from a header was rejected, because any client can send one.

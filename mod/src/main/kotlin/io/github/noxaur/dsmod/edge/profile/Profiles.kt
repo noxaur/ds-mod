@@ -17,6 +17,8 @@ import io.github.noxaur.dsmod.core.profile.ProfileSource
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.Account
 import io.github.noxaur.dsmod.edge.Chat
+import io.github.noxaur.dsmod.edge.input.CommandLinks
+import io.github.noxaur.dsmod.edge.input.InputApproved
 import io.github.noxaur.dsmod.edge.restyle
 import io.github.noxaur.dsmod.edge.toComponent
 import java.util.concurrent.CompletableFuture
@@ -25,7 +27,6 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.commands.SharedSuggestionProvider
-import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 
@@ -64,8 +65,9 @@ object Profiles {
         }
     }
 
+    @InputApproved(reaches = ["CommandLinks.runs"])
     fun names(message: Component): Component = message.restyle(PlayerNames.inText(message.string)) { name, style ->
-        style.withClickEvent(ClickEvent.RunCommand("/dsmod pv $name"))
+        style.withClickEvent(CommandLinks.runs("/dsmod pv $name"))
             .withHoverEvent(HoverEvent.ShowText(text { action("Click to view "); body(name); action("'s profile") }.toComponent()))
     }
 

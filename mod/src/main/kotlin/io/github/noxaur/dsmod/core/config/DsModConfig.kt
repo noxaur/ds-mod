@@ -1,37 +1,30 @@
-@file:OptIn(ExperimentalSerializationApi::class)
-
 package io.github.noxaur.dsmod.core.config
 
 import io.github.noxaur.dsmod.core.ui.Theme
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
-/** @keep A field's name is its key in config.json: a renamed field keeps its old name in @JsonNames, or players lose what
- * they set. */
+/** @keep Every setting is a slot of a store, saved under the key it names. Favorites alone is a field, saved under its name. */
 @Serializable
 class DsModConfig {
     @JvmField
     var favorites: List<String> = emptyList()
-
-    @JvmField
-    val general = General()
-
-    @JvmField
-    val hud = Hud()
 
     @Transient
     private val stores = Store.entries.associateWith(::Stored)
 
     fun stored(store: Store): Stored = stores.getValue(store)
 
-    @Serializable
-    class General {
-        @JvmField
-        var settingsKey = NO_KEY
+    @Transient
+    val general = General(stored(Store.GENERAL))
 
-        @JvmField
-        var favoriteKey = KEY_F
+    @Transient
+    val hud = Hud(stored(Store.HUD))
+
+    class General(stored: Stored) {
+        val settingsKey = stored.slot("settingsKey", NO_KEY)
+
+        val favoriteKey = stored.slot("favoriteKey", KEY_F)
 
         private companion object {
             const val KEY_F = 70
@@ -41,18 +34,14 @@ class DsModConfig {
     @Serializable
     data class Position(val x: Float = 0f, val y: Float = 0f, val scale: Float = 1f)
 
-    @Serializable
-    class Hud {
-        val positions = HashMap<String, Position>()
+    class Hud(stored: Stored) {
+        val positions = stored.slot("positions", emptyMap<String, Position>())
 
-        @JvmField
-        var theme = Theme.CHARCOAL
+        val theme = stored.slot("theme", Theme.CHARCOAL)
 
-        @JvmField
-        var editKey = NO_KEY
+        val editKey = stored.slot("editKey", NO_KEY)
 
-        @JvmField
-        var scale = 1f
+        val scale = stored.slot("scale", 1f)
     }
 }
 

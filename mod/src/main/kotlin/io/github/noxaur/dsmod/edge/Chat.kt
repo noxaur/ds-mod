@@ -3,8 +3,9 @@ package io.github.noxaur.dsmod.edge
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.text.Text
 import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.edge.input.CommandLinks
+import io.github.noxaur.dsmod.edge.input.InputApproved
 import net.minecraft.client.Minecraft
-import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.MutableComponent
@@ -13,13 +14,14 @@ import net.minecraft.network.chat.TextColor
 import java.util.Optional
 
 object Chat {
-    private val prefix: Component by lazy {
-        text { brand("[ds-mod]") }.toComponent().withStyle {
-            // @keep Fabric runs a clicked client command locally, so nothing reaches the server.
-            it.withClickEvent(ClickEvent.RunCommand("/dsmod"))
-                .withHoverEvent(HoverEvent.ShowText(text { action("Click to open settings.") }.toComponent()))
-        }.append(" ")
-    }
+    private val prefix: Component by lazy(::prefixed)
+
+    @InputApproved(by = "noxaur", reaches = ["CommandLinks.runs"])
+    private fun prefixed(): Component = text { brand("[ds-mod]") }.toComponent().withStyle {
+        // @keep Fabric runs a clicked client command locally, so nothing reaches the server.
+        it.withClickEvent(CommandLinks.runs("/dsmod"))
+            .withHoverEvent(HoverEvent.ShowText(text { action("Click to open settings.") }.toComponent()))
+    }.append(" ")
 
     fun send(text: Text) {
         Minecraft.getInstance().gui.hud.chat.addClientSystemMessage(Component.empty().append(prefix).append(text.toComponent()))

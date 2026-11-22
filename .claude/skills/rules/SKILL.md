@@ -29,7 +29,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | `docs/internals/` names no code, and holds one short paragraph per decision | `check:docs` in `mise.toml` |
 | `core` names nothing from Minecraft, Fabric, Mojang or `edge`, even by full name | `PurityTest` reads the compiled classes |
 | The edge is handed what it uses by `DsModClient`, the one place that wires the mod, and only the mixins and the entrypoints reach `Hooks` | `OwnersTest` reads the compiled classes |
-| Each place the release build sends or refuses input for the player is approved | `InputSitesTest` against `mod/input-sites.txt`, and the agent asks the user before it keeps a site that sends, refuses or triggers anything new |
+| Each place the release build sends or refuses input for the player is approved | Only `edge/input` and mixins touch input, and `InputSitesTest` checks the `@InputApproved` on each gate and caller. The agent asks the user before it keeps a site that sends, refuses or triggers anything new |
 | The release build runs only on dragsim.co, unless the player turns DragSim Only off | `Game` gates every feature in `core`, `SwitchesTest` makes the edge ask `Feature.runs`, and `GameTest`, `DragSimTest` and the game test `DragSimOnlyTest` |
 | A feature fires only in the area it names | `Feature` takes an `Area` and `Game` gates on it. `FeatureReplayTest` replays each fixture outside the area |
 | A feature reads no area for itself, from the tab list or the sidebar, and sits in its area's folder | `InfoRows` hands a feature no place and refuses an area row, `area-by-declaration` in `mod/detekt.yml` for a place named in a feature, and `RulesTest` |
@@ -67,7 +67,8 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | Every saved setting, a feature's saved key included, has exactly one row in the settings tree, or is listed as stored only with a reason, and every row has its own id, a Title Case name of three words or fewer and a one-sentence description | `SettingsTreeTest` |
 | The kit gallery shows every kind of settings row and every look a pick draws | `KitRowsTest` |
 | A setting's description in `SettingsTree` is short enough that the settings screen shows it at full size | `RulesTest` |
-| A saved setting keeps its key in the config file, so a player who updates keeps what they set | `ConfigFileTest` loads a file 0.1.0 wrote and checks every value |
+| A saved setting keeps its key in the config file, so a player who updates keeps what they set | `ConfigFileTest` loads a file 0.1.0 wrote and checks every value, and loads a file main wrote with every row changed and saves it again unchanged |
+| Every setting is saved in a slot of a store, under a key written where it is declared | A row takes only a `Bind`, which a `Slot` makes, and `SettingsTreeTest` refuses a field of `DsModConfig` besides favorites |
 | A feature's saved state is immutable and has a default for every field, so a change is written and an older save loads | `SavedStateTest` walks every feature's `state` |
 | A feature's handler and readout average under 20µs | `FeatureReplayTest` |
 | A capture type has one producer | `CaptureWriter` rejects a raw record with an event's type |

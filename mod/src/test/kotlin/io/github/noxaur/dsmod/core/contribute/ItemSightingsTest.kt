@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.core.contribute
 
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.harness.text
+import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.Skulls
 import kotlinx.serialization.json.Json
@@ -109,6 +110,9 @@ class ItemSightingsTest {
         val long = ItemSightings { emptySet() }
         long.see(item(data = """{"item_data":{"item_id":"${"x".repeat(129)}"}}"""))
         long.see(item().copy(skin = "x".repeat(4097)))
+        long.see(item(lore = listOf(text("x".repeat(1025)))))
+        long.see(item(lore = listOf(text(*Array(65) { ServerSpan("x") }))))
+        long.see(item(lore = List(80) { text("x".repeat(250) + it) }))
         long.see(item(lore = List(120) { text("line $it") }))
         assertEquals(80, long.batch.take().single().lore.size)
     }

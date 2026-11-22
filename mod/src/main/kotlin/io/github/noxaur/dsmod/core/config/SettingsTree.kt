@@ -56,6 +56,7 @@ import io.github.noxaur.dsmod.core.feature.slayer.SlayerTracker
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Look
+import io.github.noxaur.dsmod.core.ui.Theme
 
 class SettingGroup(val name: String?, val rows: List<Setting>, val switch: Switch? = null)
 
@@ -158,8 +159,8 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                         feature(DragSimOnly(c))
                     }
                     group("Settings") {
-                        keys(g::settingsKey, "Settings Key", "Pick a key that opens these settings, as /dsmod does.")
-                        keys(g::favoriteKey, "Favorite Key", "Pick a key that stars the setting under your mouse.", clicks = false)
+                        keys(g.settingsKey.bind, "Settings Key", "Pick a key that opens these settings, as /dsmod does.")
+                        keys(g.favoriteKey.bind, "Favorite Key", "Pick a key that stars the setting under your mouse.", clicks = false)
                     }
                     if (mac) group("Mouse") {
                         feature(ctrlClick)
@@ -185,21 +186,17 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                 section("Interface", Role.MUTED) {
                     val hud = c.hud
                     group("Theme") {
-                        pick(hud::theme, "Theme", "Pick the colors of ds-mod's screens and controls.") { Look.Swatch(it) }
+                        pick(hud.theme.bind, "Theme", "Pick the colors of ds-mod's screens and controls.", Theme.entries) { Look.Swatch(it) }
                     }
                     group("HUD") {
-                        number(hud::scale, "Scale", "Make every HUD block bigger or smaller.", 0.5f..3f, step = 0.25f, unit = "x", id = "hudScale")
+                        number(hud.scale.bind, "Scale", "Make every HUD block bigger or smaller.", 0.5f..3f, step = 0.25f, unit = "x", id = "hudScale")
                         feature(HudBackground(c))
-                        val positions = Bind("Hud.positions", { HashMap(hud.positions) }, {
-                            hud.positions.clear()
-                            hud.positions.putAll(it)
-                        })
-                        panel(positions, "Layout", "Drag a block to move it, and scroll over it to resize it.", Canvas.HUD_LAYOUT, id = "hudLayout") {
+                        panel(hud.positions.bind, "Layout", "Drag a block to move it, and scroll over it to resize it.", Canvas.HUD_LAYOUT, id = "hudLayout") {
                             if (it.isEmpty()) "Stacked" else if (it.size == 1) "1 block moved" else "${it.size} blocks moved"
                         }
                         action(Opens.HUD_EDITOR, "Move HUD", "Move your HUD over the game, with the world behind it.", button = "Move", id = "moveHud")
                         feature(ChatHudEditor(c))
-                        keys(hud::editKey, "HUD Editor Key", "Pick a key that opens the HUD editor, or none.", id = "hudEditKey")
+                        keys(hud.editKey.bind, "HUD Editor Key", "Pick a key that opens the HUD editor, or none.", id = "hudEditKey")
                         feature(HideInF3(c))
                     }
                     group(EquipmentDisplay(c))

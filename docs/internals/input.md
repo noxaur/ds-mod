@@ -30,9 +30,9 @@ The client moves the item in its own inventory as it sends a click, so a click d
 
 An item lock is the id the server gives every item that does not stack, so two swords of one kind are told apart.
 
-## Every place the mod acts for the player is approved by the user
+## Input goes through one approved layer, and each approval sits on its place
 
-Whether the mod may send input for the player, or refuse the player's own, is the user's decision. So a test reads the compiled release classes and fails on any place that acts that the approved list does not hold as it is now. A lint over the source was rejected, because it caught only the names its author thought of, and an exemption comment let whoever wrote the line approve it. The agent asks the user before it keeps a place that does anything new.
+Only one small layer touches the player's input, approved once by a hash of its code, so a server rule such as the click cap changes only with a new approval. A mixin is hashed too. Code elsewhere is approved by the layer methods it reaches, so an edit keeps its approval. A list beside the code that hashed whole classes was rejected, because most changes to it were refactors that approved nothing new. The agent asks the user before it keeps a place that does anything new.
 
 ## Forge Craft sends one click per key press
 
@@ -40,7 +40,7 @@ Forge Craft repeats a forge craft from the keyboard, and each press sends one cl
 
 ## Auto Click presses the game's own key once a tick
 
-dragsim.co allows auto clicking while the player walks, the user confirmed. Each click is the press the mouse makes on the attack or use key, so the game gives it every check a real click gets. The user asked that a button never pass 9.9 a second, so while a part of Auto Click is on, the player's own clicks of its button share its budget and one past it is dropped. Clicks go out on ticks but the budget refills by the clock, since after a freeze the game runs the missed ticks at once. Calling attack or use directly was rejected, since it skips those checks.
+dragsim.co allows auto clicking while the player walks, the user confirmed. Each click is the press the mouse makes on the attack or use key, so the game gives it every check a real click gets. A button never passes 9.9 a second, and the player's own clicks count but are never dropped, only the mod's. Clicks go out on ticks but the budget refills by the clock, since after a freeze the game runs the missed ticks at once. Calling attack or use directly was rejected, since it skips those checks.
 
 ## Ctrl Click undoes the game's right click on macOS at the press alone
 

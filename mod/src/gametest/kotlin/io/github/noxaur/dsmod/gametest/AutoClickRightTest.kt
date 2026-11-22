@@ -29,11 +29,12 @@ class AutoClickRightTest : FabricClientGameTest {
                 right.key.value = key
                 heldUses(walk = true) { "With Auto Click off the held key used $it times" }
                 context.ownClicks(1).let { (_, uses) -> check(uses == 20) { "With Auto Click off ClickCapMixin let $uses of 20 right clicks through" } }
+                context.waitTicks(30)
 
                 auto.feature.enabled = true
                 context.autoClicks(walk = true, key = key).let { (attacks, uses) -> check(attacks == 0 && uses in 9..11) { "AutoClicks used $uses and attacked $attacks times in a second of walking with the key held" } }
                 heldUses(walk = false) { "AutoClicks used $it times standing still" }
-                context.ownClicks(1).let { (_, uses) -> check(uses in 9..11) { "ClickCapMixin let $uses of 20 right clicks in a second through" } }
+                context.ownClicks(1).let { (_, uses) -> check(uses == 20) { "Auto Click dropped the player's own right clicks: $uses of 20 went through" } }
 
                 right.switch.value = false
                 heldUses(walk = true) { "With Right Click off the held key used $it times" }

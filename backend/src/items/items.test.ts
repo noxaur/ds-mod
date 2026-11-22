@@ -1,7 +1,7 @@
 import { Schema } from "effect";
 import { expect, test } from "vite-plus/test";
 
-import { sighting, testApp } from "../../test/harness.ts";
+import { sighting, testApp, unlimited } from "../../test/harness.ts";
 import { ItemAppearances } from "./model.ts";
 import { MAX_PLAYER_ITEM_ROWS, MAX_SAMPLES } from "./items.ts";
 import { itemStore } from "../../routes/_store.ts";
@@ -11,7 +11,7 @@ const texture = (url: string) => btoa(JSON.stringify({ textures: { SKIN: { url }
 const mojang = texture("http://textures.minecraft.net/texture/abc123");
 
 const backend = () => {
-  const { call, run } = testApp();
+  const { call, run } = testApp({ limiter: unlimited });
   const send = (who: string, sightings: unknown[]) =>
     call(who, "POST", "/v1/contrib/items", { modVersion: "1.0.0", items: sightings });
   const admin = (query = "") => call("agent", "GET", `/v1/admin/items${query}`);

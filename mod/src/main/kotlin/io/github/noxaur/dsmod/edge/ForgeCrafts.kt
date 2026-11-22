@@ -5,12 +5,14 @@ import io.github.noxaur.dsmod.core.feature.inventory.ForgeCraft
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.edge.input.ContainerClicks
+import io.github.noxaur.dsmod.edge.input.InputApproved
+import io.github.noxaur.dsmod.edge.input.Refusals
 import io.github.noxaur.dsmod.edge.ui.Kit
 import io.github.noxaur.dsmod.edge.ui.KitKeysButton
 import io.github.noxaur.dsmod.edge.ui.fit
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
-import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
@@ -48,6 +50,7 @@ object ForgeCrafts {
     private var clickedAt = 0L
     private val swallowed = HashSet<Int>()
 
+    @InputApproved(by = "noxaur", reaches = ["Refusals.allowKeyPress", "Refusals.allowMouseClick", "Refusals.allowMouseRelease"])
     fun register() {
         ScreenHooks.onEveryLayout<ContainerScreen> { screen, _ ->
             val client = Minecraft.getInstance()
@@ -61,13 +64,13 @@ object ForgeCrafts {
             }
             ScreenEvents.beforeExtract(screen).register { _, _, _, _, _ -> panel.place() }
             ScreenEvents.afterBackground(screen).register { _, graphics, mouseX, mouseY, _ -> if (panel.shown) panel.draw(graphics, mouseX, mouseY) }
-            ScreenKeyboardEvents.allowKeyPress(screen).register { _, event ->
+            Refusals.allowKeyPress(screen).register { _, event ->
                 !panel.shown || !key(client, screen, panel, event, Keys.action == GLFW.GLFW_PRESS)
             }
             ScreenKeyboardEvents.afterKeyRelease(screen).register { _, event ->
                 panel.keys.release(event.key())
             }
-            ScreenMouseEvents.allowMouseClick(screen).register { _, event ->
+            Refusals.allowMouseClick(screen).register { _, event ->
                 if (!panel.shown) return@register true
                 val button = event.button()
                 val background = panel.background(event.x(), event.y())
@@ -79,7 +82,7 @@ object ForgeCrafts {
                 if (!allowed) swallowed += button
                 allowed
             }
-            ScreenMouseEvents.allowMouseRelease(screen).register { _, event ->
+            Refusals.allowMouseRelease(screen).register { _, event ->
                 panel.keys.release(event.button())
                 !swallowed.remove(event.button())
             }
@@ -97,6 +100,7 @@ object ForgeCrafts {
         }
     }
 
+    @InputApproved(by = "noxaur", reaches = ["ContainerClicks.click"])
     private fun press(client: Minecraft, screen: ContainerScreen) {
         if (!on) return
         val step = feature.next() ?: return
@@ -104,11 +108,10 @@ object ForgeCrafts {
         if (step.blocked || step.menu != menu.containerId || step.slot !in menu.slots.indices) return
         val now = Util.getMillis()
         if (menu === clicked && now - clickedAt < WAIT_MILLIS) return
-        val mode = client.gameMode ?: return
-        val player = client.player ?: return
+        if (client.gameMode == null || client.player == null) return
         clicked = menu
         clickedAt = now
-        mode.handleContainerInput(menu.containerId, step.slot, 0, ContainerInput.PICKUP, player)
+        ContainerClicks.click(menu, step.slot, 0, ContainerInput.PICKUP)
     }
 
     private fun ink(rgb: Int, light: Boolean, role: Role? = null): Int {

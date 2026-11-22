@@ -2,8 +2,9 @@ package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.general.PerformanceStats
 import io.github.noxaur.dsmod.core.feature.general.Stat
+import io.github.noxaur.dsmod.edge.input.InputApproved
+import io.github.noxaur.dsmod.edge.input.PingRequests
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.minecraft.network.protocol.ping.ServerboundPingRequestPacket
 import net.minecraft.util.Util
 
 /** @keep dragsim.co writes 0 for every player's ping in the tab list, so once a second this sends the request the F3 network
@@ -18,6 +19,7 @@ object Pings {
         this.stats = stats
     }
 
+    @InputApproved(by = "noxaur", reaches = ["PingRequests.send"])
     fun register() {
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             val connection = client.connection ?: return@register
@@ -25,7 +27,7 @@ object Pings {
             if (now - sent < EVERY_MILLIS || client.debugOverlay.showNetworkCharts()) return@register
             if (!stats.feature.runs || Stat.PING !in stats.values.value || !Hud.visible) return@register
             sent = now
-            connection.send(ServerboundPingRequestPacket(now))
+            PingRequests.send(connection, now)
         }
     }
 }
