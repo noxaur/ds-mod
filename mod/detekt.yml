@@ -133,6 +133,8 @@ dsmod:
         (data["extra"] as?
             JsonObject)
       - 'value as? JsonObject?'
+      - 'value as? JsonObject ?'
+      - 'value as? kotlinx.serialization.json.JsonObject?'
       - 'item.data["item_data"]?.jsonObject?.get("rarity")'
     counterExamples:
       - 'kept["item_data"] = JsonObject(it)'
@@ -374,6 +376,7 @@ dsmod:
             private val marks = SlotMarks(feature, ::mark)
             init {
                 feature.on<ContainerOpened> { _, _ -> this.marks.invalidate() }
+                feature.on<SlotChanged> { _, _ -> this .marks.invalidate() }
             }
         }
     counterExamples:
@@ -483,6 +486,8 @@ style:
         reason: *number
       - value: 'java.text.NumberFormat.format'
         reason: *number
+      - value: 'java.util.Formatter.format'
+        reason: *number
     examples:
       - |
         import java.util.Locale
@@ -493,6 +498,9 @@ style:
       - |
         import java.text.DecimalFormat
         fun example(n: Double) = DecimalFormat("0.0").format(n)
+      - |
+        import java.util.Formatter
+        fun example(n: Double) = Formatter().format("%.1f", n)
 
   ForbiddenMethodCall/count-by-helper:
     active: true

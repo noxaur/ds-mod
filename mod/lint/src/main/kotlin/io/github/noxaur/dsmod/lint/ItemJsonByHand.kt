@@ -9,15 +9,23 @@ import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtArrayAccessExpression
 import org.jetbrains.kotlin.psi.KtBinaryExpressionWithTypeRHS
 import org.jetbrains.kotlin.psi.KtDotQualifiedExpression
+import org.jetbrains.kotlin.psi.KtNullableType
+import org.jetbrains.kotlin.psi.KtUserType
 
 class ItemJsonByHand(config: Config) : Rule(config, "A safe cast to `JsonObject`, or an item's `data` read by its key, which `Item` already reads.") {
     private val reason: String by config("")
 
     override fun visitBinaryWithTypeRHSExpression(expression: KtBinaryExpressionWithTypeRHS) {
         super.visitBinaryWithTypeRHSExpression(expression)
-        if (expression.operationReference.getReferencedNameElementType() == KtTokens.AS_SAFE && expression.right?.text?.removeSuffix("?") == "JsonObject") {
+        if (expression.operationReference.getReferencedNameElementType() == KtTokens.AS_SAFE && castsToJsonObject(expression)) {
             report(Finding(Entity.from(expression), reason))
         }
+    }
+
+    private fun castsToJsonObject(expression: KtBinaryExpressionWithTypeRHS): Boolean {
+        val type = expression.right?.typeElement
+        val inner = (type as? KtNullableType)?.innerType ?: type
+        return (inner as? KtUserType)?.referencedName == "JsonObject"
     }
 
     override fun visitArrayAccessExpression(expression: KtArrayAccessExpression) {

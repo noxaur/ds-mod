@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtDotQualifiedExpression
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtProperty
+import org.jetbrains.kotlin.psi.KtThisExpression
 import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
 
 class PartByItself(config: Config) :
@@ -36,7 +37,9 @@ class PartByItself(config: Config) :
         super.visitCallExpression(expression)
         if (owned.isEmpty()) return
         expression.lambdaBodies().flatMap { it.collectDescendantsOfType<KtDotQualifiedExpression>() }.forEach { access ->
-            val part = owned[access.receiverExpression.text.removePrefix("this.")] ?: return@forEach
+            val receiver = access.receiverExpression
+            val name = if (receiver is KtDotQualifiedExpression && receiver.receiverExpression is KtThisExpression) receiver.selectorExpression?.text else receiver.text
+            val part = owned[name] ?: return@forEach
             val call = access.selectorExpression as? KtCallExpression ?: return@forEach
             if (expression.handles(part.events) && part.forbidden(call)) report(Finding(Entity.from(call), reason))
         }
