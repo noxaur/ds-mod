@@ -171,12 +171,9 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
     private var contentHeight = 0
     private var scrolling = false
 
-    var hovered: DrawnItem? = null
-        private set
-
     private class Tab(val kind: String, val name: String, val icon: ItemStack, val pages: List<ContainerSummary>)
 
-    private class Shown(val item: DrawnItem, val stack: ItemStack, val mark: Role?)
+    private class Shown(val stack: ItemStack, val mark: Role?)
 
     private class Notice(val message: Component, val icon: Icon?, val color: Int, val wholeScreen: Boolean, val failure: Failure? = null)
 
@@ -296,7 +293,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
 
     private fun shown(item: DrawnItem): Shown {
         val rarity = item.rarity?.let { name -> Role.RARITIES.firstOrNull { it.name == name } }
-        return Shown(item, item.toStack(), rarity)
+        return Shown(item.toStack(), rarity)
     }
 
     private fun select(kind: String) {
@@ -379,7 +376,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         this.mouseX = mouseX.toDouble()
         this.mouseY = mouseY.toDouble()
         val now = System.currentTimeMillis()
-        hovered = null
         var tooltip: List<Component>? = null
         var item: ItemStack? = null
         Kit.panel(graphics, panelX, panelY, PANEL_WIDTH, PANEL_HEIGHT)
@@ -419,10 +415,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
             }
             graphics.disableScissor()
         } else {
-            contentHeight = container(graphics, profile, mx, vy, hover) { drawn, stack ->
-                hovered = drawn
-                item = stack
-            }
+            contentHeight = container(graphics, profile, mx, vy, hover) { item = it }
         }
         scroll = scroll.coerceIn(0, maxScroll())
         if (maxScroll() > 0) {
@@ -808,7 +801,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         return lines
     }
 
-    private fun container(graphics: GuiGraphicsExtractor, profile: Profile?, mouseX: Int, mouseY: Int, hover: (List<Component>) -> Unit, item: (DrawnItem, ItemStack) -> Unit): Int {
+    private fun container(graphics: GuiGraphicsExtractor, profile: Profile?, mouseX: Int, mouseY: Int, hover: (List<Component>) -> Unit, item: (ItemStack) -> Unit): Int {
         val summary = shownSummary() ?: return 0
         val texts = texts(profile)
         val pets = summary.id == PETS
@@ -899,7 +892,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         }
     }
 
-    private fun slot(graphics: GuiGraphicsExtractor, shown: Shown?, index: Int, x: Int, y: Int, mouseX: Int, mouseY: Int, hover: (DrawnItem, ItemStack) -> Unit) {
+    private fun slot(graphics: GuiGraphicsExtractor, shown: Shown?, index: Int, x: Int, y: Int, mouseX: Int, mouseY: Int, hover: (ItemStack) -> Unit) {
         Kit.slot(graphics, x, y)
         shown ?: return
         val mark = shown.mark?.takeIf { Slots.marks(it) }
@@ -908,12 +901,10 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
         graphics.itemDecorations(font, shown.stack, x + 1, y + 1)
         val over = inside(mouseX, mouseY, x, y, Kit.SLOT_SIZE, Kit.SLOT_SIZE)
         if (over) Kit.slotHover(graphics, x + 1, y + 1)
-        if (over) hover(shown.item, shown.stack)
+        if (over) hover(shown.stack)
     }
 
-    private fun maxScroll() = (contentHeight - viewHeight).coerceAtLeast(0)
-
-    val overflows get() = maxScroll() > 0
+    internal fun maxScroll() = (contentHeight - viewHeight).coerceAtLeast(0)
 
     private fun thumbHeight() = ((viewHeight - 2) * viewHeight / contentHeight.coerceAtLeast(viewHeight)).coerceAtLeast(8)
 

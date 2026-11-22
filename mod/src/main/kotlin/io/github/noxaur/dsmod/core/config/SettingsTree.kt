@@ -110,8 +110,6 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
     inline fun <reified F : HasFeature> feature(): F = feature(F::class.java)
 
     companion object {
-        val STORED = emptyMap<String, String>()
-
         val MAC = "mac" in System.getProperty("os.name").lowercase()
 
         private val fresh by lazy { declare(DsModConfig(), mac = true) }

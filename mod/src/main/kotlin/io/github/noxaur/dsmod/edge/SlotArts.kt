@@ -18,13 +18,13 @@ enum class Surface { CONTAINER, HOTBAR }
 object SlotArts {
     private class Baked(val texture: DynamicTexture, val atlas: Atlas)
 
-    private class Ready(val atlas: Atlas, val style: SlotStyle, val dark: Boolean)
+    internal class Ready(val atlas: Atlas, val style: SlotStyle, val dark: Boolean)
 
     private val width = Role.entries.size * SlotArt.SIZE
     private val height = SlotArt.VARIANTS * SlotArt.SIZE
     private val baked = HashMap<Surface, Baked>()
-    private val ready = HashMap<Surface, Ready>()
-    private val wantedStyle = arrayOfNulls<SlotStyle>(Surface.entries.size)
+    internal val ready = HashMap<Surface, Ready>()
+    internal val wantedStyle = arrayOfNulls<SlotStyle>(Surface.entries.size)
     private val wantedDark = BooleanArray(Surface.entries.size)
     private val chest = Identifier.withDefaultNamespace("textures/gui/container/generic_54.png")
     private val log = LoggerFactory.getLogger("dsmod")
@@ -62,11 +62,6 @@ object SlotArts {
             checkSlots(client)
             tick()
         }
-    }
-
-    internal fun reset() {
-        wantedStyle.fill(null)
-        ready.clear()
     }
 
     private fun checkSlots(client: Minecraft) {

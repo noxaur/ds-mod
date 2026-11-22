@@ -20,7 +20,10 @@ class SlotArtsTest {
     }
 
     @BeforeEach
-    fun clear() = SlotArts.reset()
+    fun clear() {
+        SlotArts.wantedStyle.fill(null)
+        SlotArts.ready.clear()
+    }
 
     @Test
     fun `asking for an atlas does not create or upload it`() {

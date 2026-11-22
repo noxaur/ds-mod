@@ -78,6 +78,7 @@ sourceSets.named("gametest") {
     compileClasspath += debug.output
     runtimeClasspath += debug.output
 }
+kotlin.target.compilations.named("gametest") { associateWith(kotlin.target.compilations.getByName("main")) }
 tasks.named<ProcessResources>("processGametestResources") {
     from("src/test/resources") { include("profiles/**") }
 }
@@ -242,6 +243,7 @@ tasks.register<JavaExec>("cutFixture") {
 
 tasks.test {
     useJUnitPlatform()
+    maxParallelForks = 2
     timeout = Duration.ofSeconds(30)
     inputs.dir("src")
     inputs.files(sourceSets["gametest"].output.classesDirs)

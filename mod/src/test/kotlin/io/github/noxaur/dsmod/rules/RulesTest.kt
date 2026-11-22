@@ -1,12 +1,22 @@
 package io.github.noxaur.dsmod.rules
 
-import io.github.noxaur.dsmod.core.config.Setting
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.game.Area
 import java.nio.file.Path
 import kotlin.io.path.readText
 import kotlin.test.Test
 import kotlin.test.assertEquals
+
+private const val DESCRIPTION_MAX = 67
+
+private val FOLDERS = mapOf(
+    "village" to Area.VILLAGE,
+    "crypts" to Area.CRYPTS,
+    "end" to Area.END,
+    "sepulture" to Area.VOID_SEPULTURE,
+    "dungeonhub" to Area.DUNGEON_HUB,
+    "dungeon" to Area.CATACOMBS,
+)
 
 class RulesTest {
     @Test
@@ -25,15 +35,15 @@ class RulesTest {
 
     @Test
     fun `every setting's description fits the settings screen at full size`() {
-        val long = SettingsTree().sections.flatMap { it.walk() }.filter { it.description.length > Setting.DESCRIPTION_MAX }.map { "${it.name}: ${it.description}" }
-        assertEquals(emptyList(), long, "Cut each description in SettingsTree to one short sentence of at most ${Setting.DESCRIPTION_MAX} characters. The player docs hold the rest: $long\n")
+        val long = SettingsTree().sections.flatMap { it.walk() }.filter { it.description.length > DESCRIPTION_MAX }.map { "${it.name}: ${it.description}" }
+        assertEquals(emptyList(), long, "Cut each description in SettingsTree to one short sentence of at most $DESCRIPTION_MAX characters. The player docs hold the rest: $long\n")
     }
 
     @Test
     fun `a feature in an area's folder is locked to that area`() {
         val wrong = SettingsTree().owners.filter { owner ->
             val folder = owner.javaClass.packageName.substringAfterLast('.')
-            owner.feature.area != (Area.entries.firstOrNull { it.folder == folder } ?: Area.ANYWHERE)
+            owner.feature.area != (FOLDERS[folder] ?: Area.ANYWHERE)
         }.map { "${it.javaClass.simpleName} is ${it.feature.area}" }
         assertEquals(
             emptyList(),

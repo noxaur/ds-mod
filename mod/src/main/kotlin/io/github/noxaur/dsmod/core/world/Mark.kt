@@ -15,12 +15,6 @@ data class EntityBeam(val entity: Int, val label: String, override val role: Rol
 
 data class Tracer(val entity: Int, override val role: Role = Role.VALUE) : Mark
 
-data class BlockBox(val x: Int, val y: Int, val z: Int, override val role: Role = Role.VALUE) : Mark
-
-data class Path(val points: List<Point>, override val role: Role = Role.VALUE) : Mark
-
-data class Ring(val center: Point, val radius: Float, override val role: Role = Role.VALUE) : Mark
-
 enum class BoxStyle(private val label: String) {
     OUTLINE("Outline"),
     FILLED("Filled"),

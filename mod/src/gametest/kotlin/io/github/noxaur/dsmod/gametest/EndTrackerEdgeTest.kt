@@ -5,7 +5,8 @@ import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.text.Role
-import io.github.noxaur.dsmod.core.world.BlockBox
+import io.github.noxaur.dsmod.core.world.Point
+import io.github.noxaur.dsmod.core.world.Waypoint
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Packets
 import io.github.noxaur.dsmod.edge.World
@@ -21,7 +22,7 @@ class EndTrackerEdgeTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
             context.runOnClient<Nothing> {
-                World.show("stale", listOf(BlockBox(1, 64, 1, Role.GOOD)))
+                World.show("stale", listOf(Waypoint(Point(1.0, 64.0, 1.0), "Stale", Role.GOOD)))
                 check(World.marksQueued() == 1) { "The mark was not queued" }
             }
             world.server.runCommand("execute in minecraft:the_end run tp @a 0 80 0")
