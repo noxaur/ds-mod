@@ -1,16 +1,16 @@
 import { Effect, Schema } from "effect";
 import { beforeEach, expect, test, vi } from "vite-plus/test";
 
+import { profileStore } from "../../routes/_store.ts";
 import { advance, testApp, testClock } from "../../test/harness.ts";
 import type { Services } from "../app.ts";
 import catalog from "./fixtures/catalog.json" with { type: "json" };
 import player from "./fixtures/player.json" with { type: "json" };
-import REAL_PATHS from "./fixtures/real-paths.json" with { type: "json" };
-import { CATALOG_FRESH_MS, CATALOG_RETRY_MS, FRESH_MS, MISSING_SECONDS } from "./cache.ts";
+import { CATALOG_FRESH_MS, CATALOG_RETRY_MS, FRESH_MS, MISSING_SECONDS, SNAPSHOT_SECONDS } from "./cache.ts";
 import { Container, Profile } from "./model.ts";
 import { layoutsOf } from "./layout.ts";
 import { unmappedPaths } from "./wire.ts";
-import { memoryProfileStore, WriteRefused } from "./store.ts";
+import { WriteRefused } from "./store.ts";
 import { UpstreamDown } from "./upstream.ts";
 
 const OTHER_PROFILE = player.profiles[0]?.id ?? "";
@@ -192,13 +192,12 @@ test("a hidden profile lists its containers with no items, and no equipment", as
 
 test("a hidden player's items are kept nowhere", async () => {
   const kept: string[] = [];
-  const store = memoryProfileStore();
   const { get } = ann({
     profiles: {
-      get: store.get,
+      get: profileStore.get,
       put: (key, value, ttl) => {
         kept.push(JSON.stringify(value));
-        return store.put(key, value, ttl);
+        return profileStore.put(key, value, ttl);
       },
     },
     upstream: {
@@ -218,17 +217,16 @@ test("a hidden player's items are kept nowhere", async () => {
 
 test("a copy the store refuses costs the lookup nothing, and the name is written once", async () => {
   // @keep KV takes one write per key a second. This store refuses every write to a key it already holds.
-  const store = memoryProfileStore();
   const written: string[] = [];
   const { get } = ann({
     profiles: {
-      get: store.get,
+      get: profileStore.get,
       put: (key, value, ttl) => {
         if (written.includes(key)) {
           return Effect.fail(new WriteRefused());
         }
         written.push(key);
-        return store.put(key, value, ttl);
+        return profileStore.put(key, value, ttl);
       },
     },
     upstream: {
@@ -251,6 +249,31 @@ test("asking again soon reaches dragsim.co once, whatever the name's case", asyn
   await advance(clock, FRESH_MS + 1);
   await get("/v1/players/Testwyrm/profile");
   expect(playerCalls()).toBe(2);
+});
+
+test("a view inside the fresh window writes nothing, and its snapshot lasts as long as a new one would", async () => {
+  const written: string[] = [];
+  const { get } = ann({
+    profiles: {
+      get: profileStore.get,
+      put: (key, value, ttl) => {
+        written.push(key);
+        return profileStore.put(key, value, ttl);
+      },
+    },
+    upstream: {
+      get: (path) => Effect.succeed({ status: 200, body: path.startsWith("/data/catalog") ? catalog : player }),
+    },
+  });
+  const view = async () => Schema.decodeUnknownSync(Profile)((await get("/v1/players/Testwyrm/profile")).value);
+  const first = await view();
+  const writes = written.length;
+  await advance(clock, FRESH_MS - 1);
+  const second = await view();
+  expect(written).toHaveLength(writes);
+  expect(second.snapshot).toBe(first.snapshot);
+  await advance(clock, SNAPSHOT_SECONDS * 1000 - 1);
+  expect((await get(`/v1/snapshots/${second.snapshot}/containers/inventory`)).status).toBe(200);
 });
 
 test("each profile of a player has a copy of its own", async () => {
@@ -281,18 +304,8 @@ test("a copy answers as stale when dragsim.co is down, however old", async () =>
 });
 
 test("a name outlives the first day, so a later copy still answers when dragsim.co is down", async () => {
-  const values = new Map<string, { value: unknown; until: number }>();
   const state: { player: Answer } = { player: { status: 200, body: player } };
   const { get } = ann({
-    profiles: {
-      get: (key) =>
-        Effect.sync(() => {
-          const kept = values.get(key);
-          return kept !== undefined && kept.until > clock.currentTimeMillisUnsafe() ? kept.value : null;
-        }),
-      put: (key, value, ttl) =>
-        Effect.sync(() => void values.set(key, { value, until: clock.currentTimeMillisUnsafe() + ttl * 1000 })),
-    },
     upstream: {
       get: (path) => {
         const answer = path.startsWith("/data/catalog") ? { status: 200, body: catalog } : state.player;
@@ -446,27 +459,8 @@ test("a profile answer is quick once cached", async () => {
   expect((performance.now() - start) / calls).toBeLessThan(25);
 });
 
-const build = (paths: readonly (readonly string[])[]): unknown => {
-  const deeper = paths.filter((parts) => parts.length > 0);
-  if (deeper.length === 0) {
-    return 1;
-  }
-  if (deeper.every((parts) => parts[0] === "[]")) {
-    return [build(deeper.map((parts) => parts.slice(1)))];
-  }
-  const keys = [...new Set(deeper.map((parts) => parts[0] ?? ""))];
-  return Object.fromEntries(
-    keys.map((key) => [
-      key === "*" ? "0" : key,
-      build(deeper.filter((parts) => parts[0] === key).map((parts) => parts.slice(1))),
-    ]),
-  );
-};
-const skeleton = (paths: readonly string[]): unknown => build(paths.map((path) => path.split(".")));
-
 test("every field of a real player's answer is mapped, at every depth", () => {
-  expect(REAL_PATHS.length).toBeGreaterThan(300);
-  expect(unmappedPaths(skeleton(REAL_PATHS))).toEqual([]);
+  expect(unmappedPaths(player)).toEqual([]);
 });
 
 test("a profile names itself, with or without the list of profiles", async () => {

@@ -31,12 +31,6 @@ final class JavaHooksScreen {
     }
 }
 
-final class JavaAsksGroup {
-    boolean run(io.github.noxaur.dsmod.core.feature.inventory.BetterUi ui) {
-        return ui.getFeature().getRuns();
-    }
-}
-
 final class JavaLooksUp {
     Object run() {
         return io.github.noxaur.dsmod.edge.DsModClient.INSTANCE.getGame();

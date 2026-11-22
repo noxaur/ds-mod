@@ -40,44 +40,44 @@ call edge.profile.ProfileScreen.ghost_delegate -> edge.profile.ProfileModel.<ini
     approved by github.com/noxaur 2026-11-16T08:42:00Z
 gate aw/dsmod.accesswidener c5a601581b2a
     opens Minecraft's private code
-gate edge.ArmorSwapGuards 68a3c0c83d2e
+gate edge.ArmorSwapGuards 68a3c0c83d2e  ArmorSwapGuard
     can refuse the player's actions through UseItemCallback.EVENT
-gate edge.AutoClicks 7cde8f879876
+gate edge.AutoClicks fbbe218e5bde  AutoClick
     presses a key through KeyMapping.click
 gate edge.Chat 7c62093eb80b
     builds text that runs a command when the player clicks it
     approved by github.com/noxaur 2026-11-16T01:17:00Z
-gate edge.ChatDrags 2a8fe5198d30
+gate edge.ChatDrags 2a8fe5198d30  ChatHudEditor
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseDrag
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
     can refuse the player's input through ScreenMouseEvents.allowMouseScroll
-gate edge.CopyChats 98e67d15863f
+gate edge.CopyChats 98e67d15863f  CopyChat
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-gate edge.EyeGuards 6fcea64bab3d
+gate edge.EyeGuards 6fcea64bab3d  EyeGuard
     can refuse the player's actions through UseBlockCallback.EVENT
-gate edge.ForgeCrafts 4356186fa6a7
+gate edge.ForgeCrafts 4356186fa6a7  ForgeCraft
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
 gate edge.Hits 0a2b55519d6f
     can refuse the player's actions through AttackEntityCallback.EVENT
-gate edge.Pings cffa2fc1e1c1
+gate edge.Pings cffa2fc1e1c1  PerformanceStats
     builds the packet ServerboundPingRequestPacket
     sends through ClientPacketListener.send
 gate edge.PlayerCommands 7a2042275b07
     sends through ClientPacketListener.sendChat
     sends through ClientPacketListener.sendCommand
-gate edge.SlotGuards 66c12037cfb8
+gate edge.SlotGuards 66c12037cfb8  SlotLock
     acts through MultiPlayerGameMode.handleContainerInput
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
     can refuse the player's input through ScreenMouseEvents.allowMouseRelease
-gate edge.TabBar 07ce61614d3d
+gate edge.TabBar 07ce61614d3d  MenuTabs
     can refuse the player's input through ScreenKeyboardEvents.allowKeyPress
     can refuse the player's input through ScreenMouseEvents.allowMouseClick
 gate edge.Trail d75180319c06
@@ -208,5 +208,5 @@ gate edge.mixin.TooltipMixin draws
 gate edge.profile.ProfileModel b326cc5227a6
     changes the player through AbstractClientPlayer.setId
     changes the player through AbstractClientPlayer.setItemSlot
-gate edge.profile.Profiles 4c53324559a2
+gate edge.profile.Profiles 4c53324559a2  ProfileViewer
     builds text that runs a command when the player clicks it

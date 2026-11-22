@@ -145,7 +145,7 @@ object DsModClient : ClientModInitializer {
         Recorder.bind(game)
         Contribute.bind(game, tree.feature())
         ArmorSwapGuards.bind(tree.feature())
-        AutoClicks.bind(tree.feature(), tree.feature())
+        AutoClicks.bind(tree.feature())
         ChatDrags.bind(readouts, tree.feature())
         CommandKeys.bind(game, tree.feature())
         CopyChats.bind(tree.feature())

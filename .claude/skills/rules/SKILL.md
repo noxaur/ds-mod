@@ -33,13 +33,13 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | The release build runs only on dragsim.co, unless the player turns DragSim Only off | `Game` gates every feature in `core`, `SwitchesTest` makes the edge ask `Feature.runs`, and `GameTest`, `DragSimTest` and the game test `DragSimOnlyTest` |
 | A feature fires only in the area it names | `Feature` takes an `Area` and `Game` gates on it. `FeatureReplayTest` replays each fixture outside the area |
 | A feature reads no area for itself, from the tab list or the sidebar, and sits in its area's folder | `InfoRows` hands a feature no place and refuses an area row, `area-by-declaration` in `mod/detekt.yml` for a place named in a feature, and `RulesTest` |
-| A feature tells the player's own kills through one part | `OwnKills`, and `kills-by-own-kills` in `mod/detekt.yml` for Combat XP read anywhere else |
+| A feature tells the player's own kills through one part | `OwnKills`, which keeps `CombatXp` private |
 | A feature marks slots and reads a container again after a change through one layer | `SlotMarks` and `ContainerReader`, and `container-by-reader` in `mod/detekt.yml` for a handler that only sets a flag |
-| A feature never calls into a part from its own handler of an event the part hears for itself | `Feature.on` runs every handler of a type, so a part subscribes itself, and `part-by-itself` in `mod/detekt.yml` |
-| A feature follows the player's active pet through one part | `CurrentPet`, and `pet-by-current-pet` in `mod/detekt.yml` for a pet read anywhere else |
+| A feature never calls into a part from its own handler of an event the part hears for itself | `Feature.on` runs every handler of a type, so a part subscribes itself and keeps its own handlers private, and `part-by-itself` in `mod/detekt.yml` for `SlotMarks.invalidate` |
+| A feature follows the player's active pet through one part | `CurrentPet`, which keeps the readers of a pet's stand, head and card private, and `pet-by-current-pet` in `mod/detekt.yml` for the sidebar's `Pet:` line |
 | The mod's text and colors come from its text layer | `TextLayerTest` reads the compiled classes, and `text-by-role` in `mod/detekt.yml` for a hex color or a `§` |
 | A feature writes a number, a rate or a time, and reads a number the server wrote, through `core.text` | `number-by-helper`, `rate-by-helper` and `count-by-helper` in `mod/detekt.yml` |
-| A feature reads a chat line by its start, and a line that starts right and fails to parse is counted | `line` in `Feature`, and `chat-by-line` in `mod/detekt.yml` for a chat handler written by hand |
+| A feature reads a chat line by its start, and a line that starts right and fails to parse is counted | `line` in `Feature`, because `Feature.on` takes only a `FeatureEvent` and `SystemMessage` is none |
 | A mod test builds server text, reads a readout and reads a test resource through the harness in `mod/src/test/…/harness/` | `server-text-by-harness`, `readout-by-harness` and `resource-by-harness` in `mod/detekt.yml` |
 | A feature reads a slayer boss line and the Protector's stage through their parsers in `core/game` | `SlayerLine` and `ProtectorStage`, and `slayer-by-line` and `protector-by-stage` in `mod/detekt.yml` |
 | Which slots of an open container are the player's, and where the inventory holds them, is named once | `ContainerState`'s `menuSlots`, `playerSlots` and inventory slots, and `player-slots-by-container` and `player-rows-by-container` in `mod/detekt.yml` |
@@ -58,7 +58,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | A fixture holds no player name from a capture on this machine, and an alias wherever a player's name stands | `FixtureLeakTest`, and `cutFixture` refuses such a fixture while the captures are still there |
 | Every feature shows what its transcript says | `FeatureReplayTest` replays each feature's fixtures |
 | A feature that reads nothing from the server has a game test | `FeatureReplayTest` |
-| A feature inside a group runs only while its group is on, and asks only for itself | `Feature` reads the switch above it in the tree, and `group-by-tree` in `mod/detekt.yml` |
+| A feature inside a group runs only while its group is on, and asks only for itself | `Feature` reads the switch above it in the tree, and a group's class is private to its file, so no code can ask for it |
 | Every feature class is placed in `SettingsTree` | `FeaturesListedTest` reads the compiled classes |
 | Every on/off setting is a feature | `SettingsTree` refuses a switch outside a feature when it is built |
 | Every feature has a section in the player docs | `RulesTest` |
@@ -102,7 +102,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | `vite` is the Vite+ core of `vite-plus`'s version, so Void and Vite+ share one Vite | `vite.test.ts` in `backend/test/` |
 | `backend/src/` imports nothing from Void | `no-restricted-imports` in `backend/vite.config.ts` |
 | Backend code outside `items/` reads dragsim.co's data through `src/upstream/` and the item renderer only through `items/render.ts`, and profiles reaches items only through its model and that entry | `no-restricted-imports` in `backend/vite.config.ts` |
-| The memory stores and `routes/_store.ts` pass one contract, which has a case for every `Store` method | `storeContract` in `backend/test/contract.ts`, keyed by each store's methods so a missing case fails `tsc` |
+| Every method of the stores in `backend/routes/_store.ts` has a case that runs it on the real migrations | `suites` in `backend/test/store.test.ts`, keyed by each store's methods so a missing case fails `tsc` |
 | Backend dependencies are at least 14 days old | `minimumReleaseAge` in `backend/pnpm-workspace.yaml` |
 | The website is type-safe | `tsc` with `strict` and the extra flags in `web/tsconfig.json` |
 | Website code is formatted | `vp fmt --check` in `web/package.json` |

@@ -7,7 +7,6 @@ import com.tngtech.archunit.core.domain.JavaClass
 import com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage
 import com.tngtech.archunit.core.domain.JavaClass.Predicates.resideOutsideOfPackage
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses
-import io.github.noxaur.dsmod.core.feature.inventory.BetterUi
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hooks
 import io.github.noxaur.dsmod.edge.mixin.ContainerScreenAccessor
@@ -28,12 +27,6 @@ private fun screenHooks(classes: DescribedPredicate<JavaClass>) = noClasses().th
         "`ScreenHooks.onEveryLayout<ScreenType> { screen, opened -> .. }` adds to a screen on every layout, because Fabric drops " +
             "a screen's listeners on each one, and `opened` is true only on the first, so state for one menu survives a resize. " +
             "For a container screen, `openedByServer` and `creative` in `ContainerScreens.kt` name which ones",
-    )
-
-private fun groups(classes: DescribedPredicate<JavaClass>) = noClasses().that(classes).should()
-    .dependOnClassesThat().belongToAnyOf(BetterUi::class.java).because(
-        "a feature asks only for itself, as `backButtons.feature.runs`. A feature placed inside a group in " +
-            "`SettingsTree` is on only while its group is",
     )
 
 private fun wiring(classes: DescribedPredicate<JavaClass>) = noClasses().that(classes).should()
@@ -62,7 +55,6 @@ private fun playerCommands(classes: DescribedPredicate<JavaClass>) = noClasses()
 
 private class ReadsPlace { fun run(screen: Any) = (screen as ContainerScreenAccessor).leftPos }
 private class HooksScreen { fun run() = ScreenEvents.AFTER_INIT }
-private class AsksGroup { fun run(ui: BetterUi) = ui.feature.runs }
 private class LooksUp { fun run() = DsModClient.game }
 private class AsksHooks { fun run() = Hooks.fullbright() }
 private class SendsCommand { fun run(connection: ClientPacketListener) = connection.sendCommand("warp hub") }
@@ -80,11 +72,6 @@ class OwnersTest {
     @Test
     fun `the release and debug code adds to a screen through ScreenHooks`() {
         screenHooks(outside("edge/ScreenHooks.kt")).check(modClasses)
-    }
-
-    @Test
-    fun `only SettingsTree names the Better UI group`() {
-        groups(outside("core/config/SettingsTree.kt", "core/feature/inventory/BetterUi.kt")).check(releaseClasses)
     }
 
     @Test
@@ -108,10 +95,6 @@ class OwnersTest {
         assertEquals(
             listOf(HooksScreen::class.java, JavaHooksScreen::class.java),
             flags(::screenHooks, HooksScreen::class.java, JavaHooksScreen::class.java, Plain::class.java),
-        )
-        assertEquals(
-            listOf(AsksGroup::class.java, JavaAsksGroup::class.java),
-            flags(::groups, AsksGroup::class.java, JavaAsksGroup::class.java, Plain::class.java),
         )
         assertEquals(
             listOf(SendsCommand::class.java, RefersSend::class.java, JavaRefersSend::class.java),
