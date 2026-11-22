@@ -18,7 +18,8 @@ import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.WorldChanged
-import io.github.noxaur.dsmod.core.game.ServerText
+import io.github.noxaur.dsmod.harness.chat
+import io.github.noxaur.dsmod.harness.text
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -33,13 +34,11 @@ import kotlin.test.assertTrue
 
 class CutFixtureTest {
     private val dir = createTempDirectory("cut-fixture")
-    private fun text(vararg parts: String) = ServerText(parts.map { ServerSpan(it) })
-
     private val sidebar = captureLine(0, Sidebar(lines = listOf(text("Name: Carol"))))
 
-    private fun say(line: String) = SystemMessage(text(line))
+    private fun say(line: String) = chat(line)
 
-    private fun tab(vararg info: String) = TabList(listOf(text("End Island"), text("[MVP+] Alice [IRON]"), text("Info")) + info.map(::text))
+    private fun tab(vararg info: String) = TabList(listOf(text("End Island"), text("[MVP+] Alice [IRON]"), text("Info")) + info.map { text(it) })
 
     /** Writes a capture with [sidebar] first, then each event at its second. */
     private fun capture(vararg events: Pair<Int, GameEvent>): Path = dir.resolve("capture.jsonl").also { file ->
@@ -86,7 +85,7 @@ class CutFixtureTest {
     fun `a name split across spans becomes one alias and a chat line becomes hello`() {
         val capture = capture(
             1 to tab(),
-            2 to SystemMessage(ServerText(ServerSpan("[MVP+] Al", 0x55FFFF), ServerSpan("ice", 0xFF5555), ServerSpan(": my secret"))),
+            2 to SystemMessage(text(ServerSpan("[MVP+] Al", 0x55FFFF), ServerSpan("ice", 0xFF5555), ServerSpan(": my secret"))),
             3 to say("Bob has obtained a thing"),
             4 to say("Alice: and again"),
         )

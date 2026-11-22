@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.config
 
+import io.github.noxaur.dsmod.harness.resource
 import io.github.noxaur.dsmod.core.camera.KeyMode
 import io.github.noxaur.dsmod.core.camera.Views
 import io.github.noxaur.dsmod.core.container.RarityPreset
@@ -62,7 +63,6 @@ import io.github.noxaur.dsmod.core.world.BoxStyle
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import java.nio.file.Files
-import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.readText
@@ -84,7 +84,7 @@ class ConfigFileTest {
      */
     @Test
     fun `a file the MoulConfig build wrote loads every value`() {
-        Files.copy(Path.of(javaClass.getResource("/config/moulconfig.json")!!.toURI()), path)
+        path.writeText(resource("config/moulconfig.json"))
         val c = ConfigFile(path).load()
         val tree = SettingsTree(c)
         assertEquals(listOf("general.fullbright", "loot.lootAlerts", "hud.scale", "end.editBeam", "general.resetAnimations"), c.favorites)

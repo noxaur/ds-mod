@@ -1,8 +1,6 @@
 package io.github.noxaur.dsmod.core.feature.general
 
-import io.github.noxaur.dsmod.core.config.SettingsTree
-import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.game.GameEvent
+import io.github.noxaur.dsmod.harness.Harness
 import io.github.noxaur.dsmod.core.game.PingMeasured
 import io.github.noxaur.dsmod.core.game.ServerTime
 import io.github.noxaur.dsmod.core.game.WorldChanged
@@ -13,28 +11,16 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 /** What the replay of a local server cannot show: a lagging dragsim.co's colors, a clock that goes back, and the settings. */
-class PerformanceStatsTest {
-    private val feature = SettingsTree().feature<PerformanceStats>().also { it.feature.enabled = true }
-    private val game = Game(listOf(feature.feature))
-    private var time = 1_000_000L
+class PerformanceStatsTest : Harness(alone = PerformanceStats::class) {
+    private val feature = tree.feature<PerformanceStats>().also { it.feature.enabled = true }
 
-    private fun post(vararg events: GameEvent) {
-        for (event in events) game.post(time, event)
-        game.tick(time)
-    }
+    private fun styled(): List<Text> = hud()?.rows?.map { it.text }.orEmpty()
 
-    private fun at(millis: Long) {
-        time += millis
-        game.tick(time)
-    }
-
-    private fun rows(): List<Text> = game.readouts.single().hud?.rows?.map { it.text }.orEmpty()
-
-    private fun shown() = rows().joinToString(" / ") { it.plain }
+    private fun shown() = styled().joinToString(" / ") { it.plain }
 
     /** The role of the value after [label], read from its color. */
     private fun role(label: String): Role {
-        val spans = rows().single().spans
+        val spans = styled().single().spans
         val value = spans[spans.indexOfFirst { it.text.trim() == "$label:" } + 1]
         return Role.entries.first { it.rgb == value.rgb }
     }
@@ -80,9 +66,9 @@ class PerformanceStatsTest {
     fun `a server that stops sending its clock falls, and catching up never shows more than 20`() {
         feature.values.value = listOf(Stat.TPS)
         clock(4, 20)
-        at(2_000)
+        pass(2_000)
         assertEquals("TPS: 20.0", shown())
-        at(2_000)
+        pass(2_000)
         assertEquals("TPS: 10.0", shown())
         post(ServerTime(200))
         assertEquals("TPS: 20.0", shown())
@@ -106,14 +92,14 @@ class PerformanceStatsTest {
 
     @Test
     fun `nothing shows until there is something to show, and no values means no block`() {
-        at(0)
+        pass(0)
         assertEquals("FPS: -   Ping: -   TPS: -", shown())
         feature.values.value = listOf(Stat.TPS, Stat.FPS)
         feature.layout.value = StatsLayout.COLUMN
-        at(1_000)
+        pass(1_000)
         assertEquals("TPS: - / FPS: -", shown())
         feature.values.value = listOf()
-        at(1_000)
-        assertNull(game.readouts.single().hud)
+        pass(1_000)
+        assertNull(hud())
     }
 }

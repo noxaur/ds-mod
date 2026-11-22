@@ -20,13 +20,16 @@ class BlockScanTest {
         SharedConstants.tryDetectVersion()
         Bootstrap.bootStrap()
         val offered = mutableListOf<RawRecord>()
-        val scan = BlockScan(ChangeLog { type, _ -> offered += type })
+        var now = 0L
+        var step = 1_000_000L
+        val scan = BlockScan(ChangeLog { type, _ -> offered += type }) { now += step; now }
         val player = unsafe.allocateInstance(LocalPlayer::class.java) as LocalPlayer
         val position = net.minecraft.world.entity.Entity::class.java.getDeclaredField("chunkPosition").apply { isAccessible = true }
         position.set(player, ChunkPos(0, 0))
-        val first = level(slow = true)
+        val first = level()
         repeat(20) { scan.tick(first, player) }
-        scan.tick(level(slow = false), player)
+        step = 0
+        scan.tick(level(), player)
         assertTrue(offered.isEmpty(), "A warp published $offered")
         scan.detach()
         assertTrue(offered.isEmpty(), "Detach published a partial pass: $offered")
@@ -34,20 +37,14 @@ class BlockScanTest {
 }
 
 private class StubChunkCache(level: ClientLevel) : ClientChunkCache(level, 1) {
-    var slow: Boolean = false
-
-    override fun getChunk(x: Int, z: Int, status: ChunkStatus, creating: Boolean): LevelChunk? {
-        if (slow) Thread.sleep(2)
-        return null
-    }
+    override fun getChunk(x: Int, z: Int, status: ChunkStatus, creating: Boolean): LevelChunk? = null
 }
 
 private val unsafe: Unsafe = Unsafe::class.java.getDeclaredField("theUnsafe").apply { isAccessible = true }.get(null) as Unsafe
 
-private fun level(slow: Boolean): ClientLevel {
+private fun level(): ClientLevel {
     val level = unsafe.allocateInstance(ClientLevel::class.java) as ClientLevel
     val cache = unsafe.allocateInstance(StubChunkCache::class.java) as StubChunkCache
-    cache.slow = slow
     val field = ClientLevel::class.java.getDeclaredField("chunkSource")
     field.isAccessible = true
     field.set(level, cache)
