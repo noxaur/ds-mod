@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
+import io.github.noxaur.dsmod.core.game.SlayerLine
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.text.clock
 import io.github.noxaur.dsmod.core.text.count
@@ -48,9 +49,9 @@ class SlayerTracker(config: DsModConfig) : HasFeature {
             toNext = count(left)?.toLong() ?: return@line
             level = "$slayer $at"
         }
-        feature.line(Regex("""☠ .*SLAYER BOSS"""), Regex("""☠ (?:NICE! )?SLAYER BOSS (SPAWNING|SLAIN)!""")) { (event), now ->
+        feature.line(SlayerLine.head, SlayerLine::parse) { event, now ->
             seen = true
-            if (event == "SPAWNING") {
+            if (event == SlayerLine.SPAWNING) {
                 spawnedAt = now
                 return@line
             }
