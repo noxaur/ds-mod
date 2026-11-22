@@ -16,7 +16,7 @@ Fast and smooth is checked, not promised. A perf test boots the jars a player in
 
 ## A pull request runs the game tests its change reaches
 
-The game takes long to boot and each test makes a fresh world, so the whole suite runs before a beta, and a pull request runs only the tests its change reaches, found by walking names in the source. An agent naming the tests was rejected, because the instruction was skipped or answered wrong. Recording which classes each test runs was rejected, because the central classes run in every test.
+The game takes long to boot and each test makes a fresh world, so the whole suite runs before a beta, and a pull request runs only the tests its change reaches, found from the classes the compiled code names. Matching words in the source was rejected, because pruning comments turned tests off. An agent naming the tests was rejected, because it was skipped or answered wrong. Recording which classes each test runs was rejected, because the central classes run in every test.
 
 ## A game test runs behind the developer
 

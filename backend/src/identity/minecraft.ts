@@ -3,13 +3,7 @@ import { APIError, createAuthEndpoint } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
 import { Schema } from "effect";
 
-import {
-  joinUrl,
-  minecraftName,
-  relayKeyHeader,
-  serverIdPattern,
-  trustedKeyHeader,
-} from "../../../web/shared/website.ts";
+import { joinUrl, minecraftName, relayKeyHeader, serverIdPattern } from "../../../web/shared/website.ts";
 import { skinUrl } from "../upstream/texture.ts";
 
 const PROVIDER = "minecraft";
@@ -42,8 +36,6 @@ const mojang = "https://sessionserver.mojang.com/session/minecraft/hasJoined";
 export interface MojangRelay {
   readonly url: string;
   readonly key: string;
-  /** @keep A website from before the relay key opens only to the trusted key. Drop this once none is deployed. */
-  readonly trustedKey?: string | undefined;
 }
 
 export const mojangHasJoined =
@@ -51,17 +43,12 @@ export const mojangHasJoined =
   async (name, serverId) => {
     const url = joinUrl(relay?.url ?? mojang, { username: name, serverId });
     const who = relay === undefined ? "Mojang" : "The website's Mojang relay";
-    const headers: Record<string, string> =
-      relay === undefined
-        ? {}
-        : {
-            [relayKeyHeader]: relay.key,
-            ...(relay.trustedKey === undefined ? {} : { [trustedKeyHeader]: relay.trustedKey }),
-          };
     // @keep Only a 204 means nobody joined. Anything else is Mojang failing, which the player can retry, not a refusal.
-    const response = await fetch(url, { headers }).catch(() => {
-      throw unavailable(`${who} did not answer.`);
-    });
+    const response = await fetch(url, { headers: relay === undefined ? {} : { [relayKeyHeader]: relay.key } }).catch(
+      () => {
+        throw unavailable(`${who} did not answer.`);
+      },
+    );
     if (response.status === 204) {
       return null;
     }

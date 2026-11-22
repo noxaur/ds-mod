@@ -13,7 +13,6 @@ import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.readLines
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.CaptureInputMixin]. */
 class BriefTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use {

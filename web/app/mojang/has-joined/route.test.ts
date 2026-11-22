@@ -56,11 +56,12 @@ test("a website without a relay key answers nobody", async () => {
   expect(fetchMock).not.toHaveBeenCalled();
 });
 
-test("the backend that still sends the trusted key is answered until it redeploys", async () => {
+test("the trusted key does not open the relay", async () => {
   vi.stubEnv("MOJANG_RELAY_KEY", "the-key");
   vi.stubEnv("AUTH_TRUSTED_KEY", "the-trusted-key");
-  mojangSays(new Response(null, { status: 204 }));
-  expect((await ask({ [trustedKeyHeader]: "the-trusted-key" })).status).toBe(204);
+  const fetchMock = mojangSays(new Response(null, { status: 204 }));
+  expect((await ask({ [trustedKeyHeader]: "the-trusted-key" })).status).toBe(404);
+  expect(fetchMock).not.toHaveBeenCalled();
 });
 
 test.each([

@@ -193,38 +193,21 @@ dependencies {
     "gametestImplementation"("maven.modrinth:modmenu:${property("modmenu_version")}") { isTransitive = false }
 }
 val gametests = providers.gradleProperty("gametests")
-val picked = layout.buildDirectory.file("gametests/picked")
+val gameTestManifest = file("src/gametest/fabric.mod.json")
+val picked = layout.buildDirectory.dir("gametests")
 val pickGameTests = tasks.register<JavaExec>("pickGameTests") {
     group = "verification"
-    description = "Picks the game tests that the change since the branch left main reaches. See GameTestPick.kt."
-    classpath = sourceSets["debug"].runtimeClasspath
+    description = "Lists the game tests in the test mod's manifest: those -Pgametests= names, all for -Pgametests=all, or else those the change since the branch left main reaches. See GameTestPick.kt."
+    // @keep The compile classpath holds all the picker loads, and the runtime one adds Loom's launch libraries, which a job that only builds the jars never fetched.
+    classpath = sourceSets["debug"].let { it.output + it.compileClasspath }
     mainClass = "io.github.noxaur.dsmod.debug.GameTestPickKt"
-    args(projectDir.path, picked.get().asFile.path)
-    outputs.file(picked)
+    inputs.files(sourceSets["gametest"].output.classesDirs, gameTestManifest)
+    args(listOf(projectDir.path, picked.get().asFile.path) + listOfNotNull(gametests.orNull))
+    outputs.dir(picked)
     outputs.upToDateWhen { false }
 }
 tasks.named<ProcessResources>("processGametestResources") {
-    val named = gametests.map { it.split(",") }.filter { it != listOf("all") }.orNull
-    val pick = picked.get().asFile.takeIf { !gametests.isPresent }
-    if (pick != null) {
-        dependsOn(pickGameTests)
-        inputs.file(picked)
-    } else {
-        inputs.property("gametests", named ?: emptyList<String>())
-    }
-    if (named != null || pick != null) {
-        val manifest = destinationDir.resolve("fabric.mod.json")
-        doLast {
-            val only = named ?: pick!!.readLines().filter(String::isNotBlank)
-            @Suppress("UNCHECKED_CAST")
-            val json = groovy.json.JsonSlurper().parse(manifest) as MutableMap<String, Any>
-            val entrypoints = json["entrypoints"] as MutableMap<String, List<Map<String, String>>>
-            val kept = entrypoints.getValue("fabric-client-gametest").filter { it.getValue("value").substringAfterLast('.') in only }
-            check(kept.size == only.size) { "-Pgametests=$only names a test that fabric.mod.json does not list" }
-            entrypoints["fabric-client-gametest"] = kept
-            manifest.writeText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json)))
-        }
-    }
+    from(pickGameTests) { include("fabric.mod.json") }
 }
 val gametestJar = tasks.register<Jar>("gametestJar") {
     archiveClassifier = "gametest"
@@ -245,12 +228,9 @@ tasks.register<net.fabricmc.loom.task.prod.ClientProductionRunTask>("runProdClie
     runDir = layout.buildDirectory.dir("run/prodClientGameTest")
     useXVFB = providers.environmentVariable("CI").isPresent
 }
-if (!gametests.isPresent) {
-    val pick = picked.get().asFile
-    tasks.matching { it.name == "runClientGameTest" || it.name == "runProdClientGameTest" }.configureEach {
-        dependsOn(pickGameTests)
-        onlyIf("the change reaches a game test") { pick.readLines().any(String::isNotBlank) }
-    }
+tasks.matching { it.name == "runClientGameTest" || it.name == "runProdClientGameTest" }.configureEach {
+    val list = picked.map { it.file("tests").asFile }
+    onlyIf("the change reaches a game test") { list.get().readLines().any(String::isNotBlank) }
 }
 
 tasks.register<JavaExec>("cutFixture") {
@@ -264,6 +244,7 @@ tasks.test {
     useJUnitPlatform()
     timeout = Duration.ofSeconds(30)
     inputs.dir("src")
+    inputs.files(sourceSets["gametest"].output.classesDirs)
     inputs.files("../README.md", "../docs/user/features.md")
     testLogging {
         events("failed")

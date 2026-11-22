@@ -119,6 +119,7 @@ object DsModClient : ClientModInitializer {
     }
 
     private fun start() {
+        SettingsScreen.forget()
         tree = SettingsTree(settings)
         game = Game(tree.features) { anyServer || onDragSim }
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
