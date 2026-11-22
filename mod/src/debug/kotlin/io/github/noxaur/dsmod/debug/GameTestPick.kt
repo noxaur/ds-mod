@@ -8,6 +8,7 @@ import kotlinx.serialization.json.jsonObject
 import java.io.File
 import java.lang.classfile.Attributes
 import java.lang.classfile.ClassFile
+import java.lang.classfile.constantpool.StringEntry
 import java.lang.classfile.constantpool.Utf8Entry
 import java.lang.reflect.AccessFlag
 import java.util.concurrent.TimeUnit
@@ -20,23 +21,28 @@ private const val HUB = 12
 const val MOST_PICKED = 8
 
 private const val GAME_TEST = "net/fabricmc/fabric/api/client/gametest/v1/FabricClientGameTest"
-private val BUILD = listOf(
-    "build.gradle.kts", "settings.gradle.kts", "gradle.properties", "gradle/",
-    "src/main/resources/", "src/debug/resources/", "src/gametest/resources/", "src/gametest/fabric.mod.json", "src/test/resources/profiles/",
-)
+private val BUILD = listOf("build.gradle.kts", "settings.gradle.kts", "gradle.properties", "gradle/", "src/gametest/fabric.mod.json")
+private val RESOURCES = listOf("src/main/resources/", "src/debug/resources/", "src/gametest/resources/", "src/test/resources/profiles/")
 private val SOURCE_SETS = listOf("main", "debug", "gametest")
 
 /** @keep A class name in a descriptor, a signature or an inlined function's source map, so what an inline call or a type names counts too. */
 private val OWN_CLASS = Regex("""io/github/noxaur/dsmod/[\w/$]+""")
 
-/** @keep Each class with the classes it names and the file it compiles from, where a lambda or an anonymous object counts as the class it is written in. */
-data class Sources(val names: Map<String, Set<String>>, val files: Map<String, String>, val tests: Map<String, String>, val tools: Set<String>)
+/** @keep Each class with the classes it names, its file and its code's strings, where a lambda or an anonymous object counts as the class it is written in. */
+data class Sources(
+    val names: Map<String, Set<String>>,
+    val files: Map<String, String>,
+    val tests: Map<String, String>,
+    val tools: Set<String>,
+    val strings: Map<String, Set<String>> = emptyMap(),
+)
 
 data class Picked(val tests: Set<String>, val unreached: List<String>)
 
 fun readSources(mod: File): Sources {
     val roots = mutableMapOf<String, String>()
     val named = mutableMapOf<String, Set<String>>()
+    val said = mutableMapOf<String, Set<String>>()
     val anonymous = mutableSetOf<String>()
     val supers = mutableMapOf<String, List<String>>()
     val concrete = mutableSetOf<String>()
@@ -56,6 +62,7 @@ fun readSources(mod: File): Sources {
                     anonymous += name
                 }
                 named[name] = model.constantPool().filterIsInstance<Utf8Entry>().flatMap { OWN_CLASS.findAll(it.stringValue()).map { match -> match.value } }.toSet()
+                said[name] = model.constantPool().filterIsInstance<StringEntry>().map { it.stringValue() }.toSet()
                 supers[name] = (model.superclass().map { listOf(it) }.orElse(emptyList()) + model.interfaces()).map { it.asInternalName() }
                 if (!model.flags().has(AccessFlag.ABSTRACT)) concrete += name
                 if (model.methods().any { it.methodName().equalsString("main") && it.methodType().equalsString("([Ljava/lang/String;)V") }) tools += name
@@ -68,11 +75,12 @@ fun readSources(mod: File): Sources {
     val files = named.keys.filterNot(anonymous::contains).associateWith { checkNotNull(roots[it.substringBefore('$')]) { "$it has no outer class" } }
     val names = mutableMapOf<String, MutableSet<String>>()
     for ((name, refs) in named) names.getOrPut(node(name), ::mutableSetOf) += refs.filter(named::containsKey).map(::node).toSet() - node(name)
-    return Sources(names, files, tests.associateWith { it.replace('/', '.') }, tools.map { files.getValue(node(it)) }.toSet())
+    val strings = said.entries.groupBy({ node(it.key) }, { it.value }).mapValues { it.value.flatten().toSet() }
+    return Sources(names, files, tests.associateWith { it.replace('/', '.') }, tools.map { files.getValue(node(it)) }.toSet(), strings)
 }
 
 fun pickGameTests(sources: Sources, changed: Collection<String>): Picked {
-    val (names, files, tests, tools) = sources
+    val (names, files, tests, tools, strings) = sources
     val classes = files.keys.groupBy(files::getValue)
     val namers = names.keys.flatMap { name -> names.getValue(name).map { it to name } }.groupBy({ it.first }, { it.second })
     val hubs = names.keys.filter { name -> namers[name].orEmpty().count(tests::containsKey) > HUB }.toSet()
@@ -103,25 +111,33 @@ fun pickGameTests(sources: Sources, changed: Collection<String>): Picked {
         near.filter { rank(it) == best }.flatMap { it.entries }.groupBy({ it.key }, { it.value }).mapValues { it.value.min() }
     }
 
+    // @keep The nearest tests, as many whole distances of them as fit in one pick, or the smoke test when even the nearest are too many.
+    fun fit(found: Map<String, Int>) = found.entries.groupBy({ it.value }, { it.key }).toSortedMap().values
+        .runningFold(emptySet<String>(), Set<String>::plus).last { it.size <= MOST_PICKED }.ifEmpty { if (found.isEmpty()) emptySet() else setOf(SMOKE_TEST) }
+
     val picked = mutableSetOf<String>()
     val unreached = mutableListOf<String>()
     for (path in changed) {
         if (BUILD.any { path == it || it.endsWith('/') && path.startsWith(it) }) picked += SMOKE_TEST
+        if (RESOURCES.any(path::startsWith)) {
+            // @keep A resource reaches the tests of the classes that load it by name, and one no class names, such as a mixin list, any test boots through.
+            val name = path.substringAfterLast('/')
+            val loaders = strings.filterValues { said -> said.any { it == name || it.endsWith("/$name") } }.keys - hubs
+            picked += fit(reach(loaders)).ifEmpty { setOf(SMOKE_TEST) }
+            continue
+        }
         if ("/core/" in path || path in tools || SOURCE_SETS.none { path.startsWith("src/$it/") }) continue
         val own = classes[path]?.toSet()
         if (own == null) {
-            // @keep A deleted file breaks what named it at compile time, or a mixin list at boot, which any test boots through.
+            // @keep A deleted file breaks what named it at compile time, which any test boots through.
             if (path.endsWith(".kt") || path.endsWith(".java")) picked += SMOKE_TEST
             continue
         }
-        val found = reach(own)
-        // @keep The nearest tests, as many whole distances of them as fit in one pick.
-        val nearest = found.entries.groupBy({ it.value }, { it.key }).toSortedMap().values.runningFold(emptySet<String>(), Set<String>::plus).last { it.size <= MOST_PICKED }
+        val reached = fit(reach(own))
         val throughHubs = (own.flatMap(names::getValue).toSet() - own).let { it.isNotEmpty() && it.all(hubs::contains) }
         when {
-            own.any(hubs::contains) -> picked += SMOKE_TEST
-            nearest.isNotEmpty() -> picked += nearest
-            found.isNotEmpty() || throughHubs -> picked += SMOKE_TEST
+            own.any(hubs::contains) || reached.isEmpty() && throughHubs -> picked += SMOKE_TEST
+            reached.isNotEmpty() -> picked += reached
             !path.startsWith("src/gametest/") -> unreached += path
         }
     }

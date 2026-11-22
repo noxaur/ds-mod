@@ -19,6 +19,7 @@ class GameTestPickTest {
         named.associate { (name, _) -> name to path(name.substringBefore('$')) },
         named.map { it.first }.filter { it.startsWith("gametest/") && it.endsWith("Test") }.associateWith(::test),
         setOf(path("debug/Tool")),
+        mapOf("edge/Lines" to setOf("/lines/chat.json"), "gametest/CounterTest" to setOf("counted.json")),
     )
 
     private val sources = sources(
@@ -51,6 +52,13 @@ class GameTestPickTest {
         assertEquals(Picked(setOf(test("gametest/ChatTest")), emptyList()), pick(path("edge/mixin/ChatMixin")))
         assertEquals(Picked(setOf(test("gametest/CounterTest")), emptyList()), pick(path("edge/Feature")))
         assertEquals(Picked(setOf(test("gametest/CounterTest")), emptyList()), pick(path("edge/mixin/FeatureMixin")))
+    }
+
+    @Test
+    fun `a resource reaches the tests of the classes that load it by name, and one no class names runs the smoke test`() {
+        assertEquals(Picked(setOf(test("gametest/ChatTest"), test("gametest/HelperTest")), emptyList()), pick("src/main/resources/lines/chat.json"))
+        assertEquals(Picked(setOf(test("gametest/CounterTest")), emptyList()), pick("src/test/resources/profiles/counted.json"))
+        assertEquals(Picked(setOf(SMOKE_TEST), emptyList()), pick("src/main/resources/dsmod.mixins.json"))
     }
 
     @Test
