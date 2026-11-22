@@ -3,8 +3,10 @@ package io.github.noxaur.dsmod.gametest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
 import net.fabricmc.fabric.api.client.screen.v1.Screens
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.AbstractWidget
-import net.minecraft.client.gui.screens.inventory.ContainerScreen
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.commands.Commands
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
@@ -40,7 +42,7 @@ object ServerMenus {
 
     /** Opens a menu [rows] tall titled [title], as [menu] builds it, and waits until the client shows it. */
     fun open(context: ClientGameTestContext, world: TestSingleplayerContext, rows: Int, title: String, goBack: Boolean = true, fill: (SimpleContainer) -> Unit = {}) {
-        world.server.runOnServer<Nothing> { server -> server.playerList.players.first().openMenu(menu(rows, title, goBack, fill)) }
+        world.server.runOnServer<Nothing> { server -> server.player.openMenu(menu(rows, title, goBack, fill)) }
         shows(context, title)
     }
 
@@ -49,9 +51,11 @@ object ServerMenus {
             server.commands.dispatcher.register(Commands.literal(name).executes { it.source.playerOrException.openMenu(menu(rows, title, goBack, fill)); 1 })
         }
 
+    fun title(client: Minecraft) = (client.gui.screen() as? AbstractContainerScreen<*>)?.title?.string
+
     /** Waits until the client shows the menu titled [title], and its slots have arrived. */
     fun shows(context: ClientGameTestContext, title: String) {
-        context.waitFor { (it.gui.screen() as? ContainerScreen)?.title?.string == title }
+        context.waitFor { title(it) == title }
         context.waitTicks(5)
     }
 
@@ -64,6 +68,8 @@ object ServerMenus {
     inline fun <reified W : AbstractWidget> widget(context: ClientGameTestContext, crossinline which: (W) -> Boolean = { true }) = widgets(context, which).firstOrNull()
 
     fun panes(world: TestSingleplayerContext) = world.server.computeOnServer<Int, Nothing> { server ->
-        server.playerList.players.first().inventory.count { it.`is`(Items.STAINED_GLASS_PANE.black()) }
+        server.player.inventory.count { it.`is`(Items.STAINED_GLASS_PANE.black()) }
     }
 }
+
+inline fun <reified W> Screen.widgets(): List<W> = children().filterIsInstance<W>()

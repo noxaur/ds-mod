@@ -39,7 +39,7 @@ class ContainerPollTest : FabricClientGameTest {
                             stack.set(DataComponents.LORE, ItemLore((1..40).map { Component.literal("Line $it of the lore of sword $slot") }))
                         })
                     }
-                    server.playerList.players.first().openMenu(
+                    server.player.openMenu(
                         SimpleMenuProvider({ id, inventory, _ -> ChestMenu.sixRows(id, inventory, chest) }, Component.literal("Big Chest")),
                     )
                 }

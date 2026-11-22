@@ -1,7 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
-import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.edge.HudEditorScreen
@@ -9,12 +8,10 @@ import io.github.noxaur.dsmod.edge.HudLayoutEditor
 import io.github.noxaur.dsmod.edge.SettingsScreen
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import io.github.noxaur.dsmod.gametest.SettingsSteps.guiScale
-import io.github.noxaur.dsmod.gametest.SettingsSteps.theme
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import org.lwjgl.glfw.GLFW
 
-private const val ID = "dragon-timer"
 
 /**
  * Drives the HUD's layout in the settings over a live block: a drag moves it and keeps it on the screen, Escape
@@ -28,8 +25,7 @@ class HudLayoutTest : FabricClientGameTest {
             val window = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.screenWidth to it.window.screenHeight }
             context.input.resizeWindow(1280, 720)
             guiScale(context, 2)
-            context.enterTheEnd()
-            world.server.runCommand("""tellraw @a "§5✦ §dThe Egg has Spawned!"""")
+            context.showDragonTimer(world)
             context.waitTicks(5)
             SettingsDriver(context).layout()
             context.runOnClient<Nothing> {
@@ -46,17 +42,14 @@ class HudLayoutTest : FabricClientGameTest {
     private fun SettingsDriver.layout() {
         val hud = DsModClient.settings.hud
         fun editor(client: net.minecraft.client.Minecraft) = (client.gui.screen() as SettingsScreen).editor("hudLayout") as HudLayoutEditor
-        fun point() = context.computeOnClient<Pair<Int, Int>?, Nothing> { editor(it).pointOf(ID) } ?: error("The layout does not show $ID")
-        fun placed() = context.computeOnClient<Hud.Placed, Nothing> { Hud.find(ID)!! }
+        fun point() = context.computeOnClient<Pair<Int, Int>?, Nothing> { editor(it).pointOf(DRAGON_TIMER) } ?: error("The layout does not show $DRAGON_TIMER")
+        fun placed() = context.computeOnClient<Hud.Placed, Nothing> { Hud.find(DRAGON_TIMER)!! }
 
         context.setScreen { SettingsScreen(null, SettingsTabs(at("Interface")), reveal = "hudLayout") }
         context.waitTicks(2)
         spot("hudLayout")
         context.waitTicks(2)
-        context.takeScreenshot("hud-layout")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("hud-layout-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("hud-layout")
 
         // A drag moves the block, by the map's scale, and the place is kept.
         val start = point()
@@ -64,13 +57,10 @@ class HudLayoutTest : FabricClientGameTest {
         context.input.holdMouse(0)
         context.waitTick()
         for (step in 1..4) move(start.first + step * 12, start.second + step * 6)
-        context.takeScreenshot("hud-layout-drag")
-        theme(context, Theme.VANILLA)
-        context.takeScreenshot("hud-layout-drag-vanilla")
-        theme(context, Theme.CHARCOAL)
+        context.shotInBothThemes("hud-layout-drag")
         context.input.releaseMouse(0)
         context.waitTicks(2)
-        check(ID in hud.positions) { "A drag on the layout did not place the block" }
+        check(DRAGON_TIMER in hud.positions) { "A drag on the layout did not place the block" }
         val dropped = placed()
 
         // Dragged far past the corner, it stops with its far edges on the screen's.
@@ -122,11 +112,11 @@ class HudLayoutTest : FabricClientGameTest {
 
         // A right press stacks it again, as in the HUD editor and the chat. An arrow places it once more, and Backspace stacks it.
         click(point().first, point().second, GLFW.GLFW_MOUSE_BUTTON_RIGHT)
-        check(ID !in hud.positions) { "A right press kept the block's place" }
+        check(DRAGON_TIMER !in hud.positions) { "A right press kept the block's place" }
         key(GLFW.GLFW_KEY_RIGHT)
-        check(ID in hud.positions) { "Right did not place the stacked block" }
+        check(DRAGON_TIMER in hud.positions) { "Right did not place the stacked block" }
         key(GLFW.GLFW_KEY_BACKSPACE)
-        check(ID !in hud.positions) { "Backspace kept the block's place" }
+        check(DRAGON_TIMER !in hud.positions) { "Backspace kept the block's place" }
         key(GLFW.GLFW_KEY_ESCAPE)
 
         // Move HUD opens the full editor over the game, which returns to the settings.

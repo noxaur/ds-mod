@@ -13,14 +13,13 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
 
 /**
  * A sword held over still ground, for the Animations tests to compare frames of. Time and weather stand still and the
  * player looks straight down, so a frame changes only where the held item does.
  */
 class HeldItemScene private constructor(private val context: ClientGameTestContext, private val world: TestSingleplayerContext) {
-    fun shot(name: String): BufferedImage = ImageIO.read(context.takeScreenshot(name).toFile())
+    fun shot(name: String): BufferedImage = image(context.takeScreenshot(name))
 
     fun command(command: String) = world.server.runCommand(command)
 
@@ -79,20 +78,15 @@ class HeldItemScene private constructor(private val context: ClientGameTestConte
 
     companion object {
         /** How many pixels differ between two frames, in the whole frame or only its left half. */
-        fun changed(a: BufferedImage, b: BufferedImage, right: Boolean = true): Int {
-            check(a.width == b.width && a.height == b.height) { "The frames are different sizes" }
-            val width = if (right) a.width else a.width / 2
-            var count = 0
-            for (y in 0 until a.height) for (x in 0 until width) if (a.getRGB(x, y) != b.getRGB(x, y)) count++
-            return count
-        }
+        fun changed(a: BufferedImage, b: BufferedImage, right: Boolean = true) = diff(a, b) { x, _ -> right || x < a.width / 2 }
 
         /** Opens a world with a sword in the hand, runs [test], and puts every Animations setting back after it. */
         fun run(context: ClientGameTestContext, test: HeldItemScene.() -> Unit) {
             val animations = DsModClient.feature<Animations>()
             context.worldBuilder().create().use { world ->
                 val scene = HeldItemScene(context, world)
-                listOf("gamerule advance_time false", "gamerule advance_weather false", "clear @a").forEach(scene::command)
+                world.freezeTime(noon = false)
+                scene.command("clear @a")
                 context.input.lookAt(0f, 90f)
                 // The vignette eases toward the light where the player stands for half a minute and shades the whole
                 // frame, and the attack indicator shows the cooldown a swing at the air starts. Neither is the item.

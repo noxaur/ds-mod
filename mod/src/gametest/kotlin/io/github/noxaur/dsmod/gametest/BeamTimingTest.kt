@@ -11,7 +11,6 @@ import io.github.noxaur.dsmod.gametest.SettingsSteps.at
 import io.github.noxaur.dsmod.gametest.SettingsSteps.open
 import io.github.noxaur.dsmod.gametest.SettingsSteps.restore
 import io.github.noxaur.dsmod.gametest.SettingsSteps.setUp
-import io.github.noxaur.dsmod.gametest.SettingsSteps.theme
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.loader.api.FabricLoader
@@ -79,9 +78,7 @@ class BeamTimingTest : FabricClientGameTest {
             move(150)
             context.waitTicks(2)
             context.takeScreenshot("beam-timing-merged")
-            theme(context, Theme.VANILLA)
-            context.takeScreenshot("beam-timing-vanilla")
-            theme(context, Theme.CHARCOAL)
+            context.inTheme(Theme.VANILLA) { context.takeScreenshot("beam-timing-vanilla") }
 
             move(60)
             context.input.pressMouse(1)

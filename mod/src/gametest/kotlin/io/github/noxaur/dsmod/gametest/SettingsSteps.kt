@@ -3,11 +3,13 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.ui.Place
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
-import io.github.noxaur.dsmod.core.ui.Theme
-import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.edge.SettingsScreen
+import io.github.noxaur.dsmod.edge.TabPlacesEditor
+import io.github.noxaur.dsmod.edge.ui.ItemsEditor
 import io.github.noxaur.dsmod.edge.ui.SettingRows
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.TitleScreen
 
 /** Steps the game tests of ds-mod's own settings screen share. */
@@ -51,11 +53,6 @@ internal object SettingsSteps {
         check(shown == titles) { "$step: the tabs are $shown, not $titles" }
     }
 
-    fun theme(context: ClientGameTestContext, theme: Theme) {
-        context.runOnClient<Nothing> { DsModClient.settings.hud.theme = theme }
-        context.waitTicks(2)
-    }
-
     fun guiScale(context: ClientGameTestContext, scale: Int) {
         context.runOnClient<Nothing> { client ->
             client.options.guiScale().set(scale)
@@ -89,4 +86,38 @@ internal open class SettingsDriver(val context: ClientGameTestContext) {
         return context.computeOnClient<SettingRows.Spot?, Nothing> { (it.gui.screen() as SettingsScreen).spot(id, entry) }
             ?: error("No row $id${if (entry >= 0) ", entry $entry," else ""} on the screen")
     }
+}
+
+internal class BindsDriver(context: ClientGameTestContext) : SettingsDriver(context) {
+    fun list() = spot("binds")
+
+    fun lines() = context.computeOnClient<Int, Nothing> { ((it.gui.screen() as SettingsScreen).editor("binds") as ItemsEditor<*>).size }
+
+    fun foot() = lines() - 1
+
+    fun line(i: Int) = i
+
+    fun lineOf(index: Int, details: Boolean = false) = context.computeOnClient<Int, Nothing> { editorNow(it).lineOf(index, details) }
+
+    fun headingOf(group: String, details: Boolean = false) = context.computeOnClient<Int, Nothing> { editorNow(it).headingOf(group, details) }
+
+    private fun editorNow(client: Minecraft) = (client.gui.screen() as SettingsScreen).editor("binds") as ItemsEditor<*>
+
+    fun at(line: Int, control: String? = null): IntArray {
+        val spot = context.computeOnClient<IntArray?, Nothing> { (((it.gui.screen() as SettingsScreen).editor("binds")) as ItemsEditor<*>).spot(line, control) }
+        return spot ?: error("Line $line of the binds has no ${control ?: "line"}; it has ${lines()} lines")
+    }
+
+    fun press(line: Int, control: String? = null, button: Int = 0, dx: Int = -1) {
+        val (x, y, w, h) = at(line, control).let { listOf(it[0], it[1], it[2], it[3]) }
+        click(x + if (dx >= 0) dx else w / 2, y + h / 2, button)
+    }
+}
+
+internal class TabsDriver(context: ClientGameTestContext) : SettingsDriver(context) {
+    private fun editor() = context.computeOnClient<TabPlacesEditor, Nothing> { (it.gui.screen() as SettingsScreen).editor("tabs") as TabPlacesEditor }
+
+    fun place(edge: TabEdge, slot: Int) = context.computeOnClient<Pair<Int, Int>, Nothing> { editor().placeAt(edge, slot) }
+
+    fun field(which: Int) = context.computeOnClient<IntArray, Nothing> { editor().fieldSpot(which) }
 }

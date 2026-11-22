@@ -44,10 +44,7 @@ class ProfileViewerTest : FabricClientGameTest {
                 context.waitTicks(10)
                 context.takeScreenshot("profile-overview")
                 check(context.computeOnClient<Boolean, Nothing> { !profiles.screen(it).overflows }) { "The overview needs a scrollbar" }
-                context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.VANILLA }
-                context.waitTicks(2)
-                context.takeScreenshot("profile-overview-vanilla")
-                context.runOnClient<Nothing> { DsModClient.settings.hud.theme = Theme.CHARCOAL }
+                context.inTheme(Theme.VANILLA) { context.takeScreenshot("profile-overview-vanilla") }
 
                 val (contentX, viewY) = context.computeOnClient<Pair<Int, Int>, Nothing> { profiles.screen(it).contentX to profiles.screen(it).viewY }
                 // The model sits left of the content. A drag turns it, and the skill under the mouse shows its XP.
@@ -103,12 +100,12 @@ class ProfileViewerTest : FabricClientGameTest {
                 val containers = profiles.asked.count { "/containers/" in it }
                 profiles.command("dsmod pv Hidden")
                 context.waitForScreen(ProfileScreen::class.java)
-                context.waitUntil("the hidden profile loaded") { profiles.screen(it).children().any { w -> w is KitTab } }
+                context.waitUntil("the hidden profile loaded") { profiles.screen(it).widgets<KitTab>().isNotEmpty() }
                 profiles.tab("Inventory")
                 context.waitTicks(5)
                 context.takeScreenshot("profile-hidden")
                 check(profiles.asked.count { "/containers/" in it } == containers) { "A hidden container was fetched" }
-                check(context.computeOnClient<Boolean, Nothing> { client -> profiles.screen(client).children().any { (it as? KitTab)?.message?.string == "Pets" } }) {
+                check(context.computeOnClient<Boolean, Nothing> { client -> profiles.screen(client).widgets<KitTab>().any { it.message.string == "Pets" } }) {
                     "A hidden inventory hid the pets"
                 }
 

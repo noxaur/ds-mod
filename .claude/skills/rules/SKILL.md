@@ -71,9 +71,11 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | A game test passes whichever tests ran before it | `FreshStart` in `mod/src/gametest/` starts the mod afresh before each test |
 | A game test takes at most 20 seconds, its world included | `TestClock` in `mod/src/gametest/` |
 | A game test moves the mouse, clicks and opens the inventory through `Pointer.kt`, in GUI pixels | `gametest-point-by-pointer` and `gametest-inventory-by-pointer` in `mod/…/Rules.kt` |
+| A game test switches the theme through `Themes.kt`, which puts it back, and reads a screenshot's pixels through `Pixels.kt` | `gametest-theme-by-intheme` and `gametest-pixels-by-pixels` in `mod/…/Rules.kt` |
 | A game test reads the clicks a step sent only from that step | `ClickSpy.during` in `mod/src/gametest/`, which keeps the record private |
 | A game test's wait fails the test when it times out | `gametest-no-swallowed-wait` and `gametest-poll-by-waitfor` in `mod/…/Rules.kt`, and `waitUntil` in `mod/src/gametest/Waits.kt` |
-| A game test finds a widget through `ServerMenus` | `gametest-widget-by-servermenus` in `mod/…/Rules.kt` |
+| A game test finds a widget through `ServerMenus` | `gametest-widget-by-servermenus` and `gametest-children-by-screenwidgets` in `mod/…/Rules.kt` |
+| A game test builds its player, a still world and the dragon timer from shared scenes | `gametest-player-by-scenes`, `gametest-frozen-by-scenes` and `gametest-egg-by-the-end` in `mod/…/Rules.kt` |
 | A commit passes every project's checks | `.githooks/pre-commit`, which `mise install` installs |
 | A pull request runs the game tests its change reaches | CI's `gametests` job, and `GameTestPick.kt` in `mod/src/debug/` |
 | Every file of `edge` and `debug` reaches a game test | `GameTestPickTest` |

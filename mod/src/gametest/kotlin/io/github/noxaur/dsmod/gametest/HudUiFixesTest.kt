@@ -38,7 +38,6 @@ import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.input.MouseButtonInfo
 import net.minecraft.network.chat.Component
 import java.util.concurrent.CompletableFuture
-import javax.imageio.ImageIO
 import kotlin.math.abs
 
 /**
@@ -79,14 +78,12 @@ class HudUiFixesTest : FabricClientGameTest {
     }
 }
 
-private const val TIMER = "dragon-timer"
 
 private fun freeBlockStaysOnScreen(context: ClientGameTestContext, world: net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext) {
-    context.enterTheEnd()
-    world.server.runCommand("""tellraw @a "§5✦ §dThe Egg has Spawned!"""")
+    context.showDragonTimer(world)
     context.waitTicks(5)
     val hud = DsModClient.settings.hud
-    val placed = context.computeOnClient<Hud.Placed, Nothing> { Hud.find(TIMER) ?: error("The dragon timer is not on the HUD") }
+    val placed = context.computeOnClient<Hud.Placed, Nothing> { Hud.find(DRAGON_TIMER) ?: error("The dragon timer is not on the HUD") }
     val size = context.computeOnClient<Pair<Int, Int>, Nothing> { it.window.guiScaledWidth to it.window.guiScaledHeight }
     val margin = 8f
     val fraction = DsModConfig.Position(
@@ -95,28 +92,28 @@ private fun freeBlockStaysOnScreen(context: ClientGameTestContext, world: net.fa
         1f,
     )
     context.runOnClient<Nothing> {
-        hud.positions[TIMER] = fraction
+        hud.positions[DRAGON_TIMER] = fraction
         // A watched HUD setting is what makes the next tick place the block again.
         DsModClient.feature<HudBackground>().feature.enabled = false
     }
     context.waitTicks(2)
     context.runOnClient<Nothing> { DsModClient.feature<HudBackground>().feature.enabled = true }
     context.waitTicks(2)
-    val wide = context.computeOnClient<Hud.Placed, Nothing> { Hud.find(TIMER)!! }
+    val wide = context.computeOnClient<Hud.Placed, Nothing> { Hud.find(DRAGON_TIMER)!! }
     check(inside(wide, size.first, size.second)) { "On the wide GUI the timer sits at ${wide.x},${wide.y} ${wide.box()}" }
 
     guiScale(context, 4)
     val narrow = context.computeOnClient<Triple<Hud.Placed, Int, Int>, Nothing> {
-        Triple(Hud.find(TIMER)!!, it.window.guiScaledWidth, it.window.guiScaledHeight)
+        Triple(Hud.find(DRAGON_TIMER)!!, it.window.guiScaledWidth, it.window.guiScaledHeight)
     }
     check(inside(narrow.first, narrow.second, narrow.third)) {
         "After the GUI shrinks the timer runs off it: ${narrow.first.x},${narrow.first.y} size ${narrow.first.width * narrow.first.scale}x${narrow.first.height * narrow.first.scale} on ${narrow.second}x${narrow.third}"
     }
-    val saved = context.computeOnClient<DsModConfig.Position, Nothing> { hud.positions.getValue(TIMER) }
+    val saved = context.computeOnClient<DsModConfig.Position, Nothing> { hud.positions.getValue(DRAGON_TIMER) }
     check(saved.x == fraction.x && saved.y == fraction.y) { "Clamping rewrote the saved fraction $saved" }
 
     guiScale(context, 1)
-    val back = context.computeOnClient<Hud.Placed, Nothing> { Hud.find(TIMER)!! }
+    val back = context.computeOnClient<Hud.Placed, Nothing> { Hud.find(DRAGON_TIMER)!! }
     check(abs(back.x - fraction.x * size.first) <= 1.5f && abs(back.y - fraction.y * size.second) <= 1.5f) {
         "Back on the wide GUI the timer stayed at the clamped corner ${back.x},${back.y} instead of the saved fraction"
     }
@@ -181,25 +178,17 @@ private fun subsectionLiftsUnderTheMouse(context: ClientGameTestContext) {
         }
     }
     context.waitTick()
-    val (at, scale) = context.computeOnClient<Pair<Pair<Int, Int>, Int>, Nothing> {
-        val tree = (it.gui.screen() as Screen).children().filterIsInstance<KitNavTree>().single() as AbstractWidget
+    val at = context.computeOnClient<Pair<Int, Int>, Nothing> {
+        val tree = checkNotNull(it.gui.screen()).widgets<KitNavTree>().single() as AbstractWidget
         // A subsection is 13px under the 16px section, and the side's face shows through until hover lifts it.
-        (tree.x + 4 to tree.y + 16 + 6) to it.window.guiScale
+        tree.x + 4 to tree.y + 16 + 6
     }
     context.point(at.first, at.second)
-    val spot = at.first * scale to at.second * scale
-    val shot = context.takeScreenshot("nav-subsection-hover")
-    val image = ImageIO.read(shot.toFile())
-    val pixel = image.getRGB(spot.first.coerceIn(0, image.width - 1), spot.second.coerceIn(0, image.height - 1))
+    val pixel = context.guiPixel(context.takeScreenshot("nav-subsection-hover"), at.first, at.second)
     val side = context.computeOnClient<Int, Nothing> { Kit.theme.side }
-    check(channelDistance(pixel, side) > 12) { "Hover left the subsection on the side color ${hex(side)}, pixel ${hex(pixel)}" }
+    check(distance(pixel, side) > 12) { "Hover left the subsection on the side color ${hex(side)}, pixel ${hex(pixel)}" }
     context.setScreen { null }
 }
-
-private fun channelDistance(pixel: Int, rgb: Int) =
-    abs((pixel shr 16 and 0xFF) - (rgb shr 16 and 0xFF)) +
-        abs((pixel shr 8 and 0xFF) - (rgb shr 8 and 0xFF)) +
-        abs((pixel and 0xFF) - (rgb and 0xFF))
 
 private fun hex(rgb: Int) = "#${(rgb and 0xFFFFFF).toString(16).padStart(6, '0')}"
 
@@ -252,12 +241,12 @@ private fun profileShowsThePetAndScrollsStorage(context: ClientGameTestContext) 
         containers["storage:0"] = Load.Loaded(page)
     }
     context.click(context.computeOnClient<AbstractWidget, Nothing> { client ->
-        (client.gui.screen() as ProfileScreen).children().filterIsInstance<KitTab>().first { it.message.string == "Storage" } as AbstractWidget
+        (client.gui.screen() as ProfileScreen).widgets<KitTab>().first { it.message.string == "Storage" } as AbstractWidget
     })
     context.waitTicks(2)
     val report = context.computeOnClient<String, Nothing> { client ->
         val screen = client.gui.screen() as ProfileScreen
-        val pages = screen.children().filterIsInstance<io.github.noxaur.dsmod.edge.ui.KitButton>().map { it.message.string }
+        val pages = screen.widgets<io.github.noxaur.dsmod.edge.ui.KitButton>().map { it.message.string }
         val height = ProfileScreen::class.java.getDeclaredField("contentHeight").apply { isAccessible = true }.getInt(screen)
         "overflows=${screen.overflows} pages=${pages.size} contentHeight=$height"
     }
