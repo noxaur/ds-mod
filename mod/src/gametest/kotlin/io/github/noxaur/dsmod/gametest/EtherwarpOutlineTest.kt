@@ -16,6 +16,7 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
 import net.minecraft.world.phys.AABB
 
+/** @keep Covers [io.github.noxaur.dsmod.edge.ui.ItemsEditor]. */
 class EtherwarpOutlineTest : FabricClientGameTest {
     private val aspect = listOf(
         "§7Teleport §a15 blocks §7ahead of you and",

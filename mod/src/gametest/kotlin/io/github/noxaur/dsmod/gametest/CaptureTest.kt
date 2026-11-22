@@ -18,7 +18,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.SidebarPoller]. */
+/** @keep Covers [io.github.noxaur.dsmod.edge.SidebarPoller], [io.github.noxaur.dsmod.edge.capture.BlockScan], [io.github.noxaur.dsmod.edge.mixin.CaptureInputMixin]. */
 class CaptureTest : FabricClientGameTest {
     private val expected = listOf(
         "system" to "RARE DROP!",

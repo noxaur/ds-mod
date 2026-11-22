@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import org.lwjgl.glfw.GLFW
 import kotlin.reflect.KClass
 
+/** @keep Covers [io.github.noxaur.dsmod.edge.Browser], [io.github.noxaur.dsmod.edge.mixin.MouseTurnMixin]. */
 class KitTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = SettingsSteps.windowSize(context)

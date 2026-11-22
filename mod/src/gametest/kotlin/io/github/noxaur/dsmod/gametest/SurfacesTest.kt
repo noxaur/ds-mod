@@ -22,6 +22,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.world.item.Items
 
+/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.HudHotbarMixin]. */
 class SurfacesTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         context.inWorld { world ->

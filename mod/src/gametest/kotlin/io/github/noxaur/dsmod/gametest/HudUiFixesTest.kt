@@ -40,6 +40,7 @@ import net.minecraft.network.chat.Component
 import java.util.concurrent.CompletableFuture
 import kotlin.math.abs
 
+/** @keep Covers [io.github.noxaur.dsmod.edge.Frames], [io.github.noxaur.dsmod.edge.mixin.TooltipMixin]. */
 class HudUiFixesTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = SettingsSteps.windowSize(context)

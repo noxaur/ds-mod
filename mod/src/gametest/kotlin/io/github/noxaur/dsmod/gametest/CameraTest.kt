@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.minecraft.client.CameraType
 import kotlin.math.abs
 
+/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.PerspectiveKeyMixin]. */
 class CameraTest : FabricClientGameTest {
     private class Shot(val distance: Double, val rise: Double, val pitch: Float, val head: Float)
 

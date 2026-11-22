@@ -20,6 +20,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.TitleScreen
 import org.lwjgl.glfw.GLFW
 
+/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.PerspectiveKeyMixin], [io.github.noxaur.dsmod.edge.mixin.SwingSpeedMixin]. */
 class SettingsScreenFixesTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val window = setUp(context)

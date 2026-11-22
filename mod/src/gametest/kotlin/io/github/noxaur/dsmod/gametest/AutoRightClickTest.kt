@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import org.lwjgl.glfw.GLFW
 
+/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.KeyPressMixin]. */
 class AutoRightClickTest : FabricClientGameTest {
     override fun runTest(context: ClientGameTestContext) {
         val right = DsModClient.feature<AutoRightClick>()

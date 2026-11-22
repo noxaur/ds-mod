@@ -18,6 +18,7 @@ import java.util.zip.GZIPInputStream
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 
+/** @keep Covers [io.github.noxaur.dsmod.edge.mixin.CaptureInputMixin]. */
 class ContributeTest : FabricClientGameTest {
     private class Upload(val path: String, val type: String?, val bytes: ByteArray)
 
