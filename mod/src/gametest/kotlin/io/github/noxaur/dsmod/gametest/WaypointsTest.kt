@@ -105,6 +105,11 @@ class WaypointsTest : FabricClientGameTest {
         run("dsmod waypoint share")
         context.waitTicks(5)
         check(chat.any { it.endsWith("x: $x, y: $y, z: $z") }) { "Sharing where the player stands said $chat" }
+        val said = chat.size
+        run("dsmod waypoint share Nset")
+        run("dsmod waypoint share chat Nest")
+        context.waitTicks(5)
+        check(chat.drop(said).map { it.substringAfter("> ") } == listOf("[Nest] x: 12, y: 64, z: -30")) { "A typo shared, or chat Nest did not: ${chat.drop(said)}" }
         context.runOnClient<Nothing> { clear() }
     }
 

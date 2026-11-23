@@ -49,6 +49,10 @@ class WaypointTextTest {
         val isle = SavedWaypoint(x = 1, y = 2, z = 3, area = "Isle of Dragons")
         assertEquals(listOf(isle), found(WaypointText.format(isle)))
         assertEquals("", found("x: 1, y: 2, z: 3 in The End of it").single().area)
+        for (area in listOf("Crystal & Cavern", "Dragon's Den", "The Catacombs (F1)")) {
+            assertEquals(area, found(WaypointText.format(SavedWaypoint(x = 1, y = 2, z = 3, area = area))).single().area)
+        }
+        assertEquals("", found("x: 1, y: 2, z: 3 in The End.").single().area)
     }
 
     @Test

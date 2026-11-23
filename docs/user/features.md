@@ -305,7 +305,7 @@ Marks places in the world with a beam, a box or a label, with its name and how f
 | `/dsmod waypoint share` | Say where you stand in the chat you are in |
 | `/dsmod waypoint share party`, `global` or `instance` | Say it in that channel, as `/chat party` does |
 | `/dsmod waypoint share whisper` and a player | Whisper it to them |
-| Any of the share commands with a waypoint's name after it | Share that saved waypoint instead of where you stand |
+| Any of the share commands with a saved waypoint's name after it | Share that waypoint instead of where you stand. `/dsmod waypoint share chat` and a name shares it in the chat you are in |
 | `/dsmod waypoint` | Open your waypoints in the settings |
 
 `/dsmod wp` is short for `/dsmod waypoint`. A shared waypoint reads `[Nest] x: 12, y: 64, z: -30 in The End`, so a player without ds-mod can read it too.

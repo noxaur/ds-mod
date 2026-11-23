@@ -83,7 +83,7 @@ object WaypointChat {
     private fun shares(): LiteralArgumentBuilder<FabricClientCommandSource> {
         val share = ClientCommands.literal("share").executes { share(it, Channel.CURRENT, null, "") }
             .then(named { context, name -> share(context, Channel.CURRENT, null, name) })
-        for (channel in Channel.entries - Channel.CURRENT) share.then(
+        for (channel in Channel.entries) share.then(
             ClientCommands.literal(channel.word)
                 .executes { share(it, channel, null, "") }
                 .then(named { context, name -> share(context, channel, null, name) }),
@@ -170,8 +170,12 @@ object WaypointChat {
     @InputApproved(by = "noxaur", reaches = ["PlayerCommands.chat", "PlayerCommands.send"])
     private fun share(context: CommandContext<FabricClientCommandSource>, channel: Channel, player: String?, name: String) = ready(context) { client ->
         if (player != null && !Profile.validName(player)) return@ready Chat.send(text { bad("$player is not a Minecraft name.") })
-        val waypoint = waypoints.named(name) ?: waypoints.here(WaypointText.clean(name).take(SavedWaypoint.NAME_LENGTH))
-            ?: return@ready Chat.send(text { bad("Join a world first.") })
+        // @keep A name that matches no saved waypoint is refused, so a typo never says where the player stands.
+        val waypoint = if (name.isBlank()) {
+            waypoints.here() ?: return@ready Chat.send(text { bad("Join a world first.") })
+        } else {
+            waypoints.named(name) ?: return@ready Chat.send(text { bad("No waypoint is called ${name.trim()}. Save one with /dsmod waypoint add.") })
+        }
         val line = WaypointText.format(waypoint)
         // @keep The chat screen sends the typed command as it closes, so the shared line goes on the next tick, after it.
         client.schedule {
