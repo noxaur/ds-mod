@@ -51,6 +51,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - **Storage Overview** – Hover a Storage page to see its items, or see every page and the Ender Chest at once.
 - **Forge Craft** – Repeat your last forge craft with a key, one click per press.
 - **Wardrobe Keys** – Press 1 to 9 in the Wardrobe to click that slot, once the server lets you.
+- **Profile Cooldown** – Shows in Profile Management when you can switch profiles again.
 - **Menu Theme** – Dark or glass menus, inventory and tooltips.
 - **Fixed Menu Layout** – Go Back, Close and your inventory sit in the same place in every menu.
 - **Hide Glass Panes** – Hides the blank glass panes that pad out menus.
