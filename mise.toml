@@ -29,12 +29,12 @@ fi
 [tasks.architecture]
 description = "Indexes the repository with repowise and opens its dashboard"
 tools = { uv = "0.13.9" }
-# @keep repowise and the dashboard's Next.js send usage data unless told not to, and repowise has no setting in the repository for it.
-env = { REPOWISE_OFFLINE = "1", REPOWISE_TELEMETRY_DISABLED = "1", DO_NOT_TRACK = "1", NEXT_TELEMETRY_DISABLED = "1" }
+# @keep repowise and the dashboard's Next.js send usage data unless told not to, and repowise has no setting in the repository for it. The mock embedder keeps an embedder key in the shell from sending code to a model.
+env = { REPOWISE_OFFLINE = "1", REPOWISE_TELEMETRY_DISABLED = "1", DO_NOT_TRACK = "1", NEXT_TELEMETRY_DISABLED = "1", REPOWISE_EMBEDDER = "mock" }
 run = '''
 repowise="uvx --from repowise==0.62.0 repowise"
-if [ -d .repowise ]; then
-  $repowise update
+if [ -f .repowise/state.json ]; then
+  $repowise update --index-only --no-agents
 else
   $repowise init --no-prose --no-claude-md --no-agents --no-codex --no-distill-hook --no-hook --no-editor-setup </dev/null
 fi

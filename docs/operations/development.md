@@ -48,7 +48,7 @@ Tab completes the game from the instances that load Fabric, named `<launcher>/<f
 mise run architecture
 ```
 
-This indexes the repository with [repowise](https://github.com/repowise-dev/repowise) and serves its dashboard at `http://localhost:3000`, with the import map, the files that change together and each file's history. The index is in `.repowise/`, which git ignores, and a later run updates it with the commits since. The task turns off repowise's telemetry and its other network calls, and makes no model calls.
+This indexes the repository with [repowise](https://github.com/repowise-dev/repowise) and serves its dashboard at the address the task prints, with the import map, the files that change together and each file's history. The index is in `.repowise/`, which git ignores, and a later run updates it with the commits since. The task makes no model calls, and turns off repowise's telemetry and update checks. The first run downloads repowise and its dashboard.
 
 ## Change the backend's tables
 
