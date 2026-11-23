@@ -106,7 +106,7 @@ class ProfileLookupTest {
     @Test
     fun `no container is fetched while the backend's answer is for another profile than the player's`() {
         source.profiles[0].second.complete(profile)
-        assertEquals(Load.Loaded(emptyList()), lookup.containers("A Profile Made Since"))
+        assertIs<Load.Failed>(lookup.containers("A Profile Made Since"))
         assertTrue(source.all.isEmpty())
         lookup.containers("Superior")
         assertEquals(1, source.all.size)

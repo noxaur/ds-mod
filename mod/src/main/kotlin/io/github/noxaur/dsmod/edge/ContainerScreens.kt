@@ -15,6 +15,13 @@ val AbstractContainerScreen<*>.containerBottom: Int get() = containerTop + conta
 
 val AbstractContainerScreen<*>.slotUnderMouse: Slot? get() = (this as ContainerScreenAccessor).hoveredSlot
 
+// @keep The slot a click lands on, by the screen's own hover test, since the hovered slot is only updated when a frame is drawn
+fun AbstractContainerScreen<*>.slotAt(x: Double, y: Double): Slot? = menu.slots.firstOrNull {
+    it.isActive && x >= screenX(it) - 1 && x < screenX(it) + SLOT_SIZE + 1 && y >= screenY(it) - 1 && y < screenY(it) + SLOT_SIZE + 1
+}
+
+private const val SLOT_SIZE = 16
+
 fun AbstractContainerScreen<*>.screenX(slot: Slot) = containerLeft + slot.x
 fun AbstractContainerScreen<*>.screenY(slot: Slot) = containerTop + slot.y
 
