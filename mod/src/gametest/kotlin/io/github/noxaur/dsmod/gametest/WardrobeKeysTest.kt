@@ -25,7 +25,8 @@ class WardrobeKeysTest : FabricClientGameTest {
         context.waitTicks(settle)
     }
 
-    /** @keep The frame drawn between the client applying the server's packets and its tick sets the hovered slot, so this stands in for it. */
+    /** @keep The test runs after the client applies the server's packets and before its tick, and the frame drawn between
+     * them sets the hovered slot, so this stands in for that frame. */
     private fun hoverDrawn(context: ClientGameTestContext, slot: Int) = context.runOnClient<Nothing> { client ->
         val screen = client.gui.screen() as AbstractContainerScreen<*>
         (screen as HoveredSlotAccessor).setHoveredSlot(screen.menu.getSlot(slot))
