@@ -35,6 +35,7 @@ import io.github.noxaur.dsmod.core.world.Tracer
 import io.github.noxaur.dsmod.core.world.Waypoint
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import java.nio.file.Path
@@ -293,6 +294,7 @@ class FeatureReplayTest {
         assertEquals(events.map { it.time }, ticks)
     }
 
+    @Tag("budget")
     @TestFactory
     fun `every feature stays inside the time budget`(): List<DynamicTest> = ciTree().features.map { feature ->
         dynamicTest(feature.id) {
