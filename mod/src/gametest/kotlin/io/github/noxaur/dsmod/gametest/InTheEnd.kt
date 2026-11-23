@@ -8,8 +8,7 @@ import io.github.noxaur.dsmod.edge.Hud
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
 
-/**
- * Puts the player in The End for the features locked to it, since a local world's tab list names no area. A
+/** @keep Puts the player in The End for the features locked to it, since a local world's tab list names no area. A
  * capture or a tap that just started makes the next poll post the real tab list again, so this waits one out.
  */
 fun ClientGameTestContext.enterTheEnd() {

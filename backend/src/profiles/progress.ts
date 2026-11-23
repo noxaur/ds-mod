@@ -4,8 +4,7 @@ import type { Progression } from "./wire.ts";
 
 type Progress = typeof ProgressModel.Type;
 
-/**
- * The server's slayers top out at 9: two players with 17 and 60 million XP both sit there. No table of the XP between
+/** @keep The server's slayers top out at 9: two players with 17 and 60 million XP both sit there. No table of the XP between
  * levels is in the catalog or anywhere else we have, so a slayer shows the level the server sent and no progress to
  * the next, and the cap is what the data suggests rather than what it says.
  */

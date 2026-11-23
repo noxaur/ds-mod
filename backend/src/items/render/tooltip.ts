@@ -18,7 +18,7 @@ const PINK = "#FF55FF";
 
 const inTooltipFont = (color: string): Omit<Span, "text"> => ({ color, font: "dragsim:tooltip" });
 
-/** The icon the server draws before a stat, which the catalog does not carry. The ones past `speed` are guesses. */
+/** @keep The icon the server draws before a stat, which the catalog does not carry. The ones past `speed` are guesses. */
 const ICONS: Readonly<Record<string, string>> = {
   damage: "\ue000",
   strength: "❁",
@@ -252,8 +252,7 @@ export const name = (item: UpstreamItem, catalogItem: CatalogItem | undefined, f
   return spans;
 };
 
-/**
- * Most plain items, the ones with no type and no ability, have a recipe, which the server says in a line of its own.
+/** @keep Most plain items, the ones with no type and no ability, have a recipe, which the server says in a line of its own.
  * Nothing the API sends says which do, so this is a guess that is right for most of them.
  */
 const RECIPES: Line = [{ text: "Right-click to view recipes!", color: YELLOW }];
