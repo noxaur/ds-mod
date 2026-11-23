@@ -72,7 +72,8 @@ const ContribLive = HttpApiBuilder.group(Api, "contrib", (handlers) =>
 const ProfilesLive = HttpApiBuilder.group(Api, "profiles", (handlers) =>
   handlers
     .handle("profile", ({ params, query }) => Profiles.profile(params.name, query.profile))
-    .handle("container", ({ params }) => Profiles.container(params.snapshot, params.container)),
+    .handle("container", ({ params }) => Profiles.container(params.snapshot, params.container))
+    .handle("containers", ({ params }) => Profiles.containers(params.snapshot)),
 );
 
 const AdminLive = HttpApiBuilder.group(Api, "admin", (handlers) =>

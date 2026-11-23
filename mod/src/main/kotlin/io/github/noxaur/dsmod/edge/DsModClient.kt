@@ -19,6 +19,7 @@ import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
 import io.github.noxaur.dsmod.edge.contribute.Contribute
+import io.github.noxaur.dsmod.edge.overview.ItemOverviews
 import io.github.noxaur.dsmod.edge.profile.Profiles
 import io.github.noxaur.dsmod.edge.ui.Editors
 import io.github.noxaur.dsmod.edge.ui.Kit
@@ -96,6 +97,7 @@ object DsModClient : ClientModInitializer {
     private fun pressed(key: InputConstants.Key) {
         if (Keys.matches(key, settings.general.settingsKey.value)) Minecraft.getInstance().schedule { openSettings() }
         if (Keys.matches(key, settings.hud.editKey.value)) Minecraft.getInstance().schedule { openHudEditor() }
+        ItemOverviews.pressed(key)
     }
 
     fun openHudEditor() =
@@ -156,6 +158,7 @@ object DsModClient : ClientModInitializer {
         Wardrobes.bind(tree.feature())
         TabBar.bind(tree.feature())
         Profiles.bind(game, tree.feature())
+        ItemOverviews.bind(game, tree.feature())
     }
 
     override fun onInitializeClient() {
@@ -271,7 +274,8 @@ object DsModClient : ClientModInitializer {
                     .then(ClientCommands.literal("login").executes { Account.login(); 1 })
                     .then(ClientCommands.literal("submit").executes { Contribute.submit(); 1 })
                     .then(ClientCommands.literal("cancel").executes { Contribute.cancel(); 1 })
-                    .then(Profiles.dsmod()),
+                    .then(Profiles.dsmod())
+                    .then(ItemOverviews.dsmod()),
             )
             Profiles.register(dispatcher)
         }

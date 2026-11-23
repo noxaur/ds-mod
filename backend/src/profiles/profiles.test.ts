@@ -176,8 +176,20 @@ test("a container has one slot for each place, null where upstream has no item",
   expect((await container(`/v1/snapshots/${snapshot}/containers/wardrobe:0`)).items).toHaveLength(36);
 });
 
+test("every container comes in one answer, each as its own lookup draws it", async () => {
+  const { profile, container, get } = backend();
+  const { snapshot, containers: listed } = await profile();
+  const all = Schema.decodeUnknownSync(Schema.Array(Container))(
+    (await get(`/v1/snapshots/${snapshot}/containers`)).value,
+  );
+  expect(all.map((box) => box.id)).toEqual(listed.map((box) => box.id));
+  for (const box of all) {
+    expect(box).toEqual(await container(`/v1/snapshots/${snapshot}/containers/${box.id}`));
+  }
+});
+
 test("a hidden profile lists its containers with no items, and no equipment", async () => {
-  const { profile, container, state } = backend();
+  const { profile, container, get, state } = backend();
   state.player = { status: 200, body: { ...player, profile: { ...player.profile, inventory_hidden: true } } };
   const value = await profile();
   expect(value.equipment).toEqual({ helmet: null, chestplate: null, leggings: null, boots: null, held: null });
@@ -188,6 +200,10 @@ test("a hidden profile lists its containers with no items, and no equipment", as
     hidden: true,
     items: [],
   });
+  const all = Schema.decodeUnknownSync(Schema.Array(Container))(
+    (await get(`/v1/snapshots/${value.snapshot}/containers`)).value,
+  );
+  expect(all.filter((box) => box.id !== "pets").every((box) => box.hidden && box.items.length === 0)).toBe(true);
 });
 
 test("a hidden player's items are kept nowhere", async () => {
@@ -439,6 +455,10 @@ test("a snapshot that is gone, a container that is not there and a bad id are to
   const { profile, failure } = backend();
   const { snapshot } = await profile();
   expect(await failure(`/v1/snapshots/${snapshot}/containers/nope`)).toEqual({ status: 404, tag: "ContainerNotFound" });
+  expect(await failure(`/v1/snapshots/${crypto.randomUUID()}/containers`)).toEqual({
+    status: 410,
+    tag: "SnapshotExpired",
+  });
   expect(await failure(`/v1/snapshots/${crypto.randomUUID()}/containers/inventory`)).toEqual({
     status: 410,
     tag: "SnapshotExpired",

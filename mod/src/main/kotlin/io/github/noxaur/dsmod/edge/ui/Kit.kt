@@ -73,6 +73,15 @@ object Kit {
     const val RESULT_SLOT_SIZE = 26
     const val BAR_HEIGHT = 6
     const val SCROLLBAR_WIDTH = 6
+    /** @keep A panel centred on the screen and moved down by its tabs, which stand on its top edge. `left` and `top`
+     * are where its content starts. */
+    data class Frame(val x: Int, val y: Int) {
+        val left get() = x + INSET
+        val top get() = y + INSET
+    }
+
+    fun underTabs(screenWidth: Int, screenHeight: Int, width: Int, height: Int) = Frame((screenWidth - width) / 2, (screenHeight - height + TAB_HEIGHT) / 2)
+
     const val TAB_WIDTH = TabLayout.TAB_WIDTH
     const val TAB_HEIGHT = 21
     const val CHECKBOX_SIZE = 10

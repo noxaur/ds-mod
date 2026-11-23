@@ -35,6 +35,9 @@ object Chat {
 fun Text.toComponent(): MutableComponent =
     spans.fold(Component.empty()) { line, span -> line.append(Component.literal(span.text).withColor(span.rgb)) }
 
+// @keep The game draws a lore line in italics unless the line says otherwise, as every line from the server does.
+fun Text.toLore(): MutableComponent = toComponent().withStyle { it.withItalic(false) }
+
 fun ServerText.toComponent(): MutableComponent = spans.fold(Component.empty()) { line, span ->
     line.append(
         Component.literal(span.text).withStyle {

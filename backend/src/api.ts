@@ -151,6 +151,18 @@ export const Api = HttpApi.make("dsmod")
           error: [ContainerNotFound, SnapshotExpired, UpstreamUnavailable],
         }).annotate(OpenApi.Summary, "One container of a profile, as it was when the snapshot was taken."),
       )
+      .add(
+        HttpApiEndpoint.get("containers", "/v1/snapshots/:snapshot/containers", {
+          params: { snapshot: Schema.String },
+          success: Schema.Array(Container),
+          error: [SnapshotExpired, UpstreamUnavailable],
+        })
+          .annotate(OpenApi.Summary, "Every container of a profile, as it was when the snapshot was taken.")
+          .annotate(
+            OpenApi.Description,
+            "In the order the profile lists them. The mod's item overview reads them all at once, so it asks once instead of once per container.",
+          ),
+      )
       .middleware(SignedIn)
       .annotate(
         OpenApi.Description,

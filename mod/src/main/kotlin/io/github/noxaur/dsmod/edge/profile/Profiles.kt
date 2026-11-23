@@ -46,6 +46,8 @@ object Profiles {
         override fun profile(name: String, profile: String?) = Account.backend.async { profile(name, profile) }
 
         override fun container(snapshot: String, id: String) = Account.backend.async { container(snapshot, id) }
+
+        override fun containers(snapshot: String) = Account.backend.async { containers(snapshot) }
     }
 
     fun open(name: String) {

@@ -147,6 +147,9 @@ class Backend(private val url: String, private val identity: Identity, private v
     fun container(snapshot: String, id: String): Container =
         Profile.parseContainer(send { get("/v1/snapshots/${segment(snapshot)}/containers/${segment(id)}", it) }.body())
 
+    fun containers(snapshot: String): List<Container> =
+        Profile.parseContainers(send { get("/v1/snapshots/${segment(snapshot)}/containers", it) }.body())
+
     fun skip(id: String) {
         send { post("/v1/contrib/requests/$id/skip", BodyPublishers.noBody(), null, it) }
     }

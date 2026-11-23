@@ -35,6 +35,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 ### Chat & Commands
 - **Command Binds** – Send a command with a key, a combo or a sequence. Group, fold and share them.
 - **Profile Viewer** – Type `/pv` and a name to see their skills, slayers, dungeons, pets and items.
+- **Item Overview** – Type `/dsmod items` to search every item you own, from every container, in one screen.
 - **Copy Chat** – Select messages and copy them as text, format codes or JSON.
 - **Hide Cooldown Messages** – Hides the "ability is on cooldown" messages.
 
