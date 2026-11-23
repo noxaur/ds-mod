@@ -36,13 +36,11 @@ class ItemOverviewTest : FabricClientGameTest {
                     context.setScreen { null }
                     profiles.command(line)
                     context.waitForScreen(ItemOverviewScreen::class.java)
-                    // @keep The live inventory alone brings a second tab, so the backend's answer is what brings a third.
                     context.waitUntil("the items loaded") { client -> (client.gui.screen() as? ItemOverviewScreen)?.widgets<KitTab>()?.size?.let { it > 2 } == true }
                     // @keep The diamonds unlock a recipe and an advancement, whose pop-ups would cover the sort buttons.
                     context.runOnClient<Nothing> { it.gui.toastManager().clear() }
                     context.waitTicks(3)
                 }
-                // @keep The grid starts where the panel's content does, 3 right of the first tab and 20 under the sort button's top.
                 fun grid() = context.computeOnClient<Pair<Int, Int>, Nothing> { client ->
                     (client.gui.screen() as ItemOverviewScreen).let { s -> s.widgets<KitTab>().first().x + 3 to s.widgets<KitCycleButton<*>>().first().y + 20 }
                 }

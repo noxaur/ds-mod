@@ -55,9 +55,7 @@ enum class PetLook(private val label: String) {
     override fun toString() = label
 }
 
-/** @keep The armor comes from the player's own inventory, and the last seen is kept while another menu is open, since
- * that menu does not hold the armor. The pet comes from the sidebar's line `Pet: [Lvl 100] Ender Dragon`.
- * dragsim.co floats each pet beside its owner, so the head of the last pet seen by that name is its icon */
+/** @keep The pet comes from the sidebar's line `Pet: [Lvl 100] Ender Dragon`, and dragsim.co floats each pet beside its owner, so the head of the last pet seen by that name is its icon */
 class EquipmentDisplay(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "equipment-display", Area.ANYWHERE, Store.GENERAL, "Show your armor and pet on the HUD.", hud = ::hud)
     private val inventory = ContainerReader(feature, ARMOR.minOf { it.slot }..ARMOR.maxOf { it.slot })
@@ -93,7 +91,6 @@ class EquipmentDisplay(config: DsModConfig) : HasFeature {
                 block = build()
             }
         }
-        // @keep Compared field by field, so a refresh with nothing new allocates nothing
         if (shown.layout != layout.value || shown.pieces != pieces.value || shown.petLook != petLook.value ||
             shown.petPosition != petPosition.value || shown.look != look.value || shown.placement != placement.value
         ) {

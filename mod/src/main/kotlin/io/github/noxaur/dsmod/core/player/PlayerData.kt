@@ -17,8 +17,6 @@ import io.github.noxaur.dsmod.core.profile.Profile
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
-/** @keep One container as the player last saw it, its items in the container's own order, and when, in the client's
- * milliseconds */
 @Serializable
 data class Seen(val title: String, val items: List<Item?> = emptyList(), val at: Long = 0)
 
@@ -28,8 +26,6 @@ data class ProfileData(val containers: Map<String, Seen> = emptyMap(), val featu
 @Serializable
 data class Players(val profile: String = PlayerData.UNNAMED, val profiles: Map<String, ProfileData> = emptyMap())
 
-/** @keep The player's data, on the profile they are on now. Game folds every event into it before a feature sees one,
- * so a feature reads it without asking which profile that is, and a feature's `profiled` state follows the switch. */
 class PlayerData internal constructor(private val container: ContainerState, private val metrics: Metrics) : Stored {
     private var saved = Players()
     private var changed = false
@@ -40,14 +36,10 @@ class PlayerData internal constructor(private val container: ContainerState, pri
     private var switching: String? = null
     private var unread = false
 
-    /** @keep The name of the profile the player is on, or null until the mod has seen one. What the mod keeps before then
-     * goes to the first name it learns */
     val profile: String? get() = saved.profile.takeUnless { it == UNNAMED }
 
     private val here: ProfileData get() = saved.profiles[saved.profile] ?: ProfileData()
 
-    /** @keep Each container the player saw on this profile, by the backend's id: `inventory`, `ender_chest` and
-     * `storage:<page - 1>`. The inventory holds the worn, carried and offhand slots */
     val containers: Map<String, Seen> get() = here.containers
 
     var shelf: Shelf? = null
@@ -58,10 +50,7 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         state.restore(here.features[id])
     }
 
-    /** @keep A profile is switched in the Profile Management menu: the player clicks a profile, then Switch to Profile, and
-     * the server closes the menu and sends that profile's inventory. A refusal comes as a chat line before the close.
-     * The menu also marks the profile the player is on, which names it however the mod lost track. Returns whether the
-     * profile changed */
+    /** @keep The server closes the Profile Management menu after Switch to Profile and then sends that profile's inventory; a refusal is a chat line before the close. The menu also marks the profile the player is on. */
     internal fun fold(time: Long, event: GameEvent): Boolean = when (event) {
         is ContainerOpened -> opened(time, event)
         is SlotChanged -> changed(time, event)
@@ -95,7 +84,6 @@ class PlayerData internal constructor(private val container: ContainerState, pri
             return false
         }
         shelf?.let { shelf ->
-            // @keep A menu closed before its slots arrive keeps the copy the player saw last
             if (unread) put(shelf.id, Seen(shelf.title, List(shelf.slots.count()) { null }, time))
             unread = false
             val i = event.slot - shelf.slots.first
@@ -122,7 +110,6 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         }
     }
 
-    // @keep The backend's answer for the account's own selected profile names it, when the player has not opened Profile Management
     fun heard(answer: Profile) {
         val name = answer.profileName.plain.takeIf { it.isNotEmpty() } ?: return
         if (saved.profile == UNNAMED) adopt(name)
@@ -183,8 +170,6 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         changed = false
     }
 
-    /** @keep A per-profile state from before the layer was one file for every profile, so the profile the player is on now
-     * takes it, unless that profile has its own already */
     fun takeOld(id: String, text: String) {
         val state = slices[id] ?: return
         changed = true

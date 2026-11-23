@@ -5,8 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Section(val from: Int = 0, val to: Int = 0)
 
-/** @keep A drag is worked out from the sections as they were when the button went down, not from the last frame, so a section
- * that merged on the way comes apart again when the mouse moves back. */
 object Sections {
     const val MIN_WIDTH = 5
     const val MERGE = 3

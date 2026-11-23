@@ -23,7 +23,6 @@ val eventTypes = GameEvent.serializer().descriptor.getElementDescriptor(1).let {
     (0 until subclasses.elementsCount).map(subclasses::getElementName).toSet()
 }
 
-// @keep A capture from before ticks were recorded has no tick, and a replay then ticks after every event.
 data class Captured(val time: Long, val event: GameEvent, val tick: Int? = null)
 
 class CaptureWriter(
@@ -96,7 +95,6 @@ class CaptureWriter(
 
 private fun line(time: Long, type: String, data: JsonObject, tick: Int? = null) = buildJsonObject {
     put("t", time)
-    // @keep Absent on a capture recorded before client ticks were stamped, which a replay must not guess.
     if (tick != null) put("tick", tick)
     put("type", type)
     put("data", data)

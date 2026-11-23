@@ -4,10 +4,7 @@ import type { Progression } from "./wire.ts";
 
 type Progress = typeof ProgressModel.Type;
 
-/** @keep The server's slayers top out at 9: two players with 17 and 60 million XP both sit there. No table of the XP between
- * levels is in the catalog or anywhere else we have, so a slayer shows the level the server sent and no progress to
- * the next, and the cap is what the data suggests rather than what it says.
- */
+/** @keep The server's slayers top out at 9: two players with 17 and 60 million XP both sit there. No XP table between levels exists, so a slayer shows the level sent and no progress. */
 export const SLAYER_MAX_LEVEL = 9;
 
 const tableOf = (progression: Progression, skill: string): readonly number[] =>
@@ -37,7 +34,6 @@ export const skillProgress = (
   };
 };
 
-// @keep `slayer` holds `<id>_xp` and `<id>_level` for each slayer.
 export const slayerProgress = (slayer: Readonly<Record<string, number>>): Progress[] =>
   Object.entries(slayer).flatMap(([key, totalXp]) => {
     if (!key.endsWith("_xp")) {

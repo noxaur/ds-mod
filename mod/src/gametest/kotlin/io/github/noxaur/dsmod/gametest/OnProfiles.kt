@@ -15,7 +15,6 @@ class OnProfiles(private val context: ClientGameTestContext) : AutoCloseable {
 
     val asked = CopyOnWriteArrayList<String>()
 
-    // @keep The player's own profile fails while this is set, as when dragsim.co or the backend is down.
     @Volatile var ownDown = false
 
     private val backend = FakeBackend("Testwyrm") { call ->

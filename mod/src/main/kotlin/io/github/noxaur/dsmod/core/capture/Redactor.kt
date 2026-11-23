@@ -102,8 +102,7 @@ class Redactor(private val names: Set<String>) {
             val profile = key.substringAfterLast(':') == "profile"
             val inside = here + listOfNotNull(PlayerNames.onEntity(json)?.groupValues?.get(2), if (profile) PlayerNames.inProfile(json) else null)
             val scrubbed = JsonObject(json.mapValues { (k, v) -> if (profile && k == "id") (if (v is JsonArray) JsonArray(emptyList()) else JsonPrimitive("")) else scrub(v, k, inside) })
-            /** @keep A name drawn one color per letter is one piece per letter, so no single string holds it. The pieces
-             * become one plain piece, which loses the line's colors and keeps the name on the player's machine. */
+            /** @keep A name colored per letter is one piece per letter, so no single string holds it. */
             val whole = if (scrubbed["extra"] is JsonArray) shown(scrubbed) else ""
             val named = names(whole, inside)
             if (named != whole) JsonPrimitive(named) else scrubbed
@@ -119,8 +118,6 @@ class Redactor(private val names: Set<String>) {
         }
     }
 
-    /** @keep Typed text is found only in a `system` event, so a raw `chat` record, whose event says the same, is dropped, and
-     * so is a `system` line of an older capture that does not read as today's event. */
     fun line(line: String): String? {
         val json = Json.parseToJsonElement(line).jsonObject
         val type = json.getValue("type").jsonPrimitive.content

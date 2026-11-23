@@ -4,7 +4,6 @@ import io.github.noxaur.dsmod.core.text.Role
 
 data class Point(val x: Double, val y: Double, val z: Double)
 
-// @keep Marks compare by value, so a feature that returns equal marks changes nothing on screen
 sealed interface Mark {
     val role: Role
 }

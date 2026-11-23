@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.fileSize
 import kotlin.io.path.name
 
-/** @keep Network calls run on [Account.backend]'s thread, disk work on [Background.io], and chat lines go out from the client thread. `specs/Contribute.tla` is the life of a run, and the code follows its names. */
 object Contribute {
     private const val QUIT_SECONDS = 4L
     private val log = LoggerFactory.getLogger("dsmod")
@@ -39,7 +38,6 @@ object Contribute {
     private val claimed = ConcurrentHashMap.newKeySet<Path>()
     private val uploads = ConcurrentHashMap.newKeySet<CompletableFuture<*>>()
 
-    /** @keep Offers are fetched only after the startup sweep, so it never deletes a capture a run is writing. */
     private lateinit var swept: CompletableFuture<Unit>
 
     private lateinit var game: Game
@@ -134,7 +132,6 @@ object Contribute {
         }
     }
 
-    /** @keep A sent run is told before the delete, so a delete that throws cannot hide that it went out, and one that throws keeps the claim, so this start does not upload the file again. */
     internal fun settle(answer: Upload, gz: Path, tell: (Upload) -> Unit): Boolean {
         if (answer == Upload.SENT) tell(answer)
         val deleted = try {
@@ -148,7 +145,6 @@ object Contribute {
         return deleted
     }
 
-    /** @keep The answer is handled on the backend's thread, as the upload is, so a resend queued behind it sees the file and its claim as this upload left them. */
     private fun upload(requestId: String, gz: Path) {
         val upload = Account.backend.async {
             var release = true

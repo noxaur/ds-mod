@@ -27,7 +27,6 @@ class SavedFiles(
     private val writer = lazy(startWriter)
     private val failures = ConcurrentLinkedQueue<Pair<String, Exception>>()
 
-    // @keep A state from before profiles is moved aside only once the player's file holds it, so a crash before then reads it again
     private val retiring = ConcurrentLinkedQueue<Path>()
 
     fun load() {

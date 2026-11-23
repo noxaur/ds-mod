@@ -60,7 +60,6 @@ object Recorder {
         session?.input(client, RawRecord.of(type))
     }
 
-    /** @keep Events posted before this belong to the tick that just ended. Call it at the end of `END_CLIENT_TICK`, after the listeners that post. */
     fun endedClientTick() {
         session?.endedClientTick()
     }

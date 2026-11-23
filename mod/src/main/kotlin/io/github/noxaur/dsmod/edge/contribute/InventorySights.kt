@@ -26,7 +26,6 @@ class InventorySights(private val sightings: ItemSightings) {
         for (i in stacks.indices) {
             val stack = inventory.getItem(i)
             if (stack === stacks[i] && stack.count == counts[i]) continue
-            // @keep A slot skipped for want of room is not cached, so it is read again once the batch has some.
             if (sightings.batch.full || System.nanoTime() > deadline) break
             if (remember(stacks, counts, i, stack) || stack.isEmpty) continue
             look(stack)

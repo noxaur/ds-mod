@@ -9,30 +9,25 @@ import type { Found, Progression } from "./wire.ts";
 
 export const FRESH_MS = 2 * 60 * 1000;
 export const KEEP_SECONDS = 24 * 60 * 60;
-/** @keep Renewed well inside KEEP_SECONDS, or the name expires while the copies it leads to are kept, and dragsim.co
- * being down then finds none. Renewing on every lookup would write one key twice in a second. */
 export const NAME_RENEW_MS = 60 * 60 * 1000;
 const NAME_KEEP_SECONDS = KEEP_SECONDS + NAME_RENEW_MS / 1000;
 export const MISSING_SECONDS = 60;
 export const CATALOG_FRESH_MS = 60 * 60 * 1000;
 export const CATALOG_RETRY_MS = 60 * 1000;
-/** @keep A copy is served fresh for FRESH_MS and its snapshot is reused, so the snapshot outlives that window by a
- * full SNAPSHOT_SECONDS: a profile viewed at the window's end still has its containers for that long. */
 export const SNAPSHOT_SECONDS = 10 * 60;
 const SNAPSHOT_KEEP_SECONDS = SNAPSHOT_SECONDS + FRESH_MS / 1000;
 
-// @keep Each KV key has one purpose, and a client chooses none of its parts but the name, which is lowercase and validated.
+// @keep A client chooses the name in a KV key, so it is lowercase and validated.
 const nameKey = (lower: string) => `name:${lower}`;
 const missingKey = (lower: string) => `missing:${lower}`;
 const profileKey = (uuid: string, profileId: string | undefined) => `profile:${uuid}:${profileId ?? "selected"}`;
 const snapshotKey = (id: string) => `snapshot:${id}`;
 const CATALOG_KEY = "catalog";
 
-// @keep The body is read again each time, so a change of ours never trusts a copy.
 const Entry = Schema.Struct({ fetchedAt: Schema.Number, body: Schema.Unknown });
 const decodeEntry = Schema.decodeUnknownOption(Entry);
 
-// @keep A copy kept before snapshots were reused has none, and is still a copy.
+// @keep A copy kept before snapshots were reused has no snapshot.
 const ProfileEntry = Schema.Struct({ ...Entry.fields, snapshot: Schema.optional(Schema.String) });
 const decodeProfileEntry = Schema.decodeUnknownOption(ProfileEntry);
 
@@ -62,7 +57,6 @@ const readEntry = Effect.fn(function* (store: ProfileStore["Service"], key: stri
 const putSnapshot = Effect.fn(function* (store: ProfileStore["Service"], found: Found) {
   const id = yield* newId;
   const kept = { hidden: found.profile.inventory_hidden === true, sections: sectionsOf(found.profile) };
-  // @keep A snapshot's key is new each time, so a refusal is the store failing, which no client can fix.
   yield* Effect.orDie(store.put(snapshotKey(id), kept, SNAPSHOT_KEEP_SECONDS));
   return id;
 });
@@ -71,7 +65,6 @@ export const readSnapshot = Effect.fn(function* (id: string) {
   return isSnapshotId(id) ? decodeSnapshot(yield* (yield* ProfileStore).get(snapshotKey(id))) : Option.none();
 });
 
-/** @keep The player hid the items, so no copy of them is made, in a snapshot or here. */
 const hide = (found: Found): Found => {
   const { profile } = found;
   if (profile.inventory_hidden !== true) {
@@ -102,7 +95,7 @@ const fetchPlayer = Effect.fn(function* (name: string, profileId: string | undef
       onNone: () => "",
       onSome: (decoded) => decoded.error,
     });
-    // @keep Asked for a profile, a 404 says either. Only the server's own words for a missing player mean that.
+    // @keep dragsim.co answers 404 for a missing player and a missing profile alike; only its words for a missing player tell them apart.
     if (MISSING_PLAYER.test(message)) {
       return yield* new PlayerNotFound();
     }
@@ -114,7 +107,6 @@ const fetchPlayer = Effect.fn(function* (name: string, profileId: string | undef
     yield* Effect.logWarning(`dragsim.co answered ${String(status)} for a player`);
     return yield* new UpstreamDown();
   }
-  // @keep An answer we cannot read is dragsim.co's change, not the client's mistake: it counts as down, so an older copy serves.
   const answer = yield* decodeAnswer(body).pipe(
     Effect.tapError((error) => Effect.logError(`dragsim.co's player answer did not decode: ${error.message}`)),
     Effect.mapError(() => new UpstreamDown()),
@@ -132,8 +124,6 @@ const fetchPlayer = Effect.fn(function* (name: string, profileId: string | undef
 const keep = (write: Effect.Effect<void, WriteRefused>) =>
   write.pipe(Effect.catchTag("WriteRefused", () => Effect.logWarning("The store refused a copy of a lookup")));
 
-/** @keep When dragsim.co cannot be reached the last copy answers as stale, however old: a day-old profile beats none.
- * A snapshot is written once per fetch and reused while the copy is fresh. A stale copy's snapshot may be gone. */
 export const lookup = Effect.fn(function* (name: string, profileId: string | undefined) {
   const store = yield* ProfileStore;
   const lower = name.toLowerCase();
@@ -146,7 +136,7 @@ export const lookup = Effect.fn(function* (name: string, profileId: string | und
     const { snapshot = yield* putSnapshot(store, cached.value.found) } = cached.value;
     return { ...cached.value, stale: false, snapshot };
   }
-  // @keep Checked even for a name once known, which dragsim.co answers 404 for after a rename or a ban.
+  // @keep dragsim.co answers 404 for a name once known after a rename or a ban.
   if ((yield* store.get(missingKey(lower))) !== null) {
     return yield* new PlayerNotFound();
   }
@@ -206,8 +196,6 @@ const fetchCatalog = Effect.gen(function* () {
   return { raw: body, progression: decoded.value.progression };
 });
 
-/** @keep A catalog that cannot be fetched is replaced by an older copy, with a minute before the next try, because the
- * tables change rarely. Without any copy the lookup is unavailable. */
 export const catalog = Effect.gen(function* () {
   const store = yield* ProfileStore;
   const now = yield* Clock.currentTimeMillis;

@@ -37,11 +37,6 @@ import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.useLines
 
-/** @keep The tab list and the sidebar that tell the area, and each change of world, are kept whatever the types say,
- * because a fixture without them replays as if the player never left. The fixture begins with the state at the window's
- * start, and a return to the player's inventory that keeps its slots is written with every slot it kept, so a fixture
- * never needs what came before it.
- */
 fun cutFixture(
     capture: Path,
     fixture: Path,
@@ -110,7 +105,6 @@ fun cutFixture(
                     continue
                 }
                 if (event == WorldChanged || event == LeftServer) held.clear()
-                // @keep `Game` forgets the tab list and the sidebar with the world, so the next world's rows must be written again.
                 if (event == WorldChanged) {
                     if (before) {
                         tab = null
@@ -143,7 +137,6 @@ fun cutFixture(
     }
     if (start == null) begin()
     val state = listOfNotNull(tab, sidebar, container) + checkNotNull(start) { "begin sets the slots the window starts with" }.map { (slot, item) -> SlotChanged(slot, item) } + heldAtStart
-    // @keep The carried state was posted on earlier ticks the window does not keep, so it has no tick of its own.
     val lines = (state.map { Captured(origin + (seconds.start * 1000).toLong(), it) } + events)
         .map { captureLine(it.time, redactor.redact(it.event), it.tick) }
     val others = capture.toAbsolutePath().parent.listDirectoryEntries("*.jsonl")
@@ -157,10 +150,6 @@ fun cutFixture(
     return lines.size to redactor.count
 }
 
-/** @keep `cutFixture <capture> <feature id> <name> <from>-<to> [--types a,b] [--info Key,Key] [--system regex]` writes
- * `src/test/resources/features/<feature id>/<name>.jsonl`. The window is in seconds from the capture's first line, and
- * `--types` defaults to `system,tablist`.
- */
 fun main(args: Array<String>) {
     val (capture, feature, name, window) = args
     val options = args.drop(4).chunked(2).associate { (flag, value) -> flag to value }
@@ -179,7 +168,6 @@ fun main(args: Array<String>) {
     println("Wrote $written lines for $feature/$name, with $players players renamed.")
 }
 
-/** @keep The line is the recorder's sample, so the text arrives up to a few ticks after the client had it. */
 private fun floating(line: String, shown: MutableMap<String, String>): List<Captured> {
     val json = Json.parseToJsonElement(line).jsonObject
     val time = json.getValue("t").jsonPrimitive.long

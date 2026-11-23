@@ -7,7 +7,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class StorageLayoutTest {
-    // @keep The Ender Chest's 3 rows, then 7 Storage pages of 5.
     private val rows = listOf(3) + List(7) { 5 }
 
     @Test

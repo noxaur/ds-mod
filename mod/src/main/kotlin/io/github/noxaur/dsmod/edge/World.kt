@@ -169,8 +169,7 @@ object World {
         }
     }
 
-    /** @keep Call it on each frame while the game gathers the frame's shapes, from Fabric's `AFTER_BLOCK_OUTLINE_EXTRACTION`,
-     * which runs on the client thread before they are handed to the renderer. */
+    /** @keep Fabric's `AFTER_BLOCK_OUTLINE_EXTRACTION` gathers the frame's shapes on the client thread, so call this from it each frame. */
     fun draw(mark: FrameBox) {
         val box = Gizmos.cuboid(mark.box, mark.style)
         if (mark.onTop) box.setAlwaysOnTop()

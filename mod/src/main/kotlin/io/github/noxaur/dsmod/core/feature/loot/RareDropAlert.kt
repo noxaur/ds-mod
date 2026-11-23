@@ -8,8 +8,6 @@ import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.Drop
 import io.github.noxaur.dsmod.core.text.text
 
-/** @keep A tier word no capture has shown yet counts as `unparsed` and alerts nobody, so add it to LootTier when the
- * counter shows one */
 class RareDropAlert(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "rare-drop-alert", Area.ANYWHERE, Store.LOOT, "Alert you to drops of the chosen tier or better.", formerly = listOf("lootAlerts"))
 

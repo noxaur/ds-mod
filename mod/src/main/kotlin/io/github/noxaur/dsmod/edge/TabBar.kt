@@ -44,15 +44,10 @@ object TabBar {
     private var stacks = arrayOfNulls<ItemStack>(0)
     private val dimmed = BitSet()
 
-    /** @keep The words Menu Search dims by, for items drawn outside the menu's slots, such as the storage overview's other pages */
     val searchWords: List<String> get() = if (shown) words else emptyList()
 
-    /** @keep Whether items drawn outside the menu's slots match, so the field turns red only when nothing on screen does */
     var alsoFound: () -> Boolean = { false }
 
-    /** @keep The left edge of a chest-wide column to place the tabs in, on a screen much wider than a chest, such as the
-     * storage overview, so they sit under its inventory and not at its far corner. Search joins them there, since the top
-     * edge is far from the inventory. */
     var column: (AbstractContainerScreen<*>) -> Int? = { null }
 
     fun tooltip(tab: MenuTab) = text {
@@ -206,7 +201,6 @@ object TabBar {
         }
     }
 
-    // @keep A slot that is hidden or covered keeps its match, so it dims as it should once it shows again
     fun dims(index: Int) = words.isNotEmpty() && dimmed[index] && !Slots.hides(index)
 
     private fun search(screen: AbstractContainerScreen<*>, field: KitTextField) {

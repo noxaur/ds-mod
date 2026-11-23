@@ -31,7 +31,6 @@ export const cookieCaller = (request: Request): Caller["Service"] => ({
 
 export const signedOutCaller = (): Caller["Service"] => ({ userId: null, adminToken: undefined });
 
-// @keep For a test of a cap that takes more calls than a player's rate allows in a minute.
 export const unlimited: Limiter = { allow: () => Effect.succeed(true) };
 
 export const testApp = (overrides: Partial<Services> = {}, callerOf = cookieCaller) => {

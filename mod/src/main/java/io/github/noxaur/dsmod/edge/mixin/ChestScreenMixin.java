@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ContainerScreen.class)
 abstract class ChestScreenMixin {
-    // @keep The storage overview draws its own panel in place of the chest's, after the world behind it is dimmed.
     @Inject(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIFFIIII)V", ordinal = 0), cancellable = true)
     private void dsmod$storage(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
         if (StorageOverlays.INSTANCE.background((ContainerScreen) (Object) this, graphics, mouseX, mouseY)) ci.cancel();

@@ -44,13 +44,11 @@ export interface Rules {
   readonly artOfWarDamage: number;
   readonly enrichmentAmount: number;
   readonly enrichmentStat: string;
-  // @keep What a dungeon item adds at Catacombs level 0, as a fraction.
   readonly dungeonBonus: number;
   readonly statOrder: readonly string[];
 }
 
 export interface Stat {
-  // @keep The `§` code of the stat's color, such as `c`.
   readonly color: string;
   readonly name: string;
 }
@@ -58,7 +56,6 @@ export interface Stat {
 export interface Catalog {
   readonly items: ReadonlyMap<string, CatalogItem>;
   readonly dungeon: ReadonlySet<string>;
-  // @keep Abilities by item in the catalog's order, and by key for the ones an item has but its entry does not list.
   readonly itemAbilities: ReadonlyMap<string, ReadonlyMap<string, Ability>>;
   readonly abilities: ReadonlyMap<string, Ability>;
   readonly reforges: ReadonlyMap<string, readonly Line[]>;

@@ -160,7 +160,7 @@ function main() {
     .filter((file) => file !== "" && !generated.has(file) && existsSync(join(root, file)));
   const found = scan(root, files);
   for (const comment of found) {
-    console.log(`${comment.file}:${comment.line}: delete this comment. Say it with a name, a type or a test, or fix what it excuses. A comment the user agreed to keep starts with "@keep ", as in "// @keep <what no code can say>".`);
+    console.log(`${comment.file}:${comment.line}: delete this comment. Say it with a name, a type or a test, or fix what it excuses. Only a fact no code can show, such as how the server behaves or a number someone measured, earns "// @keep <that fact>", and a person then reviews each one the pull request adds.`);
   }
   process.exit(found.length > 0 ? 1 : 0);
 }

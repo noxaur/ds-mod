@@ -38,10 +38,7 @@ enum class StatsLook(private val label: String, val hud: HudLook) {
     override fun toString() = label
 }
 
-/** @keep dragsim.co writes 0 for every player's ping in the tab list, so `Pings` in the edge asks the server once a
- * second, with the request the F3 network chart sends. The server sends its world's tick count about once a
- * second, and a server that stops ticking stops sending, so once the newest is a few seconds old the wait
- * counts as time with no ticks. Each world has its own clock */
+/** @keep dragsim.co writes 0 for every player's ping in the tab list, so the mod asks the server once a second, with the request the F3 network chart sends. The server sends its world's tick count about once a second and stops when it stops ticking, so a newest one a few seconds old counts as time with no ticks. */
 class PerformanceStats(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "performance-stats", Area.ANYWHERE, Store.GENERAL, "Show your FPS, your ping and the server's TPS on the HUD.", default = false, hud = ::hud)
 

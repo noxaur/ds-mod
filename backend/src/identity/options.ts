@@ -23,7 +23,6 @@ export const signInOptions = (hasJoined: HasJoined = mojangHasJoined()) =>
       minecraft(hasJoined),
       // @keep The mod has no cookie jar, so it sends its session as a bearer token.
       bearer(),
-      // @keep `/dsmod login` trades the mod's session for a link that signs a browser in once, within a minute.
       oneTimeToken({ expiresIn: 1, storeToken: "hashed" }),
     ],
   }) satisfies BetterAuthOptions;

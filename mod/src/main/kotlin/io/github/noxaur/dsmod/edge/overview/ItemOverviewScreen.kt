@@ -69,8 +69,6 @@ private val TAB_ITEMS = mapOf(
     Category.PETS to Items.BONE,
 )
 
-/** @keep `seen` holds what the game showed on `profile`, the one the player is on. `pick` opens the menu that holds an
- * item, and says whether one does. */
 class ItemOverviewScreen(
     private val lookup: ProfileLookup,
     private val seen: List<Copy>,
@@ -151,7 +149,6 @@ class ItemOverviewScreen(
         rebuildWidgets()
     }
 
-    /** @keep The items are merged once, when the backend's answer arrives, and only filtered as the player types. */
     private fun refresh() {
         val state = state
         if (state === built) return
@@ -178,8 +175,6 @@ class ItemOverviewScreen(
         foot()
     }
 
-    /** @keep The backend only fills in what the game has not shown, so the items show whatever it answers,
-     * and the line under them says what is missing. Hover it for why. */
     private fun foot() {
         val count = if (shown.size == 1) "1 item" else "${shown.size} items"
         when (val state = state) {
@@ -212,7 +207,6 @@ class ItemOverviewScreen(
         }.also { it.count = 1 }
     }
 
-    // @keep The places go under the item's own lore, so the tooltip keeps the item's frame and what other mods add to it.
     private fun tip(entry: Entry) = tips.getOrPut(entry) {
         val stack = stack(entry).copy()
         val lines = ArrayList(stack.get(DataComponents.LORE)?.lines().orEmpty())
@@ -232,7 +226,6 @@ class ItemOverviewScreen(
     }
 
     override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
-        // @keep The panel is as wide as the grid, and grows to the right for the scrollbar only while the items overflow, so the grid never moves.
         Kit.panel(graphics, frame.x, frame.y, PANEL_WIDTH + if (scroll.overflows) Kit.GAP + Kit.SCROLLBAR_WIDTH else 0, PANEL_HEIGHT)
         val offset = scroll.offset
         val firstRow = offset / Kit.SLOT_SIZE
@@ -273,9 +266,7 @@ class ItemOverviewScreen(
         why?.let { graphics.setComponentTooltipForNextFrame(font, it, mouseX, mouseY) }
     }
 
-    /** @keep A count draws as the game draws a stack's, unless it is wider than the slot, as 825 or 1.3k is. Then it
-     * shrinks just enough to fit. Snapping the size to whole screen pixels kept it sharp but halved it at GUI scale 2,
-     * which was too small to read. */
+    /** @keep Snapping the size to whole screen pixels kept it sharp but halved it at GUI scale 2, which was too small to read. */
     private fun count(graphics: GuiGraphicsExtractor, count: String, width: Int, x: Int, y: Int) {
         val scale = if (width <= COUNT_ROOM) 1f else COUNT_ROOM.toFloat() / width
         val pose = graphics.pose()
@@ -304,7 +295,6 @@ class ItemOverviewScreen(
 
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
         val field = search
-        // @keep A right click on the search box clears it, as in SkyOcean and the creative inventory.
         if (event.button() == 1 && field != null && field.isMouseOver(event.x, event.y)) {
             field.value = ""
             setFocused(field)

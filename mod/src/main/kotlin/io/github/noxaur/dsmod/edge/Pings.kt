@@ -6,9 +6,7 @@ import io.github.noxaur.dsmod.edge.input.InputApproved
 import io.github.noxaur.dsmod.edge.input.PingRequests
 import net.minecraft.util.Util
 
-/** @keep dragsim.co writes 0 for every player's ping in the tab list, so once a second this sends the request the F3 network
- * chart sends, and `Packets.pong` reads the answer. The chart sends one each tick itself while it is open, so this one
- * waits. */
+/** @keep dragsim.co writes 0 for every player's ping in the tab list, so this sends the request the F3 network chart sends, and `Packets.pong` reads the answer. */
 object Pings {
     private const val EVERY_MILLIS = 1_000L
     private var sent = 0L

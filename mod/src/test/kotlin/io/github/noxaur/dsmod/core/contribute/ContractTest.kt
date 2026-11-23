@@ -10,7 +10,6 @@ import kotlin.io.path.readText
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-/** @keep The backend refuses a whole batch over any bound, so each cap the mod keeps must sit inside the contract's. */
 class ContractTest {
     private val paths = Json.parseToJsonElement(Path.of("../api/openapi.json").readText()).jsonObject.getValue("paths").jsonObject
 

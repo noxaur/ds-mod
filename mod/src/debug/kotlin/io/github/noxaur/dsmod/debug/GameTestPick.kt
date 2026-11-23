@@ -27,10 +27,9 @@ private val BUILD = listOf("build.gradle.kts", "settings.gradle.kts", "gradle.pr
 private val RESOURCES = listOf("src/main/resources/", "src/debug/resources/", "src/gametest/resources/", "src/test/resources/profiles/")
 private val SOURCE_SETS = listOf("main", "debug", "gametest")
 
-/** @keep A class name in a descriptor, a signature or an inlined function's source map, so what an inline call or a type names counts too. */
+/** @keep A class name can sit in a descriptor, a signature or an inlined function's source map. */
 private val OWN_CLASS = Regex("""io/github/noxaur/dsmod/[\w/$]+""")
 
-/** @keep Each class with the classes it names, its file and its code's strings, where a lambda or an anonymous object counts as the class it is written in. */
 data class Sources(
     val names: Map<String, Set<String>>,
     val files: Map<String, String>,
@@ -87,7 +86,6 @@ fun pickGameTests(sources: Sources, changed: Collection<String>): Picked {
     val namers = names.keys.flatMap { name -> names.getValue(name).map { it to name } }.groupBy({ it.first }, { it.second })
     val hubs = names.keys.filter { name -> namers[name].orEmpty().count(tests::containsKey) > HUB }.toSet()
 
-    // @keep Each test that reaches the classes, by how many names away it is. A hub names nearly everything, so a walk stops at one.
     fun reaching(start: Collection<String>): Map<String, Int> {
         val seen = start.toMutableSet()
         val found = mutableMapOf<String, Int>()
@@ -103,7 +101,6 @@ fun pickGameTests(sources: Sources, changed: Collection<String>): Picked {
 
     val particular = mutableMapOf<String, Map<String, Int>>()
 
-    // @keep The game or a registry calls a mixin, an entrypoint or a feature's edge, so classes no test reaches reach the tests of the most particular class they name: the one fewest tests stand nearest to.
     fun reach(own: Set<String>): Map<String, Int> = reaching(own).ifEmpty {
         val near = (own.flatMap(names::getValue).toSet() - own - hubs).map { name ->
             particular.getOrPut(name) { particular[name] = emptyMap(); reach(setOf(name)) }
@@ -113,7 +110,6 @@ fun pickGameTests(sources: Sources, changed: Collection<String>): Picked {
         near.filter { rank(it) == best }.flatMap { it.entries }.groupBy({ it.key }, { it.value }).mapValues { it.value.min() }
     }
 
-    // @keep The nearest tests, as many whole distances of them as fit in one pick, or the smoke test when even the nearest are too many.
     fun fit(found: Map<String, Int>) = found.entries.groupBy({ it.value }, { it.key }).toSortedMap().values
         .runningFold(emptySet<String>(), Set<String>::plus).last { it.size <= MOST_PICKED }.ifEmpty { if (found.isEmpty()) emptySet() else setOf(SMOKE_TEST) }
 
@@ -122,7 +118,6 @@ fun pickGameTests(sources: Sources, changed: Collection<String>): Picked {
     for (path in changed) {
         if (BUILD.any { path == it || it.endsWith('/') && path.startsWith(it) }) picked += SMOKE_TEST
         if (RESOURCES.any(path::startsWith)) {
-            // @keep A resource reaches the tests of the classes that load it by name, and one no class names, such as a mixin list, any test boots through.
             val name = path.substringAfterLast('/')
             val loaders = strings.filterValues { said -> said.any { it == name || it.endsWith("/$name") } }.keys - hubs
             picked += fit(reach(loaders)).ifEmpty { setOf(SMOKE_TEST) }
@@ -131,7 +126,6 @@ fun pickGameTests(sources: Sources, changed: Collection<String>): Picked {
         if ("/core/" in path || path in tools || SOURCE_SETS.none { path.startsWith("src/$it/") }) continue
         val own = classes[path]?.toSet()
         if (own == null) {
-            // @keep A deleted file breaks what named it at compile time, which any test boots through.
             if (path.endsWith(".kt") || path.endsWith(".java")) picked += SMOKE_TEST
             continue
         }
@@ -147,7 +141,6 @@ fun pickGameTests(sources: Sources, changed: Collection<String>): Picked {
     return Picked(if (run.size > MOST_PICKED) setOf(SMOKE_TEST) else run, unreached)
 }
 
-/** @keep Writes the game test manifest with the tests the third argument names: all, a comma list of them, or, with none, those the change reaches. */
 fun main(args: Array<String>) {
     val (mod, out) = args.take(2).map(::File)
     val sources = readSources(mod)

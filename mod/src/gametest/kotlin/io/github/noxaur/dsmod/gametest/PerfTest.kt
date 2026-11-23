@@ -258,8 +258,6 @@ class PerfTest : FabricClientGameTest {
         context.runOnClient<Nothing> { it.player!!.closeContainer() }
     }
 
-    /** @keep Every page full of lored, rarity-marked items, at the GUI scale that fits them all on the test window, so
-     * the overview draws its most. */
     private fun storage(context: ClientGameTestContext, world: TestSingleplayerContext) {
         val pages = List(STORAGE_PAGES) { page ->
             SimpleContainer(MENU_SLOTS).also { chest ->

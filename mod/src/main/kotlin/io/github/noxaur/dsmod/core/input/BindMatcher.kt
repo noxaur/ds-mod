@@ -28,7 +28,6 @@ class BindMatcher {
         if (typed.size > CommandBind.MAX_KEYS) typed.removeAt(0)
         typedAt = now
         typedWhere = at
-        // @keep A sequence that just ended waits only for a longer one that starts with all of it.
         val ended = sequences.filter(::ended).maxOfOrNull { it.keys.size } ?: 1
         return if (sequences.any { continues(it, ended) }) null else finish(sequences)
     }

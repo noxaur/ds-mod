@@ -9,7 +9,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** @keep The storage overview draws its own titles, and both of its modes draw their own tooltips. */
 @Mixin(AbstractContainerScreen.class)
 abstract class StorageMenuMixin {
     @Inject(method = "extractTooltip", at = @At("HEAD"), cancellable = true)

@@ -20,7 +20,6 @@ class Metrics(private val nanoTime: () -> Long = System::nanoTime) {
 
     var onUnparsed: ((feature: String, sample: String) -> Unit)? = null
 
-    // @keep A sink that does I/O must hand the snapshot to its own thread
     val sinks = ArrayList<(Snapshot) -> Unit>()
 
     inline fun time(name: String, within: String? = null, block: () -> Unit) {

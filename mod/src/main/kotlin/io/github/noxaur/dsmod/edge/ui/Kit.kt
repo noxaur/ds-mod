@@ -73,8 +73,6 @@ object Kit {
     const val RESULT_SLOT_SIZE = 26
     const val BAR_HEIGHT = 6
     const val SCROLLBAR_WIDTH = 6
-    /** @keep A panel centred on the screen and moved down by its tabs, which stand on its top edge. `left` and `top`
-     * are where its content starts. */
     data class Frame(val x: Int, val y: Int) {
         val left get() = x + INSET
         val top get() = y + INSET
@@ -125,10 +123,6 @@ object Kit {
         frame(g, x, y, width, height, fade(t.outline, alpha), fade(t.panel, alpha), fade(t.panelLight, alpha), fade(t.panelShade, alpha))
     }
 
-    /** @keep One panel shaped like a T: `width` by `height` on top, and a stem `stemWidth` wide and `stemHeight` tall
-     * hanging from its bottom at `stemX`, with no seam between them. A stem as wide as the top, or nearly, makes it one
-     * rectangle, since a shoulder under 3 pixels has no room for its edges. `glass` is the glass alpha, or -1 for the
-     * opaque panel. */
     fun stemPanel(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, stemX: Int, stemWidth: Int, stemHeight: Int, glass: Int = -1) {
         val t = theme
         if (stemX < x + 3 || stemX + stemWidth > x + width - 3) {
@@ -213,7 +207,6 @@ object Kit {
         }
     }
 
-    // @keep The slot is painted as a whole chest's grid of slots, so `slotGrid` draws many in one blit.
     private fun paintSlot(made: DynamicTexture?, id: Identifier, face: Int, topLeft: Int, bottomRight: Int): DynamicTexture {
         val texture = made ?: DynamicTexture({ "dsmod $id" }, SLOT_GRID_WIDTH, SLOT_GRID_HEIGHT, false).also {
             Minecraft.getInstance().textureManager.register(id, it)
@@ -226,8 +219,6 @@ object Kit {
         return texture
     }
 
-    /** @keep `columns` by `rows` slots side by side, in one blit while the theme's slots are painted. A big grid, such as
-     * the storage overview's pages, would otherwise cost a blit per slot every frame. */
     fun slotGrid(g: GuiGraphicsExtractor, x: Int, y: Int, columns: Int, rows: Int, glass: Boolean) {
         if (theme === slotTheme && columns <= SLOT_GRID_COLUMNS && rows <= SLOT_GRID_ROWS) {
             return slotBlit(g, if (glass) GLASS_SLOT_TEXTURE else SLOT_TEXTURE, x, y, OPAQUE, columns * SLOT_SIZE, rows * SLOT_SIZE)
@@ -260,7 +251,6 @@ object Kit {
         slotBlit(g, GLASS_SLOT_TEXTURE, x, y, alpha)
     }
 
-    /** @keep A tab on a glass panel stops at the panel's ring, since two see-through fills on each other would show a darker band. */
     fun glassTab(
         g: GuiGraphicsExtractor, x: Int, panelY: Int, selected: Boolean, alpha: Int, edge: TabEdge = TabEdge.TOP,
         hovered: Boolean = false, width: Int = TAB_WIDTH,

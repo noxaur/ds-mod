@@ -6,8 +6,7 @@ export const PlayerName = Schema.String.check(Schema.isPattern(/^[A-Za-z0-9_]{1,
 
 export const ProfileId = Schema.String.check(Schema.isPattern(/^[0-9a-f-]{36}$/u));
 
-/** @keep dragsim.co sends only the total, and the backend does the level math, so a client shows these as they are.
- * `xpForNextLevel` is null at the cap, and when the backend does not know the table. */
+/** @keep dragsim.co sends only the total, so the backend does the level math. */
 export const Progress = Schema.Struct({
   id: Schema.String,
   name: Schema.String,
@@ -20,8 +19,6 @@ export const Progress = Schema.Struct({
 
 export const Stat = Schema.Struct({ id: Schema.String, name: Schema.String, value: Line });
 
-/** @keep `id` is stable, so a client may give a known one its own place, and must show one it does not know as a plain
- * grid. A container the player hid is listed with `hidden`, so a client can say so instead of drawing it empty. */
 export const ContainerSummary = Schema.Struct({
   id: Schema.String,
   title: Line,
@@ -59,10 +56,9 @@ export const Pet = Schema.Struct({
   xpIntoLevel: Schema.Number,
   xpForNextLevel: Schema.NullOr(Schema.Number),
   category: Schema.NullOr(Schema.String),
-  // @keep `value` is per level, not a total.
   perks: Schema.Array(StatValue),
   description: Schema.Array(Line),
-  /** @keep Rebuilt by the backend, not the server's own tooltip, which the API does not send. */
+  /** @keep The API sends no tooltip, so the backend rebuilds it. */
   item: DrawnItem,
 });
 export type Pet = typeof Pet.Type;
@@ -72,8 +68,7 @@ export const Dungeons = Schema.Struct({
   secrets: Schema.Number,
   zombieKills: Schema.Number,
   skeletorKills: Schema.Number,
-  /** @keep Leveled by the catalog's `catacombs` table, the same one the Catacombs skill uses, because the numbers fit
-   * it. It is the table of the game this server copies, and the data does not say so. */
+  /** @keep The numbers fit the catalog's `catacombs` table, which is the table of the game this server copies, though the data does not say so. */
   classes: Schema.Array(Progress),
   floors: Schema.Array(
     Schema.Struct({
@@ -113,11 +108,7 @@ export const ForgeSlot = Schema.Struct({
   stage: Schema.String,
 });
 
-/** @keep The containers are listed but not filled, because rebuilding every tooltip of thirty storage pages for a
- * player who opens one tab is wasted work. A client fetches a container from the same `snapshot`, so every tab shows
- * the profile as it was at one moment. */
 export const Profile = Schema.Struct({
-  // @keep The snapshot expires, and then the profile is fetched again.
   snapshot: Schema.String,
   fetchedAt: Schema.String,
   stale: Schema.Boolean,
@@ -146,8 +137,7 @@ export const Profile = Schema.Struct({
   playerStats: StatSheet,
   bestiary: Schema.Array(Kills),
   collections: Schema.Array(Schema.Struct({ id: Schema.String, name: Schema.String, amount: Schema.Number })),
-  /** @keep `progress` is the `kills` the server keeps for the meter, in the meter's own unit, so the `mine_` ones count
-   * blocks. */
+  /** @keep The server keeps `kills` for the meter in the meter's own unit, so the `mine_` ones count blocks. */
   rngMeters: Schema.Array(Schema.Struct({ id: Schema.String, name: Schema.String, progress: Schema.Number })),
   dungeons: Schema.NullOr(Dungeons),
   hotd: Schema.NullOr(Hotd),
@@ -158,8 +148,6 @@ export const Profile = Schema.Struct({
 });
 export type Profile = typeof Profile.Type;
 
-/* @keep Each failure has a stable `_tag` in its body, and a client that gets no body, as from a proxy, falls back on
- * the status alone. */
 export class PlayerNotFound extends Schema.TaggedError<PlayerNotFound>()(
   "PlayerNotFound",
   {},

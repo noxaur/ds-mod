@@ -1,13 +1,4 @@
 ---------------------------- MODULE SequenceFire ----------------------------
-(* @keep Command binds. One sequence is waiting out a longer one, and the client tick may finish it. The player can open
-   chat, focus a text field, hold F3, turn Command Binds off, or move between the world and a menu while it waits.
-   screen is the world, a menu, or "none", a place where no bind may fire: CommandKeys.where returns null for it, and
-   for F3 held. Command Binds off is the same, because the tick passes no place. Opening one does not call press.
-   tick calls BindMatcher.idle, which keeps a sequence while some live in-order bind covers both where() and typedWhere,
-   and the gap fires only such a bind. Null drops it.
-   Short is a bind of keys 1 then 2 whose place is both. Long is 1, 2, 1 in the world only. where() returns WORLD or
-   MENUS, never BOTH. MAX_KEYS is 3 because neither bind is longer. Gap is the sequence gap. now stops at Horizon so
-   the clock is finite. *)
 EXTENDS Naturals, Sequences
 
 CONSTANT Gap, Horizon
@@ -107,7 +98,6 @@ NoSendOffScreen == ~sentOff
 
 SequenceBounded == Len(typed) <= 3
 
-\* @keep Short's place is both, so typing it in the world and finishing in a menu still fires.
 LiveSequenceKept == ~droppedLive
 
 Spec == Init /\ [][Next]_vars

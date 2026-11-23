@@ -7,9 +7,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 
-/** @keep skin is the last part of a head's `textures.minecraft.net` address, foil is whether the game draws the shine
- * at all, from enchantments or the glint override, and style is the tooltip's frame, such as
- * `dragsim:legendary`. A capture keeps each only when it is set */
 @Serializable
 data class Item(
     val id: String,

@@ -22,13 +22,7 @@ import java.util.IdentityHashMap
 import kotlin.math.abs
 import kotlin.math.ceil
 
-/** @keep A use is the action bar's mana part appearing, `-100 Mana (Giant's Slam)`, which stays up for a few of the
- * server's half-second updates, so only its arrival counts. Abilities without one say so in chat: `HOWL!` for
- * the Tuba, `Soulcry! +` for a katana, and `You used Void Infusion!` for the drill. A press too early is
- * refused with what is left, which puts the timer where the server has it. When the server's length is not the
- * lore's, such as under a Sky Mall cut, the measured one stands in. A charging set bonus, `(4) Every 8s your
- * next hit blinks you`, starts on the player's own hit while the set is worn, and a hit while it charges does
- * not restart it, so the server sends nothing for it */
+/** @keep A use is the action bar's mana part appearing, `-100 Mana (Giant's Slam)`, which stays up for a few of the server's half-second updates, so only its arrival counts. Some abilities say so in chat instead: `HOWL!` for the Tuba, `Soulcry! +` for a katana, `You used Void Infusion!` for the drill. A charging set bonus, `(4) Every 8s your next hit blinks you`, starts on the player's own hit and a hit while it charges does not restart it, so the server sends nothing for it. */
 class AbilityCooldowns(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "ability-cooldowns", Area.ANYWHERE, Store.GENERAL, "Time your item abilities and Riftwalker's charged hit.", hud = ::hud, slots = ::slots)
 
@@ -106,8 +100,7 @@ class AbilityCooldowns(config: DsModConfig) : HasFeature {
         moved()
     }
 
-    /** @keep The refusal names no ability, so it is the timer whose end is nearest the server's among those used lately
-     * whose length is not far under what is left. Two that close together are left alone */
+    /** @keep The server's refusal names no ability, so it is matched to the timer whose end is nearest. */
     private fun refused(left: Long, now: Long) {
         val at = clock.millis(now)
         val end = at + left

@@ -44,7 +44,6 @@ export class SignedIn extends HttpApiMiddleware.Service<SignedIn, { provides: Pl
   security: { session: HttpApiSecurity.bearer },
 }) {}
 
-/** @keep The largest body an endpoint reads. An endpoint that takes more says so, so no new one inherits a large limit. */
 export const MaxBody = Context.Reference<ByteSize.ByteSize>("dsmod/MaxBody", {
   defaultValue: () => ByteSize.kibibytes(64),
 });
@@ -54,7 +53,6 @@ export const MAX_CAPTURE = ByteSize.megabytes(50);
 
 export class BodyLimit extends HttpApiMiddleware.Service<BodyLimit>()("dsmod/BodyLimit") {}
 
-// @keep An endpoint that costs more than a plain call counts against this rate as well as the player's own.
 export const Limited = Context.Reference<Rate | null>("dsmod/Limited", { defaultValue: () => null });
 
 export class Agent extends HttpApiMiddleware.Service<Agent>()("dsmod/Agent", {
@@ -223,7 +221,6 @@ export const Api = HttpApi.make("dsmod")
       .annotate(OpenApi.Description, "What an agent calls through dsctl, with the admin token."),
   )
   .middleware(BodyLimit)
-  // @keep The mod parses a brief strictly, so a key it does not know, such as `secs`, is refused here, not dropped.
   .middleware(HttpApiMiddleware.ProblemDetails)
   .annotate(HttpApi.PayloadParseOptions, { onExcessProperty: "error" })
   .annotateMerge(OpenApi.annotations({ title: "ds-mod backend", version: "0.1.0" }));

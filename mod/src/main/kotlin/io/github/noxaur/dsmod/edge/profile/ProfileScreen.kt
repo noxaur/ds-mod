@@ -100,7 +100,6 @@ private val TAB_ITEMS = mapOf(
     "pets" to Items.BONE,
 )
 
-/** @keep The backend sends no size for a hidden container, so its grid is drawn at the game's usual size. */
 private val HIDDEN_SLOTS = mapOf("inventory" to 36, "ender_chest" to 27, "storage" to 45, "wardrobe" to 36, "accessories" to 18)
 
 private val SKILL_ITEMS = mapOf(
@@ -150,7 +149,6 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
     private var tab = OVERVIEW
     private val pages = HashMap<String, Int>()
 
-    // @keep A switch or a new snapshot brings another container under the same id, so the shown container's items are matched by the answer, not by the id.
     private var stacked: Container? = null
     private var stacks = emptyList<Shown?>()
     private var tabs = emptyList<Tab>()

@@ -179,7 +179,6 @@ object DsModClient : ClientModInitializer {
         Hud.register()
         Slots.register()
         MenuSkin.register()
-        // @keep Before the menu's other layers, which place themselves on the overview's panel.
         StorageOverlays.register()
         StoragePreviews.register()
         ForgeCrafts.register()

@@ -8,8 +8,6 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-/** @keep The edge resolves legacy color codes and inherited styles before it builds one, so plain holds no formatting
- * codes and every ServerSpan carries its final style */
 @Serializable(with = TextSerializer::class)
 data class ServerText(val spans: List<ServerSpan>) {
     constructor(vararg spans: ServerSpan) : this(spans.asList())

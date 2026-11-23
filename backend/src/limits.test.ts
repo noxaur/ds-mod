@@ -31,7 +31,6 @@ const limitOf = (name: string) => config.cloudflare?.ratelimits?.find((rate) => 
 const RATES = { player: limitOf("RATE_PLAYER"), profile: limitOf("RATE_PROFILE"), items: limitOf("RATE_ITEMS") };
 const nextWindow = () => advance(clock, 60 * 1000);
 
-// @keep The mod leaves out a sighting over 16 KiB as JSON, so this is its largest batch.
 const largest = (index: number) => {
   const line = [{ text: "x".repeat(189) }];
   const item = sighting(`entry${String(index)}`, { lore: Array.from({ length: 80 }, () => line) });

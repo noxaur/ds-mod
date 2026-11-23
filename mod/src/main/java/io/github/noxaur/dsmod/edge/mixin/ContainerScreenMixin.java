@@ -30,7 +30,6 @@ abstract class ContainerScreenMixin {
     @Shadow
     protected Slot hoveredSlot;
 
-    // @keep A subclass adds its widgets after this, so they follow the new top.
     @Inject(method = "init", at = @At("TAIL"))
     private void dsmod$stable(CallbackInfo ci) {
         if ((Object) this instanceof ContainerScreen && MenuSkin.INSTANCE.getStable()) {

@@ -6,7 +6,6 @@ export interface Layout {
   readonly title: Line;
   readonly columns: number;
   readonly slots: number;
-  // @keep The items of the container, or for `pets` the pets as the server sends them.
   readonly cells: readonly unknown[];
 }
 

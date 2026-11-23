@@ -1,7 +1,6 @@
 const encoder = new TextEncoder();
 
-/** @keep Takes the same time wherever the two differ, so a secret cannot be guessed a letter at a time. An unset
- * secret matches nothing, so a missing setting refuses every caller. */
+/** @keep Takes the same time wherever the two differ, so a secret cannot be guessed a letter at a time. */
 export const sameSecret = (given: string | null | undefined, expected: string | undefined): boolean => {
   if (expected === undefined || expected === "" || given === null || given === undefined) {
     return false;

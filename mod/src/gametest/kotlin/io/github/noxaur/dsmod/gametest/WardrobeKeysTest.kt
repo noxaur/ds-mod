@@ -12,7 +12,6 @@ import net.minecraft.world.inventory.ContainerInput
 import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.Wardrobes]. */
 class WardrobeKeysTest : FabricClientGameTest {
     private val waitTicks = (WardrobeKeys.WAIT_MILLIS / 50).toInt()
 
@@ -26,8 +25,7 @@ class WardrobeKeysTest : FabricClientGameTest {
         context.waitTicks(settle)
     }
 
-    /** @keep The test runs after the client applies the server's packets and before its tick, and the frame drawn between
-     * them sets the hovered slot, so this stands in for that frame. */
+    /** @keep The frame drawn between the client applying the server's packets and its tick sets the hovered slot, so this stands in for it. */
     private fun hoverDrawn(context: ClientGameTestContext, slot: Int) = context.runOnClient<Nothing> { client ->
         val screen = client.gui.screen() as AbstractContainerScreen<*>
         (screen as HoveredSlotAccessor).setHoveredSlot(screen.menu.getSlot(slot))

@@ -32,7 +32,6 @@ class FixtureLeakTest {
     @Test
     fun `every name a fixture holds where a player's name stands is an alias`() {
         val fixtures = Files.walk(Path.of("src/test/resources/features")).asSequence().filter { it.toString().endsWith(".jsonl") }.toList()
-        // @keep PlayerNames reads a line's type from its text, so a line written any other way would go unread.
         val reformatted = fixtures.flatMap { file ->
             file.readLines().withIndex().filter { (_, line) ->
                 line.substringAfter("\"type\":\"", "").substringBefore('"') != Json.parseToJsonElement(line).jsonObject["type"]?.jsonPrimitive?.content

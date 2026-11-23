@@ -7,7 +7,6 @@ import kotlin.math.roundToInt
 
 private const val EPSILON = 1e-4f
 
-// @keep The HUD's scale snaps to whole screen pixels, so a 1px edge stays one pixel wide at every GUI scale.
 object HudScale {
     fun snap(scale: Float, guiScale: Int): Float = pixels(scale, guiScale.toFloat()).toFloat() / guiScale
 

@@ -20,9 +20,6 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.world.inventory.tooltip.TooltipComponent
 import net.minecraft.world.item.ItemStack
 
-/** @keep Preview mode: a page icon in the root Storage menu shows the page's remembered items as a grid in place of the
- * server's text, under the icon's own name and in its frame. Shift shows the server's text, and a page the player has not
- * opened this session keeps it. */
 object StoragePreviews {
     private lateinit var storage: StorageOverview
 
@@ -45,7 +42,6 @@ object StoragePreviews {
         if (stack.isEmpty || slot.index >= screen.menu.rowCount * ContainerState.ROW_SLOTS) return false
         val client = Minecraft.getInstance()
         if (client.hasShiftDown()) return false
-        // @keep The icon's name is read once per stack, not once per frame.
         if (stack !== named) {
             named = stack
             namedPage = StoragePages.pageOf(stack.hoverName.string)

@@ -15,10 +15,7 @@ data class BossRecord(val fights: Int = 0, val first: Int = 0, val loot: Map<Str
 @Serializable
 data class BossLog(val bosses: Map<String, BossRecord> = emptyMap())
 
-/** @keep The server sends one message of several lines when a dragon or the Endstone Protector falls, and its `Your
- * Damage` line is the player's own. A dragon's loot follows about ten seconds later, by which time the
- * Protector may have fallen too, and another dragon can fall during that wait, so each summary waits its turn
- * and the header takes the oldest one still inside LOOT_WINDOW_MILLIS */
+/** @keep The server sends one message of several lines when a dragon or the Endstone Protector falls, with the player's own `Your Damage` line. A dragon's loot follows about ten seconds later, when another boss may have fallen, so each summary waits its turn. */
 class BossFightTracker(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "boss-fight-tracker", Area.END, Store.END, "Show your rank, damage and loot from the last boss fight.", formerly = listOf("bossDrops"), hud = ::hud)
 

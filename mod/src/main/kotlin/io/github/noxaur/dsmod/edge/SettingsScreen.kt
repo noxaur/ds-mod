@@ -120,7 +120,7 @@ class SettingsScreen(
                 ::select, ::jump, ::folded, ::openTab, icons,
             ),
         )
-        /* @keep Vanilla narrates the first focused entry it did not narrate last, so two entries that both claim focus take turns. Only the part that has the keys claims it: the rows, the search field, or else the sidebar. */
+        /* @keep Vanilla narrates the first focused entry it did not narrate last, so two entries that both claim focus take turns. */
         nav.hasKeys = { !rows.keys && !rows.capturing && (focused == null || focused === nav) }
         addWidget(rows.narration)
         bar = addRenderableWidget(
@@ -179,7 +179,6 @@ class SettingsScreen(
         }
         pane.to(tab.scroll)
         tree.current = tab.current
-        /* @keep The pane takes the mark back only once it has scrolled, so a subsection a jump marked stays marked, even one whose heading can't reach the top near the end of a short section. */
         spiedAt = pane.offset
         folded()
         bar.layout()

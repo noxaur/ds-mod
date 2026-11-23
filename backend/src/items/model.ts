@@ -1,7 +1,6 @@
 import { Schema } from "effect";
 
-/** @keep A client draws a style it does not know as plain, so a flag can be added here without breaking an older mod.
- * Colors are `#RRGGBB`, because the server's text uses colors that `§` codes cannot name. */
+/** @keep Colors are `#RRGGBB`, because the server's text uses colors that `§` codes cannot name. */
 export const Span = Schema.Struct({
   text: Schema.String,
   color: Schema.optionalKey(Schema.String.check(Schema.isPattern(/^#[0-9A-F]{6}$/u))),
@@ -39,8 +38,6 @@ export type StatSheet = typeof StatSheet.Type;
 
 const Scalar = Schema.Union([Schema.String, Schema.Finite, Schema.Boolean]);
 
-/** @keep Every key is left out when the item has none of it. It is read from the server's own data, not rebuilt, so
- * unlike `lore` it is exact. */
 export const ItemFacts = Schema.Struct({
   // @keep Left out for the server's `NONE`.
   itemType: Schema.optionalKey(Schema.String),
@@ -61,7 +58,6 @@ export const ItemFacts = Schema.Struct({
   kills: Schema.optionalKey(Schema.Number),
   stats: Schema.optionalKey(StatSheet),
   reforgeStats: Schema.optionalKey(StatSheet),
-  // @keep Every ability the item has, hidden ones too, in the server's order.
   abilities: Schema.optionalKey(Schema.Array(Named)),
   skin: Schema.optionalKey(Named),
   dye: Schema.optionalKey(Named),
@@ -84,8 +80,7 @@ export const ItemFacts = Schema.Struct({
 });
 export type ItemFacts = typeof ItemFacts.Type;
 
-/** @keep The backend rebuilds the tooltip, because the server's API sends an item's data but no lore. `material` alone
- * must always draw something, so a client that does not know a newer field such as `itemModel` still shows an item. */
+/** @keep The server's API sends an item's data but no lore, so the backend rebuilds the tooltip. */
 export const DrawnItem = Schema.Struct({
   entry: Schema.NullOr(Schema.String),
   material: Schema.String,
@@ -94,14 +89,11 @@ export const DrawnItem = Schema.Struct({
   name: Line,
   lore: Schema.Array(Line),
   rarity: Schema.NullOr(Schema.String),
-  /** @keep The server's API sends no enchantments, so this is the catalog's word or what enough players saw. An item
-   * that glints only sometimes is drawn without it. */
+  /** @keep The server's API sends no enchantments, so this is the catalog's word or what enough players saw. */
   glint: Schema.Boolean,
   skullTexture: Schema.optionalKey(Schema.String),
   color: Schema.optionalKey(Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 0xffffff }))),
   facts: Schema.optionalKey(ItemFacts),
-  /** @keep The item's data as a real item carries it in its `custom_data`, with the same keys, so a mod that reads a
-   * real item's data reads this one too. */
   customData: Schema.optionalKey(Schema.Record(Schema.String, Schema.Unknown)),
 });
 export type DrawnItem = typeof DrawnItem.Type;
@@ -142,7 +134,6 @@ export const ItemAppearance = Schema.Struct({
   entry: Schema.String,
   players: Schema.Int,
   glintPlayers: Schema.Int,
-  // @keep Skull textures by skin, `""` for the item's own.
   textures: Schema.Array(Schema.Struct({ skinId: Schema.String, texture: Schema.String, players: Schema.Int })),
   samples: Schema.Array(ItemSighting),
 });

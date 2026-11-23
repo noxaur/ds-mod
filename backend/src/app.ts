@@ -38,7 +38,6 @@ const signedIn = (limiter: Limiter) =>
       }),
   });
 
-// @keep The endpoint reads its body inside this, so the limit is the endpoint's own.
 const BodyLimitLive = Layer.succeed(BodyLimit)((handler, { endpoint }) =>
   Effect.provideService(handler, HttpIncomingMessage.MaxBodySize, Context.get(endpoint.annotations, MaxBody)),
 );
@@ -95,7 +94,6 @@ const webOf = (limiter: Limiter) =>
         Layer.provide(ProfilesLive, signedIn(limiter)),
         Layer.provide(AdminLive, AgentLive),
       ]),
-      // @keep The client sent what the errors quote, and a refusal is never logged, so they reach only that client.
       Layer.provide(HttpApiMiddleware.layerProblemDetails({ includeDetails: true })),
       Layer.provide(BodyLimitLive),
       Layer.provide(HttpServer.layerServices),
@@ -103,8 +101,7 @@ const webOf = (limiter: Limiter) =>
     { disableLogger: true },
   );
 
-/** @keep A failure no handler expected answers an empty 500 so nothing internal leaks, and goes to the Worker's log
- * instead. A body Effect could not read is the client's mistake, answered 400 or 413, so it is not logged. */
+/** @keep A failure no handler expected answers an empty 500 so nothing internal leaks. */
 const logFailures = ErrorReporter.make(({ cause, error }) => {
   // @keep Effect lets the request's parse error die, so it is a defect here and not a failure.
   const unreadable = cause.reasons.every((reason) => {
@@ -133,7 +130,6 @@ export const makeApp = (services: Services, callerOf: (request: Request) => Call
     Context.add(Upstream, services.upstream),
     Context.add(Clock.Clock, services.clock),
     Context.add(ErrorReporter.CurrentErrorReporters, new Set([logFailures])),
-    // @keep A body read outside an endpoint gets the small limit too.
     Context.add(HttpIncomingMessage.MaxBodySize, MaxBody.defaultValue()),
   );
   const web = webOf(services.limiter);

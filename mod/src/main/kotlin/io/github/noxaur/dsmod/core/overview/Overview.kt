@@ -11,15 +11,12 @@ import io.github.noxaur.dsmod.core.ui.ItemSearch
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.doubleOrNull
 
-/** @keep How an item is drawn: as the backend rebuilt it, or as the server sent it to a menu. */
 sealed interface Look {
     data class Drawn(val item: DrawnItem) : Look
 
     data class Seen(val item: Item) : Look
 }
 
-/** @keep `id` is the server's item id, and two items are one entry when the id, the plain name and the rarity match. A
- * reforge or stars change the name, so they stay apart, and an upgrade that leaves the name alone merges. */
 data class Owned(val look: Look, val id: String, val name: String, val lore: List<String>, val rarity: String?, val price: Double?, val count: Int) {
     val key get() = Key(id, name, rarity)
 
@@ -48,8 +45,6 @@ data class Owned(val look: Look, val id: String, val name: String, val lore: Lis
     }
 }
 
-/** @keep One container's items, as one source last showed it. `kind` is the backend's id up to the colon, such as
- * `storage` for `storage:2`. */
 data class Copy(val id: String, val title: String, val items: List<Owned?>) {
     val kind get() = id.removeSuffix(":other").substringBefore(':')
 
@@ -83,7 +78,7 @@ enum class SortBy(private val label: String) {
 
 data class Place(val id: String, val title: String, val count: Int)
 
-/** @keep A server menu that shows one container: which container, and the slots that hold its items. A Storage page's
+/** @keep A Storage page's
  * top row holds its controls and the 45 slots under it its items, and `/storage <page>` opens a page itself. Its title,
  * `Storage Page (2/7)`, also gives how many pages the player has, as `pages`. The Ender Chest has one page of 27 under
  * its controls, and `/ec` opens it. */
@@ -114,15 +109,12 @@ data class Shelf(val id: String, val title: String, val slots: IntRange, val pag
     }
 }
 
-/** @keep dragsim.co gives each stack its own NPC price, and two stacks of one item can differ, so `value` sums each
- * stack's and `each` is only set when every stack agrees. */
+/** @keep dragsim.co gives each stack its own NPC price, so two stacks of one item can differ. */
 data class Entry(val item: Owned, val count: Long, val places: List<Place>, val value: Double?, val each: Double?, val lore: List<String>) {
 
     internal val rarityRank = item.rarity?.let { rarity -> Role.RARITIES.indexOfFirst { it.name == rarity } } ?: -1
 }
 
-/** @keep Built when the screen gets its items, and filtered and sorted only when the player changes the tab, the search
- * or the order, so a frame never walks the items. */
 class Overview(copies: List<Copy>) {
     private val byCategory: Map<Category, List<Entry>> = Category.entries.associateWith { category ->
         merge(copies.filter { category.kind == null || it.kind == category.kind })
@@ -139,7 +131,6 @@ class Overview(copies: List<Copy>) {
             SortBy.RARITY -> compareBy { it.rarityRank }
             SortBy.NAME -> compareBy(String.CASE_INSENSITIVE_ORDER) { it.item.name }
         }
-        // @keep A tie reads A to Z either way, so flipping the order does not shuffle equal items.
         return found.sortedWith((if (descending) order.reversed() else order).thenBy(String.CASE_INSENSITIVE_ORDER) { it.item.name })
     }
 
@@ -151,7 +142,6 @@ class Overview(copies: List<Copy>) {
             var value: Double? = null
             val prices = HashSet<Double?>()
 
-            // @keep Stacks merge by name, so their lore can differ, and a search matches any stack's.
             val lore = LinkedHashSet<String>()
         }
 
@@ -171,12 +161,7 @@ class Overview(copies: List<Copy>) {
             }
         }
 
-        /** @keep A copy the game showed always replaces the backend's. A Storage page or the Ender Chest changes only
-         * while its menu is open, where the mod reads it, so a copy the mod kept is never older than dragsim.co's, unless
-         * the player changed it from a game without ds-mod since.
-         * Comparing with dragsim.co's save time was rejected, because its clock need not agree with ours. A copy the
-         * backend does not show, such as a page bought since, a hidden one, or any when the backend did not answer, is
-         * added. */
+        /** @keep Comparing with dragsim.co's save time was rejected, because its clock need not agree with ours. */
         fun copies(backend: List<Container>, seen: List<Copy>): List<Copy> {
             val used = seen.associateBy { it.id }
             val listed = backend.filterNot { it.hidden }.map { used[it.id] ?: Copy.of(it) }

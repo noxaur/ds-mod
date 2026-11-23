@@ -38,8 +38,6 @@ export const skip = Effect.fn(function* (requestId: string, userId: string) {
   }
 });
 
-/** @keep Filling a request only stops it being offered: a player who accepted before is still recording, so their run
- * is kept too, up to twice `wanted`. The store keeps one run per player, so a single client cannot fill a request. */
 export const submit = Effect.fn(function* (requestId: string, userId: string, modVersion: string, capture: Uint8Array) {
   const gzipped = capture[0] === 0x1f && capture[1] === 0x8b;
   if (!gzipped) {
@@ -48,7 +46,6 @@ export const submit = Effect.fn(function* (requestId: string, userId: string, mo
   const store = yield* Store;
   const request = yield* requestOf(requestId);
   const runs = yield* store.submissionsOf(requestId);
-  // @keep Two uploads at once, or an upload and a close, can both pass this read. The insert below decides.
   const maxRuns = request.wanted * 2;
   if (request.status === "closed" || runs.length >= maxRuns || runs.some((run) => run.userId === userId)) {
     return yield* new HttpApiError.Conflict();

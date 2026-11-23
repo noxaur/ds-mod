@@ -7,8 +7,6 @@ import kotlinx.serialization.Serializable
 
 private val FLOOR = Regex(""" \([^)]*\)$""")
 
-/** @keep These are the server's own names and not an Area, because a request is most often for a place the mod has no feature
- * in yet. */
 @Serializable
 data class Places(val names: Set<String> = emptySet()) {
     fun with(tab: TabState, sidebar: SidebarState): Places {
@@ -19,8 +17,6 @@ data class Places(val names: Set<String> = emptySet()) {
     }
 }
 
-/** @keep The backend never knows what a player has seen, so the mod checks, and a kind it does not know is not met, so an
- * older mod never offers what it cannot judge. */
 object Requirements {
     fun met(kind: String, value: String, places: Places) = when (kind) {
         "area" -> value in places.names

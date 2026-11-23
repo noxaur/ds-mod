@@ -29,8 +29,6 @@ class PlayerDataTest {
         val profiles = arrayListOf<String?>(null)
         val left = HashMap<String?, Map<String, Seen>>()
 
-        /** @keep The fixture opens Profile Management on Old, opens the Ender Chest and Storage Page 1, switches to Young,
-         * is refused a switch back twice by the cooldown, then switches back to Old. */
         init {
             var before = player.containers
             for (captured in readCapture(Path.of("src/test/resources/features/item-overview/profile-switch.jsonl"))) {

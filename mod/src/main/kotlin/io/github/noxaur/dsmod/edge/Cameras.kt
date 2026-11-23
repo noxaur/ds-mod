@@ -40,7 +40,6 @@ object Cameras {
 
     private var tapped = false
 
-    // @keep turn already built the orbit for this press. Toggle reads a press while an orbit exists as the press that stops it, so this one must not.
     private var armed = false
 
     private var wasDown = false

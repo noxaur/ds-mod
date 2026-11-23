@@ -190,7 +190,6 @@ data class Meter(val id: String, val name: String, val progress: Double)
 
 @Serializable
 data class ContainerSummary(val id: String, val title: Line, val columns: Int, val slots: Int, val hidden: Boolean) {
-    // @keep Items the backend could not place, `inventory:other`, are a last page of their kind's tab.
     val kind get() = id.removeSuffix(":other").substringBefore(':')
 }
 

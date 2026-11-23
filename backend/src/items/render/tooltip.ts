@@ -18,7 +18,7 @@ const PINK = "#FF55FF";
 
 const inTooltipFont = (color: string): Omit<Span, "text"> => ({ color, font: "dragsim:tooltip" });
 
-/** @keep The icon the server draws before a stat, which the catalog does not carry. The ones past `speed` are guesses. */
+/** @keep The icon the server draws before a stat. The ones past `speed` are guesses. */
 const ICONS: Readonly<Record<string, string>> = {
   damage: "\ue000",
   strength: "❁",
@@ -56,7 +56,6 @@ const PERCENT = new Set(["critical_chance", "critical_damage", "attack_speed", "
 const ARMOR = new Set(["HELMET", "CHESTPLATE", "LEGGINGS", "BOOTS"]);
 const WEAPON = new Set(["SWORD", "BOW", "WAND", "AXE", "HOE", "SPADE"]);
 
-// @keep Rounds to two decimals, so `19.999999999999996` reads `20`.
 export const num = (value: number): string => String(Math.round(value * 100) / 100);
 
 const grouped = (value: number): string => value.toLocaleString("en-US", { maximumFractionDigits: 2 });
@@ -252,9 +251,7 @@ export const name = (item: UpstreamItem, catalogItem: CatalogItem | undefined, f
   return spans;
 };
 
-/** @keep Most plain items, the ones with no type and no ability, have a recipe, which the server says in a line of its own.
- * Nothing the API sends says which do, so this is a guess that is right for most of them.
- */
+/** @keep Most plain items, the ones with no type and no ability, have a recipe, which the server says in a line of its own. Nothing the API sends says which do. */
 const RECIPES: Line = [{ text: "Right-click to view recipes!", color: YELLOW }];
 
 const rune = (id: string): Line => [{ text: `◆ ${titleCase(id)}`, color: PINK }];

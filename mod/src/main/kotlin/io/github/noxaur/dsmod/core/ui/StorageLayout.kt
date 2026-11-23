@@ -3,13 +3,7 @@ package io.github.noxaur.dsmod.core.ui
 import kotlin.math.ceil
 import kotlin.math.sqrt
 
-/** @keep The storage overview on a screen of `screenWidth` by `screenHeight` GUI pixels: one panel shaped like a T, with
- * each page's grid of `rows` under its title across the top, and a chest-wide stem under it holding the player's
- * inventory, so no empty panel sits beside the inventory. The pages form the most square grid, 2 by 2 for 4 pages and 4
- * by 3 for 12, widened only when that lets them fit without scrolling, and never wider than the screen. They scroll when
- * they are still taller than the room left, and the inventory stays put. `width` and `height` are the box around the T.
- * A cell is a slot's 18 square, with its item 1 in. The panel leaves a tab's height above and below it, so the menu's
- * tabs stay on screen. */
+/** @keep A cell is a slot's 18 square, with its item 1 in. */
 class StorageLayout(screenWidth: Int, screenHeight: Int, private val rows: List<Int>) {
     val columns: Int
     val pagesWidth: Int
@@ -22,7 +16,6 @@ class StorageLayout(screenWidth: Int, screenHeight: Int, private val rows: List<
     val viewX: Int
     val viewY: Int
 
-    /** @keep Each page's left edge on screen, and its title's top from the top of the scrolled content */
     private val pageX = IntArray(rows.size)
     private val pageY = IntArray(rows.size)
 
@@ -43,7 +36,6 @@ class StorageLayout(screenWidth: Int, screenHeight: Int, private val rows: List<
         for (i in pageX.indices) pageX[i] += viewX
     }
 
-    /** @keep Places the pages in `columns` columns, a row as tall as its tallest page, and returns their height */
     private fun place(columns: Int): Int {
         var y = 0
         for (start in rows.indices step columns) {
@@ -69,13 +61,10 @@ class StorageLayout(screenWidth: Int, screenHeight: Int, private val rows: List<
 
     fun gridTop(page: Int, offset: Int) = titleTop(page, offset) + TITLE
 
-    /** @keep True while the page's title and grid are both inside the view, so it can be drawn without cutting */
     fun shows(page: Int, offset: Int) = titleTop(page, offset) >= viewY && gridTop(page, offset) + rows[page] * CELL <= viewY + view
 
-    /** @keep A page is in view while any of it is, so the overview draws only those */
     fun touches(page: Int, offset: Int) = gridTop(page, offset) + rows[page] * CELL > viewY && titleTop(page, offset) < viewY + view
 
-    /** @keep A cell counts as in view only while all of it is, since the slot under it must not take clicks outside the view */
     fun cellShows(page: Int, cell: Int, offset: Int): Boolean {
         val y = gridTop(page, offset) + cell / ROW * CELL
         return y >= viewY && y + CELL <= viewY + view
@@ -87,7 +76,6 @@ class StorageLayout(screenWidth: Int, screenHeight: Int, private val rows: List<
 
     fun inView(x: Double, y: Double) = x >= viewX && x < viewX + pagesWidth && y >= viewY && y < viewY + view
 
-    /** @keep The page under the point, its title included, or -1 */
     fun pageAt(x: Double, y: Double, offset: Int): Int {
         if (!inView(x, y)) return -1
         for (i in rows.indices) {
@@ -96,7 +84,6 @@ class StorageLayout(screenWidth: Int, screenHeight: Int, private val rows: List<
         return -1
     }
 
-    /** @keep The cell of the page under the point, or -1 over its title or outside it */
     fun cellAt(page: Int, x: Double, y: Double, offset: Int): Int {
         val dx = x - pageX[page]
         val dy = y - gridTop(page, offset)
@@ -106,7 +93,6 @@ class StorageLayout(screenWidth: Int, screenHeight: Int, private val rows: List<
 
     val scrollbarX get() = viewX + pagesWidth + SCROLL_GAP
 
-    /** @keep The height of the T's top, which holds the pages */
     val pagesHeight get() = 2 * INSET + view
 
     val inventoryX get() = viewX + (pagesWidth - GRID) / 2
@@ -115,7 +101,6 @@ class StorageLayout(screenWidth: Int, screenHeight: Int, private val rows: List<
 
     val inventoryTitleY get() = viewY + view + INVENTORY_GAP
 
-    /** @keep The cell of the player's inventory slot `slot`, 0 to 26 for the rows over the hotbar and 27 to 35 for it */
     fun inventoryCellY(slot: Int) = inventoryTitleY + TITLE + slot / ROW * CELL + if (slot >= HOTBAR) HOTBAR_GAP else 0
 
     fun inventoryCellX(slot: Int) = inventoryX + slot % ROW * CELL

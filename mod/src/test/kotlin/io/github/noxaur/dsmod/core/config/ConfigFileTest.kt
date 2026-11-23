@@ -87,7 +87,6 @@ class ConfigFileTest {
         val c = ConfigFile(path).load()
         val tree = SettingsTree(c)
         assertEquals(listOf("general.fullbright", "loot.lootAlerts", "hud.scale", "end.editBeam", "general.resetAnimations"), c.favorites)
-        // @keep Loot Alerts became Rare Drop Alert, and its star followed its former key to the feature's row.
         assertEquals(listOf("fullbright", "rare-drop-alert", "hudScale", "beamSections", "resetAnimations"), SettingsTree.favorites(c.favorites))
 
         assertFalse(tree.feature<HideCooldownMessages>().feature.enabled)

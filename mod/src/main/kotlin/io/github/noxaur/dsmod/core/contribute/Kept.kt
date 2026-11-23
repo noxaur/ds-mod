@@ -17,7 +17,6 @@ object Kept {
 
     fun waiting(dir: Path) = files(dir).filter { requestId(it) != null }.sorted()
 
-    // @keep Only a start of the game may delete files here: a run may be writing one.
     fun sweep(dir: Path) {
         val failed = files(dir).filter { requestId(it) == null }.filter { runCatching { Files.deleteIfExists(it) }.isFailure }
         if (failed.isNotEmpty()) throw java.io.IOException("Could not delete $failed")

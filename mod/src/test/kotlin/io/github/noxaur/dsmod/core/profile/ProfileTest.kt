@@ -12,7 +12,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** @keep `profile.json` and `inventory.json` come from the backend's own tests, so the mod's reading follows the contract and not a copy of it. */
 class ProfileTest {
     private val profile = Profile.parse(resource("profiles/profile.json"))
 

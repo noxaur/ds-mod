@@ -43,7 +43,6 @@ object Profiles {
     private val on get() = viewer.feature.runs
 
     var source: ProfileSource = object : ProfileSource {
-        // @keep The player's own answer is handed to their data on the client thread, so it is there when the backend is not
         override fun profile(name: String, profile: String?) = Account.backend.async { profile(name, profile) }.also { answer ->
             if (profile == null && name.equals(Account.name, ignoreCase = true)) answer.thenAccept { Minecraft.getInstance().execute { game.player.heard(it) } }
         }

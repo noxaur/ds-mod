@@ -14,10 +14,7 @@ import io.github.noxaur.dsmod.core.world.Mark
 import io.github.noxaur.dsmod.core.world.Point
 import io.github.noxaur.dsmod.core.world.Waypoint
 
-/** @keep The server marks the spot with a head: it appears the moment the last Protector falls, climbs one block with
- * each tier the next one rises, and gives way to the Protector itself, so the newest head is the spot. The
- * beam stays on the lowest block the head was seen on. Without the tab list's `Protector` row the beam shows,
- * because a beam the player did not ask for is a smaller fault than a missing one */
+/** @keep The server marks the spot with a head that appears when the last Protector falls and climbs one block per tier, so the newest head is the spot. */
 class ProtectorSpawnBeam(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "protector-spawn-beam", Area.END, Store.END, "Show a beam where the Endstone Protector will emerge.", formerly = listOf("bossBeacon"), marks = ::marks)
 

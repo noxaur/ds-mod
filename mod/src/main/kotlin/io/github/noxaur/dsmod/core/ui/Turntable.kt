@@ -3,7 +3,6 @@ package io.github.noxaur.dsmod.core.ui
 class Turntable(private val speed: Float = SPEED) {
     private var base = 0f
 
-    // @keep When the spin from base began, null until the first frame asks, so it starts facing the player.
     private var since: Long? = null
     private var grabX = 0.0
     private var grabY = 0.0

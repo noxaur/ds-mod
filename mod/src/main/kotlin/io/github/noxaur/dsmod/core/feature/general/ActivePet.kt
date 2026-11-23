@@ -150,7 +150,6 @@ class ActivePet(config: DsModConfig) : HasFeature {
         val total = needed.takeIf { xp } ?: 1.0
         val at = read.takeIf { xp } ?: progress.fraction.toDouble()
         val pace = pace
-        // @keep Less XP than the last read is another pet of the same name, summoned in the menu
         if (pace == null || pace.key != key || pace.level != card.pet.level || pace.total != total || pace.xp != xp || at < pace.read) {
             this.pace = Pace(key, card.pet.level, total, xp, now, at)
             return

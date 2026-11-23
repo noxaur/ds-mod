@@ -44,8 +44,6 @@ interface Identity {
 @Serializable
 data class Requirement(val kind: String, val value: String)
 
-/** @keep The backend may add a field and an older mod ignores it, but the brief is read strictly, so a step can't silently
- * lose its timer to a key the mod does not know. */
 @Serializable
 data class Request(
     val id: String,
@@ -114,17 +112,14 @@ private fun ServerText.toJson() = buildJsonArray {
     }
 }
 
-/** @keep The session token lives in `token` and nowhere else: the mod is open source and the backend believes nothing the mod
- * says, so the token is never written, logged or shown. A session ends after 24 hours. */
+/** @keep The mod is open source and the backend believes nothing the mod says, so the session token lives in `token` and is never written, logged or shown. */
 class Backend(private val url: String, private val identity: Identity, private val modVersion: String) {
     @Volatile
     private var token: String? = null
 
     val signedIn get() = token != null
 
-    /** @keep Built on the first call, on the worker, because building one may read the trust store from disk. HTTP/1.1,
-     * because over plain http Java asks to upgrade to HTTP/2 in a header, and a server that does not know the upgrade
-     * (Vite's, in development) drops the connection, which reads as an unreachable backend. */
+    /** @keep Built on the first call, on the worker, because building one may read the trust store from disk. HTTP/1.1, because over plain http Java sends an HTTP/2 upgrade header, and Vite's dev server drops the connection on it. */
     private val http by lazy { HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).connectTimeout(Duration.ofSeconds(10)).build() }
 
     private val worker = Executors.newSingleThreadExecutor { Thread(it, "dsmod-backend").apply { isDaemon = true } }
@@ -214,13 +209,10 @@ class Backend(private val url: String, private val identity: Identity, private v
         (json.parseToJsonElement(body.orEmpty()) as? JsonObject)?.get("_tag")?.jsonPrimitive?.content
     }.getOrNull()
 
-    // @keep A path segment the backend reads back whole: its ids are letters, digits, dashes, underscores and colons.
     private fun segment(value: String) = value.also { require(it.matches(Regex("[A-Za-z0-9_:-]{1,64}"))) { "Not an id: $it" } }
 
     private fun signIn(): String {
         val challenge = reach { exchange(auth("/api/auth/minecraft/challenge", "{}")) }
-        /** @keep Every ds-mod backend has this route, so a 404 means something else holds the address, such as another
-         * project's dev server on the port. Read as a status, it would blame a request the player never made. */
         if (challenge.statusCode() == 404) throw BackendException(null, "Nothing at $origin answers as the ds-mod backend.")
         challenge.requireOk("a sign-in")
         val serverId = field(challenge.body(), "serverId")

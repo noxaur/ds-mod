@@ -26,7 +26,6 @@ private fun String.withoutTrailingZeros() = trimEnd('0').trimEnd('.')
 
 private val SUFFIXES = arrayOf("", "k", "M", "B", "T")
 
-// @keep Each step rounds before it is read, so 999,960 reads 1M and not 1000k
 fun short(value: Double, places: Int): String {
     val scale = 10.0.pow(places)
     var tier = 0

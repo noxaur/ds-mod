@@ -47,8 +47,7 @@ object Packets {
         if (game.wants(ServerTime::class.java)) game.post(System.currentTimeMillis(), ServerTime(gameTime))
     }
 
-    /** @keep The F3 network chart's requests are answered the same way, and count as well. The game handles the answer on the
-     * network thread, so the round trip is read there, before it waits for a frame. */
+    /** @keep The game handles the F3 network chart's answer on the network thread, so the round trip is read there. */
     fun pong(sent: Long) {
         val ping = PingMeasured(Util.getMillis() - sent)
         Minecraft.getInstance().execute {

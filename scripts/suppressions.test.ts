@@ -5,7 +5,7 @@ import { added, unexplained } from "./suppressions.ts";
 
 const diff = readFileSync(new URL("suppressions.fixture.diff", import.meta.url), "utf8");
 
-test("finds each suppression a diff adds to code, at its line in the new file", () => {
+test("finds each suppression and @keep comment a diff adds to code, at its line in the new file", () => {
   assert.deepEqual(added(diff), [
     "mod/src/main/kotlin/A.kt:3",
     "mod/src/main/kotlin/A.kt:22",
@@ -18,6 +18,10 @@ test("finds each suppression a diff adds to code, at its line in the new file", 
     "web/\\303\\246.ts:1",
     "mod/G.kt:1",
     "mod/G.kt:2",
+    "mod/H.kt:1",
+    ".github/workflows/i.yml:1",
+    "specs/J.tla:1",
+    "specs/J.tla:2",
   ]);
 });
 
@@ -43,5 +47,9 @@ test("a suppression is explained by a body line that names where it is and gives
     "web/f g.ts:6",
     "web/\\303\\246.ts:1",
     "mod/G.kt:1",
+    "mod/H.kt:1",
+    ".github/workflows/i.yml:1",
+    "specs/J.tla:1",
+    "specs/J.tla:2",
   ]);
 });

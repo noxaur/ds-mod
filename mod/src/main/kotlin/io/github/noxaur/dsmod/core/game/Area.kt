@@ -1,7 +1,6 @@
 package io.github.noxaur.dsmod.core.game
 
-/** @keep Each place is taken from a capture: prefer whichever of the tab list row and the sidebar place arrives
- * first. A dungeon, the Dungeon Hub and a part of an area are told by the sidebar's `⏣` line */
+/** @keep The sidebar's `⏣` line tells a dungeon, the Dungeon Hub and a part of an area. */
 enum class Area(val key: String?, val value: String?, val place: String?) {
     ANYWHERE(null, null, null),
     VILLAGE("Area", "Village", null),

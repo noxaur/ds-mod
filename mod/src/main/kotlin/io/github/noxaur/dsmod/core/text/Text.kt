@@ -34,7 +34,6 @@ enum class Role(val rgb: Int) {
     }
 }
 
-// @keep The blue is lighter than the logo's, to read on dark chat
 private val brandStops = intArrayOf(0xFFBB00, 0xFFFFFF, 0x6C68FF)
 
 data class Span(val text: String, val rgb: Int)

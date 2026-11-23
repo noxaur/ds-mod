@@ -11,8 +11,7 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 
-/** @keep An empty slot is one the player can put an item in, as every slot of a storage page is, so the button shows only
- * while the Go Back slot holds filler and never covers a slot the player uses. */
+/** @keep Every slot of a storage page is empty and takes an item, so the button shows only while the Go Back slot holds filler. */
 object MenuBack {
     private const val GO_BACK = "Go Back"
 

@@ -10,8 +10,6 @@ import kotlinx.serialization.json.jsonObject
 import java.nio.file.Path
 import kotlin.io.path.useLines
 
-/** @keep Each rule is a shape a capture shows, never a guess, and Redactor and FixtureLeakTest learn names only here, so they
- * cannot disagree. */
 object PlayerNames {
     internal val word = Regex("""\w+""")
 
@@ -89,10 +87,7 @@ object PlayerNames {
         }
     }
 
-    /** @keep The player rows are the first column under its title, which is the area, and an info row can name whoever
-     * started a booster, as in ` Admin Booster 6m 47s by [ADMIN] name`. The column is 19 rows. A dungeon puts `Class:
-     * Mage` rows there too. A tab list of one column has the `Info` title inside the first 19 rows, and the players
-     * end there. */
+    /** @keep The player rows are the first column under its title, the area, and an info row can name whoever started a booster, as in ` Admin Booster 6m 47s by [ADMIN] name`. The column is 19 rows, and a one-column tab list has the `Info` title inside them. */
     fun inTabList(rows: List<String>): List<List<IntRange>> {
         val players = 1 until (rows.indexOfFirst { it.trim() == "Info" }.takeIf { it > 0 } ?: 20).coerceAtMost(20)
         return rows.mapIndexed { i, row ->
