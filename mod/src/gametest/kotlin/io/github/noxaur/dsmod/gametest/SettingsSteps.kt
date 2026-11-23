@@ -138,10 +138,10 @@ internal open class SettingsDriver(val context: ClientGameTestContext) {
     }
 }
 
-internal class BindsDriver(context: ClientGameTestContext) : SettingsDriver(context) {
-    fun list() = spot("binds")
+internal class BindsDriver(context: ClientGameTestContext, private val id: String = "binds") : SettingsDriver(context) {
+    fun list() = spot(id)
 
-    fun lines() = context.computeOnClient<Int, Nothing> { ((it.gui.screen() as SettingsScreen).editor("binds") as ItemsEditor<*>).size }
+    fun lines() = context.computeOnClient<Int, Nothing> { editorNow(it).size }
 
     fun foot() = lines() - 1
 
@@ -151,11 +151,11 @@ internal class BindsDriver(context: ClientGameTestContext) : SettingsDriver(cont
 
     fun headingOf(group: String, details: Boolean = false) = context.computeOnClient<Int, Nothing> { editorNow(it).headingOf(group, details) }
 
-    private fun editorNow(client: Minecraft) = (client.gui.screen() as SettingsScreen).editor("binds") as ItemsEditor<*>
+    fun editorNow(client: Minecraft) = (client.gui.screen() as SettingsScreen).editor(id) as ItemsEditor<*>
 
     fun at(line: Int, control: String? = null): IntArray {
-        val spot = context.computeOnClient<IntArray?, Nothing> { (((it.gui.screen() as SettingsScreen).editor("binds")) as ItemsEditor<*>).spot(line, control) }
-        return spot ?: error("Line $line of the binds has no ${control ?: "line"}; it has ${lines()} lines")
+        val spot = context.computeOnClient<IntArray?, Nothing> { editorNow(it).spot(line, control) }
+        return spot ?: error("Line $line of $id has no ${control ?: "line"}; it has ${lines()} lines")
     }
 
     fun press(line: Int, control: String? = null, button: Int = 0, dx: Int = -1) {

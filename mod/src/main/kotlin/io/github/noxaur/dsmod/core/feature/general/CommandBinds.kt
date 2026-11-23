@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.core.feature.general
 
-import io.github.noxaur.dsmod.core.config.Bind
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Grouped
 import io.github.noxaur.dsmod.core.config.Store
@@ -25,17 +24,7 @@ class CommandBinds(config: DsModConfig) : HasFeature {
 
     init {
         feature.rows {
-            val list = Bind(
-                binds.bind.field,
-                { Grouped(binds.value, groups.value, collapsedGroups.value, offGroups.value) },
-                {
-                    binds.value = it.items
-                    groups.value = it.groups
-                    collapsedGroups.value = it.folded
-                    offGroups.value = it.off
-                },
-            )
-            items(list, "Binds", "Name each bind, pick its keys and choose where it works.", BindKind)
+            items(Grouped.bind(binds, groups, collapsedGroups, offGroups), "Binds", "Name each bind, pick its keys and choose where it works.", BindKind)
         }
     }
 

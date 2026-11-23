@@ -87,6 +87,8 @@ fun ItemsEditor<*>.spot(line: Int, control: String? = null): IntArray? {
 
 val ItemsEditor<*>.size get() = lines.size
 
+fun ItemsEditor<*>.picker() = menu as? KitColorPicker
+
 fun ItemsEditor<*>.lineOf(index: Int, details: Boolean = false) = indexOf(Entry.Item(index), details)
 
 fun ItemsEditor<*>.headingOf(group: String, details: Boolean = false) = indexOf(Entry.Heading(group), details)

@@ -127,6 +127,11 @@ class Feature(
 
     val here: Boolean get() = inArea()
 
+    // @keep The server's name for where the player is, from Area.named, for a feature that remembers places by it
+    val areaName: String? get() = named()
+
+    internal var named: () -> String? = { null }
+
     var state: Saved<*>? = null
         private set
 

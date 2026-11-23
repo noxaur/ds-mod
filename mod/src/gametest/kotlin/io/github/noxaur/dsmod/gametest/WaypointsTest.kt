@@ -1,0 +1,141 @@
+package io.github.noxaur.dsmod.gametest
+
+import io.github.noxaur.dsmod.core.feature.general.Waypoints
+import io.github.noxaur.dsmod.core.ui.SettingsTabs
+import io.github.noxaur.dsmod.core.waypoint.SavedWaypoint
+import io.github.noxaur.dsmod.core.world.WaypointLook
+import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.WaypointChat
+import io.github.noxaur.dsmod.edge.World
+import io.github.noxaur.dsmod.edge.ui.KitColorPicker
+import io.github.noxaur.dsmod.gametest.SettingsSteps.at
+import io.github.noxaur.dsmod.gametest.SettingsSteps.open
+import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
+import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.Style
+import org.lwjgl.glfw.GLFW
+import java.util.Optional
+import java.util.concurrent.CopyOnWriteArrayList
+
+class WaypointsTest : FabricClientGameTest {
+    private val waypoints get() = DsModClient.feature<Waypoints>()
+
+    override fun runTest(context: ClientGameTestContext) {
+        val chat = CopyOnWriteArrayList<String>()
+        ClientReceiveMessageEvents.CHAT.register { message, _, _, _, _ -> chat += message.string }
+        context.inWorld {
+            context.waitTicks(20)
+            looks(context)
+            links(context)
+            commands(context, chat)
+            ListDriver(context).run()
+            context.runOnClient<Nothing> { clear() }
+        }
+    }
+
+    private fun clear() {
+        waypoints.saved.value = emptyList()
+        waypoints.groups.value = emptyList()
+    }
+
+    // @keep Each look side by side ahead of the player, one of them hidden behind the world, to read in the screenshot.
+    private fun looks(context: ClientGameTestContext) {
+        context.runOnClient<Nothing> { client ->
+            val player = checkNotNull(client.player)
+            val colors = listOf(0x46AADCF8, 0x80FF5555.toInt(), 0x4055FF55, 0xC0FFAA00.toInt(), 0x46FFFFFF)
+            waypoints.saved.value = WaypointLook.entries.mapIndexed { i, look ->
+                SavedWaypoint(look.toString(), player.blockX - 20 + i * 10, player.blockY, player.blockZ + 14, color = colors[i], look = look, distance = i % 2 == 0)
+            } + SavedWaypoint("Behind", player.blockX, player.blockY - 3, player.blockZ + 10, throughWalls = false, color = 0x80FF55FF.toInt())
+        }
+        context.waitTicks(30)
+        context.takeScreenshot("waypoints-looks")
+        context.checkClient("The saved waypoints are not all drawn") { World.shown.size >= WaypointLook.entries.size + 1 }
+        context.runOnClient<Nothing> { clear() }
+    }
+
+    private fun links(context: ClientGameTestContext) {
+        val commands = context.computeOnClient<List<String>, Nothing> {
+            val linked = WaypointChat.links(Component.literal("Bob: [Nest] x: 12, y: 64, z: -30 in The End, and hi"))
+            val found = ArrayList<String>()
+            linked.visit({ style: Style, _: String ->
+                (style.clickEvent as? ClickEvent.RunCommand)?.let { found += it.command() }
+                Optional.empty<Unit>()
+            }, Style.EMPTY)
+            found
+        }
+        check(commands.distinct() == listOf("/dsmod waypoint show 12 64 -30 \"\" \"Nest\"")) { "The coordinates link to $commands" }
+        val untouched = context.computeOnClient<Component, Nothing> { WaypointChat.links(Component.literal("Bob: 1 2 3")) }
+        check(untouched.string == "Bob: 1 2 3" && untouched.style.clickEvent == null) { "Three bare numbers became a link" }
+    }
+
+    private fun commands(context: ClientGameTestContext, chat: List<String>) {
+        fun run(line: String) {
+            context.runOnClient<Nothing> { it.connection!!.sendCommand(line) }
+            context.waitTicks(3)
+        }
+        run("dsmod waypoint show 12 64 -30 \"\" \"Nest\"")
+        context.checkClient("Showing a clicked waypoint drew nothing") { World.shown.isNotEmpty() }
+        check(waypoints.saved.value.isEmpty()) { "Showing a waypoint saved it" }
+        run("dsmod waypoint save 12 64 -30 \"\" \"Nest\"")
+        check(waypoints.saved.value.map { it.name to it.position } == listOf("Nest" to "12 64 -30")) { "Saving left ${waypoints.saved.value}" }
+        run("dsmod waypoint save 12 64 -30 \"\" \"Nest\"")
+        check(waypoints.saved.value.size == 1) { "Saving twice left ${waypoints.saved.value}" }
+
+        val (x, y, z) = context.computeOnClient<Triple<Int, Int, Int>, Nothing> { checkNotNull(it.player).blockPosition().let { p -> Triple(p.x, p.y, p.z) } }
+        run("dsmod wp add Here")
+        check(waypoints.saved.value.last().let { it.name == "Here" && it.position == "$x $y $z" }) { "Adding where the player stands left ${waypoints.saved.value.last()}" }
+
+        run("dsmod waypoint share Nest")
+        context.waitTicks(5)
+        check(chat.any { it.endsWith("[Nest] x: 12, y: 64, z: -30") }) { "Sharing Nest said $chat" }
+        run("dsmod waypoint share")
+        context.waitTicks(5)
+        check(chat.any { it.endsWith("x: $x, y: $y, z: $z") }) { "Sharing where the player stands said $chat" }
+        context.runOnClient<Nothing> { clear() }
+    }
+
+    private class ListDriver(context: ClientGameTestContext) {
+        private val list = BindsDriver(context, "savedWaypoints")
+        private val ctx = context
+        private val waypoints get() = DsModClient.feature<Waypoints>()
+
+        private fun picker() = ctx.computeOnClient<KitColorPicker?, Nothing> { list.editorNow(it).picker() }
+
+        fun run() = with(list) {
+            open(ctx, SettingsTabs(at("General")))
+            list()
+            press(line(foot()), "Add Waypoint")
+            ctx.input.typeChars("Nest")
+            key(GLFW.GLFW_KEY_ENTER)
+            val added = waypoints.saved.value.single()
+            check(added.name == "Nest" && added.color == waypoints.color.value && added.look == waypoints.look.value) { "Add Waypoint left $added" }
+
+            press(lineOf(0), "Position", dx = 2)
+            repeat(waypoints.saved.value.single().position.length) { ctx.input.pressKey(GLFW.GLFW_KEY_BACKSPACE) }
+            ctx.input.typeChars("12 64 -30")
+            key(GLFW.GLFW_KEY_ENTER)
+            check(waypoints.saved.value.single().position == "12 64 -30") { "Typing the position left ${waypoints.saved.value.single()}" }
+
+            press(lineOf(0), "Look")
+            check(waypoints.saved.value.single().look == WaypointLook.BOX) { "A press on Look left ${waypoints.saved.value.single().look}" }
+
+            press(lineOf(0), "Color")
+            val picker = picker() ?: error("A press on the color opened no picker")
+            ctx.shotInBothThemes("waypoints-color")
+            val red = ctx.computeOnClient<Int, Nothing> { picker.swatches.indexOf(0xFFFF5555.toInt()) }
+            click(ctx.computeOnClient<Int, Nothing> { picker.swatchX(red) } + 2, ctx.computeOnClient<Int, Nothing> { picker.swatchY(red) } + 2)
+            check(waypoints.saved.value.single().color == 0xFFFF5555.toInt()) { "A press on the red swatch left ${Integer.toHexString(waypoints.saved.value.single().color)}" }
+            key(GLFW.GLFW_KEY_ESCAPE)
+            check(picker() == null) { "Escape left the picker open" }
+
+            press(lineOf(0), "Settings")
+            val details = lineOf(0, details = true)
+            press(details, "Through Walls")
+            check(!waypoints.saved.value.single().throughWalls) { "Through Walls did not turn off" }
+            ctx.shotInBothThemes("waypoints-list")
+        }
+    }
+}

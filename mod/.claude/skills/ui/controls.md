@@ -159,6 +159,7 @@ A list of things the player made, such as command binds, edited where it sits in
 - Up and Down from the row above enter the list. Inside, Up and Down pick a line, Left and Right fold and unfold a heading or move between a line's cells, Space switches the picked group, Enter opens a line's details or presses the cell, Alt with Up or Down moves the picked line or group, Delete deletes, Tab moves between text fields, and Escape leaves the list.
 - A right press on a line opens its context menu, and so do the Menu key and Shift+F10.
 - Keys are recorded on the keys cell with every convention of a key bind, and keys that clash with another thing or with the game are ringed, with the line under the list saying which.
+- A color on a line is a swatch on a dropdown that opens the color picker under it, with every convention of the picker. Its hex shows beside the swatch when the cell has room.
 
 ## Context menu
 

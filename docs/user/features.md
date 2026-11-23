@@ -295,6 +295,31 @@ Lists every item you own in one screen, from your inventory, ender chest, storag
 
 The total under the grid is the NPC value of the items shown. Your inventory is read from the game as you open the screen, and a Storage page or the Ender Chest you opened this session shows as you last saw it. Everything else comes from dragsim.co through ds-mod's service, as the profile viewer's does, so it is as fresh as dragsim.co's last save of your profile. If you hide your inventory on dragsim.co, only your inventory and the menus you opened show. If ds-mod's service can't be reached, the overview still shows what the game has shown you, and the line under the grid reads "Showing only what you opened". Hover that line to see why.
 
+### Waypoints
+
+Marks places in the world with a beam, a box or a label, with its name and how far away it is. Save your own, share them in any chat, and click coordinates someone else shares to see them. A waypoint shows only in the area it was made in, such as The End, because two areas share the same coordinates.
+
+| Type this | To |
+| --- | --- |
+| `/dsmod waypoint add` and a name | Save a waypoint where you stand |
+| `/dsmod waypoint share` | Say where you stand in the chat you are in |
+| `/dsmod waypoint share party`, `global` or `instance` | Say it in that channel, as `/chat party` does |
+| `/dsmod waypoint share whisper` and a player | Whisper it to them |
+| Any of the share commands with a waypoint's name after it | Share that saved waypoint instead of where you stand |
+| `/dsmod waypoint` | Open your waypoints in the settings |
+
+`/dsmod wp` is short for `/dsmod waypoint`. A shared waypoint reads `[Nest] x: 12, y: 64, z: -30 in The End`, so a player without ds-mod can read it too.
+
+Coordinates in chat, from ds-mod or from another mod, are clickable. Click them to show the waypoint until you walk up to it or change worlds, then click the line ds-mod writes to save it. Only the last eight you click show at once. Turn the links off with Chat Links.
+
+Your saved waypoints are a list in the settings, which works like Command Binds: a line for each waypoint with its switch, name, position, color and look, under its group. **Add Waypoint** adds one where you stand, with its name ready to type. Type a position as `12 64 -30`. Press the color to pick it and its opacity, which is how see-through the box is. The look is a Beam, a Box, an Outline, a Filled box or only the Label. Press ▸ at the end of a line for the rest:
+
+- **Area:** the area the waypoint shows in. Leave it empty to show it everywhere.
+- **Distance:** shows how many meters away it is beside its name.
+- **Through Walls:** shows it through the blocks in front of it.
+
+**Export** copies a group to your clipboard to share, and **Import** adds what someone shared as a new group. Color and Look pick how new waypoints and the ones you click in chat start out.
+
 ## Interface
 
 Theme picks the colors of ds-mod's screens: Charcoal is dark, and Vanilla matches the game's own menus.

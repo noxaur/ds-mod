@@ -7,11 +7,13 @@ import io.github.noxaur.dsmod.core.config.Items
 import io.github.noxaur.dsmod.core.config.Items.Entry
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.core.ui.Colors
 import io.github.noxaur.dsmod.core.ui.Narration
 import io.github.noxaur.dsmod.edge.Keys
 import io.github.noxaur.dsmod.edge.toComponent
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.narration.NarratedElementType
 import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.input.CharacterEvent
@@ -40,6 +42,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         var label = ""
         var text: Component = Component.empty()
         var on = false
+        var argb = 0
         var active = true
         var clash: Role? = null
         val y get() = line.y + dy
@@ -76,7 +79,10 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     private var fieldIndex = -1
     private var recorder: KitKeysButton? = null
     private var recordHit: Hit? = null
-    private var menu: KitMenu? = null
+    internal var menu: AbstractWidget? = null
+        private set
+    private var menuLeave: () -> Unit = {}
+    private var menuHit: Hit? = null
 
     private var dragged: Entry? = null
 
@@ -95,12 +101,12 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     override val recording get() = recorder != null
 
     override fun layout(x: Int, y: Int, width: Int): Int {
+        closeMenu()
         this.x = x
         this.width = width
         lines.clear()
         recorder = null
         recordHit = null
-        menu = null
         var at = y
         val entries = items.entries()
         if (entries.isEmpty()) lines += Line(Kind.NOTHING, null, at, MESSAGE).also { at += it.height }
@@ -168,6 +174,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         is Cell.Pick<T, *> -> cell.width
         is Cell.Check -> Kit.SWITCH_WIDTH
         is Cell.Count -> COUNT
+        is Cell.Color -> COLOR
     }
 
     private fun details(entry: Entry, y: Int): Line {
@@ -309,6 +316,10 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
                         hit.label = cell.get(item).toString()
                         hit.text = text { value(hit.label) }.toComponent()
                     }
+                    is Cell.Color -> {
+                        hit.argb = cell.get(item)
+                        hit.label = Colors.show(hit.argb).takeIf { font.width(it) <= Kit.dropdownLabel(hit.width, Kit.COLOR_SWATCH) } ?: ""
+                    }
                 }
             }
             else -> Unit
@@ -338,7 +349,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         if (dragged != null && moved) return "Drop it under a heading to move it to that group. Escape puts it back." to false
         if (value.items.isEmpty()) return "" to false
         return when (val entry = picked) {
-            is Entry.Heading -> (if (entry.group in value.off) "${items.groupName(entry.group)} is off, so none of its ${type.noun}s send." else "") to false
+            is Entry.Heading -> (if (entry.group in value.off) offGroup(entry.group) else "") to false
             is Entry.Item -> (value.items.getOrNull(entry.index)?.let { readout(entry.index, it, value, clashing) } ?: "") to false
             else -> "" to false
         }
@@ -348,13 +359,13 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         val keysCell = type.cells.filterIsInstance<Cell.Keys<T>>().firstOrNull()
         val keys = keysCell?.get(item).orEmpty()
         val names = keysCell?.let { Keys.names(keys, it.inOrder(item)) } ?: ""
-        val command = type.cells.filterIsInstance<Cell.Text<T>>().lastOrNull()?.get(item).orEmpty()
         val clash = if (clashing[index]) items.clashes(index).firstOrNull() else null
         val game = keys.singleOrNull()?.let(Keys::gameKey)
+        val problem = type.problem(item)
         return when {
-            command.isBlank() -> "Type a command, such as /warp end."
+            problem != null -> problem
             keysCell != null && keys.isEmpty() -> "Press Keys, then the keys to use."
-            items.home(item) in value.off -> "${items.groupName(items.home(item))} is off, so this ${type.noun} sends nothing."
+            items.home(item) in value.off -> offGroup(items.home(item))
             !type.on(item) -> "Off. Turn on its switch to use it."
             clash != null -> "$names also fires ${type.title(clash)}."
             game != null -> "$names is also the game's $game key."
@@ -362,11 +373,13 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         }
     }
 
+    private fun offGroup(group: String) = "${items.groupName(group)} is off, so none of its ${type.noun}s ${type.verb}."
+
     override fun view(origin: Int, clipTop: Int, clipBottom: Int, screenWidth: Int, screenHeight: Int) {
         if (origin != this.origin) {
             closeField()
             finishRecording()
-            menu = null
+            closeMenu()
         }
         this.origin = origin
         this.clipTop = clipTop
@@ -527,6 +540,10 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
                 hit.clash?.let { ringHit(g, hit, y, it.argb()) }
             }
             is Cell.Pick<T, *> -> labelButton(g, hit, y, state, hit.label)
+            is Cell.Color -> {
+                Kit.dropdown(g, hit.x, y, hit.width, hit.height, if (menuHit === hit) Kit.State.HOVER else state, hit.label, Kit.COLOR_SWATCH)
+                Kit.colorSwatch(g, hit.x + 4, y + (hit.height - Kit.COLOR_SWATCH) / 2, Kit.COLOR_SWATCH, hit.argb)
+            }
             is Cell.Count -> {
                 val lit = state == Kit.State.HOVER
                 val side = if (!lit) 0 else if (mx < hit.x + Kit.BUTTON_HEIGHT) -1 else if (mx >= hit.x + hit.width - Kit.BUTTON_HEIGHT) 1 else 0
@@ -546,7 +563,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         val my = event.y
         menu?.let {
             if (it.takesPress(event, doubleClick)) return true
-            menu = null
+            closeMenu()
         }
         field?.let {
             if (isOver(mx, my) && it.takesPress(event, doubleClick)) return true
@@ -600,6 +617,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     }
 
     override fun mouseDragged(event: MouseButtonEvent, dx: Double, dy: Double): Boolean {
+        menu?.let { return it.mouseDragged(event, dx, dy) }
         val entry = dragged ?: return false
         if (!moved) {
             if (Math.abs(event.y - pressY) < DRAG_START) return true
@@ -630,6 +648,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     }
 
     override fun mouseReleased(event: MouseButtonEvent): Boolean {
+        menu?.let { return it.mouseReleased(event) }
         recorder?.let {
             it.release(event.button())
             if (!it.recording) finishRecording()
@@ -644,7 +663,8 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double, shift: Boolean): Boolean {
-        if (menu != null || amount == 0.0) return false
+        menu?.let { return it.isMouseOver(mouseX, mouseY) && it.mouseScrolled(mouseX, mouseY, 0.0, amount) }
+        if (amount == 0.0) return false
         val line = lineAt(mouseX, mouseY) ?: return false
         val hit = hitAt(line, mouseX, mouseY)?.takeIf { it.does == Does.CELL } ?: return false
         return when (cellAt(hit.cell)) {
@@ -663,6 +683,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
                 is Cell.Keys -> record(hit, cell)
                 is Cell.Pick<T, *> -> stepPick(hit, if (shift) -1 else 1)
                 is Cell.Count -> stepCount(hit, if (mouseX == null) (if (shift) -1 else 1) else if (mouseX < hit.x + Kit.BUTTON_HEIGHT) -1 else if (mouseX >= hit.x + hit.width - Kit.BUTTON_HEIGHT) 1 else 0)
+                is Cell.Color -> openPicker(hit, cell)
             }
             Does.FOLD -> fold(group(entry), group(entry) !in list.folded)
             Does.GROUP -> change { items.switchGroup(group(entry), group(entry) in list.off) }
@@ -808,10 +829,10 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
             pickEntry(Entry.Item(at))
         }
         val line = pickedLine() ?: return
-        val command = line.hits.lastOrNull { it.does == Does.CELL && cellAt(it.cell) is Cell.Text } ?: return
-        cursor = line.hits.indexOf(command)
-        val cell = cellAt(command.cell) as Cell.Text<T>
-        openText(command, cell, "")
+        val typed = line.hits.firstOrNull { it.does == Does.CELL && cellAt(it.cell).let { cell -> cell is Cell.Text && cell.name == type.opens } } ?: return
+        cursor = line.hits.indexOf(typed)
+        val cell = cellAt(typed.cell) as Cell.Text<T>
+        openText(typed, cell)
     }
 
     private fun addGroup() {
@@ -849,8 +870,9 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
             result = items.import(Minecraft.getInstance().keyboardHandler.clipboard)
             result?.let { pickEntry(Entry.Heading(it.first)) }
         }
-        val (_, count) = result ?: return say("No ${type.noun}s on the clipboard. Use Export first.", bad = true)
-        say("Imported ${items.plural(count)}. Each starts off, so read them before you turn them on.")
+        val (group, count) = result ?: return say("No ${type.noun}s on the clipboard. Use Export first.", bad = true)
+        val off = list.items.none { items.home(it) == group && type.on(it) }
+        say("Imported ${items.plural(count)}." + if (off) " Each starts off, so read them before you turn them on." else "")
     }
 
     private fun say(text: String, bad: Boolean = false) {
@@ -884,8 +906,30 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
             if (items.count(group) > 0) menuItems += "Export" to { export(group) }
             if (group.isNotEmpty()) menuItems += "Delete" to { delete(Entry.Heading(group)) }
         }
-        menu = KitMenu(mouseX, mouseY, screenWidth, screenHeight, menuItems, { menu = null })
+        closeMenu()
+        menu = KitMenu(mouseX, mouseY, screenWidth, screenHeight, menuItems, ::closeMenu)
         refresh()
+    }
+
+    private fun openPicker(hit: Hit, cell: Cell.Color<T>) {
+        closeField()
+        finishRecording()
+        closeMenu()
+        val picker = KitColorPicker(cell.get(itemAt(hit)), { argb -> itemOf(hit)?.let { change { set(hit, cell.set(it, argb)) } } }, ::closeMenu, host.recent)
+            .below(hit.x, origin + hit.y, hit.width, hit.height, screenWidth, screenHeight)
+        menu = picker
+        menuLeave = picker::leave
+        menuHit = hit
+        refresh()
+    }
+
+    private fun closeMenu() {
+        menu ?: return
+        val leave = menuLeave
+        menu = null
+        menuLeave = {}
+        menuHit = null
+        leave()
     }
 
     private fun moveItems(menuItems: MutableList<Pair<String, () -> Unit>>, entry: Entry) {
@@ -1105,7 +1149,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         inside = false
         closeField()
         finishRecording()
-        menu = null
+        closeMenu()
         disarm()
     }
 
@@ -1130,6 +1174,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
             is Cell.Keys -> Narration.join(cell.name, "key bind", hit.label)
             is Cell.Pick<T, *> -> Narration.join(cell.name, "button", hit.label)
             is Cell.Count -> Narration.join(cell.name, "number", hit.label)
+            is Cell.Color -> Narration.join(cell.name, "color", Colors.spoken(hit.argb))
         }
         Does.GROUP -> Narration.join("Group", "switch", if (hit.on) "on" else "off")
         Does.NAME -> Narration.join(NAME, "text", (hit.line.entry as? Entry.Heading)?.group)
@@ -1151,6 +1196,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
         const val ITEM_SWITCH = 18
         const val EMPTY_X = ITEM_SWITCH
         const val COUNT = Kit.BUTTON_HEIGHT * 2 + 20
+        val COLOR = Kit.dropdownWidth(0, Kit.COLOR_SWATCH)
         const val MIN_GROW = 40
         const val NAME_FIELD = 140
         const val NAME = "Name"

@@ -110,7 +110,7 @@ class SettingRows(
     internal val made = HashMap<String, Editor>()
     private val conditional = HashMap<Setting, Boolean>()
 
-    private val host = Editor.Host({ relayout() }, { top, bottom -> scrollTo(top, bottom) }, { refresh() }, { words })
+    private val host = Editor.Host({ relayout() }, { top, bottom -> scrollTo(top, bottom) }, { refresh() }, { words }, recent)
 
     private var pressed: Editor? = null
     internal var origin = 0
