@@ -149,7 +149,7 @@ object World {
 
     fun register() {
         LevelExtractionEvents.AFTER_BLOCK_OUTLINE_EXTRACTION.register { context, _ ->
-            if (beamsShown.isNotEmpty() || tracersShown.isNotEmpty()) game.metrics.time("world.follow", Metrics.FRAME) { follow(context) }
+            if (shown.isNotEmpty() || beamsShown.isNotEmpty() || tracersShown.isNotEmpty()) game.metrics.time("world.follow", Metrics.FRAME) { follow(context) }
         }
         LevelRenderEvents.COLLECT_SUBMITS.register { context ->
             if (shown.isNotEmpty() || beamsShown.isNotEmpty() || frame != null) game.metrics.time("world.labels", Metrics.FRAME) { labels(context) }
@@ -164,9 +164,6 @@ object World {
                     is ShownWaypoint -> {
                         mark.label.at(camera.distanceTo(mark.at).toInt())
                         mark.box?.let { box -> Gizmos.cuboid(box.box, box.style).onTop(mark.onTop) }
-                        if (mark.beam) above(mark.label, mark.labelAt, camera, mark.box != null)?.let { start ->
-                            beam(start, mark.label.color).onTop(mark.onTop)
-                        }
                     }
                 }
             }
@@ -178,9 +175,17 @@ object World {
         for (i in tracersShown.indices) tracersShown[i].let { it.found = level.getEntity(it.entity) }
     }
 
+    /** @keep A beam starts where it clears its label, which turns with the camera, so beams are placed each frame with the
+     * camera that draws the labels. */
     private fun follow(context: LevelExtractionContext) {
         val camera = context.camera()
         val eye = camera.position()
+        forward.set(camera.forwardVector())
+        up.set(camera.upVector())
+        for (i in shown.indices) {
+            val mark = shown[i] as? ShownWaypoint ?: continue
+            if (mark.beam) above(mark.label, mark.labelAt, eye, mark.box != null)?.let { start -> beam(start, mark.label.color).onTop(mark.onTop) }
+        }
         val partial = context.deltaTracker().getGameTimeDeltaPartialTick(false)
         for (i in beamsShown.indices) {
             val mark = beamsShown[i]
@@ -284,8 +289,7 @@ object World {
 
     /** @keep A beam rises from the top of its label, so it never crosses the text. The label faces the camera and the beam
      * stands upright, so from above the beam is both shortened and drawn nearer as it rises. The start is where the beam's
-     * projection meets the label's top edge. Looking down along the beam, no start clears the label, so no beam is drawn. A
-     * tick's beam takes the camera from the last frame. */
+     * projection meets the label's top edge. Looking down along the beam, no start clears the label, so no beam is drawn. */
     private fun above(label: WorldLabel, at: Vec3, eye: Vec3, boxed: Boolean): Vec3? {
         if (label.lines == 0) return at
         val height = (label.lines * LINE + LABEL_GAP + 2) * scale(eye, at) + lift(boxed)

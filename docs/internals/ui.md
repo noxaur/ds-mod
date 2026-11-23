@@ -32,7 +32,7 @@ The kit's edges are one pixel wide, and at a free scale some edges come out two 
 
 ## World marks reach Minecraft once per tick
 
-World marks are submitted once per tick, and Minecraft replays them every frame, so a mark costs nothing in the frame loop. Only a mark that follows the crosshair or a moving entity is placed per frame, because a mark from the last tick would trail it by up to 50 ms. Labels are the other exception, because they keep their size on screen as the camera moves, and a gizmo's text can't be outlined.
+World marks are submitted once per tick, and Minecraft replays them every frame, so a mark costs nothing in the frame loop. Only a mark that follows the crosshair or a moving entity is placed per frame, because a mark from the last tick would trail it by up to 50 ms. Labels and beams are the other exception: a label keeps its size on screen as the camera moves, and a gizmo's text can't be outlined, and a beam starts where it clears its label, so it moves with the camera too. Placing beams per tick was rejected, because for up to 50 ms after a turn they crossed their labels.
 
 ## World text is outlined like a glowing sign
 

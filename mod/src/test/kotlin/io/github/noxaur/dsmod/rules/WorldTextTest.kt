@@ -24,6 +24,7 @@ private val worldText = setOf(
     "net.minecraft.gizmos.Gizmos" to "billboardText",
     "net.minecraft.gizmos.Gizmos" to "billboardTextOverBlock",
     "net.minecraft.gizmos.Gizmos" to "billboardTextOverMob",
+    "net.minecraft.gizmos.TextGizmo" to "<init>",
     "net.minecraft.client.renderer.feature.TextFeatureRenderer\$Submit" to "<init>",
     "net.minecraft.client.renderer.feature.NameTagFeatureRenderer\$Submit" to "<init>",
 )
@@ -44,6 +45,7 @@ private fun worldText(classes: DescribedPredicate<JavaClass>) = noClasses().that
 )
 
 private class Gizmo { fun run() = Gizmos.billboardText("Nest", Vec3.ZERO, TextGizmo.Style.whiteAndCentered()) }
+private class DirectGizmo { fun run() = Gizmos.addGizmo(TextGizmo(Vec3.ZERO, "Nest", TextGizmo.Style.whiteAndCentered())) }
 private class DirectSubmit {
     fun run() = TextFeatureRenderer.Submit(Matrix4f(), 0f, 0f, FormattedCharSequence.EMPTY, false, Font.DisplayMode.NORMAL, 0, 0, 0, 0)
 }
@@ -61,8 +63,8 @@ class WorldTextTest {
     @Test
     fun `the rule catches world text drawn outside World`() {
         assertEquals(
-            listOf(Gizmo::class.java, DirectSubmit::class.java, Concrete::class.java),
-            flags(::worldText, Gizmo::class.java, DirectSubmit::class.java, Concrete::class.java, NoGizmoText::class.java),
+            listOf(Gizmo::class.java, DirectGizmo::class.java, DirectSubmit::class.java, Concrete::class.java),
+            flags(::worldText, Gizmo::class.java, DirectGizmo::class.java, DirectSubmit::class.java, Concrete::class.java, NoGizmoText::class.java),
         )
     }
 }
