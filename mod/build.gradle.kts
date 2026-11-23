@@ -187,6 +187,23 @@ val debugJar = tasks.register<Jar>("debugJar") {
 
 tasks.assemble { dependsOn(debugJar) }
 
+tasks.register("installMod") {
+    group = "distribution"
+    description = "Puts the release jar, or the debug jar with -Pjar=debug, in the game folder at -Pgame=, in place of any ds-mod jar there. `mise run install` picks the jar and the backend."
+    val game = providers.gradleProperty("game").map { File(it) }
+    val jar = (if (providers.gradleProperty("jar").orNull == "debug") debugJar else tasks.jar).flatMap { it.archiveFile }
+    inputs.file(jar)
+    outputs.upToDateWhen { false }
+    doLast {
+        val mods = game.get().let { if (it.name == "mods") it else it.resolve("mods") }
+        check(mods.isDirectory) { "$mods is not a mods folder. Pass the game folder that holds mods, such as a Prism instance's minecraft folder, or the mods folder." }
+        mods.listFiles { file -> file.name.startsWith("dsmod-") && file.name.endsWith(".jar") }?.forEach { it.delete() }
+        val built = jar.get().asFile
+        built.copyTo(mods.resolve(built.name))
+        logger.lifecycle("Installed ${built.name} in $mods")
+    }
+}
+
 dependencies {
     productionRuntimeMods("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
     productionRuntimeMods("net.fabricmc:fabric-language-kotlin:${property("fabric_kotlin_version")}")
