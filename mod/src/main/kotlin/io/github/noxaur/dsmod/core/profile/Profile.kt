@@ -136,7 +136,7 @@ data class Dungeons(
     }
 }
 
-/** The Heart of the Dragon. `core`, `ender`, `void`, `resets` and `tokens` keep the server's names, as their meaning is a guess. */
+/** @keep The Heart of the Dragon. `core`, `ender`, `void`, `resets` and `tokens` keep the server's names, as their meaning is a guess. */
 @Serializable
 data class Hotd(
     val tier: Double = 0.0,
