@@ -30,8 +30,11 @@ import net.minecraft.world.item.component.ItemLore
 import net.minecraft.world.item.component.ResolvableProfile
 import java.util.Base64
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
-val ItemStack.id: String get() = BuiltInRegistries.ITEM.getKey(item).toString()
+private val ids = ConcurrentHashMap<net.minecraft.world.item.Item, String>()
+
+val ItemStack.id: String get() = ids.computeIfAbsent(item) { BuiltInRegistries.ITEM.getKey(it).toString() }
 
 fun stackOf(id: String, count: Int = 1): ItemStack = ItemStack(itemOf(id) ?: Items.BARRIER, count)
 
@@ -79,7 +82,7 @@ fun ItemStack.toItem(): Item {
         get(DataComponents.ENCHANTMENT_GLINT_OVERRIDE),
         get(DataComponents.TOOLTIP_STYLE)?.toString(),
         hasFoil(),
-        get(DataComponents.ITEM_MODEL)?.toString()?.takeIf { it != key },
+        get(DataComponents.ITEM_MODEL)?.takeIf { it != BuiltInRegistries.ITEM.getKey(item) }?.toString(),
     )
 }
 
