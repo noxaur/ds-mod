@@ -29,7 +29,7 @@ import net.minecraft.network.chat.MutableComponent
 import net.minecraft.util.Util
 import net.minecraft.world.item.ItemStack
 
-private fun plain(label: String) = text { body(label) }.toComponent()
+internal fun plain(label: String) = text { body(label) }.toComponent()
 
 class KitButton private constructor(
     x: Int,
@@ -793,9 +793,9 @@ private fun TypeAhead.jump(event: CharacterEvent, labels: List<String>, lit: Int
     return type(char, Util.getMillis(), labels, lit)
 }
 
-private fun belowX(anchorX: Int, anchorWidth: Int, width: Int, screenWidth: Int) = (anchorX + anchorWidth - width).coerceIn(0, (screenWidth - width).coerceAtLeast(0))
+internal fun belowX(anchorX: Int, anchorWidth: Int, width: Int, screenWidth: Int) = (anchorX + anchorWidth - width).coerceIn(0, (screenWidth - width).coerceAtLeast(0))
 
-private fun belowY(anchorY: Int, anchorHeight: Int, height: Int, screenHeight: Int) =
+internal fun belowY(anchorY: Int, anchorHeight: Int, height: Int, screenHeight: Int) =
     if (anchorY + anchorHeight + 1 + height <= screenHeight) anchorY + anchorHeight + 1 else (anchorY - 1 - height).coerceAtLeast(0)
 
 private fun typed(event: CharacterEvent): Char? {

@@ -7,6 +7,7 @@ import io.github.noxaur.dsmod.core.overview.StoragePages
 import io.github.noxaur.dsmod.core.player.Seen
 import io.github.noxaur.dsmod.core.ui.StorageLayout
 import io.github.noxaur.dsmod.edge.slotUnderMouse
+import io.github.noxaur.dsmod.edge.toText
 import io.github.noxaur.dsmod.edge.ui.Kit
 import java.util.Optional
 import net.fabricmc.fabric.api.client.rendering.v1.ClientTooltipComponentCallback
@@ -44,7 +45,7 @@ object StoragePreviews {
         if (client.hasShiftDown()) return false
         if (stack !== named) {
             named = stack
-            namedPage = StoragePages.pageOf(stack.hoverName.string)
+            namedPage = StoragePages.pageOf(stack.hoverName.toText().plain)
         }
         val id = namedPage ?: return false
         val page = storage.pages.page(id) ?: return false

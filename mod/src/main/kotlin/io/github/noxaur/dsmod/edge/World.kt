@@ -3,8 +3,10 @@ package io.github.noxaur.dsmod.edge
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.core.ui.Colors
 import io.github.noxaur.dsmod.core.world.BoxStyle
 import io.github.noxaur.dsmod.core.world.EntityBeam
+import io.github.noxaur.dsmod.core.world.FILL_ALPHA
 import io.github.noxaur.dsmod.core.world.Mark
 import io.github.noxaur.dsmod.core.world.Point
 import io.github.noxaur.dsmod.core.world.Tracer
@@ -13,6 +15,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionContext
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.multiplayer.ClientLevel
+import net.minecraft.gizmos.GizmoProperties
 import net.minecraft.gizmos.GizmoStyle
 import net.minecraft.gizmos.Gizmos
 import net.minecraft.gizmos.TextGizmo
@@ -22,7 +25,6 @@ import net.minecraft.world.phys.Vec3
 
 private const val BEAM_HEIGHT = 64.0
 private const val LINE_WIDTH = 2f
-private const val FILL_ALPHA = 70
 
 private const val TRACER_AHEAD = 1.0
 
@@ -40,19 +42,20 @@ object World {
     }
     internal class ShownBeam(entity: Int, val label: BeamLabel) : Follow(entity)
     internal class ShownTracer(entity: Int, val color: Int) : Follow(entity)
-    internal class ShownWaypoint(val at: Vec3, val top: Vec3, val label: BeamLabel, val box: ShownBox) : Shown {
+    internal class ShownWaypoint(val at: Vec3, val top: Vec3?, val label: BeamLabel, val box: ShownBox?, val onTop: Boolean) : Shown {
         var labelAt = at
     }
 
-    internal class BeamLabel(val name: String, val color: Int) {
+    internal class BeamLabel(val name: String, val color: Int, private val distance: Boolean = true) {
         var meters = -1
         var text = name
         var style: TextGizmo.Style = TextGizmo.Style.forColorAndCentered(color)
+        val shown = name.isNotEmpty() || distance
 
         fun at(meters: Int): Boolean {
             if (meters == this.meters) return false
             this.meters = meters
-            text = "$name ${meters}m"
+            text = if (!distance) name else if (name.isEmpty()) "${meters}m" else "$name ${meters}m"
             style = labelStyle(color, meters * 0.5f, 1.5f)
             return true
         }
@@ -84,14 +87,8 @@ object World {
         beams[id] = marks.filterIsInstance<EntityBeam>().map { ShownBeam(it.entity, BeamLabel(it.label, it.role.argb())) }
         tracers[id] = marks.filterIsInstance<Tracer>().map { ShownTracer(it.entity, it.role.argb()) }
         this.marks[id] = marks.mapNotNull { mark ->
-            val color = mark.role.argb()
             when (mark) {
-                is Waypoint -> ShownWaypoint(
-                    mark.at.vec(),
-                    mark.at.vec().add(0.0, BEAM_HEIGHT, 0.0),
-                    BeamLabel(mark.label, color),
-                    box(mark.at.x - 0.5, mark.at.y, mark.at.z - 0.5, mark),
-                )
+                is Waypoint -> waypoint(mark)
                 is EntityBeam, is Tracer -> null
             }
         }
@@ -132,8 +129,9 @@ object World {
                     is ShownBox -> Gizmos.cuboid(mark.box, mark.style)
                     is ShownWaypoint -> {
                         if (mark.label.at(camera.distanceTo(mark.at).toInt())) mark.labelAt = labelAt(mark.at, mark.label)
-                        Gizmos.cuboid(mark.box.box, mark.box.style).setAlwaysOnTop()
-                        beam(mark.at, mark.top, mark.label, mark.labelAt)
+                        mark.box?.let { box -> Gizmos.cuboid(box.box, box.style).onTop(mark.onTop) }
+                        mark.top?.let { top -> Gizmos.line(mark.at, top, mark.label.color, LINE_WIDTH * 2).onTop(mark.onTop) }
+                        if (mark.label.shown) Gizmos.billboardText(mark.label.text, mark.labelAt, mark.label.style).onTop(mark.onTop)
                     }
                 }
             }
@@ -193,8 +191,25 @@ object World {
     private fun labelStyle(color: Int, grown: Float, least: Float) =
         TextGizmo.Style.forColorAndCentered(color).withScale(TextGizmo.Style.DEFAULT_SCALE * grown.coerceAtLeast(least))
 
-    private fun box(x: Double, y: Double, z: Double, mark: Mark) =
-        ShownBox(AABB(x, y, z, x + 1, y + 1, z + 1), GizmoStyle.strokeAndFill(mark.role.argb(), LINE_WIDTH, mark.role.argb(FILL_ALPHA)))
+    private fun waypoint(mark: Waypoint): ShownWaypoint {
+        val at = mark.at.vec()
+        val solid = Colors.rgb(mark.color) or (Colors.OPAQUE shl 24)
+        val box = mark.look.box?.let { style ->
+            val cube = AABB(mark.at.x - 0.5, mark.at.y, mark.at.z - 0.5, mark.at.x + 0.5, mark.at.y + 1, mark.at.z + 0.5)
+            // @keep A box drawn behind the world lies on the block's faces, and would flicker against them.
+            ShownBox(if (mark.throughWalls) cube else cube.inflate(0.002), when (style) {
+                BoxStyle.OUTLINE -> GizmoStyle.stroke(solid, LINE_WIDTH)
+                BoxStyle.FILLED -> GizmoStyle.fill(mark.color)
+                BoxStyle.BOTH -> GizmoStyle.strokeAndFill(solid, LINE_WIDTH, mark.color)
+            })
+        }
+        val top = if (mark.look.beam) at.add(0.0, BEAM_HEIGHT, 0.0) else null
+        return ShownWaypoint(at, top, BeamLabel(mark.label, solid, mark.distance), box, mark.throughWalls)
+    }
+
+    private fun GizmoProperties.onTop(onTop: Boolean) {
+        if (onTop) setAlwaysOnTop()
+    }
 
     private fun Point.vec() = Vec3(x, y, z)
 }

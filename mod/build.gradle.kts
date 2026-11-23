@@ -192,14 +192,14 @@ tasks.assemble { dependsOn(debugJar) }
 
 tasks.register("installMod") {
     group = "distribution"
-    description = "Puts the release jar, or the debug jar with -Pjar=debug, in the game folder at -Pgame=, in place of any ds-mod jar there. `mise run install` picks the jar and the backend."
-    val game = providers.gradleProperty("game").map { File(it).absoluteFile.normalize() }
+    description = "Puts the release jar, or the debug jar with -Pjar=debug, in the mods folder at -Pmods=, in place of any ds-mod jar there. `mise run install` picks the jar, the backend and the instance's mods folder."
+    val modsFolder = providers.gradleProperty("mods").map { File(it).absoluteFile.normalize() }
     val jar = (if (providers.gradleProperty("jar").orNull == "debug") debugJar else tasks.jar).flatMap { it.archiveFile }
     inputs.file(jar)
     outputs.upToDateWhen { false }
     doLast {
-        val mods = game.get().let { if (it.name == "mods") it else it.resolve("mods") }
-        check(mods.isDirectory) { "$mods is not a mods folder. Pass the game folder that holds mods, such as a Prism instance's minecraft folder, or the mods folder." }
+        val mods = modsFolder.get()
+        check(mods.isDirectory) { "$mods is not a folder. Pass the mods folder the game loads, or run `mise run install`, which finds it." }
         val built = jar.get().asFile
         val old = checkNotNull(mods.listFiles { file -> file.name.startsWith("dsmod-") && file.name.endsWith(".jar") && file.name != built.name }) { "Could not list $mods to find the ds-mod jar it holds." }
         val staged = built.copyTo(mods.resolve(".${built.name}.part"), overwrite = true)

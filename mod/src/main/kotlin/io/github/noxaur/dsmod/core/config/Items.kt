@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.config
 
+import io.github.noxaur.dsmod.core.ui.Colors
 import io.github.noxaur.dsmod.core.ui.Narration
 
 data class Grouped<T>(
@@ -9,6 +10,19 @@ data class Grouped<T>(
     val off: List<String> = emptyList(),
 ) {
     fun withItems(items: List<T>, change: (List<String>) -> List<String>) = Grouped(items, change(groups), change(folded), change(off))
+
+    companion object {
+        fun <T> bind(items: Slot<List<T>>, groups: Slot<List<String>>, folded: Slot<List<String>>, off: Slot<List<String>>) = Bind(
+            items.bind.field,
+            { Grouped(items.value, groups.value, folded.value, off.value) },
+            {
+                items.value = it.items
+                groups.value = it.groups
+                folded.value = it.folded
+                off.value = it.off
+            },
+        )
+    }
 }
 
 sealed class Cell<T>(val name: String) {
@@ -28,10 +42,14 @@ sealed class Cell<T>(val name: String) {
     class Count<T>(name: String, val get: (T) -> Int, val set: (T, Int) -> T, val min: Int, val max: Int) : Cell<T>(name) {
         fun step(item: T, by: Int) = set(item, (get(item) + by).coerceIn(min, max))
     }
+
+    class Color<T>(name: String, val get: (T) -> Int, val set: (T, Int) -> T) : Cell<T>(name)
 }
 
 interface ItemKind<T> {
     val noun: String
+
+    val verb: String
 
     val first: String
 
@@ -58,6 +76,10 @@ interface ItemKind<T> {
     fun encode(group: String, items: List<T>): String
 
     fun decode(text: String): Pair<String, List<T>>?
+
+    val opens: String get() = cells.last { it is Cell.Text }.name
+
+    fun problem(item: T): String? = null
 }
 
 class Items<T>(id: String, name: String, description: String, bind: Bind<Grouped<T>>, val type: ItemKind<T>) :
@@ -287,6 +309,7 @@ class Items<T>(id: String, name: String, description: String, bind: Bind<Grouped
                         is Cell.Pick<T, *> -> cell.shown(item)
                         is Cell.Check -> null
                         is Cell.Count -> cell.get(item).toString()
+                        is Cell.Color -> Colors.spoken(cell.get(item))
                     }
                 }
                 Narration.join(type.title(item), type.noun, if (type.on(item)) "on" else "off", *parts.toTypedArray(), place)

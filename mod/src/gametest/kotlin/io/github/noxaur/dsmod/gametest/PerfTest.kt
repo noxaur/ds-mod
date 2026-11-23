@@ -4,6 +4,7 @@ import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.feature.boss.BossBeacon
 import io.github.noxaur.dsmod.core.feature.boss.BossTracer
 import io.github.noxaur.dsmod.core.feature.contribute.ReportGameData
+import io.github.noxaur.dsmod.core.feature.general.Waypoints
 import io.github.noxaur.dsmod.core.feature.inventory.StorageMode
 import io.github.noxaur.dsmod.core.feature.inventory.StorageOverview
 import io.github.noxaur.dsmod.core.game.Metrics
@@ -11,6 +12,8 @@ import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.hud
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.core.waypoint.SavedWaypoint
+import io.github.noxaur.dsmod.core.world.WaypointLook
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.edge.Slots
@@ -44,6 +47,7 @@ private const val SIDEBAR_LINES = 15
 private const val ARMORED_MOBS = 40
 private const val RECORDING_WARM_UP_TICKS = 40
 private const val MENU_SLOTS = 54
+private const val WAYPOINTS = 50
 private const val STORAGE_PAGES = 7
 private const val PAGE_FIRST_ITEM = 9
 
@@ -98,6 +102,7 @@ class PerfTest : FabricClientGameTest {
             context.waitTicks(WARM_UP_TICKS)
             windows(context, "inventory") { context.waitTicks(WINDOW_TICKS) }
             etherwarp(context, world)
+            waypoints(context, world)
             recording(context, world)
             bosses(context, world)
             menuBurst(context, world)
@@ -189,6 +194,23 @@ class PerfTest : FabricClientGameTest {
         } finally {
             context.input.releaseKey { it.keyShift }
         }
+    }
+
+    private fun waypoints(context: ClientGameTestContext, world: TestSingleplayerContext) {
+        context.runOnClient<Nothing> { client ->
+            val at = checkNotNull(client.player).blockPosition()
+            DsModClient.feature<Waypoints>().saved.value = List(WAYPOINTS) { i ->
+                SavedWaypoint("Waypoint $i", at.x + i % 10 * 4 - 20, at.y, at.z + i / 10 * 4 + 8, look = WaypointLook.entries[i % WaypointLook.entries.size], throughWalls = i % 2 == 0)
+            }
+        }
+        context.waitTicks(20)
+        windows(context, "waypoints") {
+            repeat(WINDOW_TICKS) {
+                world.server.runCommand("execute as @a at @s run tp @s ~1 ~ ~")
+                context.waitTick()
+            }
+        }
+        context.runOnClient<Nothing> { DsModClient.feature<Waypoints>().saved.value = emptyList() }
     }
 
     private fun recording(context: ClientGameTestContext, world: TestSingleplayerContext) {

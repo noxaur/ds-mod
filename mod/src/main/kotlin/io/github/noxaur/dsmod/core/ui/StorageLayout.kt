@@ -21,16 +21,16 @@ class StorageLayout(screenWidth: Int, screenHeight: Int, private val rows: List<
 
     init {
         val fit = maxOf(1, minOf(rows.size, (screenWidth - 2 * MARGIN_X - 2 * INSET - SCROLL_ROOM + COLUMN_GAP) / (GRID + COLUMN_GAP)))
-        val square = minOf(fit, maxOf(1, ceil(sqrt(rows.size.toDouble())).toInt()))
-        val room = maxOf(screenHeight - 2 * MARGIN_Y - 2 * INSET - INVENTORY_GAP - INVENTORY, MIN_VIEW)
-        columns = (square..fit).firstOrNull { place(it) <= room } ?: fit
+        columns = minOf(fit, maxOf(1, ceil(sqrt(rows.size.toDouble())).toInt()))
         content = place(columns)
+        val bottom = minOf(screenHeight, (screenHeight + Menus.TALLEST) / 2)
+        val room = maxOf(bottom - MARGIN_Y - 2 * INSET - INVENTORY_GAP - INVENTORY, MIN_VIEW)
         pagesWidth = columns * GRID + (columns - 1) * COLUMN_GAP
         view = minOf(content, room)
         width = 2 * INSET + pagesWidth + if (overflows) SCROLL_ROOM else 0
         height = 2 * INSET + view + INVENTORY_GAP + INVENTORY
         left = (screenWidth - width) / 2
-        top = maxOf(0, (screenHeight - height) / 2)
+        top = maxOf(0, bottom - height)
         viewX = left + INSET
         viewY = top + INSET
         for (i in pageX.indices) pageX[i] += viewX

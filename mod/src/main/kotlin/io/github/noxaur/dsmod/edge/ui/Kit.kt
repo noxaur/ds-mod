@@ -1,8 +1,10 @@
 package io.github.noxaur.dsmod.edge.ui
 
+import com.mojang.blaze3d.platform.NativeImage
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.text.Role
+import io.github.noxaur.dsmod.core.ui.ColorPick
 import io.github.noxaur.dsmod.core.ui.GameScreenColors
 import io.github.noxaur.dsmod.core.ui.Piece
 import io.github.noxaur.dsmod.core.ui.SettingsSearch
@@ -97,6 +99,7 @@ object Kit {
     const val SWITCH_HEIGHT = 12
     const val SWATCH_WIDTH = 22
     const val SWATCH_HEIGHT = 13
+    const val COLOR_SWATCH = 10
     private const val DROPDOWN_PAD = 4
     private const val DIM_WASH = 150
     private const val PAGE_TAB_PAD = 5
@@ -205,6 +208,58 @@ object Kit {
             glassSlotTexture = paintSlot(glassSlotTexture, GLASS_SLOT_TEXTURE, glassFace(t), glassShade(t), glassLight(t))
             slotTheme = t
         }
+        Ticks.end { if (!colorsPainted) paintColors() }
+    }
+
+    private fun paintColors() {
+        val image = NativeImage(RAMP, COLOR_ATLAS_HEIGHT, true)
+        for (i in 0 until RAMP) {
+            val f = i / (RAMP - 1f)
+            image.setPixel(i, HUE_ROW, ColorPick.hsv(f * 360f, 1f, 1f) or OPAQUE_BLACK)
+            image.setPixel(i, SATURATION_ROW, ARGB.white(((1 - f) * 255).roundToInt()))
+            image.setPixel(i, OPACITY_ROW, ARGB.white((f * 255).roundToInt()))
+            for (j in 0 until CHECKER_HEIGHT) image.setPixel(i, CHECKER_ROW + j, if ((i / CHECKER + j / CHECKER) % 2 == 0) CHECKER_LIGHT else CHECKER_DARK)
+        }
+        val texture = DynamicTexture({ "ds-mod colors" }, image)
+        Minecraft.getInstance().textureManager.register(COLOR_ATLAS, texture)
+        texture.upload()
+        colorsPainted = true
+    }
+
+    private fun colorBlit(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, u: Int, v: Int, regionWidth: Int, regionHeight: Int, color: Int = -1) {
+        if (colorsPainted) g.blit(RenderPipelines.GUI_TEXTURED, COLOR_ATLAS, x, y, u.toFloat(), v.toFloat(), width, height, regionWidth, regionHeight, RAMP, COLOR_ATLAS_HEIGHT, color)
+    }
+
+    private fun checker(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) =
+        colorBlit(g, x, y, width, height, 0, CHECKER_ROW, width.coerceAtMost(RAMP), height.coerceAtMost(CHECKER_HEIGHT))
+
+    fun colorSwatch(g: GuiGraphicsExtractor, x: Int, y: Int, size: Int, argb: Int) {
+        rect(g, x, y, size, size, theme.outline)
+        if (ARGB.alpha(argb) < OPAQUE) checker(g, x + 1, y + 1, size - 2, size - 2)
+        rect(g, x + 1, y + 1, size - 2, size - 2, argb)
+    }
+
+    fun colorField(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, hue: Int) {
+        rect(g, x, y, width, height, hue)
+        colorBlit(g, x, y, width, height, 0, SATURATION_ROW, RAMP, 1)
+        g.fillGradient(x, y, x + width, y + height, 0, OPAQUE_BLACK)
+    }
+
+    fun hueStrip(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) = colorBlit(g, x, y, width, height, 0, HUE_ROW, RAMP, 1)
+
+    fun opacityStrip(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, argb: Int) {
+        checker(g, x, y, width, height)
+        colorBlit(g, x, y, width, height, 0, OPACITY_ROW, RAMP, 1, ARGB.opaque(argb))
+    }
+
+    fun fieldMarker(g: GuiGraphicsExtractor, x: Int, y: Int) {
+        ring(g, x - 3, y - 3, 7, 7, OPAQUE_BLACK)
+        ring(g, x - 2, y - 2, 5, 5, -1)
+    }
+
+    fun stripKnob(g: GuiGraphicsExtractor, x: Int, y: Int, height: Int) {
+        ring(g, x - 3, y - 2, 7, height + 4, OPAQUE_BLACK)
+        ring(g, x - 2, y - 1, 5, height + 2, -1)
     }
 
     private fun paintSlot(made: DynamicTexture?, id: Identifier, face: Int, topLeft: Int, bottomRight: Int): DynamicTexture {
@@ -762,7 +817,7 @@ object Kit {
         if (glass) glassFace(g, x, y, width, height, state) else face(g, x, y, width, height, state)
     }
 
-    private fun focusRing(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
+    fun focusRing(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
         if (state == State.HOVER || state == State.DOWN) ring(g, x - 1, y - 1, width + 2, height + 2, theme.hoverOutline)
     }
 
@@ -823,6 +878,19 @@ object Kit {
     private fun channel(from: Int, to: Int, amount: Float) = (from + (to - from) * amount).roundToInt()
 
     private const val DIM_ALPHA = 184
+    private val COLOR_ATLAS: Identifier = Identifier.fromNamespaceAndPath("dsmod", "kit/colors")
+    private const val RAMP = 256
+    private const val HUE_ROW = 0
+    private const val SATURATION_ROW = 1
+    private const val OPACITY_ROW = 2
+    private const val CHECKER_ROW = 4
+    private const val CHECKER = 4
+    private const val CHECKER_HEIGHT = 12
+    private const val COLOR_ATLAS_HEIGHT = CHECKER_ROW + CHECKER_HEIGHT
+    private val CHECKER_LIGHT = ARGB.white(1f)
+    private val CHECKER_DARK = ARGB.color(OPAQUE, 200, 200, 200)
+    private val OPAQUE_BLACK = ARGB.black(1f)
+    private var colorsPainted = false
     private const val COOLDOWN_ALPHA = 0.5f
     const val OPAQUE = 255
     private const val HOVER_STRENGTH = 0.5f

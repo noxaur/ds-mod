@@ -100,6 +100,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             it.tab = InfoRows(tab::info)
             it.sidebar = InfoRows(sidebar::info)
             it.inArea = { it.area.holds(tab, sidebar) }
+            it.named = { Area.named(tab, sidebar) }
             it.container = container
             it.player = player
             it.state?.takeIf { state -> state.profiled }?.let { state -> player.slice(it.id, state) }

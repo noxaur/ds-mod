@@ -14,6 +14,7 @@ import io.github.noxaur.dsmod.core.game.SlotClicked
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.overview.Shelf
 import io.github.noxaur.dsmod.core.profile.Profile
+import io.github.noxaur.dsmod.core.text.count
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
@@ -36,6 +37,9 @@ class PlayerData internal constructor(private val container: ContainerState, pri
     private var switching: String? = null
     private var unread = false
 
+    var switchesAt = 0L
+        private set
+
     val profile: String? get() = saved.profile.takeUnless { it == UNNAMED }
 
     private val here: ProfileData get() = saved.profiles[saved.profile] ?: ProfileData()
@@ -55,7 +59,7 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         is ContainerOpened -> opened(time, event)
         is SlotChanged -> changed(time, event)
         is SlotClicked -> false.also { clicked(event) }
-        is SystemMessage -> false.also { if (event.text.plain.startsWith(REFUSED)) switching = null }
+        is SystemMessage -> false.also { refused(time, event.text.plain) }
         LeftServer -> false.also {
             shelf = null
             inProfiles = false
@@ -75,7 +79,17 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         unread = shelf != null
         if (to == null || event.id != ContainerState.INVENTORY) return false
         switch(to, time)
+        switchesAt = time + COOLDOWN_MILLIS
         return true
+    }
+
+    // @keep The refusal rounds to the second, so a switch the mod saw is kept when it agrees to within one
+    private fun refused(time: Long, line: String) {
+        if (!line.startsWith(REFUSED)) return
+        switching = null
+        val seconds = REFUSAL.matchEntire(line)?.groupValues?.get(1)?.let(::count) ?: return
+        val heard = time + seconds * 1000L
+        if (switchesAt !in heard - 1000..heard + 1000) switchesAt = heard
     }
 
     private fun changed(time: Long, event: SlotChanged): Boolean {
@@ -198,11 +212,13 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         const val INVENTORY_ID = "inventory"
         private const val INVENTORY_TITLE = "Inventory"
         private val INVENTORY = ContainerState.WORN_SLOTS.first..ContainerState.OFFHAND_SLOT
-        private const val PROFILES = "Profile Management"
+        const val PROFILES = "Profile Management"
         private const val SELECTED = "Selected"
         private const val IN_USE = "In use"
         private const val SWITCH = "Switch to Profile"
         private const val REFUSED = "You can switch profiles in "
+        private val REFUSAL = Regex("$REFUSED(\\d+)s\\.")
+        const val COOLDOWN_MILLIS = 30_000L
 
         private val FOLDS = setOf(ContainerOpened::class.java, SlotChanged::class.java, SlotClicked::class.java)
     }

@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.config.Items
 import io.github.noxaur.dsmod.core.config.Panel
 import io.github.noxaur.dsmod.core.config.Preview
 import io.github.noxaur.dsmod.core.config.Setting
+import io.github.noxaur.dsmod.core.ui.RecentColors
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.input.CharacterEvent
@@ -17,6 +18,7 @@ interface Editor {
         val scrollTo: (top: Int, bottom: Int) -> Unit,
         val changed: () -> Unit,
         val words: () -> List<String>,
+        val recent: RecentColors,
     )
 
     fun layout(x: Int, y: Int, width: Int): Int

@@ -21,4 +21,9 @@ enum class Area(val key: String?, val value: String?, val place: String?) {
 
     fun holds(tab: TabState, sidebar: SidebarState) =
         (key == null || tab.info(key) == value) && (place == null || sidebar.place?.startsWith(place) == true)
+
+    companion object {
+        /** @keep The tab list's `Area:` row names the world, but a place such as `Dungeon Hub` has no such row, so only the sidebar names it. */
+        fun named(tab: TabState, sidebar: SidebarState): String? = tab.info("Area") ?: sidebar.place
+    }
 }

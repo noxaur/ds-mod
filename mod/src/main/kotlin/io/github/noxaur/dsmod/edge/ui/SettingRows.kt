@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.edge.ui
 import com.mojang.blaze3d.platform.cursor.CursorTypes
 import io.github.noxaur.dsmod.core.config.Action
 import io.github.noxaur.dsmod.core.config.Choice
+import io.github.noxaur.dsmod.core.config.Color
 import io.github.noxaur.dsmod.core.config.Fold
 import io.github.noxaur.dsmod.core.config.Items
 import io.github.noxaur.dsmod.core.config.KeyBind
@@ -20,6 +21,7 @@ import io.github.noxaur.dsmod.core.text.TextBuilder
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Look
 import io.github.noxaur.dsmod.core.ui.Narration
+import io.github.noxaur.dsmod.core.ui.RecentColors
 import io.github.noxaur.dsmod.core.ui.SettingsSearch
 import io.github.noxaur.dsmod.edge.Keys
 import io.github.noxaur.dsmod.edge.toComponent
@@ -44,6 +46,7 @@ class SettingRows(
     private val scrollTo: (top: Int, bottom: Int) -> Unit,
     private val editors: (Setting, Editor.Host) -> Editor = Editors::of,
     private val stars: Stars? = null,
+    private val recent: RecentColors,
 ) {
     class Tip(val lines: List<FormattedCharSequence>)
 
@@ -107,7 +110,7 @@ class SettingRows(
     internal val made = HashMap<String, Editor>()
     private val conditional = HashMap<Setting, Boolean>()
 
-    private val host = Editor.Host({ relayout() }, { top, bottom -> scrollTo(top, bottom) }, { refresh() }, { words })
+    private val host = Editor.Host({ relayout() }, { top, bottom -> scrollTo(top, bottom) }, { refresh() }, { words }, recent)
 
     private var pressed: Editor? = null
     internal var origin = 0
@@ -139,7 +142,7 @@ class SettingRows(
     private sealed interface Mode {
         object Idle : Mode
 
-        class Menu(val widget: AbstractWidget) : Mode
+        class Menu(val widget: AbstractWidget, val leave: () -> Unit = {}) : Mode
 
         class Field(val field: KitTextField, val line: Line) : Mode
 
@@ -160,7 +163,7 @@ class SettingRows(
 
     private val dragging get() = (mode as? Mode.Drag)?.line
 
-    private val menu get() = (mode as? Mode.Menu)?.widget
+    internal val menu get() = (mode as? Mode.Menu)?.widget
 
     var found: MutableSet<String> = HashSet()
 
@@ -207,7 +210,7 @@ class SettingRows(
     fun view(originY: Int, top: Int, bottom: Int, width: Int, height: Int) {
         if (originY != origin) {
             when (mode) {
-                is Mode.Menu -> mode = Mode.Idle
+                is Mode.Menu -> closeMenu()
                 is Mode.Field -> commit()
                 is Mode.Recording -> finishRecording()
                 else -> Unit
@@ -226,6 +229,7 @@ class SettingRows(
 
     fun begin() {
         if (mode is Mode.Field) commit()
+        closeMenu()
         focusId = lines.getOrNull(focus)?.key
         spokenId = lines.getOrNull(spoken)?.key
         lines.clear()
@@ -321,6 +325,10 @@ class SettingRows(
             }
             is Choice<*> -> {
                 line.cw = maxOf(DROPDOWN, Kit.dropdownWidth(s.labels.maxOf(font::width)))
+                line.ch = Kit.BUTTON_HEIGHT
+            }
+            is Color -> {
+                line.cw = Kit.dropdownWidth(font.width(COLOR_LABEL), Kit.COLOR_SWATCH)
                 line.ch = Kit.BUTTON_HEIGHT
             }
             is KeyBind -> {
@@ -440,6 +448,7 @@ class SettingRows(
                     line.label = fit(s.shown, Kit.dropdownLabel(line.cw))
                     line.marked = Kit.Marked.of(line.label, words)
                 }
+                is Color -> line.label = s.summary(Keys::name).orEmpty()
                 is KeyBind -> line.label = fit(Keys.name(s.value), KEYS - 8)
                 is Span -> {
                     val summary = s.summary(Keys::name).orEmpty()
@@ -633,6 +642,11 @@ class SettingRows(
                 if (look != null) Looks.draw(g, look, line.cx + 4, cy + (line.ch - Looks.HEIGHT) / 2)
                 if (overControl) g.requestCursor(CursorTypes.POINTING_HAND)
             }
+            is Color -> {
+                Kit.dropdown(g, line.cx, cy, line.cw, line.ch, if (menuOpen) Kit.State.HOVER else controlState, line.label, Kit.COLOR_SWATCH)
+                Kit.colorSwatch(g, line.cx + 4, cy + (line.ch - Kit.COLOR_SWATCH) / 2, Kit.COLOR_SWATCH, s.value)
+                if (overControl) g.requestCursor(CursorTypes.POINTING_HAND)
+            }
             is KeyBind -> {
                 val open = mode
                 if (open is Mode.Recording && open.line === line) {
@@ -693,12 +707,13 @@ class SettingRows(
     }
 
     fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
+        swallow = false
         val mx = event.x
         val my = event.y
         when (val open = mode) {
             is Mode.Menu -> {
                 if (open.widget.takesPress(event, doubleClick)) return true
-                mode = Mode.Idle
+                closeMenu()
             }
             is Mode.Field -> {
                 if (open.field.takesPress(event, doubleClick)) return true
@@ -747,6 +762,7 @@ class SettingRows(
             is Choice<*> -> if (overControl(line, mx, my)) {
                 if (right) change { s.step(if (shift) -1 else 1) } else openMenu(line)
             }
+            is Color -> if (!right && overControl(line, mx, my)) openPicker(line)
             is KeyBind -> if (overControl(line, mx, my)) {
                 if (right) change { s.clear() } else record(line)
             }
@@ -787,6 +803,7 @@ class SettingRows(
     fun mouseDragged(event: MouseButtonEvent, dx: Double, dy: Double): Boolean {
         pressed?.let { return it.mouseDragged(event, dx, dy) }
         when (val drag = mode) {
+            is Mode.Menu -> return drag.widget.mouseDragged(event, dx, dy)
             is Mode.Reorder -> {
                 if (!drag.moved && Math.abs(event.y - drag.pressY) < DRAG_START) return true
                 drag.moved = true
@@ -817,6 +834,7 @@ class SettingRows(
             return it.mouseReleased(event)
         }
         capturer()?.mouseReleased(event)
+        menu?.mouseReleased(event)
         (mode as? Mode.Recording)?.button?.release(event.button())
         when (val drag = mode) {
             is Mode.Reorder -> {
@@ -837,7 +855,9 @@ class SettingRows(
     }
 
     fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double, shift: Boolean): Boolean {
-        if (mode is Mode.Menu || mode is Mode.Field || amount == 0.0) return false
+        menu?.let { return it.isMouseOver(mouseX, mouseY) && it.mouseScrolled(mouseX, mouseY, 0.0, amount) }
+        if (mode is Mode.Field || amount == 0.0) return false
+        capturer()?.let { if (it.isOver(mouseX, mouseY)) return it.mouseScrolled(mouseX, mouseY, amount, shift) }
         val i = lineAt(mouseX, mouseY).takeIf { it >= 0 } ?: return false
         val line = lines[i]
         line.editor?.let { return it.isOver(mouseX, mouseY) && it.mouseScrolled(mouseX, mouseY, amount, shift) }
@@ -965,6 +985,7 @@ class SettingRows(
             return true
         }
         val line = lines.getOrNull(focus) ?: return false
+        if (keys && line.setting is Color && event.codepoint() == '#'.code) return true.also { openPicker(line, "#") }
         if (!keys || line.setting !is Number) return false
         val c = event.codepoint()
         if (c !in '0'.code..'9'.code && c != '-'.code && c != '.'.code) return false
@@ -977,6 +998,7 @@ class SettingRows(
             is Switch -> change { s.toggle() }
             is Number -> edit(line, null)
             is Choice<*> -> openMenu(line)
+            is Color -> openPicker(line)
             is KeyBind -> record(line)
             is Span -> line.slider?.selectNext()
             is Action -> {
@@ -1045,6 +1067,19 @@ class SettingRows(
                 .below(line.cx, y, line.cw, line.ch, screenWidth, screenHeight)
         }
         mode = Mode.Menu(widget)
+    }
+
+    private fun closeMenu() {
+        val open = mode as? Mode.Menu ?: return
+        mode = Mode.Idle
+        open.leave()
+    }
+
+    private fun openPicker(line: Line, typed: String? = null) {
+        val s = line.setting as Color
+        val picker = KitColorPicker(s.value, { change { s.value = it } }, ::closeMenu, recent).below(line.cx, origin + line.cy, line.cw, line.ch, screenWidth, screenHeight)
+        typed?.let(picker::type)
+        mode = Mode.Menu(picker, picker::leave)
     }
 
     private fun edit(line: Line, typed: String?) {
@@ -1130,6 +1165,7 @@ class SettingRows(
         private const val DROPDOWN = 64
         private const val PICK_HEIGHT = Looks.HEIGHT + 4
         private const val KEYS = 92
+        private const val COLOR_LABEL = "#DDDDDD 100%"
         private const val SPAN_SUMMARY = 80
         private const val SPAN_BELOW = 4
         private const val EDITOR_BELOW = 6

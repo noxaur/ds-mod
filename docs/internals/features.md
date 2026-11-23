@@ -22,6 +22,10 @@ The tab list, the sidebar and the open container are folded into shared state be
 
 A feature names its area, and the mod gives it events and a readout only there. Each feature checking the area for itself was rejected: four features had three different checks, and one kept saving loot from other areas. Before the server names an area the player is in none, because a wrong count is saved for good, while a late readout costs only a quarter of a second.
 
+## A waypoint shows only in the area it was made in
+
+A waypoint keeps the server's name for its area, from the tab list or the sidebar, and shows only there, because two areas share the same coordinates. The name is the server's own and not one of the areas the mod knows, because players mark places the mod has no feature in. The user chose this over an area per group, as Skyblocker has, and over showing every waypoint everywhere.
+
 ## The mod forgets a feature's world and session for it
 
 A feature declares what lasts one world and what lasts one session, and the mod builds both again when they end. Each feature resetting its own fields was rejected: four of them missed one, and a boss feature claimed the next world's boss. A generic state machine per feature was rejected too, because each event would pay for a lookup and the bug was the forgotten reset, not the transitions.

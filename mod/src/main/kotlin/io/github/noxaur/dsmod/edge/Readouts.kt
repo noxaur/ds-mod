@@ -52,6 +52,11 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud, pr
 
     val standIns = HashSet<String>()
 
+    fun worldChanged() {
+        World.worldChanged()
+        handed.fill(-1)
+    }
+
     fun opened(screen: AbstractContainerScreen<*>) {
         game.readouts.forEach { Slots.clear(it.feature.id) }
         handed.fill(-1)

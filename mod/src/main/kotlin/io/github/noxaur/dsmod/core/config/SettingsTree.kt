@@ -17,6 +17,7 @@ import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
 import io.github.noxaur.dsmod.core.feature.end.ProtectorStatus
 import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
 import io.github.noxaur.dsmod.core.feature.general.AbilityCooldowns
+import io.github.noxaur.dsmod.core.feature.general.Waypoints
 import io.github.noxaur.dsmod.core.feature.general.ActivePet
 import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.core.feature.general.Camera
@@ -48,6 +49,7 @@ import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
 import io.github.noxaur.dsmod.core.feature.inventory.ForgeCraft
 import io.github.noxaur.dsmod.core.feature.inventory.HotdButton
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
+import io.github.noxaur.dsmod.core.feature.inventory.ProfileCooldown
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
 import io.github.noxaur.dsmod.core.feature.inventory.SkyBlockMenuClick
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
@@ -177,6 +179,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                     group(PlayerModel(c))
                     group(ProfileViewer(c))
                     group(ItemOverview(c))
+                    group(Waypoints(c))
                 }
                 section("Camera", Role.ACTION) {
                     group(Camera(c), "Third Person")
@@ -235,6 +238,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                     group(StorageOverview(c))
                     group(ForgeCraft(c))
                     group(WardrobeKeys(c))
+                    group(ProfileCooldown(c))
                 }
                 section("The End", Role.EPIC) {
                     group("Dragon") {

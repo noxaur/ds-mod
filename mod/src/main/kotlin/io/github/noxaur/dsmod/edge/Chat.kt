@@ -25,8 +25,10 @@ object Chat {
             .withHoverEvent(HoverEvent.ShowText(text { action("Click to open settings.") }.toComponent()))
     }.append(" ")
 
-    fun send(text: Text) {
-        Minecraft.getInstance().gui.hud.chat.addClientSystemMessage(Component.empty().append(prefix).append(text.toComponent()))
+    fun send(text: Text) = send(text.toComponent())
+
+    fun send(line: Component) {
+        Minecraft.getInstance().gui.hud.chat.addClientSystemMessage(Component.empty().append(prefix).append(line))
     }
 
     fun notice(feature: String, detail: Text) = send(noticeText(feature, detail))
