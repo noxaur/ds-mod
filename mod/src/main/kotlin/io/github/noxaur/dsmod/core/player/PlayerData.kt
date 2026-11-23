@@ -130,8 +130,9 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         return switched
     }
 
-    /** @keep A profile without an answer, or with a stale one, is asked for once each time the player joins. The id is
-     * the one an earlier answer listed for the profile's name, and the selected profile is asked for when none did */
+    /** @keep A profile without an answer, or with a stale one, is asked for once each time the player joins or switches
+     * to it, and an answer for it counts as that ask. The id is the one an earlier answer listed for the profile's name,
+     * and the selected profile is asked for when none did */
     private fun ask() {
         due = false
         val ask = ask ?: return
@@ -216,7 +217,7 @@ class PlayerData internal constructor(private val container: ContainerState, pri
     private fun clicked(event: SlotClicked) {
         val item = container.slots.getOrNull(event.slot) ?: return
         val name = item.name?.plain
-        if (menu == HEART && changesTree(item) || menu == RESET && name == CONFIRM) keepHeart(heart.copy(layout = null))
+        if (menu == HEART && event.slot in container.menuSlots && changesTree(item) || menu == RESET && name == CONFIRM) keepHeart(heart.copy(layout = null))
         menu?.let(APPLY::matchEntire)?.let { if (name == CONFIRM) applying = count(it.groupValues[1]) }
         if (menu != PROFILES) return
         when {
@@ -233,6 +234,7 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         if (saved.profile == UNNAMED && answer.choice.selected) adopt(name)
         val kept = saved.profiles[name] ?: ProfileData()
         if (answer.stale && kept.answer?.stale == false) return
+        asked += answer.profileId
         saved = saved.copy(profiles = saved.profiles + (name to kept.copy(answer = answer)))
         changed = true
         due = true
@@ -298,6 +300,7 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         inventory(time)
         target = null
         changed = true
+        asked.clear()
         due = true
     }
 

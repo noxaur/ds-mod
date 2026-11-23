@@ -179,10 +179,14 @@ class PlayerDataTest {
         assertEquals(listOf<String?>(ARCANE), asked)
         assertNull(session.here.answer)
 
+        session.switchTo("Superior", from = "Arcane")
+        session.switchTo("Arcane", from = "Superior")
+        assertEquals(listOf<String?>(ARCANE, ARCANE), asked, "again, as the backend never answered")
+
         session.game.player.heard(arcane)
         session.switchTo("Superior", from = "Arcane")
         assertEquals(superior, session.here.answer)
-        assertEquals(listOf<String?>(ARCANE), asked)
+        assertEquals(listOf<String?>(ARCANE, ARCANE), asked)
     }
 
     @Test
@@ -202,7 +206,7 @@ class PlayerDataTest {
         val asked = session.asked
         session.game.player.heard(superior.copy(stale = true))
         session.post(diamonds, LeftServer, diamonds)
-        assertEquals(listOf<String?>(SUPERIOR, SUPERIOR), asked, "by the id the stale answer lists")
+        assertEquals(listOf<String?>(SUPERIOR), asked, "not again before the player joins, and then by the id it lists")
 
         session.game.player.heard(superior)
         session.game.player.heard(superior.copy(stale = true, savedAt = "later"))
@@ -277,6 +281,13 @@ class PlayerDataTest {
         assertNull(session.here.heart.layout)
         assertEquals(one, session.here.heart.layouts[1])
         assertEquals("Level 32/50", session.here.heart.lore("Speedy Mineman").first())
+    }
+
+    @Test
+    fun `a click on the player's own inventory keeps the tree as the Heart profile's`() {
+        val session = heart()
+        session.post(ContainerOpened(9, text("Heart of the Dragon"), 90), SlotChanged(54, Item("minecraft:diamond_pickaxe", 1, text("Pickaxe"), lines("Mining Speed: +60"))), SlotClicked(54))
+        assertEquals(1, session.here.heart.layout)
     }
 
     @Test
