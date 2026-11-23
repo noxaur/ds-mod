@@ -11,6 +11,7 @@ class MenuKeys(
     private val feature: Feature,
     private val title: String,
     val keys: List<KeyBind>,
+    private val waitMillis: Long,
     private val button: (index: Int) -> Int?,
 ) {
     private var openedAt by feature.world { 0L }
@@ -47,7 +48,7 @@ class MenuKeys(
         return button(index)
     }
 
-    fun wait(now: Long): Long = if (open) (openedAt + WAIT_MILLIS - now).coerceAtLeast(0) else 0
+    fun wait(now: Long): Long = if (open) (openedAt + waitMillis - now).coerceAtLeast(0) else 0
 
     private fun hold(index: Int?) {
         queued = index
@@ -58,7 +59,6 @@ class MenuKeys(
     }
 
     companion object {
-        const val WAIT_MILLIS = 1000L
         const val KEY_0 = 48
     }
 }

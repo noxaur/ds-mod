@@ -27,7 +27,19 @@ enum class RawRecord {
 
     PARTICLES,
 
+    // @keep A block update: place, the new `state`, and the state the block `was` before it.
     BLOCK,
+
+    /** @keep The server's crack on a block: place, `progress` from 0 to 9 or another value to clear it, the breaker's entity
+     * `id`, and `self` when that id is the player's. */
+    BREAKING,
+
+    // @keep A level event: place, `event`, `data`, and for 2001, a block's break effect, the `block` state that broke.
+    LEVELEVENT,
+
+    /** @keep Each change of the player's own digging: `destroying`, the client's crack `stage`, and the block under the
+     * crosshair. */
+    DIGGING,
 
     /** @keep Fires before the game acts: place, `yaw`, `pitch`, the held item's `item`, `name` and `custom_data` `itemId`,
      * and the `target` entity or the `block` under the crosshair. */

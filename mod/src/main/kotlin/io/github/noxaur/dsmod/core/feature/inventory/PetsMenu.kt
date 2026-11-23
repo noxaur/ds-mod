@@ -25,7 +25,7 @@ class PetsMenu(config: DsModConfig) : HasFeature {
         feature.fold("petKeys", "Keys", "Pick the key for each pet, counted from the top left.", *keyList.toTypedArray())
     }
 
-    val keys = MenuKeys(feature, PetCard.MENU, keyList) { pets().getOrNull(it) }
+    val keys = MenuKeys(feature, PetCard.MENU, keyList, waitMillis = 0) { pets().getOrNull(it) }
 
     private val container = ContainerReader(feature)
 
