@@ -16,6 +16,8 @@ const GREEN = "#55FF55";
 const AQUA = "#00AAAA";
 const PINK = "#FF55FF";
 
+const inTooltipFont = (color: string): Omit<Span, "text"> => ({ color, font: "dragsim:tooltip" });
+
 /** @keep The icon the server draws before a stat, which the catalog does not carry. The ones past `speed` are guesses. */
 const ICONS: Readonly<Record<string, string>> = {
   damage: "\ue000",
@@ -71,12 +73,12 @@ const styleOf = ({ text: _text, ...style }: Span): Omit<Span, "text"> => style;
 const badge = (color: string, middle: readonly Span[]): Span[] => {
   const width = advance(middle.map((span) => span.text).join(""));
   const spans: Span[] = [];
-  push(spans, bar(width + 4), { color });
-  push(spans, gap(0xe200, width + 5), { color: WHITE });
+  push(spans, bar(width + 4), inTooltipFont(color));
+  push(spans, gap(0xe200, width + 5), inTooltipFont(WHITE));
   for (const span of middle) {
     push(spans, span.text, { color, ...styleOf(span) });
   }
-  push(spans, "\ue405", { color: WHITE });
+  push(spans, "\ue405", inTooltipFont(WHITE));
   return spans;
 };
 
@@ -191,7 +193,7 @@ const abilityHeader = (ability: Ability, wide: number, worn: number): Line => {
   if (triggered) {
     const space = wide - used - advance(ability.trigger) - 13;
     if (space >= 0) {
-      push(header, gap(0xe400, space), { color: WHITE });
+      push(header, gap(0xe400, space), inTooltipFont(WHITE));
     }
     for (const span of badge(YELLOW, [{ text: ability.trigger }])) {
       push(header, span.text, styleOf(span));
@@ -200,9 +202,9 @@ const abilityHeader = (ability: Ability, wide: number, worn: number): Line => {
   }
   const pad = wide - used - 9;
   if (pad >= 0) {
-    push(header, "\ue407", { color: WHITE });
-    push(header, "\ue103\ue200".repeat(Math.floor(pad / 8)), { color: DARK_GRAY });
-    push(header, gap(0xe400, pad % 8), { color: WHITE });
+    push(header, "\ue407", inTooltipFont(WHITE));
+    push(header, "\ue103\ue200".repeat(Math.floor(pad / 8)), inTooltipFont(DARK_GRAY));
+    push(header, gap(0xe400, pad % 8), inTooltipFont(WHITE));
   }
   return header;
 };
@@ -223,7 +225,7 @@ const footer = (item: UpstreamItem, catalogItem: CatalogItem | undefined, dungeo
   if (item.type !== "NONE" && item.type !== "") {
     const kind = `${dungeon ? "DUNGEON " : ""}${item.type.replaceAll("_", " ")}`;
     if (line.length > 0) {
-      push(line, "\ue405", { color: WHITE });
+      push(line, "\ue405", inTooltipFont(WHITE));
     }
     for (const span of badge(GRAY, [{ text: kind }])) {
       push(line, span.text, styleOf(span));

@@ -26,6 +26,7 @@ data class ServerSpan(
     val underlined: Boolean = false,
     val strikethrough: Boolean = false,
     val obfuscated: Boolean = false,
+    val font: String? = null,
 )
 
 @Serializable

@@ -287,7 +287,7 @@ class BackendTest {
         backend.items(
             listOf(
                 ItemSighting(
-                    "scylla", "minecraft:iron_sword", null, "gold", text(span), listOf(text(), text("Damage")),
+                    "scylla", "minecraft:iron_sword", null, "gold", text(span), listOf(text(), text("Damage"), text(ServerSpan("\ue405", font = "dragsim:tooltip"))),
                     true, null, 0x112233, buildJsonObject { put("item_data", buildJsonObject { put("item_id", "scylla") }) },
                 ),
             ),
@@ -296,7 +296,7 @@ class BackendTest {
         val report = seen.last()
         assertEquals("POST /v1/contrib/items", "${report.method} ${report.path}")
         assertEquals(
-            """{"modVersion":"1.2.3","items":[{"entry":"scylla","material":"minecraft:iron_sword","skinId":"gold","name":[{"text":"Scylla","color":"#FFAA00","bold":true}],"lore":[[],[{"text":"Damage"}]],"glint":true,"color":1122867,"data":{"item_data":{"item_id":"scylla"}}}]}""",
+            """{"modVersion":"1.2.3","items":[{"entry":"scylla","material":"minecraft:iron_sword","skinId":"gold","name":[{"text":"Scylla","color":"#FFAA00","bold":true}],"lore":[[],[{"text":"Damage"}],[{"text":"${"\ue405"}","font":"dragsim:tooltip"}]],"glint":true,"color":1122867,"data":{"item_data":{"item_id":"scylla"}}}]}""",
             String(report.body),
         )
     }
