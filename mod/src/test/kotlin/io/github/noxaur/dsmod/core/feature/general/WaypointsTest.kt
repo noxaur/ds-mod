@@ -87,6 +87,20 @@ class WaypointsTest : Harness(alone = Waypoints::class) {
     }
 
     @Test
+    fun `a shown waypoint far away, or in another area, stays`() {
+        at = Triple(0, 64, 0)
+        waypoints.show(SavedWaypoint("Far", 65536, 64, 0))
+        waypoints.show(SavedWaypoint("Village", 1, 64, 0, "Village"))
+        inArea("The End")
+        pass()
+        assertEquals(listOf("Far"), marks())
+        at = Triple(500, 64, 500)
+        inArea("Village")
+        pass()
+        assertEquals(listOf("Village", "Far"), marks(), "standing on its coordinates in another area left the Village waypoint be")
+    }
+
+    @Test
     fun `a shown waypoint goes with the world`() {
         at = Triple(100, 64, 100)
         waypoints.show(SavedWaypoint("Bob's", 10, 64, 10))

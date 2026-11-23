@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.feature.general.Waypoints
+import io.github.noxaur.dsmod.core.ui.Colors
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.waypoint.SavedWaypoint
 import io.github.noxaur.dsmod.core.world.WaypointLook
@@ -32,6 +33,16 @@ class WaypointsTest : FabricClientGameTest {
             links(context)
             commands(context, chat)
             ListDriver(context).run()
+            context.runOnClient<Nothing> {
+                it.gui.setScreen(null)
+                clear()
+                waypoints.saved.value = listOf(SavedWaypoint("Anywhere", 0, 64, 0))
+            }
+        }
+        // @keep The world layer drops its marks with the old world, and a waypoint that shows everywhere is the same in the next.
+        context.inWorld {
+            context.waitTicks(20)
+            context.checkClient("A waypoint that shows everywhere was gone in the next world") { World.shown.any { (it as? World.ShownWaypoint)?.label?.name == "Anywhere" } }
             context.runOnClient<Nothing> { clear() }
         }
     }
@@ -125,6 +136,12 @@ class WaypointsTest : FabricClientGameTest {
             press(lineOf(0), "Color")
             val picker = picker() ?: error("A press on the color opened no picker")
             ctx.shotInBothThemes("waypoints-color")
+            val opacity = Colors.opacity(waypoints.saved.value.single().color)
+            move(ctx.computeOnClient<Int, Nothing> { picker.left } + 20, ctx.computeOnClient<Int, Nothing> { picker.opacityY } + 4)
+            ctx.input.scroll(1.0)
+            ctx.waitTicks(2)
+            check(picker() != null) { "The wheel over the picker, past the list, closed it" }
+            check(Colors.opacity(waypoints.saved.value.single().color) == opacity + 1) { "The wheel over the opacity strip left ${Colors.show(waypoints.saved.value.single().color)}" }
             val red = ctx.computeOnClient<Int, Nothing> { picker.swatches.indexOf(0xFFFF5555.toInt()) }
             click(ctx.computeOnClient<Int, Nothing> { picker.swatchX(red) } + 2, ctx.computeOnClient<Int, Nothing> { picker.swatchY(red) } + 2)
             check(waypoints.saved.value.single().color == 0xFFFF5555.toInt()) { "A press on the red swatch left ${Integer.toHexString(waypoints.saved.value.single().color)}" }

@@ -14,12 +14,13 @@ object WaypointText {
 
     private const val NUMBER = """(-?\d{1,8}(?:\.\d+)?)"""
 
-    /** @keep The server writes each word of an area's name with a capital, as `The Catacombs (F1)`, and players type theirs
-     * in lowercase, so `in the cave` is no area */
+    /** @keep The server starts and ends an area's name with a capital word, as `The Catacombs (F1)` or `Isle of Dragons`, and
+     * players type theirs in lowercase, so `in the cave` is no area */
     private const val WORD = """[A-Z0-9(][\w'()-]*"""
+    private const val AREA = """$WORD(?:(?: [\w'()-]+)* $WORD)?"""
 
     private val SHARED = Regex(
-        """(?:\[([^\[\]]{1,${SavedWaypoint.NAME_LENGTH}})] )?\b[xX]:? ?$NUMBER,? [yY]:? ?$NUMBER,? [zZ]:? ?$NUMBER(?: in ($WORD(?: $WORD)*)$)?""",
+        """(?:\[([^\[\]]{1,${SavedWaypoint.NAME_LENGTH}})] )?\b[xX]:? ?$NUMBER,? [yY]:? ?$NUMBER,? [zZ]:? ?$NUMBER(?!\d)(?: in ($AREA)$)?""",
     )
 
     private val TYPED = Regex("""(?:[xX]:? ?)?$NUMBER[, ]+(?:[yY]:? ?)?$NUMBER[, ]+(?:[zZ]:? ?)?$NUMBER""")

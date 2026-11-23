@@ -75,6 +75,7 @@ class WaypointKind(private val fresh: (group: String) -> SavedWaypoint) : ItemKi
         const val NAME = "Name"
         const val GROUP_LENGTH = 32
         const val POSITION_LENGTH = 40
-        const val MAX_WAYPOINTS = 500
+        // @keep Each takes under 200 bytes of JSON, so this many decode well inside what a share may hold.
+        const val MAX_WAYPOINTS = 2000
     }
 }

@@ -29,6 +29,13 @@ class WaypointKindTest {
     }
 
     @Test
+    fun `a big group exported imports whole`() {
+        val many = List(1000) { SavedWaypoint("Waypoint number $it", it, 64, -it, "The End", 0x46AADCF8) }
+        val to = list()
+        assertEquals("Imported" to 1000, to.import(checkNotNull(list(*many.toTypedArray()).export(""))))
+    }
+
+    @Test
     fun `an import cleans each waypoint and drops the ones with no block`() {
         val bad = mapOf(
             "group" to "Shared",

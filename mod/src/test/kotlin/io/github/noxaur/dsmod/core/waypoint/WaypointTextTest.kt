@@ -46,12 +46,21 @@ class WaypointTextTest {
         assertEquals(listOf(SavedWaypoint(x = 1, y = 2, z = 3)), found("Bob: x: 1, y: 2, z: 3 in the cave"))
         assertEquals("The Catacombs (F1)", found("x: 1, y: 2, z: 3 in The Catacombs (F1)").single().area)
         assertEquals("Dragon's Den", found("x: 1, y: 2, z: 3 in Dragon's Den").single().area)
+        val isle = SavedWaypoint(x = 1, y = 2, z = 3, area = "Isle of Dragons")
+        assertEquals(listOf(isle), found(WaypointText.format(isle)))
+        assertEquals("", found("x: 1, y: 2, z: 3 in The End of it").single().area)
     }
 
     @Test
     fun `coordinates past the world border or the build limits are no waypoint`() {
         assertEquals(emptyList(), found("x: 99999999, y: 64, z: 0"))
         assertEquals(emptyList(), found("x: 0, y: 9000, z: 0"))
+        assertEquals(emptyList(), found("x: 1, y: 2, z: 100000000"), "a number too long is not cut to one that fits")
+    }
+
+    @Test
+    fun `a share at the end of a sentence is found`() {
+        assertEquals(listOf(SavedWaypoint(x = 1, y = 2, z = 3)), found("meet at x: 1, y: 2, z: 3."))
     }
 
     @Test

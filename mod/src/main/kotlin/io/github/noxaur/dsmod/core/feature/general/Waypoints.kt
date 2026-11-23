@@ -81,8 +81,8 @@ class Waypoints(config: DsModConfig) : HasFeature {
 
     private fun marks(@Suppress("UNUSED_PARAMETER") now: Long): List<Mark> {
         val at = position()
-        if (at != null && shown.any { reached(it, at) }) shown = shown.filterNot { reached(it, at) }
         val area = feature.areaName
+        if (at != null && shown.any { reached(it, at, area) }) shown = shown.filterNot { reached(it, at, area) }
         val from = listOf(saved.value, offGroups.value, shown, area)
         if (from == builtFrom) return built
         val off = offGroups.value
@@ -91,10 +91,11 @@ class Waypoints(config: DsModConfig) : HasFeature {
         return built
     }
 
-    private fun reached(waypoint: SavedWaypoint, at: Triple<Int, Int, Int>): Boolean {
-        val dx = waypoint.x - at.first
-        val dy = waypoint.y - at.second
-        val dz = waypoint.z - at.third
+    private fun reached(waypoint: SavedWaypoint, at: Triple<Int, Int, Int>, area: String?): Boolean {
+        if (!waypoint.shows(area)) return false
+        val dx = (waypoint.x - at.first).toLong()
+        val dy = (waypoint.y - at.second).toLong()
+        val dz = (waypoint.z - at.third).toLong()
         return dx * dx + dy * dy + dz * dz <= REACH * REACH
     }
 

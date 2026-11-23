@@ -218,7 +218,7 @@ object DsModClient : ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> left = true }
         ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ ->
             Packets.worldChanged()
-            World.worldChanged()
+            readouts.worldChanged()
             game.post(System.currentTimeMillis(), WorldChanged)
             tabs.forget()
             entities.forget()

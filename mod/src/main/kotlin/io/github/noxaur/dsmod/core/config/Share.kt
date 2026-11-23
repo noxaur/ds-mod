@@ -8,10 +8,10 @@ import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
 /** @keep A list the player copies out of the mod is its prefix and then the JSON gzipped as Base64, so a pasted share
- * says what it holds and stays short enough for chat. Only `@Expose` fields travel, and decoding reads at most 64 KB,
+ * says what it holds and stays short. Only `@Expose` fields travel, and decoding reads at most 1 MB,
  * so a bad paste cannot fill the memory. Gson writes null into a field the text gets wrong, so the caller cleans each one. */
 object Share {
-    private const val MAX_BYTES = 1 shl 16
+    private const val MAX_BYTES = 1 shl 20
 
     private val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
 

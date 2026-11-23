@@ -389,6 +389,7 @@ class ItemsEditor<T>(private val items: Items<T>, private val host: Editor.Host)
     }
 
     override fun isOver(mouseX: Double, mouseY: Double): Boolean {
+        if (menu?.isMouseOver(mouseX, mouseY) == true) return true
         val first = lines.firstOrNull() ?: return false
         return mouseY >= clipTop && mouseY < clipBottom && mouseX >= x && mouseX < right() && mouseY >= origin + first.y && mouseY < origin + statusY + STATUS
     }
