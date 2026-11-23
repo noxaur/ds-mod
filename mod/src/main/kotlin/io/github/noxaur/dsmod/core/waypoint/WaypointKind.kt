@@ -47,28 +47,43 @@ class WaypointKind(private val fresh: (group: String) -> SavedWaypoint) : ItemKi
 
     override fun encode(group: String, items: List<SavedWaypoint>): String = Share.encode(PREFIX, Shared(group, items.map { it.copy(group = "") }))
 
-    @Suppress("USELESS_CAST", "SENSELESS_COMPARISON") // @keep Gson writes null into a field the text gets wrong.
     override fun decode(text: String): Pair<String, List<SavedWaypoint>>? {
-        val shared = Share.decode(PREFIX, text, Shared::class.java) ?: return null
-        val waypoints = (shared.waypoints as List<SavedWaypoint?>?).orEmpty().filterNotNull().take(MAX_WAYPOINTS).mapNotNull {
+        val shared = Share.decode(PREFIX, text, Read::class.java) ?: return null
+        val waypoints = shared.waypoints.orEmpty().filterNotNull().take(MAX_WAYPOINTS).mapNotNull {
             val (x, y, z) = WaypointText.position("${it.x} ${it.y} ${it.z}") ?: return@mapNotNull null
             SavedWaypoint(
-                name = WaypointText.clean((it.name as String?).orEmpty()).take(SavedWaypoint.NAME_LENGTH),
+                name = WaypointText.clean(it.name.orEmpty()).take(SavedWaypoint.NAME_LENGTH),
                 x = x,
                 y = y,
                 z = z,
-                area = WaypointText.clean((it.area as String?).orEmpty()).take(SavedWaypoint.AREA_LENGTH),
-                color = it.color,
-                look = (it.look as WaypointLook?) ?: WaypointLook.BEAM,
-                distance = it.distance,
-                throughWalls = it.throughWalls,
-                enabled = it.enabled,
+                area = WaypointText.clean(it.area.orEmpty()).take(SavedWaypoint.AREA_LENGTH),
+                color = it.color ?: 0,
+                look = it.look ?: WaypointLook.BEAM,
+                distance = it.distance ?: true,
+                throughWalls = it.throughWalls ?: true,
+                enabled = it.enabled ?: true,
             )
         }
-        return (shared.group as String?).orEmpty().trim().take(GROUP_LENGTH) to waypoints
+        return shared.group.orEmpty().trim().take(GROUP_LENGTH) to waypoints
     }
 
     private data class Shared(@Expose val group: String = "", @Expose val waypoints: List<SavedWaypoint> = emptyList())
+
+    // @keep A share is read into fields that may be null, because Gson leaves out or nulls whatever the text gets wrong.
+    private data class Read(@Expose val group: String? = null, @Expose val waypoints: List<ReadWaypoint?>? = null)
+
+    private data class ReadWaypoint(
+        @Expose val name: String? = null,
+        @Expose val x: Int? = null,
+        @Expose val y: Int? = null,
+        @Expose val z: Int? = null,
+        @Expose val area: String? = null,
+        @Expose val color: Int? = null,
+        @Expose val look: WaypointLook? = null,
+        @Expose val distance: Boolean? = null,
+        @Expose val throughWalls: Boolean? = null,
+        @Expose val enabled: Boolean? = null,
+    )
 
     private companion object {
         const val PREFIX = "dsmod-waypoints:"

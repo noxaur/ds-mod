@@ -17,7 +17,7 @@ import io.github.noxaur.dsmod.core.world.WaypointLook
  * chat full of coordinates cannot fill the sky. One the player saves stays, in the settings, where they edit, group, import
  * and export it. Both show only in the area they belong to */
 class Waypoints(config: DsModConfig) : HasFeature {
-    override val feature = Feature(config, "waypoints", Area.ANYWHERE, Store.GENERAL, "Show the waypoints you save, and the ones you click in chat.", marks = ::marks)
+    override val feature = Feature(config, "waypoints", Area.ANYWHERE, Store.GENERAL, "Show the waypoints you save, and the ones you click in chat.", marks = { marks() })
 
     val chatLinks = feature.switch("waypointChatLinks", "Chat Links", "Make coordinates in chat clickable, to show or save them.", default = true)
 
@@ -79,7 +79,7 @@ class Waypoints(config: DsModConfig) : HasFeature {
 
     fun names(): List<String> = saved.value.map { it.name.trim() }.filter { it.isNotEmpty() }.distinct()
 
-    private fun marks(@Suppress("UNUSED_PARAMETER") now: Long): List<Mark> {
+    private fun marks(): List<Mark> {
         val at = position()
         val area = feature.areaName
         if (at != null && shown.any { reached(it, at, area) }) shown = shown.filterNot { reached(it, at, area) }
