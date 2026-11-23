@@ -70,6 +70,7 @@ class WaypointTextTest {
     @Test
     fun `two waypoints in one line are both found`() {
         assertEquals(2, WaypointText.find("x: 1, y: 2, z: 3 or x: 4, y: 5, z: 6").size)
+        assertEquals(listOf("", ""), found("x: 1, y: 2, z: 3 in The End or x: 4, y: 5, z: 6").map { it.area }, "an area never takes in the next waypoint")
     }
 
     @Test

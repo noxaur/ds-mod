@@ -16,9 +16,10 @@ object WaypointText {
 
     /** @keep The server starts and ends an area's name with a capital word, as `The Catacombs (F1)` or `Isle of Dragons`, and
      * players type theirs in lowercase, so `in the cave` is no area. A word ends in a letter, a digit or a bracket, so the
-     * full stop after a sentence is not taken into the name */
-    private const val WORD = """[A-Z0-9(](?:[^\s\[\]|]*[\p{L}\d)])?"""
-    private const val AREA = """$WORD(?:(?: [^\s\[\]|]+)* $WORD)?"""
+     * full stop after a sentence is not taken into the name. No word holds a colon, so an area never runs into the next
+     * waypoint's `x:` */
+    private const val WORD = """[A-Z0-9(](?:[^\s\[\]|:]*[\p{L}\d)])?"""
+    private const val AREA = """$WORD(?:(?: [^\s\[\]|:]+)* $WORD)?"""
 
     private val SHARED = Regex(
         """(?:\[([^\[\]]{1,${SavedWaypoint.NAME_LENGTH}})] )?\b[xX]:? ?$NUMBER,? [yY]:? ?$NUMBER,? [zZ]:? ?$NUMBER(?!\d)(?: in ($AREA)$)?""",
