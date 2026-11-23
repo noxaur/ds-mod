@@ -511,6 +511,12 @@ The server refuses a wardrobe click for a second after the menu opens, so a pres
 
 Change the keys under Keys in Wardrobe Keys' settings. Each key works only in the Wardrobe, so 1 to 9 still pick your hotbar slot everywhere else.
 
+### Profile Cooldown
+
+The server lets you switch profiles once every 30 seconds. After a switch, Profile Management shows the seconds left beside its title in red. When they run out, it shows Ready in green for 5 seconds.
+
+If the server refuses a switch the mod didn't see, such as one from before you joined, the timer starts from the wait the server names.
+
 ## Combat
 
 ### Damage Numbers
