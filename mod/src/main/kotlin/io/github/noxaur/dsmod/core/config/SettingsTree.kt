@@ -33,6 +33,7 @@ import io.github.noxaur.dsmod.core.feature.general.HideExplosions
 import io.github.noxaur.dsmod.core.feature.general.InventoryHud
 import io.github.noxaur.dsmod.core.feature.general.PerformanceStats
 import io.github.noxaur.dsmod.core.feature.general.PlayerModel
+import io.github.noxaur.dsmod.core.feature.general.ItemOverview
 import io.github.noxaur.dsmod.core.feature.general.ProfileViewer
 import io.github.noxaur.dsmod.core.feature.hud.ChatHudEditor
 import io.github.noxaur.dsmod.core.feature.hud.HideInF3
@@ -176,6 +177,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                     group(Animations(c))
                     group(PlayerModel(c))
                     group(ProfileViewer(c))
+                    group(ItemOverview(c))
                 }
                 section("Camera", Role.ACTION) {
                     group(Camera(c), "Third Person")

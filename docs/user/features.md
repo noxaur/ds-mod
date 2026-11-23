@@ -278,6 +278,23 @@ The player stands on the left in what they wear, turning slowly. The overview sh
 
 Beside each grid are how many slots it fills and how many items of each rarity it holds, and on the inventory, what the player wears. Item Rarity colors the slots, as in a menu. A player who hides their inventory has their items hidden here too. The profile comes from ds-mod's service, which signs in with your Minecraft account the first time you look someone up. "Out of date" under the name means dragsim.co did not answer, and the profile is the last copy, from up to a day before. Tooltips are rebuilt from the server's data, so a few lines can differ from the game's own. They wear the server's frame for each rarity, and another mod that adds to item tooltips adds to these too.
 
+### Item Overview
+
+Lists every item you own in one screen, from your inventory, ender chest, storage, wardrobe, accessory bag and pets. Type `/dsmod items`, or `/dsmod items` and a search, or pick a key in its settings. Items that share a name and rarity are counted together, and the count under each one adds up every slot that holds it.
+
+| Do this | To |
+| --- | --- |
+| Type in the search box | Show only items whose name or tooltip has every word you type |
+| Right-click the search box | Clear the search |
+| Press a tab along the top | Show only one kind of container, or All |
+| Press the sort button | Order the items by amount, NPC value, rarity or name. Right-click or scroll to go back |
+| Press the arrow beside it | Flip the order |
+| Hover an item | Read its tooltip, then where it is kept and how many of it each place holds, and its NPC value |
+| Click an item kept in storage or the ender chest | Open the first Storage page or the Ender Chest that holds it, with the item outlined for the Highlight Time |
+| Scroll, drag the scrollbar, or press Page Up, Page Down, Home or End | See the rest of the items |
+
+The total under the grid is the NPC value of the items shown. Your inventory is read from the game as you open the screen, and a Storage page or the Ender Chest you opened this session shows as you last saw it. Everything else comes from dragsim.co through ds-mod's service, as the profile viewer's does, so it is as fresh as dragsim.co's last save of your profile. If you hide your inventory on dragsim.co, only your inventory and the menus you opened show. If ds-mod's service can't be reached, the overview still shows what the game has shown you, and the line under the grid reads "Showing only what you opened". Hover that line to see why.
+
 ## Interface
 
 Theme picks the colors of ds-mod's screens: Charcoal is dark, and Vanilla matches the game's own menus.

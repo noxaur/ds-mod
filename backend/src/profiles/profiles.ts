@@ -121,22 +121,54 @@ export const profile = Effect.fn(function* (name: string, profileId: string | un
   };
 });
 
-export const container = Effect.fn(function* (snapshot: string, containerId: string) {
-  const kept = yield* readSnapshot(snapshot);
-  if (Option.isNone(kept)) {
+const kept = Effect.fn(function* (snapshot: string) {
+  const found = yield* readSnapshot(snapshot);
+  if (Option.isNone(found)) {
     return yield* new SnapshotExpired();
   }
-  const { hidden, sections } = kept.value;
+  return found.value;
+});
+
+const petsOf = Effect.fn(function* (layout: Layout, hidden: boolean) {
+  const items = decodeCatalog((yield* catalog).raw);
+  return {
+    ...summaryOf(layout, hidden),
+    items: layout.cells.map((pet) => (pet === null ? null : petOf(items, pet).item)),
+  };
+});
+
+export const container = Effect.fn(function* (snapshot: string, containerId: string) {
+  const { hidden, sections } = yield* kept(snapshot);
   const layout = layoutsOf(sections).find((candidate) => candidate.id === containerId);
   if (layout === undefined) {
     return yield* new ContainerNotFound();
   }
   if (layout.id === PETS_ID) {
-    const items = decodeCatalog((yield* catalog).raw);
-    return {
-      ...summaryOf(layout, hidden),
-      items: layout.cells.map((pet) => (pet === null ? null : petOf(items, pet).item)),
-    };
+    return yield* petsOf(layout, hidden);
   }
   return { ...summaryOf(layout, hidden), items: hidden ? [] : yield* draw(layout.cells, sections.inventory) };
+});
+
+// @keep One renderer draws every item, so the catalog is read once for all thirty storage pages.
+export const containers = Effect.fn(function* (snapshot: string) {
+  const { hidden, sections } = yield* kept(snapshot);
+  const layouts = layoutsOf(sections);
+  const boxes = layouts.filter((layout) => layout.id !== PETS_ID);
+  const drawn = hidden
+    ? []
+    : yield* draw(
+        boxes.flatMap((layout) => layout.cells),
+        sections.inventory,
+      );
+  let at = 0;
+  const out = [];
+  for (const layout of layouts) {
+    if (layout.id === PETS_ID) {
+      out.push(yield* petsOf(layout, hidden));
+      continue;
+    }
+    out.push({ ...summaryOf(layout, hidden), items: drawn.slice(at, at + layout.cells.length) });
+    at += layout.cells.length;
+  }
+  return out;
 });

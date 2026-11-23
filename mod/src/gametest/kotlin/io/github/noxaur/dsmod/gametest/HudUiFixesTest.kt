@@ -205,6 +205,7 @@ private fun profileShowsThePetAndScrollsStorage(context: ClientGameTestContext) 
         val lookup = ProfileLookup("Testwyrm", object : ProfileSource {
             override fun profile(name: String, profileId: String?) = CompletableFuture.completedFuture(profile)
             override fun container(snapshot: String, id: String) = CompletableFuture.supplyAsync { page.copy(id = id) }
+            override fun containers(snapshot: String) = CompletableFuture.supplyAsync { listOf(page) }
         }) { Minecraft.getInstance().execute(it) }
         ProfileScreen(lookup, null)
     }

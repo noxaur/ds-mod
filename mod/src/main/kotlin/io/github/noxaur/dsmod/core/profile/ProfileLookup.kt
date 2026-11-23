@@ -10,6 +10,8 @@ interface ProfileSource {
     fun profile(name: String, profile: String?): CompletableFuture<Profile>
 
     fun container(snapshot: String, id: String): CompletableFuture<Container>
+
+    fun containers(snapshot: String): CompletableFuture<List<Container>>
 }
 
 sealed interface Load<out T> {
@@ -30,6 +32,7 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
         private set
 
     private val containers = HashMap<String, Load<Container>>()
+    private var all: Load<List<Container>>? = null
     private var request = 0
 
     init {
@@ -43,6 +46,7 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
     fun retry() {
         if (state is Load.Failed) return load(asked)
         containers.entries.removeAll { it.value is Load.Failed }
+        if (all is Load.Failed) all = null
     }
 
     fun selected() = load(null)
@@ -50,8 +54,17 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
     fun container(id: String): Load<Container> {
         val profile = (state as? Load.Loaded)?.value ?: return Load.Loading
         return containers.getOrPut(id) {
-            fetch(profile, id, retried = false)
+            fetch({ source.container(it, id) }, { containers[id] = it }, profile.snapshot, retried = false)
             Load.Loading
+        }
+    }
+
+    // @keep Every container in one answer, for the item overview, which needs them all at once.
+    fun containers(): Load<List<Container>> {
+        val profile = (state as? Load.Loaded)?.value ?: return Load.Loading
+        return all ?: Load.Loading.also {
+            all = it
+            fetch(source::containers, { all = it }, profile.snapshot, retried = false)
         }
     }
 
@@ -60,27 +73,29 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
         val request = ++request
         state = Load.Loading
         containers.clear()
+        all = null
         source.profile(name, profile).whenCurrent(request, { state = Load.Loaded(it) }) { state = Load.Failed(failure(it)) }
     }
 
-    private fun fetch(profile: Profile, id: String, retried: Boolean) {
-        source.container(profile.snapshot, id).whenCurrent(request, { containers[id] = Load.Loaded(it) }) { error ->
+    private fun <T> fetch(ask: (String) -> CompletableFuture<T>, put: (Load<T>) -> Unit, snapshot: String, retried: Boolean) {
+        ask(snapshot).whenCurrent(request, { put(Load.Loaded(it)) }) { error ->
             val e = error.unwrapped()
             // @keep A snapshot lasts 10 minutes. A new one shows another moment, so the other tabs fetch theirs again.
-            if (e is BackendException && e.tag == "SnapshotExpired" && !retried) renew(id) else containers[id] = Load.Failed(failure(e))
+            if (e is BackendException && e.tag == "SnapshotExpired" && !retried) renew(ask, put) else put(Load.Failed(failure(e)))
         }
     }
 
-    private fun renew(id: String) {
+    private fun <T> renew(ask: (String) -> CompletableFuture<T>, put: (Load<T>) -> Unit) {
         source.profile(name, (state as? Load.Loaded)?.value?.profileId ?: asked).whenCurrent(request, { answer ->
             /** @keep The new snapshot replaces the old, so what is still on its way from the old one, or from a second
              * renewal another tab started, is dropped. */
             request++
             state = Load.Loaded(answer)
             containers.clear()
-            containers[id] = Load.Loading
-            fetch(answer, id, retried = true)
-        }) { containers[id] = Load.Failed(failure(it)) }
+            all = null
+            put(Load.Loading)
+            fetch(ask, put, answer.snapshot, retried = true)
+        }) { put(Load.Failed(failure(it))) }
     }
 
     private fun <T> CompletableFuture<T>.whenCurrent(request: Int, answered: (T) -> Unit, failed: (Throwable) -> Unit) {

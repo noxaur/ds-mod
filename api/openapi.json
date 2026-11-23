@@ -8238,6 +8238,975 @@
         "summary": "One container of a profile, as it was when the snapshot was taken."
       }
     },
+    "/v1/snapshots/{snapshot}/containers": {
+      "get": {
+        "tags": [
+          "profiles"
+        ],
+        "operationId": "profiles.containers",
+        "parameters": [
+          {
+            "name": "snapshot",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "text": {
+                              "type": "string"
+                            },
+                            "color": {
+                              "type": "string",
+                              "pattern": "^#[0-9A-F]{6}$"
+                            },
+                            "bold": {
+                              "type": "boolean"
+                            },
+                            "italic": {
+                              "type": "boolean"
+                            },
+                            "underlined": {
+                              "type": "boolean"
+                            },
+                            "strikethrough": {
+                              "type": "boolean"
+                            },
+                            "obfuscated": {
+                              "type": "boolean"
+                            },
+                            "font": {
+                              "type": "string",
+                              "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
+                            }
+                          },
+                          "required": [
+                            "text"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "columns": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9
+                      },
+                      "slots": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "hidden": {
+                        "type": "boolean"
+                      },
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "entry": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "material": {
+                                  "type": "string"
+                                },
+                                "itemModel": {
+                                  "type": "string"
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 99
+                                },
+                                "name": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "text": {
+                                        "type": "string"
+                                      },
+                                      "color": {
+                                        "type": "string",
+                                        "pattern": "^#[0-9A-F]{6}$"
+                                      },
+                                      "bold": {
+                                        "type": "boolean"
+                                      },
+                                      "italic": {
+                                        "type": "boolean"
+                                      },
+                                      "underlined": {
+                                        "type": "boolean"
+                                      },
+                                      "strikethrough": {
+                                        "type": "boolean"
+                                      },
+                                      "obfuscated": {
+                                        "type": "boolean"
+                                      },
+                                      "font": {
+                                        "type": "string",
+                                        "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
+                                      }
+                                    },
+                                    "required": [
+                                      "text"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "lore": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "text": {
+                                          "type": "string"
+                                        },
+                                        "color": {
+                                          "type": "string",
+                                          "pattern": "^#[0-9A-F]{6}$"
+                                        },
+                                        "bold": {
+                                          "type": "boolean"
+                                        },
+                                        "italic": {
+                                          "type": "boolean"
+                                        },
+                                        "underlined": {
+                                          "type": "boolean"
+                                        },
+                                        "strikethrough": {
+                                          "type": "boolean"
+                                        },
+                                        "obfuscated": {
+                                          "type": "boolean"
+                                        },
+                                        "font": {
+                                          "type": "string",
+                                          "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
+                                        }
+                                      },
+                                      "required": [
+                                        "text"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  }
+                                },
+                                "rarity": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "glint": {
+                                  "type": "boolean"
+                                },
+                                "skullTexture": {
+                                  "type": "string"
+                                },
+                                "color": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 16777215
+                                },
+                                "facts": {
+                                  "type": "object",
+                                  "properties": {
+                                    "itemType": {
+                                      "type": "string"
+                                    },
+                                    "skull": {
+                                      "type": "boolean"
+                                    },
+                                    "npcSellPrice": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "Infinity",
+                                            "-Infinity",
+                                            "NaN"
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    "reforge": {
+                                      "type": "string"
+                                    },
+                                    "stars": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "hotPotatoBooks": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "fumingBooks": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "recombobulated": {
+                                      "type": "boolean"
+                                    },
+                                    "artOfWar": {
+                                      "type": "boolean"
+                                    },
+                                    "finalSynchronizers": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "rune": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "name": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "name"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "enrichment": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "name": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "name"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "kills": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "Infinity",
+                                            "-Infinity",
+                                            "NaN"
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    "stats": {
+                                      "type": "object",
+                                      "properties": {
+                                        "base": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "id": {
+                                                "type": "string"
+                                              },
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "color": {
+                                                "type": "string",
+                                                "pattern": "^#[0-9A-F]{6}$"
+                                              },
+                                              "value": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "Infinity",
+                                                      "-Infinity",
+                                                      "NaN"
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "id",
+                                              "name",
+                                              "color",
+                                              "value"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "additive": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "id": {
+                                                "type": "string"
+                                              },
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "color": {
+                                                "type": "string",
+                                                "pattern": "^#[0-9A-F]{6}$"
+                                              },
+                                              "value": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "Infinity",
+                                                      "-Infinity",
+                                                      "NaN"
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "id",
+                                              "name",
+                                              "color",
+                                              "value"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "multiplicative": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "id": {
+                                                "type": "string"
+                                              },
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "color": {
+                                                "type": "string",
+                                                "pattern": "^#[0-9A-F]{6}$"
+                                              },
+                                              "value": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "Infinity",
+                                                      "-Infinity",
+                                                      "NaN"
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "id",
+                                              "name",
+                                              "color",
+                                              "value"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "increaseMax": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "id": {
+                                                "type": "string"
+                                              },
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "color": {
+                                                "type": "string",
+                                                "pattern": "^#[0-9A-F]{6}$"
+                                              },
+                                              "value": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "Infinity",
+                                                      "-Infinity",
+                                                      "NaN"
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "id",
+                                              "name",
+                                              "color",
+                                              "value"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "base",
+                                        "additive",
+                                        "multiplicative",
+                                        "increaseMax"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "reforgeStats": {
+                                      "type": "object",
+                                      "properties": {
+                                        "base": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "id": {
+                                                "type": "string"
+                                              },
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "color": {
+                                                "type": "string",
+                                                "pattern": "^#[0-9A-F]{6}$"
+                                              },
+                                              "value": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "Infinity",
+                                                      "-Infinity",
+                                                      "NaN"
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "id",
+                                              "name",
+                                              "color",
+                                              "value"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "additive": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "id": {
+                                                "type": "string"
+                                              },
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "color": {
+                                                "type": "string",
+                                                "pattern": "^#[0-9A-F]{6}$"
+                                              },
+                                              "value": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "Infinity",
+                                                      "-Infinity",
+                                                      "NaN"
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "id",
+                                              "name",
+                                              "color",
+                                              "value"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "multiplicative": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "id": {
+                                                "type": "string"
+                                              },
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "color": {
+                                                "type": "string",
+                                                "pattern": "^#[0-9A-F]{6}$"
+                                              },
+                                              "value": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "Infinity",
+                                                      "-Infinity",
+                                                      "NaN"
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "id",
+                                              "name",
+                                              "color",
+                                              "value"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "increaseMax": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "id": {
+                                                "type": "string"
+                                              },
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "color": {
+                                                "type": "string",
+                                                "pattern": "^#[0-9A-F]{6}$"
+                                              },
+                                              "value": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "Infinity",
+                                                      "-Infinity",
+                                                      "NaN"
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "id",
+                                              "name",
+                                              "color",
+                                              "value"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "base",
+                                        "additive",
+                                        "multiplicative",
+                                        "increaseMax"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "abilities": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string"
+                                          },
+                                          "name": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "id",
+                                          "name"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "skin": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "name": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "name"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "dye": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "name": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "name"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "drill": {
+                                      "type": "object",
+                                      "properties": {
+                                        "fuel": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "string",
+                                              "enum": [
+                                                "Infinity",
+                                                "-Infinity",
+                                                "NaN"
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        "engine": {
+                                          "type": "object",
+                                          "properties": {
+                                            "id": {
+                                              "type": "string"
+                                            },
+                                            "name": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "id",
+                                            "name"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "tank": {
+                                          "type": "object",
+                                          "properties": {
+                                            "id": {
+                                              "type": "string"
+                                            },
+                                            "name": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "id",
+                                            "name"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "module": {
+                                          "type": "object",
+                                          "properties": {
+                                            "id": {
+                                              "type": "string"
+                                            },
+                                            "name": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "id",
+                                            "name"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "coated": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "additionalProperties": false
+                                    },
+                                    "coating": {
+                                      "type": "object",
+                                      "additionalProperties": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "boolean"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "attunement": {
+                                      "type": "object",
+                                      "additionalProperties": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "boolean"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "witherScrolls": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string"
+                                          },
+                                          "name": {
+                                            "type": "string"
+                                          },
+                                          "value": {
+                                            "anyOf": [
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "string",
+                                                "enum": [
+                                                  "Infinity",
+                                                  "-Infinity",
+                                                  "NaN"
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "id",
+                                          "name",
+                                          "value"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "dungeonUpgrade": {
+                                      "type": "object",
+                                      "additionalProperties": {
+                                        "anyOf": [
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "enum": [
+                                              "Infinity",
+                                              "-Infinity",
+                                              "NaN"
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  },
+                                  "additionalProperties": false
+                                },
+                                "customData": {
+                                  "type": "object"
+                                }
+                              },
+                              "required": [
+                                "entry",
+                                "material",
+                                "count",
+                                "name",
+                                "lore",
+                                "rarity",
+                                "glint"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "title",
+                      "columns",
+                      "slots",
+                      "hidden",
+                      "items"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestProblemEncoded"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/effect_HttpApiError_UnauthorizedEncoded"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "The snapshot is gone. Fetch the profile again for a new one.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotExpiredEncoded"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The player called more often than a player can. A minute later they may again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TooManyRequestsEncoded"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorProblemEncoded"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "dragsim.co did not answer, and the backend has no copy to fall back on.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpstreamUnavailableEncoded"
+                }
+              }
+            }
+          }
+        },
+        "description": "In the order the profile lists them. The mod's item overview reads them all at once, so it asks once instead of once per container.",
+        "summary": "Every container of a profile, as it was when the snapshot was taken."
+      }
+    },
     "/v1/admin/requests": {
       "post": {
         "tags": [

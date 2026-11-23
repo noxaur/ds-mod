@@ -19,6 +19,10 @@ class ProfileLookupTest {
         override fun profile(name: String, profile: String?) = CompletableFuture<Profile>().also { profiles += profile to it }
 
         override fun container(snapshot: String, id: String) = CompletableFuture<Container>().also { containers += "$snapshot/$id" to it }
+
+        val all = ArrayList<Pair<String, CompletableFuture<List<Container>>>>()
+
+        override fun containers(snapshot: String) = CompletableFuture<List<Container>>().also { all += snapshot to it }
     }
 
     private val source = Source()
@@ -42,6 +46,31 @@ class ProfileLookupTest {
         assertEquals(listOf("${profile.snapshot}/inventory"), source.containers.map { it.first })
         source.containers[0].second.complete(inventory)
         assertEquals(Load.Loaded(inventory), lookup.container("inventory"))
+    }
+
+    @Test
+    fun `every container comes in one fetch, asked once`() {
+        assertIs<Load.Loading>(lookup.containers())
+        assertTrue(source.all.isEmpty(), "nothing before the profile is in")
+        source.profiles[0].second.complete(profile)
+        lookup.containers()
+        lookup.containers()
+        assertEquals(listOf(profile.snapshot), source.all.map { it.first })
+        source.all[0].second.complete(listOf(inventory))
+        assertEquals(Load.Loaded(listOf(inventory)), lookup.containers())
+    }
+
+    @Test
+    fun `an expired snapshot is renewed once for every container too`() {
+        source.profiles[0].second.complete(profile)
+        lookup.containers()
+        source.all[0].second.completeExceptionally(failed(410, "SnapshotExpired"))
+        val renewed = profile.copy(snapshot = "renewed")
+        source.profiles[1].second.complete(renewed)
+        assertEquals("renewed", source.all[1].first)
+        source.all[1].second.completeExceptionally(failed(410, "SnapshotExpired"))
+        assertIs<Load.Failed>(lookup.containers())
+        assertEquals(2, source.profiles.size, "renewed only once")
     }
 
     @Test

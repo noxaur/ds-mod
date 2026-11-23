@@ -156,10 +156,11 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
     private var tabs = emptyList<Tab>()
     private val skillIcons = HashMap<String, ItemStack>()
 
-    private var panelX = 0
-    private var panelY = 0
-    private var left = 0
-    private var top = 0
+    private var frame = Kit.Frame(0, 0)
+    private val panelX get() = frame.x
+    private val panelY get() = frame.y
+    private val left get() = frame.left
+    private val top get() = frame.top
 
     var contentX = 0
         private set
@@ -200,10 +201,7 @@ class ProfileScreen(private val lookup: ProfileLookup, private val parent: Scree
     private fun nameOf(profile: Profile?) = profile?.player?.name ?: lookup.name
 
     override fun init() {
-        panelX = (width - PANEL_WIDTH) / 2
-        panelY = (height - PANEL_HEIGHT + Kit.TAB_HEIGHT) / 2
-        left = panelX + Kit.INSET
-        top = panelY + Kit.INSET
+        frame = Kit.underTabs(width, height, PANEL_WIDTH, PANEL_HEIGHT)
         contentX = left + LEFT_WIDTH + Kit.INSET
         built = lookup.state
         fetched?.let { last = it }

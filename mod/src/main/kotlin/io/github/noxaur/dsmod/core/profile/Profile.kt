@@ -242,6 +242,8 @@ data class Profile(
 
         fun parseContainer(body: String): Container = json.decodeFromString(Container.serializer(), body)
 
+        fun parseContainers(body: String): List<Container> = json.decodeFromString(ListSerializer(Container.serializer()), body)
+
         // @keep dragsim.co looks players up by their Minecraft name.
         private val NAME = Regex("[A-Za-z0-9_]{1,16}")
 
