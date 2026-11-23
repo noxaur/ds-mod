@@ -258,7 +258,10 @@ class FeatureReplayTest {
         session.game.messages.clear()
         return Transcript(session, start).apply {
             play(events)
-            if (saved) saved()
+            if (!saved) return@apply
+            saved()
+            // @keep Every profile's state, as the edge writes it, because the line above shows only the profile the player is on
+            if (session.readout().feature.state?.profiled == true) text.appendLine("saved players = " + session.game.player.run { unwritten(); takeChanges()?.invoke() })
         }.text.toString()
     }
 
@@ -282,16 +285,18 @@ class FeatureReplayTest {
                 else -> Unit
             }
         }
-        val inventory = container.inventorySlots.toList()
-        val opened = if (inventory.isEmpty()) emptyList() else listOf(ContainerOpened(ContainerState.INVENTORY, size = inventory.size))
-        val slots = inventory.withIndex().filter { it.value != null }.map { SlotChanged(it.index, it.value) }
+        fun opened(id: Int, slots: List<Item?>): List<GameEvent> =
+            if (slots.isEmpty()) emptyList() else listOf(ContainerOpened(id, container.title.takeIf { id != ContainerState.INVENTORY }, slots.size)) + slots.withIndex().filter { it.value != null }.map { SlotChanged(it.index, it.value) }
+        // @keep The menu that was open is opened again, because the capture's next slot updates are its own and would land in the inventory
+        val menu = if (container.id == ContainerState.INVENTORY) emptyList() else opened(container.id, container.slots.toList())
         val last = before.last()
-        return (listOfNotNull(tab, sidebar) + opened + slots + entities.values).map { Captured(last.time, it, last.tick?.let { Int.MIN_VALUE }) }
+        return (listOfNotNull(tab, sidebar) + opened(ContainerState.INVENTORY, container.inventorySlots.toList()) + menu + entities.values).map { Captured(last.time, it, last.tick?.let { Int.MIN_VALUE }) }
     }
 
     private inner class Cut(val feature: Feature, val events: List<Captured>, val index: Int, private val start: Long, fixture: Path) {
         val time = events[index - 1].time
         val at = "replaying $fixture, at +%.1fs".format(Locale.ROOT, (time - start) / 1000.0)
+        val joined = sentOnJoin(events.subList(0, index)) + events.subList(index, events.size)
 
         fun played(how: String, rest: List<Captured>, saved: Boolean, disturb: (Harness) -> Unit): String {
             val session = fresh(feature.id)
@@ -316,9 +321,9 @@ class FeatureReplayTest {
     @TestFactory
     fun `a feature switched off for a tick shows what a clean replay does once the world changes`() = eachCut { cut ->
         val events = cut.events
-        val hop = (cut.index until events.size).firstOrNull { events[it].event == WorldChanged || events[it].event == LeftServer } ?: events.size
-        val until = events.subList(cut.index, hop)
-        val after = events.subList(hop, events.size).ifEmpty { listOf(Captured(events.last().time, WorldChanged, events.last().tick?.let { Int.MIN_VALUE })) + sentOnJoin(events) }
+        val hop = (cut.index until events.size).firstOrNull { events[it].event == WorldChanged || events[it].event == LeftServer }
+        val until = if (hop == null) emptyList() else events.subList(cut.index, hop)
+        val after = if (hop == null) listOf(Captured(cut.time, WorldChanged, events[cut.index - 1].tick?.let { Int.MIN_VALUE })) + cut.joined else events.subList(hop, events.size)
         val clean = cut.played("a clean replay", after, saved = false) { play(it.game, until) }
         val switched = cut.played("it was switched off and on", after, saved = false) { session ->
             session.readout().feature.enabled = false
@@ -332,7 +337,7 @@ class FeatureReplayTest {
 
     @TestFactory
     fun `a feature that was off while the player left comes back as one that stayed on`() = eachCut { cut ->
-        fun rejoined(off: Boolean) = cut.played(if (off) "the player left while it was off" else "the player left", cut.events.subList(cut.index, cut.events.size), saved = true) { session ->
+        fun rejoined(off: Boolean) = cut.played(if (off) "the player left while it was off" else "the player left", cut.joined, saved = true) { session ->
             if (off) {
                 session.readout().feature.enabled = false
                 session.game.tick(cut.time)
@@ -340,7 +345,6 @@ class FeatureReplayTest {
             session.game.post(cut.time, LeftServer)
             session.game.tick(cut.time)
             session.readout().feature.enabled = true
-            play(session.game, sentOnJoin(cut.events.subList(0, cut.index)))
         }
         assertEquals(rejoined(off = false), rejoined(off = true), "${cut.feature.id} shows or saves something else after a rejoin when it was off while the player left: one of the two kept the server it left, ${cut.at}")
     }
