@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
 import io.github.noxaur.dsmod.core.feature.general.Camera
 import io.github.noxaur.dsmod.core.feature.general.CommandBinds
+import io.github.noxaur.dsmod.core.feature.general.Waypoints
 import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
@@ -20,8 +21,9 @@ class SettingsTreeTest {
     private val tree = settings.sections
     private val rows = tree.flatMap { it.walk() }
     private val rarity = settings.feature<ItemRarity>()
-    private val stored = emptyMap<String, String>()
-    private val spanned = settings.feature<CommandBinds>().run { listOf(groups, collapsedGroups, offGroups).map { it.bind.field } }
+    private val stored = mapOf("General.recentColors" to "The color picker's recent swatches, which the player picks by picking a color, not on a row")
+    private val spanned = settings.feature<CommandBinds>().run { listOf(groups, collapsedGroups, offGroups).map { it.bind.field } } +
+        settings.feature<Waypoints>().run { listOf(groups, collapsedGroups, offGroups).map { it.bind.field } }
 
     private val saved = Store.entries.flatMap { store -> config.stored(store).all.map { it.bind.field } }
 

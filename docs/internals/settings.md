@@ -30,6 +30,10 @@ All the rows are drawn by one painter, not a widget each. A widget can't be clip
 
 Player Model's Preview shows the settings around it applied and edits nothing. A panel was the nearest kind, but a panel has a value, a changed marker and a reset, and every value already has its one row. So a preview is a kind of its own with no value, and it gets the name, dimming, search, star and keys of any row. Its turntable holds still, because Spin is one of the settings it shows.
 
+## A color is a kind of its own
+
+A color setting opens a full picker, with a field, hue and opacity strips, hex and swatches, rather than being a pick of preset colors. A pick would need no new kind, but it can't reach the color a player has in mind, and the chat colors are already offered as the picker's swatches. The picker is a panel over the rows, like a dropdown's menu, so it gets the row's search, reset and keyboard and needs no screen of its own.
+
 ## Every setting is edited where it sits
 
 Lists, layouts and other editors that take many values are rows, not screens of their own reached through an Edit button. So a search finds them, and dimming and the keyboard work as on any row. A list of things the player made is one generic row, so the next list gets every convention without new drawing code. Only Move HUD opens a screen, because placing a block needs the world behind it.

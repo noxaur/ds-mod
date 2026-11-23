@@ -21,6 +21,7 @@ class SettingsTest {
         val spans = s.slot("spans", listOf(Section(175, 200)))
         val other = s.slot("other", false)
         val pieces = s.slot("pieces", listOf(Piece.HELMET, Piece.BOOTS, Piece.PET))
+        val tint = s.slot("tint", 0xFFFF8800.toInt())
     }
 
     private enum class Tier { RARE, EPIC, RNGESUS }
@@ -46,6 +47,7 @@ class SettingsTest {
         choice(v.tier.bind, "Tier", "Pick it.", Tier.entries)
         span(v.spans.bind, "Timing", "Pick it.", max = 200)
         order(v.pieces.bind, "Pieces", "Pick them.", Piece.entries)
+        color(v.tint.bind, "Tint", "Pick it.")
         pick(v.other.bind, "Look", "Pick it.", listOf(false, true)) { Look.Slots(io.github.noxaur.dsmod.core.container.SlotStyle(), if (it) 3 else 1) }
     }.rows.also { SettingsTree.link(it, null) }
     private val byName = rows.flatMap { it.walk().toList() }.associateBy { it.name }
@@ -139,6 +141,18 @@ class SettingsTest {
     }
 
     @Test
+    fun `a color sums itself up as hex, names its default and resets to it`() {
+        val tint = byName.getValue("Tint") as Color
+        assertEquals("#FF8800", tint.summary { "" })
+        tint.value = 0x80112233.toInt()
+        assertEquals("#112233 50%", tint.summary { "" })
+        assertTrue(tint.changed)
+        assertEquals("#FF8800", tint.default { "" })
+        tint.reset()
+        assertEquals(0xFFFF8800.toInt(), v.tint.value)
+    }
+
+    @Test
     fun `rows under an off switch dim and stay editable`() {
         v.on.value = false
         assertTrue(number("Distance").dimmed)
@@ -169,6 +183,7 @@ class SettingsTest {
         assertEquals("Look, pick, false, 1 of 2", byName.getValue("Look").narration(keys))
         assertEquals("Key, key bind, L", byName.getValue("Key").narration(keys))
         assertEquals("Timing, span, 175 to 200", byName.getValue("Timing").narration(keys))
+        assertEquals("Tint, color, #FF8800, 100% opacity", byName.getValue("Tint").narration(keys))
         val more = Rows().apply {
             fold("f", "Fold", "More.") { switch(v.other.bind, "Other", "Turn it on.") }
             action("moveHud", "Move HUD", "Drag a block.", button = "Move") {}

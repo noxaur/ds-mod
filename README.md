@@ -36,6 +36,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - **Command Binds** – Send a command with a key, a combo or a sequence. Group, fold and share them.
 - **Profile Viewer** – Type `/pv` and a name to see their skills, slayers, dungeons, pets and items.
 - **Item Overview** – Type `/dsmod items` to search every item you own, from every container, in one screen.
+- **Waypoints** – Save, style and group waypoints, share them in any chat, and click shared coordinates to see them.
 - **Copy Chat** – Select messages and copy them as text, format codes or JSON.
 - **Hide Cooldown Messages** – Hides the "ability is on cooldown" messages.
 
@@ -51,6 +52,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - **Storage Overview** – Hover a Storage page to see its items, or see every page and the Ender Chest at once.
 - **Forge Craft** – Repeat your last forge craft with a key, one click per press.
 - **Wardrobe Keys** – Press 1 to 9 in the Wardrobe to click that slot, once the server lets you.
+- **Profile Cooldown** – Shows in Profile Management when you can switch profiles again.
 - **Menu Theme** – Dark or glass menus, inventory and tooltips.
 - **Fixed Menu Layout** – Go Back, Close and your inventory sit in the same place in every menu.
 - **Hide Glass Panes** – Hides the blank glass panes that pad out menus.

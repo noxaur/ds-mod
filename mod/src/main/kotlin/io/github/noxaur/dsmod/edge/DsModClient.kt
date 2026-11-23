@@ -160,9 +160,11 @@ object DsModClient : ClientModInitializer {
         SkyBlockMenuClicks.bind(tree.feature())
         SlotGuards.bind(tree.feature())
         Wardrobes.bind(tree.feature())
+        ProfileCooldowns.bind(tree.feature())
         TabBar.bind(tree.feature())
         Profiles.bind(game, tree.feature())
         ItemOverviews.bind(game, tree.feature())
+        WaypointChat.bind(game, tree.feature(), ::saveSettings) { openSettings(it) }
         StorageOverlays.bind(game, tree.feature())
         StoragePreviews.bind(tree.feature())
     }
@@ -184,6 +186,7 @@ object DsModClient : ClientModInitializer {
         StoragePreviews.register()
         ForgeCrafts.register()
         Wardrobes.register()
+        ProfileCooldowns.register()
         AutoClicks.register()
         Trail.register()
         MenuBack.register()
@@ -214,6 +217,7 @@ object DsModClient : ClientModInitializer {
         Recording.register(::leave)
         Contribute.register()
         Profiles.registerNames()
+        WaypointChat.register()
 
         ClientReceiveMessageEvents.ALLOW_GAME.register { _, _ -> Packets.shows() }
         lookUpDragSim()
@@ -228,7 +232,7 @@ object DsModClient : ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> left = true }
         ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ ->
             Packets.worldChanged()
-            World.worldChanged()
+            readouts.worldChanged()
             game.post(System.currentTimeMillis(), WorldChanged)
             tabs.forget()
             entities.forget()
@@ -287,7 +291,9 @@ object DsModClient : ClientModInitializer {
                     .then(ClientCommands.literal("submit").executes { Contribute.submit(); 1 })
                     .then(ClientCommands.literal("cancel").executes { Contribute.cancel(); 1 })
                     .then(Profiles.dsmod())
-                    .then(ItemOverviews.dsmod()),
+                    .then(ItemOverviews.dsmod())
+                    .then(WaypointChat.dsmod("waypoint"))
+                    .then(WaypointChat.dsmod("wp")),
             )
             Profiles.register(dispatcher)
         }

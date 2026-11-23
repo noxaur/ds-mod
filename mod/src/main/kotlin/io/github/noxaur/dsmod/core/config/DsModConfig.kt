@@ -26,6 +26,8 @@ class DsModConfig {
 
         val favoriteKey = stored.slot("favoriteKey", KEY_F)
 
+        val recentColors = stored.slot("recentColors", emptyList<Int>())
+
         private companion object {
             const val KEY_F = 70
         }

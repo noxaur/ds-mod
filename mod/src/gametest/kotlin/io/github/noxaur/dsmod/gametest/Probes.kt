@@ -25,10 +25,12 @@ import io.github.noxaur.dsmod.edge.toComponent
 import io.github.noxaur.dsmod.edge.ui.Editor
 import io.github.noxaur.dsmod.edge.ui.ItemsEditor
 import io.github.noxaur.dsmod.edge.ui.Kit
+import io.github.noxaur.dsmod.edge.ui.KitColorPicker
 import io.github.noxaur.dsmod.edge.ui.KitNavTree
 import io.github.noxaur.dsmod.edge.ui.SettingRows
 import io.github.noxaur.dsmod.gametest.mixin.NarrationInvoker
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.narration.ScreenNarrationCollector
 
 class Spot(
@@ -85,6 +87,8 @@ fun ItemsEditor<*>.spot(line: Int, control: String? = null): IntArray? {
 
 val ItemsEditor<*>.size get() = lines.size
 
+fun ItemsEditor<*>.picker() = menu as? KitColorPicker
+
 fun ItemsEditor<*>.lineOf(index: Int, details: Boolean = false) = indexOf(Entry.Item(index), details)
 
 fun ItemsEditor<*>.headingOf(group: String, details: Boolean = false) = indexOf(Entry.Heading(group), details)
@@ -135,3 +139,9 @@ fun Stored.reset() = all.forEach { reset(it) }
 private fun <T> reset(slot: Slot<T>) {
     slot.value = slot.default
 }
+
+fun SettingRows.picker() = menu as? KitColorPicker
+
+fun KitColorPicker.hue() = pick.hue
+
+fun AbstractWidget.narrated(): String = ScreenNarrationCollector().apply { update(::updateNarration) }.collectNarrationText(true)

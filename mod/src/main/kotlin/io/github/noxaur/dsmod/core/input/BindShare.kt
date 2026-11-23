@@ -1,38 +1,22 @@
 package io.github.noxaur.dsmod.core.input
 
-import com.google.gson.GsonBuilder
 import com.google.gson.annotations.Expose
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.util.Base64
-import java.util.zip.GZIPInputStream
-import java.util.zip.GZIPOutputStream
+import io.github.noxaur.dsmod.core.config.Share
 
 object BindShare {
     private const val PREFIX = "dsmod-binds:"
     private const val MAX_BINDS = 100
-    private const val MAX_BYTES = 1 shl 16
 
     const val GROUP_LENGTH = 32
 
     data class Shared(@Expose val group: String = "", @Expose val binds: List<CommandBind> = emptyList())
 
-    private val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
-
-    fun encode(group: String, binds: List<CommandBind>): String {
-        val bytes = ByteArrayOutputStream()
-        GZIPOutputStream(bytes).use { it.write(gson.toJson(Shared(group, binds.map { bind -> bind.copy(group = "") })).toByteArray()) }
-        return PREFIX + Base64.getEncoder().encodeToString(bytes.toByteArray())
-    }
+    fun encode(group: String, binds: List<CommandBind>): String = Share.encode(PREFIX, Shared(group, binds.map { bind -> bind.copy(group = "") }))
 
     // @keep Every bind comes in switched off, so the player reads each command before a key can send it.
     @Suppress("USELESS_CAST", "SENSELESS_COMPARISON") // @keep Gson writes null into a field the text gets wrong.
     fun decode(text: String): Shared? {
-        val body = text.trim().takeIf { it.startsWith(PREFIX) }?.removePrefix(PREFIX) ?: return null
-        val shared = runCatching {
-            val json = GZIPInputStream(ByteArrayInputStream(Base64.getDecoder().decode(body))).use { it.readNBytes(MAX_BYTES) }
-            gson.fromJson(String(json), Shared::class.java)
-        }.getOrNull() ?: return null
+        val shared = Share.decode(PREFIX, text, Shared::class.java) ?: return null
         val binds = (shared.binds as List<CommandBind?>?).orEmpty().filterNotNull().take(MAX_BINDS).map {
             CommandBind(
                 name = (it.name as String?).orEmpty().take(CommandBind.MAX_LENGTH),

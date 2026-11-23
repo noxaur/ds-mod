@@ -11,15 +11,25 @@ class StorageLayoutTest {
     private val rows = listOf(3) + List(7) { 5 }
 
     @Test
-    fun `pages form the most square grid, wider only to stop scrolling and never wider than the screen`() {
+    fun `pages form the most square grid, never wider than the screen`() {
         assertEquals(2, StorageLayout(2000, 2000, List(4) { 5 }).columns)
         assertEquals(3, StorageLayout(2000, 2000, List(5) { 5 }).columns)
         assertEquals(3, StorageLayout(2000, 2000, List(9) { 5 }).columns)
         assertEquals(4, StorageLayout(2000, 2000, List(12) { 5 }).columns)
-        assertEquals(4, StorageLayout(960, 400, rows).columns, "3 by 3 would scroll, and 4 by 2 fits")
+        assertEquals(3, StorageLayout(960, 400, rows).columns, "3 by 3 scrolls rather than widening to 4 by 2")
         assertEquals(1, StorageLayout(200, 400, rows).columns)
         assertEquals(2, StorageLayout(400, 400, rows).columns)
         assertEquals(2, StorageLayout(960, 400, listOf(3, 5)).columns, "no column stands empty")
+    }
+
+    @Test
+    fun `the panel ends where a six-row chest does, so the hotbar stays in sight`() {
+        val layout = StorageLayout(853, 480, rows)
+        assertEquals((480 + Menus.TALLEST) / 2, layout.top + layout.height)
+        assertEquals(StorageLayout.MARGIN_Y, layout.top, "the pages fill the room above, a tab's height under the screen's top")
+        assertTrue(layout.overflows)
+        val few = StorageLayout(853, 480, listOf(3, 5))
+        assertEquals(layout.top + layout.height, few.top + few.height, "the inventory stays put however many pages there are")
     }
 
     @Test
