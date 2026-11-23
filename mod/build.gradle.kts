@@ -231,7 +231,10 @@ val pickGameTests = tasks.register<JavaExec>("pickGameTests") {
     classpath = sourceSets["debug"].let { it.output + it.compileClasspath }
     mainClass = "io.github.noxaur.dsmod.debug.GameTestPickKt"
     inputs.files(sourceSets["gametest"].output.classesDirs, gameTestManifest)
-    args(listOf(projectDir.path, picked.get().asFile.path) + listOfNotNull(gametests.orNull))
+    args(projectDir.path, picked.get().asFile.path)
+    // @keep Read at execution, so each CI job's -Pgametests= reuses one configuration cache entry.
+    val only = gametests
+    argumentProviders.add { listOfNotNull(only.orNull) }
     outputs.dir(picked)
     outputs.upToDateWhen { false }
 }
