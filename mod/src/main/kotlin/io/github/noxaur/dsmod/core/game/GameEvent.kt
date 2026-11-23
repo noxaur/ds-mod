@@ -96,3 +96,14 @@ data class PingMeasured(val millis: Long) : FeatureEvent
 @Serializable
 @SerialName("fps")
 data class FrameRate(val fps: Int) : FeatureEvent
+
+/** @keep dragsim.co shows a mined block as bedrock until it grows back, and the client never breaks one itself, so this is a
+ * block that became bedrock, with the `block` it was. An Ender Node is `minecraft:sandstone`, with portal particles around
+ * it. `BreakSorter` says who broke it, and `tick` counts the client's ticks, 20 a second. */
+@Serializable
+@SerialName("broken")
+data class BlockBroken(val block: String, val x: Int, val y: Int, val z: Int, val tick: Long, val by: Breaker) : FeatureEvent
+
+/** @keep `WITH_PLAYER` broke in the same tick as the player's own, as spread and Pickobulus break them, and `OTHER` is another
+ * player's or the server's. */
+enum class Breaker { PLAYER, WITH_PLAYER, OTHER }

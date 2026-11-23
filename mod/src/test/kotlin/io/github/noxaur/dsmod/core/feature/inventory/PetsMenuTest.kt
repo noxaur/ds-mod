@@ -79,7 +79,6 @@ class PetsMenuTest : Harness(alone = PetsMenu::class) {
     @Test
     fun `1 to 9 and 0 click the first ten pets from the top left, skipping the menu's own items`() {
         open(slots = shelf().toTypedArray())
-        pass(MenuKeys.WAIT_MILLIS)
         assertEquals(10, feature.press(key(1), time))
         assertEquals(16, feature.press(key(7), time))
         assertEquals(19, feature.press(key(8), time))
@@ -89,20 +88,16 @@ class PetsMenuTest : Harness(alone = PetsMenu::class) {
     @Test
     fun `a key past the last pet clicks nothing, and the keys do nothing in another menu`() {
         open(slots = arrayOf(10 to pet("Wolf"), 11 to pet("Black Cat", active = true)))
-        pass(MenuKeys.WAIT_MILLIS)
         assertNull(feature.press(key(3), time))
         open("Wardrobe", 10 to pet("Wolf"))
         assertNull(feature.index(MenuKeys.KEY_0 + 1))
     }
 
     @Test
-    fun `a press in the first second is outlined over the active mark and clicked when it ends`() {
+    fun `a press the moment the menu opens clicks at once, with no wait`() {
         open(slots = shelf().toTypedArray())
-        assertNull(feature.press(key(4), time))
-        pass()
-        assertEquals(SlotMark(Role.ACTION, label("4"), outline = true), readout().slots[13])
-        pass(MenuKeys.WAIT_MILLIS)
-        assertEquals(13, feature.due(time))
+        assertEquals(0, feature.wait(time))
+        assertEquals(13, feature.press(key(4), time))
         pass()
         assertEquals(SlotMark(Role.GOOD, label("4"), outline = true), readout().slots[13])
     }

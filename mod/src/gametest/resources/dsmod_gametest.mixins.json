@@ -13,7 +13,9 @@
     "HoveredSlotAccessor",
     "HudAccessor",
     "MouseButtonInvoker",
-    "NarrationInvoker"
+    "NarrationInvoker",
+    "TickFrameBlurMixin",
+    "TickFrameMixin"
   ],
   "injectors": {
     "defaultRequire": 1

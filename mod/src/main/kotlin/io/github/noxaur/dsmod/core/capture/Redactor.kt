@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.capture
 
 import io.github.noxaur.dsmod.core.game.ActionBar
+import io.github.noxaur.dsmod.core.game.BlockBroken
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.FrameRate
@@ -143,7 +144,7 @@ class Redactor(private val names: Set<String>) {
         is SlotChanged -> event.copy(item = event.item?.let(::item))
         WorldChanged -> event
         LeftServer -> event
-        is HeadPlaced, is Hit, is ServerTime, is PingMeasured, is FrameRate, is EntityGone, is SlotClicked -> event
+        is HeadPlaced, is Hit, is ServerTime, is PingMeasured, is FrameRate, is EntityGone, is SlotClicked, is BlockBroken -> event
         is ActionBar -> ActionBar(event.text.named())
         is EntityDied -> event.copy(name = event.name.named())
         is EntitySeen -> event.copy(name = event.name.named(), head = event.head?.let(::item))
