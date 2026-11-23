@@ -20,7 +20,7 @@ class SettingsTreeTest {
     private val tree = settings.sections
     private val rows = tree.flatMap { it.walk() }
     private val rarity = settings.feature<ItemRarity>()
-    private val stored = emptyMap<String, String>()
+    private val stored = mapOf("General.recentColors" to "The color picker's recent swatches, which the player picks by picking a color, not on a row")
     private val spanned = settings.feature<CommandBinds>().run { listOf(groups, collapsedGroups, offGroups).map { it.bind.field } }
 
     private val saved = Store.entries.flatMap { store -> config.stored(store).all.map { it.bind.field } }

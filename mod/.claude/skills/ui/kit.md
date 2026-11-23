@@ -40,6 +40,9 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `side` | Any | A strip in `side` with an outline down its right edge, beside a `backdrop` |
 | `navRow` | 16 tall, or 13 for a subsection | A line of a navigation tree on a `side`. Hover and keyboard focus lift its face, and the selected one lifts further and has a 2px ink bar on its left |
 | `swatch` | Any square, 9x9 for a section | A color in a 1px outline: a placeholder icon, or a color to pick |
+| `colorSwatch` | Any square, 10x10 on a color row | A swatch of any color, on a checkerboard where it is see-through |
+| `colorField`, `hueStrip`, `opacityStrip` | Any | The color picker's field of saturation and brightness for a hue, its strip of hues, and its strip of a color's opacity on a checkerboard. Content, not chrome, so they are gradients, cut from one texture painted once |
+| `fieldMarker`, `stripKnob` | 7x7, 7 wide | The white-and-black rings that mark the picked spot on a color field and on a strip, so they show on any color |
 | `rule` | 1 tall | A faint line across a panel, such as after a heading, or between the rows of a well |
 | `button` | 16 tall | The raised face of a control in one of four states: idle, hover, pressed, off |
 | `well` | Any | A dark sunk area |
@@ -115,6 +118,7 @@ A widget is a vanilla widget with a kit face. It takes its label as a string and
 | `SettingRows` | The rows of a settings screen, each a `Setting` with the face of its kind, and the behaviors every row shares, as `settings.md` says. It lays out on change and draws only the rows that show. Its `narration` is one entry of the screen's narration, which the screen adds with `addWidget` |
 | `Editor` | A row that edits many values in place, such as `ItemsEditor` for a list and the editors of a canvas. `SettingRows` hosts it under the row's header, lays it out on change, hands it the input while the player is inside it, and draws its menus over the rows |
 | `Looks` | Draws each `Look` a pick shows, 18 tall. Slot looks come from one atlas of every style, with and without sparkles, painted once |
+| `KitColorPicker` | A Color row's panel: field, hue and opacity strips, hex and opacity fields, recent and chat-color swatches, as the color picker section of `controls.md` says. `ColorPick` in `core/ui` holds its rules |
 | `KitRangeSlider` | A 16 tall track with any number of spans, for picking stretches of a scale. Press and drag on the track to draw one or click to add one, drag an end or the middle, right-click to remove. The cursor shows what a press will do. `Sections` in `core/ui` holds its rules: a span is at least 5 long, and two within 3 of each other become one |
 
 Controls in a row are 4 apart, and rows are 4 apart. A label beside a control sits on the control's text baseline.

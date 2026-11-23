@@ -20,6 +20,7 @@ import io.github.noxaur.dsmod.core.input.CommandBinds
 import io.github.noxaur.dsmod.core.input.Where
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Look
+import io.github.noxaur.dsmod.core.ui.RecentColors
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.TabLayout
 import io.github.noxaur.dsmod.core.ui.SettingsSearch
@@ -36,7 +37,7 @@ import org.lwjgl.glfw.GLFW
 import kotlin.reflect.KClass
 
 private const val WIDTH = 620
-private const val HEIGHT = 352
+private const val HEIGHT = 420
 private const val COLUMN = 198
 private const val HEADING = 12
 
@@ -59,6 +60,10 @@ class SettingsGalleryScreen(private val hud: DsModConfig.Hud, private val page: 
         val heading = s.slot("heading", true)
         val distance = s.slot("distance", 4f)
         val tilt = s.slot("tilt", -12f)
+        val color = s.slot("color", 0xFF55FFFF.toInt())
+        val tint = s.slot("tint", 0xFFFFAA00.toInt())
+        val dimColor = s.slot("dimColor", 0xFF55FF55.toInt())
+        val recent = s.slot("recent", emptyList<Int>())
         val tier = s.slot("tier", Tier.EPIC)
         val views = s.slot("views", Tier.RARE)
         val preset = s.slot("preset", MarkStyle.FRAME)
@@ -129,6 +134,10 @@ class SettingsGalleryScreen(private val hud: DsModConfig.Hud, private val page: 
                 number(v.distance.bind, "Distance", "Set the distance.", 1f..50f, step = 0.5f)
                 number(v.tilt.bind, "Tilt", "Angle the camera.", -45f..45f, step = 1f, unit = "°")
             },
+            "Color: idle, changed and see-through" to rows {
+                color(v.color.bind, "Beam Color", "Pick a color.")
+                color(v.tint.bind, "Tint", "Pick the tint.")
+            },
         ),
         listOf(
             "Choice and pick: idle, changed" to rows {
@@ -144,6 +153,7 @@ class SettingsGalleryScreen(private val hud: DsModConfig.Hud, private val page: 
             "Dimmed too" to rows {
                 span(v.dimSpans.bind, "Timing", "Pick it.", max = 200, dependsOn = gate)
                 pick(v.dimPreset.bind, "Style", "Pick it.", MarkStyle.entries, dependsOn = gate) { slotLook(it) }
+                color(v.dimColor.bind, "Color", "Pick it.", dependsOn = gate)
                 action("noop", "Edit Binds", "Edit them.", button = "Edit", dependsOn = gate) {}
             },
         ),
@@ -233,13 +243,13 @@ class SettingsGalleryScreen(private val hud: DsModConfig.Hud, private val page: 
     val looks: Set<KClass<out Look>> = all.filterIsInstance<Pick<*>>().flatMap { pick -> pick.values.indices.map { pick.lookAt(it)::class } }.toSet()
 
     private val opened = hashSetOf("openSwitch", "openFold", "openOrder")
-    val settingRows = SettingRows(opened, ::layout, { _, _ -> })
+    val settingRows = SettingRows(opened, ::layout, { _, _ -> }, recent = RecentColors(v.recent.bind))
 
     private val found = "Found by a search: frame look" to rows {
         pick(v.foundPreset.bind, "Style", "Pick a look for the marks.", MarkStyle.entries, id = "foundStyle") { slotLook(it) }
         fold("foundFold", "Hotbar Look", "Give the hotbar its own look.") { switch(v.foundSparkles.bind, "Sparkles", "Add glints.", id = "foundSparkles") }
     }
-    private val foundRows = SettingRows(HashSet(), ::layout, { _, _ -> })
+    private val foundRows = SettingRows(HashSet(), ::layout, { _, _ -> }, recent = RecentColors(v.recent.bind))
     private val wells = ArrayList<Well>()
     private var ox = 0
     private var oy = 0
@@ -252,6 +262,7 @@ class SettingsGalleryScreen(private val hud: DsModConfig.Hud, private val page: 
         v.views.value = Tier.RNGESUS
         v.theme.value = Theme.CHARCOAL
         v.tilt.value = 12f
+        v.tint.value = 0x80FF5555.toInt()
         v.none.value = -1
         v.foundSparkles.value = true
         v.rows.value = listOf(Row.TOP)

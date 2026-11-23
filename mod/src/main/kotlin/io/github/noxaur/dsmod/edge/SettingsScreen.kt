@@ -12,6 +12,7 @@ import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.NavRow
 import io.github.noxaur.dsmod.core.ui.NavTree
 import io.github.noxaur.dsmod.core.ui.Place
+import io.github.noxaur.dsmod.core.ui.RecentColors
 import io.github.noxaur.dsmod.core.ui.Scroll
 import io.github.noxaur.dsmod.core.ui.SettingHit
 import io.github.noxaur.dsmod.core.ui.SettingsSearch
@@ -74,7 +75,7 @@ class SettingsScreen(
     private val icons = List(sections.size) { if (it == FAVORITES) Icon.STAR else null }
     private val tree = NavTree(sections.map { it.named.size })
     private val pane = Scroll()
-    internal val rows = SettingRows(opened, ::build, ::scrollTo, stars = SettingRows.Stars({ it in config.favorites }, ::star, { config.general.favoriteKey.value }))
+    internal val rows = SettingRows(opened, ::build, ::scrollTo, stars = SettingRows.Stars({ it in config.favorites }, ::star, { config.general.favoriteKey.value }), recent = RecentColors(config.general.recentColors.bind))
 
     private lateinit var search: KitTextField
     internal lateinit var nav: KitNavTree

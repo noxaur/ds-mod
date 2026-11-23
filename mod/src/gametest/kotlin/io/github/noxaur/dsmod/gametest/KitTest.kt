@@ -18,7 +18,7 @@ class KitTest : FabricClientGameTest {
     companion object {
         fun inKit(context: ClientGameTestContext, test: () -> Unit) {
             val window = SettingsSteps.windowSize(context)
-            context.input.resizeWindow(1280, 800)
+            context.input.resizeWindow(1280, 880)
             // @keep An item needs a world's registries, and the gallery shows items in its slots.
             context.worldBuilder().create().use {
                 guiScale(context, 2)

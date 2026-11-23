@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.core.feature
 import io.github.noxaur.dsmod.core.config.Bind
 import io.github.noxaur.dsmod.core.config.Canvas
 import io.github.noxaur.dsmod.core.config.Choice
+import io.github.noxaur.dsmod.core.config.Color
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Fold
 import io.github.noxaur.dsmod.core.config.KeyBind
@@ -174,6 +175,9 @@ class Feature(
         key: String, name: String, description: String, default: Float, range: ClosedFloatingPointRange<Float>, step: Float, unit: String = "",
         dependsOn: Switch? = null,
     ): Number = settings.number(stored(key, default).bind, name, description, range, step, unit, key, dependsOn)
+
+    fun color(key: String, name: String, description: String, default: Int, dependsOn: Switch? = null, formerly: List<String> = emptyList()): Color =
+        settings.color(slot(key, default, serializer(), formerly).bind, name, description, key, dependsOn)
 
     inline fun <reified E : Enum<E>> choice(key: String, name: String, description: String, default: E, dependsOn: Switch? = null, formerly: List<String> = emptyList()): Choice<E> =
         settings.choice(enumBind(key, default, formerly), name, description, enumList<E>(), key, dependsOn)
