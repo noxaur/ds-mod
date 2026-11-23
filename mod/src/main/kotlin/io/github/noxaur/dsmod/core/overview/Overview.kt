@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.overview
 
 import io.github.noxaur.dsmod.core.feature.inventory.SkyBlockMenuClick
+import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.profile.Container
 import io.github.noxaur.dsmod.core.profile.DrawnItem
@@ -83,18 +84,26 @@ enum class SortBy(private val label: String) {
 data class Place(val id: String, val title: String, val count: Int)
 
 /** @keep A server menu that shows one container: which container, and the slots that hold its items. A Storage page's
- * top row holds its controls and the 45 slots under it its items, and `/storage <page>` opens a page itself. The Ender
- * Chest has one page of 27 under its controls, and `/ec` opens it. */
-data class Shelf(val id: String, val title: String, val slots: IntRange) {
+ * top row holds its controls and the 45 slots under it its items, and `/storage <page>` opens a page itself. Its title,
+ * `Storage Page (2/7)`, also gives how many pages the player has, as `pages`. The Ender Chest has one page of 27 under
+ * its controls, and `/ec` opens it. */
+data class Shelf(val id: String, val title: String, val slots: IntRange, val pages: Int? = null) {
+    val rows get() = slots.count() / ContainerState.ROW_SLOTS
+
     companion object {
-        private val STORAGE_PAGE = Regex("Storage Page \\((\\d+)/\\d+\\)")
+        private val STORAGE_PAGE = Regex("Storage Page \\((\\d+)/(\\d+)\\)")
         private const val ENDER_CHEST = "Ender Chest"
         private const val FIRST_ITEM = 9
 
+        val ENDER_CHEST_SHELF = Shelf("ender_chest", ENDER_CHEST, FIRST_ITEM until FIRST_ITEM + 27)
+
+        fun storage(page: Int, pages: Int? = null) = Shelf("storage:${page - 1}", "Storage $page", FIRST_ITEM until FIRST_ITEM + 45, pages)
+
         fun of(title: String?): Shelf? {
-            if (title == ENDER_CHEST) return Shelf("ender_chest", ENDER_CHEST, FIRST_ITEM until FIRST_ITEM + 27)
-            val page = title?.let(STORAGE_PAGE::matchEntire)?.groupValues?.get(1)?.let(::count) ?: return null
-            return Shelf("storage:${page - 1}", "Storage $page", FIRST_ITEM until FIRST_ITEM + 45)
+            if (title == ENDER_CHEST) return ENDER_CHEST_SHELF
+            val match = title?.let(STORAGE_PAGE::matchEntire) ?: return null
+            val page = count(match.groupValues[1]) ?: return null
+            return storage(page, count(match.groupValues[2]))
         }
 
         fun command(id: String): String? = when {

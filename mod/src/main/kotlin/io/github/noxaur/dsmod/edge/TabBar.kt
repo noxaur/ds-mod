@@ -36,12 +36,24 @@ object TabBar {
     private val shown get() = menuTabs.feature.runs
 
     private const val SEARCH_LENGTH = 64
+    private const val CHEST_WIDTH = 176
 
     private var query = ""
     private var words = emptyList<String>()
     private var searched: String? = null
     private var stacks = arrayOfNulls<ItemStack>(0)
     private val dimmed = BitSet()
+
+    /** @keep The words Menu Search dims by, for items drawn outside the menu's slots, such as the storage overview's other pages */
+    val searchWords: List<String> get() = if (shown) words else emptyList()
+
+    /** @keep Whether items drawn outside the menu's slots match, so the field turns red only when nothing on screen does */
+    var alsoFound: () -> Boolean = { false }
+
+    /** @keep The left edge of a chest-wide column to place the tabs in, on a screen much wider than a chest, such as the
+     * storage overview, so they sit under its inventory and not at its far corner. Search joins them there, since the top
+     * edge is far from the inventory. */
+    var column: (AbstractContainerScreen<*>) -> Int? = { null }
 
     fun tooltip(tab: MenuTab) = text {
         if (tab.search) {
@@ -64,12 +76,15 @@ object TabBar {
                 searched = null
                 dimmed.clear()
             }
-            val left = screen.containerLeft
-            val menuWidth = screen.containerWidth
+            val chest = column(screen)
+            val inset = chest?.minus(screen.containerLeft) ?: 0
+            val left = screen.containerLeft + inset
+            val menuWidth = if (chest == null) screen.containerWidth else CHEST_WIDTH
             fun edgeY(edge: TabEdge) = if (edge == TabEdge.TOP) screen.containerTop else screen.containerBottom
 
             val widgets = Screens.getWidgets(screen)
-            val tabs = menuTabs.tabs.value.filter { it.slot in 0 until TabLayout.PER_EDGE }
+            val placed = menuTabs.tabs.value.filter { it.slot in 0 until TabLayout.PER_EDGE }
+            val tabs = if (chest == null) placed else TabLayout.searchBelow(placed)
             val selected = TabLayout.selected(tabs, Trail.opener(screen))
             val made = ArrayList<Pair<MenuTab, KitTab>>()
             val glass = { MenuSkin.glass(screen) }
@@ -90,7 +105,7 @@ object TabBar {
             }
             // @keep The recipe book moves the inventory and the crafting table sideways without laying them out again.
             val ours = ArrayList<AbstractWidget>(made.map { it.second })
-            var laidOut = left
+            var laidOut = screen.containerLeft
             ScreenEvents.beforeExtract(screen).register { _, _, _, _, _ ->
                 val dx = screen.containerLeft - laidOut
                 if (dx == 0) return@register
@@ -100,7 +115,7 @@ object TabBar {
             val bar = search ?: return@onEveryLayout
 
             val (barLeft, barWidth) = TabLayout.searchBar(bar.slot, menuWidth)
-            fun barX() = screen.containerLeft + barLeft
+            fun barX() = screen.containerLeft + inset + barLeft
             val barY = if (bar.edge == TabEdge.TOP) maxOf(edgeY(bar.edge), Kit.TAB_HEIGHT - 2) else minOf(edgeY(bar.edge), screen.height - Kit.TAB_HEIGHT + 2)
             val covered = made.filter { (tab, _) -> tab.edge == bar.edge && TabLayout.x(tab.slot) < barLeft + barWidth && TabLayout.x(tab.slot) + Kit.TAB_WIDTH > barLeft }
             val contentY = if (bar.edge == TabEdge.TOP) barY - Kit.TAB_HEIGHT + 3 else barY
@@ -208,7 +223,7 @@ object TabBar {
             dimmed[i] = !stack.isEmpty && !Slots.hides(i) && !matches(stack)
         }
         searched = query
-        val any = slots.indices.any { stacks[it]?.isEmpty == false && !dimmed[it] && !Slots.hides(it) }
+        val any = slots.indices.any { stacks[it]?.isEmpty == false && !dimmed[it] && !Slots.hides(it) } || alsoFound()
         field.setTextColor(if (any) Role.BODY.argb() else Role.BAD.argb())
     }
 

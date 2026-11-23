@@ -42,6 +42,7 @@
     "PlayerShapeMixin",
     "ServerPacketsMixin",
     "SlotClickMixin",
+    "StorageMenuMixin",
     "SuggestionsListAccessor",
     "SwingSpeedMixin",
     "TooltipMixin"

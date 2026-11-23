@@ -81,6 +81,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     val container = ContainerState()
 
     private var worlds = 0
+    private var sessions = 0
 
     private var sharedChanges = 0
     private val everyone = IntArray(features.size) { it }
@@ -101,6 +102,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             it.messages = messages
             if (it !== dragSimOnly) it.gate = { active }
             it.worlds = { worlds }
+            it.sessions = { sessions }
         }
     }
 
@@ -162,6 +164,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
              * disconnect changes no world, and a feature switched on after it must not hear the old server's sidebar */
             WorldChanged, LeftServer -> true.also {
                 worlds++
+                if (event == LeftServer) sessions++
                 lastTab = null
                 lastSidebar = null
                 tab.update(emptyList())

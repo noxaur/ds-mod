@@ -1,0 +1,271 @@
++   0.0s > (opened your inventory, 46 slots)
++   0.0s > (slot 5) 1 x Crying Obsidian Helmet
++   0.0s > (slot 6) 1 x Crying Obsidian Chestplate
++   0.0s > (slot 7) 1 x Crying Obsidian Leggings
++   0.0s > (slot 8) 1 x Crying Obsidian Boots
++   0.0s > (slot 9) 1 x Promising Pickaxe
++   0.0s > (slot 10) 1 x Obsidian Drill OD-355
++   0.0s > (slot 12) 1 x Refined Crying Obsidian
++   0.0s > (slot 13) 64 x Obsidian
++   0.0s > (slot 15) 28 x Flawed Amethyst
++   0.0s > (slot 16) 56 x Obsidian
++   0.0s > (slot 17) 1 x Enchanted Obsidian
++   0.0s > (slot 18) 1 x Refined Enderite Pickaxe
++   0.0s > (slot 19) 1 x Crying Obsidian Pickaxe
++   0.0s > (slot 21) 19 x Rough Amethyst
++   0.0s > (slot 22) 32 x End Stone
++   0.0s > (slot 27) 1 x Flint Arrow
++   0.0s > (slot 28) 1 x Summoning Eye
++   0.0s > (slot 29) 2 x Bejeweled Handle
++   0.0s > (slot 34) 53 x Enchanted End Stone
++   0.0s > (slot 35) 1 x InfiniEye™
++   0.0s > (slot 36) 1 x Suspicious Giant's Sword
++   0.0s > (slot 37) 1 x Warped Aspect of the Void
++   0.0s > (slot 38) 1 x Fabled Frozen Scythe
++   0.0s > (slot 39) 1 x Fabled Edible Mace
++   0.0s > (slot 40) 1 x Precise Golden Gun
++   0.0s > (slot 41) 1 x Auspicious Amethyst Gauntlet
++   0.0s > (slot 42) 1 x Fuel Tank
++   0.0s > (slot 44) 1 x SkyBlock Menu (Right Click)
++   1.2s > (opened "Storage Page (2/7)", 90 slots)
++   1.2s > (slot 0) 1 x Close
++   1.2s > (slot 1) 1 x Go Back
++   1.2s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 3) 1 x Previous page
++   1.2s > (slot 4) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 5) 1 x Next page
++   1.2s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   1.2s > (slot 9) 1 x Pure Seeds
++   1.2s > (slot 10) 1 x Rapid Cannon
++   1.2s > (slot 11) 3 x Dragon Scale
++   1.2s > (slot 17) 22 x Null Ovoid
++   1.2s > (slot 18) 8 x Necromancer's Brooch
++   1.2s > (slot 19) 6 x Dragon Claw
++   1.2s > (slot 20) 3 x Spicy Wart
++   1.2s > (slot 45) 1 x Combat XP Boost
++   1.2s > (slot 46) 1 x Combat XP Boost
++   1.2s > (slot 51) 1 x Golden Hot Potato Book
++   1.2s > (slot 52) 19 x Hot Potato Book
++   1.2s > (slot 53) 8 x Hot Potato Book
++   1.2s > (slot 54) 1 x Promising Pickaxe
++   1.2s > (slot 55) 1 x Obsidian Drill OD-355
++   1.2s > (slot 57) 1 x Refined Crying Obsidian
++   1.2s > (slot 58) 64 x Obsidian
++   1.2s > (slot 60) 28 x Flawed Amethyst
++   1.2s > (slot 61) 56 x Obsidian
++   1.2s > (slot 62) 1 x Enchanted Obsidian
++   1.2s > (slot 63) 1 x Refined Enderite Pickaxe
++   1.2s > (slot 64) 1 x Crying Obsidian Pickaxe
++   1.2s > (slot 66) 19 x Rough Amethyst
++   1.2s > (slot 67) 32 x End Stone
++   1.2s > (slot 72) 1 x Flint Arrow
++   1.2s > (slot 73) 1 x Summoning Eye
++   1.2s > (slot 74) 2 x Bejeweled Handle
++   1.2s > (slot 79) 53 x Enchanted End Stone
++   1.2s > (slot 80) 1 x InfiniEye™
++   1.2s > (slot 81) 1 x Suspicious Giant's Sword
++   1.2s > (slot 82) 1 x Warped Aspect of the Void
++   1.2s > (slot 83) 1 x Fabled Frozen Scythe
++   1.2s > (slot 84) 1 x Fabled Edible Mace
++   1.2s > (slot 85) 1 x Precise Golden Gun
++   1.2s > (slot 86) 1 x Auspicious Amethyst Gauntlet
++   1.2s > (slot 87) 1 x Fuel Tank
++   1.2s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   7.7s > (opened your inventory, 46 slots)
++   7.7s > (slot 5) 1 x Crying Obsidian Helmet
++   7.7s > (slot 6) 1 x Crying Obsidian Chestplate
++   7.7s > (slot 7) 1 x Crying Obsidian Leggings
++   7.7s > (slot 8) 1 x Crying Obsidian Boots
++   7.7s > (slot 9) 1 x Promising Pickaxe
++   7.7s > (slot 10) 1 x Obsidian Drill OD-355
++   7.7s > (slot 12) 1 x Refined Crying Obsidian
++   7.7s > (slot 13) 64 x Obsidian
++   7.7s > (slot 15) 28 x Flawed Amethyst
++   7.7s > (slot 16) 56 x Obsidian
++   7.7s > (slot 17) 1 x Enchanted Obsidian
++   7.7s > (slot 18) 1 x Refined Enderite Pickaxe
++   7.7s > (slot 19) 1 x Crying Obsidian Pickaxe
++   7.7s > (slot 21) 19 x Rough Amethyst
++   7.7s > (slot 22) 32 x End Stone
++   7.7s > (slot 27) 1 x Flint Arrow
++   7.7s > (slot 28) 1 x Summoning Eye
++   7.7s > (slot 29) 2 x Bejeweled Handle
++   7.7s > (slot 34) 53 x Enchanted End Stone
++   7.7s > (slot 35) 1 x InfiniEye™
++   7.7s > (slot 36) 1 x Suspicious Giant's Sword
++   7.7s > (slot 37) 1 x Warped Aspect of the Void
++   7.7s > (slot 38) 1 x Fabled Frozen Scythe
++   7.7s > (slot 39) 1 x Fabled Edible Mace
++   7.7s > (slot 40) 1 x Precise Golden Gun
++   7.7s > (slot 41) 1 x Auspicious Amethyst Gauntlet
++   7.7s > (slot 42) 1 x Fuel Tank
++   7.7s > (slot 44) 1 x SkyBlock Menu (Right Click)
++  13.9s > (opened "Ender Chest", 72 slots)
++  13.9s > (slot 0) 1 x Close
++  13.9s > (slot 1) 1 x Go Back
++  13.9s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  13.9s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  13.9s > (slot 4) 1 x minecraft:black_stained_glass_pane
++  13.9s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  13.9s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  13.9s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  13.9s > (slot 8) 1 x minecraft:black_stained_glass_pane
++  13.9s > (slot 9) 3 x Crystal Fragment
++  13.9s > (slot 10) 6 x Crystal Fragment
++  13.9s > (slot 11) 24 x Frozen Fragment
++  13.9s > (slot 12) 5 x Endstone Rose Bush
++  13.9s > (slot 13) 64 x End Stone Rose
++  13.9s > (slot 14) 1 x Flower of Truth
++  13.9s > (slot 16) 1 x Crown of Greed
++  13.9s > (slot 18) 1 x Mysterious Handle
++  13.9s > (slot 19) 1 x Mysterious Handle
++  13.9s > (slot 20) 1 x Maxor Wand
++  13.9s > (slot 21) 1 x Frozen Fragment
++  13.9s > (slot 22) 4 x End Stone Rose
++  13.9s > (slot 23) 1 x Mythic Carrot
++  13.9s > (slot 25) 1 x Fabled Emerald Blade
++  13.9s > (slot 26) 1 x Livid Dagger
++  13.9s > (slot 27) 1 x Mysterious Handle
++  13.9s > (slot 28) 1 x Mysterious Handle
++  13.9s > (slot 29) 1 x Maxor Wand
++  13.9s > (slot 32) 1 x Mythic Carrot
++  13.9s > (slot 35) 1 x Livid Dagger
++  13.9s > (slot 36) 1 x Promising Pickaxe
++  13.9s > (slot 37) 1 x Obsidian Drill OD-355
++  13.9s > (slot 39) 1 x Refined Crying Obsidian
++  13.9s > (slot 40) 64 x Obsidian
++  13.9s > (slot 42) 28 x Flawed Amethyst
++  13.9s > (slot 43) 56 x Obsidian
++  13.9s > (slot 44) 1 x Enchanted Obsidian
++  13.9s > (slot 45) 1 x Refined Enderite Pickaxe
++  13.9s > (slot 46) 1 x Crying Obsidian Pickaxe
++  13.9s > (slot 48) 19 x Rough Amethyst
++  14.0s > (slot 49) 32 x End Stone
++  14.0s > (slot 54) 1 x Flint Arrow
++  14.0s > (slot 55) 1 x Summoning Eye
++  14.0s > (slot 56) 2 x Bejeweled Handle
++  14.0s > (slot 61) 53 x Enchanted End Stone
++  14.0s > (slot 62) 1 x InfiniEye™
++  14.0s > (slot 63) 1 x Suspicious Giant's Sword
++  14.0s > (slot 64) 1 x Warped Aspect of the Void
++  14.0s > (slot 65) 1 x Fabled Frozen Scythe
++  14.0s > (slot 66) 1 x Fabled Edible Mace
++  14.0s > (slot 67) 1 x Precise Golden Gun
++  14.0s > (slot 68) 1 x Auspicious Amethyst Gauntlet
++  14.0s > (slot 69) 1 x Fuel Tank
++  14.0s > (slot 71) 1 x SkyBlock Menu (Right Click)
++  18.1s > (opened your inventory, 46 slots)
++  18.1s > (slot 5) 1 x Crying Obsidian Helmet
++  18.1s > (slot 6) 1 x Crying Obsidian Chestplate
++  18.1s > (slot 7) 1 x Crying Obsidian Leggings
++  18.1s > (slot 8) 1 x Crying Obsidian Boots
++  18.1s > (slot 9) 1 x Promising Pickaxe
++  18.1s > (slot 10) 1 x Obsidian Drill OD-355
++  18.1s > (slot 12) 1 x Refined Crying Obsidian
++  18.1s > (slot 13) 64 x Obsidian
++  18.1s > (slot 15) 28 x Flawed Amethyst
++  18.1s > (slot 16) 56 x Obsidian
++  18.1s > (slot 17) 1 x Enchanted Obsidian
++  18.1s > (slot 18) 1 x Refined Enderite Pickaxe
++  18.1s > (slot 19) 1 x Crying Obsidian Pickaxe
++  18.1s > (slot 21) 19 x Rough Amethyst
++  18.1s > (slot 22) 32 x End Stone
++  18.1s > (slot 27) 1 x Flint Arrow
++  18.1s > (slot 28) 1 x Summoning Eye
++  18.1s > (slot 29) 2 x Bejeweled Handle
++  18.1s > (slot 34) 53 x Enchanted End Stone
++  18.1s > (slot 35) 1 x InfiniEye™
++  18.1s > (slot 36) 1 x Suspicious Giant's Sword
++  18.1s > (slot 37) 1 x Warped Aspect of the Void
++  18.1s > (slot 38) 1 x Fabled Frozen Scythe
++  18.1s > (slot 39) 1 x Fabled Edible Mace
++  18.1s > (slot 40) 1 x Precise Golden Gun
++  18.1s > (slot 41) 1 x Auspicious Amethyst Gauntlet
++  18.1s > (slot 42) 1 x Fuel Tank
++  18.1s > (slot 44) 1 x SkyBlock Menu (Right Click)
++  21.5s > (opened "Ender Chest", 72 slots)
++  21.5s > (slot 0) 1 x Close
++  21.5s > (slot 1) 1 x Go Back
++  21.5s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  21.5s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  21.5s > (slot 4) 1 x minecraft:black_stained_glass_pane
++  21.5s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  21.5s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  21.5s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  21.5s > (slot 8) 1 x minecraft:black_stained_glass_pane
++  21.5s > (slot 9) 3 x Crystal Fragment
++  21.5s > (slot 10) 6 x Crystal Fragment
++  21.5s > (slot 11) 24 x Frozen Fragment
++  21.5s > (slot 12) 5 x Endstone Rose Bush
++  21.5s > (slot 13) 64 x End Stone Rose
++  21.5s > (slot 14) 1 x Flower of Truth
++  21.5s > (slot 16) 1 x Crown of Greed
++  21.5s > (slot 18) 1 x Mysterious Handle
++  21.5s > (slot 19) 1 x Mysterious Handle
++  21.5s > (slot 20) 1 x Maxor Wand
++  21.5s > (slot 21) 1 x Frozen Fragment
++  21.5s > (slot 22) 4 x End Stone Rose
++  21.5s > (slot 23) 1 x Mythic Carrot
++  21.5s > (slot 25) 1 x Fabled Emerald Blade
++  21.5s > (slot 26) 1 x Livid Dagger
++  21.5s > (slot 27) 1 x Mysterious Handle
++  21.5s > (slot 28) 1 x Mysterious Handle
++  21.5s > (slot 29) 1 x Maxor Wand
++  21.5s > (slot 32) 1 x Mythic Carrot
++  21.5s > (slot 35) 1 x Livid Dagger
++  21.5s > (slot 36) 1 x Promising Pickaxe
++  21.5s > (slot 37) 1 x Obsidian Drill OD-355
++  21.5s > (slot 39) 1 x Refined Crying Obsidian
++  21.5s > (slot 40) 64 x Obsidian
++  21.5s > (slot 42) 28 x Flawed Amethyst
++  21.5s > (slot 43) 56 x Obsidian
++  21.5s > (slot 44) 1 x Enchanted Obsidian
++  21.5s > (slot 45) 1 x Refined Enderite Pickaxe
++  21.5s > (slot 46) 1 x Crying Obsidian Pickaxe
++  21.5s > (slot 48) 19 x Rough Amethyst
++  21.5s > (slot 49) 32 x End Stone
++  21.5s > (slot 54) 1 x Flint Arrow
++  21.5s > (slot 55) 1 x Summoning Eye
++  21.5s > (slot 56) 2 x Bejeweled Handle
++  21.5s > (slot 61) 53 x Enchanted End Stone
++  21.5s > (slot 62) 1 x InfiniEye™
++  21.5s > (slot 63) 1 x Suspicious Giant's Sword
++  21.5s > (slot 64) 1 x Warped Aspect of the Void
++  21.5s > (slot 65) 1 x Fabled Frozen Scythe
++  21.5s > (slot 66) 1 x Fabled Edible Mace
++  21.5s > (slot 67) 1 x Precise Golden Gun
++  21.5s > (slot 68) 1 x Auspicious Amethyst Gauntlet
++  21.5s > (slot 69) 1 x Fuel Tank
++  21.5s > (slot 71) 1 x SkyBlock Menu (Right Click)
++  22.8s > (opened your inventory, 46 slots)
++  22.8s > (slot 5) 1 x Crying Obsidian Helmet
++  22.8s > (slot 6) 1 x Crying Obsidian Chestplate
++  22.8s > (slot 7) 1 x Crying Obsidian Leggings
++  22.8s > (slot 8) 1 x Crying Obsidian Boots
++  22.8s > (slot 9) 1 x Promising Pickaxe
++  22.8s > (slot 10) 1 x Obsidian Drill OD-355
++  22.8s > (slot 12) 1 x Refined Crying Obsidian
++  22.8s > (slot 13) 64 x Obsidian
++  22.8s > (slot 15) 28 x Flawed Amethyst
++  22.8s > (slot 16) 56 x Obsidian
++  22.8s > (slot 17) 1 x Enchanted Obsidian
++  22.8s > (slot 18) 1 x Refined Enderite Pickaxe
++  22.8s > (slot 19) 1 x Crying Obsidian Pickaxe
++  22.8s > (slot 21) 19 x Rough Amethyst
++  22.8s > (slot 22) 32 x End Stone
++  22.8s > (slot 27) 1 x Flint Arrow
++  22.8s > (slot 28) 1 x Summoning Eye
++  22.8s > (slot 29) 2 x Bejeweled Handle
++  22.8s > (slot 34) 53 x Enchanted End Stone
++  22.8s > (slot 35) 1 x InfiniEye™
++  22.8s > (slot 36) 1 x Suspicious Giant's Sword
++  22.8s > (slot 37) 1 x Warped Aspect of the Void
++  22.8s > (slot 38) 1 x Fabled Frozen Scythe
++  22.8s > (slot 39) 1 x Fabled Edible Mace
++  22.8s > (slot 40) 1 x Precise Golden Gun
++  22.8s > (slot 41) 1 x Auspicious Amethyst Gauntlet
++  22.8s > (slot 42) 1 x Fuel Tank
++  22.8s > (slot 44) 1 x SkyBlock Menu (Right Click)
+saved storage-overview.json = {"told":false}

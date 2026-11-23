@@ -65,4 +65,13 @@ class TabLayoutTest {
         assertEquals("dsmod:thing", TabLayout.itemId("dsmod:thing"))
         assertEquals("warp end", TabLayout.command(" /warp end "))
     }
+
+    @Test
+    fun `the search tab moves to the rightmost free slot along the bottom, and stays on top when the bottom is full`() {
+        val moved = TabLayout.searchBelow(TabLayout.DEFAULT)
+        assertEquals(MenuTab(TabEdge.BOTTOM, TabLayout.PER_EDGE - 1, item = "", tooltip = "Search", search = true), moved.single { it.search })
+        assertEquals(TabLayout.DEFAULT.filterNot { it.search }, moved.filterNot { it.search })
+        val full = (0 until TabLayout.PER_EDGE).map { MenuTab(TabEdge.BOTTOM, it, "storage $it") } + MenuTab(TabEdge.TOP, 2, search = true)
+        assertEquals(full, TabLayout.searchBelow(full))
+    }
 }

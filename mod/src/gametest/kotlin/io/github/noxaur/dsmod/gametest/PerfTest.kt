@@ -4,6 +4,8 @@ import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.feature.boss.BossBeacon
 import io.github.noxaur.dsmod.core.feature.boss.BossTracer
 import io.github.noxaur.dsmod.core.feature.contribute.ReportGameData
+import io.github.noxaur.dsmod.core.feature.inventory.StorageMode
+import io.github.noxaur.dsmod.core.feature.inventory.StorageOverview
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.hud
@@ -42,6 +44,11 @@ private const val SIDEBAR_LINES = 15
 private const val ARMORED_MOBS = 40
 private const val RECORDING_WARM_UP_TICKS = 40
 private const val MENU_SLOTS = 54
+private const val STORAGE_PAGES = 7
+private const val PAGE_FIRST_ITEM = 9
+
+// @keep A page of 45 lored items is read over a few ticks, at most a millisecond a tick.
+private const val PAGE_READ_TICKS = 10
 private const val JAR = "jar"
 
 class PerfTest : FabricClientGameTest {
@@ -94,6 +101,7 @@ class PerfTest : FabricClientGameTest {
             recording(context, world)
             bosses(context, world)
             menuBurst(context, world)
+            storage(context, world)
             val calibrate = context.computeOnClient<Double, Nothing> {
                 repeat(3) { spin() }
                 List(7) { spin() }.sorted()[3]
@@ -248,6 +256,37 @@ class PerfTest : FabricClientGameTest {
             context.waitTicks(WINDOW_TICKS)
         }
         context.runOnClient<Nothing> { it.player!!.closeContainer() }
+    }
+
+    /** @keep Every page full of lored, rarity-marked items, at the GUI scale that fits them all on the test window, so
+     * the overview draws its most. */
+    private fun storage(context: ClientGameTestContext, world: TestSingleplayerContext) {
+        val pages = List(STORAGE_PAGES) { page ->
+            SimpleContainer(MENU_SLOTS).also { chest ->
+                for (slot in PAGE_FIRST_ITEM until MENU_SLOTS) {
+                    chest.setItem(slot, ServerMenus.rarity(ServerMenus.lored(Items.DIAMOND_SWORD, "Page $page Sword $slot", listOf("Damage: +$slot", "LEGENDARY SWORD")), "LEGENDARY"))
+                }
+            }
+        }
+        val scale = context.computeOnClient<Int, Nothing> { it.options.guiScale().get() }
+        context.runOnClient<Nothing> {
+            DsModClient.feature<StorageOverview>().mode.value = StorageMode.OVERVIEW
+            it.options.guiScale().set(1)
+            it.resizeGui()
+        }
+        for ((i, page) in pages.withIndex()) {
+            world.server.runOnServer<Nothing> { server -> server.player.openMenu(ServerMenus.sixRows(page, "Storage Page (${i + 1}/$STORAGE_PAGES)")) }
+            context.waitTicks(PAGE_READ_TICKS)
+        }
+        val kept = context.computeOnClient<Int, Nothing> { DsModClient.feature<StorageOverview>().pages.pages.sumOf { page -> page.items.count { it != null } } }
+        check(kept == STORAGE_PAGES * (MENU_SLOTS - PAGE_FIRST_ITEM)) { "The overview remembers $kept items, so it would draw fewer than the row says" }
+        windows(context, "storage") { context.waitTicks(WINDOW_TICKS) }
+        context.runOnClient<Nothing> {
+            it.player!!.closeContainer()
+            DsModClient.feature<StorageOverview>().mode.value = StorageMode.PREVIEW
+            it.options.guiScale().set(scale)
+            it.resizeGui()
+        }
     }
 
     private fun spin(): Double {

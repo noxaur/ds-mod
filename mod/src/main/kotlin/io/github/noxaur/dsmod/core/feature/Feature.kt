@@ -124,6 +124,11 @@ class Feature(
 
     internal var worlds: () -> Int = { 0 }
 
+    /** @keep A part that features share forgets its session by this, as [worldNumber] lets it forget its world */
+    val sessionNumber: Int get() = sessions()
+
+    internal var sessions: () -> Int = { 0 }
+
     val here: Boolean get() = inArea()
 
     var state: Saved<*>? = null

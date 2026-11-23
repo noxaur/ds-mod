@@ -51,11 +51,13 @@ import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
 import io.github.noxaur.dsmod.core.feature.inventory.SkyBlockMenuClick
 import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
+import io.github.noxaur.dsmod.core.feature.inventory.StorageOverview
 import io.github.noxaur.dsmod.core.feature.inventory.WardrobeKeys
 import io.github.noxaur.dsmod.core.feature.loot.RareDropAlert
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerBossAlert
 import io.github.noxaur.dsmod.core.feature.slayer.SlayerTracker
 import io.github.noxaur.dsmod.core.game.Area
+import io.github.noxaur.dsmod.core.overview.StoragePages
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Look
 import io.github.noxaur.dsmod.core.ui.Theme
@@ -154,6 +156,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
         private fun declare(c: DsModConfig, mac: Boolean): List<SettingSection> {
             val g = c.general
             val claim = SlayerClaim()
+            val pages = StoragePages()
             val ctrlClick = CtrlClick(c)
             val sections = Sections().apply {
                 section("General", Role.VALUE) {
@@ -177,7 +180,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                     group(Animations(c))
                     group(PlayerModel(c))
                     group(ProfileViewer(c))
-                    group(ItemOverview(c))
+                    group(ItemOverview(c, pages))
                 }
                 section("Camera", Role.ACTION) {
                     group(Camera(c), "Third Person")
@@ -233,6 +236,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                         feature(SkyBlockMenuClick(c))
                         feature(HotdButton(c))
                     }
+                    group(StorageOverview(c, pages))
                     group(ForgeCraft(c))
                     group(WardrobeKeys(c))
                 }
