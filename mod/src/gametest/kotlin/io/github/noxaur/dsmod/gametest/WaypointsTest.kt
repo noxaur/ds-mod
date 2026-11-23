@@ -21,6 +21,8 @@ import org.lwjgl.glfw.GLFW
 import java.util.Optional
 import java.util.concurrent.CopyOnWriteArrayList
 
+private const val BURIED = 0xFF55FFFF.toInt()
+
 class WaypointsTest : FabricClientGameTest {
     private val waypoints get() = DsModClient.feature<Waypoints>()
 
@@ -52,17 +54,20 @@ class WaypointsTest : FabricClientGameTest {
         waypoints.groups.value = emptyList()
     }
 
-    // @keep Each look side by side ahead of the player, one of them hidden behind the world, to read in the screenshot.
+    /* @keep Each look side by side ahead of the player, and two buried under the ground: one hidden by it, and one whose label
+     * shows through it, to read in the screenshot. */
     private fun looks(context: ClientGameTestContext) {
         context.runOnClient<Nothing> { client ->
             val player = checkNotNull(client.player)
             val colors = listOf(0x46AADCF8, 0x80FF5555.toInt(), 0x4055FF55, 0xC0FFAA00.toInt(), 0x46FFFFFF)
             waypoints.saved.value = WaypointLook.entries.mapIndexed { i, look ->
                 SavedWaypoint(look.toString(), player.blockX - 20 + i * 10, player.blockY, player.blockZ + 14, color = colors[i], look = look, distance = i % 2 == 0)
-            } + SavedWaypoint("Behind", player.blockX, player.blockY - 3, player.blockZ + 10, throughWalls = false, color = 0x80FF55FF.toInt())
+            } + SavedWaypoint("Behind", player.blockX, player.blockY - 3, player.blockZ + 10, throughWalls = false, color = 0x80FF55FF.toInt()) +
+                SavedWaypoint("Buried", player.blockX + 6, player.blockY - 3, player.blockZ + 10, look = WaypointLook.LABEL, color = BURIED)
         }
         context.waitTicks(30)
-        context.takeScreenshot("waypoints-looks")
+        val shot = context.screenshot("waypoints-looks")
+        check(countNear(shot, BURIED and 0xFFFFFF) > 20) { "The label of a waypoint shown through walls is hidden by the ground over it" }
         context.checkClient("The saved waypoints are not all drawn") { World.shown.size >= WaypointLook.entries.size + 1 }
         context.runOnClient<Nothing> { clear() }
     }

@@ -32,7 +32,11 @@ The kit's edges are one pixel wide, and at a free scale some edges come out two 
 
 ## World marks reach Minecraft once per tick
 
-World marks are submitted once per tick, and Minecraft replays them every frame, so a mark costs nothing in the frame loop. Only a mark that follows the crosshair or a moving entity is placed per frame, because a mark from the last tick would trail it by up to 50 ms.
+World marks are submitted once per tick, and Minecraft replays them every frame, so a mark costs nothing in the frame loop. Only a mark that follows the crosshair or a moving entity is placed per frame, because a mark from the last tick would trail it by up to 50 ms. Labels are the other exception, because they keep their size on screen as the camera moves, and a gizmo's text can't be outlined.
+
+## World text is outlined like a glowing sign
+
+Every text the mod draws in the world, such as a waypoint's name or Etherwarp's "No Room", is traced in its own color darkened to 40%, as vanilla traces a sign dyed with a glow ink sac, with no plate behind it. Text on the HUD and on screens keeps vanilla's drop shadow, so the outline marks text that floats in the world, as it does in vanilla. A plate behind the text, as on a name tag or the HUD, was rejected in favor of the outline, which reads on sky and ground alike with nothing behind it. Vanilla's faint name tag plate also left the muted distance unreadable against the sky.
 
 ## A waypoint is drawn in the color its player picked
 
