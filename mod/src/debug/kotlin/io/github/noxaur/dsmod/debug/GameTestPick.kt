@@ -142,16 +142,17 @@ fun pickGameTests(sources: Sources, changed: Collection<String>): Picked {
     return Picked(picked - PERF_TEST, unreached)
 }
 
-/** @keep Writes the game test manifest with the tests the third argument names: all, a comma list of them, or, with none, those the change reaches, and writes `jobs`, the tests split into CI's jobs. */
+/** @keep Writes the game test manifest with the tests the third argument names: all, a comma list of them, none for an empty one, or, with no argument, those the change reaches, and writes `jobs`, the tests split into CI's jobs. */
 fun main(args: Array<String>) {
     val (mod, out) = args.take(2).map(::File)
     val sources = readSources(mod)
     val tests = when (val only = args.getOrNull(2)) {
         "all" -> sources.tests.values.toSet()
+        "" -> emptySet()
         null -> pickGameTests(sources, changed(mod)).tests.also {
             println(if (it.isEmpty()) "No game test reaches the change." else "Game tests the change reaches: ${it.map { name -> name.substringAfterLast('.') }.sorted().joinToString()}")
         }
-        else -> only.split(",").filter(String::isNotBlank).map { name ->
+        else -> only.split(",").map { name ->
             sources.tests.values.singleOrNull { it.substringAfterLast('.') == name } ?: error("-Pgametests=$only names $name, which is no game test")
         }.toSet()
     }.sorted()

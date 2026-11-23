@@ -61,7 +61,7 @@ jobs:
       - id: setup
         uses: ./.github/actions/setup-mod
         with:
-          cache: gametests
+          cache: pick
       - id: pick
         working-directory: mod
         run: |
