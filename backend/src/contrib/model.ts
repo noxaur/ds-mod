@@ -1,5 +1,6 @@
 import { Schema, Struct } from "effect";
 
+/** @keep Effect writes a pattern into the generated contract only when it has the `u` flag. */
 const Shown = Schema.String.check(Schema.isPattern(/\S/u));
 
 export const Step = Schema.Struct({

@@ -6,6 +6,7 @@ const markers: [RegExp, RegExp][] = [
   [/\.(kt|kts|java)$/, /\bSuppress(Warnings)?\b/],
   [/\.(ts|mts|cts|tsx|js|mjs|cjs|jsx)$/, /eslint-disable|\beslint\s+[@\w/-]+\s*:|\/\*\s*eslint\s*$/],
   [/\.(kt|kts|java|ts|mts|cts|tsx|js|mjs|cjs|jsx|css|ya?ml|sh|tla|toml|properties)$|^\.githooks\//, /(\/\/|\/\*\*?|#|\\\*|\(\*)\s*@keep\b/],
+  [/\.(kt|kts|java|ts|mts|cts|tsx|js|mjs|cjs|jsx|css)$/, /^\+\s*\*(\s|$)/],
 ];
 
 export function added(diff: string): string[] {

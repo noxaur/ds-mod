@@ -22,6 +22,8 @@ test("finds each suppression and @keep comment a diff adds to code, at its line 
     ".github/workflows/i.yml:1",
     "specs/J.tla:1",
     "specs/J.tla:2",
+    "mod/L.kt:2",
+    "mod/L.kt:3",
   ]);
 });
 
@@ -51,5 +53,7 @@ test("a suppression is explained by a body line that names where it is and gives
     ".github/workflows/i.yml:1",
     "specs/J.tla:1",
     "specs/J.tla:2",
+    "mod/L.kt:2",
+    "mod/L.kt:3",
   ]);
 });

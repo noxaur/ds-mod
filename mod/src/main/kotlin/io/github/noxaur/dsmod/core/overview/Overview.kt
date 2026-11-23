@@ -78,8 +78,7 @@ enum class SortBy(private val label: String) {
 
 data class Place(val id: String, val title: String, val count: Int)
 
-/** @keep A Storage page's
- * top row holds its controls and the 45 slots under it its items, and `/storage <page>` opens a page itself. Its title,
+/** @keep A Storage page's top row holds its controls and the 45 slots under it its items, and `/storage <page>` opens a page itself. Its title,
  * `Storage Page (2/7)`, also gives how many pages the player has, as `pages`. The Ender Chest has one page of 27 under
  * its controls, and `/ec` opens it. */
 data class Shelf(val id: String, val title: String, val slots: IntRange, val pages: Int? = null) {
@@ -161,7 +160,9 @@ class Overview(copies: List<Copy>) {
             }
         }
 
-        /** @keep Comparing with dragsim.co's save time was rejected, because its clock need not agree with ours. */
+        /** @keep A Storage page or the Ender Chest changes only while its menu is open, where the mod reads it, so a copy
+         * the mod kept is never older than dragsim.co's, unless the player changed it from a game without ds-mod since.
+         * Comparing with dragsim.co's save time was rejected, because its clock need not agree with ours. */
         fun copies(backend: List<Container>, seen: List<Copy>): List<Copy> {
             val used = seen.associateBy { it.id }
             val listed = backend.filterNot { it.hidden }.map { used[it.id] ?: Copy.of(it) }

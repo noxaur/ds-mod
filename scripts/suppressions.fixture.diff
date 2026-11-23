@@ -90,6 +90,15 @@ diff --git a/specs/J.tla b/specs/J.tla
 @@ -0,0 +1,2 @@
 +\* @keep The writer renames the .part only after the server answers
 +(* @keep A run cut short is never resumed *)
+diff --git a/mod/L.kt b/mod/L.kt
+--- a/mod/L.kt
++++ b/mod/L.kt
+@@ -1,3 +1,4 @@
+ /** @keep The server rounds the refusal to the second, so a switch the mod saw is kept
+- * when it agrees to within one */
++ * when it agrees to within one
++ * and a new claim slipped in under the unchanged marker */
+ val x = 1
 diff --git a/docs/k.md b/docs/k.md
 --- a/docs/k.md
 +++ b/docs/k.md
