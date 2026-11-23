@@ -7,6 +7,24 @@ ast-grep = "0.51.1"
 [hooks]
 postinstall = "git config core.hooksPath .githooks"
 
+[tasks.install]
+description = "Builds the mod and puts it in a game folder"
+dir = "mod"
+usage = '''
+arg "<path>" help="The game folder, such as a Prism instance's minecraft folder, or its mods folder"
+arg "[build]" default="prod" help="prod: the release jar, against the deployed backend. dev: the debug jar, against the local backend" {
+  choices "prod" "dev"
+}
+'''
+run = '''
+case "$usage_path" in /*) game=$usage_path ;; *) game=$MISE_ORIGINAL_CWD/$usage_path ;; esac
+if [ "$usage_build" = prod ]; then
+  ./gradlew installMod -Pgame="$game" -Pbackend_url=https://api.ds-mod.perwko.com -Pwebsite_url=https://ds-mod.perwko.com
+else
+  ./gradlew installMod -Pgame="$game" -Pjar=debug
+fi
+'''
+
 [tasks."check:mod"]
 dir = "mod"
 run = "./gradlew check"
