@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.inventory.MenuKeys
 import io.github.noxaur.dsmod.core.feature.inventory.WardrobeKeys
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.gametest.mixin.HoveredSlotAccessor
@@ -15,7 +14,7 @@ import org.lwjgl.glfw.GLFW
 
 /** @keep Covers [io.github.noxaur.dsmod.edge.MenuKeyClicks]. */
 class WardrobeKeysTest : FabricClientGameTest {
-    private val waitTicks = (MenuKeys.WAIT_MILLIS / 50).toInt()
+    private val waitTicks = (WardrobeKeys.WAIT_MILLIS / 50).toInt()
 
     private fun wardrobe(context: ClientGameTestContext, world: TestSingleplayerContext, settle: Int = 5) {
         val menu = ServerMenus.menu(6, WardrobeKeys.TITLE) {
