@@ -4,14 +4,10 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
-import net.minecraft.core.component.DataComponents
-import net.minecraft.nbt.CompoundTag
-import net.minecraft.network.chat.Component
 import net.minecraft.world.Container
 import net.minecraft.world.SimpleContainer
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
-import net.minecraft.world.item.component.CustomData
 
 object RarityChest {
     fun open(context: ClientGameTestContext, server: TestServerContext) {
@@ -33,8 +29,5 @@ object RarityChest {
         context.waitTicks(10)
     }
 
-    private fun item(name: String, rarity: String): ItemStack = ItemStack(Items.DIAMOND_SWORD).also {
-        it.set(DataComponents.CUSTOM_NAME, Component.literal(name))
-        it.set(DataComponents.CUSTOM_DATA, CustomData.of(CompoundTag().apply { put("item_data", CompoundTag().apply { putString("rarity", rarity) }) }))
-    }
+    private fun item(name: String, rarity: String): ItemStack = ServerMenus.rarity(ServerMenus.named(Items.DIAMOND_SWORD, name), rarity)
 }

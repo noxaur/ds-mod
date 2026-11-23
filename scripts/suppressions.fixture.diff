@@ -1,0 +1,73 @@
+diff --git a/mod/src/main/kotlin/A.kt b/mod/src/main/kotlin/A.kt
+index 1111111..2222222 100644
+--- a/mod/src/main/kotlin/A.kt
++++ b/mod/src/main/kotlin/A.kt
+@@ -1,4 +1,5 @@
+ package a
+-@Suppress("Gone")
++
++@Suppress("UNCHECKED_CAST")
+ fun f() = 1
+@@ -20,2 +21,4 @@ fun g() = 2
+ val x = 1
++@file:Suppress("Detekt/no-bang-bang")
++val y = 2
+\ No newline at end of file
+diff --git a/web/app/b.tsx b/web/app/b.tsx
+new file mode 100644
+--- /dev/null
++++ b/web/app/b.tsx
+@@ -0,0 +1,3 @@
++export const B = () => null;
++// eslint-disable-next-line no-console -- the one place that logs
++console.log(1);
+diff --git a/docs/c.md b/docs/c.md
+--- a/docs/c.md
++++ b/docs/c.md
+@@ -1 +1,2 @@
+ # C
++Write @Suppress("X") only with a reason, and never eslint-disable.
+diff --git a/backend/old.ts b/backend/old.ts
+deleted file mode 100644
+--- a/backend/old.ts
++++ /dev/null
+@@ -1 +0,0 @@
+-// eslint-disable-next-line no-console -- gone
+diff --git a/mod/src/main/kotlin/D.kt b/mod/src/main/kotlin/D.kt
+--- a/mod/src/main/kotlin/D.kt
++++ b/mod/src/main/kotlin/D.kt
+@@ -1,1 +1,4 @@
+ package d
++@kotlin.Suppress("UNCHECKED_CAST")
++@Suppress
++    ("UNCHECKED_CAST")
+diff --git a/web/app/e.jsx b/web/app/e.jsx
+--- a/web/app/e.jsx
++++ b/web/app/e.jsx
+@@ -1,1 +1,5 @@
+ let count = 0;
++++ count;
++/*
++  eslint-disable no-console
++*/
+diff --git a/web/f g.ts b/web/f g.ts
+--- a/web/f g.ts
++++ b/web/f g.ts	
+@@ -1,1 +1,6 @@
+ let a = 0;
++/*
++  eslint no-console: off
++*/
++@[Suppress("UNUSED_PARAMETER") Deprecated("old")]
++/* eslint
+diff --git "a/web/\303\246.ts" "b/web/\303\246.ts"
+--- "a/web/\303\246.ts"
++++ "b/web/\303\246.ts"
+@@ -0,0 +1,1 @@
++// eslint-disable-next-line no-console -- x
+diff --git a/mod/G.kt b/mod/G.kt
+--- a/mod/G.kt
++++ b/mod/G.kt
+@@ -0,0 +1,2 @@
++@get:Suppress("X")
++@[Suppress("UNUSED_PARAMETER") Deprecated("old")]

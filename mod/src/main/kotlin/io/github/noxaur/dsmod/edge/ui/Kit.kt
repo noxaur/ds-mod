@@ -128,6 +128,45 @@ object Kit {
         frame(g, x, y, width, height, fade(t.outline, alpha), fade(t.panel, alpha), fade(t.panelLight, alpha), fade(t.panelShade, alpha))
     }
 
+    /** @keep One panel shaped like a T: `width` by `height` on top, and a stem `stemWidth` wide and `stemHeight` tall
+     * hanging from its bottom at `stemX`, with no seam between them. A stem as wide as the top, or nearly, makes it one
+     * rectangle, since a shoulder under 3 pixels has no room for its edges. `glass` is the glass alpha, or -1 for the
+     * opaque panel. */
+    fun stemPanel(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, stemX: Int, stemWidth: Int, stemHeight: Int, glass: Int = -1) {
+        val t = theme
+        if (stemX < x + 3 || stemX + stemWidth > x + width - 3) {
+            return if (glass >= 0) glass(g, x, y, width, height + stemHeight, glass) else panel(g, x, y, width, height + stemHeight)
+        }
+        val bottom = y + height
+        val right = stemX + stemWidth
+        val face = if (glass >= 0) ARGB.color(glass, t.plate) else t.panel
+        if (glass != 0) {
+            rect(g, x + 1, y + 1, width - 2, height - 2, face)
+            rect(g, stemX, bottom - 1, stemWidth, 1, face)
+            rect(g, stemX + 1, bottom, stemWidth - 2, stemHeight - 1, face)
+        }
+        if (glass < 0) {
+            rect(g, x + 1, y + 1, width - 3, 1, t.panelLight)
+            rect(g, x + 1, y + 1, 1, height - 3, t.panelLight)
+            rect(g, stemX + 1, bottom, 1, stemHeight - 2, t.panelLight)
+            rect(g, x + width - 2, y + 2, 1, height - 3, t.panelShade)
+            rect(g, x + 2, bottom - 2, stemX - x - 2, 1, t.panelShade)
+            rect(g, right, bottom - 2, x + width - 2 - right, 1, t.panelShade)
+            rect(g, right - 1, bottom - 1, 1, 1, t.panelShade)
+            rect(g, right - 2, bottom, 1, stemHeight - 1, t.panelShade)
+            rect(g, stemX + 2, bottom + stemHeight - 2, stemWidth - 3, 1, t.panelShade)
+        }
+        val edge = if (glass >= 0) t.plateEdge else t.outline
+        rect(g, x + 1, y, width - 2, 1, edge)
+        rect(g, x, y + 1, 1, height - 2, edge)
+        rect(g, x + width - 1, y + 1, 1, height - 2, edge)
+        rect(g, x + 1, bottom - 1, stemX - x - 1, 1, edge)
+        rect(g, right, bottom - 1, x + width - 1 - right, 1, edge)
+        rect(g, stemX, bottom, 1, stemHeight - 1, edge)
+        rect(g, right - 1, bottom, 1, stemHeight - 1, edge)
+        rect(g, stemX + 1, bottom + stemHeight - 1, stemWidth - 2, 1, edge)
+    }
+
     fun button(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, label: String, labelWidth: Int, glass: Boolean = false) {
         buttonFace(g, x, y, width, height, state, glass)
         val dy = if (state == State.DOWN) 1 else 0
@@ -229,13 +268,26 @@ object Kit {
         ring(g, x - 2, y - 1, 5, height + 2, -1)
     }
 
+    // @keep The slot is painted as a whole chest's grid of slots, so `slotGrid` draws many in one blit.
     private fun paintSlot(made: DynamicTexture?, id: Identifier, face: Int, topLeft: Int, bottomRight: Int): DynamicTexture {
-        val texture = made ?: DynamicTexture({ "dsmod $id" }, SLOT_SIZE, SLOT_SIZE, false).also {
+        val texture = made ?: DynamicTexture({ "dsmod $id" }, SLOT_GRID_WIDTH, SLOT_GRID_HEIGHT, false).also {
             Minecraft.getInstance().textureManager.register(id, it)
         }
-        bevelRects(0, 0, SLOT_SIZE, SLOT_SIZE, face, topLeft, bottomRight, checkNotNull(texture.pixels)::fillRect)
+        val pixels = checkNotNull(texture.pixels)
+        for (row in 0 until SLOT_GRID_ROWS) for (column in 0 until SLOT_GRID_COLUMNS) {
+            bevelRects(column * SLOT_SIZE, row * SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, face, topLeft, bottomRight, pixels::fillRect)
+        }
         texture.upload()
         return texture
+    }
+
+    /** @keep `columns` by `rows` slots side by side, in one blit while the theme's slots are painted. A big grid, such as
+     * the storage overview's pages, would otherwise cost a blit per slot every frame. */
+    fun slotGrid(g: GuiGraphicsExtractor, x: Int, y: Int, columns: Int, rows: Int, glass: Boolean) {
+        if (theme === slotTheme && columns <= SLOT_GRID_COLUMNS && rows <= SLOT_GRID_ROWS) {
+            return slotBlit(g, if (glass) GLASS_SLOT_TEXTURE else SLOT_TEXTURE, x, y, OPAQUE, columns * SLOT_SIZE, rows * SLOT_SIZE)
+        }
+        for (row in 0 until rows) for (column in 0 until columns) slotFrame(g, x + column * SLOT_SIZE, y + row * SLOT_SIZE, glass)
     }
 
     fun glass(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, alpha: Int) {
@@ -779,8 +831,8 @@ object Kit {
         if (state == State.HOVER || state == State.DOWN) ring(g, x - 1, y - 1, width + 2, height + 2, theme.hoverOutline)
     }
 
-    private fun slotBlit(g: GuiGraphicsExtractor, id: Identifier, x: Int, y: Int, alpha: Int) {
-        g.blit(RenderPipelines.GUI_TEXTURED, id, x, y, 0f, 0f, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, ARGB.white(alpha))
+    private fun slotBlit(g: GuiGraphicsExtractor, id: Identifier, x: Int, y: Int, alpha: Int, width: Int = SLOT_SIZE, height: Int = SLOT_SIZE) {
+        g.blit(RenderPipelines.GUI_TEXTURED, id, x, y, 0f, 0f, width, height, SLOT_GRID_WIDTH, SLOT_GRID_HEIGHT, ARGB.white(alpha))
     }
 
     private fun stripe(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, color: Int, tint: Int, amount: Float) = rect(g, x, y, width, 1, mix(color, tint, amount))
@@ -873,6 +925,10 @@ object Kit {
     private const val HOTBAR_WIDTH = 182
     const val HOTBAR_HEIGHT = 22
     const val HOTBAR_CELL = 20
+    private const val SLOT_GRID_COLUMNS = 9
+    private const val SLOT_GRID_ROWS = 6
+    private const val SLOT_GRID_WIDTH = SLOT_GRID_COLUMNS * SLOT_SIZE
+    private const val SLOT_GRID_HEIGHT = SLOT_GRID_ROWS * SLOT_SIZE
     private var slotTexture: DynamicTexture? = null
     private var glassSlotTexture: DynamicTexture? = null
     private var slotTheme: Theme? = null

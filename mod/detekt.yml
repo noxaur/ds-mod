@@ -36,6 +36,27 @@ dsmod:
     examples:
       - 'line.startsWith("Pet:")'
 
+  ForbiddenText/containers-by-player:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/feature/**']
+    pattern: '"(Ender Chest|Storage Page|Profile Management)'
+    reason: 'Read the containers the player saw from `feature.player.containers`, which keeps each one for the profile the player is on, `feature.player.shelf` for the one open now, and `feature.player.profile` for the profile. A container the layer lacks is added to `PlayerData`.'
+    examples:
+      - 'if (opened.title?.plain == "Ender Chest") open = true'
+      - 'val page = Regex("Storage Page \\((\\d+)/\\d+\\)")'
+    counterExamples:
+      - 'val seen = feature.player.containers["ender_chest"]'
+
+  ForbiddenReference/shelves-by-player:
+    active: true
+    includes: ['**/src/main/kotlin/**/core/feature/**']
+    symbols: ['io.github.noxaur.dsmod.core.overview.Shelf.Companion.of']
+    reason: 'Read the containers the player saw from `feature.player.containers`, and the one open now from `feature.player.shelf`, which `PlayerData` reads once for every feature.'
+    examples:
+      - |
+        import io.github.noxaur.dsmod.core.overview.Shelf
+        fun example(title: String?) = Shelf.of(title)
+
   ForbiddenText/text-by-role:
     active: true
     includes: ['**/src/main/**']

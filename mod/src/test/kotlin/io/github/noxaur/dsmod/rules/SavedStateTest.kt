@@ -52,7 +52,23 @@ internal data object Empty : Unset
 @Serializable
 internal data class Full(val count: Int) : Kept
 
+private val sameOnEveryProfile = mapOf(
+    "hide-glass-panes" to "a hint told once, whichever profile the player is on",
+)
+
 class SavedStateTest {
+    @Test
+    fun `a feature's state is kept for each profile, unless it is the same on every profile`() {
+        val shared = SettingsTree().features.filter { it.state?.profiled == false }.map { it.id }.toSet()
+        assertEquals(
+            sameOnEveryProfile.keys,
+            shared,
+            "A feature's saved state is the player's own, so declare it with `feature.profiled(..)`, which keeps it for each " +
+                "profile. Only a state that is the same on every profile, such as a hint told once, takes `feature.saved(..)`, " +
+                "and then name its feature in `sameOnEveryProfile` in this test with why.\n",
+        )
+    }
+
     @Test
     fun `every saved state is immutable and has a default for every field`() {
         val problems = SettingsTree().features.flatMap { feature ->

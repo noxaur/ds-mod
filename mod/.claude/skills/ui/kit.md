@@ -23,6 +23,7 @@ A token names a job, and each theme gives it a color. `Theme.kt` has the values.
 | `ink`, `inkMuted`, `inkOff` | Labels on a panel or a control: normal, secondary, disabled |
 | `inkMatch` | The words of a search in a label on a panel or a control, such as a dropdown's value. On a well, the `match` role does this job |
 | `inkBad` | Bad text on a panel or a control, such as a count that is short or Slots full. On a well, the `bad` role does this job |
+| `inkGood` | Good text on a panel or a control, such as Ready. On a well, the `good` role does this job |
 | `inkShadow` | Whether ink has Minecraft's text shadow. Dark ink on a light panel has none |
 | `accent` | The selected thing |
 | `plate`, `plateEdge` | The translucent backing of the HUD |

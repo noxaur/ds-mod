@@ -57,6 +57,15 @@ object TabLayout {
         return null
     }
 
+    /** @keep The tabs with a search tab on the top edge moved to the bottom one, at its rightmost free slot, for a menu
+     * whose top edge is far from the items it searches, such as the storage overview. It stays on top when the bottom is full. */
+    fun searchBelow(tabs: List<MenuTab>): List<MenuTab> {
+        val search = tabs.indexOfFirst { it.search && it.edge == TabEdge.TOP }
+        if (search < 0) return tabs
+        val slot = (PER_EDGE - 1 downTo 0).firstOrNull { at(tabs, TabEdge.BOTTOM, it) < 0 } ?: return tabs
+        return tabs.mapIndexed { i, tab -> if (i == search) tab.copy(edge = TabEdge.BOTTOM, slot = slot) else tab }
+    }
+
     fun add(tabs: List<MenuTab>, tab: MenuTab): List<MenuTab>? {
         val (edge, slot) = free(tabs) ?: return null
         return tabs + tab.copy(edge = edge, slot = slot)

@@ -45,3 +45,7 @@ Better UI's switch covers only the controls the mod adds to menus, not how the m
 ## Menu Tabs are places on the menu's edges
 
 Menu Tabs are places along a menu's top and bottom edges, like the creative tabs and the tabs of other mods players know. So a tab dropped on another trades places with it, instead of pushing a row along. The selected tab is the one whose command opened the menu, so matching the menu's title was not needed.
+
+## The storage overview moves the server's slots into the open page
+
+The storage overview keeps the server's menu as the screen and moves its slots into the open page's place, as Firmament does, so a click on the open page is the menu's own and every feature that marks or guards a slot still works there. A screen of the mod's own that passed clicks on to the menu was rejected, because each passed click would be the mod clicking for the player. The other pages are drawn from what the mod remembers, and a click on one sends that page's command.

@@ -16,6 +16,9 @@ class ContainerState {
     var playerSlots = 0 until 0
         private set
 
+    // @keep The player's own inventory by its slot index, as it was when another menu opened over it. A view, so copy it to keep it.
+    val inventorySlots: List<Item?> get() = (if (id == INVENTORY) items else inventory).asList()
+
     fun opened(event: ContainerOpened) {
         if (id == INVENTORY) inventory = items
         id = event.id

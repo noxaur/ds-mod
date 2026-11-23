@@ -45,10 +45,13 @@ class WaypointKind(private val fresh: (group: String) -> SavedWaypoint) : ItemKi
 
     override fun clashes(item: SavedWaypoint, live: List<SavedWaypoint>) = emptyList<SavedWaypoint>()
 
-    override fun encode(group: String, items: List<SavedWaypoint>): String = Share.encode(PREFIX, Shared(group, items.map { it.copy(group = "") }))
+    override fun encode(group: String, items: List<SavedWaypoint>): String = Share.encode(
+        PREFIX,
+        Shared(group, items.map { Entry(it.name, it.x, it.y, it.z, it.area, it.color, it.look, it.distance, it.throughWalls, it.enabled) }),
+    )
 
     override fun decode(text: String): Pair<String, List<SavedWaypoint>>? {
-        val shared = Share.decode(PREFIX, text, Read::class.java) ?: return null
+        val shared = Share.decode(PREFIX, text, Shared::class.java) ?: return null
         val waypoints = shared.waypoints.orEmpty().filterNotNull().take(MAX_WAYPOINTS).mapNotNull {
             val (x, y, z) = WaypointText.position("${it.x} ${it.y} ${it.z}") ?: return@mapNotNull null
             SavedWaypoint(
@@ -67,22 +70,20 @@ class WaypointKind(private val fresh: (group: String) -> SavedWaypoint) : ItemKi
         return shared.group.orEmpty().trim().take(GROUP_LENGTH) to waypoints
     }
 
-    private data class Shared(@Expose val group: String = "", @Expose val waypoints: List<SavedWaypoint> = emptyList())
+    // @keep A share's fields may be null, because Gson leaves out or nulls whatever a pasted text gets wrong.
+    private class Shared(@Expose val group: String?, @Expose val waypoints: List<Entry?>?)
 
-    // @keep A share is read into fields that may be null, because Gson leaves out or nulls whatever the text gets wrong.
-    private data class Read(@Expose val group: String? = null, @Expose val waypoints: List<ReadWaypoint?>? = null)
-
-    private data class ReadWaypoint(
-        @Expose val name: String? = null,
-        @Expose val x: Int? = null,
-        @Expose val y: Int? = null,
-        @Expose val z: Int? = null,
-        @Expose val area: String? = null,
-        @Expose val color: Int? = null,
-        @Expose val look: WaypointLook? = null,
-        @Expose val distance: Boolean? = null,
-        @Expose val throughWalls: Boolean? = null,
-        @Expose val enabled: Boolean? = null,
+    private class Entry(
+        @Expose val name: String?,
+        @Expose val x: Int?,
+        @Expose val y: Int?,
+        @Expose val z: Int?,
+        @Expose val area: String?,
+        @Expose val color: Int?,
+        @Expose val look: WaypointLook?,
+        @Expose val distance: Boolean?,
+        @Expose val throughWalls: Boolean?,
+        @Expose val enabled: Boolean?,
     )
 
     private companion object {

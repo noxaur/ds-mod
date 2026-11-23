@@ -230,4 +230,4 @@
                Loot: 13x Chaotic Dragon Fragment
                Fights: 6 (1 all-time on this boss)
 + 389.9s > [DRAGON] Player46: hello
-saved boss-fight-tracker.json = {"bosses":{"Endstone Protector":{"fights":3,"first":2,"loot":{}},"Wise Dragon":{"fights":1,"first":0,"loot":{"Wise Dragon Fragment":13}},"Unstable Dragon":{"fights":1,"first":0,"loot":{"Unstable Dragon Fragment":10}},"Chaotic Dragon":{"fights":1,"first":0,"loot":{"Chaotic Dragon Fragment":13}}}}
+saved for the profile boss-fight-tracker = {"bosses":{"Endstone Protector":{"fights":3,"first":2,"loot":{}},"Wise Dragon":{"fights":1,"first":0,"loot":{"Wise Dragon Fragment":13}},"Unstable Dragon":{"fights":1,"first":0,"loot":{"Unstable Dragon Fragment":10}},"Chaotic Dragon":{"fights":1,"first":0,"loot":{"Chaotic Dragon Fragment":13}}}}

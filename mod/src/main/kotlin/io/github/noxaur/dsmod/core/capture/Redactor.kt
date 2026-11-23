@@ -17,6 +17,7 @@ import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.ServerTime
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SlotChanged
+import io.github.noxaur.dsmod.core.game.SlotClicked
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.LeftServer
@@ -142,7 +143,7 @@ class Redactor(private val names: Set<String>) {
         is SlotChanged -> event.copy(item = event.item?.let(::item))
         WorldChanged -> event
         LeftServer -> event
-        is HeadPlaced, is Hit, is ServerTime, is PingMeasured, is FrameRate, is EntityGone -> event
+        is HeadPlaced, is Hit, is ServerTime, is PingMeasured, is FrameRate, is EntityGone, is SlotClicked -> event
         is ActionBar -> ActionBar(event.text.named())
         is EntityDied -> event.copy(name = event.name.named())
         is EntitySeen -> event.copy(name = event.name.named(), head = event.head?.let(::item))

@@ -2,7 +2,7 @@
 
 `/dsmod` opens the settings. Everything is on unless marked off.
 
-<sub>Trackers read only the server's own messages, never player chat. All-time numbers are saved in `config/dsmod/data/`. Delete a file to reset it.</sub>
+<sub>Trackers read only the server's own messages, never player chat. All-time numbers are kept for each of your profiles, in `config/dsmod/data/players/`, one file for each Minecraft account. Delete that file to reset them, along with everything else ds-mod remembers of your profiles.</sub>
 
 ## General
 
@@ -293,7 +293,7 @@ Lists every item you own in one screen, from your inventory, ender chest, storag
 | Click an item kept in storage or the ender chest | Open the first Storage page or the Ender Chest that holds it, with the item outlined for the Highlight Time |
 | Scroll, drag the scrollbar, or press Page Up, Page Down, Home or End | See the rest of the items |
 
-The total under the grid is the NPC value of the items shown. Your inventory is read from the game as you open the screen, and a Storage page or the Ender Chest you opened this session shows as you last saw it. Everything else comes from dragsim.co through ds-mod's service, as the profile viewer's does, so it is as fresh as dragsim.co's last save of your profile. If you hide your inventory on dragsim.co, only your inventory and the menus you opened show. If ds-mod's service can't be reached, the overview still shows what the game has shown you, and the line under the grid reads "Showing only what you opened". Hover that line to see why.
+The total under the grid is the NPC value of the items shown. Your inventory is read from the game, and a Storage page or the Ender Chest you opened on this profile shows as you last saw it, even after you restart the game. The line under the grid names the profile. ds-mod learns which profile you're on when you open Profile Management, and follows each switch you make there. Everything else comes from dragsim.co through ds-mod's service, as the profile viewer's does, so it is as fresh as dragsim.co's last save of your profile. If you hide your inventory on dragsim.co, only your inventory and the menus you opened show. If ds-mod's service can't be reached, the overview still shows what the game has shown you, and the line under the grid reads "Showing only what you opened". Hover that line to see why.
 
 ### Waypoints
 
@@ -503,6 +503,21 @@ Click the SkyBlock Menu item in the last hotbar slot, in your inventory or any m
 
 A dragon egg in the empty slot at the top left of the Dragon Sim Menu. Clicking it sends `/hotd`, which opens the Heart of the Dragon.
 
+### Storage Overview
+
+Shows what your Storage pages and Ender Chest hold before you open them. The mod remembers each page as you saw it the last time you opened it, for each of your profiles and across restarts, so open a page once to fill it in. Pick one of two modes:
+
+- **Preview**, the default: in the `/storage` menu, hover a page to see its items in its tooltip, in their slots, under the page's name. Hold Shift to read the server's text instead. A page you haven't opened yet keeps the server's text.
+- **Overview**: `/storage`, `/ec` and every Storage page open one screen that shows every page at once, under its title and with your inventory below. The pages form a square grid, 2 by 2 for 4 pages and 3 by 3 for 9, and grow wider only when that saves you scrolling and your screen has room. Your menu tabs and the Search tab sit under your inventory.
+
+In the overview the open page has an outline and works as the menu does. The other pages show what the mod remembers, with their tooltips and item rarity, and Menu Search dims them too. A page you haven't opened yet reads "Click to load items".
+
+| Do this | To |
+| --- | --- |
+| Click another page | Open it in its place. Nothing happens while an item is on your cursor, so you can't carry it off by mistake |
+| Hover an item on any page | Read its tooltip |
+| Scroll, drag the scrollbar, or press Page Up, Page Down, Home or End | See the rest of the pages, while your inventory stays put |
+
 ### Forge Craft
 
 Craft an item at the forge once the usual way, and the mod remembers it until you leave the server. From then on, each press of the Craft Key (R) clicks the next button of that craft: Forge Queue, the category, the item, then Confirm. A repeat is four presses, one click each, and it works only in the forge's menus.
@@ -520,6 +535,12 @@ In the Wardrobe, press 1 to 9 to click the nine slot buttons of the page you're 
 The server refuses a wardrobe click for a second after the menu opens, so a press in that second waits for it. The seconds left show beside the menu's title, and the button your press will click has a thin outline. Press another number while you wait to change your mind.
 
 Change the keys under Keys in Wardrobe Keys' settings. Each key works only in the Wardrobe, so 1 to 9 still pick your hotbar slot everywhere else.
+
+### Profile Cooldown
+
+The server lets you switch profiles once every 30 seconds. After a switch, Profile Management shows the seconds left beside its title in red. When they run out, it shows Ready in green for 5 seconds.
+
+If the server refuses a switch the mod didn't see, such as one from before you joined, the timer starts from the wait the server names.
 
 ## Combat
 

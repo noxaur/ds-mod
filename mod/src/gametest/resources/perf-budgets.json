@@ -29,6 +29,10 @@
       "label": "Recording 46 lored items and 40 armored mobs",
       "cap": 600
     },
+    "storage.frame": {
+      "label": "Storage overview, 7 pages of 45 lored items, and the HUD",
+      "cap": 1000
+    },
     "menu.packets": {
       "label": "54 menu slots swapped at once",
       "cap": 600

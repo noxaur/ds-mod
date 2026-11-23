@@ -1,9 +1,9 @@
 name: label
 
-# @keep pull_request_target gives a fork's pull request a token that can label it, so nothing is checked out and only the title is read.
+# @keep pull_request_target gives a fork's pull request a token that can label it, so only the base branch is checked out and the pull request is read through the API.
 on:
   pull_request_target:
-    types: [opened, edited, reopened]
+    types: [opened, edited, reopened, synchronize]
   issues:
     types: [opened, edited, reopened]
 
@@ -33,3 +33,22 @@ jobs:
             if (!current.includes(label)) {
               await github.rest.issues.addLabels({ owner, repo, issue_number, labels: [label] })
             }
+
+  suppressions:
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # @keep v5.2.9
+        with:
+          install_args: node
+      - run: node scripts/suppressions.ts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          BODY: ${{ github.event.pull_request.body }}

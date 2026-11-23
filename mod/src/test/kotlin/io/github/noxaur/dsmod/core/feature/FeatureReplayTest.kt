@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.feature
 
+import io.github.noxaur.dsmod.harness.encode
 import io.github.noxaur.dsmod.core.capture.Captured
 import io.github.noxaur.dsmod.harness.readCapture
 import io.github.noxaur.dsmod.harness.chat
@@ -25,6 +26,7 @@ import io.github.noxaur.dsmod.core.game.ServerTime
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.Sidebar
 import io.github.noxaur.dsmod.core.game.SlotChanged
+import io.github.noxaur.dsmod.core.game.SlotClicked
 import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.core.game.TabList
 import io.github.noxaur.dsmod.core.game.LeftServer
@@ -140,6 +142,7 @@ class FeatureReplayTest {
         is PingMeasured -> "(ping) ${event.millis} ms"
         is FrameRate -> "(frame rate) ${event.fps} fps"
         is SlotChanged -> "(slot ${event.slot}) " + (event.item?.let { "${it.count} x ${name(it)}" } ?: "emptied")
+        is SlotClicked -> "(you clicked slot ${event.slot})"
     }
 
     @TestFactory
@@ -215,7 +218,7 @@ class FeatureReplayTest {
                     val metrics = game.metrics.snapshot()
                     assertEquals(emptyMap(), metrics.failures, "${feature.id} threw while replaying $fixture")
                     metrics.counters.toSortedMap().forEach { (name, count) -> appendLine("$name = $count") }
-                    session.readout().feature.state?.let { appendLine("saved ${feature.id}.json = ${it.encode()}") }
+                    session.readout().feature.state?.let { appendLine((if (it.profiled) "saved for the profile ${feature.id}" else "saved ${feature.id}.json") + " = ${it.encode()}") }
                     if (game.hidden.value.told.isNotEmpty()) appendLine("saved hidden.json = ${game.hidden.encode()}")
                 }
 

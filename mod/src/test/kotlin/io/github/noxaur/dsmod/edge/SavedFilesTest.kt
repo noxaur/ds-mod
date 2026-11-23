@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
+import io.github.noxaur.dsmod.harness.encode
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.harness.chat
 import io.github.noxaur.dsmod.harness.Harness
@@ -9,6 +10,8 @@ import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
 import io.github.noxaur.dsmod.core.game.TabList
 import java.nio.file.Files
 import java.util.concurrent.Executors
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.readText
@@ -20,7 +23,7 @@ import kotlin.test.assertTrue
 
 class SavedFilesTest {
     private val dir = Files.createTempDirectory("dsmod-saved")
-    private val file = dir.resolve("zealot-tracker.json")
+    private val file = dir.resolve("players/local.json")
 
     private fun game() = object : Harness() {}.also { session ->
         session.tree.features.forEach { it.enabled = true }
@@ -31,6 +34,8 @@ class SavedFilesTest {
 
     private fun Harness.saved() = readout(tree.feature<ZealotTracker>()).feature.state!!.encode()
 
+    private fun written() = Json.parseToJsonElement(file.readText()).jsonObject["profiles"]!!.jsonObject[""]!!.jsonObject["features"]!!.jsonObject["zealot-tracker"].toString()
+
     @Test
     fun `a saved state comes back in the next session`() {
         val first = game()
@@ -38,8 +43,8 @@ class SavedFilesTest {
         first.drop("RARE DROP! (Summoning Eye) (✯ 90%)")
         first.drop("RNGESUS DROP! [Lvl 1] Enderman")
         files.close()
-        assertEquals("""{"drops":{"Summoning Eye":1,"[Lvl 1] Enderman":1},"kills":0}""", file.readText())
-        assertEquals(emptyList(), dir.listDirectoryEntries().filter { it.fileName.toString().endsWith(".tmp") })
+        assertEquals("""{"drops":{"Summoning Eye":1,"[Lvl 1] Enderman":1},"kills":0}""", written())
+        assertEquals(emptyList(), dir.resolve("players").listDirectoryEntries().filter { it.fileName.toString().endsWith(".tmp") })
 
         val second = game()
         SavedFiles(dir, second.game).load()
@@ -49,19 +54,20 @@ class SavedFilesTest {
 
     @Test
     fun `a file that does not parse is kept aside and the feature starts from its default`() {
+        Files.createDirectories(file.parent)
         file.writeText("{not json")
         val session = game()
         val files = SavedFiles(dir, session.game)
         files.load()
 
         assertEquals("""{"drops":{},"kills":0}""", session.saved())
-        assertTrue("zealot-tracker.load" in session.game.metrics.snapshot().failures)
+        assertTrue("players/local.load" in session.game.metrics.snapshot().failures)
         assertFalse(file.exists())
-        assertEquals("{not json", dir.listDirectoryEntries("zealot-tracker.json.corrupt-*").single().readText())
+        assertEquals("{not json", dir.resolve("players").listDirectoryEntries("local.json.corrupt-*").single().readText())
 
         session.drop("RARE DROP! (Summoning Eye) (✯ 90%)")
         files.close()
-        assertEquals("""{"drops":{"Summoning Eye":1},"kills":0}""", file.readText())
+        assertEquals("""{"drops":{"Summoning Eye":1},"kills":0}""", written())
     }
 
     @Test
@@ -75,12 +81,12 @@ class SavedFilesTest {
         files.flush()
         writer.submit {}.get()
         files.flush()
-        assertTrue("zealot-tracker.save" in session.game.metrics.snapshot().failures)
+        assertTrue("players/local.save" in session.game.metrics.snapshot().failures)
         writer.submit {}.get()
 
         Files.delete(blocked)
         files.close()
-        assertEquals("""{"drops":{"Summoning Eye":1},"kills":0}""", blocked.resolve("zealot-tracker.json").readText())
+        assertTrue("Summoning Eye" in blocked.resolve("players/local.json").readText())
     }
 
     @Test
@@ -126,10 +132,37 @@ class SavedFilesTest {
         files.flush()
         files.flush()
         files.close()
-        val saved = file.readText()
+        val saved = written()
         file.writeText("changed by someone else")
         files.flush()
         assertEquals("changed by someone else", file.readText())
         assertEquals("""{"drops":{"Summoning Eye":1},"kills":0}""", saved)
+    }
+
+    @Test
+    fun `a state saved before profiles moves into the profile the player is on, once`() {
+        val old = dir.resolve("zealot-tracker.json")
+        old.writeText("""{"drops":{"Summoning Eye":4},"kills":9}""")
+        SavedFiles(dir, game().game).load()
+        assertTrue(old.exists(), "a crash before the player's file is written reads it again")
+        val first = game()
+        SavedFiles(dir, first.game).apply { load() }.close()
+        assertEquals("""{"drops":{"Summoning Eye":4},"kills":9}""", written())
+        assertFalse(old.exists())
+        assertTrue(dir.resolve("zealot-tracker.json.moved-to-profile").exists())
+
+        old.writeText("""{"drops":{},"kills":1}""")
+        val second = game()
+        SavedFiles(dir, second.game).load()
+        assertEquals("""{"drops":{"Summoning Eye":4},"kills":9}""", second.saved(), "the profile has its own now")
+    }
+
+    @Test
+    fun `two accounts keep apart`() {
+        val first = game()
+        SavedFiles(dir, first.game, "one").also { first.drop("RARE DROP! (Summoning Eye) (✯ 90%)") }.close()
+        val second = game()
+        SavedFiles(dir, second.game, "two").load()
+        assertEquals("""{"drops":{},"kills":0}""", second.saved())
     }
 }

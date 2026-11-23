@@ -9,6 +9,7 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.commands.Commands
 import net.minecraft.core.component.DataComponents
+import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
 import net.minecraft.world.Container
 import net.minecraft.world.SimpleContainer
@@ -18,12 +19,18 @@ import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import net.minecraft.world.item.component.CustomData
 import net.minecraft.world.item.component.ItemLore
 
 object ServerMenus {
     private val TYPES = listOf(MenuType.GENERIC_9x1, MenuType.GENERIC_9x2, MenuType.GENERIC_9x3, MenuType.GENERIC_9x4, MenuType.GENERIC_9x5, MenuType.GENERIC_9x6)
 
     fun named(item: Item, name: String): ItemStack = ItemStack(item).also { it.set(DataComponents.CUSTOM_NAME, Component.literal(name)) }
+
+    /** @keep The rarity the server writes in an item's data, which Item Rarity reads */
+    fun rarity(stack: ItemStack, rarity: String): ItemStack = stack.also {
+        it.set(DataComponents.CUSTOM_DATA, CustomData.of(CompoundTag().apply { put("item_data", CompoundTag().apply { putString("rarity", rarity) }) }))
+    }
 
     fun lored(item: Item, name: String, lore: List<String>): ItemStack = named(item, name).also { it.set(DataComponents.LORE, ItemLore(lore.map(Component::literal))) }
 

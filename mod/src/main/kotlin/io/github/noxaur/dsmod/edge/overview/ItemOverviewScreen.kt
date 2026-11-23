@@ -69,11 +69,12 @@ private val TAB_ITEMS = mapOf(
     Category.PETS to Items.BONE,
 )
 
-/** @keep `seen` holds what the game showed: the inventory as the screen opens, and the menus the player opened this
- * session. `pick` opens the menu that holds an item, and says whether one does. */
+/** @keep `seen` holds what the game showed on `profile`, the one the player is on. `pick` opens the menu that holds an
+ * item, and says whether one does. */
 class ItemOverviewScreen(
     private val lookup: ProfileLookup,
     private val seen: List<Copy>,
+    private val profile: String?,
     query: String,
     private val parent: Screen?,
     private val pick: (Entry) -> Boolean,
@@ -104,7 +105,7 @@ class ItemOverviewScreen(
     private val gridY get() = frame.top + Kit.BUTTON_HEIGHT + Kit.GAP
 
     private val state: Load<List<Container>> get() = when (val profile = lookup.state) {
-        is Load.Loaded -> lookup.containers()
+        is Load.Loaded -> lookup.containers(this.profile)
         is Load.Failed -> profile
         Load.Loading -> Load.Loading
     }
@@ -177,7 +178,7 @@ class ItemOverviewScreen(
         foot()
     }
 
-    /** @keep The backend only fills in what the game has not shown this session, so the items show whatever it answers,
+    /** @keep The backend only fills in what the game has not shown, so the items show whatever it answers,
      * and the line under them says what is missing. Hover it for why. */
     private fun foot() {
         val count = if (shown.size == 1) "1 item" else "${shown.size} items"
@@ -191,13 +192,14 @@ class ItemOverviewScreen(
                 footTip = listOf(state.failure.message.toComponent(), text { muted("Open the overview again to load the rest.") }.toComponent())
             }
             is Load.Loaded -> {
-                foot = if (hidden) "Showing only what you opened" else count
+                foot = if (hidden) "Showing only what you opened" else profile?.let { "$count on $it" } ?: count
                 footTip = if (hidden) listOf(text { muted("dragsim.co hides your items, so only the menus you opened show.") }.toComponent()) else null
             }
         }
     }
 
     override fun tick() {
+        lookup.follow(profile)
         if (state !== built) rebuildWidgets()
     }
 

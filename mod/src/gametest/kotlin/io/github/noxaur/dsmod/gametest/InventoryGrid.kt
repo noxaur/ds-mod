@@ -11,11 +11,9 @@ import io.github.noxaur.dsmod.edge.Hud
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
 import net.minecraft.core.component.DataComponents
-import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
-import net.minecraft.world.item.component.CustomData
 import net.minecraft.world.item.component.DyedItemColor
 import net.minecraft.world.item.component.ItemLore
 import java.nio.file.Path
@@ -93,9 +91,7 @@ object InventoryGrid {
         val stack = when (index) {
             9 -> ItemStack(Items.PLAYER_HEAD).also { it.set(DataComponents.PROFILE, HeadSkin.profile()) }
             10 -> ItemStack(Items.LEATHER_CHESTPLATE).also { it.set(DataComponents.DYED_COLOR, DyedItemColor(DYE)) }
-            15 -> ItemStack(Items.DIAMOND_SWORD).also {
-                it.set(DataComponents.CUSTOM_DATA, CustomData.of(CompoundTag().apply { put("item_data", CompoundTag().apply { putString("rarity", "LEGENDARY") }) }))
-            }
+            15 -> ServerMenus.rarity(ItemStack(Items.DIAMOND_SWORD), "LEGENDARY")
             22 -> ItemStack(Items.ENDER_EYE, 13)
             else -> ItemStack(ITEMS[index % ITEMS.size])
         }

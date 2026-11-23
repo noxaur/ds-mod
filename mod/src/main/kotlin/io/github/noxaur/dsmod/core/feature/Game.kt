@@ -24,6 +24,7 @@ import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.game.view
 import io.github.noxaur.dsmod.core.hud.HudBlock
+import io.github.noxaur.dsmod.core.player.PlayerData
 import io.github.noxaur.dsmod.core.text.Text
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.world.Mark
@@ -80,6 +81,8 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
 
     val container = ContainerState()
 
+    val player = PlayerData(container, metrics)
+
     private var worlds = 0
 
     private var sharedChanges = 0
@@ -99,6 +102,8 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             it.inArea = { it.area.holds(tab, sidebar) }
             it.named = { Area.named(tab, sidebar) }
             it.container = container
+            it.player = player
+            it.state?.takeIf { state -> state.profiled }?.let { state -> player.slice(it.id, state) }
             it.messages = messages
             if (it !== dragSimOnly) it.gate = { active }
             it.worlds = { worlds }
@@ -106,7 +111,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     }
 
     fun wants(type: Class<out GameEvent>) =
-        tap != null || active && features.any { it.enabled && (type == TabList::class.java || type == Sidebar::class.java || type in it.handlers) }
+        tap != null || active && (player.wants(type) ||features.any { it.enabled && (type == TabList::class.java || type == Sidebar::class.java || type in it.handlers) })
 
     /** @keep A source whose event comes once, such as a block that is already standing, holds it back until this is true,
      * because post gives a feature outside its area nothing */
@@ -172,7 +177,9 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             }
             else -> false
         }
-        if (shared) sharedChanges++
+        // @keep Folded whichever features are on, so one turned on later finds the containers the player saw meanwhile
+        val switched = active && player.fold(time, event)
+        if (shared || switched) sharedChanges++
         val all = entity || event == WorldChanged || event == LeftServer
         val listeners = if (all) everyone else hearing.getOrPut(event.javaClass) { features.indices.filter { event.javaClass in features[it].handlers }.toIntArray() }
         for (i in listeners) {

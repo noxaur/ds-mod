@@ -49,8 +49,10 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - **Back Buttons** – Adds Go Back to menus that have none.
 - **SkyBlock Menu Click** – Clicking the SkyBlock Menu item opens the menu instead of picking it up.
 - **HOTD Button** – Opens the Heart of the Dragon from the Dragon Sim Menu.
+- **Storage Overview** – Hover a Storage page to see its items, or see every page and the Ender Chest at once.
 - **Forge Craft** – Repeat your last forge craft with a key, one click per press.
 - **Wardrobe Keys** – Press 1 to 9 in the Wardrobe to click that slot, once the server lets you.
+- **Profile Cooldown** – Shows in Profile Management when you can switch profiles again.
 - **Menu Theme** – Dark or glass menus, inventory and tooltips.
 - **Fixed Menu Layout** – Go Back, Close and your inventory sit in the same place in every menu.
 - **Hide Glass Panes** – Hides the blank glass panes that pad out menus.

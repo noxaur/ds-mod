@@ -7,12 +7,8 @@ import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
-import io.github.noxaur.dsmod.core.game.ContainerOpened
-import io.github.noxaur.dsmod.core.game.ContainerState
-import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.overview.Copy
 import io.github.noxaur.dsmod.core.overview.Owned
-import io.github.noxaur.dsmod.core.overview.Shelf
 import io.github.noxaur.dsmod.core.text.Role
 
 class ItemOverview(config: DsModConfig) : HasFeature {
@@ -23,33 +19,12 @@ class ItemOverview(config: DsModConfig) : HasFeature {
 
     private class Wanted(val key: Owned.Key, val until: Long)
 
-    private class Kept(val shelf: Shelf, val items: Array<Owned?>)
-
-    /** @keep A copy lasts the session. dragsim.co saves the profile again soon enough, and a copy kept on disk could
-     * outlive a switch to another profile. Each slot is read as it arrives, so a menu costs one item per change. */
-    private var kept by feature.session { LinkedHashMap<String, Kept>() }
-    private var open by feature.session<Kept?> { null }
     private var wanted by feature.session<Wanted?> { null }
     private var marks by feature.session { emptyMap<Int, SlotMark>() }
     private var stale = false
+    private val reader = ContainerReader(feature)
 
-    init {
-        feature.on<ContainerOpened> { opened, _ ->
-            val shelf = Shelf.of(opened.title?.plain)?.takeIf { it.slots.last < opened.size - ContainerState.PLAYER_SLOTS }
-            open = shelf?.let { Kept(it, arrayOfNulls(it.slots.count())) }?.also { kept[it.shelf.id] = it }
-            stale = true
-        }
-        feature.on<SlotChanged> { changed, _ ->
-            val menu = open ?: return@on
-            val i = changed.slot - menu.shelf.slots.first
-            if (i !in menu.items.indices) return@on
-            menu.items[i] = changed.item?.let(Owned::of)
-            stale = true
-        }
-    }
-
-    /** @keep Each Storage page and the Ender Chest as the player last saw them this session. */
-    val copies: List<Copy> get() = kept.values.map { Copy(it.shelf.id, it.shelf.title, it.items.toList()) }
+    val copies: List<Copy> get() = feature.player.containers.map { (id, seen) -> Copy(id, seen.title, seen.items.map { it?.let(Owned::of) }) }
 
     fun find(key: Owned.Key, now: Long) {
         wanted = Wanted(key, now + (highlight.value * 1000).toLong())
@@ -58,11 +33,13 @@ class ItemOverview(config: DsModConfig) : HasFeature {
     }
 
     private fun slots(now: Long): Map<Int, SlotMark> {
-        if (stale) {
+        if (reader.changed() || stale) {
             stale = false
-            val menu = open
+            val shelf = feature.player.shelf
+            val items = shelf?.let { feature.player.containers[it.id]?.items }
             val key = wanted?.key
-            marks = if (menu == null || key == null) emptyMap() else menu.items.indices.filter { menu.items[it]?.key == key }.associate { menu.shelf.slots.first + it to MARK }
+            marks = if (shelf == null || items == null || key == null) emptyMap()
+            else items.indices.filter { items[it]?.let(Owned::of)?.key == key }.associate { shelf.slots.first + it to MARK }
         }
         if ((wanted?.until ?: Long.MAX_VALUE) <= now) {
             wanted = null
