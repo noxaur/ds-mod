@@ -7,9 +7,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.util.CommonColors
 
-/** @keep A timer after a menu's title, as Wardrobe Keys and Profile Cooldown show. Without a role it takes the menu's
- * ink, and a role reads on the menu's ground: its own color on glass, the theme's on a themed panel, Vanilla's on the
- * game's gray */
 object MenuTimers {
     private const val GAP = 4
 

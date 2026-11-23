@@ -12,8 +12,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class ProfileCooldownTest {
-    /** @keep The capture opens Profile Management on Old, switches to Young at +30.188s, opens it twice while the server
-     * refuses a switch back with 17s and then 3s left, then switches back to Old at +60.822s */
     private val capture = readCapture(Path.of("src/test/resources/features/item-overview/profile-switch.jsonl"))
     private val start = capture.first().time
 

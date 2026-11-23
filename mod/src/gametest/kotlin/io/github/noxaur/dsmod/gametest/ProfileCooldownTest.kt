@@ -11,8 +11,6 @@ import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.Items
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.ProfileCooldowns]. The menus are Profile Management as the server sends it:
- * the profile list, then the chosen profile's own menu with Switch to Profile, closed by the server on a switch. */
 class ProfileCooldownTest : FabricClientGameTest {
     private val feature get() = DsModClient.feature<ProfileCooldown>()
 

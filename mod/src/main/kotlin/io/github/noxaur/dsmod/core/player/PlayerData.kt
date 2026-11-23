@@ -41,8 +41,6 @@ class PlayerData internal constructor(private val container: ContainerState, pri
     private var switching: String? = null
     private var unread = false
 
-    /** @keep When the server lets the player switch profiles again, in the client's milliseconds, or 0 before the mod saw a
-     * switch or a refusal */
     var switchesAt = 0L
         private set
 
