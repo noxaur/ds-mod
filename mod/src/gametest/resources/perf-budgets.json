@@ -27,7 +27,7 @@
     },
     "menu.packets": {
       "label": "54 menu slots swapped at once",
-      "cap": 500
+      "cap": 600
     },
     "jar": {
       "label": "Release jar",
