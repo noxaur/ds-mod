@@ -1,0 +1,32 @@
+name: alert
+
+# @keep A failed run on main, deploy or beta release, or a failed Vercel deploy, reaches no one otherwise: a backend deploy once failed for days unseen.
+on:
+  workflow_run:
+    workflows: [ci, deploy, beta]
+    types: [completed]
+    branches: [main]
+  deployment_status:
+
+permissions: {}
+
+jobs:
+  discord:
+    if: >-
+      (github.event_name == 'workflow_run' && github.event.workflow_run.event != 'pull_request'
+        && contains(fromJSON('["failure", "timed_out", "startup_failure"]'), github.event.workflow_run.conclusion))
+      || (github.event_name == 'deployment_status' && contains(fromJSON('["failure", "error"]'), github.event.deployment_status.state))
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          WHAT: ${{ github.event.workflow_run.name || format('{0} deploy', github.event.deployment.environment) }}
+          TITLE: ${{ github.event.workflow_run.display_title || github.event.deployment_status.description }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.event.deployment.sha }}
+          URL: ${{ github.event.workflow_run.html_url || github.event.deployment_status.target_url }}
+        # @keep allowed_mentions stops a commit title that holds @everyone from pinging the server.
+        run: |
+          jq -n --arg content "**$WHAT failed** on \`main\`: $TITLE (\`${SHA:0:7}\`)
+          $URL" '{content: $content, allowed_mentions: {parse: []}}' |
+            curl -fsS -H 'Content-Type: application/json' --data @- "$WEBHOOK"
