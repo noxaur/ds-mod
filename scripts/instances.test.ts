@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -79,6 +79,22 @@ test("picks the game folder each launcher loads, before the game has made it", (
       ["prism/Fresh", join(at.home, ".local/share/PrismLauncher/instances/Fresh/minecraft/mods")],
       ["multimc/Both", join(at.home, "MultiMC/instances/Both/.minecraft/mods")],
       ["multimc/Fresh", join(at.home, "MultiMC/instances/Fresh/.minecraft/mods")],
+    ]),
+  );
+});
+
+test("keeps the first data folder's instance when another has one of the same name, and follows a linked instance", () => {
+  const at = machine({
+    ".local/share/PrismLauncher/instances/Skyblock/mmc-pack.json": fabricPack,
+    ".var/app/org.prismlauncher.PrismLauncher/data/PrismLauncher/instances/Skyblock/mmc-pack.json": fabricPack,
+    "packs/Linked/mmc-pack.json": fabricPack,
+  });
+  symlinkSync(join(at.home, "packs/Linked"), join(at.home, ".local/share/PrismLauncher/instances/Linked"));
+  assert.deepEqual(
+    instances(at),
+    new Map([
+      ["prism/Skyblock", join(at.home, ".local/share/PrismLauncher/instances/Skyblock/minecraft/mods")],
+      ["prism/Linked", join(at.home, ".local/share/PrismLauncher/instances/Linked/minecraft/mods")],
     ]),
   );
 });

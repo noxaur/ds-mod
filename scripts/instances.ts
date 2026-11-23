@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, isAbsolute, join, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -44,8 +44,8 @@ const rows = (file: string, query: string): any[] => {
 const folders = (dir: string) => {
   try {
     return readdirSync(dir, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => ({ name: entry.name, path: join(dir, entry.name) }));
+      .map((entry) => ({ name: entry.name, path: join(dir, entry.name) }))
+      .filter(({ path }) => statSync(path, { throwIfNoEntry: false })?.isDirectory());
   } catch {
     return [];
   }
@@ -156,7 +156,7 @@ export const instances = (machine: Machine = thisMachine): Map<string, string> =
   if (existsSync(official)) found.set("minecraft", join(official, "mods"));
   for (const [launcher, find] of Object.entries(launchers)) {
     for (const { name, game, mods } of find(machine)) {
-      found.set(`${launcher}/${name}`, mods ?? join(game, "mods"));
+      if (!found.has(`${launcher}/${name}`)) found.set(`${launcher}/${name}`, mods ?? join(game, "mods"));
     }
   }
   return found;
