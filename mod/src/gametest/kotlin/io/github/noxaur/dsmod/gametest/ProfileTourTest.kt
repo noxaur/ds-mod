@@ -32,5 +32,3 @@ abstract class ProfileTour(private val theme: Theme) : FabricClientGameTest {
 class ProfileTourTest : ProfileTour(Theme.CHARCOAL)
 
 class ProfileTourVanillaTest : ProfileTour(Theme.VANILLA)
-
-// evidence run, reverted before merge
