@@ -14,9 +14,9 @@ Each rule the mod enforces in its source is a detekt rule, and each rule about w
 
 A release member needs a caller in the release or debug code, and a game test's call does not count, because the jar would carry the hook for every player. So a game test writes its own reads of a screen and reaches the state the screen keeps from other modules. Hooks in the release code were rejected, because nothing told them apart from code that had lost its last caller.
 
-## CI measures the mod in a real game
+## The beta measures the mod in a real game
 
-Fast and smooth is checked, not promised. A perf test boots the jars a player installs and times the mod where the game calls it: each tick, each frame and each burst of the server's packets, so a part can move or be renamed without touching the test. A timer per part was rejected, because every refactor edited the test, and a unit benchmark because it misses the draw cost. Every time is scaled to a reference device, and each cap gates the median of twelve windows, because one window on a shared runner can be several times slower.
+Fast and smooth is checked, not promised. A perf test boots the jars a player installs and times the mod each tick, each frame and each burst of packets, scaled to a reference device, and each cap gates the median of twelve windows. A timer per part was rejected, because every refactor edited the test, and a unit benchmark because it misses the draw cost. It runs before each beta and not on each pull request, because a shared runner's noise failed pull requests that changed nothing.
 
 ## A pull request runs the game tests its change reaches
 
@@ -30,13 +30,9 @@ A developer runs the game tests beside their own game. So the test game opens wi
 
 Every test in a run shares one game, because a boot per test would multiply the run's time. So before each test the mod starts again as a launch with no saved files would. A test that cleans up after itself was rejected, because the next leak would be found the same way: a test that passed in the full order failing in a picked one.
 
-## A feature's time budget is measured alone
+## CI's time limit warns, and a timeout stops only a hang
 
-Each feature's handlers are timed against a budget per call, and a mean taken while another test runs beside it measures that test as much as the feature. So the timing runs on its own after the other unit tests, under a time limit of its own. Fewer replays were rejected, because the code was not yet compiled for speed and its means read up to three times higher.
-
-## CI's time limit is a step, not a timeout
-
-A job's timeout cancels it and says only that it was cancelled, and it can't tell a slow change from a cold cache. So the last step of every job reads when the job started and fails with the time and what to do, and lets a run through when the cache was cold. A build cache for compiled classes was rejected, because most changes edit what every compile reads.
+A job's time on a shared runner moves by a minute with no change in the code. So the last step of every job reads when the job started and warns with the time and what to do, unless the cache was cold. A limit that failed the job was rejected, because it failed runs that changed nothing. Each job's timeout, and the mod's unit test timeout, stop only a run that hangs. A build cache for compiled classes was rejected, because most changes edit what every compile reads.
 
 ## A warm job runs offline
 

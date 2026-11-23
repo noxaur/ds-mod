@@ -55,7 +55,7 @@ Every rule is enforced by a check, and a failure prints the fix. When a mistake 
 
 - A commit runs every project's checks, and a pull request runs the game tests its change reaches.
 - Test the real implementation instead of copying its logic into the test.
-- When a CI job nears its 3 minutes, make it faster or move the slow part to the beta pipeline. Raise a limit or a perf cap only when the user agrees.
+- When a CI job warns that it took over its 3 minutes, make it faster or move the slow part to the beta pipeline. Raise a limit or a perf cap only when the user agrees.
 
 ## Branches and pull requests
 

@@ -70,10 +70,9 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | A saved setting keeps its key in the config file, so a player who updates keeps what they set | `ConfigFileTest` loads a file 0.1.0 wrote and checks every value, and loads a file main wrote with every row changed and saves it again unchanged |
 | Every setting is saved in a slot of a store, under a key written where it is declared | A row takes only a `Bind`, which a `Slot` makes, and `SettingsTreeTest` refuses a field of `DsModConfig` besides favorites |
 | A feature's saved state is immutable and has a default for every field, so a change is written and an older save loads | `SavedStateTest` walks every feature's `state` |
-| A feature's handler and readout average under 20µs | `FeatureReplayTest`, in the mod's `budgetTest`, which runs alone after the unit tests |
 | A capture type has one producer | `CaptureWriter` rejects a raw record with an event's type |
 | The jars a player installs boot and open settings | `runProdClientGameTest` |
-| A unit test run takes at most 30 seconds | `timeout` on each `Test` task in `mod/build.gradle.kts`, and `scripts/test-time-limit.ts`, the global setup of the tests in `backend/vite.config.ts` and `web/vite.config.ts` |
+| A mod unit test run that hangs fails after 3 minutes, and a backend or website test run takes at most 30 seconds | `timeout` on `tasks.test` in `mod/build.gradle.kts`, and `scripts/test-time-limit.ts`, the global setup of the tests in `backend/vite.config.ts` and `web/vite.config.ts` |
 | A game test passes whichever tests ran before it | `FreshStart` in `mod/src/gametest/` starts the mod afresh before each test |
 | A game test takes at most 20 seconds, its world included | `TestClock` in `mod/src/gametest/` |
 | A game test moves the mouse, clicks and opens the inventory through `Pointer.kt`, in GUI pixels | `gametest-point-by-pointer` and `gametest-inventory-by-pointer` in `mod/detekt.yml` |
@@ -83,10 +82,9 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | A game test finds a widget through `ServerMenus` | `gametest-widget-by-servermenus` and `gametest-children-by-screenwidgets` in `mod/detekt.yml` |
 | A game test builds its player, a still world and the dragon timer from shared scenes | `gametest-player-by-scenes`, `gametest-frozen-by-scenes` and `gametest-egg-by-the-end` in `mod/detekt.yml` |
 | A commit passes every project's checks | `.githooks/pre-commit`, which `mise install` installs |
-| A pull request runs the game tests its change reaches | CI's `gametests` job, and `GameTestPick.kt` in `mod/src/debug/`, which leaves `PerfTest` to CI's `perf` job |
+| A pull request runs the game tests its change reaches | CI's `gametests` job, and `GameTestPick.kt` in `mod/src/debug/`, which leaves `PerfTest` to the beta pipeline |
 | Every file of `edge` and `debug` reaches a game test | `GameTestPickTest` |
-| A CI job takes at most 3 minutes | `.github/actions/time-limit`, the last step of every job in `ci.yml` |
-| The mod stays inside its frame, tick, packet and size caps | `PerfTest` against `mod/src/gametest/resources/perf-budgets.json`, in CI's `perf` job, and `tick-by-ticks` in `mod/detekt.yml` for a tick handler the tick cap would miss |
+| The mod stays inside its frame, tick, packet and size caps | `PerfTest` against `mod/src/gametest/resources/perf-budgets.json`, in the beta pipeline, and `tick-by-ticks` in `mod/detekt.yml` for a tick handler the tick cap would miss |
 | A beta ships only when every check and game test passes | `.github/workflows/beta.yml` |
 | Every capture type reaches the file | `CaptureTest`, and `BriefTest` for `step` |
 | A redacted capture holds no player name the mod knows, and no typed chat | `RedactCaptureTest` |

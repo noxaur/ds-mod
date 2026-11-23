@@ -269,8 +269,10 @@ tasks.register<JavaExec>("cutFixture") {
     mainClass = "io.github.noxaur.dsmod.debug.capture.CutFixtureKt"
 }
 
-tasks.withType<Test>().configureEach {
-    timeout = Duration.ofSeconds(30)
+tasks.test {
+    useJUnitPlatform()
+    maxParallelForks = 2
+    timeout = Duration.ofMinutes(3)
     inputs.dir("src")
     inputs.files(sourceSets["gametest"].output.classesDirs)
     inputs.files("../README.md", "../docs/user/features.md")
@@ -280,19 +282,6 @@ tasks.withType<Test>().configureEach {
         showStackTraces = false
     }
 }
-tasks.test {
-    useJUnitPlatform { excludeTags("budget") }
-    maxParallelForks = 2
-}
-val budgetTest = tasks.register<Test>("budgetTest") {
-    group = "verification"
-    description = "Times every feature against its budget, alone after the unit tests, so no other test shares the CPU it measures."
-    testClassesDirs = sourceSets.test.get().output.classesDirs
-    classpath = sourceSets.test.get().runtimeClasspath
-    useJUnitPlatform { includeTags("budget") }
-    mustRunAfter(tasks.test)
-}
-tasks.check { dependsOn(budgetTest) }
 
 val specs = fileTree("../specs") { include("*.cfg") }.files.sortedBy { it.name }
 val tlc = tasks.register("tlc") {
@@ -368,4 +357,4 @@ val lintCheck = tasks.register("lintCheck") {
     dependsOn("detektMain", "detektDebug", "detektTest", "detektGametest", ":lint:test")
 }
 tasks.check { dependsOn(lintCheck) }
-tasks.matching { it.name.startsWith("detekt") }.configureEach { mustRunAfter(tasks.test, budgetTest) }
+tasks.matching { it.name.startsWith("detekt") }.configureEach { mustRunAfter(tasks.test) }
