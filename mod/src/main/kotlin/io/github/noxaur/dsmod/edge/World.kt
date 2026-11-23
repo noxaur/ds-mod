@@ -25,6 +25,8 @@ import net.minecraft.gizmos.GizmoProperties
 import net.minecraft.gizmos.GizmoStyle
 import net.minecraft.gizmos.Gizmos
 import net.minecraft.util.FormattedCharSequence
+import net.minecraft.locale.Language
+import net.minecraft.network.chat.FormattedText
 import net.minecraft.network.chat.Style
 import net.minecraft.util.ARGB
 import net.minecraft.util.LightCoordsUtil
@@ -32,6 +34,8 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import org.joml.Matrix4f
+import org.joml.Vector3f
+import kotlin.math.sqrt
 
 private const val BEAM_HEIGHT = 64.0
 private const val LINE_WIDTH = 2f
@@ -42,6 +46,9 @@ private const val TRACER_AHEAD = 1.0
 private const val NAME_TAG_SCALE = 0.025f
 private const val LINE = 10f
 private const val LABEL_GAP = 2f
+private const val STEEPEST = 0.25f
+private const val HALF_DIAGONAL = 0.71f
+private const val FILL_AHEAD = 1f
 
 object World {
     private lateinit var game: Game
@@ -69,7 +76,7 @@ object World {
     internal class WorldLabel(val name: String, val color: Int, private val distance: Boolean = true) {
         var meters = -1
         private val font get() = Minecraft.getInstance().font
-        val title: FormattedCharSequence? = name.takeIf { it.isNotEmpty() }?.let { FormattedCharSequence.forward(it, Style.EMPTY) }
+        val title: FormattedCharSequence? = name.takeIf { it.isNotEmpty() }?.let { Language.getInstance().getVisualOrder(FormattedText.of(it)) }
         val titleWidth = title?.let(font::width) ?: 0
         var meterLine: FormattedCharSequence? = null
         var meterWidth = 0
@@ -105,6 +112,8 @@ object World {
     internal var tracersShown = emptyList<ShownTracer>()
     private var frame: FrameBox? = null
     private var pixel = 0f
+    private val forward = Vector3f(0f, 0f, -1f)
+    private val up = Vector3f(0f, 1f, 0f)
 
     fun show(id: String, marks: List<Mark>) {
         beams[id] = marks.filterIsInstance<EntityBeam>().map { ShownBeam(it.entity, WorldLabel(it.label, it.role.argb())) }
@@ -156,7 +165,7 @@ object World {
                     is ShownWaypoint -> {
                         mark.label.at(camera.distanceTo(mark.at).toInt())
                         mark.box?.let { box -> Gizmos.cuboid(box.box, box.style).onTop(mark.onTop) }
-                        mark.top?.let { top -> Gizmos.line(above(mark.label, mark.labelAt, camera), top, mark.label.color, LINE_WIDTH * 2).onTop(mark.onTop) }
+                        mark.top?.let { top -> Gizmos.line(above(mark.label, mark.labelAt, camera, mark.box != null), top, mark.label.color, LINE_WIDTH * 2).onTop(mark.onTop) }
                     }
                 }
             }
@@ -181,7 +190,7 @@ object World {
             val top = at.add(0.0, entity.bbHeight.toDouble(), 0.0)
             mark.label.at(eye.distanceTo(at).toInt())
             mark.labelAt = top
-            Gizmos.line(above(mark.label, top, eye), top.add(0.0, BEAM_HEIGHT, 0.0), mark.label.color, LINE_WIDTH * 2).setAlwaysOnTop()
+            Gizmos.line(above(mark.label, top, eye, false), top.add(0.0, BEAM_HEIGHT, 0.0), mark.label.color, LINE_WIDTH * 2).setAlwaysOnTop()
         }
         if (tracersShown.isEmpty()) return
         val forward = camera.forwardVector()
@@ -208,20 +217,22 @@ object World {
         val client = Minecraft.getInstance()
         val camera = context.levelState().cameraRenderState
         pixel = client.window.guiScale.toFloat() * 2f / (client.window.height * camera.projectionMatrix.m11())
+        camera.orientation.transform(forward.set(0f, 0f, -1f))
+        camera.orientation.transform(up.set(0f, 1f, 0f))
         for (i in shown.indices) {
             val mark = shown[i] as? ShownWaypoint ?: continue
-            label(context, camera.pos, camera.orientation, mark.label, mark.labelAt, mark.onTop)
+            label(context, camera.pos, camera.orientation, mark.label, mark.labelAt, mark.onTop, mark.box != null)
         }
         for (i in beamsShown.indices) {
             val mark = beamsShown[i]
-            label(context, camera.pos, camera.orientation, mark.label, mark.labelAt ?: continue, true)
+            label(context, camera.pos, camera.orientation, mark.label, mark.labelAt ?: continue, true, false)
         }
         // @keep A miss label says why the warp fails, often a block in the way, so it shows through that block.
-        frame?.let { box -> box.label?.let { label(context, camera.pos, camera.orientation, it, box.top, true) } }
+        frame?.let { box -> box.label?.let { label(context, camera.pos, camera.orientation, it, box.top, true, true) } }
         frame = null
     }
 
-    private fun label(context: LevelRenderContext, eye: Vec3, facing: org.joml.Quaternionfc, label: WorldLabel, at: Vec3, onTop: Boolean) {
+    private fun label(context: LevelRenderContext, eye: Vec3, facing: org.joml.Quaternionfc, label: WorldLabel, at: Vec3, onTop: Boolean, boxed: Boolean) {
         if (label.lines == 0) return
         val scale = scale(eye, at)
         val pose = context.poseStack()
@@ -229,7 +240,7 @@ object World {
         pose.translate(at.x - eye.x, at.y - eye.y, at.z - eye.z)
         pose.mulPose(facing)
         pose.scale(scale, -scale, scale)
-        var y = -label.lines * LINE - LABEL_GAP
+        var y = -label.lines * LINE - LABEL_GAP - lift(boxed) / scale
         label.title?.let { title ->
             line(context, pose, onTop, -label.titleWidth / 2f, y, title, label.color, label.titleEdge)
             y += LINE
@@ -242,19 +253,39 @@ object World {
      * before Sodium's terrain, which would paint over it. */
     private fun line(context: LevelRenderContext, pose: PoseStack, onTop: Boolean, x: Float, y: Float, text: FormattedCharSequence, color: Int, edge: Int) {
         val last = (context.submitNodeCollector().order(0) as? SubmitNodeCollection)?.alwaysOnTop?.takeIf { onTop }
-        if (last == null) {
-            val mode = if (onTop) Font.DisplayMode.SEE_THROUGH else Font.DisplayMode.NORMAL
-            return context.submitNodeCollector().submitText(pose, x, y, text, false, mode, LightCoordsUtil.FULL_BRIGHT, color, 0, edge)
+        fun submit(edge: Int) {
+            if (last == null) {
+                val mode = if (onTop) Font.DisplayMode.SEE_THROUGH else Font.DisplayMode.NORMAL
+                return context.submitNodeCollector().submitText(pose, x, y, text, false, mode, LightCoordsUtil.FULL_BRIGHT, color, 0, edge)
+            }
+            last.submit(TextFeatureRenderer.Submit(Matrix4f(pose.last().pose()), x, y, text, false, Font.DisplayMode.SEE_THROUGH, LightCoordsUtil.FULL_BRIGHT, color, 0, edge))
         }
-        last.submit(TextFeatureRenderer.Submit(Matrix4f(pose.last().pose()), x, y, text, false, Font.DisplayMode.SEE_THROUGH, LightCoordsUtil.FULL_BRIGHT, color, 0, edge))
+        submit(edge)
+        // @keep Text quads are sorted far to near, and from a slant the outline's shifted copies can sort after the letters and bury them, so the letters are drawn again a little nearer.
+        pose.pushPose()
+        pose.translate(0f, 0f, FILL_AHEAD)
+        submit(0)
+        pose.popPose()
     }
 
-    private fun scale(eye: Vec3, at: Vec3) = (pixel * eye.distanceTo(at).toFloat()).coerceAtLeast(NAME_TAG_SCALE)
+    /** @keep A camera looking down sees a box's top face rise above its middle, up to the corner half a diagonal away, so a
+     * label over a box rises with it and stays off the face. */
+    private fun lift(boxed: Boolean) = if (boxed) HALF_DIAGONAL * sqrt(up.x * up.x + up.z * up.z) else 0f
 
-    /** @keep A beam rises from the top of its label, so it never crosses the text. The label's size on screen is fixed, so its
-     * height in the world follows the distance, which a tick's beam takes from the last frame. */
-    private fun above(label: WorldLabel, at: Vec3, eye: Vec3): Vec3 =
-        if (label.lines == 0) at else at.add(0.0, ((label.lines * LINE + LABEL_GAP + 2) * scale(eye, at)).toDouble(), 0.0)
+    // @keep Perspective shrinks a thing by its depth along the view, so a label at the edge of the screen keeps the size of one in the middle.
+    private fun scale(eye: Vec3, at: Vec3): Float {
+        val depth = (at.x - eye.x) * forward.x + (at.y - eye.y) * forward.y + (at.z - eye.z) * forward.z
+        return (pixel * depth.toFloat()).coerceAtLeast(NAME_TAG_SCALE)
+    }
+
+    /** @keep A beam rises from the top of its label, so it never crosses the text. The label faces the camera and the beam
+     * stands upright, so a camera looking down sees the beam shortened and it starts higher to clear the label, up to four
+     * times as high when the camera looks straight down at it. A tick's beam takes the camera from the last frame. */
+    private fun above(label: WorldLabel, at: Vec3, eye: Vec3, boxed: Boolean): Vec3 {
+        if (label.lines == 0) return at
+        val height = ((label.lines * LINE + LABEL_GAP + 2) * scale(eye, at) + lift(boxed)) / up.y.coerceAtLeast(STEEPEST)
+        return at.add(0.0, height.toDouble(), 0.0)
+    }
 
     // @keep Vanilla's glowing sign darkens its text color to 40% for the outline.
     private fun outline(color: Int) = ARGB.opaque(ARGB.scaleRGB(color, 0.4f))

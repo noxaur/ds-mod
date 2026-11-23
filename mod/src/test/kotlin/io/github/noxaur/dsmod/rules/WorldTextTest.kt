@@ -5,9 +5,13 @@ import com.tngtech.archunit.base.DescribedPredicate.describe
 import com.tngtech.archunit.core.domain.JavaAccess
 import com.tngtech.archunit.core.domain.JavaClass
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses
+import net.minecraft.client.gui.Font
+import net.minecraft.client.renderer.feature.TextFeatureRenderer
 import net.minecraft.gizmos.Gizmos
 import net.minecraft.gizmos.TextGizmo
+import net.minecraft.util.FormattedCharSequence
 import net.minecraft.world.phys.Vec3
+import org.joml.Matrix4f
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -19,6 +23,8 @@ private val worldText = setOf(
     "net.minecraft.client.renderer.SubmitNodeCollector" to "submitNameTag",
     "net.minecraft.client.renderer.OrderedSubmitNodeCollector" to "submitText",
     "net.minecraft.client.renderer.OrderedSubmitNodeCollector" to "submitNameTag",
+    "net.minecraft.client.renderer.feature.TextFeatureRenderer\$Submit" to "<init>",
+    "net.minecraft.client.renderer.feature.NameTagFeatureRenderer\$Submit" to "<init>",
 )
 
 private val drawsWorldText = describe<JavaAccess<*>>("draws text in the world") { access ->
@@ -31,6 +37,9 @@ private fun worldText(classes: DescribedPredicate<JavaClass>) = noClasses().that
 )
 
 private class Gizmo { fun run() = Gizmos.billboardText("Nest", Vec3.ZERO, TextGizmo.Style.whiteAndCentered()) }
+private class DirectSubmit {
+    fun run() = TextFeatureRenderer.Submit(Matrix4f(), 0f, 0f, FormattedCharSequence.EMPTY, false, Font.DisplayMode.NORMAL, 0, 0, 0, 0)
+}
 private class NoGizmoText { fun run() = Gizmos.line(Vec3.ZERO, Vec3.ZERO, 0) }
 
 class WorldTextTest {
@@ -41,6 +50,6 @@ class WorldTextTest {
 
     @Test
     fun `the rule catches world text drawn outside World`() {
-        assertEquals(listOf(Gizmo::class.java), flags(::worldText, Gizmo::class.java, NoGizmoText::class.java))
+        assertEquals(listOf(Gizmo::class.java, DirectSubmit::class.java), flags(::worldText, Gizmo::class.java, DirectSubmit::class.java, NoGizmoText::class.java))
     }
 }

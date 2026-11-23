@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.feature.general.Waypoints
+import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Colors
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.waypoint.SavedWaypoint
@@ -69,6 +70,17 @@ class WaypointsTest : FabricClientGameTest {
         val shot = context.screenshot("waypoints-looks")
         check(countNear(shot, BURIED and 0xFFFFFF) > 20) { "The label of a waypoint shown through walls is hidden by the ground over it" }
         context.checkClient("The saved waypoints are not all drawn") { World.shown.size >= WaypointLook.entries.size + 1 }
+        // @keep Looking down at a beam close by, where the beam is shortened most and must still start above its label.
+        context.runOnClient<Nothing> { client ->
+            val player = checkNotNull(client.player)
+            waypoints.saved.value = listOf(SavedWaypoint("Below", player.blockX, player.blockY - 3, player.blockZ + 4, color = 0xC0FFAA00.toInt()))
+        }
+        context.input.lookAt(0f, 50f)
+        context.waitTicks(10)
+        val down = context.screenshot("waypoints-looking-down")
+        val muted = countNear(down, Role.MUTED.rgb, tolerance = 6)
+        check(muted > 60) { "The distance under a label seen from above is buried under its own outline: $muted muted pixels" }
+        context.input.lookAt(0f, 0f)
         context.runOnClient<Nothing> { clear() }
     }
 
