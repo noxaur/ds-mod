@@ -26,7 +26,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | Rule | Enforced by |
 | --- | --- |
 | No code, config or spec holds a comment, but an exception the user agreed to | `scripts/comments.ts` against `comments.txt`, in `check:comments` |
-| `docs/internals/` names no code, and holds one short paragraph per decision | `check:docs` in `mise.toml` |
+| `docs/internals/` names no code, and holds one short paragraph per decision | `scripts/docs.ts`, in `check:docs` |
 | `core` names nothing from Minecraft, Fabric, Mojang or `edge`, even by full name | `PurityTest` reads the compiled classes |
 | The edge is handed what it uses by `DsModClient`, the one place that wires the mod, and only the mixins and the entrypoints reach `Hooks` | `OwnersTest` reads the compiled classes |
 | Each place the release build sends or refuses input for the player is approved | Only `edge/input` and mixins touch input, and `InputSitesTest` checks the `@InputApproved` on each gate and caller. The agent asks the user before it keeps a site that sends, refuses or triggers anything new |
