@@ -16,7 +16,7 @@ runs:
         WARM: ${{ inputs.warm }}
         LIMIT: ${{ inputs.seconds }}
       run: |
-        started=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs" \
+        started=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" \
           --jq ".jobs[] | select(.runner_name == \"$RUNNER_NAME\") | .started_at")
         took=$(( $(date +%s) - $(date -d "$started" +%s) ))
         echo "$GITHUB_JOB took ${took}s of ${LIMIT}s." | tee -a "$GITHUB_STEP_SUMMARY"

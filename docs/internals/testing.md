@@ -20,7 +20,7 @@ Fast and smooth is checked, not promised. A perf test boots the jars a player in
 
 ## A pull request runs every game test its change reaches
 
-The game takes long to boot, so a pull request runs only the tests its change reaches, found from the classes the compiled code names, split into jobs of eight that run side by side. Matching words in the source was rejected, because pruning comments turned tests off, an agent naming the tests because it was skipped or answered wrong, and recording what each test runs because the central classes run in every test. One smoke test past eight was rejected, because agents then ran the whole suite on the user's machine.
+The game takes long to boot, so a pull request runs only the tests its change reaches, found from the classes the compiled code names, split into jobs that run side by side, each small enough for CI's time limit. Matching words in the source was rejected, because pruning comments turned tests off, an agent naming the tests because it was skipped or answered wrong, and recording what each test runs because the central classes run in every test. One smoke test past a job's worth was rejected, because agents then ran the whole suite on the user's machine.
 
 ## A game test runs behind the developer
 

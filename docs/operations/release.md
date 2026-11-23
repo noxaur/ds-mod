@@ -4,7 +4,7 @@ What runs on a pull request, on `main`, and before a beta reaches players. Why C
 
 ## CI
 
-`.github/workflows/ci.yml` runs on every pull request and on `main`. It runs each `check:` task in its own job, with the mod's lint (`./gradlew lintCheck`) in a `lint` job of its own, and `gametests` jobs that run the game tests the change reaches, split by a `pick` job into jobs of eight. `PerfTest` runs only in the beta pipeline.
+`.github/workflows/ci.yml` runs on every pull request and on `main`. It runs each `check:` task in its own job, with the mod's lint (`./gradlew lintCheck`) in a `lint` job of its own, and `gametests` jobs that run the game tests the change reaches, split by a `pick` job into jobs that run side by side. `PerfTest` runs only in the beta pipeline.
 
 A pull request that adds a `@Suppress` or an `eslint-disable` gets the `human review needed` label from `.github/workflows/label.yml`, whose `suppressions` job fails until the body names each one's `file:line` and says why it is there.
 

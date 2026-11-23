@@ -19,8 +19,8 @@ const val PERF_TEST = "io.github.noxaur.dsmod.gametest.PerfTest"
 
 private const val HUB = 12
 
-/** @keep A test takes 8 seconds on a CI runner, and the boot leaves a job about 70 of its 180, so CI splits the picked tests into jobs of this many. */
-const val TESTS_PER_JOB = 8
+/** @keep A test takes about 10 seconds on a CI runner, and the build and boot leave a job about 60 of its 180, so CI splits the picked tests into jobs of this many. */
+const val TESTS_PER_JOB = 5
 
 private const val GAME_TEST = "net/fabricmc/fabric/api/client/gametest/v1/FabricClientGameTest"
 private val BUILD = listOf("build.gradle.kts", "settings.gradle.kts", "gradle.properties", "gradle/", "src/gametest/fabric.mod.json")
