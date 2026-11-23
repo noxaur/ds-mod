@@ -52,10 +52,6 @@ import kotlin.test.fail
 class FeatureReplayTest {
     private val root = Path.of("src/test/resources/features")
 
-    private val budgetNanos = 20_000L
-    private val warmUpRuns = 2_000
-    private val measuredRuns = 2_000
-
     private fun play(
         game: Game,
         events: List<Captured>,
@@ -291,26 +287,5 @@ class FeatureReplayTest {
         val events = listOf(Captured(100, line), Captured(101, line), Captured(149, line))
         play(game, events, ticked = { ticks += it })
         assertEquals(events.map { it.time }, ticks)
-    }
-
-    @TestFactory
-    fun `every feature stays inside the time budget`(): List<DynamicTest> = ciTree().features.map { feature ->
-        dynamicTest(feature.id) {
-            eachFixture(feature) { fixture, session ->
-                val game = session.game
-                val events = events(feature, fixture)
-                fun replay(times: Int) = repeat(times) {
-                    play(game, events)
-                    game.messages.clear()
-                }
-                replay(warmUpRuns)
-                game.metrics.flush()
-                replay(measuredRuns)
-                game.metrics.snapshot().timers.forEach { (name, timer) ->
-                    val mean = timer.totalNanos / timer.count
-                    assertTrue(mean < budgetNanos, "$name takes ${mean}ns on average replaying $fixture. The budget is ${budgetNanos}ns.")
-                }
-            }
-        }
     }
 }

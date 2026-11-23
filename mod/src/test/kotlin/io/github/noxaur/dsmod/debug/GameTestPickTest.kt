@@ -99,7 +99,7 @@ class GameTestPickTest {
     }
 
     @Test
-    fun `a pick leaves out the perf test, which CI's perf job runs on every pull request`() {
+    fun `a pick leaves out the perf test, which the beta runs`() {
         val timed = with("gametest/PerfTest" to listOf("edge/Chat"))
         assertEquals(PERF_TEST, test("gametest/PerfTest"))
         assertEquals(Picked(setOf(test("gametest/ChatTest")), emptyList()), pickGameTests(timed, listOf(path("edge/Chat"))))
