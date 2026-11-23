@@ -10,6 +10,7 @@ postinstall = "git config core.hooksPath .githooks"
 [tasks."check:mod"]
 dir = "mod"
 run = "./gradlew check"
+run_windows = '.\gradlew.bat check'
 
 [tasks."check:backend"]
 dir = "backend"
@@ -20,35 +21,10 @@ dir = "web"
 run = ["pnpm install --frozen-lockfile", "pnpm check"]
 
 [tasks."check:docs"]
-dir = "docs"
-run = '''
-fail=0
-for page in $(find user internals operations -name '*.md' | sort); do
-  grep -qF "($page)" README.md || { echo "docs/README.md:1: link $page here with one line on what it covers"; fail=1; }
-done
-if grep -nHEi '^#+ +(add|how to|write|run|check|verify|test)s?( |$)' internals/*.md; then
-  echo "docs/internals records why, not steps. Move the recipe to docs/operations/."
-  fail=1
-fi
-decisions=$(ls internals/*.md | grep -v glossary.md)
-if grep -nH '`' $decisions; then
-  echo "docs/internals records decisions in the domain's words, so it names no code. Say what was decided and why, and let the source show how."
-  fail=1
-fi
-long=$(awk 'function out() { if (n > 600) print file ":" head ": cut this section to one paragraph of at most 600 characters: the decision, the constraint that decided it and the alternative it rejected. A limitation is an issue, not a section." } FNR == 1 { out(); n = 0; head = 1; file = FILENAME } /^#/ { out(); n = 0; head = FNR; next } { n += length($0) } END { out() }' $decisions)
-if [ -n "$long" ]; then
-  echo "$long"
-  fail=1
-fi
-if grep -nHwi 'your' operations/*.md; then
-  echo "docs/operations is read by an agent. The machine, desktop and accounts are the user's, so write \"the user's\"."
-  fail=1
-fi
-exit $fail
-'''
+run = "node scripts/docs.ts"
 
 [tasks."check:comments"]
-run = ["node --test 'scripts/*.test.ts'", "node scripts/comments.ts"]
+run = ['node --test "scripts/*.test.ts"', "node scripts/comments.ts"]
 
 [tasks.check]
 description = "Runs every project's checks"
