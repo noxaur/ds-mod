@@ -18,7 +18,7 @@ We can't compromise on these.
 - Before adding complexity for a speculative or vanishingly unlikely race or edge case, explain the concrete failure mode, likelihood and complexity cost to the user and get their buy-in.
 - If a short request has two possible meanings, ask one question before you start.
 - Call a bug fixed only when a test, log or capture shows it.
-- A rule in prose gets skipped, so turn a repeated mistake into a check. See Rules.
+- Stop a repeated mistake with a check whose failure prints the fix, never with a sentence in a doc or a skill.
 
 ## Layout
 
@@ -29,7 +29,7 @@ We can't compromise on these.
 | `web/` | The website, in Next.js with Effect | `web/AGENTS.md` |
 | `api/` | `openapi.json`, the REST contract between the mod, the backend and the website | API |
 | `specs/` | TLA+ specs for any project | Formal specs |
-| `scripts/` | Checks that span every project | Rules |
+| `scripts/` | Checks that span every project | Checks |
 | `docs/` | Guides for players and contributors, and the reasons behind the code | The `docs` skill |
 
 "Server" means dragsim.co. Our own service is the backend. Skills sit in `.claude/skills/` beside the `AGENTS.md` that names them.
@@ -46,10 +46,6 @@ We can't compromise on these.
 ## Docs
 
 Before you change an area, read its page in `docs/internals/`. Most code changes need no doc change. Update the page when a change alters a decision it records, or how a player uses a feature, and load the `docs` skill first.
-
-## Rules
-
-Every rule is enforced by a check, and a failure prints the fix. When a mistake happens a second time, or before you add, change or remove a check or an exception, load the `rules` skill.
 
 ## Checks
 
