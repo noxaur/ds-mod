@@ -11,17 +11,18 @@ postinstall = "git config core.hooksPath .githooks"
 description = "Builds the mod and puts it in a game folder"
 dir = "mod"
 usage = '''
-arg "<path>" help="The game folder, such as a Prism instance's minecraft folder, or its mods folder"
+arg "<game>" help="An instance as launcher/name, such as prism/Skyblock or lunar/Fabric, minecraft for the official launcher, or the path of a game folder or its mods folder"
+complete "game" run="mise exec -- node {{config_root}}/scripts/instances.ts"
 arg "[build]" default="prod" help="prod: the release jar, against the deployed backend. dev: the debug jar, against the local backend" {
   choices "prod" "dev"
 }
 '''
 run = '''
-case "$usage_path" in /*) game=$usage_path ;; *) game=$MISE_ORIGINAL_CWD/$usage_path ;; esac
+mods=$(node ../scripts/instances.ts "$usage_game") || exit 1
 if [ "$usage_build" = prod ]; then
-  ./gradlew installMod -Pgame="$game" -Pbackend_url=https://api.ds-mod.perwko.com -Pwebsite_url=https://ds-mod.perwko.com
+  ./gradlew installMod -Pmods="$mods" -Pbackend_url=https://api.ds-mod.perwko.com -Pwebsite_url=https://ds-mod.perwko.com
 else
-  ./gradlew installMod -Pgame="$game" -Pjar=debug
+  ./gradlew installMod -Pmods="$mods" -Pjar=debug
 fi
 '''
 
