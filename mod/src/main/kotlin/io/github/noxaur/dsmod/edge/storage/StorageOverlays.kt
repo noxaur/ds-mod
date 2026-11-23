@@ -166,7 +166,7 @@ object StorageOverlays {
         }
     }
 
-    @InputApproved(reaches = ["SlotPlaces.move"])
+    @InputApproved(by = "noxaur", reaches = ["SlotPlaces.move"])
     private fun restore(was: Original) {
         val screen = was.screen
         screen.imageWidth = was.width
