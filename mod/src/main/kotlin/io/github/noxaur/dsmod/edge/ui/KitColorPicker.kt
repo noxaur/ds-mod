@@ -24,7 +24,7 @@ class KitColorPicker(
     private val onClose: () -> Unit,
     private val recent: RecentColors,
 ) : AbstractWidget(0, 0, PAD * 2 + WIDTH, 0, plain("Color")) {
-    private val pick = ColorPick(start)
+    internal val pick = ColorPick(start)
     internal val swatches = recent.colors + Colors.PRESETS
     private val recentRows = (recent.colors.size + PER_ROW - 1) / PER_ROW
     private val swatchRows = recentRows + (Colors.PRESETS.size + PER_ROW - 1) / PER_ROW
@@ -107,8 +107,14 @@ class KitColorPicker(
         val field = typing() ?: return
         field.setFocused(false)
         if (field.value == shown(field)) return sync()
-        val next = if (field === hex) Colors.parseHex(hex.value, Colors.alpha(pick.argb)) else Colors.parseOpacity(percent.value)?.let { Colors.withOpacity(pick.argb, it) }
-        if (next != null && next != pick.argb) choose(next) else sync()
+        if (field === hex) {
+            val next = Colors.parseHex(hex.value, Colors.alpha(pick.argb))
+            if (next != null && next != pick.argb) choose(next) else sync()
+            return
+        }
+        val opacity = Colors.parseOpacity(percent.value) ?: return sync()
+        pick.opacityAt(Colors.alpha(Colors.withOpacity(pick.argb, opacity)) / 255.0)
+        changed()
     }
 
     private fun cancel() {

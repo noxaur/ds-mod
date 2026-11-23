@@ -25,6 +25,8 @@ class ColorPickerTest : FabricClientGameTest {
 
         private fun picker() = context.computeOnClient<KitColorPicker?, Nothing> { rows().picker() }
 
+        private fun hue() = context.computeOnClient<Float, Nothing> { picker()?.hue() ?: error("The picker closed") }
+
         private fun open(): KitColorPicker {
             val row = context.computeOnClient<Spot, Nothing> { rows().spot("color")!! }
             click(row.controlX + 8, row.controlY + 8)
@@ -57,6 +59,13 @@ class ColorPickerTest : FabricClientGameTest {
 
             click(p.left, p.hueY + 4)
             expect("A press on the hue strip's start", 0xFFFF0000.toInt())
+            click(right, p.hueY + 4)
+            val end = hue()
+            click(p.left + KitColorPicker.HEX_WIDTH + 8, p.rowY + 8)
+            context.input.typeChars("50")
+            key(GLFW.GLFW_KEY_ENTER)
+            check(hue() == end) { "Typing an opacity moved the hue from $end to ${hue()}" }
+            click(p.left, p.hueY + 4)
             click(p.left, p.opacityY + 4)
             expect("A press on the opacity strip's start", 0x00FF0000)
             move(p.left + 20, p.opacityY + 4)

@@ -140,4 +140,6 @@ private fun <T> reset(slot: Slot<T>) {
 
 fun SettingRows.picker() = menu as? KitColorPicker
 
+fun KitColorPicker.hue() = pick.hue
+
 fun AbstractWidget.narrated(): String = ScreenNarrationCollector().apply { update(::updateNarration) }.collectNarrationText(true)
