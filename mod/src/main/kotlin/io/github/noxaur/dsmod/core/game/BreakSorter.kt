@@ -20,7 +20,7 @@ class BreakSorter {
     // @keep The player is digging this block in this tick.
     fun dig(x: Int, y: Int, z: Int) = mark(dug, x, y, z)
 
-    // @keep The player holds right click on this block in this tick.
+    // @keep The player right-clicked this block in this tick.
     fun use(x: Int, y: Int, z: Int) = mark(used, x, y, z)
 
     fun changed(x: Int, y: Int, z: Int, was: String, now: String) {

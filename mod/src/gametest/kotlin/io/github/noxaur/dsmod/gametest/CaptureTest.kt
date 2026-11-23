@@ -157,6 +157,12 @@ class CaptureTest : FabricClientGameTest {
             world.server.runCommand("execute as @a at @s anchored eyes positioned ^ ^ ^2 run setblock ~ ~ ~ minecraft:bedrock")
             world.server.runCommand("execute at @a run setblock ~5 ~ ~ minecraft:bedrock")
             context.waitTicks(2)
+            // @keep Pickobulus is a right click on a block, and the server breaks the blocks around it a few ticks later.
+            world.server.runCommand("execute as @a at @s anchored eyes positioned ^ ^ ^2 run fill ~ ~ ~ ~ ~1 ~ minecraft:end_stone")
+            context.waitTicks(2)
+            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT)
+            world.server.runCommand("execute as @a at @s anchored eyes positioned ^ ^ ^2 run setblock ~ ~1 ~ minecraft:bedrock")
+            context.waitTicks(2)
             world.server.runOnServer<Nothing> { it.playerList.broadcastAll(ClientboundTabListPacket(Component.literal("Dragon Sim"), Component.literal("dragsim.co"))) }
             context.waitTicks(40)
             world.server.runCommand("execute in minecraft:the_nether run tp @a 0 100 0")
@@ -178,8 +184,8 @@ class CaptureTest : FabricClientGameTest {
             }
         }
         val broken = byType["broken"].orEmpty()
-        check(broken.any { "obsidian" in it && "\"by\":\"PLAYER\"" in it } && broken.any { "end_stone" in it && "\"by\":\"OTHER\"" in it }) {
-            "The block the player dug should break by PLAYER, and the other by OTHER: $broken"
+        check(listOf("PLAYER", "WITH_PLAYER", "OTHER").all { by -> broken.any { "\"by\":\"$by\"" in it } }) {
+            "The block the player dug should break by PLAYER, the one beside the block they right-clicked WITH_PLAYER, and the other OTHER: $broken"
         }
         check(byType["death"].orEmpty().none { "Leaver" in it }) { "The mob that left was recorded as dead: ${byType["death"]}" }
         check(byType["unload"].orEmpty().none { "Leaver" in it && "KILLED" in it }) { "The mob that left was recorded as killed: ${byType["unload"]}" }
