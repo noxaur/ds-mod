@@ -85,7 +85,9 @@ class FeatureReplayTest {
         }
     }
 
-    private val owners = SettingsTree().owners.associate { it.feature.id to it::class }
+    private fun ciTree() = SettingsTree(mac = false)
+
+    private val owners = ciTree().owners.associate { it.feature.id to it::class }
 
     private fun fresh(id: String) = object : Harness(alone = owners.getValue(id)) {}.also { it.readout().feature.enabled = true }
 
@@ -101,7 +103,7 @@ class FeatureReplayTest {
             feature.handlers.isEmpty() && !feature.hasHud,
             "${feature.id} has no fixture. Put an excerpt of a capture at $dir/<name>.jsonl.",
         )
-        val owner = SettingsTree().owners.single { it.feature.id == feature.id }
+        val owner = ciTree().owners.single { it.feature.id == feature.id }
         val gameTest = Path.of("src/gametest/kotlin/io/github/noxaur/dsmod/gametest/${owner.javaClass.simpleName}Test.kt")
         assertTrue(gameTest.exists(), "${feature.id} reads nothing from the server, so it needs a game test at $gameTest.")
         return fixtures
@@ -145,7 +147,7 @@ class FeatureReplayTest {
     }
 
     @TestFactory
-    fun `every feature shows what its transcript says`(): List<DynamicTest> = SettingsTree().features.map { feature ->
+    fun `every feature shows what its transcript says`(): List<DynamicTest> = ciTree().features.map { feature ->
         dynamicTest(feature.id) {
             val written = ArrayList<Path>()
             eachFixture(feature) { fixture, session ->
@@ -239,7 +241,7 @@ class FeatureReplayTest {
 
     @TestFactory
     fun `a feature locked to an area does nothing outside it`(): List<DynamicTest> =
-        SettingsTree().features.filter { it.area != Area.ANYWHERE }.map { feature ->
+        ciTree().features.filter { it.area != Area.ANYWHERE }.map { feature ->
             dynamicTest(feature.id) {
                 val untouched = feature.state?.encode()
                 eachFixture(feature) { fixture, session ->
@@ -265,7 +267,7 @@ class FeatureReplayTest {
 
     @Test
     fun `play ticks once for the events of one recorded client tick`() {
-        val game = fresh(SettingsTree().features.first().id).game
+        val game = fresh(ciTree().features.first().id).game
         val death = chat("Zealot was slain")
         val bar = ActionBar(text("Kills: 4"))
         val ticks = ArrayList<Long>()
@@ -283,7 +285,7 @@ class FeatureReplayTest {
 
     @Test
     fun `play ticks after every event when the capture recorded no client tick`() {
-        val game = fresh(SettingsTree().features.first().id).game
+        val game = fresh(ciTree().features.first().id).game
         val line = chat("hello")
         val ticks = ArrayList<Long>()
         val events = listOf(Captured(100, line), Captured(101, line), Captured(149, line))
@@ -292,7 +294,7 @@ class FeatureReplayTest {
     }
 
     @TestFactory
-    fun `every feature stays inside the time budget`(): List<DynamicTest> = SettingsTree().features.map { feature ->
+    fun `every feature stays inside the time budget`(): List<DynamicTest> = ciTree().features.map { feature ->
         dynamicTest(feature.id) {
             eachFixture(feature) { fixture, session ->
                 val game = session.game
