@@ -60,6 +60,29 @@ test("finds the official launcher's folder and the Fabric instances of Prism, Mu
   );
 });
 
+test("picks the game folder each launcher loads, before the game has made it", () => {
+  const at = machine({
+    ".local/share/PrismLauncher/instances/Both/mmc-pack.json": fabricPack,
+    ".local/share/PrismLauncher/instances/Both/minecraft/": "",
+    ".local/share/PrismLauncher/instances/Both/.minecraft/": "",
+    ".local/share/PrismLauncher/instances/Fresh/mmc-pack.json": fabricPack,
+    "MultiMC/multimc.cfg": "",
+    "MultiMC/instances/Both/mmc-pack.json": fabricPack,
+    "MultiMC/instances/Both/minecraft/": "",
+    "MultiMC/instances/Both/.minecraft/": "",
+    "MultiMC/instances/Fresh/mmc-pack.json": fabricPack,
+  });
+  assert.deepEqual(
+    instances(at),
+    new Map([
+      ["prism/Both", join(at.home, ".local/share/PrismLauncher/instances/Both/minecraft/mods")],
+      ["prism/Fresh", join(at.home, ".local/share/PrismLauncher/instances/Fresh/minecraft/mods")],
+      ["multimc/Both", join(at.home, "MultiMC/instances/Both/.minecraft/mods")],
+      ["multimc/Fresh", join(at.home, "MultiMC/instances/Fresh/.minecraft/mods")],
+    ]),
+  );
+});
+
 test("follows the instance folder that Prism's and CurseForge's settings name", () => {
   const at = machine({ "AppData/Roaming/PrismLauncher/prismlauncher.cfg": "[General]\nInstanceDir=elsewhere\n", "AppData/Roaming/PrismLauncher/elsewhere/Skyblock/mmc-pack.json": fabricPack, "AppData/Roaming/PrismLauncher/elsewhere/Skyblock/minecraft/": "" }, "win32");
   const moved = join(at.home, "D/modding");

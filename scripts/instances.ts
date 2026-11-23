@@ -53,6 +53,11 @@ const folders = (dir: string) => {
 
 const firstExisting = (paths: string[]) => paths.find(existsSync);
 
+const gameIn = (instance: string, preferred: "minecraft" | ".minecraft") => {
+  const other = preferred === "minecraft" ? ".minecraft" : "minecraft";
+  return join(instance, existsSync(join(instance, other)) && !existsSync(join(instance, preferred)) ? other : preferred);
+};
+
 const loadsFabric = (loader: unknown) => typeof loader === "string" && /^(legacy)?(fabric|quilt)/i.test(loader);
 
 const appDirs = ({ home, platform, env }: Machine, app: string, flatpak?: string) => {
@@ -62,32 +67,31 @@ const appDirs = ({ home, platform, env }: Machine, app: string, flatpak?: string
   return [join(env["XDG_DATA_HOME"] ?? join(home, ".local", "share"), app), join(env["XDG_CONFIG_HOME"] ?? join(home, ".config"), app), ...sandbox];
 };
 
-const multiMcFormat = (data: string, cfg: string): Instance[] => {
+const multiMcFormat = (data: string, cfg: string, preferred: "minecraft" | ".minecraft"): Instance[] => {
   const setting = /^InstanceDir=(.+)$/m.exec(read(join(data, cfg)))?.[1]?.trim() ?? "instances";
   return folders(isAbsolute(setting) ? setting : join(data, setting)).flatMap(({ name, path }) => {
     const pack = json(join(path, "mmc-pack.json"));
-    const game = firstExisting([join(path, ".minecraft"), join(path, "minecraft")]);
     const fabric = pack?.components?.some((component: { uid?: string }) => component.uid === "net.fabricmc.fabric-loader" || component.uid === "org.quiltmc.quilt-loader");
-    return fabric && game !== undefined ? [{ name, game }] : [];
+    return fabric ? [{ name, game: gameIn(path, preferred) }] : [];
   });
 };
 
 const launchers: Record<string, (machine: Machine) => Instance[]> = {
   prism: (machine) =>
     [...(machine.env["PRISMLAUNCHER_DATA_DIR"] ? [machine.env["PRISMLAUNCHER_DATA_DIR"]] : []), ...appDirs(machine, "PrismLauncher", "org.prismlauncher.PrismLauncher"), join(machine.home, "snap", "prismlauncher", "common")].flatMap(
-      (data) => multiMcFormat(data, "prismlauncher.cfg"),
+      (data) => multiMcFormat(data, "prismlauncher.cfg", "minecraft"),
     ),
   multimc: (machine) =>
     (machine.platform === "darwin" ? ["/Applications", join(machine.home, "Applications")].map((apps) => join(apps, "MultiMC.app", "Data")) : machine.platform === "win32" ? [] : [join(machine.env["XDG_DATA_HOME"] ?? join(machine.home, ".local", "share"), "multimc")])
       .concat(join(machine.home, "MultiMC"))
       .filter((data) => existsSync(join(data, "multimc.cfg")))
-      .flatMap((data) => multiMcFormat(data, "multimc.cfg")),
+      .flatMap((data) => multiMcFormat(data, "multimc.cfg", ".minecraft")),
   modrinth: (machine) =>
     appDirs(machine, "ModrinthApp", "com.modrinth.ModrinthApp").flatMap((data) => {
       const db = join(data, "app.db");
       const root = rows(db, "SELECT custom_dir FROM settings LIMIT 1")[0]?.custom_dir?.trim() || data;
       const instances = rows(db, "SELECT i.path, cs.loader FROM instances i LEFT JOIN instance_content_sets cs ON cs.id = i.applied_content_set_id AND cs.instance_id = i.id");
-      return instances.filter((row) => loadsFabric(row.loader)).map((row) => ({ name: row.path, game: join(root, "profiles", row.path) }));
+      return instances.filter((row) => loadsFabric(row.loader) && existsSync(join(root, "profiles", row.path))).map((row) => ({ name: row.path, game: join(root, "profiles", row.path) }));
     }),
   curseforge: (machine) => {
     const configured = appDirs(machine, "CurseForge").flatMap((data) => {
@@ -129,8 +133,7 @@ const launchers: Record<string, (machine: Machine) => Instance[]> = {
     [...appDirs(machine, ".dawn"), join(machine.home, ".dawn")].flatMap((data) =>
       folders(join(data, "profiles")).flatMap(({ name, path }) => {
         const profile = json(join(path, "profile.json"))?.profile;
-        const game = firstExisting([join(path, ".minecraft"), join(path, "minecraft")]);
-        return loadsFabric(profile?.loader?.kind) && game !== undefined ? [{ name, game }] : [];
+        return loadsFabric(profile?.loader?.kind) ? [{ name, game: gameIn(path, ".minecraft") }] : [];
       }),
     ),
   lunar: ({ home, env }) => {
@@ -153,7 +156,7 @@ export const instances = (machine: Machine = thisMachine): Map<string, string> =
   if (existsSync(official)) found.set("minecraft", join(official, "mods"));
   for (const [launcher, find] of Object.entries(launchers)) {
     for (const { name, game, mods } of find(machine)) {
-      if (existsSync(game)) found.set(`${launcher}/${name}`, mods ?? join(game, "mods"));
+      found.set(`${launcher}/${name}`, mods ?? join(game, "mods"));
     }
   }
   return found;
