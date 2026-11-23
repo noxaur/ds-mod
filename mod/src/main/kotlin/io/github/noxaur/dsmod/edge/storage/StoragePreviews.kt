@@ -4,6 +4,7 @@ import io.github.noxaur.dsmod.core.feature.inventory.StorageMode
 import io.github.noxaur.dsmod.core.feature.inventory.StorageOverview
 import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.overview.StoragePages
+import io.github.noxaur.dsmod.core.player.Seen
 import io.github.noxaur.dsmod.core.ui.StorageLayout
 import io.github.noxaur.dsmod.edge.slotUnderMouse
 import io.github.noxaur.dsmod.edge.ui.Kit
@@ -49,22 +50,23 @@ object StoragePreviews {
             named = stack
             namedPage = StoragePages.pageOf(stack.hoverName.string)
         }
-        val page = namedPage?.let(storage.pages::page) ?: return false
-        graphics.setTooltipForNextFrame(client.font, listOf(stack.styledHoverName), Optional.of(PageTooltip(page)), mouseX, mouseY, stack.get(DataComponents.TOOLTIP_STYLE))
+        val id = namedPage ?: return false
+        val page = storage.pages.page(id) ?: return false
+        graphics.setTooltipForNextFrame(client.font, listOf(stack.styledHoverName), Optional.of(PageTooltip(id, page)), mouseX, mouseY, stack.get(DataComponents.TOOLTIP_STYLE))
         return true
     }
 
-    class PageTooltip(val page: StoragePages.Page) : TooltipComponent
+    class PageTooltip(val id: String, val page: Seen) : TooltipComponent
 
     private class ClientPageTooltip(private val tip: PageTooltip) : ClientTooltipComponent {
-        private val rows = tip.page.shelf.rows
+        private val rows = (tip.page.items.size + StorageLayout.ROW - 1) / StorageLayout.ROW
 
         override fun getHeight(font: Font) = rows * StorageLayout.CELL + 2 * PAD
 
         override fun getWidth(font: Font) = StorageLayout.GRID
 
         override fun extractImage(font: Font, x: Int, y: Int, w: Int, h: Int, graphics: GuiGraphicsExtractor) {
-            val stacks = PageStacks.of(tip.page)
+            val stacks = PageStacks.of(tip.id, tip.page)
             for (i in 0 until rows * StorageLayout.ROW) {
                 val cx = x + i % StorageLayout.ROW * StorageLayout.CELL
                 val cy = y + PAD + i / StorageLayout.ROW * StorageLayout.CELL

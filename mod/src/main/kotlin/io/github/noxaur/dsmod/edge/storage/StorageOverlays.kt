@@ -172,7 +172,7 @@ object StorageOverlays {
         }
         val words = TabBar.searchWords
         if (pages.version == o.version && words === o.searched) return
-        if (pages.version != o.version) PageStacks.keep(pages.pages)
+        if (pages.version != o.version) PageStacks.keep(storage.feature.player.containers.keys)
         o.version = pages.version
         o.searched = words
         o.found = false
@@ -181,7 +181,7 @@ object StorageOverlays {
             dimmed.clear()
             val page = pages.page(shelf.id)?.takeIf { p != o.open } ?: continue
             if (words.isEmpty()) continue
-            for ((c, item) in page.items.withIndex()) {
+            for ((c, item) in PageStacks.of(shelf.id, page).owned.withIndex()) {
                 if (item == null) continue
                 if (ItemSearch.matches(words, item.name, item.lore)) o.found = true else dimmed.set(c)
             }
@@ -254,7 +254,7 @@ object StorageOverlays {
             val cells = layout.rows(p) * StorageLayout.ROW
             Kit.label(g, shelf.title, x + 1, layout.titleTop(p, offset) + 1, Kit.Ink.NORMAL, glass)
             val page = storage.pages.page(shelf.id)
-            val stacks = if (p == o.open) null else page?.let(PageStacks::of)
+            val stacks = if (p == o.open) null else page?.let { PageStacks.of(shelf.id, it) }
             Kit.slotGrid(g, x, gridY, StorageLayout.ROW, layout.rows(p), glass)
             for (c in 0 until cells) {
                 val cx = layout.cellX(p, c)
@@ -306,7 +306,7 @@ object StorageOverlays {
         val stack = if (p == o.open) {
             o.screen.menu.slots.getOrNull(o.first + c)?.item?.takeUnless { it.isEmpty }
         } else {
-            storage.pages.page(o.shelves[p].id)?.let { PageStacks.of(it).stacks.getOrNull(c) }
+            o.shelves[p].id.let { id -> storage.pages.page(id)?.let { PageStacks.of(id, it).stacks.getOrNull(c) } }
         } ?: return false
         graphics.setTooltipForNextFrame(Minecraft.getInstance().font, stack, mouseX, mouseY)
         return true

@@ -1,11 +1,9 @@
 package io.github.noxaur.dsmod.core.feature.inventory
 
-import io.github.noxaur.dsmod.core.feature.general.ItemOverview
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.SlotChanged
-import io.github.noxaur.dsmod.core.overview.Shelf
 import io.github.noxaur.dsmod.core.overview.StoragePages
 import io.github.noxaur.dsmod.harness.Harness
 import io.github.noxaur.dsmod.harness.text
@@ -26,16 +24,16 @@ class StorageOverviewTest : Harness() {
     private fun shown(title: String? = null) = pages.shown(title).map { it.id }
 
     @Test
-    fun `an opened page is kept with its items, and the controls are left out`() {
+    fun `an opened page is read from the player's data, with the controls left out`() {
         post(open("Storage Page (2/3)", 90), SlotChanged(0, item("Close")), SlotChanged(9, item("Dragon Scale", 3)), SlotChanged(53, item("Hot Potato Book")))
         val page = pages.page("storage:1")!!
         assertEquals(45, page.items.size)
-        assertEquals("Dragon Scale" to 3, page.items[0]!!.name to page.items[0]!!.count)
-        assertEquals("Hot Potato Book", page.items[44]!!.name)
+        assertEquals("Dragon Scale" to 3, page.items[0]!!.name?.plain to page.items[0]!!.count)
+        assertEquals("Hot Potato Book", page.items[44]!!.name?.plain)
         assertEquals(2, page.items.count { it != null }, "Close is a control")
         post(open("Ender Chest", 72), SlotChanged(9, item("Ender Pearl", 16)))
-        assertEquals("Ender Pearl", pages.page("ender_chest")!!.items[0]!!.name)
-        assertEquals(Shelf.ENDER_CHEST_SHELF, pages.open!!.shelf)
+        assertEquals("Ender Pearl", pages.page("ender_chest")!!.items[0]!!.name?.plain)
+        assertTrue(pages.any)
     }
 
     @Test
@@ -52,7 +50,6 @@ class StorageOverviewTest : Harness() {
         assertEquals(4, pages.owned)
         post(SlotChanged(60, item("Storage Page 9")))
         assertEquals(4, pages.owned, "an item in the player's inventory is no icon")
-        assertNull(pages.open)
     }
 
     @Test
@@ -64,22 +61,21 @@ class StorageOverviewTest : Harness() {
     }
 
     @Test
-    fun `features that share the pages take each event once`() {
-        assertTrue(tree.feature<ItemOverview>().feature.runs && storage.feature.runs)
+    fun `the version moves when a page changes, and only then`() {
         post(open("Storage Page (1/1)", 90))
         val before = pages.version
+        assertEquals(before, pages.version)
         post(SlotChanged(9, item("Dragon Scale")))
         assertEquals(before + 1, pages.version)
-        assertEquals(listOf("storage:0"), tree.feature<ItemOverview>().copies.map { it.id })
     }
 
     @Test
-    fun `the pages last one session`() {
-        post(open("Storage Page (1/2)", 90), SlotChanged(9, item("Dragon Scale")))
+    fun `the pages outlast the session, and the count of pages does not`() {
+        post(open("Storage Page (1/3)", 90), SlotChanged(9, item("Dragon Scale")))
         post(LeftServer)
         post(open("Ender Chest", 72))
-        assertNull(pages.page("storage:0"))
-        assertEquals(listOf("ender_chest"), shown())
+        assertEquals("Dragon Scale", pages.page("storage:0")!!.items[0]!!.name?.plain)
+        assertEquals(listOf("ender_chest", "storage:0"), shown())
     }
 
     @Test

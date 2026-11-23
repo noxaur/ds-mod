@@ -278,7 +278,7 @@ class PerfTest : FabricClientGameTest {
             world.server.runOnServer<Nothing> { server -> server.player.openMenu(ServerMenus.sixRows(page, "Storage Page (${i + 1}/$STORAGE_PAGES)")) }
             context.waitTicks(PAGE_READ_TICKS)
         }
-        val kept = context.computeOnClient<Int, Nothing> { DsModClient.feature<StorageOverview>().pages.pages.sumOf { page -> page.items.count { it != null } } }
+        val kept = context.computeOnClient<Int, Nothing> { DsModClient.feature<StorageOverview>().pages.let { pages -> (0 until STORAGE_PAGES).sumOf { n -> pages.page("storage:$n")?.items?.count { it != null } ?: 0 } } }
         check(kept == STORAGE_PAGES * (MENU_SLOTS - PAGE_FIRST_ITEM)) { "The overview remembers $kept items, so it would draw fewer than the row says" }
         windows(context, "storage") { context.waitTicks(WINDOW_TICKS) }
         context.runOnClient<Nothing> {

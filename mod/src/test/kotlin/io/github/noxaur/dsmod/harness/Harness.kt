@@ -5,6 +5,8 @@ import io.github.noxaur.dsmod.core.capture.readCaptureLine
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.HasFeature
+import io.github.noxaur.dsmod.core.feature.Saved
+import io.github.noxaur.dsmod.core.feature.savedJson
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.Item
@@ -71,3 +73,6 @@ fun ownInventory(vararg slots: Pair<Int, Item?>): Array<GameEvent> =
 fun resource(path: String) = checkNotNull(Harness::class.java.getResource("/$path")) { "No test resource /$path" }.readText()
 
 fun readCapture(file: Path): List<Captured> = Files.readAllLines(file).filter { it.isNotBlank() }.mapNotNull(::readCaptureLine)
+
+@Suppress("UNCHECKED_CAST")
+fun Saved<*>.encode(): String = (this as Saved<Any>).let { savedJson.encodeToString(it.serializer, it.value) }

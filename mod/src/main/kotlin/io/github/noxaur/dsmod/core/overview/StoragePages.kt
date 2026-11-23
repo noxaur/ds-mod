@@ -3,90 +3,67 @@ package io.github.noxaur.dsmod.core.overview
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState
-import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.SlotChanged
+import io.github.noxaur.dsmod.core.player.Seen
 import io.github.noxaur.dsmod.core.text.count
 
-/** @keep Each Storage page and the Ender Chest as the player last saw them this session, shared by every feature that
- * shows them. A copy lasts the session, because a copy kept on disk could outlive a switch to another profile. Each
- * slot is read as it arrives, so a menu costs one item per change. Each feature that follows the pages hears every
- * event, so an event one of them already took is skipped. */
-class StoragePages {
-    class Page(val shelf: Shelf, val items: Array<Owned?>)
+/** @keep The Storage pages and the Ender Chest the storage overview shows. Their items are the player's data, so a page
+ * keeps them over a restart and follows a switch of profile. How many pages the player has is counted from the root
+ * menu's page icons and a page's `(2/7)`, for the profile it was counted on, since a page not bought has no icon. */
+class StoragePages(private val feature: Feature) {
+    private class Counted(val profile: String?, val pages: Int)
 
-    private val kept = LinkedHashMap<String, Page>()
-    private var session = -1
-    private var last: GameEvent? = null
-    private var root = false
-    private var rootSize = 0
+    private var root by feature.session { false }
+    private var rootSize by feature.session { 0 }
+    private var counted by feature.session { Counted(null, 0) }
+    private var read: Map<String, Seen>? = null
+    private var changes = 0
 
-    var open: Page? = null
-        private set
+    /** @keep How many Storage pages the player has, and 0 before the root menu or a page's title was seen */
+    val owned: Int get() = counted.takeIf { it.profile == feature.player.profile }?.pages ?: 0
 
-    /** @keep How many Storage pages the player has, from the root menu's page icons or a page's `(2/7)`, and 0 before
-     * either was seen. A page that is not bought has no icon, so it is not counted. */
-    var owned = 0
-        private set
+    /** @keep Goes up whenever the pages change, so a reader rebuilds what it drew from them only when this moves */
+    val version: Int
+        get() {
+            val now = feature.player.containers
+            if (now !== read) {
+                read = now
+                changes++
+            }
+            return changes
+        }
 
-    /** @keep Goes up on every change, so a reader rebuilds what it drew from the pages only when this moves */
-    var version = 0
-        private set
+    fun page(id: String): Seen? = feature.player.containers[id]
 
-    fun page(id: String): Page? = kept[id]
-
-    val pages: Collection<Page> get() = kept.values
-
-    val copies: List<Copy> get() = kept.values.map { Copy(it.shelf.id, it.shelf.title, it.items.toList()) }
+    /** @keep Whether the player opened a Storage page or the Ender Chest on this profile */
+    val any: Boolean get() = feature.player.containers.keys.any { it == Shelf.ENDER_CHEST_SHELF.id || number(it) != null }
 
     /** @keep The pages the overview shows, the Ender Chest first: every Storage page the player has, and any page seen
      * past that count. The menu `title` is the one opening, which can arrive before its events do. */
     fun shown(title: String?): List<Shelf> {
         val opening = Shelf.of(title)
-        val last = listOfNotNull(owned, opening?.pages, opening?.id?.let(::number), kept.keys.mapNotNull(::number).maxOrNull()).max()
+        val kept = feature.player.containers.keys.mapNotNull(::number).maxOrNull()
+        val last = listOfNotNull(owned, opening?.pages, opening?.id?.let(::number), kept).max()
         return listOf(Shelf.ENDER_CHEST_SHELF) + (1..last).map { Shelf.storage(it) }
     }
 
-    fun follow(feature: Feature) {
+    init {
         feature.on<ContainerOpened> { opened, _ ->
-            if (!take(feature, opened)) return@on
             val title = opened.title?.plain
             root = title == ROOT
             rootSize = opened.size - ContainerState.PLAYER_SLOTS
-            val shelf = Shelf.of(title)?.takeIf { it.slots.last < rootSize }
-            open = shelf?.let { Page(it, arrayOfNulls(it.slots.count())) }?.also { kept[it.shelf.id] = it }
-            shelf?.pages?.let { owned = maxOf(owned, it) }
-            version++
+            Shelf.of(title)?.pages?.let(::count)
         }
         feature.on<SlotChanged> { changed, _ ->
-            if (!take(feature, changed)) return@on
-            if (root) {
-                val page = changed.item?.name?.plain?.let(::pageOf)?.let(::number)
-                if (page != null && changed.slot < rootSize && page > owned) {
-                    owned = page
-                    version++
-                }
-                return@on
-            }
-            val menu = open ?: return@on
-            val i = changed.slot - menu.shelf.slots.first
-            if (i !in menu.items.indices) return@on
-            menu.items[i] = changed.item?.let(Owned::of)
-            version++
+            if (!root || changed.slot >= rootSize) return@on
+            changed.item?.name?.plain?.let(::pageOf)?.let(::number)?.let(::count)
         }
     }
 
-    private fun take(feature: Feature, event: GameEvent): Boolean {
-        if (session != feature.sessionNumber) {
-            session = feature.sessionNumber
-            kept.clear()
-            open = null
-            owned = 0
-            root = false
-            version++
-        }
-        if (event === last) return false
-        last = event
-        return true
+    private fun count(pages: Int) {
+        if (pages <= owned) return
+        counted = Counted(feature.player.profile, pages)
+        changes++
     }
 
     companion object {

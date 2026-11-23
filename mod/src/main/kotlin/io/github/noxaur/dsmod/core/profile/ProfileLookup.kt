@@ -43,6 +43,13 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
         if ((state as? Load.Loaded)?.value?.profileId != profile) load(profile)
     }
 
+    /** @keep For as long as the backend keeps an answer, the profile it calls selected can be the one the player just left,
+     * so a lookup that knows the player's profile asks for it by name */
+    fun follow(profile: String?) {
+        val loaded = (state as? Load.Loaded)?.value ?: return
+        loaded.choices.firstOrNull { it.name.plain == profile }?.let { switch(it.id) }
+    }
+
     fun retry() {
         if (state is Load.Failed) return load(asked)
         containers.entries.removeAll { it.value is Load.Failed }
@@ -59,9 +66,11 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
         }
     }
 
-    // @keep Every container in one answer, for the item overview, which needs them all at once.
-    fun containers(): Load<List<Container>> {
+    /** @keep Every container in one answer, for the item overview, which needs them all at once. A failure while the
+     * backend's answer is for another profile than the player's, such as one created after the backend's list */
+    fun containers(of: String?): Load<List<Container>> {
         val profile = (state as? Load.Loaded)?.value ?: return Load.Loading
+        if (of != null && profile.profileName.plain != of) return OTHER
         return all ?: Load.Loading.also {
             all = it
             fetch(source::containers, { all = it }, profile.snapshot, retried = false)
@@ -118,5 +127,9 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
             e.status >= 500 -> Failure(text { bad("ds-mod's backend is down. Try again soon.") }, retry = true)
             else -> Failure(text { bad("Something went wrong loading this profile.") }, retry = true, bug = true, cause = e)
         }
+    }
+
+    private companion object {
+        val OTHER = Load.Failed(Failure(text { bad("dragsim.co has not listed this profile yet.") }, retry = true))
     }
 }

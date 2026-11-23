@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.core.feature.general
 
+import io.github.noxaur.dsmod.harness.encode
 import io.github.noxaur.dsmod.harness.Harness
 import io.github.noxaur.dsmod.harness.chat
 import io.github.noxaur.dsmod.harness.dragSimSidebar

@@ -9,10 +9,9 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.overview.Copy
 import io.github.noxaur.dsmod.core.overview.Owned
-import io.github.noxaur.dsmod.core.overview.StoragePages
 import io.github.noxaur.dsmod.core.text.Role
 
-class ItemOverview(config: DsModConfig, private val pages: StoragePages) : HasFeature {
+class ItemOverview(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "item-overview", Area.ANYWHERE, Store.GENERAL, "List every item you own in one screen with /dsmod items.", slots = ::slots)
 
     val key = feature.keys("itemOverviewKey", "Key", "Pick a key that opens the item overview.", KeyBind.NONE)
@@ -22,27 +21,25 @@ class ItemOverview(config: DsModConfig, private val pages: StoragePages) : HasFe
 
     private var wanted by feature.session<Wanted?> { null }
     private var marks by feature.session { emptyMap<Int, SlotMark>() }
-    private var seen = -1
+    private var stale = false
+    private val reader = ContainerReader(feature)
 
-    init {
-        pages.follow(feature)
-    }
-
-    /** @keep Each Storage page and the Ender Chest as the player last saw them this session. */
-    val copies: List<Copy> get() = pages.copies
+    val copies: List<Copy> get() = feature.player.containers.map { (id, seen) -> Copy(id, seen.title, seen.items.map { it?.let(Owned::of) }) }
 
     fun find(key: Owned.Key, now: Long) {
         wanted = Wanted(key, now + (highlight.value * 1000).toLong())
-        seen = -1
+        stale = true
         feature.redraw()
     }
 
     private fun slots(now: Long): Map<Int, SlotMark> {
-        if (seen != pages.version) {
-            seen = pages.version
-            val menu = pages.open
+        if (reader.changed() || stale) {
+            stale = false
+            val shelf = feature.player.shelf
+            val items = shelf?.let { feature.player.containers[it.id]?.items }
             val key = wanted?.key
-            marks = if (menu == null || key == null) emptyMap() else menu.items.indices.filter { menu.items[it]?.key == key }.associate { menu.shelf.slots.first + it to MARK }
+            marks = if (shelf == null || items == null || key == null) emptyMap()
+            else items.indices.filter { items[it]?.let(Owned::of)?.key == key }.associate { shelf.slots.first + it to MARK }
         }
         if ((wanted?.until ?: Long.MAX_VALUE) <= now) {
             wanted = null

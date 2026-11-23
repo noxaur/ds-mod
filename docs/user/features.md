@@ -2,7 +2,7 @@
 
 `/dsmod` opens the settings. Everything is on unless marked off.
 
-<sub>Trackers read only the server's own messages, never player chat. All-time numbers are saved in `config/dsmod/data/`. Delete a file to reset it.</sub>
+<sub>Trackers read only the server's own messages, never player chat. All-time numbers are kept for each of your profiles, in `config/dsmod/data/players/`, one file for each Minecraft account. Delete that file to reset them, along with everything else ds-mod remembers of your profiles.</sub>
 
 ## General
 
@@ -293,7 +293,7 @@ Lists every item you own in one screen, from your inventory, ender chest, storag
 | Click an item kept in storage or the ender chest | Open the first Storage page or the Ender Chest that holds it, with the item outlined for the Highlight Time |
 | Scroll, drag the scrollbar, or press Page Up, Page Down, Home or End | See the rest of the items |
 
-The total under the grid is the NPC value of the items shown. Your inventory is read from the game as you open the screen, and a Storage page or the Ender Chest you opened this session shows as you last saw it. Everything else comes from dragsim.co through ds-mod's service, as the profile viewer's does, so it is as fresh as dragsim.co's last save of your profile. If you hide your inventory on dragsim.co, only your inventory and the menus you opened show. If ds-mod's service can't be reached, the overview still shows what the game has shown you, and the line under the grid reads "Showing only what you opened". Hover that line to see why.
+The total under the grid is the NPC value of the items shown. Your inventory is read from the game, and a Storage page or the Ender Chest you opened on this profile shows as you last saw it, even after you restart the game. The line under the grid names the profile. ds-mod learns which profile you're on when you open Profile Management, and follows each switch you make there. Everything else comes from dragsim.co through ds-mod's service, as the profile viewer's does, so it is as fresh as dragsim.co's last save of your profile. If you hide your inventory on dragsim.co, only your inventory and the menus you opened show. If ds-mod's service can't be reached, the overview still shows what the game has shown you, and the line under the grid reads "Showing only what you opened". Hover that line to see why.
 
 ## Interface
 
@@ -480,7 +480,7 @@ A dragon egg in the empty slot at the top left of the Dragon Sim Menu. Clicking 
 
 ### Storage Overview
 
-Shows what your Storage pages and Ender Chest hold before you open them. The mod remembers each page as you saw it the last time you opened it, until you leave the server, so open a page once to fill it in. Pick one of two modes:
+Shows what your Storage pages and Ender Chest hold before you open them. The mod remembers each page as you saw it the last time you opened it, for each of your profiles and across restarts, so open a page once to fill it in. Pick one of two modes:
 
 - **Preview**, the default: in the `/storage` menu, hover a page to see its items in its tooltip, in their slots, under the page's name. Hold Shift to read the server's text instead. A page you haven't opened yet keeps the server's text.
 - **Overview**: `/storage`, `/ec` and every Storage page open one screen that shows every page at once, under its title and with your inventory below. The pages form a square grid, 2 by 2 for 4 pages and 3 by 3 for 9, and grow wider only when that saves you scrolling and your screen has room. Your menu tabs and the Search tab sit under your inventory.

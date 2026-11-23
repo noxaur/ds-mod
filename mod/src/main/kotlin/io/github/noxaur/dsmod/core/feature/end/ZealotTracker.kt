@@ -25,7 +25,7 @@ data class ZealotDrops(val drops: Map<String, Int> = emptyMap(), val kills: Int 
 class ZealotTracker(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "zealot-tracker", Area.END, Store.END, "Count your Summoning Eyes and zealot kills, per hour and all-time.", hud = ::hud)
 
-    private val allTime = feature.saved(ZealotDrops())
+    private val allTime = feature.profiled(ZealotDrops())
     private var session = emptyMap<String, Int>()
     private var endMillis = 0L
     private var endSince: Long? = null

@@ -100,7 +100,7 @@ class StorageOverviewTest : FabricClientGameTest {
         val spy = Identifier.fromNamespaceAndPath("dsmod_test", "storage_spy")
         ClientTooltipComponentCallback.EVENT.addPhaseOrdering(spy, Event.DEFAULT_PHASE)
         ClientTooltipComponentCallback.EVENT.register(spy) { data ->
-            (data as? StoragePreviews.PageTooltip)?.let { previewed += it.page.shelf.id }
+            (data as? StoragePreviews.PageTooltip)?.let { previewed += it.id }
             null
         }
         ItemTooltipCallback.EVENT.register { stack, _, _, _ -> tooltips += stack.hoverName.string }

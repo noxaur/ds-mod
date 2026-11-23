@@ -35,4 +35,4 @@
                All-Time: 0
 +  58.7s >   » You died! Wait... if you are dead, how are you reading this?
 +  63.9s > [DRAGON] Player1: hello
-saved slayer-tracker.json = {"slain":0}
+saved for the profile slayer-tracker = {"slain":0}

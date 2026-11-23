@@ -33,6 +33,7 @@ import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudBuilder
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudLook
+import io.github.noxaur.dsmod.core.player.PlayerData
 import io.github.noxaur.dsmod.core.text.Text
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.Look
@@ -124,22 +125,26 @@ class Feature(
 
     internal var worlds: () -> Int = { 0 }
 
-    /** @keep A part that features share forgets its session by this, as [worldNumber] lets it forget its world */
-    val sessionNumber: Int get() = sessions()
-
-    internal var sessions: () -> Int = { 0 }
-
     val here: Boolean get() = inArea()
 
     var state: Saved<*>? = null
         private set
 
-    inline fun <reified S : Any> saved(default: S) = saved(serializer<S>(), default)
+    /** @keep The player's data on the profile they are on: the containers they saw and the backend's last answer. Read the
+     * player's items here, not from a copy of the feature's own */
+    lateinit var player: PlayerData
+        internal set
+
+    // @keep For state that is the same on every profile, such as a hint told once. The player's own data is `profiled`
+    inline fun <reified S : Any> saved(default: S) = saved(serializer<S>(), default, profiled = false)
+
+    // @keep State that is the player's own, such as a total or a lock, kept for each profile and swapped when they switch
+    inline fun <reified S : Any> profiled(default: S) = saved(serializer<S>(), default, profiled = true)
 
     @PublishedApi
-    internal fun <S : Any> saved(serializer: KSerializer<S>, default: S): Saved<S> {
+    internal fun <S : Any> saved(serializer: KSerializer<S>, default: S, profiled: Boolean): Saved<S> {
         check(state == null) { "$id already saves state" }
-        return Saved(serializer, default).also { state = it }
+        return Saved(serializer, default, profiled).also { state = it }
     }
 
     private val inWorld = ArrayList<Scoped<*>>()
