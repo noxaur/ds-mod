@@ -1,5 +1,6 @@
 package io.github.noxaur.dsmod.edge.mixin;
 
+import io.github.noxaur.dsmod.edge.BlockBreaks;
 import io.github.noxaur.dsmod.edge.Packets;
 import io.github.noxaur.dsmod.edge.Hooks;
 import io.github.noxaur.dsmod.edge.input.InputApproved;
@@ -20,14 +21,16 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /** @keep Each handler runs twice, and only the client-thread pass reaches TAIL, except the pong's, which the game handles on the network thread alone. */
-@InputApproved(by = "noxaur", hash = "fa42ef0c8027")
+@InputApproved(by = "noxaur", hash = "29ec0f174a7b")
 @Mixin(ClientPacketListener.class)
 abstract class ServerPacketsMixin {
+    private static final String ON_CLIENT_THREAD = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/network/PacketProcessor;)V";
+
     @Inject(
         method = "handleSystemChat",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/network/PacketProcessor;)V",
+            target = ON_CLIENT_THREAD,
             shift = At.Shift.AFTER
         )
     )
@@ -43,6 +46,16 @@ abstract class ServerPacketsMixin {
     @Inject(method = "setActionBarText", at = @At("TAIL"))
     private void dsmod$actionBar(ClientboundSetActionBarTextPacket packet, CallbackInfo ci) {
         Packets.INSTANCE.actionBar(packet.text());
+    }
+
+    @Inject(method = "handleBlockUpdate", at = @At(value = "INVOKE", target = ON_CLIENT_THREAD, shift = At.Shift.AFTER))
+    private void dsmod$blockChanging(ClientboundBlockUpdatePacket packet, CallbackInfo ci) {
+        BlockBreaks.INSTANCE.block(packet.getPos(), packet.getBlockState());
+    }
+
+    @Inject(method = "handleChunkBlocksUpdate", at = @At(value = "INVOKE", target = ON_CLIENT_THREAD, shift = At.Shift.AFTER))
+    private void dsmod$blocksChanging(ClientboundSectionBlocksUpdatePacket packet, CallbackInfo ci) {
+        packet.runUpdates(BlockBreaks.INSTANCE::block);
     }
 
     @Inject(method = "handleBlockUpdate", at = @At("TAIL"))
