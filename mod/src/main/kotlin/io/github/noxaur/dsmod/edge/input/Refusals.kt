@@ -3,12 +3,13 @@ package io.github.noxaur.dsmod.edge.input
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.fabricmc.fabric.api.event.Event
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.event.player.UseItemCallback
 import net.minecraft.client.gui.screens.Screen
 
-@InputApproved(hash = "e472cbf112ec")
+@InputApproved(by = "noxaur", hash = "1676bc5b66e0")
 object Refusals {
     fun allowKeyPress(screen: Screen): Event<ScreenKeyboardEvents.AllowKeyPress> = ScreenKeyboardEvents.allowKeyPress(screen)
 
@@ -25,4 +26,6 @@ object Refusals {
     fun useBlock(): Event<UseBlockCallback> = UseBlockCallback.EVENT
 
     fun attackEntity(): Event<AttackEntityCallback> = AttackEntityCallback.EVENT
+
+    fun attackBlock(): Event<AttackBlockCallback> = AttackBlockCallback.EVENT
 }

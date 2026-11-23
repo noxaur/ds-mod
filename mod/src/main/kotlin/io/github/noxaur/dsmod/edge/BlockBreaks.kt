@@ -31,11 +31,16 @@ object BlockBreaks {
         sorter.changed(pos.x, pos.y, pos.z, was.block.id, state.block.id)
     }
 
-    // @keep A right click can start and end within one tick, so the use is heard as the game makes it, not read at the tick's end.
-    @InputApproved(by = "noxaur", reaches = ["Refusals.useBlock"])
+    /** @keep A click can start and end within one tick, so a right click and the start of digging are heard as the game makes
+     * them, and only a held dig is read at the tick's end. */
+    @InputApproved(by = "noxaur", reaches = ["Refusals.useBlock", "Refusals.attackBlock"])
     fun register() {
         Refusals.useBlock().register { player, level, _, hit ->
             if (level.isClientSide && player === Minecraft.getInstance().player) sorter.use(hit.blockPos.x, hit.blockPos.y, hit.blockPos.z)
+            InteractionResult.PASS
+        }
+        Refusals.attackBlock().register { player, level, _, pos, _ ->
+            if (level.isClientSide && player === Minecraft.getInstance().player) sorter.dig(pos.x, pos.y, pos.z)
             InteractionResult.PASS
         }
         Ticks.end { client ->
