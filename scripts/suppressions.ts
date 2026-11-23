@@ -3,8 +3,8 @@ import { execFileSync } from "node:child_process";
 export const label = "human review needed";
 
 const markers: [RegExp, RegExp][] = [
-  [/\.(kt|kts|java)$/, /@(file:)?([\w.]+\.)?Suppress(Warnings)?\b/],
-  [/\.(ts|mts|cts|tsx|js|mjs|cjs|jsx)$/, /eslint-disable|\/\*\s*eslint\s/],
+  [/\.(kt|kts|java)$/, /\bSuppress(Warnings)?\b/],
+  [/\.(ts|mts|cts|tsx|js|mjs|cjs|jsx)$/, /eslint-disable|\beslint\s+[@\w/-]+\s*:|\/\*\s*eslint\s*$/],
 ];
 
 export function added(diff: string): string[] {
@@ -18,7 +18,7 @@ export function added(diff: string): string[] {
       continue;
     }
     if (header && text.startsWith("+++ ")) {
-      file = text.replace(/^\+\+\+ (b\/)?/, "");
+      file = text.slice(4).replace(/\t.*$/, "").replace(/^"(.*)"$/, "$1").replace(/^b\//, "");
       continue;
     }
     const hunk = /^@@ -\d+(?:,\d+)? \+(\d+)/.exec(text);
@@ -38,7 +38,7 @@ export function added(diff: string): string[] {
 export function unexplained(found: string[], body: string): string[] {
   const lines = body.split("\n");
   return found.filter((at) => {
-    const named = new RegExp(`(?<![\\w./-])${at.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?!\\d)`);
+    const named = new RegExp(`(?<=^|[\\s\`'"(\\[])${at.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?=$|[\\s\`'"),:;]|\\.(\\s|$))`);
     return !lines.some((text) => named.test(text) && text.replace(/\S*:\d+\S*/g, "").split(/\W+/).filter(Boolean).length >= 3);
   });
 }

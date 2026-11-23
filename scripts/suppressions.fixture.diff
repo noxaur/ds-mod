@@ -50,3 +50,24 @@ diff --git a/web/app/e.jsx b/web/app/e.jsx
 +/*
 +  eslint-disable no-console
 +*/
+diff --git a/web/f g.ts b/web/f g.ts
+--- a/web/f g.ts
++++ b/web/f g.ts	
+@@ -1,1 +1,6 @@
+ let a = 0;
++/*
++  eslint no-console: off
++*/
++@[Suppress("UNUSED_PARAMETER") Deprecated("old")]
++/* eslint
+diff --git "a/web/\303\246.ts" "b/web/\303\246.ts"
+--- "a/web/\303\246.ts"
++++ "b/web/\303\246.ts"
+@@ -0,0 +1,1 @@
++// eslint-disable-next-line no-console -- x
+diff --git a/mod/G.kt b/mod/G.kt
+--- a/mod/G.kt
++++ b/mod/G.kt
+@@ -0,0 +1,2 @@
++@get:Suppress("X")
++@[Suppress("UNUSED_PARAMETER") Deprecated("old")]
