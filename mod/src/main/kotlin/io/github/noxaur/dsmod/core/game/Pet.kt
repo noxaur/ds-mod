@@ -11,9 +11,12 @@ data class Pet(val name: String, val level: Int, val rarity: Role) {
 
         fun of(text: ServerText, plain: String = text.plain.trim()): Pet? {
             val (level, name) = LINE.matchEntire(plain)?.destructured ?: return null
-            val color = text.spans.lastOrNull { it.text.isNotBlank() }?.color
-            return Pet(name, count(level) ?: return null, Role.rarity(color) ?: Role.COMMON)
+            return Pet(name, count(level) ?: return null, color(text) ?: Role.COMMON)
         }
+
+        fun rarity(name: ServerText): Role? = if (LINE.matches(name.plain.trim())) color(name) else null
+
+        private fun color(text: ServerText) = Role.rarity(text.spans.lastOrNull { it.text.isNotBlank() }?.color)
 
         fun nameOf(plain: String) = LINE.matchEntire(plain.trim())?.groupValues?.get(2)
     }
@@ -45,5 +48,6 @@ data class PetCard(
 ) {
     companion object {
         const val MENU = "Pets"
+        const val ACTIVE = "Click to deactivate!"
     }
 }

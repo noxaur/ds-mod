@@ -12,7 +12,8 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class WardrobeKeysTest : Harness(alone = WardrobeKeys::class) {
-    private val feature = tree.feature<WardrobeKeys>()
+    private val wardrobe = tree.feature<WardrobeKeys>()
+    private val feature = wardrobe.keys
     private var id = 1
 
     private fun open(title: String, buttons: Int = 9): Int {
@@ -24,13 +25,13 @@ class WardrobeKeysTest : Harness(alone = WardrobeKeys::class) {
 
     private fun key(n: Int) = feature.index(48 + n)!!
 
-    private fun marks() = feature.feature.slots!!(time)
+    private fun marks() = wardrobe.feature.slots!!(time)
 
     @Test
     fun `each number key clicks its slot button once the second is up`() {
         val menu = open(WardrobeKeys.TITLE)
         assertTrue(feature.open(menu))
-        pass(WardrobeKeys.WAIT_MILLIS)
+        pass(MenuKeys.WAIT_MILLIS)
         assertEquals(36, feature.press(key(1), time))
         assertEquals(44, feature.press(key(9), time))
         assertNull(feature.due(time))
@@ -39,7 +40,7 @@ class WardrobeKeysTest : Harness(alone = WardrobeKeys::class) {
     @Test
     fun `a press inside the second waits for it, and the last press wins`() {
         open(WardrobeKeys.TITLE)
-        assertEquals(WardrobeKeys.WAIT_MILLIS, feature.wait(time))
+        assertEquals(MenuKeys.WAIT_MILLIS, feature.wait(time))
         assertNull(feature.press(key(1), time))
         pass(400)
         assertNull(feature.press(key(3), time))
@@ -60,7 +61,7 @@ class WardrobeKeysTest : Harness(alone = WardrobeKeys::class) {
         assertTrue(marks().isEmpty())
         post(SlotChanged(36, Item("minecraft:pink_dye", 1, text("Slot 1"), lines("Click to equip!"))))
         assertEquals(setOf(36), marks().keys)
-        pass(WardrobeKeys.WAIT_MILLIS)
+        pass(MenuKeys.WAIT_MILLIS)
         assertEquals(36, feature.due(time))
     }
 
@@ -70,7 +71,7 @@ class WardrobeKeysTest : Harness(alone = WardrobeKeys::class) {
         pass(100)
         feature.press(key(2), time)
         pass(50)
-        assertEquals(setOf(37), readout(feature).slots.keys)
+        assertEquals(setOf(37), readout(wardrobe).slots.keys)
     }
 
     @Test
@@ -91,7 +92,7 @@ class WardrobeKeysTest : Harness(alone = WardrobeKeys::class) {
         assertEquals(0, feature.wait(time))
         assertTrue(!feature.open(guide))
         open(WardrobeKeys.TITLE, buttons = 3)
-        pass(WardrobeKeys.WAIT_MILLIS)
+        pass(MenuKeys.WAIT_MILLIS)
         assertNull(feature.press(key(4), time))
     }
 
@@ -100,7 +101,7 @@ class WardrobeKeysTest : Harness(alone = WardrobeKeys::class) {
         feature.keys[0].value = 82
         open(WardrobeKeys.TITLE)
         assertNull(feature.index(49))
-        pass(WardrobeKeys.WAIT_MILLIS)
+        pass(MenuKeys.WAIT_MILLIS)
         assertEquals(36, feature.press(feature.index(82)!!, time))
     }
 }

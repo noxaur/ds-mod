@@ -80,8 +80,6 @@ private fun worn(seen: EntitySeen): Pair<String, Item>? {
     return Pet.nameOf(seen.name.plain)?.let { it to head }
 }
 
-private const val ACTIVE = "Click to deactivate!"
-
 private const val HELD = "Held Item"
 private const val MAX_LEVEL = "MAX LEVEL"
 private val LEVEL = Regex("""LEVEL \d+""")
@@ -93,7 +91,7 @@ private val FOOTER = Regex("""(?:VERY SPECIAL|SPECIAL|DIVINE|MYTHIC|LEGENDARY|EP
  * an `xp/needed` pair, or else a percent */
 private fun cardOf(item: Item): PetCard? {
     val lore = item.cleanLore
-    if (ACTIVE !in lore) return null
+    if (PetCard.ACTIVE !in lore) return null
     val pet = item.name?.let(Pet::of) ?: return null
     val key = item.string("extra", "item_uuid", "uuid") ?: pet.name
     val category = lore.firstNotNullOfOrNull { FOOTER.matchEntire(it)?.groupValues?.get(1)?.trim() }
