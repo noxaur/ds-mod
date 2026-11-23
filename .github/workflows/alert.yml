@@ -9,14 +9,16 @@ on:
   # @keep Vercel reports each deploy as a commit status, never as a GitHub deployment, and a build it skips reports success.
   status:
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
   discord:
     if: >-
       (github.event_name == 'workflow_run' && github.event.workflow_run.event != 'pull_request'
         && contains(fromJSON('["failure", "timed_out", "startup_failure"]'), github.event.workflow_run.conclusion))
-      || (github.event_name == 'status' && github.event.context == 'Vercel' && contains(fromJSON('["failure", "error"]'), github.event.state))
+      || (github.event_name == 'status' && github.event.context == 'Vercel' && github.event.sender.login == 'vercel[bot]'
+        && contains(fromJSON('["failure", "error"]'), github.event.state))
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
@@ -26,8 +28,15 @@ jobs:
           TITLE: ${{ github.event.workflow_run.display_title || github.event.description }}
           SHA: ${{ github.event.workflow_run.head_sha || github.event.sha }}
           URL: ${{ github.event.workflow_run.html_url || github.event.target_url }}
-        # @keep allowed_mentions stops a commit title that holds @everyone from pinging the server.
+          GH_TOKEN: ${{ github.token }}
+        # @keep A branch that predates main-only deploys still gets Vercel previews, so a status counts only for a commit main holds. allowed_mentions stops a commit title that holds @everyone from pinging the server.
         run: |
+          if [ "$GITHUB_EVENT_NAME" = status ]; then
+            case "$(gh api "repos/$GITHUB_REPOSITORY/compare/main...$SHA" --jq .status)" in
+              behind | identical) ;;
+              *) exit 0 ;;
+            esac
+          fi
           jq -n --arg content "**$WHAT failed** on \`main\`: $TITLE (\`${SHA:0:7}\`)
           $URL" '{content: $content, allowed_mentions: {parse: []}}' |
             curl -fsS -H 'Content-Type: application/json' --data @- "$WEBHOOK"
