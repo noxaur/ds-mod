@@ -34,7 +34,7 @@ class KitColorPicker(
     private var part = Part.FIELD
     private var lit = swatches.indexOf(start).coerceAtLeast(0)
     private var drag: Part? = null
-    private var before = start
+    private var before = pick.hold()
     private var keyboard = false
 
     internal val left get() = x + PAD
@@ -77,9 +77,11 @@ class KitColorPicker(
 
     private fun typing() = if (hex.isFocused) hex else if (percent.isFocused) percent else null
 
+    private fun shown(field: KitTextField) = if (field === hex) Colors.hex(pick.argb) else "${Colors.opacity(pick.argb)}%"
+
     private fun sync() {
-        if (!hex.isFocused) hex.value = Colors.hex(pick.argb)
-        if (!percent.isFocused) percent.value = "${Colors.opacity(pick.argb)}%"
+        if (!hex.isFocused) hex.value = shown(hex)
+        if (!percent.isFocused) percent.value = shown(percent)
     }
 
     private fun changed() {
@@ -104,6 +106,7 @@ class KitColorPicker(
     private fun commit() {
         val field = typing() ?: return
         field.setFocused(false)
+        if (field.value == shown(field)) return sync()
         val next = if (field === hex) Colors.parseHex(hex.value, Colors.alpha(pick.argb)) else Colors.parseOpacity(percent.value)?.let { Colors.withOpacity(pick.argb, it) }
         if (next != null && next != pick.argb) choose(next) else sync()
     }
@@ -173,7 +176,7 @@ class KitColorPicker(
                 commit()
                 part = at
                 drag = at
-                before = pick.argb
+                before = pick.hold()
                 slide(at, event.x, event.y)
             }
         }
@@ -220,7 +223,8 @@ class KitColorPicker(
             event.isEscape -> {
                 if (drag != null) {
                     drag = null
-                    choose(before)
+                    pick.restore(before)
+                    changed()
                 } else {
                     onClose()
                 }

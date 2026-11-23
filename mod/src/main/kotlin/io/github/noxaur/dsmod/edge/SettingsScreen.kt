@@ -506,7 +506,8 @@ class SettingsScreen(
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, scrollX: Double, scrollY: Double): Boolean {
-        if (mouseX < side || mouseY < BAR) return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY)
+        val overMenu = rows.menu?.isMouseOver(mouseX, mouseY) == true
+        if (!overMenu && (mouseX < side || mouseY < BAR)) return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY)
         sync()
         // @keep Some systems turn the wheel with Shift held into a sideways scroll.
         val amount = if (scrollY != 0.0) scrollY else scrollX

@@ -106,6 +106,18 @@ class ColorPick(argb: Int) {
         build()
     }
 
+    data class Held(val hue: Float, val saturation: Float, val brightness: Float, val alpha: Int)
+
+    fun hold() = Held(hue, saturation, brightness, alpha)
+
+    fun restore(held: Held) {
+        hue = held.hue
+        saturation = held.saturation
+        brightness = held.brightness
+        alpha = held.alpha
+        build()
+    }
+
     val hueFraction get() = hue / 360f
 
     val opacityFraction get() = alpha / 255f
@@ -123,7 +135,7 @@ class ColorPick(argb: Int) {
         return true
     }
 
-    private fun step(value: Float, percent: Int) = ((value * 100).roundToInt() + percent) / 100.0
+    private fun step(value: Float, percent: Int) = if (percent == 0) value.toDouble() else ((value * 100).roundToInt() + percent) / 100.0
 
     private fun build() {
         argb = (alpha shl 24) or hsv(hue, saturation, brightness)

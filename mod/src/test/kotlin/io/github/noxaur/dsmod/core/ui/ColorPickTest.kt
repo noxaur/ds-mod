@@ -62,6 +62,20 @@ class ColorPickTest {
         assertEquals(90, Colors.opacity(pick.argb))
         assertFalse(pick.nudge(Part.HUE, 0, 1, big = false))
         assertFalse(pick.nudge(Part.SWATCHES, 1, 0, big = false))
+        val dark = ColorPick(0xFF010100.toInt())
+        assertTrue(dark.nudge(Part.FIELD, 1, 0, big = false))
+        assertEquals(0xFF010100.toInt(), dark.argb, "Right at full saturation leaves the brightness alone")
+    }
+
+    @Test
+    fun `restoring what was held brings back the hue and saturation that black hides`() {
+        val green = ColorPick(0xFF00FF00.toInt())
+        val held = green.hold()
+        green.field(1.0, 0.0)
+        green.hueAt(240 / 360.0)
+        green.restore(held)
+        green.field(1.0, 1.0)
+        assertEquals(0xFF00FF00.toInt(), green.argb)
     }
 
     @Test
