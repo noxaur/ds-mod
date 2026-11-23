@@ -102,13 +102,17 @@ class OverviewTest {
     }
 
     @Test
-    fun `a copy seen after dragsim co saved the profile replaces the backend's, and an older one does not`() {
+    fun `a copy the game showed replaces the backend's, and one the backend lacks is added`() {
         val live = Copy("inventory", "Inventory", listOf(seen("dirt", "Dirt", 1)))
         val page = Copy("storage:7", "Storage 8", listOf(seen("dirt", "Dirt", 2)))
-        val newer = Overview.copies(listOf(inventory, enderChest), savedAt = 100, seen = listOf(live to 101L, page to 101L))
-        assertEquals(listOf(live, Copy.of(enderChest), page), newer)
-        val older = Overview.copies(listOf(inventory, enderChest), savedAt = 100, seen = listOf(live to 99L))
-        assertEquals(listOf(Copy.of(inventory), Copy.of(enderChest)), older)
+        assertEquals(listOf(live, Copy.of(enderChest), page), Overview.copies(listOf(inventory, enderChest), listOf(live, page)))
+        assertEquals(listOf(Copy.of(inventory), Copy.of(enderChest)), Overview.copies(listOf(inventory, enderChest), emptyList()))
+    }
+
+    @Test
+    fun `a search matches the lore of any stack merged into an entry`() {
+        val copy = Copy("inventory", "Inventory", listOf(seen("blade", "Blade", 1, lore = listOf("Damage: +80")), seen("blade", "Blade", 1, lore = listOf("Damage: +100"))))
+        assertEquals(2, Overview(listOf(copy)).entries(Category.ALL, "+100", SortBy.AMOUNT, true).single().count)
     }
 
     @Test
@@ -122,22 +126,15 @@ class OverviewTest {
     }
 
     @Test
-    fun `a page seen before dragsim co's last save is kept when the backend has no copy of it`() {
-        val page = Copy("storage:1", "Storage 2", listOf(seen("dirt", "Dirt", 1)))
-        assertEquals(listOf(page), Overview.copies(emptyList(), savedAt = 101, seen = listOf(page to 100L)))
-    }
-
-    @Test
-    fun `a hidden container keeps the copy the player saw, and the live inventory beats a later save`() {
+    fun `a hidden container, or a backend that did not answer, keeps the copies the player saw`() {
         val chest = Copy("ender_chest", "Ender Chest", listOf(seen("dirt", "Dirt", 1)))
-        val live = Copy("inventory", "Inventory", listOf(seen("bone", "Bone", 1)))
-        val hidden = listOf(inventory, enderChest.copy(hidden = true, items = emptyList()))
-        assertEquals(listOf(live, chest), Overview.copies(hidden, savedAt = 200, seen = listOf(chest to 100L), live = live))
+        assertEquals(listOf(Copy.of(inventory), chest), Overview.copies(listOf(inventory, enderChest.copy(hidden = true, items = emptyList())), listOf(chest)))
+        assertEquals(listOf(chest), Overview.copies(emptyList(), listOf(chest)))
     }
 
     @Test
     fun `a container the player hid lists nothing`() {
-        assertEquals(emptyList(), Overview.copies(listOf(enderChest.copy(hidden = true, items = emptyList())), savedAt = null, seen = emptyList()))
+        assertEquals(emptyList(), Overview.copies(listOf(enderChest.copy(hidden = true, items = emptyList())), emptyList()))
     }
 
     @Test

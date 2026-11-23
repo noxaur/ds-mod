@@ -107,7 +107,7 @@ data class Shelf(val id: String, val title: String, val slots: IntRange) {
 
 /** @keep dragsim.co gives each stack its own NPC price, and two stacks of one item can differ, so `value` sums each
  * stack's and `each` is only set when every stack agrees. */
-data class Entry(val item: Owned, val count: Long, val places: List<Place>, val value: Double?, val each: Double?) {
+data class Entry(val item: Owned, val count: Long, val places: List<Place>, val value: Double?, val each: Double?, val lore: List<String>) {
 
     internal val rarityRank = item.rarity?.let { rarity -> Role.RARITIES.indexOfFirst { it.name == rarity } } ?: -1
 }
@@ -123,7 +123,7 @@ class Overview(copies: List<Copy>) {
 
     fun entries(category: Category, query: String, sort: SortBy, descending: Boolean): List<Entry> {
         val words = ItemSearch.words(query)
-        val found = byCategory.getValue(category).filter { ItemSearch.matches(words, it.item.name, it.item.lore) }
+        val found = byCategory.getValue(category).filter { ItemSearch.matches(words, it.item.name, it.lore) }
         val order = when (sort) {
             SortBy.AMOUNT -> compareBy<Entry> { it.count }
             SortBy.VALUE -> compareBy { it.value ?: -1.0 }
@@ -141,6 +141,9 @@ class Overview(copies: List<Copy>) {
             val places = LinkedHashMap<Pair<String, String>, Int>()
             var value: Double? = null
             val prices = HashSet<Double?>()
+
+            // @keep Stacks merge by name, so their lore can differ, and a search matches any stack's.
+            val lore = LinkedHashSet<String>()
         }
 
         private fun merge(copies: List<Copy>): List<Entry> {
@@ -151,23 +154,22 @@ class Overview(copies: List<Copy>) {
                 val merged = found.getOrPut(item.key) { Merged(item) }
                 merged.places.merge(copy.id to copy.title, item.count, Int::plus)
                 merged.prices += item.price
+                merged.lore += item.lore
                 item.price?.let { merged.value = (merged.value ?: 0.0) + it * item.count }
             }
             return found.values.map { m ->
-                Entry(m.item, m.places.values.sumOf(Int::toLong), m.places.map { (where, count) -> Place(where.first, where.second, count) }, m.value, m.prices.singleOrNull())
+                Entry(m.item, m.places.values.sumOf(Int::toLong), m.places.map { (where, count) -> Place(where.first, where.second, count) }, m.value, m.prices.singleOrNull(), m.lore.toList())
             }
         }
 
-        /** @keep A copy the player saw in a menu replaces the backend's when it was seen after dragsim.co last saved the
-         * profile, because the backend's is then older. One the backend does not show, such as a page bought since, a
-         * hidden one, or any page when the backend did not answer, is kept whenever it was seen. The live inventory
-         * always wins: it is the game's own, worn armor included, and dragsim.co's clock need not agree with ours. */
-        fun copies(backend: List<Container>, savedAt: Long?, seen: List<Pair<Copy, Long>>, live: Copy? = null): List<Copy> {
-            val shown = backend.filterNot { it.hidden }
-            val ids = shown.mapTo(HashSet()) { it.id }
-            val used = seen.filter { (copy, at) -> copy.id !in ids || savedAt == null || at > savedAt }.associate { (copy, _) -> copy.id to copy } +
-                listOfNotNull(live).associateBy { it.id }
-            val listed = shown.map { used[it.id] ?: Copy.of(it) }
+        /** @keep A copy the game showed always replaces the backend's. A Storage page or the Ender Chest changes only
+         * while its menu is open, where the mod reads it, so a copy seen this session is never older than dragsim.co's.
+         * Comparing with dragsim.co's save time was rejected, because its clock need not agree with ours. A copy the
+         * backend does not show, such as a page bought since, a hidden one, or any when the backend did not answer, is
+         * added. */
+        fun copies(backend: List<Container>, seen: List<Copy>): List<Copy> {
+            val used = seen.associateBy { it.id }
+            val listed = backend.filterNot { it.hidden }.map { used[it.id] ?: Copy.of(it) }
             return listed + used.values.filter { copy -> listed.none { it.id == copy.id } }
         }
     }

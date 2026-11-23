@@ -61,7 +61,7 @@ object ItemOverviews {
         val inventory = client.player?.inventoryMenu?.let { menu ->
             Copy("inventory", "Inventory", INVENTORY_SLOTS.map { slot -> menu.getSlot(slot).item.takeUnless { it.isEmpty }?.toItem()?.let(Owned::of) })
         }
-        client.setScreenAndShow(ItemOverviewScreen(lookup, inventory, overview.copies, query, client.gui.screen(), ::pick))
+        client.setScreenAndShow(ItemOverviewScreen(lookup, listOfNotNull(inventory) + overview.copies, query, client.gui.screen(), ::pick))
     }
 
     /** @keep A click runs the command that opens the first Storage page or Ender Chest holding the item, and marks the

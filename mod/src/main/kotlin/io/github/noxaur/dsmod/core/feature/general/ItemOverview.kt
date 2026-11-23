@@ -23,7 +23,7 @@ class ItemOverview(config: DsModConfig) : HasFeature {
 
     private class Wanted(val key: Owned.Key, val until: Long)
 
-    private class Kept(val shelf: Shelf, val items: Array<Owned?>, var at: Long)
+    private class Kept(val shelf: Shelf, val items: Array<Owned?>)
 
     /** @keep A copy lasts the session. dragsim.co saves the profile again soon enough, and a copy kept on disk could
      * outlive a switch to another profile. Each slot is read as it arrives, so a menu costs one item per change. */
@@ -34,23 +34,22 @@ class ItemOverview(config: DsModConfig) : HasFeature {
     private var stale = false
 
     init {
-        feature.on<ContainerOpened> { opened, now ->
+        feature.on<ContainerOpened> { opened, _ ->
             val shelf = Shelf.of(opened.title?.plain)?.takeIf { it.slots.last < opened.size - ContainerState.PLAYER_SLOTS }
-            open = shelf?.let { Kept(it, arrayOfNulls(it.slots.count()), now) }?.also { kept[it.shelf.id] = it }
+            open = shelf?.let { Kept(it, arrayOfNulls(it.slots.count())) }?.also { kept[it.shelf.id] = it }
             stale = true
         }
-        feature.on<SlotChanged> { changed, now ->
+        feature.on<SlotChanged> { changed, _ ->
             val menu = open ?: return@on
             val i = changed.slot - menu.shelf.slots.first
             if (i !in menu.items.indices) return@on
             menu.items[i] = changed.item?.let(Owned::of)
-            menu.at = now
             stale = true
         }
     }
 
-    /** @keep Each Storage page and the Ender Chest as the player last saw them this session, with when. */
-    val copies: List<Pair<Copy, Long>> get() = kept.values.map { Copy(it.shelf.id, it.shelf.title, it.items.toList()) to it.at }
+    /** @keep Each Storage page and the Ender Chest as the player last saw them this session. */
+    val copies: List<Copy> get() = kept.values.map { Copy(it.shelf.id, it.shelf.title, it.items.toList()) }
 
     fun find(key: Owned.Key, now: Long) {
         wanted = Wanted(key, now + (highlight.value * 1000).toLong())

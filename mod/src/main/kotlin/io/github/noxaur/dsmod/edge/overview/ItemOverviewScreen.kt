@@ -38,7 +38,6 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
 import org.lwjgl.glfw.GLFW
 import org.slf4j.LoggerFactory
-import java.time.Instant
 
 private const val COLUMNS = 14
 private const val ROWS = 8
@@ -70,12 +69,11 @@ private val TAB_ITEMS = mapOf(
     Category.PETS to Items.BONE,
 )
 
-/** @keep `live` is the inventory as the screen opens, and `seen` the menus the player opened this session, each with
- * when. `pick` opens the menu that holds an item, and says whether one does. */
+/** @keep `seen` holds what the game showed: the inventory as the screen opens, and the menus the player opened this
+ * session. `pick` opens the menu that holds an item, and says whether one does. */
 class ItemOverviewScreen(
     private val lookup: ProfileLookup,
-    private val live: Copy?,
-    private val seen: List<Pair<Copy, Long>>,
+    private val seen: List<Copy>,
     query: String,
     private val parent: Screen?,
     private val pick: (Entry) -> Boolean,
@@ -158,9 +156,7 @@ class ItemOverviewScreen(
         if (state === built) return
         built = state
         val backend = (state as? Load.Loaded)?.value
-        val profile = (lookup.state as? Load.Loaded)?.value
-        val savedAt = profile?.savedAt?.let { runCatching { Instant.parse(it).toEpochMilli() }.getOrNull() }
-        overview = Overview(Overview.copies(backend.orEmpty(), savedAt, seen, live))
+        overview = Overview(Overview.copies(backend.orEmpty(), seen))
         hidden = backend.orEmpty().any { it.hidden }
         (state as? Load.Failed)?.failure?.takeIf { it.bug }?.let { LOG.warn("The item overview could not load the backend's containers", it.cause) }
         stacks.clear()

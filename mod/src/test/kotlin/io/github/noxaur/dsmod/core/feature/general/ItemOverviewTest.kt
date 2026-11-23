@@ -23,13 +23,13 @@ class ItemOverviewTest : Harness(alone = ItemOverview::class) {
 
     private fun marks() = overview.feature.slots!!(time)
 
-    private fun hotPotatoBook() = overview.copies.first { it.first.id == "storage:1" }.first.items.firstNotNullOf { it?.takeIf { item -> item.name == "Hot Potato Book" } }.key
+    private fun hotPotatoBook() = overview.copies.first { it.id == "storage:1" }.items.firstNotNullOf { it?.takeIf { item -> item.name == "Hot Potato Book" } }.key
 
     @Test
     fun `a storage page and the ender chest are kept as the player saw them`() {
         post(*events.toTypedArray())
         marks()
-        val copies = overview.copies.map { it.first }
+        val copies = overview.copies
         assertEquals(listOf("storage:1" to "Storage 2", "ender_chest" to "Ender Chest"), copies.map { it.id to it.title })
         assertEquals(45, copies[0].items.size)
         assertEquals(27, copies[1].items.size)
