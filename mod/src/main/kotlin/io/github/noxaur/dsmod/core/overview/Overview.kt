@@ -159,12 +159,15 @@ class Overview(copies: List<Copy>) {
         }
 
         /** @keep A copy the player saw in a menu replaces the backend's when it was seen after dragsim.co last saved the
-         * profile, because the backend's is then older. One the backend does not have, such as a page bought since or
-         * any page when the backend did not answer, is kept whenever it was seen. */
-        fun copies(backend: List<Container>, savedAt: Long?, seen: List<Pair<Copy, Long>>): List<Copy> {
-            val ids = backend.mapTo(HashSet()) { it.id }
-            val used = seen.filter { (copy, at) -> copy.id !in ids || savedAt == null || at > savedAt }.associate { (copy, _) -> copy.id to copy }
-            val listed = backend.filterNot { it.hidden }.map { used[it.id] ?: Copy.of(it) }
+         * profile, because the backend's is then older. One the backend does not show, such as a page bought since, a
+         * hidden one, or any page when the backend did not answer, is kept whenever it was seen. The live inventory
+         * always wins: it is the game's own, worn armor included, and dragsim.co's clock need not agree with ours. */
+        fun copies(backend: List<Container>, savedAt: Long?, seen: List<Pair<Copy, Long>>, live: Copy? = null): List<Copy> {
+            val shown = backend.filterNot { it.hidden }
+            val ids = shown.mapTo(HashSet()) { it.id }
+            val used = seen.filter { (copy, at) -> copy.id !in ids || savedAt == null || at > savedAt }.associate { (copy, _) -> copy.id to copy } +
+                listOfNotNull(live).associateBy { it.id }
+            val listed = shown.map { used[it.id] ?: Copy.of(it) }
             return listed + used.values.filter { copy -> listed.none { it.id == copy.id } }
         }
     }

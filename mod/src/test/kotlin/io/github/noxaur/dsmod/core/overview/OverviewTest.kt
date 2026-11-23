@@ -128,6 +128,14 @@ class OverviewTest {
     }
 
     @Test
+    fun `a hidden container keeps the copy the player saw, and the live inventory beats a later save`() {
+        val chest = Copy("ender_chest", "Ender Chest", listOf(seen("dirt", "Dirt", 1)))
+        val live = Copy("inventory", "Inventory", listOf(seen("bone", "Bone", 1)))
+        val hidden = listOf(inventory, enderChest.copy(hidden = true, items = emptyList()))
+        assertEquals(listOf(live, chest), Overview.copies(hidden, savedAt = 200, seen = listOf(chest to 100L), live = live))
+    }
+
+    @Test
     fun `a container the player hid lists nothing`() {
         assertEquals(emptyList(), Overview.copies(listOf(enderChest.copy(hidden = true, items = emptyList())), savedAt = null, seen = emptyList()))
     }

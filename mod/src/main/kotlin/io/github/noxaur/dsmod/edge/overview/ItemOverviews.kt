@@ -57,12 +57,11 @@ object ItemOverviews {
     // @keep The live inventory is read as the screen opens, so it shows what the player holds now, not what dragsim.co last saved.
     fun open(query: String) {
         val client = Minecraft.getInstance()
-        val now = System.currentTimeMillis()
         val lookup = ProfileLookup(Account.name, Profiles.source) { client.execute(it) }
         val inventory = client.player?.inventoryMenu?.let { menu ->
             Copy("inventory", "Inventory", INVENTORY_SLOTS.map { slot -> menu.getSlot(slot).item.takeUnless { it.isEmpty }?.toItem()?.let(Owned::of) })
         }
-        client.setScreenAndShow(ItemOverviewScreen(lookup, listOfNotNull(inventory?.let { it to now }) + overview.copies, query, client.gui.screen(), ::pick))
+        client.setScreenAndShow(ItemOverviewScreen(lookup, inventory, overview.copies, query, client.gui.screen(), ::pick))
     }
 
     /** @keep A click runs the command that opens the first Storage page or Ender Chest holding the item, and marks the

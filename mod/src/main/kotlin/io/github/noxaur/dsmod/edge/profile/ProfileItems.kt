@@ -1,23 +1,19 @@
 package io.github.noxaur.dsmod.edge.profile
 
 import com.google.common.collect.ImmutableMultimap
-import com.google.gson.JsonParser
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
 import com.mojang.authlib.properties.PropertyMap
-import com.mojang.serialization.JsonOps
 import io.github.noxaur.dsmod.core.game.Skulls
 import io.github.noxaur.dsmod.core.profile.DrawnItem
+import io.github.noxaur.dsmod.edge.customData
 import io.github.noxaur.dsmod.edge.stackOf
 import io.github.noxaur.dsmod.edge.toComponent
 import net.minecraft.client.Minecraft
 import net.minecraft.core.component.DataComponents
-import net.minecraft.nbt.CompoundTag
-import net.minecraft.nbt.NbtOps
 import net.minecraft.resources.Identifier
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
-import net.minecraft.world.item.component.CustomData
 import net.minecraft.world.item.component.DyedItemColor
 import net.minecraft.world.item.component.ItemAttributeModifiers
 import net.minecraft.world.item.component.ItemLore
@@ -34,9 +30,7 @@ fun DrawnItem.toStack(): ItemStack {
     stack.set(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay(false, linkedSetOf(DataComponents.DYED_COLOR)))
     itemModel?.let(Identifier::tryParse)?.let { stack.set(DataComponents.ITEM_MODEL, it) }
     color?.let { stack.set(DataComponents.DYED_COLOR, DyedItemColor(it)) }
-    customData?.let { data ->
-        (JsonOps.INSTANCE.convertTo(NbtOps.INSTANCE, JsonParser.parseString(data.toString())) as? CompoundTag)?.let { stack.set(DataComponents.CUSTOM_DATA, CustomData.of(it)) }
-    }
+    customData?.let(stack::customData)
     rarity?.let(::tooltipStyle)?.let { stack.set(DataComponents.TOOLTIP_STYLE, it) }
     skullTexture?.takeIf { stack.item == Items.PLAYER_HEAD && Skulls.onMojang(it) }?.let { texture ->
         val properties = PropertyMap(ImmutableMultimap.of("textures", Property("textures", texture)))

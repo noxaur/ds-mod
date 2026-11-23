@@ -5,6 +5,8 @@ import com.google.common.collect.MapMaker
 import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
 import com.mojang.authlib.properties.PropertyMap
+import com.mojang.serialization.JsonOps
+import com.google.gson.JsonParser
 import io.github.noxaur.dsmod.core.container.Filler
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.Skulls
@@ -18,6 +20,7 @@ import net.minecraft.nbt.CollectionTag
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.DoubleTag
 import net.minecraft.nbt.FloatTag
+import net.minecraft.nbt.NbtOps
 import net.minecraft.nbt.NumericTag
 import net.minecraft.nbt.StringTag
 import net.minecraft.nbt.Tag
@@ -104,7 +107,14 @@ fun Item.toStack(): ItemStack {
     dye?.let { stack.set(DataComponents.DYED_COLOR, DyedItemColor(it)) }
     glint?.let { stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, it) }
     style?.let { stack.set(DataComponents.TOOLTIP_STYLE, Identifier.parse(it)) }
+    if (data.isNotEmpty()) stack.customData(data)
     return stack
+}
+
+/** @keep The server's item data goes back on a rebuilt stack, because other mods read a tooltip's item data, and a stack
+ * without it would show a bare tooltip where a menu shows theirs. */
+fun ItemStack.customData(data: JsonObject) {
+    (JsonOps.INSTANCE.convertTo(NbtOps.INSTANCE, JsonParser.parseString(data.toString())) as? CompoundTag)?.let { set(DataComponents.CUSTOM_DATA, CustomData.of(it)) }
 }
 
 private const val TEXTURES = "textures"

@@ -70,10 +70,11 @@ private val TAB_ITEMS = mapOf(
     Category.PETS to Items.BONE,
 )
 
-/** @keep `seen` holds the containers read from the game, each with when: the live inventory as the screen opens, and the
- * menus the player opened this session. `pick` opens the menu that holds an item, and says whether one does. */
+/** @keep `live` is the inventory as the screen opens, and `seen` the menus the player opened this session, each with
+ * when. `pick` opens the menu that holds an item, and says whether one does. */
 class ItemOverviewScreen(
     private val lookup: ProfileLookup,
+    private val live: Copy?,
     private val seen: List<Pair<Copy, Long>>,
     query: String,
     private val parent: Screen?,
@@ -159,7 +160,7 @@ class ItemOverviewScreen(
         val backend = (state as? Load.Loaded)?.value
         val profile = (lookup.state as? Load.Loaded)?.value
         val savedAt = profile?.savedAt?.let { runCatching { Instant.parse(it).toEpochMilli() }.getOrNull() }
-        overview = Overview(Overview.copies(backend.orEmpty(), savedAt, seen))
+        overview = Overview(Overview.copies(backend.orEmpty(), savedAt, seen, live))
         hidden = backend.orEmpty().any { it.hidden }
         (state as? Load.Failed)?.failure?.takeIf { it.bug }?.let { LOG.warn("The item overview could not load the backend's containers", it.cause) }
         stacks.clear()
