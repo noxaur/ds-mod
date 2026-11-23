@@ -11,6 +11,7 @@ test("runs the projects that read a file outside their folder", () => {
   assert.deepEqual(affected(["specs/Contribute.tla"]), ["check:mod"]);
   assert.deepEqual(affected(["api/openapi.json"]), ["check:mod", "check:backend"]);
   assert.deepEqual(affected(["web/shared/website.ts"]), ["check:backend", "check:web"]);
+  assert.deepEqual(affected(["web/lint/secret-compare.js"]), ["check:backend", "check:web"]);
   assert.deepEqual(affected(["docs/user/features.md"]), ["check:mod"]);
 });
 

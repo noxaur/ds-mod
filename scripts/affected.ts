@@ -10,6 +10,7 @@ const reaches: [string, string[]][] = [
   ["LICENSE", ["check:mod"]],
   ["backend/", ["check:backend"]],
   ["web/shared/", ["check:backend", "check:web"]],
+  ["web/lint/", ["check:backend", "check:web"]],
   ["web/", ["check:web"]],
   ["scripts/test-time-limit.ts", ["check:backend", "check:web"]],
 ];
