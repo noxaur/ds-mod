@@ -10,7 +10,7 @@ import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
-import io.github.noxaur.dsmod.core.game.Pet
+import io.github.noxaur.dsmod.core.game.PetCard
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Look
 import kotlinx.serialization.Serializable
@@ -81,7 +81,7 @@ class ItemRarity(config: DsModConfig) : HasFeature {
 
     private val marks = SlotMarks(feature) { _, item, _ ->
         val rarity = item.rarity
-        val mark = if (rarity == null) item.name?.let(Pet::rarity)?.let { byRarity[it.name] } else byRarity[rarity]
+        val mark = if (rarity == null) PetCard.rarity(item)?.let { byRarity[it.name] } else byRarity[rarity]
         if (mark == null && rarity != null) feature.unparsed(rarity)
         mark?.takeIf { it.role != Role.COMMON || common }
     }

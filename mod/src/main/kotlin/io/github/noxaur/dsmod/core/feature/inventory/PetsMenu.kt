@@ -46,7 +46,7 @@ class PetsMenu(config: DsModConfig) : HasFeature {
         drawn = next
         val held = next.held.keys
         marks = pets().withIndex().mapNotNull { (n, slot) ->
-            val label = next.keys.getOrNull(n)?.let(::keyLabel)?.let { text { value(it) } }
+            val label = next.keys.getOrNull(n)?.takeIf { next.keys.indexOf(it) == n }?.let(::keyLabel)?.let { text { value(it) } }
             val active = next.mark && feature.container.slots[slot]?.cleanLore?.contains(PetCard.ACTIVE) == true
             val role = if (slot in held) Role.ACTION else if (active) Role.GOOD else Role.MUTED
             if (label == null && slot !in held && !active) null else slot to SlotMark(role, label, outline = slot in held || active)

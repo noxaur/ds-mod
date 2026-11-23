@@ -69,6 +69,14 @@ class PetsMenuTest : Harness(alone = PetsMenu::class) {
     }
 
     @Test
+    fun `a key bound to two pets shows only on the one it clicks`() {
+        open(slots = shelf().toTypedArray())
+        feature.keys[1].value = MenuKeys.KEY_0 + 1
+        pass()
+        assertEquals("1" to null, labels()[10] to labels()[11])
+    }
+
+    @Test
     fun `1 to 9 and 0 click the first ten pets from the top left, skipping the menu's own items`() {
         open(slots = shelf().toTypedArray())
         pass(MenuKeys.WAIT_MILLIS)

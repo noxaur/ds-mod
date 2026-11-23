@@ -20,20 +20,20 @@ import org.lwjgl.glfw.GLFW
 class PetsMenuTest : FabricClientGameTest {
     private val waitTicks = (MenuKeys.WAIT_MILLIS / 50).toInt()
 
-    private fun pet(name: String, color: ChatFormatting, active: Boolean = false) = ItemStack(Items.PLAYER_HEAD).also {
+    private fun pet(name: String, color: ChatFormatting, rarity: String, active: Boolean = false) = ItemStack(Items.PLAYER_HEAD).also {
         it.set(DataComponents.CUSTOM_NAME, Component.literal("[Lvl 100] ").withStyle(ChatFormatting.GRAY).append(Component.literal(name).withStyle(color)))
         val click = if (active) listOf(Component.literal("ACTIVE").withStyle(ChatFormatting.GREEN), Component.literal(PetCard.ACTIVE)) else listOf(Component.literal("Click to summon!"))
-        it.set(DataComponents.LORE, ItemLore(listOf(Component.literal("LEVEL 100"), Component.empty(), Component.literal("MAX LEVEL"), Component.empty()) + click))
+        it.set(DataComponents.LORE, ItemLore(listOf(Component.literal("LEVEL 100"), Component.empty(), Component.literal("MAX LEVEL"), Component.empty()) + click + Component.literal("$rarity COMBAT PET")))
     }
 
     private fun pets(context: ClientGameTestContext, world: TestSingleplayerContext, settle: Int = 5) {
         val menu = ServerMenus.menu(6, PetCard.MENU) {
             it.setItem(4, ServerMenus.named(Items.BONE, PetCard.MENU))
-            it.setItem(10, pet("Enderman", ChatFormatting.GOLD))
-            it.setItem(11, pet("Wolf", ChatFormatting.GOLD))
-            it.setItem(12, pet("Ender Dragon", ChatFormatting.DARK_PURPLE))
-            it.setItem(13, pet("Black Cat", ChatFormatting.GOLD, active = true))
-            it.setItem(14, pet("Rabbit", ChatFormatting.BLUE))
+            it.setItem(10, pet("Enderman", ChatFormatting.GOLD, "LEGENDARY"))
+            it.setItem(11, pet("Wolf", ChatFormatting.GOLD, "LEGENDARY"))
+            it.setItem(12, pet("Ender Dragon", ChatFormatting.DARK_PURPLE, "EPIC"))
+            it.setItem(13, pet("Black Cat", ChatFormatting.GOLD, "LEGENDARY", active = true))
+            it.setItem(14, pet("Rabbit", ChatFormatting.BLUE, "RARE"))
         }
         world.server.runOnServer<Nothing> { server -> server.player.openMenu(menu) }
         context.waitFor { ServerMenus.title(it) == PetCard.MENU }
@@ -54,7 +54,7 @@ class PetsMenuTest : FabricClientGameTest {
             check(held == listOf(Click(11, 0, ContainerInput.PICKUP))) { "The held press did not click the second pet once the second was up: $held" }
             world.server.runOnServer<Nothing> { server ->
                 server.player.containerMenu.setCarried(ItemStack.EMPTY)
-                (server.player.containerMenu as ChestMenu).container.setItem(11, pet("Wolf", ChatFormatting.GOLD))
+                (server.player.containerMenu as ChestMenu).container.setItem(11, pet("Wolf", ChatFormatting.GOLD, "LEGENDARY"))
             }
             context.waitFor { !it.player!!.containerMenu.getSlot(11).item.isEmpty }
 
