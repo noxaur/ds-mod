@@ -56,9 +56,9 @@ class SurfacesTest : FabricClientGameTest {
                 Slots.mark(
                     "test",
                     mapOf(
-                        diamond.index to SlotMark(Role.GOOD, text { good("1") }),
+                        diamond.index to SlotMark(Role.GOOD),
                         diamond.index - 18 to SlotMark(Role.BAD),
-                        diamond.index - 9 to SlotMark(Role.LEGENDARY, rarity = true),
+                        diamond.index - 9 to SlotMark(Role.LEGENDARY, text { value("1") }, rarity = true),
                         diamond.index + 1 to SlotMark(Role.ACTION, outline = true),
                     ),
                 )

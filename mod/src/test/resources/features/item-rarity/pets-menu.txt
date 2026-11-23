@@ -1,0 +1,277 @@
++   0.0s > (sidebar) Name: Player1; Purse: 596,514,464; Pet: [Lvl 100] Black Cat; Booster: Whale Booster; ⏣ Dragon's Den; Quest: Market Trader; Use the Auction House 0/1; Dragon HP: 2,796,000❤; Your Damage: 0; dragsim.co
++   0.0s > (opened your inventory, 46 slots)
++   0.0s > (slot 5) 1 x Necrotic Storm Helmet
+             + slot 5: LEGENDARY rarity on Necrotic Storm Helmet
++   0.0s > (slot 6) 1 x Necrotic Storm Chestplate
+             + slot 6: LEGENDARY rarity on Necrotic Storm Chestplate
++   0.0s > (slot 7) 1 x Necrotic Storm Leggings
+             + slot 7: LEGENDARY rarity on Necrotic Storm Leggings
++   0.0s > (slot 8) 1 x Necrotic Storm Boots
+             + slot 8: LEGENDARY rarity on Necrotic Storm Boots
++   0.0s > (slot 9) 16 x Summoning Eye
+             + slot 9: EPIC rarity on Summoning Eye
++   0.0s > (slot 10) 16 x Summoning Eye
+             + slot 10: EPIC rarity on Summoning Eye
++   0.0s > (slot 11) 1 x Endstone Rose Bush
+             + slot 11: EPIC rarity on Endstone Rose Bush
++   0.0s > (slot 12) 2 x Null Ovoid
+             + slot 12: RARE rarity on Null Ovoid
++   0.0s > (slot 16) 16 x Summoning Eye
+             + slot 16: EPIC rarity on Summoning Eye
++   0.0s > (slot 17) 1 x Rift Pass
+             + slot 17: MYTHIC rarity on Rift Pass
++   0.0s > (slot 18) 1 x Arcane Dragon Chestplate
+             + slot 18: LEGENDARY rarity on Arcane Dragon Chestplate
++   0.0s > (slot 19) 5 x Arcane Dragon Fragment
+             + slot 19: EPIC rarity on Arcane Dragon Fragment
++   0.0s > (slot 20) 16 x Summoning Eye
+             + slot 20: EPIC rarity on Summoning Eye
++   0.0s > (slot 23) 1 x Mysterious Handle
+             + slot 23: EPIC rarity on Mysterious Handle
++   0.0s > (slot 24) 1 x Warden Catalyst
+             + slot 24: LEGENDARY rarity on Warden Catalyst
++   0.0s > (slot 25) 1 x Fabled Edible Mace
+             + slot 25: RARE rarity on Fabled Edible Mace
++   0.0s > (slot 26) 1 x Promising Pickaxe
+             + slot 26: UNCOMMON rarity on Promising Pickaxe
++   0.0s > (slot 27) 1 x Flint Arrow
++   0.0s > (slot 28) 16 x Summoning Eye
+             + slot 28: EPIC rarity on Summoning Eye
++   0.0s > (slot 32) 61 x End Stone Rose
+             + slot 32: RARE rarity on End Stone Rose
++   0.0s > (slot 33) 1 x Flower of Truth
+             + slot 33: LEGENDARY rarity on Flower of Truth
++   0.0s > (slot 34) 16 x Summoning Eye
+             + slot 34: EPIC rarity on Summoning Eye
++   0.0s > (slot 35) 1 x Rift Pass
+             + slot 35: MYTHIC rarity on Rift Pass
++   0.0s > (slot 36) 1 x Suspicious Giant's Sword
+             + slot 36: MYTHIC rarity on Suspicious Giant's Sword
++   0.0s > (slot 37) 1 x Warped Aspect of the Void
+             + slot 37: EPIC rarity on Warped Aspect of the Void
++   0.0s > (slot 38) 1 x Fabled Frozen Scythe
+             + slot 38: RARE rarity on Fabled Frozen Scythe
++   0.0s > (slot 39) 1 x Precise Golden Gun
+             + slot 39: EPIC rarity on Precise Golden Gun
++   0.0s > (slot 40) 16 x Summoning Eye
+             + slot 40: EPIC rarity on Summoning Eye
++   0.0s > (slot 41) 16 x Summoning Eye
+             + slot 41: EPIC rarity on Summoning Eye
++   0.0s > (slot 42) 1 x Golden Eye
+             + slot 42: LEGENDARY rarity on Golden Eye
++   0.0s > (slot 44) 1 x SkyBlock Menu (Right Click)
++   0.2s > (sidebar) Name: Player1; Purse: 596,514,464; Pet: [Lvl 100] Black Cat; Booster: Whale Booster; ⏣ Dragon's Den; Quest: Market Trader; Use the Auction House 0/1; Dragon HP: 2,421,553❤; Your Damage: 0; dragsim.co
++   0.7s > (sidebar) Name: Player1; Purse: 596,514,464; Pet: [Lvl 100] Black Cat; Booster: Whale Booster; ⏣ Dragon's Den; Quest: Market Trader; Use the Auction House 0/1; Dragon HP: 2,047,106❤; Your Damage: 0; dragsim.co
++   1.2s > (sidebar) Name: Player1; Purse: 596,514,464; Pet: [Lvl 100] Black Cat; Booster: Whale Booster; ⏣ Dragon's Den; Quest: Market Trader; Use the Auction House 0/1; Dragon HP: 1,472,658❤; Your Damage: 0; dragsim.co
++   1.7s > (sidebar) Name: Player1; Purse: 596,514,464; Pet: [Lvl 100] Black Cat; Booster: Whale Booster; ⏣ Dragon's Den; Quest: Market Trader; Use the Auction House 0/1; Dragon HP: 698,211❤; Your Damage: 0; dragsim.co
++   2.2s > (sidebar) Name: Player1; Purse: 596,514,464; Pet: [Lvl 100] Black Cat; Booster: Whale Booster; ⏣ Dragon's Den; Quest: Market Trader; Use the Auction House 0/1; Dragon HP: 349,317❤; Your Damage: 0; dragsim.co
++   2.4s > (opened "Pets", 90 slots)
+             - slot 5
+             - slot 6
+             - slot 7
+             - slot 8
+             - slot 9
+             - slot 10
+             - slot 11
+             - slot 12
+             - slot 16
+             - slot 17
+             - slot 18
+             - slot 19
+             - slot 20
+             - slot 23
+             - slot 24
+             - slot 25
+             - slot 26
+             - slot 28
+             - slot 32
+             - slot 33
+             - slot 34
+             - slot 35
+             - slot 36
+             - slot 37
+             - slot 38
+             - slot 39
+             - slot 40
+             - slot 41
+             - slot 42
++   2.4s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 4) 1 x Pets
++   2.4s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 10) 1 x [Lvl 100] Enderman
+             + slot 10: LEGENDARY rarity on [Lvl 100] Enderman
++   2.4s > (slot 11) 1 x [Lvl 100] Wolf
+             + slot 11: LEGENDARY rarity on [Lvl 100] Wolf
++   2.4s > (slot 12) 1 x [Lvl 100] Ender Dragon
+             + slot 12: EPIC rarity on [Lvl 100] Ender Dragon
++   2.4s > (slot 13) 1 x [Lvl 100] Black Cat
+             + slot 13: LEGENDARY rarity on [Lvl 100] Black Cat
++   2.4s > (slot 14) 1 x [Lvl 100] Enderman
+             + slot 14: LEGENDARY rarity on [Lvl 100] Enderman
++   2.4s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 36) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 44) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 45) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 46) 1 x Autopet
++   2.4s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 48) 1 x Go Back
++   2.4s > (slot 49) 1 x Close
++   2.4s > (slot 50) 1 x Pet visibility
++   2.4s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 52) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 53) 1 x minecraft:black_stained_glass_pane
++   2.4s > (slot 54) 16 x Summoning Eye
+             + slot 54: EPIC rarity on Summoning Eye
++   2.4s > (slot 55) 16 x Summoning Eye
+             + slot 55: EPIC rarity on Summoning Eye
++   2.4s > (slot 56) 1 x Endstone Rose Bush
+             + slot 56: EPIC rarity on Endstone Rose Bush
++   2.4s > (slot 57) 2 x Null Ovoid
+             + slot 57: RARE rarity on Null Ovoid
++   2.4s > (slot 61) 16 x Summoning Eye
+             + slot 61: EPIC rarity on Summoning Eye
++   2.4s > (slot 62) 1 x Rift Pass
+             + slot 62: MYTHIC rarity on Rift Pass
++   2.4s > (slot 63) 1 x Arcane Dragon Chestplate
+             + slot 63: LEGENDARY rarity on Arcane Dragon Chestplate
++   2.4s > (slot 64) 5 x Arcane Dragon Fragment
+             + slot 64: EPIC rarity on Arcane Dragon Fragment
++   2.4s > (slot 65) 16 x Summoning Eye
+             + slot 65: EPIC rarity on Summoning Eye
++   2.4s > (slot 68) 1 x Mysterious Handle
+             + slot 68: EPIC rarity on Mysterious Handle
++   2.4s > (slot 69) 1 x Warden Catalyst
+             + slot 69: LEGENDARY rarity on Warden Catalyst
++   2.4s > (slot 70) 1 x Fabled Edible Mace
+             + slot 70: RARE rarity on Fabled Edible Mace
++   2.4s > (slot 71) 1 x Promising Pickaxe
+             + slot 71: UNCOMMON rarity on Promising Pickaxe
++   2.4s > (slot 72) 1 x Flint Arrow
++   2.4s > (slot 73) 16 x Summoning Eye
+             + slot 73: EPIC rarity on Summoning Eye
++   2.4s > (slot 77) 61 x End Stone Rose
+             + slot 77: RARE rarity on End Stone Rose
++   2.4s > (slot 78) 1 x Flower of Truth
+             + slot 78: LEGENDARY rarity on Flower of Truth
++   2.4s > (slot 79) 16 x Summoning Eye
+             + slot 79: EPIC rarity on Summoning Eye
++   2.4s > (slot 80) 1 x Rift Pass
+             + slot 80: MYTHIC rarity on Rift Pass
++   2.4s > (slot 81) 1 x Suspicious Giant's Sword
+             + slot 81: MYTHIC rarity on Suspicious Giant's Sword
++   2.4s > (slot 82) 1 x Warped Aspect of the Void
+             + slot 82: EPIC rarity on Warped Aspect of the Void
++   2.4s > (slot 83) 1 x Fabled Frozen Scythe
+             + slot 83: RARE rarity on Fabled Frozen Scythe
++   2.4s > (slot 84) 1 x Precise Golden Gun
+             + slot 84: EPIC rarity on Precise Golden Gun
++   2.4s > (slot 85) 16 x Summoning Eye
+             + slot 85: EPIC rarity on Summoning Eye
++   2.4s > (slot 86) 16 x Summoning Eye
+             + slot 86: EPIC rarity on Summoning Eye
++   2.4s > (slot 87) 1 x Golden Eye
+             + slot 87: LEGENDARY rarity on Golden Eye
++   2.4s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   2.7s > (sidebar) Name: Player1; Purse: 596,514,464; Pet: [Lvl 100] Black Cat; Booster: Whale Booster; ⏣ Dragon's Den; Quest: Market Trader; Use the Auction House 0/1; dragsim.co
++   6.6s > (opened your inventory, 46 slots)
+             - slot 10
+             - slot 11
+             - slot 12
+             - slot 13
+             - slot 14
+             - slot 54
+             - slot 55
+             - slot 56
+             - slot 57
+             - slot 61
+             - slot 62
+             - slot 63
+             - slot 64
+             - slot 65
+             - slot 68
+             - slot 69
+             - slot 70
+             - slot 71
+             - slot 73
+             - slot 77
+             - slot 78
+             - slot 79
+             - slot 80
+             - slot 81
+             - slot 82
+             - slot 83
+             - slot 84
+             - slot 85
+             - slot 86
+             - slot 87
++   6.6s > (slot 5) 1 x Necrotic Storm Helmet
+             + slot 5: LEGENDARY rarity on Necrotic Storm Helmet
++   6.6s > (slot 6) 1 x Necrotic Storm Chestplate
+             + slot 6: LEGENDARY rarity on Necrotic Storm Chestplate
++   6.6s > (slot 7) 1 x Necrotic Storm Leggings
+             + slot 7: LEGENDARY rarity on Necrotic Storm Leggings
++   6.6s > (slot 8) 1 x Necrotic Storm Boots
+             + slot 8: LEGENDARY rarity on Necrotic Storm Boots
++   6.6s > (slot 9) 16 x Summoning Eye
+             + slot 9: EPIC rarity on Summoning Eye
++   6.6s > (slot 10) 16 x Summoning Eye
+             + slot 10: EPIC rarity on Summoning Eye
++   6.6s > (slot 11) 1 x Endstone Rose Bush
+             + slot 11: EPIC rarity on Endstone Rose Bush
++   6.6s > (slot 12) 2 x Null Ovoid
+             + slot 12: RARE rarity on Null Ovoid
++   6.6s > (slot 16) 16 x Summoning Eye
+             + slot 16: EPIC rarity on Summoning Eye
++   6.6s > (slot 17) 1 x Rift Pass
+             + slot 17: MYTHIC rarity on Rift Pass
++   6.6s > (slot 18) 1 x Arcane Dragon Chestplate
+             + slot 18: LEGENDARY rarity on Arcane Dragon Chestplate
++   6.6s > (slot 19) 5 x Arcane Dragon Fragment
+             + slot 19: EPIC rarity on Arcane Dragon Fragment
++   6.6s > (slot 20) 16 x Summoning Eye
+             + slot 20: EPIC rarity on Summoning Eye
++   6.6s > (slot 23) 1 x Mysterious Handle
+             + slot 23: EPIC rarity on Mysterious Handle
++   6.6s > (slot 24) 1 x Warden Catalyst
+             + slot 24: LEGENDARY rarity on Warden Catalyst
++   6.6s > (slot 25) 1 x Fabled Edible Mace
+             + slot 25: RARE rarity on Fabled Edible Mace
++   6.6s > (slot 26) 1 x Promising Pickaxe
+             + slot 26: UNCOMMON rarity on Promising Pickaxe
++   6.6s > (slot 27) 1 x Flint Arrow
++   6.6s > (slot 28) 16 x Summoning Eye
+             + slot 28: EPIC rarity on Summoning Eye
++   6.6s > (slot 32) 61 x End Stone Rose
+             + slot 32: RARE rarity on End Stone Rose
++   6.6s > (slot 33) 1 x Flower of Truth
+             + slot 33: LEGENDARY rarity on Flower of Truth
++   6.6s > (slot 34) 16 x Summoning Eye
+             + slot 34: EPIC rarity on Summoning Eye
++   6.6s > (slot 35) 1 x Rift Pass
+             + slot 35: MYTHIC rarity on Rift Pass
++   6.6s > (slot 36) 1 x Suspicious Giant's Sword
+             + slot 36: MYTHIC rarity on Suspicious Giant's Sword
++   6.6s > (slot 37) 1 x Warped Aspect of the Void
+             + slot 37: EPIC rarity on Warped Aspect of the Void
++   6.6s > (slot 38) 1 x Fabled Frozen Scythe
+             + slot 38: RARE rarity on Fabled Frozen Scythe
++   6.6s > (slot 39) 1 x Precise Golden Gun
+             + slot 39: EPIC rarity on Precise Golden Gun
++   6.6s > (slot 40) 16 x Summoning Eye
+             + slot 40: EPIC rarity on Summoning Eye
++   6.6s > (slot 41) 16 x Summoning Eye
+             + slot 41: EPIC rarity on Summoning Eye
++   6.6s > (slot 42) 1 x Golden Eye
+             + slot 42: LEGENDARY rarity on Golden Eye
++   6.6s > (slot 44) 1 x SkyBlock Menu (Right Click)
