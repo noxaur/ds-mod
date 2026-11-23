@@ -8,6 +8,7 @@ import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.overview.Shelf
 import io.github.noxaur.dsmod.core.overview.StoragePages
 import io.github.noxaur.dsmod.core.ui.ItemSearch
+import io.github.noxaur.dsmod.core.ui.Menus
 import io.github.noxaur.dsmod.core.ui.Scroll
 import io.github.noxaur.dsmod.core.ui.StorageLayout
 import io.github.noxaur.dsmod.edge.MenuSkin
@@ -21,6 +22,7 @@ import io.github.noxaur.dsmod.edge.input.Refusals
 import io.github.noxaur.dsmod.edge.input.SlotPlaces
 import io.github.noxaur.dsmod.edge.slotUnderMouse
 import io.github.noxaur.dsmod.edge.ui.Kit
+import java.lang.ref.WeakReference
 import java.util.BitSet
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.minecraft.client.Minecraft
@@ -51,8 +53,11 @@ object StorageOverlays {
     private val covered = BitSet()
 
     /** @keep The screen's own size and slot places from before the overview took it, put back if the overview lets it go
-     * while it stays open, such as when the player picks Preview in settings opened over it */
-    private class Original(val screen: ContainerScreen, val width: Int, val height: Int, val x: IntArray, val y: IntArray)
+     * while it stays open, such as when the player picks Preview in settings opened over it. The screen is held weakly, so
+     * a closed one does not keep its world after the player leaves. */
+    private class Original(screen: ContainerScreen, val width: Int, val height: Int, val x: IntArray, val y: IntArray) {
+        val screen = WeakReference(screen)
+    }
 
     private var original: Original? = null
 
@@ -85,10 +90,10 @@ object StorageOverlays {
             val title = screen.title.string
             if (!applies(title)) {
                 if (overlay?.screen === screen) overlay = null
-                original?.takeIf { it.screen === screen }?.let(::restore)
+                original?.takeIf { it.screen.get() === screen }?.let { restore(screen, it) }
                 return@onEveryLayout
             }
-            if (original?.screen !== screen) {
+            if (original?.screen?.get() !== screen) {
                 val slots = screen.menu.slots
                 original = Original(screen, screen.imageWidth, screen.imageHeight, IntArray(slots.size) { slots[it].x }, IntArray(slots.size) { slots[it].y })
             }
@@ -167,12 +172,12 @@ object StorageOverlays {
     }
 
     @InputApproved(by = "noxaur", reaches = ["SlotPlaces.move"])
-    private fun restore(was: Original) {
-        val screen = was.screen
+    private fun restore(screen: ContainerScreen, was: Original) {
         screen.imageWidth = was.width
         screen.imageHeight = was.height
         screen.leftPos = (screen.width - was.width) / 2
-        screen.topPos = (screen.height - was.height) / 2
+        // @keep The same top vanilla's init and Fixed Menu Layout give it, which they took from the overview's height
+        screen.topPos = if (MenuSkin.stable) Menus.top(screen.height, was.height) else (screen.height - was.height) / 2
         for (slot in screen.menu.slots) {
             SlotPlaces.move(slot, was.x[slot.index], was.y[slot.index])
             if (covered[slot.index]) Slots.cover(slot.index, false)

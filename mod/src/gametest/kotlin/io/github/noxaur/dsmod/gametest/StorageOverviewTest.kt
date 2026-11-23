@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.feature.inventory.StorageMode
 import io.github.noxaur.dsmod.core.feature.inventory.StorageOverview
 import io.github.noxaur.dsmod.core.ui.StorageLayout
 import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.containerTop
 import io.github.noxaur.dsmod.edge.containerWidth
 import io.github.noxaur.dsmod.edge.storage.StoragePreviews
 import io.github.noxaur.dsmod.edge.ui.KitTab
@@ -183,6 +184,10 @@ class StorageOverviewTest : FabricClientGameTest {
                 val slot = screen.menu.slots[9]
                 screen.containerWidth == VANILLA_WIDTH && slot.x == VANILLA_SLOT_X && slot.y == VANILLA_SLOT_Y && slot.isActive
             }
+            val restoredTop = context.computeOnClient<Int, Nothing> { (it.gui.screen() as AbstractContainerScreen<*>).containerTop }
+            send(context, "ec", "Ender Chest")
+            val freshTop = context.computeOnClient<Int, Nothing> { (it.gui.screen() as AbstractContainerScreen<*>).containerTop }
+            check(restoredTop == freshTop) { "The given-back Ender Chest sits at y $restoredTop, not where a fresh one does at $freshTop" }
         }
     }
 
