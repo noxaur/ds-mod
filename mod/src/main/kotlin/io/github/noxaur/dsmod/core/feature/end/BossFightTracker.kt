@@ -22,7 +22,7 @@ data class BossLog(val bosses: Map<String, BossRecord> = emptyMap())
 class BossFightTracker(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "boss-fight-tracker", Area.END, Store.END, "Show your rank, damage and loot from the last boss fight.", formerly = listOf("bossDrops"), hud = ::hud)
 
-    private val log = feature.saved(BossLog())
+    private val log = feature.profiled(BossLog())
     private var last: String? = null
 
     private var lastDragon: String? by feature.world { null }

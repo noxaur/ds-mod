@@ -57,7 +57,7 @@ class ActivePet(config: DsModConfig) : HasFeature {
     val markInMenu = feature.switch("markActivePet", "Mark In Menu", "Mark your active pet in the Pets menu.", default = true)
     val hideAutopet = feature.switch("hideAutopet", "Hide Autopet", "Hide the chat line Autopet sends when it swaps your pet.", default = false)
 
-    private val known = feature.saved(KnownPets())
+    private val known = feature.profiled(KnownPets())
 
     private val pets = CurrentPet(feature, ::changed, ::menuSlot) { if (it == pet?.name) block = null }
     private val pet: Pet? get() = pets.pet

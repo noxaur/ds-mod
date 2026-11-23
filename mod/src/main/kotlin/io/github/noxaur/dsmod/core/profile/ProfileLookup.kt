@@ -43,6 +43,13 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
         if ((state as? Load.Loaded)?.value?.profileId != profile) load(profile)
     }
 
+    /** @keep For as long as the backend keeps an answer, the profile it calls selected can be the one the player just left,
+     * so a lookup that knows the player's profile asks for it by name */
+    fun follow(profile: String?) {
+        val loaded = (state as? Load.Loaded)?.value ?: return
+        loaded.choices.firstOrNull { it.name.plain == profile }?.let { switch(it.id) }
+    }
+
     fun retry() {
         if (state is Load.Failed) return load(asked)
         containers.entries.removeAll { it.value is Load.Failed }

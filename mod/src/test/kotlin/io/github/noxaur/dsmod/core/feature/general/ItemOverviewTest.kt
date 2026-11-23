@@ -30,12 +30,12 @@ class ItemOverviewTest : Harness(alone = ItemOverview::class) {
         post(*events.toTypedArray())
         marks()
         val copies = overview.copies
-        assertEquals(listOf("storage:1" to "Storage 2", "ender_chest" to "Ender Chest"), copies.map { it.id to it.title })
-        assertEquals(45, copies[0].items.size)
-        assertEquals(27, copies[1].items.size)
+        assertEquals(listOf("inventory" to "Inventory", "storage:1" to "Storage 2", "ender_chest" to "Ender Chest"), copies.map { it.id to it.title })
+        assertEquals(45, copies[1].items.size)
+        assertEquals(27, copies[2].items.size)
         val books = Overview(copies).entries(Category.ALL, "hot potato", SortBy.AMOUNT, true)
         assertEquals(listOf("Hot Potato Book" to 27L, "Golden Hot Potato Book" to 1L), books.map { it.item.name to it.count })
-        assertNull(copies[1].items.firstOrNull { it?.name == "Close" }, "the controls are not items")
+        assertNull(copies[2].items.firstOrNull { it?.name == "Close" }, "the controls are not items")
     }
 
     @Test

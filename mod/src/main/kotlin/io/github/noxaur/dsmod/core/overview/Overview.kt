@@ -163,7 +163,8 @@ class Overview(copies: List<Copy>) {
         }
 
         /** @keep A copy the game showed always replaces the backend's. A Storage page or the Ender Chest changes only
-         * while its menu is open, where the mod reads it, so a copy seen this session is never older than dragsim.co's.
+         * while its menu is open, where the mod reads it, so a copy the mod kept is never older than dragsim.co's, unless
+         * the player changed it from a game without ds-mod since.
          * Comparing with dragsim.co's save time was rejected, because its clock need not agree with ours. A copy the
          * backend does not show, such as a page bought since, a hidden one, or any when the backend did not answer, is
          * added. */

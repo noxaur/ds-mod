@@ -445,4 +445,4 @@
                All-Time Eyes: 3
                Kills: 40 (40 all-time)
                Kills per Eye: 13.3
-saved zealot-tracker.json = {"drops":{"Summoning Eye":3},"kills":40}
+saved for the profile zealot-tracker = {"drops":{"Summoning Eye":3},"kills":40}

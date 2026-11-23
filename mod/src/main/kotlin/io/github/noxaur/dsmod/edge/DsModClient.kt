@@ -13,6 +13,7 @@ import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.LeftServer
+import io.github.noxaur.dsmod.core.game.SlotClicked
 import io.github.noxaur.dsmod.core.game.WorldChanged
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.MenuTab
@@ -33,6 +34,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.rendering.v1.PictureInPictureRendererRegistry
+import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.Screen
@@ -118,7 +120,7 @@ object DsModClient : ClientModInitializer {
         SettingsScreen.forget()
         tree = SettingsTree(settings)
         game = Game(tree.features) { anyServer || onDragSim }
-        saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game).also { it.load() }
+        saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game, Minecraft.getInstance().user.profileId.toString()).also { it.load() }
         readouts = Readouts(game, settings.hud, tree.feature())
         tabs = TabListPoller(game)
         sidebars = SidebarPoller(game)
@@ -189,7 +191,10 @@ object DsModClient : ClientModInitializer {
         SlotGuards.register()
         CommandKeys.register()
         Pings.register()
-        ScreenHooks.onEveryLayout<AbstractContainerScreen<*>> { screen, _ -> readouts.opened(screen) }
+        ScreenHooks.onEveryLayout<AbstractContainerScreen<*>> { screen, _ ->
+            readouts.opened(screen)
+            ScreenMouseEvents.beforeMouseClick(screen).register { _, _ -> screen.slotUnderMouse?.let { game.post(System.currentTimeMillis(), SlotClicked(it.index)) } }
+        }
         ChatDrags.register(settings.hud, ::saveSettings)
         Editors.register(Canvas.HUD_LAYOUT) { panel, host -> @Suppress("UNCHECKED_CAST") HudLayoutEditor(panel as Panel<Map<String, DsModConfig.Position>>, readouts, host) }
         Editors.register(Canvas.MENU_TABS) { panel, host -> @Suppress("UNCHECKED_CAST") TabPlacesEditor(panel as Panel<List<MenuTab>>, host) }

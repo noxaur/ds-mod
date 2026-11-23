@@ -6,10 +6,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.general.ItemOverview
-import io.github.noxaur.dsmod.core.game.ContainerState
-import io.github.noxaur.dsmod.core.overview.Copy
 import io.github.noxaur.dsmod.core.overview.Entry
-import io.github.noxaur.dsmod.core.overview.Owned
 import io.github.noxaur.dsmod.core.overview.Shelf
 import io.github.noxaur.dsmod.core.profile.ProfileLookup
 import io.github.noxaur.dsmod.core.text.text
@@ -19,7 +16,6 @@ import io.github.noxaur.dsmod.edge.Keys
 import io.github.noxaur.dsmod.edge.input.InputApproved
 import io.github.noxaur.dsmod.edge.input.PlayerCommands
 import io.github.noxaur.dsmod.edge.profile.Profiles
-import io.github.noxaur.dsmod.edge.toItem
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.minecraft.client.Minecraft
@@ -27,8 +23,6 @@ import net.minecraft.client.Minecraft
 object ItemOverviews {
     private lateinit var game: Game
     private lateinit var overview: ItemOverview
-
-    private val INVENTORY_SLOTS = ContainerState.WORN_SLOTS + ContainerState.CARRIED_SLOTS + ContainerState.OFFHAND_SLOT
 
     fun bind(game: Game, overview: ItemOverview) {
         this.game = game
@@ -54,14 +48,10 @@ object ItemOverviews {
         return 1
     }
 
-    // @keep The live inventory is read as the screen opens, so it shows what the player holds now, not what dragsim.co last saved.
     fun open(query: String) {
         val client = Minecraft.getInstance()
         val lookup = ProfileLookup(Account.name, Profiles.source) { client.execute(it) }
-        val inventory = client.player?.inventoryMenu?.let { menu ->
-            Copy("inventory", "Inventory", INVENTORY_SLOTS.map { slot -> menu.getSlot(slot).item.takeUnless { it.isEmpty }?.toItem()?.let(Owned::of) })
-        }
-        client.setScreenAndShow(ItemOverviewScreen(lookup, listOfNotNull(inventory) + overview.copies, query, client.gui.screen(), ::pick))
+        client.setScreenAndShow(ItemOverviewScreen(lookup, overview.copies, overview.feature.player.profile, query, client.gui.screen(), ::pick))
     }
 
     /** @keep A click runs the command that opens the first Storage page or Ender Chest holding the item, and marks the

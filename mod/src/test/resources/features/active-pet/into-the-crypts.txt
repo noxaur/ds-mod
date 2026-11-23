@@ -17,4 +17,4 @@
 +  58.0s > (the world changed)
 +  58.0s > (sidebar) 
 +  58.5s > (sidebar) Name: Player1; Purse: 527,099,929; Pet: [Lvl 100] Ender Dragon; Booster: Magic Find Boost; ⏣ Dragon's Den; Quest: Market Trader; Use the Auction House 0/1; dragsim.co
-saved active-pet.json = {"pets":{"Ender Dragon":{"icon":null,"held":null,"rarity":"EPIC","maxLevel":null,"category":null}},"latest":{}}
+saved for the profile active-pet = {"pets":{"Ender Dragon":{"icon":null,"held":null,"rarity":"EPIC","maxLevel":null,"category":null}},"latest":{}}

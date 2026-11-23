@@ -91,6 +91,19 @@ class ProfileLookupTest {
     }
 
     @Test
+    fun `a lookup that knows the player's profile asks for it by name, once`() {
+        source.profiles[0].second.complete(profile)
+        lookup.follow("Superior")
+        assertEquals(1, source.profiles.size, "the backend answered for it")
+        lookup.follow("Arcane")
+        lookup.follow("Arcane")
+        assertEquals(listOf(null, "aaaaaaaa-0000-4000-8000-000000000001"), source.profiles.map { it.first })
+        lookup.follow("No Such Profile")
+        lookup.follow(null)
+        assertEquals(2, source.profiles.size)
+    }
+
+    @Test
     fun `switching to the profile shown asks for nothing`() {
         source.profiles[0].second.complete(profile)
         lookup.switch(profile.profileId)

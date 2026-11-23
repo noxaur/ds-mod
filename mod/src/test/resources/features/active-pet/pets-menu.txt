@@ -136,4 +136,4 @@
 +   6.6s > (slot 41) 16 x Summoning Eye
 +   6.6s > (slot 42) 1 x Golden Eye
 +   6.6s > (slot 44) 1 x SkyBlock Menu (Right Click)
-saved active-pet.json = {"pets":{"Black Cat":{"icon":{"id":"minecraft:player_head","skin":null,"model":null},"held":{"name":"Gold Claws","rarity":"LEGENDARY"},"rarity":"LEGENDARY","maxLevel":100,"category":"COMBAT"}},"latest":{"Black Cat":"Black Cat"}}
+saved for the profile active-pet = {"pets":{"Black Cat":{"icon":{"id":"minecraft:player_head","skin":null,"model":null},"held":{"name":"Gold Claws","rarity":"LEGENDARY"},"rarity":"LEGENDARY","maxLevel":100,"category":"COMBAT"}},"latest":{"Black Cat":"Black Cat"}}

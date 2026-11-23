@@ -13,7 +13,7 @@ class SlotLock(config: DsModConfig) : HasFeature {
     val slotLockKey = feature.keys("slotLockKey", "Slot Key", "Pick the key or mouse button that locks the slot under the mouse.", KEY_L, clicks = false)
     val itemLockKey = feature.keys("itemLockKey", "Item Key", "Pick the key that locks an item that does not stack.", KEY_K, clicks = false)
 
-    private val kept = feature.saved(SlotLocks())
+    private val kept = feature.profiled(SlotLocks())
 
     var locks: SlotLocks
         get() = kept.value
