@@ -11,7 +11,6 @@ import io.github.noxaur.dsmod.edge.input.InputApproved
 import io.github.noxaur.dsmod.edge.input.Refusals
 import io.github.noxaur.dsmod.edge.ui.Icon
 import io.github.noxaur.dsmod.edge.ui.Kit
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.minecraft.client.Minecraft
@@ -63,16 +62,16 @@ object SlotGuards {
     @InputApproved(by = "noxaur", reaches = ["Refusals.allowKeyPress", "Refusals.allowMouseClick", "Refusals.allowMouseRelease"])
     fun register() {
         // @keep The server refills a crafting result after the click, so the next craft waits for that packet.
-        ClientTickEvents.END_CLIENT_TICK.register { client ->
-            val (screen, index) = pending ?: return@register
+        Ticks.end { client ->
+            val (screen, index) = pending ?: return@end
             if (!on || client.gui.screen() !== screen) {
                 pending = null
-                return@register
+                return@end
             }
             val slot = screen.menu.getSlot(index)
             if (!slot.hasItem()) {
                 if (++pendingWaits > RESULT_WAIT) pending = null
-                return@register
+                return@end
             }
             pendingWaits = 0
             if (!steered(client, screen, slot)) pending = null

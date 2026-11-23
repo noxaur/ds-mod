@@ -15,6 +15,8 @@ import java.util.concurrent.TimeUnit
 
 const val SMOKE_TEST = "io.github.noxaur.dsmod.gametest.SettingsScreenTest"
 
+const val PERF_TEST = "io.github.noxaur.dsmod.gametest.PerfTest"
+
 private const val HUB = 12
 
 /** @keep A test takes 8 seconds on a CI runner, and the boot leaves the job about 70 of its 180. */
@@ -141,7 +143,8 @@ fun pickGameTests(sources: Sources, changed: Collection<String>): Picked {
             !path.startsWith("src/gametest/") -> unreached += path
         }
     }
-    return Picked(if (picked.size > MOST_PICKED) setOf(SMOKE_TEST) else picked, unreached)
+    val run = picked - PERF_TEST
+    return Picked(if (run.size > MOST_PICKED) setOf(SMOKE_TEST) else run, unreached)
 }
 
 /** @keep Writes the game test manifest with the tests the third argument names: all, a comma list of them, or, with none, those the change reaches. */

@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.container.SlotCooldown
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
+import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.ui.Kit
@@ -70,7 +71,7 @@ object Slots {
     fun register() {
         HudElementRegistry.attachElementAfter(VanillaHudElements.HOTBAR, Identifier.fromNamespaceAndPath("dsmod", "hotbar")) { graphics, _ ->
             if (!onHotbar() || !cooldowns) return@attachElementAfter
-            game.metrics.time("slots.draw") {
+            game.metrics.time("slots.draw", Metrics.FRAME) {
                 val left = graphics.guiWidth() / 2 - 88
                 val top = graphics.guiHeight() - 19
                 for (i in 0 until Inventory.SELECTION_SIZE) drawFront(graphics, InventoryMenu.USE_ROW_SLOT_START + i, left + i * HOTBAR_PITCH, top)
@@ -153,7 +154,7 @@ object Slots {
 
     private inline fun each(screen: AbstractContainerScreen<*>, graphics: GuiGraphicsExtractor, draw: (Int, Slot, Shown) -> Unit) {
         if (marks.isEmpty()) return
-        game.metrics.time("slots.draw") {
+        game.metrics.time("slots.draw", Metrics.FRAME) {
             screen.drawInContainer(graphics) {
                 for (slots in marks.values) {
                     for ((index, shown) in slots) {

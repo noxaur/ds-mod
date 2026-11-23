@@ -1,4 +1,7 @@
+import java.io.IOException
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
@@ -186,6 +189,31 @@ val debugJar = tasks.register<Jar>("debugJar") {
 }
 
 tasks.assemble { dependsOn(debugJar) }
+
+tasks.register("installMod") {
+    group = "distribution"
+    description = "Puts the release jar, or the debug jar with -Pjar=debug, in the game folder at -Pgame=, in place of any ds-mod jar there. `mise run install` picks the jar and the backend."
+    val game = providers.gradleProperty("game").map { File(it).absoluteFile.normalize() }
+    val jar = (if (providers.gradleProperty("jar").orNull == "debug") debugJar else tasks.jar).flatMap { it.archiveFile }
+    inputs.file(jar)
+    outputs.upToDateWhen { false }
+    doLast {
+        val mods = game.get().let { if (it.name == "mods") it else it.resolve("mods") }
+        check(mods.isDirectory) { "$mods is not a mods folder. Pass the game folder that holds mods, such as a Prism instance's minecraft folder, or the mods folder." }
+        val built = jar.get().asFile
+        val old = checkNotNull(mods.listFiles { file -> file.name.startsWith("dsmod-") && file.name.endsWith(".jar") && file.name != built.name }) { "Could not list $mods to find the ds-mod jar it holds." }
+        val staged = built.copyTo(mods.resolve(".${built.name}.part"), overwrite = true)
+        Files.move(staged.toPath(), mods.resolve(built.name).toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
+        for (file in old) {
+            try {
+                Files.delete(file.toPath())
+            } catch (e: IOException) {
+                throw GradleException("Installed ${built.name}, but could not remove $file, so the game would load both. Close the game and run the install again.", e)
+            }
+        }
+        logger.lifecycle("Installed ${built.name} in $mods")
+    }
+}
 
 dependencies {
     productionRuntimeMods("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")

@@ -16,10 +16,7 @@ class ContainerPollTest : FabricClientGameTest {
         ClientTickEvents.START_CLIENT_TICK.register { tick++ }
         context.worldBuilder().create().use { world ->
             context.waitTicks(10)
-            context.runOnClient<Nothing> {
-                DsModClient.game.metrics.flush()
-                DsModClient.game.tap = { _, event -> if (event is SlotChanged) ticksWithSlots += tick }
-            }
+            context.runOnClient<Nothing> { DsModClient.game.tap = { _, event -> if (event is SlotChanged) ticksWithSlots += tick } }
             try {
                 world.server.runOnServer<Nothing> { server ->
                     val chest = SimpleContainer(54)
@@ -30,13 +27,9 @@ class ContainerPollTest : FabricClientGameTest {
                 }
                 context.waitFor { it.gui.screen() is AbstractContainerScreen<*> }
                 context.waitTicks(20)
-                val (read, longest) = context.computeOnClient<Pair<Int, Long>, Nothing> {
-                    DsModClient.game.container.slots.take(54).count { it?.lore?.size == 40 } to
-                        DsModClient.game.metrics.snapshot().timers.getValue("container-poll").maxNanos
-                }
-                println("ContainerPollTest: the longest poll took ${longest / 1000}µs, and slots arrived in ${ticksWithSlots.size} ticks")
+                val read = context.computeOnClient<Int, Nothing> { DsModClient.game.container.slots.take(54).count { it?.lore?.size == 40 } }
                 check(read == 54) { "Only $read of the 54 items arrived" }
-                check(ticksWithSlots.size > 1) { "All slots were read in one tick, which took ${longest / 1000}µs" }
+                check(ticksWithSlots.size > 1) { "All slots were read in one tick" }
             } finally {
                 context.runOnClient<Nothing> {
                     DsModClient.game.tap = null

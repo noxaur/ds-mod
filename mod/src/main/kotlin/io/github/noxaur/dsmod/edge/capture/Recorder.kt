@@ -4,11 +4,11 @@ import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.capture.CaptureIncompleteException
 import io.github.noxaur.dsmod.core.capture.RawRecord
 import io.github.noxaur.dsmod.edge.Background
+import io.github.noxaur.dsmod.edge.Ticks
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.network.protocol.Packet
@@ -75,7 +75,7 @@ object Recorder {
                 }
             }
         }
-        ClientTickEvents.END_CLIENT_TICK.register { client -> session?.tick(client) }
+        Ticks.end { client -> session?.tick(client) }
     }
 
     fun quit() {

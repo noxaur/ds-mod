@@ -27,7 +27,11 @@ class ForgeCraftTest : Harness(alone = ForgeCraft::class) {
         if (carried > 0) post(SlotChanged(size - 1, item("minecraft:obsidian", "Enchanted Obsidian", carried)))
     }
 
-    private fun forge(queued: Int = 0) = open(ForgeCraft.FORGE, 6, mapOf(22 to item("minecraft:hopper", "Forge Queue ($queued/10)")))
+    private fun forge(queued: Int = 0, busy: Int = 7, carried: Int = 34) {
+        val plate = item("minecraft:netherite_scrap", "Void Plate", 1, "Right-click to view recipes.", "", "EPIC", "", "Time Remaining: 26m 1s")
+        val forging = (10..16).associateWith { if (it < 10 + busy) plate else item("minecraft:black_stained_glass_pane", "") }
+        open(ForgeCraft.FORGE, 6, forging + (22 to item("minecraft:hopper", "Forge Queue ($queued/10)")), carried)
+    }
 
     private fun select() = open(ForgeCraft.SELECT, 6, mapOf(11 to item("minecraft:end_stone_bricks", "Refining", 1, "Click to browse!")))
 
@@ -88,6 +92,16 @@ class ForgeCraftTest : Harness(alone = ForgeCraft::class) {
         assertTrue(feature.full)
         assertEquals(22 to true, next())
         assertEquals(0, feature.canCraft())
+    }
+
+    @Test
+    fun `an idle forge takes its seven slots and the queue's ten`() {
+        craftByHand()
+        forge(busy = 0, carried = 20 * 16)
+        assertEquals(17, feature.free)
+        assertEquals(17, feature.canCraft())
+        forge(queued = 0, busy = 3)
+        assertEquals(14, feature.free)
     }
 
     @Test

@@ -2,6 +2,7 @@ package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.general.EtherwarpOutline
+import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.hand.Etherwarp
 import io.github.noxaur.dsmod.core.text.Role
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionEvents
@@ -67,7 +68,7 @@ object Etherwarps {
             range = Etherwarp.range(stack.get(DataComponents.LORE)?.lines()?.map { it.toText().plain }.orEmpty())
         }
         if (range == 0) return clear()
-        game.metrics.time("etherwarp.frame") {
+        game.metrics.time("etherwarp.frame", Metrics.FRAME) {
             /* @keep The server warps from where it last saw the player, which is where the last tick left them and not where
              * this frame draws them, and from a sneaking eye, which is lower than a standing one. */
             val x = player.x

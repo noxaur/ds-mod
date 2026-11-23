@@ -23,14 +23,23 @@ class Metrics(private val nanoTime: () -> Long = System::nanoTime) {
     // @keep A sink that does I/O must hand the snapshot to its own thread
     val sinks = ArrayList<(Snapshot) -> Unit>()
 
-    inline fun time(name: String, block: () -> Unit) {
+    inline fun time(name: String, within: String? = null, block: () -> Unit) {
         val start = start()
         try {
             block()
         } catch (e: Exception) {
             fail(name, e)
         }
-        stop(name, start)
+        stop(name, start, within)
+    }
+
+    inline fun <T> measure(boundary: String, block: () -> T): T {
+        val start = start()
+        try {
+            return block()
+        } finally {
+            stop(boundary, start)
+        }
     }
 
     fun count(name: String, by: Long = 1) {
@@ -59,11 +68,22 @@ class Metrics(private val nanoTime: () -> Long = System::nanoTime) {
     internal fun start() = nanoTime()
 
     @PublishedApi
-    internal fun stop(name: String, start: Long) {
+    internal fun stop(name: String, start: Long, within: String? = null) {
         val elapsed = nanoTime() - start
+        record(name, elapsed)
+        if (within != null) record(within, elapsed)
+    }
+
+    private fun record(name: String, elapsed: Long) {
         val timing = timings.getOrPut(name, ::Timing)
         timing.count++
         timing.total += elapsed
         if (elapsed > timing.max) timing.max = elapsed
+    }
+
+    companion object {
+        const val TICK = "tick"
+        const val FRAME = "frame"
+        const val PACKETS = "packets"
     }
 }

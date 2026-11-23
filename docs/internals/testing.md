@@ -16,7 +16,7 @@ A release member needs a caller in the release or debug code, and a game test's 
 
 ## CI measures the mod in a real game
 
-Fast and smooth is checked, not promised. A perf test boots the jars a player installs and reads the mod's own timers, so the numbers are the ones play produces. A unit benchmark was rejected, because it would miss the draw cost, which exists only inside Minecraft's renderer. Every time is scaled to a reference device, and each cap gates the median of twelve windows, because one window on a shared runner can be several times slower.
+Fast and smooth is checked, not promised. A perf test boots the jars a player installs and times the mod where the game calls it: each tick, each frame and each burst of the server's packets, so a part can move or be renamed without touching the test. A timer per part was rejected, because every refactor edited the test, and a unit benchmark because it misses the draw cost. Every time is scaled to a reference device, and each cap gates the median of twelve windows, because one window on a shared runner can be several times slower.
 
 ## A pull request runs the game tests its change reaches
 
