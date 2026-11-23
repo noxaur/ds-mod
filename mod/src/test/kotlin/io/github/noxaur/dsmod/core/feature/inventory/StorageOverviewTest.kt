@@ -70,12 +70,12 @@ class StorageOverviewTest : Harness() {
     }
 
     @Test
-    fun `the pages outlast the session, and the count of pages does not`() {
+    fun `the pages and their count outlast the session`() {
         post(open("Storage Page (1/3)", 90), SlotChanged(9, item("Dragon Scale")))
         post(LeftServer)
         post(open("Ender Chest", 72))
         assertEquals("Dragon Scale", pages.page("storage:0")!!.items[0]!!.name?.plain)
-        assertEquals(listOf("ender_chest", "storage:0"), shown())
+        assertEquals(listOf("ender_chest", "storage:0", "storage:1", "storage:2"), shown())
     }
 
     @Test

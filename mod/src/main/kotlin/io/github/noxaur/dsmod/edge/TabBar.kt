@@ -206,7 +206,8 @@ object TabBar {
         }
     }
 
-    fun dims(index: Int) = words.isNotEmpty() && dimmed[index]
+    // @keep A slot that is hidden or covered keeps its match, so it dims as it should once it shows again
+    fun dims(index: Int) = words.isNotEmpty() && dimmed[index] && !Slots.hides(index)
 
     private fun search(screen: AbstractContainerScreen<*>, field: KitTextField) {
         if (!field.visible || words.isEmpty()) {
@@ -220,7 +221,7 @@ object TabBar {
             val stack = slots[i].item
             if (!again && stack === stacks[i]) continue
             stacks[i] = stack
-            dimmed[i] = !stack.isEmpty && !Slots.hides(i) && !matches(stack)
+            dimmed[i] = !stack.isEmpty && !matches(stack)
         }
         searched = query
         val any = slots.indices.any { stacks[it]?.isEmpty == false && !dimmed[it] && !Slots.hides(it) } || alsoFound()

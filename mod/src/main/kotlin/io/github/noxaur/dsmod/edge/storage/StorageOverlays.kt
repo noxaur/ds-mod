@@ -50,6 +50,12 @@ object StorageOverlays {
     // @keep The slots this screen hid, kept over a new layout of the same screen, since the slots stay hidden until shown.
     private val covered = BitSet()
 
+    /** @keep The screen's own size and slot places from before the overview took it, put back if the overview lets it go
+     * while it stays open, such as when the player picks Preview in settings opened over it */
+    private class Original(val screen: ContainerScreen, val width: Int, val height: Int, val x: IntArray, val y: IntArray)
+
+    private var original: Original? = null
+
     /** @keep `open` is the open page's place in `shelves`, and -1 in the root menu. `items` is how many slots the menu
      * itself has, before the player's inventory. */
     private class Overlay(val screen: ContainerScreen, val title: String, val shelves: List<Shelf>, val open: Int, val layout: StorageLayout) {
@@ -79,7 +85,12 @@ object StorageOverlays {
             val title = screen.title.string
             if (!applies(title)) {
                 if (overlay?.screen === screen) overlay = null
+                original?.takeIf { it.screen === screen }?.let(::restore)
                 return@onEveryLayout
+            }
+            if (original?.screen !== screen) {
+                val slots = screen.menu.slots
+                original = Original(screen, screen.imageWidth, screen.imageHeight, IntArray(slots.size) { slots[it].x }, IntArray(slots.size) { slots[it].y })
             }
             val shelves = storage.pages.shown(title)
             val open = Shelf.of(title)?.id
@@ -153,6 +164,21 @@ object StorageOverlays {
                 covered.set(i)
             }
         }
+    }
+
+    @InputApproved(reaches = ["SlotPlaces.move"])
+    private fun restore(was: Original) {
+        val screen = was.screen
+        screen.imageWidth = was.width
+        screen.imageHeight = was.height
+        screen.leftPos = (screen.width - was.width) / 2
+        screen.topPos = (screen.height - was.height) / 2
+        for (slot in screen.menu.slots) {
+            SlotPlaces.move(slot, was.x[slot.index], was.y[slot.index])
+            if (covered[slot.index]) Slots.cover(slot.index, false)
+        }
+        covered.clear()
+        original = null
     }
 
     @InputApproved(by = "noxaur", reaches = ["SlotPlaces.move"])

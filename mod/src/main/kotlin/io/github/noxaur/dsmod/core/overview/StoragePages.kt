@@ -1,6 +1,8 @@
 package io.github.noxaur.dsmod.core.overview
 
 import io.github.noxaur.dsmod.core.feature.Feature
+import io.github.noxaur.dsmod.core.feature.Saved
+import io.github.noxaur.dsmod.core.feature.inventory.StorageOverviewState
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.game.SlotChanged
@@ -9,18 +11,16 @@ import io.github.noxaur.dsmod.core.text.count
 
 /** @keep The Storage pages and the Ender Chest the storage overview shows. Their items are the player's data, so a page
  * keeps them over a restart and follows a switch of profile. How many pages the player has is counted from the root
- * menu's page icons and a page's `(2/7)`, for the profile it was counted on, since a page not bought has no icon. */
-class StoragePages(private val feature: Feature) {
-    private class Counted(val profile: String?, val pages: Int)
-
+ * menu's page icons and a page's `(2/7)`, since a page not bought has no icon, and kept in the feature's own profiled
+ * `state`. */
+class StoragePages(private val feature: Feature, private val state: Saved<StorageOverviewState>) {
     private var root by feature.session { false }
     private var rootSize by feature.session { 0 }
-    private var counted by feature.session { Counted(null, 0) }
     private var read: Map<String, Seen>? = null
     private var changes = 0
 
     /** @keep How many Storage pages the player has, and 0 before the root menu or a page's title was seen */
-    val owned: Int get() = counted.takeIf { it.profile == feature.player.profile }?.pages ?: 0
+    val owned: Int get() = state.value.pages
 
     /** @keep Goes up whenever the pages change, so a reader rebuilds what it drew from them only when this moves */
     val version: Int
@@ -62,7 +62,7 @@ class StoragePages(private val feature: Feature) {
 
     private fun count(pages: Int) {
         if (pages <= owned) return
-        counted = Counted(feature.player.profile, pages)
+        state.value = state.value.copy(pages = pages)
         changes++
     }
 

@@ -268,4 +268,4 @@
 +  22.8s > (slot 41) 1 x Auspicious Amethyst Gauntlet
 +  22.8s > (slot 42) 1 x Fuel Tank
 +  22.8s > (slot 44) 1 x SkyBlock Menu (Right Click)
-saved storage-overview.json = {"told":false}
+saved for the profile storage-overview = {"told":false,"pages":7}

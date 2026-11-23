@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.feature.inventory.StorageMode
 import io.github.noxaur.dsmod.core.feature.inventory.StorageOverview
 import io.github.noxaur.dsmod.core.ui.StorageLayout
 import io.github.noxaur.dsmod.edge.DsModClient
+import io.github.noxaur.dsmod.edge.containerWidth
 import io.github.noxaur.dsmod.edge.storage.StoragePreviews
 import io.github.noxaur.dsmod.edge.ui.KitTab
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
@@ -173,11 +174,22 @@ class StorageOverviewTest : FabricClientGameTest {
             context.setScreen { null }
             send(context, "ec", "Ender Chest")
             context.takeScreenshot("storage-overview-ender-chest")
+            // @keep Settings opened over the menu returns to it, which lays it out again, so Preview picked there must give the chest back as vanilla drew it.
             mode(context, StorageMode.PREVIEW)
+            context.runOnClient<Nothing> { it.resizeGui() }
+            context.waitTicks(2)
+            context.checkClient("Picking Preview left the Ender Chest laid out as the overview") { client ->
+                val screen = client.gui.screen() as AbstractContainerScreen<*>
+                val slot = screen.menu.slots[9]
+                screen.containerWidth == VANILLA_WIDTH && slot.x == VANILLA_SLOT_X && slot.y == VANILLA_SLOT_Y && slot.isActive
+            }
         }
     }
 
     private companion object {
         const val PAGES = 3
+        const val VANILLA_WIDTH = 176
+        const val VANILLA_SLOT_X = 8
+        const val VANILLA_SLOT_Y = 36
     }
 }
