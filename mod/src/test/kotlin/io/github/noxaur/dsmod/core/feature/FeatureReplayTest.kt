@@ -181,7 +181,7 @@ class FeatureReplayTest {
                                     appendLine("             + slot $slot: cooldown until +%.1fs on %s".format(Locale.ROOT, (cooldown.end - start) / 1000.0, item))
                                     continue
                                 }
-                                val shape = if (mark.rarity) "rarity" else if (mark.outline) "outline" else "fill"
+                                val shape = if (mark.rarity) "rarity" else if (mark.outline) "outline" else if (mark.label != null) "label" else "fill"
                                 val label = mark.label?.let { " \"${it.plain}\"" } ?: ""
                                 appendLine("             + slot $slot: ${mark.role} $shape$label on $item")
                             }

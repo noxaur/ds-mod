@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.feature.inventory.WardrobeKeys
+import io.github.noxaur.dsmod.core.feature.inventory.MenuKeys
 import io.github.noxaur.dsmod.edge.input.ContainerClicks
 import io.github.noxaur.dsmod.edge.input.InputApproved
 import io.github.noxaur.dsmod.edge.input.Refusals
@@ -11,14 +11,12 @@ import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.world.inventory.ContainerInput
 import org.lwjgl.glfw.GLFW
 
-object Wardrobes {
-    private lateinit var feature: WardrobeKeys
+object MenuKeyClicks {
+    private var menus = emptyList<MenuKeys>()
 
-    fun bind(wardrobeKeys: WardrobeKeys) {
-        feature = wardrobeKeys
+    fun bind(vararg keys: MenuKeys) {
+        menus = keys.toList()
     }
-
-    private val on get() = feature.feature.runs
 
     private val taken = TakenButtons()
 
@@ -26,10 +24,11 @@ object Wardrobes {
         ScreenHooks.onEveryLayout<ContainerScreen> { screen, _ ->
             val client = Minecraft.getInstance()
             ScreenEvents.afterTick(screen).register {
-                if (on) feature.due(System.currentTimeMillis())?.let { click(client, screen, it) }
+                val keys = open(screen) ?: return@register
+                keys.due(System.currentTimeMillis())?.let { click(client, screen, keys, it) }
             }
             ScreenEvents.afterBackground(screen).register { _, g, _, _, _ ->
-                val wait = if (on && wardrobe(screen)) feature.wait(System.currentTimeMillis()) else 0
+                val wait = open(screen)?.wait(System.currentTimeMillis()) ?: 0
                 if (wait > 0) MenuTimers.draw(g, screen, MenuTimers.seconds(wait))
             }
             takeKeys(client, screen)
@@ -45,19 +44,19 @@ object Wardrobes {
         taken.register(screen) { event -> press(client, screen, event.button(), fresh = true) }
     }
 
-    private fun wardrobe(screen: ContainerScreen) = feature.open(screen.menu.containerId)
+    private fun open(screen: ContainerScreen) = menus.firstOrNull { it.runs && it.open(screen.menu.containerId) }
 
     private fun press(client: Minecraft, screen: ContainerScreen, bound: Int, fresh: Boolean): Boolean {
-        if (!on || !wardrobe(screen)) return false
-        val index = feature.index(bound) ?: return false
-        if (fresh) feature.press(index, System.currentTimeMillis())?.let { click(client, screen, it) }
+        val keys = open(screen) ?: return false
+        val index = keys.index(bound) ?: return false
+        if (fresh) keys.press(index, System.currentTimeMillis())?.let { click(client, screen, keys, it) }
         return true
     }
 
     @InputApproved(by = "noxaur", reaches = ["ContainerClicks.click"])
-    private fun click(client: Minecraft, screen: ContainerScreen, slot: Int) {
+    private fun click(client: Minecraft, screen: ContainerScreen, keys: MenuKeys, slot: Int) {
         val menu = screen.menu
-        if (!wardrobe(screen) || slot !in menu.slots.indices) return
+        if (!keys.open(menu.containerId) || slot !in menu.slots.indices) return
         if (client.gameMode == null || client.player == null) return
         ContainerClicks.click(menu, slot, 0, ContainerInput.PICKUP)
     }

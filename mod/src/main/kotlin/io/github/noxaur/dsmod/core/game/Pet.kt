@@ -45,5 +45,12 @@ data class PetCard(
 ) {
     companion object {
         const val MENU = "Pets"
+        const val ACTIVE = "Click to deactivate!"
+        val FOOTER = Regex("""(VERY SPECIAL|SPECIAL|DIVINE|MYTHIC|LEGENDARY|EPIC|RARE|UNCOMMON|COMMON)\s*([A-Z ]+?) PET""")
+
+        fun rarity(item: Item): Role? {
+            val rarity = item.cleanLore.firstNotNullOfOrNull { FOOTER.matchEntire(it) }?.groupValues?.get(1) ?: return null
+            return Role.RARITIES.firstOrNull { it.name == rarity }
+        }
     }
 }
