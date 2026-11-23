@@ -46,7 +46,6 @@ private const val TRACER_AHEAD = 1.0
 private const val NAME_TAG_SCALE = 0.025f
 private const val LINE = 10f
 private const val LABEL_GAP = 2f
-private const val STEEPEST = 0.25f
 private const val HALF_DIAGONAL = 0.71f
 private const val FILL_AHEAD = 1f
 
@@ -66,7 +65,7 @@ object World {
         var labelAt: Vec3? = null
     }
     internal class ShownTracer(entity: Int, val color: Int) : Follow(entity)
-    internal class ShownWaypoint(val at: Vec3, val top: Vec3?, val label: WorldLabel, val box: ShownBox?, val onTop: Boolean) : Shown {
+    internal class ShownWaypoint(val at: Vec3, val beam: Boolean, val label: WorldLabel, val box: ShownBox?, val onTop: Boolean) : Shown {
         val labelAt: Vec3 = at.add(0.0, 1.0, 0.0)
     }
 
@@ -165,7 +164,9 @@ object World {
                     is ShownWaypoint -> {
                         mark.label.at(camera.distanceTo(mark.at).toInt())
                         mark.box?.let { box -> Gizmos.cuboid(box.box, box.style).onTop(mark.onTop) }
-                        mark.top?.let { top -> Gizmos.line(above(mark.label, mark.labelAt, camera, mark.box != null), top, mark.label.color, LINE_WIDTH * 2).onTop(mark.onTop) }
+                        if (mark.beam) above(mark.label, mark.labelAt, camera, mark.box != null)?.let { start ->
+                            beam(start, mark.label.color).onTop(mark.onTop)
+                        }
                     }
                 }
             }
@@ -190,7 +191,8 @@ object World {
             val top = at.add(0.0, entity.bbHeight.toDouble(), 0.0)
             mark.label.at(eye.distanceTo(at).toInt())
             mark.labelAt = top
-            Gizmos.line(above(mark.label, top, eye, false), top.add(0.0, BEAM_HEIGHT, 0.0), mark.label.color, LINE_WIDTH * 2).setAlwaysOnTop()
+            val start = above(mark.label, top, eye, false) ?: continue
+            beam(start, mark.label.color).setAlwaysOnTop()
         }
         if (tracersShown.isEmpty()) return
         val forward = camera.forwardVector()
@@ -278,13 +280,24 @@ object World {
         return (pixel * depth.toFloat()).coerceAtLeast(NAME_TAG_SCALE)
     }
 
+    private fun beam(start: Vec3, color: Int) = Gizmos.line(start, start.add(0.0, BEAM_HEIGHT, 0.0), color, LINE_WIDTH * 2)
+
     /** @keep A beam rises from the top of its label, so it never crosses the text. The label faces the camera and the beam
-     * stands upright, so a camera looking down sees the beam shortened and it starts higher to clear the label, up to four
-     * times as high when the camera looks straight down at it. A tick's beam takes the camera from the last frame. */
-    private fun above(label: WorldLabel, at: Vec3, eye: Vec3, boxed: Boolean): Vec3 {
+     * stands upright, so from above the beam is both shortened and drawn nearer as it rises. The start is where the beam's
+     * projection meets the label's top edge. Looking down along the beam, no start clears the label, so no beam is drawn. A
+     * tick's beam takes the camera from the last frame. */
+    private fun above(label: WorldLabel, at: Vec3, eye: Vec3, boxed: Boolean): Vec3? {
         if (label.lines == 0) return at
-        val height = ((label.lines * LINE + LABEL_GAP + 2) * scale(eye, at) + lift(boxed)) / up.y.coerceAtLeast(STEEPEST)
-        return at.add(0.0, height.toDouble(), 0.0)
+        val height = (label.lines * LINE + LABEL_GAP + 2) * scale(eye, at) + lift(boxed)
+        val dx = (at.x - eye.x).toFloat()
+        val dy = (at.y - eye.y).toFloat()
+        val dz = (at.z - eye.z).toFloat()
+        val depth = dx * forward.x + dy * forward.y + dz * forward.z
+        if (depth <= 0f) return at.add(0.0, height.toDouble(), 0.0)
+        val rise = dx * up.x + dy * up.y + dz * up.z
+        val clear = up.y * depth - (rise + height) * forward.y
+        if (clear <= 0f) return null
+        return at.add(0.0, (height * depth / clear).toDouble(), 0.0)
     }
 
     // @keep Vanilla's glowing sign darkens its text color to 40% for the outline.
@@ -305,8 +318,7 @@ object World {
                 BoxStyle.BOTH -> GizmoStyle.strokeAndFill(solid, LINE_WIDTH, mark.color)
             })
         }
-        val top = if (mark.look.beam) at.add(0.0, BEAM_HEIGHT, 0.0) else null
-        return ShownWaypoint(at, top, WorldLabel(mark.label, solid, mark.distance), box, mark.throughWalls)
+        return ShownWaypoint(at, mark.look.beam, WorldLabel(mark.label, solid, mark.distance), box, mark.throughWalls)
     }
 
     private fun GizmoProperties.onTop(onTop: Boolean) {
