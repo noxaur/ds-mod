@@ -224,7 +224,7 @@ object ForgeCrafts {
                     body("Can craft")
                     val covered = feature.covered()
                     if (covered > 0) muted("\nMaterials cover $covered.") else bad("\nMaterials cover none.")
-                    if (feature.free > 0) muted("\nForge queue has ${feature.free} free.") else bad("\nForge queue is full.")
+                    if (feature.free > 0) muted("\nForge and queue have ${feature.free} free.") else bad("\nForge and queue are full.")
                 }
                 over(mouseX, mouseY, ix, row, inner, Kit.SLOT_SIZE) -> text {
                     body("Each craft takes")

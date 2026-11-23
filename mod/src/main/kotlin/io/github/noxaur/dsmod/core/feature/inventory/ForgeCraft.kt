@@ -32,6 +32,7 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
     private var category by feature.world<String?> { null }
     private var queued by feature.world { 0 }
     private var queueSize by feature.world { QUEUE_SIZE }
+    private var forging by feature.world { FORGE_SLOTS.count() }
 
     private val offered by feature.world { HashMap<String, Item>() }
     private val seen by feature.world { HashMap<String, Item>() }
@@ -49,6 +50,10 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
         }
         feature.on<SlotChanged> { changed, _ ->
             if (!forge(menu)) return@on
+            if (menu == FORGE && changed.slot in FORGE_SLOTS) {
+                val slots = feature.container.slots
+                forging = FORGE_SLOTS.count { slots[it]?.lore?.any { line -> line.plain.startsWith(REMAINING) } == true }
+            }
             val item = changed.item ?: return@on
             val name = item.name?.plain?.ifEmpty { null } ?: return@on
             seen.putIfAbsent(name, item)
@@ -88,7 +93,7 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
         val slots = feature.container.slots
         val id = feature.container.id
         return when (menu) {
-            FORGE -> find { QUEUE.matches(it) }?.let { Step(id, it, queued >= queueSize) }
+            FORGE -> find { QUEUE.matches(it) }?.let { Step(id, it, full) }
             SELECT -> find { it == recipe.category }?.let { Step(id, it, false) }
             recipe.category -> find { it == recipe.name }?.let { Step(id, it, false) }
             CONFIRM -> if (slots.getOrNull(CONFIRM_ITEM)?.name?.plain != recipe.name) null
@@ -108,7 +113,7 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
 
     fun covered(): Int = recipe?.materials?.minOfOrNull { has(it.name) / it.count.coerceAtLeast(1) } ?: 0
 
-    val free: Int get() = (queueSize - queued).coerceAtLeast(0)
+    val free: Int get() = (FORGE_SLOTS.count() - forging + queueSize - queued).coerceAtLeast(0)
 
     val full: Boolean get() = free == 0
 
@@ -123,6 +128,7 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
         private const val KEY_R = 82
         private const val QUEUE_SIZE = 10
         private const val CONFIRM_ITEM = 4
+        private val FORGE_SLOTS = 10..16
 
         const val FORGE = "The Forge"
         const val SELECT = "Select Process"
@@ -130,6 +136,7 @@ class ForgeCraft(config: DsModConfig) : HasFeature {
         private const val CONFIRM_BUTTON = "Confirm"
         private const val BROWSE = "Click to browse!"
         private const val REQUIRED = "Items Required"
+        private const val REMAINING = "Time Remaining: "
         private const val GRAY = "minecraft:gray_terracotta"
         private val QUEUE = Regex("Forge Queue \\((\\d+)/(\\d+)\\)")
         private val MATERIAL = Regex("(.+?)(?: x(\\d+))?")

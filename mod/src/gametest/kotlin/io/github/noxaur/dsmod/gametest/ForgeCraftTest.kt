@@ -27,6 +27,7 @@ class ForgeCraftTest : FabricClientGameTest {
 
     private fun forge(context: ClientGameTestContext, world: TestSingleplayerContext, queued: Int) =
         ServerMenus.open(context, world, 6, ForgeCraft.FORGE, goBack = false) {
+            for (slot in 10..16) it.setItem(slot, named(Items.NETHERITE_SCRAP, "Void Plate", 0xAA00AA, 1, "Right-click to view recipes.", "", "EPIC", "", "Time Remaining: 26m 1s"))
             it.setItem(22, named(Items.HOPPER, "Forge Queue ($queued/10)", 0xFFAA00, 1, "Click to select another recipe!"))
         }
 
