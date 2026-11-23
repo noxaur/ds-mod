@@ -3,24 +3,31 @@ import { execFileSync } from "node:child_process";
 export const label = "human review needed";
 
 const markers: [RegExp, RegExp][] = [
-  [/\.(kt|kts|java)$/, /@(file:)?Suppress(Warnings)?\(/],
-  [/\.(ts|mts|tsx|js|mjs|cjs)$/, /(\/\/|\/\*)\s*eslint-disable/],
+  [/\.(kt|kts|java)$/, /@(file:)?([\w.]+\.)?Suppress(Warnings)?\b/],
+  [/\.(ts|mts|cts|tsx|js|mjs|cjs|jsx)$/, /eslint-disable|\/\*\s*eslint\s/],
 ];
 
 export function added(diff: string): string[] {
   const found: string[] = [];
   let file = "";
   let line = 0;
+  let header = false;
   for (const text of diff.split("\n")) {
-    if (text.startsWith("+++ ")) {
+    if (text.startsWith("diff --git ")) {
+      header = true;
+      continue;
+    }
+    if (header && text.startsWith("+++ ")) {
       file = text.replace(/^\+\+\+ (b\/)?/, "");
       continue;
     }
     const hunk = /^@@ -\d+(?:,\d+)? \+(\d+)/.exec(text);
     if (hunk !== null) {
+      header = false;
       line = Number(hunk[1]);
       continue;
     }
+    if (header) continue;
     const marker = markers.find(([path]) => path.test(file))?.[1];
     if (text.startsWith("+") && marker?.test(text) === true) found.push(`${file}:${line}`);
     if (text.startsWith("+") || text.startsWith(" ")) line++;
@@ -31,8 +38,8 @@ export function added(diff: string): string[] {
 export function unexplained(found: string[], body: string): string[] {
   const lines = body.split("\n");
   return found.filter((at) => {
-    const named = new RegExp(`${at.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?!\\d)`);
-    return !lines.some((text) => named.test(text) && text.replace(named, "").split(/\W+/).filter(Boolean).length >= 3);
+    const named = new RegExp(`(?<![\\w./-])${at.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?!\\d)`);
+    return !lines.some((text) => named.test(text) && text.replace(/\S*:\d+\S*/g, "").split(/\W+/).filter(Boolean).length >= 3);
   });
 }
 

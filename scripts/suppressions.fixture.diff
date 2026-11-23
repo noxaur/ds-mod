@@ -33,3 +33,20 @@ deleted file mode 100644
 +++ /dev/null
 @@ -1 +0,0 @@
 -// eslint-disable-next-line no-console -- gone
+diff --git a/mod/src/main/kotlin/D.kt b/mod/src/main/kotlin/D.kt
+--- a/mod/src/main/kotlin/D.kt
++++ b/mod/src/main/kotlin/D.kt
+@@ -1,1 +1,4 @@
+ package d
++@kotlin.Suppress("UNCHECKED_CAST")
++@Suppress
++    ("UNCHECKED_CAST")
+diff --git a/web/app/e.jsx b/web/app/e.jsx
+--- a/web/app/e.jsx
++++ b/web/app/e.jsx
+@@ -1,1 +1,5 @@
+ let count = 0;
++++ count;
++/*
++  eslint-disable no-console
++*/
