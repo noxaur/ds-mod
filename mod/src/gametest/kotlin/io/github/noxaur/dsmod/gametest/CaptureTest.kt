@@ -40,6 +40,11 @@ class CaptureTest : FabricClientGameTest {
         "sound" to "minecraft:entity.ender_dragon.growl",
         "particles" to "minecraft:flame",
         "block" to "minecraft:end_portal_frame[eye=true",
+        "block" to "\"was\":\"minecraft:end_stone\"",
+        "breaking" to "\"progress\":5",
+        "levelevent" to "\"block\":\"minecraft:end_stone\"",
+        "digging" to "\"destroying\":true",
+        "broken" to "\"block\":\"minecraft:obsidian\"",
         "tablist" to "\"rows\"",
         "tabheader" to "dragsim.co",
         "status" to "\"health\"",
@@ -106,6 +111,8 @@ class CaptureTest : FabricClientGameTest {
                 "execute at @a run playsound minecraft:entity.ender_dragon.growl master @a",
                 "execute at @a run particle minecraft:flame ~ ~1 ~ 0 0 0 0 5 force",
                 "execute at @a run setblock ~2 ~ ~ minecraft:end_portal_frame[eye=true]",
+                "execute at @a run setblock ~4 ~ ~ minecraft:end_stone",
+                "execute at @a run setblock ~5 ~ ~ minecraft:end_stone",
                 "execute at @a run setblock ~-3 ~ ~1 minecraft:player_head",
                 """execute at @a run summon text_display ~ ~2 ~ {text:"Quiz Label"}""",
                 "execute at @a run summon silverfish ~-2 ~ ~ {NoAI:1b,Glowing:1b}",
@@ -126,6 +133,12 @@ class CaptureTest : FabricClientGameTest {
             ).forEach(world.server::runCommand)
             context.waitTicks(5)
             world.server.runCommand("kill @e[type=zombie]")
+            world.server.runCommand("execute at @a run setblock ~4 ~ ~ air destroy")
+            // @keep Another player's crack reaches everyone but the breaker, so an id no player has stands in for one.
+            world.server.runOnServer<Nothing> { server ->
+                val player = server.player
+                player.level().destroyBlockProgress(-7, player.blockPosition().offset(4, 0, 0), 5)
+            }
             world.server.runCommand("execute as @a at @s anchored eyes positioned ^ ^ ^2 run summon husk ~ ~-1 ~ {NoAI:1b,Silent:1b}")
             context.waitTicks(5)
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
@@ -134,6 +147,16 @@ class CaptureTest : FabricClientGameTest {
             context.hoverSlot(36)
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
             context.runOnClient<Nothing> { it.player!!.closeContainer() }
+            world.server.runCommand("execute as @e[type=husk] run tp @s ~ ~ ~5000")
+            world.server.runCommand("execute as @e[name=Hologram] run tp @s ~ ~ ~-5000")
+            world.server.runCommand("gamemode survival @a")
+            world.server.runCommand("execute as @a at @s anchored eyes positioned ^ ^ ^2 run setblock ~ ~ ~ minecraft:obsidian")
+            context.waitTicks(2)
+            context.input.holdMouseFor(GLFW.GLFW_MOUSE_BUTTON_LEFT, 10)
+            // @keep dragsim.co shows a mined block as bedrock, so the block the player was digging becomes it.
+            world.server.runCommand("execute as @a at @s anchored eyes positioned ^ ^ ^2 run setblock ~ ~ ~ minecraft:bedrock")
+            world.server.runCommand("execute at @a run setblock ~5 ~ ~ minecraft:bedrock")
+            context.waitTicks(2)
             world.server.runOnServer<Nothing> { it.playerList.broadcastAll(ClientboundTabListPacket(Component.literal("Dragon Sim"), Component.literal("dragsim.co"))) }
             context.waitTicks(40)
             world.server.runCommand("execute in minecraft:the_nether run tp @a 0 100 0")
@@ -153,6 +176,10 @@ class CaptureTest : FabricClientGameTest {
             check(byType[type].orEmpty().any { part in it }) {
                 "No '$type' event containing $part. Got: ${byType[type]}"
             }
+        }
+        val broken = byType["broken"].orEmpty()
+        check(broken.any { "obsidian" in it && "\"by\":\"PLAYER\"" in it } && broken.any { "end_stone" in it && "\"by\":\"OTHER\"" in it }) {
+            "The block the player dug should break by PLAYER, and the other by OTHER: $broken"
         }
         check(byType["death"].orEmpty().none { "Leaver" in it }) { "The mob that left was recorded as dead: ${byType["death"]}" }
         check(byType["unload"].orEmpty().none { "Leaver" in it && "KILLED" in it }) { "The mob that left was recorded as killed: ${byType["unload"]}" }

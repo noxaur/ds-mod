@@ -10,6 +10,8 @@ import io.github.noxaur.dsmod.harness.text
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.game.ActionBar
+import io.github.noxaur.dsmod.core.game.BlockBroken
+import io.github.noxaur.dsmod.core.game.Breaker
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.EntityDied
@@ -143,6 +145,11 @@ class FeatureReplayTest {
         is FrameRate -> "(frame rate) ${event.fps} fps"
         is SlotChanged -> "(slot ${event.slot}) " + (event.item?.let { "${it.count} x ${name(it)}" } ?: "emptied")
         is SlotClicked -> "(you clicked slot ${event.slot})"
+        is BlockBroken -> "(broken) ${event.block} at ${event.x}, ${event.y}, ${event.z} " + when (event.by) {
+            Breaker.PLAYER -> "by you"
+            Breaker.WITH_PLAYER -> "with your break"
+            Breaker.OTHER -> "by someone else"
+        }
     }
 
     @TestFactory
