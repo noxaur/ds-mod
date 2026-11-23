@@ -110,7 +110,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     }
 
     fun wants(type: Class<out GameEvent>) =
-        tap != null || active && (type in PlayerData.FOLDS || features.any { it.enabled && (type == TabList::class.java || type == Sidebar::class.java || type in it.handlers) })
+        tap != null || active && (player.wants(type) ||features.any { it.enabled && (type == TabList::class.java || type == Sidebar::class.java || type in it.handlers) })
 
     /** @keep A source whose event comes once, such as a block that is already standing, holds it back until this is true,
      * because post gives a feature outside its area nothing */

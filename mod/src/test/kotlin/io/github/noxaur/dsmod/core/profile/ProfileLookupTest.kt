@@ -50,26 +50,26 @@ class ProfileLookupTest {
 
     @Test
     fun `every container comes in one fetch, asked once`() {
-        assertIs<Load.Loading>(lookup.containers())
+        assertIs<Load.Loading>(lookup.containers(null))
         assertTrue(source.all.isEmpty(), "nothing before the profile is in")
         source.profiles[0].second.complete(profile)
-        lookup.containers()
-        lookup.containers()
+        lookup.containers(null)
+        lookup.containers(null)
         assertEquals(listOf(profile.snapshot), source.all.map { it.first })
         source.all[0].second.complete(listOf(inventory))
-        assertEquals(Load.Loaded(listOf(inventory)), lookup.containers())
+        assertEquals(Load.Loaded(listOf(inventory)), lookup.containers(null))
     }
 
     @Test
     fun `an expired snapshot is renewed once for every container too`() {
         source.profiles[0].second.complete(profile)
-        lookup.containers()
+        lookup.containers(null)
         source.all[0].second.completeExceptionally(failed(410, "SnapshotExpired"))
         val renewed = profile.copy(snapshot = "renewed")
         source.profiles[1].second.complete(renewed)
         assertEquals("renewed", source.all[1].first)
         source.all[1].second.completeExceptionally(failed(410, "SnapshotExpired"))
-        assertIs<Load.Failed>(lookup.containers())
+        assertIs<Load.Failed>(lookup.containers(null))
         assertEquals(2, source.profiles.size, "renewed only once")
     }
 
@@ -101,6 +101,15 @@ class ProfileLookupTest {
         lookup.follow("No Such Profile")
         lookup.follow(null)
         assertEquals(2, source.profiles.size)
+    }
+
+    @Test
+    fun `no container is fetched while the backend's answer is for another profile than the player's`() {
+        source.profiles[0].second.complete(profile)
+        assertEquals(Load.Loaded(emptyList()), lookup.containers("A Profile Made Since"))
+        assertTrue(source.all.isEmpty())
+        lookup.containers("Superior")
+        assertEquals(1, source.all.size)
     }
 
     @Test

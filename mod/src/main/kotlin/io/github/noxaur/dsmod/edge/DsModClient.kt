@@ -193,7 +193,7 @@ object DsModClient : ClientModInitializer {
         Pings.register()
         ScreenHooks.onEveryLayout<AbstractContainerScreen<*>> { screen, _ ->
             readouts.opened(screen)
-            ScreenMouseEvents.beforeMouseClick(screen).register { _, _ -> screen.slotUnderMouse?.let { game.post(System.currentTimeMillis(), SlotClicked(it.index)) } }
+            ScreenMouseEvents.beforeMouseClick(screen).register { _, click -> screen.slotUnderMouse?.takeIf { click.button() <= 1 }?.let { game.post(System.currentTimeMillis(), SlotClicked(it.index)) } }
         }
         ChatDrags.register(settings.hud, ::saveSettings)
         Editors.register(Canvas.HUD_LAYOUT) { panel, host -> @Suppress("UNCHECKED_CAST") HudLayoutEditor(panel as Panel<Map<String, DsModConfig.Position>>, readouts, host) }

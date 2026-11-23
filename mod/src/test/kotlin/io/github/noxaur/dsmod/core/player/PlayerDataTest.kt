@@ -9,6 +9,7 @@ import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.SlotChanged
 import io.github.noxaur.dsmod.core.game.SlotClicked
+import io.github.noxaur.dsmod.core.game.SystemMessage
 import io.github.noxaur.dsmod.harness.Harness
 import io.github.noxaur.dsmod.harness.chat
 import io.github.noxaur.dsmod.harness.lines
@@ -17,8 +18,10 @@ import io.github.noxaur.dsmod.harness.text
 import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class PlayerDataTest {
     private class Session : Harness(alone = ItemOverview::class) {
@@ -70,9 +73,25 @@ class PlayerDataTest {
     private val manage = ContainerOpened(2, text("Profile Management"), 72)
     private val closed = ContainerOpened(0, null, 46, kept = true)
 
-    private fun Harness.switchTo(other: String, from: String, vararg before: GameEvent) {
+    private fun Harness.begin(other: String, from: String) {
         post(list, SlotChanged(10, profile(from, "Selected")), SlotChanged(11, profile(other, "In use")), SlotClicked(11))
-        post(manage, SlotChanged(11, Item("minecraft:grass_block", 1, text("Switch to Profile"))), SlotClicked(11), *before, closed)
+        post(manage, SlotChanged(11, Item("minecraft:grass_block", 1, text("Switch to Profile"))), SlotClicked(11))
+    }
+
+    private fun Harness.switchTo(other: String, from: String, vararg before: GameEvent) {
+        begin(other, from)
+        post(*before, closed)
+    }
+
+    @Test
+    fun `a switch the player begun asks for the chat line that refuses it, whichever features are on`() {
+        val session = object : Harness(alone = ItemOverview::class) {}
+        assertFalse(session.game.wants(SystemMessage::class.java))
+        session.begin("Young", from = "Old")
+        assertTrue(session.game.wants(SystemMessage::class.java))
+        session.post(chat("You can switch profiles in 12s."), closed)
+        assertEquals("Old", session.game.player.profile)
+        assertFalse(session.game.wants(SystemMessage::class.java))
     }
 
     @Test

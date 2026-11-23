@@ -143,6 +143,8 @@ class SavedFilesTest {
     fun `a state saved before profiles moves into the profile the player is on, once`() {
         val old = dir.resolve("zealot-tracker.json")
         old.writeText("""{"drops":{"Summoning Eye":4},"kills":9}""")
+        SavedFiles(dir, game().game).load()
+        assertTrue(old.exists(), "a crash before the player's file is written reads it again")
         val first = game()
         SavedFiles(dir, first.game).apply { load() }.close()
         assertEquals("""{"drops":{"Summoning Eye":4},"kills":9}""", written())

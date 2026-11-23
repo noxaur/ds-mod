@@ -75,6 +75,8 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         else -> false
     }
 
+    internal fun wants(type: Class<out GameEvent>) = type in FOLDS || switching != null && type == SystemMessage::class.java
+
     private fun opened(time: Long, event: ContainerOpened): Boolean {
         val to = switching
         switching = null
@@ -179,12 +181,10 @@ class PlayerData internal constructor(private val container: ContainerState, pri
 
     /** @keep A per-profile state from before the layer was one file for every profile, so the profile the player is on now
      * takes it, unless that profile has its own already */
-    fun takeOld(id: String, text: String): Boolean {
-        val state = slices[id] ?: return false
-        if (id in here.features) return false
-        state.load(text)
+    fun takeOld(id: String, text: String) {
+        val state = slices[id] ?: return
         changed = true
-        return true
+        if (id !in here.features) state.load(text)
     }
 
     override fun takeChanges(): (() -> String)? {
@@ -215,6 +215,6 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         private const val SWITCH = "Switch to Profile"
         private const val REFUSED = "You can switch profiles in "
 
-        internal val FOLDS = setOf(ContainerOpened::class.java, SlotChanged::class.java, SlotClicked::class.java)
+        private val FOLDS = setOf(ContainerOpened::class.java, SlotChanged::class.java, SlotClicked::class.java)
     }
 }

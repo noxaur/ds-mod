@@ -27,12 +27,12 @@ class SavedFiles(
     private val writer = lazy(startWriter)
     private val failures = ConcurrentLinkedQueue<Pair<String, Exception>>()
 
+    // @keep A state from before profiles is moved aside only once the player's file holds it, so a crash before then reads it again
+    private val retiring = ConcurrentLinkedQueue<Path>()
+
     fun load() {
         for ((id, state) in states) read(id, state::load)
-        for (id in profiled) {
-            val file = dir.resolve("$id.json")
-            if (read(id) { game.player.takeOld(id, it) } == true) file.moveTo(dir.resolve("$id.json.$MOVED"))
-        }
+        for (id in profiled) if (read(id) { game.player.takeOld(id, it) } != null) retiring.add(dir.resolve("$id.json"))
     }
 
     private fun <T> read(id: String, take: (String) -> T): T? {
@@ -57,6 +57,7 @@ class SavedFiles(
         }
         for ((id, state) in states) {
             val encode = state.takeChanges() ?: continue
+            val holds = if (state === game.player) generateSequence(retiring::poll).toList() else emptyList()
             writer.value.execute {
                 try {
                     val file = dir.resolve("$id.json")
@@ -64,7 +65,9 @@ class SavedFiles(
                     val temporary = file.resolveSibling("${file.fileName}.tmp")
                     temporary.writeText(encode())
                     temporary.moveTo(file, ATOMIC_MOVE)
+                    for (old in holds) if (old.exists()) old.moveTo(old.resolveSibling("${old.fileName}.$MOVED"), overwrite = true)
                 } catch (e: Exception) {
+                    retiring.addAll(holds)
                     failures += id to e
                 }
             }

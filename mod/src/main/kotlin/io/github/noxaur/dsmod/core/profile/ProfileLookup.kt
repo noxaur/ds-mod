@@ -66,9 +66,11 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
         }
     }
 
-    // @keep Every container in one answer, for the item overview, which needs them all at once.
-    fun containers(): Load<List<Container>> {
+    /** @keep Every container in one answer, for the item overview, which needs them all at once. Nothing while the
+     * backend's answer is for another profile than the player's, such as one created after the backend's list */
+    fun containers(of: String?): Load<List<Container>> {
         val profile = (state as? Load.Loaded)?.value ?: return Load.Loading
+        if (of != null && profile.profileName.plain != of) return OTHER
         return all ?: Load.Loading.also {
             all = it
             fetch(source::containers, { all = it }, profile.snapshot, retried = false)
@@ -125,5 +127,9 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
             e.status >= 500 -> Failure(text { bad("ds-mod's backend is down. Try again soon.") }, retry = true)
             else -> Failure(text { bad("Something went wrong loading this profile.") }, retry = true, bug = true, cause = e)
         }
+    }
+
+    private companion object {
+        val OTHER = Load.Loaded(emptyList<Container>())
     }
 }

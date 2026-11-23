@@ -105,7 +105,7 @@ class ItemOverviewScreen(
     private val gridY get() = frame.top + Kit.BUTTON_HEIGHT + Kit.GAP
 
     private val state: Load<List<Container>> get() = when (val profile = lookup.state) {
-        is Load.Loaded -> lookup.containers()
+        is Load.Loaded -> lookup.containers(this.profile)
         is Load.Failed -> profile
         Load.Loading -> Load.Loading
     }
