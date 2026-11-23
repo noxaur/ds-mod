@@ -19,8 +19,8 @@ const val PERF_TEST = "io.github.noxaur.dsmod.gametest.PerfTest"
 
 private const val HUB = 12
 
-/** @keep A test takes 8 seconds on a CI runner, and the boot leaves the job about 70 of its 180. */
-const val MOST_PICKED = 8
+/** @keep A test takes 8 seconds on a CI runner, and the boot leaves a job about 70 of its 180, so CI splits the picked tests into jobs of this many. */
+const val TESTS_PER_JOB = 8
 
 private const val GAME_TEST = "net/fabricmc/fabric/api/client/gametest/v1/FabricClientGameTest"
 private val BUILD = listOf("build.gradle.kts", "settings.gradle.kts", "gradle.properties", "gradle/", "src/gametest/fabric.mod.json")
@@ -113,10 +113,6 @@ fun pickGameTests(sources: Sources, changed: Collection<String>): Picked {
         near.filter { rank(it) == best }.flatMap { it.entries }.groupBy({ it.key }, { it.value }).mapValues { it.value.min() }
     }
 
-    // @keep The nearest tests, as many whole distances of them as fit in one pick, or the smoke test when even the nearest are too many.
-    fun fit(found: Map<String, Int>) = found.entries.groupBy({ it.value }, { it.key }).toSortedMap().values
-        .runningFold(emptySet<String>(), Set<String>::plus).last { it.size <= MOST_PICKED }.ifEmpty { if (found.isEmpty()) emptySet() else setOf(SMOKE_TEST) }
-
     val picked = mutableSetOf<String>()
     val unreached = mutableListOf<String>()
     for (path in changed) {
@@ -125,7 +121,7 @@ fun pickGameTests(sources: Sources, changed: Collection<String>): Picked {
             // @keep A resource reaches the tests of the classes that load it by name, and one no class names, such as a mixin list, any test boots through.
             val name = path.substringAfterLast('/')
             val loaders = strings.filterValues { said -> said.any { it == name || it.endsWith("/$name") } }.keys - hubs
-            picked += fit(reach(loaders)).ifEmpty { setOf(SMOKE_TEST) }
+            picked += reach(loaders).keys.ifEmpty { setOf(SMOKE_TEST) }
             continue
         }
         if ("/core/" in path || path in tools || SOURCE_SETS.none { path.startsWith("src/$it/") }) continue
@@ -135,7 +131,7 @@ fun pickGameTests(sources: Sources, changed: Collection<String>): Picked {
             if (path.endsWith(".kt") || path.endsWith(".java")) picked += SMOKE_TEST
             continue
         }
-        val reached = fit(reach(own))
+        val reached = reach(own).keys
         val throughHubs = (own.flatMap(names::getValue).toSet() - own).let { it.isNotEmpty() && it.all(hubs::contains) }
         when {
             own.any(hubs::contains) || reached.isEmpty() && throughHubs -> picked += SMOKE_TEST
@@ -143,11 +139,10 @@ fun pickGameTests(sources: Sources, changed: Collection<String>): Picked {
             !path.startsWith("src/gametest/") -> unreached += path
         }
     }
-    val run = picked - PERF_TEST
-    return Picked(if (run.size > MOST_PICKED) setOf(SMOKE_TEST) else run, unreached)
+    return Picked(picked - PERF_TEST, unreached)
 }
 
-/** @keep Writes the game test manifest with the tests the third argument names: all, a comma list of them, or, with none, those the change reaches. */
+/** @keep Writes the game test manifest with the tests the third argument names: all, a comma list of them, or, with none, those the change reaches, and writes `jobs`, the tests split into CI's jobs. */
 fun main(args: Array<String>) {
     val (mod, out) = args.take(2).map(::File)
     val sources = readSources(mod)
@@ -156,7 +151,7 @@ fun main(args: Array<String>) {
         null -> pickGameTests(sources, changed(mod)).tests.also {
             println(if (it.isEmpty()) "No game test reaches the change." else "Game tests the change reaches: ${it.map { name -> name.substringAfterLast('.') }.sorted().joinToString()}")
         }
-        else -> only.split(",").map { name ->
+        else -> only.split(",").filter(String::isNotBlank).map { name ->
             sources.tests.values.singleOrNull { it.substringAfterLast('.') == name } ?: error("-Pgametests=$only names $name, which is no game test")
         }.toSet()
     }.sorted()
@@ -166,6 +161,8 @@ fun main(args: Array<String>) {
     out.mkdirs()
     out.resolve("fabric.mod.json").writeText(Json { prettyPrint = true }.encodeToString(JsonObject.serializer(), JsonObject(manifest + ("entrypoints" to JsonObject(entrypoints)))))
     out.resolve("tests").writeText(tests.joinToString("\n"))
+    val jobs = tests.map { it.substringAfterLast('.') }.chunked(TESTS_PER_JOB).map { JsonPrimitive(it.joinToString(",")) }.ifEmpty { listOf(JsonPrimitive("")) }
+    out.resolve("jobs").writeText(JsonArray(jobs).toString())
 }
 
 private fun changed(mod: File): List<String> {

@@ -18,9 +18,9 @@ A release member needs a caller in the release or debug code, and a game test's 
 
 Fast and smooth is checked, not promised. A perf test boots the jars a player installs and times the mod each tick, each frame and each burst of packets, scaled to a reference device, and each cap gates the median of twelve windows. A timer per part was rejected, because every refactor edited the test, and a unit benchmark because it misses the draw cost. It runs before each beta and not on each pull request, because a shared runner's noise failed pull requests that changed nothing.
 
-## A pull request runs the game tests its change reaches
+## A pull request runs every game test its change reaches
 
-The game takes long to boot and each test makes a fresh world, so the whole suite runs before a beta, and a pull request runs only the tests its change reaches, found from the classes the compiled code names. Matching words in the source was rejected, because pruning comments turned tests off. An agent naming the tests was rejected, because it was skipped or answered wrong. Recording which classes each test runs was rejected, because the central classes run in every test.
+The game takes long to boot, so a pull request runs only the tests its change reaches, found from the classes the compiled code names, split into jobs of eight that run side by side. Matching words in the source was rejected, because pruning comments turned tests off, an agent naming the tests because it was skipped or answered wrong, and recording what each test runs because the central classes run in every test. One smoke test past eight was rejected, because agents then ran the whole suite on the user's machine.
 
 ## A game test runs behind the developer
 

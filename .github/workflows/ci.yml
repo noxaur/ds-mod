@@ -49,10 +49,11 @@ jobs:
         with:
           warm: ${{ steps.setup.outputs.warm }}
 
-  # @keep On main the picked change is empty, and the run keeps the job's caches warm, because a pull request cannot read a cache another pull request saved.
-  gametests:
+  pick:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
+    outputs:
+      jobs: ${{ steps.pick.outputs.jobs }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -61,13 +62,39 @@ jobs:
         uses: ./.github/actions/setup-mod
         with:
           cache: gametests
+      - id: pick
+        working-directory: mod
+        run: |
+          ./gradlew ${{ steps.setup.outputs.gradle-args }} -Perrorprone=false pickGameTests
+          echo "jobs=$(cat build/gametests/jobs)" >> "$GITHUB_OUTPUT"
+      - uses: ./.github/actions/time-limit
+        with:
+          warm: ${{ steps.setup.outputs.warm }}
+
+  # @keep On main the picked change is empty, and its one job keeps the caches warm, because a pull request cannot read a cache another pull request saved.
+  gametests:
+    needs: pick
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        tests: ${{ fromJSON(needs.pick.outputs.jobs) }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: setup
+        uses: ./.github/actions/setup-mod
+        with:
+          cache: gametests
       - uses: ./.github/actions/preload-gl
       - working-directory: mod
-        run: ./gradlew ${{ steps.setup.outputs.gradle-args }} -Perrorprone=false runProdClientGameTest
+        env:
+          TESTS: ${{ matrix.tests }}
+        run: ./gradlew ${{ steps.setup.outputs.gradle-args }} -Perrorprone=false runProdClientGameTest "-Pgametests=$TESTS"
       - if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: gametests
+          name: gametests-${{ strategy.job-index }}
           path: |
             mod/build/run/prodClientGameTest/logs
             mod/build/run/prodClientGameTest/screenshots
