@@ -1,6 +1,7 @@
 import java.io.IOException
 import java.net.URI
 import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
@@ -200,7 +201,8 @@ tasks.register("installMod") {
         val mods = game.get().let { if (it.name == "mods") it else it.resolve("mods") }
         check(mods.isDirectory) { "$mods is not a mods folder. Pass the game folder that holds mods, such as a Prism instance's minecraft folder, or the mods folder." }
         val built = jar.get().asFile
-        built.copyTo(mods.resolve(built.name), overwrite = true)
+        val staged = built.copyTo(mods.resolve(".${built.name}.part"), overwrite = true)
+        Files.move(staged.toPath(), mods.resolve(built.name).toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
         val old = mods.listFiles { file -> file.name.startsWith("dsmod-") && file.name.endsWith(".jar") && file.name != built.name }.orEmpty()
         for (file in old) {
             try {
