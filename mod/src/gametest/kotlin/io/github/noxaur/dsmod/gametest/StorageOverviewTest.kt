@@ -15,6 +15,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContex
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.fabricmc.fabric.api.client.rendering.v1.ClientTooltipComponentCallback
 import net.fabricmc.fabric.api.event.Event
+import net.minecraft.ChatFormatting
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.commands.Commands
 import net.minecraft.network.chat.Component
@@ -48,8 +49,9 @@ class StorageOverviewTest : FabricClientGameTest {
     private fun commands(world: TestSingleplayerContext) {
         val pages = (1..PAGES).associateWith(::page)
         val root = SimpleContainer(54).also { chest ->
-            for (n in 1..PAGES) chest.setItem(9 + n, ServerMenus.named(Items.CHEST, "Storage Page $n"))
-            chest.setItem(16, ServerMenus.named(Items.ENDER_CHEST, "Ender Chest"))
+            // @keep The server colors an icon's name with a section code, as a capture's raw packet shows.
+            for (n in 1..PAGES) chest.setItem(9 + n, ServerMenus.named(Items.STAINED_GLASS_PANE.purple(), "§aStorage Page $n"))
+            chest.setItem(16, ServerMenus.named(Items.ENDER_CHEST, "§aEnder Chest"))
         }
         val ender = SimpleContainer(36).also { it.setItem(9, ItemStack(Items.ENDER_EYE, 5)) }
         world.server.runOnServer<Nothing> { server ->
@@ -105,7 +107,7 @@ class StorageOverviewTest : FabricClientGameTest {
             (data as? StoragePreviews.PageTooltip)?.let { previewed += it.id }
             null
         }
-        ItemTooltipCallback.EVENT.register { stack, _, _, _ -> tooltips += stack.hoverName.string }
+        ItemTooltipCallback.EVENT.register { stack, _, _, _ -> tooltips += ChatFormatting.stripFormatting(stack.hoverName.string) }
         context.worldBuilder().create().use { world ->
             commands(world)
 

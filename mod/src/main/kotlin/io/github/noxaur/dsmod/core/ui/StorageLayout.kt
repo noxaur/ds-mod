@@ -6,10 +6,10 @@ import kotlin.math.sqrt
 /** @keep The storage overview on a screen of `screenWidth` by `screenHeight` GUI pixels: one panel shaped like a T, with
  * each page's grid of `rows` under its title across the top, and a chest-wide stem under it holding the player's
  * inventory, so no empty panel sits beside the inventory. The pages form the most square grid, 2 by 2 for 4 pages and 4
- * by 3 for 12, widened only when that lets them fit without scrolling, and never wider than the screen. They scroll when
- * they are still taller than the room left, and the inventory stays put. `width` and `height` are the box around the T.
- * A cell is a slot's 18 square, with its item 1 in. The panel leaves a tab's height above and below it, so the menu's
- * tabs stay on screen. */
+ * by 3 for 12, never wider than the screen, and scroll when they are taller than the room left. The panel ends where a
+ * six-row chest ends, so the inventory sits where every other menu has it and the hotbar stays in sight, and it leaves a
+ * tab's height above it, so the menu's tabs stay on screen. `width` and `height` are the box around the T. A cell is a
+ * slot's 18 square, with its item 1 in. */
 class StorageLayout(screenWidth: Int, screenHeight: Int, private val rows: List<Int>) {
     val columns: Int
     val pagesWidth: Int
@@ -28,16 +28,16 @@ class StorageLayout(screenWidth: Int, screenHeight: Int, private val rows: List<
 
     init {
         val fit = maxOf(1, minOf(rows.size, (screenWidth - 2 * MARGIN_X - 2 * INSET - SCROLL_ROOM + COLUMN_GAP) / (GRID + COLUMN_GAP)))
-        val square = minOf(fit, maxOf(1, ceil(sqrt(rows.size.toDouble())).toInt()))
-        val room = maxOf(screenHeight - 2 * MARGIN_Y - 2 * INSET - INVENTORY_GAP - INVENTORY, MIN_VIEW)
-        columns = (square..fit).firstOrNull { place(it) <= room } ?: fit
+        columns = minOf(fit, maxOf(1, ceil(sqrt(rows.size.toDouble())).toInt()))
         content = place(columns)
+        val bottom = minOf(screenHeight, (screenHeight + Menus.TALLEST) / 2)
+        val room = maxOf(bottom - MARGIN_Y - 2 * INSET - INVENTORY_GAP - INVENTORY, MIN_VIEW)
         pagesWidth = columns * GRID + (columns - 1) * COLUMN_GAP
         view = minOf(content, room)
         width = 2 * INSET + pagesWidth + if (overflows) SCROLL_ROOM else 0
         height = 2 * INSET + view + INVENTORY_GAP + INVENTORY
         left = (screenWidth - width) / 2
-        top = maxOf(0, (screenHeight - height) / 2)
+        top = maxOf(0, bottom - height)
         viewX = left + INSET
         viewY = top + INSET
         for (i in pageX.indices) pageX[i] += viewX

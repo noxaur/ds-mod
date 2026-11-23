@@ -49,3 +49,7 @@ Menu Tabs are places along a menu's top and bottom edges, like the creative tabs
 ## The storage overview moves the server's slots into the open page
 
 The storage overview keeps the server's menu as the screen and moves its slots into the open page's place, as Firmament does, so a click on the open page is the menu's own and every feature that marks or guards a slot still works there. A screen of the mod's own that passed clicks on to the menu was rejected, because each passed click would be the mod clicking for the player. The other pages are drawn from what the mod remembers, and a click on one sends that page's command.
+
+## The storage overview scrolls above a still inventory
+
+The storage overview ends where a six-row chest ends, so the player's inventory sits where every other menu has it and the hotbar stays in sight, and its pages scroll in the room above. Centering the panel on the screen and widening the grid until every page fit was rejected, because on a common screen it filled the whole height, moved the inventory down from menu to menu and covered the hotbar.
