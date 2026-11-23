@@ -441,3 +441,4 @@ object MenuSkin {
     private val XP = Role.GOOD.argb()
     private val XP_GAINED = Role.VALUE.argb()
 }
+
