@@ -85,17 +85,14 @@ class GameTestPickTest {
     }
 
     @Test
-    fun `a change reaching more tests than a pick runs takes the nearest that fit, or the smoke test`() {
-        val wide = (1..MOST_PICKED + 1).map { "gametest/F${it}Test" to listOf("edge/Wide") } +
-            ("edge/Wide" to emptyList()) + ("edge/Narrow" to emptyList()) + ("gametest/NarrowTest" to listOf("edge/Narrow")) +
-            ("gametest/Far" to listOf("edge/Narrow")) + (1..MOST_PICKED).map { "gametest/G${it}Test" to listOf("gametest/Far") }
+    fun `a change reaching more tests than one CI job runs picks every test it reaches`() {
+        val wide = listOf("edge/Narrow" to emptyList(), "gametest/NarrowTest" to listOf("edge/Narrow"), "gametest/Far" to listOf("edge/Narrow")) +
+            (1..TESTS_PER_JOB + 1).map { "gametest/G${it}Test" to listOf("gametest/Far") }
         val spread = sources(*wide.toTypedArray())
-        assertEquals(setOf(SMOKE_TEST), pickGameTests(spread, listOf(path("edge/Wide"))).tests)
-        assertEquals(setOf(test("gametest/NarrowTest")), pickGameTests(spread, listOf(path("edge/Narrow"))).tests)
-        val each = (1..MOST_PICKED + 1).flatMap { listOf("edge/E$it" to emptyList(), "gametest/E${it}Test" to listOf("edge/E$it")) }
+        assertEquals(TESTS_PER_JOB + 2, pickGameTests(spread, listOf(path("edge/Narrow"))).tests.size)
+        val each = (1..TESTS_PER_JOB * 2).flatMap { listOf("edge/E$it" to emptyList(), "gametest/E${it}Test" to listOf("edge/E$it")) }
         val apart = sources(*each.toTypedArray())
-        assertEquals(setOf(SMOKE_TEST), pickGameTests(apart, (1..MOST_PICKED + 1).map { path("edge/E$it") }).tests)
-        assertEquals(MOST_PICKED, pickGameTests(apart, (1..MOST_PICKED).map { path("edge/E$it") }).tests.size)
+        assertEquals(TESTS_PER_JOB * 2, pickGameTests(apart, (1..TESTS_PER_JOB * 2).map { path("edge/E$it") }).tests.size)
     }
 
     @Test

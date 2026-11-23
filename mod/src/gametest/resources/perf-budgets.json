@@ -17,6 +17,10 @@
       "label": "Inventory open, 15 sidebar lines and 36 items sighted",
       "cap": 300
     },
+    "waypoints.frame": {
+      "label": "50 waypoints of every look and their labels, walked past",
+      "cap": 150
+    },
     "waypoints.tick": {
       "label": "50 waypoints of every look, walked past",
       "cap": 300

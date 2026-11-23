@@ -52,6 +52,7 @@ class CaptureTest : FabricClientGameTest {
         "renamed" to "☠ Test Horror I 2M/3M❤",
         "gone" to "\"id\":",
         "hit" to "minecraft:husk",
+        "click" to "\"slot\":36",
         "unload" to "Leaver",
         "unload" to "Victim",
         "skulls" to "DsHead",
@@ -129,6 +130,10 @@ class CaptureTest : FabricClientGameTest {
             context.waitTicks(5)
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
             context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT)
+            context.openInventory()
+            context.hoverSlot(36)
+            context.input.pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT)
+            context.runOnClient<Nothing> { it.player!!.closeContainer() }
             world.server.runOnServer<Nothing> { it.playerList.broadcastAll(ClientboundTabListPacket(Component.literal("Dragon Sim"), Component.literal("dragsim.co"))) }
             context.waitTicks(40)
             world.server.runCommand("execute in minecraft:the_nether run tp @a 0 100 0")
