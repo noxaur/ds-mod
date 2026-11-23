@@ -37,10 +37,10 @@ In T3 Code, `t3.json` has an action for each command.
 To play the mod in the user's own launcher, such as a Prism instance, from anywhere in the repository:
 
 ```sh
-mise run install <game folder> [prod|dev]
+mise run install <game> [prod|dev]
 ```
 
-The game folder is the one that holds `mods`, or `mods` itself. `prod`, the default, builds the release jar against the deployed backend and website, as a beta is. `dev` builds the debug jar against the local backend and website. The command replaces any ds-mod jar already in `mods` and leaves the other mods alone, so the instance still needs Fabric API and Fabric Language Kotlin.
+Tab completes the game from the instances that load Fabric, named `<launcher>/<folder>`, such as `prism/Skyblock`. It finds the instances of Prism, MultiMC, the Modrinth App, CurseForge, ATLauncher, GDLauncher, Dawn and Lunar, and `minecraft` is the official launcher's folder. The game can also be the path of a game folder or its `mods` folder. `prod`, the default, builds the release jar against the deployed backend and website, as a beta is. `dev` builds the debug jar against the local backend and website. The command replaces any ds-mod jar already in `mods` and leaves the other mods alone, so the instance still needs Fabric API and Fabric Language Kotlin.
 
 ## Change the backend's tables
 
