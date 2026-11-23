@@ -31,7 +31,7 @@ After a deploy, `https://api.ds-mod.perwko.com/healthz` answers 204, and a `POST
 
 ## Alerts
 
-The `alert` workflow posts to the user's Discord channel when `ci`, `deploy` or `beta` fails on `main`, or when a Vercel deploy fails. It posts through the webhook in the repository secret `DISCORD_WEBHOOK_URL`. To change the channel, make a new webhook in Discord and replace the secret:
+[`alert.yml`](../../.github/workflows/alert.yml) posts each failure on `main` to the user's Discord channel, through the webhook in the repository secret `DISCORD_WEBHOOK_URL`. To change the channel, make a new webhook in Discord and replace the secret:
 
 ```sh
 gh secret set DISCORD_WEBHOOK_URL

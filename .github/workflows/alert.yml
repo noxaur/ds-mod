@@ -6,7 +6,8 @@ on:
     workflows: [ci, deploy, beta]
     types: [completed]
     branches: [main]
-  deployment_status:
+  # @keep Vercel reports each deploy as a commit status, never as a GitHub deployment, and a build it skips reports success.
+  status:
 
 permissions: {}
 
@@ -15,16 +16,16 @@ jobs:
     if: >-
       (github.event_name == 'workflow_run' && github.event.workflow_run.event != 'pull_request'
         && contains(fromJSON('["failure", "timed_out", "startup_failure"]'), github.event.workflow_run.conclusion))
-      || (github.event_name == 'deployment_status' && contains(fromJSON('["failure", "error"]'), github.event.deployment_status.state))
+      || (github.event_name == 'status' && github.event.context == 'Vercel' && contains(fromJSON('["failure", "error"]'), github.event.state))
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
       - env:
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          WHAT: ${{ github.event.workflow_run.name || format('{0} deploy', github.event.deployment.environment) }}
-          TITLE: ${{ github.event.workflow_run.display_title || github.event.deployment_status.description }}
-          SHA: ${{ github.event.workflow_run.head_sha || github.event.deployment.sha }}
-          URL: ${{ github.event.workflow_run.html_url || github.event.deployment_status.target_url }}
+          WHAT: ${{ github.event.workflow_run.name || 'Vercel deploy' }}
+          TITLE: ${{ github.event.workflow_run.display_title || github.event.description }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.event.sha }}
+          URL: ${{ github.event.workflow_run.html_url || github.event.target_url }}
         # @keep allowed_mentions stops a commit title that holds @everyone from pinging the server.
         run: |
           jq -n --arg content "**$WHAT failed** on \`main\`: $TITLE (\`${SHA:0:7}\`)
