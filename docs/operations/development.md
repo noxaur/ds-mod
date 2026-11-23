@@ -42,6 +42,14 @@ mise run install <game> [prod|dev]
 
 Tab completes the game from the instances that load Fabric, named `<launcher>/<folder>`, such as `prism/Skyblock`. It finds the instances of Prism, MultiMC, the Modrinth App, CurseForge, ATLauncher, GDLauncher, Dawn and Lunar, and `minecraft` is the official launcher's folder. The game can also be the path of a game folder or its `mods` folder. `prod`, the default, builds the release jar against the deployed backend and website, as a beta is. `dev` builds the debug jar against the local backend and website. The command replaces any ds-mod jar already in `mods` and leaves the other mods alone, so the instance still needs Fabric API and Fabric Language Kotlin.
 
+## See the architecture
+
+```sh
+mise run architecture
+```
+
+This indexes the repository with [repowise](https://github.com/repowise-dev/repowise) and serves its dashboard at the address the task prints, with the import map, the files that change together and each file's history. The index is in `.repowise/`, which git ignores, and a later run updates it with the commits since. The task makes no model calls, and turns off repowise's telemetry and update checks. The first run downloads repowise and its dashboard.
+
 ## Change the backend's tables
 
 Edit `backend/db/schema.ts`, then in `backend/`:
