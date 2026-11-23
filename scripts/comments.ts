@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -150,56 +150,19 @@ export function scan(root: string, files: string[]): Comment[] {
 
 export const entry = (comment: Comment) => `${comment.file}: ${comment.text.replace(/\s*\n\s*/g, " ")}`;
 
-export function compare<T>(found: T[], listed: string[], key: (item: T) => string) {
-  const left = new Map<string, number>();
-  for (const line of listed) left.set(line, (left.get(line) ?? 0) + 1);
-  const added: T[] = [];
-  for (const item of found) {
-    const count = left.get(key(item)) ?? 0;
-    if (count > 0) left.set(key(item), count - 1);
-    else added.push(item);
-  }
-  const gone = [...left].flatMap(([line, count]) => Array<string>(count).fill(line));
-  return { added, gone };
-}
-
-const lines = (text: string) => text.split("\n").filter(Boolean);
-
 function main() {
   const root = execFileSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" }).trim();
-  const git = (...args: string[]) => execFileSync("git", args, { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
-  const files = lines(git("ls-files", "--cached", "--others", "--exclude-standard", "mod", "backend", "web", "specs", "scripts", ".github", ".githooks", "mise.toml")).filter(
-    (file) => !generated.has(file) && existsSync(join(root, file)),
-  );
+  const files = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "mod", "backend", "web", "specs", "scripts", ".github", ".githooks", "mise.toml"], {
+    cwd: root,
+    encoding: "utf8",
+  })
+    .split("\n")
+    .filter((file) => file !== "" && !generated.has(file) && existsSync(join(root, file)));
   const found = scan(root, files);
-  const path = join(root, "comments.txt");
-  const listed = existsSync(path) ? lines(readFileSync(path, "utf8")) : [];
-  const base = process.env.COMMENTS_BASE ?? "HEAD";
-  const before = (() => {
-    try {
-      return lines(git("show", `${base}:comments.txt`));
-    } catch {
-      return null;
-    }
-  })();
-  let failed = false;
-  const gained = before === null ? [] : compare(listed, before, (line) => line).added;
-  for (const line of gained) {
-    console.log(`comments.txt: ${line}\n  is not in ${base}'s comments.txt, which only shrinks. Delete the comment, or start it with "@keep " if the user agreed to keep it.`);
-    failed = true;
-  }
-  const { added, gone } = compare(found, listed, entry);
-  for (const comment of added) {
+  for (const comment of found) {
     console.log(`${comment.file}:${comment.line}: delete this comment. Say it with a name, a type or a test, or fix what it excuses. A comment the user agreed to keep starts with "@keep ", as in "// @keep <what no code can say>".`);
-    failed = true;
   }
-  if (gone.length > 0) {
-    const kept = found.filter((comment) => !added.includes(comment)).map(entry).sort();
-    writeFileSync(path, kept.length > 0 ? `${kept.join("\n")}\n` : "");
-    console.log(`comments.txt listed ${gone.length} comments that are gone. It is written again, so stage it.`);
-    failed = true;
-  }
-  process.exit(failed ? 1 : 0);
+  process.exit(found.length > 0 ? 1 : 0);
 }
 
 if (import.meta.main) main();
