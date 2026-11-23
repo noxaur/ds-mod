@@ -59,7 +59,7 @@ Follow the [`feature` skill](../../mod/.claude/skills/feature/SKILL.md). A featu
 
 ## Checks
 
-A commit runs `mise run check`, which runs `check:mod`, `check:backend`, `check:web` and `check:docs`. `mise install` points git at `.githooks/`, whose `pre-commit` runs it, and a failure prints the log and commits nothing.
+`mise run check` runs every project's checks, as CI does. `mise install` points git at `.githooks/`, whose `pre-commit` runs `check:docs` and `check:comments`, and the project checks that the staged change reaches, which `scripts/affected.ts` maps from its paths. Where `flock` exists, every worktree's commit takes one shared lock for the project checks, so parallel commits run them in turn. A failure prints the log and commits nothing.
 
 A pull request's `gametests` job runs the game tests that its change reaches, against the jars a player installs, and `GameTestPick.kt` in `mod/src/debug/` says how a change reaches a test. Each test's time is in the log as `TestClock:`, and a test over 20 seconds fails the run. The beta pipeline runs every game test.
 
