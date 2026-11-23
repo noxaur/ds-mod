@@ -521,6 +521,10 @@
                               },
                               "obfuscated": {
                                 "type": "boolean"
+                              },
+                              "font": {
+                                "type": "string",
+                                "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                               }
                             },
                             "required": [
@@ -559,6 +563,10 @@
                                 },
                                 "obfuscated": {
                                   "type": "boolean"
+                                },
+                                "font": {
+                                  "type": "string",
+                                  "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                 }
                               },
                               "required": [
@@ -813,6 +821,10 @@
                                   },
                                   "obfuscated": {
                                     "type": "boolean"
+                                  },
+                                  "font": {
+                                    "type": "string",
+                                    "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                   }
                                 },
                                 "required": [
@@ -870,6 +882,10 @@
                                 },
                                 "obfuscated": {
                                   "type": "boolean"
+                                },
+                                "font": {
+                                  "type": "string",
+                                  "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                 }
                               },
                               "required": [
@@ -923,6 +939,10 @@
                           },
                           "obfuscated": {
                             "type": "boolean"
+                          },
+                          "font": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                           }
                         },
                         "required": [
@@ -1135,6 +1155,10 @@
                                 },
                                 "obfuscated": {
                                   "type": "boolean"
+                                },
+                                "font": {
+                                  "type": "string",
+                                  "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                 }
                               },
                               "required": [
@@ -2133,6 +2157,10 @@
                                   },
                                   "obfuscated": {
                                     "type": "boolean"
+                                  },
+                                  "font": {
+                                    "type": "string",
+                                    "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                   }
                                 },
                                 "required": [
@@ -2192,6 +2220,10 @@
                                     },
                                     "obfuscated": {
                                       "type": "boolean"
+                                    },
+                                    "font": {
+                                      "type": "string",
+                                      "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                     }
                                   },
                                   "required": [
@@ -2228,6 +2260,10 @@
                                       },
                                       "obfuscated": {
                                         "type": "boolean"
+                                      },
+                                      "font": {
+                                        "type": "string",
+                                        "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                       }
                                     },
                                     "required": [
@@ -3083,6 +3119,10 @@
                                       },
                                       "obfuscated": {
                                         "type": "boolean"
+                                      },
+                                      "font": {
+                                        "type": "string",
+                                        "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                       }
                                     },
                                     "required": [
@@ -3119,6 +3159,10 @@
                                         },
                                         "obfuscated": {
                                           "type": "boolean"
+                                        },
+                                        "font": {
+                                          "type": "string",
+                                          "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                         }
                                       },
                                       "required": [
@@ -3876,6 +3920,10 @@
                                       },
                                       "obfuscated": {
                                         "type": "boolean"
+                                      },
+                                      "font": {
+                                        "type": "string",
+                                        "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                       }
                                     },
                                     "required": [
@@ -3912,6 +3960,10 @@
                                         },
                                         "obfuscated": {
                                           "type": "boolean"
+                                        },
+                                        "font": {
+                                          "type": "string",
+                                          "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                         }
                                       },
                                       "required": [
@@ -4669,6 +4721,10 @@
                                       },
                                       "obfuscated": {
                                         "type": "boolean"
+                                      },
+                                      "font": {
+                                        "type": "string",
+                                        "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                       }
                                     },
                                     "required": [
@@ -4705,6 +4761,10 @@
                                         },
                                         "obfuscated": {
                                           "type": "boolean"
+                                        },
+                                        "font": {
+                                          "type": "string",
+                                          "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                         }
                                       },
                                       "required": [
@@ -5462,6 +5522,10 @@
                                       },
                                       "obfuscated": {
                                         "type": "boolean"
+                                      },
+                                      "font": {
+                                        "type": "string",
+                                        "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                       }
                                     },
                                     "required": [
@@ -5498,6 +5562,10 @@
                                         },
                                         "obfuscated": {
                                           "type": "boolean"
+                                        },
+                                        "font": {
+                                          "type": "string",
+                                          "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                         }
                                       },
                                       "required": [
@@ -6255,6 +6323,10 @@
                                       },
                                       "obfuscated": {
                                         "type": "boolean"
+                                      },
+                                      "font": {
+                                        "type": "string",
+                                        "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                       }
                                     },
                                     "required": [
@@ -6291,6 +6363,10 @@
                                         },
                                         "obfuscated": {
                                           "type": "boolean"
+                                        },
+                                        "font": {
+                                          "type": "string",
+                                          "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                         }
                                       },
                                       "required": [
@@ -7040,6 +7116,10 @@
                                 },
                                 "obfuscated": {
                                   "type": "boolean"
+                                },
+                                "font": {
+                                  "type": "string",
+                                  "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                 }
                               },
                               "required": [
@@ -7241,6 +7321,10 @@
                           },
                           "obfuscated": {
                             "type": "boolean"
+                          },
+                          "font": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                           }
                         },
                         "required": [
@@ -7316,6 +7400,10 @@
                                     },
                                     "obfuscated": {
                                       "type": "boolean"
+                                    },
+                                    "font": {
+                                      "type": "string",
+                                      "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                     }
                                   },
                                   "required": [
@@ -7352,6 +7440,10 @@
                                       },
                                       "obfuscated": {
                                         "type": "boolean"
+                                      },
+                                      "font": {
+                                        "type": "string",
+                                        "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                       }
                                     },
                                     "required": [
@@ -9844,6 +9936,10 @@
                                       },
                                       "obfuscated": {
                                         "type": "boolean"
+                                      },
+                                      "font": {
+                                        "type": "string",
+                                        "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                       }
                                     },
                                     "required": [
@@ -9882,6 +9978,10 @@
                                         },
                                         "obfuscated": {
                                           "type": "boolean"
+                                        },
+                                        "font": {
+                                          "type": "string",
+                                          "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
                                         }
                                       },
                                       "required": [

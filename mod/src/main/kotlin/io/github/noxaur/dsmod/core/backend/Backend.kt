@@ -108,6 +108,7 @@ private fun ServerText.toJson() = buildJsonArray {
                 if (span.underlined) put("underlined", true)
                 if (span.strikethrough) put("strikethrough", true)
                 if (span.obfuscated) put("obfuscated", true)
+                span.font?.let { put("font", it) }
             },
         )
     }

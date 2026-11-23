@@ -29,7 +29,8 @@ const same = (a: Style, b: Style): boolean =>
   a.italic === b.italic &&
   a.underlined === b.underlined &&
   a.strikethrough === b.strikethrough &&
-  a.obfuscated === b.obfuscated;
+  a.obfuscated === b.obfuscated &&
+  a.font === b.font;
 
 export const push = (spans: Span[], text: string, style: Style): void => {
   if (text === "") {

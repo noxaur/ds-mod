@@ -3,11 +3,12 @@ package io.github.noxaur.dsmod.edge
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.FontDescription
 import net.minecraft.network.chat.Style
 import net.minecraft.util.StringDecomposer
 
 private fun Style.toSpan(text: String = "") =
-    ServerSpan(text, color?.value, isBold, isItalic, isUnderlined, isStrikethrough, isObfuscated)
+    ServerSpan(text, color?.value, isBold, isItalic, isUnderlined, isStrikethrough, isObfuscated, (font as? FontDescription.Resource)?.takeIf { it != FontDescription.DEFAULT }?.id?.toString())
 
 fun Component.toText(): ServerText {
     val spans = ArrayList<ServerSpan>()

@@ -30,6 +30,10 @@ A developer runs the game tests beside their own game. So the test game opens wi
 
 Every test in a run shares one game, because a boot per test would multiply the run's time. So before each test the mod starts again as a launch with no saved files would. A test that cleans up after itself was rejected, because the next leak would be found the same way: a test that passed in the full order failing in a picked one.
 
+## A feature's time budget is measured alone
+
+Each feature's handlers are timed against a budget per call, and a mean taken while another test runs beside it measures that test as much as the feature. So the timing runs on its own after the other unit tests, under a time limit of its own. Fewer replays were rejected, because the code was not yet compiled for speed and its means read up to three times higher.
+
 ## CI's time limit is a step, not a timeout
 
 A job's timeout cancels it and says only that it was cancelled, and it can't tell a slow change from a cold cache. So the last step of every job reads when the job started and fails with the time and what to do, and lets a run through when the cache was cold. A build cache for compiled classes was rejected, because most changes edit what every compile reads.

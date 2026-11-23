@@ -10,6 +10,7 @@ export const Span = Schema.Struct({
   underlined: Schema.optionalKey(Schema.Boolean),
   strikethrough: Schema.optionalKey(Schema.Boolean),
   obfuscated: Schema.optionalKey(Schema.Boolean),
+  font: Schema.optionalKey(Schema.String.check(Schema.isPattern(/^[a-z0-9_.-]+:[a-z0-9_./-]+$/u))),
 });
 export type Span = typeof Span.Type;
 

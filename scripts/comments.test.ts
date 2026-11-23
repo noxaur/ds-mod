@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { compare, entry, scan } from "./comments.ts";
+import { entry, scan } from "./comments.ts";
 
 const sources: Record<string, string> = {
   "a.kt": 'val u = "https://x" // kt tail\n/* kt block */\n/** kt doc */\nfun f() = """raw // ${"a /* b */"}"""\nval c = \'/\'\n',
@@ -60,11 +60,4 @@ test("finds every kind of comment, and no string, shebang or approved exception"
   for (const [file, text] of Object.entries(sources)) writeFileSync(join(root, file), text);
   const found = scan(root, Object.keys(sources)).map(entry);
   assert.deepEqual(found.sort(), [...expected].sort());
-});
-
-test("a comment is new until comments.txt lists it once for each copy", () => {
-  const comment = { file: "a.kt", line: 1, text: "// same" };
-  const { added, gone } = compare([comment, { ...comment, line: 2 }], ["a.kt: // same", "a.kt: // gone"], entry);
-  assert.deepEqual(added, [{ ...comment, line: 2 }]);
-  assert.deepEqual(gone, ["a.kt: // gone"]);
 });

@@ -25,7 +25,7 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 
 | Rule | Enforced by |
 | --- | --- |
-| No code, config or spec holds a comment, but an exception the user agreed to | `scripts/comments.ts` against `comments.txt`, in `check:comments` |
+| No code, config or spec holds a comment, but an exception the user agreed to | `scripts/comments.ts`, in `check:comments` |
 | `docs/internals/` names no code, and holds one short paragraph per decision | `scripts/docs.ts`, in `check:docs` |
 | `core` names nothing from Minecraft, Fabric, Mojang or `edge`, even by full name | `PurityTest` reads the compiled classes |
 | The edge is handed what it uses by `DsModClient`, the one place that wires the mod, and only the mixins and the entrypoints reach `Hooks` | `OwnersTest` reads the compiled classes |
@@ -70,10 +70,10 @@ A commit runs all of them, except the game tests, which a pull request runs, and
 | A saved setting keeps its key in the config file, so a player who updates keeps what they set | `ConfigFileTest` loads a file 0.1.0 wrote and checks every value, and loads a file main wrote with every row changed and saves it again unchanged |
 | Every setting is saved in a slot of a store, under a key written where it is declared | A row takes only a `Bind`, which a `Slot` makes, and `SettingsTreeTest` refuses a field of `DsModConfig` besides favorites |
 | A feature's saved state is immutable and has a default for every field, so a change is written and an older save loads | `SavedStateTest` walks every feature's `state` |
-| A feature's handler and readout average under 20µs | `FeatureReplayTest` |
+| A feature's handler and readout average under 20µs | `FeatureReplayTest`, in the mod's `budgetTest`, which runs alone after the unit tests |
 | A capture type has one producer | `CaptureWriter` rejects a raw record with an event's type |
 | The jars a player installs boot and open settings | `runProdClientGameTest` |
-| A unit test run takes at most 30 seconds | `timeout` on `tasks.test` in `mod/build.gradle.kts`, and `scripts/test-time-limit.ts`, the global setup of the tests in `backend/vite.config.ts` and `web/vite.config.ts` |
+| A unit test run takes at most 30 seconds | `timeout` on each `Test` task in `mod/build.gradle.kts`, and `scripts/test-time-limit.ts`, the global setup of the tests in `backend/vite.config.ts` and `web/vite.config.ts` |
 | A game test passes whichever tests ran before it | `FreshStart` in `mod/src/gametest/` starts the mod afresh before each test |
 | A game test takes at most 20 seconds, its world included | `TestClock` in `mod/src/gametest/` |
 | A game test moves the mouse, clicks and opens the inventory through `Pointer.kt`, in GUI pixels | `gametest-point-by-pointer` and `gametest-inventory-by-pointer` in `mod/detekt.yml` |
