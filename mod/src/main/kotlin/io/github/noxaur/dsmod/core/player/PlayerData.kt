@@ -38,6 +38,7 @@ class PlayerData internal constructor(private val container: ContainerState, pri
     private var inProfiles = false
     private var target: String? = null
     private var switching: String? = null
+    private var unread = false
 
     /** @keep The name of the profile the player is on, or null until the mod has seen one. What the mod keeps before then
      * goes to the first name it learns */
@@ -82,7 +83,7 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         switching = null
         inProfiles = event.title?.plain == PROFILES
         shelf = Shelf.of(event.title?.plain)?.takeIf { it.slots.last < event.size - ContainerState.PLAYER_SLOTS }
-        shelf?.let { put(it.id, Seen(it.title, List(it.slots.count()) { null }, time)) }
+        unread = shelf != null
         if (to == null || event.id != ContainerState.INVENTORY) return false
         switch(to, time)
         return true
@@ -94,6 +95,9 @@ class PlayerData internal constructor(private val container: ContainerState, pri
             return false
         }
         shelf?.let { shelf ->
+            // @keep A menu closed before its slots arrive keeps the copy the player saw last
+            if (unread) put(shelf.id, Seen(shelf.title, List(shelf.slots.count()) { null }, time))
+            unread = false
             val i = event.slot - shelf.slots.first
             val seen = containers[shelf.id]
             if (seen != null && i in seen.items.indices) put(shelf.id, seen.copy(items = seen.items.toMutableList().also { it[i] = event.item }, at = time))

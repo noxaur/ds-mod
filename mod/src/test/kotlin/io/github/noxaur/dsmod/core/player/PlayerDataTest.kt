@@ -72,6 +72,8 @@ class PlayerDataTest {
     private val list = ContainerOpened(1, text("Profile Management"), 72)
     private val manage = ContainerOpened(2, text("Profile Management"), 72)
     private val closed = ContainerOpened(0, null, 46, kept = true)
+    private val enderChest = ContainerOpened(3, text("Ender Chest"), 72)
+    private val diamonds = SlotChanged(9, Item("minecraft:diamond", 3, text("Diamond")))
 
     private fun Harness.begin(other: String, from: String) {
         post(list, SlotChanged(10, profile(from, "Selected")), SlotChanged(11, profile(other, "In use")), SlotClicked(11))
@@ -113,10 +115,17 @@ class PlayerDataTest {
     @Test
     fun `what the mod kept before it knew the profile goes to the first name it learns`() {
         val session = object : Harness(alone = ItemOverview::class) {}
-        session.post(ContainerOpened(3, text("Ender Chest"), 72), SlotChanged(9, Item("minecraft:diamond", 3, text("Diamond"))))
+        session.post(enderChest, diamonds)
         assertNull(session.game.player.profile)
         session.post(list, SlotChanged(10, profile("Old", "Selected")), closed)
         assertEquals("Old", session.game.player.profile)
+        assertEquals(3, session.game.player.containers.getValue("ender_chest").items[0]?.count)
+    }
+
+    @Test
+    fun `a menu closed before its slots arrive keeps the copy the player saw last`() {
+        val session = object : Harness(alone = ItemOverview::class) {}
+        session.post(enderChest, diamonds, closed, enderChest.copy(id = 4), closed)
         assertEquals(3, session.game.player.containers.getValue("ender_chest").items[0]?.count)
     }
 
