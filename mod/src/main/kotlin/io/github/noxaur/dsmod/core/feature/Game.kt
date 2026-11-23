@@ -52,6 +52,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             internal set
         internal var stale = true
         internal var on = false
+        internal var sharedSeen = 0
         internal var refreshedAt = 0L
 
         internal var missedLeave = false
@@ -80,6 +81,10 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     val container = ContainerState()
 
     private var worlds = 0
+
+    private var sharedChanges = 0
+    private val everyone = IntArray(features.size) { it }
+    private val hearing = HashMap<Class<out GameEvent>, IntArray>()
 
     private val held = EntityTable()
     private val readers = features.filter { it.entityFilters.isNotEmpty() }.also { check(it.size <= Long.SIZE_BITS) }
@@ -122,8 +127,17 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         private set
 
     fun post(time: Long, event: GameEvent): Boolean {
-        tap?.invoke(time, event)
         sync(time)
+        return deliver(time, event)
+    }
+
+    fun post(time: Long, events: List<GameEvent>) {
+        sync(time)
+        for (event in events) deliver(time, event)
+    }
+
+    private fun deliver(time: Long, event: GameEvent): Boolean {
+        tap?.invoke(time, event)
         var shown = true
         replaced = null
         val entity = held.apply(event)
@@ -157,7 +171,10 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             }
             else -> false
         }
-        for (i in features.indices) {
+        if (shared) sharedChanges++
+        val all = entity || event == WorldChanged || event == LeftServer
+        val listeners = if (all) everyone else hearing.getOrPut(event.javaClass) { features.indices.filter { event.javaClass in features[it].handlers }.toIntArray() }
+        for (i in listeners) {
             val feature = features[i]
             if (!readouts[i].on) {
                 if (event == LeftServer) readouts[i].missedLeave = true
@@ -174,7 +191,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
                 is EntityGone -> feature.heldEntities.remove(heard.id)
                 else -> Unit
             }
-            if (handler != null || shared || entity) readouts[i].stale = true
+            if (handler != null || entity) readouts[i].stale = true
             feature.replacement?.let {
                 feature.replacement = null
                 replaced = it
@@ -225,8 +242,9 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
         for (readout in readouts) {
             val feature = readout.feature
             val enabled = readout.on
-            if (!readout.stale && !feature.redrawn && enabled && time - readout.refreshedAt in 0 until REFRESH_MILLIS) continue
+            if (!readout.stale && readout.sharedSeen == sharedChanges && !feature.redrawn && enabled && time - readout.refreshedAt in 0 until REFRESH_MILLIS) continue
             readout.stale = !enabled
+            readout.sharedSeen = sharedChanges
             feature.redrawn = false
             readout.refreshedAt = time
             var hud: HudBlock? = null
