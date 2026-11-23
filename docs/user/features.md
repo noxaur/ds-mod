@@ -478,6 +478,21 @@ Click the SkyBlock Menu item in the last hotbar slot, in your inventory or any m
 
 A dragon egg in the empty slot at the top left of the Dragon Sim Menu. Clicking it sends `/hotd`, which opens the Heart of the Dragon.
 
+### Storage Overview
+
+Shows what your Storage pages and Ender Chest hold before you open them. The mod remembers each page as you saw it the last time you opened it, for each of your profiles and across restarts, so open a page once to fill it in. Pick one of two modes:
+
+- **Preview**, the default: in the `/storage` menu, hover a page to see its items in its tooltip, in their slots, under the page's name. Hold Shift to read the server's text instead. A page you haven't opened yet keeps the server's text.
+- **Overview**: `/storage`, `/ec` and every Storage page open one screen that shows every page at once, under its title and with your inventory below. The pages form a square grid, 2 by 2 for 4 pages and 3 by 3 for 9, and grow wider only when that saves you scrolling and your screen has room. Your menu tabs and the Search tab sit under your inventory.
+
+In the overview the open page has an outline and works as the menu does. The other pages show what the mod remembers, with their tooltips and item rarity, and Menu Search dims them too. A page you haven't opened yet reads "Click to load items".
+
+| Do this | To |
+| --- | --- |
+| Click another page | Open it in its place. Nothing happens while an item is on your cursor, so you can't carry it off by mistake |
+| Hover an item on any page | Read its tooltip |
+| Scroll, drag the scrollbar, or press Page Up, Page Down, Home or End | See the rest of the pages, while your inventory stays put |
+
 ### Forge Craft
 
 Craft an item at the forge once the usual way, and the mod remembers it until you leave the server. From then on, each press of the Craft Key (R) clicks the next button of that craft: Forge Queue, the category, the item, then Confirm. A repeat is four presses, one click each, and it works only in the forge's menus.

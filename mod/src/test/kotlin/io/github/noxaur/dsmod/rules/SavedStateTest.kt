@@ -52,7 +52,9 @@ internal data object Empty : Unset
 @Serializable
 internal data class Full(val count: Int) : Kept
 
-private val sameOnEveryProfile = mapOf("hide-glass-panes" to "a hint told once, whichever profile the player is on")
+private val sameOnEveryProfile = mapOf(
+    "hide-glass-panes" to "a hint told once, whichever profile the player is on",
+)
 
 class SavedStateTest {
     @Test

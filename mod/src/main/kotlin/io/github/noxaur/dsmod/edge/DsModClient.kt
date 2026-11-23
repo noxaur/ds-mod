@@ -21,6 +21,8 @@ import io.github.noxaur.dsmod.edge.capture.Recorder
 import io.github.noxaur.dsmod.edge.capture.Recording
 import io.github.noxaur.dsmod.edge.contribute.Contribute
 import io.github.noxaur.dsmod.edge.overview.ItemOverviews
+import io.github.noxaur.dsmod.edge.storage.StorageOverlays
+import io.github.noxaur.dsmod.edge.storage.StoragePreviews
 import io.github.noxaur.dsmod.edge.profile.Profiles
 import io.github.noxaur.dsmod.edge.ui.Editors
 import io.github.noxaur.dsmod.edge.ui.Kit
@@ -161,6 +163,8 @@ object DsModClient : ClientModInitializer {
         TabBar.bind(tree.feature())
         Profiles.bind(game, tree.feature())
         ItemOverviews.bind(game, tree.feature())
+        StorageOverlays.bind(game, tree.feature())
+        StoragePreviews.bind(tree.feature())
     }
 
     override fun onInitializeClient() {
@@ -175,6 +179,9 @@ object DsModClient : ClientModInitializer {
         Hud.register()
         Slots.register()
         MenuSkin.register()
+        // @keep Before the menu's other layers, which place themselves on the overview's panel.
+        StorageOverlays.register()
+        StoragePreviews.register()
         ForgeCrafts.register()
         Wardrobes.register()
         AutoClicks.register()
