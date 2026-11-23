@@ -135,7 +135,6 @@ The XP is read each time you open the Pets menu. Open it again a little later, a
 | XP | Shows how far your pet is to its next level, as a bar |
 | XP Rate | Shows how much XP your pet gains an hour, from two reads of the Pets menu |
 | Next Level | Shows how long until your pet reaches its next level at that rate |
-| Mark In Menu | Marks your active pet in the Pets menu |
 | Hide Autopet | Hides the chat line Autopet sends when it swaps your pet. Off until you turn it on |
 
 ### Inventory HUD
@@ -397,7 +396,7 @@ A message is copied whole, also when it wraps over several rows. A block the ser
 
 ### Item Rarity
 
-Each item's slot is marked in the color of its rarity, in every menu and on your hotbar.
+Each item's slot is marked in the color of its rarity, in every menu and on your hotbar. In the Pets menu, each pet is marked in the color of its rarity too.
 
 <p>
   <img src="../images/rarity-chest.png" width="49%" alt="A chest in the Aura style: each item sits on a round glow in its rarity's color, with a few sparkles in it">
@@ -535,6 +534,14 @@ In the Wardrobe, press 1 to 9 to click the nine slot buttons of the page you're 
 The server refuses a wardrobe click for a second after the menu opens, so a press in that second waits for it. The seconds left show beside the menu's title, and the button your press will click has a thin outline. Press another number while you wait to change your mind.
 
 Change the keys under Keys in Wardrobe Keys' settings. Each key works only in the Wardrobe, so 1 to 9 still pick your hotbar slot everywhere else.
+
+### Pets Menu
+
+In the Pets menu, your active pet has a green outline, so you can find it among the rest. Turn off Mark Active Pet to hide it.
+
+Press 1 to 9 and 0 to click the first ten pets on the page, counted from the top left, row by row, the same as clicking the pet yourself: on a pet you don't have out it summons it, and on your active pet it puts it away. Each press is one click. Each of those pets shows its key in its bottom right corner, where a stack count goes, since with seven pets to a row, 8 is the first pet on the second row. A press in the first second after the menu opens waits for that second, as in the Wardrobe, with the seconds left beside the menu's title and the pet your press will click outlined.
+
+Change the keys under Keys in Pets Menu's settings. Each key works only in the Pets menu, so the numbers still pick your hotbar slot everywhere else.
 
 ### Profile Cooldown
 

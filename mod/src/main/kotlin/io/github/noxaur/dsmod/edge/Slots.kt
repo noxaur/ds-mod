@@ -26,8 +26,11 @@ import kotlin.math.ceil
 private const val HOTBAR_PITCH = 20
 private const val FILL_ALPHA = 110
 
+private const val COUNT_RIGHT = 17
+private const val COUNT_TOP = 9
+
 object Slots {
-    private class Shown(val role: Role, val color: Int, val rarity: Role?, val hide: Boolean, val label: Component?, val cooldown: SlotCooldown?, val outline: Boolean)
+    private class Shown(val role: Role, val color: Int, val rarity: Role?, val hide: Boolean, val label: Component?, val labelWidth: Int, val cooldown: SlotCooldown?, val outline: Boolean)
 
     private val marks = HashMap<String, Map<Int, Shown>>()
     private val hidden = BitSet()
@@ -45,8 +48,10 @@ object Slots {
     }
 
     fun mark(id: String, slots: Map<Int, SlotMark>) {
+        val font = Minecraft.getInstance().font
         marks[id] = slots.mapValues { (_, mark) ->
-            Shown(mark.role, mark.role.argb(FILL_ALPHA), mark.role.takeIf { mark.rarity }, mark.hide, mark.label?.toComponent(), mark.cooldown, mark.outline)
+            val label = mark.label?.toComponent()
+            Shown(mark.role, mark.role.argb(FILL_ALPHA), mark.role.takeIf { mark.rarity }, mark.hide, label, label?.let(font::width) ?: 0, mark.cooldown, mark.outline)
         }
         recount()
     }
@@ -84,7 +89,7 @@ object Slots {
             }
             ScreenEvents.afterForeground(screen).register { _, graphics, _, _, _ ->
                 each(screen, graphics) { _, slot, shown ->
-                    shown.label?.let { graphics.text(font, it, slot.x, slot.y, -1, true) }
+                    shown.label?.let { graphics.text(font, it, slot.x + COUNT_RIGHT - shown.labelWidth, slot.y + COUNT_TOP, -1, true) }
                     shown.cooldown?.let { cooldown(graphics, it, slot.x, slot.y) }
                     if (shown.outline) Kit.slotOutline(graphics, slot.x, slot.y, if (shown.role == Role.ACTION) Kit.theme.accent else shown.role.argb())
                 }
@@ -125,7 +130,7 @@ object Slots {
         val label = if (seconds < 60) "$seconds" else "${seconds / 60}m"
         val text = counts.getOrPut(label) { text { value(label) }.toComponent() }
         val font = Minecraft.getInstance().font
-        graphics.text(font, text, x + 17 - font.width(text), y + 9, -1, true)
+        graphics.text(font, text, x + COUNT_RIGHT - font.width(text), y + COUNT_TOP, -1, true)
     }
 
     fun marks(rarity: Role?) = rarity != null && settings.feature.runs && (rarity != Role.COMMON || settings.markCommon.value)
@@ -137,8 +142,8 @@ object Slots {
     private fun back(graphics: GuiGraphicsExtractor, surface: Surface, shown: Shown, index: Int, x: Int, y: Int) {
         if (shown.cooldown != null || shown.outline) return
         val rarity = shown.rarity
-        if (rarity == null) Kit.slotFill(graphics, x, y, shown.color)
-        else art(graphics, surface, rarity, index, x, y)
+        if (rarity != null) art(graphics, surface, rarity, index, x, y)
+        else if (shown.label == null) Kit.slotFill(graphics, x, y, shown.color)
     }
 
     private fun art(graphics: GuiGraphicsExtractor, surface: Surface, rarity: Role, index: Int, x: Int, y: Int) {

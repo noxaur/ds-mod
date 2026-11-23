@@ -35,7 +35,7 @@ Every type of interface ds-mod can show, grouped by surface. A feature uses the 
 
 **Container overlay**
 - Slot highlight: a colored background or border.
-- Slot text: a label in the corner, or a replaced stack count.
+- Slot text: a number where the stack count goes, on an item that never stacks, as cooldown seconds and key numbers are.
 - Slot dimming: graying out or hiding what doesn't matter.
 - Slot link: lines or numbers that connect slots or show an order.
 - Side panel: a HUD-style block beside the container.
