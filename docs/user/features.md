@@ -539,7 +539,7 @@ Change the keys under Keys in Wardrobe Keys' settings. Each key works only in th
 
 In the Pets menu, your active pet has a green outline, so you can find it among the rest. Turn off Mark Active Pet to hide it.
 
-Press 1 to 9 and 0 to click the first ten pets on the page, counted from the top left, row by row, the same as clicking the pet yourself: on a pet you don't have out it summons it, and on your active pet it puts it away. Each press is one click. Each of those pets shows its key in its bottom right corner, where a stack count goes, since with seven pets to a row, 8 is the first pet on the second row. A press in the first second after the menu opens waits for that second, as in the Wardrobe, with the seconds left beside the menu's title and the pet your press will click outlined.
+Press 1 to 9 and 0 to click the first ten pets on the page, counted from the top left, row by row, the same as clicking the pet yourself: on a pet you don't have out it summons it, and on your active pet it puts it away. Each press is one click. Each of those pets shows its key in its bottom right corner, where a stack count goes, since with seven pets to a row, 8 is the first pet on the second row. A press clicks at once once its pet shows in the menu, and a press before that does nothing.
 
 Change the keys under Keys in Pets Menu's settings. Each key works only in the Pets menu, so the numbers still pick your hotbar slot everywhere else.
 

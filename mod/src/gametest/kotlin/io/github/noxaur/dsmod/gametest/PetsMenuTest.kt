@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.inventory.MenuKeys
 import io.github.noxaur.dsmod.core.game.PetCard
 import io.github.noxaur.dsmod.core.ui.Theme
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
@@ -18,7 +17,6 @@ import org.lwjgl.glfw.GLFW
 
 /** @keep Covers [io.github.noxaur.dsmod.edge.MenuKeyClicks] in the Pets menu, and the rarity and active marks on its pets. */
 class PetsMenuTest : FabricClientGameTest {
-    private val waitTicks = (MenuKeys.WAIT_MILLIS / 50).toInt()
 
     private fun pet(name: String, color: ChatFormatting, rarity: String, active: Boolean = false) = ItemStack(Items.PLAYER_HEAD).also {
         it.set(DataComponents.CUSTOM_NAME, Component.literal("[Lvl 100] ").withStyle(ChatFormatting.GRAY).append(Component.literal(name).withStyle(color)))
@@ -47,11 +45,8 @@ class PetsMenuTest : FabricClientGameTest {
 
     override fun runTest(context: ClientGameTestContext) {
         context.worldBuilder().create().use { world ->
-            pets(context, world, settle = 0)
-            check(press(context, GLFW.GLFW_KEY_2).isEmpty()) { "A press the moment the Pets menu appeared clicked at once" }
-            context.takeScreenshot("pets-menu-waiting")
-            val held = ClickSpy.during(context) { context.waitTicks(waitTicks) }
-            check(held == listOf(Click(11, 0, ContainerInput.PICKUP))) { "The held press did not click the second pet once the second was up: $held" }
+            pets(context, world)
+            check(press(context, GLFW.GLFW_KEY_2) == listOf(Click(11, 0, ContainerInput.PICKUP))) { "A press right after the Pets menu opened did not click the second pet at once" }
             world.server.runOnServer<Nothing> { server ->
                 server.player.containerMenu.setCarried(ItemStack.EMPTY)
                 (server.player.containerMenu as ChestMenu).container.setItem(11, pet("Wolf", ChatFormatting.GOLD, "LEGENDARY"))
@@ -64,7 +59,6 @@ class PetsMenuTest : FabricClientGameTest {
 
             context.inTheme(Theme.VANILLA, settle = 0) {
                 pets(context, world)
-                context.waitTicks(waitTicks)
                 context.takeScreenshot("pets-menu-vanilla")
             }
         }

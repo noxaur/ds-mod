@@ -17,7 +17,7 @@ class WardrobeKeys(config: DsModConfig) : HasFeature {
         feature.fold("wardrobeKeys", "Keys", "Pick the key for each wardrobe slot.", *keyList.toTypedArray())
     }
 
-    val keys = MenuKeys(feature, TITLE, keyList, ::button)
+    val keys = MenuKeys(feature, TITLE, keyList, WAIT_MILLIS, ::button)
 
     private fun button(index: Int): Int? = (BUTTON_ROW * ContainerState.ROW_SLOTS + index).takeIf { slot ->
         slot in feature.container.menuSlots && feature.container.slots[slot]?.name?.plain?.let(BUTTON::matches) == true
@@ -28,6 +28,7 @@ class WardrobeKeys(config: DsModConfig) : HasFeature {
     companion object {
         const val TITLE = "Wardrobe"
         const val SLOTS = 9
+        const val WAIT_MILLIS = 1000L
         private const val BUTTON_ROW = 4
         private val BUTTON = Regex("Slot \\d+")
     }
