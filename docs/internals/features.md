@@ -8,7 +8,7 @@ A feature builds the parts it needs and holds them, and two features that share 
 
 ## Features run on events and ticks, never in a frame
 
-A feature handles events and returns what it shows, and the mod rebuilds its readout after an event it could see and four times a second for clocks. The frame only draws what the last rebuild left, so feature code never runs inside a frame, and a feature that is off shows nothing without remembering to hide. It still runs on the client tick, on the thread that draws, so a slow handler delays the next frame and the perf caps hold each one. Calling a UI layer from the feature was rejected, because the replay test could not read it without Minecraft.
+A feature handles events and returns what it shows, and the mod rebuilds its readout after an event it could see and four times a second for clocks. The frame only draws what the last rebuild left, so feature code never runs inside a frame, and a feature that is off shows nothing without remembering to hide. It still runs on the client tick, on the thread that draws, so a slow handler delays the next frame, and the beta's perf caps hold every handler's tick together. Calling a UI layer from the feature was rejected, because the replay test could not read it without Minecraft.
 
 ## What a feature says is delivered at the end of the tick
 
