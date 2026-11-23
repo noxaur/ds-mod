@@ -7,10 +7,12 @@ import io.github.noxaur.dsmod.edge.input.CommandLinks
 import io.github.noxaur.dsmod.edge.input.InputApproved
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.FontDescription
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Style
 import net.minecraft.network.chat.TextColor
+import net.minecraft.resources.Identifier
 import java.util.Optional
 
 object Chat {
@@ -40,6 +42,7 @@ fun ServerText.toComponent(): MutableComponent = spans.fold(Component.empty()) {
         Component.literal(span.text).withStyle {
             it.withColor(span.color?.let(TextColor::fromRgb)).withBold(span.bold).withItalic(span.italic).withUnderlined(span.underlined)
                 .withStrikethrough(span.strikethrough).withObfuscated(span.obfuscated)
+                .withFont(span.font?.let(Identifier::tryParse)?.let(FontDescription::Resource))
         },
     )
 }
