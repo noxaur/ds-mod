@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.Game
+import io.github.noxaur.dsmod.core.feature.Stored
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption.ATOMIC_MOVE
@@ -16,26 +17,37 @@ import kotlin.io.path.writeText
 class SavedFiles(
     private val dir: Path,
     private val game: Game,
+    account: String = "local",
     startWriter: () -> ExecutorService = { Executors.newSingleThreadExecutor { Thread(it, "dsmod-save").apply { isDaemon = true } } },
 ) {
-    private val states = game.readouts.mapNotNull { readout -> readout.feature.state?.let { readout.feature.id to it } } +
-        ("places" to game.places) + ("hidden" to game.hidden)
+    private val profiled = game.readouts.mapNotNull { readout -> readout.feature.id.takeIf { readout.feature.state?.profiled == true } }
+    private val states: List<Pair<String, Stored>> =
+        game.readouts.mapNotNull { readout -> readout.feature.state?.takeUnless { it.profiled }?.let { readout.feature.id to it } } +
+            ("places" to game.places) + ("hidden" to game.hidden) + ("players/$account" to game.player)
     private val writer = lazy(startWriter)
     private val failures = ConcurrentLinkedQueue<Pair<String, Exception>>()
 
+    // @keep A state from before profiles is moved aside only once the player's file holds it, so a crash before then reads it again
+    private val retiring = ConcurrentLinkedQueue<Path>()
+
     fun load() {
-        for ((id, state) in states) {
-            val file = dir.resolve("$id.json")
-            if (!file.exists()) continue
-            game.metrics.time("$id.load") {
-                try {
-                    state.load(file.readText())
-                } catch (e: Exception) {
-                    file.moveTo(dir.resolve("$id.json.corrupt-${System.currentTimeMillis()}"))
-                    throw e
-                }
+        for ((id, state) in states) read(id, state::load)
+        for (id in profiled) if (read(id) { game.player.takeOld(id, it) } != null) retiring.add(dir.resolve("$id.json"))
+    }
+
+    private fun <T> read(id: String, take: (String) -> T): T? {
+        val file = dir.resolve("$id.json")
+        if (!file.exists()) return null
+        var taken: T? = null
+        game.metrics.time("$id.load") {
+            try {
+                taken = take(file.readText())
+            } catch (e: Exception) {
+                file.moveTo(file.resolveSibling("${file.fileName}.corrupt-${System.currentTimeMillis()}"))
+                throw e
             }
         }
+        return taken
     }
 
     fun flush() {
@@ -44,14 +56,18 @@ class SavedFiles(
             states.first { it.first == id }.second.unwritten()
         }
         for ((id, state) in states) {
-            val json = state.takeChanges() ?: continue
+            val encode = state.takeChanges() ?: continue
+            val holds = if (state === game.player) generateSequence(retiring::poll).toList() else emptyList()
             writer.value.execute {
                 try {
-                    Files.createDirectories(dir)
-                    val temporary = dir.resolve("$id.json.tmp")
-                    temporary.writeText(json)
-                    temporary.moveTo(dir.resolve("$id.json"), ATOMIC_MOVE)
+                    val file = dir.resolve("$id.json")
+                    Files.createDirectories(file.parent)
+                    val temporary = file.resolveSibling("${file.fileName}.tmp")
+                    temporary.writeText(encode())
+                    temporary.moveTo(file, ATOMIC_MOVE)
+                    for (old in holds) if (old.exists()) old.moveTo(old.resolveSibling("${old.fileName}.$MOVED"), overwrite = true)
                 } catch (e: Exception) {
+                    retiring.addAll(holds)
                     failures += id to e
                 }
             }
@@ -63,5 +79,9 @@ class SavedFiles(
         if (!writer.isInitialized()) return
         writer.value.shutdown()
         writer.value.awaitTermination(5, TimeUnit.SECONDS)
+    }
+
+    private companion object {
+        const val MOVED = "moved-to-profile"
     }
 }

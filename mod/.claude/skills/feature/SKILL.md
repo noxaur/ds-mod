@@ -20,7 +20,8 @@ Load the `ui` skill too when the feature shows the player anything.
 
 ## State
 
-- State that outlives the session is one `@Serializable` class given to `saved()`. Replace its `value` to change it.
+- State that outlives the session is one `@Serializable` class given to `profiled()`, which keeps it for each of the player's profiles. Replace its `value` to change it.
+- The player's own data, such as the containers they opened and the profile they are on, is read from `feature.player`. Data it lacks is added to `PlayerData`, so every feature shares it. Why is in [internals/player-data.md](../../../../docs/internals/player-data.md).
 - State that holds for one world is declared as `private var phase by feature.world { Phase.Unknown }`, and for one session on the server with `feature.session { }`. `Game` resets it, so never reset it in a `WorldChanged` or `LeftServer` handler. Values that exclude each other, such as a dragon alive and an egg returning, are one sealed type, as in `DragonTimer`.
 
 ## Fixtures

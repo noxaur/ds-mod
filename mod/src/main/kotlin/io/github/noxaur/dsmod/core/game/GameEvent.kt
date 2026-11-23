@@ -54,6 +54,12 @@ data class HeadPlaced(val x: Int, val y: Int, val z: Int) : FeatureEvent
 @SerialName("slot")
 data class SlotChanged(val slot: Int, val item: Item? = null) : FeatureEvent
 
+/** @keep The player clicked a slot of the open menu, by the index `SlotChanged` uses. Posted before the click reaches the
+ * server, and only seen, never refused */
+@Serializable
+@SerialName("click")
+data class SlotClicked(val slot: Int) : FeatureEvent
+
 /** @keep Posted again with the same id when the head changes or the client's reason to report it does, which a reader
  * takes as the entity now being this */
 @Serializable

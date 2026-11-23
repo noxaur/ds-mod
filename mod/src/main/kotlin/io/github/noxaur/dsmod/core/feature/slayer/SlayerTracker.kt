@@ -19,7 +19,7 @@ data class SlayerKills(val slain: Int = 0)
 class SlayerTracker(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "slayer-tracker", Area.ANYWHERE, Store.SLAYER, "Count the slayer bosses you slay and time each from spawn to slain.", hud = ::hud)
 
-    private val allTime = feature.saved(SlayerKills())
+    private val allTime = feature.profiled(SlayerKills())
     private var slain = 0
     private var timed = 0
     private var timedMillis = 0L

@@ -21,4 +21,6 @@ The words below mean one thing each, in code, docs and conversation. Use them as
 - **Request**: a brief plus requirements, published to the backend by an agent, for players to record.
 - **Contribution**: one player's run of a request, redacted and uploaded.
 - **Sighting**: how an item looked in a player's own inventory, sent under Report Game Data so the backend can draw items the server's API describes badly.
+- **Profile**: one of a player's dragsim.co profiles, each with its own inventory, storage, coins and pets. The mod knows it by the name dragsim.co gives it.
+- **Player data**: what the mod keeps of the player's own profiles, in one layer that every feature reads. See [player data](player-data.md).
 - **Snapshot**: the containers of one profile lookup, kept by the backend for ten minutes so a tab opened later matches the overview.
