@@ -34,6 +34,10 @@ An item lock is the id the server gives every item that does not stack, so two s
 
 Only one small layer touches the player's input, approved once by a hash of its code, so a server rule such as the click cap changes only with a new approval. A mixin is hashed too. Code elsewhere is approved by the layer methods it reaches, so an edit keeps its approval. A list beside the code that hashed whole classes was rejected, because most changes to it were refactors that approved nothing new. The agent asks the user before it keeps a place that does anything new.
 
+## A shared waypoint is plain text, sent only by the player's command
+
+Sharing a waypoint sends one line, its name, coordinates and area as plain words, to the channel the player names, and only when they run the share command. A player without ds-mod can read it. The user rejected a tag carrying the waypoint's color and look, because players without the mod would read it as noise. Coordinates in chat become a click that runs one of ds-mod's own commands on the client. Its coordinates are typed numbers and its name and area are quoted with quotes and backslashes taken out, so a click never reaches the server.
+
 ## Forge Craft sends one click per key press
 
 Forge Craft repeats a forge craft from the keyboard, and each press sends one click, the next of the four the player made by hand, so the player still makes every step and sees each menu. One press that sent every click was rejected, because that is automation. A press waits up to a second for the menu it clicked to give way to the next, so a quick second press cannot land on the wrong button, and a menu the server never replaced takes a click again after that.

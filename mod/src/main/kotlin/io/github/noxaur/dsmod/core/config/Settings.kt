@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.core.config
 
 import io.github.noxaur.dsmod.core.feature.HasFeature
+import io.github.noxaur.dsmod.core.ui.Colors
 import io.github.noxaur.dsmod.core.ui.Look
 import io.github.noxaur.dsmod.core.ui.Narration
 import io.github.noxaur.dsmod.core.ui.Section
@@ -25,6 +26,7 @@ enum class Kind(val spoken: String) {
     NUMBER("number"),
     CHOICE("choice"),
     PICK("pick"),
+    COLOR("color"),
     KEYS("key bind"),
     SPAN("span"),
     FOLD("fold"),
@@ -218,6 +220,12 @@ class Pick<T>(
     fun lookAt(index: Int = this.index) = look(values[index])
 }
 
+class Color(id: String, name: String, description: String, bind: Bind<Int>) : Valued<Int>(id, name, description, Kind.COLOR, bind) {
+    override fun show(v: Int, keys: (Int) -> String) = Colors.show(v)
+
+    override fun spoken(keys: (Int) -> String, open: Boolean) = Colors.spoken(value)
+}
+
 class KeyBind(id: String, name: String, description: String, bind: Bind<Int>, val clicks: Boolean = true) : Valued<Int>(id, name, description, Kind.KEYS, bind) {
     fun clear() {
         value = NONE
@@ -353,6 +361,9 @@ class Rows {
         bind: Bind<T>, name: String, description: String, values: List<T>, id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null,
         label: (T) -> String = { it.toString() }, look: (T) -> Look,
     ) = add(Pick(id, name, description, bind, values, look, label), dependsOn)
+
+    fun color(bind: Bind<Int>, name: String, description: String, id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null) =
+        add(Color(id, name, description, bind), dependsOn)
 
     fun keys(bind: Bind<Int>, name: String, description: String, id: String = bind.field.substringAfterLast('.'), dependsOn: Switch? = null, clicks: Boolean = true) =
         add(KeyBind(id, name, description, bind, clicks), dependsOn)

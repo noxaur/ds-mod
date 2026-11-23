@@ -65,6 +65,7 @@ object CommandBinds : ItemKind<CommandBind> {
     private val AREAS: List<Area?> = listOf(null) + (Area.entries - Area.ANYWHERE)
 
     override val noun = "bind"
+    override val verb = "send"
     override val first = "General"
     override val groupLength = BindShare.GROUP_LENGTH
 
@@ -100,6 +101,8 @@ object CommandBinds : ItemKind<CommandBind> {
     override fun encode(group: String, items: List<CommandBind>) = BindShare.encode(group, items)
 
     override fun decode(text: String) = BindShare.decode(text)?.let { it.group to it.binds }
+
+    override fun problem(item: CommandBind) = if (item.command.isBlank()) "Type a command, such as /warp end." else null
 
     fun first(binds: Iterable<CommandBind>): CommandBind? = binds.maxByOrNull { it.priority }
 

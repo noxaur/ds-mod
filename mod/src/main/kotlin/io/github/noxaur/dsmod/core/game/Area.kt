@@ -22,4 +22,10 @@ enum class Area(val key: String?, val value: String?, val place: String?) {
 
     fun holds(tab: TabState, sidebar: SidebarState) =
         (key == null || tab.info(key) == value) && (place == null || sidebar.place?.startsWith(place) == true)
+
+    companion object {
+        /** @keep The server's own name for the world the player is in, such as `The End`, even where the mod has no Area
+         * for it. The tab list names the area, and a place without that row, such as `Dungeon Hub`, is named by the sidebar */
+        fun named(tab: TabState, sidebar: SidebarState): String? = tab.info("Area") ?: sidebar.place
+    }
 }

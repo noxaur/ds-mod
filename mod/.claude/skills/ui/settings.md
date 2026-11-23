@@ -17,6 +17,7 @@ A saved value that no row should edit is `stored("inventoryLook", SlotStyle())` 
 | Number | `number("cameraDistance", "Distance", "Set how far the camera sits.", 4f, 1f..50f, step = 0.5f, unit = "°")` | A number in a range, stepped from its minimum |
 | Choice | `choice("lootAlertTier", "Alert Tier", "Pick the lowest tier that alerts you.", LootTier.EPIC)` | One value of an enum, labeled by its `toString` |
 | Pick | `pick("style", "Style", "Pick a look for the marks.", MarkStyle.FRAME) { Look.Slots(SlotStyle(it)) }`, or `pick(hud::theme, ..) { Look.Swatch(it) }` in the tree | A value chosen by how it looks |
+| Color | `color("beamColor", "Beam Color", "Pick the beam's color.", Role.DIVINE.argb())` | Any color with its opacity, as an ARGB `Int`, picked in the color picker of `controls.md`. The default comes from a `Role`, which holds the mod's colors |
 | Keys | `keys("freeLookKey", "Key", "Pick the key for Free Look.", 342)`, or `keys(g::settingsKey, ..)` in the tree | One key or mouse button, as a GLFW code or `KeyBind.NONE` |
 | Span | `span("beamSections", "Beam Timing", "Pick when the beam shows.", listOf(Section(175, 200)), max = 200)` | Stretches of a scale, by `Sections`' rules |
 | Fold | `fold("swingOptions", "Swing", "Set how fast and how far your held item swings.", swingSpeed, turn, reach)` | Rows the player rarely needs, under a bar. The rows are declared before it, and the fold takes them from their place to its own |

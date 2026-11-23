@@ -34,6 +34,10 @@ The kit's edges are one pixel wide, and at a free scale some edges come out two 
 
 World marks are submitted once per tick, and Minecraft replays them every frame, so a mark costs nothing in the frame loop. Only a mark that follows the crosshair or a moving entity is placed per frame, because a mark from the last tick would trail it by up to 50 ms.
 
+## A waypoint is drawn in the color its player picked
+
+A world mark is colored by its role, as text is, except a waypoint, whose look the player edits in depth. It carries the color and opacity they picked. The opacity is the box's fill, and the outline, beam and label are solid in the same color, so a see-through box never hides the name. A waypoint colored only by role was rejected, because the player asked to style each one.
+
 ## Rarity marks are baked once
 
 A mark's alpha varies pixel by pixel, which as fills would be thousands of rectangles per chest every frame. So each rarity's art, with a row per sparkle placement that a slot's index picks, is painted once into a texture and a slot costs one blit. Opacity is the blit's color, so its slider repaints nothing. The art matches the slot under it, Menu Theme's or the resource pack's, because a faint tint vanishes on gray and a dim one sinks into black.

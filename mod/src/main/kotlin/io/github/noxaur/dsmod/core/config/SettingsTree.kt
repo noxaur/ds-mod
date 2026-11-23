@@ -17,6 +17,7 @@ import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
 import io.github.noxaur.dsmod.core.feature.end.ProtectorStatus
 import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
 import io.github.noxaur.dsmod.core.feature.general.AbilityCooldowns
+import io.github.noxaur.dsmod.core.feature.general.Waypoints
 import io.github.noxaur.dsmod.core.feature.general.ActivePet
 import io.github.noxaur.dsmod.core.feature.general.Animations
 import io.github.noxaur.dsmod.core.feature.general.Camera
@@ -180,6 +181,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                     group(PlayerModel(c))
                     group(ProfileViewer(c))
                     group(ItemOverview(c))
+                    group(Waypoints(c))
                 }
                 section("Camera", Role.ACTION) {
                     group(Camera(c), "Third Person")

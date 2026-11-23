@@ -106,6 +106,20 @@ A dropdown whose values are told apart by how they look, such as a rarity style 
 - Its menu is a row of tiles, each a preview over its name, wrapping where the screen is narrow. The current one is ringed in the accent, and the one under the mouse or the keys is lit.
 - The arrow keys move between tiles, and Enter or a press takes one. The rest is a dropdown's.
 
+## Color picker
+
+A color the player picks freely, such as a beam's, on a dropdown whose preview is a swatch of the color, with its hex and its opacity when it is see-through. Figma's picker is the peer, since no Minecraft mod has one worth copying. `ColorPick` in `core/ui` holds its rules, and `KitColorPicker` has all of this.
+
+- A press, Enter or Space on the row opens a panel under it, or over it where the screen has no room below. `#` typed on the row opens it with the hex field holding `#`.
+- The panel holds a field of saturation across and brightness down for the hue, a hue strip, an opacity strip on a checkerboard, a hex field, an opacity field in percent, and swatches: the last 8 colors picked, saved in the config so they outlast a restart, then the 16 chat colors. The current swatch is ringed in `accent`.
+- A press on the field or a strip jumps there and a drag follows, past their ends too. The cursor is a crosshair over the field and a sideways resize over a strip. Escape during a drag puts the color back.
+- The hue stays where it was while the color is gray or black, and the saturation while it is black, so dragging brightness back up finds the color again.
+- The wheel over the field steps brightness, and over the hue strip, the opacity strip or the opacity field steps them, by ten with Shift.
+- A press on a field selects its text. Hex takes 1, 2, 3, 6 or 8 digits, with or without `#`, and 8 sets the opacity too. Enter or a press elsewhere takes it, Escape leaves the color as it was, and the text turns `bad` while it is not a color.
+- Tab and Shift+Tab move between the parts, and the part the keys are on is ringed as hover is. Arrows nudge the field by a percent, the hue by a degree and the opacity by a percent, ten with Shift. On the swatches the arrows move the ring and Enter takes one.
+- A press on a swatch takes it. Every change applies at once, as in the settings.
+- Escape, Enter on the field or a strip, or a press outside closes the panel, and the press outside still does its own job. The narrator says the part and its value, such as "Hue 32 degrees".
+
 ## Fold
 
 More rows the player rarely needs, under a raised bar with an arrow, as MoulConfig's accordion is.
@@ -145,6 +159,7 @@ A list of things the player made, such as command binds, edited where it sits in
 - Up and Down from the row above enter the list. Inside, Up and Down pick a line, Left and Right fold and unfold a heading or move between a line's cells, Space switches the picked group, Enter opens a line's details or presses the cell, Alt with Up or Down moves the picked line or group, Delete deletes, Tab moves between text fields, and Escape leaves the list.
 - A right press on a line opens its context menu, and so do the Menu key and Shift+F10.
 - Keys are recorded on the keys cell with every convention of a key bind, and keys that clash with another thing or with the game are ringed, with the line under the list saying which.
+- A color on a line is a swatch on a dropdown that opens the color picker under it, with every convention of the picker. Its hex shows beside the swatch when the cell has room.
 
 ## Context menu
 
