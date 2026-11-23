@@ -80,6 +80,7 @@ class PlayerData internal constructor(private val container: ContainerState, pri
     var ask: ((profile: String?) -> Unit)? = null
     private val asked = HashSet<String>()
     private var due = true
+    private var joining = true
 
     var switchesAt = 0L
         private set
@@ -121,10 +122,15 @@ class PlayerData internal constructor(private val container: ContainerState, pri
                 applying = null
                 target = null
                 switching = null
-                asked.clear()
+                joining = true
                 due = true
             }
             else -> false
+        }
+        // @keep An answer can arrive between leaving and joining again, and must not stand for the new join's ask
+        if (joining && event != LeftServer) {
+            joining = false
+            asked.clear()
         }
         if (due && event != LeftServer) ask()
         return switched
@@ -139,7 +145,7 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         if (here.answer?.stale == false) return
         val name = saved.profile
         val id = if (name == UNNAMED) null else saved.profiles.values.firstNotNullOfOrNull { data -> data.answer?.choices?.firstOrNull { it.name.plain == name }?.id }
-        if (asked.add(id ?: "selected:$name")) ask(id)
+        if (asked.add(id ?: SELECTED_PROFILE)) ask(id)
     }
 
     // @keep The Stats rows follow a `Stats:` row up to the first blank one, as ` ✯ Magic Find 58`
@@ -217,8 +223,9 @@ class PlayerData internal constructor(private val container: ContainerState, pri
     private fun clicked(event: SlotClicked) {
         val item = container.slots.getOrNull(event.slot) ?: return
         val name = item.name?.plain
-        if (menu == HEART && event.slot in container.menuSlots && changesTree(item) || menu == RESET && name == CONFIRM) keepHeart(heart.copy(layout = null))
-        menu?.let(APPLY::matchEntire)?.let { if (name == CONFIRM) applying = count(it.groupValues[1]) }
+        val inMenu = event.slot in container.menuSlots
+        if (inMenu && (menu == HEART && changesTree(item) || menu == RESET && name == CONFIRM)) keepHeart(heart.copy(layout = null))
+        menu?.let(APPLY::matchEntire)?.let { if (inMenu && name == CONFIRM) applying = count(it.groupValues[1]) }
         if (menu != PROFILES) return
         when {
             item.name?.plain == SWITCH -> switching = target
@@ -389,6 +396,7 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         private const val CONFIRM = "Confirm"
         private val APPLIED = Regex("Applied Heart of the Dragon Profile #(\\d+)\\.")
         const val COOLDOWN_MILLIS = 30_000L
+        private const val SELECTED_PROFILE = "selected"
 
         private val FOLDS = setOf(ContainerOpened::class.java, SlotChanged::class.java, SlotClicked::class.java, TabList::class.java)
     }

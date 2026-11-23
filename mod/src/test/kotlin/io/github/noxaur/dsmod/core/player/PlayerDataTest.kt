@@ -171,6 +171,23 @@ class PlayerDataTest {
     }
 
     @Test
+    fun `the menu naming the profile while the first ask is out asks nothing more`() {
+        val session = Asking()
+        session.post(diamonds, list, SlotChanged(10, profile("Old", "Selected")), closed)
+        assertEquals("Old", session.game.player.profile)
+        assertEquals(listOf<String?>(null), session.asked)
+    }
+
+    @Test
+    fun `an answer that arrives after the player left still lets the next join ask`() {
+        val session = Asking()
+        session.post(diamonds, LeftServer)
+        session.game.player.heard(superior.copy(stale = true))
+        session.post(diamonds)
+        assertEquals(listOf<String?>(null, SUPERIOR), session.asked)
+    }
+
+    @Test
     fun `a switch to a profile with no answer asks for it by the id an earlier answer listed`() {
         val session = Asking()
         val asked = session.asked
@@ -206,7 +223,7 @@ class PlayerDataTest {
         val asked = session.asked
         session.game.player.heard(superior.copy(stale = true))
         session.post(diamonds, LeftServer, diamonds)
-        assertEquals(listOf<String?>(SUPERIOR), asked, "not again before the player joins, and then by the id it lists")
+        assertEquals(listOf<String?>(SUPERIOR, SUPERIOR), asked, "once on each join, by the id it lists")
 
         session.game.player.heard(superior)
         session.game.player.heard(superior.copy(stale = true, savedAt = "later"))
