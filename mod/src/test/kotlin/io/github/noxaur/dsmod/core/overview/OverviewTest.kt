@@ -112,6 +112,22 @@ class OverviewTest {
     }
 
     @Test
+    fun `two stacks at different prices add up each stack's value, and name no price each`() {
+        val copy = Copy("storage:1", "Storage 2", listOf(seen("hot_potato_book", "Hot Potato Book", 19, price = 2.5e6), seen("hot_potato_book", "Hot Potato Book", 8, price = 5e6)))
+        val books = Overview(listOf(copy)).entries(Category.ALL, "", SortBy.VALUE, true).single()
+        assertEquals(87.5e6, books.value)
+        assertEquals(null, books.each)
+        val bones = Overview(listOf(Copy("inventory", "Inventory", listOf(seen("bone", "Bone", 2, price = 3.0), seen("bone", "Bone", 1, price = 3.0))))).entries(Category.ALL, "", SortBy.VALUE, true).single()
+        assertEquals(3.0, bones.each)
+    }
+
+    @Test
+    fun `a page seen before dragsim co's last save is kept when the backend has no copy of it`() {
+        val page = Copy("storage:1", "Storage 2", listOf(seen("dirt", "Dirt", 1)))
+        assertEquals(listOf(page), Overview.copies(emptyList(), savedAt = 101, seen = listOf(page to 100L)))
+    }
+
+    @Test
     fun `a container the player hid lists nothing`() {
         assertEquals(emptyList(), Overview.copies(listOf(enderChest.copy(hidden = true, items = emptyList())), savedAt = null, seen = emptyList()))
     }

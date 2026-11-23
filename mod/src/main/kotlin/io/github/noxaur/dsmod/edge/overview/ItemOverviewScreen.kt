@@ -83,7 +83,7 @@ class ItemOverviewScreen(
     private var category = Category.ALL
     private var sort = SortBy.AMOUNT
     private var descending = true
-    private var query = query
+    private var query = query.take(MAX_QUERY)
 
     private var built: Load<List<Container>>? = null
     private var overview: Overview? = null
@@ -98,7 +98,6 @@ class ItemOverviewScreen(
     private val tips = HashMap<Entry, ItemStack>()
 
     private val scroll = Scroll()
-    private var hovered: Entry? = null
     private var dragging = false
     private var search: KitTextField? = null
 
@@ -124,7 +123,7 @@ class ItemOverviewScreen(
             })
         }
         val sortX = frame.left + GRID_WIDTH - Kit.BUTTON_HEIGHT - Kit.GAP - SORT_WIDTH
-        val field = KitTextField(frame.left, frame.top, sortX - Kit.GAP - frame.left, "Search", query, MAX_QUERY) { changed ->
+        val field = KitTextField(frame.left, frame.top, sortX - Kit.GAP - frame.left, "Search", this.query, MAX_QUERY) { changed ->
             query = changed
             filter(keepScroll = false)
         }.icon(Icon.SEARCH).hint("Search")
@@ -221,8 +220,12 @@ class ItemOverviewScreen(
         lines += Component.empty()
         for (place in entry.places.take(MAX_PLACES)) lines += text { muted("${place.title}: "); value(place.count.toLong()) }.toLore()
         if (entry.places.size > MAX_PLACES) lines += text { muted("and ${entry.places.size - MAX_PLACES} more") }.toLore()
-        entry.item.price?.let { price ->
-            lines += text { muted("NPC Value: "); value(short(price * entry.count, 1)); muted(" (${short(price, 1)} each)") }.toLore()
+        entry.value?.let { value ->
+            lines += text {
+                muted("NPC Value: ")
+                value(short(value, 1))
+                entry.each?.let { muted(" (${short(it, 1)} each)") }
+            }.toLore()
         }
         entry.places.firstOrNull { Shelf.command(it.id) != null }?.let { lines += text { action("Click to open ${it.title}.") }.toLore() }
         stack.set(DataComponents.LORE, ItemLore(lines))
@@ -234,7 +237,7 @@ class ItemOverviewScreen(
         Kit.panel(graphics, frame.x, frame.y, PANEL_WIDTH + if (scroll.overflows) Kit.GAP + Kit.SCROLLBAR_WIDTH else 0, PANEL_HEIGHT)
         val offset = scroll.offset
         val firstRow = offset / Kit.SLOT_SIZE
-        hovered = null
+        val hovered = entryAt(mouseX.toDouble(), mouseY.toDouble())
         graphics.enableScissor(frame.left, gridY, frame.left + GRID_WIDTH, gridY + GRID_HEIGHT)
         for (row in firstRow..firstRow + ROWS) {
             val y = gridY + row * Kit.SLOT_SIZE - offset
@@ -249,10 +252,7 @@ class ItemOverviewScreen(
                 graphics.item(stack, x + 1, y + 1)
                 graphics.itemDecorations(font, stack, x + 1, y + 1)
                 counts[i]?.let { count(graphics, it, countWidths[i], x + 1, y + 1) }
-                if (mouseX in x until x + Kit.SLOT_SIZE && mouseY in maxOf(y, gridY) until minOf(y + Kit.SLOT_SIZE, gridY + GRID_HEIGHT)) {
-                    Kit.slotHover(graphics, x + 1, y + 1)
-                    hovered = entry
-                }
+                if (entry === hovered) Kit.slotHover(graphics, x + 1, y + 1)
             }
         }
         graphics.disableScissor()
@@ -287,6 +287,13 @@ class ItemOverviewScreen(
         pose.popMatrix()
     }
 
+    private fun entryAt(x: Double, y: Double): Entry? {
+        if (x < frame.left || x >= frame.left + GRID_WIDTH || y < gridY || y >= gridY + GRID_HEIGHT) return null
+        val column = ((x - frame.left) / Kit.SLOT_SIZE).toInt()
+        val row = ((y - gridY + scroll.offset) / Kit.SLOT_SIZE).toInt()
+        return shown.getOrNull(row * COLUMNS + column)
+    }
+
     private fun scrollbarX() = frame.left + GRID_WIDTH + Kit.GAP
 
     private fun overScrollbar(x: Double, y: Double) = scroll.overflows && x >= scrollbarX() && x < scrollbarX() + Kit.SCROLLBAR_WIDTH && y >= gridY && y < gridY + GRID_HEIGHT
@@ -305,7 +312,7 @@ class ItemOverviewScreen(
             return true
         }
         if (super.mouseClicked(event, doubleClick)) return true
-        val entry = hovered
+        val entry = entryAt(event.x, event.y)
         if (event.button() == 0 && entry != null) return pick(entry)
         if (event.button() == 0 && overScrollbar(event.x, event.y)) {
             dragging = true

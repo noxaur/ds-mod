@@ -105,8 +105,9 @@ data class Shelf(val id: String, val title: String, val slots: IntRange) {
     }
 }
 
-data class Entry(val item: Owned, val count: Long, val places: List<Place>) {
-    val value get() = item.price?.let { it * count }
+/** @keep dragsim.co gives each stack its own NPC price, and two stacks of one item can differ, so `value` sums each
+ * stack's and `each` is only set when every stack agrees. */
+data class Entry(val item: Owned, val count: Long, val places: List<Place>, val value: Double?, val each: Double?) {
 
     internal val rarityRank = item.rarity?.let { rarity -> Role.RARITIES.indexOfFirst { it.name == rarity } } ?: -1
 }
@@ -136,24 +137,35 @@ class Overview(copies: List<Copy>) {
     companion object {
         fun total(entries: List<Entry>) = entries.sumOf { it.value ?: 0.0 }
 
+        private class Merged(val item: Owned) {
+            val places = LinkedHashMap<Pair<String, String>, Int>()
+            var value: Double? = null
+            val prices = HashSet<Double?>()
+        }
+
         private fun merge(copies: List<Copy>): List<Entry> {
-            val found = LinkedHashMap<Owned.Key, Pair<Owned, LinkedHashMap<Pair<String, String>, Int>>>()
+            val found = LinkedHashMap<Owned.Key, Merged>()
             for (copy in copies) for (item in copy.items) {
                 // @keep The SkyBlock Menu item sits in every hotbar and is no item the player keeps.
                 if (item == null || item.id == SkyBlockMenuClick.ITEM_ID) continue
-                val (_, places) = found.getOrPut(item.key) { item to LinkedHashMap() }
-                places.merge(copy.id to copy.title, item.count, Int::plus)
+                val merged = found.getOrPut(item.key) { Merged(item) }
+                merged.places.merge(copy.id to copy.title, item.count, Int::plus)
+                merged.prices += item.price
+                item.price?.let { merged.value = (merged.value ?: 0.0) + it * item.count }
             }
-            return found.values.map { (item, places) -> Entry(item, places.values.sumOf(Int::toLong), places.map { (where, count) -> Place(where.first, where.second, count) }) }
+            return found.values.map { m ->
+                Entry(m.item, m.places.values.sumOf(Int::toLong), m.places.map { (where, count) -> Place(where.first, where.second, count) }, m.value, m.prices.singleOrNull())
+            }
         }
 
         /** @keep A copy the player saw in a menu replaces the backend's when it was seen after dragsim.co last saved the
-         * profile, because the backend's is then older. One the backend does not list, such as a page bought since,
-         * is added. */
+         * profile, because the backend's is then older. One the backend does not have, such as a page bought since or
+         * any page when the backend did not answer, is kept whenever it was seen. */
         fun copies(backend: List<Container>, savedAt: Long?, seen: List<Pair<Copy, Long>>): List<Copy> {
-            val newer = seen.filter { (_, at) -> savedAt == null || at > savedAt }.associate { (copy, _) -> copy.id to copy }
-            val listed = backend.filterNot { it.hidden }.map { newer[it.id] ?: Copy.of(it) }
-            return listed + newer.values.filter { copy -> listed.none { it.id == copy.id } }
+            val ids = backend.mapTo(HashSet()) { it.id }
+            val used = seen.filter { (copy, at) -> copy.id !in ids || savedAt == null || at > savedAt }.associate { (copy, _) -> copy.id to copy }
+            val listed = backend.filterNot { it.hidden }.map { used[it.id] ?: Copy.of(it) }
+            return listed + used.values.filter { copy -> listed.none { it.id == copy.id } }
         }
     }
 }
