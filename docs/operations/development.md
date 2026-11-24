@@ -42,6 +42,14 @@ mise run install <game> [prod|dev]
 
 Tab completes the game from the instances that load Fabric, named `<launcher>/<folder>`, such as `prism/Skyblock`. It finds the instances of Prism, MultiMC, the Modrinth App, CurseForge, ATLauncher, GDLauncher, Dawn and Lunar, and `minecraft` is the official launcher's folder. The game can also be the path of a game folder or its `mods` folder. `prod`, the default, builds the release jar against the deployed backend and website, as a beta is. `dev` builds the debug jar against the local backend and website. The command replaces any ds-mod jar already in `mods` and leaves the other mods alone, so the instance still needs Fabric API and Fabric Language Kotlin.
 
+## See the architecture
+
+```sh
+mise run architecture
+```
+
+This indexes the repository with [repowise](https://github.com/repowise-dev/repowise) and serves its dashboard at the address the task prints, with the import map, the files that change together and each file's history. The index is in `.repowise/`, which git ignores, and a later run updates it with the commits since. The task makes no model calls, and turns off repowise's telemetry and update checks. The first run downloads repowise and its dashboard.
+
 ## Change the backend's tables
 
 Edit `backend/db/schema.ts`, then in `backend/`:
@@ -59,8 +67,8 @@ Follow the [`feature` skill](../../mod/.claude/skills/feature/SKILL.md). A featu
 
 ## Checks
 
-A commit runs `mise run check`, which runs `check:mod`, `check:backend`, `check:web` and `check:docs`. `mise install` points git at `.githooks/`, whose `pre-commit` runs it, and a failure prints the log and commits nothing.
+`mise run check` runs every project's checks, as CI does. `mise install` points git at `.githooks/`, whose `pre-commit` runs `check:docs` and `check:comments`, and the project checks that the staged change reaches, which `scripts/affected.ts` maps from its paths. Where `flock` exists, every worktree's commit takes one shared lock for the project checks, so parallel commits run them in turn. A failure prints the log and commits nothing.
 
-A pull request's `gametests` job runs the game tests that its change reaches, against the jars a player installs, and `GameTestPick.kt` in `mod/src/debug/` says how a change reaches a test. Each test's time is in the log as `TestClock:`, and a test over 20 seconds fails the run. The beta pipeline runs every game test.
+A pull request's `gametests` jobs run the game tests that its change reaches, against the jars a player installs, split into jobs that run side by side, and `GameTestPick.kt` in `mod/src/debug/` says how a change reaches a test. So run no game test on the user's machine to check a pull request: push it and read the jobs. Each test's time is in the log as `TestClock:`, and a test over 20 seconds fails the run. The beta pipeline runs every game test.
 
-To see a screen, write a game test that opens it and calls `takeScreenshot`. The job uploads its log and screenshots as the `gametests` artifact, which `gh run download <run id> -n gametests` fetches.
+To see a screen, write a game test that opens it and calls `takeScreenshot`. Each job uploads its log and screenshots as a `gametests-<n>` artifact, which `gh run download <run id> -p 'gametests-*'` fetches.

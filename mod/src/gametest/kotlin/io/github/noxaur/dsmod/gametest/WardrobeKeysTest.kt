@@ -12,7 +12,7 @@ import net.minecraft.world.inventory.ContainerInput
 import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.Wardrobes]. */
+/** @keep Covers [io.github.noxaur.dsmod.edge.MenuKeyClicks]. */
 class WardrobeKeysTest : FabricClientGameTest {
     private val waitTicks = (WardrobeKeys.WAIT_MILLIS / 50).toInt()
 

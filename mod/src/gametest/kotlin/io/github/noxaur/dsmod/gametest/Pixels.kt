@@ -12,11 +12,11 @@ fun brightness(rgb: Int) = (rgb shr 16 and 0xFF) + (rgb shr 8 and 0xFF) + (rgb a
 
 fun distance(a: Int, b: Int) = (0..16 step 8).sumOf { abs((a shr it and 0xFF) - (b shr it and 0xFF)) }
 
-fun countNear(shot: Path, rgb: Int, middle: Boolean = false): Int {
+fun countNear(shot: Path, rgb: Int, middle: Boolean = false, tolerance: Int = 60): Int {
     val image = image(shot)
     val xs = if (middle) image.width / 4 until image.width * 3 / 4 else 0 until image.width
     val ys = if (middle) image.height / 4 until image.height * 3 / 4 else 0 until image.height
-    return ys.sumOf { y -> xs.count { x -> distance(image.getRGB(x, y), rgb) < 60 } }
+    return ys.sumOf { y -> xs.count { x -> distance(image.getRGB(x, y), rgb) < tolerance } }
 }
 
 fun diff(a: BufferedImage, b: BufferedImage, tolerance: Int = 0, where: (Int, Int) -> Boolean = { _, _ -> true }): Int {

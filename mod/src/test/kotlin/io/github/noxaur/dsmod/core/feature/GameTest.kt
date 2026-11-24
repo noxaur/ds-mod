@@ -26,6 +26,7 @@ import io.github.noxaur.dsmod.core.world.EntityBeam
 import io.github.noxaur.dsmod.core.world.Tracer
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
@@ -79,6 +80,19 @@ class GameTest : Harness() {
         tree.feature<BossTracer>().feature.enabled = true
         game.tick(50)
         assertEquals(listOf(Tracer(36339, Role.BAD)), marks(tree.feature<BossTracer>()))
+    }
+
+    @Test
+    fun `a trailing lambda is the server check, and background work comes back on the next tick`() {
+        val listener = Feature(config, "listener", Area.ANYWHERE, Store.END, "Hears entities in a test.")
+        val onlyHere = DragSimOnly(config).feature.also { it.enabled = true }
+        assertFalse(Game(listOf(onlyHere)) { false }.active, "Game's last parameter must stay `connected`, so `Game(features) { .. }` sets it")
+        val game = Game(listOf(listener), worker = Runnable::run)
+        var got = 0
+        listener.background({ 7 }) { got = it }
+        assertEquals(0, got)
+        game.tick(0)
+        assertEquals(7, got)
     }
 
     @Test

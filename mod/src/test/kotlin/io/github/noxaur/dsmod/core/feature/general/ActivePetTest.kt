@@ -6,7 +6,6 @@ import io.github.noxaur.dsmod.harness.chat
 import io.github.noxaur.dsmod.harness.dragSimSidebar
 import io.github.noxaur.dsmod.harness.lines
 import io.github.noxaur.dsmod.harness.text
-import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.game.ActionBar
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.EntityDied
@@ -209,18 +208,6 @@ class ActivePetTest : Harness(alone = ActivePet::class) {
         pass()
         assertNull(hud()?.icon)
         assertEquals(listOf("[Lvl 100] Black Cat"), rows())
-    }
-
-    @Test
-    fun `the active pet is marked in the Pets menu, and the mark goes when it is despawned`() {
-        post(pet(), *menu(12 to other(), 13 to card()))
-        assertEquals(mapOf(13 to SlotMark(Role.GOOD)), readout().slots)
-        post(SlotChanged(13, other("Black Cat")))
-        assertEquals(emptyMap(), readout().slots)
-        post(SlotChanged(13, card()))
-        feature.markInMenu.value = false
-        pass()
-        assertEquals(emptyMap(), readout().slots)
     }
 
     @Test

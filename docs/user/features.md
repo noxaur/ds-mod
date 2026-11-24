@@ -135,7 +135,6 @@ The XP is read each time you open the Pets menu. Open it again a little later, a
 | XP | Shows how far your pet is to its next level, as a bar |
 | XP Rate | Shows how much XP your pet gains an hour, from two reads of the Pets menu |
 | Next Level | Shows how long until your pet reaches its next level at that rate |
-| Mark In Menu | Marks your active pet in the Pets menu |
 | Hide Autopet | Hides the chat line Autopet sends when it swaps your pet. Off until you turn it on |
 
 ### Inventory HUD
@@ -397,7 +396,7 @@ A message is copied whole, also when it wraps over several rows. A block the ser
 
 ### Item Rarity
 
-Each item's slot is marked in the color of its rarity, in every menu and on your hotbar.
+Each item's slot is marked in the color of its rarity, in every menu and on your hotbar. In the Pets menu, each pet is marked in the color of its rarity too.
 
 <p>
   <img src="../images/rarity-chest.png" width="49%" alt="A chest in the Aura style: each item sits on a round glow in its rarity's color, with a few sparkles in it">
@@ -528,6 +527,16 @@ A panel beside the forge's menus shows the item, how many you can craft now, and
 
 Click the key in the panel's corner, then press a key or a side mouse button, to change it without opening the settings.
 
+### HOTD Planner
+
+Open the Heart of the Dragon with `/hotd`, and the mod marks what to click next. Pick the block you mine, the area you mine it in, and what you want from it in the panel left of the menu: Yield, Powder, XP and Pets, plus Pristine and Fragments for Amethyst. For End Stone and Obsidian, tick Ender Nodes if you mine those. The plan starts from the perks you already have and runs to the last upgrade worth buying.
+
+One slot at a time is marked green, with the number of clicks left in its corner. That is every level your powder already pays for, so a perk you'll level 21 times shows 21. When the next upgrade is on another tier, the Scroll Up or Scroll Down arrow is marked instead, with the number of scrolls. The mark turns red when neither powder covers the next upgrade, and the menu's green tier panes are grayed out, so the only green is what to click.
+
+The panel's bottom box shows your Ender and Void Powder. A number turns red when that powder can't pay for its next upgrade.
+
+The first time, scroll through every tier once so the mod can read them, and it remembers them after that. Open the Dragon Sim Menu with your mining tool held, so the plan uses your mining stats.
+
 ### Wardrobe Keys
 
 In the Wardrobe, press 1 to 9 to click the nine slot buttons of the page you're on, from left to right, the same as clicking the button yourself. On the second page, 1 is Slot 10. Each press is one click.
@@ -535,6 +544,14 @@ In the Wardrobe, press 1 to 9 to click the nine slot buttons of the page you're 
 The server refuses a wardrobe click for a second after the menu opens, so a press in that second waits for it. The seconds left show beside the menu's title, and the button your press will click has a thin outline. Press another number while you wait to change your mind.
 
 Change the keys under Keys in Wardrobe Keys' settings. Each key works only in the Wardrobe, so 1 to 9 still pick your hotbar slot everywhere else.
+
+### Pets Menu
+
+In the Pets menu, your active pet has a green outline, so you can find it among the rest. Turn off Mark Active Pet to hide it.
+
+Press 1 to 9 and 0 to click the first ten pets on the page, counted from the top left, row by row, the same as clicking the pet yourself: on a pet you don't have out it summons it, and on your active pet it puts it away. Each press is one click. Each of those pets shows its key in its bottom right corner, where a stack count goes, since with seven pets to a row, 8 is the first pet on the second row. A press clicks at once once its pet shows in the menu, and a press before that does nothing.
+
+Change the keys under Keys in Pets Menu's settings. Each key works only in the Pets menu, so the numbers still pick your hotbar slot everywhere else.
 
 ### Profile Cooldown
 

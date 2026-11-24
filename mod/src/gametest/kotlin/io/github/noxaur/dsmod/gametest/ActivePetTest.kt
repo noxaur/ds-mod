@@ -55,8 +55,8 @@ class ActivePetTest : FabricClientGameTest {
                     chest.setItem(13, card(head.copy(), active = true, "Progress to Level 38: 40%", "4,000/10,000 XP"))
                 }
                 context.waitTicks(5)
-                check(context.computeOnClient<Boolean, Nothing> { DsModClient.game.readouts.single { it.feature.id == ID }.slots.keys == setOf(13) }) {
-                    "The active pet is not the one marked in the Pets menu"
+                check(context.computeOnClient<Boolean, Nothing> { DsModClient.game.readouts.single { it.feature.id == "pets-menu" }.slots.filterValues { m -> m.outline }.keys == setOf(13) }) {
+                    "The active pet is not the one Pets Menu outlines"
                 }
                 context.takeScreenshot("active-pet-menu")
                 context.runOnClient<Nothing> { it.player!!.closeContainer() }

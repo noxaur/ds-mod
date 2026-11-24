@@ -49,7 +49,7 @@ Before you change an area, read its page in `docs/internals/`. Most code changes
 
 ## Checks
 
-- A commit runs every project's checks, and a pull request runs the game tests its change reaches.
+- A commit runs the docs and comment checks and the checks of every project its staged change reaches, and a pull request runs every project's checks and the game tests its change reaches.
 - Test the real implementation instead of copying its logic into the test.
 - When a CI job warns that it took over its 3 minutes, make it faster or move the slow part to the beta pipeline. Raise a limit or a perf cap only when the user agrees.
 

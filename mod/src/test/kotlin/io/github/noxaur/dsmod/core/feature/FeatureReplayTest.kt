@@ -10,6 +10,8 @@ import io.github.noxaur.dsmod.harness.text
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.game.ActionBar
+import io.github.noxaur.dsmod.core.game.BlockBroken
+import io.github.noxaur.dsmod.core.game.Breaker
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState
@@ -145,6 +147,11 @@ class FeatureReplayTest {
         is FrameRate -> "(frame rate) ${event.fps} fps"
         is SlotChanged -> "(slot ${event.slot}) " + (event.item?.let { "${it.count} x ${name(it)}" } ?: "emptied")
         is SlotClicked -> "(you clicked slot ${event.slot})"
+        is BlockBroken -> "(broken) ${event.block} at ${event.x}, ${event.y}, ${event.z} " + when (event.by) {
+            Breaker.PLAYER -> "by you"
+            Breaker.WITH_PLAYER -> "with your break"
+            Breaker.OTHER -> "by someone else"
+        }
     }
 
     private inner class Transcript(private val session: Harness, private val start: Long) {
@@ -193,8 +200,8 @@ class FeatureReplayTest {
                         appendLine("             + slot $slot: cooldown until +%.1fs on %s".format(Locale.ROOT, (cooldown.end - start) / 1000.0, item))
                         continue
                     }
-                    val shape = if (mark.rarity) "rarity" else if (mark.outline) "outline" else "fill"
-                    val label = mark.label?.let { " \"${it.plain}\"" } ?: ""
+                    val shape = if (mark.rarity) "rarity" else if (mark.outline) "outline" else if (mark.dim) "dim" else if (mark.label != null) "label" else "fill"
+                    val label = mark.label?.let { " \"${it.plain}\"" } ?: mark.count?.let { " x$it" } ?: ""
                     appendLine("             + slot $slot: ${mark.role} $shape$label on $item")
                 }
                 marked = marks

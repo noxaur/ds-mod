@@ -10,6 +10,10 @@ A feature builds the parts it needs and holds them, and two features that share 
 
 A feature handles events and returns what it shows, and the mod rebuilds its readout after an event it could see and four times a second for clocks. The frame only draws what the last rebuild left, so feature code never runs inside a frame, and a feature that is off shows nothing without remembering to hide. It still runs on the client tick, on the thread that draws, so a slow handler delays the next frame, and the beta's perf caps hold every handler's tick together. Calling a UI layer from the feature was rejected, because the replay test could not read it without Minecraft.
 
+## Work too slow for a tick runs on one background thread
+
+Work that takes longer than a frame, such as a Heart of the Dragon plan, runs on one thread of the mod's, and its result comes back at the start of the next tick, as an event would. Running it on the tick was rejected because it drops a frame, and splitting it over many ticks because it turns a plain function into states. In a test it runs in place, so a transcript is the same on every run.
+
 ## What a feature says is delivered at the end of the tick
 
 A chat line or an alert a feature sends is held until the tick ends. Printed from inside the handler, it would land above the server line that caused it, because the handler runs before that line reaches the chat. Hiding a server line is the one thing a handler answers on the spot, because the chat asks before it shows the line.

@@ -23,7 +23,9 @@ import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.protocol.Packet
+import net.minecraft.network.protocol.game.ClientboundBlockDestructionPacket
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket
+import net.minecraft.network.protocol.game.ClientboundLevelEventPacket
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket
 import net.minecraft.network.protocol.game.ClientboundSoundPacket
@@ -31,6 +33,8 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.LevelEvent
 import net.minecraft.world.level.saveddata.maps.MapId
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
@@ -80,6 +84,9 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
     private val entities = EntityRecorder()
     private var ticks = 0
     private var titleTime = 0
+    private val stateNames = HashMap<BlockState, String>()
+    private var digStage = Int.MIN_VALUE
+    private var digTarget: BlockPos? = null
 
     init {
         game.tap = writer::record
@@ -113,6 +120,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
         titleTime = hud.titleTime
 
         blockScan.tick(level, player)
+        digging(client)
 
         if (ticks++ % OFFER_PERIOD_TICKS != 0) return
 
@@ -215,6 +223,18 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
             }
             is ClientboundBlockUpdatePacket -> block(packet.pos, packet.blockState)
             is ClientboundSectionBlocksUpdatePacket -> packet.runUpdates(::block)
+            is ClientboundBlockDestructionPacket -> recordNow(RawRecord.BREAKING) {
+                put("id", packet.id)
+                if (packet.id == Minecraft.getInstance().player?.id) put("self", true)
+                position(packet.pos.x, packet.pos.y, packet.pos.z)
+                put("progress", packet.progress)
+            }
+            is ClientboundLevelEventPacket -> recordNow(RawRecord.LEVELEVENT) {
+                put("event", packet.type)
+                position(packet.pos.x, packet.pos.y, packet.pos.z)
+                put("data", packet.data)
+                if (packet.type == LevelEvent.PARTICLES_DESTROY_BLOCK) put("block", name(Block.stateById(packet.data)))
+            }
         }
     }
 
@@ -247,12 +267,30 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
     }
 
     private fun block(pos: BlockPos, state: BlockState) {
+        val was = Minecraft.getInstance().level?.getBlockState(pos)
         // @keep The section packet reuses one mutable position, so read it now.
         recordNow(RawRecord.BLOCK) {
             position(pos.x, pos.y, pos.z)
-            put("state", BlockStateParser.serialize(state))
+            put("state", name(state))
+            was?.let { put("was", name(it)) }
         }
     }
+
+    private fun digging(client: Minecraft) {
+        val mode = client.gameMode ?: return
+        val stage = if (mode.isDestroying) mode.destroyStage else Int.MIN_VALUE
+        val target = (client.hitResult as? BlockHitResult)?.takeIf { stage != Int.MIN_VALUE && it.type == HitResult.Type.BLOCK }?.blockPos
+        if (stage == digStage && target == digTarget) return
+        digStage = stage
+        digTarget = target
+        recordNow(RawRecord.DIGGING) {
+            put("destroying", stage != Int.MIN_VALUE)
+            if (stage != Int.MIN_VALUE) put("stage", stage)
+            target?.let { position(it.x, it.y, it.z) }
+        }
+    }
+
+    private fun name(state: BlockState) = stateNames.getOrPut(state) { BlockStateParser.serialize(state) }
 
     fun detach() {
         game.tap = null

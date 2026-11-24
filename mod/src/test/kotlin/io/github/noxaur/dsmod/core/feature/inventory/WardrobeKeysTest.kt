@@ -12,7 +12,8 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class WardrobeKeysTest : Harness(alone = WardrobeKeys::class) {
-    private val feature = tree.feature<WardrobeKeys>()
+    private val wardrobe = tree.feature<WardrobeKeys>()
+    private val feature = wardrobe.keys
     private var id = 1
 
     private fun open(title: String, buttons: Int = 9): Int {
@@ -24,7 +25,7 @@ class WardrobeKeysTest : Harness(alone = WardrobeKeys::class) {
 
     private fun key(n: Int) = feature.index(48 + n)!!
 
-    private fun marks() = feature.feature.slots!!(time)
+    private fun marks() = wardrobe.feature.slots!!(time)
 
     @Test
     fun `each number key clicks its slot button once the second is up`() {
@@ -70,7 +71,7 @@ class WardrobeKeysTest : Harness(alone = WardrobeKeys::class) {
         pass(100)
         feature.press(key(2), time)
         pass(50)
-        assertEquals(setOf(37), readout(feature).slots.keys)
+        assertEquals(setOf(37), readout(wardrobe).slots.keys)
     }
 
     @Test

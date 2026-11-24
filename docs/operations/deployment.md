@@ -29,6 +29,14 @@ Without `CLOUDFLARE_API_TOKEN`, Void's Cloudflare commands use the browser sign-
 
 After a deploy, `https://api.ds-mod.perwko.com/healthz` answers 204, and a `POST` to `/api/auth/minecraft/challenge` answers 200 with a `serverId`, which proves the database is reachable.
 
+## Alerts
+
+[`alert.yml`](../../.github/workflows/alert.yml) posts each failure on `main` to the user's Discord channel, through the webhook in the repository secret `DISCORD_WEBHOOK_URL`. To change the channel, make a new webhook in Discord and replace the secret:
+
+```sh
+gh secret set DISCORD_WEBHOOK_URL
+```
+
 ## Secrets
 
 | Name | What it is | Where it lives |

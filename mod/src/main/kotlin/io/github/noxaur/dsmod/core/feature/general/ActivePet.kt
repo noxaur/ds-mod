@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.core.feature.general
 
-import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.feature.Feature
@@ -47,14 +46,13 @@ data class KnownPets(val pets: Map<String, KnownPet> = emptyMap(), val latest: M
  * Black Cat!`). A combat pet gains XP as the player gains Combat XP, which the action bar shows behind each
  * kill, so from the second read on the Combat XP since the last read moves the XP live */
 class ActivePet(config: DsModConfig) : HasFeature {
-    override val feature = Feature(config, "active-pet", Area.ANYWHERE, Store.GENERAL, "Show your pet, its level, held item and XP on the HUD.", default = false, hud = ::hud, slots = ::slots)
+    override val feature = Feature(config, "active-pet", Area.ANYWHERE, Store.GENERAL, "Show your pet, its level, held item and XP on the HUD.", default = false, hud = ::hud)
 
     val showIcon = feature.switch("activePetIcon", "Icon", "Show your pet's head beside its name.", default = true)
     val showItem = feature.switch("activePetItem", "Held Item", "Show the pet item your pet holds.", default = true)
     val showXp = feature.switch("activePetXp", "XP", "Show how far your pet is to its next level.", default = true)
     val showRate = feature.switch("activePetRate", "XP Rate", "Show how fast your pet gains XP.", default = true)
     val showNext = feature.switch("activePetNext", "Next Level", "Show how long until your pet reaches its next level.", default = true)
-    val markInMenu = feature.switch("markActivePet", "Mark In Menu", "Mark your active pet in the Pets menu.", default = true)
     val hideAutopet = feature.switch("hideAutopet", "Hide Autopet", "Hide the chat line Autopet sends when it swaps your pet.", default = false)
 
     private val known = feature.profiled(KnownPets())
@@ -184,9 +182,6 @@ class ActivePet(config: DsModConfig) : HasFeature {
         if (pet?.let { keyOf(it.name) } == key) block = null
     }
 
-    fun slots(now: Long): Map<Int, SlotMark> =
-        if (markInMenu.value && menuSlot >= 0 && feature.container.title?.plain == PetCard.MENU) mapOf(menuSlot to MARK) else emptyMap()
-
     private fun pace(pet: Pet, key: String) = pace?.takeIf { it.key == key && it.level == pet.level }
 
     private fun nextLevel(pace: Pace?, now: Long): String? {
@@ -273,6 +268,5 @@ class ActivePet(config: DsModConfig) : HasFeature {
         val ACTIVATED = Regex("""Activated \[Lvl (\d+)] (.+)!""")
         val AUTOPET_LINE = Regex("""Autopet equipped your \[Lvl (\d+)] (.+?)!.*""")
         val EQUIPPED = Regex("""Equipped (.+) on \[Lvl (\d+)] (.+)!""")
-        val MARK = SlotMark(Role.GOOD)
     }
 }
