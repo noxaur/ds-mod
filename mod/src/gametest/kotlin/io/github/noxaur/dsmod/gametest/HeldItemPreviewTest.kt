@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.Animations
+import io.github.noxaur.dsmod.core.feature.general.animations.Animations
 import io.github.noxaur.dsmod.core.hand.HandPreview
 import io.github.noxaur.dsmod.core.hand.HandStyle
 import io.github.noxaur.dsmod.core.ui.SettingsTabs

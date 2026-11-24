@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.DamageNumbers
-import io.github.noxaur.dsmod.core.feature.general.DamageShown
+import io.github.noxaur.dsmod.core.feature.combat.damagenumbers.DamageNumbers
+import io.github.noxaur.dsmod.core.feature.combat.damagenumbers.DamageShown
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.EditedText
 import io.github.noxaur.dsmod.edge.FloatingTexts

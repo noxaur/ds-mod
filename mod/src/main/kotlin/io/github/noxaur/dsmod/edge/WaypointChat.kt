@@ -6,7 +6,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.feature.general.Waypoints
+import io.github.noxaur.dsmod.core.feature.general.waypoints.Waypoints
 import io.github.noxaur.dsmod.core.profile.Profile
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.waypoint.SavedWaypoint

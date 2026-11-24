@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
-import io.github.noxaur.dsmod.core.feature.inventory.ProfileCooldown
+import io.github.noxaur.dsmod.core.feature.menus.look.menutheme.MenuTheme
+import io.github.noxaur.dsmod.core.feature.menus.profilecooldown.ProfileCooldown
 import io.github.noxaur.dsmod.core.player.PlayerData
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest

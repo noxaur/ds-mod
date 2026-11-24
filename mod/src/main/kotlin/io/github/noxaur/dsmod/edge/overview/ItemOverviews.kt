@@ -5,7 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.feature.general.ItemOverview
+import io.github.noxaur.dsmod.core.feature.general.itemoverview.ItemOverview
 import io.github.noxaur.dsmod.core.overview.Entry
 import io.github.noxaur.dsmod.core.overview.Shelf
 import io.github.noxaur.dsmod.core.profile.ProfileLookup

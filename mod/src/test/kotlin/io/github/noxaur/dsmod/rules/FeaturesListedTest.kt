@@ -9,15 +9,17 @@ import kotlin.test.assertEquals
 
 class FeaturesListedTest {
     @Test
-    fun `every feature class is placed in SettingsTree`() {
+    fun `every feature class is placed by the folder above it`() {
         val listed = SettingsTree(mac = true).owners.map { it.javaClass.name }.toSet()
         val missing = releaseClasses.that(implement(HasFeature::class.java))
-            .filter { !it.isInterface && JavaModifier.ABSTRACT !in it.modifiers && it.name !in listed }.map { it.name }
+            .filter { !it.isInterface && JavaModifier.ABSTRACT !in it.modifiers && it.name !in listed }
+            .map { "${it.simpleName}, in the file of core/feature/${it.packageName.removePrefix("io.github.noxaur.dsmod.core.feature.").substringBeforeLast('.').replace('.', '/')}/" }
         assertEquals(
             emptyList(),
             missing,
-            "A feature that SettingsTree places nowhere never runs. In core/config/SettingsTree.kt, give each one a group of its " +
-                "own with `group(Feature(c))`, or a row among others with `feature(Feature(c))`:\n" + missing.joinToString("\n") + "\n",
+            "A feature that no folder above it places never runs. Place each one in the file named after the folder above its own: " +
+                "in a section's file as a group of its own with `group(Feature(c))`, or in a group's file as a row with `feature(Feature(c))`:\n" +
+                missing.joinToString("\n") + "\n",
         )
     }
 }

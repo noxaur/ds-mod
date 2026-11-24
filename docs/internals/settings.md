@@ -10,9 +10,13 @@ ds-mod draws its own settings screen and dropped MoulConfig. MoulConfig's boxes 
 
 Every setting is a row of one kind, and the screen builds everything a row does from its kind: the control, the changed marker, reset, dimming, search and the keyboard. An agent adds a setting with one line and writes no drawing or input code, so each kind's conventions are built once and hold for every setting. Each saved value has exactly one row, because a value two rows write disagrees with itself, and one with none can't be reached.
 
-## A feature is declared in one place, and the tree keeps only the shape
+## A feature is declared in one place
 
-A feature's switch, its settings and their defaults are declared in its own class, and the tree only places the feature. Four places that had to agree were rejected: a feature left out of one compiled and then silently had no row, no save or never ran. The tree still holds the shape, because where a feature sits among the sections is a choice about the screen, not about the feature. A feature placed under another's switch runs only while that switch is on, as its row dims, so a group's children never each check the group.
+A feature's switch, its settings and their defaults are declared in its own class. Four places that had to agree were rejected: a feature left out of one compiled and then silently had no row, no save or never ran. A feature placed under another's switch runs only while that switch is on, as its row dims, so a group's children never each check the group.
+
+## The folders are the screen's shape, and each parent orders its children
+
+A feature's folder sits in its group's, and its group's in its section's, and each parent lists its children in the order the screen shows them. One list of every feature was rejected, because each pull request that added a feature edited it beside the last and they conflicted. Sorting by name was rejected because the order is a choice about the screen, and a number on each feature because no one place shows the order.
 
 ## A default lives beside the value it belongs to
 

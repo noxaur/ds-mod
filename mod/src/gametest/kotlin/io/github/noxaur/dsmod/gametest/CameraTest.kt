@@ -2,7 +2,7 @@ package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.camera.ThirdPerson
 import io.github.noxaur.dsmod.core.camera.Views
-import io.github.noxaur.dsmod.core.feature.general.Camera
+import io.github.noxaur.dsmod.core.feature.camera.thirdperson.Camera
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext

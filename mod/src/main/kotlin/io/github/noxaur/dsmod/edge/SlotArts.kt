@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import com.mojang.blaze3d.platform.NativeImage
-import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
+import io.github.noxaur.dsmod.core.feature.inventory.itemrarity.ItemRarity
 import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.text.Role

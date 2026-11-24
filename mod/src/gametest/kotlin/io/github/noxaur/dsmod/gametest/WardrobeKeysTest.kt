@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.inventory.WardrobeKeys
+import io.github.noxaur.dsmod.core.feature.menus.wardrobekeys.WardrobeKeys
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.gametest.mixin.HoveredSlotAccessor
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest

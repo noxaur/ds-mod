@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.edge.contribute
 
-import io.github.noxaur.dsmod.core.feature.contribute.ReportGameData
+import io.github.noxaur.dsmod.core.feature.contribute.reportgamedata.ReportGameData
 import io.github.noxaur.dsmod.core.backend.Backend
 import io.github.noxaur.dsmod.core.backend.Request
 import io.github.noxaur.dsmod.core.backend.Upload

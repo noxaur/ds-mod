@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.InventoryHud
-import io.github.noxaur.dsmod.core.feature.general.InventoryRow
+import io.github.noxaur.dsmod.core.feature.ui.inventoryhud.InventoryHud
+import io.github.noxaur.dsmod.core.feature.ui.inventoryhud.InventoryRow
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.GameEvent
 import io.github.noxaur.dsmod.core.game.SlotChanged

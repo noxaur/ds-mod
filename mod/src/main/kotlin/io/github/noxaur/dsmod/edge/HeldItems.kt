@@ -2,7 +2,7 @@ package io.github.noxaur.dsmod.edge
 
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
-import io.github.noxaur.dsmod.core.feature.general.Animations
+import io.github.noxaur.dsmod.core.feature.general.animations.Animations
 import io.github.noxaur.dsmod.core.hand.HandStyle
 import io.github.noxaur.dsmod.core.hand.HeldItem
 import java.util.IdentityHashMap

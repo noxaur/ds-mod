@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
+import io.github.noxaur.dsmod.core.feature.menus.betterui.backbuttons.BackButtons
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest

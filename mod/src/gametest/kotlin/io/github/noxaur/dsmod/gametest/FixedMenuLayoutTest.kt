@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
-import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
+import io.github.noxaur.dsmod.core.feature.menus.look.fixedmenulayout.FixedMenuLayout
+import io.github.noxaur.dsmod.core.feature.menus.look.menutheme.MenuTheme
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext

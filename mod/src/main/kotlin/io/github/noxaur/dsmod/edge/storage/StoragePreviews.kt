@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.edge.storage
 
-import io.github.noxaur.dsmod.core.feature.inventory.StorageMode
-import io.github.noxaur.dsmod.core.feature.inventory.StorageOverview
+import io.github.noxaur.dsmod.core.feature.menus.storageoverview.StorageMode
+import io.github.noxaur.dsmod.core.feature.menus.storageoverview.StorageOverview
 import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.overview.StoragePages
 import io.github.noxaur.dsmod.core.player.Seen

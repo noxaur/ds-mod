@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
-import io.github.noxaur.dsmod.core.feature.general.EquipmentPiece
+import io.github.noxaur.dsmod.core.feature.ui.equipmentdisplay.EquipmentDisplay
+import io.github.noxaur.dsmod.core.feature.ui.equipmentdisplay.EquipmentPiece
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen

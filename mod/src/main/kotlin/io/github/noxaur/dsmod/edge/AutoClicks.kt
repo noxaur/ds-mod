@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import com.mojang.blaze3d.platform.InputConstants
-import io.github.noxaur.dsmod.core.feature.general.AutoClick
+import io.github.noxaur.dsmod.core.feature.general.autoclick.AutoClick
 import io.github.noxaur.dsmod.edge.input.Clicks
 import io.github.noxaur.dsmod.edge.input.InputApproved
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper

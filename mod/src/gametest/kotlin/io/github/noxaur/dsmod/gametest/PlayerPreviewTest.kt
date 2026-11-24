@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.PlayerModel
+import io.github.noxaur.dsmod.core.feature.general.playermodel.PlayerModel
 import io.github.noxaur.dsmod.core.player.ModelPose
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.Turntable

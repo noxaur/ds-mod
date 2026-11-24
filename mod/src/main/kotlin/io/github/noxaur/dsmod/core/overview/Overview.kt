@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.core.overview
 
-import io.github.noxaur.dsmod.core.feature.inventory.SkyBlockMenuClick
+import io.github.noxaur.dsmod.core.feature.menus.betterui.skyblockmenuclick.SkyBlockMenuClick
 import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.profile.Container

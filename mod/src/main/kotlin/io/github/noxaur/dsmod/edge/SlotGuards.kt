@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
+import io.github.noxaur.dsmod.core.feature.inventory.protection.slotlock.SlotLock
 import io.github.noxaur.dsmod.core.inventory.ShiftSlot
 import io.github.noxaur.dsmod.core.inventory.SlotLocks
 import io.github.noxaur.dsmod.core.inventory.shiftPlaces

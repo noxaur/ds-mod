@@ -4,7 +4,7 @@ import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.container.SlotArt
 import io.github.noxaur.dsmod.core.container.SlotCooldown
 import io.github.noxaur.dsmod.core.container.SlotMark
-import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
+import io.github.noxaur.dsmod.core.feature.inventory.itemrarity.ItemRarity
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.Span

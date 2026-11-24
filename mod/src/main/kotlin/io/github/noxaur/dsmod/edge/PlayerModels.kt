@@ -2,7 +2,7 @@ package io.github.noxaur.dsmod.edge
 
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
-import io.github.noxaur.dsmod.core.feature.general.PlayerModel
+import io.github.noxaur.dsmod.core.feature.general.playermodel.PlayerModel
 import io.github.noxaur.dsmod.core.player.ModelShape
 import io.github.noxaur.dsmod.core.player.ModelTarget
 import io.github.noxaur.dsmod.core.player.Turn

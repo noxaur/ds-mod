@@ -2,12 +2,12 @@ package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.container.MarkStyle
-import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
-import io.github.noxaur.dsmod.core.feature.general.Camera
-import io.github.noxaur.dsmod.core.feature.general.FreeLook
-import io.github.noxaur.dsmod.core.feature.general.Fullbright
-import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
-import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
+import io.github.noxaur.dsmod.core.feature.end.protector.protectorspawnbeam.ProtectorSpawnBeam
+import io.github.noxaur.dsmod.core.feature.camera.thirdperson.Camera
+import io.github.noxaur.dsmod.core.feature.camera.freelook.FreeLook
+import io.github.noxaur.dsmod.core.feature.general.world.fullbright.Fullbright
+import io.github.noxaur.dsmod.core.feature.inventory.itemrarity.ItemRarity
+import io.github.noxaur.dsmod.core.feature.inventory.protection.slotlock.SlotLock
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen

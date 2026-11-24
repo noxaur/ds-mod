@@ -4,7 +4,7 @@ import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.harness.chat
 import io.github.noxaur.dsmod.harness.Harness
 import io.github.noxaur.dsmod.harness.lines
-import io.github.noxaur.dsmod.core.feature.end.ProtectorStatus
+import io.github.noxaur.dsmod.core.feature.end.protector.protectorstatus.ProtectorStatus
 import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.TabList

@@ -2,8 +2,8 @@ package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.container.MarkStyle
 import io.github.noxaur.dsmod.core.container.SlotStyle
-import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
-import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
+import io.github.noxaur.dsmod.core.feature.inventory.itemrarity.ItemRarity
+import io.github.noxaur.dsmod.core.feature.menus.look.menutheme.MenuTheme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SlotArts
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest

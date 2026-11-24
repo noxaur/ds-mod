@@ -3,7 +3,7 @@ package io.github.noxaur.dsmod.core.feature
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.container.SlotMark
 import io.github.noxaur.dsmod.core.contribute.Places
-import io.github.noxaur.dsmod.core.feature.general.DragSimOnly
+import io.github.noxaur.dsmod.core.feature.general.server.dragsimonly.DragSimOnly
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState

@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
+import io.github.noxaur.dsmod.core.feature.menus.betterui.menutabs.MenuTabs
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.ItemSearch

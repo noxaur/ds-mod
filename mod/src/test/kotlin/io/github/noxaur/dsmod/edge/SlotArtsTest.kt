@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.SettingsTree
-import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
+import io.github.noxaur.dsmod.core.feature.inventory.itemrarity.ItemRarity
 import io.github.noxaur.dsmod.core.container.MarkStyle
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.edge.ui.Atlas

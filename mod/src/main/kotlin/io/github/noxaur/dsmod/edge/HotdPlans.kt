@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.Switch
-import io.github.noxaur.dsmod.core.feature.inventory.HotdPlanner
+import io.github.noxaur.dsmod.core.feature.menus.hotdplanner.HotdPlanner
 import io.github.noxaur.dsmod.core.heart.HeartBlock
 import io.github.noxaur.dsmod.core.heart.MiningArea
 import io.github.noxaur.dsmod.core.text.Role

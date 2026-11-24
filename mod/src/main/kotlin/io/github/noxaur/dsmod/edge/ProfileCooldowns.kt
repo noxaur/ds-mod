@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.feature.inventory.ProfileCooldown
+import io.github.noxaur.dsmod.core.feature.menus.profilecooldown.ProfileCooldown
 import io.github.noxaur.dsmod.core.text.Role
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.minecraft.client.gui.screens.inventory.ContainerScreen

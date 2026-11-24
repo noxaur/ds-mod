@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
+import io.github.noxaur.dsmod.core.feature.inventory.protection.armorswapguard.ArmorSwapGuard
 import io.github.noxaur.dsmod.edge.input.InputApproved
 import io.github.noxaur.dsmod.edge.input.Refusals
 import net.minecraft.core.component.DataComponents

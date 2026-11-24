@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.feature.general.PerformanceStats
-import io.github.noxaur.dsmod.core.feature.general.Stat
+import io.github.noxaur.dsmod.core.feature.ui.performancestats.PerformanceStats
+import io.github.noxaur.dsmod.core.feature.ui.performancestats.Stat
 import io.github.noxaur.dsmod.edge.input.InputApproved
 import io.github.noxaur.dsmod.edge.input.PingRequests
 import net.minecraft.util.Util

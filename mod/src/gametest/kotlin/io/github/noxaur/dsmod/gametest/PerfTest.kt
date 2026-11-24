@@ -1,12 +1,12 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.container.SlotMark
-import io.github.noxaur.dsmod.core.feature.boss.BossBeacon
-import io.github.noxaur.dsmod.core.feature.boss.BossTracer
-import io.github.noxaur.dsmod.core.feature.contribute.ReportGameData
-import io.github.noxaur.dsmod.core.feature.general.Waypoints
-import io.github.noxaur.dsmod.core.feature.inventory.StorageMode
-import io.github.noxaur.dsmod.core.feature.inventory.StorageOverview
+import io.github.noxaur.dsmod.core.feature.combat.bosses.bossbeacon.BossBeacon
+import io.github.noxaur.dsmod.core.feature.combat.bosses.bosstracer.BossTracer
+import io.github.noxaur.dsmod.core.feature.contribute.reportgamedata.ReportGameData
+import io.github.noxaur.dsmod.core.feature.general.waypoints.Waypoints
+import io.github.noxaur.dsmod.core.feature.menus.storageoverview.StorageMode
+import io.github.noxaur.dsmod.core.feature.menus.storageoverview.StorageOverview
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.hud.HudGroup
 import io.github.noxaur.dsmod.core.hud.hud

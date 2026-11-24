@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.boss.BossBeacon
-import io.github.noxaur.dsmod.core.feature.boss.BossTracer
+import io.github.noxaur.dsmod.core.feature.combat.bosses.bossbeacon.BossBeacon
+import io.github.noxaur.dsmod.core.feature.combat.bosses.bosstracer.BossTracer
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.SystemMessage

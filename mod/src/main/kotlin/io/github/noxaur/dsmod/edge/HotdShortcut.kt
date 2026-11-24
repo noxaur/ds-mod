@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.feature.inventory.HotdButton
+import io.github.noxaur.dsmod.core.feature.menus.betterui.hotdbutton.HotdButton
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.input.InputApproved
 import io.github.noxaur.dsmod.edge.input.PlayerCommands

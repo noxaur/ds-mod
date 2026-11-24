@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
+import io.github.noxaur.dsmod.core.feature.end.protector.protectorspawnbeam.ProtectorSpawnBeam
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.Theme

@@ -1,69 +1,20 @@
 package io.github.noxaur.dsmod.core.config
 
-import io.github.noxaur.dsmod.core.feature.boss.BossBeacon
-import io.github.noxaur.dsmod.core.feature.boss.BossTracer
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
+import io.github.noxaur.dsmod.core.feature.binds.binds
 import io.github.noxaur.dsmod.core.feature.camel
-import io.github.noxaur.dsmod.core.feature.boss.SlayerClaim
-import io.github.noxaur.dsmod.core.feature.chat.CopyChat
-import io.github.noxaur.dsmod.core.feature.chat.HideCooldownMessages
-import io.github.noxaur.dsmod.core.feature.contribute.ReportGameData
-import io.github.noxaur.dsmod.core.feature.end.BossFightTracker
-import io.github.noxaur.dsmod.core.feature.end.DragonTimer
-import io.github.noxaur.dsmod.core.feature.end.EyeGuard
-import io.github.noxaur.dsmod.core.feature.end.FireballAlert
-import io.github.noxaur.dsmod.core.feature.end.ProtectorSpawnBeam
-import io.github.noxaur.dsmod.core.feature.end.ProtectorStatus
-import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
-import io.github.noxaur.dsmod.core.feature.general.AbilityCooldowns
-import io.github.noxaur.dsmod.core.feature.general.Waypoints
-import io.github.noxaur.dsmod.core.feature.general.ActivePet
-import io.github.noxaur.dsmod.core.feature.general.Animations
-import io.github.noxaur.dsmod.core.feature.general.Camera
-import io.github.noxaur.dsmod.core.feature.general.CommandBinds
-import io.github.noxaur.dsmod.core.feature.general.AutoClick
-import io.github.noxaur.dsmod.core.feature.general.CtrlClick
-import io.github.noxaur.dsmod.core.feature.general.DragSimOnly
-import io.github.noxaur.dsmod.core.feature.general.DamageNumbers
-import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
-import io.github.noxaur.dsmod.core.feature.general.EtherwarpOutline
-import io.github.noxaur.dsmod.core.feature.general.FreeLook
-import io.github.noxaur.dsmod.core.feature.general.Fullbright
-import io.github.noxaur.dsmod.core.feature.general.HideExplosions
-import io.github.noxaur.dsmod.core.feature.general.InventoryHud
-import io.github.noxaur.dsmod.core.feature.general.PerformanceStats
-import io.github.noxaur.dsmod.core.feature.general.PlayerModel
-import io.github.noxaur.dsmod.core.feature.general.ItemOverview
-import io.github.noxaur.dsmod.core.feature.general.ProfileViewer
-import io.github.noxaur.dsmod.core.feature.hud.ChatHudEditor
-import io.github.noxaur.dsmod.core.feature.hud.HideInF3
-import io.github.noxaur.dsmod.core.feature.hud.HudBackground
-import io.github.noxaur.dsmod.core.feature.inventory.ArmorSwapGuard
-import io.github.noxaur.dsmod.core.feature.inventory.BackButtons
-import io.github.noxaur.dsmod.core.feature.inventory.betterUi
-import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
-import io.github.noxaur.dsmod.core.feature.inventory.HideGlassPanes
-import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
-import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
-import io.github.noxaur.dsmod.core.feature.inventory.ForgeCraft
-import io.github.noxaur.dsmod.core.feature.inventory.HotdButton
-import io.github.noxaur.dsmod.core.feature.inventory.HotdPlanner
-import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
-import io.github.noxaur.dsmod.core.feature.inventory.ProfileCooldown
-import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
-import io.github.noxaur.dsmod.core.feature.inventory.SkyBlockMenuClick
-import io.github.noxaur.dsmod.core.feature.inventory.SlotLock
-import io.github.noxaur.dsmod.core.feature.inventory.StorageOverview
-import io.github.noxaur.dsmod.core.feature.inventory.PetsMenu
-import io.github.noxaur.dsmod.core.feature.inventory.WardrobeKeys
-import io.github.noxaur.dsmod.core.feature.loot.RareDropAlert
-import io.github.noxaur.dsmod.core.feature.slayer.SlayerBossAlert
-import io.github.noxaur.dsmod.core.feature.slayer.SlayerTracker
+import io.github.noxaur.dsmod.core.feature.camera.camera
+import io.github.noxaur.dsmod.core.feature.chat.chat
+import io.github.noxaur.dsmod.core.feature.combat.combat
+import io.github.noxaur.dsmod.core.feature.contribute.contribute
+import io.github.noxaur.dsmod.core.feature.end.end
+import io.github.noxaur.dsmod.core.feature.general.general
+import io.github.noxaur.dsmod.core.feature.inventory.inventory
+import io.github.noxaur.dsmod.core.feature.menus.menus
+import io.github.noxaur.dsmod.core.feature.ui.ui
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.text.Role
-import io.github.noxaur.dsmod.core.ui.Look
-import io.github.noxaur.dsmod.core.ui.Theme
 
 class SettingGroup(val name: String?, val rows: List<Setting>, val switch: Switch? = null)
 
@@ -73,17 +24,15 @@ class SettingSection(val name: String, val icon: Role, val groups: List<SettingG
     fun walk(): Sequence<Setting> = groups.asSequence().flatMap { group -> listOfNotNull(group.switch).asSequence() + group.rows.asSequence().flatMap { it.walk() } }
 }
 
-@SettingsDsl
-class Sections {
+class Sections(val c: DsModConfig, val mac: Boolean) {
     internal val sections = ArrayList<SettingSection>()
 
     fun section(name: String, icon: Role, groups: Groups.() -> Unit) {
-        sections += SettingSection(name, icon, Groups().apply(groups).groups)
+        sections += SettingSection(name, icon, Groups(c, mac).apply(groups).groups)
     }
 }
 
-@SettingsDsl
-class Groups {
+class Groups(val c: DsModConfig, val mac: Boolean) {
     internal val groups = ArrayList<SettingGroup>()
 
     fun group(name: String?, rows: Rows.() -> Unit) {
@@ -155,135 +104,22 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
         }
 
         private fun declare(c: DsModConfig, mac: Boolean): List<SettingSection> {
-            val g = c.general
-            val claim = SlayerClaim()
-            val ctrlClick = CtrlClick(c)
-            val sections = Sections().apply {
-                section("General", Role.VALUE) {
-                    group("Server") {
-                        feature(DragSimOnly(c))
-                    }
-                    group("Settings") {
-                        keys(g.settingsKey.bind, "Settings Key", "Pick a key that opens these settings, as /dsmod does.")
-                        keys(g.favoriteKey.bind, "Favorite Key", "Pick a key that stars the setting under your mouse.", clicks = false)
-                    }
-                    if (mac) group("Mouse") {
-                        feature(ctrlClick)
-                    }
-                    group("World") {
-                        feature(Fullbright(c))
-                        feature(HideExplosions(c))
-                    }
-                    group(EtherwarpOutline(c), "Etherwarp")
-                    group(AutoClick(c))
-                    group(AbilityCooldowns(c))
-                    group(Animations(c))
-                    group(PlayerModel(c))
-                    group(ProfileViewer(c))
-                    group(ItemOverview(c))
-                    group(Waypoints(c))
-                }
-                section("Camera", Role.ACTION) {
-                    group(Camera(c), "Third Person")
-                    group(FreeLook(c))
-                }
-                section("Binds", Role.DIVINE) {
-                    group(CommandBinds(c))
-                }
-                section("Interface", Role.MUTED) {
-                    val hud = c.hud
-                    group("Theme") {
-                        pick(hud.theme.bind, "Theme", "Pick the colors of ds-mod's screens and controls.", Theme.entries) { Look.Swatch(it) }
-                    }
-                    group("HUD") {
-                        number(hud.scale.bind, "Scale", "Make every HUD block bigger or smaller.", 0.5f..3f, step = 0.25f, unit = "x", id = "hudScale")
-                        feature(HudBackground(c))
-                        panel(hud.positions.bind, "Layout", "Drag a block to move it, and scroll over it to resize it.", Canvas.HUD_LAYOUT, id = "hudLayout") {
-                            if (it.isEmpty()) "Stacked" else if (it.size == 1) "1 block moved" else "${it.size} blocks moved"
-                        }
-                        action(Opens.HUD_EDITOR, "Move HUD", "Move your HUD over the game, with the world behind it.", button = "Move", id = "moveHud")
-                        feature(ChatHudEditor(c))
-                        keys(hud.editKey.bind, "HUD Editor Key", "Pick a key that opens the HUD editor, or none.", id = "hudEditKey")
-                        feature(HideInF3(c))
-                    }
-                    group(EquipmentDisplay(c))
-                    group(PerformanceStats(c))
-                    group(ActivePet(c))
-                    group(InventoryHud(c))
-                }
-                section("Chat", Role.WARNING) {
-                    group(null) {
-                        feature(HideCooldownMessages(c))
-                        feature(CopyChat(c))
-                    }
-                }
-                section("Inventory", Role.GOOD) {
-                    group(ItemRarity(c))
-                    group("Protection") {
-                        feature(SlotLock(c))
-                        feature(ArmorSwapGuard(c))
-                    }
-                }
-                section("Menus", Role.LEGENDARY) {
-                    group("Look") {
-                        feature(MenuTheme(c))
-                        feature(FixedMenuLayout(c))
-                        feature(HideGlassPanes(c))
-                        feature(KeepCursor(c))
-                    }
-                    group(betterUi(c)) {
-                        feature(BackButtons(c))
-                        feature(MenuTabs(c))
-                        feature(SkyBlockMenuClick(c))
-                        feature(HotdButton(c))
-                    }
-                    group(StorageOverview(c))
-                    group(ForgeCraft(c))
-                    group(HotdPlanner(c))
-                    group(WardrobeKeys(c))
-                    group(PetsMenu(c))
-                    group(ProfileCooldown(c))
-                }
-                section("The End", Role.EPIC) {
-                    group("Dragon") {
-                        feature(DragonTimer(c))
-                        feature(FireballAlert(c))
-                        feature(EyeGuard(c))
-                    }
-                    group("Protector") {
-                        feature(ProtectorStatus(c))
-                        feature(ProtectorSpawnBeam(c))
-                    }
-                    group("Drops") {
-                        feature(BossFightTracker(c))
-                        feature(ZealotTracker(c))
-                    }
-                }
-                section("Combat", Role.BAD) {
-                    group(DamageNumbers(c))
-                    group("Slayers") {
-                        feature(SlayerTracker(c))
-                        feature(SlayerBossAlert(c))
-                    }
-                    group("Bosses") {
-                        feature(BossBeacon(c, claim))
-                        feature(BossTracer(c, claim))
-                    }
-                    group("Loot") {
-                        feature(RareDropAlert(c))
-                    }
-                }
-                section("Contribute", Role.RARE) {
-                    group(null) {
-                        action(Opens.REQUESTS, "Requests", "See what ds-mod's developers ask players to record.", id = "requests")
-                        feature(ReportGameData(c))
-                    }
-                }
+            val sections = Sections(c, mac).apply {
+                general()
+                camera()
+                binds()
+                ui()
+                chat()
+                inventory()
+                menus()
+                end()
+                combat()
+                contribute()
             }.sections
             for (section in sections) for (group in section.groups) link(group.rows, group.switch)
             val plain = sections.flatMap { it.groups }.filter { it.switch == null }.flatMap { loose(it.rows) }.filterIsInstance<Switch>()
             check(plain.isEmpty()) {
-                "Every on/off setting is a feature, so place each of these in SettingsTree as feature(Feature(c)), with its own class in core/feature: ${plain.map { it.id }}"
+                "Every on/off setting is a feature, so give each of these its own class in a folder of core/feature and place it as feature(Feature(c)) in the group file beside that folder: ${plain.map { it.id }}"
             }
             return sections
         }
