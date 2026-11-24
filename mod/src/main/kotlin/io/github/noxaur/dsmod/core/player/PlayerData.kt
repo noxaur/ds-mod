@@ -247,7 +247,11 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         due = true
     }
 
-    private val heart get() = here.heart
+    /** @keep Every stat the tab list or the Dragon Sim Menu showed on this profile, by its name */
+    val stats: Map<String, Reading> get() = here.stats
+
+    /** @keep The Heart of the Dragon on this profile, as its menu showed it last */
+    val heart: Heart get() = here.heart
 
     private fun keepHeart(heart: Heart) {
         if (heart == this.heart) return

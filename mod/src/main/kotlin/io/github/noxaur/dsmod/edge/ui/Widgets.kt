@@ -11,6 +11,7 @@ import io.github.noxaur.dsmod.core.ui.TabEdge
 import io.github.noxaur.dsmod.core.ui.TypeAhead
 import io.github.noxaur.dsmod.edge.Keys
 import io.github.noxaur.dsmod.edge.toComponent
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.AbstractButton
 import net.minecraft.client.gui.components.AbstractWidget
@@ -526,24 +527,25 @@ class KitKeysButton(
     }
 }
 
-class KitCycleButton<T>(
+open class KitCycleButton<T>(
     x: Int,
     y: Int,
     width: Int,
     private val name: String,
-    private val values: List<T>,
+    protected val values: List<T>,
     value: T,
     private val title: (T) -> String,
+    private val labelWidth: Int = width - 6,
     private val onChange: (T) -> Unit,
 ) : AbstractButton(x, y, width, Kit.BUTTON_HEIGHT, plain(name)) {
     var value = value
         set(next) {
             field = next
-            label = fit(title(next), width - 6)
+            label = fit(title(next), labelWidth)
             message = plain("$name: ${title(next)}")
         }
-    private var label = ""
-    private var pressed = false
+    protected var label = ""
+    protected var pressed = false
 
     init {
         this.value = value
@@ -568,10 +570,12 @@ class KitCycleButton<T>(
         return true
     }
 
-    private fun step(by: Int) {
-        value = values[(values.indexOf(value) + by).mod(values.size)]
-        onChange(value)
+    protected fun choose(next: T) {
+        value = next
+        onChange(next)
     }
+
+    protected fun step(by: Int) = choose(values[(values.indexOf(value) + by).mod(values.size)])
 
     override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         val state = Kit.state(active, isHoveredOrFocused, pressed && isHovered)
@@ -601,6 +605,61 @@ fun wrap(text: String, width: Int, max: Int): List<String> {
     }
     lines += line
     return if (lines.size <= max) lines else lines.take(max - 1) + fit(lines.drop(max - 1).joinToString(" "), width)
+}
+
+/** @keep A dropdown on a screen that is not the settings screen, as the dropdown section of controls.md says. It steps
+ * as a cycle button does, but a right press goes forward. Its open `menu` belongs to the screen, which draws it over
+ * everything and gives it the press and the keys first, as `HotdPlans` does. A typed letter reaches the menu here, since
+ * the dropdown keeps the focus while it is open */
+class KitDropdown<T>(
+    x: Int,
+    y: Int,
+    width: Int,
+    name: String,
+    values: List<T>,
+    value: T,
+    private val title: (T) -> String,
+    onChange: (T) -> Unit,
+) : KitCycleButton<T>(x, y, width, name, values, value, title, Kit.dropdownLabel(width), onChange) {
+    var menu: KitMenu? = null
+        private set
+
+    override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
+        if (event.button() == 1) return step(if (event.hasShiftDown()) -1 else 1)
+        pressed = true
+        open()
+    }
+
+    override fun onPress(input: InputWithModifiers) = open()
+
+    override fun keyPressed(event: KeyEvent): Boolean {
+        menu?.let { return it.keyPressed(event) }
+        if (!isFocused) return false
+        when {
+            event.isLeft -> step(-1)
+            event.isRight -> step(1)
+            else -> return super.keyPressed(event)
+        }
+        return true
+    }
+
+    override fun charTyped(event: CharacterEvent): Boolean = menu?.charTyped(event) ?: false
+
+    private fun open() {
+        val window = Minecraft.getInstance().window
+        val (screenWidth, screenHeight) = window.guiScaledWidth to window.guiScaledHeight
+        menu = KitMenu(0, 0, screenWidth, screenHeight, values.map { title(it) to { choose(it) } }, ::close, values.indexOf(value))
+            .below(x, y, width, height, screenWidth, screenHeight)
+    }
+
+    fun close() {
+        menu = null
+    }
+
+    override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
+        val state = if (menu != null) Kit.State.HOVER else Kit.state(active, isHoveredOrFocused, pressed && isHovered)
+        Kit.dropdown(graphics, x, y, width, height, state, label)
+    }
 }
 
 class KitMenu(

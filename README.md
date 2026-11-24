@@ -51,6 +51,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - **HOTD Button** – Opens the Heart of the Dragon from the Dragon Sim Menu.
 - **Storage Overview** – Hover a Storage page to see its items, or see every page and the Ender Chest at once.
 - **Forge Craft** – Repeat your last forge craft with a key, one click per press.
+- **HOTD Planner** – Marks what to click next in the Heart of the Dragon for the block you mine.
 - **Wardrobe Keys** – Press 1 to 9 in the Wardrobe to click that slot, once the server lets you.
 - **Pets Menu** – Outlines your active pet in the Pets menu, and 1 to 0 click your first ten pets.
 - **Profile Cooldown** – Shows in Profile Management when you can switch profiles again.

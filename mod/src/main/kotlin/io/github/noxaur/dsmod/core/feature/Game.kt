@@ -29,11 +29,21 @@ import io.github.noxaur.dsmod.core.text.Text
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.world.Mark
 import kotlinx.serialization.Serializable
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 @Serializable
 data class Hidden(val told: Set<String> = emptySet())
 
-class Game(private val features: List<Feature>, val metrics: Metrics = Metrics(), private val connected: () -> Boolean = { true }) {
+/** @keep `worker` runs a feature's background work. The client's is a thread of its own, and a test's runs it in place, so
+ * a transcript stays the same on every run */
+class Game(
+    private val features: List<Feature>,
+    val metrics: Metrics = Metrics(),
+    private val connected: () -> Boolean = { true },
+    private val worker: Executor = BACKGROUND,
+) {
     private val dragSimOnly = features.firstOrNull { it.id == DragSimOnly.ID }
 
     val active: Boolean get() = connected() || dragSimOnly?.enabled != true
@@ -60,6 +70,8 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     }
 
     val readouts = features.map(::Readout)
+
+    private val finished = ConcurrentLinkedQueue<() -> Unit>()
 
     var tap: ((time: Long, event: GameEvent) -> Unit)? = null
 
@@ -107,6 +119,8 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
             it.messages = messages
             if (it !== dragSimOnly) it.gate = { active }
             it.worlds = { worlds }
+            it.worker = { work -> worker.execute(work) }
+            it.handBack = { done -> finished.add(done) }
         }
     }
 
@@ -246,6 +260,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
     }
 
     fun tick(time: Long) {
+        while (true) finished.poll()?.invoke() ?: break
         sync(time)
         for (readout in readouts) {
             val feature = readout.feature
@@ -273,5 +288,7 @@ class Game(private val features: List<Feature>, val metrics: Metrics = Metrics()
 
     internal companion object {
         const val REFRESH_MILLIS = 250L
+
+        private val BACKGROUND: Executor = Executors.newSingleThreadExecutor { Thread(it, "dsmod-background").apply { isDaemon = true } }
     }
 }

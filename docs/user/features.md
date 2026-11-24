@@ -527,6 +527,16 @@ A panel beside the forge's menus shows the item, how many you can craft now, and
 
 Click the key in the panel's corner, then press a key or a side mouse button, to change it without opening the settings.
 
+### HOTD Planner
+
+Open the Heart of the Dragon with `/hotd`, and the mod marks what to click next. Pick the block you mine, the area you mine it in, and what you want from it in the panel left of the menu: Yield, Powder, XP and Pets, plus Pristine and Fragments for Amethyst. For End Stone and Obsidian, tick Ender Nodes if you mine those. The plan starts from the perks you already have and runs to the last upgrade worth buying.
+
+One slot at a time is marked green, with the number of clicks left in its corner. That is every level your powder already pays for, so a perk you'll level 21 times shows 21. When the next upgrade is on another tier, the Scroll Up or Scroll Down arrow is marked instead, with the number of scrolls. The mark turns red when neither powder covers the next upgrade, and the menu's green tier panes are grayed out, so the only green is what to click.
+
+The panel's bottom box shows your Ender and Void Powder. A number turns red when that powder can't pay for its next upgrade.
+
+The first time, scroll through every tier once so the mod can read them, and it remembers them after that. Open the Dragon Sim Menu with your mining tool held, so the plan uses your mining stats.
+
 ### Wardrobe Keys
 
 In the Wardrobe, press 1 to 9 to click the nine slot buttons of the page you're on, from left to right, the same as clicking the button yourself. On the second page, 1 is Slot 10. Each press is one click.
