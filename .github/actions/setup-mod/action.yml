@@ -26,7 +26,6 @@ runs:
         org.gradle.java.installations.auto-detect=false
         kotlin.daemon.jvmargs=-XX:TieredStopAtLevel=1
         EOF
-    # @keep The plugins' versions live in gradle.properties, so an edit to the build scripts keeps the cache.
     - id: key
       shell: bash
       run: echo "key=${{ inputs.cache }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('mise.toml', 'mod/gradle.properties', 'mod/gradle/wrapper/gradle-wrapper.properties') }}" >> "$GITHUB_OUTPUT"

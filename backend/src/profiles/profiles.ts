@@ -28,7 +28,6 @@ const draw = Effect.fn(function* (items: readonly unknown[], inventory: Sections
   return items.map((item) => (item === null || item === undefined ? null : renderer.render(item)));
 });
 
-// @keep The player hides their items, and a pet is not one: the pets stay as the profile lists them.
 const summaryOf = (layout: Layout, hiddenItems: boolean) => {
   const hidden = hiddenItems && layout.id !== PETS_ID;
   return { id: layout.id, title: layout.title, columns: layout.columns, slots: hidden ? 0 : layout.slots, hidden };
@@ -149,7 +148,6 @@ export const container = Effect.fn(function* (snapshot: string, containerId: str
   return { ...summaryOf(layout, hidden), items: hidden ? [] : yield* draw(layout.cells, sections.inventory) };
 });
 
-// @keep One renderer draws every item, so the catalog is read once for all thirty storage pages.
 export const containers = Effect.fn(function* (snapshot: string) {
   const { hidden, sections } = yield* kept(snapshot);
   const layouts = layoutsOf(sections);

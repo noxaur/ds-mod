@@ -6,9 +6,6 @@ import { mobName } from "./names.ts";
 import { skillProgress } from "./progress.ts";
 import type { Progression } from "./wire.ts";
 
-/* @keep Each section is read leniently, so a section that changes shape costs only itself: a value that is missing or
- * of the wrong type is left out, and a section that is no object is empty. */
-
 export const playerStats = (catalog: Catalog, raw: unknown): Profile["playerStats"] => statSheet(catalog, statSet(raw));
 
 export const bestiary = (raw: unknown): Profile["bestiary"] =>

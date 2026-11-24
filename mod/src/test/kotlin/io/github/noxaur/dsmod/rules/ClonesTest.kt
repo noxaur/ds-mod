@@ -12,7 +12,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** @keep The parameter lists of declarations are left out, because an override has to repeat its signature. */
 object Clones {
     const val RUN = 40
     const val SHORT_RUN = 25

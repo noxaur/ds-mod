@@ -84,7 +84,6 @@ test("a profile is the player's, with levels worked out from the catalog", async
   ]);
 
   const skills = Object.fromEntries(value.skills.map((skill) => [skill.id, skill]));
-  // @keep 175 XP is exactly the cumulative XP of combat level 2, so level 2 has just begun.
   expect(skills["combat"]).toMatchObject({
     name: "Combat",
     level: 2,

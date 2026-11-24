@@ -6,7 +6,6 @@ fi
 log=$(git rev-parse --git-path check.log)
 lock="$(git rev-parse --git-common-dir)/check.lock"
 heavy=$(mise exec -- node scripts/affected.ts) || exit 1
-# @keep Every worktree shares one lock, so parallel commits take turns on the project checks instead of starving each other.
 locked() {
   command -v flock >/dev/null || { "$@"; return; }
   exec 9>"$lock"

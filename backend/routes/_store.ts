@@ -63,10 +63,8 @@ export const contribStore: Store["Service"] = {
     ]).pipe(Effect.map((rows) => rows.map((row) => row.id))),
   insertSubmission: (row, capture, maxRuns) =>
     run(async () => {
-      /** @keep The file first, so a row always has one: a run that counts towards filling a request is a run an agent
-       * can read. */
       await storage.put(`captures/${row.id}`, capture);
-      // @keep One statement, so neither a second upload nor a close can slip in between the check in contrib.ts and here.
+      // @keep One statement, so a second upload or a close cannot slip in between the check and the insert.
       const kept = await db.all<{ id: string }>(sql`
         INSERT INTO ${submissions} (id, request_id, user_id, mod_version, bytes, created_at)
         SELECT ${row.id}, ${row.requestId}, ${row.userId}, ${row.modVersion}, ${row.bytes}, ${row.createdAt}
@@ -304,7 +302,6 @@ export const itemStore: ItemStore["Service"] = {
     }),
 };
 
-// @keep void.config.ts sets each binding's limit.
 const RATE_BINDINGS: Record<Rate, string> = { player: "RATE_PLAYER", profile: "RATE_PROFILE", items: "RATE_ITEMS" };
 
 /** @keep Cloudflare counts each rate in each of its locations apart and catches up in the background, so a player who

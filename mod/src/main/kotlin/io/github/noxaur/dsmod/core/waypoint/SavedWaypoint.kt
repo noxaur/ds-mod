@@ -6,8 +6,7 @@ import io.github.noxaur.dsmod.core.world.Waypoint
 import io.github.noxaur.dsmod.core.world.WaypointLook
 import kotlinx.serialization.Serializable
 
-/** @keep A waypoint holds the server's name for the area it was made in, as the tab list's `Area:` row gives it, and shows
- * only there, because two areas share the same coordinates. No area shows it everywhere */
+/** @keep Two areas on the server share the same coordinates, so a waypoint shows only in the area it was made in. */
 @Serializable
 data class SavedWaypoint(
     @Expose val name: String = "",

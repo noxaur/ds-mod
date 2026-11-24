@@ -1,11 +1,5 @@
 --------------------------- MODULE ProtectorStatus ---------------------------
-(* @keep ProtectorStatus while the player is in The End. One atomic step is one callback. Chat, the tab list, and a
-   world change arrive in any order.
-   stage "none" is the null stage. spawned is spawnedAt > 0, set only by the emerge line. defeated is defeatedAt > 0,
-   set by the defeat line only while the row is Spawned or the emerge line is still in force.
-   inEnd is Area.END holding, so chat is delivered. A world change clears the tab first, so the End no longer holds
-   and later chat is not delivered.
-   The readout prefers defeated, then spawned. *)
+(* @keep Chat, the tab list and a world change arrive in any order. *)
 EXTENDS FiniteSets
 
 VARIABLES stage, spawned, defeated, inEnd
@@ -32,7 +26,6 @@ Tab(next) ==
     /\ stage' = next
     /\ UNCHANGED inEnd
 
-\* @keep Emerge has no guard on the current stage.
 Emerge ==
     /\ inEnd
     /\ spawned' = TRUE
@@ -67,7 +60,6 @@ Next ==
     \/ Return
     \/ Done
 
-\* @keep Chat can still be ahead of the tab: emerge, then defeat, while the row is still Resting or Rising.
 TabOwnsTheCycle ==
     stage \in {"Resting", "Rising"} /\ ~spawned => ~defeated
 

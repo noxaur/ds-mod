@@ -53,7 +53,7 @@ private class ItemEncodings {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Key, JsonElement>) = size > 256
     }
 
-    /** @keep [stack] must be a copy nothing changes: a stack can change in place, and its key would then no longer match its hash. */
+    /** @keep [stack] must be a copy, because the game changes a stack in place. */
     fun encode(stack: ItemStack): JsonElement = encodings.getOrPut(Key(stack)) { stack.toCaptureJson() }
 }
 
@@ -164,7 +164,6 @@ class EntityRecorder {
             }
             entry.text?.let { put("text", it) }
         }
-        // @keep An input can change and leave the entry the same, as a name's hover can.
         if (json == entry.json) return null
         entry.json = json
         return json

@@ -121,7 +121,7 @@ class Redactor(private val names: Set<String>) {
     }
 
     /** @keep Typed text is found only in a `system` event, so a raw `chat` record, whose event says the same, is dropped, and
-     * so is a `system` line of an older capture that does not read as today's event. */
+     * so is a `system` line of an older capture that does not read as today's event, since the scrub below keeps typed text. */
     fun line(line: String): String? {
         val json = Json.parseToJsonElement(line).jsonObject
         val type = json.getValue("type").jsonPrimitive.content

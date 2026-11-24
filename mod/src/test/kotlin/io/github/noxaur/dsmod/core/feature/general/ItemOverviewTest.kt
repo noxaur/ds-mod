@@ -18,7 +18,6 @@ class ItemOverviewTest : Harness(alone = ItemOverview::class) {
     private val overview = tree.feature<ItemOverview>()
     private val events = readCapture(Path.of("src/test/resources/features/item-overview/storage-and-ender-chest.jsonl")).map { it.event }
 
-    // @keep The fixture starts in the inventory, opens Storage Page 2 with /storage 2, then the Ender Chest, closing each in between.
     private val storagePage = events.take(events.indices.filter { events[it] is ContainerOpened }[2])
 
     private fun marks() = overview.feature.slots!!(time)

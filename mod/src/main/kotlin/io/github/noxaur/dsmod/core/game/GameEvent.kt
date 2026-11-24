@@ -12,8 +12,6 @@ sealed interface FeatureEvent : GameEvent
 @SerialName("system")
 data class SystemMessage(val text: ServerText) : GameEvent
 
-/** @keep Game also runs this handler when the player switches the feature off, because a feature that is off sees no
- * events */
 @Serializable
 @SerialName("world")
 data object WorldChanged : FeatureEvent
@@ -31,8 +29,7 @@ data class TabList(val rows: List<ServerText>) : FeatureEvent
 @SerialName("sidebar")
 data class Sidebar(val title: ServerText = ServerText(), val lines: List<ServerText> = emptyList()) : FeatureEvent
 
-/** @keep A big menu's slots arrive over a few ticks. With kept, back in the player's own inventory, the slots hold
- * what they held when the last menu opened, and only the ones that changed since follow */
+/** @keep A big menu's slots arrive over a few ticks. */
 @Serializable
 @SerialName("container")
 data class ContainerOpened(val id: Int, val title: ServerText? = null, val size: Int, val kept: Boolean = false) : FeatureEvent
@@ -54,14 +51,10 @@ data class HeadPlaced(val x: Int, val y: Int, val z: Int) : FeatureEvent
 @SerialName("slot")
 data class SlotChanged(val slot: Int, val item: Item? = null) : FeatureEvent
 
-/** @keep The player clicked a slot of the open menu, by the index `SlotChanged` uses. Posted before the click reaches the
- * server, and only seen, never refused */
 @Serializable
 @SerialName("click")
 data class SlotClicked(val slot: Int) : FeatureEvent
 
-/** @keep Posted again with the same id when the head changes or the client's reason to report it does, which a reader
- * takes as the entity now being this */
 @Serializable
 @SerialName("seen")
 data class EntitySeen(val id: Int, val entity: String, val name: ServerText, val head: Item? = null) : FeatureEvent
@@ -79,8 +72,6 @@ data class EntityGone(val id: Int) : FeatureEvent
 @SerialName("hit")
 data class Hit(val entity: String) : FeatureEvent
 
-/** @keep Damage numbers, NPC names and holograms are all these. A handler may `hide()` it or `replace()` its text, on
- * this client only, until the server changes the text again */
 @Serializable
 @SerialName("floating")
 data class FloatingText(val text: ServerText) : FeatureEvent
@@ -97,13 +88,10 @@ data class PingMeasured(val millis: Long) : FeatureEvent
 @SerialName("fps")
 data class FrameRate(val fps: Int) : FeatureEvent
 
-/** @keep dragsim.co shows a mined block as bedrock until it grows back, and the client never breaks one itself, so this is a
- * block that became bedrock, with the `block` it was. An Ender Node is `minecraft:sandstone`, with portal particles around
- * it. `BreakSorter` says who broke it, and `tick` counts the client's ticks, 20 a second. */
+/** @keep dragsim.co shows a mined block as bedrock until it grows back, and the client never breaks one itself. An
+ * Ender Node is `minecraft:sandstone`, with portal particles around it. */
 @Serializable
 @SerialName("broken")
 data class BlockBroken(val block: String, val x: Int, val y: Int, val z: Int, val tick: Long, val by: Breaker) : FeatureEvent
 
-/** @keep `WITH_PLAYER` broke in the same tick as the player's own, as spread and Pickobulus break them, and `OTHER` is another
- * player's or the server's. */
 enum class Breaker { PLAYER, WITH_PLAYER, OTHER }

@@ -4,14 +4,10 @@ import io.github.noxaur.dsmod.core.text.Role
 
 data class Point(val x: Double, val y: Double, val z: Double)
 
-// @keep Marks compare by value, so a feature that returns equal marks changes nothing on screen
 sealed interface Mark {
     val role: Role
 }
 
-/** @keep The color's opacity is the box's fill, and its outline, beam and label are drawn solid in the same color, so a
- * see-through fill never hides the label. A waypoint drawn behind the world is hidden by the blocks in front of it, as the
- * game draws everything else */
 data class Waypoint(
     val at: Point,
     val label: String,
@@ -33,7 +29,6 @@ enum class WaypointLook(private val label: String, val box: BoxStyle?, val beam:
     override fun toString() = label
 }
 
-// @keep A fill this faint shows the block it marks through it.
 const val FILL_ALPHA = 70
 
 data class EntityBeam(val entity: Int, val label: String, override val role: Role = Role.VALUE) : Mark

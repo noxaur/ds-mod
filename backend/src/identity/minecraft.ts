@@ -62,9 +62,7 @@ export const mojangHasJoined =
     return skin === undefined ? { uuid, name: profile.name } : { uuid, name: profile.name, skin };
   };
 
-/** @keep Nothing the client sends is believed. The backend picks a random server id, the client tells Mojang it is
- * joining that server, which only the holder of the account's Minecraft session can do, and the backend asks Mojang
- * who joined. A modified client can therefore sign in as its own account and as no other. */
+/** @keep Nothing the client sends is believed: only the holder of the account's Minecraft session can tell Mojang it joined the backend's random server id. */
 export const minecraft = (hasJoined: HasJoined) =>
   ({
     id: PROVIDER,
@@ -73,7 +71,6 @@ export const minecraft = (hasJoined: HasJoined) =>
         const serverId = Array.from(crypto.getRandomValues(new Uint8Array(20)), (byte) =>
           byte.toString(16).padStart(2, "0"),
         ).join("");
-        // @keep Nothing else removes a challenge or a login link nobody used, so each new challenge clears the expired ones.
         await ctx.context.adapter.deleteMany({
           model: "verification",
           where: [{ field: "expiresAt", operator: "lt", value: new Date() }],
@@ -92,7 +89,6 @@ export const minecraft = (hasJoined: HasJoined) =>
           body: Verify,
         },
         async (ctx) => {
-          // @keep Consumed before Mojang is asked, so one challenge buys one question.
           const challenge = await ctx.context.internalAdapter.consumeVerificationValue(
             `${PROVIDER}:${ctx.body.serverId}`,
           );

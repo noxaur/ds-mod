@@ -81,7 +81,7 @@ class HeldItemScene private constructor(private val context: ClientGameTestConte
                 world.freezeTime(at = null)
                 scene.command("clear @a")
                 context.input.lookAt(0f, 90f)
-                // @keep The vignette eases toward the light where the player stands for half a minute and shades the whole frame, and the attack indicator shows the cooldown a swing at the air starts.
+                // @keep The vignette eases toward the light for half a minute and shades the whole frame, and the attack indicator shows the cooldown a swing at the air starts.
                 val vignette = context.computeOnClient<Boolean, Nothing> { it.options.vignette().get() }
                 val indicator = context.computeOnClient<AttackIndicatorStatus, Nothing> { it.options.attackIndicator().get() }
                 context.runOnClient<Nothing> {

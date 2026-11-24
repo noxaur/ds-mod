@@ -14,8 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** @keep Each handler runs twice, and only the client-thread pass reaches TAIL or the point after the thread check. A block
- * update is read there, before the level holds it, so its line can say what the block was. */
+/** @keep Each handler runs twice, and only the client-thread pass reaches TAIL or the point after the thread check. */
 @InputApproved(by = "noxaur", hash = "7408f3e32f26")
 @Mixin(ClientPacketListener.class)
 abstract class CapturePacketsMixin {

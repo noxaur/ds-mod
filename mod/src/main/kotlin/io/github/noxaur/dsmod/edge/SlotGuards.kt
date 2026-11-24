@@ -24,7 +24,7 @@ import net.minecraft.world.inventory.InventoryMenu
 import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
 
-/** @keep Every way a menu moves an item goes through one method of the screen, so `SlotClickMixin` asks [refuses] there. The drop key outside a menu goes another way, which `DropKeyMixin` covers. The server can still change a locked slot itself. */
+/** @keep Every way a menu moves an item goes through one method of the screen. The drop key outside a menu goes another way. The server can still change a locked slot itself. */
 object SlotGuards {
     private const val FLASH_MILLIS = 300L
     private const val RESULT_WAIT = 5

@@ -13,7 +13,6 @@ object HudSnap {
                 best = candidate
             }
         }
-        // @keep Offered last to first, so a start wins a tie with an end, and an edge with a center.
         for (line in centers) offer(line - size / 2)
         for (line in edges) offer(line - size)
         for (line in edges) offer(line)

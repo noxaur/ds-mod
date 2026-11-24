@@ -35,11 +35,6 @@ import net.minecraft.world.inventory.Slot
 import org.lwjgl.glfw.GLFW
 import kotlin.math.roundToInt
 
-/** @keep Overview mode: the root Storage menu, a Storage page and the Ender Chest are drawn as every page at once, with
- * the player's inventory under them, as Firmament does. The server's menu stays the screen, and its real slots move into
- * the open page's place, so that page works as the menu does. The other pages are drawn from what the mod remembers, and
- * a click on one sends its command, unless an item is on the cursor. Each new menu from the server is laid out the same,
- * so the overview looks like one screen. */
 object StorageOverlays {
     private lateinit var game: Game
     private lateinit var storage: StorageOverview
@@ -49,20 +44,15 @@ object StorageOverlays {
     private var switching = 0L
     private var grab = -1.0
 
-    // @keep The slots this screen hid, kept over a new layout of the same screen, since the slots stay hidden until shown.
     private val covered = BitSet()
 
-    /** @keep The screen's own size and slot places from before the overview took it, put back if the overview lets it go
-     * while it stays open, such as when the player picks Preview in settings opened over it. The screen is held weakly, so
-     * a closed one does not keep its world after the player leaves. */
+    /** @keep The screen is held weakly, so a closed one does not keep its world after the player leaves. */
     private class Original(screen: ContainerScreen, val width: Int, val height: Int, val x: IntArray, val y: IntArray) {
         val screen = WeakReference(screen)
     }
 
     private var original: Original? = null
 
-    /** @keep `open` is the open page's place in `shelves`, and -1 in the root menu. `items` is how many slots the menu
-     * itself has, before the player's inventory. */
     private class Overlay(val screen: ContainerScreen, val title: String, val shelves: List<Shelf>, val open: Int, val layout: StorageLayout) {
         val items = screen.menu.rowCount * ContainerState.ROW_SLOTS
         val first = shelves.getOrNull(open)?.slots?.first ?: 0
@@ -82,8 +72,6 @@ object StorageOverlays {
     private fun applies(title: String) =
         storage.feature.runs && storage.mode.value == StorageMode.OVERVIEW && (title == StoragePages.ROOT || Shelf.of(title) != null)
 
-    /** @keep Registered before the menu's other layers, so the tabs, the search bar and Go Back are placed on the overview
-     * and not on the menu it replaced. */
     @InputApproved(by = "noxaur", reaches = ["Refusals.allowKeyPress", "Refusals.allowMouseDrag", "Refusals.allowMouseScroll"])
     fun register() {
         ScreenHooks.onEveryLayout<ContainerScreen> { screen, opened ->
@@ -146,8 +134,6 @@ object StorageOverlays {
         }
     }
 
-    /** @keep The open page's slots sit in its cells while the whole cell is in view, and every other slot of the menu is
-     * moved off the screen and hidden, so nothing out of view takes a click. */
     @InputApproved(by = "noxaur", reaches = ["SlotPlaces.move"])
     private fun place(o: Overlay) {
         val layout = o.layout
@@ -176,7 +162,6 @@ object StorageOverlays {
         screen.imageWidth = was.width
         screen.imageHeight = was.height
         screen.leftPos = (screen.width - was.width) / 2
-        // @keep The same top vanilla's init and Fixed Menu Layout give it, which they took from the overview's height
         screen.topPos = if (MenuSkin.stable) Menus.top(screen.height, was.height) else (screen.height - was.height) / 2
         for (slot in screen.menu.slots) {
             SlotPlaces.move(slot, was.x[slot.index], was.y[slot.index])
@@ -193,8 +178,6 @@ object StorageOverlays {
         covered.clear(slot.index)
     }
 
-    /** @keep A page the root menu or a page's title brings in after the layout lays the menu out again. The search dims
-     * the remembered items only when the words or the pages change. */
     private fun tick(o: Overlay) {
         val pages = storage.pages
         if (pages.version != o.version && pages.shown(o.title).size != o.shelves.size) {
@@ -253,7 +236,6 @@ object StorageOverlays {
 
     fun covers(screen: AbstractContainerScreen<*>) = overlay?.screen === screen
 
-    /** @keep The page and cell under the mouse as `page * CELLS + cell`, or -1, so a frame allocates nothing */
     private fun hovered(o: Overlay, x: Int, y: Int): Int {
         val page = o.layout.pageAt(x.toDouble(), y.toDouble(), scroll.offset)
         if (page < 0) return -1
@@ -291,7 +273,6 @@ object StorageOverlays {
                 val cx = layout.cellX(p, c)
                 val cy = layout.cellY(p, c, offset)
                 if (p == o.open) {
-                    // @keep A cell cut by the view's edge has no slot under it, so its item is drawn here.
                     if (layout.cellShows(p, c, offset)) continue
                     val stack = slots.getOrNull(o.first + c)?.item ?: continue
                     g.item(stack, cx + 1, cy + 1)
@@ -304,7 +285,6 @@ object StorageOverlays {
                 if (hovered == p * CELLS + c) Kit.slotHover(g, cx + 1, cy + 1)
             }
             if (p != o.open && page == null) {
-                // @keep One wash over the grid, not one per slot. The wash is dark in both themes, so the label takes the light ink.
                 Kit.dim(g, x, gridY, StorageLayout.GRID, layout.rows(p) * StorageLayout.CELL)
                 Kit.label(g, LOAD, x + (StorageLayout.GRID - font.width(LOAD)) / 2, gridY + (cells / StorageLayout.ROW * StorageLayout.CELL - Kit.LABEL_HEIGHT) / 2, Kit.Ink.NORMAL, true)
             }

@@ -19,8 +19,6 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.Items
 import org.lwjgl.glfw.GLFW
 
-/** @keep The panel is a [SidePanel], left of a /hotd menu built from a capture's items: the top view holds tiers 10 to 6, the
- * bottom view tiers 5 to 1 and the Core */
 class HotdPlannerTest : FabricClientGameTest {
     private class Hotd(val tier: Int, val core: Int, val spent: Int, val ender: String, val void: String, val owned: Map<String, Int> = emptyMap())
 

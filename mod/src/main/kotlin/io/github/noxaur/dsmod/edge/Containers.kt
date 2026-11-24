@@ -21,7 +21,7 @@ internal fun remember(stacks: Array<ItemStack?>, counts: IntArray, i: Int, stack
     return equal
 }
 
-/** @keep Compares stack references and counts, so a stack the client edits in place and leaves at the same count goes unnoticed. */
+/** @keep A stack the client edits in place and leaves at the same count goes unnoticed. */
 class ContainerPoller(private val game: Game) {
     private class Read(val menu: AbstractContainerMenu, val stacks: Array<ItemStack?>, val counts: IntArray, val items: Array<Item?>)
 

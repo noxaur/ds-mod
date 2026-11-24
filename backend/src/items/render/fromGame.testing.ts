@@ -8,7 +8,6 @@ export interface GameItem {
   readonly data: Readonly<Record<string, unknown>>;
 }
 
-// @keep The game's `stats` is the API's `base`.
 const statSet = (value: unknown) => {
   const set = record(value);
   return {

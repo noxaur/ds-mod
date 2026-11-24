@@ -95,7 +95,7 @@ private fun calledOn(owner: String, name: String, opcode: Int): Sink? {
         owner == "net/minecraft/client/gui/screens/Screen" && opcode != Opcodes.INVOKESPECIAL &&
             name in setOf("handleComponentClicked", "handleClickEvent", "mouseClicked", "keyPressed") ->
             Sink("plays a click or key on a screen through $what")
-        // @keep A container screen's close tells the server and a plain screen's does not, so a super call counts: only a subclass of a container screen makes one.
+        // @keep A container screen's close tells the server and a plain screen's does not, so only a subclass of one counts.
         owner == "net/minecraft/client/gui/screens/inventory/AbstractContainerScreen" &&
             name in setOf("slotClicked", "onClose", "mouseClicked", "keyPressed") ->
             Sink("plays a click or key on a screen through $what")
@@ -127,7 +127,6 @@ private fun built(type: String): Sink? = when {
 private fun widened(lines: List<String>) = lines.map { it.trim().split(Regex("\\s+")) }
     .filter { it.size >= 4 && it[1] in setOf("method", "field") }.map { "${it[2]}.${it[3]}" }.toSet()
 
-/** @keep A call is matched on its owner and on every class the owner extends or implements, so a subclass such as `ToggleKeyMapping`, or one of the mod's own, is no way around it. */
 private class Sinks(private val mod: Map<String, ClassNode>, private val widened: Set<String>) {
     private val lineages = HashMap<String, List<String>>()
 
@@ -218,7 +217,6 @@ private fun ClassNode.approval() = approval(annotations(visibleAnnotations, invi
 
 private fun MethodNode.approval() = approval(annotations(visibleAnnotations, invisibleAnnotations))
 
-/** @keep A mixin [draws] when every hook is in a method that draws, at no call or field the scan counts as input, and every other method it adds is a helper of its own, since an unmarked method of a target's name replaces the target's. Anything the scan cannot tell is hashed with its code, so a new kind of hook fails closed. */
 private class Shape(val draws: Boolean, val readOnly: Boolean, val does: List<String>)
 
 private val DRAWING = Regex("^(render|extract|submit|draw)[A-Z]|^blit(Sprite)?$")
@@ -226,7 +224,6 @@ private val DRAWING = Regex("^(render|extract|submit|draw)[A-Z]|^blit(Sprite)?$"
 private fun shape(node: ClassNode, mixin: AnnotationNode, sinks: Sinks): Shape {
     val targets = (mixin.value("value") as? List<*>).orEmpty().filterIsInstance<Type>().map { it.internalName } + mixin.strings("targets").map { it.replace('.', '/') }
     val named = targets.map { it.substringAfterLast('/').replace('$', '.') }
-    // @keep A hook on the player, or anything the scan counts as input, can write its fields through a shadow.
     var draws = targets.none { sinks.called(it, "set", 0) != null }
     var hooked = false
     var readOnly = true
@@ -271,7 +268,7 @@ private fun shape(node: ClassNode, mixin: AnnotationNode, sinks: Sinks): Shape {
     return Shape(draws && hooked, readOnly && reads && !hooked, does.distinct())
 }
 
-/** @keep Kotlin copies its debug data, which [ClassReader.SKIP_DEBUG] drops as attributes, into annotations too: the source map, whose lines for an inlined call such as `DsModClient.runs` move with the file it is inlined from, and a coroutine's lines and local names. */
+/** @keep Kotlin copies debug data that [ClassReader.SKIP_DEBUG] drops into annotations too: the source map and a coroutine's lines and local names. */
 private const val KOTLIN_METADATA = "Lkotlin/Metadata;"
 
 private val DEBUG_ANNOTATIONS = setOf("Lkotlin/jvm/internal/SourceDebugExtension;", "Lkotlin/coroutines/jvm/internal/DebugMetadata;")
@@ -573,7 +570,7 @@ class InputSitesTest {
                 example("HearsChat", run(*static("net/fabricmc/fabric/api/client/message/v1/ClientSendMessageEvents", "COMMAND"))),
                 example("Consume", run(call("net/minecraft/client/KeyMapping", "consumeClick"))),
                 example("Inventory", run(call("net/minecraft/client/player/LocalPlayer", "sendOpenInventory"))),
-                // @keep ToggleKeyMapping extends KeyMapping, and the scan reads that from Minecraft's own class.
+                // @keep ToggleKeyMapping extends KeyMapping in Minecraft.
                 example("Toggle", run(call("net/minecraft/client/ToggleKeyMapping", "setDown"))),
                 example("Preview", run(call(REMOTE, "setId", "(I)V"))),
                 example("Reflect", run(call("java/lang/reflect/Method", "invoke"))),

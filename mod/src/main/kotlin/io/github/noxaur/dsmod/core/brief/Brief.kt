@@ -67,8 +67,6 @@ class BriefRun(val brief: Brief, private val openedAt: Long = 0, private val tim
         return secondsLeft(seconds * 1000L - (now - since)).toInt()
     }
 
-    /** @keep each step record is built as it happens, since one built later would name whatever step the run is on by
-     * then */
     fun step(now: Long, presses: Int): List<JsonObject> = buildList {
         if (tick(now)) add(record())
         repeat(presses) { if (advance(now)) add(record()) }

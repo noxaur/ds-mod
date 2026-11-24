@@ -4,9 +4,7 @@ import io.github.noxaur.dsmod.core.text.count
 import kotlin.math.abs
 import kotlin.math.floor
 
-/** @keep The server follows the look line from the eye one block boundary at a time to the first block with a
- * collision box, and warps onto it if the two blocks above it are clear. Fluids, grass and torches have no
- * collision box, so the line passes through them */
+/** @keep The server follows the look line one block boundary at a time to the first block with a collision box, and warps onto it if the two blocks above are clear. Fluids, grass and torches have none. */
 object Etherwarp {
     const val BEYOND = 64
 
@@ -23,9 +21,7 @@ object Etherwarp {
         fun solid(x: Int, y: Int, z: Int): Boolean
     }
 
-    /** @keep The server writes the range in the ability's own section, "looking at, up to 57 blocks away.", which ends at
-     * a blank line. So the "Teleport 8 blocks ahead" of Instant Transmission above it is never read, and an
-     * Etherwarp Conduit, which names Etherwarp in its description and has no range, has none */
+    /** @keep The server writes the range in the ability's own section, "looking at, up to 57 blocks away.", which ends at a blank line, so Instant Transmission's "Teleport 8 blocks ahead" above it is not read, and an Etherwarp Conduit, which has no range, has none. */
     fun range(lore: List<String>): Int {
         val header = lore.indexOfFirst { "Etherwarp" in it }
         if (header < 0) return 0

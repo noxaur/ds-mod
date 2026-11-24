@@ -1,15 +1,5 @@
 ---------------------------- MODULE Contribute ----------------------------
-(* @keep A player's runs of contribution requests, from Accept to the upload, across the client thread, the io thread,
-   the backend's worker and the disk, which outlives a quit or a crash.
-   client accepts a run, starts it with the key, finishes it (last step or /dsmod submit) or discards it
-   (/dsmod cancel, time out, disconnect, quit), and asks for a resend (/dsmod submit).
-   io is one queue: the startup sweep, deleting a discarded raw capture, and sealing a finished one
-   (raw -> .part -> .gz, raw deleted). worker is one queue: uploads, and the resend that lists kept files.
-   claimed holds the runs whose .gz an upload has claimed, so a resend leaves it alone. sentHere holds the runs the
-   backend kept since this start, which the client still remembers.
-   The game can stop at any moment, which loses every thread and claim but not the disk. The next start sweeps raw and
-   .part files on io, and the offers the player accepts from are fetched only after that sweep, so a sweep never
-   deletes a new run's capture. *)
+(* @keep The game can stop at any moment, which loses every thread and claim but not the disk. *)
 EXTENDS Naturals, Sequences, FiniteSets
 
 CONSTANT Runs
@@ -49,14 +39,12 @@ Accept(r) ==
     /\ phase' = [phase EXCEPT ![r] = "accepted"]
     /\ UNCHANGED <<disk, io, worker, claimed, swept, alive, sent, sentHere>>
 
-\* @keep The first key press starts the recorder, whose writer creates the raw file.
 Start(r) ==
     /\ alive /\ phase[r] = "accepted"
     /\ phase' = [phase EXCEPT ![r] = "recording"]
     /\ disk' = [disk EXCEPT ![r] = @ \cup {"raw"}]
     /\ UNCHANGED <<io, worker, claimed, swept, alive, sent, sentHere>>
 
-\* @keep Recorder.stop hands the capture to io, whose callback seals it.
 Finish(r) ==
     /\ alive /\ phase[r] = "recording"
     /\ phase' = [phase EXCEPT ![r] = "finished"]
@@ -69,7 +57,6 @@ Discard(r) ==
     /\ io' = IF phase[r] = "recording" THEN Append(io, Op("delete", r)) ELSE io
     /\ UNCHANGED <<disk, worker, claimed, swept, alive, sent, sentHere>>
 
-\* @keep A second /dsmod submit while one is queued adds nothing the first does not do, so the model leaves it out.
 Resend ==
     /\ alive /\ ~\E i \in DOMAIN worker : worker[i].op = "resend"
     /\ worker' = Append(worker, Op("resend", 0))
@@ -87,11 +74,9 @@ IoStep ==
                 /\ disk' = [disk EXCEPT ![t.run] = @ \ {"raw"}]
                 /\ io' = Tail(io)
                 /\ UNCHANGED <<worker, claimed, swept>>
-          \* @keep The redactor writes the .part beside the raw file.
           [] t.op = "seal" /\ "part" \notin disk[t.run] ->
                 /\ disk' = [disk EXCEPT ![t.run] = @ \cup {"part"}]
                 /\ UNCHANGED <<io, worker, claimed, swept>>
-          \* @keep Then it claims the .gz, renames the .part to it, queues its upload, and deletes the raw file.
           [] t.op = "seal" ->
                 /\ claimed' = claimed \cup {t.run}
                 /\ disk' = [disk EXCEPT ![t.run] = (@ \ {"part"}) \cup {"gz"}]
@@ -100,7 +85,6 @@ IoStep ==
                 /\ UNCHANGED swept
     /\ UNCHANGED <<phase, alive, sent, sentHere>>
 
-\* @keep A capture its writer did not finish is deleted instead of sealed.
 IoBroken ==
     /\ alive /\ io /= <<>>
     /\ Head(io).op = "seal" /\ "part" \notin disk[Head(io).run]
@@ -116,11 +100,9 @@ WorkerResend ==
           /\ worker' = Tail(worker) \o [i \in DOMAIN order |-> Op("upload", order[i])]
     /\ UNCHANGED <<phase, disk, io, swept, alive, sent, sentHere>>
 
-\* @keep A failure releases the claim and keeps the .gz for a resend. A file the backend kept or refused stays claimed until WorkerDrop, a separate step so a throw after Upload.SENT can leave the claim held.
 WorkerUpload(outcome) ==
     /\ alive /\ worker /= <<>> /\ Head(worker).op = "upload"
     /\ LET r == Head(worker).run IN
-        \* @keep The backend keeps one run per player and request, so a run it already kept is refused.
         /\ outcome = "sent" => r \notin sent
         /\ sent' = IF outcome = "sent" THEN sent \cup {r} ELSE sent
         /\ sentHere' = IF outcome = "sent" THEN sentHere \cup {r} ELSE sentHere
@@ -139,7 +121,6 @@ WorkerDrop ==
     /\ worker' = Tail(worker)
     /\ UNCHANGED <<phase, io, swept, alive, sent, sentHere>>
 
-\* @keep A run cut short is never resumed.
 Stop ==
     /\ alive
     /\ alive' = FALSE
@@ -185,6 +166,5 @@ NoLeftovers == \A r \in Runs :
 
 SweepSparesRuns == \A r \in Runs : alive /\ Queued(io, "sweep", 0) => ~Active(r)
 
-\* @keep After a crash between the backend keeping a run and the delete, the next start resends it and the backend refuses it, which WorkerUpload holds to.
 SentStaysClaimed == \A r \in Runs : alive /\ r \in sentHere /\ "gz" \in disk[r] => r \in claimed
 =============================================================================

@@ -17,11 +17,7 @@ import io.github.noxaur.dsmod.core.text.perHour
 @Serializable
 data class ZealotDrops(val drops: Map<String, Int> = emptyMap(), val kills: Int = 0)
 
-/** @keep The server names no killer, but sends the Combat XP action bar right behind the death event of the mob the
- * player killed: in a capture of 430 kills in a crowd, all but five came within 5 ms. The bar repeats the last
- * gain for about a second, so another player's zealot dying just ahead of a repeat is counted too, which the
- * short window keeps rare. A Zealot Bruiser is another mob. Eyes per hour show only after a minute in The End,
- * when one eye would give an absurd rate */
+/** @keep The server names no killer, but sends the Combat XP action bar right behind the death event of the mob the player killed: in a capture of 430 kills in a crowd, all but five came within 5 ms. The bar repeats the last gain for about a second, so another player's zealot dying just ahead of a repeat is counted too. */
 class ZealotTracker(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "zealot-tracker", Area.END, Store.END, "Count your Summoning Eyes and zealot kills, per hour and all-time.", hud = ::hud)
 

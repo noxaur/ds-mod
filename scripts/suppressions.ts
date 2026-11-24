@@ -5,6 +5,8 @@ export const label = "human review needed";
 const markers: [RegExp, RegExp][] = [
   [/\.(kt|kts|java)$/, /\bSuppress(Warnings)?\b/],
   [/\.(ts|mts|cts|tsx|js|mjs|cjs|jsx)$/, /eslint-disable|\beslint\s+[@\w/-]+\s*:|\/\*\s*eslint\s*$/],
+  [/\.(kt|kts|java|ts|mts|cts|tsx|js|mjs|cjs|jsx|css|ya?ml|sh|tla|toml|properties)$|^\.githooks\//, /(\/\/|\/\*\*?|#|\\\*|\(\*)\s*@keep\b/],
+  [/\.(kt|kts|java|ts|mts|cts|tsx|js|mjs|cjs|jsx|css)$/, /^\+\s*\*(\s|$)/],
 ];
 
 export function added(diff: string): string[] {
@@ -28,8 +30,7 @@ export function added(diff: string): string[] {
       continue;
     }
     if (header) continue;
-    const marker = markers.find(([path]) => path.test(file))?.[1];
-    if (text.startsWith("+") && marker?.test(text) === true) found.push(`${file}:${line}`);
+    if (text.startsWith("+") && markers.some(([path, marker]) => path.test(file) && marker.test(text))) found.push(`${file}:${line}`);
     if (text.startsWith("+") || text.startsWith(" ")) line++;
   }
   return found;
@@ -52,7 +53,7 @@ function main() {
   execFileSync("gh", ["api", "--method", "POST", `repos/${repo}/issues/${pr}/labels`, "-f", `labels[]=${label}`]);
   const missing = unexplained(found, process.env.BODY ?? "");
   for (const at of missing) {
-    console.log(`${at}: this pull request adds a suppression here, so a person reviews it. Add a line to the pull request body that names \`${at}\` and says why the check is wrong at this spot and why the code cannot satisfy it instead.`);
+    console.log(`${at}: this pull request adds a suppression or a @keep comment here, so a person reviews it. Add a line to the pull request body that names \`${at}\` and says why the code cannot satisfy the check, or what fact the comment records that no name, type or test can say.`);
   }
   process.exit(missing.length > 0 ? 1 : 0);
 }

@@ -13,7 +13,6 @@ export const skips = sqliteTable(
   (table) => [primaryKey({ columns: [table.requestId, table.userId] })],
 );
 
-// @keep The capture itself is a file in storage, under `captures/<id>`.
 export const submissions = sqliteTable(
   "contrib_submissions",
   {
@@ -52,7 +51,6 @@ export const itemSeen = sqliteTable(
   (table) => [primaryKey({ columns: [table.entry, table.userId] }), index("item_seen_by_user").on(table.userId)],
 );
 
-// @keep The skull texture a player saw on one skin of an item, "" for the item's own.
 export const itemTextures = sqliteTable(
   "item_textures",
   {

@@ -17,17 +17,14 @@ class BreakSorter {
     private val broken = ArrayList<BlockBroken>()
     private var tick = 0L
 
-    // @keep The player is digging this block in this tick.
     fun dig(x: Int, y: Int, z: Int) = mark(dug, x, y, z)
 
-    // @keep The player right-clicked this block in this tick.
     fun use(x: Int, y: Int, z: Int) = mark(used, x, y, z)
 
     fun changed(x: Int, y: Int, z: Int, was: String, now: String) {
         if (now == BEDROCK && was != BEDROCK && was !in AIR) broken += BlockBroken(was, x, y, z, tick, Breaker.OTHER)
     }
 
-    // @keep Ends the tick, and returns the blocks that broke in it.
     fun tick(): List<BlockBroken> {
         val sorted = if (broken.isEmpty()) emptyList() else sort()
         broken.clear()

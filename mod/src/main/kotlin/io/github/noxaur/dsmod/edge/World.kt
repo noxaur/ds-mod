@@ -42,7 +42,6 @@ private const val LINE_WIDTH = 2f
 
 private const val TRACER_AHEAD = 1.0
 
-// @keep Up close a label is as big as a vanilla name tag, and farther off it keeps the size of the game's own text on screen.
 private const val NAME_TAG_SCALE = 0.025f
 private const val LINE = 10f
 private const val LABEL_GAP = 2f
@@ -69,9 +68,6 @@ object World {
         val labelAt: Vec3 = at.add(0.0, 1.0, 0.0)
     }
 
-    /** @keep Every text the mod draws in the world is one of these, so world text has one look: a name in its color over the
-     * distance in muted, each traced in its own color darkened, as a sign dyed with a glow ink sac is, which keeps it readable on
-     * sky and ground alike. Text on the HUD and on screens keeps vanilla's drop shadow instead. */
     internal class WorldLabel(val name: String, val color: Int, private val distance: Boolean = true) {
         var meters = -1
         private val font get() = Minecraft.getInstance().font
@@ -175,8 +171,6 @@ object World {
         for (i in tracersShown.indices) tracersShown[i].let { it.found = level.getEntity(it.entity) }
     }
 
-    /** @keep A beam starts where it clears its label, which turns with the camera, so beams are placed each frame with the
-     * camera that draws the labels. */
     private fun follow(context: LevelExtractionContext) {
         val camera = context.camera()
         val eye = camera.position()
@@ -210,16 +204,14 @@ object World {
         }
     }
 
-    /** @keep Call it on each frame while the game gathers the frame's shapes, from Fabric's `AFTER_BLOCK_OUTLINE_EXTRACTION`,
-     * which runs on the client thread before they are handed to the renderer. */
+    /** @keep Fabric's `AFTER_BLOCK_OUTLINE_EXTRACTION` gathers the frame's shapes on the client thread, so call this from it each frame. */
     fun draw(mark: FrameBox) {
         val box = Gizmos.cuboid(mark.box, mark.style)
         if (mark.onTop) box.setAlwaysOnTop()
         if (mark.label != null) frame = mark
     }
 
-    /** @keep Labels are placed each frame, because a gizmo's text has no outline, and the size that keeps a label readable at
-     * any distance follows the camera. A frame box's label is drawn in the frame that placed the box. */
+    /** @keep Labels are placed each frame, because a gizmo's text has no outline. */
     private fun labels(context: LevelRenderContext) {
         val client = Minecraft.getInstance()
         val camera = context.levelState().cameraRenderState
@@ -234,7 +226,6 @@ object World {
             val mark = beamsShown[i]
             label(context, camera.pos, camera.orientation, mark.label, mark.labelAt ?: continue, true, false)
         }
-        // @keep A miss label says why the warp fails, often a block in the way, so it shows through that block.
         frame?.let { box -> box.label?.let { label(context, camera.pos, camera.orientation, it, box.top, true, true) } }
         frame = null
     }
@@ -256,8 +247,8 @@ object World {
         pose.popPose()
     }
 
-    /** @keep A see-through line goes to the pass that draws gizmos on top, which runs after the world. The pass for text runs
-     * before Sodium's terrain, which would paint over it. */
+    /** @keep The pass for text runs before Sodium's terrain, which would paint over it, so a see-through line goes to
+     * the pass that draws gizmos on top, which runs after the world. */
     private fun line(context: LevelRenderContext, pose: PoseStack, onTop: Boolean, x: Float, y: Float, text: FormattedCharSequence, color: Int, edge: Int) {
         val last = (context.submitNodeCollector().order(0) as? SubmitNodeCollection)?.alwaysOnTop?.takeIf { onTop }
         fun submit(edge: Int) {
@@ -275,11 +266,8 @@ object World {
         pose.popPose()
     }
 
-    /** @keep A camera looking down sees a box's top face rise above its middle, up to the corner half a diagonal away, so a
-     * label over a box rises with it and stays off the face. */
     private fun lift(boxed: Boolean) = if (boxed) HALF_DIAGONAL * sqrt(up.x * up.x + up.z * up.z) else 0f
 
-    // @keep Perspective shrinks a thing by its depth along the view, so a label at the edge of the screen keeps the size of one in the middle.
     private fun scale(eye: Vec3, at: Vec3): Float {
         val depth = (at.x - eye.x) * forward.x + (at.y - eye.y) * forward.y + (at.z - eye.z) * forward.z
         return (pixel * depth.toFloat()).coerceAtLeast(NAME_TAG_SCALE)
@@ -287,9 +275,6 @@ object World {
 
     private fun beam(start: Vec3, color: Int) = Gizmos.line(start, start.add(0.0, BEAM_HEIGHT, 0.0), color, LINE_WIDTH * 2)
 
-    /** @keep A beam rises from the top of its label, so it never crosses the text. The label faces the camera and the beam
-     * stands upright, so from above the beam is both shortened and drawn nearer as it rises. The start is where the beam's
-     * projection meets the label's top edge. Looking down along the beam, no start clears the label, so no beam is drawn. */
     private fun above(label: WorldLabel, at: Vec3, eye: Vec3, boxed: Boolean): Vec3? {
         if (label.lines == 0) return at
         val height = (label.lines * LINE + LABEL_GAP + 2) * scale(eye, at) + lift(boxed)

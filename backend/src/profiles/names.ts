@@ -15,8 +15,7 @@ export const mobName = (id: string): string => titleCase(id.replace(/_MOB$/u, ""
 const GREEN = "#55FF55";
 const AQUA = "#55FFFF";
 
-/** @keep The ranks whose colors the game shows the same for everyone, as captured. A `DRAGON` player picks their own
- * color, and the staff ranks were never captured, so those are left plain for a client to draw in its own. */
+/** @keep The ranks whose colors the game shows the same for everyone, as captured. A `DRAGON` player picks their own color, and the staff ranks were never captured. */
 const COLORED: Readonly<Record<string, Line>> = {
   VIP: [{ text: "[VIP]", color: GREEN }],
   VIP_PLUS: [

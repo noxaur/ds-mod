@@ -4,7 +4,6 @@ import io.github.noxaur.dsmod.core.ui.Theme
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
-/** @keep Every setting is a slot of a store, saved under the key it names. Favorites alone is a field, saved under its name. */
 @Serializable
 class DsModConfig {
     @JvmField

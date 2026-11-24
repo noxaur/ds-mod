@@ -21,7 +21,6 @@ interface Editor {
         val recent: RecentColors,
     )
 
-    /** @keep Called on change, never per frame. */
     fun layout(x: Int, y: Int, width: Int): Int
 
     fun refresh()
@@ -42,7 +41,6 @@ interface Editor {
 
     fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double, shift: Boolean): Boolean
 
-    /** @keep False lets Up and Down go on to the next row. */
     fun keyPressed(event: KeyEvent): Boolean
 
     fun keyReleased(event: KeyEvent): Boolean = false
@@ -55,7 +53,6 @@ interface Editor {
 
     val capturing: Boolean
 
-    /** @keep A key button that records takes every key and mouse button, the mouse's back and forward too. */
     val recording: Boolean get() = false
 
     fun narrate(output: NarrationElementOutput): Boolean

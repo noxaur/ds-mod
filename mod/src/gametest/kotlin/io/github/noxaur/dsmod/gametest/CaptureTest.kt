@@ -184,7 +184,6 @@ class CaptureTest : FabricClientGameTest {
             }
         }
         val broken = byType["broken"].orEmpty()
-        // @keep The player stands at 0.5, -60, 0.5 looking south, so the block they dug is at eye height 2 ahead, and the one beside the block they right-clicked is above it.
         val expected = mapOf("\"block\":\"minecraft:obsidian\",\"x\":0,\"y\":-59," to "PLAYER", "\"x\":0,\"y\":-58," to "WITH_PLAYER", "\"x\":5," to "OTHER")
         check(expected.all { (at, by) -> broken.any { at in it && "\"by\":\"$by\"" in it } }) {
             "The block the player dug should break by PLAYER, the one beside the block they right-clicked WITH_PLAYER, and the other OTHER: $broken"

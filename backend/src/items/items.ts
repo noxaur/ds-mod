@@ -4,11 +4,9 @@ import type { ItemSighting } from "./model.ts";
 import { safeTexture } from "../upstream/texture.ts";
 import { type AppearanceQuery, ItemStore, type Observation } from "./store.ts";
 
-/** @keep Any signed-in client can invent sightings. A real game has a few thousand items, so this is the backstop for
- * many accounts at once. */
+/** @keep Any signed-in client can invent sightings, and a real game has only a few thousand items. */
 export const MAX_ITEM_ROWS = 20_000;
 
-// @keep One account's share of the table, so a single player cannot fill it.
 export const MAX_PLAYER_ITEM_ROWS = 2_000;
 
 export const MAX_SAMPLES = 5;

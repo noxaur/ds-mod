@@ -13,8 +13,6 @@ enum class Powder {
     VOID,
 }
 
-/** @keep One perk or ability of the Heart of the Dragon. `cost[n]` is the powder that buys level n + 1, so `cost[0]`,
- * the unlock, is 0 because a token pays for it, and `value[n]` is the number the perk's lore shows at level n + 1 */
 @Serializable
 data class Perk(
     val name: String,

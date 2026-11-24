@@ -4,8 +4,7 @@ import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.player.Heart
 import io.github.noxaur.dsmod.core.text.count
 
-/** @keep The Heart of the Dragon as its menu showed it: the tier, the Core's level, the tokens spent, the powder, and each
- * perk's level by name. A perk the menu never showed, since it shows five tiers at a time, has no level */
+/** @keep The menu shows five tiers at a time, so a perk it never showed has no level. */
 data class Tree(
     val tier: Int,
     val core: Int,
@@ -40,10 +39,9 @@ data class Tree(
         // @keep The server colors each powder's amount in that powder's color
         private fun Item.color(pattern: Regex) = lore.firstOrNull { pattern.matches(it.plain.trim()) }?.spans?.lastOrNull()?.color
 
-        /** @keep A locked perk costs a token, and still reads `Level 1/50`, as level 1 is what the token buys. A maxed perk
-         * reads `Level 10`, with no maximum. An ability's
-         * `Level 3/3` is the Core's doing, so an unlocked ability is level 1. A line that reads none of these goes to
-         * `unparsed` */
+        /** @keep A locked perk costs a token, and still reads `Level 1/50`, as level 1 is what the token buys. A maxed
+         * perk reads `Level 10`, with no maximum. An ability's `Level 3/3` is the Core's doing, so an unlocked ability is
+         * level 1. */
         fun level(perk: Perk, item: Item, unparsed: (String) -> Unit = {}): Int {
             if (item.section(COST).firstOrNull() == TOKEN) return 0
             if (perk.max == 1) return 1

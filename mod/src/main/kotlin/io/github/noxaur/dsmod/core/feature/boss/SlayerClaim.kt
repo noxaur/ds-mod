@@ -14,8 +14,6 @@ class SlayerClaim {
     private var spawnedAt: Long? = null
     private var own: Int? = null
 
-    /** @keep A feature that comes on hears the bosses the client already holds as if they came then, and one in view
-     * before the spawn line is not the player's */
     private val considered = HashSet<Int>()
 
     fun owns(feature: Feature, boss: Boss) = boss.id == current(feature).own
@@ -32,9 +30,6 @@ class SlayerClaim {
         }
     }
 
-    /** @keep Goes by the world's number, not by a feature hearing the world end, because Game also tells a feature that
-     * goes off, or comes back on after the player left, while another feature sharing the claim may have claimed
-     * the new world's boss */
     private fun current(feature: Feature): SlayerClaim {
         if (world != feature.worldNumber) {
             world = feature.worldNumber

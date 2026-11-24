@@ -20,25 +20,16 @@ import io.github.noxaur.dsmod.core.text.number
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
-/** @keep One container as the player last saw it, its items in the container's own order, and when, in the client's
- * milliseconds */
 @Serializable
 data class Seen(val title: String, val items: List<Item?> = emptyList(), val at: Long = 0)
 
-/** @keep One stat as the tab list or the Dragon Sim Menu showed it last, and when. A percent keeps its number, so `98%`
- * is 98 */
 @Serializable
 data class Reading(val value: Double, val at: Long)
 
-/** @keep One item of the Heart of the Dragon menu, and the tier of the row it sits in. A locked perk still reads
- * `Level 1/50`, so its lore, not that line, tells whether it is unlocked */
+/** @keep A locked perk still reads `Level 1/50`, so its lore, not that line, tells whether it is unlocked */
 @Serializable
 data class HeartItem(val item: Item, val tier: Int? = null)
 
-/** @keep The Heart of the Dragon as its menu showed it last, each item by its name: the perks, the abilities, the Core
- * of the Dragon, the tiers and the Heart itself, which holds the tokens and the powder. The menu shows five tiers at a
- * time, so what the player scrolled to is merged in. `layout` is the Heart profile the player applied last, while the
- * tree is still the one it saved, and `layouts` keeps each Heart profile's tree as the mod saw it while applied */
 @Serializable
 data class Heart(
     val items: Map<String, HeartItem> = emptyMap(),
@@ -47,9 +38,6 @@ data class Heart(
     val layouts: Map<Int, Map<String, HeartItem>> = emptyMap(),
 )
 
-/** @keep `answer` is the backend's whole answer for this profile, kept as it came. `stats` holds every stat the tab
- * list or the Dragon Sim Menu showed on it, by its name, such as `Magic Find`, and a stat the tab list stopped showing
- * keeps its last reading */
 @Serializable
 data class ProfileData(
     val containers: Map<String, Seen> = emptyMap(),
@@ -62,8 +50,6 @@ data class ProfileData(
 @Serializable
 data class Players(val profile: String = PlayerData.UNNAMED, val profiles: Map<String, ProfileData> = emptyMap())
 
-/** @keep The player's data, on the profile they are on now. Game folds every event into it before a feature sees one,
- * so a feature reads it without asking which profile that is, and a feature's `profiled` state follows the switch. */
 class PlayerData internal constructor(private val container: ContainerState, private val metrics: Metrics) : Stored {
     private var saved = Players()
     private var changed = false
@@ -75,8 +61,6 @@ class PlayerData internal constructor(private val container: ContainerState, pri
     private var switching: String? = null
     private var unread = false
 
-    /** @keep Asks the backend for one of the account's own profiles, by its id, or the selected one for null. The
-     * answer comes back through `heard` */
     var ask: ((profile: String?) -> Unit)? = null
     private val asked = HashSet<String>()
     private var due = true
@@ -85,14 +69,10 @@ class PlayerData internal constructor(private val container: ContainerState, pri
     var switchesAt = 0L
         private set
 
-    /** @keep The name of the profile the player is on, or null until the mod has seen one. What the mod keeps before then
-     * goes to the first name it learns */
     val profile: String? get() = saved.profile.takeUnless { it == UNNAMED }
 
     private val here: ProfileData get() = saved.profiles[saved.profile] ?: ProfileData()
 
-    /** @keep Each container the player saw on this profile, by the backend's id: `inventory`, `ender_chest` and
-     * `storage:<page - 1>`. The inventory holds the worn, carried and offhand slots */
     val containers: Map<String, Seen> get() = here.containers
 
     var shelf: Shelf? = null
@@ -103,10 +83,7 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         state.restore(here.features[id])
     }
 
-    /** @keep A profile is switched in the Profile Management menu: the player clicks a profile, then Switch to Profile, and
-     * the server closes the menu and sends that profile's inventory. A refusal comes as a chat line before the close.
-     * The menu also marks the profile the player is on, which names it however the mod lost track. Returns whether the
-     * profile changed */
+    /** @keep The server closes the Profile Management menu after Switch to Profile and then sends that profile's inventory; a refusal is a chat line before the close. The menu also marks the profile the player is on. */
     internal fun fold(time: Long, event: GameEvent): Boolean {
         val switched = when (event) {
             is ContainerOpened -> opened(time, event)
@@ -127,7 +104,6 @@ class PlayerData internal constructor(private val container: ContainerState, pri
             }
             else -> false
         }
-        // @keep An answer can arrive between leaving and joining again, and must not stand for the new join's ask
         if (joining && event != LeftServer) {
             joining = false
             asked.clear()
@@ -136,9 +112,6 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         return switched
     }
 
-    /** @keep A profile without an answer, or with a stale one, is asked for once each time the player joins or switches
-     * to it, and an answer for it counts as that ask. The id is the one an earlier answer listed for the profile's name,
-     * and the selected profile is asked for when none did */
     private fun ask() {
         due = false
         val ask = ask ?: return
@@ -200,7 +173,6 @@ class PlayerData internal constructor(private val container: ContainerState, pri
             return false
         }
         shelf?.let { shelf ->
-            // @keep A menu closed before its slots arrive keeps the copy the player saw last
             if (unread) put(shelf.id, Seen(shelf.title, List(shelf.slots.count()) { null }, time))
             unread = false
             val i = event.slot - shelf.slots.first
@@ -233,9 +205,7 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         }
     }
 
-    /** @keep The backend's answer for one of the account's own profiles is kept under the name it gives, which need not
-     * be the profile the player is on, as the backend can still name the one they left. A stale answer never replaces a
-     * fresh one. The answer for the selected profile names it, when the player has not opened Profile Management */
+    /** @keep The backend can still name the profile the player left, so its answer is kept under the name it gives. */
     fun heard(answer: Profile) {
         val name = answer.profileName.plain.takeIf { it.isNotEmpty() } ?: return
         if (saved.profile == UNNAMED && answer.choice.selected) adopt(name)
@@ -247,10 +217,8 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         due = true
     }
 
-    /** @keep Every stat the tab list or the Dragon Sim Menu showed on this profile, by its name */
     val stats: Map<String, Reading> get() = here.stats
 
-    /** @keep The Heart of the Dragon on this profile, as its menu showed it last */
     val heart: Heart get() = here.heart
 
     private fun keepHeart(heart: Heart) {
@@ -278,9 +246,6 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         keepHeart(heart.copy(items = heart.items + (name to placed), at = time, layouts = layouts))
     }
 
-    /** @keep Applying a Heart profile changes the whole tree, so the tree becomes the one the mod saw while that profile
-     * was applied, or nothing until the menu shows it. A click on a perk or a confirmed reset may change the tree, so it
-     * stops being kept as that profile's */
     private fun applied(line: String) {
         val number = APPLIED.matchEntire(line)?.groupValues?.get(1)?.let(::count) ?: return
         if (number != applying) return
@@ -349,8 +314,6 @@ class PlayerData internal constructor(private val container: ContainerState, pri
         changed = false
     }
 
-    /** @keep A per-profile state from before the layer was one file for every profile, so the profile the player is on now
-     * takes it, unless that profile has its own already */
     fun takeOld(id: String, text: String) {
         val state = slices[id] ?: return
         changed = true

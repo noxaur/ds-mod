@@ -34,8 +34,7 @@ object ThirdPerson {
     fun pitch(pitch: Float, tilt: Float, front: Boolean): Float = (pitch + if (front) -tilt else tilt).coerceIn(-90f, 90f)
 }
 
-/** @keep Never slides in: a wall between the player and the camera has to win in the same frame, or the camera shows
- * what is behind the wall */
+/** @keep Never slides in, or the camera would show what is behind a wall for a frame. */
 class Slide {
     private var shown = 0f
     private var last = 0L
@@ -53,7 +52,6 @@ class Slide {
     }
 
     private companion object {
-        // @keep At 100 the camera covers two thirds of the way in each 0.15 seconds
         const val SECONDS_PER_PERCENT = 0.0015f
     }
 }

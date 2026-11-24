@@ -289,7 +289,6 @@ class KitRangeSlider(
             if (hit != null) {
                 selected = -1
                 sections = Sections.remove(sections, hit.first)
-                // @keep The left button may still be down from a drag, and a set grab would rebuild the track from the list taken at the left press, putting this section back.
                 grab = null
                 onChange()
             }
@@ -474,8 +473,6 @@ class KitKeysButton(
         down.clear()
     }
 
-    /** @keep Left and right click record only on the button itself, so a click anywhere else still stops recording. A key
-     *  used inside a menu takes neither, since one bound to them would take every click the menu needs. */
     fun capture(event: MouseButtonEvent): Boolean {
         if (recording && event.button() <= 1 && !(clicks && isMouseOver(event.x, event.y))) finish()
         return capture(event.button(), mouse = true)
@@ -607,10 +604,6 @@ fun wrap(text: String, width: Int, max: Int): List<String> {
     return if (lines.size <= max) lines else lines.take(max - 1) + fit(lines.drop(max - 1).joinToString(" "), width)
 }
 
-/** @keep A dropdown on a screen that is not the settings screen, as the dropdown section of controls.md says. It steps
- * as a cycle button does, but a right press goes forward. Its open `menu` belongs to the screen, which draws it over
- * everything and gives it the press and the keys first, as `HotdPlans` does. A typed letter reaches the menu here, since
- * the dropdown keeps the focus while it is open */
 class KitDropdown<T>(
     x: Int,
     y: Int,

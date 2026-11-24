@@ -26,7 +26,6 @@ const Listed = Schema.decodeUnknownSync(
 function backend(overrides: Partial<Services> = {}) {
   const app = testApp({ clock, ...overrides });
   const call: typeof app.call = async (...args) => {
-    // @keep The store orders runs by time, then random id, so each call is a millisecond after the last.
     await advance(clock, 1);
     return app.call(...args);
   };

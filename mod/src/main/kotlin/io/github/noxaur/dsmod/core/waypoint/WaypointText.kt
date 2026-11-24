@@ -4,20 +4,13 @@ import io.github.noxaur.dsmod.core.text.number
 import kotlin.math.abs
 import kotlin.math.floor
 
-/** @keep A shared waypoint is plain text that a player without the mod can read, as `[Nest] x: 12, y: 64, z: -30 in The End`.
- * The name and the area are left out when there are none. Other mods send `x: 12, y: 64, z: -30`, so that is found too, with
- * or without commas and with decimals, which round down to the block. Three bare numbers are not, because chat is full of
- * them. The area is read only when the line ends with it, so words a player types after the coordinates are not taken for
- * one */
+/** @keep Other mods send `x: 12, y: 64, z: -30`, with or without commas and with decimals, and chat is full of bare numbers, so three of them alone are no waypoint. */
 object WaypointText {
     data class Found(val range: IntRange, val waypoint: SavedWaypoint)
 
     private const val NUMBER = """(-?\d{1,8}(?:\.\d+)?)"""
 
-    /** @keep The server starts and ends an area's name with a capital word, as `The Catacombs (F1)` or `Isle of Dragons`, and
-     * players type theirs in lowercase, so `in the cave` is no area. A word ends in a letter, a digit or a bracket, so the
-     * full stop after a sentence is not taken into the name. No word holds a colon, so an area never runs into the next
-     * waypoint's `x:` */
+    /** @keep The server capitalizes the words of an area's name, as `The Catacombs (F1)` or `Isle of Dragons`, and players type theirs in lowercase, so `in the cave` is no area. */
     private const val WORD = """[A-Z0-9(](?:[^\s\[\]|:]*[\p{L}\d)])?"""
     private const val AREA = """$WORD(?:(?: [^\s\[\]|:]+)* $WORD)?"""
 

@@ -22,9 +22,7 @@ import net.minecraft.commands.SharedSuggestionProvider
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 
-/** @keep A click on coordinates runs `/dsmod waypoint show`, which Fabric runs on the client, so nothing reaches the server.
- * Its arguments are typed, and a name or area is quoted with the quotes and backslashes taken out, so a line that does not
- * parse is never sent on. Sharing sends one chat line, and only when the player runs the command */
+/** @keep Fabric runs a clicked `/dsmod waypoint show` on the client, so nothing reaches the server. */
 object WaypointChat {
     private lateinit var game: Game
     private lateinit var waypoints: Waypoints

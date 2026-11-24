@@ -54,8 +54,7 @@ object ItemOverviews {
         client.setScreenAndShow(ItemOverviewScreen(lookup, overview.copies, overview.feature.player.profile, query, client.gui.screen(), ::pick))
     }
 
-    /** @keep A click runs the command that opens the first Storage page or Ender Chest holding the item, and marks the
-     * item there. The inventory needs no command, and the server has none that opens one wardrobe or bag page. */
+    /** @keep The inventory needs no command, and the server has none that opens one wardrobe or bag page. */
     @InputApproved(reaches = ["PlayerCommands.send"])
     private fun pick(entry: Entry): Boolean {
         val command = entry.places.firstNotNullOfOrNull { Shelf.command(it.id) } ?: return false

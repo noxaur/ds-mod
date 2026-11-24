@@ -96,7 +96,6 @@ enum class Theme(
         ink = 0xFF3F3F3F.toInt(),
         inkMuted = 0xFF636363.toInt(),
         inkOff = 0xFF8B8B8B.toInt(),
-        // @keep The match role's yellow is lost on a light face, so a dark amber reads as the same highlight.
         inkMatch = 0xFF7A4A00.toInt(),
         inkBad = 0xFFB3261E.toInt(),
         inkGood = 0xFF1E6B22.toInt(),

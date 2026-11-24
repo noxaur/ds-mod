@@ -42,7 +42,6 @@ class WaypointsTest : FabricClientGameTest {
                 waypoints.saved.value = listOf(SavedWaypoint("Anywhere", 0, 64, 0))
             }
         }
-        // @keep The world layer drops its marks with the old world, and a waypoint that shows everywhere is the same in the next.
         context.inWorld {
             context.waitTicks(20)
             context.checkClient("A waypoint that shows everywhere was gone in the next world") { World.shown.any { (it as? World.ShownWaypoint)?.label?.name == "Anywhere" } }
@@ -55,8 +54,6 @@ class WaypointsTest : FabricClientGameTest {
         waypoints.groups.value = emptyList()
     }
 
-    /* @keep Each look side by side ahead of the player, and two buried under the ground: one hidden by it, and one whose label
-     * shows through it, to read in the screenshot. */
     private fun looks(context: ClientGameTestContext) {
         context.runOnClient<Nothing> { client ->
             val player = checkNotNull(client.player)

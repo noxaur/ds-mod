@@ -83,7 +83,6 @@ private fun freeBlockStaysOnScreen(context: ClientGameTestContext, world: net.fa
     )
     context.runOnClient<Nothing> {
         hud.positions.value += DRAGON_TIMER to fraction
-        // @keep A watched HUD setting is what makes the next tick place the block again.
         DsModClient.feature<HudBackground>().feature.enabled = false
     }
     context.waitTicks(2)

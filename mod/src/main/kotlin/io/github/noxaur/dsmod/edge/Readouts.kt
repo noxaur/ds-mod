@@ -52,7 +52,6 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud, pr
 
     val standIns = HashSet<String>()
 
-    // @keep The world layer drops every mark with the old world, so each feature's marks are handed again, even unchanged.
     fun worldChanged() {
         World.worldChanged()
         handed.fill(-1)

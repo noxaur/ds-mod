@@ -13,9 +13,6 @@ import io.github.noxaur.dsmod.core.world.FILL_ALPHA
 import io.github.noxaur.dsmod.core.world.Mark
 import io.github.noxaur.dsmod.core.world.WaypointLook
 
-/** @keep A waypoint clicked in chat shows until the player walks up to it or leaves the world, and only the last few show, so
- * chat full of coordinates cannot fill the sky. One the player saves stays, in the settings, where they edit, group, import
- * and export it. Both show only in the area they belong to */
 class Waypoints(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "waypoints", Area.ANYWHERE, Store.GENERAL, "Show the waypoints you save, and the ones you click in chat.", marks = { marks() })
 
@@ -33,7 +30,6 @@ class Waypoints(config: DsModConfig) : HasFeature {
 
     val offGroups = feature.stored<List<String>>("offWaypointGroups", emptyList())
 
-    // @keep The block the player stands in, which the edge reads from the game.
     var position: () -> Triple<Int, Int, Int>? = { null }
 
     private var shown by feature.world { emptyList<SavedWaypoint>() }
@@ -54,7 +50,6 @@ class Waypoints(config: DsModConfig) : HasFeature {
         return SavedWaypoint(name, x, y, z, feature.areaName.orEmpty(), color.value, look.value, group = group)
     }
 
-    // @keep A waypoint from chat takes the player's own color and look, since the text carries neither.
     fun styled(waypoint: SavedWaypoint) = waypoint.copy(color = color.value, look = look.value, area = waypoint.area.ifEmpty { feature.areaName.orEmpty() })
 
     fun show(waypoint: SavedWaypoint) {
@@ -62,7 +57,6 @@ class Waypoints(config: DsModConfig) : HasFeature {
         feature.redraw()
     }
 
-    // @keep False when the same waypoint is saved already, so a second click adds no copy.
     fun save(waypoint: SavedWaypoint): Boolean {
         shown = shown.filterNot { it.sameSpot(waypoint) }
         feature.redraw()
@@ -102,7 +96,6 @@ class Waypoints(config: DsModConfig) : HasFeature {
     private companion object {
         const val MAX_SHOWN = 8
 
-        // @keep A shown waypoint goes once the player is this many blocks from it.
         const val REACH = 5
     }
 }

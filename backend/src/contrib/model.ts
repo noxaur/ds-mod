@@ -1,6 +1,6 @@
 import { Schema, Struct } from "effect";
 
-/** @keep The mod refuses a blank line, so the backend must too. The `u` flag lets the pattern into the contract. */
+/** @keep Effect writes a pattern into the generated contract only when it has the `u` flag. */
 const Shown = Schema.String.check(Schema.isPattern(/\S/u));
 
 export const Step = Schema.Struct({
@@ -12,7 +12,6 @@ export const Step = Schema.Struct({
 // @keep A plain list with a minimum, which a generated client reads as a list and not as a tuple.
 export const Brief = Schema.Struct({ name: Shown, steps: Schema.Array(Step).check(Schema.isMinLength(1)) });
 
-/** @keep The mod checks requirements, since only it sees the player's game, and treats an unknown kind as not met. */
 export const Requirement = Schema.Struct({ kind: Schema.Literals(["area"]), value: Schema.NonEmptyString });
 
 export const RequestSpec = Schema.Struct({

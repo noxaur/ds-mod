@@ -18,14 +18,9 @@ enum class StorageMode(private val label: String) {
     override fun toString() = label
 }
 
-/** @keep `pages` is how many Storage pages the profile has, from the root menu's page icons and a page's `(2/7)`, and
- * `told` whether the player was told where a page icon's text went. Both are the profile's own, so a second profile is
- * told once too. */
 @Serializable
 data class StorageOverviewState(val told: Boolean = false, val pages: Int = 0)
 
-/** @keep The edge draws both modes from [pages]: Preview as a page icon's tooltip in the root menu, and Overview as every
- * page at once over the Storage and Ender Chest menus. */
 class StorageOverview(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "storage-overview", Area.ANYWHERE, Store.INVENTORY, "Show what your Storage pages hold before you open them.")
 
@@ -36,7 +31,6 @@ class StorageOverview(config: DsModConfig) : HasFeature {
     val pages = StoragePages(feature, state)
 
     init {
-        // @keep The preview replaces the server's text on a page icon, so the player is told once where that text went.
         feature.on<ContainerOpened> { opened, _ ->
             if (state.value.told || mode.value != StorageMode.PREVIEW || opened.title?.plain != StoragePages.ROOT || !pages.any) return@on
             state.value = state.value.copy(told = true)

@@ -19,9 +19,6 @@ import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.network.chat.Component
 
-/** @keep The Heart of the Dragon planner's panel, left of /hotd where Forge Craft puts its own: what the player mines,
- * where and for what, and the powder they have. A dropdown's open menu is drawn over everything and takes the press and
- * the keys first, and a press outside closes it and still does its own job */
 object HotdPlans {
     private const val WIDTH = 116
     private const val LABEL_WIDTH = 30
@@ -111,7 +108,6 @@ object HotdPlans {
         fun open() = listOf(block, area).firstOrNull { it.menu != null }
 
         override fun sync() {
-            // @keep A window too narrow for the panel beside the menu keeps the marks, and the settings keep the choices
             shown = feature.feature.runs && feature.shown(screen.title.string) && screen.containerLeft >= WIDTH + 2
             if (!shown) {
                 block.close()
@@ -134,7 +130,6 @@ object HotdPlans {
             place()
         }
 
-        // @keep Checkboxes go two to a row, and one whose label is too long for half the row takes all of it
         override fun place() {
             x = screen.containerLeft - WIDTH - 2
             y = screen.containerTop

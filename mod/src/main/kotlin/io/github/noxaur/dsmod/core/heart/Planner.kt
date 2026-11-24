@@ -6,8 +6,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToLong
 
-/** @keep A block the planner mines, from dragsim.co/wiki/reference/mining. Amethyst Block's numbers stand for every
- * Amethyst size. `count` is the items one block drops before Fortune, and `low` and `high` its powder range */
+/** @keep From dragsim.co/wiki/reference/mining, where Amethyst Block's numbers stand for every Amethyst size. */
 enum class HeartBlock(
     private val label: String,
     val drop: String,
@@ -39,8 +38,6 @@ enum class MiningArea(private val label: String) {
 
 enum class Goal { ITEMS, POWDER, XP, FLAWED, FINE, FRAGMENTS, RARE }
 
-/** @keep The player's stats with no perk of the Heart: gear, pets and the Core. `amethystSpread` is the Void set's,
- * and `cooldownCut` a drill's ability cooldown cut in percent */
 @Serializable
 data class Base(
     val speed: Double = 1500.0,
@@ -53,8 +50,7 @@ data class Base(
     val cooldownCut: Double = 0.0,
 )
 
-/** @keep Everything a plan depends on. The powder the player has is not here, so a change of powder never replans.
- * `hoursPerDay`, `instantTicks` and `pickobulusBlocks` are guesses until the mod measures them */
+/** @keep `hoursPerDay`, `instantTicks` and `pickobulusBlocks` are guesses until the mod measures them. */
 data class PlanInput(
     val block: HeartBlock,
     val nodes: Boolean,
@@ -69,12 +65,9 @@ data class PlanInput(
     val pickobulusBlocks: Int = 30,
 )
 
-/** @keep One run of a perk's levels: an unlock, which a token pays for and has no powder, or levels bought with powder */
 data class Step(val perk: String, val powder: Powder?, val from: Int, val to: Int, val cost: Long)
 
 data class Plan(val input: PlanInput, val steps: List<Step>, val ability: String?) {
-    /** @keep The steps still to do once the player has `levels`, so the plan shows the right count the moment a level
-     * lands, before the next plan is worked out */
     fun after(levels: Map<String, Int>): List<Step> = steps.mapNotNull { step ->
         val level = levels[step.perk] ?: 0
         when {
@@ -85,19 +78,10 @@ data class Plan(val input: PlanInput, val steps: List<Step>, val ability: String
     }
 }
 
-/** @keep What the player's powder pays for now, one upgrade per perk in plan order, and the steps that wait. Ender and
- * Void are separate purses, so each pays for its own steps until one is too dear */
 data class Batch(val now: List<Step>, val later: List<Step>)
 
-/** @keep The Heart of the Dragon planner. Formulas are from dragsim.co/wiki/article/mining-formulas and
- * /wiki/article/loot-formulas, and the pickaxe abilities' numbers at level 3 from a capture of /hotd.
- *
- * Tokens go first, one at a time, to the perk that adds the most once everything picked is maxed. Powder then buys,
- * again and again, the run of one perk's levels with the most score per powder, each scored with the best ability
- * unlocked, so a speed breakpoint a few levels ahead counts. When no one perk helps but finishing all of them does, as
- * two speed perks reaching instant break together, the cheapest next level goes first. Goals are scored against what a
- * maxed tree gives, so goals in different units add up, and one Void Powder is worth the Ender Powder the same mining
- * time gives at no perks, so the worth stays fixed while the player follows the plan */
+/** @keep Formulas are from dragsim.co/wiki/article/mining-formulas and /wiki/article/loot-formulas, and the pickaxe
+ * abilities' numbers at level 3 from a capture of /hotd. */
 object Planner {
     private class Ability(
         val duration: Double,
@@ -169,9 +153,8 @@ object Planner {
         return tokens
     }
 
-    /** @keep What a perk does with the number its level shows. A perk missing here changes no goal: No Stone Unturned,
-     * Obsidian Insanium, Frugal Miner and Quick Forge are not mining rates. Dragon's Favor grants one of five buffs a
-     * SkyBlock day, so a fifth of each counts */
+    /** @keep No Stone Unturned, Obsidian Insanium, Frugal Miner and Quick Forge are not mining rates. Dragon's Favor
+     * grants one of five buffs a SkyBlock day, so a fifth of each counts */
     private fun add(a: Stats, perk: Perk, level: Int, c: Context) {
         if (level <= 0) return
         val v = perk.value[level - 1]
@@ -224,7 +207,6 @@ object Planner {
         }
     }
 
-    /** @keep The stats a perk adds to every block in every area, which the Dragon Sim Menu counts in its own numbers */
     fun everywhere(levels: Map<String, Int>): Base {
         val c = Context(PlanInput(HeartBlock.END_STONE, false, MiningArea.ANYWHERE, emptySet(), 0, 0, Base(), levels), HeartBlock.END_STONE, false, 1.0)
         val a = Stats(speed = 0.0, fortune = 0.0, spread = 0.0, amethystSpread = 0.0, pristine = 0.0, wisdom = 0.0, magicFind = 0.0, cooldownPct = 0.0)
@@ -429,9 +411,6 @@ object Planner {
         return Plan(input, steps, current.ability)
     }
 
-    /** @keep Steps the powder pays for are merged into one upgrade per perk, in the order the plan reaches them, and an
-     * unlock always fits, since a token pays for it. The levels of a run the powder covers are bought before the run
-     * waits, so a run too dear as a whole still shows what one click buys */
     fun batch(steps: List<Step>, ender: Long, void: Long): Batch {
         val purse = longArrayOf(ender, void)
         val blocked = booleanArrayOf(false, false)

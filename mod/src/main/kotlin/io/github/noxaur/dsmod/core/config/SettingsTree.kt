@@ -122,9 +122,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
 
         fun home(switch: Switch): SettingSection? = fresh.firstOrNull { section -> section.walk().any { it is Switch && it.field == switch.field } }
 
-        /** @keep Versions up to 0.1.0 starred MoulConfig's options by path, as general.fullbright, and a feature's switch by
-         * its field's name. A feature that became a switch of another's, as Auto Left Click, keeps its star through the
-         * camel case of its old id. */
+        /** @keep Versions up to 0.1.0 starred MoulConfig's options by path, as general.fullbright, and a feature's switch by its field's name. */
         fun favorites(saved: List<String>): List<String> {
             val rows = fresh.flatMap { it.walk() }
             val ids = rows.mapTo(HashSet()) { it.id }

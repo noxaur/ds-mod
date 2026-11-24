@@ -32,7 +32,6 @@ class StorageOverviewTest : FabricClientGameTest {
     private val previewed = CopyOnWriteArrayList<String>()
     private val tooltips = CopyOnWriteArrayList<String>()
 
-    // @keep Three pages: the first holds the blade and pearls, the second the scales, and the third is never opened.
     private fun page(n: Int) = SimpleContainer(54).also { chest ->
         chest.setItem(0, ServerMenus.named(Items.BARRIER, "Close"))
         chest.setItem(1, ServerMenus.named(Items.ARROW, "Go Back"))
@@ -95,7 +94,6 @@ class StorageOverviewTest : FabricClientGameTest {
         StorageLayout(screen.width, screen.height, listOf(3) + List(PAGES) { 5 })
     }
 
-    // @keep The overview keeps its scroll from menu to menu, so it is read back from where the open page's first slot sits.
     private fun offset(context: ClientGameTestContext, layout: StorageLayout, open: Int) = layout.cellY(open, 0, 0) + 1 - context.slotCorner(9).second
 
     private fun cellCenter(layout: StorageLayout, page: Int, cell: Int, offset: Int) = layout.cellX(page, cell) + 9 to layout.cellY(page, cell, offset) + 9
@@ -130,7 +128,6 @@ class StorageOverviewTest : FabricClientGameTest {
 
             mode(context, StorageMode.OVERVIEW)
             val was = context.computeOnClient<Int, Nothing> { it.options.guiScale().get() }
-            // @keep At scale 1 the test window fits every page side by side, so no page is scrolled out of view.
             scale(context, 1)
             send(context, "storage 2", "Storage Page (2/$PAGES)")
             val layout = layout(context)
@@ -177,7 +174,6 @@ class StorageOverviewTest : FabricClientGameTest {
             context.setScreen { null }
             send(context, "ec", "Ender Chest")
             context.takeScreenshot("storage-overview-ender-chest")
-            // @keep Settings opened over the menu returns to it, which lays it out again, so Preview picked there must give the chest back as vanilla drew it.
             mode(context, StorageMode.PREVIEW)
             context.runOnClient<Nothing> { it.resizeGui() }
             context.waitTicks(2)

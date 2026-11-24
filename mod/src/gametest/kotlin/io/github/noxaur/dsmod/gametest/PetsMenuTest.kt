@@ -15,7 +15,6 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
 import org.lwjgl.glfw.GLFW
 
-/** @keep Covers [io.github.noxaur.dsmod.edge.MenuKeyClicks] in the Pets menu, and the rarity and active marks on its pets. */
 class PetsMenuTest : FabricClientGameTest {
 
     private fun pet(name: String, color: ChatFormatting, rarity: String, active: Boolean = false) = ItemStack(Items.PLAYER_HEAD).also {

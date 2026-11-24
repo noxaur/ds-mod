@@ -17,7 +17,6 @@ import net.minecraft.client.Minecraft
 import org.lwjgl.glfw.GLFW
 import java.nio.file.Files
 
-/** @keep `specs/Contribute.tla` is the life of a request's run. */
 object Recording {
     private lateinit var leave: () -> Unit
 
@@ -116,7 +115,6 @@ object Recording {
 
     @InputApproved(reaches = ["KeyPresses.take"])
     private fun tick(client: Minecraft) {
-        // @keep A run that lost its connection during this tick must not finish and send now.
         leave()
         val now = System.currentTimeMillis()
         if (ended(run, now)) {
@@ -134,7 +132,6 @@ object Recording {
         val presses = KeyPresses.take(nextStep)
         val steps = run.step(now, presses)
         if (steps.isNotEmpty()) {
-            // @keep A request's run always has a capture of its own, which only Contribute may hand out.
             if (capture == null && (request != null || !Recorder.running)) {
                 capture = Recorder.start(request?.let { Contribute.dir() } ?: client.gameDirectory.toPath().resolve("dsmod/captures"))
             }

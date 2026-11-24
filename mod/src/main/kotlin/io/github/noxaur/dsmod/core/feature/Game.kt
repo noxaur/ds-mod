@@ -36,8 +36,6 @@ import java.util.concurrent.Executors
 @Serializable
 data class Hidden(val told: Set<String> = emptySet())
 
-/** @keep `worker` runs a feature's background work. The client's is a thread of its own, and a test's runs it in place, so
- * a transcript stays the same on every run */
 class Game(
     private val features: List<Feature>,
     val metrics: Metrics = Metrics(),
@@ -127,8 +125,6 @@ class Game(
     fun wants(type: Class<out GameEvent>) =
         tap != null || active && (player.wants(type) ||features.any { it.enabled && (type == TabList::class.java || type == Sidebar::class.java || type in it.handlers) })
 
-    /** @keep A source whose event comes once, such as a block that is already standing, holds it back until this is true,
-     * because post gives a feature outside its area nothing */
     fun reaches(type: Class<out GameEvent>) = active && features.any { it.enabled && type in it.handlers && it.area.holds(tab, sidebar) }
 
     fun entityFilters(): List<EntityFilter> {
@@ -178,8 +174,6 @@ class Game(
             }
             is ContainerOpened -> true.also { metrics.time("container") { container.opened(event) } }
             is SlotChanged -> true.also { metrics.time("container") { container.changed(event) } }
-            /** @keep The new world's tab list and sidebar have not arrived, so the old one's area must not outlive the hop. A
-             * disconnect changes no world, and a feature switched on after it must not hear the old server's sidebar */
             WorldChanged, LeftServer -> true.also {
                 worlds++
                 lastTab = null
@@ -191,7 +185,6 @@ class Game(
             }
             else -> false
         }
-        // @keep Folded whichever features are on, so one turned on later finds the containers the player saw meanwhile
         val switched = active && player.fold(time, event)
         if (shared || switched) sharedChanges++
         val all = entity || event == WorldChanged || event == LeftServer
@@ -234,10 +227,7 @@ class Game(
         messages += Notice(feature.title, text { body("Hid a message from the server. Turn off "); value(feature.title); body(" under ${section.name} in /dsmod to see them.") })
     }
 
-    /** @keep A feature switched on between two ticks never hears an event twice, because post syncs before an event
-     * reaches any feature. One that comes back hears the tab list and the sidebar again, because the next ones
-     * arrive only when a row changes. A server it left meanwhile comes first, so it forgets that session before it
-     * hears the new one */
+    /** @keep The server resends the tab list and the sidebar only when a row changes. */
     private fun sync(time: Long) {
         val active = active
         for (readout in readouts) {

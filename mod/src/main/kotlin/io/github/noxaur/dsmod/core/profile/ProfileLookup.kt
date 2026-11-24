@@ -43,8 +43,7 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
         if ((state as? Load.Loaded)?.value?.profileId != profile) load(profile)
     }
 
-    /** @keep For as long as the backend keeps an answer, the profile it calls selected can be the one the player just left,
-     * so a lookup that knows the player's profile asks for it by name */
+    /** @keep The backend keeps an answer for a while, in which the profile it calls selected can be the one the player just left. */
     fun follow(profile: String?) {
         val loaded = (state as? Load.Loaded)?.value ?: return
         loaded.choices.firstOrNull { it.name.plain == profile }?.let { switch(it.id) }
@@ -66,8 +65,6 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
         }
     }
 
-    /** @keep Every container in one answer, for the item overview, which needs them all at once. A failure while the
-     * backend's answer is for another profile than the player's, such as one created after the backend's list */
     fun containers(of: String?): Load<List<Container>> {
         val profile = (state as? Load.Loaded)?.value ?: return Load.Loading
         if (of != null && profile.profileName.plain != of) return OTHER
@@ -96,8 +93,6 @@ class ProfileLookup(val name: String, private val source: ProfileSource, private
 
     private fun <T> renew(ask: (String) -> CompletableFuture<T>, put: (Load<T>) -> Unit) {
         source.profile(name, (state as? Load.Loaded)?.value?.profileId ?: asked).whenCurrent(request, { answer ->
-            /** @keep The new snapshot replaces the old, so what is still on its way from the old one, or from a second
-             * renewal another tab started, is dropped. */
             request++
             state = Load.Loaded(answer)
             containers.clear()

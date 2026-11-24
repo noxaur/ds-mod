@@ -360,7 +360,7 @@ object CopyChats {
             var layout = layout(client, message)
             val shown = rowsOf.getValue(message)
             val full = layout.partOfRow.size
-            /* @keep The chat drops the oldest rows once a message no longer fits in its 100. Those missing rows are a prefix of the replay. A count the replay never produced is another mod's layout, and stays one part. */
+            /* @keep The chat drops the oldest rows once a message no longer fits in its 100. */
             if (layout.parts.size > 1 && full != shown) {
                 if (full > shown) {
                     layout.parts[layout.partOfRow[full - shown + row]]
@@ -392,7 +392,7 @@ object CopyChats {
     private inline fun visible(client: Minecraft, crossinline row: (line: Int, pose: Matrix3x2fc, top: Int, bottom: Int) -> Unit) {
         val chat = client.gui.hud.chat
         val lines = (chat as ChatComponentAccessor).trimmedMessages
-        /* @keep Minecraft draws the rows on screen from the top one down to the newest, and then lines that belong to no message. A row is told by that order and not by its text, because every empty line is the same object. */
+        /* @keep Minecraft draws the rows on screen from the top one down to the newest, then lines that belong to no message, and every empty line is the same object. */
         val scrolled = chat.chatScrollbarPos
         var next = minOf(lines.size - scrolled, chat.linesPerPage) - 1
         val spacing = client.options.chatLineSpacing().get()

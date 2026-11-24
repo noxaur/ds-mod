@@ -55,7 +55,6 @@ class Batch<T : Any>(private val key: (T) -> Any) {
             if (!sending.remove(k)) continue
             if (done) sent.add(k) else if (pending.size < MAX_BATCH) pending[k] = thing
         }
-        // @keep What found no room must be read again to come back.
         if (!done) seen.clear()
     }
 

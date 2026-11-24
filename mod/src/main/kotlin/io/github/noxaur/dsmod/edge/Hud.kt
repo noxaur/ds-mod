@@ -94,7 +94,6 @@ object Hud {
     private class Group(var place: HudGroup) {
         val blocks = LinkedHashMap<String, Block>()
 
-        // @keep Read every frame, so these are rebuilt on change and the frame loop allocates nothing.
         var shown = emptyList<Block>()
         var width = 0
         var height = 0
@@ -115,7 +114,7 @@ object Hud {
 
     private val groups = LinkedHashMap<String, Group>()
 
-    /* @keep Each block's stacks by the item they were built from. A block shown again reuses the stack of an item it showed before, because building one costs tens of microseconds and an inventory changes one slot at a time. A slot that did not change holds the very same item, so identity finds it without hashing its lore. */
+    /* @keep Building a stack costs tens of microseconds, so each block reuses the stack of an item it showed before. */
     private val stacksByItem = HashMap<String, IdentityHashMap<Item, ItemStack>>()
     private var shown = emptyList<Group>()
     private var placed = emptyList<Placed>()

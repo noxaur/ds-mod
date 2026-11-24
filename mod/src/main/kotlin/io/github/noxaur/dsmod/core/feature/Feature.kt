@@ -51,17 +51,6 @@ fun interface Handler<in E : GameEvent> {
     fun handle(event: E, now: Long)
 }
 
-/** @keep Start from the feature closest to yours. Chat lines: DragonTimer. The tab list's info rows, or the sidebar's
- * the same way: ProtectorStatus. Items and slot marks: ItemRarity. Items on the HUD, from the player's own
- * inventory or an entity near them: EquipmentDisplay. Changing how the game draws, reading nothing from the
- * server: Fullbright. Counting something and keeping the total: SlayerTracker. Hiding a line the server sends:
- * HideCooldownMessages. Shortening or hiding text the server floats in the world: DamageNumbers. Telling the
- * player something once, with a setting besides the switch: RareDropAlert. A rate, following the player into
- * and out of its area: ZealotTracker. Marking a place in the world: ProtectorSpawnBeam. Reading the entities
- * the client holds and marking them: BossBeacon, with its part BossMarks. A key the player binds, or the
- * camera: FreeLook and Camera, with Cameras in edge and the rules in core/camera. The player's own input on a
- * vanilla screen: CopyChat, with CopyChats in edge. Settings the edge reads each frame, and a button that
- * resets them: Animations, with HeldItems in edge */
 class Feature(
     config: DsModConfig,
     val id: String,
@@ -70,11 +59,8 @@ class Feature(
     description: String,
     default: Boolean = true,
     formerly: List<String> = emptyList(),
-    // @keep Called after an event this feature could see and a few times a second, never per frame
     internal val hud: ((now: Long) -> HudBlock?)? = null,
-    // @keep Called when hud is, so return the same map until the marks change
     internal val slots: ((now: Long) -> Map<Int, SlotMark>)? = null,
-    // @keep Called when hud is, so return equal marks until they change
     internal val marks: ((now: Long) -> List<Mark>)? = null,
 ) {
     val title = id.split('-').joinToString(" ") { WORDS[it] ?: it.replaceFirstChar(Char::uppercase) }
@@ -96,8 +82,6 @@ class Feature(
             switch.value = value
         }
 
-    /** @keep Code outside core asks this or runs and never the switch, because off dragsim.co a switch that is on still
-     * runs nothing */
     val on: Boolean get() = enabled && gate()
 
     val runs: Boolean get() = on && inArea()
@@ -128,7 +112,6 @@ class Feature(
 
     val here: Boolean get() = inArea()
 
-    // @keep The server's name for where the player is, from Area.named, for a feature that remembers places by it
     val areaName: String? get() = named()
 
     internal var named: () -> String? = { null }
@@ -136,15 +119,11 @@ class Feature(
     var state: Saved<*>? = null
         private set
 
-    /** @keep The player's data on the profile they are on: the containers they saw and the backend's last answer. Read the
-     * player's items here, not from a copy of the feature's own */
     lateinit var player: PlayerData
         internal set
 
-    // @keep For state that is the same on every profile, such as a hint told once. The player's own data is `profiled`
     inline fun <reified S : Any> saved(default: S) = saved(serializer<S>(), default, profiled = false)
 
-    // @keep State that is the player's own, such as a total or a lock, kept for each profile and swapped when they switch
     inline fun <reified S : Any> profiled(default: S) = saved(serializer<S>(), default, profiled = true)
 
     @PublishedApi
@@ -156,8 +135,6 @@ class Feature(
     internal var worker: (work: () -> Unit) -> Unit = { it() }
     internal var handBack: (done: () -> Unit) -> Unit = { it() }
 
-    /** @keep Work too slow for a frame, such as a plan, runs off the client thread, and its result comes back to `done` on
-     * the game's next tick, which then refreshes the feature's readout */
     fun <T> background(work: () -> T, done: (T) -> Unit) = worker {
         val result = try {
             Result.success(work())
@@ -193,7 +170,6 @@ class Feature(
     @PublishedApi
     internal fun <T> former(key: String, serializer: KSerializer<T>): T? = stored.former(key, serializer)
 
-    // @keep `under` takes rows declared before the switch from their place to open under it, as a fold does
     fun switch(
         key: String, name: String, description: String, default: Boolean, dependsOn: Switch? = null, formerly: List<String> = emptyList(),
         under: List<Setting> = emptyList(), settings: (Rows.() -> Unit)? = null,
@@ -257,11 +233,8 @@ class Feature(
 
     internal val heldEntities = LinkedHashMap<Int, EntitySeen>()
 
-    // @keep A handler of an entity event sees the entities as they were before that event
     val entities: Collection<EntitySeen> get() = heldEntities.values
 
-    /** @keep Keep each filter narrow: the edge's tracker walks the client's entities only while a feature that reads them
-     * is on */
     fun readEntities(vararg filters: EntityFilter) {
         check(entityFilters.isEmpty()) { "$id already reads entities" }
         entityFilters = filters.toList()
@@ -286,8 +259,7 @@ class Feature(
 
     private val lines = ArrayList<Line>()
 
-    /** @keep A player's chat line starts with their name, so a server line is told by its start, and a player can type
-     * anything after it */
+    /** @keep A player's chat line starts with their name and can go on with anything, so a server line is told by its start */
     fun line(head: String, handler: (now: Long) -> Unit) = line({ it.startsWith(head) }, { it }) { _, now -> handler(now) }
 
     fun line(head: String, pattern: Regex, handler: (groups: MatchResult.Destructured, now: Long) -> Unit) =
@@ -309,7 +281,6 @@ class Feature(
         lines += Line(head) { text, now -> parse(text)?.also { handler(it, now) } != null }
     }
 
-    // @keep Pass the server's text as it is, because the report redacts it
     fun unparsed(sample: String) {
         metrics.count("$id.unparsed")
         metrics.onUnparsed?.invoke(id, sample)

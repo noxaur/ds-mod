@@ -6,7 +6,6 @@ import io.github.noxaur.dsmod.core.config.ItemKind
 import io.github.noxaur.dsmod.core.config.Share
 import io.github.noxaur.dsmod.core.world.WaypointLook
 
-// @keep A new waypoint starts where the player stands, in their area, so `fresh` reads the game.
 class WaypointKind(private val fresh: (group: String) -> SavedWaypoint) : ItemKind<SavedWaypoint> {
     override val noun = "waypoint"
     override val verb = "show"
@@ -17,7 +16,6 @@ class WaypointKind(private val fresh: (group: String) -> SavedWaypoint) : ItemKi
     override val cells: List<Cell<SavedWaypoint>> = listOf(
         Cell.Check("On", SavedWaypoint::enabled) { w, on -> w.copy(enabled = on) },
         Cell.Text(NAME, SavedWaypoint::name, { w, name -> w.copy(name = WaypointText.clean(name)) }, hint = NAME, max = SavedWaypoint.NAME_LENGTH),
-        // @keep A position that does not parse yet keeps the last one, so typing it digit by digit never moves the waypoint to 0.
         Cell.Text("Position", SavedWaypoint::position, { w, typed ->
             WaypointText.position(typed)?.let { (x, y, z) -> w.copy(x = x, y = y, z = z) } ?: w
         }, hint = "x y z", max = POSITION_LENGTH, width = 72),
@@ -70,7 +68,7 @@ class WaypointKind(private val fresh: (group: String) -> SavedWaypoint) : ItemKi
         return shared.group.orEmpty().trim().take(GROUP_LENGTH) to waypoints
     }
 
-    // @keep A share's fields may be null, because Gson leaves out or nulls whatever a pasted text gets wrong.
+    // @keep Gson leaves a field null when a pasted text omits it or gets it wrong.
     private class Shared(@Expose val group: String?, @Expose val waypoints: List<Entry?>?)
 
     private class Entry(
@@ -91,7 +89,6 @@ class WaypointKind(private val fresh: (group: String) -> SavedWaypoint) : ItemKi
         const val NAME = "Name"
         const val GROUP_LENGTH = 32
         const val POSITION_LENGTH = 40
-        // @keep Each takes under 200 bytes of JSON, so this many decode well inside what a share may hold.
         const val MAX_WAYPOINTS = 2000
     }
 }

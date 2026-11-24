@@ -18,8 +18,7 @@ class ItemSightings(private val own: () -> Set<String>) {
     fun see(item: Item) {
         if (batch.full) return
         val redacted = (Redactor(own()).redact(SlotChanged(0, item)) as SlotChanged).item ?: return
-        /** @keep The redactor drops a skin, as a capture must, but a head's texture is what a sighting is for. The skin is
-         * only its address, with no name or id beside it, and the backend draws it only once a second player saw it. */
+        /** @keep The redactor drops a skin, but a head's texture is what a sighting is for, and it is only an address with no name or id beside it. */
         batch.add(sighting(redacted.copy(skin = item.skin)) ?: return)
     }
 
@@ -76,7 +75,6 @@ class ItemSightings(private val own: () -> Set<String>) {
         const val MAX_SPAN_TEXT = 1024
         const val MAX_LINE_SPANS = 64
 
-        /** @keep A batch of 50 sightings this size is under the backend's 1 MiB for the items it is sent with. */
         const val MAX_SIGHTING_BYTES = 16_384
         private const val RGB = (1 shl 24) - 1
         private val ITEM_DATA = setOf("npc_sell_price", "reforge_stats", "color", "item_id", "reforge", "item_type", "item_name", "skull", "rarity")

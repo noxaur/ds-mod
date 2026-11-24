@@ -3,8 +3,7 @@ import { Context } from "effect";
 
 import type { ItemAppearance, ItemSighting } from "./model.ts";
 
-/** @keep Each hint needs enough different players, because one client can send anything. `glint` is null when too few
- * players saw the item. */
+/** @keep Each hint needs enough different players, because one client can send anything. */
 export interface ItemHints {
   readonly glint: "always" | "never" | "mixed" | null;
   readonly textures: ReadonlyMap<string, string>;
@@ -19,14 +18,11 @@ export interface Observation {
 }
 
 export interface ItemLimits {
-  // @keep At most this many (entry, player) rows in all, and as many (entry, player, skin) rows.
   readonly maxRows: number;
-  // @keep At most this many (entry, player) rows for one player, and as many (entry, player, skin) rows.
   readonly maxPlayerRows: number;
   readonly maxSamples: number;
 }
 
-/** @keep A player who saw both a glint and none counts in `glintPlayers` only. */
 export interface EntryTally {
   readonly entry: string;
   readonly players: number;
@@ -74,7 +70,6 @@ export const fold = (observations: readonly Observation[]): readonly Folded[] =>
   return [...byEntry].map(([entry, folded]) => ({ entry, ...folded }));
 };
 
-// @keep The sorted list holds one more than `limit` when there is a next page.
 export const pageOf = (entries: readonly string[], limit: number) => ({
   entries: entries.slice(0, limit),
   next: entries.length > limit ? (entries[limit - 1] ?? null) : null,
@@ -100,7 +95,6 @@ export const hintsFrom = (
     const agreed = new Map<string, TextureTally>();
     for (const seen of textures) {
       const best = agreed.get(seen.skinId);
-      // @keep Two textures for one skin cannot both be right: the one more players saw wins, and the first of equals.
       if (
         seen.entry === tally.entry &&
         seen.players >= MIN_PLAYERS &&
@@ -123,16 +117,12 @@ export const hintsFrom = (
 export class ItemStore extends Context.Service<
   ItemStore,
   {
-    /** @keep A row for a new entry is kept only while the player has fewer than `limits.maxPlayerRows` and everyone
-     * fewer than `limits.maxRows`, and an entry whose row was refused keeps no texture and no sample. */
     readonly record: (
       userId: string,
       modVersion: string,
       observations: readonly Observation[],
       limits: ItemLimits,
     ) => Effect.Effect<void>;
-    /** @keep One entry comes with its samples. Without one, a page of entries comes without, so a reply is never bigger
-     * than `limit` entries and the samples of one. */
     readonly appearances: (query: AppearanceQuery) => Effect.Effect<{
       readonly items: readonly ItemAppearance[];
       readonly next: string | null;

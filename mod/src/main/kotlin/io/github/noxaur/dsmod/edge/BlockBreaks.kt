@@ -31,8 +31,7 @@ object BlockBreaks {
         sorter.changed(pos.x, pos.y, pos.z, was.block.id, state.block.id)
     }
 
-    /** @keep A click can start and end within one tick, so a right click and the start of digging are heard as the game makes
-     * them, and only a held dig is read at the tick's end. */
+    /** @keep A click can start and end within one tick, so only a held dig is read at the tick's end. */
     @InputApproved(by = "noxaur", reaches = ["Refusals.useBlock", "Refusals.attackBlock"])
     fun register() {
         Refusals.useBlock().register { player, level, _, hit ->

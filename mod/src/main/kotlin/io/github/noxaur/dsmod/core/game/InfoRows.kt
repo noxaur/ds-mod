@@ -1,7 +1,5 @@
 package io.github.noxaur.dsmod.core.game
 
-/** @keep The place line and the rows that tell the player's Area stay out of reach, because the feature names its
- * Area and Game decides */
 class InfoRows(private val read: (String) -> String?) {
     fun info(key: String): String? {
         require(key !in AREA_KEYS) { "A feature never reads the `$key` row to learn where the player is. Pass its `Area` to `Feature(..)`." }

@@ -12,9 +12,6 @@ import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.world.item.ItemStack
 
-/** @keep What a remembered page draws and searches, by the page's id, rebuilt one slot at a time when its item changes,
- * so a frame builds no stack. The player's data replaces only the item that changed, so the others are kept by identity,
- * and a switch of profile brings new ones. */
 object PageStacks {
     class Stacks(size: Int) {
         internal val from = arrayOfNulls<Item>(size)
@@ -40,12 +37,10 @@ object PageStacks {
         return made
     }
 
-    /** @keep Forgets the pages no longer kept, called when the pages change rather than per frame */
     fun keep(ids: Set<String>) {
         cache.keys.retainAll(ids)
     }
 
-    /** @keep One remembered item in its cell, with its rarity mark, as a menu's slot draws it. `x` and `y` are the item's. */
     fun draw(graphics: GuiGraphicsExtractor, font: Font, stacks: Stacks, i: Int, x: Int, y: Int) {
         val stack = stacks.stacks[i] ?: return
         stacks.rarities[i]?.takeIf { Slots.marks(it) }?.let { Slots.rarityBack(graphics, it, i, x, y) }

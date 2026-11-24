@@ -1,13 +1,9 @@
 import { Schema, SchemaAST } from "effect";
 
-/* @keep Read leniently: a key we do not know is ignored, and a section dragsim.co leaves out, or sends as null, is
- * none. Only what a profile cannot be drawn without is required. */
+/* @keep dragsim.co leaves out a section or sends it as null, and adds keys, so a profile is read leniently. */
 
 const optional = <S extends Schema.Top>(schema: S) => Schema.optional(Schema.NullOr(schema));
 
-/* @keep A part a reader in sections.ts, pets.ts or items/ reads leniently on its own decodes as it came, so a part that
- * changed shape costs only itself. It carries the schema of every field the reader maps, which only `unmappedPaths`
- * reads. A scalar is a string, number, boolean or null, so a map or a list where one was expected is named too. */
 const MAPPED = "dsmod/mapped";
 const readApart = (shape: Schema.Top) => Schema.Unknown.annotate({ [MAPPED]: shape.ast });
 const Scalar = Schema.Union([Schema.String, Schema.Number, Schema.Boolean, Schema.Null]);
@@ -53,7 +49,6 @@ const Item = readApart(
       item_dye: Schema.Struct({ dyeId: Scalar }),
       item_skin: Schema.Struct({ skinId: Scalar }),
       drill: Schema.Struct({ fuel: Scalar, engine: Scalar, tank: Scalar, module: Scalar, coated: Scalar }),
-      // @keep Passed on whole, as `facts`.
       dungeon_upgrade: open(Scalar),
       wither_scrolls: open(Scalar),
       coating: open(Scalar),
@@ -164,9 +159,7 @@ export const WireProfile = Schema.Struct({
 export type WireProfile = typeof WireProfile.Type;
 
 const Answer = Schema.Struct({
-  // @keep `mode` is always the `main` the backend asked for, so it is not passed on.
   mode: optional(Schema.String),
-  // @keep `fetchedAt` is when the backend read the answer, so the server's own time is not passed on.
   fetched_at: optional(Schema.Number),
   player: Schema.Struct({
     uuid: Schema.String,
@@ -189,8 +182,6 @@ const Answer = Schema.Struct({
 const members = (ast: SchemaAST.AST): readonly SchemaAST.AST[] =>
   SchemaAST.isUnion(ast) ? ast.types.flatMap(members) : [ast];
 
-/** @keep Paths look like `profile.dungeons.new_section`. A map's key is `*` and a list's element is `[]`, so a path is
- * named once however many slots or mobs have it. A part the schema leaves `Unknown` takes anything. */
 export const unmappedPaths = (value: unknown, ast: SchemaAST.AST = Answer.ast, path = ""): readonly string[] => {
   const mapped = ast.annotations?.[MAPPED];
   if (SchemaAST.isAST(mapped)) {
@@ -208,7 +199,6 @@ export const unmappedPaths = (value: unknown, ast: SchemaAST.AST = Answer.ast, p
   const add = (paths: readonly string[]) => paths.forEach((each) => found.add(each));
   if (SchemaAST.isArrays(ast)) {
     const element = ast.rest[0];
-    // @keep A map where a list was expected is read as none, so it is named.
     if (!Array.isArray(value) || element === undefined) {
       return [path];
     }

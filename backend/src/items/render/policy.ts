@@ -11,9 +11,7 @@ const SELF_GLINTING = new Set([
   "minecraft:written_book",
 ]);
 
-/** @keep The API sends no enchantments, so the order is: the catalog says it glows, a material the game glints by
- * itself does unless enough players saw a copy without, otherwise what enough players agree on. `mixed` means the
- * glint comes from enchantments the API does not send, so it is not drawn on every copy. */
+/** @keep The API sends no enchantments, so a glint is inferred from the catalog, the material and what players saw. */
 export const glints = (material: string, catalogGlowing: boolean, hint: ItemHints["glint"] | undefined): boolean => {
   if (catalogGlowing) {
     return true;

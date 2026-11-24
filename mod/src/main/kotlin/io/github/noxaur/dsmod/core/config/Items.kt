@@ -12,7 +12,6 @@ data class Grouped<T>(
     fun withItems(items: List<T>, change: (List<String>) -> List<String>) = Grouped(items, change(groups), change(folded), change(off))
 
     companion object {
-        // @keep A list row saves its items, its groups, the folded groups and the groups that are off in four slots.
         fun <T> bind(items: Slot<List<T>>, groups: Slot<List<String>>, folded: Slot<List<String>>, off: Slot<List<String>>) = Bind(
             items.bind.field,
             { Grouped(items.value, groups.value, folded.value, off.value) },
@@ -44,14 +43,12 @@ sealed class Cell<T>(val name: String) {
         fun step(item: T, by: Int) = set(item, (get(item) + by).coerceIn(min, max))
     }
 
-    // @keep An ARGB color, picked in the same panel as a Color row.
     class Color<T>(name: String, val get: (T) -> Int, val set: (T, Int) -> T) : Cell<T>(name)
 }
 
 interface ItemKind<T> {
     val noun: String
 
-    // @keep What a live item does, after "none of its binds", as "send".
     val verb: String
 
     val first: String
@@ -80,10 +77,8 @@ interface ItemKind<T> {
 
     fun decode(text: String): Pair<String, List<T>>?
 
-    // @keep The text cell a new item opens for typing.
     val opens: String get() = cells.last { it is Cell.Text }.name
 
-    // @keep What the player must fix before the item works, said under the list while it is picked.
     fun problem(item: T): String? = null
 }
 

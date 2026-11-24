@@ -35,7 +35,6 @@ private val drawsWorldText = describe<JavaAccess<*>>("draws text in the world") 
         target.name in setOf("submitText", "submitNameTag") && collector(target.owner.name)
 }
 
-// @keep The rule's import holds only the mod's classes, so whether a Minecraft class is a submit collector is asked of the JVM.
 private fun collector(name: String) =
     runCatching { OrderedSubmitNodeCollector::class.java.isAssignableFrom(Class.forName(name, false, OrderedSubmitNodeCollector::class.java.classLoader)) }.getOrDefault(false)
 

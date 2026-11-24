@@ -12,7 +12,6 @@ class Unknowns(private val own: () -> Set<String>) {
 
     fun see(kind: String, line: String) {
         if (batch.full || !batch.fresh(kind to line)) return
-        // @keep Redacted as a chat line, so that what a player typed is replaced as well as their name.
         val names = PlayerNames.inText(line).mapTo(HashSet(own()), line::substring)
         val redacted = (Redactor(names).redact(SystemMessage(ServerText(listOf(ServerSpan(line))))) as SystemMessage).text.plain
         val sample = redacted.take(MAX_SAMPLE)

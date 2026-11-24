@@ -29,8 +29,6 @@ import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import kotlinx.serialization.Serializable
 
-/** @keep The player's stats with no perk of the Heart, worked out when the Dragon Sim Menu or the tab list last showed a
- * mining stat, from the perks the player had then, so buying a level later does not move them */
 @Serializable
 data class MiningStats(val at: Long = 0, val base: Base? = null)
 
@@ -55,8 +53,6 @@ class HotdPlanner(config: DsModConfig) : HasFeature {
 
     private val stats = feature.profiled(MiningStats())
 
-    /** @keep What the panel shows: the powder the player has, each named in the server's color for it, and whether each
-     * is short of its next upgrade */
     data class Purse(val ender: Long, val void: Long, val enderShort: Boolean, val voidShort: Boolean, val enderName: Text, val voidName: Text)
 
     private fun name(label: String, color: Int?) = text { if (color == null) body(label) else server(label, ServerText(ServerSpan(label, color))) }
@@ -96,11 +92,10 @@ class HotdPlanner(config: DsModConfig) : HasFeature {
         }
     }
 
-    // @keep A tree is complete once every tier the player has was read since its last reset or Heart profile
     private fun complete(tree: Tree) = !tree.stale && Perks.all.none { it.tier <= tree.tier && it.name !in tree.levels }
 
-    /** @keep The Dragon Sim Menu counts the perks that hold on every block in its numbers, and the planner adds them
-     * back, so a reading waits for a complete tree */
+    /** @keep The Dragon Sim Menu counts the perks that hold on every block in its numbers, so a reading waits for a
+     * complete tree to add them back. */
     private fun readStats() {
         val readings = STATS.mapNotNull { feature.player.stats[it] }
         val at = readings.maxOfOrNull { it.at } ?: return
@@ -109,7 +104,6 @@ class HotdPlanner(config: DsModConfig) : HasFeature {
         val levels = read?.levels.orEmpty()
         val waiting = waiting
         if (waiting == null || waiting.first != at) this.waiting = at to levels
-        // @keep A level bought while the reading waits is not in the reading, so the reading is dropped
         else if (waiting.second.any { (perk, level) -> levels[perk] != level }) {
             stats.value = stats.value.copy(at = at)
             return
@@ -134,7 +128,6 @@ class HotdPlanner(config: DsModConfig) : HasFeature {
         tree.levels.filterValues { it > 0 },
     )
 
-    /** @keep The next thing to click, and how many times: a perk on screen, or the scroll arrow toward one */
     data class Next(val slot: Int, val clicks: Int, val short: Boolean)
 
     private fun slots(now: Long): Map<Int, SlotMark> {
@@ -159,7 +152,7 @@ class HotdPlanner(config: DsModConfig) : HasFeature {
         val tree = tree
         purse = tree?.let { Purse(it.ender, it.void, false, false, name(ENDER, it.enderColor), name(VOID, it.voidColor)) }
         if (tree == null) return marks
-        // @keep A slot is marked once the server sent its item, as the menu fills a slot at a time
+        // @keep The server fills a menu a slot at a time, so a slot is marked once it sent its item.
         next(tree, tiers)?.takeIf { container.slots.getOrNull(it.slot) != null }?.let { marks[it.slot] = SlotMark(if (it.short) Role.BAD else Role.GOOD, count = it.clicks) }
         return marks
     }
@@ -186,7 +179,6 @@ class HotdPlanner(config: DsModConfig) : HasFeature {
             asked = input
             feature.background({ Planner.plan(input) }) { done -> if (done.input == asked) plan = done }
         }
-        // @keep A plan holds while the player only bought levels since, as a reset or another Heart profile takes some away
         val plan = plan?.takeIf { p -> p.input.copy(levels = input.levels) == input && p.input.levels.all { (perk, level) -> (tree.levels[perk] ?: 0) >= level } }
             ?: return null
         val rest = plan.after(tree.levels)

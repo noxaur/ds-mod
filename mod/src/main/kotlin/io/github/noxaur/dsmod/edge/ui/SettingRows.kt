@@ -228,7 +228,6 @@ class SettingRows(
     }
 
     fun begin() {
-        // @keep A resize rebuilds the rows without a click outside the field, so the typed number is taken first. Escape closes the field without taking it, and that path does not come through here.
         if (mode is Mode.Field) commit()
         closeMenu()
         focusId = lines.getOrNull(focus)?.key
@@ -857,9 +856,7 @@ class SettingRows(
 
     fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double, shift: Boolean): Boolean {
         menu?.let { return it.isMouseOver(mouseX, mouseY) && it.mouseScrolled(mouseX, mouseY, 0.0, amount) }
-        // @keep Stepping an open field would leave the stepped value behind when Escape discards the text.
         if (mode is Mode.Field || amount == 0.0) return false
-        // @keep An editor's menu may hang past its rows, over the rows below, and the wheel goes to it there too.
         capturer()?.let { if (it.isOver(mouseX, mouseY)) return it.mouseScrolled(mouseX, mouseY, amount, shift) }
         val i = lineAt(mouseX, mouseY).takeIf { it >= 0 } ?: return false
         val line = lines[i]

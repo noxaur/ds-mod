@@ -28,8 +28,6 @@ object ScreenHooks {
     }
 }
 
-/** @keep A panel the mod puts beside a server's menu, as Forge Craft's left of The Forge. It reads its feature on each
- * tick, follows the menu's place before each frame, and draws behind the items, so a tooltip covers it */
 interface SidePanel {
     val widgets: List<AbstractWidget>
     val shown: Boolean

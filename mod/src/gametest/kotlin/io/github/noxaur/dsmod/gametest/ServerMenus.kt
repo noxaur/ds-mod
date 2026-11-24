@@ -27,7 +27,6 @@ object ServerMenus {
 
     fun named(item: Item, name: String): ItemStack = ItemStack(item).also { it.set(DataComponents.CUSTOM_NAME, Component.literal(name)) }
 
-    /** @keep The rarity the server writes in an item's data, which Item Rarity reads */
     fun rarity(stack: ItemStack, rarity: String): ItemStack = stack.also {
         it.set(DataComponents.CUSTOM_DATA, CustomData.of(CompoundTag().apply { put("item_data", CompoundTag().apply { putString("rarity", rarity) }) }))
     }

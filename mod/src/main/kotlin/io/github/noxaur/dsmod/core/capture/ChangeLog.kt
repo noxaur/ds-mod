@@ -18,7 +18,6 @@ class ChangeLog(private val record: (type: RawRecord, data: JsonObject) -> Unit)
 
     fun offerEntries(type: RawRecord, header: JsonObject, current: Map<String, JsonElement>) {
         val full = headers.put(type, header) != header
-        // @keep A caller may refill one map for every offer, and the record is written later on another thread.
         val current = current.toMap()
         val previous = entries.put(type, current).orEmpty()
         val changed = if (full) {

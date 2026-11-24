@@ -117,7 +117,6 @@ object Slots {
         if (!onHotbar() || !settings.hotbarMarks.value) return
         val from = x - (graphics.guiWidth() / 2 - 88)
         val i = from / HOTBAR_PITCH
-        // @keep The offhand slot comes through here too, left of the first slot.
         if (from < 0 || from % HOTBAR_PITCH != 0 || i >= Inventory.SELECTION_SIZE || y != graphics.guiHeight() - 19) return
         drawBack(graphics, Surface.HOTBAR, InventoryMenu.USE_ROW_SLOT_START + i, x, y)
     }

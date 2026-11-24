@@ -33,8 +33,6 @@ class PlayerDataTest {
         val profiles = arrayListOf<String?>(null)
         val left = HashMap<String?, Map<String, Seen>>()
 
-        /** @keep The fixture opens Profile Management on Old, opens the Ender Chest and Storage Page 1, switches to Young,
-         * is refused a switch back twice by the cooldown, then switches back to Old. */
         init {
             var before = player.containers
             for (captured in readCapture(Path.of("src/test/resources/features/item-overview/profile-switch.jsonl"))) {
@@ -140,14 +138,12 @@ class PlayerDataTest {
         assertEquals("Old", session.game.player.profile)
     }
 
-    /** @keep The fixture's account has Arcane and Superior, and Superior is selected */
     private val superior = Profile.parse(Files.readString(Path.of("src/test/resources/profiles/profile.json")))
     private val arcane = superior.copy(profileId = ARCANE, profileName = text("Arcane"), profiles = superior.profiles.map { it.copy(selected = it.id == ARCANE) })
 
     private class Asking : Harness(alone = ItemOverview::class) {
         val asked = arrayListOf<String?>().also { asked -> game.player.ask = { asked += it } }
 
-        // @keep Read from what the layer writes, so the test sees what the file keeps
         val here: ProfileData
             get() {
                 game.player.unwritten()
@@ -252,8 +248,6 @@ class PlayerDataTest {
         const val SUPERIOR = "bbbbbbbb-0000-4000-8000-000000000002"
     }
 
-    /** @keep The fixture applies Heart profile 2, which is empty, scrolls through it, applies Heart profile 1, scrolls
-     * through it, and opens the Dragon Sim Menu */
     private fun heart() = Asking().apply {
         for (captured in readCapture(Path.of("src/test/resources/features/hotd-button/heart-profiles.jsonl"))) post(captured.event)
     }
