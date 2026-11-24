@@ -14,6 +14,8 @@ import io.github.noxaur.dsmod.core.game.BlockBroken
 import io.github.noxaur.dsmod.core.game.Breaker
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.ContainerOpened
+import io.github.noxaur.dsmod.core.game.ContainerState
+import io.github.noxaur.dsmod.core.game.EntityTable
 import io.github.noxaur.dsmod.core.game.EntityDied
 import io.github.noxaur.dsmod.core.game.FloatingText
 import io.github.noxaur.dsmod.core.game.GameEvent
@@ -152,6 +154,82 @@ class FeatureReplayTest {
         }
     }
 
+    private inner class Transcript(private val session: Harness, private val start: Long) {
+        val text = StringBuilder()
+        private val game = session.game
+        private var shown = emptyList<String>()
+        private var marked = emptyMap<Int, SlotMark>()
+        private var drawn = emptyList<Mark>()
+        private val infoRows = HashSet<String>()
+
+        fun play(events: List<Captured>) = play(game, events, posted = ::posted, ticked = { readout() })
+
+        private fun posted(time: Long, event: GameEvent, kept: Boolean) = with(text) {
+            appendLine("+%6.1fs > %s".format(Locale.ROOT, (time - start) / 1000.0, describe(event, infoRows)))
+            if (!kept) appendLine(if (event is FloatingText) "             (hidden)" else "             (hidden from chat)")
+            game.replaced?.let { appendLine("             (shown as) ${it.plain}") }
+            for (message in game.messages) {
+                when (message) {
+                    is Notice -> appendLine("             (chat) ${message.feature} | ${message.detail.plain}")
+                    is Alert -> appendLine("             (title) ${message.title.plain}, (chat) ${message.feature} | ${message.detail.plain}")
+                }
+            }
+            game.messages.clear()
+        }
+
+        fun readout() = with(text) {
+            val lines = session.readout().hud?.let { block -> listOfNotNull(block.header.plain.ifEmpty { null }, block.icon?.let { "  (icon) ${name(it)}" }) + block.rows.map { "  " + it.text.plain } }
+                ?: emptyList()
+            if (lines != shown) {
+                shown = lines
+                lines.ifEmpty { listOf("(nothing)") }.forEach { appendLine("             $it") }
+            }
+            val marks = session.readout().slots
+            if (marks != marked) {
+                for (slot in marked.keys.sorted()) if (marks[slot] != marked[slot]) appendLine("             - slot $slot")
+                for (slot in marks.keys.sorted()) {
+                    val mark = marks.getValue(slot)
+                    if (mark == marked[slot]) continue
+                    val item = name(game.container.slots[slot]!!)
+                    if (mark.hide) {
+                        appendLine("             + slot $slot: hidden, on $item")
+                        continue
+                    }
+                    val cooldown = mark.cooldown
+                    if (cooldown != null) {
+                        appendLine("             + slot $slot: cooldown until +%.1fs on %s".format(Locale.ROOT, (cooldown.end - start) / 1000.0, item))
+                        continue
+                    }
+                    val shape = if (mark.rarity) "rarity" else if (mark.outline) "outline" else if (mark.dim) "dim" else if (mark.label != null) "label" else "fill"
+                    val label = mark.label?.let { " \"${it.plain}\"" } ?: mark.count?.let { " x$it" } ?: ""
+                    appendLine("             + slot $slot: ${mark.role} $shape$label on $item")
+                }
+                marked = marks
+            }
+            val inWorld = session.readout().marks
+            if (inWorld != drawn) {
+                drawn = inWorld
+                if (inWorld.isEmpty()) appendLine("             (no marks in the world)")
+                for (mark in inWorld) {
+                    appendLine(
+                        "             (in the world) " + when (mark) {
+                            is Waypoint -> "${mark.role} beam \"${mark.label}\" at ${mark.at.x}, ${mark.at.y}, ${mark.at.z}"
+                            is EntityBeam -> "${mark.role} beam \"${mark.label}\" on entity ${mark.entity}"
+                            is Tracer -> "${mark.role} tracer to entity ${mark.entity}"
+                            else -> mark.toString()
+                        },
+                    )
+                }
+            }
+        }
+
+        fun saved() = with(text) {
+            val feature = session.readout().feature
+            feature.state?.let { appendLine((if (it.profiled) "saved for the profile ${feature.id}" else "saved ${feature.id}.json") + " = ${it.encode()}") }
+            if (game.hidden.value.told.isNotEmpty()) appendLine("saved hidden.json = ${game.hidden.encode()}")
+        }
+    }
+
     @TestFactory
     fun `every feature shows what its transcript says`(): List<DynamicTest> = ciTree().features.map { feature ->
         dynamicTest(feature.id) {
@@ -159,75 +237,13 @@ class FeatureReplayTest {
             eachFixture(feature) { fixture, session ->
                 val game = session.game
                 val events = events(feature, fixture)
-                val start = events.first().time
-                var shown = emptyList<String>()
-                var marked = emptyMap<Int, SlotMark>()
-                var drawn = emptyList<Mark>()
-                val infoRows = HashSet<String>()
-                val transcript = buildString {
-                    fun readout() {
-                        val lines = session.readout().hud?.let { block -> listOfNotNull(block.header.plain.ifEmpty { null }, block.icon?.let { "  (icon) ${name(it)}" }) + block.rows.map { "  " + it.text.plain } }
-                            ?: emptyList()
-                        if (lines != shown) {
-                            shown = lines
-                            lines.ifEmpty { listOf("(nothing)") }.forEach { appendLine("             $it") }
-                        }
-                        val marks = session.readout().slots
-                        if (marks != marked) {
-                            for (slot in marked.keys.sorted()) if (marks[slot] != marked[slot]) appendLine("             - slot $slot")
-                            for (slot in marks.keys.sorted()) {
-                                val mark = marks.getValue(slot)
-                                if (mark == marked[slot]) continue
-                                val item = name(game.container.slots[slot]!!)
-                                if (mark.hide) {
-                                    appendLine("             + slot $slot: hidden, on $item")
-                                    continue
-                                }
-                                val cooldown = mark.cooldown
-                                if (cooldown != null) {
-                                    appendLine("             + slot $slot: cooldown until +%.1fs on %s".format(Locale.ROOT, (cooldown.end - start) / 1000.0, item))
-                                    continue
-                                }
-                                val shape = if (mark.rarity) "rarity" else if (mark.outline) "outline" else if (mark.dim) "dim" else if (mark.label != null) "label" else "fill"
-                                val label = mark.label?.let { " \"${it.plain}\"" } ?: mark.count?.let { " x$it" } ?: ""
-                                appendLine("             + slot $slot: ${mark.role} $shape$label on $item")
-                            }
-                            marked = marks
-                        }
-                        val inWorld = session.readout().marks
-                        if (inWorld != drawn) {
-                            drawn = inWorld
-                            if (inWorld.isEmpty()) appendLine("             (no marks in the world)")
-                            for (mark in inWorld) {
-                                appendLine(
-                                    "             (in the world) " + when (mark) {
-                                        is Waypoint -> "${mark.role} beam \"${mark.label}\" at ${mark.at.x}, ${mark.at.y}, ${mark.at.z}"
-                                        is EntityBeam -> "${mark.role} beam \"${mark.label}\" on entity ${mark.entity}"
-                                        is Tracer -> "${mark.role} tracer to entity ${mark.entity}"
-                                        else -> mark.toString()
-                                    },
-                                )
-                            }
-                        }
-                    }
-                    play(game, events, posted = { time, event, kept ->
-                        appendLine("+%6.1fs > %s".format(Locale.ROOT, (time - start) / 1000.0, describe(event, infoRows)))
-                        if (!kept) appendLine(if (event is FloatingText) "             (hidden)" else "             (hidden from chat)")
-                        game.replaced?.let { appendLine("             (shown as) ${it.plain}") }
-                        for (message in game.messages) {
-                            when (message) {
-                                is Notice -> appendLine("             (chat) ${message.feature} | ${message.detail.plain}")
-                                is Alert -> appendLine("             (title) ${message.title.plain}, (chat) ${message.feature} | ${message.detail.plain}")
-                            }
-                        }
-                        game.messages.clear()
-                    }, ticked = { readout() })
-                    val metrics = game.metrics.snapshot()
-                    assertEquals(emptyMap(), metrics.failures, "${feature.id} threw while replaying $fixture")
-                    metrics.counters.toSortedMap().forEach { (name, count) -> appendLine("$name = $count") }
-                    session.readout().feature.state?.let { appendLine((if (it.profiled) "saved for the profile ${feature.id}" else "saved ${feature.id}.json") + " = ${it.encode()}") }
-                    if (game.hidden.value.told.isNotEmpty()) appendLine("saved hidden.json = ${game.hidden.encode()}")
-                }
+                val recorded = Transcript(session, events.first().time)
+                recorded.play(events)
+                val metrics = game.metrics.snapshot()
+                assertEquals(emptyMap(), metrics.failures, "${feature.id} threw while replaying $fixture")
+                metrics.counters.toSortedMap().forEach { (name, count) -> recorded.text.appendLine("$name = $count") }
+                recorded.saved()
+                val transcript = recorded.text.toString()
 
                 val expected = fixture.resolveSibling(fixture.nameWithoutExtension + ".txt")
                 if (!expected.exists()) {
@@ -243,6 +259,102 @@ class FeatureReplayTest {
             }
             if (written.isNotEmpty()) fail("Wrote $written. Read each one, and keep it only if it shows what the player should see.")
         }
+    }
+
+    private fun recorded(session: Harness, start: Long, events: List<Captured>, saved: Boolean): String {
+        session.game.messages.clear()
+        return Transcript(session, start).apply {
+            play(events)
+            if (!saved) return@apply
+            saved()
+            // @keep Every profile's state, as the edge writes it, because the line above shows only the profile the player is on
+            if (session.readout().feature.state?.profiled == true) text.appendLine("saved players = " + session.game.player.run { unwritten(); takeChanges()?.invoke() })
+        }.text.toString()
+    }
+
+    private fun sentOnJoin(before: List<Captured>): List<Captured> {
+        val entities = EntityTable()
+        val container = ContainerState()
+        var tab: TabList? = null
+        var sidebar: Sidebar? = null
+        for ((_, event) in before) {
+            entities.apply(event)
+            when (event) {
+                is TabList -> tab = event
+                is Sidebar -> sidebar = event
+                is ContainerOpened -> container.opened(event)
+                is SlotChanged -> container.changed(event)
+                WorldChanged, LeftServer -> {
+                    tab = null
+                    sidebar = null
+                    entities.clear()
+                }
+                else -> Unit
+            }
+        }
+        fun opened(id: Int, slots: List<Item?>): List<GameEvent> =
+            if (slots.isEmpty()) emptyList() else listOf(ContainerOpened(id, container.title.takeIf { id != ContainerState.INVENTORY }, slots.size)) + slots.withIndex().filter { it.value != null }.map { SlotChanged(it.index, it.value) }
+        // @keep The menu that was open is opened again, because the capture's next slot updates are its own and would land in the inventory. It opens a tick after the join, so the join's HUD is drawn before the old menu refills what the leave should have cleared
+        val menu = if (container.id == ContainerState.INVENTORY) emptyList() else opened(container.id, container.slots.toList())
+        val last = before.last()
+        val joined = listOfNotNull(tab, sidebar) + opened(ContainerState.INVENTORY, container.inventorySlots.toList()) + entities.values
+        return joined.map { Captured(last.time, it, last.tick?.let { Int.MIN_VALUE }) } + menu.map { Captured(last.time, it, last.tick?.let { Int.MIN_VALUE + 1 }) }
+    }
+
+    private inner class Cut(val feature: Feature, val events: List<Captured>, val index: Int, private val start: Long, fixture: Path) {
+        val time = events[index - 1].time
+        val at = "replaying $fixture, at +%.1fs".format(Locale.ROOT, (time - start) / 1000.0)
+        val joined = sentOnJoin(events.subList(0, index)) + events.subList(index, events.size)
+
+        fun played(how: String, rest: List<Captured>, saved: Boolean, disturb: (Harness) -> Unit): String {
+            val session = fresh(feature.id)
+            play(session.game, events.subList(0, index))
+            disturb(session)
+            return recorded(session, start, rest, saved).also {
+                assertEquals(emptyMap(), session.game.metrics.snapshot().failures, "${feature.id} threw after $how, $at")
+            }
+        }
+    }
+
+    private fun eachCut(body: (Cut) -> Unit): List<DynamicTest> = ciTree().features.map { feature ->
+        dynamicTest(feature.id) {
+            for (fixture in fixtures(feature)) {
+                val events = events(feature, fixture)
+                val ticks = events.indices.filter { it == 0 || events[it].tick == null || events[it].tick != events[it - 1].tick }
+                for (index in (1..3).map { ticks[ticks.size * it / 4] }.filter { it > 0 }.distinct()) body(Cut(feature, events, index, events.first().time, fixture))
+            }
+        }
+    }
+
+    @TestFactory
+    fun `a feature switched off for a tick shows what a clean replay does once the world changes`() = eachCut { cut ->
+        val events = cut.events
+        val hop = (cut.index until events.size).firstOrNull { events[it].event == WorldChanged || events[it].event == LeftServer }
+        val until = if (hop == null) emptyList() else events.subList(cut.index, hop)
+        val after = if (hop == null) listOf(Captured(cut.time, WorldChanged, events[cut.index - 1].tick?.let { Int.MIN_VALUE })) + cut.joined else events.subList(hop, events.size)
+        val clean = cut.played("a clean replay", after, saved = false) { play(it.game, until) }
+        val switched = cut.played("it was switched off and on", after, saved = false) { session ->
+            session.readout().feature.enabled = false
+            session.game.tick(cut.time)
+            session.readout().feature.enabled = true
+            session.game.tick(cut.time)
+            play(session.game, until)
+        }
+        assertEquals(clean, switched, "${cut.feature.id} kept something outside the world, or heard something twice, when it was switched off and on, ${cut.at}")
+    }
+
+    @TestFactory
+    fun `a feature that was off while the player left comes back as one that stayed on`() = eachCut { cut ->
+        fun rejoined(off: Boolean) = cut.played(if (off) "the player left while it was off" else "the player left", cut.joined, saved = true) { session ->
+            if (off) {
+                session.readout().feature.enabled = false
+                session.game.tick(cut.time)
+            }
+            session.game.post(cut.time, LeftServer)
+            session.game.tick(cut.time)
+            session.readout().feature.enabled = true
+        }
+        assertEquals(rejoined(off = false), rejoined(off = true), "${cut.feature.id} shows or saves something else after a rejoin when it was off while the player left: one of the two kept the server it left, ${cut.at}")
     }
 
     @TestFactory
