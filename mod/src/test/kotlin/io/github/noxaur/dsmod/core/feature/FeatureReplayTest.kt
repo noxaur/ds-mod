@@ -287,10 +287,11 @@ class FeatureReplayTest {
         }
         fun opened(id: Int, slots: List<Item?>): List<GameEvent> =
             if (slots.isEmpty()) emptyList() else listOf(ContainerOpened(id, container.title.takeIf { id != ContainerState.INVENTORY }, slots.size)) + slots.withIndex().filter { it.value != null }.map { SlotChanged(it.index, it.value) }
-        // @keep The menu that was open is opened again, because the capture's next slot updates are its own and would land in the inventory
+        // @keep The menu that was open is opened again, because the capture's next slot updates are its own and would land in the inventory. It opens a tick after the join, so the join's HUD is drawn before the old menu refills what the leave should have cleared
         val menu = if (container.id == ContainerState.INVENTORY) emptyList() else opened(container.id, container.slots.toList())
         val last = before.last()
-        return (listOfNotNull(tab, sidebar) + opened(ContainerState.INVENTORY, container.inventorySlots.toList()) + menu + entities.values).map { Captured(last.time, it, last.tick?.let { Int.MIN_VALUE }) }
+        val joined = listOfNotNull(tab, sidebar) + opened(ContainerState.INVENTORY, container.inventorySlots.toList()) + entities.values
+        return joined.map { Captured(last.time, it, last.tick?.let { Int.MIN_VALUE }) } + menu.map { Captured(last.time, it, last.tick?.let { Int.MIN_VALUE + 1 }) }
     }
 
     private inner class Cut(val feature: Feature, val events: List<Captured>, val index: Int, private val start: Long, fixture: Path) {
