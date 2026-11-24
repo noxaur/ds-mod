@@ -87,3 +87,11 @@ data class PingMeasured(val millis: Long) : FeatureEvent
 @Serializable
 @SerialName("fps")
 data class FrameRate(val fps: Int) : FeatureEvent
+
+/** @keep dragsim.co shows a mined block as bedrock until it grows back, and the client never breaks one itself. An
+ * Ender Node is `minecraft:sandstone`, with portal particles around it. */
+@Serializable
+@SerialName("broken")
+data class BlockBroken(val block: String, val x: Int, val y: Int, val z: Int, val tick: Long, val by: Breaker) : FeatureEvent
+
+enum class Breaker { PLAYER, WITH_PLAYER, OTHER }

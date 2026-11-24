@@ -38,13 +38,14 @@ object Profiles {
     fun bind(game: Game, viewer: ProfileViewer) {
         this.game = game
         this.viewer = viewer
+        game.player.ask = { source.profile(Account.name, it) }
     }
 
     private val on get() = viewer.feature.runs
 
     var source: ProfileSource = object : ProfileSource {
         override fun profile(name: String, profile: String?) = Account.backend.async { profile(name, profile) }.also { answer ->
-            if (profile == null && name.equals(Account.name, ignoreCase = true)) answer.thenAccept { Minecraft.getInstance().execute { game.player.heard(it) } }
+            if (name.equals(Account.name, ignoreCase = true)) answer.thenAccept { Minecraft.getInstance().execute { game.player.heard(it) } }
         }
 
         override fun container(snapshot: String, id: String) = Account.backend.async { container(snapshot, id) }

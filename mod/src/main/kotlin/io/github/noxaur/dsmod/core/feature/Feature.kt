@@ -132,6 +132,21 @@ class Feature(
         return Saved(serializer, default, profiled).also { state = it }
     }
 
+    internal var worker: (work: () -> Unit) -> Unit = { it() }
+    internal var handBack: (done: () -> Unit) -> Unit = { it() }
+
+    fun <T> background(work: () -> T, done: (T) -> Unit) = worker {
+        val result = try {
+            Result.success(work())
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+        handBack {
+            result.fold(done) { metrics.fail("$id.background", it as Exception) }
+            redraw()
+        }
+    }
+
     private val inWorld = ArrayList<Scoped<*>>()
     private val inSession = ArrayList<Scoped<*>>()
 

@@ -55,12 +55,7 @@ object ForgeCrafts {
         ScreenHooks.onEveryLayout<ContainerScreen> { screen, _ ->
             val client = Minecraft.getInstance()
             val panel = Panel(screen)
-            val widgets = Screens.getWidgets(screen)
-            widgets += panel.keys
-            panel.sync()
-            ScreenEvents.afterTick(screen).register { panel.sync() }
-            ScreenEvents.beforeExtract(screen).register { _, _, _, _, _ -> panel.place() }
-            ScreenEvents.afterBackground(screen).register { _, graphics, mouseX, mouseY, _ -> if (panel.shown) panel.draw(graphics, mouseX, mouseY) }
+            panel.attach(screen)
             Refusals.allowKeyPress(screen).register { _, event ->
                 !panel.shown || !key(client, screen, panel, event, Keys.action == GLFW.GLFW_PRESS)
             }
@@ -119,8 +114,8 @@ object ForgeCrafts {
         return part(16) or part(8) or part(0)
     }
 
-    private class Panel(private val screen: ContainerScreen) {
-        var shown = false
+    private class Panel(private val screen: ContainerScreen) : SidePanel {
+        override var shown = false
             private set
         private var x = 0
         private var y = 0
@@ -143,7 +138,9 @@ object ForgeCrafts {
 
         private fun glass() = MenuSkin.glass(screen) >= 0
 
-        fun sync() {
+        override val widgets get() = listOf(keys)
+
+        override fun sync() {
             val recipe = feature.recipe
             shown = on && recipe != null && feature.forge(screen.title.string)
             keys.visible = shown
@@ -156,7 +153,7 @@ object ForgeCrafts {
             place()
         }
 
-        fun place() {
+        override fun place() {
             x = screen.containerLeft - width - 2
             y = screen.containerTop
             val right = x + width - Kit.INSET
@@ -170,7 +167,7 @@ object ForgeCrafts {
 
         private fun stack(item: Item) = stacks.getOrPut(item) { item.toStack().also { it.count = 1 } }
 
-        fun draw(g: GuiGraphicsExtractor, mouseX: Int, mouseY: Int) {
+        override fun draw(g: GuiGraphicsExtractor, mouseX: Int, mouseY: Int) {
             val recipe = feature.recipe ?: return
             val glass = MenuSkin.glass(screen)
             val light = glass < 0 && !Kit.theme.inkShadow

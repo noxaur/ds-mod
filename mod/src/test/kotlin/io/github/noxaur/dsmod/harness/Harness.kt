@@ -26,7 +26,7 @@ abstract class Harness(
     var time: Long = 1_000_000,
     onDragSim: () -> Boolean = { true },
 ) {
-    val game = Game(if (alone == null) tree.features else listOf(tree.feature(alone.java).feature), connected = onDragSim)
+    val game = Game(if (alone == null) tree.features else listOf(tree.feature(alone.java).feature), connected = onDragSim, worker = Runnable::run)
 
     fun post(vararg events: GameEvent): Boolean {
         val shown = events.map { game.post(time, it) }.all { it }

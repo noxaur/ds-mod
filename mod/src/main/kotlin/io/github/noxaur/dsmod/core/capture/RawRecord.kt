@@ -19,7 +19,15 @@ enum class RawRecord {
 
     PARTICLES,
 
+    // @keep A block update: place, the new `state`, and the state the block `was` before it.
     BLOCK,
+
+    BREAKING,
+
+    // @keep Minecraft's level event 2001 is a block's break effect, so that one also records the `block` state that broke.
+    LEVELEVENT,
+
+    DIGGING,
 
     SWING,
 

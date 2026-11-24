@@ -15,6 +15,8 @@ import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.SlotClicked
 import io.github.noxaur.dsmod.core.game.WorldChanged
+import io.github.noxaur.dsmod.core.feature.inventory.PetsMenu
+import io.github.noxaur.dsmod.core.feature.inventory.WardrobeKeys
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.edge.capture.Recorder
@@ -121,7 +123,7 @@ object DsModClient : ClientModInitializer {
     internal fun start() {
         SettingsScreen.forget()
         tree = SettingsTree(settings)
-        game = Game(tree.features) { anyServer || onDragSim }
+        game = Game(tree.features, connected = { anyServer || onDragSim })
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game, Minecraft.getInstance().user.profileId.toString()).also { it.load() }
         readouts = Readouts(game, settings.hud, tree.feature())
         tabs = TabListPoller(game)
@@ -153,13 +155,15 @@ object DsModClient : ClientModInitializer {
         CopyChats.bind(tree.feature())
         EyeGuards.bind(tree.feature())
         ForgeCrafts.bind(tree.feature())
+        HotdPlans.bind(tree.feature())
         Hits.bind(game)
+        BlockBreaks.bind(game)
         HotdShortcut.bind(tree.feature())
         MenuBack.bind(tree.feature())
         Pings.bind(tree.feature())
         SkyBlockMenuClicks.bind(tree.feature())
         SlotGuards.bind(tree.feature())
-        Wardrobes.bind(tree.feature())
+        MenuKeyClicks.bind(tree.feature<WardrobeKeys>().keys, tree.feature<PetsMenu>().keys)
         ProfileCooldowns.bind(tree.feature())
         TabBar.bind(tree.feature())
         Profiles.bind(game, tree.feature())
@@ -184,7 +188,8 @@ object DsModClient : ClientModInitializer {
         StorageOverlays.register()
         StoragePreviews.register()
         ForgeCrafts.register()
-        Wardrobes.register()
+        HotdPlans.register()
+        MenuKeyClicks.register()
         ProfileCooldowns.register()
         AutoClicks.register()
         Trail.register()
@@ -194,6 +199,7 @@ object DsModClient : ClientModInitializer {
         World.register()
         Etherwarps.register()
         Hits.register()
+        BlockBreaks.register()
         ArmorSwapGuards.register()
         EyeGuards.register()
         CopyChats.register()
