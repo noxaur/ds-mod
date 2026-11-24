@@ -61,10 +61,6 @@ pnpm exec void db migrate
 
 Commit the SQL that `generate` writes. When `migrate` says the local database does not match, `pnpm exec void db reset` rebuilds it from the migrations. A deploy applies the migrations, as [deployment](deployment.md#deploy-the-backend) describes.
 
-## Add a feature
-
-Follow the [`feature` skill](../../mod/.claude/skills/feature/SKILL.md). A feature needs a fixture cut from a capture, so record the capture first, as [captures](captures.md) describes, and cut the fixture from it.
-
 ## Checks
 
 `mise run check` runs every project's checks, as CI does. `mise install` points git at `.githooks/`, whose `pre-commit` runs `check:docs` and `check:comments`, and the project checks that the staged change reaches, which `scripts/affected.ts` maps from its paths. Where `flock` exists, every worktree's commit takes one shared lock for the project checks, so parallel commits run them in turn. A failure prints the log and commits nothing.

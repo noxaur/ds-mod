@@ -12,6 +12,5 @@ The Fabric mod, in Kotlin. Read the root `AGENTS.md` first.
 
 Each is in `mod/.claude/skills/`. Load it before the work it names.
 
-- `feature`: adding or changing a feature, its fixture or its transcript.
 - `captures`: reading a capture, needing game data no capture shows, or changing the recorder.
 - `ui`: anything the player sees, hears or operates.
