@@ -88,7 +88,7 @@ The XP is read each time you open the Pets menu. Open it again a little later, a
 
 ### Inventory HUD
 
-Shows the items in your inventory as a grid on the HUD, nine to a row as your inventory holds them, with each stack's count, durability bar and cooldown. Item Rarity colors each slot as it does in your inventory, and with your hotbar in the grid the slot you hold is ringed. The grid steps aside while a menu or your inventory is open, since they show your items already. Open the chat and point at an item to read its tooltip, and move or resize the grid in the HUD editor. Turn it on in General.
+Shows the items in your inventory as a grid on the HUD, nine to a row as your inventory holds them, with each stack's count, durability bar and cooldown. Item Rarity colors each slot as it does in your inventory, and with your hotbar in the grid the slot you hold is ringed. The grid steps aside while a menu or your inventory is open, since they show your items already. Open the chat and point at an item to read its tooltip, and move or resize the grid in the HUD editor. Turn it on in HUD.
 
 | Setting | Does |
 | --- | --- |
@@ -547,7 +547,7 @@ While you sneak with an Aspect of the End or Aspect of the Void that has Etherwa
 
 ### Command Binds
 
-Sends a command with a key, with keys held together such as Shift + F6, or with keys pressed in turn such as F7 then F8. Set your binds up under Binds in the settings.
+Sends a command with a key, with keys held together such as Shift + F6, or with keys pressed in turn such as F7 then F8. Set your binds up under Utilities in the settings.
 
 <img src="../images/command-binds.png" alt="Command Binds in the settings: each bind a line with its switch, name, command, keys and where it works, under its group, with a second group folded">
 

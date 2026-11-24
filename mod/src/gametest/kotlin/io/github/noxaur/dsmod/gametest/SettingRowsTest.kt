@@ -117,6 +117,7 @@ class SettingRowsTest : FabricClientGameTest {
         check(viewsAt() == 2) { "S and Enter in the menu did not pick Skip Back" }
         check(searched().isEmpty()) { "Typing in the open menu searched for \"${searched()}\"" }
 
+        unfold("freeLookKey", "free-look") { it.extraX + 7 to it.controlY + 6 }
         var k = spot("freeLookKey")
         click(k.controlX + 8, k.controlY + 8)
         context.takeScreenshot("own-settings-keys-recording")
@@ -140,13 +141,13 @@ class SettingRowsTest : FabricClientGameTest {
 
         val camera = spot("camera")
         click(camera.controlX + 11, camera.controlY + 6)
-        expect("The heading switch", false) { DsModClient.feature<Camera>().feature.enabled }
+        expect("The Third Person switch", false) { DsModClient.feature<Camera>().feature.enabled }
         context.shotInBothThemes("own-settings-dimmed")
         d = spot("cameraDistance")
         click(d.controlX + 71, d.controlY + 6)
         expect("A dimmed row stays editable", 50f) { DsModClient.feature<Camera>().distance.value }
         click(camera.controlX + 11, camera.controlY + 6)
-        expect("The heading switch again", true) { DsModClient.feature<Camera>().feature.enabled }
+        expect("The Third Person switch again", true) { DsModClient.feature<Camera>().feature.enabled }
 
         open(context, SettingsTabs(at("Inventory")))
         val style = spot("style")
