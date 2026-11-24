@@ -3,14 +3,22 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.client.Minecraft
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 class ZealotTrackerTest : FabricClientGameTest {
-    private val file = FabricLoader.getInstance().configDir.resolve("dsmod/data/zealot-tracker.json")
+    private val dir = FabricLoader.getInstance().configDir.resolve("dsmod/data")
+    private val file = dir.resolve("zealot-tracker.json")
+    private val player by lazy { dir.resolve("players/${Minecraft.getInstance().user.profileId}.json") }
+
+    private fun written(): String? = if (!player.exists()) null else
+        Json.parseToJsonElement(player.readText()).jsonObject["profiles"]?.jsonObject?.values?.firstNotNullOfOrNull { it.jsonObject["features"]?.jsonObject?.get("zealot-tracker") }?.toString()
 
     override fun runTest(context: ClientGameTestContext) {
         file.parent.createDirectories()
@@ -28,10 +36,10 @@ class ZealotTrackerTest : FabricClientGameTest {
             world.server.runCommand("""kill @e[name="[Lv55] Zealot Theirs"]""")
             context.waitTicks(10)
             context.runOnClient<Nothing> { DsModClient.saved.flush() }
-            context.waitUntil("the drop and the kill were written", 100) { file.readText() != """{"drops":{"Summoning Eye":7},"kills":0}""" }
-            val written = file.readText()
-            check(written == """{"drops":{"Summoning Eye":8},"kills":1}""") { "Expected 7 loaded, 1 drop and 1 kill counted, the file says $written" }
-            check(!file.resolveSibling("zealot-tracker.json.tmp").exists()) { "The temporary file was left behind" }
+            context.waitUntil("the drop and the kill were written", 100) { written().let { it != null && it != """{"drops":{"Summoning Eye":7},"kills":0}""" } }
+            val written = written()
+            check(written == """{"drops":{"Summoning Eye":8},"kills":1}""") { "Expected 7 carried over from the old file, 1 drop and 1 kill counted, the player's file says $written" }
+            check(!player.resolveSibling("${player.fileName}.tmp").exists()) { "The temporary file was left behind" }
         }
     }
 }
