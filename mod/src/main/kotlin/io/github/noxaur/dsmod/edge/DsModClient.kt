@@ -123,7 +123,7 @@ object DsModClient : ClientModInitializer {
     internal fun start() {
         SettingsScreen.forget()
         tree = SettingsTree(settings)
-        game = Game(tree.features) { anyServer || onDragSim }
+        game = Game(tree.features, connected = { anyServer || onDragSim })
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game, Minecraft.getInstance().user.profileId.toString()).also { it.load() }
         readouts = Readouts(game, settings.hud, tree.feature())
         tabs = TabListPoller(game)

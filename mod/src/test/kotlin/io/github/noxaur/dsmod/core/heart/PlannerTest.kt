@@ -1,5 +1,8 @@
 package io.github.noxaur.dsmod.core.heart
 
+import io.github.noxaur.dsmod.core.game.Item
+import io.github.noxaur.dsmod.harness.lines
+import io.github.noxaur.dsmod.harness.text
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -49,5 +52,20 @@ class PlannerTest {
         val left = plan.after(levels).first { it.perk == run.perk }
         assertEquals(run.from + 1, left.from)
         assertEquals(Perks.byName.getValue(run.perk).cost(run.from + 1, run.to), left.cost)
+    }
+
+    @Test
+    fun powder_short_of_a_whole_run_still_buys_the_levels_it_covers() {
+        val run = Step("Mining Speed", Powder.ENDER, 1, 41, Perks.byName.getValue("Mining Speed").cost(1, 41))
+        val batch = Planner.batch(listOf(run), 27, 0)
+        assertEquals(listOf(run.copy(to = 2, cost = 27)), batch.now)
+        assertEquals(listOf(run.copy(from = 2, cost = Perks.byName.getValue("Mining Speed").cost(2, 41))), batch.later)
+    }
+
+    @Test
+    fun a_maxed_perk_reads_its_level_without_a_maximum() {
+        val lore = lines("Level 10", "", "Grants +1 ✧ Pristine.", "", "ENABLED", "", "Right-click to disable!")
+        val item = Item("minecraft:diamond", 1, text("Mining Master"), lore)
+        assertEquals(10, Tree.level(Perks.byName.getValue("Mining Master"), item) { error("Read as unparsed: $it") })
     }
 }

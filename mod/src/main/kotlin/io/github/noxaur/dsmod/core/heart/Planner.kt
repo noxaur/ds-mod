@@ -430,24 +430,35 @@ object Planner {
     }
 
     /** @keep Steps the powder pays for are merged into one upgrade per perk, in the order the plan reaches them, and an
-     * unlock always fits, since a token pays for it */
+     * unlock always fits, since a token pays for it. The levels of a run the powder covers are bought before the run
+     * waits, so a run too dear as a whole still shows what one click buys */
     fun batch(steps: List<Step>, ender: Long, void: Long): Batch {
         val purse = longArrayOf(ender, void)
         val blocked = booleanArrayOf(false, false)
         val now = LinkedHashMap<String, Step>()
         val later = ArrayList<Step>()
+        fun buy(s: Step) {
+            val n = now[s.perk]
+            now[s.perk] = if (n == null) s else n.copy(to = s.to, cost = n.cost + s.cost, powder = n.powder ?: s.powder)
+        }
         for (s in steps) {
             val powder = s.powder
-            if (powder == null || !blocked[powder.ordinal] && purse[powder.ordinal] >= s.cost) {
-                if (powder != null) purse[powder.ordinal] -= s.cost
-                val n = now[s.perk]
-                now[s.perk] = if (n == null) s else n.copy(to = s.to, cost = n.cost + s.cost, powder = n.powder ?: powder)
+            if (powder == null) {
+                buy(s)
                 continue
             }
-            blocked[powder.ordinal] = true
+            var to = s.from
+            if (!blocked[powder.ordinal]) {
+                val perk = Perks.byName.getValue(s.perk)
+                while (to < s.to && perk.cost[to] <= purse[powder.ordinal]) purse[powder.ordinal] -= perk.cost[to++]
+                if (to > s.from) buy(s.copy(to = to, cost = perk.cost(s.from, to)))
+                if (to == s.to) continue
+                blocked[powder.ordinal] = true
+            }
+            val rest = if (to == s.from) s else s.copy(from = to, cost = Perks.byName.getValue(s.perk).cost(to, s.to))
             val last = later.lastOrNull()
-            if (last != null && last.perk == s.perk) later[later.lastIndex] = last.copy(to = s.to, cost = last.cost + s.cost)
-            else later += s
+            if (last != null && last.perk == s.perk) later[later.lastIndex] = last.copy(to = s.to, cost = last.cost + rest.cost)
+            else later += rest
         }
         return Batch(now.values.toList(), later)
     }

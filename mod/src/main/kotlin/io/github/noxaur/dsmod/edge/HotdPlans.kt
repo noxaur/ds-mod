@@ -57,7 +57,7 @@ object HotdPlans {
                 val menu = open?.menu
                 when {
                     menu != null && menu.isMouseOver(event.x(), event.y()) -> true.also { menu.mouseClicked(event, false) }
-                    open != null -> open.isMouseOver(event.x(), event.y()).also { open.close() }
+                    open != null -> (open.isMouseOver(event.x(), event.y()) || panel.background(event.x(), event.y())).also { open.close() }
                     else -> panel.background(event.x(), event.y())
                 }
             }
@@ -111,7 +111,8 @@ object HotdPlans {
         fun open() = listOf(block, area).firstOrNull { it.menu != null }
 
         override fun sync() {
-            shown = feature.feature.runs && feature.shown(screen.title.string)
+            // @keep A window too narrow for the panel beside the menu keeps the marks, and the settings keep the choices
+            shown = feature.feature.runs && feature.shown(screen.title.string) && screen.containerLeft >= WIDTH + 2
             if (!shown) {
                 block.close()
                 area.close()

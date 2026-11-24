@@ -106,12 +106,15 @@ class HotdPlannerTest : FabricClientGameTest {
             check(context.computeOnClient<HeartBlock, Nothing> { feature.block.value } == HeartBlock.END_STONE) { "A right press did not step Amethyst on to End Stone" }
 
             // @keep Tier 1 with no Core gives one token, and Mining Speed spent it, so with no powder its next level is out of reach
+            // @keep Obsidian, since the default speed already mines End Stone at once and Mining Speed would add nothing
+            context.runOnClient<Nothing> { feature.block.value = HeartBlock.OBSIDIAN }
             val broke = Hotd(1, 0, 1, "0", "0", mapOf("Mining Speed" to 1))
             open(context, world, broke, 5)
             val short = next(context)
             check(short != null && short.second.role == Role.BAD) { "With no powder, the mark is $short, not red" }
             check(context.computeOnClient<Boolean, Nothing> { feature.purse?.let { it.enderShort } == true }) { "Ender was not short" }
             context.takeScreenshot("hotd-planner-short")
+            context.runOnClient<Nothing> { feature.block.value = HeartBlock.END_STONE }
 
             context.inTheme(Theme.VANILLA) {
                 open(context, world, reset, 10)

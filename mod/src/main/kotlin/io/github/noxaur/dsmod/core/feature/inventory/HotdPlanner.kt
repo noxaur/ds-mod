@@ -94,12 +94,16 @@ class HotdPlanner(config: DsModConfig) : HasFeature {
         }
     }
 
-    // @keep The Dragon Sim Menu counts the perks that hold on every block in its numbers, and the planner adds them back
+    // @keep A tree is complete once every tier the player has was read since its last reset or Heart profile
+    private fun complete(tree: Tree) = !tree.stale && Perks.all.none { it.tier <= tree.tier && it.name !in tree.levels }
+
+    /** @keep The Dragon Sim Menu counts the perks that hold on every block in its numbers, and the planner adds them
+     * back, so a reading waits for a complete tree */
     private fun readStats() {
         val readings = STATS.mapNotNull { feature.player.stats[it] }
         val at = readings.maxOfOrNull { it.at } ?: return
         if (at <= stats.value.at) return
-        val tree = Tree.read(feature.player.heart) ?: return
+        val tree = Tree.read(feature.player.heart)?.takeIf { complete(it) } ?: return
         val shown = STATS.associateWith { feature.player.stats[it]?.value }
         val perks = Planner.everywhere(tree.levels)
         val none = Base()
@@ -171,9 +175,11 @@ class HotdPlanner(config: DsModConfig) : HasFeature {
             asked = input
             feature.background({ Planner.plan(input) }) { done -> if (done.input == asked) plan = done }
         }
-        val plan = plan?.takeIf { it.input.copy(levels = input.levels) == input } ?: return null
+        // @keep A plan holds while the player only bought levels since, as a reset or another Heart profile takes some away
+        val plan = plan?.takeIf { p -> p.input.copy(levels = input.levels) == input && p.input.levels.all { (perk, level) -> (tree.levels[perk] ?: 0) >= level } }
+            ?: return null
         val rest = plan.after(tree.levels)
-        fun short(powder: Powder) = rest.firstOrNull { it.powder == powder }?.let { it.cost > tree.have(powder) } == true
+        fun short(powder: Powder) = rest.firstOrNull { it.powder == powder }?.let { Perks.byName.getValue(it.perk).cost[it.from] > tree.have(powder) } == true
         purse = purse?.copy(enderShort = short(Powder.ENDER), voidShort = short(Powder.VOID))
         val batch = Planner.batch(rest, tree.ender, tree.void)
         if (batch.now.isEmpty()) return batch.later.firstOrNull()?.let { at(it, true) }

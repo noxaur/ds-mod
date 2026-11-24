@@ -41,8 +41,8 @@ data class Hidden(val told: Set<String> = emptySet())
 class Game(
     private val features: List<Feature>,
     val metrics: Metrics = Metrics(),
-    private val connected: () -> Boolean = { true },
     private val worker: Executor = BACKGROUND,
+    private val connected: () -> Boolean = { true },
 ) {
     private val dragSimOnly = features.firstOrNull { it.id == DragSimOnly.ID }
 

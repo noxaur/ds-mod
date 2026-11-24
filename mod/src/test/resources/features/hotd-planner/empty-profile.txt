@@ -748,7 +748,7 @@
 +  11.7s > (you clicked slot 44)
              - slot 44
 +  11.8s > (you clicked slot 44)
-             + slot 13: GOOD fill x76 on Mole
+             + slot 13: GOOD fill x74 on Mole
 +  14.0s > (opened your inventory, 46 slots)
 +  14.0s > (slot 5) 1 x Crying Obsidian Helmet
 +  14.0s > (slot 6) 1 x Crying Obsidian Chestplate

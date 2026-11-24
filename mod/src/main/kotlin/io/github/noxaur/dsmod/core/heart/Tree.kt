@@ -27,8 +27,7 @@ data class Tree(
         const val CORE = "Core of the Dragon"
         private const val COST = "Cost"
         private const val TOKEN = "1 Token of the Dragon"
-        private val LEVEL = Regex("Level (\\d+)/\\d+")
-        private val CORE_LEVEL = Regex("Level (\\d+)")
+        private val LEVEL = Regex("Level (\\d+)(?:/\\d+)?")
         private val TIER = Regex("Tier: (\\d+)")
         private val TOKENS = Regex("Token of the Dragon: (\\d+) \\((\\d+) spent\\)")
         private val ENDER = Regex("Ender Powder: ([\\d,]+)")
@@ -41,7 +40,8 @@ data class Tree(
         // @keep The server colors each powder's amount in that powder's color
         private fun Item.color(pattern: Regex) = lore.firstOrNull { pattern.matches(it.plain.trim()) }?.spans?.lastOrNull()?.color
 
-        /** @keep A locked perk costs a token, and still reads `Level 1/50`, as level 1 is what the token buys. An ability's
+        /** @keep A locked perk costs a token, and still reads `Level 1/50`, as level 1 is what the token buys. A maxed perk
+         * reads `Level 10`, with no maximum. An ability's
          * `Level 3/3` is the Core's doing, so an unlocked ability is level 1. A line that reads none of these goes to
          * `unparsed` */
         fun level(perk: Perk, item: Item, unparsed: (String) -> Unit = {}): Int {
@@ -62,7 +62,7 @@ data class Tree(
                 unparsed(egg.cleanLore.joinToString("\n"))
                 return null
             }
-            val core = heart.items[CORE]?.item?.number(CORE_LEVEL) ?: 0
+            val core = heart.items[CORE]?.item?.number(LEVEL) ?: 0
             val levels = HashMap<String, Int>()
             for (perk in Perks.all) heart.items[perk.name]?.let { levels[perk.name] = level(perk, it.item, unparsed) }
             return Tree(tier, core, spent, ender.toLong(), void.toLong(), levels, egg.color(ENDER), egg.color(VOID))
