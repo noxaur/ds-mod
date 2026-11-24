@@ -214,6 +214,8 @@ Times every item ability you use, such as Giant's Slam, the Tuba's Howl, a katan
 
 ### Hide Cooldown Messages
 
+Hides the message that an ability is on cooldown. It sits under Ability Cooldowns, so it works only while Ability Cooldowns is on.
+
 <sub>Hides `This ability is on cooldown for 4.35s`.</sub>
 
 ### Slayer Tracker
