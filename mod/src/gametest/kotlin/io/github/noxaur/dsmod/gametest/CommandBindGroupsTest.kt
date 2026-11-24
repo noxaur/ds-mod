@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.binds.commandbinds.CommandBinds
+import io.github.noxaur.dsmod.core.feature.utilities.commandbinds.CommandBinds
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.debug.friendBind
@@ -30,7 +30,7 @@ class CommandBindGroupsTest : FabricClientGameTest {
         val commandBinds = DsModClient.feature<CommandBinds>()
         val commands = { context.computeOnClient<List<String>, Nothing> { commandBinds.binds.value.map { it.command } } }
         context.runOnClient<Nothing> { commandBinds.fill(listOf("other", "/me bound", "/me seq", "/me end").map { CommandBind(command = it) }) }
-        open(context, SettingsTabs(at("Binds")))
+        open(context, SettingsTabs(at("Utilities")))
         list()
 
         press(foot(), "Add Group")
@@ -112,7 +112,7 @@ class CommandBindGroupsTest : FabricClientGameTest {
     private fun BindsDriver.guide() {
         val commandBinds = DsModClient.feature<CommandBinds>()
         context.runOnClient<Nothing> { commandBinds.fill(sampleBinds("/sbmenu on") + friendBind(), listOf("From a Friend"), listOf("From a Friend")) }
-        open(context, SettingsTabs(at("Binds")))
+        open(context, SettingsTabs(at("Utilities")))
         list()
         context.point(0, 0, settle = 2)
         context.takeScreenshot("command-binds-guide")

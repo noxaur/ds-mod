@@ -10,7 +10,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import io.github.noxaur.dsmod.core.capture.PlayerNames
-import io.github.noxaur.dsmod.core.feature.general.profileviewer.ProfileViewer
+import io.github.noxaur.dsmod.core.feature.utilities.chat.profileviewer.ProfileViewer
 import io.github.noxaur.dsmod.core.profile.Profile
 import io.github.noxaur.dsmod.core.profile.ProfileLookup
 import io.github.noxaur.dsmod.core.profile.ProfileSource

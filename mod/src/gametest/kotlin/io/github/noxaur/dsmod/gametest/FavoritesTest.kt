@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.world.fullbright.Fullbright
-import io.github.noxaur.dsmod.core.feature.combat.loot.raredropalert.RareDropAlert
+import io.github.noxaur.dsmod.core.feature.visuals.world.fullbright.Fullbright
+import io.github.noxaur.dsmod.core.feature.inventory.items.raredropalert.RareDropAlert
 import io.github.noxaur.dsmod.core.ui.Place
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.edge.DsModClient
@@ -40,7 +40,7 @@ class FavoritesTest : FabricClientGameTest {
             check(shown().isEmpty()) { "An empty Favorites lists ${shown()}" }
             context.takeScreenshot("settings-favorites-empty")
 
-            context.runOnClient<Nothing> { tabs.current.go(at("General").section) }
+            context.runOnClient<Nothing> { tabs.current.go(at("Visuals").section) }
             open(context, tabs)
             star("fullbright", press = false)
             context.takeScreenshot("settings-favorites-star-hover")
@@ -78,7 +78,7 @@ class FavoritesTest : FabricClientGameTest {
 
             context.runOnClient<Nothing> {
                 settings.general.favoriteKey.value = GLFW.GLFW_MOUSE_BUTTON_MIDDLE
-                tabs.current.go(at("Combat").section)
+                tabs.current.go(at("Inventory").section)
             }
             open(context, tabs)
             over("rare-drop-alert")
@@ -96,21 +96,21 @@ class FavoritesTest : FabricClientGameTest {
 
             context.runOnClient<Nothing> { tabs.current.go(SettingsScreen.FAVORITES) }
             open(context, tabs)
-            check(shown() == listOf("fullbright", "hide-explosions", "rare-drop-alert")) { "Favorites lists ${shown()}" }
+            check(shown() == listOf("rare-drop-alert", "fullbright", "hide-explosions")) { "Favorites lists ${shown()}" }
             context.shotInBothThemes("settings-favorites")
 
             star("fullbright")
-            check("fullbright" !in starred() && shown().first() == "fullbright") { "The unstarred row moved: ${shown()}" }
+            check("fullbright" !in starred() && shown() == listOf("rare-drop-alert", "fullbright", "hide-explosions")) { "The unstarred row moved: ${shown()}" }
             context.takeScreenshot("settings-favorites-kept")
             star("fullbright")
             check("fullbright" in starred()) { "The second press left ${starred()}" }
 
             star("fullbright")
-            context.runOnClient<Nothing> { tabs.current.go(at("General").section) }
+            context.runOnClient<Nothing> { tabs.current.go(at("Visuals").section) }
             open(context, tabs)
             context.runOnClient<Nothing> { tabs.current.go(SettingsScreen.FAVORITES) }
             open(context, tabs)
-            check(shown() == listOf("hide-explosions", "rare-drop-alert")) { "After leaving, Favorites lists ${shown()}" }
+            check(shown() == listOf("rare-drop-alert", "hide-explosions")) { "After leaving, Favorites lists ${shown()}" }
 
             context.setScreen { TitleScreen() }
             val saved = savedConfig()

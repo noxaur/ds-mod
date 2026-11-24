@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.container.SlotMark
-import io.github.noxaur.dsmod.core.feature.menus.hotdplanner.HotdPlanner
+import io.github.noxaur.dsmod.core.feature.mining.hotdplanner.HotdPlanner
 import io.github.noxaur.dsmod.core.heart.HeartBlock
 import io.github.noxaur.dsmod.core.heart.Perks
 import io.github.noxaur.dsmod.core.text.Role

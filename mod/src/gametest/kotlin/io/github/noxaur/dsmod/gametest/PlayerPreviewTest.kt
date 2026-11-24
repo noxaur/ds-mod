@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.playermodel.PlayerModel
+import io.github.noxaur.dsmod.core.feature.visuals.playermodel.PlayerModel
 import io.github.noxaur.dsmod.core.player.ModelPose
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.Turntable
@@ -21,7 +21,7 @@ class PlayerPreviewTest : FabricClientGameTest {
         val driver = SettingsDriver(context)
         fun preview() = context.computeOnClient<PlayerPreview, Nothing> { (it.gui.screen() as SettingsScreen).editor("modelPreview") as PlayerPreview }
         fun open() {
-            context.setScreen { DsModClient.settingsScreen(TitleScreen(), SettingsTabs(at("General")), reveal = "modelPreview") }
+            context.setScreen { DsModClient.settingsScreen(TitleScreen(), SettingsTabs(at("Visuals")), reveal = "modelPreview") }
             context.waitTicks(2)
         }
         fun near(got: Float, want: Float, what: String) = check(abs(got - want) < 0.5f) { "$what is $got, not $want" }

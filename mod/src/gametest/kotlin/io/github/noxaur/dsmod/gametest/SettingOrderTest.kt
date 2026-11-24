@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.ui.equipmentdisplay.EquipmentDisplay
-import io.github.noxaur.dsmod.core.feature.ui.equipmentdisplay.EquipmentPiece
+import io.github.noxaur.dsmod.core.feature.hud.equipmentdisplay.EquipmentDisplay
+import io.github.noxaur.dsmod.core.feature.hud.equipmentdisplay.EquipmentPiece
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SettingsScreen
@@ -29,7 +29,7 @@ class SettingOrderTest : FabricClientGameTest {
     }
 
     private fun SettingsDriver.order() {
-        open(context, SettingsTabs(at("Interface")))
+        open(context, SettingsTabs(at("HUD")))
         val pieces = { context.computeOnClient<List<EquipmentPiece>, Nothing> { DsModClient.feature<EquipmentDisplay>().pieces.value.toList() } }
         fun entry(i: Int) = spot("equipmentPieces", i)
         val list = spot("equipmentPieces")

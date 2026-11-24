@@ -10,8 +10,8 @@ import io.github.noxaur.dsmod.core.feature.combat.bosses.bosstracer.BossTracer
 import io.github.noxaur.dsmod.core.feature.end.dragon.dragontimer.DragonTimer
 import io.github.noxaur.dsmod.core.feature.end.dragon.eyeguard.EyeGuard
 import io.github.noxaur.dsmod.core.feature.end.protector.protectorstatus.ProtectorStatus
-import io.github.noxaur.dsmod.core.feature.ui.activepet.ActivePet
-import io.github.noxaur.dsmod.core.feature.general.server.dragsimonly.DragSimOnly
+import io.github.noxaur.dsmod.core.feature.hud.activepet.ActivePet
+import io.github.noxaur.dsmod.core.feature.general.dsmod.dragsimonly.DragSimOnly
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.Boss
 import io.github.noxaur.dsmod.core.game.EntityGone
@@ -344,7 +344,7 @@ class GameTest : Harness() {
     fun `a feature on by default tells the player once where its switch is`() {
         say(0, "This ability is on cooldown for 4.35s")
         say(1, "This ability is on cooldown for 4.30s")
-        assertEquals(listOf("Hid a message from the server. Turn off Hide Cooldown Messages under Chat in /dsmod to see them."), game.messages.map { it.detail.plain })
+        assertEquals(listOf("Hid a message from the server. Turn off Hide Cooldown Messages under Combat in /dsmod to see them."), game.messages.map { it.detail.plain })
         assertEquals(setOf("hide-cooldown-messages"), game.hidden.value.told)
     }
 

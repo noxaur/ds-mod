@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
-import io.github.noxaur.dsmod.core.feature.ui.hud.hudbackground.HudBackground
+import io.github.noxaur.dsmod.core.feature.hud.layout.hudbackground.HudBackground
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText

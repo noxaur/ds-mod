@@ -1,8 +1,8 @@
 package io.github.noxaur.dsmod.gametest
 
 import com.mojang.brigadier.arguments.IntegerArgumentType
-import io.github.noxaur.dsmod.core.feature.menus.storageoverview.StorageMode
-import io.github.noxaur.dsmod.core.feature.menus.storageoverview.StorageOverview
+import io.github.noxaur.dsmod.core.feature.menus.helpers.storageoverview.StorageMode
+import io.github.noxaur.dsmod.core.feature.menus.helpers.storageoverview.StorageOverview
 import io.github.noxaur.dsmod.core.ui.StorageLayout
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.containerTop

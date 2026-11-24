@@ -18,6 +18,14 @@ A feature's switch, its settings and their defaults are declared in its own clas
 
 A feature's folder sits in its group's, and its group's in its section's, and each parent lists its children in the order the screen shows them. One list of every feature was rejected, because each pull request that added a feature edited it beside the last and they conflicted. Sorting by name was rejected because the order is a choice about the screen, and a number on each feature because no one place shows the order.
 
+## The sections follow SkyHanni's order
+
+The sections run from what ds-mod as a whole does, to places and activities, to what works everywhere, with Contribute last, as SkyHanni puts About and GUI first and Dev last. Players come from SkyHanni and SkyOcean, so they look for a setting where those mods keep it. A section for one kind of control, such as Binds or Camera, was rejected because a player looks for what a setting does, not how it is set. A feature that works in every activity, such as Rare Drop Alert, sits in Inventory rather than under the activity it was first built for.
+
+## A small feature is a row in a shared group
+
+A feature whose settings are only a key, a mode or one pick is a row in a group it shares, with those settings folded under its switch. A group of its own gave it a heading and a row of the same name, and kept its settings open, so one feature filled three or four lines.
+
 ## A default lives beside the value it belongs to
 
 A setting's default is declared in the one line that names its key, or read from a fresh config for a setting of no feature. A default written beside the row was rejected, because it would drift from the value's own, and the changed marker would then call an untouched setting changed.

@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.feature.general.etherwarpoutline.EtherwarpOutline
+import io.github.noxaur.dsmod.core.feature.visuals.etherwarpoutline.EtherwarpOutline
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.hand.Etherwarp
 import io.github.noxaur.dsmod.core.text.Role

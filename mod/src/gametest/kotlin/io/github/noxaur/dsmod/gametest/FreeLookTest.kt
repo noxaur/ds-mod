@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.camera.KeyMode
-import io.github.noxaur.dsmod.core.feature.camera.freelook.FreeLook
+import io.github.noxaur.dsmod.core.feature.visuals.camera.freelook.FreeLook
 import io.github.noxaur.dsmod.edge.Cameras
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest

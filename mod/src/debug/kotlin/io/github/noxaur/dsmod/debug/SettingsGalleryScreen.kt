@@ -14,7 +14,7 @@ import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.config.Switch
 import io.github.noxaur.dsmod.core.container.MarkStyle
 import io.github.noxaur.dsmod.core.container.SlotStyle
-import io.github.noxaur.dsmod.core.feature.ui.equipmentdisplay.EquipmentPiece
+import io.github.noxaur.dsmod.core.feature.hud.equipmentdisplay.EquipmentPiece
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.CommandBinds
 import io.github.noxaur.dsmod.core.input.Where

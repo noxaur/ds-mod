@@ -3,9 +3,9 @@ package io.github.noxaur.dsmod.core.config
 import io.github.noxaur.dsmod.core.container.MarkStyle
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.end.protector.protectorspawnbeam.ProtectorSpawnBeam
-import io.github.noxaur.dsmod.core.feature.camera.thirdperson.Camera
-import io.github.noxaur.dsmod.core.feature.binds.commandbinds.CommandBinds
-import io.github.noxaur.dsmod.core.feature.general.waypoints.Waypoints
+import io.github.noxaur.dsmod.core.feature.visuals.camera.thirdperson.Camera
+import io.github.noxaur.dsmod.core.feature.utilities.commandbinds.CommandBinds
+import io.github.noxaur.dsmod.core.feature.utilities.waypoints.Waypoints
 import io.github.noxaur.dsmod.core.feature.menus.betterui.backbuttons.BackButtons
 import io.github.noxaur.dsmod.core.feature.inventory.itemrarity.ItemRarity
 import io.github.noxaur.dsmod.core.feature.inventory.protection.slotlock.SlotLock

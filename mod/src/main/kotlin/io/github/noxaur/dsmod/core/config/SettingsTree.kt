@@ -2,17 +2,17 @@ package io.github.noxaur.dsmod.core.config
 
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
-import io.github.noxaur.dsmod.core.feature.binds.binds
 import io.github.noxaur.dsmod.core.feature.camel
-import io.github.noxaur.dsmod.core.feature.camera.camera
-import io.github.noxaur.dsmod.core.feature.chat.chat
 import io.github.noxaur.dsmod.core.feature.combat.combat
 import io.github.noxaur.dsmod.core.feature.contribute.contribute
 import io.github.noxaur.dsmod.core.feature.end.end
 import io.github.noxaur.dsmod.core.feature.general.general
+import io.github.noxaur.dsmod.core.feature.hud.hud
 import io.github.noxaur.dsmod.core.feature.inventory.inventory
 import io.github.noxaur.dsmod.core.feature.menus.menus
-import io.github.noxaur.dsmod.core.feature.ui.ui
+import io.github.noxaur.dsmod.core.feature.mining.mining
+import io.github.noxaur.dsmod.core.feature.utilities.utilities
+import io.github.noxaur.dsmod.core.feature.visuals.visuals
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.text.Role
 
@@ -106,14 +106,14 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
         private fun declare(c: DsModConfig, mac: Boolean): List<SettingSection> {
             val sections = Sections(c, mac).apply {
                 general()
-                camera()
-                binds()
-                ui()
-                chat()
-                inventory()
-                menus()
+                hud()
                 end()
                 combat()
+                mining()
+                inventory()
+                menus()
+                visuals()
+                utilities()
                 contribute()
             }.sections
             for (section in sections) for (group in section.groups) link(group.rows, group.switch)

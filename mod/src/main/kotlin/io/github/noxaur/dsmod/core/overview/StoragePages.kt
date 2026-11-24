@@ -2,7 +2,7 @@ package io.github.noxaur.dsmod.core.overview
 
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.Saved
-import io.github.noxaur.dsmod.core.feature.menus.storageoverview.StorageOverviewState
+import io.github.noxaur.dsmod.core.feature.menus.helpers.storageoverview.StorageOverviewState
 import io.github.noxaur.dsmod.core.game.ContainerOpened
 import io.github.noxaur.dsmod.core.game.ContainerState
 import io.github.noxaur.dsmod.core.game.SlotChanged

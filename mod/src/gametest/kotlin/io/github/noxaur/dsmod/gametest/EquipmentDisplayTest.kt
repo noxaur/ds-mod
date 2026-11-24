@@ -1,9 +1,9 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.ui.equipmentdisplay.EquipmentDisplay
-import io.github.noxaur.dsmod.core.feature.ui.equipmentdisplay.EquipmentLayout
-import io.github.noxaur.dsmod.core.feature.ui.equipmentdisplay.EquipmentLook
-import io.github.noxaur.dsmod.core.feature.ui.equipmentdisplay.PetPosition
+import io.github.noxaur.dsmod.core.feature.hud.equipmentdisplay.EquipmentDisplay
+import io.github.noxaur.dsmod.core.feature.hud.equipmentdisplay.EquipmentLayout
+import io.github.noxaur.dsmod.core.feature.hud.equipmentdisplay.EquipmentLook
+import io.github.noxaur.dsmod.core.feature.hud.equipmentdisplay.PetPosition
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud

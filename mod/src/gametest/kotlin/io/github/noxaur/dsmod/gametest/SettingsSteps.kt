@@ -2,7 +2,7 @@ package io.github.noxaur.dsmod.gametest
 
 import com.google.gson.JsonParser
 import io.github.noxaur.dsmod.core.config.DsModConfig
-import io.github.noxaur.dsmod.core.feature.binds.commandbinds.CommandBinds
+import io.github.noxaur.dsmod.core.feature.utilities.commandbinds.CommandBinds
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.ui.Place
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
@@ -47,8 +47,8 @@ internal object SettingsSteps {
         check(want in said) { "$step, the narrator says \"$said\", not \"$want\"" }
     }
 
-    fun open(context: ClientGameTestContext, tabs: SettingsTabs) {
-        context.setScreen { DsModClient.settingsScreen(TitleScreen(), tabs) }
+    fun open(context: ClientGameTestContext, tabs: SettingsTabs, reveal: String? = null) {
+        context.setScreen { DsModClient.settingsScreen(TitleScreen(), tabs, reveal) }
         context.waitTicks(2)
     }
 

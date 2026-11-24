@@ -3,9 +3,9 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.core.config.SettingsTree
 import io.github.noxaur.dsmod.core.container.MarkStyle
 import io.github.noxaur.dsmod.core.feature.end.protector.protectorspawnbeam.ProtectorSpawnBeam
-import io.github.noxaur.dsmod.core.feature.camera.thirdperson.Camera
-import io.github.noxaur.dsmod.core.feature.camera.freelook.FreeLook
-import io.github.noxaur.dsmod.core.feature.general.world.fullbright.Fullbright
+import io.github.noxaur.dsmod.core.feature.visuals.camera.thirdperson.Camera
+import io.github.noxaur.dsmod.core.feature.visuals.camera.freelook.FreeLook
+import io.github.noxaur.dsmod.core.feature.visuals.world.fullbright.Fullbright
 import io.github.noxaur.dsmod.core.feature.inventory.itemrarity.ItemRarity
 import io.github.noxaur.dsmod.core.feature.inventory.protection.slotlock.SlotLock
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
@@ -38,8 +38,8 @@ class SettingRowsTest : FabricClientGameTest {
         }
 
         context.runOnClient<Nothing> { DsModClient.feature<Camera>().tilt.value = -12f }
-        val cameraTabs = SettingsTabs(at("Camera"))
-        open(context, cameraTabs)
+        val cameraTabs = SettingsTabs(at("Visuals"))
+        open(context, cameraTabs, reveal = "cameraDistance")
         val searched = { context.computeOnClient<String, Nothing> { cameraTabs.current.place.query } }
         context.shotInBothThemes("own-settings-camera")
 
@@ -117,6 +117,7 @@ class SettingRowsTest : FabricClientGameTest {
         check(viewsAt() == 2) { "S and Enter in the menu did not pick Skip Back" }
         check(searched().isEmpty()) { "Typing in the open menu searched for \"${searched()}\"" }
 
+        unfold("freeLookKey", "free-look") { it.extraX + 7 to it.controlY + 6 }
         var k = spot("freeLookKey")
         click(k.controlX + 8, k.controlY + 8)
         context.takeScreenshot("own-settings-keys-recording")
@@ -140,13 +141,13 @@ class SettingRowsTest : FabricClientGameTest {
 
         val camera = spot("camera")
         click(camera.controlX + 11, camera.controlY + 6)
-        expect("The heading switch", false) { DsModClient.feature<Camera>().feature.enabled }
+        expect("The Third Person switch", false) { DsModClient.feature<Camera>().feature.enabled }
         context.shotInBothThemes("own-settings-dimmed")
         d = spot("cameraDistance")
         click(d.controlX + 71, d.controlY + 6)
         expect("A dimmed row stays editable", 50f) { DsModClient.feature<Camera>().distance.value }
         click(camera.controlX + 11, camera.controlY + 6)
-        expect("The heading switch again", true) { DsModClient.feature<Camera>().feature.enabled }
+        expect("The Third Person switch again", true) { DsModClient.feature<Camera>().feature.enabled }
 
         open(context, SettingsTabs(at("Inventory")))
         val style = spot("style")
@@ -215,7 +216,7 @@ class SettingRowsTest : FabricClientGameTest {
         key(GLFW.GLFW_KEY_ESCAPE)
         context.checkClient("The Contribute screen did not return to the settings") { it.gui.screen() is SettingsScreen }
 
-        open(context, SettingsTabs(at("General")))
+        open(context, SettingsTabs(at("Visuals")))
         val bright = spot("fullbright")
         click(bright.x + 20, bright.y + bright.height / 2)
         expect("A press on a switch's row", true) { DsModClient.feature<Fullbright>().feature.enabled }
@@ -229,7 +230,7 @@ class SettingRowsTest : FabricClientGameTest {
         context.checkClient("Two Escapes did not close the settings") { it.gui.screen() is TitleScreen }
         val saved = savedConfig()
         check(saved["general"].asJsonObject["fullbright"].asBoolean) { "Fullbright was not written to the config file" }
-        open(context, SettingsTabs(at("General")))
+        open(context, SettingsTabs(at("Visuals")))
         context.takeScreenshot("own-settings-reopened")
         check(DsModClient.feature<Fullbright>().feature.enabled) { "Fullbright is off after reopening" }
 

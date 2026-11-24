@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.etherwarpoutline.EtherwarpOutline
+import io.github.noxaur.dsmod.core.feature.visuals.etherwarpoutline.EtherwarpOutline
 import io.github.noxaur.dsmod.core.hand.Etherwarp
 import io.github.noxaur.dsmod.core.hand.Etherwarp.Miss
 import io.github.noxaur.dsmod.edge.DsModClient

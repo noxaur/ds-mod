@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.feature.ui.hud.hideinf3.HideInF3
+import io.github.noxaur.dsmod.core.feature.hud.layout.hideinf3.HideInF3
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.hud.BarRow

@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.waypoints.Waypoints
+import io.github.noxaur.dsmod.core.feature.utilities.waypoints.Waypoints
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Colors
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
@@ -135,7 +135,7 @@ class WaypointsTest : FabricClientGameTest {
         private fun picker() = ctx.computeOnClient<KitColorPicker?, Nothing> { list.editorNow(it).picker() }
 
         fun run() = with(list) {
-            open(ctx, SettingsTabs(at("General")))
+            open(ctx, SettingsTabs(at("Utilities")))
             list()
             press(line(foot()), "Add Waypoint")
             ctx.input.typeChars("Nest")

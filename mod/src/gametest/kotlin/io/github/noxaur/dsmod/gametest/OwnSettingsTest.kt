@@ -23,7 +23,7 @@ class OwnSettingsTest : FabricClientGameTest {
 
     private fun SettingsDriver.screen() {
         val window = setUp(context)
-        open(context, SettingsTabs(at("General")))
+        open(context, SettingsTabs(at("Visuals")))
         context.takeScreenshot("own-settings-charcoal")
         context.inTheme(Theme.VANILLA) { context.takeScreenshot("own-settings-vanilla") }
 
@@ -38,7 +38,7 @@ class OwnSettingsTest : FabricClientGameTest {
         context.takeScreenshot("own-settings-expanded")
         click(116 - 1 - 4 - 8, 360 - 4 - 8)
 
-        open(context, SettingsTabs(at("General")))
+        open(context, SettingsTabs(at("Visuals")))
         for (k in List(12) { GLFW.GLFW_KEY_DOWN } + listOf(GLFW.GLFW_KEY_RIGHT, GLFW.GLFW_KEY_DOWN, GLFW.GLFW_KEY_DOWN, GLFW.GLFW_KEY_ENTER)) {
             context.input.pressKey(k)
             context.waitTick()
@@ -60,7 +60,7 @@ class OwnSettingsTest : FabricClientGameTest {
         // @keep On macOS the game makes a Ctrl left press a right press, and Ctrl Click keeps it.
         val ctrlTabs = SettingsTabs(at("The End"))
         open(context, ctrlTabs)
-        move(30, 207 + 8)
+        move(30, 127 + 8)
         context.input.holdKey(GLFW.GLFW_KEY_LEFT_CONTROL)
         for (action in listOf(GLFW.GLFW_PRESS, GLFW.GLFW_RELEASE)) context.runOnClient<Nothing> {
             (it.mouseHandler as MouseButtonInvoker).invokeOnButton(it.window.handle(), MouseButtonInfo(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_MOD_CONTROL), action)
@@ -71,10 +71,10 @@ class OwnSettingsTest : FabricClientGameTest {
         val tabs = SettingsTabs(at("The End"))
         open(context, tabs)
         context.input.holdControl()
-        click(30, 207 + 8)
+        click(30, 127 + 8)
         context.input.releaseControl()
         expect(context, tabs, "[The End] Combat", "A Ctrl press on a section opens it after the selected tab, in the background")
-        click(40, 181 + 6, GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
+        click(40, 101 + 6, GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
         expect(context, tabs, "[The End] The End Combat", "A middle press on a subsection opens its section")
         click(120 + 3 * 93 + 7, 9)
         expect(context, tabs, "The End [New Tab] The End Combat", "The plus opens a blank tab after the selected one")
@@ -119,7 +119,7 @@ class OwnSettingsTest : FabricClientGameTest {
         key(GLFW.GLFW_KEY_1, control = true)
         expect(context, tabs, "[The End] eyes Combat New Tab The End", "Ctrl+1 selects the first tab")
 
-        click(30, 207 + 8)
+        click(30, 127 + 8)
         expect(context, tabs, "[Combat] eyes Combat New Tab The End", "A press on a section goes there in the same tab")
         key(GLFW.GLFW_KEY_LEFT, alt = true)
         expect(context, tabs, "[The End] eyes Combat New Tab The End", "Alt+Left goes back")
@@ -159,11 +159,11 @@ class OwnSettingsTest : FabricClientGameTest {
 
         // @keep 854x480 is the smallest window the game allows.
         context.input.resizeWindow(854, 480)
-        open(context, SettingsTabs(at("Camera")))
+        open(context, SettingsTabs(at("Visuals")), reveal = "cameraDistance")
         context.takeScreenshot("own-settings-small-camera")
         val small = SettingsTabs(at("The End"))
         context.runOnClient<Nothing> {
-            small.open(at("Chat"))
+            small.open(at("Utilities"))
             small.open(at("Inventory", "slot"))
             small.open(Place.BLANK)
             small.select(2)

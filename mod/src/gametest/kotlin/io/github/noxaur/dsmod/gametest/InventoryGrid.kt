@@ -1,10 +1,10 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.camera.KeyMode
-import io.github.noxaur.dsmod.core.feature.ui.inventoryhud.InventoryHud
-import io.github.noxaur.dsmod.core.feature.ui.inventoryhud.InventoryLayout
-import io.github.noxaur.dsmod.core.feature.ui.inventoryhud.InventoryLook
-import io.github.noxaur.dsmod.core.feature.ui.inventoryhud.InventoryRow
+import io.github.noxaur.dsmod.core.feature.hud.inventoryhud.InventoryHud
+import io.github.noxaur.dsmod.core.feature.hud.inventoryhud.InventoryLayout
+import io.github.noxaur.dsmod.core.feature.hud.inventoryhud.InventoryLook
+import io.github.noxaur.dsmod.core.feature.hud.inventoryhud.InventoryRow
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud

@@ -7,8 +7,8 @@ import io.github.noxaur.dsmod.core.camera.Slide
 import io.github.noxaur.dsmod.core.camera.ThirdPerson
 import io.github.noxaur.dsmod.core.camera.View
 import io.github.noxaur.dsmod.core.camera.Views
-import io.github.noxaur.dsmod.core.feature.camera.thirdperson.Camera
-import io.github.noxaur.dsmod.core.feature.camera.freelook.FreeLook
+import io.github.noxaur.dsmod.core.feature.visuals.camera.thirdperson.Camera
+import io.github.noxaur.dsmod.core.feature.visuals.camera.freelook.FreeLook
 import net.minecraft.client.CameraType
 import net.minecraft.client.Minecraft
 import net.minecraft.client.player.LocalPlayer
