@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.feature.binds.commandbinds.CommandBinds
+import io.github.noxaur.dsmod.core.feature.utilities.commandbinds.CommandBinds
 import io.github.noxaur.dsmod.core.input.BindMatcher
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.CommandBind.Message

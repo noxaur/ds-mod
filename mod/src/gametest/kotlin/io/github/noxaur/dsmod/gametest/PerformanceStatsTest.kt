@@ -1,9 +1,9 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.ui.performancestats.PerformanceStats
-import io.github.noxaur.dsmod.core.feature.ui.performancestats.Stat
-import io.github.noxaur.dsmod.core.feature.ui.performancestats.StatsLayout
-import io.github.noxaur.dsmod.core.feature.ui.performancestats.StatsLook
+import io.github.noxaur.dsmod.core.feature.hud.performancestats.PerformanceStats
+import io.github.noxaur.dsmod.core.feature.hud.performancestats.Stat
+import io.github.noxaur.dsmod.core.feature.hud.performancestats.StatsLayout
+import io.github.noxaur.dsmod.core.feature.hud.performancestats.StatsLook
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.Text
 import io.github.noxaur.dsmod.edge.DsModClient

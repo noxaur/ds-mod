@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.binds.commandbinds.CommandBinds
+import io.github.noxaur.dsmod.core.feature.utilities.commandbinds.CommandBinds
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.Where

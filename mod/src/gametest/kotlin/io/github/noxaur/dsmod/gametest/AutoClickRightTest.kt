@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.autoclick.AutoClick
+import io.github.noxaur.dsmod.core.feature.utilities.autoclick.AutoClick
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.gametest.SettingsSteps.at
@@ -17,7 +17,7 @@ class AutoClickRightTest : FabricClientGameTest {
         fun heldUses(walk: Boolean, message: (Int) -> String) = context.autoClicks(walk = walk, key = key).let { (_, uses) -> check(uses == 0) { message(uses) } }
         val window = SettingsSteps.setUp(context)
         try {
-            context.setScreen { DsModClient.settingsScreen(TitleScreen(), SettingsTabs(at("General")), reveal = "ability-cooldowns") }
+            context.setScreen { DsModClient.settingsScreen(TitleScreen(), SettingsTabs(at("Utilities")), reveal = "autoClickRight") }
             context.waitTicks(2)
             context.shotInBothThemes("auto-click-settings")
         } finally {

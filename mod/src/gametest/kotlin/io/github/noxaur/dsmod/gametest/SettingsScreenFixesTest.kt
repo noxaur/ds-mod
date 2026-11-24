@@ -1,8 +1,8 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.animations.Animations
-import io.github.noxaur.dsmod.core.feature.camera.thirdperson.Camera
-import io.github.noxaur.dsmod.core.feature.binds.commandbinds.CommandBinds
+import io.github.noxaur.dsmod.core.feature.visuals.animations.Animations
+import io.github.noxaur.dsmod.core.feature.visuals.camera.thirdperson.Camera
+import io.github.noxaur.dsmod.core.feature.utilities.commandbinds.CommandBinds
 import io.github.noxaur.dsmod.core.feature.menus.betterui.menutabs.MenuTabs
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
@@ -32,8 +32,8 @@ class SettingsScreenFixesTest : FabricClientGameTest {
 
     private fun SettingsDriver.rows() {
         val distance = { DsModClient.feature<Camera>().distance.value }
-        val tabs = SettingsTabs(at("Camera"))
-        open(context, tabs)
+        val tabs = SettingsTabs(at("Visuals"))
+        open(context, tabs, reveal = "cameraDistance")
         val d = spot("cameraDistance")
 
         click(d.extraX + 4, d.controlY + 6)
@@ -59,7 +59,7 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         check(distance() == 7f) { "The digit never opened the field, leaving ${distance()}" }
 
         context.runOnClient<Nothing> { DsModClient.feature<Animations>().itemSize.value = 2f }
-        open(context, SettingsTabs(at("General")))
+        open(context, SettingsTabs(at("Visuals")))
         val animations = spot("animations")
         click(animations.x + 8, animations.y + 8)
         key(GLFW.GLFW_KEY_RIGHT)
@@ -79,7 +79,7 @@ class SettingsScreenFixesTest : FabricClientGameTest {
         val menuTabs = DsModClient.feature<MenuTabs>()
         commandBinds.binds.value = listOf(CommandBind(command = "/a"), CommandBind(command = "/b"))
         commandBinds.groups.value = emptyList()
-        open(context, SettingsTabs(at("Binds")))
+        open(context, SettingsTabs(at("Utilities")))
         list()
         val from = at(lineOf(0))
         val gx = from[0] + 12
@@ -99,7 +99,7 @@ class SettingsScreenFixesTest : FabricClientGameTest {
 
         commandBinds.binds.value = listOf(CommandBind(command = "/c", group = "Dungeons"))
         commandBinds.groups.value = listOf("Dungeons")
-        open(context, SettingsTabs(at("Binds")))
+        open(context, SettingsTabs(at("Utilities")))
         list()
         press(headingOf("Dungeons"))
         context.runOnClient<Nothing> { Minecraft.getInstance().keyboardHandler.clipboard = "none" }

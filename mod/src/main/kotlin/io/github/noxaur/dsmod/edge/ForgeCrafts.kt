@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.config.KeyBind
-import io.github.noxaur.dsmod.core.feature.menus.forgecraft.ForgeCraft
+import io.github.noxaur.dsmod.core.feature.mining.forge.forgecraft.ForgeCraft
 import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.text

@@ -2,7 +2,7 @@ package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.config.DsModConfig
-import io.github.noxaur.dsmod.core.feature.ui.hud.hudbackground.HudBackground
+import io.github.noxaur.dsmod.core.feature.hud.layout.hudbackground.HudBackground
 import io.github.noxaur.dsmod.core.hud.HudScale
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.edge.ui.EditorScreen

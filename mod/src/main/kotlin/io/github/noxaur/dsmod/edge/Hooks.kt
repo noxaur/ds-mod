@@ -3,8 +3,8 @@ package io.github.noxaur.dsmod.edge
 import com.mojang.blaze3d.platform.InputConstants
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.feature.general.mouse.ctrlclick.CtrlClick
-import io.github.noxaur.dsmod.core.feature.general.world.fullbright.Fullbright
-import io.github.noxaur.dsmod.core.feature.general.world.hideexplosions.HideExplosions
+import io.github.noxaur.dsmod.core.feature.visuals.world.fullbright.Fullbright
+import io.github.noxaur.dsmod.core.feature.visuals.world.hideexplosions.HideExplosions
 import net.minecraft.client.gui.screens.Screen
 
 object Hooks {

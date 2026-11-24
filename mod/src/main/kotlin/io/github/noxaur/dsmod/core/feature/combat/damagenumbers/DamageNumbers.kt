@@ -25,8 +25,8 @@ class DamageNumbers(config: DsModConfig) : HasFeature {
     override val feature = Feature(config, "damage-numbers", Area.ANYWHERE, Store.GENERAL, "Shorten or hide the damage numbers that pop up on a hit.", default = false)
 
     val shown = feature.choice("damageShown", "Show", "Pick which damage numbers you see: all, only crits, or none.", DamageShown.ALL)
-    val shorten = feature.switch("damageShort", "Short Numbers", "Shorten big numbers, so 1,234,567 reads 1.2M.", default = true)
-    val decimals = feature.number("damageDecimals", "Decimals", "Set how many decimals a short number keeps.", 1f, 0f..3f, step = 1f, dependsOn = shorten)
+    val decimals = feature.number("damageDecimals", "Decimals", "Set how many decimals a short number keeps.", 1f, 0f..3f, step = 1f)
+    val shorten = feature.switch("damageShort", "Short Numbers", "Shorten big numbers, so 1,234,567 reads 1.2M.", default = true, under = listOf(decimals))
 
     init {
         feature.on<FloatingText> { event, _ ->

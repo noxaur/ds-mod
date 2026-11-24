@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.ui.hud.hideinf3.HideInF3
+import io.github.noxaur.dsmod.core.feature.hud.layout.hideinf3.HideInF3
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.gametest.InventoryGrid.ID

@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.binds.commandbinds.CommandBinds
+import io.github.noxaur.dsmod.core.feature.utilities.commandbinds.CommandBinds
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.Where
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
@@ -27,7 +27,7 @@ class CommandBindsTest : FabricClientGameTest {
 
     private fun BindsDriver.binds() {
         val commandBinds = DsModClient.feature<CommandBinds>()
-        open(context, SettingsTabs(at("Binds")))
+        open(context, SettingsTabs(at("Utilities")))
         list()
         context.takeScreenshot("command-binds-empty")
         check(lines() == 2) { "An empty list shows ${lines()} lines, not its message and its buttons" }

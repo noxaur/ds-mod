@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.playermodel.PlayerModel
+import io.github.noxaur.dsmod.core.feature.visuals.playermodel.PlayerModel
 import io.github.noxaur.dsmod.core.player.ModelPose
 import io.github.noxaur.dsmod.core.player.ModelTarget
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
@@ -158,7 +158,7 @@ class PlayerModelTest : FabricClientGameTest {
                 val spun = moved(spinStart, model("player-model-inventory-spin-later"))
                 check(spun > 500) { "Spin turned the inventory's model by only $spun pixels" }
                 playerModel.spin.value = 0f
-                context.setScreen { DsModClient.settingsScreen(null, SettingsTabs(at("General")), reveal = "resetPlayerModel") }
+                context.setScreen { DsModClient.settingsScreen(null, SettingsTabs(at("Visuals")), reveal = "resetPlayerModel") }
                 context.waitTicks(2)
                 context.takeScreenshot("player-model-settings")
                 context.setScreen { null }

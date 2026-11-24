@@ -31,7 +31,7 @@ dsmod:
   ForbiddenText/pet-by-current-pet:
     active: true
     includes: ['**/src/main/kotlin/**/core/feature/**']
-    excludes: ['**/core/feature/ui/CurrentPet.kt']
+    excludes: ['**/core/feature/hud/CurrentPet.kt']
     pattern: '"Pet:'
     reason: 'Follow the pet the player has out with `CurrentPet(feature, { before -> .. })`, which reads the sidebar, the Pets menu''s card and the heads of pets nearby, and forgets the pet when the player leaves.'
     examples:

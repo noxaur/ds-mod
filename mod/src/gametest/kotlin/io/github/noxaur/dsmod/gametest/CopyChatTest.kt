@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.chat.copychat.CopyChat
+import io.github.noxaur.dsmod.core.feature.utilities.chat.copychat.CopyChat
 import io.github.noxaur.dsmod.edge.CopyChats
 import io.github.noxaur.dsmod.edge.CopyChats.Format
 import io.github.noxaur.dsmod.edge.DsModClient

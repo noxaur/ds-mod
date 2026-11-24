@@ -2,7 +2,7 @@ package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.capture.RawRecord
 import io.github.noxaur.dsmod.core.capture.eventTypes
-import io.github.noxaur.dsmod.core.feature.ui.performancestats.PerformanceStats
+import io.github.noxaur.dsmod.core.feature.hud.performancestats.PerformanceStats
 import io.github.noxaur.dsmod.debug.DsModDebug
 import io.github.noxaur.dsmod.edge.DsModClient
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest

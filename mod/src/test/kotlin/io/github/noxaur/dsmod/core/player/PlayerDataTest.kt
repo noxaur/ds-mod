@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.core.player
 
 import io.github.noxaur.dsmod.harness.encode
-import io.github.noxaur.dsmod.core.feature.general.itemoverview.ItemOverview
+import io.github.noxaur.dsmod.core.feature.inventory.items.itemoverview.ItemOverview
 import io.github.noxaur.dsmod.core.feature.savedJson
 import io.github.noxaur.dsmod.core.feature.combat.slayers.slayertracker.SlayerTracker
 import io.github.noxaur.dsmod.core.game.ContainerOpened

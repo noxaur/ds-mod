@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.animations.Animations
+import io.github.noxaur.dsmod.core.feature.visuals.animations.Animations
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.gametest.mixin.HandAccessor
 import io.github.noxaur.dsmod.gametest.mixin.HudAccessor

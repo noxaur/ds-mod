@@ -51,10 +51,10 @@ class FavoritesTest {
         val tree = SettingsTree().sections
         val hits = Favorites.hits(tree, listOf("slotLockKey", "etherwarp-outline", "etherwarpWidth", "slot-lock", "rare-drop-alert", "gone"))
         assertEquals(
-            listOf("Etherwarp" to listOf("etherwarp-outline", "etherwarpWidth"), "Protection" to listOf("slot-lock"), "Loot" to listOf("rare-drop-alert")),
+            listOf("Protection" to listOf("slot-lock"), "Items" to listOf("rare-drop-alert"), "Etherwarp" to listOf("etherwarp-outline", "etherwarpWidth")),
             hits.map { it.group.name to it.rows.map(Setting::id) },
         )
-        assertEquals(listOf("General", "Inventory", "Combat"), hits.map { tree[it.section].name })
+        assertEquals(listOf("Inventory", "Inventory", "Visuals"), hits.map { tree[it.section].name })
     }
 
     @Test

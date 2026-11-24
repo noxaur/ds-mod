@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.itemoverview.ItemOverview
+import io.github.noxaur.dsmod.core.feature.inventory.items.itemoverview.ItemOverview
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.overview.ItemOverviewScreen
 import io.github.noxaur.dsmod.edge.ui.KitButton

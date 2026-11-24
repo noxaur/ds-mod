@@ -62,8 +62,9 @@ class Feature(
     internal val hud: ((now: Long) -> HudBlock?)? = null,
     internal val slots: ((now: Long) -> Map<Int, SlotMark>)? = null,
     internal val marks: ((now: Long) -> List<Mark>)? = null,
+    name: String? = null,
 ) {
-    val title = id.split('-').joinToString(" ") { WORDS[it] ?: it.replaceFirstChar(Char::uppercase) }
+    val title = name ?: id.split('-').joinToString(" ") { WORDS[it] ?: it.replaceFirstChar(Char::uppercase) }
     private val header = text { brand(title) }
 
     private val stored = config.stored(store)
