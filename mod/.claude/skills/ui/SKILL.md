@@ -59,7 +59,7 @@ A screen is a vanilla `Screen` holding the kit's widgets. It takes the screen it
 
 [`kit.md`](kit.md) lists every token, component and size. Read it before you build a screen, or when you need a component it may not have.
 
-A setting is one line with a kind of row, in its feature's class or in `SettingsTree` for a setting of no feature, which brings its control, reset, search and keyboard. [`settings.md`](settings.md) says how to add a setting, a look, or a kind of row.
+A setting is one line with a kind of row, in its feature's class or in its group's file under `core/feature` for a setting of no feature, which brings its control, reset, search and keyboard. [`settings.md`](settings.md) says how to add a setting, a look, or a kind of row.
 
 ## Design the control whole
 

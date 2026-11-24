@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.feature.general.CtrlClick
+import io.github.noxaur.dsmod.core.feature.general.mouse.ctrlclick.CtrlClick
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.brigadier.arguments.StringArgumentType
@@ -15,8 +15,8 @@ import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.SlotClicked
 import io.github.noxaur.dsmod.core.game.WorldChanged
-import io.github.noxaur.dsmod.core.feature.inventory.PetsMenu
-import io.github.noxaur.dsmod.core.feature.inventory.WardrobeKeys
+import io.github.noxaur.dsmod.core.feature.menus.petsmenu.PetsMenu
+import io.github.noxaur.dsmod.core.feature.menus.wardrobekeys.WardrobeKeys
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.edge.capture.Recorder

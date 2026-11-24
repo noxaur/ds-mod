@@ -6,7 +6,7 @@ import io.github.noxaur.dsmod.harness.chat
 import io.github.noxaur.dsmod.harness.Harness
 import io.github.noxaur.dsmod.harness.lines
 import io.github.noxaur.dsmod.core.feature.Game
-import io.github.noxaur.dsmod.core.feature.end.ZealotTracker
+import io.github.noxaur.dsmod.core.feature.end.drops.zealottracker.ZealotTracker
 import io.github.noxaur.dsmod.core.game.TabList
 import java.nio.file.Files
 import java.util.concurrent.Executors

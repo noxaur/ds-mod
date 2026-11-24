@@ -1,9 +1,9 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.InventoryHud
-import io.github.noxaur.dsmod.core.feature.general.InventoryLayout
-import io.github.noxaur.dsmod.core.feature.general.InventoryLook
-import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
+import io.github.noxaur.dsmod.core.feature.ui.inventoryhud.InventoryHud
+import io.github.noxaur.dsmod.core.feature.ui.inventoryhud.InventoryLayout
+import io.github.noxaur.dsmod.core.feature.ui.inventoryhud.InventoryLook
+import io.github.noxaur.dsmod.core.feature.menus.look.menutheme.MenuTheme
 import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.Theme
 import io.github.noxaur.dsmod.edge.DsModClient

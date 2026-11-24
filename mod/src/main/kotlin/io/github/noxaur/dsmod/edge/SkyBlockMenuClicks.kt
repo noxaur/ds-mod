@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.feature.inventory.SkyBlockMenuClick
+import io.github.noxaur.dsmod.core.feature.menus.betterui.skyblockmenuclick.SkyBlockMenuClick
 import io.github.noxaur.dsmod.edge.input.InputApproved
 import io.github.noxaur.dsmod.edge.input.PlayerCommands
 import net.minecraft.world.entity.player.Inventory

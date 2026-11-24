@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.Fullbright
-import io.github.noxaur.dsmod.core.feature.loot.RareDropAlert
+import io.github.noxaur.dsmod.core.feature.general.world.fullbright.Fullbright
+import io.github.noxaur.dsmod.core.feature.combat.loot.raredropalert.RareDropAlert
 import io.github.noxaur.dsmod.core.ui.Place
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.edge.DsModClient

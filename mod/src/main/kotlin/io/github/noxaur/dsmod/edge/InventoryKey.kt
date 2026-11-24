@@ -2,7 +2,7 @@ package io.github.noxaur.dsmod.edge
 
 import com.mojang.blaze3d.platform.InputConstants
 import io.github.noxaur.dsmod.core.camera.KeyMode
-import io.github.noxaur.dsmod.core.feature.general.InventoryHud
+import io.github.noxaur.dsmod.core.feature.ui.inventoryhud.InventoryHud
 import net.minecraft.client.Minecraft
 
 object InventoryKey {

@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.edge
 
-import io.github.noxaur.dsmod.core.feature.end.EyeGuard
+import io.github.noxaur.dsmod.core.feature.end.dragon.eyeguard.EyeGuard
 import io.github.noxaur.dsmod.edge.input.InputApproved
 import io.github.noxaur.dsmod.edge.input.Refusals
 import net.minecraft.core.BlockPos

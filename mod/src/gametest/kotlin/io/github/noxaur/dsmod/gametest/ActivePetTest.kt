@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.ActivePet
-import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
+import io.github.noxaur.dsmod.core.feature.ui.activepet.ActivePet
+import io.github.noxaur.dsmod.core.feature.ui.equipmentdisplay.EquipmentDisplay
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest

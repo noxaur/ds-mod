@@ -5,7 +5,7 @@ import io.github.noxaur.dsmod.core.config.DsModConfig.Position
 import io.github.noxaur.dsmod.core.feature.Alert
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.feature.Notice
-import io.github.noxaur.dsmod.core.feature.hud.HudBackground
+import io.github.noxaur.dsmod.core.feature.ui.hud.hudbackground.HudBackground
 import io.github.noxaur.dsmod.core.hud.HudBlock
 import io.github.noxaur.dsmod.core.hud.HudBox
 import io.github.noxaur.dsmod.core.hud.HudDock

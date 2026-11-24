@@ -1,9 +1,9 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.Animations
-import io.github.noxaur.dsmod.core.feature.general.Camera
-import io.github.noxaur.dsmod.core.feature.general.CommandBinds
-import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
+import io.github.noxaur.dsmod.core.feature.general.animations.Animations
+import io.github.noxaur.dsmod.core.feature.camera.thirdperson.Camera
+import io.github.noxaur.dsmod.core.feature.binds.commandbinds.CommandBinds
+import io.github.noxaur.dsmod.core.feature.menus.betterui.menutabs.MenuTabs
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.ui.SettingsTabs
 import io.github.noxaur.dsmod.core.ui.TabEdge

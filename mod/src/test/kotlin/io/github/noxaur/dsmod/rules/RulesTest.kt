@@ -42,7 +42,7 @@ class RulesTest {
     @Test
     fun `a feature in an area's folder is locked to that area`() {
         val wrong = SettingsTree().owners.filter { owner ->
-            val folder = owner.javaClass.packageName.substringAfterLast('.')
+            val folder = owner.javaClass.packageName.removePrefix("io.github.noxaur.dsmod.core.feature.").substringBefore('.')
             owner.feature.area != (FOLDERS[folder] ?: Area.ANYWHERE)
         }.map { "${it.javaClass.simpleName} is ${it.feature.area}" }
         assertEquals(

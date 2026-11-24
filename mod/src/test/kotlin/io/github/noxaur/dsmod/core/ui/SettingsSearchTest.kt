@@ -7,7 +7,7 @@ import io.github.noxaur.dsmod.core.config.Store
 import io.github.noxaur.dsmod.core.config.Stored
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
-import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
+import io.github.noxaur.dsmod.core.feature.inventory.itemrarity.ItemRarity
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.text.Role
 import kotlin.test.Test
@@ -38,7 +38,7 @@ class SettingsSearchTest {
     private val look = object : HasFeature {
         override val feature = Feature(DsModConfig(), "free-look", Area.ANYWHERE, Store.GENERAL, "Look around.")
     }
-    private val sections = Sections().apply {
+    private val sections = Sections(DsModConfig(), mac = false).apply {
         section("The End", Role.EPIC) {
             group("Dragon") {
                 switch(v.a.bind, "Dragon Timer", "Show when the egg returns.", id = "timer")

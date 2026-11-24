@@ -2,9 +2,9 @@ package io.github.noxaur.dsmod.edge
 
 import io.github.noxaur.dsmod.core.feature.Game
 import io.github.noxaur.dsmod.core.container.MenuButton
-import io.github.noxaur.dsmod.core.feature.inventory.FixedMenuLayout
-import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
-import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
+import io.github.noxaur.dsmod.core.feature.menus.look.fixedmenulayout.FixedMenuLayout
+import io.github.noxaur.dsmod.core.feature.menus.look.keepcursor.KeepCursor
+import io.github.noxaur.dsmod.core.feature.menus.look.menutheme.MenuTheme
 import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.CursorMemory

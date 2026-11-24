@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.general.EquipmentDisplay
+import io.github.noxaur.dsmod.core.feature.ui.equipmentdisplay.EquipmentDisplay
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.hud.HudScale
 import io.github.noxaur.dsmod.edge.DsModClient

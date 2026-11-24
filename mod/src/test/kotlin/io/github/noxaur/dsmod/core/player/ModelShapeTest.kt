@@ -1,7 +1,7 @@
 package io.github.noxaur.dsmod.core.player
 
 import io.github.noxaur.dsmod.core.config.SettingsTree
-import io.github.noxaur.dsmod.core.feature.general.PlayerModel
+import io.github.noxaur.dsmod.core.feature.general.playermodel.PlayerModel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

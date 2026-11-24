@@ -2,7 +2,7 @@ package io.github.noxaur.dsmod.edge
 
 import com.google.gson.JsonArray
 import com.mojang.serialization.JsonOps
-import io.github.noxaur.dsmod.core.feature.chat.CopyChat
+import io.github.noxaur.dsmod.core.feature.chat.copychat.CopyChat
 import io.github.noxaur.dsmod.core.text.FormatCodes
 import io.github.noxaur.dsmod.core.text.StyledRun
 import io.github.noxaur.dsmod.core.text.text

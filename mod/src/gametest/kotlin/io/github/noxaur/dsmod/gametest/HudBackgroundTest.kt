@@ -1,6 +1,6 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.hud.HudBackground
+import io.github.noxaur.dsmod.core.feature.ui.hud.hudbackground.HudBackground
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.edge.HudEditorScreen

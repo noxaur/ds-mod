@@ -6,6 +6,7 @@ dsmod:
   ForbiddenText/area-by-declaration:
     active: true
     includes: ['**/src/main/kotlin/**/core/feature/**']
+    excludes: ['**/core/feature/end/End.kt']
     pattern: '"(The End|Village|The Crypts|Catacombs|Dungeon Hub|Void Sepulture)"'
     reason: 'A feature never asks where the player is. Pass its `Area` to `Feature(..)` and `Game` gives it events and a readout only there. For a place `Area` lacks, add an entry with the tab list row or the sidebar place a capture shows.'
     examples:
@@ -14,7 +15,7 @@ dsmod:
   ContainerByReader/container-by-reader:
     active: true
     includes: ['**/src/main/kotlin/**/core/feature/**']
-    excludes: ['**/core/feature/general/ContainerReader.kt']
+    excludes: ['**/core/feature/ContainerReader.kt']
     reason: 'Mark slots with `SlotMarks(feature) { slot, item, now -> .. }`, which rebuilds the marks only when the container changed or `invalidate()` says so. To read a container''s items again after it changed, ask `ContainerReader(feature).changed()`.'
     examples:
       - 'feature.on<SlotChanged> { _, _ -> changed = true }'
@@ -30,7 +31,7 @@ dsmod:
   ForbiddenText/pet-by-current-pet:
     active: true
     includes: ['**/src/main/kotlin/**/core/feature/**']
-    excludes: ['**/core/feature/general/CurrentPet.kt']
+    excludes: ['**/core/feature/ui/CurrentPet.kt']
     pattern: '"Pet:'
     reason: 'Follow the pet the player has out with `CurrentPet(feature, { before -> .. })`, which reads the sidebar, the Pets menu''s card and the heads of pets nearby, and forgets the pet when the player leaves.'
     examples:
