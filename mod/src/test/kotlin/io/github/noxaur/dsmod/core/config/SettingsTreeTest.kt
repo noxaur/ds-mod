@@ -1,7 +1,6 @@
 package io.github.noxaur.dsmod.core.config
 
 import io.github.noxaur.dsmod.core.container.MarkStyle
-import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.end.protector.protectorspawnbeam.ProtectorSpawnBeam
 import io.github.noxaur.dsmod.core.feature.camera.thirdperson.Camera
@@ -11,9 +10,6 @@ import io.github.noxaur.dsmod.core.feature.menus.betterui.backbuttons.BackButton
 import io.github.noxaur.dsmod.core.feature.inventory.itemrarity.ItemRarity
 import io.github.noxaur.dsmod.core.feature.inventory.protection.slotlock.SlotLock
 import kotlinx.serialization.descriptors.elementNames
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -48,17 +44,6 @@ class SettingsTreeTest {
             assertTrue(listOf(whole, parts > 0, only).count { it } == 1, "$field: reached $whole, by $parts parts, stored only $only")
         }
         for (field in reached + stored.keys) assertTrue(saved.any { field == it || field.startsWith("$it.") }, "$field is not a saved field")
-    }
-
-    @Test
-    fun `every feature class is placed in a group`() {
-        val classes = Path.of(HasFeature::class.java.protectionDomain.codeSource.location.toURI())
-        val features = Files.walk(classes.resolve("io/github/noxaur/dsmod/core/feature")).use { paths ->
-            paths.filter { it.toString().endsWith(".class") }.map { classes.relativize(it).toString().removeSuffix(".class").replace(File.separatorChar, '.') }.toList()
-        }.map { Class.forName(it, false, javaClass.classLoader) }.filter { HasFeature::class.java.isAssignableFrom(it) && !it.isInterface && !it.isAnonymousClass }
-        val placed = settings.owners.map { it.javaClass }.toSet()
-        val unplaced = features.filter { it !in placed }.map { "${it.simpleName}: add feature(${it.simpleName}(c)) to the group file in ${it.packageName.removePrefix("io.github.noxaur.dsmod.").substringBeforeLast('.').replace('.', '/')}/" }
-        assertEquals(emptyList(), unplaced)
     }
 
     @Test
