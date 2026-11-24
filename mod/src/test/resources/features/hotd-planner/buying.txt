@@ -1,0 +1,3535 @@
++   0.0s > (opened your inventory, 46 slots)
++   0.0s > (slot 5) 1 x Crying Obsidian Helmet
++   0.0s > (slot 6) 1 x Crying Obsidian Chestplate
++   0.0s > (slot 7) 1 x Crying Obsidian Leggings
++   0.0s > (slot 8) 1 x Crying Obsidian Boots
++   0.0s > (slot 9) 1 x Promising Pickaxe
++   0.0s > (slot 10) 1 x Obsidian Drill OD-355
++   0.0s > (slot 11) 64 x Enchanted End Stone
++   0.0s > (slot 12) 64 x Enchanted End Stone
++   0.0s > (slot 13) 64 x Enchanted End Stone
++   0.0s > (slot 14) 64 x Enchanted End Stone
++   0.0s > (slot 15) 64 x Enchanted End Stone
++   0.0s > (slot 16) 64 x Enchanted End Stone
++   0.0s > (slot 17) 64 x Enchanted End Stone
++   0.0s > (slot 18) 1 x Refined Enderite Pickaxe
++   0.0s > (slot 19) 1 x Crying Obsidian Pickaxe
++   0.0s > (slot 20) 52 x Obsidian
++   0.0s > (slot 21) 64 x Rough Amethyst
++   0.0s > (slot 22) 64 x Enchanted End Stone
++   0.0s > (slot 23) 63 x Flawed Amethyst
++   0.0s > (slot 24) 1 x Fuel Tank
++   0.0s > (slot 25) 57 x Enchanted End Stone
++   0.0s > (slot 26) 3 x End Stone Rose
++   0.0s > (slot 27) 1 x Flint Arrow
++   0.0s > (slot 28) 3 x Summoning Eye
++   0.0s > (slot 29) 2 x Bejeweled Handle
++   0.0s > (slot 31) 60 x Fine Amethyst
++   0.0s > (slot 34) 3 x Rough Amethyst
++   0.1s > (slot 35) 1 x InfiniEye™
++   0.1s > (slot 36) 1 x Suspicious Giant's Sword
++   0.1s > (slot 37) 1 x Warped Aspect of the Void
++   0.1s > (slot 38) 1 x Fabled Frozen Scythe
++   0.1s > (slot 39) 1 x Fabled Edible Mace
++   0.1s > (slot 40) 1 x Precise Golden Gun
++   0.1s > (slot 41) 1 x Auspicious Amethyst Gauntlet
++   0.1s > (slot 43) 13 x Crying Obsidian
++   0.1s > (slot 44) 1 x SkyBlock Menu (Right Click)
++   3.4s > (you clicked slot 44)
++   3.5s > (opened "Dragon Sim Menu", 90 slots)
++   3.5s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 4) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 11) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 13) 1 x Your Dragon Sim Profile
++   3.5s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 15) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 19) 1 x Your Skills
++   3.5s > (slot 20) 1 x Collections
++   3.5s > (slot 21) 1 x Recipe Book
++   3.5s > (slot 22) 1 x Mythic Carrot
++   3.5s > (slot 23) 1 x Quests & Guides
++   3.5s > (slot 24) 1 x Boosters
++   3.5s > (slot 25) 1 x Storage
++   3.5s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 28) 1 x Accessory Bag
++   3.5s > (slot 29) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 30) 1 x Pets
++   3.5s > (slot 31) 1 x Crafting Table
++   3.5s > (slot 32) 1 x Auction House
++   3.5s > (slot 33) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 34) 1 x Wardrobe
++   3.5s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 36) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 37) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 38) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 39) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 40) 1 x Teleport
++   3.5s > (slot 41) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 42) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 43) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 44) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 45) 1 x Store
++   3.5s > (slot 46) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 48) 1 x Profile Management
++   3.5s > (slot 49) 1 x Close
++   3.5s > (slot 50) 1 x Settings
++   3.5s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 52) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 53) 1 x minecraft:black_stained_glass_pane
++   3.5s > (slot 54) 1 x Promising Pickaxe
++   3.5s > (slot 55) 1 x Obsidian Drill OD-355
++   3.5s > (slot 56) 64 x Enchanted End Stone
++   3.5s > (slot 57) 64 x Enchanted End Stone
++   3.5s > (slot 58) 64 x Enchanted End Stone
++   3.5s > (slot 59) 64 x Enchanted End Stone
++   3.5s > (slot 60) 64 x Enchanted End Stone
++   3.5s > (slot 61) 64 x Enchanted End Stone
++   3.5s > (slot 62) 64 x Enchanted End Stone
++   3.5s > (slot 63) 1 x Refined Enderite Pickaxe
++   3.5s > (slot 64) 1 x Crying Obsidian Pickaxe
++   3.5s > (slot 65) 52 x Obsidian
++   3.5s > (slot 66) 64 x Rough Amethyst
++   3.5s > (slot 67) 64 x Enchanted End Stone
++   3.6s > (slot 68) 63 x Flawed Amethyst
++   3.6s > (slot 69) 1 x Fuel Tank
++   3.6s > (slot 70) 57 x Enchanted End Stone
++   3.6s > (slot 71) 3 x End Stone Rose
++   3.6s > (slot 72) 1 x Flint Arrow
++   3.6s > (slot 73) 3 x Summoning Eye
++   3.6s > (slot 74) 2 x Bejeweled Handle
++   3.6s > (slot 76) 60 x Fine Amethyst
++   3.6s > (slot 79) 3 x Rough Amethyst
++   3.6s > (slot 80) 1 x InfiniEye™
++   3.6s > (slot 81) 1 x Suspicious Giant's Sword
++   3.6s > (slot 82) 1 x Warped Aspect of the Void
++   3.6s > (slot 83) 1 x Fabled Frozen Scythe
++   3.6s > (slot 84) 1 x Fabled Edible Mace
++   3.6s > (slot 85) 1 x Precise Golden Gun
++   3.6s > (slot 86) 1 x Auspicious Amethyst Gauntlet
++   3.6s > (slot 88) 13 x Crying Obsidian
++   3.6s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   5.1s > (opened your inventory, 46 slots)
++   5.1s > (slot 5) 1 x Crying Obsidian Helmet
++   5.1s > (slot 6) 1 x Crying Obsidian Chestplate
++   5.1s > (slot 7) 1 x Crying Obsidian Leggings
++   5.1s > (slot 8) 1 x Crying Obsidian Boots
++   5.1s > (slot 9) 1 x Promising Pickaxe
++   5.1s > (slot 10) 1 x Obsidian Drill OD-355
++   5.1s > (slot 11) 64 x Enchanted End Stone
++   5.1s > (slot 12) 64 x Enchanted End Stone
++   5.1s > (slot 13) 64 x Enchanted End Stone
++   5.1s > (slot 14) 64 x Enchanted End Stone
++   5.1s > (slot 15) 64 x Enchanted End Stone
++   5.1s > (slot 16) 64 x Enchanted End Stone
++   5.1s > (slot 17) 64 x Enchanted End Stone
++   5.1s > (slot 18) 1 x Refined Enderite Pickaxe
++   5.1s > (slot 19) 1 x Crying Obsidian Pickaxe
++   5.1s > (slot 20) 52 x Obsidian
++   5.1s > (slot 21) 64 x Rough Amethyst
++   5.1s > (slot 22) 64 x Enchanted End Stone
++   5.1s > (slot 23) 63 x Flawed Amethyst
++   5.1s > (slot 24) 1 x Fuel Tank
++   5.1s > (slot 25) 57 x Enchanted End Stone
++   5.1s > (slot 26) 3 x End Stone Rose
++   5.1s > (slot 27) 1 x Flint Arrow
++   5.1s > (slot 28) 3 x Summoning Eye
++   5.1s > (slot 29) 2 x Bejeweled Handle
++   5.1s > (slot 31) 60 x Fine Amethyst
++   5.1s > (slot 34) 3 x Rough Amethyst
++   5.1s > (slot 35) 1 x InfiniEye™
++   5.1s > (slot 36) 1 x Suspicious Giant's Sword
++   5.1s > (slot 37) 1 x Warped Aspect of the Void
++   5.1s > (slot 38) 1 x Fabled Frozen Scythe
++   5.1s > (slot 39) 1 x Fabled Edible Mace
++   5.1s > (slot 40) 1 x Precise Golden Gun
++   5.1s > (slot 41) 1 x Auspicious Amethyst Gauntlet
++   5.1s > (slot 43) 13 x Crying Obsidian
++   5.1s > (slot 44) 1 x SkyBlock Menu (Right Click)
++   7.9s > (you clicked slot 44)
++   8.0s > (opened "Dragon Sim Menu", 90 slots)
++   8.0s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 4) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 11) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 13) 1 x Your Dragon Sim Profile
++   8.0s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 15) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 19) 1 x Your Skills
++   8.0s > (slot 20) 1 x Collections
++   8.0s > (slot 21) 1 x Recipe Book
++   8.0s > (slot 22) 1 x Mythic Carrot
++   8.0s > (slot 23) 1 x Quests & Guides
++   8.0s > (slot 24) 1 x Boosters
++   8.0s > (slot 25) 1 x Storage
++   8.0s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 28) 1 x Accessory Bag
++   8.0s > (slot 29) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 30) 1 x Pets
++   8.0s > (slot 31) 1 x Crafting Table
++   8.0s > (slot 32) 1 x Auction House
++   8.0s > (slot 33) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 34) 1 x Wardrobe
++   8.0s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 36) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 37) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 38) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 39) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 40) 1 x Teleport
++   8.0s > (slot 41) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 42) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 43) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 44) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 45) 1 x Store
++   8.0s > (slot 46) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 48) 1 x Profile Management
++   8.0s > (slot 49) 1 x Close
++   8.0s > (slot 50) 1 x Settings
++   8.0s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 52) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 53) 1 x minecraft:black_stained_glass_pane
++   8.0s > (slot 54) 1 x Promising Pickaxe
++   8.0s > (slot 55) 1 x Obsidian Drill OD-355
++   8.0s > (slot 56) 64 x Enchanted End Stone
++   8.0s > (slot 57) 64 x Enchanted End Stone
++   8.0s > (slot 58) 64 x Enchanted End Stone
++   8.0s > (slot 59) 64 x Enchanted End Stone
++   8.0s > (slot 60) 64 x Enchanted End Stone
++   8.0s > (slot 61) 64 x Enchanted End Stone
++   8.0s > (slot 62) 64 x Enchanted End Stone
++   8.0s > (slot 63) 1 x Refined Enderite Pickaxe
++   8.0s > (slot 64) 1 x Crying Obsidian Pickaxe
++   8.0s > (slot 65) 52 x Obsidian
++   8.0s > (slot 66) 64 x Rough Amethyst
++   8.0s > (slot 67) 64 x Enchanted End Stone
++   8.0s > (slot 68) 63 x Flawed Amethyst
++   8.0s > (slot 69) 1 x Fuel Tank
++   8.0s > (slot 70) 57 x Enchanted End Stone
++   8.0s > (slot 71) 3 x End Stone Rose
++   8.0s > (slot 72) 1 x Flint Arrow
++   8.0s > (slot 73) 3 x Summoning Eye
++   8.0s > (slot 74) 2 x Bejeweled Handle
++   8.1s > (slot 76) 60 x Fine Amethyst
++   8.1s > (slot 79) 3 x Rough Amethyst
++   8.1s > (slot 80) 1 x InfiniEye™
++   8.1s > (slot 81) 1 x Suspicious Giant's Sword
++   8.1s > (slot 82) 1 x Warped Aspect of the Void
++   8.1s > (slot 83) 1 x Fabled Frozen Scythe
++   8.1s > (slot 84) 1 x Fabled Edible Mace
++   8.1s > (slot 85) 1 x Precise Golden Gun
++   8.1s > (slot 86) 1 x Auspicious Amethyst Gauntlet
++   8.1s > (slot 88) 13 x Crying Obsidian
++   8.1s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   8.6s > (you clicked slot 10)
++   8.8s > (opened "Heart of the Dragon", 90 slots)
++   8.8s > (slot 0) 1 x Tier 10
++   8.8s > (slot 1) 1 x Void Infusion
++   8.8s > (slot 2) 1 x Crystalline
++   8.8s > (slot 3) 1 x Gifts from the Void
++   8.8s > (slot 4) 1 x Mining Master
++   8.8s > (slot 5) 1 x Fine Cut
++   8.8s > (slot 6) 1 x Void Seeker
++   8.8s > (slot 7) 1 x Sheer Force
++   8.8s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 9) 1 x Tier 9
++   8.8s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 11) 1 x Metal Head
++   8.8s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 13) 1 x Rags to Riches
++   8.8s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 15) 1 x Eager Adventurer
++   8.8s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 18) 1 x Tier 8
++   8.8s > (slot 19) 1 x Miner's Blessing
++   8.8s > (slot 20) 1 x No Stone Unturned
++   8.8s > (slot 21) 1 x Strong Arm
++   8.8s > (slot 22) 1 x Steady Hand
++   8.8s > (slot 23) 1 x Seasoned Spelunker
++   8.8s > (slot 24) 1 x Surveyor
++   8.8s > (slot 25) 1 x Void Blessing
++   8.8s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 27) 1 x Tier 7
++   8.8s > (slot 28) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 29) 1 x Speedy Mineman
++   8.8s > (slot 30) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 31) 1 x Powder Buff
++   8.8s > (slot 32) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 33) 1 x Fortunate Mineman
++   8.8s > (slot 34) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 36) 1 x Tier 6
++   8.8s > (slot 37) 1 x Tunnel Vision
++   8.8s > (slot 38) 1 x Blockhead
++   8.8s > (slot 39) 1 x Mining Madness
++   8.8s > (slot 40) 1 x Keep It Cool
++   8.8s > (slot 41) 1 x Impatient Miner
++   8.8s > (slot 42) 1 x Spelunker
++   8.8s > (slot 43) 1 x Maniac Miner
++   8.8s > (slot 44) 1 x Scroll Down
++   8.8s > (slot 45) 1 x Close
++   8.8s > (slot 46) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 48) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 49) 1 x Heart of the Dragon
++   8.8s > (slot 50) 1 x Dragon Profiles
++   8.8s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 52) 1 x Reset Heart of the Dragon
++   8.8s > (slot 53) 1 x minecraft:black_stained_glass_pane
++   8.8s > (slot 54) 1 x Promising Pickaxe
++   8.8s > (slot 55) 1 x Obsidian Drill OD-355
++   8.8s > (slot 56) 64 x Enchanted End Stone
++   8.8s > (slot 57) 64 x Enchanted End Stone
++   8.8s > (slot 58) 64 x Enchanted End Stone
++   8.8s > (slot 59) 64 x Enchanted End Stone
++   8.8s > (slot 60) 64 x Enchanted End Stone
++   8.8s > (slot 61) 64 x Enchanted End Stone
++   8.8s > (slot 62) 64 x Enchanted End Stone
++   8.8s > (slot 63) 1 x Refined Enderite Pickaxe
++   8.8s > (slot 64) 1 x Crying Obsidian Pickaxe
++   8.8s > (slot 65) 52 x Obsidian
++   8.8s > (slot 66) 64 x Rough Amethyst
++   8.8s > (slot 67) 64 x Enchanted End Stone
++   8.8s > (slot 68) 63 x Flawed Amethyst
++   8.8s > (slot 69) 1 x Fuel Tank
++   8.8s > (slot 70) 57 x Enchanted End Stone
++   8.8s > (slot 71) 3 x End Stone Rose
++   8.8s > (slot 72) 1 x Flint Arrow
++   8.8s > (slot 73) 3 x Summoning Eye
+             + slot 0: MUTED dim on Tier 10
+             + slot 9: MUTED dim on Tier 9
+             + slot 18: MUTED dim on Tier 8
+             + slot 27: MUTED dim on Tier 7
+             + slot 36: MUTED dim on Tier 6
+             + slot 44: GOOD fill x1 on Scroll Down
++   8.8s > (slot 74) 2 x Bejeweled Handle
++   8.8s > (slot 76) 60 x Fine Amethyst
++   8.8s > (slot 79) 3 x Rough Amethyst
++   8.8s > (slot 80) 1 x InfiniEye™
++   8.8s > (slot 81) 1 x Suspicious Giant's Sword
++   8.8s > (slot 82) 1 x Warped Aspect of the Void
++   8.8s > (slot 83) 1 x Fabled Frozen Scythe
++   8.8s > (slot 84) 1 x Fabled Edible Mace
++   8.8s > (slot 85) 1 x Precise Golden Gun
++   8.8s > (slot 86) 1 x Auspicious Amethyst Gauntlet
++   8.8s > (slot 88) 13 x Crying Obsidian
++   8.8s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  11.4s > (you clicked slot 44)
++  11.4s > (slot 44) emptied
+             - slot 44
++  11.6s > (slot 0) 1 x Tier 9
++  11.6s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  11.6s > (slot 2) 1 x Metal Head
++  11.6s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  11.6s > (slot 4) 1 x Rags to Riches
++  11.6s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  11.6s > (slot 6) 1 x Eager Adventurer
++  11.6s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  11.6s > (slot 8) 1 x Scroll Up
++  11.6s > (slot 9) 1 x Tier 8
++  11.6s > (slot 10) 1 x Miner's Blessing
++  11.6s > (slot 11) 1 x No Stone Unturned
++  11.6s > (slot 12) 1 x Strong Arm
++  11.6s > (slot 13) 1 x Steady Hand
++  11.6s > (slot 14) 1 x Seasoned Spelunker
++  11.6s > (slot 15) 1 x Surveyor
++  11.6s > (slot 16) 1 x Void Blessing
++  11.6s > (slot 18) 1 x Tier 7
++  11.6s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  11.6s > (slot 20) 1 x Speedy Mineman
++  11.6s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  11.6s > (slot 22) 1 x Powder Buff
++  11.6s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  11.6s > (slot 24) 1 x Fortunate Mineman
++  11.6s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  11.6s > (slot 27) 1 x Tier 6
++  11.6s > (slot 28) 1 x Tunnel Vision
++  11.6s > (slot 29) 1 x Blockhead
++  11.6s > (slot 30) 1 x Mining Madness
++  11.6s > (slot 31) 1 x Keep It Cool
++  11.6s > (slot 32) 1 x Impatient Miner
++  11.6s > (slot 33) 1 x Spelunker
++  11.6s > (slot 34) 1 x Maniac Miner
++  11.6s > (slot 36) 1 x Tier 5
++  11.6s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  11.6s > (slot 38) 1 x Daily Grind
++  11.6s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  11.6s > (slot 40) 1 x Core of the Dragon
++  11.6s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  11.6s > (slot 42) 1 x Daily Powder
++  11.6s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  11.6s > (slot 44) 1 x Scroll Down
+             + slot 44: GOOD fill x1 on Scroll Down
++  11.6s > (you clicked slot 44)
++  11.8s > (you clicked slot 44)
++  12.0s > (slot 0) 1 x Tier 8
++  12.0s > (slot 1) 1 x Miner's Blessing
++  12.0s > (slot 2) 1 x No Stone Unturned
++  12.0s > (slot 3) 1 x Strong Arm
++  12.0s > (slot 4) 1 x Steady Hand
++  12.0s > (slot 5) 1 x Seasoned Spelunker
++  12.0s > (slot 6) 1 x Surveyor
++  12.0s > (slot 7) 1 x Void Blessing
++  12.0s > (slot 8) emptied
++  12.0s > (slot 9) 1 x Tier 7
++  12.0s > (slot 10) emptied
++  12.0s > (slot 11) 1 x Speedy Mineman
++  12.0s > (slot 12) emptied
++  12.0s > (slot 13) emptied
++  12.0s > (slot 14) emptied
++  12.0s > (slot 15) emptied
++  12.0s > (slot 16) emptied
++  12.0s > (slot 17) emptied
++  12.0s > (slot 18) emptied
++  12.0s > (slot 19) emptied
++  12.0s > (slot 20) emptied
++  12.0s > (slot 21) emptied
++  12.0s > (slot 22) emptied
++  12.0s > (slot 23) emptied
++  12.0s > (slot 24) emptied
++  12.0s > (slot 25) emptied
++  12.0s > (slot 26) emptied
++  12.0s > (slot 27) emptied
++  12.0s > (slot 28) emptied
++  12.0s > (slot 29) emptied
++  12.0s > (slot 30) emptied
++  12.0s > (slot 31) emptied
++  12.0s > (slot 32) emptied
++  12.0s > (slot 33) emptied
++  12.0s > (slot 34) emptied
++  12.0s > (slot 35) emptied
++  12.0s > (slot 36) emptied
++  12.0s > (slot 37) emptied
++  12.0s > (slot 38) emptied
++  12.0s > (slot 39) emptied
++  12.0s > (slot 40) emptied
++  12.0s > (slot 41) emptied
++  12.0s > (slot 42) emptied
++  12.0s > (slot 43) emptied
++  12.0s > (slot 44) emptied
++  12.0s > (slot 45) emptied
++  12.0s > (slot 46) emptied
++  12.0s > (slot 47) emptied
++  12.0s > (slot 48) emptied
++  12.0s > (slot 49) emptied
++  12.0s > (slot 50) emptied
++  12.0s > (slot 51) emptied
++  12.0s > (slot 52) emptied
++  12.0s > (slot 53) emptied
++  12.0s > (slot 8) 1 x Scroll Up
++  12.0s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 13) 1 x Powder Buff
++  12.0s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 15) 1 x Fortunate Mineman
++  12.0s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 18) 1 x Tier 6
++  12.0s > (slot 19) 1 x Tunnel Vision
++  12.0s > (slot 20) 1 x Blockhead
++  12.0s > (slot 21) 1 x Mining Madness
++  12.0s > (slot 22) 1 x Keep It Cool
++  12.0s > (slot 23) 1 x Impatient Miner
++  12.0s > (slot 24) 1 x Spelunker
++  12.0s > (slot 25) 1 x Maniac Miner
+             - slot 27
+             - slot 36
+             - slot 44
++  12.0s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 27) 1 x Tier 5
++  12.0s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 29) 1 x Daily Grind
++  12.0s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 31) 1 x Core of the Dragon
++  12.0s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 33) 1 x Daily Powder
++  12.0s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 36) 1 x Tier 4
++  12.0s > (slot 37) 1 x Dragon's Favor
++  12.0s > (slot 38) 1 x Old-School
++  12.0s > (slot 39) 1 x Professional
++  12.0s > (slot 40) 1 x Mole
++  12.0s > (slot 41) 1 x Gem Lover
++  12.0s > (slot 42) 1 x Seasoned Mineman
++  12.0s > (slot 43) 1 x Front Loaded
++  12.0s > (slot 44) 1 x Scroll Down
++  12.0s > (slot 45) 1 x Close
++  12.0s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 49) 1 x Heart of the Dragon
++  12.0s > (slot 50) 1 x Dragon Profiles
++  12.0s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  12.0s > (slot 52) 1 x Reset Heart of the Dragon
++  12.0s > (slot 53) 1 x minecraft:black_stained_glass_pane
+             + slot 27: MUTED dim on Tier 5
+             + slot 36: MUTED dim on Tier 4
+             + slot 44: GOOD fill x1 on Scroll Down
++  12.0s > (you clicked slot 44)
++  12.1s > (slot 44) emptied
+             - slot 44
++  12.2s > (you clicked slot 44)
++  12.2s > (slot 0) 1 x Tier 7
++  12.2s > (slot 1) emptied
++  12.2s > (slot 2) 1 x Speedy Mineman
++  12.2s > (slot 3) emptied
++  12.2s > (slot 4) 1 x Powder Buff
++  12.2s > (slot 5) emptied
++  12.2s > (slot 6) 1 x Fortunate Mineman
++  12.2s > (slot 7) emptied
++  12.2s > (slot 8) emptied
++  12.2s > (slot 9) 1 x Tier 6
++  12.2s > (slot 10) 1 x Tunnel Vision
++  12.2s > (slot 11) 1 x Blockhead
++  12.2s > (slot 12) 1 x Mining Madness
++  12.2s > (slot 13) 1 x Keep It Cool
++  12.2s > (slot 14) 1 x Impatient Miner
++  12.2s > (slot 15) 1 x Spelunker
++  12.2s > (slot 16) 1 x Maniac Miner
++  12.2s > (slot 17) emptied
++  12.2s > (slot 18) 1 x Tier 5
++  12.2s > (slot 19) emptied
++  12.2s > (slot 20) 1 x Daily Grind
++  12.2s > (slot 21) emptied
++  12.2s > (slot 22) 1 x Core of the Dragon
++  12.2s > (slot 23) emptied
++  12.2s > (slot 24) 1 x Daily Powder
++  12.2s > (slot 25) emptied
++  12.2s > (slot 26) emptied
++  12.2s > (slot 27) 1 x Tier 4
++  12.2s > (slot 28) 1 x Dragon's Favor
++  12.2s > (slot 29) 1 x Old-School
++  12.2s > (slot 30) 1 x Professional
++  12.2s > (slot 31) 1 x Mole
++  12.2s > (slot 32) 1 x Gem Lover
++  12.2s > (slot 33) 1 x Seasoned Mineman
++  12.2s > (slot 34) 1 x Front Loaded
++  12.2s > (slot 35) emptied
++  12.2s > (slot 36) 1 x Tier 3
++  12.2s > (slot 37) emptied
++  12.2s > (slot 38) 1 x Frugal Miner
++  12.2s > (slot 39) emptied
++  12.2s > (slot 40) 1 x Efficient Miner
++  12.2s > (slot 41) emptied
++  12.2s > (slot 42) emptied
++  12.2s > (slot 43) emptied
++  12.2s > (slot 45) emptied
++  12.2s > (slot 46) emptied
++  12.2s > (slot 47) emptied
++  12.2s > (slot 48) emptied
++  12.2s > (slot 49) emptied
++  12.2s > (slot 50) emptied
++  12.2s > (slot 51) emptied
++  12.2s > (slot 52) emptied
++  12.2s > (slot 53) emptied
++  12.3s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 8) 1 x Scroll Up
++  12.3s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 42) 1 x Quick Forge
++  12.3s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 44) 1 x Scroll Down
++  12.3s > (slot 45) 1 x Close
++  12.3s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 49) 1 x Heart of the Dragon
++  12.3s > (slot 50) 1 x Dragon Profiles
++  12.3s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  12.3s > (slot 52) 1 x Reset Heart of the Dragon
++  12.3s > (slot 53) 1 x minecraft:black_stained_glass_pane
+             + slot 44: GOOD fill x1 on Scroll Down
++  12.3s > (you clicked slot 44)
++  12.4s > (slot 44) emptied
+             - slot 44
++  12.4s > (slot 44) 1 x Scroll Down
+             + slot 44: GOOD fill x1 on Scroll Down
++  12.5s > (you clicked slot 44)
++  12.5s > (slot 0) 1 x Tier 6
++  12.5s > (slot 1) 1 x Tunnel Vision
++  12.5s > (slot 2) 1 x Blockhead
++  12.5s > (slot 3) 1 x Mining Madness
++  12.5s > (slot 4) 1 x Keep It Cool
++  12.5s > (slot 5) 1 x Impatient Miner
++  12.5s > (slot 6) 1 x Spelunker
++  12.5s > (slot 7) 1 x Maniac Miner
++  12.5s > (slot 9) 1 x Tier 5
++  12.5s > (slot 10) emptied
++  12.5s > (slot 11) 1 x Daily Grind
++  12.5s > (slot 12) emptied
++  12.5s > (slot 13) 1 x Core of the Dragon
++  12.5s > (slot 14) emptied
++  12.5s > (slot 15) 1 x Daily Powder
++  12.5s > (slot 16) emptied
++  12.5s > (slot 17) emptied
++  12.5s > (slot 18) 1 x Tier 4
++  12.5s > (slot 19) 1 x Dragon's Favor
++  12.5s > (slot 20) 1 x Old-School
++  12.5s > (slot 21) 1 x Professional
++  12.5s > (slot 22) 1 x Mole
++  12.5s > (slot 23) 1 x Gem Lover
++  12.5s > (slot 24) 1 x Seasoned Mineman
++  12.5s > (slot 25) 1 x Front Loaded
++  12.5s > (slot 26) emptied
++  12.5s > (slot 27) 1 x Tier 3
++  12.5s > (slot 28) emptied
++  12.5s > (slot 29) 1 x Frugal Miner
++  12.5s > (slot 30) emptied
++  12.5s > (slot 31) 1 x Efficient Miner
++  12.5s > (slot 32) emptied
++  12.5s > (slot 33) 1 x Quick Forge
++  12.5s > (slot 34) emptied
++  12.5s > (slot 35) emptied
++  12.5s > (slot 36) 1 x Tier 2
++  12.5s > (slot 37) emptied
++  12.5s > (slot 38) 1 x Mining Speed Boost
++  12.5s > (slot 39) 1 x Precision Mining
++  12.5s > (slot 40) 1 x Mining Fortune
++  12.5s > (slot 41) 1 x Obsidian Insanium
++  12.5s > (slot 42) 1 x Pickobulus
++  12.5s > (slot 43) emptied
++  12.5s > (slot 45) emptied
++  12.5s > (slot 46) emptied
++  12.5s > (slot 47) emptied
++  12.5s > (slot 48) emptied
++  12.5s > (slot 49) emptied
++  12.5s > (slot 50) emptied
++  12.5s > (slot 51) emptied
++  12.5s > (slot 52) emptied
++  12.5s > (slot 53) emptied
++  12.6s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 45) 1 x Close
++  12.6s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 49) 1 x Heart of the Dragon
++  12.6s > (slot 50) 1 x Dragon Profiles
++  12.6s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  12.6s > (slot 52) 1 x Reset Heart of the Dragon
++  12.6s > (slot 53) 1 x minecraft:black_stained_glass_pane
++  12.6s > (you clicked slot 44)
++  12.7s > (slot 0) 1 x Tier 5
++  12.7s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  12.7s > (slot 2) 1 x Daily Grind
++  12.7s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  12.7s > (slot 4) 1 x Core of the Dragon
++  12.7s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  12.7s > (slot 6) 1 x Daily Powder
++  12.7s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  12.7s > (slot 9) 1 x Tier 4
++  12.7s > (slot 10) 1 x Dragon's Favor
++  12.7s > (slot 11) 1 x Old-School
++  12.7s > (slot 12) 1 x Professional
++  12.7s > (slot 13) 1 x Mole
++  12.7s > (slot 14) 1 x Gem Lover
++  12.7s > (slot 15) 1 x Seasoned Mineman
++  12.7s > (slot 16) 1 x Front Loaded
++  12.7s > (slot 18) 1 x Tier 3
++  12.7s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  12.7s > (slot 20) 1 x Frugal Miner
++  12.7s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  12.7s > (slot 22) 1 x Efficient Miner
++  12.7s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  12.7s > (slot 24) 1 x Quick Forge
++  12.7s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  12.7s > (slot 27) 1 x Tier 2
++  12.7s > (slot 29) 1 x Mining Speed Boost
++  12.7s > (slot 30) 1 x Precision Mining
++  12.7s > (slot 31) 1 x Mining Fortune
++  12.7s > (slot 32) 1 x Obsidian Insanium
++  12.7s > (slot 33) 1 x Pickobulus
++  12.7s > (slot 36) 1 x Tier 1
++  12.7s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  12.7s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  12.7s > (slot 40) 1 x Mining Speed
++  12.7s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  12.7s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  12.7s > (slot 44) 1 x minecraft:black_stained_glass_pane
+             - slot 44
++  12.8s > (you clicked slot 44)
+             + slot 13: GOOD fill x27 on Mole
++  13.0s > (you clicked slot 44)
++  13.7s > (you clicked slot 8)
++  13.7s > (slot 8) emptied
++  13.8s > (slot 0) 1 x Tier 6
++  13.8s > (slot 1) 1 x Tunnel Vision
++  13.8s > (slot 2) 1 x Blockhead
++  13.8s > (slot 3) 1 x Mining Madness
++  13.8s > (slot 4) 1 x Keep It Cool
++  13.8s > (slot 5) 1 x Impatient Miner
++  13.8s > (slot 6) 1 x Spelunker
++  13.8s > (slot 7) 1 x Maniac Miner
++  13.8s > (slot 9) 1 x Tier 5
++  13.8s > (slot 10) emptied
++  13.8s > (slot 11) 1 x Daily Grind
++  13.8s > (slot 12) emptied
++  13.8s > (slot 13) 1 x Core of the Dragon
++  13.8s > (slot 14) emptied
++  13.8s > (slot 15) 1 x Daily Powder
++  13.8s > (slot 16) emptied
++  13.8s > (slot 17) emptied
++  13.8s > (slot 18) 1 x Tier 4
++  13.8s > (slot 19) 1 x Dragon's Favor
++  13.8s > (slot 20) 1 x Old-School
++  13.8s > (slot 21) 1 x Professional
++  13.8s > (slot 22) 1 x Mole
++  13.8s > (slot 23) 1 x Gem Lover
++  13.8s > (slot 24) 1 x Seasoned Mineman
++  13.8s > (slot 25) 1 x Front Loaded
++  13.8s > (slot 26) emptied
++  13.8s > (slot 27) 1 x Tier 3
++  13.8s > (slot 28) emptied
++  13.8s > (slot 29) emptied
++  13.8s > (slot 30) emptied
++  13.8s > (slot 31) emptied
++  13.8s > (slot 32) emptied
++  13.8s > (slot 33) emptied
++  13.8s > (slot 34) emptied
++  13.8s > (slot 35) emptied
++  13.8s > (slot 36) emptied
++  13.8s > (slot 37) emptied
++  13.8s > (slot 38) emptied
++  13.8s > (slot 39) emptied
++  13.8s > (slot 40) emptied
++  13.8s > (slot 41) emptied
++  13.8s > (slot 42) emptied
++  13.8s > (slot 43) emptied
++  13.8s > (slot 44) emptied
++  13.8s > (slot 45) emptied
++  13.8s > (slot 46) emptied
++  13.8s > (slot 47) emptied
++  13.8s > (slot 48) emptied
++  13.8s > (slot 49) emptied
++  13.8s > (slot 50) emptied
++  13.8s > (slot 51) emptied
++  13.8s > (slot 52) emptied
++  13.8s > (slot 53) emptied
++  13.8s > (slot 8) 1 x Scroll Up
++  13.8s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 29) 1 x Frugal Miner
++  13.8s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 31) 1 x Efficient Miner
++  13.8s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 33) 1 x Quick Forge
++  13.8s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 36) 1 x Tier 2
++  13.8s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 38) 1 x Mining Speed Boost
+             - slot 13
+             + slot 7: GOOD fill x1 on Maniac Miner
++  13.8s > (you clicked slot 8)
++  13.9s > (slot 8) emptied
++  13.9s > (slot 39) 1 x Precision Mining
++  13.9s > (slot 40) 1 x Mining Fortune
++  13.9s > (slot 41) 1 x Obsidian Insanium
++  13.9s > (slot 42) 1 x Pickobulus
++  13.9s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  13.9s > (slot 44) 1 x Scroll Down
++  13.9s > (slot 45) 1 x Close
++  13.9s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  13.9s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  13.9s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  13.9s > (slot 49) 1 x Heart of the Dragon
++  13.9s > (slot 50) 1 x Dragon Profiles
++  13.9s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  13.9s > (slot 52) 1 x Reset Heart of the Dragon
++  13.9s > (slot 53) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 0) 1 x Tier 7
++  14.0s > (slot 1) emptied
++  14.0s > (slot 2) 1 x Speedy Mineman
++  14.0s > (slot 3) emptied
++  14.0s > (slot 4) 1 x Powder Buff
++  14.0s > (slot 5) emptied
++  14.0s > (slot 6) 1 x Fortunate Mineman
++  14.0s > (slot 7) emptied
++  14.0s > (slot 9) 1 x Tier 6
++  14.0s > (slot 10) 1 x Tunnel Vision
++  14.0s > (slot 11) 1 x Blockhead
++  14.0s > (slot 12) 1 x Mining Madness
++  14.0s > (slot 13) emptied
++  14.0s > (slot 14) emptied
++  14.0s > (slot 15) emptied
++  14.0s > (slot 16) emptied
++  14.0s > (slot 17) emptied
++  14.0s > (slot 18) emptied
++  14.0s > (slot 19) emptied
++  14.0s > (slot 20) emptied
++  14.0s > (slot 21) emptied
++  14.0s > (slot 22) emptied
++  14.0s > (slot 23) emptied
++  14.0s > (slot 24) emptied
++  14.0s > (slot 25) emptied
++  14.0s > (slot 26) emptied
++  14.0s > (slot 27) emptied
++  14.0s > (slot 28) emptied
++  14.0s > (slot 29) emptied
++  14.0s > (slot 30) emptied
++  14.0s > (slot 31) emptied
++  14.0s > (slot 32) emptied
++  14.0s > (slot 33) emptied
++  14.0s > (slot 34) emptied
++  14.0s > (slot 35) emptied
++  14.0s > (slot 36) emptied
++  14.0s > (slot 37) emptied
++  14.0s > (slot 38) emptied
++  14.0s > (slot 39) emptied
++  14.0s > (slot 40) emptied
++  14.0s > (slot 41) emptied
++  14.0s > (slot 42) emptied
++  14.0s > (slot 43) emptied
++  14.0s > (slot 44) emptied
++  14.0s > (slot 45) emptied
++  14.0s > (slot 46) emptied
++  14.0s > (slot 47) emptied
++  14.0s > (slot 48) emptied
++  14.0s > (slot 49) emptied
++  14.0s > (slot 50) emptied
++  14.0s > (slot 51) emptied
++  14.0s > (slot 52) emptied
++  14.0s > (slot 53) emptied
++  14.0s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 8) 1 x Scroll Up
++  14.0s > (slot 13) 1 x Keep It Cool
++  14.0s > (slot 14) 1 x Impatient Miner
++  14.0s > (slot 15) 1 x Spelunker
++  14.0s > (slot 16) 1 x Maniac Miner
++  14.0s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 18) 1 x Tier 5
++  14.0s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 20) 1 x Daily Grind
++  14.0s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 22) 1 x Core of the Dragon
++  14.0s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 24) 1 x Daily Powder
++  14.0s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 27) 1 x Tier 4
++  14.0s > (slot 28) 1 x Dragon's Favor
++  14.0s > (slot 29) 1 x Old-School
++  14.0s > (slot 30) 1 x Professional
++  14.0s > (slot 31) 1 x Mole
++  14.0s > (slot 32) 1 x Gem Lover
++  14.0s > (slot 33) 1 x Seasoned Mineman
++  14.0s > (slot 34) 1 x Front Loaded
++  14.0s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 36) 1 x Tier 3
++  14.0s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 38) 1 x Frugal Miner
++  14.0s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 40) 1 x Efficient Miner
++  14.0s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 42) 1 x Quick Forge
++  14.0s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 44) 1 x Scroll Down
++  14.0s > (slot 45) 1 x Close
++  14.0s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 49) 1 x Heart of the Dragon
++  14.0s > (slot 50) 1 x Dragon Profiles
++  14.0s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  14.0s > (slot 52) 1 x Reset Heart of the Dragon
++  14.0s > (slot 53) 1 x minecraft:black_stained_glass_pane
++  14.0s > (you clicked slot 8)
+             - slot 7
+             + slot 16: GOOD fill x1 on Maniac Miner
++  14.1s > (slot 8) emptied
++  14.1s > (slot 8) 1 x Scroll Up
++  14.2s > (slot 0) 1 x Tier 8
++  14.2s > (slot 1) 1 x Miner's Blessing
++  14.2s > (slot 2) 1 x No Stone Unturned
++  14.2s > (slot 3) 1 x Strong Arm
++  14.2s > (slot 4) 1 x Steady Hand
++  14.2s > (slot 5) 1 x Seasoned Spelunker
++  14.2s > (slot 6) 1 x Surveyor
++  14.2s > (slot 7) 1 x Void Blessing
++  14.2s > (slot 8) emptied
++  14.2s > (slot 9) 1 x Tier 7
++  14.2s > (slot 10) emptied
++  14.2s > (slot 11) 1 x Speedy Mineman
++  14.2s > (slot 12) emptied
++  14.2s > (slot 13) 1 x Powder Buff
++  14.2s > (slot 14) emptied
++  14.2s > (slot 15) 1 x Fortunate Mineman
++  14.2s > (slot 16) emptied
++  14.2s > (slot 17) emptied
++  14.2s > (slot 18) 1 x Tier 6
++  14.2s > (slot 19) 1 x Tunnel Vision
++  14.2s > (slot 20) emptied
++  14.2s > (slot 21) emptied
++  14.2s > (slot 22) emptied
++  14.2s > (slot 23) emptied
++  14.2s > (slot 24) emptied
++  14.2s > (slot 25) emptied
++  14.2s > (slot 26) emptied
++  14.2s > (slot 27) emptied
++  14.2s > (slot 28) emptied
++  14.2s > (slot 29) emptied
++  14.2s > (slot 30) emptied
++  14.2s > (slot 31) emptied
++  14.2s > (slot 32) emptied
++  14.2s > (slot 33) emptied
++  14.2s > (slot 34) emptied
++  14.2s > (slot 35) emptied
++  14.2s > (slot 36) emptied
++  14.2s > (slot 37) emptied
++  14.2s > (slot 38) emptied
++  14.2s > (slot 39) emptied
++  14.2s > (slot 40) emptied
++  14.2s > (slot 41) emptied
++  14.2s > (slot 42) emptied
++  14.2s > (slot 43) emptied
++  14.2s > (slot 44) emptied
++  14.2s > (slot 45) emptied
++  14.2s > (slot 46) emptied
++  14.2s > (slot 47) emptied
++  14.2s > (slot 48) emptied
++  14.2s > (slot 49) emptied
++  14.2s > (slot 50) emptied
++  14.2s > (slot 51) emptied
++  14.2s > (slot 52) emptied
++  14.2s > (slot 53) emptied
++  14.2s > (slot 8) 1 x Scroll Up
++  14.2s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  14.2s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  14.2s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  14.2s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  14.2s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  14.2s > (slot 20) 1 x Blockhead
++  14.2s > (slot 21) 1 x Mining Madness
++  14.2s > (slot 22) 1 x Keep It Cool
++  14.2s > (slot 23) 1 x Impatient Miner
++  14.2s > (slot 24) 1 x Spelunker
++  14.2s > (slot 25) 1 x Maniac Miner
++  14.2s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  14.2s > (slot 27) 1 x Tier 5
++  14.2s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  14.2s > (slot 29) 1 x Daily Grind
++  14.2s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  14.2s > (slot 31) 1 x Core of the Dragon
++  14.2s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  14.2s > (slot 33) 1 x Daily Powder
++  14.2s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  14.2s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  14.2s > (slot 36) 1 x Tier 4
++  14.2s > (slot 37) 1 x Dragon's Favor
++  14.2s > (slot 38) 1 x Old-School
++  14.2s > (slot 39) 1 x Professional
++  14.2s > (slot 40) 1 x Mole
++  14.2s > (slot 41) 1 x Gem Lover
++  14.2s > (slot 42) 1 x Seasoned Mineman
++  14.2s > (slot 43) 1 x Front Loaded
++  14.2s > (slot 44) 1 x Scroll Down
++  14.2s > (slot 45) 1 x Close
++  14.2s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  14.2s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  14.2s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  14.2s > (slot 49) 1 x Heart of the Dragon
++  14.2s > (slot 50) 1 x Dragon Profiles
++  14.2s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  14.2s > (slot 52) 1 x Reset Heart of the Dragon
++  14.2s > (slot 53) 1 x minecraft:black_stained_glass_pane
+             - slot 16
+             + slot 25: GOOD fill x1 on Maniac Miner
++  14.2s > (you clicked slot 8)
++  14.2s > (slot 8) emptied
++  14.3s > (slot 8) 1 x Scroll Up
++  14.4s > (slot 0) emptied
++  14.4s > (slot 1) emptied
++  14.4s > (slot 2) emptied
++  14.4s > (slot 3) emptied
++  14.4s > (slot 4) emptied
++  14.4s > (slot 5) emptied
++  14.4s > (slot 6) emptied
++  14.4s > (slot 7) emptied
++  14.4s > (slot 8) emptied
++  14.4s > (slot 9) emptied
++  14.4s > (slot 10) emptied
++  14.4s > (slot 11) emptied
++  14.4s > (slot 12) emptied
++  14.4s > (slot 13) emptied
++  14.4s > (slot 14) emptied
++  14.4s > (slot 15) emptied
++  14.4s > (slot 16) emptied
++  14.4s > (slot 17) emptied
++  14.4s > (slot 18) emptied
++  14.4s > (slot 19) emptied
++  14.4s > (slot 20) emptied
++  14.4s > (slot 21) emptied
++  14.4s > (slot 22) emptied
++  14.4s > (slot 23) emptied
++  14.4s > (slot 24) emptied
++  14.4s > (slot 25) emptied
++  14.4s > (slot 26) emptied
++  14.4s > (slot 0) 1 x Tier 9
++  14.4s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  14.4s > (slot 2) 1 x Metal Head
++  14.4s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  14.4s > (slot 4) 1 x Rags to Riches
++  14.4s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  14.4s > (slot 6) 1 x Eager Adventurer
++  14.4s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  14.4s > (slot 8) 1 x Scroll Up
++  14.4s > (slot 9) 1 x Tier 8
++  14.4s > (slot 10) 1 x Miner's Blessing
++  14.4s > (slot 11) 1 x No Stone Unturned
++  14.4s > (slot 12) 1 x Strong Arm
++  14.4s > (slot 13) 1 x Steady Hand
++  14.4s > (slot 14) 1 x Seasoned Spelunker
++  14.4s > (slot 15) 1 x Surveyor
++  14.4s > (slot 16) 1 x Void Blessing
++  14.4s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  14.4s > (slot 18) 1 x Tier 7
++  14.4s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  14.4s > (slot 20) 1 x Speedy Mineman
++  14.4s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  14.4s > (slot 22) 1 x Powder Buff
++  14.4s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  14.4s > (slot 24) 1 x Fortunate Mineman
++  14.4s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  14.4s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  14.4s > (slot 27) 1 x Tier 6
++  14.4s > (slot 28) 1 x Tunnel Vision
++  14.4s > (slot 29) 1 x Blockhead
++  14.4s > (slot 30) 1 x Mining Madness
++  14.4s > (slot 31) 1 x Keep It Cool
++  14.4s > (slot 32) 1 x Impatient Miner
++  14.4s > (slot 33) 1 x Spelunker
++  14.4s > (slot 34) 1 x Maniac Miner
++  14.4s > (slot 36) 1 x Tier 5
++  14.4s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  14.4s > (slot 38) 1 x Daily Grind
++  14.4s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  14.4s > (slot 40) 1 x Core of the Dragon
++  14.4s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  14.4s > (slot 42) 1 x Daily Powder
++  14.4s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  14.4s > (you clicked slot 8)
+             - slot 25
+             + slot 34: GOOD fill x1 on Maniac Miner
++  14.4s > (slot 8) emptied
++  14.5s > (slot 8) 1 x Scroll Up
++  14.5s > (you clicked slot 8)
++  14.5s > (slot 8) emptied
++  14.6s > (slot 0) 1 x Tier 10
++  14.6s > (slot 1) 1 x Void Infusion
++  14.6s > (slot 2) 1 x Crystalline
++  14.6s > (slot 3) 1 x Gifts from the Void
++  14.6s > (slot 4) 1 x Mining Master
++  14.6s > (slot 5) 1 x Fine Cut
++  14.6s > (slot 6) 1 x Void Seeker
++  14.6s > (slot 7) 1 x Sheer Force
++  14.6s > (slot 9) 1 x Tier 9
++  14.6s > (slot 10) emptied
++  14.6s > (slot 11) 1 x Metal Head
++  14.6s > (slot 12) emptied
++  14.6s > (slot 13) 1 x Rags to Riches
++  14.6s > (slot 14) emptied
++  14.6s > (slot 15) 1 x Eager Adventurer
++  14.6s > (slot 16) emptied
++  14.6s > (slot 17) emptied
++  14.6s > (slot 18) emptied
++  14.6s > (slot 19) emptied
++  14.6s > (slot 20) emptied
++  14.6s > (slot 21) emptied
++  14.6s > (slot 22) emptied
++  14.6s > (slot 23) emptied
++  14.6s > (slot 24) emptied
++  14.6s > (slot 25) emptied
++  14.6s > (slot 26) emptied
++  14.6s > (slot 27) emptied
++  14.6s > (slot 28) emptied
++  14.6s > (slot 29) emptied
++  14.6s > (slot 30) emptied
++  14.6s > (slot 31) emptied
++  14.6s > (slot 32) emptied
++  14.6s > (slot 33) emptied
++  14.6s > (slot 34) emptied
++  14.6s > (slot 35) emptied
++  14.6s > (slot 36) emptied
++  14.6s > (slot 37) emptied
++  14.6s > (slot 38) emptied
++  14.6s > (slot 39) emptied
++  14.6s > (slot 40) emptied
++  14.6s > (slot 41) emptied
++  14.6s > (slot 42) emptied
++  14.6s > (slot 43) emptied
++  14.6s > (slot 44) emptied
++  14.6s > (slot 45) emptied
++  14.6s > (slot 46) emptied
++  14.6s > (slot 47) emptied
++  14.6s > (slot 48) emptied
++  14.6s > (slot 49) emptied
++  14.6s > (slot 50) emptied
++  14.6s > (slot 51) emptied
++  14.6s > (slot 52) emptied
++  14.6s > (slot 53) emptied
++  14.6s > (slot 8) 1 x minecraft:black_stained_glass_pane
++  14.6s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  14.6s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  14.6s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  14.6s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  14.6s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  14.6s > (slot 18) 1 x Tier 8
++  14.6s > (slot 19) 1 x Miner's Blessing
++  14.6s > (slot 20) 1 x No Stone Unturned
++  14.6s > (slot 21) 1 x Strong Arm
++  14.6s > (slot 22) 1 x Steady Hand
++  14.6s > (slot 23) 1 x Seasoned Spelunker
++  14.6s > (slot 24) 1 x Surveyor
++  14.6s > (slot 25) 1 x Void Blessing
++  14.6s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  14.6s > (slot 27) 1 x Tier 7
++  14.6s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  14.6s > (slot 29) 1 x Speedy Mineman
++  14.6s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  14.6s > (slot 31) 1 x Powder Buff
++  14.6s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  14.6s > (slot 33) 1 x Fortunate Mineman
++  14.6s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  14.6s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  14.6s > (slot 36) 1 x Tier 6
++  14.6s > (slot 37) 1 x Tunnel Vision
++  14.6s > (slot 38) 1 x Blockhead
++  14.6s > (slot 39) 1 x Mining Madness
++  14.6s > (slot 40) 1 x Keep It Cool
++  14.6s > (slot 41) 1 x Impatient Miner
++  14.6s > (slot 42) 1 x Spelunker
++  14.6s > (slot 43) 1 x Maniac Miner
+             - slot 34
+             + slot 43: GOOD fill x1 on Maniac Miner
++  14.6s > (slot 44) 1 x Scroll Down
++  14.6s > (slot 45) 1 x Close
++  14.6s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  14.6s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  14.6s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  14.6s > (slot 49) 1 x Heart of the Dragon
++  14.6s > (slot 50) 1 x Dragon Profiles
++  14.6s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  14.6s > (slot 52) 1 x Reset Heart of the Dragon
++  14.6s > (slot 53) 1 x minecraft:black_stained_glass_pane
++  14.7s > (you clicked slot 8)
++  14.7s > (slot 8) emptied
++  14.8s > (slot 8) 1 x minecraft:black_stained_glass_pane
++  14.8s > (you clicked slot 8)
++  15.0s > (you clicked slot 8)
++  15.0s > (slot 8) emptied
++  15.1s > (slot 10) emptied
++  15.1s > (slot 12) emptied
++  15.1s > (slot 14) emptied
++  15.1s > (slot 16) emptied
++  15.1s > (slot 17) emptied
++  15.1s > (slot 26) emptied
++  15.1s > (slot 28) emptied
++  15.1s > (slot 30) emptied
++  15.1s > (slot 32) emptied
++  15.1s > (slot 34) emptied
++  15.1s > (slot 35) emptied
++  15.1s > (slot 46) emptied
++  15.1s > (slot 47) emptied
++  15.1s > (slot 48) emptied
++  15.1s > (slot 51) emptied
++  15.1s > (slot 53) emptied
++  15.1s > (slot 8) 1 x minecraft:black_stained_glass_pane
++  15.1s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  15.1s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  15.1s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  15.1s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  15.1s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  15.1s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  15.1s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  15.1s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  15.1s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  15.1s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  15.1s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  15.1s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  15.1s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  15.1s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  15.1s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  15.1s > (slot 53) 1 x minecraft:black_stained_glass_pane
++  17.9s > (opened your inventory, 46 slots)
++  17.9s > (slot 5) 1 x Crying Obsidian Helmet
++  17.9s > (slot 6) 1 x Crying Obsidian Chestplate
++  17.9s > (slot 7) 1 x Crying Obsidian Leggings
++  17.9s > (slot 8) 1 x Crying Obsidian Boots
++  17.9s > (slot 9) 1 x Promising Pickaxe
++  17.9s > (slot 10) 1 x Obsidian Drill OD-355
++  17.9s > (slot 11) 64 x Enchanted End Stone
++  17.9s > (slot 12) 64 x Enchanted End Stone
++  17.9s > (slot 13) 64 x Enchanted End Stone
++  17.9s > (slot 14) 64 x Enchanted End Stone
++  17.9s > (slot 15) 64 x Enchanted End Stone
++  17.9s > (slot 16) 64 x Enchanted End Stone
++  17.9s > (slot 17) 64 x Enchanted End Stone
++  17.9s > (slot 18) 1 x Refined Enderite Pickaxe
++  17.9s > (slot 19) 1 x Crying Obsidian Pickaxe
++  17.9s > (slot 20) 52 x Obsidian
++  17.9s > (slot 21) 64 x Rough Amethyst
++  17.9s > (slot 22) 64 x Enchanted End Stone
++  17.9s > (slot 23) 63 x Flawed Amethyst
++  17.9s > (slot 24) 1 x Fuel Tank
++  17.9s > (slot 25) 57 x Enchanted End Stone
++  17.9s > (slot 26) 3 x End Stone Rose
++  17.9s > (slot 27) 1 x Flint Arrow
++  17.9s > (slot 28) 3 x Summoning Eye
++  17.9s > (slot 29) 2 x Bejeweled Handle
++  17.9s > (slot 31) 60 x Fine Amethyst
++  17.9s > (slot 34) 3 x Rough Amethyst
++  17.9s > (slot 35) 1 x InfiniEye™
++  17.9s > (slot 36) 1 x Suspicious Giant's Sword
++  17.9s > (slot 37) 1 x Warped Aspect of the Void
++  17.9s > (slot 38) 1 x Fabled Frozen Scythe
++  17.9s > (slot 39) 1 x Fabled Edible Mace
++  17.9s > (slot 40) 1 x Precise Golden Gun
++  17.9s > (slot 41) 1 x Auspicious Amethyst Gauntlet
++  17.9s > (slot 43) 13 x Crying Obsidian
++  17.9s > (slot 44) 1 x SkyBlock Menu (Right Click)
+             - slot 0
+             - slot 9
+             - slot 18
+             - slot 27
+             - slot 36
+             - slot 43
++  21.4s > (you clicked slot 44)
++  21.6s > (opened "Dragon Sim Menu", 90 slots)
++  21.6s > (slot 0) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 4) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 8) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 9) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 13) 1 x Your Dragon Sim Profile
++  21.6s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 19) 1 x Your Skills
++  21.6s > (slot 20) 1 x Collections
++  21.6s > (slot 21) 1 x Recipe Book
++  21.6s > (slot 22) 1 x Mythic Carrot
++  21.6s > (slot 23) 1 x Quests & Guides
++  21.6s > (slot 24) 1 x Boosters
++  21.6s > (slot 25) 1 x Storage
++  21.6s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 28) 1 x Accessory Bag
++  21.6s > (slot 29) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 30) 1 x Pets
++  21.6s > (slot 31) 1 x Crafting Table
++  21.6s > (slot 32) 1 x Auction House
++  21.6s > (slot 33) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 34) 1 x Wardrobe
++  21.6s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 36) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 40) 1 x Teleport
++  21.6s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 44) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 45) 1 x Store
++  21.6s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 48) 1 x Profile Management
++  21.6s > (slot 49) 1 x Close
++  21.6s > (slot 50) 1 x Settings
++  21.6s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 52) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 53) 1 x minecraft:black_stained_glass_pane
++  21.6s > (slot 54) 1 x Promising Pickaxe
++  21.6s > (slot 55) 1 x Obsidian Drill OD-355
++  21.6s > (slot 56) 64 x Enchanted End Stone
++  21.6s > (slot 57) 64 x Enchanted End Stone
++  21.6s > (slot 58) 64 x Enchanted End Stone
++  21.6s > (slot 59) 64 x Enchanted End Stone
++  21.6s > (slot 60) 64 x Enchanted End Stone
++  21.6s > (slot 61) 64 x Enchanted End Stone
++  21.6s > (slot 62) 64 x Enchanted End Stone
++  21.6s > (slot 63) 1 x Refined Enderite Pickaxe
++  21.6s > (slot 64) 1 x Crying Obsidian Pickaxe
++  21.6s > (slot 65) 52 x Obsidian
++  21.6s > (slot 66) 64 x Rough Amethyst
++  21.6s > (slot 67) 64 x Enchanted End Stone
++  21.6s > (slot 68) 63 x Flawed Amethyst
++  21.6s > (slot 69) 1 x Fuel Tank
++  21.6s > (slot 70) 57 x Enchanted End Stone
++  21.6s > (slot 71) 3 x End Stone Rose
++  21.6s > (slot 72) 1 x Flint Arrow
++  21.6s > (slot 73) 3 x Summoning Eye
++  21.6s > (slot 74) 2 x Bejeweled Handle
++  21.6s > (slot 76) 60 x Fine Amethyst
++  21.6s > (slot 79) 3 x Rough Amethyst
++  21.6s > (slot 80) 1 x InfiniEye™
++  21.6s > (slot 81) 1 x Suspicious Giant's Sword
++  21.6s > (slot 82) 1 x Warped Aspect of the Void
++  21.6s > (slot 83) 1 x Fabled Frozen Scythe
++  21.6s > (slot 84) 1 x Fabled Edible Mace
++  21.6s > (slot 85) 1 x Precise Golden Gun
++  21.6s > (slot 86) 1 x Auspicious Amethyst Gauntlet
++  21.6s > (slot 88) 13 x Crying Obsidian
++  21.6s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  22.5s > (you clicked slot 10)
++  22.6s > (opened "Heart of the Dragon", 90 slots)
++  22.6s > (slot 0) 1 x Tier 10
++  22.6s > (slot 1) 1 x Void Infusion
++  22.6s > (slot 2) 1 x Crystalline
++  22.6s > (slot 3) 1 x Gifts from the Void
++  22.6s > (slot 4) 1 x Mining Master
++  22.6s > (slot 5) 1 x Fine Cut
++  22.6s > (slot 6) 1 x Void Seeker
++  22.6s > (slot 7) 1 x Sheer Force
++  22.6s > (slot 8) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 9) 1 x Tier 9
++  22.6s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 11) 1 x Metal Head
++  22.6s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 13) 1 x Rags to Riches
++  22.6s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 15) 1 x Eager Adventurer
++  22.6s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 18) 1 x Tier 8
++  22.6s > (slot 19) 1 x Miner's Blessing
++  22.6s > (slot 20) 1 x No Stone Unturned
++  22.6s > (slot 21) 1 x Strong Arm
++  22.6s > (slot 22) 1 x Steady Hand
++  22.6s > (slot 23) 1 x Seasoned Spelunker
++  22.6s > (slot 24) 1 x Surveyor
++  22.6s > (slot 25) 1 x Void Blessing
++  22.6s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 27) 1 x Tier 7
++  22.6s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 29) 1 x Speedy Mineman
++  22.6s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 31) 1 x Powder Buff
++  22.6s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 33) 1 x Fortunate Mineman
++  22.6s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 36) 1 x Tier 6
++  22.6s > (slot 37) 1 x Tunnel Vision
++  22.6s > (slot 38) 1 x Blockhead
++  22.6s > (slot 39) 1 x Mining Madness
++  22.6s > (slot 40) 1 x Keep It Cool
++  22.6s > (slot 41) 1 x Impatient Miner
++  22.6s > (slot 42) 1 x Spelunker
++  22.6s > (slot 43) 1 x Maniac Miner
++  22.6s > (slot 44) 1 x Scroll Down
++  22.6s > (slot 45) 1 x Close
++  22.6s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 49) 1 x Heart of the Dragon
++  22.6s > (slot 50) 1 x Dragon Profiles
++  22.6s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 52) 1 x Reset Heart of the Dragon
++  22.6s > (slot 53) 1 x minecraft:black_stained_glass_pane
++  22.6s > (slot 54) 1 x Promising Pickaxe
++  22.6s > (slot 55) 1 x Obsidian Drill OD-355
++  22.6s > (slot 56) 64 x Enchanted End Stone
++  22.6s > (slot 57) 64 x Enchanted End Stone
++  22.6s > (slot 58) 64 x Enchanted End Stone
++  22.6s > (slot 59) 64 x Enchanted End Stone
++  22.6s > (slot 60) 64 x Enchanted End Stone
++  22.6s > (slot 61) 64 x Enchanted End Stone
++  22.6s > (slot 62) 64 x Enchanted End Stone
++  22.6s > (slot 63) 1 x Refined Enderite Pickaxe
++  22.6s > (slot 64) 1 x Crying Obsidian Pickaxe
++  22.6s > (slot 65) 52 x Obsidian
++  22.6s > (slot 66) 64 x Rough Amethyst
++  22.6s > (slot 67) 64 x Enchanted End Stone
++  22.6s > (slot 68) 63 x Flawed Amethyst
++  22.6s > (slot 69) 1 x Fuel Tank
++  22.6s > (slot 70) 57 x Enchanted End Stone
++  22.6s > (slot 71) 3 x End Stone Rose
++  22.6s > (slot 72) 1 x Flint Arrow
++  22.6s > (slot 73) 3 x Summoning Eye
++  22.6s > (slot 74) 2 x Bejeweled Handle
++  22.6s > (slot 76) 60 x Fine Amethyst
++  22.6s > (slot 79) 3 x Rough Amethyst
++  22.6s > (slot 80) 1 x InfiniEye™
++  22.6s > (slot 81) 1 x Suspicious Giant's Sword
++  22.6s > (slot 82) 1 x Warped Aspect of the Void
++  22.6s > (slot 83) 1 x Fabled Frozen Scythe
++  22.6s > (slot 84) 1 x Fabled Edible Mace
++  22.6s > (slot 85) 1 x Precise Golden Gun
++  22.6s > (slot 86) 1 x Auspicious Amethyst Gauntlet
++  22.6s > (slot 88) 13 x Crying Obsidian
++  22.6s > (slot 89) 1 x SkyBlock Menu (Right Click)
+             + slot 0: MUTED dim on Tier 10
+             + slot 9: MUTED dim on Tier 9
+             + slot 18: MUTED dim on Tier 8
+             + slot 27: MUTED dim on Tier 7
+             + slot 36: MUTED dim on Tier 6
+             + slot 43: GOOD fill x1 on Maniac Miner
++  23.5s > (you clicked slot 44)
++  23.5s > (slot 44) emptied
++  23.6s > (slot 0) 1 x Tier 9
++  23.6s > (slot 1) emptied
++  23.6s > (slot 2) 1 x Metal Head
++  23.6s > (slot 3) emptied
++  23.6s > (slot 4) 1 x Rags to Riches
++  23.6s > (slot 5) emptied
++  23.6s > (slot 6) 1 x Eager Adventurer
++  23.6s > (slot 7) emptied
++  23.6s > (slot 8) emptied
++  23.6s > (slot 9) 1 x Tier 8
++  23.6s > (slot 10) 1 x Miner's Blessing
++  23.6s > (slot 11) 1 x No Stone Unturned
++  23.6s > (slot 12) 1 x Strong Arm
++  23.6s > (slot 13) 1 x Steady Hand
++  23.6s > (slot 14) 1 x Seasoned Spelunker
++  23.6s > (slot 15) 1 x Surveyor
++  23.6s > (slot 16) 1 x Void Blessing
++  23.6s > (slot 17) emptied
++  23.6s > (slot 18) emptied
++  23.6s > (slot 19) emptied
++  23.6s > (slot 20) emptied
++  23.6s > (slot 21) emptied
++  23.6s > (slot 22) emptied
++  23.6s > (slot 23) emptied
++  23.6s > (slot 24) emptied
++  23.6s > (slot 25) emptied
++  23.6s > (slot 26) emptied
++  23.6s > (slot 27) emptied
++  23.6s > (slot 28) emptied
++  23.6s > (slot 29) emptied
++  23.6s > (slot 30) emptied
++  23.6s > (slot 31) emptied
++  23.6s > (slot 32) emptied
++  23.6s > (slot 33) emptied
++  23.6s > (slot 34) emptied
++  23.6s > (slot 35) emptied
++  23.6s > (slot 36) emptied
++  23.6s > (slot 37) emptied
++  23.6s > (slot 38) emptied
++  23.6s > (slot 39) emptied
++  23.6s > (slot 40) emptied
++  23.6s > (slot 41) emptied
++  23.6s > (slot 42) emptied
++  23.6s > (slot 43) emptied
++  23.6s > (slot 45) emptied
++  23.6s > (slot 46) emptied
++  23.6s > (slot 47) emptied
++  23.6s > (slot 48) emptied
++  23.6s > (slot 49) emptied
++  23.6s > (slot 50) emptied
++  23.6s > (slot 51) emptied
++  23.6s > (slot 52) emptied
++  23.6s > (slot 53) emptied
++  23.6s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 8) 1 x Scroll Up
++  23.6s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 18) 1 x Tier 7
++  23.6s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 20) 1 x Speedy Mineman
++  23.6s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 22) 1 x Powder Buff
++  23.6s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 24) 1 x Fortunate Mineman
++  23.6s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 27) 1 x Tier 6
++  23.6s > (slot 28) 1 x Tunnel Vision
++  23.6s > (slot 29) 1 x Blockhead
++  23.6s > (slot 30) 1 x Mining Madness
++  23.6s > (slot 31) 1 x Keep It Cool
++  23.6s > (slot 32) 1 x Impatient Miner
++  23.6s > (slot 33) 1 x Spelunker
++  23.6s > (slot 34) 1 x Maniac Miner
++  23.6s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 36) 1 x Tier 5
++  23.6s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 38) 1 x Daily Grind
++  23.6s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 40) 1 x Core of the Dragon
++  23.6s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 42) 1 x Daily Powder
++  23.6s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 44) 1 x Scroll Down
++  23.6s > (slot 45) 1 x Close
++  23.6s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 49) 1 x Heart of the Dragon
++  23.6s > (slot 50) 1 x Dragon Profiles
++  23.6s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  23.6s > (slot 52) 1 x Reset Heart of the Dragon
++  23.6s > (slot 53) 1 x minecraft:black_stained_glass_pane
+             - slot 43
+             + slot 34: GOOD fill x1 on Maniac Miner
++  24.0s > (you clicked slot 44)
++  24.0s > (slot 44) emptied
++  24.1s > (slot 0) 1 x Tier 8
++  24.1s > (slot 1) 1 x Miner's Blessing
++  24.1s > (slot 2) 1 x No Stone Unturned
++  24.1s > (slot 3) 1 x Strong Arm
++  24.1s > (slot 4) 1 x Steady Hand
++  24.1s > (slot 5) 1 x Seasoned Spelunker
++  24.1s > (slot 6) 1 x Surveyor
++  24.1s > (slot 7) 1 x Void Blessing
++  24.1s > (slot 8) emptied
++  24.1s > (slot 9) 1 x Tier 7
++  24.1s > (slot 10) emptied
++  24.1s > (slot 11) 1 x Speedy Mineman
++  24.1s > (slot 12) emptied
++  24.1s > (slot 13) 1 x Powder Buff
++  24.1s > (slot 14) emptied
++  24.1s > (slot 15) 1 x Fortunate Mineman
++  24.1s > (slot 16) emptied
++  24.1s > (slot 17) emptied
++  24.1s > (slot 18) 1 x Tier 6
++  24.1s > (slot 19) 1 x Tunnel Vision
++  24.1s > (slot 20) 1 x Blockhead
++  24.1s > (slot 21) 1 x Mining Madness
++  24.1s > (slot 22) 1 x Keep It Cool
++  24.1s > (slot 23) 1 x Impatient Miner
++  24.1s > (slot 24) emptied
++  24.1s > (slot 25) emptied
++  24.1s > (slot 26) emptied
++  24.1s > (slot 27) emptied
++  24.1s > (slot 28) emptied
++  24.1s > (slot 29) emptied
++  24.1s > (slot 30) emptied
++  24.1s > (slot 31) emptied
++  24.1s > (slot 32) emptied
++  24.1s > (slot 33) emptied
++  24.1s > (slot 34) emptied
++  24.1s > (slot 35) emptied
++  24.1s > (slot 36) emptied
++  24.1s > (slot 37) emptied
++  24.1s > (slot 38) emptied
++  24.1s > (slot 39) emptied
++  24.1s > (slot 40) emptied
++  24.1s > (slot 41) emptied
++  24.1s > (slot 42) emptied
++  24.1s > (slot 43) emptied
++  24.1s > (slot 45) emptied
++  24.1s > (slot 46) emptied
++  24.1s > (slot 47) emptied
++  24.1s > (slot 48) emptied
++  24.1s > (slot 49) emptied
++  24.1s > (slot 50) emptied
++  24.1s > (slot 51) emptied
++  24.1s > (slot 52) emptied
++  24.1s > (slot 53) emptied
++  24.1s > (slot 8) 1 x Scroll Up
++  24.1s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 24) 1 x Spelunker
++  24.1s > (slot 25) 1 x Maniac Miner
++  24.1s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 27) 1 x Tier 5
++  24.1s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 29) 1 x Daily Grind
++  24.1s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 31) 1 x Core of the Dragon
++  24.1s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 33) 1 x Daily Powder
++  24.1s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 36) 1 x Tier 4
++  24.1s > (slot 37) 1 x Dragon's Favor
++  24.1s > (slot 38) 1 x Old-School
++  24.1s > (slot 39) 1 x Professional
++  24.1s > (slot 40) 1 x Mole
++  24.1s > (slot 41) 1 x Gem Lover
++  24.1s > (slot 42) 1 x Seasoned Mineman
++  24.1s > (slot 43) 1 x Front Loaded
++  24.1s > (slot 44) 1 x Scroll Down
++  24.1s > (slot 45) 1 x Close
++  24.1s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 49) 1 x Heart of the Dragon
++  24.1s > (slot 50) 1 x Dragon Profiles
++  24.1s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 52) 1 x Reset Heart of the Dragon
++  24.1s > (slot 53) 1 x minecraft:black_stained_glass_pane
+             - slot 34
+             + slot 25: GOOD fill x1 on Maniac Miner
++  24.3s > (you clicked slot 44)
++  24.3s > (slot 44) emptied
++  24.5s > (slot 0) 1 x Tier 7
++  24.5s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  24.5s > (slot 2) 1 x Speedy Mineman
++  24.5s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  24.5s > (slot 4) 1 x Powder Buff
++  24.5s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  24.5s > (slot 6) 1 x Fortunate Mineman
++  24.5s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  24.5s > (slot 9) 1 x Tier 6
++  24.5s > (slot 10) 1 x Tunnel Vision
++  24.5s > (slot 11) 1 x Blockhead
++  24.5s > (slot 12) 1 x Mining Madness
++  24.5s > (slot 13) 1 x Keep It Cool
++  24.5s > (slot 14) 1 x Impatient Miner
++  24.5s > (slot 15) 1 x Spelunker
++  24.5s > (slot 16) 1 x Maniac Miner
++  24.5s > (slot 18) 1 x Tier 5
++  24.5s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  24.5s > (slot 20) 1 x Daily Grind
++  24.5s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  24.5s > (slot 22) 1 x Core of the Dragon
++  24.5s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  24.5s > (slot 24) 1 x Daily Powder
++  24.5s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  24.5s > (slot 27) 1 x Tier 4
++  24.5s > (slot 28) 1 x Dragon's Favor
++  24.5s > (slot 29) 1 x Old-School
++  24.5s > (slot 30) 1 x Professional
++  24.5s > (slot 31) 1 x Mole
++  24.5s > (slot 32) 1 x Gem Lover
++  24.5s > (slot 33) 1 x Seasoned Mineman
++  24.5s > (slot 34) 1 x Front Loaded
++  24.5s > (slot 36) 1 x Tier 3
++  24.5s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  24.5s > (slot 38) 1 x Frugal Miner
++  24.5s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  24.5s > (slot 40) 1 x Efficient Miner
++  24.5s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  24.5s > (slot 42) 1 x Quick Forge
++  24.5s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  24.5s > (slot 44) 1 x Scroll Down
++  24.5s > (you clicked slot 44)
+             - slot 25
+             + slot 16: GOOD fill x1 on Maniac Miner
++  24.5s > (slot 44) emptied
++  24.6s > (slot 0) 1 x Tier 6
++  24.6s > (slot 1) 1 x Tunnel Vision
++  24.6s > (slot 2) 1 x Blockhead
++  24.6s > (slot 3) 1 x Mining Madness
++  24.6s > (slot 4) 1 x Keep It Cool
++  24.6s > (slot 5) 1 x Impatient Miner
++  24.6s > (slot 6) 1 x Spelunker
++  24.6s > (slot 7) 1 x Maniac Miner
++  24.6s > (slot 8) emptied
++  24.6s > (slot 9) 1 x Tier 5
++  24.6s > (slot 10) emptied
++  24.6s > (slot 11) 1 x Daily Grind
++  24.6s > (slot 12) emptied
++  24.6s > (slot 13) 1 x Core of the Dragon
++  24.6s > (slot 14) emptied
++  24.6s > (slot 15) 1 x Daily Powder
++  24.6s > (slot 16) emptied
++  24.6s > (slot 17) emptied
++  24.6s > (slot 18) 1 x Tier 4
++  24.6s > (slot 19) 1 x Dragon's Favor
++  24.6s > (slot 20) 1 x Old-School
++  24.6s > (slot 21) 1 x Professional
++  24.6s > (slot 22) 1 x Mole
++  24.6s > (slot 23) 1 x Gem Lover
++  24.6s > (slot 24) 1 x Seasoned Mineman
++  24.6s > (slot 25) 1 x Front Loaded
++  24.6s > (slot 26) emptied
++  24.6s > (slot 27) 1 x Tier 3
++  24.6s > (slot 28) emptied
++  24.6s > (slot 29) 1 x Frugal Miner
++  24.6s > (slot 30) emptied
++  24.6s > (slot 31) 1 x Efficient Miner
++  24.6s > (slot 32) emptied
++  24.6s > (slot 33) 1 x Quick Forge
++  24.6s > (slot 34) emptied
++  24.6s > (slot 35) emptied
++  24.6s > (slot 36) 1 x Tier 2
++  24.6s > (slot 37) emptied
++  24.6s > (slot 38) 1 x Mining Speed Boost
++  24.6s > (slot 39) 1 x Precision Mining
++  24.6s > (slot 40) 1 x Mining Fortune
++  24.6s > (slot 41) 1 x Obsidian Insanium
++  24.6s > (slot 42) emptied
++  24.6s > (slot 43) emptied
++  24.6s > (slot 45) emptied
++  24.6s > (slot 46) emptied
++  24.6s > (slot 47) emptied
++  24.6s > (slot 48) emptied
++  24.6s > (slot 49) emptied
++  24.6s > (slot 50) emptied
++  24.6s > (slot 51) emptied
++  24.6s > (slot 52) emptied
++  24.6s > (slot 53) emptied
++  24.6s > (slot 8) 1 x Scroll Up
++  24.6s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 42) 1 x Pickobulus
++  24.6s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 44) 1 x Scroll Down
++  24.6s > (slot 45) 1 x Close
++  24.6s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 49) 1 x Heart of the Dragon
++  24.6s > (slot 50) 1 x Dragon Profiles
++  24.6s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  24.6s > (slot 52) 1 x Reset Heart of the Dragon
++  24.6s > (slot 53) 1 x minecraft:black_stained_glass_pane
+             - slot 16
+             + slot 7: GOOD fill x1 on Maniac Miner
++  24.7s > (you clicked slot 44)
++  24.7s > (slot 44) emptied
++  24.7s > (slot 44) 1 x Scroll Down
++  24.8s > (you clicked slot 44)
++  24.8s > (slot 0) emptied
++  24.8s > (slot 1) emptied
++  24.8s > (slot 2) emptied
++  24.8s > (slot 3) emptied
++  24.8s > (slot 4) emptied
++  24.8s > (slot 5) emptied
++  24.8s > (slot 6) emptied
++  24.8s > (slot 44) emptied
++  24.8s > (slot 0) 1 x Tier 5
++  24.8s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  24.8s > (slot 2) 1 x Daily Grind
++  24.8s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  24.8s > (slot 4) 1 x Core of the Dragon
++  24.8s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  24.8s > (slot 6) 1 x Daily Powder
++  24.8s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  24.8s > (slot 9) 1 x Tier 4
++  24.8s > (slot 10) 1 x Dragon's Favor
++  24.8s > (slot 11) 1 x Old-School
++  24.8s > (slot 12) 1 x Professional
++  24.8s > (slot 13) 1 x Mole
++  24.8s > (slot 14) 1 x Gem Lover
++  24.8s > (slot 15) 1 x Seasoned Mineman
++  24.8s > (slot 16) 1 x Front Loaded
++  24.8s > (slot 18) 1 x Tier 3
++  24.8s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  24.8s > (slot 20) 1 x Frugal Miner
++  24.8s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  24.8s > (slot 22) 1 x Efficient Miner
++  24.8s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  24.8s > (slot 24) 1 x Quick Forge
++  24.8s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  24.8s > (slot 27) 1 x Tier 2
++  24.8s > (slot 29) 1 x Mining Speed Boost
++  24.8s > (slot 30) 1 x Precision Mining
++  24.8s > (slot 31) 1 x Mining Fortune
++  24.8s > (slot 32) 1 x Obsidian Insanium
++  24.8s > (slot 33) 1 x Pickobulus
++  24.8s > (slot 36) 1 x Tier 1
++  24.8s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  24.8s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  24.8s > (slot 40) 1 x Mining Speed
++  24.8s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  24.8s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  24.8s > (slot 44) 1 x minecraft:black_stained_glass_pane
+             - slot 7
+             + slot 13: GOOD fill x27 on Mole
++  25.0s > (you clicked slot 44)
++  25.0s > (slot 44) emptied
++  25.1s > (slot 44) 1 x minecraft:black_stained_glass_pane
++  44.6s > (you clicked slot 8)
++  44.6s > (slot 8) emptied
++  44.8s > (slot 0) 1 x Tier 6
++  44.8s > (slot 1) 1 x Tunnel Vision
++  44.8s > (slot 2) 1 x Blockhead
++  44.8s > (slot 3) 1 x Mining Madness
++  44.8s > (slot 4) 1 x Keep It Cool
++  44.8s > (slot 5) 1 x Impatient Miner
++  44.8s > (slot 6) 1 x Spelunker
++  44.8s > (slot 7) 1 x Maniac Miner
++  44.8s > (slot 8) 1 x Scroll Up
++  44.8s > (slot 9) 1 x Tier 5
++  44.8s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  44.8s > (slot 11) 1 x Daily Grind
++  44.8s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  44.8s > (slot 13) 1 x Core of the Dragon
++  44.8s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  44.8s > (slot 15) 1 x Daily Powder
++  44.8s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  44.8s > (slot 18) 1 x Tier 4
++  44.8s > (slot 19) 1 x Dragon's Favor
++  44.8s > (slot 20) 1 x Old-School
++  44.8s > (slot 21) 1 x Professional
++  44.8s > (slot 22) 1 x Mole
++  44.8s > (slot 23) 1 x Gem Lover
++  44.8s > (slot 24) 1 x Seasoned Mineman
++  44.8s > (slot 25) 1 x Front Loaded
++  44.8s > (slot 27) 1 x Tier 3
++  44.8s > (slot 29) 1 x Frugal Miner
++  44.8s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  44.8s > (slot 31) 1 x Efficient Miner
++  44.8s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  44.8s > (slot 33) 1 x Quick Forge
++  44.8s > (slot 36) 1 x Tier 2
++  44.8s > (slot 38) 1 x Mining Speed Boost
++  44.8s > (slot 39) 1 x Precision Mining
++  44.8s > (slot 40) 1 x Mining Fortune
++  44.8s > (slot 41) 1 x Obsidian Insanium
++  44.8s > (slot 42) 1 x Pickobulus
++  44.8s > (slot 44) 1 x Scroll Down
+             - slot 13
+             + slot 7: GOOD fill x1 on Maniac Miner
++  44.9s > (you clicked slot 8)
++  45.0s > (slot 8) emptied
++  45.1s > (slot 0) 1 x Tier 7
++  45.1s > (slot 1) emptied
++  45.1s > (slot 2) 1 x Speedy Mineman
++  45.1s > (slot 3) emptied
++  45.1s > (slot 4) 1 x Powder Buff
++  45.1s > (slot 5) emptied
++  45.1s > (slot 6) 1 x Fortunate Mineman
++  45.1s > (slot 7) emptied
++  45.1s > (slot 9) emptied
++  45.1s > (slot 10) emptied
++  45.1s > (slot 11) emptied
++  45.1s > (slot 12) emptied
++  45.1s > (slot 13) emptied
++  45.1s > (slot 14) emptied
++  45.1s > (slot 15) emptied
++  45.1s > (slot 16) emptied
++  45.1s > (slot 17) emptied
++  45.1s > (slot 18) emptied
++  45.1s > (slot 19) emptied
++  45.1s > (slot 20) emptied
++  45.1s > (slot 21) emptied
++  45.1s > (slot 22) emptied
++  45.1s > (slot 23) emptied
++  45.1s > (slot 24) emptied
++  45.1s > (slot 25) emptied
++  45.1s > (slot 26) emptied
++  45.1s > (slot 27) emptied
++  45.1s > (slot 28) emptied
++  45.1s > (slot 29) emptied
++  45.1s > (slot 30) emptied
++  45.1s > (slot 31) emptied
++  45.1s > (slot 32) emptied
++  45.1s > (slot 33) emptied
++  45.1s > (slot 34) emptied
++  45.1s > (slot 35) emptied
++  45.1s > (slot 36) emptied
++  45.1s > (slot 37) emptied
++  45.1s > (slot 38) emptied
++  45.1s > (slot 39) emptied
++  45.1s > (slot 40) emptied
++  45.1s > (slot 41) emptied
++  45.1s > (slot 42) emptied
++  45.1s > (slot 43) emptied
++  45.1s > (slot 44) emptied
++  45.1s > (slot 45) emptied
++  45.1s > (slot 46) emptied
++  45.1s > (slot 47) emptied
++  45.1s > (slot 48) emptied
++  45.1s > (slot 49) emptied
++  45.1s > (slot 50) emptied
++  45.1s > (slot 51) emptied
++  45.1s > (slot 52) emptied
++  45.1s > (slot 53) emptied
++  45.1s > (you clicked slot 8)
++  45.1s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 8) 1 x Scroll Up
++  45.1s > (slot 9) 1 x Tier 6
++  45.1s > (slot 10) 1 x Tunnel Vision
++  45.1s > (slot 11) 1 x Blockhead
++  45.1s > (slot 12) 1 x Mining Madness
++  45.1s > (slot 13) 1 x Keep It Cool
++  45.1s > (slot 14) 1 x Impatient Miner
++  45.1s > (slot 15) 1 x Spelunker
++  45.1s > (slot 16) 1 x Maniac Miner
++  45.1s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 18) 1 x Tier 5
++  45.1s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 20) 1 x Daily Grind
++  45.1s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 22) 1 x Core of the Dragon
++  45.1s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 24) 1 x Daily Powder
++  45.1s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 27) 1 x Tier 4
++  45.1s > (slot 28) 1 x Dragon's Favor
++  45.1s > (slot 29) 1 x Old-School
++  45.1s > (slot 30) 1 x Professional
++  45.1s > (slot 31) 1 x Mole
++  45.1s > (slot 32) 1 x Gem Lover
++  45.1s > (slot 33) 1 x Seasoned Mineman
++  45.1s > (slot 34) 1 x Front Loaded
++  45.1s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 36) 1 x Tier 3
++  45.1s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 38) 1 x Frugal Miner
++  45.1s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 40) 1 x Efficient Miner
++  45.1s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 42) 1 x Quick Forge
++  45.1s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 44) 1 x Scroll Down
++  45.1s > (slot 45) 1 x Close
++  45.1s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 49) 1 x Heart of the Dragon
++  45.1s > (slot 50) 1 x Dragon Profiles
++  45.1s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  45.1s > (slot 52) 1 x Reset Heart of the Dragon
++  45.1s > (slot 53) 1 x minecraft:black_stained_glass_pane
+             - slot 7
+             + slot 16: GOOD fill x1 on Maniac Miner
++  45.3s > (you clicked slot 8)
++  45.3s > (slot 8) emptied
++  45.4s > (slot 8) 1 x Scroll Up
++  45.5s > (slot 0) 1 x Tier 8
++  45.5s > (slot 1) 1 x Miner's Blessing
++  45.5s > (slot 2) 1 x No Stone Unturned
++  45.5s > (slot 3) 1 x Strong Arm
++  45.5s > (slot 4) 1 x Steady Hand
++  45.5s > (slot 5) 1 x Seasoned Spelunker
++  45.5s > (slot 6) 1 x Surveyor
++  45.5s > (slot 7) 1 x Void Blessing
++  45.5s > (slot 8) emptied
++  45.5s > (slot 9) 1 x Tier 7
++  45.5s > (slot 10) emptied
++  45.5s > (slot 11) 1 x Speedy Mineman
++  45.5s > (slot 12) emptied
++  45.5s > (slot 13) 1 x Powder Buff
++  45.5s > (slot 14) emptied
++  45.5s > (slot 15) 1 x Fortunate Mineman
++  45.5s > (slot 16) emptied
++  45.5s > (slot 17) emptied
++  45.5s > (slot 18) 1 x Tier 6
++  45.5s > (slot 19) 1 x Tunnel Vision
++  45.5s > (slot 20) 1 x Blockhead
++  45.5s > (slot 21) 1 x Mining Madness
++  45.5s > (slot 22) 1 x Keep It Cool
++  45.5s > (slot 23) 1 x Impatient Miner
++  45.5s > (slot 24) 1 x Spelunker
++  45.5s > (slot 25) 1 x Maniac Miner
++  45.5s > (slot 26) emptied
++  45.5s > (slot 27) 1 x Tier 5
++  45.5s > (slot 28) emptied
++  45.5s > (slot 29) 1 x Daily Grind
++  45.5s > (slot 30) emptied
++  45.5s > (slot 31) emptied
++  45.5s > (slot 32) emptied
++  45.5s > (slot 33) emptied
++  45.5s > (slot 34) emptied
++  45.5s > (slot 35) emptied
++  45.5s > (slot 36) emptied
++  45.5s > (slot 37) emptied
++  45.5s > (slot 38) emptied
++  45.5s > (slot 39) emptied
++  45.5s > (slot 40) emptied
++  45.5s > (slot 41) emptied
++  45.5s > (slot 42) emptied
++  45.5s > (slot 43) emptied
++  45.5s > (slot 44) emptied
++  45.5s > (slot 45) emptied
++  45.5s > (slot 46) emptied
++  45.5s > (slot 47) emptied
++  45.5s > (slot 48) emptied
++  45.5s > (slot 49) emptied
++  45.5s > (slot 50) emptied
++  45.5s > (slot 51) emptied
++  45.5s > (slot 52) emptied
++  45.5s > (slot 53) emptied
++  45.5s > (slot 31) 1 x Core of the Dragon
++  45.5s > (slot 33) 1 x Daily Powder
++  45.5s > (slot 36) 1 x Tier 4
++  45.5s > (slot 37) 1 x Dragon's Favor
++  45.5s > (slot 38) 1 x Old-School
++  45.5s > (slot 8) 1 x Scroll Up
++  45.5s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  45.5s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  45.5s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  45.5s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  45.5s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  45.5s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  45.5s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  45.5s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  45.5s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  45.5s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  45.5s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  45.5s > (slot 39) 1 x Professional
++  45.5s > (slot 40) 1 x Mole
++  45.5s > (slot 41) 1 x Gem Lover
++  45.5s > (slot 42) 1 x Seasoned Mineman
++  45.5s > (slot 43) 1 x Front Loaded
++  45.5s > (slot 44) 1 x Scroll Down
++  45.5s > (slot 45) 1 x Close
++  45.5s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  45.5s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  45.5s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  45.5s > (slot 49) 1 x Heart of the Dragon
++  45.5s > (slot 50) 1 x Dragon Profiles
++  45.5s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  45.5s > (slot 52) 1 x Reset Heart of the Dragon
++  45.5s > (slot 53) 1 x minecraft:black_stained_glass_pane
++  45.5s > (you clicked slot 8)
+             - slot 16
+             + slot 25: GOOD fill x1 on Maniac Miner
++  45.5s > (slot 8) emptied
++  45.6s > (slot 8) 1 x Scroll Up
++  45.6s > (slot 0) 1 x Tier 9
++  45.6s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  45.6s > (slot 2) 1 x Metal Head
++  45.6s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  45.6s > (slot 4) 1 x Rags to Riches
++  45.6s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  45.6s > (slot 6) 1 x Eager Adventurer
++  45.6s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  45.6s > (slot 9) 1 x Tier 8
++  45.6s > (slot 10) 1 x Miner's Blessing
++  45.6s > (slot 11) 1 x No Stone Unturned
++  45.6s > (slot 12) 1 x Strong Arm
++  45.6s > (slot 13) 1 x Steady Hand
++  45.6s > (slot 14) 1 x Seasoned Spelunker
++  45.6s > (slot 15) 1 x Surveyor
++  45.6s > (slot 16) 1 x Void Blessing
++  45.6s > (slot 18) 1 x Tier 7
++  45.6s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  45.6s > (slot 20) 1 x Speedy Mineman
++  45.6s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  45.6s > (slot 22) 1 x Powder Buff
++  45.6s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  45.6s > (slot 24) 1 x Fortunate Mineman
++  45.6s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  45.6s > (slot 27) 1 x Tier 6
++  45.6s > (slot 28) 1 x Tunnel Vision
++  45.6s > (slot 29) 1 x Blockhead
++  45.6s > (slot 30) 1 x Mining Madness
++  45.6s > (slot 31) 1 x Keep It Cool
++  45.6s > (slot 32) 1 x Impatient Miner
++  45.6s > (slot 33) 1 x Spelunker
++  45.6s > (slot 34) 1 x Maniac Miner
++  45.6s > (slot 36) 1 x Tier 5
++  45.6s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  45.6s > (slot 38) 1 x Daily Grind
++  45.6s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  45.6s > (slot 40) 1 x Core of the Dragon
++  45.6s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  45.6s > (slot 42) 1 x Daily Powder
++  45.6s > (slot 43) 1 x minecraft:black_stained_glass_pane
+             - slot 25
+             + slot 34: GOOD fill x1 on Maniac Miner
++  45.6s > (you clicked slot 8)
++  45.7s > (slot 8) emptied
++  45.7s > (slot 8) 1 x Scroll Up
++  45.8s > (you clicked slot 8)
++  45.8s > (slot 0) 1 x Tier 10
++  45.8s > (slot 1) 1 x Void Infusion
++  45.8s > (slot 2) 1 x Crystalline
++  45.8s > (slot 3) 1 x Gifts from the Void
++  45.8s > (slot 4) 1 x Mining Master
++  45.8s > (slot 5) 1 x Fine Cut
++  45.8s > (slot 6) 1 x Void Seeker
++  45.8s > (slot 7) 1 x Sheer Force
++  45.8s > (slot 8) 1 x minecraft:black_stained_glass_pane
++  45.8s > (slot 9) 1 x Tier 9
++  45.8s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  45.8s > (slot 11) 1 x Metal Head
++  45.8s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  45.8s > (slot 13) 1 x Rags to Riches
++  45.8s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  45.8s > (slot 15) 1 x Eager Adventurer
++  45.8s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  45.8s > (slot 18) 1 x Tier 8
++  45.8s > (slot 19) 1 x Miner's Blessing
++  45.8s > (slot 20) 1 x No Stone Unturned
++  45.8s > (slot 21) 1 x Strong Arm
++  45.8s > (slot 22) 1 x Steady Hand
++  45.8s > (slot 23) 1 x Seasoned Spelunker
++  45.8s > (slot 24) 1 x Surveyor
++  45.8s > (slot 25) 1 x Void Blessing
++  45.8s > (slot 27) 1 x Tier 7
++  45.8s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  45.8s > (slot 29) 1 x Speedy Mineman
++  45.8s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  45.8s > (slot 31) 1 x Powder Buff
++  45.8s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  45.8s > (slot 33) 1 x Fortunate Mineman
++  45.8s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  45.8s > (slot 36) 1 x Tier 6
++  45.8s > (slot 37) 1 x Tunnel Vision
++  45.8s > (slot 38) 1 x Blockhead
++  45.8s > (slot 39) 1 x Mining Madness
++  45.8s > (slot 40) 1 x Keep It Cool
++  45.8s > (slot 41) 1 x Impatient Miner
++  45.8s > (slot 42) 1 x Spelunker
++  45.8s > (slot 43) 1 x Maniac Miner
+             - slot 34
+             + slot 43: GOOD fill x1 on Maniac Miner
++  46.1s > (you clicked slot 8)
++  46.1s > (slot 8) emptied
++  46.3s > (slot 8) 1 x minecraft:black_stained_glass_pane
++  46.4s > (you clicked slot 8)
++  46.4s > (slot 8) emptied
++  46.5s > (slot 10) emptied
++  46.5s > (slot 12) emptied
++  46.5s > (slot 14) emptied
++  46.5s > (slot 16) emptied
++  46.5s > (slot 17) emptied
++  46.5s > (slot 26) emptied
++  46.5s > (slot 28) emptied
++  46.5s > (slot 30) emptied
++  46.5s > (slot 32) emptied
++  46.5s > (slot 34) emptied
++  46.5s > (slot 35) emptied
++  46.5s > (slot 46) emptied
++  46.5s > (slot 47) emptied
++  46.5s > (slot 48) emptied
++  46.5s > (slot 51) emptied
++  46.5s > (slot 53) emptied
++  46.5s > (slot 8) 1 x minecraft:black_stained_glass_pane
++  46.5s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  46.5s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  46.5s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  46.5s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  46.5s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  46.5s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  46.5s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  46.5s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  46.5s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  46.5s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  46.5s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  46.5s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  46.5s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  46.5s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  46.5s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  46.5s > (slot 53) 1 x minecraft:black_stained_glass_pane
++  47.9s > (you clicked slot 44)
++  47.9s > (slot 44) emptied
++  48.1s > (slot 0) 1 x Tier 9
++  48.1s > (slot 1) emptied
++  48.1s > (slot 2) 1 x Metal Head
++  48.1s > (slot 3) emptied
++  48.1s > (slot 4) 1 x Rags to Riches
++  48.1s > (slot 5) emptied
++  48.1s > (slot 6) 1 x Eager Adventurer
++  48.1s > (slot 7) emptied
++  48.1s > (slot 8) 1 x Scroll Up
++  48.1s > (slot 9) 1 x Tier 8
++  48.1s > (slot 10) 1 x Miner's Blessing
++  48.1s > (slot 11) 1 x No Stone Unturned
++  48.1s > (slot 12) 1 x Strong Arm
++  48.1s > (slot 13) 1 x Steady Hand
++  48.1s > (slot 14) 1 x Seasoned Spelunker
++  48.1s > (slot 15) 1 x Surveyor
++  48.1s > (slot 16) 1 x Void Blessing
++  48.1s > (slot 17) emptied
++  48.1s > (slot 18) 1 x Tier 7
++  48.1s > (slot 19) emptied
++  48.1s > (slot 20) 1 x Speedy Mineman
++  48.1s > (slot 21) emptied
++  48.1s > (slot 22) 1 x Powder Buff
++  48.1s > (slot 23) emptied
++  48.1s > (slot 24) 1 x Fortunate Mineman
++  48.1s > (slot 25) emptied
++  48.1s > (slot 26) emptied
++  48.1s > (slot 27) 1 x Tier 6
++  48.1s > (slot 28) 1 x Tunnel Vision
++  48.1s > (slot 29) 1 x Blockhead
++  48.1s > (slot 30) 1 x Mining Madness
++  48.1s > (slot 31) 1 x Keep It Cool
++  48.1s > (slot 32) 1 x Impatient Miner
++  48.1s > (slot 33) 1 x Spelunker
++  48.1s > (slot 34) 1 x Maniac Miner
++  48.1s > (slot 35) emptied
++  48.1s > (slot 36) 1 x Tier 5
++  48.1s > (slot 37) emptied
++  48.1s > (slot 38) 1 x Daily Grind
++  48.1s > (slot 39) emptied
++  48.1s > (slot 40) 1 x Core of the Dragon
++  48.1s > (slot 41) emptied
++  48.1s > (slot 42) 1 x Daily Powder
++  48.1s > (slot 43) emptied
++  48.1s > (slot 44) 1 x Scroll Down
++  48.1s > (slot 46) emptied
++  48.1s > (slot 47) emptied
++  48.1s > (slot 48) emptied
++  48.1s > (slot 51) emptied
++  48.1s > (slot 52) emptied
++  48.1s > (slot 53) emptied
++  48.1s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  48.1s > (slot 52) 1 x Reset Heart of the Dragon
++  48.1s > (slot 53) 1 x minecraft:black_stained_glass_pane
++  48.1s > (you clicked slot 44)
+             - slot 43
+             + slot 34: GOOD fill x1 on Maniac Miner
++  48.1s > (slot 44) emptied
++  48.2s > (slot 0) 1 x Tier 8
++  48.2s > (slot 1) 1 x Miner's Blessing
++  48.2s > (slot 2) 1 x No Stone Unturned
++  48.2s > (slot 3) 1 x Strong Arm
++  48.2s > (slot 4) 1 x Steady Hand
++  48.2s > (slot 5) 1 x Seasoned Spelunker
++  48.2s > (slot 6) 1 x Surveyor
++  48.2s > (slot 7) 1 x Void Blessing
++  48.2s > (slot 9) 1 x Tier 7
++  48.2s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  48.2s > (slot 11) 1 x Speedy Mineman
++  48.2s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  48.2s > (slot 13) 1 x Powder Buff
++  48.2s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  48.2s > (slot 15) 1 x Fortunate Mineman
++  48.2s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  48.2s > (slot 18) 1 x Tier 6
++  48.2s > (slot 19) 1 x Tunnel Vision
++  48.2s > (slot 20) 1 x Blockhead
++  48.2s > (slot 21) 1 x Mining Madness
++  48.2s > (slot 22) 1 x Keep It Cool
++  48.2s > (slot 23) 1 x Impatient Miner
++  48.2s > (slot 24) 1 x Spelunker
++  48.2s > (slot 25) 1 x Maniac Miner
++  48.2s > (slot 27) 1 x Tier 5
++  48.2s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  48.2s > (slot 29) 1 x Daily Grind
++  48.2s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  48.2s > (slot 31) 1 x Core of the Dragon
++  48.2s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  48.2s > (slot 33) 1 x Daily Powder
++  48.2s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  48.2s > (slot 36) 1 x Tier 4
++  48.2s > (slot 37) 1 x Dragon's Favor
++  48.2s > (slot 38) 1 x Old-School
++  48.2s > (slot 39) 1 x Professional
++  48.2s > (slot 40) 1 x Mole
++  48.2s > (slot 41) 1 x Gem Lover
++  48.2s > (slot 42) 1 x Seasoned Mineman
++  48.2s > (slot 43) 1 x Front Loaded
++  48.2s > (slot 44) 1 x Scroll Down
+             - slot 34
+             + slot 25: GOOD fill x1 on Maniac Miner
++  48.3s > (you clicked slot 44)
++  48.3s > (slot 44) emptied
++  48.3s > (slot 44) 1 x Scroll Down
++  48.4s > (slot 0) 1 x Tier 7
++  48.4s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  48.4s > (slot 2) 1 x Speedy Mineman
++  48.4s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  48.4s > (slot 4) 1 x Powder Buff
++  48.4s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  48.4s > (slot 6) 1 x Fortunate Mineman
++  48.4s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  48.4s > (slot 9) 1 x Tier 6
++  48.4s > (slot 10) 1 x Tunnel Vision
++  48.4s > (slot 11) 1 x Blockhead
++  48.4s > (slot 12) 1 x Mining Madness
++  48.4s > (slot 13) 1 x Keep It Cool
++  48.4s > (slot 14) 1 x Impatient Miner
++  48.4s > (slot 15) 1 x Spelunker
++  48.4s > (slot 16) 1 x Maniac Miner
++  48.4s > (slot 18) 1 x Tier 5
++  48.4s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  48.4s > (slot 20) 1 x Daily Grind
++  48.4s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  48.4s > (slot 22) 1 x Core of the Dragon
++  48.4s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  48.4s > (slot 24) 1 x Daily Powder
++  48.4s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  48.4s > (slot 27) 1 x Tier 4
++  48.4s > (slot 28) 1 x Dragon's Favor
++  48.4s > (slot 29) 1 x Old-School
++  48.4s > (slot 30) 1 x Professional
++  48.4s > (slot 31) 1 x Mole
++  48.4s > (slot 32) 1 x Gem Lover
++  48.4s > (slot 33) 1 x Seasoned Mineman
++  48.4s > (slot 34) 1 x Front Loaded
++  48.4s > (slot 36) 1 x Tier 3
++  48.4s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  48.4s > (slot 38) 1 x Frugal Miner
++  48.4s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  48.4s > (slot 40) 1 x Efficient Miner
++  48.4s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  48.4s > (slot 42) 1 x Quick Forge
++  48.4s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  48.4s > (you clicked slot 44)
+             - slot 25
+             + slot 16: GOOD fill x1 on Maniac Miner
++  48.5s > (slot 44) emptied
++  48.5s > (slot 44) 1 x Scroll Down
++  48.6s > (slot 0) 1 x Tier 6
++  48.6s > (slot 1) 1 x Tunnel Vision
++  48.6s > (slot 2) 1 x Blockhead
++  48.6s > (slot 3) 1 x Mining Madness
++  48.6s > (slot 4) emptied
++  48.6s > (slot 5) emptied
++  48.6s > (slot 6) emptied
++  48.6s > (slot 7) emptied
++  48.6s > (slot 8) emptied
++  48.6s > (slot 9) emptied
++  48.6s > (slot 10) emptied
++  48.6s > (slot 11) emptied
++  48.6s > (slot 12) emptied
++  48.6s > (slot 13) emptied
++  48.6s > (slot 14) emptied
++  48.6s > (slot 15) emptied
++  48.6s > (slot 16) emptied
++  48.6s > (slot 17) emptied
++  48.6s > (slot 18) emptied
++  48.6s > (slot 19) emptied
++  48.6s > (slot 20) emptied
++  48.6s > (slot 21) emptied
++  48.6s > (slot 22) emptied
++  48.6s > (slot 23) emptied
++  48.6s > (slot 24) emptied
++  48.6s > (slot 25) emptied
++  48.6s > (slot 26) emptied
++  48.6s > (slot 27) emptied
++  48.6s > (slot 28) emptied
++  48.6s > (slot 29) emptied
++  48.6s > (slot 30) emptied
++  48.6s > (slot 31) emptied
++  48.6s > (slot 32) emptied
++  48.6s > (slot 33) emptied
++  48.6s > (slot 34) emptied
++  48.6s > (slot 35) emptied
++  48.6s > (slot 36) emptied
++  48.6s > (slot 37) emptied
++  48.6s > (slot 38) emptied
++  48.6s > (slot 39) emptied
++  48.6s > (slot 40) emptied
++  48.6s > (slot 41) emptied
++  48.6s > (slot 42) emptied
++  48.6s > (slot 43) emptied
++  48.6s > (slot 44) emptied
++  48.6s > (slot 45) emptied
++  48.6s > (slot 46) emptied
++  48.6s > (slot 47) emptied
++  48.6s > (slot 48) emptied
++  48.6s > (slot 49) emptied
++  48.6s > (slot 50) emptied
++  48.6s > (slot 51) emptied
++  48.6s > (slot 52) emptied
++  48.6s > (slot 53) emptied
++  48.6s > (slot 4) 1 x Keep It Cool
++  48.6s > (slot 5) 1 x Impatient Miner
++  48.6s > (slot 6) 1 x Spelunker
++  48.6s > (slot 7) 1 x Maniac Miner
++  48.6s > (slot 8) 1 x Scroll Up
++  48.6s > (slot 9) 1 x Tier 5
++  48.6s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 11) 1 x Daily Grind
++  48.6s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 13) 1 x Core of the Dragon
++  48.6s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 15) 1 x Daily Powder
++  48.6s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 18) 1 x Tier 4
++  48.6s > (slot 19) 1 x Dragon's Favor
++  48.6s > (slot 20) 1 x Old-School
++  48.6s > (slot 21) 1 x Professional
++  48.6s > (slot 22) 1 x Mole
++  48.6s > (slot 23) 1 x Gem Lover
++  48.6s > (slot 24) 1 x Seasoned Mineman
++  48.6s > (slot 25) 1 x Front Loaded
++  48.6s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 27) 1 x Tier 3
++  48.6s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 29) 1 x Frugal Miner
++  48.6s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 31) 1 x Efficient Miner
++  48.6s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 33) 1 x Quick Forge
++  48.6s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 36) 1 x Tier 2
++  48.6s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 38) 1 x Mining Speed Boost
++  48.6s > (slot 39) 1 x Precision Mining
++  48.6s > (slot 40) 1 x Mining Fortune
++  48.6s > (slot 41) 1 x Obsidian Insanium
++  48.6s > (slot 42) 1 x Pickobulus
++  48.6s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 44) 1 x Scroll Down
++  48.6s > (slot 45) 1 x Close
++  48.6s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 49) 1 x Heart of the Dragon
++  48.6s > (slot 50) 1 x Dragon Profiles
++  48.6s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  48.6s > (slot 52) 1 x Reset Heart of the Dragon
++  48.6s > (slot 53) 1 x minecraft:black_stained_glass_pane
+             - slot 16
+             + slot 7: GOOD fill x1 on Maniac Miner
++  48.6s > (you clicked slot 44)
++  48.6s > (slot 44) emptied
++  48.7s > (slot 44) 1 x Scroll Down
++  48.8s > (slot 0) 1 x Tier 5
++  48.8s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  48.8s > (slot 2) 1 x Daily Grind
++  48.8s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  48.8s > (slot 4) 1 x Core of the Dragon
++  48.8s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  48.8s > (slot 6) 1 x Daily Powder
++  48.8s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  48.8s > (slot 9) 1 x Tier 4
++  48.8s > (slot 10) 1 x Dragon's Favor
++  48.8s > (slot 11) 1 x Old-School
++  48.8s > (slot 12) 1 x Professional
++  48.8s > (slot 13) 1 x Mole
++  48.8s > (slot 14) 1 x Gem Lover
++  48.8s > (slot 15) 1 x Seasoned Mineman
++  48.8s > (slot 16) 1 x Front Loaded
++  48.8s > (slot 18) 1 x Tier 3
++  48.8s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  48.8s > (slot 20) 1 x Frugal Miner
++  48.8s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  48.8s > (slot 22) 1 x Efficient Miner
++  48.8s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  48.8s > (slot 24) 1 x Quick Forge
++  48.8s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  48.8s > (slot 27) 1 x Tier 2
++  48.8s > (slot 29) 1 x Mining Speed Boost
++  48.8s > (slot 30) 1 x Precision Mining
++  48.8s > (slot 31) 1 x Mining Fortune
++  48.8s > (slot 32) 1 x Obsidian Insanium
++  48.8s > (slot 33) 1 x Pickobulus
++  48.8s > (slot 36) 1 x Tier 1
++  48.8s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  48.8s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  48.8s > (slot 40) 1 x Mining Speed
++  48.8s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  48.8s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  48.8s > (slot 44) 1 x minecraft:black_stained_glass_pane
+             - slot 7
+             + slot 13: GOOD fill x27 on Mole
++  48.8s > (you clicked slot 44)
++  48.8s > (slot 44) emptied
++  48.9s > (slot 44) 1 x minecraft:black_stained_glass_pane
++  49.0s > (you clicked slot 44)
++  49.0s > (slot 44) emptied
++  49.1s > (slot 44) 1 x minecraft:black_stained_glass_pane
++  49.2s > (you clicked slot 44)
++  49.2s > (slot 44) emptied
++  49.2s > (slot 44) 1 x minecraft:black_stained_glass_pane
++  49.3s > (you clicked slot 44)
++  49.3s > (slot 44) emptied
++  49.4s > (slot 44) 1 x minecraft:black_stained_glass_pane
++  61.6s > (you clicked slot 40)
++  61.6s > (slot 40) emptied
++  61.8s > You upgraded Mining Speed to level 35!
++  61.8s > (slot 1) emptied
++  61.8s > (slot 3) emptied
++  61.8s > (slot 5) emptied
++  61.8s > (slot 7) emptied
++  61.8s > (slot 17) emptied
++  61.8s > (slot 19) emptied
++  61.8s > (slot 21) emptied
++  61.8s > (slot 23) emptied
++  61.8s > (slot 25) emptied
++  61.8s > (slot 26) emptied
++  61.8s > (slot 28) emptied
++  61.8s > (slot 34) emptied
++  61.8s > (slot 35) emptied
++  61.8s > (slot 37) emptied
++  61.8s > (slot 38) emptied
++  61.8s > (slot 39) emptied
++  61.8s > (slot 40) 1 x Mining Speed
++  61.8s > (slot 41) emptied
++  61.8s > (slot 42) emptied
++  61.8s > (slot 43) emptied
++  61.8s > (slot 44) emptied
++  61.8s > (slot 46) emptied
++  61.8s > (slot 47) emptied
++  61.8s > (slot 48) emptied
++  61.8s > (slot 49) 1 x Heart of the Dragon
++  61.8s > (slot 51) emptied
++  61.8s > (slot 52) emptied
++  61.8s > (slot 53) emptied
++  61.8s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 44) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  61.8s > (slot 52) 1 x Reset Heart of the Dragon
++  61.8s > (slot 53) 1 x minecraft:black_stained_glass_pane
++  66.3s > (you clicked slot 22)
++  66.3s > (slot 22) emptied
++  66.5s > You upgraded Efficient Miner to level 45!
++  66.5s > (slot 22) 1 x Efficient Miner
++  66.5s > (slot 49) 1 x Heart of the Dragon
++  66.5s > (slot 52) 1 x Reset Heart of the Dragon
++  67.6s > (opened your inventory, 46 slots)
++  67.6s > (slot 5) 1 x Crying Obsidian Helmet
++  67.6s > (slot 6) 1 x Crying Obsidian Chestplate
++  67.6s > (slot 7) 1 x Crying Obsidian Leggings
++  67.6s > (slot 8) 1 x Crying Obsidian Boots
++  67.6s > (slot 9) 1 x Promising Pickaxe
++  67.6s > (slot 10) 1 x Obsidian Drill OD-355
++  67.6s > (slot 11) 64 x Enchanted End Stone
++  67.6s > (slot 12) 64 x Enchanted End Stone
++  67.6s > (slot 13) 64 x Enchanted End Stone
++  67.6s > (slot 14) 64 x Enchanted End Stone
++  67.6s > (slot 15) 64 x Enchanted End Stone
++  67.6s > (slot 16) 64 x Enchanted End Stone
++  67.6s > (slot 17) 64 x Enchanted End Stone
++  67.6s > (slot 18) 1 x Refined Enderite Pickaxe
++  67.6s > (slot 19) 1 x Crying Obsidian Pickaxe
++  67.6s > (slot 20) 52 x Obsidian
++  67.6s > (slot 21) 64 x Rough Amethyst
++  67.6s > (slot 22) 64 x Enchanted End Stone
++  67.6s > (slot 23) 63 x Flawed Amethyst
++  67.6s > (slot 24) 1 x Fuel Tank
++  67.6s > (slot 25) 57 x Enchanted End Stone
++  67.6s > (slot 26) 3 x End Stone Rose
++  67.6s > (slot 27) 1 x Flint Arrow
++  67.6s > (slot 28) 3 x Summoning Eye
++  67.6s > (slot 29) 2 x Bejeweled Handle
++  67.6s > (slot 31) 60 x Fine Amethyst
++  67.6s > (slot 34) 3 x Rough Amethyst
++  67.6s > (slot 35) 1 x InfiniEye™
++  67.6s > (slot 36) 1 x Suspicious Giant's Sword
++  67.6s > (slot 37) 1 x Warped Aspect of the Void
++  67.6s > (slot 38) 1 x Fabled Frozen Scythe
++  67.6s > (slot 39) 1 x Fabled Edible Mace
++  67.6s > (slot 40) 1 x Precise Golden Gun
++  67.6s > (slot 41) 1 x Auspicious Amethyst Gauntlet
++  67.6s > (slot 43) 13 x Crying Obsidian
++  67.6s > (slot 44) 1 x SkyBlock Menu (Right Click)
+             - slot 0
+             - slot 9
+             - slot 13
+             - slot 18
+             - slot 27
+             - slot 36
++  78.2s > (you clicked slot 44)
++  78.4s > (opened "Dragon Sim Menu", 90 slots)
++  78.4s > (slot 0) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 4) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 8) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 9) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 13) 1 x Your Dragon Sim Profile
++  78.4s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 19) 1 x Your Skills
++  78.4s > (slot 20) 1 x Collections
++  78.4s > (slot 21) 1 x Recipe Book
++  78.4s > (slot 22) 1 x Mythic Carrot
++  78.4s > (slot 23) 1 x Quests & Guides
++  78.4s > (slot 24) 1 x Boosters
++  78.4s > (slot 25) 1 x Storage
++  78.4s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 28) 1 x Accessory Bag
++  78.4s > (slot 29) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 30) 1 x Pets
++  78.4s > (slot 31) 1 x Crafting Table
++  78.4s > (slot 32) 1 x Auction House
++  78.4s > (slot 33) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 34) 1 x Wardrobe
++  78.4s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 36) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 40) 1 x Teleport
++  78.4s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 44) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 45) 1 x Store
++  78.4s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 48) 1 x Profile Management
++  78.4s > (slot 49) 1 x Close
++  78.4s > (slot 50) 1 x Settings
++  78.4s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 52) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 53) 1 x minecraft:black_stained_glass_pane
++  78.4s > (slot 54) 1 x Promising Pickaxe
++  78.4s > (slot 55) 1 x Obsidian Drill OD-355
++  78.4s > (slot 56) 64 x Enchanted End Stone
++  78.4s > (slot 57) 64 x Enchanted End Stone
++  78.4s > (slot 58) 64 x Enchanted End Stone
++  78.4s > (slot 59) 64 x Enchanted End Stone
++  78.4s > (slot 60) 64 x Enchanted End Stone
++  78.4s > (slot 61) 64 x Enchanted End Stone
++  78.4s > (slot 62) 64 x Enchanted End Stone
++  78.4s > (slot 63) 1 x Refined Enderite Pickaxe
++  78.4s > (slot 64) 1 x Crying Obsidian Pickaxe
++  78.4s > (slot 65) 52 x Obsidian
++  78.4s > (slot 66) 64 x Rough Amethyst
++  78.4s > (slot 67) 64 x Enchanted End Stone
++  78.4s > (slot 68) 63 x Flawed Amethyst
++  78.4s > (slot 69) 1 x Fuel Tank
++  78.4s > (slot 70) 57 x Enchanted End Stone
++  78.4s > (slot 71) 3 x End Stone Rose
++  78.4s > (slot 72) 1 x Flint Arrow
++  78.4s > (slot 73) 3 x Summoning Eye
++  78.4s > (slot 74) 2 x Bejeweled Handle
++  78.4s > (slot 76) 60 x Fine Amethyst
++  78.4s > (slot 79) 3 x Rough Amethyst
++  78.4s > (slot 80) 1 x InfiniEye™
++  78.4s > (slot 81) 1 x Suspicious Giant's Sword
++  78.4s > (slot 82) 1 x Warped Aspect of the Void
++  78.4s > (slot 83) 1 x Fabled Frozen Scythe
++  78.4s > (slot 84) 1 x Fabled Edible Mace
++  78.4s > (slot 85) 1 x Precise Golden Gun
++  78.4s > (slot 86) 1 x Auspicious Amethyst Gauntlet
++  78.4s > (slot 88) 13 x Crying Obsidian
++  78.4s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  79.6s > (you clicked slot 10)
++  79.8s > (opened "Heart of the Dragon", 90 slots)
++  79.8s > (slot 0) 1 x Tier 10
++  79.8s > (slot 1) 1 x Void Infusion
++  79.8s > (slot 2) 1 x Crystalline
++  79.8s > (slot 3) 1 x Gifts from the Void
++  79.8s > (slot 4) 1 x Mining Master
++  79.8s > (slot 5) 1 x Fine Cut
++  79.8s > (slot 6) 1 x Void Seeker
++  79.8s > (slot 7) 1 x Sheer Force
++  79.8s > (slot 8) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 9) 1 x Tier 9
++  79.8s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 11) 1 x Metal Head
++  79.8s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 13) 1 x Rags to Riches
++  79.8s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 15) 1 x Eager Adventurer
++  79.8s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 18) 1 x Tier 8
++  79.8s > (slot 19) 1 x Miner's Blessing
++  79.8s > (slot 20) 1 x No Stone Unturned
++  79.8s > (slot 21) 1 x Strong Arm
++  79.8s > (slot 22) 1 x Steady Hand
++  79.8s > (slot 23) 1 x Seasoned Spelunker
++  79.8s > (slot 24) 1 x Surveyor
++  79.8s > (slot 25) 1 x Void Blessing
++  79.8s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 27) 1 x Tier 7
++  79.8s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 29) 1 x Speedy Mineman
++  79.8s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 31) 1 x Powder Buff
++  79.8s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 33) 1 x Fortunate Mineman
++  79.8s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 36) 1 x Tier 6
++  79.8s > (slot 37) 1 x Tunnel Vision
++  79.8s > (slot 38) 1 x Blockhead
++  79.8s > (slot 39) 1 x Mining Madness
++  79.8s > (slot 40) 1 x Keep It Cool
++  79.8s > (slot 41) 1 x Impatient Miner
++  79.8s > (slot 42) 1 x Spelunker
++  79.8s > (slot 43) 1 x Maniac Miner
++  79.8s > (slot 44) 1 x Scroll Down
++  79.8s > (slot 45) 1 x Close
++  79.8s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 49) 1 x Heart of the Dragon
++  79.8s > (slot 50) 1 x Dragon Profiles
++  79.8s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 52) 1 x Reset Heart of the Dragon
++  79.8s > (slot 53) 1 x minecraft:black_stained_glass_pane
++  79.8s > (slot 54) 1 x Promising Pickaxe
++  79.8s > (slot 55) 1 x Obsidian Drill OD-355
++  79.8s > (slot 56) 64 x Enchanted End Stone
++  79.8s > (slot 57) 64 x Enchanted End Stone
++  79.8s > (slot 58) 64 x Enchanted End Stone
++  79.8s > (slot 59) 64 x Enchanted End Stone
++  79.8s > (slot 60) 64 x Enchanted End Stone
++  79.8s > (slot 61) 64 x Enchanted End Stone
++  79.8s > (slot 62) 64 x Enchanted End Stone
++  79.8s > (slot 63) 1 x Refined Enderite Pickaxe
++  79.8s > (slot 64) 1 x Crying Obsidian Pickaxe
++  79.8s > (slot 65) 52 x Obsidian
++  79.8s > (slot 66) 64 x Rough Amethyst
++  79.8s > (slot 67) 64 x Enchanted End Stone
++  79.8s > (slot 68) 63 x Flawed Amethyst
++  79.8s > (slot 69) 1 x Fuel Tank
++  79.8s > (slot 70) 57 x Enchanted End Stone
++  79.8s > (slot 71) 3 x End Stone Rose
++  79.8s > (slot 72) 1 x Flint Arrow
++  79.8s > (slot 73) 3 x Summoning Eye
++  79.8s > (slot 74) 2 x Bejeweled Handle
++  79.8s > (slot 76) 60 x Fine Amethyst
++  79.8s > (slot 79) 3 x Rough Amethyst
++  79.8s > (slot 80) 1 x InfiniEye™
++  79.8s > (slot 81) 1 x Suspicious Giant's Sword
++  79.8s > (slot 82) 1 x Warped Aspect of the Void
++  79.8s > (slot 83) 1 x Fabled Frozen Scythe
++  79.8s > (slot 84) 1 x Fabled Edible Mace
++  79.8s > (slot 85) 1 x Precise Golden Gun
++  79.8s > (slot 86) 1 x Auspicious Amethyst Gauntlet
++  79.8s > (slot 88) 13 x Crying Obsidian
++  79.8s > (slot 89) 1 x SkyBlock Menu (Right Click)
+             + slot 0: MUTED dim on Tier 10
+             + slot 9: MUTED dim on Tier 9
+             + slot 18: MUTED dim on Tier 8
+             + slot 27: MUTED dim on Tier 7
+             + slot 36: MUTED dim on Tier 6
++  88.5s > (you clicked slot 44)
++  88.5s > (slot 44) emptied
+             + slot 43: GOOD fill x1 on Maniac Miner
++  88.6s > (slot 0) 1 x Tier 9
++  88.6s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  88.6s > (slot 2) 1 x Metal Head
++  88.6s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  88.6s > (slot 4) 1 x Rags to Riches
++  88.6s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  88.6s > (slot 6) 1 x Eager Adventurer
++  88.6s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  88.6s > (slot 8) 1 x Scroll Up
++  88.6s > (slot 9) 1 x Tier 8
++  88.6s > (slot 10) 1 x Miner's Blessing
++  88.6s > (slot 11) 1 x No Stone Unturned
++  88.6s > (slot 12) 1 x Strong Arm
++  88.6s > (slot 13) 1 x Steady Hand
++  88.6s > (slot 14) 1 x Seasoned Spelunker
++  88.6s > (slot 15) 1 x Surveyor
++  88.6s > (slot 16) 1 x Void Blessing
++  88.6s > (slot 18) 1 x Tier 7
++  88.6s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  88.6s > (slot 20) 1 x Speedy Mineman
++  88.6s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  88.6s > (slot 22) 1 x Powder Buff
++  88.6s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  88.6s > (slot 24) 1 x Fortunate Mineman
++  88.6s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  88.6s > (slot 27) 1 x Tier 6
++  88.6s > (slot 28) 1 x Tunnel Vision
++  88.6s > (slot 29) 1 x Blockhead
++  88.6s > (slot 30) 1 x Mining Madness
++  88.6s > (slot 31) 1 x Keep It Cool
++  88.6s > (slot 32) 1 x Impatient Miner
++  88.6s > (slot 33) 1 x Spelunker
++  88.6s > (slot 34) 1 x Maniac Miner
++  88.6s > (slot 36) 1 x Tier 5
++  88.6s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  88.6s > (slot 38) 1 x Daily Grind
++  88.6s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  88.6s > (slot 40) 1 x Core of the Dragon
++  88.6s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  88.6s > (slot 42) 1 x Daily Powder
++  88.6s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  88.6s > (slot 44) 1 x Scroll Down
++  88.6s > (you clicked slot 44)
+             - slot 43
+             + slot 34: GOOD fill x1 on Maniac Miner
++  88.8s > (you clicked slot 44)
++  88.8s > (slot 44) emptied
++  88.9s > (slot 44) 1 x Scroll Down
++  89.0s > (slot 0) 1 x Tier 8
++  89.0s > (slot 1) 1 x Miner's Blessing
++  89.0s > (slot 2) 1 x No Stone Unturned
++  89.0s > (slot 3) 1 x Strong Arm
++  89.0s > (slot 4) 1 x Steady Hand
++  89.0s > (slot 5) 1 x Seasoned Spelunker
++  89.0s > (slot 6) 1 x Surveyor
++  89.0s > (slot 7) 1 x Void Blessing
++  89.0s > (slot 8) emptied
++  89.0s > (slot 9) 1 x Tier 7
++  89.0s > (slot 10) emptied
++  89.0s > (slot 11) 1 x Speedy Mineman
++  89.0s > (slot 12) emptied
++  89.0s > (slot 13) 1 x Powder Buff
++  89.0s > (slot 14) emptied
++  89.0s > (slot 15) 1 x Fortunate Mineman
++  89.0s > (slot 16) emptied
++  89.0s > (slot 17) emptied
++  89.0s > (slot 18) 1 x Tier 6
++  89.0s > (slot 19) emptied
++  89.0s > (slot 20) emptied
++  89.0s > (slot 21) emptied
++  89.0s > (slot 22) emptied
++  89.0s > (slot 23) emptied
++  89.0s > (slot 24) emptied
++  89.0s > (slot 25) emptied
++  89.0s > (slot 26) emptied
++  89.0s > (slot 27) emptied
++  89.0s > (slot 28) emptied
++  89.0s > (slot 29) emptied
++  89.0s > (slot 30) emptied
++  89.0s > (slot 31) emptied
++  89.0s > (slot 32) emptied
++  89.0s > (slot 33) emptied
++  89.0s > (slot 34) emptied
++  89.0s > (slot 35) emptied
++  89.0s > (slot 36) emptied
++  89.0s > (slot 37) emptied
++  89.0s > (slot 38) emptied
++  89.0s > (slot 39) emptied
++  89.0s > (slot 40) emptied
++  89.0s > (slot 41) emptied
++  89.0s > (slot 42) emptied
++  89.0s > (slot 43) emptied
++  89.0s > (slot 44) emptied
++  89.0s > (slot 45) emptied
++  89.0s > (slot 46) emptied
++  89.0s > (slot 47) emptied
++  89.0s > (slot 48) emptied
++  89.0s > (slot 49) emptied
++  89.0s > (slot 50) emptied
++  89.0s > (slot 51) emptied
++  89.0s > (slot 52) emptied
++  89.0s > (slot 53) emptied
++  89.0s > (slot 8) 1 x Scroll Up
++  89.0s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  89.0s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  89.0s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  89.0s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  89.0s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  89.0s > (slot 19) 1 x Tunnel Vision
++  89.0s > (slot 20) 1 x Blockhead
++  89.0s > (slot 21) 1 x Mining Madness
++  89.0s > (slot 22) 1 x Keep It Cool
++  89.0s > (slot 23) 1 x Impatient Miner
++  89.0s > (slot 24) 1 x Spelunker
++  89.0s > (slot 25) 1 x Maniac Miner
++  89.0s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  89.0s > (slot 27) 1 x Tier 5
++  89.0s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  89.0s > (slot 29) 1 x Daily Grind
++  89.0s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  89.0s > (slot 31) 1 x Core of the Dragon
++  89.0s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  89.0s > (slot 33) 1 x Daily Powder
++  89.0s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  89.0s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  89.0s > (slot 36) 1 x Tier 4
++  89.0s > (slot 37) 1 x Dragon's Favor
++  89.0s > (slot 38) 1 x Old-School
++  89.0s > (slot 39) 1 x Professional
++  89.0s > (slot 40) 1 x Mole
++  89.0s > (slot 41) 1 x Gem Lover
++  89.0s > (slot 42) 1 x Seasoned Mineman
++  89.0s > (slot 43) 1 x Front Loaded
++  89.0s > (slot 44) 1 x Scroll Down
++  89.0s > (slot 45) 1 x Close
++  89.0s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  89.0s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  89.0s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  89.0s > (slot 49) 1 x Heart of the Dragon
++  89.0s > (slot 50) 1 x Dragon Profiles
++  89.0s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  89.0s > (slot 52) 1 x Reset Heart of the Dragon
++  89.0s > (slot 53) 1 x minecraft:black_stained_glass_pane
+             - slot 34
+             + slot 25: GOOD fill x1 on Maniac Miner
++  89.5s > (you clicked slot 44)
++  89.5s > (slot 44) emptied
++  89.7s > (slot 0) 1 x Tier 7
++  89.7s > (slot 1) emptied
++  89.7s > (slot 2) 1 x Speedy Mineman
++  89.7s > (slot 3) emptied
++  89.7s > (slot 4) 1 x Powder Buff
++  89.7s > (slot 5) emptied
++  89.7s > (slot 6) 1 x Fortunate Mineman
++  89.7s > (slot 7) emptied
++  89.7s > (slot 8) emptied
++  89.7s > (slot 9) 1 x Tier 6
++  89.7s > (slot 10) 1 x Tunnel Vision
++  89.7s > (slot 11) 1 x Blockhead
++  89.7s > (slot 12) 1 x Mining Madness
++  89.7s > (slot 13) 1 x Keep It Cool
++  89.7s > (slot 14) 1 x Impatient Miner
++  89.7s > (slot 15) 1 x Spelunker
++  89.7s > (slot 16) 1 x Maniac Miner
++  89.7s > (slot 17) emptied
++  89.7s > (slot 18) 1 x Tier 5
++  89.7s > (slot 19) emptied
++  89.7s > (slot 20) 1 x Daily Grind
++  89.7s > (slot 21) emptied
++  89.7s > (slot 22) 1 x Core of the Dragon
++  89.7s > (slot 23) emptied
++  89.7s > (slot 24) 1 x Daily Powder
++  89.7s > (slot 25) emptied
++  89.7s > (slot 26) emptied
++  89.7s > (slot 27) 1 x Tier 4
++  89.7s > (slot 28) 1 x Dragon's Favor
++  89.7s > (slot 29) 1 x Old-School
++  89.7s > (slot 30) 1 x Professional
++  89.7s > (slot 31) 1 x Mole
++  89.7s > (slot 32) 1 x Gem Lover
++  89.7s > (slot 33) 1 x Seasoned Mineman
++  89.7s > (slot 34) 1 x Front Loaded
++  89.7s > (slot 35) emptied
++  89.7s > (slot 36) 1 x Tier 3
++  89.7s > (slot 37) emptied
++  89.7s > (slot 38) 1 x Frugal Miner
++  89.7s > (slot 39) emptied
++  89.7s > (slot 40) 1 x Efficient Miner
++  89.7s > (slot 41) emptied
++  89.7s > (slot 42) emptied
++  89.7s > (slot 43) emptied
++  89.7s > (slot 45) emptied
++  89.7s > (slot 46) emptied
++  89.7s > (slot 47) emptied
++  89.7s > (slot 48) emptied
++  89.7s > (slot 49) emptied
++  89.7s > (slot 50) emptied
++  89.7s > (slot 51) emptied
++  89.7s > (slot 52) emptied
++  89.7s > (slot 53) emptied
++  89.7s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 8) 1 x Scroll Up
++  89.7s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 42) 1 x Quick Forge
++  89.7s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 44) 1 x Scroll Down
++  89.7s > (slot 45) 1 x Close
++  89.7s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 49) 1 x Heart of the Dragon
++  89.7s > (slot 50) 1 x Dragon Profiles
++  89.7s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  89.7s > (slot 52) 1 x Reset Heart of the Dragon
++  89.7s > (slot 53) 1 x minecraft:black_stained_glass_pane
++  89.7s > (you clicked slot 44)
+             - slot 25
+             + slot 16: GOOD fill x1 on Maniac Miner
++  89.7s > (slot 44) emptied
++  89.8s > (slot 0) 1 x Tier 6
++  89.8s > (slot 1) 1 x Tunnel Vision
++  89.8s > (slot 2) 1 x Blockhead
++  89.8s > (slot 3) 1 x Mining Madness
++  89.8s > (slot 4) 1 x Keep It Cool
++  89.8s > (slot 5) 1 x Impatient Miner
++  89.8s > (slot 6) 1 x Spelunker
++  89.8s > (slot 7) 1 x Maniac Miner
++  89.8s > (slot 9) 1 x Tier 5
++  89.8s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  89.8s > (slot 11) 1 x Daily Grind
++  89.8s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  89.8s > (slot 13) 1 x Core of the Dragon
++  89.8s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  89.8s > (slot 15) 1 x Daily Powder
++  89.8s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  89.8s > (slot 18) 1 x Tier 4
++  89.8s > (slot 19) 1 x Dragon's Favor
++  89.8s > (slot 20) 1 x Old-School
++  89.8s > (slot 21) 1 x Professional
++  89.8s > (slot 22) 1 x Mole
++  89.8s > (slot 23) 1 x Gem Lover
++  89.8s > (slot 24) 1 x Seasoned Mineman
++  89.8s > (slot 25) 1 x Front Loaded
++  89.8s > (slot 27) 1 x Tier 3
++  89.8s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  89.8s > (slot 29) 1 x Frugal Miner
++  89.8s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  89.8s > (slot 31) 1 x Efficient Miner
++  89.8s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  89.8s > (slot 33) 1 x Quick Forge
++  89.8s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  89.8s > (slot 36) 1 x Tier 2
++  89.8s > (slot 38) 1 x Mining Speed Boost
++  89.8s > (slot 39) 1 x Precision Mining
++  89.8s > (slot 40) 1 x Mining Fortune
++  89.8s > (slot 41) 1 x Obsidian Insanium
++  89.8s > (slot 42) 1 x Pickobulus
++  89.8s > (slot 44) 1 x Scroll Down
+             - slot 16
+             + slot 7: GOOD fill x1 on Maniac Miner
++ 101.6s > (you clicked slot 8)
++ 101.6s > (slot 8) emptied
++ 101.7s > (slot 0) 1 x Tier 7
++ 101.7s > (slot 1) emptied
++ 101.7s > (slot 2) 1 x Speedy Mineman
++ 101.7s > (slot 3) emptied
++ 101.7s > (slot 4) 1 x Powder Buff
++ 101.7s > (slot 5) emptied
++ 101.7s > (slot 6) 1 x Fortunate Mineman
++ 101.7s > (slot 7) emptied
++ 101.7s > (slot 9) 1 x Tier 6
++ 101.7s > (slot 10) 1 x Tunnel Vision
++ 101.7s > (slot 11) 1 x Blockhead
++ 101.7s > (slot 12) 1 x Mining Madness
++ 101.7s > (slot 13) 1 x Keep It Cool
++ 101.7s > (slot 14) 1 x Impatient Miner
++ 101.7s > (slot 15) 1 x Spelunker
++ 101.7s > (slot 16) 1 x Maniac Miner
++ 101.7s > (slot 17) emptied
++ 101.7s > (slot 18) 1 x Tier 5
++ 101.7s > (slot 19) emptied
++ 101.7s > (slot 20) emptied
++ 101.7s > (slot 21) emptied
++ 101.7s > (slot 22) emptied
++ 101.7s > (slot 23) emptied
++ 101.7s > (slot 24) emptied
++ 101.7s > (slot 25) emptied
++ 101.7s > (slot 26) emptied
++ 101.7s > (slot 27) emptied
++ 101.7s > (slot 28) emptied
++ 101.7s > (slot 29) emptied
++ 101.7s > (slot 30) emptied
++ 101.7s > (slot 31) emptied
++ 101.7s > (slot 32) emptied
++ 101.7s > (slot 33) emptied
++ 101.7s > (slot 34) emptied
++ 101.7s > (slot 35) emptied
++ 101.7s > (slot 36) emptied
++ 101.7s > (slot 37) emptied
++ 101.7s > (slot 38) emptied
++ 101.7s > (slot 39) emptied
++ 101.7s > (slot 40) emptied
++ 101.7s > (slot 41) emptied
++ 101.7s > (slot 42) emptied
++ 101.7s > (slot 43) emptied
++ 101.7s > (slot 44) emptied
++ 101.7s > (slot 45) emptied
++ 101.7s > (slot 46) emptied
++ 101.7s > (slot 47) emptied
++ 101.7s > (slot 48) emptied
++ 101.7s > (slot 49) emptied
++ 101.7s > (slot 50) emptied
++ 101.7s > (slot 51) emptied
++ 101.7s > (slot 52) emptied
++ 101.7s > (slot 53) emptied
++ 101.7s > (slot 1) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 3) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 5) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 7) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 8) 1 x Scroll Up
++ 101.7s > (slot 17) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 19) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 20) 1 x Daily Grind
++ 101.7s > (slot 21) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 22) 1 x Core of the Dragon
++ 101.7s > (slot 23) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 24) 1 x Daily Powder
++ 101.7s > (slot 25) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 26) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 27) 1 x Tier 4
++ 101.7s > (slot 28) 1 x Dragon's Favor
++ 101.7s > (slot 29) 1 x Old-School
++ 101.7s > (slot 30) 1 x Professional
++ 101.7s > (slot 31) 1 x Mole
++ 101.7s > (slot 32) 1 x Gem Lover
++ 101.7s > (slot 33) 1 x Seasoned Mineman
++ 101.7s > (slot 34) 1 x Front Loaded
++ 101.7s > (slot 35) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 36) 1 x Tier 3
++ 101.7s > (slot 37) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 38) 1 x Frugal Miner
++ 101.7s > (slot 39) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 40) 1 x Efficient Miner
++ 101.7s > (slot 41) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 42) 1 x Quick Forge
++ 101.7s > (slot 43) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 44) 1 x Scroll Down
++ 101.7s > (slot 45) 1 x Close
++ 101.7s > (slot 46) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 47) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 48) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 49) 1 x Heart of the Dragon
++ 101.7s > (slot 50) 1 x Dragon Profiles
++ 101.7s > (slot 51) 1 x minecraft:black_stained_glass_pane
++ 101.7s > (slot 52) 1 x Reset Heart of the Dragon
++ 101.7s > (slot 53) 1 x minecraft:black_stained_glass_pane
+             - slot 7
+             + slot 16: GOOD fill x1 on Maniac Miner
++ 101.8s > (you clicked slot 8)
++ 101.9s > (you clicked slot 8)
++ 101.9s > (slot 8) emptied
++ 102.0s > (slot 8) 1 x Scroll Up
++ 102.0s > (you clicked slot 8)
++ 102.1s > (slot 0) 1 x Tier 8
++ 102.1s > (slot 1) 1 x Miner's Blessing
++ 102.1s > (slot 2) 1 x No Stone Unturned
++ 102.1s > (slot 3) 1 x Strong Arm
++ 102.1s > (slot 4) 1 x Steady Hand
++ 102.1s > (slot 5) 1 x Seasoned Spelunker
++ 102.1s > (slot 6) 1 x Surveyor
++ 102.1s > (slot 7) 1 x Void Blessing
++ 102.1s > (slot 9) 1 x Tier 7
++ 102.1s > (slot 10) 1 x minecraft:black_stained_glass_pane
++ 102.1s > (slot 11) 1 x Speedy Mineman
++ 102.1s > (slot 12) 1 x minecraft:black_stained_glass_pane
++ 102.1s > (slot 13) 1 x Powder Buff
++ 102.1s > (slot 14) 1 x minecraft:black_stained_glass_pane
++ 102.1s > (slot 15) 1 x Fortunate Mineman
++ 102.1s > (slot 16) 1 x minecraft:black_stained_glass_pane
++ 102.1s > (slot 18) 1 x Tier 6
++ 102.1s > (slot 19) 1 x Tunnel Vision
++ 102.1s > (slot 20) 1 x Blockhead
++ 102.1s > (slot 21) 1 x Mining Madness
++ 102.1s > (slot 22) 1 x Keep It Cool
++ 102.1s > (slot 23) 1 x Impatient Miner
++ 102.1s > (slot 24) 1 x Spelunker
++ 102.1s > (slot 25) 1 x Maniac Miner
++ 102.1s > (slot 27) 1 x Tier 5
++ 102.1s > (slot 28) 1 x minecraft:black_stained_glass_pane
++ 102.1s > (slot 29) 1 x Daily Grind
++ 102.1s > (slot 30) 1 x minecraft:black_stained_glass_pane
++ 102.1s > (slot 31) 1 x Core of the Dragon
++ 102.1s > (slot 32) 1 x minecraft:black_stained_glass_pane
++ 102.1s > (slot 33) 1 x Daily Powder
++ 102.1s > (slot 34) 1 x minecraft:black_stained_glass_pane
++ 102.1s > (slot 36) 1 x Tier 4
++ 102.1s > (slot 37) 1 x Dragon's Favor
++ 102.1s > (slot 38) 1 x Old-School
++ 102.1s > (slot 39) 1 x Professional
++ 102.1s > (slot 40) 1 x Mole
++ 102.1s > (slot 41) 1 x Gem Lover
++ 102.1s > (slot 42) 1 x Seasoned Mineman
++ 102.1s > (slot 43) 1 x Front Loaded
+             - slot 16
+             + slot 25: GOOD fill x1 on Maniac Miner
++ 102.2s > (you clicked slot 8)
++ 102.2s > (slot 0) 1 x Tier 9
++ 102.2s > (slot 1) emptied
++ 102.2s > (slot 2) 1 x Metal Head
++ 102.2s > (slot 3) emptied
++ 102.2s > (slot 4) 1 x Rags to Riches
++ 102.2s > (slot 5) emptied
++ 102.2s > (slot 6) 1 x Eager Adventurer
++ 102.2s > (slot 7) emptied
++ 102.2s > (slot 8) emptied
++ 102.2s > (slot 9) 1 x Tier 8
++ 102.2s > (slot 10) 1 x Miner's Blessing
++ 102.2s > (slot 11) 1 x No Stone Unturned
++ 102.2s > (slot 12) 1 x Strong Arm
++ 102.2s > (slot 13) 1 x Steady Hand
++ 102.2s > (slot 14) 1 x Seasoned Spelunker
++ 102.2s > (slot 15) 1 x Surveyor
++ 102.2s > (slot 16) 1 x Void Blessing
++ 102.2s > (slot 17) emptied
++ 102.2s > (slot 18) 1 x Tier 7
++ 102.2s > (slot 19) emptied
++ 102.2s > (slot 20) 1 x Speedy Mineman
++ 102.2s > (slot 21) emptied
++ 102.2s > (slot 22) 1 x Powder Buff
++ 102.2s > (slot 23) emptied
++ 102.2s > (slot 24) 1 x Fortunate Mineman
++ 102.2s > (slot 25) emptied
++ 102.2s > (slot 26) emptied
++ 102.2s > (slot 27) 1 x Tier 6
++ 102.2s > (slot 28) 1 x Tunnel Vision
++ 102.2s > (slot 29) 1 x Blockhead
++ 102.2s > (slot 30) 1 x Mining Madness
++ 102.2s > (slot 31) 1 x Keep It Cool
++ 102.2s > (slot 32) 1 x Impatient Miner
++ 102.2s > (slot 33) emptied
++ 102.2s > (slot 34) emptied
++ 102.2s > (slot 35) emptied
++ 102.2s > (slot 36) emptied
++ 102.2s > (slot 37) emptied
++ 102.2s > (slot 38) emptied
++ 102.2s > (slot 39) emptied
++ 102.2s > (slot 40) emptied
++ 102.2s > (slot 41) emptied
++ 102.2s > (slot 42) emptied
++ 102.2s > (slot 43) emptied
++ 102.2s > (slot 44) emptied
++ 102.2s > (slot 45) emptied
++ 102.2s > (slot 46) emptied
++ 102.2s > (slot 47) emptied
++ 102.2s > (slot 48) emptied
++ 102.2s > (slot 49) emptied
++ 102.2s > (slot 50) emptied
++ 102.2s > (slot 51) emptied
++ 102.2s > (slot 52) emptied
++ 102.2s > (slot 53) emptied
++ 102.2s > (slot 1) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 3) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 5) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 7) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 8) 1 x Scroll Up
++ 102.2s > (slot 17) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 19) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 21) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 23) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 25) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 26) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 33) 1 x Spelunker
++ 102.2s > (slot 34) 1 x Maniac Miner
++ 102.2s > (slot 35) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 36) 1 x Tier 5
++ 102.2s > (slot 37) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 38) 1 x Daily Grind
++ 102.2s > (slot 39) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 40) 1 x Core of the Dragon
++ 102.2s > (slot 41) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 42) 1 x Daily Powder
++ 102.2s > (slot 43) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 44) 1 x Scroll Down
++ 102.2s > (slot 45) 1 x Close
++ 102.2s > (slot 46) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 47) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 48) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 49) 1 x Heart of the Dragon
++ 102.2s > (slot 50) 1 x Dragon Profiles
++ 102.2s > (slot 51) 1 x minecraft:black_stained_glass_pane
++ 102.2s > (slot 52) 1 x Reset Heart of the Dragon
++ 102.2s > (slot 53) 1 x minecraft:black_stained_glass_pane
+             - slot 25
+             + slot 34: GOOD fill x1 on Maniac Miner
++ 102.4s > (slot 0) 1 x Tier 10
++ 102.4s > (slot 1) 1 x Void Infusion
++ 102.4s > (slot 2) 1 x Crystalline
++ 102.4s > (slot 3) 1 x Gifts from the Void
++ 102.4s > (slot 4) 1 x Mining Master
++ 102.4s > (slot 5) 1 x Fine Cut
++ 102.4s > (slot 6) 1 x Void Seeker
++ 102.4s > (slot 7) 1 x Sheer Force
++ 102.4s > (slot 8) emptied
++ 102.4s > (slot 9) 1 x Tier 9
++ 102.4s > (slot 10) emptied
++ 102.4s > (slot 11) 1 x Metal Head
++ 102.4s > (slot 12) emptied
++ 102.4s > (slot 13) 1 x Rags to Riches
++ 102.4s > (slot 14) emptied
++ 102.4s > (slot 15) 1 x Eager Adventurer
++ 102.4s > (slot 16) emptied
++ 102.4s > (slot 17) emptied
++ 102.4s > (slot 18) 1 x Tier 8
++ 102.4s > (slot 19) 1 x Miner's Blessing
++ 102.4s > (slot 20) 1 x No Stone Unturned
++ 102.4s > (slot 21) 1 x Strong Arm
++ 102.4s > (slot 22) 1 x Steady Hand
++ 102.4s > (slot 23) 1 x Seasoned Spelunker
++ 102.4s > (slot 24) 1 x Surveyor
++ 102.4s > (slot 25) 1 x Void Blessing
++ 102.4s > (slot 26) emptied
++ 102.4s > (slot 27) 1 x Tier 7
++ 102.4s > (slot 28) emptied
++ 102.4s > (slot 29) 1 x Speedy Mineman
++ 102.4s > (slot 30) emptied
++ 102.4s > (slot 31) 1 x Powder Buff
++ 102.4s > (slot 32) emptied
++ 102.4s > (slot 33) 1 x Fortunate Mineman
++ 102.4s > (slot 34) emptied
++ 102.4s > (slot 35) emptied
++ 102.4s > (slot 36) 1 x Tier 6
++ 102.4s > (slot 37) 1 x Tunnel Vision
++ 102.4s > (slot 38) 1 x Blockhead
++ 102.4s > (slot 39) emptied
++ 102.4s > (slot 40) emptied
++ 102.4s > (slot 41) emptied
++ 102.4s > (slot 42) emptied
++ 102.4s > (slot 43) emptied
++ 102.4s > (slot 44) emptied
++ 102.4s > (slot 45) emptied
++ 102.4s > (slot 46) emptied
++ 102.4s > (slot 47) emptied
++ 102.4s > (slot 48) emptied
++ 102.4s > (slot 49) emptied
++ 102.4s > (slot 50) emptied
++ 102.4s > (slot 51) emptied
++ 102.4s > (slot 52) emptied
++ 102.4s > (slot 53) emptied
++ 102.4s > (slot 8) 1 x minecraft:black_stained_glass_pane
++ 102.4s > (slot 10) 1 x minecraft:black_stained_glass_pane
++ 102.4s > (slot 12) 1 x minecraft:black_stained_glass_pane
++ 102.4s > (slot 14) 1 x minecraft:black_stained_glass_pane
++ 102.4s > (slot 16) 1 x minecraft:black_stained_glass_pane
++ 102.4s > (slot 17) 1 x minecraft:black_stained_glass_pane
++ 102.4s > (slot 26) 1 x minecraft:black_stained_glass_pane
++ 102.4s > (slot 28) 1 x minecraft:black_stained_glass_pane
++ 102.4s > (slot 30) 1 x minecraft:black_stained_glass_pane
++ 102.4s > (slot 32) 1 x minecraft:black_stained_glass_pane
++ 102.4s > (slot 34) 1 x minecraft:black_stained_glass_pane
++ 102.4s > (slot 35) 1 x minecraft:black_stained_glass_pane
++ 102.4s > (slot 39) 1 x Mining Madness
++ 102.4s > (slot 40) 1 x Keep It Cool
++ 102.4s > (slot 41) 1 x Impatient Miner
++ 102.4s > (slot 42) 1 x Spelunker
++ 102.4s > (slot 43) 1 x Maniac Miner
++ 102.4s > (slot 44) 1 x Scroll Down
++ 102.4s > (slot 45) 1 x Close
++ 102.4s > (slot 46) 1 x minecraft:black_stained_glass_pane
++ 102.4s > (slot 47) 1 x minecraft:black_stained_glass_pane
++ 102.4s > (slot 48) 1 x minecraft:black_stained_glass_pane
++ 102.4s > (slot 49) 1 x Heart of the Dragon
++ 102.4s > (slot 50) 1 x Dragon Profiles
++ 102.4s > (slot 51) 1 x minecraft:black_stained_glass_pane
++ 102.4s > (slot 52) 1 x Reset Heart of the Dragon
++ 102.4s > (slot 53) 1 x minecraft:black_stained_glass_pane
+             - slot 34
+             + slot 43: GOOD fill x1 on Maniac Miner
++ 102.4s > (you clicked slot 8)
++ 102.4s > (slot 8) emptied
++ 102.5s > (slot 8) 1 x minecraft:black_stained_glass_pane
++ 102.5s > (you clicked slot 8)
++ 102.7s > (you clicked slot 8)
++ 102.7s > (slot 8) emptied
++ 102.7s > (slot 8) 1 x minecraft:black_stained_glass_pane
++ 108.7s > (you clicked slot 4)
++ 108.7s > (slot 4) emptied
++ 108.9s > You unlocked Mining Master!
++ 108.9s > (slot 4) 1 x Mining Master
++ 108.9s > (slot 49) 1 x Heart of the Dragon
++ 108.9s > (slot 52) 1 x Reset Heart of the Dragon
++ 109.9s > (you clicked slot 4)
++ 109.9s > (slot 4) emptied
++ 109.9s > (slot 87) 1 x Mining Master
++ 110.0s > You upgraded Mining Master to level 10!
++ 110.0s > (slot 4) 1 x Mining Master
++ 110.0s > (slot 8) emptied
++ 110.0s > (slot 10) emptied
++ 110.0s > (slot 12) emptied
++ 110.0s > (slot 14) emptied
++ 110.0s > (slot 16) emptied
++ 110.0s > (slot 17) emptied
++ 110.0s > (slot 18) emptied
++ 110.0s > (slot 19) emptied
++ 110.0s > (slot 20) emptied
++ 110.0s > (slot 21) emptied
++ 110.0s > (slot 22) emptied
++ 110.0s > (slot 23) emptied
++ 110.0s > (slot 24) emptied
++ 110.0s > (slot 25) emptied
++ 110.0s > (slot 26) emptied
++ 110.0s > (slot 27) emptied
++ 110.0s > (slot 28) emptied
++ 110.0s > (slot 29) emptied
++ 110.0s > (slot 30) emptied
++ 110.0s > (slot 31) emptied
++ 110.0s > (slot 32) emptied
++ 110.0s > (slot 33) emptied
++ 110.0s > (slot 34) emptied
++ 110.0s > (slot 35) emptied
++ 110.0s > (slot 36) emptied
++ 110.0s > (slot 37) emptied
++ 110.0s > (slot 38) emptied
++ 110.0s > (slot 39) emptied
++ 110.0s > (slot 40) emptied
++ 110.0s > (slot 41) emptied
++ 110.0s > (slot 42) emptied
++ 110.0s > (slot 43) emptied
++ 110.0s > (slot 44) emptied
++ 110.0s > (slot 45) emptied
++ 110.0s > (slot 46) emptied
++ 110.0s > (slot 47) emptied
++ 110.0s > (slot 48) emptied
++ 110.0s > (slot 49) emptied
++ 110.0s > (slot 50) emptied
++ 110.0s > (slot 51) emptied
++ 110.0s > (slot 52) emptied
++ 110.0s > (slot 53) emptied
++ 110.0s > (slot 8) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 10) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 12) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 14) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 16) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 17) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 18) 1 x Tier 8
++ 110.0s > (slot 19) 1 x Miner's Blessing
++ 110.0s > (slot 20) 1 x No Stone Unturned
++ 110.0s > (slot 21) 1 x Strong Arm
++ 110.0s > (slot 22) 1 x Steady Hand
++ 110.0s > (slot 23) 1 x Seasoned Spelunker
++ 110.0s > (slot 24) 1 x Surveyor
++ 110.0s > (slot 25) 1 x Void Blessing
++ 110.0s > (slot 26) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 27) 1 x Tier 7
++ 110.0s > (slot 28) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 29) 1 x Speedy Mineman
++ 110.0s > (slot 30) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 31) 1 x Powder Buff
++ 110.0s > (slot 32) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 33) 1 x Fortunate Mineman
++ 110.0s > (slot 34) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 35) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 36) 1 x Tier 6
++ 110.0s > (slot 37) 1 x Tunnel Vision
++ 110.0s > (slot 38) 1 x Blockhead
++ 110.0s > (slot 39) 1 x Mining Madness
++ 110.0s > (slot 40) 1 x Keep It Cool
++ 110.0s > (slot 41) 1 x Impatient Miner
++ 110.0s > (slot 42) 1 x Spelunker
++ 110.0s > (slot 43) 1 x Maniac Miner
++ 110.0s > (slot 44) 1 x Scroll Down
++ 110.0s > (slot 45) 1 x Close
++ 110.0s > (slot 46) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 47) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 48) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 49) 1 x Heart of the Dragon
++ 110.0s > (slot 50) 1 x Dragon Profiles
++ 110.0s > (slot 51) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 52) 1 x Reset Heart of the Dragon
++ 110.0s > (slot 53) 1 x minecraft:black_stained_glass_pane
++ 110.0s > (slot 87) emptied
++ 115.6s > (opened your inventory, 46 slots)
++ 115.6s > (slot 5) 1 x Crying Obsidian Helmet
++ 115.6s > (slot 6) 1 x Crying Obsidian Chestplate
++ 115.6s > (slot 7) 1 x Crying Obsidian Leggings
++ 115.6s > (slot 8) 1 x Crying Obsidian Boots
++ 115.6s > (slot 9) 1 x Promising Pickaxe
++ 115.6s > (slot 10) 1 x Obsidian Drill OD-355
++ 115.6s > (slot 11) 64 x Enchanted End Stone
++ 115.6s > (slot 12) 64 x Enchanted End Stone
++ 115.6s > (slot 13) 64 x Enchanted End Stone
++ 115.6s > (slot 14) 64 x Enchanted End Stone
++ 115.6s > (slot 15) 64 x Enchanted End Stone
++ 115.6s > (slot 16) 64 x Enchanted End Stone
++ 115.6s > (slot 17) 64 x Enchanted End Stone
++ 115.6s > (slot 18) 1 x Refined Enderite Pickaxe
++ 115.6s > (slot 19) 1 x Crying Obsidian Pickaxe
++ 115.6s > (slot 20) 52 x Obsidian
++ 115.6s > (slot 21) 64 x Rough Amethyst
++ 115.6s > (slot 22) 64 x Enchanted End Stone
++ 115.6s > (slot 23) 63 x Flawed Amethyst
++ 115.6s > (slot 24) 1 x Fuel Tank
++ 115.6s > (slot 25) 57 x Enchanted End Stone
++ 115.6s > (slot 26) 3 x End Stone Rose
++ 115.6s > (slot 27) 1 x Flint Arrow
++ 115.6s > (slot 28) 3 x Summoning Eye
++ 115.6s > (slot 29) 2 x Bejeweled Handle
++ 115.6s > (slot 31) 60 x Fine Amethyst
++ 115.6s > (slot 34) 3 x Rough Amethyst
++ 115.6s > (slot 35) 1 x InfiniEye™
++ 115.6s > (slot 36) 1 x Suspicious Giant's Sword
++ 115.6s > (slot 37) 1 x Warped Aspect of the Void
++ 115.6s > (slot 38) 1 x Fabled Frozen Scythe
++ 115.6s > (slot 39) 1 x Fabled Edible Mace
++ 115.6s > (slot 40) 1 x Precise Golden Gun
++ 115.6s > (slot 41) 1 x Auspicious Amethyst Gauntlet
++ 115.6s > (slot 43) 13 x Crying Obsidian
++ 115.6s > (slot 44) 1 x SkyBlock Menu (Right Click)
+             - slot 0
+             - slot 9
+             - slot 18
+             - slot 27
+             - slot 36
+             - slot 43
+saved for the profile hotd-planner = {"at":1795507056519,"base":{"speed":1617.0,"fortune":599.0,"spread":7.0,"amethystSpread":0.0,"pristine":4.0,"wisdom":1.0,"magicFind":123.0,"cooldownCut":0.0}}

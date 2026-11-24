@@ -123,7 +123,7 @@ object DsModClient : ClientModInitializer {
     internal fun start() {
         SettingsScreen.forget()
         tree = SettingsTree(settings)
-        game = Game(tree.features) { anyServer || onDragSim }
+        game = Game(tree.features, connected = { anyServer || onDragSim })
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dsmod/data"), game, Minecraft.getInstance().user.profileId.toString()).also { it.load() }
         readouts = Readouts(game, settings.hud, tree.feature())
         tabs = TabListPoller(game)
@@ -155,6 +155,7 @@ object DsModClient : ClientModInitializer {
         CopyChats.bind(tree.feature())
         EyeGuards.bind(tree.feature())
         ForgeCrafts.bind(tree.feature())
+        HotdPlans.bind(tree.feature())
         Hits.bind(game)
         BlockBreaks.bind(game)
         HotdShortcut.bind(tree.feature())
@@ -188,6 +189,7 @@ object DsModClient : ClientModInitializer {
         StorageOverlays.register()
         StoragePreviews.register()
         ForgeCrafts.register()
+        HotdPlans.register()
         MenuKeyClicks.register()
         ProfileCooldowns.register()
         AutoClicks.register()

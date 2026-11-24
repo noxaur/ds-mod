@@ -48,6 +48,7 @@ import io.github.noxaur.dsmod.core.feature.inventory.ItemRarity
 import io.github.noxaur.dsmod.core.feature.inventory.KeepCursor
 import io.github.noxaur.dsmod.core.feature.inventory.ForgeCraft
 import io.github.noxaur.dsmod.core.feature.inventory.HotdButton
+import io.github.noxaur.dsmod.core.feature.inventory.HotdPlanner
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTabs
 import io.github.noxaur.dsmod.core.feature.inventory.ProfileCooldown
 import io.github.noxaur.dsmod.core.feature.inventory.MenuTheme
@@ -240,6 +241,7 @@ class SettingsTree(val config: DsModConfig = DsModConfig(), mac: Boolean = MAC) 
                     }
                     group(StorageOverview(c))
                     group(ForgeCraft(c))
+                    group(HotdPlanner(c))
                     group(WardrobeKeys(c))
                     group(PetsMenu(c))
                     group(ProfileCooldown(c))
