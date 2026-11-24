@@ -1,6 +1,6 @@
 # Features
 
-How a feature gets its input and hands back what it shows. The contract an agent writes against is in the [feature skill](../../mod/.claude/skills/feature/SKILL.md).
+How a feature gets its input and hands back what it shows.
 
 ## A feature holds its parts instead of extending a base
 
