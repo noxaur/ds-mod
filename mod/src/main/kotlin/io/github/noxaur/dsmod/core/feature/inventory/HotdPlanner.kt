@@ -72,6 +72,8 @@ class HotdPlanner(config: DsModConfig) : HasFeature {
     // @keep The tree is read again on each slot the menu sends, so a line it cannot read is told once
     private val told by feature.session { HashSet<String>() }
 
+    private var waiting by feature.session<Pair<Long, Map<String, Int>>?> { null }
+
     init {
         feature.on<SlotChanged> { _, _ -> readStats() }
         feature.on<TabList> { _, _ -> readStats() }
@@ -103,7 +105,16 @@ class HotdPlanner(config: DsModConfig) : HasFeature {
         val readings = STATS.mapNotNull { feature.player.stats[it] }
         val at = readings.maxOfOrNull { it.at } ?: return
         if (at <= stats.value.at) return
-        val tree = Tree.read(feature.player.heart)?.takeIf { complete(it) } ?: return
+        val read = Tree.read(feature.player.heart)
+        val levels = read?.levels.orEmpty()
+        val waiting = waiting
+        if (waiting == null || waiting.first != at) this.waiting = at to levels
+        // @keep A level bought while the reading waits is not in the reading, so the reading is dropped
+        else if (waiting.second.any { (perk, level) -> levels[perk] != level }) {
+            stats.value = stats.value.copy(at = at)
+            return
+        }
+        val tree = read?.takeIf { complete(it) } ?: return
         val shown = STATS.associateWith { feature.player.stats[it]?.value }
         val perks = Planner.everywhere(tree.levels)
         val none = Base()
