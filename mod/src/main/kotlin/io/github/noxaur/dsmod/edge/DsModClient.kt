@@ -15,7 +15,6 @@ import io.github.noxaur.dsmod.core.game.DragSim
 import io.github.noxaur.dsmod.core.game.LeftServer
 import io.github.noxaur.dsmod.core.game.SlotClicked
 import io.github.noxaur.dsmod.core.game.WorldChanged
-import io.github.noxaur.dsmod.core.feature.menus.petsmenu.PetsMenu
 import io.github.noxaur.dsmod.core.feature.menus.wardrobekeys.WardrobeKeys
 import io.github.noxaur.dsmod.core.text.text
 import io.github.noxaur.dsmod.core.ui.MenuTab
@@ -136,7 +135,7 @@ object DsModClient : ClientModInitializer {
         Hooks.bind(tree.feature(), tree.owners.filterIsInstance<CtrlClick>().firstOrNull(), tree.feature())
         Hud.bind(game, tree.feature())
         Slots.bind(game, tree.feature())
-        MenuSkin.bind(game, tree.feature(), tree.feature(), tree.feature())
+        MenuCursor.bind(tree.feature())
         World.bind(game)
         Packets.bind(game)
         FloatingTexts.bind(game)
@@ -144,13 +143,11 @@ object DsModClient : ClientModInitializer {
         HeldItems.bind(tree.feature())
         Cameras.bind(tree.feature(), tree.feature())
         PlayerModels.bind(tree.feature())
-        InventoryKey.bind(tree.feature())
         Recorder.bind(game)
         Ticks.bind(game)
         Contribute.bind(game, tree.feature())
         ArmorSwapGuards.bind(tree.feature())
         AutoClicks.bind(tree.feature())
-        ChatDrags.bind(readouts, tree.feature())
         CommandKeys.bind(game, tree.feature())
         CopyChats.bind(tree.feature())
         EyeGuards.bind(tree.feature())
@@ -159,11 +156,10 @@ object DsModClient : ClientModInitializer {
         Hits.bind(game)
         BlockBreaks.bind(game)
         HotdShortcut.bind(tree.feature())
-        MenuBack.bind(tree.feature())
         Pings.bind(tree.feature())
         SkyBlockMenuClicks.bind(tree.feature())
         SlotGuards.bind(tree.feature())
-        MenuKeyClicks.bind(tree.feature<WardrobeKeys>().keys, tree.feature<PetsMenu>().keys)
+        MenuKeyClicks.bind(tree.feature<WardrobeKeys>().keys)
         ProfileCooldowns.bind(tree.feature())
         TabBar.bind(tree.feature())
         Profiles.bind(game, tree.feature())
@@ -184,7 +180,6 @@ object DsModClient : ClientModInitializer {
         SlotArts.register()
         Hud.register()
         Slots.register()
-        MenuSkin.register()
         StorageOverlays.register()
         StoragePreviews.register()
         ForgeCrafts.register()
@@ -193,7 +188,6 @@ object DsModClient : ClientModInitializer {
         ProfileCooldowns.register()
         AutoClicks.register()
         Trail.register()
-        MenuBack.register()
         TabBar.register()
         HotdShortcut.register()
         World.register()
@@ -210,7 +204,6 @@ object DsModClient : ClientModInitializer {
             readouts.opened(screen)
             ScreenMouseEvents.beforeMouseClick(screen).register { _, click -> screen.slotAt(click.x(), click.y())?.takeIf { click.button() <= 1 }?.let { game.post(System.currentTimeMillis(), SlotClicked(it.index)) } }
         }
-        ChatDrags.register(settings.hud, ::saveSettings)
         Editors.register(Canvas.HUD_LAYOUT) { panel, host -> @Suppress("UNCHECKED_CAST") HudLayoutEditor(panel as Panel<Map<String, DsModConfig.Position>>, readouts, host) }
         Editors.register(Canvas.MENU_TABS) { panel, host -> @Suppress("UNCHECKED_CAST") TabPlacesEditor(panel as Panel<List<MenuTab>>, host) }
         Editors.register(Canvas.PLAYER_MODEL) { _, _ -> PlayerPreview() }
@@ -256,7 +249,6 @@ object DsModClient : ClientModInitializer {
             Packets.tick(it)
             game.tick(System.currentTimeMillis())
             readouts.push()
-            InventoryKey.tick(it)
             Contribute.tick(System.currentTimeMillis())
             if (++ticks % FLUSH_TICKS == 0) {
                 saved.flush()

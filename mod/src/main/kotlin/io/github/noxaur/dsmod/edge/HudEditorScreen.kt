@@ -55,7 +55,8 @@ class HudEditorScreen(
         panelWidth = content + Kit.INSET * 2
         panelHeight = Kit.INSET * 2 + Kit.BUTTON_HEIGHT * 3 + Kit.LABEL_HEIGHT + Kit.GAP * 3
         panelX = (width - panelWidth) / 2
-        panelY = height - panelHeight - Kit.GAP
+        val bottom = height - panelHeight - Kit.GAP
+        panelY = if (covers(bottom)) Kit.GAP else bottom
         labelX = panelX + Kit.INSET
         val top = panelY + Kit.INSET
         nameY = top + Kit.BUTTON_HEIGHT + Kit.GAP
@@ -65,7 +66,7 @@ class HudEditorScreen(
 
         addRenderableWidget(KitButton(panelX + panelWidth - Kit.INSET - doneWidth, top, "Done", ::onClose, doneWidth))
         scale = addRenderableWidget(KitStepper(controlX, scaleY, SCALE, VALUE_WIDTH) { by -> selected?.let(Hud::find)?.let { readouts.resize(it, by) }; refresh() })
-        reset = addRenderableWidget(KitButton(scale.right + Kit.GAP, scaleY, "Reset", { selected?.let(readouts::reset); refresh() }))
+        reset = addRenderableWidget(KitButton(scale.right + Kit.GAP, scaleY, "Reset", { selected?.let(readouts::reset); refresh(); clearPanel() }))
         hudScale = addRenderableWidget(KitStepper(controlX, hudScaleY, HUD_SCALE, VALUE_WIDTH) { by -> readouts.resizeAll(by); refresh() })
         background = addRenderableWidget(
             KitCheckbox(hudScale.right + Kit.GAP, hudScaleY + (Kit.BUTTON_HEIGHT - Kit.CHECKBOX_SIZE) / 2, "Background", hudBackground.feature.runs) {
@@ -103,7 +104,7 @@ class HudEditorScreen(
         val block = Hud.at(event.x, event.y) ?: return super.mouseClicked(event, doubleClick)
         when (event.button()) {
             0 -> mover.grab(block, event.x, event.y)
-            1 -> mover.reset(block)
+            1 -> mover.reset(block).also { clearPanel() }
             else -> return super.mouseClicked(event, doubleClick)
         }
         select(block.id)
@@ -117,7 +118,7 @@ class HudEditorScreen(
     }
 
     override fun mouseReleased(event: MouseButtonEvent): Boolean {
-        mover.release()
+        if (mover.release()) clearPanel()
         return super.mouseReleased(event)
     }
 
@@ -156,6 +157,12 @@ class HudEditorScreen(
         scale.value = HudScale.label(id?.let(readouts::scale) ?: 1f)
         reset.active = id != null && readouts.isPlaced(id)
         hudScale.value = HudScale.label(settings.scale.value)
+    }
+
+    private fun covers(y: Int) = Hud.placed().any { it.x < panelX + panelWidth && it.x + it.width * it.scale > panelX && it.y < y + panelHeight && it.y + it.height * it.scale > y }
+
+    private fun clearPanel() {
+        if (covers(panelY)) rebuildWidgets()
     }
 
     private fun inPanel(x: Double, y: Double) = x >= panelX && x < panelX + panelWidth && y >= panelY && y < panelY + panelHeight

@@ -66,10 +66,6 @@ dragsim.co names no slayer boss's owner, so the mod tells the player's own by ti
 
 The mod walks the client's entities once a tick, and each feature declares the types and names it reads. A walk per feature was rejected: each paid for its own walk and carried its own event, redaction and fixture cutting. The walk converts nothing an enabled feature does not match, so with no reader on it costs nothing. Positions stay out of the logic, because an event per move would run every handler for nothing.
 
-## A pet's XP is read from the menu and moved by Combat XP
-
-dragsim.co shows a pet's XP only in the Pets menu, so each read is an exact point, and the Combat XP behind each kill moves the estimate between reads. How much of it reaches the pet is the server's rule, which no capture shows, so the mod learns the ratio from the reads instead of writing a rule down.
-
 ## Saved state belongs to the feature, and the disk to the edge
 
 A feature declares one immutable state object and replaces it to change it, and the edge writes the changed ones off the client thread about once a minute. A file that fails to parse is moved aside, not overwritten, because a tracker's history is worth more than a clean start.

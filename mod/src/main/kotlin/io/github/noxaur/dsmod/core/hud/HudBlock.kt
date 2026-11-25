@@ -20,10 +20,6 @@ data class HudBlock(
     val rows: List<HudRow>,
     val look: HudLook = HudLook.PLATE,
     val dock: HudDock = HudDock.FREE,
-    val overMenus: Boolean = true,
-    val columns: Boolean = false,
-    val opacity: Float = 1f,
-    val pops: Boolean = false,
     val icon: Item? = null,
 )
 
@@ -33,8 +29,6 @@ enum class HudLook(private val label: String) {
     CLEAR("Clear"),
 
     HOTBAR("Hotbar"),
-
-    INVENTORY("Inventory"),
     ;
 
     override fun toString() = label
@@ -57,7 +51,7 @@ data class TextRow(override val text: Text) : HudRow
 
 data class BarRow(override val text: Text, val fraction: Float, val role: Role) : HudRow
 
-data class ItemsRow(val items: List<Item?>, val apart: Boolean = false, val slot: Int = -1) : HudRow {
+data class ItemsRow(val items: List<Item?>) : HudRow {
     override val text: Text get() = text { muted(items.joinToString(", ") { it?.name?.plain ?: it?.id ?: "-" }) }
 }
 
@@ -78,8 +72,8 @@ class HudBuilder {
         rows += TextRow(text(content))
     }
 
-    fun items(items: List<Item?>, apart: Boolean = false, slot: Int = -1) {
-        rows += ItemsRow(items, apart, slot)
+    fun items(items: List<Item?>) {
+        rows += ItemsRow(items)
     }
 }
 

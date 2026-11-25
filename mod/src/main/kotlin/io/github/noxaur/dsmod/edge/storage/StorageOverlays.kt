@@ -8,10 +8,9 @@ import io.github.noxaur.dsmod.core.game.Metrics
 import io.github.noxaur.dsmod.core.overview.Shelf
 import io.github.noxaur.dsmod.core.overview.StoragePages
 import io.github.noxaur.dsmod.core.ui.ItemSearch
-import io.github.noxaur.dsmod.core.ui.Menus
+import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.ui.Scroll
 import io.github.noxaur.dsmod.core.ui.StorageLayout
-import io.github.noxaur.dsmod.edge.MenuSkin
 import io.github.noxaur.dsmod.edge.ScreenHooks
 import io.github.noxaur.dsmod.edge.Slots
 import io.github.noxaur.dsmod.edge.TabBar
@@ -162,7 +161,7 @@ object StorageOverlays {
         screen.imageWidth = was.width
         screen.imageHeight = was.height
         screen.leftPos = (screen.width - was.width) / 2
-        screen.topPos = if (MenuSkin.stable) Menus.top(screen.height, was.height) else (screen.height - was.height) / 2
+        screen.topPos = (screen.height - was.height) / 2
         for (slot in screen.menu.slots) {
             SlotPlaces.move(slot, was.x[slot.index], was.y[slot.index])
             if (covered[slot.index]) Slots.cover(slot.index, false)
@@ -253,9 +252,7 @@ object StorageOverlays {
         val layout = o.layout
         val offset = scroll.offset
         val font = Minecraft.getInstance().font
-        val alpha = MenuSkin.glass(o.screen)
-        val glass = alpha >= 0
-        Kit.stemPanel(g, layout.left, layout.top, layout.width, layout.pagesHeight, layout.stemX, StorageLayout.STEM_WIDTH, layout.height - layout.pagesHeight, alpha)
+        Kit.stemPanel(g, layout.left, layout.top, layout.width, layout.pagesHeight, layout.stemX, StorageLayout.STEM_WIDTH, layout.height - layout.pagesHeight)
         val hovered = if (o.screen.slotUnderMouse == null) hovered(o, mouseX, mouseY) else -1
         val slots = o.screen.menu.slots
         g.enableScissor(layout.viewX, layout.viewY, layout.viewX + layout.pagesWidth, layout.viewY + layout.view)
@@ -265,10 +262,10 @@ object StorageOverlays {
             val x = layout.pageLeft(p)
             val gridY = layout.gridTop(p, offset)
             val cells = layout.rows(p) * StorageLayout.ROW
-            Kit.label(g, shelf.title, x + 1, layout.titleTop(p, offset) + 1, Kit.Ink.NORMAL, glass)
+            Kit.label(g, shelf.title, x + 1, layout.titleTop(p, offset) + 1, Kit.Ink.NORMAL)
             val page = storage.pages.page(shelf.id)
             val stacks = if (p == o.open) null else page?.let { PageStacks.of(shelf.id, it) }
-            Kit.slotGrid(g, x, gridY, StorageLayout.ROW, layout.rows(p), glass)
+            Kit.slotGrid(g, x, gridY, StorageLayout.ROW, layout.rows(p))
             for (c in 0 until cells) {
                 val cx = layout.cellX(p, c)
                 val cy = layout.cellY(p, c, offset)
@@ -286,7 +283,7 @@ object StorageOverlays {
             }
             if (p != o.open && page == null) {
                 Kit.dim(g, x, gridY, StorageLayout.GRID, layout.rows(p) * StorageLayout.CELL)
-                Kit.label(g, LOAD, x + (StorageLayout.GRID - font.width(LOAD)) / 2, gridY + (cells / StorageLayout.ROW * StorageLayout.CELL - Kit.LABEL_HEIGHT) / 2, Kit.Ink.NORMAL, true)
+                g.text(font, LOAD, x + (StorageLayout.GRID - font.width(LOAD)) / 2, gridY + (cells / StorageLayout.ROW * StorageLayout.CELL - Kit.LABEL_HEIGHT) / 2, Role.BODY.argb(), true)
             }
         }
         g.disableScissor()
@@ -302,9 +299,9 @@ object StorageOverlays {
             val track = track(layout)
             Kit.scrollbar(g, layout.scrollbarX, layout.viewY, layout.view, scroll.thumbY(track), scroll.thumb(track))
         }
-        Kit.label(g, INVENTORY, layout.inventoryX + 1, layout.inventoryTitleY + 1, Kit.Ink.NORMAL, glass)
-        Kit.slotGrid(g, layout.inventoryX, layout.inventoryCellY(0), StorageLayout.ROW, StorageLayout.HOTBAR / StorageLayout.ROW, glass)
-        Kit.slotGrid(g, layout.inventoryX, layout.inventoryCellY(StorageLayout.HOTBAR), StorageLayout.ROW, 1, glass)
+        Kit.label(g, INVENTORY, layout.inventoryX + 1, layout.inventoryTitleY + 1, Kit.Ink.NORMAL)
+        Kit.slotGrid(g, layout.inventoryX, layout.inventoryCellY(0), StorageLayout.ROW, StorageLayout.HOTBAR / StorageLayout.ROW)
+        Kit.slotGrid(g, layout.inventoryX, layout.inventoryCellY(StorageLayout.HOTBAR), StorageLayout.ROW, 1)
     }
 
     fun tooltip(screen: AbstractContainerScreen<*>, graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int): Boolean {

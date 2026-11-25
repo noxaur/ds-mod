@@ -70,21 +70,6 @@ class NumbersTest {
     }
 
     @Test
-    fun `a wait reads in whole minutes rounded up, and under a minute when none are left`() {
-        assertEquals("<1m", duration(0))
-        assertEquals("1m", duration(20_000))
-        assertEquals("3h 5m", duration((3 * 60 + 5) * 60_000L))
-        assertEquals("2d 4h", duration((52 * 60) * 60_000L))
-    }
-
-    @Test
-    fun `a wait can round to the nearest minute instead`() {
-        assertEquals("4h 0m", duration(4 * 60 * 60_000L + 29_999, nearest = true))
-        assertEquals("4h 1m", duration(4 * 60 * 60_000L + 30_000, nearest = true))
-        assertEquals("<1m", duration(29_999, nearest = true))
-    }
-
-    @Test
     fun `a fixed number keeps its places, a whole one too`() {
         assertEquals("1.0", fixed(1.0, 1))
         assertEquals("19.9", fixed(19.94, 1))

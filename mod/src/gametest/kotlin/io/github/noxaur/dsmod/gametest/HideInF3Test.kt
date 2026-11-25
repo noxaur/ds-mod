@@ -3,29 +3,29 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.core.feature.hud.layout.hideinf3.HideInF3
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
-import io.github.noxaur.dsmod.gametest.InventoryGrid.ID
-import io.github.noxaur.dsmod.gametest.InventoryGrid.panelColor
+import io.github.noxaur.dsmod.gametest.StatsBlock.ID
+import io.github.noxaur.dsmod.gametest.StatsBlock.plateColor
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import org.lwjgl.glfw.GLFW
 
 class HideInF3Test : FabricClientGameTest {
-    override fun runTest(context: ClientGameTestContext) = InventoryGrid.with(context) {
-        val panel = panelColor(context, context.takeScreenshot("hud-before-f3"))
+    override fun runTest(context: ClientGameTestContext) = StatsBlock.with(context) {
+        val panel = plateColor(context, context.takeScreenshot("hud-before-f3"))
         fun shows(name: String): Boolean {
             context.waitTicks(3)
-            return panelColor(context, context.takeScreenshot(name)) == panel
+            return plateColor(context, context.takeScreenshot(name)) == panel
         }
         try {
             context.input.pressKey(GLFW.GLFW_KEY_F3)
             context.waitFor { it.debugOverlay.showDebugScreen() }
             check(shows("hud-shown-in-f3")) { "The HUD hid under F3 with Hide In F3 off" }
-            val grid = context.computeOnClient<Hud.Placed, Nothing> { checkNotNull(Hud.find(ID)) }
+            val block = context.computeOnClient<Hud.Placed, Nothing> { checkNotNull(Hud.find(ID)) }
             context.runOnClient<Nothing> { DsModClient.feature<HideInF3>().feature.enabled = true }
             check(!shows("hud-hidden-in-f3")) { "The HUD drew under F3 with Hide In F3 on" }
             context.runOnClient<Nothing> {
-                check(Hud.at(grid.x + 9.0, grid.y + 9.0) == null && Hud.itemAt(grid.x + 16.0, grid.y + 16.0) == null && Hud.placed().isEmpty()) {
-                    "The HUD hidden in F3 can still be pointed at, dragged or read a tooltip from"
+                check(Hud.at(block.x + 9.0, block.y + 9.0) == null && Hud.placed().isEmpty()) {
+                    "The HUD hidden in F3 can still be pointed at or dragged"
                 }
             }
             context.input.pressKey(GLFW.GLFW_KEY_F3)

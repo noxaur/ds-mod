@@ -9,7 +9,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu
 object Trail {
     private val trail = MenuTrail()
     private var menu: AbstractContainerMenu? = null
-    private var back: String? = null
 
     fun register() {
         ClientSendMessageEvents.COMMAND.register(::sent)
@@ -17,15 +16,13 @@ object Trail {
             if (!screen.openedByServer) return@onEveryLayout
             if (opened) {
                 menu = screen.menu
-                back = trail.opened(System.currentTimeMillis(), screen.title.string)
+                trail.opened(System.currentTimeMillis(), screen.title.string)
             }
             ScreenEvents.remove(screen).register { trail.closed(System.currentTimeMillis()) }
         }
     }
 
     fun opener(screen: AbstractContainerScreen<*>) = if (screen.menu === menu) trail.opener else null
-
-    fun back(screen: AbstractContainerScreen<*>) = if (screen.menu === menu) back else null
 
     private fun sent(command: String) = trail.sent(System.currentTimeMillis(), command)
 }

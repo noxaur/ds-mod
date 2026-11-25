@@ -16,16 +16,10 @@ object MenuTimers {
     }
 
     fun draw(g: GuiGraphicsExtractor, screen: ContainerScreen, text: String, role: Role? = null) {
-        val glass = MenuSkin.glass(screen)
-        val skinned = MenuSkin.skins(screen)
-        val color = when {
-            role == null -> if (skinned) MenuSkin.ink(glass) else CommonColors.DARK_GRAY
-            glass >= 0 -> role.argb()
-            else -> ink(if (skinned) Kit.theme else Theme.VANILLA, role)
-        }
+        val color = if (role == null) CommonColors.DARK_GRAY else ink(Theme.VANILLA, role)
         val x = screen.containerLeft + screen.titleLabelX + Kit.font.width(screen.title) + GAP
         val y = screen.containerTop + screen.titleLabelY
-        g.text(Kit.font, text, x, y, color, skinned && MenuSkin.inkShadow(glass))
+        g.text(Kit.font, text, x, y, color, false)
     }
 
     private fun ink(theme: Theme, role: Role) = when (role) {

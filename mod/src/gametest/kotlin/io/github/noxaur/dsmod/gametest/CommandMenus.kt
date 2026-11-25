@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.edge.ui.KitButton
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext
 
@@ -15,4 +14,3 @@ fun ClientGameTestContext.sendMenuCommand(name: String, title: String) {
     ServerMenus.shows(this, title)
 }
 
-fun ClientGameTestContext.goBackButton() = ServerMenus.widget<KitButton>(this) { it.message.string == "Go Back" }

@@ -22,9 +22,9 @@ Two themes ship, because resource-pack screens are dark and Minecraft's own are 
 
 The mod keeps how an item looks as well as what features read, and the HUD rebuilds the item from that alone. Asking for the stack the item was read from was rejected, because the game lets go of it once its menu closes, and the icon fell back to a default head.
 
-## The chat keeps what it draws over the HUD
+## A docked block's drag writes its feature's placement
 
-On the chat screen a press or a wheel turn over the chat's rows, input or suggestions is the chat's, even over a block, so a block is the mouse's only where the player sees it. A docked block's drag writes its feature's placement setting, so the setting stays the one place the dock is kept and the settings screen never disagrees with the HUD.
+A docked block's drag writes its feature's placement setting, so the setting stays the one place the dock is kept and the settings screen never disagrees with the HUD.
 
 ## The HUD's scale snaps to screen pixels
 
@@ -44,7 +44,7 @@ A world mark is colored by its role, as text is, except a waypoint, whose look t
 
 ## Rarity marks are baked once
 
-A mark's alpha varies pixel by pixel, which as fills would be thousands of rectangles per chest every frame. So each rarity's art, with a row per sparkle placement that a slot's index picks, is painted once into a texture and a slot costs one blit. Opacity is the blit's color, so its slider repaints nothing. The art matches the slot under it, Menu Theme's or the resource pack's, because a faint tint vanishes on gray and a dim one sinks into black.
+A mark's alpha varies pixel by pixel, which as fills would be thousands of rectangles per chest every frame. So each rarity's art, with a row per sparkle placement that a slot's index picks, is painted once into a texture and a slot costs one blit. Opacity is the blit's color, so its slider repaints nothing. The art matches the resource pack's slot under it, because a faint tint vanishes on gray and a dim one sinks into black.
 
 ## A cooldown is drawn from its start and end
 
