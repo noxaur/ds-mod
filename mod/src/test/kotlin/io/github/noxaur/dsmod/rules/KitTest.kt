@@ -18,7 +18,7 @@ private val drawsShape = describe<JavaAccess<*>>("draws a shape on the graphics"
 
 private fun kit(classes: DescribedPredicate<JavaClass>) = noClasses().that(classes).should().accessTargetWhere(drawsShape).because(
     "the kit draws chrome on the grid in the player's theme. Draw it with `Kit` in edge/ui, and if the kit lacks a shape, " +
-        "add it there, to kit.md and to the gallery",
+        "add it there and to the gallery",
 )
 
 private class Fills { fun run(g: GuiGraphicsExtractor) = g.fill(0, 0, 1, 1, 0) }

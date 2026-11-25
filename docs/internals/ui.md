@@ -1,6 +1,6 @@
 # UI
 
-How the mod draws what features hand it. How to pick a surface and build on it is in the [ui skill](../../mod/.claude/skills/ui/SKILL.md).
+How the mod draws what features hand it.
 
 ## A feature states a role, the text layer owns the color
 

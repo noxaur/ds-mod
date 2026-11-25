@@ -9,7 +9,7 @@
 
 Start with the [contribution guide](../CONTRIBUTING.md) and the [development runbook](operations/development.md).
 
-Internal docs record the decisions, the constraints and the traps that the code alone can't explain, one page per area. Most code changes need none. Follow the [`docs` skill](../.claude/skills/docs/SKILL.md) before adding one.
+Internal docs record the decisions, the constraints and the traps that the code alone can't explain, one page per area. Most code changes need none.
 
 - [Architecture overview](internals/overview.md): the three parts, why `core` is pure, why the mod runs only on dragsim.co, and how the jars are built.
 - [Glossary](internals/glossary.md): the words the code and the docs use, each with one meaning.
