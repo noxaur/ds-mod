@@ -10,7 +10,7 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 
 class AutoClick(config: DsModConfig) : HasFeature {
-    override val feature = Feature(config, "auto-click", Area.ANYWHERE, Store.GENERAL, "Click 9.9 times a second while you hold or toggle a key.", default = false)
+    override val feature = Feature(config, "auto-click", Area.ANYWHERE, Store.GENERAL, "Click 9.9 times a second while you hold or toggle a key.", default = false, name = "Auto Clicker")
 
     val left = Part("Left", "Right", MOUSE_LEFT)
     val right = Part("Right", "Left", MOUSE_RIGHT)

@@ -529,9 +529,9 @@ Your saved waypoints are a list in the settings, which works like Command Binds:
 
 **Export** copies a group to your clipboard to share, and **Import** adds what someone shared as a new group. Color and Look pick how new waypoints and the ones you click in chat start out.
 
-### Auto Click
+### Auto Clicker
 
-Clicks 9.9 times a second while you hold a key and walk. It stops the moment you let go, stand still or open a menu, and each click goes through the game as your own would. It has a part for each button, and both start on once you turn Auto Click on.
+Clicks 9.9 times a second while you hold a key and walk. It stops the moment you let go, stand still or open a menu, and each click goes through the game as your own would. It has a part for each button, and both start on once you turn Auto Clicker on.
 
 | Setting | Does |
 | --- | --- |
@@ -540,7 +540,7 @@ Clicks 9.9 times a second while you hold a key and walk. It stops the moment you
 | Key | Any key or mouse button. Left Click starts on the left mouse button and Right Click on the right, and the two can't share a key |
 | Mode | Hold, or Toggle to press once to start and again to stop. A toggled click still runs only while you walk |
 
-Your own clicks always go through. They count toward the 9.9 a second, so Auto Click skips one of its clicks rather than take the two of you past it.
+Your own clicks always go through. They count toward the 9.9 a second, so Auto Clicker skips one of its clicks rather than take the two of you past it.
 
 <sub>Off by default.</sub>
 

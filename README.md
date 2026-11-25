@@ -5,37 +5,34 @@
 [![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/YUZCYAnr7F) [![Ko-fi](https://img.shields.io/badge/Ko--fi-support-FF5E5B?logo=kofi&logoColor=white)](https://ko-fi.com/noxaur) [![GitHub stars](https://img.shields.io/github/stars/noxaur/ds-mod?style=flat&logo=github)](https://github.com/noxaur/ds-mod/stargazers)
 
 Dragen is a mod for [DragSim](https://dragsim.co/) (Dragon Simulator) that aims to boost your enjoyment of DragSim without going too crazy on modifications. We strive to feel like a seamless addition to the game. Feature requests and contributions are handled as fast and respectfully as we can.
-
 <sub>Dragen is the Norwegian word for "the dragon".</sub>
 
 ## Installation guide
 
 Requires Minecraft 26.2, [Fabric Loader](https://fabricmc.net/use/installer/) 0.20.1+, Java 25+, [Fabric API](https://modrinth.com/mod/fabric-api) and [Fabric Language Kotlin](https://modrinth.com/mod/fabric-language-kotlin).
 
-Drop the jar from [Releases](https://github.com/noxaur/ds-mod/releases) into `mods`, then type `/dragen` in game.
+Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases). And add it to your mods using your favorite minecraft client.
 
 ## Features
-
-Every feature is explained in the [feature guide](docs/user/features.md).
 
 <details>
 <summary><h3>General</h3></summary>
 
-- **DragSim Only** – Runs Dragen only on dragsim.co, until you turn it off.
-- **Ctrl Click** – On a Mac, makes Ctrl + left click a Ctrl click instead of a right click.
-- **Auto Click** – Left or right clicks 9.9 times a second while you hold or toggle a key.
+- **DragSim Only** – Toggles dragen to only run while connected to dragsim.co
+- **Ctrl Click** ( Mac only )– Makes Ctrl + left click a Ctrl click instead of a right click.
+- **Auto Clicker** – Left and or right clicks 9.9 cps.
 
 </details>
 
 <details>
 <summary><h3>Camera & Visuals</h3></summary>
 
-- **Fullbright** – Lights caves and nights as brightly as day.
-- **Hide Explosions** – Hides explosion particles.
-- **Animations** – Swing like 1.7, Exhibition, Spin or Stab, and move or resize your held item.
-- **Player Model** – Resize, tilt, spin and pose your player or everyone's, with a live preview in the settings.
+- **Fullbright** – Never must you see the darkness, come fourth light.
+- **Hide Explosions** – Hide explosion particles.
+- **Animations** – Use 1.7 animations, and change how your held item swings and sits.
+- **Player Model** – Resize, tilt, spin and pose your or everyone's player.
 - **Third Person** – Set the camera's distance, height and tilt, and which views F5 goes through.
-- **Free Look** – Hold Left Alt to look around in third person without turning.
+- **Free Look** – Hold Left Alt to look around in third person without turning your player head.
 - **Etherwarp Outline** – Outlines the block your Etherwarp will land on, or shows why it would fail.
 
 </details>
