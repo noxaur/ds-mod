@@ -522,6 +522,9 @@ object Kit {
     fun flash(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, strength: Float) =
         rect(g, x, y, width, height, ARGB.white(strength.coerceIn(0f, 1f)))
 
+    fun blackout(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, strength: Float = 1f) =
+        rect(g, x, y, width, height, ARGB.black(strength.coerceIn(0f, 1f)))
+
     fun tick(g: GuiGraphicsExtractor, x: Int, y: Int, height: Int) = rect(g, x, y, 1, height, theme.wellLight)
 
     fun divider(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int) {

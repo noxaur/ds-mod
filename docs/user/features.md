@@ -339,6 +339,10 @@ Change the keys under Keys in Wardrobe Keys' settings. Each key works only in th
 
 In the Pets menu, your active pet has a green outline, so you can find it among the rest.
 
+### Quieter AFK
+
+While the `/afk` menu counts down to your next reward, everything around the menu goes black and the game goes silent, so you can leave it running and walk away. The menu itself stays lit for 30 seconds after you last move the mouse, then dims to a tenth of its brightness. Move the mouse to light it up again, and use it as normal. Close the menu and the screen and sound come back at once.
+
 ### Storage Overview
 
 Shows what your Storage pages and Ender Chest hold before you open them. The mod remembers each page as you saw it the last time you opened it, for each of your profiles and across restarts, so open a page once to fill it in. Pick one of two modes:

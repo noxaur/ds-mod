@@ -76,6 +76,7 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 - **HOTD Planner** – Marks what to unlock next in the Heart of the Dragon.
 - **Wardrobe Keys** – Press 1 to 9 in the Wardrobe to equip that slot.
 - **Pets Menu** – Outlines your active pet in the Pets menu.
+- **Quieter AFK** – Dims and mutes the game in the /afk menu.
 - **Profile Cooldown** – Shows when you can switch profiles again.
 - **Keep Cursor** – Keeps the cursor in place when one menu opens another.
 

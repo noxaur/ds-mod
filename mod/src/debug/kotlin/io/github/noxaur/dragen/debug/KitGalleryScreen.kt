@@ -255,7 +255,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
     private fun barAt(g: GuiGraphicsExtractor, x: Int, line: Int) = Kit.tabBar(g, x, line - Kit.TAB_BAR_HEIGHT + 1, 278)
 
     private fun list(g: GuiGraphicsExtractor, x: Int, y: Int) {
-        caption(g, "Well with role text, one line flashed", x, y)
+        caption(g, "Well with role text, one line flashed, one blacked out", x, y)
         Kit.well(g, x, y + 12, 172, 122)
         for (i in lines.indices) {
             val line = lines[i]
@@ -265,6 +265,7 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
             g.text(font, line.text, lx + 10, ly, -1, true)
         }
         Kit.flash(g, x + 1, y + 27, 163, 11, 0.3f)
+        Kit.blackout(g, x + 1, y + 38, 163, 11, 0.9f)
         Kit.scrollbar(g, x + 164, y + 14, 118, 0, 60)
     }
 
