@@ -55,7 +55,7 @@ class HudEditorScreen(
         panelWidth = content + Kit.INSET * 2
         panelHeight = Kit.INSET * 2 + Kit.BUTTON_HEIGHT * 3 + Kit.LABEL_HEIGHT + Kit.GAP * 3
         panelX = (width - panelWidth) / 2
-        panelY = height - panelHeight - Kit.GAP
+        panelY = Kit.GAP
         labelX = panelX + Kit.INSET
         val top = panelY + Kit.INSET
         nameY = top + Kit.BUTTON_HEIGHT + Kit.GAP

@@ -1,6 +1,6 @@
 # Menus
 
-How the mod adds controls to the server's menus. What each setting does for the player is in [docs/user/features.md](../user/features.md#inventory).
+How the mod adds controls to the server's menus. What each setting does for the player is in [docs/user/features.md](../user/features.md#menus).
 
 ## Keep Cursor restores the cursor after any quick reopen
 

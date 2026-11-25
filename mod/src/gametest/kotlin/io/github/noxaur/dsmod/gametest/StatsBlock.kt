@@ -1,6 +1,7 @@
 package io.github.noxaur.dsmod.gametest
 
 import io.github.noxaur.dsmod.core.feature.hud.performancestats.PerformanceStats
+import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
@@ -9,15 +10,25 @@ import java.nio.file.Path
 object StatsBlock {
     const val ID = "performance-stats"
 
+    // @keep The middle of the screen is clear of the F3 debug text, which draws over the HUD's top left corner.
+    private const val MIDDLE = 0.5f
+
     fun with(context: ClientGameTestContext, test: () -> Unit) {
         val stats = DsModClient.feature<PerformanceStats>()
+        val positions = DsModClient.settings.hud.positions
         context.worldBuilder().create().use {
-            context.runOnClient<Nothing> { stats.feature.enabled = true }
+            context.runOnClient<Nothing> {
+                positions.value += ID to DsModConfig.Position(MIDDLE, MIDDLE)
+                stats.feature.enabled = true
+            }
             try {
                 context.waitFor { Hud.find(ID) != null }
                 test()
             } finally {
-                context.runOnClient<Nothing> { stats.feature.enabled = false }
+                context.runOnClient<Nothing> {
+                    stats.feature.enabled = false
+                    positions.value -= ID
+                }
             }
         }
     }
