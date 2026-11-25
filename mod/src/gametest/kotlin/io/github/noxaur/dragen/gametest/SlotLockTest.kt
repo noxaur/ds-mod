@@ -1,0 +1,206 @@
+package io.github.noxaur.dragen.gametest
+
+import io.github.noxaur.dragen.core.feature.inventory.protection.slotlock.SlotLock
+import io.github.noxaur.dragen.core.inventory.SlotLocks
+import io.github.noxaur.dragen.edge.DragenClient
+import io.github.noxaur.dragen.edge.SlotGuards
+import io.github.noxaur.dragen.edge.mixin.ContainerScreenAccessor
+import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
+import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
+import net.minecraft.client.gui.screens.inventory.InventoryScreen
+import net.minecraft.world.entity.player.Inventory
+import net.minecraft.world.inventory.ContainerInput
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.Items
+import org.lwjgl.glfw.GLFW
+
+class SlotLockTest : FabricClientGameTest {
+    override fun runTest(context: ClientGameTestContext) {
+        val slotLock = DragenClient.feature<SlotLock>()
+        val key = GLFW.GLFW_KEY_L
+        val itemKey = GLFW.GLFW_KEY_K
+
+        fun hover(slot: Int) {
+            context.hoverOwnSlot(slot, settle = 0)
+            context.waitFor { client ->
+                val hovered = ((client.gui.screen() as? ContainerScreenAccessor) ?: return@waitFor false).hoveredSlot
+                hovered != null && hovered.container is Inventory && hovered.containerSlot == slot
+            }
+        }
+        val ticksPastDoubleClick = 6
+        fun click(slot: Int, button: Int = 0) {
+            hover(slot)
+            context.input.pressMouse(button)
+            context.waitTicks(ticksPastDoubleClick)
+        }
+        fun tap(slot: Int) {
+            hover(slot)
+            context.input.pressKey(key)
+            context.waitTicks(3)
+        }
+        fun open() {
+            context.openInventory()
+            context.waitForScreen(InventoryScreen::class.java)
+            context.waitTicks(3)
+        }
+        fun doubleClick(slot: Int) {
+            hover(slot)
+            context.input.pressMouse(0)
+            context.input.pressMouse(0)
+            context.waitTicks(5)
+        }
+
+        fun shiftClick(slot: Int) {
+            context.runOnClient<Nothing> { client ->
+                val screen = client.gui.screen() as AbstractContainerScreen<*>
+                val at = screen.menu.slots.first { it.container is Inventory && it.containerSlot == slot }
+                if (!SlotGuards.refuses(screen, at, 0, ContainerInput.QUICK_MOVE)) {
+                    client.gameMode!!.handleContainerInput(screen.menu.containerId, at.index, 0, ContainerInput.QUICK_MOVE, client.player!!)
+                }
+            }
+            context.waitTicks(5)
+        }
+
+        fun holds(vararg slots: Pair<Int, Item>) = slots.all { (slot, item) -> context.ownItem(slot).first == item }
+        fun link(from: Int, to: Int, screenshot: String? = null) {
+            hover(from)
+            context.input.holdKey(key)
+            hover(to)
+            screenshot?.let { context.takeScreenshot(it) }
+            context.input.releaseKey(key)
+            context.waitTicks(3)
+        }
+
+        context.worldBuilder().create().use { world ->
+            try {
+                for ((slot, give) in listOf(
+                    "hotbar.0" to "diamond_sword", "hotbar.1" to "stone 5", "inventory.0" to "diamond_pickaxe", "inventory.1" to "stone 5",
+                    "inventory.2" to "diamond_axe[custom_data={item_data:{uuid:\"an-axe\"}}]",
+                    "inventory.14" to "diamond_hoe[custom_data={item_data:{uuid:\"a-hoe\"}}]",
+                )) {
+                    world.server.runCommand("item replace entity @a $slot with $give")
+                }
+                context.waitFor { it.player!!.inventory.getItem(23).`is`(Items.DIAMOND_HOE) }
+                open()
+
+                click(0)
+                check(context.carried() == 1) { "A click on an unlocked slot picked nothing up, so this test proves nothing" }
+                click(0)
+
+                tap(0)
+                check(slotLock.locks == SlotLocks(setOf(0))) { "The key over the first hotbar slot left ${slotLock.locks}" }
+                click(0)
+                check(context.carried() == 0 && context.ownItem(0).first == Items.DIAMOND_SWORD) { "A click took the locked sword" }
+                click(0, 1)
+                check(context.carried() == 0) { "A right click took the locked sword" }
+                hover(10)
+                context.input.pressKey(GLFW.GLFW_KEY_1)
+                context.waitTicks(3)
+                check(holds(0 to Items.DIAMOND_SWORD, 10 to Items.STONE)) { "The 1 key over another slot traded with the locked slot" }
+                hover(0)
+                context.input.pressKey { it.keyDrop }
+                context.waitTicks(3)
+                check(context.ownItem(0).first == Items.DIAMOND_SWORD) { "The drop key over the locked slot dropped the sword" }
+
+                slotLock.slotLockKey.value = 2
+                click(10, 2)
+                check(10 in slotLock.locks.locked) { "The middle button did not lock the slot, and left ${slotLock.locks}" }
+                slotLock.slotLockKey.value = key
+                click(1)
+                doubleClick(12)
+                check(context.carried() == 5 && context.ownItem(10).second == 5) { "A double click gathered from the locked stack: carrying ${context.carried()}, and ${context.ownItem(10)} is left" }
+                click(1)
+
+                link(0, 1)
+                check(slotLock.locks.links.isEmpty() && slotLock.locks.locked == setOf(0, 10)) { "A drag between two hotbar slots left ${slotLock.locks}" }
+
+                link(0, 9, "slot-lock-linking")
+                check(slotLock.locks == SlotLocks(setOf(0, 10, 9), mapOf(0 to 9))) { "Holding the key from the hotbar to the slot above left ${slotLock.locks}" }
+                click(9)
+                check(context.carried() == 0) { "A click took the linked pickaxe" }
+                context.takeScreenshot("slot-lock")
+                hover(20)
+                context.takeScreenshot("slot-lock-rest")
+
+                shiftClick(9)
+                check(holds(0 to Items.DIAMOND_PICKAXE, 9 to Items.DIAMOND_SWORD)) { "A Shift click did not trade the pair: ${context.ownItem(0)} and ${context.ownItem(9)}" }
+
+                tap(9)
+                check(slotLock.locks == SlotLocks(setOf(0, 10))) { "Unlocking one end of the link left ${slotLock.locks}" }
+                tap(0)
+                tap(10)
+                check(slotLock.locks == SlotLocks()) { "Unlocking every slot left ${slotLock.locks}" }
+
+                hover(11)
+                context.input.pressKey(itemKey)
+                context.waitTicks(3)
+                check(slotLock.locks == SlotLocks(items = setOf("an-axe"))) { "The item key over the axe left ${slotLock.locks}" }
+                click(11)
+                check(context.carried() == 0) { "A click took the locked axe" }
+                context.takeScreenshot("slot-lock-item")
+                hover(11)
+                context.input.pressKey(itemKey)
+                context.waitTicks(3)
+                click(11)
+                check(context.carried() == 1) { "The unlocked axe did not come up" }
+                click(13)
+                hover(13)
+                context.input.pressKey(itemKey)
+                context.waitTicks(3)
+                click(13)
+                check(context.carried() == 0 && context.ownItem(13).first == Items.DIAMOND_AXE) { "The lock did not follow the axe to its new slot" }
+                hover(13)
+                context.input.pressKey(itemKey)
+                hover(1)
+                context.input.pressKey(itemKey)
+                context.waitTicks(3)
+                check(slotLock.locks == SlotLocks()) { "The item key over stone, which stacks, left ${slotLock.locks}" }
+
+                fun sweep(vararg slots: Int) {
+                    hover(slots.first())
+                    context.input.holdKey(itemKey)
+                    for (slot in slots.drop(1)) hover(slot)
+                    context.input.releaseKey(itemKey)
+                    context.waitTicks(3)
+                }
+                sweep(13, 1, 23)
+                check(slotLock.locks == SlotLocks(items = setOf("an-axe", "a-hoe"))) { "Sweeping the item key over the axe and the hoe left ${slotLock.locks}" }
+                sweep(23, 13)
+                check(slotLock.locks == SlotLocks()) { "Sweeping the item key back from a locked item left ${slotLock.locks}" }
+
+                tap(2)
+                shiftClick(13)
+                check(context.ownItem(2).second == 0 && context.ownItem(3).first == Items.DIAMOND_AXE && context.ownItem(13).second == 0) {
+                    "The Shift click left ${context.ownItem(2)} in the locked slot, ${context.ownItem(3)} beside it and ${context.ownItem(13)} behind"
+                }
+                tap(2)
+                shiftClick(3)
+                check(context.ownItem(3).second == 0 && context.ownItem(11).first == Items.DIAMOND_AXE) { "With nothing locked a Shift click is the game's own, and left ${context.ownItem(11)}" }
+
+                click(1)
+                doubleClick(12)
+                check(context.carried() == 10) { "With nothing locked a double click gathered ${context.carried()}, so the check above proves nothing" }
+                click(1)
+                tap(1)
+                context.runOnClient<Nothing> { it.gui.setScreen(null) }
+                context.waitTicks(5)
+
+                context.input.pressKey(GLFW.GLFW_KEY_2)
+                context.waitTicks(3)
+                context.input.pressKey { it.keyDrop }
+                context.waitTicks(5)
+                check(context.ownItem(1).second == 10) { "The drop key dropped from the locked slot in hand, leaving ${context.ownItem(1)}" }
+                slotLock.feature.enabled = false
+                context.input.pressKey { it.keyDrop }
+                context.waitTicks(5)
+                check(context.ownItem(1).second == 9) { "With Slot Lock off the drop key left ${context.ownItem(1)}" }
+            } finally {
+                slotLock.feature.enabled = true
+                slotLock.slotLockKey.value = key
+                slotLock.locks = SlotLocks()
+                context.runOnClient<Nothing> { it.gui.setScreen(null) }
+            }
+        }
+    }
+}

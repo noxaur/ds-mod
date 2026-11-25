@@ -66,7 +66,7 @@ printf %s "$key" | pnpm dlx vercel env add MOJANG_RELAY_KEY --environment produc
 unset key
 ```
 
-`dsctl` reaches the deployment with `DSMOD_BACKEND=https://api.ds-mod.perwko.com` and `DSMOD_ADMIN_TOKEN` read from that file.
+`dsctl` reaches the deployment with `DRAGEN_BACKEND=https://api.ds-mod.perwko.com` and `DRAGEN_ADMIN_TOKEN` read from that file.
 
 ## The website
 

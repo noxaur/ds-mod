@@ -176,5 +176,5 @@ function Choices({ onAnswer }: { onAnswer: ((choice: "continue" | "cancel") => v
 }
 
 function Command() {
-  return <code className={styles.command}>/dsmod login</code>;
+  return <code className={styles.command}>/dragen login</code>;
 }

@@ -6,7 +6,7 @@ const expiresAt = "2030-01-02T03:04:05.000Z";
 const verified = { session: { token: "session-secret", expiresAt }, user: { id: "steve-id", name: "Steve" } };
 const current = { session: { expiresAt }, user: { id: "steve-id", name: "Steve" } };
 const options = { httpOnly: true, sameSite: "lax", secure: false };
-const dropPending = ["dsmod_pending", "", { ...options, expires: new Date(0), path: "/login" }];
+const dropPending = ["dragen_pending", "", { ...options, expires: new Date(0), path: "/login" }];
 
 const backendSays = (status: number, body: unknown) =>
   vi.stubGlobal(
@@ -20,7 +20,7 @@ const jarWith = (sent: Record<string, string> = {}) => {
   return { jar, set };
 };
 
-const pending = { dsmod_pending: "session-secret" };
+const pending = { dragen_pending: "session-secret" };
 const steve = { user: "steve-id", name: "Steve", skin: null };
 const skin = "https://textures.minecraft.net/texture/5c1";
 
@@ -39,7 +39,7 @@ describe("begin", () => {
     expect(await Effect.runPromise(begin("one-time-secret", jar))).toEqual(steve);
     expect(set.mock.calls).toEqual([
       [
-        "dsmod_pending",
+        "dragen_pending",
         "session-secret",
         { ...options, expires: new Date("2029-06-01T00:05:00.000Z"), path: "/login" },
       ],
@@ -111,7 +111,7 @@ describe("begin", () => {
 
   it("names nobody and asks the backend nothing without a token or a pending session", async () => {
     backendSays(200, current);
-    expect(await Effect.runPromise(begin("", jarWith({ dsmod_session: "old" }).jar))).toBeNull();
+    expect(await Effect.runPromise(begin("", jarWith({ dragen_session: "old" }).jar))).toBeNull();
     expect(fetch).not.toHaveBeenCalled();
   });
 });
@@ -123,7 +123,7 @@ describe("finish", () => {
     expect(await Effect.runPromise(finish("continue", "steve-id", jar))).toBe("Steve");
     expect(set.mock.calls).toEqual([
       dropPending,
-      ["dsmod_session", "session-secret", { ...options, expires: new Date(expiresAt), path: "/" }],
+      ["dragen_session", "session-secret", { ...options, expires: new Date(expiresAt), path: "/" }],
     ]);
     const [url, init] = vi.mocked(fetch).mock.calls[0] ?? [];
     expect(url).toBe("http://127.0.0.1:16385/api/auth/get-session");
@@ -171,7 +171,7 @@ describe("finish", () => {
 
   it("signs nobody in without a pending cookie", async () => {
     backendSays(200, current);
-    const { jar, set } = jarWith({ dsmod_session: "old" });
+    const { jar, set } = jarWith({ dragen_session: "old" });
     expect(await Effect.runPromise(finish("continue", "steve-id", jar))).toBeNull();
     expect(set.mock.calls).toEqual([dropPending]);
     expect(fetch).not.toHaveBeenCalled();

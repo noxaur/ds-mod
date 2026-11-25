@@ -6,7 +6,7 @@ import tseslint from "typescript-eslint";
 import secretCompare from "./lint/secret-compare.js";
 
 const uiSdk =
-  "ds-mod builds every interactive control from ui-sdk, so focus, keyboard and ARIA behave the same everywhere.";
+  "Dragen builds every interactive control from ui-sdk, so focus, keyboard and ARIA behave the same everywhere.";
 
 const uiSdkElements = {
   button: "@ui-sdk/react/button",
@@ -55,7 +55,7 @@ export default defineConfig(
   tseslint.configs.stylisticTypeChecked,
   {
     linterOptions: { reportUnusedDisableDirectives: "error", reportUnusedInlineConfigs: "error" },
-    plugins: { dsmod: { rules: { "secret-compare": secretCompare } } },
+    plugins: { dragen: { rules: { "secret-compare": secretCompare } } },
     languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname } },
     rules: {
       eqeqeq: "error",
@@ -69,7 +69,7 @@ export default defineConfig(
       "@typescript-eslint/switch-exhaustiveness-check": "error",
       "@typescript-eslint/no-shadow": "error",
       "@typescript-eslint/explicit-module-boundary-types": "off",
-      "dsmod/secret-compare": "error",
+      "dragen/secret-compare": "error",
       "no-restricted-syntax": restricted(),
       "no-restricted-imports": [
         "error",

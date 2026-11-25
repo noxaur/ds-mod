@@ -1,28 +1,28 @@
 {
   "schemaVersion": 1,
-  "id": "dsmod_debug",
+  "id": "dragen_debug",
   "version": "${version}",
-  "name": "ds-mod debug tools",
-  "description": "Developer tools for ds-mod. Bundles the release build.",
+  "name": "Dragen debug tools",
+  "description": "Developer tools for Dragen. Bundles the release build.",
   "license": "Apache-2.0",
   "environment": "client",
   "entrypoints": {
     "client": [
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.debug.DsModDebug"
+        "value": "io.github.noxaur.dragen.debug.DragenDebug"
       }
     ]
   },
   "mixins": [
-    "dsmod_debug.mixins.json"
+    "dragen_debug.mixins.json"
   ],
   "jars": [
     {
-      "file": "META-INF/jars/dsmod-${version}.jar"
+      "file": "META-INF/jars/dragen-${version}.jar"
     }
   ],
   "depends": {
-    "dsmod": "${version}"
+    "dragen": "${version}"
   }
 }

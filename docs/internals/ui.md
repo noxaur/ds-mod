@@ -4,7 +4,7 @@ How the mod draws what features hand it.
 
 ## A feature states a role, the text layer owns the color
 
-Minecraft mods usually write color codes inline, and their colors drift from feature to feature. In ds-mod a feature says what a piece of text means, such as body, value or muted, and the text layer maps that role to a color, so the palette lives in one place. Text the server sent is a separate type that keeps the server's colors, so they can't leak into what the mod shows.
+Minecraft mods usually write color codes inline, and their colors drift from feature to feature. In Dragen a feature says what a piece of text means, such as body, value or muted, and the text layer maps that role to a color, so the palette lives in one place. Text the server sent is a separate type that keeps the server's colors, so they can't leak into what the mod shows.
 
 ## UI layers keep what they are given
 

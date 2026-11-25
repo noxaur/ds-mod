@@ -1,11 +1,11 @@
-# ds-mod docs
+# Dragen docs
 
-## Using ds-mod
+## Using Dragen
 
-- [Install ds-mod](user/install.md): what the mod needs, where the jar goes, and how to open settings.
+- [Install Dragen](user/install.md): what the mod needs, where the jar goes, and how to open settings.
 - [Features](user/features.md): what each feature shows, and how to move a readout.
 
-## Working on ds-mod
+## Working on Dragen
 
 Start with the [contribution guide](../CONTRIBUTING.md) and the [development runbook](operations/development.md).
 

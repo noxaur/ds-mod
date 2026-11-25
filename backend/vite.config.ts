@@ -30,7 +30,7 @@ export default defineConfig({
   fmt: { ignorePatterns: [".void/**", "db/migrations/**", "src/items/fixtures/**"], printWidth: 120 },
   lint: {
     ignorePatterns: [".void/**"],
-    jsPlugins: ["./lint/dsmod.js"],
+    jsPlugins: ["./lint/dragen.js"],
     options: { typeAware: true, typeCheck: true, denyWarnings: true },
     categories: { correctness: "error", suspicious: "error" },
     rules: {
@@ -43,9 +43,9 @@ export default defineConfig({
       "typescript/strict-boolean-expressions": "error",
       "typescript/switch-exhaustiveness-check": "error",
       "typescript/no-floating-promises": "error",
-      "dsmod/no-try": "error",
-      "dsmod/no-computed-console": "error",
-      "dsmod/secret-compare": "error",
+      "dragen/no-try": "error",
+      "dragen/no-computed-console": "error",
+      "dragen/secret-compare": "error",
       "typescript/no-explicit-any": "error",
       // @keep An Effect generator leaves early with `return yield* failure`, which this rule reads as a missing value.
       "typescript/consistent-return": "off",
@@ -54,8 +54,8 @@ export default defineConfig({
       {
         files: ["src/**"],
         rules: {
-          "dsmod/no-json-parse": "error",
-          "dsmod/time-through-effect": "error",
+          "dragen/no-json-parse": "error",
+          "dragen/time-through-effect": "error",
           "no-restricted-imports": ["error", { patterns: [noVoid, noWebsiteInside, noRenderInside] }],
         },
       },
@@ -79,12 +79,12 @@ export default defineConfig({
           ],
         },
       },
-      { files: ["src/**/*.test.ts"], rules: { "dsmod/no-json-parse": "off" } },
-      { files: ["**/*.test.ts", "test/**"], rules: { "dsmod/test-harness": "error" } },
-      { files: ["test/harness.ts"], rules: { "dsmod/test-harness": "off" } },
+      { files: ["src/**/*.test.ts"], rules: { "dragen/no-json-parse": "off" } },
+      { files: ["**/*.test.ts", "test/**"], rules: { "dragen/test-harness": "error" } },
+      { files: ["test/harness.ts"], rules: { "dragen/test-harness": "off" } },
       {
         files: ["src/**/*.test.ts", "src/ids.ts", "src/identity/minecraft.ts"],
-        rules: { "dsmod/time-through-effect": "off" },
+        rules: { "dragen/time-through-effect": "off" },
       },
     ],
   },

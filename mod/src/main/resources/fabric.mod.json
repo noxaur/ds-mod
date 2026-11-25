@@ -1,32 +1,32 @@
 {
   "schemaVersion": 1,
-  "id": "dsmod",
+  "id": "dragen",
   "version": "${version}",
-  "name": "ds-mod",
+  "name": "Dragen",
   "description": "Quality-of-life features for Dragon Simulator.",
   "license": "Apache-2.0",
   "custom": {
-    "dsmod:backend": "${backend_url}",
-    "dsmod:website": "${website_url}"
+    "dragen:backend": "${backend_url}",
+    "dragen:website": "${website_url}"
   },
   "environment": "client",
   "entrypoints": {
     "client": [
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.edge.DsModClient"
+        "value": "io.github.noxaur.dragen.edge.DragenClient"
       }
     ],
     "modmenu": [
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.edge.ModMenu"
+        "value": "io.github.noxaur.dragen.edge.ModMenu"
       }
     ]
   },
-  "accessWidener": "dsmod.accesswidener",
+  "accessWidener": "dragen.accesswidener",
   "mixins": [
-    "dsmod.mixins.json"
+    "dragen.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.20.1",

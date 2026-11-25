@@ -4,7 +4,7 @@ import { Schema, SchemaAST } from "effect";
 
 const optional = <S extends Schema.Top>(schema: S) => Schema.optional(Schema.NullOr(schema));
 
-const MAPPED = "dsmod/mapped";
+const MAPPED = "dragen/mapped";
 const readApart = (shape: Schema.Top) => Schema.Unknown.annotate({ [MAPPED]: shape.ast });
 const Scalar = Schema.Union([Schema.String, Schema.Number, Schema.Boolean, Schema.Null]);
 const open = (shape: Schema.Top) => Schema.Record(Schema.String, shape);

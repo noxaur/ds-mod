@@ -1,6 +1,6 @@
 # Architecture overview
 
-ds-mod has three parts. The mod runs in the player's game. The backend is our own REST service, and the website reads from it too. One generated contract binds them. The words used here are defined in the [glossary](glossary.md).
+Dragen has three parts. The mod runs in the player's game. The backend is our own REST service, and the website reads from it too. One generated contract binds them. The words used here are defined in the [glossary](glossary.md).
 
 ## The mod knows the game only from packets
 
@@ -32,7 +32,7 @@ Developer tools live in a build that release code can't see, so the compiler kee
 
 ## The release jar carries no library
 
-The release jar holds only ds-mod's own code, and the libraries it uses come with Minecraft and Fabric Language Kotlin, which every player installs. A bundled library would have to be relocated so it can't clash with another mod's copy, and then none of its types could cross a public signature. So a library ds-mod can't take from the platform is not used.
+The release jar holds only Dragen's own code, and the libraries it uses come with Minecraft and Fabric Language Kotlin, which every player installs. A bundled library would have to be relocated so it can't clash with another mod's copy, and then none of its types could cross a public signature. So a library Dragen can't take from the platform is not used.
 
 ## The backend and the website keep each other's boundaries
 

@@ -2,7 +2,7 @@ import { Effect } from "effect";
 import { sessionCookie, sessionOf, verifyOneTimeToken } from "../backend";
 import { inProduction } from "../env";
 
-export const pendingCookie = "dsmod_pending";
+export const pendingCookie = "dragen_pending";
 
 const pendingMs = 5 * 60 * 1000;
 

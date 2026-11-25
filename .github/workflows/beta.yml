@@ -72,5 +72,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          gh release create "v$VERSION" "mod/build/libs/dsmod-$VERSION.jar" --target "$GITHUB_SHA" \
-            --title "ds-mod $VERSION" --prerelease --generate-notes
+          gh release create "v$VERSION" "mod/build/libs/dragen-$VERSION.jar" --target "$GITHUB_SHA" \
+            --title "Dragen $VERSION" --prerelease --generate-notes

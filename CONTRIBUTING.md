@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for being interested in developing ds-mod. If you want to contribute in other ways than GitHub, check out the [Discord](https://discord.gg/YUZCYAnr7F).
+Thank you for being interested in developing Dragen. If you want to contribute in other ways than GitHub, check out the [Discord](https://discord.gg/YUZCYAnr7F).
 
 ## Send us data
 
@@ -32,7 +32,7 @@ For a UI change, attach before and after screenshots. Add a short video when the
 
 ### Keep it fast
 
-ds-mod runs inside the render and tick loops, so a dropped frame is a bug. If your change touches a hot path, measure it, and put the numbers in the pull request.
+Dragen runs inside the render and tick loops, so a dropped frame is a bug. If your change touches a hot path, measure it, and put the numbers in the pull request.
 
 ## Submit a change
 
