@@ -129,7 +129,7 @@ export class ItemStore extends Context.Service<
     }>;
     readonly hints: (entries: readonly string[]) => Effect.Effect<ReadonlyMap<string, ItemHints>>;
   }
->()("dsmod/items/ItemStore") {}
+>()("dragen/items/ItemStore") {}
 
 export const appearancesFrom = (
   tallies: readonly EntryTally[],

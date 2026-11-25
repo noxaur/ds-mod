@@ -155,7 +155,7 @@ test("a brief that cannot be read or published says which, naming the problem", 
 });
 
 test("a wrong token, an unknown id and a bad command each say what went wrong", async () => {
-  expect(await backend("wrong").failure("list")).toBe("The backend refused the admin token. Set DSMOD_ADMIN_TOKEN.");
+  expect(await backend("wrong").failure("list")).toBe("The backend refused the admin token. Set DRAGEN_ADMIN_TOKEN.");
   expect(await backend().failure("--json", "close", "nothing")).toBe("No request has the id nothing.");
   expect(await backend().failure("pull", "nothing", directory())).toBe("No request has the id nothing.");
   expect(await backend().failure("frobnicate")).toMatch(/^dsctl asks players/);

@@ -31,7 +31,7 @@ tasks.test {
     val classpath = rootProject.layout.buildDirectory.file("lint/classpath").get().asFile
     inputs.file(config)
     outputs.upToDateWhen { false }
-    jvmArgumentProviders.add(CommandLineArgumentProvider { listOf("-Ddsmod.detekt=${config.path}", "-Ddsmod.classpath=${classpath.path}") })
+    jvmArgumentProviders.add(CommandLineArgumentProvider { listOf("-Ddragen.detekt=${config.path}", "-Ddragen.classpath=${classpath.path}") })
     testLogging {
         events("failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL

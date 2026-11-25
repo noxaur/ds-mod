@@ -33,7 +33,7 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 - **Player Model** – Resize, tilt, spin and pose your or everyone's player.
 - **Third Person** – Set the camera's distance, height and tilt, and which views F5 goes through.
 - **Free Look** – Hold Left Alt to look around in third person without turning your player head.
-- **Etherwarp Outline** – Outlines the block your Etherwarp will land on, or shows why it would fail.
+- **Etherwarp Outline** – Outlines the block your Etherwarp will land on.
 
 </details>
 

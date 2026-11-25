@@ -1,8 +1,8 @@
-# ds-mod
+# Dragen
 
-ds-mod is a client-side quality-of-life mod for the Dragon Simulator server (dragsim.co). This repo holds the mod, a backend it talks to over REST, and a website.
+Dragen is a client-side quality-of-life mod for the Dragon Simulator server (dragsim.co). This repo holds the mod, a backend it talks to over REST, and a website.
 
-## What makes ds-mod special
+## What makes Dragen special
 
 We can't compromise on these.
 

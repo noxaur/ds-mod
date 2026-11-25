@@ -13,6 +13,6 @@ pluginManagement {
     }
 }
 
-rootProject.name = "dsmod"
+rootProject.name = "dragen"
 
 include("lint")

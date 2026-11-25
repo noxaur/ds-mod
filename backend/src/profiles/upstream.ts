@@ -6,4 +6,4 @@ export class UpstreamDown extends Schema.TaggedError<UpstreamDown>()("UpstreamDo
 export class Upstream extends Context.Service<
   Upstream,
   { readonly get: (path: string) => Effect.Effect<{ readonly status: number; readonly body: unknown }, UpstreamDown> }
->()("dsmod/profiles/Upstream") {}
+>()("dragen/profiles/Upstream") {}

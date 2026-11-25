@@ -1,0 +1,66 @@
+package io.github.noxaur.dragen.edge.overview
+
+import com.mojang.blaze3d.platform.InputConstants
+import com.mojang.brigadier.arguments.StringArgumentType
+import com.mojang.brigadier.builder.LiteralArgumentBuilder
+import com.mojang.brigadier.context.CommandContext
+import io.github.noxaur.dragen.core.feature.Game
+import io.github.noxaur.dragen.core.feature.inventory.items.itemoverview.ItemOverview
+import io.github.noxaur.dragen.core.overview.Entry
+import io.github.noxaur.dragen.core.overview.Shelf
+import io.github.noxaur.dragen.core.profile.ProfileLookup
+import io.github.noxaur.dragen.core.text.text
+import io.github.noxaur.dragen.edge.Account
+import io.github.noxaur.dragen.edge.Chat
+import io.github.noxaur.dragen.edge.Keys
+import io.github.noxaur.dragen.edge.input.InputApproved
+import io.github.noxaur.dragen.edge.input.PlayerCommands
+import io.github.noxaur.dragen.edge.profile.Profiles
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
+import net.minecraft.client.Minecraft
+
+object ItemOverviews {
+    private lateinit var game: Game
+    private lateinit var overview: ItemOverview
+
+    fun bind(game: Game, overview: ItemOverview) {
+        this.game = game
+        this.overview = overview
+    }
+
+    fun pressed(key: InputConstants.Key) {
+        if (overview.feature.runs && Keys.matches(key, overview.key.value)) Minecraft.getInstance().schedule { open("") }
+    }
+
+    fun dragen(): LiteralArgumentBuilder<FabricClientCommandSource> = ClientCommands.literal("items")
+        .executes { open(it, "") }
+        .then(ClientCommands.argument("search", StringArgumentType.greedyString()).executes { open(it, StringArgumentType.getString(it, "search")) })
+
+    private fun open(context: CommandContext<FabricClientCommandSource>, query: String): Int {
+        if (!overview.feature.runs) {
+            val why = if (game.active) "Item Overview is off. Turn it on in /dragen to list your items." else "Item Overview works only on dragsim.co."
+            Chat.send(text { bad(why) })
+            return 0
+        }
+        // @keep The chat screen closes after the command returns, so open on the next tick.
+        context.source.client.schedule { open(query) }
+        return 1
+    }
+
+    fun open(query: String) {
+        val client = Minecraft.getInstance()
+        val lookup = ProfileLookup(Account.name, Profiles.source) { client.execute(it) }
+        client.setScreenAndShow(ItemOverviewScreen(lookup, overview.copies, overview.feature.player.profile, query, client.gui.screen(), ::pick))
+    }
+
+    /** @keep The inventory needs no command, and the server has none that opens one wardrobe or bag page. */
+    @InputApproved(reaches = ["PlayerCommands.send"])
+    private fun pick(entry: Entry): Boolean {
+        val command = entry.places.firstNotNullOfOrNull { Shelf.command(it.id) } ?: return false
+        overview.find(entry.item.key, System.currentTimeMillis())
+        Minecraft.getInstance().gui.setScreen(null)
+        PlayerCommands.send(command)
+        return true
+    }
+}

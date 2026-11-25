@@ -1,0 +1,23 @@
+{
+  "required": true,
+  "package": "io.github.noxaur.dragen.gametest.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "ActionSpyMixin",
+    "BackgroundWindowMixin",
+    "ClickSpyMixin",
+    "DrawnFramesMixin",
+    "FocusEachTestMixin",
+    "FreshStartMixin",
+    "HandAccessor",
+    "HoveredSlotAccessor",
+    "HudAccessor",
+    "MouseButtonInvoker",
+    "NarrationInvoker",
+    "TickFrameBlurMixin",
+    "TickFrameMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

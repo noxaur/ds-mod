@@ -1,26 +1,26 @@
 # Features
 
-`/dsmod` opens the settings. Everything is on unless marked off.
+`/dragen` opens the settings. Everything is on unless marked off.
 
-<sub>Trackers read only the server's own messages, never player chat. All-time numbers are kept for each of your profiles, in `config/dsmod/data/players/`, one file for each Minecraft account. Delete that file to reset them, along with everything else ds-mod remembers of your profiles.</sub>
+<sub>Trackers read only the server's own messages, never player chat. All-time numbers are kept for each of your profiles, in `config/dragen/data/players/`, one file for each Minecraft account. Delete that file to reset them, along with everything else Dragen remembers of your profiles.</sub>
 
 ## General
 
-Theme picks the colors of ds-mod's screens and the controls it adds to menus: Charcoal is dark, and Vanilla matches the game's own menus.
+Theme picks the colors of Dragen's screens and the controls it adds to menus: Charcoal is dark, and Vanilla matches the game's own menus.
 
 ### DragSim Only
 
-ds-mod runs only while you play on dragsim.co, and stays out of the way in singleplayer and on other servers. Turn it off to use ds-mod anywhere. Features that read the server read dragsim.co's own lines, so elsewhere they can miss or miscount.
+Dragen runs only while you play on dragsim.co, and stays out of the way in singleplayer and on other servers. Turn it off to use Dragen anywhere. Features that read the server read dragsim.co's own lines, so elsewhere they can miss or miscount.
 
 ### Ctrl Click
 
-On a Mac, Minecraft turns Ctrl and a left click into a right click. ds-mod keeps it a Ctrl click, as on Windows and Linux, so a Ctrl click opens a section in a new tab and works in menus the same way. Turn it off to get the Mac's right click back.
+On a Mac, Minecraft turns Ctrl and a left click into a right click. Dragen keeps it a Ctrl click, as on Windows and Linux, so a Ctrl click opens a section in a new tab and works in menus the same way. Turn it off to get the Mac's right click back.
 
 <sub>Only a Mac shows it.</sub>
 
 ## HUD
 
-Layout is a small copy of your screen with your HUD on it. **Move HUD**, `/dsmod hud` or the HUD Editor Key opens the same editor over the game, so you see the world behind your HUD.
+Layout is a small copy of your screen with your HUD on it. **Move HUD**, `/dragen hud` or the HUD Editor Key opens the same editor over the game, so you see the world behind your HUD.
 
 | Do this | To |
 | --- | --- |
@@ -32,11 +32,11 @@ Layout is a small copy of your screen with your HUD on it. **Move HUD**, `/dsmod
 
 ### HUD Background
 
-A dark plate behind ds-mod's HUD, so it reads over a bright world. The Background box in the HUD editor turns it on and off too.
+A dark plate behind Dragen's HUD, so it reads over a bright world. The Background box in the HUD editor turns it on and off too.
 
 ### Hide In F3
 
-Takes ds-mod's HUD off while the F3 debug screen is open, so the HUD doesn't cover the debug text.
+Takes Dragen's HUD off while the F3 debug screen is open, so the HUD doesn't cover the debug text.
 
 <sub>Off by default.</sub>
 
@@ -55,7 +55,7 @@ Shows the armor you wear and your pet as a row of icons on the HUD, with each he
 
 ### Performance Stats
 
-Shows your frames per second, your ping and the server's ticks per second on the HUD. Turn it on under HUD in `/dsmod`, and place it in the HUD editor, like any other block.
+Shows your frames per second, your ping and the server's ticks per second on the HUD. Turn it on under HUD in `/dragen`, and place it in the HUD editor, like any other block.
 
 - **FPS** is the game's own count of the frames it drew in the last second.
 - **Ping** is how long the server takes to answer, there and back, as the mean of its last five answers. The tab list always says 0 on Dragon Simulator, so the mod asks the server once a second while Ping is shown, the same way the F3 network chart does. Take Ping out of the values and the mod stops asking.
@@ -266,7 +266,7 @@ Slot Lock Key and Item Lock Key take any key or mouse button but left and right 
 
 ### Item Overview
 
-Lists every item you own in one screen, from your inventory, ender chest, storage, wardrobe, accessory bag and pets. Type `/dsmod items`, or `/dsmod items` and a search, or pick a key in its settings. Items that share a name and rarity are counted together, and the count under each one adds up every slot that holds it.
+Lists every item you own in one screen, from your inventory, ender chest, storage, wardrobe, accessory bag and pets. Type `/dragen items`, or `/dragen items` and a search, or pick a key in its settings. Items that share a name and rarity are counted together, and the count under each one adds up every slot that holds it.
 
 | Do this | To |
 | --- | --- |
@@ -279,7 +279,7 @@ Lists every item you own in one screen, from your inventory, ender chest, storag
 | Click an item kept in storage or the ender chest | Open the first Storage page or the Ender Chest that holds it, with the item outlined for the Highlight Time |
 | Scroll, drag the scrollbar, or press Page Up, Page Down, Home or End | See the rest of the items |
 
-The total under the grid is the NPC value of the items shown. Your inventory is read from the game, and a Storage page or the Ender Chest you opened on this profile shows as you last saw it, even after you restart the game. The line under the grid names the profile. ds-mod learns which profile you're on when you open Profile Management, and follows each switch you make there. Everything else comes from dragsim.co through ds-mod's service, as the profile viewer's does, so it is as fresh as dragsim.co's last save of your profile. If you hide your inventory on dragsim.co, only your inventory and the menus you opened show. If ds-mod's service can't be reached, the overview still shows what the game has shown you, and the line under the grid reads "Showing only what you opened". Hover that line to see why.
+The total under the grid is the NPC value of the items shown. Your inventory is read from the game, and a Storage page or the Ender Chest you opened on this profile shows as you last saw it, even after you restart the game. The line under the grid names the profile. Dragen learns which profile you're on when you open Profile Management, and follows each switch you make there. Everything else comes from dragsim.co through Dragen's service, as the profile viewer's does, so it is as fresh as dragsim.co's last save of your profile. If you hide your inventory on dragsim.co, only your inventory and the menus you opened show. If Dragen's service can't be reached, the overview still shows what the game has shown you, and the line under the grid reads "Showing only what you opened". Hover that line to see why.
 
 ### Rare Drop Alert
 
@@ -510,16 +510,16 @@ Marks places in the world with a beam, a box or a label, with its name and how f
 
 | Type this | To |
 | --- | --- |
-| `/dsmod waypoint add` and a name | Save a waypoint where you stand |
-| `/dsmod waypoint share` | Say where you stand in the chat you are in |
-| `/dsmod waypoint share party`, `global` or `instance` | Say it in that channel, as `/chat party` does |
-| `/dsmod waypoint share whisper` and a player | Whisper it to them |
-| Any of the share commands with a saved waypoint's name after it | Share that waypoint instead of where you stand. `/dsmod waypoint share chat` and a name shares it in the chat you are in |
-| `/dsmod waypoint` | Open your waypoints in the settings |
+| `/dragen waypoint add` and a name | Save a waypoint where you stand |
+| `/dragen waypoint share` | Say where you stand in the chat you are in |
+| `/dragen waypoint share party`, `global` or `instance` | Say it in that channel, as `/chat party` does |
+| `/dragen waypoint share whisper` and a player | Whisper it to them |
+| Any of the share commands with a saved waypoint's name after it | Share that waypoint instead of where you stand. `/dragen waypoint share chat` and a name shares it in the chat you are in |
+| `/dragen waypoint` | Open your waypoints in the settings |
 
-`/dsmod wp` is short for `/dsmod waypoint`. A shared waypoint reads `[Nest] x: 12, y: 64, z: -30 in The End`, so a player without ds-mod can read it too.
+`/dragen wp` is short for `/dragen waypoint`. A shared waypoint reads `[Nest] x: 12, y: 64, z: -30 in The End`, so a player without Dragen can read it too.
 
-Coordinates in chat, from ds-mod or from another mod, are clickable. Click them to show the waypoint until you walk up to it or change worlds, then click the line ds-mod writes to save it. Only the last eight you click show at once. Turn the links off with Chat Links.
+Coordinates in chat, from Dragen or from another mod, are clickable. Click them to show the waypoint until you walk up to it or change worlds, then click the line Dragen writes to save it. Only the last eight you click show at once. Turn the links off with Chat Links.
 
 Your saved waypoints are a list in the settings, which works like Command Binds: a line for each waypoint with its switch, name, position, color and look, under its group. **Add Waypoint** adds one where you stand, with its name ready to type. Type a position as `12 64 -30`. Press the color to pick it and its opacity, which is how see-through the box is. The look is a Beam, a Box, an Outline, a Filled box or only the Label. Press ▸ at the end of a line for the rest:
 
@@ -573,7 +573,7 @@ A message is copied whole, also when it wraps over several rows. A block the ser
 
 ### Profile Viewer
 
-Shows any player's profile: their skills, slayers, stats, dungeons, Heart of the Dragon, forge, bestiary, collections, pets and the items they keep. Type `/pv` and a name, or `/pv` alone for your own. `/dsmod pv` does the same. `/pv 1` and `/pv 2` still open your vaults, because the server's own `/pv` takes a number of one or two digits.
+Shows any player's profile: their skills, slayers, stats, dungeons, Heart of the Dragon, forge, bestiary, collections, pets and the items they keep. Type `/pv` and a name, or `/pv` alone for your own. `/dragen pv` does the same. `/pv 1` and `/pv 2` still open your vaults, because the server's own `/pv` takes a number of one or two digits.
 
 The player stands on the left in what they wear, turning slowly. The overview shows each dungeon class with its level, the picked one ringed. The Dungeons tab has the Catacombs level, each class with a tick beside the one picked, their essence, and the runs and best score of every floor, master floors beside the rest. Player Stats lists each stat once with its base value and, after it, what the other groups add. Hover a stat for its breakdown. Mining has the Heart of the Dragon, its nodes, and what the forge is making and when it is ready. The wardrobe rings the set the player wears, and the pets ring the active one, with its held item and skin beside the grid. A tab with nothing to show is left out.
 
@@ -584,7 +584,7 @@ The player stands on the left in what they wear, turning slowly. The overview sh
 | Press Escape while you drag | Put them back where the drag began |
 | Press a tab along the top | Open the overview, player stats, dungeons, mining, the inventory, the ender chest, storage, the wardrobe, the accessory bag, pets, the bestiary or collections |
 | Hover the top kills | Read all ten, where the overview lists fewer |
-| Hover the player's name | See when dragsim.co last saved the profile, and when ds-mod read it |
+| Hover the player's name | See when dragsim.co last saved the profile, and when Dragen read it |
 | Click a player's name in chat | Open their profile. Turn this off with Click Names |
 | Press a page number beside the grid | Show that storage or wardrobe page |
 | Press the profile's name under the player | Show their next profile. Right-click or scroll to go back |
@@ -593,28 +593,28 @@ The player stands on the left in what they wear, turning slowly. The overview sh
 | Hover a stat on Player Stats | Read what each of its groups gives it |
 | Scroll, drag the scrollbar, or press Page Up, Page Down, Home or End | See the rest of a tab |
 
-Beside each grid are how many slots it fills and how many items of each rarity it holds, and on the inventory, what the player wears. Item Rarity colors the slots, as in a menu. A player who hides their inventory has their items hidden here too. The profile comes from ds-mod's service, which signs in with your Minecraft account the first time you look someone up. "Out of date" under the name means dragsim.co did not answer, and the profile is the last copy, from up to a day before. Tooltips are rebuilt from the server's data, so a few lines can differ from the game's own. They wear the server's frame for each rarity, and another mod that adds to item tooltips adds to these too.
+Beside each grid are how many slots it fills and how many items of each rarity it holds, and on the inventory, what the player wears. Item Rarity colors the slots, as in a menu. A player who hides their inventory has their items hidden here too. The profile comes from Dragen's service, which signs in with your Minecraft account the first time you look someone up. "Out of date" under the name means dragsim.co did not answer, and the profile is the last copy, from up to a day before. Tooltips are rebuilt from the server's data, so a few lines can differ from the game's own. They wear the server's frame for each rarity, and another mod that adds to item tooltips adds to these too.
 
 ## Contribute
 
-ds-mod's developers cannot reach all of the server, so they ask players to record the parts they can't. Contribute is the last entry in the settings. It does nothing until you open it.
+Dragen's developers cannot reach all of the server, so they ask players to record the parts they can't. Contribute is the last entry in the settings. It does nothing until you open it.
 
 ### Record a request
 
 1. Open Contribute in the settings. The first time in a game it signs you in with your Minecraft account, which takes a second or two. Then a window shows one request you qualify for, with its steps and how long you have. A long request shows the steps that fit and how many more there are. A request that needs an area only shows once you have been there.
 2. Press Accept to take it, or Skip if you don't want it. Skip hides it for you and shows the next one. Close takes you back to the game.
-3. Your screen lists the steps and, under them, how much of the request's time is left. Press the key shown (`]` by default, Next Recording Step in the game's controls) to start, and press it again after each step. A step with a timer moves on by itself. ds-mod only tells you what to do. You type every command and make every move yourself.
-4. After the last step, ds-mod sends the recording. Type `/dsmod submit` to send early, or `/dsmod cancel` to stop and send nothing.
+3. Your screen lists the steps and, under them, how much of the request's time is left. Press the key shown (`]` by default, Next Recording Step in the game's controls) to start, and press it again after each step. A step with a timer moves on by itself. Dragen only tells you what to do. You type every command and make every move yourself.
+4. After the last step, Dragen sends the recording. Type `/dragen submit` to send early, or `/dragen cancel` to stop and send nothing.
 
-If you take longer than the request allows, or you leave the server or the game, the recording is thrown away and nothing is sent. Changing area on the same server is fine. If sending fails, ds-mod keeps the recording and says so. Type `/dsmod submit` when no recording is running to send what it kept. If the request has closed since, ds-mod deletes the recording and tells you. If the recording could not be saved in full, it is thrown away, and you can accept the request again.
+If you take longer than the request allows, or you leave the server or the game, the recording is thrown away and nothing is sent. Changing area on the same server is fine. If sending fails, Dragen keeps the recording and says so. Type `/dragen submit` when no recording is running to send what it kept. If the request has closed since, Dragen deletes the recording and tells you. If the recording could not be saved in full, it is thrown away, and you can accept the request again.
 
-Before it leaves your computer, ds-mod removes player names and what players typed, and it does not send your Minecraft login. Several players record each request, so one run does not have to be perfect.
+Before it leaves your computer, Dragen removes player names and what players typed, and it does not send your Minecraft login. Several players record each request, so one run does not have to be perfect.
 
 ### Report Game Data
 
 <sub>Off by default.</sub>
 
-When you turn it on, ds-mod sends game data it has not seen before to its developers, with player names removed, so a change on the server gets fixed sooner and items can be drawn as the game draws them. This one switch covers every kind of game data ds-mod reports, now and later, so it never asks again when it learns to report something new. Today that is two things.
+When you turn it on, Dragen sends game data it has not seen before to its developers, with player names removed, so a change on the server gets fixed sooner and items can be drawn as the game draws them. This one switch covers every kind of game data Dragen reports, now and later, so it never asks again when it learns to report something new. Today that is two things.
 
 - Lines the server sent that a feature could not read, with player names and what players typed removed.
 - How the items in your own inventory look: the 36 slots, your armor and your offhand. Each item's name, lore, glint, skin, head texture and color go, with the parts of its data that say how it is built. Your name, the names in your tab list and the item's own ids are removed. Items in a menu, such as an auction or a trade, are never read, because they can belong to another player. Each look goes once a session.
@@ -625,4 +625,4 @@ The first report goes about two minutes after something turns up, and then at mo
 
 ### Sign in to the website
 
-Type `/dsmod login` to open the ds-mod website in your browser, signed in as your Minecraft account. The link works once, for a minute, and is never shown in chat.
+Type `/dragen login` to open the Dragen website in your browser, signed in as your Minecraft account. The link works once, for a minute, and is never shown in chat.

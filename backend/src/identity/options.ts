@@ -15,7 +15,7 @@ export const signInOptions = (hasJoined: HasJoined = mojangHasJoined()) =>
     // @keep A database error carries its query's parameters, and a session lookup's parameter is the session token.
     logger: {
       log: (level, message, ...args) => {
-        // eslint-disable-next-line dsmod/no-computed-console -- Better Auth names the level of each line it logs, and this is the one place that writes them to the Worker's log.
+        // eslint-disable-next-line dragen/no-computed-console -- Better Auth names the level of each line it logs, and this is the one place that writes them to the Worker's log.
         console[level](message, ...args.map((arg: unknown) => (arg instanceof Error ? arg.name : typeof arg)));
       },
     },

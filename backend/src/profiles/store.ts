@@ -10,4 +10,4 @@ export class ProfileStore extends Context.Service<
     readonly get: (key: string) => Effect.Effect<unknown>;
     readonly put: (key: string, value: unknown, ttlSeconds: number) => Effect.Effect<void, WriteRefused>;
   }
->()("dsmod/profiles/ProfileStore") {}
+>()("dragen/profiles/ProfileStore") {}

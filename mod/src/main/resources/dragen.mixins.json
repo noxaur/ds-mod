@@ -1,0 +1,43 @@
+{
+  "required": true,
+  "package": "io.github.noxaur.dragen.edge.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "BlockingArmMixin",
+    "CameraMixin",
+    "ClickCapMixin",
+    "CaptureInputMixin",
+    "CapturePacketsMixin",
+    "ChatComponentAccessor",
+    "ChestScreenMixin",
+    "ContainerScreenAccessor",
+    "ContainerScreenMixin",
+    "CtrlClickMixin",
+    "CursorMixin",
+    "DropKeyMixin",
+    "ExplosionParticleMixin",
+    "FloatingTextMixin",
+    "FullbrightMixin",
+    "GuiGraphicsAccessor",
+    "HeldItemMixin",
+    "HeldItemModelMixin",
+    "HiddenTextMixin",
+    "ItemLayerAccessor",
+    "ItemRenderStateAccessor",
+    "HudHotbarMixin",
+    "KeyInputMixin",
+    "KeyPressMixin",
+    "MouseInputMixin",
+    "MouseTurnMixin",
+    "PerspectiveKeyMixin",
+    "PlayerPoseMixin",
+    "PlayerShapeMixin",
+    "ServerPacketsMixin",
+    "SlotClickMixin",
+    "StorageMenuMixin",
+    "SwingSpeedMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

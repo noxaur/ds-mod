@@ -2,7 +2,7 @@
 
 The words below mean one thing each, in code, docs and conversation. Use them as defined.
 
-- **Server**: dragsim.co, the Minecraft server ds-mod is for. It is someone else's.
+- **Server**: dragsim.co, the Minecraft server Dragen is for. It is someone else's.
 - **Backend**: our own REST service in `backend/`. Never "the server".
 - **Area**: a place on the server that a feature can be locked to, told by the tab list's `Area` row or the sidebar's `⏣` place. `Area` in `core/game`.
 - **Feature**: one class in its own folder of `core/feature/<section>/`, under its group's folder when it has one, that holds a `Feature` part, declares its own settings on it, and is placed once by the group or section file above it, with one switch in the settings. It reads events and returns readouts.

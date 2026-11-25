@@ -28,9 +28,9 @@ import {
 export class Caller extends Context.Service<
   Caller,
   { readonly userId: string | null; readonly adminToken: string | undefined }
->()("dsmod/Caller") {}
+>()("dragen/Caller") {}
 
-export class Player extends Context.Service<Player, { readonly userId: string }>()("dsmod/Player") {}
+export class Player extends Context.Service<Player, { readonly userId: string }>()("dragen/Player") {}
 
 export class TooManyRequests extends Schema.TaggedError<TooManyRequests>()(
   "TooManyRequests",
@@ -39,23 +39,23 @@ export class TooManyRequests extends Schema.TaggedError<TooManyRequests>()(
 ) {}
 
 /** @keep Void checks the bearer session token before the API runs, so the scheme is only for the contract. */
-export class SignedIn extends HttpApiMiddleware.Service<SignedIn, { provides: Player }>()("dsmod/SignedIn", {
+export class SignedIn extends HttpApiMiddleware.Service<SignedIn, { provides: Player }>()("dragen/SignedIn", {
   error: [HttpApiError.Unauthorized, TooManyRequests],
   security: { session: HttpApiSecurity.bearer },
 }) {}
 
-export const MaxBody = Context.Reference<ByteSize.ByteSize>("dsmod/MaxBody", {
+export const MaxBody = Context.Reference<ByteSize.ByteSize>("dragen/MaxBody", {
   defaultValue: () => ByteSize.kibibytes(64),
 });
 
 /** @keep A capture of half an hour in a busy place is under this once gzipped. */
 export const MAX_CAPTURE = ByteSize.megabytes(50);
 
-export class BodyLimit extends HttpApiMiddleware.Service<BodyLimit>()("dsmod/BodyLimit") {}
+export class BodyLimit extends HttpApiMiddleware.Service<BodyLimit>()("dragen/BodyLimit") {}
 
-export const Limited = Context.Reference<Rate | null>("dsmod/Limited", { defaultValue: () => null });
+export const Limited = Context.Reference<Rate | null>("dragen/Limited", { defaultValue: () => null });
 
-export class Agent extends HttpApiMiddleware.Service<Agent>()("dsmod/Agent", {
+export class Agent extends HttpApiMiddleware.Service<Agent>()("dragen/Agent", {
   error: HttpApiError.Unauthorized,
   security: { adminToken: HttpApiSecurity.bearer },
 }) {}
@@ -64,7 +64,7 @@ const id = { id: Schema.String };
 const ModVersion = Schema.String.check(Schema.isMaxLength(64));
 const Capture = Schema.Uint8Array.pipe(HttpApiSchema.asUint8Array());
 
-export const Api = HttpApi.make("dsmod")
+export const Api = HttpApi.make("dragen")
   .add(
     HttpApiGroup.make("health").add(
       HttpApiEndpoint.get("healthz", "/healthz").annotate(OpenApi.Summary, "Reports that the backend is up."),
@@ -223,4 +223,4 @@ export const Api = HttpApi.make("dsmod")
   .middleware(BodyLimit)
   .middleware(HttpApiMiddleware.ProblemDetails)
   .annotate(HttpApi.PayloadParseOptions, { onExcessProperty: "error" })
-  .annotateMerge(OpenApi.annotations({ title: "ds-mod backend", version: "0.1.0" }));
+  .annotateMerge(OpenApi.annotations({ title: "Dragen backend", version: "0.1.0" }));

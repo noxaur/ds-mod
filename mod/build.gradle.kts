@@ -60,10 +60,10 @@ sourceSets.test {
 }
 
 loom {
-    accessWidenerPath = file("src/main/resources/dsmod.accesswidener")
+    accessWidenerPath = file("src/main/resources/dragen.accesswidener")
     mods {
-        register("dsmod") { sourceSet(sourceSets.main.get()) }
-        register("dsmod_debug") { sourceSet(debug) }
+        register("dragen") { sourceSet(sourceSets.main.get()) }
+        register("dragen_debug") { sourceSet(debug) }
     }
     runs.named("client") { setSource(debug) }
 }
@@ -71,7 +71,7 @@ loom {
 fabricApi {
     configureTests {
         createSourceSet = true
-        modId = "dsmod_gametest"
+        modId = "dragen_gametest"
         enableGameTests = false
         enableClientGameTests = true
         eula = true
@@ -116,7 +116,7 @@ val seedRun = tasks.register("seedRun") {
     val defaults = file("run-defaults")
     val run = file("run")
     // @keep The client keeps a server's pack at downloads/<the id the server sends>/<sha1>, and verifies the hash, so a stale copy is replaced.
-    val cache = gradle.gradleUserHomeDir.resolve("caches/dsmod/dragsim.zip")
+    val cache = gradle.gradleUserHomeDir.resolve("caches/dragen/dragsim.zip")
     val pack = run.resolve("downloads/c2222eea-454f-35cd-b85c-93c1c5a59e17")
     doNotTrackState("Copies into the game folder, which the game writes to")
     doLast {
@@ -162,7 +162,7 @@ tasks.named<JavaExec>("runClient") {
                 "-Dfabric.addMods=" + mods.get().joinToString(File.pathSeparator) { it.asFile.path },
                 "-Ddevauth.enabled=true",
                 "-Ddevauth.account=main",
-            ) + listOfNotNull(brief.orNull?.let { "-Ddsmod.brief=$it" })
+            ) + listOfNotNull(brief.orNull?.let { "-Ddragen.brief=$it" })
         },
     )
 }
@@ -192,7 +192,7 @@ tasks.assemble { dependsOn(debugJar) }
 
 tasks.register("installMod") {
     group = "distribution"
-    description = "Puts the release jar, or the debug jar with -Pjar=debug, in the mods folder at -Pmods=, in place of any ds-mod jar there. `mise run install` picks the jar, the backend and the instance's mods folder."
+    description = "Puts the release jar, or the debug jar with -Pjar=debug, in the mods folder at -Pmods=, in place of any Dragen jar there. `mise run install` picks the jar, the backend and the instance's mods folder."
     val modsFolder = providers.gradleProperty("mods").map { File(it).absoluteFile.normalize() }
     val jar = (if (providers.gradleProperty("jar").orNull == "debug") debugJar else tasks.jar).flatMap { it.archiveFile }
     inputs.file(jar)
@@ -201,7 +201,7 @@ tasks.register("installMod") {
         val mods = modsFolder.get()
         check(mods.isDirectory) { "$mods is not a folder. Pass the mods folder the game loads, or run `mise run install`, which finds it." }
         val built = jar.get().asFile
-        val old = checkNotNull(mods.listFiles { file -> file.name.startsWith("dsmod-") && file.name.endsWith(".jar") && file.name != built.name }) { "Could not list $mods to find the ds-mod jar it holds." }
+        val old = checkNotNull(mods.listFiles { file -> file.name.startsWith("dragen-") && file.name.endsWith(".jar") && file.name != built.name }) { "Could not list $mods to find the Dragen jar it holds." }
         val staged = built.copyTo(mods.resolve(".${built.name}.part"), overwrite = true)
         Files.move(staged.toPath(), mods.resolve(built.name).toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
         for (file in old) {
@@ -229,7 +229,7 @@ val pickGameTests = tasks.register<JavaExec>("pickGameTests") {
     description = "Lists the game tests in the test mod's manifest: those -Pgametests= names, all for -Pgametests=all, or else those the change since the branch left main reaches. See GameTestPick.kt."
     // @keep The compile classpath holds all the picker loads, and the runtime one adds Loom's launch libraries, which a job that only builds the jars never fetched.
     classpath = sourceSets["debug"].let { it.output + it.compileClasspath }
-    mainClass = "io.github.noxaur.dsmod.debug.GameTestPickKt"
+    mainClass = "io.github.noxaur.dragen.debug.GameTestPickKt"
     inputs.files(sourceSets["gametest"].output.classesDirs, gameTestManifest)
     args(projectDir.path, picked.get().asFile.path)
     // @keep Read at execution, so each CI job's -Pgametests= reuses one configuration cache entry.
@@ -256,7 +256,7 @@ tasks.register<net.fabricmc.loom.task.prod.ClientProductionRunTask>("runProdClie
     // @keep Loom would add the release jar beside the debug jar that already holds it, so the mods are listed explicitly.
     mods.setFrom(debugJar, gametestJar, configurations.productionRuntimeMods)
     jvmArgs.add("-Dfabric.client.gametest")
-    jvmArgs.add(tasks.jar.flatMap { it.archiveFile }.map { "-Ddsmod.jar=${it.asFile.path}" })
+    jvmArgs.add(tasks.jar.flatMap { it.archiveFile }.map { "-Ddragen.jar=${it.asFile.path}" })
     runDir = layout.buildDirectory.dir("run/prodClientGameTest")
     useXVFB = providers.environmentVariable("CI").isPresent
 }
@@ -269,7 +269,7 @@ tasks.register<JavaExec>("cutFixture") {
     group = "development"
     description = "Cuts a redacted fixture out of a capture. See CutFixture.kt."
     classpath = sourceSets["debug"].runtimeClasspath
-    mainClass = "io.github.noxaur.dsmod.debug.capture.CutFixtureKt"
+    mainClass = "io.github.noxaur.dragen.debug.capture.CutFixtureKt"
 }
 
 tasks.test {
