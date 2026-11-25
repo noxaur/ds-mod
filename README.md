@@ -1,22 +1,18 @@
-<h1>Dragen <img src="assets/icon.svg" height="40" align="center" alt="The Dragen logo: a raised dragon's head in gold, white and blue"></h1>
+<h1>Dragen&nbsp;&nbsp;<img src="assets/icon.svg" height="40" align="center" alt="The Dragen logo: a raised dragon's head in gold, white and blue"></h1>
 
-[![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/YUZCYAnr7F)
-[![Ko-fi](https://img.shields.io/badge/Ko--fi-support-FF5E5B?logo=kofi&logoColor=white)](https://ko-fi.com/noxaur)
-[![GitHub stars](https://img.shields.io/github/stars/noxaur/ds-mod?style=flat&logo=github)](https://github.com/noxaur/ds-mod/stargazers)
+---
 
-Dragen is a mod for [DragSim](https://dragsim.co/) (Dragon Simulator) that makes the game a lot more fun without changing too much. It should feel like part of the game.
+[![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/YUZCYAnr7F) [![Ko-fi](https://img.shields.io/badge/Ko--fi-support-FF5E5B?logo=kofi&logoColor=white)](https://ko-fi.com/noxaur) [![GitHub stars](https://img.shields.io/github/stars/noxaur/ds-mod?style=flat&logo=github)](https://github.com/noxaur/ds-mod/stargazers)
+
+Dragen is a mod for [DragSim](https://dragsim.co/) (Dragon Simulator) that aims to boost your enjoyment of DragSim without going too crazy on modifications. We strive to feel like a seamless addition to the game. Feature requests and contributions are handled as fast and respectfully as we can.
+
 <sub>Dragen is the Norwegian word for "the dragon".</sub>
-
-If you like Dragen, [star the repo](https://github.com/noxaur/ds-mod) so more players find it.
 
 ## Installation guide
 
-You need:
+Requires Minecraft 26.2, [Fabric Loader](https://fabricmc.net/use/installer/) 0.20.1+, Java 25+, [Fabric API](https://modrinth.com/mod/fabric-api) and [Fabric Language Kotlin](https://modrinth.com/mod/fabric-language-kotlin).
 
-- Minecraft 26.2 with [Fabric Loader](https://fabricmc.net/use/installer/) 0.20.1 or later, on Java 25 or later.
-- [Fabric API](https://modrinth.com/mod/fabric-api) and [Fabric Language Kotlin](https://modrinth.com/mod/fabric-language-kotlin).
-
-Download `dragen-<version>.jar` from [Releases](https://github.com/noxaur/ds-mod/releases) and drop it in your `mods` folder with the two mods above. Skip the `-debug` jar. Join dragsim.co and type `/dragen` to open the settings. `/dg` and `/dragon` work too. The [install guide](docs/user/install.md) covers the details.
+Drop the jar from [Releases](https://github.com/noxaur/ds-mod/releases) into `mods`, then type `/dragen` in game.
 
 ## Features
 
