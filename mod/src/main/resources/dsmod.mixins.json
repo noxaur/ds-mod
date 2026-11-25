@@ -22,7 +22,7 @@
     "FloatingTextMixin",
     "FullbrightMixin",
     "QuietSoundMixin",
-    "QuietTooltipMixin",
+    "QuietMenuMixin",
     "GuiGraphicsAccessor",
     "HeldItemMixin",
     "HeldItemModelMixin",
