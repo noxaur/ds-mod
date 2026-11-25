@@ -54,6 +54,7 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - **HOTD Planner** – Marks what to click next in the Heart of the Dragon for the block you mine.
 - **Wardrobe Keys** – Press 1 to 9 in the Wardrobe to click that slot, once the server lets you.
 - **Pets Menu** – Outlines your active pet in the Pets menu, and 1 to 0 click your first ten pets.
+- **Quieter AFK** – Dims the screen and mutes audio inside the /afk menu.
 - **Profile Cooldown** – Shows in Profile Management when you can switch profiles again.
 - **Menu Theme** – Dark or glass menus, inventory and tooltips.
 - **Fixed Menu Layout** – Go Back, Close and your inventory sit in the same place in every menu.

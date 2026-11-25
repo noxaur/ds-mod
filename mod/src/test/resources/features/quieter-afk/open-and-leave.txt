@@ -1,0 +1,1745 @@
++   0.0s > (opened your inventory, 46 slots)
++   0.0s > (slot 5) 1 x Necrotic Storm Helmet
++   0.0s > (slot 6) 1 x Necrotic Storm Chestplate
++   0.0s > (slot 7) 1 x Necrotic Storm Leggings
++   0.0s > (slot 8) 1 x Necrotic Storm Boots
++   0.0s > (slot 14) 1 x Defender Talisman
++   0.0s > (slot 18) 28 x End Stone Rose
++   0.0s > (slot 27) 1 x Flint Arrow
++   0.0s > (slot 28) 1 x Void Canister
++   0.0s > (slot 34) 1 x Summoning Eye
++   0.0s > (slot 35) 1 x Revenant Viscera
++   0.0s > (slot 36) 1 x Suspicious Giant's Sword
++   0.0s > (slot 37) 1 x Warped Aspect of the Void
++   0.0s > (slot 38) 1 x Fabled Frozen Scythe
++   0.0s > (slot 39) 1 x Fabled Edible Mace
++   0.0s > (slot 40) 1 x Precise Golden Gun
++   0.0s > (slot 41) 1 x Auspicious Obsidian Drill OD-455
++   0.0s > (slot 42) 1 x InfiniEye™
++   0.0s > (slot 44) 1 x SkyBlock Menu (Right Click)
++   1.0s > You are now AFK! Keep this menu open for a random Dragon Loot Credit every 15 minutes.
++   1.0s > Closing the menu stops rewards. Claim earned credits with /compensation.
++   1.0s > (opened "AFK Rewards · 15:00", 90 slots)
++   1.0s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++   1.0s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++   1.0s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 4) 1 x DRAGON'S REST
++   1.0s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++   1.0s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++   1.0s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++   1.0s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 11) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 13) 1 x ▼ Your reward lands here
++   1.0s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 15) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++   1.0s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 19) 1 x Protector Dragon
++   1.0s > (slot 20) 1 x Old Dragon
++   1.0s > (slot 21) 1 x Unstable Dragon
++   1.0s > (slot 22) 1 x Your next dragon awaits
++   1.0s > (slot 23) 1 x Strong Dragon
++   1.0s > (slot 24) 1 x Wise Dragon
++   1.0s > (slot 25) 1 x Superior Dragon
++   1.0s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 28) 1 x Next roll: 15:00
++   1.0s > (slot 29) 1 x Next roll: 15:00
++   1.0s > (slot 30) 1 x Next roll: 15:00
++   1.0s > (slot 31) 1 x ▲ Your reward lands here
++   1.0s > (slot 32) 1 x Next roll: 15:00
++   1.0s > (slot 33) 1 x Next roll: 15:00
++   1.0s > (slot 34) 1 x Next roll: 15:00
++   1.0s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++   1.0s > (slot 37) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 38) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 39) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 40) 1 x NEXT REWARD IN 15:00
++   1.0s > (slot 41) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 42) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 43) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++   1.0s > (slot 45) 1 x Claim your credits
++   1.0s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++   1.0s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 48) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 49) 1 x Stop AFK
++   1.0s > (slot 50) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   1.0s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++   1.0s > (slot 53) 1 x Reward odds
++   1.0s > (slot 59) 1 x Defender Talisman
++   1.0s > (slot 63) 28 x End Stone Rose
++   1.0s > (slot 72) 1 x Flint Arrow
++   1.0s > (slot 73) 1 x Void Canister
++   1.0s > (slot 79) 1 x Summoning Eye
++   1.0s > (slot 80) 1 x Revenant Viscera
++   1.0s > (slot 81) 1 x Suspicious Giant's Sword
++   1.0s > (slot 82) 1 x Warped Aspect of the Void
++   1.0s > (slot 83) 1 x Fabled Frozen Scythe
++   1.0s > (slot 84) 1 x Fabled Edible Mace
++   1.0s > (slot 85) 1 x Precise Golden Gun
++   1.0s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++   1.0s > (slot 87) 1 x InfiniEye™
++   1.0s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   2.0s > (opened "AFK Rewards · 14:59", 90 slots)
++   2.0s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++   2.0s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++   2.0s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 4) 1 x DRAGON'S REST
++   2.0s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++   2.0s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++   2.0s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++   2.0s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 11) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 13) 1 x ▼ Your reward lands here
++   2.0s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 15) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++   2.0s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 19) 1 x Protector Dragon
++   2.0s > (slot 20) 1 x Old Dragon
++   2.0s > (slot 21) 1 x Unstable Dragon
++   2.0s > (slot 22) 1 x Your next dragon awaits
++   2.0s > (slot 23) 1 x Strong Dragon
++   2.0s > (slot 24) 1 x Wise Dragon
++   2.0s > (slot 25) 1 x Superior Dragon
++   2.0s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 28) 1 x Next roll: 14:59
++   2.0s > (slot 29) 1 x Next roll: 14:59
++   2.0s > (slot 30) 1 x Next roll: 14:59
++   2.0s > (slot 31) 1 x ▲ Your reward lands here
++   2.0s > (slot 32) 1 x Next roll: 14:59
++   2.0s > (slot 33) 1 x Next roll: 14:59
++   2.0s > (slot 34) 1 x Next roll: 14:59
++   2.0s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++   2.0s > (slot 37) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 38) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 39) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 40) 1 x NEXT REWARD IN 14:59
++   2.0s > (slot 41) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 42) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 43) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++   2.0s > (slot 45) 1 x Claim your credits
++   2.0s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++   2.0s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 48) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 49) 1 x Stop AFK
++   2.0s > (slot 50) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   2.0s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++   2.0s > (slot 53) 1 x Reward odds
++   2.0s > (slot 59) 1 x Defender Talisman
++   2.0s > (slot 63) 28 x End Stone Rose
++   2.0s > (slot 72) 1 x Flint Arrow
++   2.0s > (slot 73) 1 x Void Canister
++   2.0s > (slot 79) 1 x Summoning Eye
++   2.0s > (slot 80) 1 x Revenant Viscera
++   2.0s > (slot 81) 1 x Suspicious Giant's Sword
++   2.0s > (slot 82) 1 x Warped Aspect of the Void
++   2.0s > (slot 83) 1 x Fabled Frozen Scythe
++   2.0s > (slot 84) 1 x Fabled Edible Mace
++   2.0s > (slot 85) 1 x Precise Golden Gun
++   2.0s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++   2.0s > (slot 87) 1 x InfiniEye™
++   2.0s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   2.9s > (opened "AFK Rewards · 14:58", 90 slots)
++   2.9s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++   2.9s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++   2.9s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 4) 1 x DRAGON'S REST
++   2.9s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++   2.9s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++   2.9s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++   2.9s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 11) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 13) 1 x ▼ Your reward lands here
++   2.9s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 15) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++   2.9s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 19) 1 x Protector Dragon
++   2.9s > (slot 20) 1 x Old Dragon
++   2.9s > (slot 21) 1 x Unstable Dragon
++   2.9s > (slot 22) 1 x Your next dragon awaits
++   2.9s > (slot 23) 1 x Strong Dragon
++   2.9s > (slot 24) 1 x Wise Dragon
++   2.9s > (slot 25) 1 x Superior Dragon
++   2.9s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 28) 1 x Next roll: 14:58
++   2.9s > (slot 29) 1 x Next roll: 14:58
++   2.9s > (slot 30) 1 x Next roll: 14:58
++   2.9s > (slot 31) 1 x ▲ Your reward lands here
++   2.9s > (slot 32) 1 x Next roll: 14:58
++   2.9s > (slot 33) 1 x Next roll: 14:58
++   2.9s > (slot 34) 1 x Next roll: 14:58
++   2.9s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++   2.9s > (slot 37) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 38) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 39) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 40) 1 x NEXT REWARD IN 14:58
++   2.9s > (slot 41) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 42) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 43) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++   2.9s > (slot 45) 1 x Claim your credits
++   2.9s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++   2.9s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 48) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 49) 1 x Stop AFK
++   2.9s > (slot 50) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   2.9s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++   2.9s > (slot 53) 1 x Reward odds
++   2.9s > (slot 59) 1 x Defender Talisman
++   2.9s > (slot 63) 28 x End Stone Rose
++   2.9s > (slot 72) 1 x Flint Arrow
++   2.9s > (slot 73) 1 x Void Canister
++   2.9s > (slot 79) 1 x Summoning Eye
++   2.9s > (slot 80) 1 x Revenant Viscera
++   2.9s > (slot 81) 1 x Suspicious Giant's Sword
++   2.9s > (slot 82) 1 x Warped Aspect of the Void
++   2.9s > (slot 83) 1 x Fabled Frozen Scythe
++   2.9s > (slot 84) 1 x Fabled Edible Mace
++   2.9s > (slot 85) 1 x Precise Golden Gun
++   2.9s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++   2.9s > (slot 87) 1 x InfiniEye™
++   2.9s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   4.0s > (opened "AFK Rewards · 14:57", 90 slots)
++   4.0s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++   4.0s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++   4.0s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 4) 1 x DRAGON'S REST
++   4.0s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++   4.0s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++   4.0s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++   4.0s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 11) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 13) 1 x ▼ Your reward lands here
++   4.0s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 15) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++   4.0s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 19) 1 x Protector Dragon
++   4.0s > (slot 20) 1 x Old Dragon
++   4.0s > (slot 21) 1 x Unstable Dragon
++   4.0s > (slot 22) 1 x Your next dragon awaits
++   4.0s > (slot 23) 1 x Strong Dragon
++   4.0s > (slot 24) 1 x Wise Dragon
++   4.0s > (slot 25) 1 x Superior Dragon
++   4.0s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 28) 1 x Next roll: 14:57
++   4.0s > (slot 29) 1 x Next roll: 14:57
++   4.0s > (slot 30) 1 x Next roll: 14:57
++   4.0s > (slot 31) 1 x ▲ Your reward lands here
++   4.0s > (slot 32) 1 x Next roll: 14:57
++   4.0s > (slot 33) 1 x Next roll: 14:57
++   4.0s > (slot 34) 1 x Next roll: 14:57
++   4.0s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++   4.0s > (slot 37) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 38) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 39) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 40) 1 x NEXT REWARD IN 14:57
++   4.0s > (slot 41) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 42) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 43) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++   4.0s > (slot 45) 1 x Claim your credits
++   4.0s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++   4.0s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 48) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 49) 1 x Stop AFK
++   4.0s > (slot 50) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   4.0s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++   4.0s > (slot 53) 1 x Reward odds
++   4.0s > (slot 59) 1 x Defender Talisman
++   4.0s > (slot 63) 28 x End Stone Rose
++   4.0s > (slot 72) 1 x Flint Arrow
++   4.0s > (slot 73) 1 x Void Canister
++   4.0s > (slot 79) 1 x Summoning Eye
++   4.0s > (slot 80) 1 x Revenant Viscera
++   4.0s > (slot 81) 1 x Suspicious Giant's Sword
++   4.0s > (slot 82) 1 x Warped Aspect of the Void
++   4.0s > (slot 83) 1 x Fabled Frozen Scythe
++   4.0s > (slot 84) 1 x Fabled Edible Mace
++   4.0s > (slot 85) 1 x Precise Golden Gun
++   4.0s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++   4.0s > (slot 87) 1 x InfiniEye™
++   4.0s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   5.0s > (opened "AFK Rewards · 14:56", 90 slots)
++   5.0s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++   5.0s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++   5.0s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 4) 1 x DRAGON'S REST
++   5.0s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++   5.0s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++   5.0s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++   5.0s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 11) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 13) 1 x ▼ Your reward lands here
++   5.0s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 15) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++   5.0s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 19) 1 x Protector Dragon
++   5.0s > (slot 20) 1 x Old Dragon
++   5.0s > (slot 21) 1 x Unstable Dragon
++   5.0s > (slot 22) 1 x Your next dragon awaits
++   5.0s > (slot 23) 1 x Strong Dragon
++   5.0s > (slot 24) 1 x Wise Dragon
++   5.0s > (slot 25) 1 x Superior Dragon
++   5.0s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 28) 1 x Next roll: 14:56
++   5.0s > (slot 29) 1 x Next roll: 14:56
++   5.0s > (slot 30) 1 x Next roll: 14:56
++   5.0s > (slot 31) 1 x ▲ Your reward lands here
++   5.0s > (slot 32) 1 x Next roll: 14:56
++   5.0s > (slot 33) 1 x Next roll: 14:56
++   5.0s > (slot 34) 1 x Next roll: 14:56
++   5.0s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++   5.0s > (slot 37) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 38) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 39) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 40) 1 x NEXT REWARD IN 14:56
++   5.0s > (slot 41) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 42) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 43) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++   5.0s > (slot 45) 1 x Claim your credits
++   5.0s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++   5.0s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 48) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 49) 1 x Stop AFK
++   5.0s > (slot 50) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   5.0s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++   5.0s > (slot 53) 1 x Reward odds
++   5.0s > (slot 59) 1 x Defender Talisman
++   5.0s > (slot 63) 28 x End Stone Rose
++   5.0s > (slot 72) 1 x Flint Arrow
++   5.0s > (slot 73) 1 x Void Canister
++   5.0s > (slot 79) 1 x Summoning Eye
++   5.0s > (slot 80) 1 x Revenant Viscera
++   5.0s > (slot 81) 1 x Suspicious Giant's Sword
++   5.0s > (slot 82) 1 x Warped Aspect of the Void
++   5.0s > (slot 83) 1 x Fabled Frozen Scythe
++   5.0s > (slot 84) 1 x Fabled Edible Mace
++   5.0s > (slot 85) 1 x Precise Golden Gun
++   5.0s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++   5.0s > (slot 87) 1 x InfiniEye™
++   5.0s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   6.0s > (opened "AFK Rewards · 14:55", 90 slots)
++   6.0s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++   6.0s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++   6.0s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 4) 1 x DRAGON'S REST
++   6.0s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++   6.0s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++   6.0s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++   6.0s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 11) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 13) 1 x ▼ Your reward lands here
++   6.0s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 15) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++   6.0s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 19) 1 x Protector Dragon
++   6.0s > (slot 20) 1 x Old Dragon
++   6.0s > (slot 21) 1 x Unstable Dragon
++   6.0s > (slot 22) 1 x Your next dragon awaits
++   6.0s > (slot 23) 1 x Strong Dragon
++   6.0s > (slot 24) 1 x Wise Dragon
++   6.0s > (slot 25) 1 x Superior Dragon
++   6.0s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 28) 1 x Next roll: 14:55
++   6.0s > (slot 29) 1 x Next roll: 14:55
++   6.0s > (slot 30) 1 x Next roll: 14:55
++   6.0s > (slot 31) 1 x ▲ Your reward lands here
++   6.0s > (slot 32) 1 x Next roll: 14:55
++   6.0s > (slot 33) 1 x Next roll: 14:55
++   6.0s > (slot 34) 1 x Next roll: 14:55
++   6.0s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++   6.0s > (slot 37) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 38) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 39) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 40) 1 x NEXT REWARD IN 14:55
++   6.0s > (slot 41) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 42) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 43) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++   6.0s > (slot 45) 1 x Claim your credits
++   6.0s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++   6.0s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 48) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 49) 1 x Stop AFK
++   6.0s > (slot 50) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   6.0s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++   6.0s > (slot 53) 1 x Reward odds
++   6.0s > (slot 59) 1 x Defender Talisman
++   6.0s > (slot 63) 28 x End Stone Rose
++   6.0s > (slot 72) 1 x Flint Arrow
++   6.0s > (slot 73) 1 x Void Canister
++   6.0s > (slot 79) 1 x Summoning Eye
++   6.0s > (slot 80) 1 x Revenant Viscera
++   6.0s > (slot 81) 1 x Suspicious Giant's Sword
++   6.0s > (slot 82) 1 x Warped Aspect of the Void
++   6.0s > (slot 83) 1 x Fabled Frozen Scythe
++   6.0s > (slot 84) 1 x Fabled Edible Mace
++   6.0s > (slot 85) 1 x Precise Golden Gun
++   6.0s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++   6.0s > (slot 87) 1 x InfiniEye™
++   6.0s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   6.2s > (slot 45) emptied
++   6.3s > AFK rewards stopped. Open /afk in the Hub to start a new timer.
++   6.3s > (opened "Compensation Rewards", 90 slots)
++   6.3s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 4) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 11) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 13) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 15) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 19) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 20) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 21) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 22) 1 x No compensation credits remaining.
++   6.3s > (slot 23) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 24) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 25) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 28) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 29) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 30) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 31) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 32) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 33) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 34) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 36) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 37) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 38) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 39) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 40) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 41) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 42) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 43) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 44) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 45) 1 x Keep Armor
++   6.3s > (slot 46) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 48) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 49) 1 x Close
++   6.3s > (slot 50) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 52) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 53) 1 x minecraft:black_stained_glass_pane
++   6.3s > (slot 59) 1 x Defender Talisman
++   6.3s > (slot 63) 28 x End Stone Rose
++   6.3s > (slot 72) 1 x Flint Arrow
++   6.3s > (slot 73) 1 x Void Canister
++   6.3s > (slot 79) 1 x Summoning Eye
++   6.3s > (slot 80) 1 x Revenant Viscera
++   6.3s > (slot 81) 1 x Suspicious Giant's Sword
++   6.3s > (slot 82) 1 x Warped Aspect of the Void
++   6.3s > (slot 83) 1 x Fabled Frozen Scythe
++   6.3s > (slot 84) 1 x Fabled Edible Mace
++   6.3s > (slot 85) 1 x Precise Golden Gun
++   6.3s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++   6.3s > (slot 87) 1 x InfiniEye™
++   6.3s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   9.1s > (slot 45) emptied
++   9.3s > (opened "Compensation Rewards", 90 slots)
++   9.3s > (slot 0) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 1) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 2) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 3) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 4) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 5) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 6) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 7) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 8) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 9) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 10) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 11) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 12) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 13) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 14) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 15) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 16) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 17) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 18) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 19) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 20) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 21) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 22) 1 x No compensation credits remaining.
++   9.3s > (slot 23) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 24) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 25) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 26) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 27) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 28) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 29) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 30) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 31) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 32) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 33) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 34) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 35) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 36) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 37) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 38) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 39) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 40) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 41) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 42) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 43) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 44) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 45) 1 x Auto-Sell Armor
++   9.3s > (slot 46) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 47) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 48) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 49) 1 x Close
++   9.3s > (slot 50) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 51) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 52) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 53) 1 x minecraft:black_stained_glass_pane
++   9.3s > (slot 59) 1 x Defender Talisman
++   9.3s > (slot 63) 28 x End Stone Rose
++   9.3s > (slot 72) 1 x Flint Arrow
++   9.3s > (slot 73) 1 x Void Canister
++   9.3s > (slot 79) 1 x Summoning Eye
++   9.3s > (slot 80) 1 x Revenant Viscera
++   9.3s > (slot 81) 1 x Suspicious Giant's Sword
++   9.3s > (slot 82) 1 x Warped Aspect of the Void
++   9.3s > (slot 83) 1 x Fabled Frozen Scythe
++   9.3s > (slot 84) 1 x Fabled Edible Mace
++   9.3s > (slot 85) 1 x Precise Golden Gun
++   9.3s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++   9.3s > (slot 87) 1 x InfiniEye™
++   9.3s > (slot 89) 1 x SkyBlock Menu (Right Click)
++   9.8s > (slot 45) emptied
++  10.0s > (opened "Compensation Rewards", 90 slots)
++  10.0s > (slot 0) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 1) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 4) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 7) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 8) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 9) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 13) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 17) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 20) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 22) 1 x No compensation credits remaining.
++  10.0s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 24) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 29) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 31) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 33) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 36) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 40) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 44) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 45) 1 x Keep Armor
++  10.0s > (slot 46) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 49) 1 x Close
++  10.0s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 52) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 53) 1 x minecraft:black_stained_glass_pane
++  10.0s > (slot 59) 1 x Defender Talisman
++  10.0s > (slot 63) 28 x End Stone Rose
++  10.0s > (slot 72) 1 x Flint Arrow
++  10.0s > (slot 73) 1 x Void Canister
++  10.0s > (slot 79) 1 x Summoning Eye
++  10.0s > (slot 80) 1 x Revenant Viscera
++  10.0s > (slot 81) 1 x Suspicious Giant's Sword
++  10.0s > (slot 82) 1 x Warped Aspect of the Void
++  10.0s > (slot 83) 1 x Fabled Frozen Scythe
++  10.0s > (slot 84) 1 x Fabled Edible Mace
++  10.0s > (slot 85) 1 x Precise Golden Gun
++  10.0s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++  10.0s > (slot 87) 1 x InfiniEye™
++  10.0s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  10.8s > (opened "Dragon's Rest · AFK Rewards", 90 slots)
++  10.8s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 4) 1 x DRAGON'S REST
++  10.8s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 13) 1 x ▼ Your reward lands here
++  10.8s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 20) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 22) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 24) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 29) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 31) 1 x ▲ Your reward lands here
++  10.8s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 33) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 40) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 45) 1 x Claim your credits
++  10.8s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 49) 1 x Stop AFK
++  10.8s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 53) 1 x Reward odds
++  10.8s > (slot 59) 1 x Defender Talisman
++  10.8s > (slot 63) 28 x End Stone Rose
++  10.8s > (slot 72) 1 x Flint Arrow
++  10.8s > (slot 73) 1 x Void Canister
++  10.8s > (slot 79) 1 x Summoning Eye
++  10.8s > (slot 80) 1 x Revenant Viscera
++  10.8s > (slot 81) 1 x Suspicious Giant's Sword
++  10.8s > (slot 82) 1 x Warped Aspect of the Void
++  10.8s > (slot 83) 1 x Fabled Frozen Scythe
++  10.8s > (slot 84) 1 x Fabled Edible Mace
++  10.8s > (slot 85) 1 x Precise Golden Gun
++  10.8s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++  10.8s > (slot 87) 1 x InfiniEye™
++  10.8s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  10.8s > You are now AFK! Keep this menu open for a random Dragon Loot Credit every 15 minutes.
++  10.8s > Closing the menu stops rewards. Claim earned credits with /compensation.
++  10.8s > (slot 19) 1 x Protector Dragon
++  10.8s > (slot 20) 1 x Old Dragon
++  10.8s > (slot 21) 1 x Unstable Dragon
++  10.8s > (slot 22) 1 x Young Dragon
++  10.8s > (slot 23) 1 x Strong Dragon
++  10.8s > (slot 24) 1 x Wise Dragon
++  10.8s > (opened "AFK Rewards · 15:00", 90 slots)
++  10.8s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 4) 1 x DRAGON'S REST
++  10.8s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 13) 1 x ▼ Your reward lands here
++  10.8s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 19) 1 x Protector Dragon
++  10.8s > (slot 20) 1 x Old Dragon
++  10.8s > (slot 21) 1 x Unstable Dragon
++  10.8s > (slot 22) 1 x Your next dragon awaits
++  10.8s > (slot 23) 1 x Strong Dragon
++  10.8s > (slot 24) 1 x Wise Dragon
++  10.8s > (slot 25) 1 x Superior Dragon
++  10.8s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 28) 1 x Next roll: 15:00
++  10.8s > (slot 29) 1 x Next roll: 15:00
++  10.8s > (slot 30) 1 x Next roll: 15:00
++  10.8s > (slot 31) 1 x ▲ Your reward lands here
++  10.8s > (slot 32) 1 x Next roll: 15:00
++  10.8s > (slot 33) 1 x Next roll: 15:00
++  10.8s > (slot 34) 1 x Next roll: 15:00
++  10.8s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 40) 1 x NEXT REWARD IN 15:00
++  10.8s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 45) 1 x Claim your credits
++  10.8s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 49) 1 x Stop AFK
++  10.8s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  10.8s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++  10.8s > (slot 53) 1 x Reward odds
++  10.8s > (slot 59) 1 x Defender Talisman
++  10.8s > (slot 63) 28 x End Stone Rose
++  10.8s > (slot 72) 1 x Flint Arrow
++  10.8s > (slot 73) 1 x Void Canister
++  10.8s > (slot 79) 1 x Summoning Eye
++  10.8s > (slot 80) 1 x Revenant Viscera
++  10.8s > (slot 81) 1 x Suspicious Giant's Sword
++  10.8s > (slot 82) 1 x Warped Aspect of the Void
++  10.8s > (slot 83) 1 x Fabled Frozen Scythe
++  10.8s > (slot 84) 1 x Fabled Edible Mace
++  10.8s > (slot 85) 1 x Precise Golden Gun
++  10.8s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++  10.8s > (slot 87) 1 x InfiniEye™
++  10.8s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  11.9s > (opened "AFK Rewards · 14:59", 90 slots)
++  11.9s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++  11.9s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++  11.9s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 4) 1 x DRAGON'S REST
++  11.9s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++  11.9s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++  11.9s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++  11.9s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 13) 1 x ▼ Your reward lands here
++  11.9s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++  11.9s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 19) 1 x Protector Dragon
++  11.9s > (slot 20) 1 x Old Dragon
++  11.9s > (slot 21) 1 x Unstable Dragon
++  11.9s > (slot 22) 1 x Your next dragon awaits
++  11.9s > (slot 23) 1 x Strong Dragon
++  11.9s > (slot 24) 1 x Wise Dragon
++  11.9s > (slot 25) 1 x Superior Dragon
++  11.9s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 28) 1 x Next roll: 14:59
++  11.9s > (slot 29) 1 x Next roll: 14:59
++  11.9s > (slot 30) 1 x Next roll: 14:59
++  11.9s > (slot 31) 1 x ▲ Your reward lands here
++  11.9s > (slot 32) 1 x Next roll: 14:59
++  11.9s > (slot 33) 1 x Next roll: 14:59
++  11.9s > (slot 34) 1 x Next roll: 14:59
++  11.9s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++  11.9s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 40) 1 x NEXT REWARD IN 14:59
++  11.9s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++  11.9s > (slot 45) 1 x Claim your credits
++  11.9s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++  11.9s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 49) 1 x Stop AFK
++  11.9s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  11.9s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++  11.9s > (slot 53) 1 x Reward odds
++  11.9s > (slot 59) 1 x Defender Talisman
++  11.9s > (slot 63) 28 x End Stone Rose
++  11.9s > (slot 72) 1 x Flint Arrow
++  11.9s > (slot 73) 1 x Void Canister
++  11.9s > (slot 79) 1 x Summoning Eye
++  11.9s > (slot 80) 1 x Revenant Viscera
++  11.9s > (slot 81) 1 x Suspicious Giant's Sword
++  11.9s > (slot 82) 1 x Warped Aspect of the Void
++  11.9s > (slot 83) 1 x Fabled Frozen Scythe
++  11.9s > (slot 84) 1 x Fabled Edible Mace
++  11.9s > (slot 85) 1 x Precise Golden Gun
++  11.9s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++  11.9s > (slot 87) 1 x InfiniEye™
++  11.9s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  12.7s > (slot 53) emptied
++  12.8s > (slot 53) 1 x Reward odds
++  12.9s > (opened "AFK Rewards · 14:58", 90 slots)
++  12.9s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++  12.9s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++  12.9s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 4) 1 x DRAGON'S REST
++  12.9s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++  12.9s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++  12.9s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++  12.9s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 13) 1 x ▼ Your reward lands here
++  12.9s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++  12.9s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 19) 1 x Protector Dragon
++  12.9s > (slot 20) 1 x Old Dragon
++  12.9s > (slot 21) 1 x Unstable Dragon
++  12.9s > (slot 22) 1 x Your next dragon awaits
++  12.9s > (slot 23) 1 x Strong Dragon
++  12.9s > (slot 24) 1 x Wise Dragon
++  12.9s > (slot 25) 1 x Superior Dragon
++  12.9s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 28) 1 x Next roll: 14:58
++  12.9s > (slot 29) 1 x Next roll: 14:58
++  12.9s > (slot 30) 1 x Next roll: 14:58
++  12.9s > (slot 31) 1 x ▲ Your reward lands here
++  12.9s > (slot 32) 1 x Next roll: 14:58
++  12.9s > (slot 33) 1 x Next roll: 14:58
++  12.9s > (slot 34) 1 x Next roll: 14:58
++  12.9s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++  12.9s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 40) 1 x NEXT REWARD IN 14:58
++  12.9s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++  12.9s > (slot 45) 1 x Claim your credits
++  12.9s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++  12.9s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 49) 1 x Stop AFK
++  12.9s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  12.9s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++  12.9s > (slot 53) 1 x Reward odds
++  12.9s > (slot 59) 1 x Defender Talisman
++  12.9s > (slot 63) 28 x End Stone Rose
++  12.9s > (slot 72) 1 x Flint Arrow
++  12.9s > (slot 73) 1 x Void Canister
++  12.9s > (slot 79) 1 x Summoning Eye
++  12.9s > (slot 80) 1 x Revenant Viscera
++  12.9s > (slot 81) 1 x Suspicious Giant's Sword
++  12.9s > (slot 82) 1 x Warped Aspect of the Void
++  12.9s > (slot 83) 1 x Fabled Frozen Scythe
++  12.9s > (slot 84) 1 x Fabled Edible Mace
++  12.9s > (slot 85) 1 x Precise Golden Gun
++  12.9s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++  12.9s > (slot 87) 1 x InfiniEye™
++  12.9s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  13.8s > (opened "AFK Rewards · 14:57", 90 slots)
++  13.8s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++  13.8s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++  13.8s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 4) 1 x DRAGON'S REST
++  13.8s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++  13.8s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++  13.8s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++  13.8s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 13) 1 x ▼ Your reward lands here
++  13.8s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++  13.8s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 19) 1 x Protector Dragon
++  13.8s > (slot 20) 1 x Old Dragon
++  13.8s > (slot 21) 1 x Unstable Dragon
++  13.8s > (slot 22) 1 x Your next dragon awaits
++  13.8s > (slot 23) 1 x Strong Dragon
++  13.8s > (slot 24) 1 x Wise Dragon
++  13.8s > (slot 25) 1 x Superior Dragon
++  13.8s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 28) 1 x Next roll: 14:57
++  13.8s > (slot 29) 1 x Next roll: 14:57
++  13.8s > (slot 30) 1 x Next roll: 14:57
++  13.8s > (slot 31) 1 x ▲ Your reward lands here
++  13.8s > (slot 32) 1 x Next roll: 14:57
++  13.8s > (slot 33) 1 x Next roll: 14:57
++  13.8s > (slot 34) 1 x Next roll: 14:57
++  13.8s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++  13.8s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 40) 1 x NEXT REWARD IN 14:57
++  13.8s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++  13.8s > (slot 45) 1 x Claim your credits
++  13.8s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++  13.8s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 49) 1 x Stop AFK
++  13.8s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  13.8s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++  13.8s > (slot 53) 1 x Reward odds
++  13.8s > (slot 59) 1 x Defender Talisman
++  13.8s > (slot 63) 28 x End Stone Rose
++  13.8s > (slot 72) 1 x Flint Arrow
++  13.8s > (slot 73) 1 x Void Canister
++  13.8s > (slot 79) 1 x Summoning Eye
++  13.8s > (slot 80) 1 x Revenant Viscera
++  13.8s > (slot 81) 1 x Suspicious Giant's Sword
++  13.8s > (slot 82) 1 x Warped Aspect of the Void
++  13.8s > (slot 83) 1 x Fabled Frozen Scythe
++  13.8s > (slot 84) 1 x Fabled Edible Mace
++  13.8s > (slot 85) 1 x Precise Golden Gun
++  13.8s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++  13.8s > (slot 87) 1 x InfiniEye™
++  13.8s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  13.9s > (slot 40) emptied
++  14.0s > (slot 40) 1 x NEXT REWARD IN 14:57
++  14.4s > (slot 31) emptied
++  14.6s > (slot 31) 1 x ▲ Your reward lands here
++  14.8s > (opened "AFK Rewards · 14:56", 90 slots)
++  14.8s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++  14.8s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++  14.8s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 4) 1 x DRAGON'S REST
++  14.8s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++  14.8s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++  14.8s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++  14.8s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 13) 1 x ▼ Your reward lands here
++  14.8s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++  14.8s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 19) 1 x Protector Dragon
++  14.8s > (slot 20) 1 x Old Dragon
++  14.8s > (slot 21) 1 x Unstable Dragon
++  14.8s > (slot 22) 1 x Your next dragon awaits
++  14.8s > (slot 23) 1 x Strong Dragon
++  14.8s > (slot 24) 1 x Wise Dragon
++  14.8s > (slot 25) 1 x Superior Dragon
++  14.8s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 28) 1 x Next roll: 14:56
++  14.8s > (slot 29) 1 x Next roll: 14:56
++  14.8s > (slot 30) 1 x Next roll: 14:56
++  14.8s > (slot 31) 1 x ▲ Your reward lands here
++  14.8s > (slot 32) 1 x Next roll: 14:56
++  14.8s > (slot 33) 1 x Next roll: 14:56
++  14.8s > (slot 34) 1 x Next roll: 14:56
++  14.8s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++  14.8s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 40) 1 x NEXT REWARD IN 14:56
++  14.8s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++  14.8s > (slot 45) 1 x Claim your credits
++  14.8s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++  14.8s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 49) 1 x Stop AFK
++  14.8s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  14.8s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++  14.8s > (slot 53) 1 x Reward odds
++  14.8s > (slot 59) 1 x Defender Talisman
++  14.8s > (slot 63) 28 x End Stone Rose
++  14.8s > (slot 72) 1 x Flint Arrow
++  14.8s > (slot 73) 1 x Void Canister
++  14.8s > (slot 79) 1 x Summoning Eye
++  14.8s > (slot 80) 1 x Revenant Viscera
++  14.8s > (slot 81) 1 x Suspicious Giant's Sword
++  14.8s > (slot 82) 1 x Warped Aspect of the Void
++  14.8s > (slot 83) 1 x Fabled Frozen Scythe
++  14.8s > (slot 84) 1 x Fabled Edible Mace
++  14.8s > (slot 85) 1 x Precise Golden Gun
++  14.8s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++  14.8s > (slot 87) 1 x InfiniEye™
++  14.8s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  14.8s > (slot 22) emptied
++  15.0s > (slot 22) 1 x Your next dragon awaits
++  15.1s > (slot 13) emptied
++  15.3s > (slot 13) 1 x ▼ Your reward lands here
++  15.4s > [-] [DRAGON] Player1
++  15.5s > (slot 4) emptied
++  15.6s > (slot 4) 1 x DRAGON'S REST
++  15.9s > (opened "AFK Rewards · 14:55", 90 slots)
++  15.9s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++  15.9s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++  15.9s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 4) 1 x DRAGON'S REST
++  15.9s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++  15.9s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++  15.9s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++  15.9s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 13) 1 x ▼ Your reward lands here
++  15.9s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++  15.9s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 19) 1 x Protector Dragon
++  15.9s > (slot 20) 1 x Old Dragon
++  15.9s > (slot 21) 1 x Unstable Dragon
++  15.9s > (slot 22) 1 x Your next dragon awaits
++  15.9s > (slot 23) 1 x Strong Dragon
++  15.9s > (slot 24) 1 x Wise Dragon
++  15.9s > (slot 25) 1 x Superior Dragon
++  15.9s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 28) 1 x Next roll: 14:55
++  15.9s > (slot 29) 1 x Next roll: 14:55
++  15.9s > (slot 30) 1 x Next roll: 14:55
++  15.9s > (slot 31) 1 x ▲ Your reward lands here
++  15.9s > (slot 32) 1 x Next roll: 14:55
++  15.9s > (slot 33) 1 x Next roll: 14:55
++  15.9s > (slot 34) 1 x Next roll: 14:55
++  15.9s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++  15.9s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 40) 1 x NEXT REWARD IN 14:55
++  15.9s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++  15.9s > (slot 45) 1 x Claim your credits
++  15.9s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++  15.9s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 49) 1 x Stop AFK
++  15.9s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  15.9s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++  15.9s > (slot 53) 1 x Reward odds
++  15.9s > (slot 59) 1 x Defender Talisman
++  15.9s > (slot 63) 28 x End Stone Rose
++  15.9s > (slot 72) 1 x Flint Arrow
++  15.9s > (slot 73) 1 x Void Canister
++  15.9s > (slot 79) 1 x Summoning Eye
++  15.9s > (slot 80) 1 x Revenant Viscera
++  15.9s > (slot 81) 1 x Suspicious Giant's Sword
++  15.9s > (slot 82) 1 x Warped Aspect of the Void
++  15.9s > (slot 83) 1 x Fabled Frozen Scythe
++  15.9s > (slot 84) 1 x Fabled Edible Mace
++  15.9s > (slot 85) 1 x Precise Golden Gun
++  15.9s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++  15.9s > (slot 87) 1 x InfiniEye™
++  15.9s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  16.9s > (opened "AFK Rewards · 14:54", 90 slots)
++  16.9s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++  16.9s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++  16.9s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 4) 1 x DRAGON'S REST
++  16.9s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++  16.9s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++  16.9s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++  16.9s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 13) 1 x ▼ Your reward lands here
++  16.9s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++  16.9s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 19) 1 x Protector Dragon
++  16.9s > (slot 20) 1 x Old Dragon
++  16.9s > (slot 21) 1 x Unstable Dragon
++  16.9s > (slot 22) 1 x Your next dragon awaits
++  16.9s > (slot 23) 1 x Strong Dragon
++  16.9s > (slot 24) 1 x Wise Dragon
++  16.9s > (slot 25) 1 x Superior Dragon
++  16.9s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 28) 1 x Next roll: 14:54
++  16.9s > (slot 29) 1 x Next roll: 14:54
++  16.9s > (slot 30) 1 x Next roll: 14:54
++  16.9s > (slot 31) 1 x ▲ Your reward lands here
++  16.9s > (slot 32) 1 x Next roll: 14:54
++  16.9s > (slot 33) 1 x Next roll: 14:54
++  16.9s > (slot 34) 1 x Next roll: 14:54
++  16.9s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++  16.9s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 40) 1 x NEXT REWARD IN 14:54
++  16.9s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++  16.9s > (slot 45) 1 x Claim your credits
++  16.9s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++  16.9s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 49) 1 x Stop AFK
++  16.9s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  16.9s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++  16.9s > (slot 53) 1 x Reward odds
++  16.9s > (slot 59) 1 x Defender Talisman
++  16.9s > (slot 63) 28 x End Stone Rose
++  16.9s > (slot 72) 1 x Flint Arrow
++  16.9s > (slot 73) 1 x Void Canister
++  16.9s > (slot 79) 1 x Summoning Eye
++  16.9s > (slot 80) 1 x Revenant Viscera
++  16.9s > (slot 81) 1 x Suspicious Giant's Sword
++  16.9s > (slot 82) 1 x Warped Aspect of the Void
++  16.9s > (slot 83) 1 x Fabled Frozen Scythe
++  16.9s > (slot 84) 1 x Fabled Edible Mace
++  16.9s > (slot 85) 1 x Precise Golden Gun
++  16.9s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++  16.9s > (slot 87) 1 x InfiniEye™
++  16.9s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  17.8s > [DRAGON] Player2: hello
++  17.8s > (opened "AFK Rewards · 14:53", 90 slots)
++  17.8s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++  17.8s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++  17.8s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 4) 1 x DRAGON'S REST
++  17.8s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++  17.8s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++  17.8s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++  17.8s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 13) 1 x ▼ Your reward lands here
++  17.8s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++  17.8s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 19) 1 x Protector Dragon
++  17.8s > (slot 20) 1 x Old Dragon
++  17.8s > (slot 21) 1 x Unstable Dragon
++  17.8s > (slot 22) 1 x Your next dragon awaits
++  17.8s > (slot 23) 1 x Strong Dragon
++  17.8s > (slot 24) 1 x Wise Dragon
++  17.8s > (slot 25) 1 x Superior Dragon
++  17.8s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 28) 1 x Next roll: 14:53
++  17.8s > (slot 29) 1 x Next roll: 14:53
++  17.8s > (slot 30) 1 x Next roll: 14:53
++  17.8s > (slot 31) 1 x ▲ Your reward lands here
++  17.8s > (slot 32) 1 x Next roll: 14:53
++  17.8s > (slot 33) 1 x Next roll: 14:53
++  17.8s > (slot 34) 1 x Next roll: 14:53
++  17.8s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++  17.8s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 40) 1 x NEXT REWARD IN 14:53
++  17.8s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++  17.8s > (slot 45) 1 x Claim your credits
++  17.8s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++  17.8s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 49) 1 x Stop AFK
++  17.8s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  17.8s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++  17.8s > (slot 53) 1 x Reward odds
++  17.8s > (slot 59) 1 x Defender Talisman
++  17.8s > (slot 63) 28 x End Stone Rose
++  17.8s > (slot 72) 1 x Flint Arrow
++  17.8s > (slot 73) 1 x Void Canister
++  17.8s > (slot 79) 1 x Summoning Eye
++  17.8s > (slot 80) 1 x Revenant Viscera
++  17.8s > (slot 81) 1 x Suspicious Giant's Sword
++  17.8s > (slot 82) 1 x Warped Aspect of the Void
++  17.8s > (slot 83) 1 x Fabled Frozen Scythe
++  17.8s > (slot 84) 1 x Fabled Edible Mace
++  17.8s > (slot 85) 1 x Precise Golden Gun
++  17.8s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++  17.8s > (slot 87) 1 x InfiniEye™
++  17.8s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  18.8s > (opened "AFK Rewards · 14:52", 90 slots)
++  18.8s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++  18.8s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++  18.8s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 4) 1 x DRAGON'S REST
++  18.8s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++  18.8s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++  18.8s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++  18.8s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 13) 1 x ▼ Your reward lands here
++  18.8s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++  18.8s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 19) 1 x Protector Dragon
++  18.8s > (slot 20) 1 x Old Dragon
++  18.8s > (slot 21) 1 x Unstable Dragon
++  18.8s > (slot 22) 1 x Your next dragon awaits
++  18.8s > (slot 23) 1 x Strong Dragon
++  18.8s > (slot 24) 1 x Wise Dragon
++  18.8s > (slot 25) 1 x Superior Dragon
++  18.8s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 28) 1 x Next roll: 14:52
++  18.8s > (slot 29) 1 x Next roll: 14:52
++  18.8s > (slot 30) 1 x Next roll: 14:52
++  18.8s > (slot 31) 1 x ▲ Your reward lands here
++  18.8s > (slot 32) 1 x Next roll: 14:52
++  18.8s > (slot 33) 1 x Next roll: 14:52
++  18.8s > (slot 34) 1 x Next roll: 14:52
++  18.8s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++  18.8s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 40) 1 x NEXT REWARD IN 14:52
++  18.8s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++  18.8s > (slot 45) 1 x Claim your credits
++  18.8s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++  18.8s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 49) 1 x Stop AFK
++  18.8s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  18.8s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++  18.8s > (slot 53) 1 x Reward odds
++  18.8s > (slot 59) 1 x Defender Talisman
++  18.8s > (slot 63) 28 x End Stone Rose
++  18.8s > (slot 72) 1 x Flint Arrow
++  18.8s > (slot 73) 1 x Void Canister
++  18.8s > (slot 79) 1 x Summoning Eye
++  18.8s > (slot 80) 1 x Revenant Viscera
++  18.8s > (slot 81) 1 x Suspicious Giant's Sword
++  18.8s > (slot 82) 1 x Warped Aspect of the Void
++  18.8s > (slot 83) 1 x Fabled Frozen Scythe
++  18.8s > (slot 84) 1 x Fabled Edible Mace
++  18.8s > (slot 85) 1 x Precise Golden Gun
++  18.8s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++  18.8s > (slot 87) 1 x InfiniEye™
++  18.8s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  19.9s > (opened "AFK Rewards · 14:51", 90 slots)
++  19.9s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++  19.9s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++  19.9s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 4) 1 x DRAGON'S REST
++  19.9s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++  19.9s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++  19.9s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++  19.9s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 13) 1 x ▼ Your reward lands here
++  19.9s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++  19.9s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 19) 1 x Protector Dragon
++  19.9s > (slot 20) 1 x Old Dragon
++  19.9s > (slot 21) 1 x Unstable Dragon
++  19.9s > (slot 22) 1 x Your next dragon awaits
++  19.9s > (slot 23) 1 x Strong Dragon
++  19.9s > (slot 24) 1 x Wise Dragon
++  19.9s > (slot 25) 1 x Superior Dragon
++  19.9s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 28) 1 x Next roll: 14:51
++  19.9s > (slot 29) 1 x Next roll: 14:51
++  19.9s > (slot 30) 1 x Next roll: 14:51
++  19.9s > (slot 31) 1 x ▲ Your reward lands here
++  19.9s > (slot 32) 1 x Next roll: 14:51
++  19.9s > (slot 33) 1 x Next roll: 14:51
++  19.9s > (slot 34) 1 x Next roll: 14:51
++  19.9s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++  19.9s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 40) 1 x NEXT REWARD IN 14:51
++  19.9s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++  19.9s > (slot 45) 1 x Claim your credits
++  19.9s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++  19.9s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 49) 1 x Stop AFK
++  19.9s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  19.9s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++  19.9s > (slot 53) 1 x Reward odds
++  19.9s > (slot 59) 1 x Defender Talisman
++  19.9s > (slot 63) 28 x End Stone Rose
++  19.9s > (slot 72) 1 x Flint Arrow
++  19.9s > (slot 73) 1 x Void Canister
++  19.9s > (slot 79) 1 x Summoning Eye
++  19.9s > (slot 80) 1 x Revenant Viscera
++  19.9s > (slot 81) 1 x Suspicious Giant's Sword
++  19.9s > (slot 82) 1 x Warped Aspect of the Void
++  19.9s > (slot 83) 1 x Fabled Frozen Scythe
++  19.9s > (slot 84) 1 x Fabled Edible Mace
++  19.9s > (slot 85) 1 x Precise Golden Gun
++  19.9s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++  19.9s > (slot 87) 1 x InfiniEye™
++  19.9s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  20.9s > (opened "AFK Rewards · 14:50", 90 slots)
++  20.9s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++  20.9s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++  20.9s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 4) 1 x DRAGON'S REST
++  20.9s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++  20.9s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++  20.9s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++  20.9s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 13) 1 x ▼ Your reward lands here
++  20.9s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++  20.9s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 19) 1 x Protector Dragon
++  20.9s > (slot 20) 1 x Old Dragon
++  20.9s > (slot 21) 1 x Unstable Dragon
++  20.9s > (slot 22) 1 x Your next dragon awaits
++  20.9s > (slot 23) 1 x Strong Dragon
++  20.9s > (slot 24) 1 x Wise Dragon
++  20.9s > (slot 25) 1 x Superior Dragon
++  20.9s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 28) 1 x Next roll: 14:50
++  20.9s > (slot 29) 1 x Next roll: 14:50
++  20.9s > (slot 30) 1 x Next roll: 14:50
++  20.9s > (slot 31) 1 x ▲ Your reward lands here
++  20.9s > (slot 32) 1 x Next roll: 14:50
++  20.9s > (slot 33) 1 x Next roll: 14:50
++  20.9s > (slot 34) 1 x Next roll: 14:50
++  20.9s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++  20.9s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 40) 1 x NEXT REWARD IN 14:50
++  20.9s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++  20.9s > (slot 45) 1 x Claim your credits
++  20.9s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++  20.9s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 49) 1 x Stop AFK
++  20.9s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  20.9s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++  20.9s > (slot 53) 1 x Reward odds
++  20.9s > (slot 59) 1 x Defender Talisman
++  20.9s > (slot 63) 28 x End Stone Rose
++  20.9s > (slot 72) 1 x Flint Arrow
++  20.9s > (slot 73) 1 x Void Canister
++  20.9s > (slot 79) 1 x Summoning Eye
++  20.9s > (slot 80) 1 x Revenant Viscera
++  20.9s > (slot 81) 1 x Suspicious Giant's Sword
++  20.9s > (slot 82) 1 x Warped Aspect of the Void
++  20.9s > (slot 83) 1 x Fabled Frozen Scythe
++  20.9s > (slot 84) 1 x Fabled Edible Mace
++  20.9s > (slot 85) 1 x Precise Golden Gun
++  20.9s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++  20.9s > (slot 87) 1 x InfiniEye™
++  20.9s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  21.8s > (opened "AFK Rewards · 14:49", 90 slots)
++  21.8s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++  21.8s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++  21.8s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 4) 1 x DRAGON'S REST
++  21.8s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++  21.8s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++  21.8s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++  21.8s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 13) 1 x ▼ Your reward lands here
++  21.8s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++  21.8s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 19) 1 x Protector Dragon
++  21.8s > (slot 20) 1 x Old Dragon
++  21.8s > (slot 21) 1 x Unstable Dragon
++  21.8s > (slot 22) 1 x Your next dragon awaits
++  21.8s > (slot 23) 1 x Strong Dragon
++  21.8s > (slot 24) 1 x Wise Dragon
++  21.8s > (slot 25) 1 x Superior Dragon
++  21.8s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 28) 1 x Next roll: 14:49
++  21.8s > (slot 29) 1 x Next roll: 14:49
++  21.8s > (slot 30) 1 x Next roll: 14:49
++  21.8s > (slot 31) 1 x ▲ Your reward lands here
++  21.8s > (slot 32) 1 x Next roll: 14:49
++  21.8s > (slot 33) 1 x Next roll: 14:49
++  21.8s > (slot 34) 1 x Next roll: 14:49
++  21.8s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++  21.8s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 40) 1 x NEXT REWARD IN 14:49
++  21.8s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++  21.8s > (slot 45) 1 x Claim your credits
++  21.8s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++  21.8s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 49) 1 x Stop AFK
++  21.8s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  21.8s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++  21.8s > (slot 53) 1 x Reward odds
++  21.8s > (slot 59) 1 x Defender Talisman
++  21.8s > (slot 63) 28 x End Stone Rose
++  21.8s > (slot 72) 1 x Flint Arrow
++  21.8s > (slot 73) 1 x Void Canister
++  21.8s > (slot 79) 1 x Summoning Eye
++  21.8s > (slot 80) 1 x Revenant Viscera
++  21.8s > (slot 81) 1 x Suspicious Giant's Sword
++  21.8s > (slot 82) 1 x Warped Aspect of the Void
++  21.8s > (slot 83) 1 x Fabled Frozen Scythe
++  21.8s > (slot 84) 1 x Fabled Edible Mace
++  21.8s > (slot 85) 1 x Precise Golden Gun
++  21.8s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++  21.8s > (slot 87) 1 x InfiniEye™
++  21.8s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  22.4s > (opened your inventory, 46 slots)
++  22.4s > (slot 5) 1 x Necrotic Storm Helmet
++  22.4s > (slot 6) 1 x Necrotic Storm Chestplate
++  22.4s > (slot 7) 1 x Necrotic Storm Leggings
++  22.4s > (slot 8) 1 x Necrotic Storm Boots
++  22.4s > (slot 14) 1 x Defender Talisman
++  22.4s > (slot 18) 28 x End Stone Rose
++  22.4s > (slot 27) 1 x Flint Arrow
++  22.4s > (slot 28) 1 x Void Canister
++  22.4s > (slot 34) 1 x Summoning Eye
++  22.4s > (slot 35) 1 x Revenant Viscera
++  22.4s > (slot 36) 1 x Suspicious Giant's Sword
++  22.4s > (slot 37) 1 x Warped Aspect of the Void
++  22.4s > (slot 38) 1 x Fabled Frozen Scythe
++  22.4s > (slot 39) 1 x Fabled Edible Mace
++  22.4s > (slot 40) 1 x Precise Golden Gun
++  22.4s > (slot 41) 1 x Auspicious Obsidian Drill OD-455
++  22.4s > (slot 42) 1 x InfiniEye™
++  22.4s > (slot 44) 1 x SkyBlock Menu (Right Click)
++  22.5s > AFK rewards stopped. Open /afk in the Hub to start a new timer.
++  24.0s > (opened "Dragon's Rest · AFK Rewards", 90 slots)
++  24.0s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++  24.0s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++  24.0s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 4) 1 x DRAGON'S REST
++  24.0s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++  24.0s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++  24.0s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++  24.0s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 13) 1 x ▼ Your reward lands here
++  24.0s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++  24.0s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 19) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 20) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 21) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 22) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 23) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 24) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 25) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 28) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 29) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 30) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 31) 1 x ▲ Your reward lands here
++  24.0s > (slot 32) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 33) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 34) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++  24.0s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 40) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++  24.0s > (slot 45) 1 x Claim your credits
++  24.0s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++  24.0s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 49) 1 x Stop AFK
++  24.0s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  24.0s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++  24.0s > (slot 53) 1 x Reward odds
++  24.0s > (slot 59) 1 x Defender Talisman
++  24.0s > (slot 63) 28 x End Stone Rose
++  24.0s > (slot 72) 1 x Flint Arrow
++  24.0s > (slot 73) 1 x Void Canister
++  24.0s > (slot 79) 1 x Summoning Eye
++  24.0s > (slot 80) 1 x Revenant Viscera
++  24.0s > (slot 81) 1 x Suspicious Giant's Sword
++  24.0s > (slot 82) 1 x Warped Aspect of the Void
++  24.0s > (slot 83) 1 x Fabled Frozen Scythe
++  24.0s > (slot 84) 1 x Fabled Edible Mace
++  24.0s > (slot 85) 1 x Precise Golden Gun
++  24.0s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++  24.0s > (slot 87) 1 x InfiniEye™
++  24.0s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  24.1s > You are now AFK! Keep this menu open for a random Dragon Loot Credit every 15 minutes.
++  24.1s > Closing the menu stops rewards. Claim earned credits with /compensation.
++  24.1s > (opened "AFK Rewards · 15:00", 90 slots)
++  24.1s > (slot 0) 1 x minecraft:purple_stained_glass_pane
++  24.1s > (slot 1) 1 x minecraft:purple_stained_glass_pane
++  24.1s > (slot 2) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 3) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 4) 1 x DRAGON'S REST
++  24.1s > (slot 5) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 6) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 7) 1 x minecraft:purple_stained_glass_pane
++  24.1s > (slot 8) 1 x minecraft:purple_stained_glass_pane
++  24.1s > (slot 9) 1 x minecraft:purple_stained_glass_pane
++  24.1s > (slot 10) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 11) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 12) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 13) 1 x ▼ Your reward lands here
++  24.1s > (slot 14) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 15) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 16) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 17) 1 x minecraft:purple_stained_glass_pane
++  24.1s > (slot 18) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 19) 1 x Protector Dragon
++  24.1s > (slot 20) 1 x Old Dragon
++  24.1s > (slot 21) 1 x Unstable Dragon
++  24.1s > (slot 22) 1 x Your next dragon awaits
++  24.1s > (slot 23) 1 x Strong Dragon
++  24.1s > (slot 24) 1 x Wise Dragon
++  24.1s > (slot 25) 1 x Superior Dragon
++  24.1s > (slot 26) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 27) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 28) 1 x Next roll: 15:00
++  24.1s > (slot 29) 1 x Next roll: 15:00
++  24.1s > (slot 30) 1 x Next roll: 15:00
++  24.1s > (slot 31) 1 x ▲ Your reward lands here
++  24.1s > (slot 32) 1 x Next roll: 15:00
++  24.1s > (slot 33) 1 x Next roll: 15:00
++  24.1s > (slot 34) 1 x Next roll: 15:00
++  24.1s > (slot 35) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 36) 1 x minecraft:purple_stained_glass_pane
++  24.1s > (slot 37) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 38) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 39) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 40) 1 x NEXT REWARD IN 15:00
++  24.1s > (slot 41) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 42) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 43) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 44) 1 x minecraft:purple_stained_glass_pane
++  24.1s > (slot 45) 1 x Claim your credits
++  24.1s > (slot 46) 1 x minecraft:purple_stained_glass_pane
++  24.1s > (slot 47) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 48) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 49) 1 x Stop AFK
++  24.1s > (slot 50) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 51) 1 x minecraft:black_stained_glass_pane
++  24.1s > (slot 52) 1 x minecraft:purple_stained_glass_pane
++  24.1s > (slot 53) 1 x Reward odds
++  24.1s > (slot 59) 1 x Defender Talisman
++  24.1s > (slot 63) 28 x End Stone Rose
++  24.1s > (slot 72) 1 x Flint Arrow
++  24.1s > (slot 73) 1 x Void Canister
++  24.1s > (slot 79) 1 x Summoning Eye
++  24.1s > (slot 80) 1 x Revenant Viscera
++  24.1s > (slot 81) 1 x Suspicious Giant's Sword
++  24.1s > (slot 82) 1 x Warped Aspect of the Void
++  24.1s > (slot 83) 1 x Fabled Frozen Scythe
++  24.1s > (slot 84) 1 x Fabled Edible Mace
++  24.1s > (slot 85) 1 x Precise Golden Gun
++  24.1s > (slot 86) 1 x Auspicious Obsidian Drill OD-455
++  24.1s > (slot 87) 1 x InfiniEye™
++  24.1s > (slot 89) 1 x SkyBlock Menu (Right Click)
++  24.6s > (opened your inventory, 46 slots)
++  24.6s > (slot 5) 1 x Necrotic Storm Helmet
++  24.6s > (slot 6) 1 x Necrotic Storm Chestplate
++  24.6s > (slot 7) 1 x Necrotic Storm Leggings
++  24.6s > (slot 8) 1 x Necrotic Storm Boots
++  24.6s > (slot 14) 1 x Defender Talisman
++  24.6s > (slot 18) 28 x End Stone Rose
++  24.6s > (slot 27) 1 x Flint Arrow
++  24.6s > (slot 28) 1 x Void Canister
++  24.6s > (slot 34) 1 x Summoning Eye
++  24.6s > (slot 35) 1 x Revenant Viscera
++  24.6s > (slot 36) 1 x Suspicious Giant's Sword
++  24.6s > (slot 37) 1 x Warped Aspect of the Void
++  24.6s > (slot 38) 1 x Fabled Frozen Scythe
++  24.6s > (slot 39) 1 x Fabled Edible Mace
++  24.6s > (slot 40) 1 x Precise Golden Gun
++  24.6s > (slot 41) 1 x Auspicious Obsidian Drill OD-455
++  24.6s > (slot 42) 1 x InfiniEye™
++  24.6s > (slot 44) 1 x SkyBlock Menu (Right Click)
++  24.8s > AFK rewards stopped. Open /afk in the Hub to start a new timer.

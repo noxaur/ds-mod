@@ -82,6 +82,7 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `span` | Any, 14 tall in a slider | A switched-on stretch of a range slider: a raised face in `accent`, lighter under the mouse and sunk while dragged |
 | `tick` | 1 wide | A mark across a track where its scale changes |
 | `flash` | Any | A white wash over something the player just acted on, which fades out. The same in both themes, because it lies on the game and not on a panel |
+| `blackout` | Any | Black over the game, solid or at a strength, so a screen left alone goes dark. The same in both themes, because it lies on the game and not on a panel |
 | `divider` | 2 tall | A shade line over a light line, cut into the panel |
 | `ring` | Any | A notched 1px line in `accent` or a role, around the selected thing |
 | `icon` | Up to 7x7 | A tinted sprite: check, cross, warn, up, down, left, right, search, arrow, lock, back, book, star. |

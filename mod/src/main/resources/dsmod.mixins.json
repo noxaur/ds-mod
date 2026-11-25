@@ -21,6 +21,8 @@
     "ExplosionParticleMixin",
     "FloatingTextMixin",
     "FullbrightMixin",
+    "QuietSoundMixin",
+    "QuietTooltipMixin",
     "GuiGraphicsAccessor",
     "HeldItemMixin",
     "HeldItemModelMixin",

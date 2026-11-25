@@ -417,6 +417,10 @@ Press 1 to 9 and 0 to click the first ten pets on the page, counted from the top
 
 Change the keys under Keys in Pets Menu's settings. Each key works only in the Pets menu, so the numbers still pick your hotbar slot everywhere else.
 
+### Quieter AFK
+
+While the `/afk` menu counts down to your next reward, everything around the menu goes black and the game goes silent, so you can leave it running and walk away. The menu itself stays lit for 30 seconds after you last move the mouse, then dims to a tenth of its brightness. Move the mouse to light it up again, and use it as normal. Close the menu and the screen and sound come back at once.
+
 ### Storage Overview
 
 Shows what your Storage pages and Ender Chest hold before you open them. The mod remembers each page as you saw it the last time you opened it, for each of your profiles and across restarts, so open a page once to fill it in. Pick one of two modes:

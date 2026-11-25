@@ -326,7 +326,7 @@ class Feature(
     ) = HudBlock(if (headed) header else text {}, HudBuilder().apply(rows).rows, look, dock, overMenus, columns, opacity, pops, icon)
 
     private companion object {
-        val WORDS = mapOf("hud" to "HUD", "ui" to "UI", "dragsim" to "DragSim", "skyblock" to "SkyBlock", "hotd" to "HOTD")
+        val WORDS = mapOf("hud" to "HUD", "ui" to "UI", "dragsim" to "DragSim", "skyblock" to "SkyBlock", "hotd" to "HOTD", "afk" to "AFK")
     }
 }
 
