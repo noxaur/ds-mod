@@ -73,7 +73,7 @@ object SlotArts {
                 }.map { Kit.dark(it) }.orElse(false)
             }.onFailure { log.warn("Could not read the chest texture, so rarity marks assume a light slot", it) }.getOrDefault(false)
         }
-        containerDark = if (MenuSkin.themed) MenuSkin.glassAlpha >= 0 || Kit.dark(Kit.theme.slot) else packDark
+        containerDark = packDark
     }
 
     private fun paintAndUpload(surface: Surface, style: SlotStyle, dark: Boolean): Atlas {

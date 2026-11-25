@@ -4,7 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
-import io.github.noxaur.dsmod.edge.MenuSkin;
+import io.github.noxaur.dsmod.edge.MenuCursor;
 import io.github.noxaur.dsmod.edge.input.InputApproved;
 import kotlin.Pair;
 import net.minecraft.client.MouseHandler;
@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /** @keep The server closes a menu before it opens the next, so the game takes the mouse back for a moment and then lets it
  * go at the middle of the window. */
-@InputApproved(by = "noxaur", hash = "ec46fb6ba006")
+@InputApproved(by = "noxaur", hash = "738b6018799c")
 @Mixin(MouseHandler.class)
 abstract class CursorMixin {
     @Shadow
@@ -30,13 +30,13 @@ abstract class CursorMixin {
 
     @Inject(method = "grabMouse", at = @At("HEAD"))
     private void dsmod$left(CallbackInfo ci) {
-        if (!mouseGrabbed) MenuSkin.INSTANCE.getCursor().left(System.currentTimeMillis(), xpos, ypos);
+        if (!mouseGrabbed) MenuCursor.INSTANCE.getMemory().left(System.currentTimeMillis(), xpos, ypos);
     }
 
     @WrapOperation(method = "releaseMouse", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/InputConstants;grabOrReleaseMouse(Lcom/mojang/blaze3d/platform/Window;IDD)V"))
     private void dsmod$back(Window window, int mode, double x, double y, Operation<Void> original) {
-        Pair<Double, Double> kept = MenuSkin.INSTANCE.getCursor().reopened(System.currentTimeMillis());
-        if (kept != null && MenuSkin.INSTANCE.getKeepsCursor()) {
+        Pair<Double, Double> kept = MenuCursor.INSTANCE.getMemory().reopened(System.currentTimeMillis());
+        if (kept != null && MenuCursor.INSTANCE.getKeeps()) {
             xpos = kept.getFirst();
             ypos = kept.getSecond();
         }

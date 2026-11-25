@@ -33,12 +33,11 @@ private const val COUNT_TOP = 9
 
 object Slots {
     private class Shown(
-        val role: Role, val color: Int, val rarity: Role?, val hide: Boolean, val label: Component?, val labelWidth: Int, val cooldown: SlotCooldown?, val outline: Boolean,
+        val role: Role, val color: Int, val rarity: Role?, val label: Component?, val labelWidth: Int, val cooldown: SlotCooldown?, val outline: Boolean,
         val fill: Boolean, val dim: Boolean,
     )
 
     private val marks = HashMap<String, Map<Int, Shown>>()
-    private val hidden = BitSet()
 
     private var cooldowns = false
 
@@ -57,7 +56,7 @@ object Slots {
         marks[id] = slots.mapValues { (_, mark) ->
             val label = mark.label?.toComponent() ?: mark.count?.takeIf { it > 1 }?.let { Text(listOf(Span("$it", mark.role.rgb))).toComponent() }
             Shown(
-                mark.role, mark.role.argb(FILL_ALPHA), mark.role.takeIf { mark.rarity }, mark.hide, label, label?.let(font::width) ?: 0, mark.cooldown, mark.outline,
+                mark.role, mark.role.argb(FILL_ALPHA), mark.role.takeIf { mark.rarity }, label, label?.let(font::width) ?: 0, mark.cooldown, mark.outline,
                 fill = mark.label == null && !mark.dim, dim = mark.dim,
             )
         }
@@ -69,7 +68,7 @@ object Slots {
         recount()
     }
 
-    fun hides(index: Int) = hidden[index] || covered[index]
+    fun hides(index: Int) = covered[index]
 
     fun cover(index: Int, on: Boolean) {
         covered[index] = on
@@ -77,8 +76,6 @@ object Slots {
 
     private fun recount() {
         cooldowns = marks.values.any { slots -> slots.values.any { it.cooldown != null } }
-        hidden.clear()
-        for (slots in marks.values) for ((index, shown) in slots) if (shown.hide) hidden.set(index)
     }
 
     fun register() {
@@ -106,7 +103,6 @@ object Slots {
             ScreenEvents.remove(screen).register {
                 marks.clear()
                 cooldowns = false
-                hidden.clear()
                 covered.clear()
             }
         }
@@ -122,11 +118,11 @@ object Slots {
     }
 
     fun drawBack(graphics: GuiGraphicsExtractor, surface: Surface, index: Int, x: Int, y: Int) {
-        for (slots in marks.values) slots[index]?.takeUnless { it.hide }?.let { back(graphics, surface, it, index, x, y) }
+        for (slots in marks.values) slots[index]?.let { back(graphics, surface, it, index, x, y) }
     }
 
     fun drawFront(graphics: GuiGraphicsExtractor, index: Int, x: Int, y: Int) {
-        for (slots in marks.values) slots[index]?.takeUnless { it.hide }?.cooldown?.let { cooldown(graphics, it, x, y) }
+        for (slots in marks.values) slots[index]?.cooldown?.let { cooldown(graphics, it, x, y) }
     }
 
     private fun cooldown(graphics: GuiGraphicsExtractor, cooldown: SlotCooldown, x: Int, y: Int) {
@@ -172,7 +168,7 @@ object Slots {
                 for (slots in marks.values) {
                     for ((index, shown) in slots) {
                         val slot = screen.menu.slots.getOrNull(index)
-                        if (slot != null && !shown.hide) draw(index, slot, shown)
+                        if (slot != null) draw(index, slot, shown)
                     }
                 }
             }

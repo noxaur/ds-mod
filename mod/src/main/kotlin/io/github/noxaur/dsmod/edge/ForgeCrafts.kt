@@ -130,13 +130,10 @@ object ForgeCrafts {
         }.also {
             it.prompt = "?"
             it.clicks = feature.key.clicks
-            it.glass = ::glass
             it.setTooltip(tip("Craft Key", "\nEach press clicks the outlined button.", "\nClick, then press a key."))
         }
 
         private fun tip(name: String, detail: String, hint: String) = Tooltip.create(text { body(name); muted(detail); action(hint) }.toComponent())
-
-        private fun glass() = MenuSkin.glass(screen) >= 0
 
         override val widgets get() = listOf(keys)
 
@@ -169,14 +166,13 @@ object ForgeCrafts {
 
         override fun draw(g: GuiGraphicsExtractor, mouseX: Int, mouseY: Int) {
             val recipe = feature.recipe ?: return
-            val glass = MenuSkin.glass(screen)
-            val light = glass < 0 && !Kit.theme.inkShadow
+            val light = !Kit.theme.inkShadow
             val font = Kit.font
-            if (glass < 0) Kit.panel(g, x, y, width, HEIGHT) else Kit.glass(g, x, y, width, HEIGHT, glass)
+            Kit.panel(g, x, y, width, HEIGHT)
             val ix = x + Kit.INSET
             val inner = width - Kit.INSET * 2
-            Kit.label(g, "Craft", ix, y + 7, Kit.Ink.NORMAL, glass >= 0)
-            fun slot(sx: Int, sy: Int) = Kit.slotFrame(g, sx, sy, glass >= 0)
+            Kit.label(g, "Craft", ix, y + 7, Kit.Ink.NORMAL)
+            fun slot(sx: Int, sy: Int) = Kit.slot(g, sx, sy)
             fun line(text: String, tx: Int, ty: Int, rgb: Int, role: Role? = null) = g.text(font, text, tx, ty, ink(rgb, light, role), !light)
 
             val top = y + ITEM_ROW
@@ -191,7 +187,7 @@ object ForgeCrafts {
                 line("Slots full", nameX, top + 10, Role.BAD.rgb, Role.BAD)
             } else {
                 val label = "Can craft "
-                Kit.label(g, label, nameX, top + 10, Kit.Ink.MUTED, glass >= 0)
+                Kit.label(g, label, nameX, top + 10, Kit.Ink.MUTED)
                 val role = if (can > 0) Role.VALUE else Role.BAD
                 line("$can", nameX + font.width(label), top + 10, role.rgb, role)
             }
@@ -211,7 +207,7 @@ object ForgeCrafts {
             if (drawn.size < materials.size) {
                 val more = "+${materials.size - drawn.size}"
                 val sx = ix + drawn.size * Kit.SLOT_SIZE
-                Kit.label(g, more, sx + (Kit.SLOT_SIZE - font.width(more)) / 2, row + 5, Kit.Ink.MUTED, glass >= 0)
+                Kit.label(g, more, sx + (Kit.SLOT_SIZE - font.width(more)) / 2, row + 5, Kit.Ink.MUTED)
             }
 
             val tip = when {

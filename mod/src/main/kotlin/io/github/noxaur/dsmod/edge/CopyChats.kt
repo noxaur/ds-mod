@@ -378,17 +378,6 @@ object CopyChats {
         return rows
     }
 
-    fun covers(client: Minecraft, x: Double, y: Double): Boolean {
-        val width = width(client)
-        val inverse = Matrix3x2f()
-        val local = Vector2f()
-        var hit = false
-        visible(client) { _, pose, top, bottom ->
-            if (!hit) hit = hits(pose, x, y, top, bottom, width, inverse, local)
-        }
-        return hit
-    }
-
     private inline fun visible(client: Minecraft, crossinline row: (line: Int, pose: Matrix3x2fc, top: Int, bottom: Int) -> Unit) {
         val chat = client.gui.hud.chat
         val lines = (chat as ChatComponentAccessor).trimmedMessages

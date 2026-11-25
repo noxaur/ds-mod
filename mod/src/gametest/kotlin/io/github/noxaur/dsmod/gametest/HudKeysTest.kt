@@ -3,14 +3,14 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.Hud
 import io.github.noxaur.dsmod.edge.HudEditorScreen
-import io.github.noxaur.dsmod.gametest.InventoryGrid.ID
+import io.github.noxaur.dsmod.gametest.StatsBlock.ID
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext
 import org.lwjgl.glfw.GLFW
 import kotlin.math.roundToInt
 
 class HudKeysTest : FabricClientGameTest {
-    override fun runTest(context: ClientGameTestContext) = InventoryGrid.with(context) {
+    override fun runTest(context: ClientGameTestContext) = StatsBlock.with(context) {
         val hud = DsModClient.settings.hud
         val guiScale = context.computeOnClient<Int, Nothing> { it.window.guiScale }
         fun pixels() = context.computeOnClient<Int, Nothing> { (checkNotNull(Hud.find(ID)).scale * guiScale).roundToInt() }
@@ -24,10 +24,10 @@ class HudKeysTest : FabricClientGameTest {
             val before = pixels()
             context.input.pressKey(GLFW.GLFW_KEY_EQUAL)
             context.waitTick()
-            check(pixels() == before + 1) { "+ did not make the grid bigger: ${pixels()} pixels, not ${before + 1}" }
+            check(pixels() == before + 1) { "+ did not make the block bigger: ${pixels()} pixels, not ${before + 1}" }
             context.input.pressKey(GLFW.GLFW_KEY_MINUS)
             context.waitTick()
-            check(pixels() == before) { "- did not make the grid smaller: ${pixels()} pixels, not $before" }
+            check(pixels() == before) { "- did not make the block smaller: ${pixels()} pixels, not $before" }
             context.setScreen { null }
         } finally {
             hud.editKey.value = -1

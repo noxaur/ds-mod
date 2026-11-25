@@ -7,15 +7,12 @@ data class SlotMark(
     val role: Role,
     val label: Text? = null,
     val rarity: Boolean = false,
-    val hide: Boolean = false,
     val cooldown: SlotCooldown? = null,
     val outline: Boolean = false,
     val count: Int? = null,
     val dim: Boolean = false,
 ) {
     companion object {
-        val HIDE = SlotMark(Role.MUTED, hide = true)
-
         fun cooldown(start: Long, end: Long) = SlotMark(Role.MUTED, cooldown = SlotCooldown(start, end))
     }
 }

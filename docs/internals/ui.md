@@ -44,7 +44,7 @@ A world mark is colored by its role, as text is, except a waypoint, whose look t
 
 ## Rarity marks are baked once
 
-A mark's alpha varies pixel by pixel, which as fills would be thousands of rectangles per chest every frame. So each rarity's art, with a row per sparkle placement that a slot's index picks, is painted once into a texture and a slot costs one blit. Opacity is the blit's color, so its slider repaints nothing. The art matches the slot under it, Menu Theme's or the resource pack's, because a faint tint vanishes on gray and a dim one sinks into black.
+A mark's alpha varies pixel by pixel, which as fills would be thousands of rectangles per chest every frame. So each rarity's art, with a row per sparkle placement that a slot's index picks, is painted once into a texture and a slot costs one blit. Opacity is the blit's color, so its slider repaints nothing. The art matches the resource pack's slot under it, because a faint tint vanishes on gray and a dim one sinks into black.
 
 ## A cooldown is drawn from its start and end
 

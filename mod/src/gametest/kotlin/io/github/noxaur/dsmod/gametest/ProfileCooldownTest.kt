@@ -1,6 +1,5 @@
 package io.github.noxaur.dsmod.gametest
 
-import io.github.noxaur.dsmod.core.feature.menus.look.menutheme.MenuTheme
 import io.github.noxaur.dsmod.core.feature.menus.helpers.profilecooldown.ProfileCooldown
 import io.github.noxaur.dsmod.core.player.PlayerData
 import io.github.noxaur.dsmod.edge.DsModClient
@@ -54,9 +53,6 @@ class ProfileCooldownTest : FabricClientGameTest {
             profiles(context, world)
             context.waitFor { left(it).let { left -> left != null && left <= 0 } }
             context.shotInBothThemes("profile-cooldown-ready")
-            context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().feature.enabled = false }
-            context.waitTicks(2)
-            context.takeScreenshot("profile-cooldown-ready-plain")
 
             context.waitFor({ left(it) == null }, ProfileCooldown.READY_MILLIS.toInt() / 50 + 40)
         }

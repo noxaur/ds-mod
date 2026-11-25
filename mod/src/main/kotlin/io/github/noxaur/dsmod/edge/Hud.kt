@@ -120,7 +120,6 @@ object Hud {
     private var placed = emptyList<Placed>()
     private var cells = emptyList<Cell>()
 
-    private val concealed = HashSet<String>()
 
     fun show(id: String, group: HudGroup, block: HudBlock, placeable: Boolean = true, order: Int = 0) {
         val font = Minecraft.getInstance().font
@@ -193,10 +192,6 @@ object Hud {
         layout()
     }
 
-    fun conceal(id: String, hidden: Boolean) {
-        if (if (hidden) concealed.add(id) else concealed.remove(id)) layout()
-    }
-
     fun hide(id: String) {
         stacksByItem.remove(id)
         groups.values.forEach { it.blocks.remove(id) }
@@ -242,8 +237,7 @@ object Hud {
         val all = ArrayList<Placed>()
         val items = ArrayList<Cell>()
         groups.values.forEach { group ->
-            val visible = group.blocks.filterKeys { it !in concealed }
-            group.shown = visible.values.toList()
+            group.shown = group.blocks.values.toList()
             if (group.shown.isEmpty()) return@forEach
             group.width = group.shown.maxOf { it.width }
             group.height = group.shown.sumOf { it.height } + BLOCK_GAP * (group.shown.size - 1)
@@ -252,7 +246,7 @@ object Hud {
             place(group)
             val scale = group.scale
             var y = 0
-            for ((id, block) in visible) {
+            for ((id, block) in group.blocks) {
                 if (block.placeable) all += Placed(id, group.x.toFloat(), group.y + y * scale, plate(block.width), plate(block.height), scale, group.place.dock)
                 block.icon?.let { items += Cell(group.x + PADDING * scale, group.y + (y + PADDING + block.iconY) * scale, ITEM * scale, it) }
                 for (row in block.rows) {
@@ -379,8 +373,6 @@ object Hud {
         val client = Minecraft.getInstance()
         val font = client.font
         val line = font.lineHeight + 1
-        val themed = MenuSkin.themed
-        val glass = MenuSkin.glassAlpha
         val menu = client.gui.screen() is AbstractContainerScreen<*>
         val player = client.player
         val held = player?.let { InventoryMenu.USE_ROW_SLOT_START + it.inventory.selectedSlot } ?: -1
@@ -402,13 +394,7 @@ object Hud {
                 val hotbar = block.look == HudLook.HOTBAR
                 val inventory = block.look == HudLook.INVENTORY
                 val alpha = block.alpha
-                if (inventory) {
-                    when {
-                        glass >= 0 -> Kit.glass(graphics, PADDING, top, block.width, block.height, glass * alpha / Kit.OPAQUE)
-                        themed -> Kit.panel(graphics, PADDING, top, block.width, block.height, alpha)
-                        else -> Kit.inventoryPanel(graphics, PADDING, top, block.width, block.height, alpha)
-                    }
-                }
+                if (inventory) Kit.inventoryPanel(graphics, PADDING, top, block.width, block.height, alpha)
                 if (block.header != null) graphics.text(font, block.header, PADDING, top, -1, true)
                 block.icon?.let {
                     graphics.item(it, PADDING, top + block.iconY)
@@ -424,9 +410,7 @@ object Hud {
                         for (i in stacks.indices) {
                             val x = block.iconX(row, i)
                             val itemY = top + block.iconY(row, i)
-                            if (inventory) {
-                                if (themed) Kit.slotFrame(graphics, x - 1, itemY - 1, glass >= 0, alpha = alpha) else Kit.slotAt(graphics, x - 1, itemY - 1, alpha)
-                            }
+                            if (inventory) Kit.slotAt(graphics, x - 1, itemY - 1, alpha)
                             val slot = if (row.slot < 0) -1 else row.slot + i
                             val stack = stacks[i]
                             if (stack != null) {
@@ -450,7 +434,7 @@ object Hud {
                                 graphics.itemDecorations(font, stack, x, itemY)
                                 if (slot >= 0) Slots.drawFront(graphics, slot, x, itemY)
                             }
-                            if (slot == held) Kit.held(graphics, x, itemY, inventory && glass < 0 && !themed)
+                            if (slot == held) Kit.held(graphics, x, itemY, inventory)
                         }
                         continue
                     }

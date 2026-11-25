@@ -48,15 +48,11 @@
 +   2.4s > (slot 8) 1 x minecraft:black_stained_glass_pane
 +   2.4s > (slot 9) 1 x minecraft:black_stained_glass_pane
 +   2.4s > (slot 10) 1 x [Lvl 100] Enderman
-             + slot 10: MUTED label "1" on [Lvl 100] Enderman
 +   2.4s > (slot 11) 1 x [Lvl 100] Wolf
-             + slot 11: MUTED label "2" on [Lvl 100] Wolf
 +   2.4s > (slot 12) 1 x [Lvl 100] Ender Dragon
-             + slot 12: MUTED label "3" on [Lvl 100] Ender Dragon
 +   2.4s > (slot 13) 1 x [Lvl 100] Black Cat
-             + slot 13: GOOD outline "4" on [Lvl 100] Black Cat
+             + slot 13: GOOD outline on [Lvl 100] Black Cat
 +   2.4s > (slot 14) 1 x [Lvl 100] Enderman
-             + slot 14: MUTED label "5" on [Lvl 100] Enderman
 +   2.4s > (slot 17) 1 x minecraft:black_stained_glass_pane
 +   2.4s > (slot 18) 1 x minecraft:black_stained_glass_pane
 +   2.4s > (slot 26) 1 x minecraft:black_stained_glass_pane
@@ -102,11 +98,7 @@
 +   2.4s > (slot 89) 1 x SkyBlock Menu (Right Click)
 +   2.7s > (sidebar) Name: Player1; Purse: 596,514,464; Pet: [Lvl 100] Black Cat; Booster: Whale Booster; ⏣ Dragon's Den; Quest: Market Trader; Use the Auction House 0/1; dragsim.co
 +   6.6s > (opened your inventory, 46 slots)
-             - slot 10
-             - slot 11
-             - slot 12
              - slot 13
-             - slot 14
 +   6.6s > (slot 5) 1 x Necrotic Storm Helmet
 +   6.6s > (slot 6) 1 x Necrotic Storm Chestplate
 +   6.6s > (slot 7) 1 x Necrotic Storm Leggings

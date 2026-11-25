@@ -164,12 +164,11 @@ object HotdPlans {
             mouseX >= x && mouseX < x + WIDTH && mouseY >= y && mouseY < y + height && widgets.none { it.visible && it.isMouseOver(mouseX, mouseY) }
 
         override fun draw(g: GuiGraphicsExtractor, mouseX: Int, mouseY: Int) {
-            val glass = MenuSkin.glass(screen)
-            if (glass < 0) Kit.panel(g, x, y, WIDTH, height) else Kit.glass(g, x, y, WIDTH, height, glass)
-            Kit.label(g, "Upgrades", ix, y + 7, Kit.Ink.NORMAL, glass >= 0)
-            Kit.label(g, "Block", ix, block.y + 4, Kit.Ink.MUTED, glass >= 0)
-            Kit.label(g, "Area", ix, area.y + 4, Kit.Ink.MUTED, glass >= 0)
-            if (glass < 0) Kit.well(g, ix, wellY, inner, WELL_HEIGHT) else Kit.glassWell(g, ix, wellY, inner, WELL_HEIGHT)
+            Kit.panel(g, x, y, WIDTH, height)
+            Kit.label(g, "Upgrades", ix, y + 7, Kit.Ink.NORMAL)
+            Kit.label(g, "Block", ix, block.y + 4, Kit.Ink.MUTED)
+            Kit.label(g, "Area", ix, area.y + 4, Kit.Ink.MUTED)
+            Kit.well(g, ix, wellY, inner, WELL_HEIGHT)
             val purse = feature.purse ?: return
             val font = Kit.font
             fun line(name: Text, have: Long, short: Boolean, top: Int) {

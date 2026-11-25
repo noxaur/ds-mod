@@ -191,10 +191,6 @@ class FeatureReplayTest {
                     val mark = marks.getValue(slot)
                     if (mark == marked[slot]) continue
                     val item = name(game.container.slots[slot]!!)
-                    if (mark.hide) {
-                        appendLine("             + slot $slot: hidden, on $item")
-                        continue
-                    }
                     val cooldown = mark.cooldown
                     if (cooldown != null) {
                         appendLine("             + slot $slot: cooldown until +%.1fs on %s".format(Locale.ROOT, (cooldown.end - start) / 1000.0, item))
