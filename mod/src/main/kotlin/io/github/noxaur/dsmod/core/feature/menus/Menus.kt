@@ -5,6 +5,7 @@ import io.github.noxaur.dsmod.core.feature.menus.betterui.betterUi
 import io.github.noxaur.dsmod.core.feature.menus.helpers.helpers
 import io.github.noxaur.dsmod.core.feature.menus.keepcursor.KeepCursor
 import io.github.noxaur.dsmod.core.feature.menus.petsmenu.PetsMenu
+import io.github.noxaur.dsmod.core.feature.menus.quieterafk.QuieterAfk
 import io.github.noxaur.dsmod.core.feature.menus.wardrobekeys.WardrobeKeys
 import io.github.noxaur.dsmod.core.text.Role
 
@@ -13,5 +14,6 @@ internal fun Sections.menus() = section("Menus", Role.LEGENDARY) {
     betterUi()
     group(WardrobeKeys(c))
     group(PetsMenu(c))
+    group(QuieterAfk(c))
     helpers()
 }
