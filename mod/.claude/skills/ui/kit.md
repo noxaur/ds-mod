@@ -47,23 +47,13 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `rule` | 1 tall | A faint line across a panel, such as after a heading, or between the rows of a well |
 | `button` | 16 tall | The raised face of a control in one of four states: idle, hover, pressed, off |
 | `well` | Any | A dark sunk area |
-| `slot` | 18x18, or 26x26 | A sunk square with a 16x16 inside for an item. The big one is a crafting result's |
+| `slot` | 18x18, or any | A sunk square with a 16x16 inside for an item |
 | `plate` | Any | The HUD's backing: a translucent fill inside a notched ring |
-| `glass` | Any | A panel the world shows through: the plate's fill at an alpha the player sets, inside the plate's ring. Dark in both themes, so ink on it is `GLASS_INK` |
-| `glassSlot`, `glassWell` | 18x18, or any | A sunk square on glass, see-through at any alpha, so a clear menu still shows its grid |
-| `slotFrame` | 18x18, or 26x26 | An empty slot in the open menu's look: a `slot`, a `glassSlot` on glass, or nothing where the menu keeps its own texture, which already has the slot |
-| `button` on glass | 16 tall | `button` with `glass = true`: a lighter pane raised off the glass in the plate's ring, ringed in `hoverOutline` under the mouse and sunk into a `glassWell` while pressed, with its label in `GLASS_INK`. `KitButton.glass` asks for it each frame |
-| `glassTab` | 22x19, or 17 when not selected | A tab on glass. It stops at the panel's ring, since two see-through fills on each other show a darker band, so the selected one stands taller instead of joining |
 | `hotbar` | 20 per cell plus 2, by 22 | A strip of slots cut from the game's own hotbar sprite, for a HUD block in the Hotbar look. The one piece of chrome that is not the kit's, because it has to match the player's hotbar under their resource pack |
 | `gameScreen` | Any, with the size of one of the screen's GUI pixels | A template of the game's screen: sky over ground split at the horizon, the crosshair, and the hotbar at the screen's own size, for a preview of where something sits on screen. The same in both themes, because it pictures the game |
-| `tooltip` | Text plus 4 on each side | A plain tooltip's backing: the plate's colors, nearly opaque. A tooltip with a style of its own keeps it |
 | `bar` | 6 tall | A well with a 4px fill that has a lit top row and a shaded bottom row |
 | `scrollbar` | 6 wide | A well with a raised thumb |
 | `thumb` | Any | A scrollbar's thumb alone, idle, hover or off, for a track the screen draws itself |
-| `barFill` | Any | A bar's fill alone, with its lit top row and shaded bottom row |
-| `arrow` | Any, 24x16 in a furnace | A flat sunk arrow, right or down, filled along its length to a fraction in a role, for progress |
-| `flame` | 14x14 | A sunk flame filled from the bottom to a fraction, for fuel burning |
-| `bubbles` | 12x29 | A column of sunk dots lit from the bottom to a fraction, for brewing |
 | `tab` | 22x21, or wider to hold a field, or taller to hold the creative inventory's item | Sits on a panel's top or bottom edge. The selected one joins the panel, and the rest sit 2px further out in `tabOff`, or in `hover` under the mouse. Draw the rest before the panel and the selected one after it |
 | `tabBar` | 18 tall | A strip in `side` across the top of a pane, with a 1px outline along its bottom for browser tabs to sit on |
 | `pageTab` | 15 tall, 44 to 92 wide | A browser tab on a `tabBar`: a swatch or an icon, a label in muted ink, and a × that shows under the mouse and on the selected one, in a 9x9 square that mirrors the swatch's. Hover lifts it to `hover`, the selected one is 17 tall in `panel` and covers the line to join the pane, and DOWN is the selected one while dragged, outlined in `hoverOutline` |
@@ -96,7 +86,6 @@ A new theme is one more entry in `Theme` with every token filled. A new token is
 | `slotHover` | 16x16 inside | The white wash over the slot under the mouse, in a grid the mod draws itself, as a menu lights its own |
 | `slotHighlightBack`, `slotHighlightFront` | 24x24 around the item | Vanilla's own slot highlight, behind the item and over it, for a slot the mod adds to a server menu, so it lights as the menu's items do |
 | `slotArt` | 18x18 | A rarity mark behind the item at an opacity, cut from an `Atlas` that `SlotArts` bakes from the player's style, or from any row of a bigger atlas |
-| `inventory`, `slotAt` | 176x166, 18x18 | The player's inventory, and one empty slot of it, from the resource pack's own texture, for a preview that must match the real screen |
 
 ## Widgets
 
@@ -126,10 +115,6 @@ A widget is a vanilla widget with a kit face. It takes its label as a string and
 Controls in a row are 4 apart, and rows are 4 apart. A label beside a control sits on the control's text baseline.
 
 Padding mirrors. What sits at the end of a row, a tab or a field, such as a × or an arrow, takes a square as wide as what sits at its start and the same gap from the edge, so the two are centered alike. An outline is an edge, so content keeps the same gap from a strip's outline as from the window's edge, and a strip's content has the same gap on every side.
-
-## The game's menus
-
-`MenuSkin` in `edge` draws every one of the game's container screens with these shapes when Menu Theme is on: a `panel` over the menu, a `slot` under each slot, a big one under each result, and `well`s where the texture had dark areas. The game draws each moving part as a named sprite, and `MenuSkin`'s table swaps each name for a shape: a progress `arrow`, a `flame`, `bubbles`, a `thumb`, a button face, a `barFill`. Their labels take the theme's ink. The Glass look draws `glass`, `glassSlot`, `glassWell`, `glassTab` and glass buttons in their place, with labels in `GLASS_INK`. A sprite the table lacks keeps the game's art, so a new part in a Minecraft update gets its row there.
 
 ## Adding to the kit
 

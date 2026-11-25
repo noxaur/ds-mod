@@ -22,9 +22,9 @@ Two themes ship, because resource-pack screens are dark and Minecraft's own are 
 
 The mod keeps how an item looks as well as what features read, and the HUD rebuilds the item from that alone. Asking for the stack the item was read from was rejected, because the game lets go of it once its menu closes, and the icon fell back to a default head.
 
-## The chat keeps what it draws over the HUD
+## A docked block's drag writes its feature's placement
 
-On the chat screen a press or a wheel turn over the chat's rows, input or suggestions is the chat's, even over a block, so a block is the mouse's only where the player sees it. A docked block's drag writes its feature's placement setting, so the setting stays the one place the dock is kept and the settings screen never disagrees with the HUD.
+A docked block's drag writes its feature's placement setting, so the setting stays the one place the dock is kept and the settings screen never disagrees with the HUD.
 
 ## The HUD's scale snaps to screen pixels
 

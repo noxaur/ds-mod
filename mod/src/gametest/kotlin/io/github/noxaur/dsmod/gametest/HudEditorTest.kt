@@ -74,7 +74,7 @@ class HudEditorTest : FabricClientGameTest {
             context.inTheme(Theme.VANILLA) { context.takeScreenshot("hud-editor-vanilla") }
 
             onBlock(context) { _, screen, block ->
-                val to = screen.width / 2.0 to 2.0 + 5.0
+                val to = screen.width / 2.0 to screen.height - block.height * block.scale - 2.0 + 5.0
                 grab(screen, block)
                 release(screen, to.first, to.second, 0.0, 0.0)
                 val under = Hud.find(DRAGON_TIMER)!!

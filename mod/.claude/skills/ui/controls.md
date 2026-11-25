@@ -189,7 +189,7 @@ A list of things the player made, such as command binds, edited where it sits in
 
 ## Layout of the HUD
 
-The HUD's blocks placed on the screen, as in SkyHanni's, Skytils' and Odin's editors. The HUD editor over the game, the chat screen and the settings' scaled copy of the screen all move blocks through `HudMover`, so they behave alike. The copy draws the real blocks, with the hotbar as a landmark.
+The HUD's blocks placed on the screen, as in SkyHanni's, Skytils' and Odin's editors. The HUD editor over the game and the settings' scaled copy of the screen both move blocks through `HudMover`, so they behave alike. The copy draws the real blocks, with the hotbar as a landmark.
 
 - Every convention of a draggable thing. A dragged block lines up with the screen's edges and middle and with the other blocks within a few pixels, docks beside the hotbar near a spot it can dock in, and Shift places it freely. It never leaves the screen.
 - The wheel over a block resizes it a step, and so do + and − with it picked. Shift with an arrow nudges ten pixels.
