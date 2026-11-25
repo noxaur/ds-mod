@@ -7,6 +7,7 @@ import io.github.noxaur.dsmod.core.feature.ContainerReader
 import io.github.noxaur.dsmod.core.feature.Feature
 import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
+import io.github.noxaur.dsmod.core.game.Pet
 import io.github.noxaur.dsmod.core.game.PetCard
 import io.github.noxaur.dsmod.core.text.Role
 
@@ -21,7 +22,7 @@ class PetsMenu(config: DsModConfig) : HasFeature {
         if (!container.changed()) return marks
         val open = feature.container
         marks = if (open.title?.plain != PetCard.MENU) emptyMap() else open.menuSlots
-            .filter { open.slots[it]?.cleanLore?.contains(PetCard.ACTIVE) == true }
+            .filter { slot -> open.slots[slot]?.let { it.name?.plain?.let(Pet::nameOf) != null && PetCard.ACTIVE in it.cleanLore } == true }
             .associateWith { SlotMark(Role.GOOD, outline = true) }
         return marks
     }

@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.resources.Identifier
 import org.slf4j.LoggerFactory
 
-enum class Surface { CONTAINER, HOTBAR }
+enum class Surface { CONTAINER, KIT, HOTBAR }
 
 object SlotArts {
     private class Baked(val texture: DynamicTexture, val atlas: Atlas)
@@ -38,7 +38,11 @@ object SlotArts {
 
     fun atlas(settings: ItemRarity, surface: Surface): Atlas? {
         val style = style(settings, surface)
-        val dark = surface == Surface.HOTBAR || containerDark
+        val dark = when (surface) {
+            Surface.HOTBAR -> true
+            Surface.CONTAINER -> containerDark
+            Surface.KIT -> Kit.dark(Kit.theme.slot)
+        }
         wantedStyle[surface.ordinal] = style
         wantedDark[surface.ordinal] = dark
         return ready[surface]?.atlas

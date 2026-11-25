@@ -35,6 +35,13 @@ class PetsMenuTest : Harness(alone = PetsMenu::class) {
     }
 
     @Test
+    fun `a menu button whose lore reads like an active pet's is not outlined`() {
+        val button = Item("minecraft:bone", 1, text("Manage Pets"), lines("Click to deactivate!"))
+        open(slots = arrayOf(13 to pet("Black Cat", active = true), 22 to button))
+        assertEquals(setOf(13), readout().slots.keys)
+    }
+
+    @Test
     fun `nothing is marked outside the Pets menu`() {
         open("Storage", 13 to pet("Black Cat", active = true))
         assertEquals(emptyMap(), readout().slots)

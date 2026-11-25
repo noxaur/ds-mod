@@ -10,6 +10,7 @@ import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.Span
 import io.github.noxaur.dsmod.core.text.Text
 import io.github.noxaur.dsmod.core.text.text
+import io.github.noxaur.dsmod.edge.storage.StorageOverlays
 import io.github.noxaur.dsmod.edge.ui.Kit
 import java.util.BitSet
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
@@ -90,7 +91,8 @@ object Slots {
         ScreenHooks.onEveryLayout<AbstractContainerScreen<*>> { screen, _ ->
             val font = Minecraft.getInstance().font
             ScreenEvents.afterBackground(screen).register { _, graphics, _, _, _ ->
-                each(screen, graphics) { index, slot, shown -> back(graphics, Surface.CONTAINER, shown, index, slot.x, slot.y) }
+                val surface = if (StorageOverlays.covers(screen)) Surface.KIT else Surface.CONTAINER
+                each(screen, graphics) { index, slot, shown -> back(graphics, surface, shown, index, slot.x, slot.y) }
             }
             ScreenEvents.afterForeground(screen).register { _, graphics, _, _, _ ->
                 each(screen, graphics) { _, slot, shown ->
@@ -140,7 +142,7 @@ object Slots {
     fun marks(rarity: Role?) = rarity != null && settings.feature.runs && (rarity != Role.COMMON || settings.markCommon.value)
 
     fun rarityBack(graphics: GuiGraphicsExtractor, rarity: Role, index: Int, x: Int, y: Int) {
-        art(graphics, Surface.CONTAINER, rarity, index, x, y)
+        art(graphics, Surface.KIT, rarity, index, x, y)
     }
 
     private fun back(graphics: GuiGraphicsExtractor, surface: Surface, shown: Shown, index: Int, x: Int, y: Int) {

@@ -89,7 +89,6 @@ object Kit {
     const val GAP = 4
     const val INSET = 7
     const val INVENTORY_WIDTH = 176
-    const val INVENTORY_HEIGHT = 166
     const val TAB_BAR_HEIGHT = 18
     const val NEW_TAB_WIDTH = TabStrip.NEW
     const val SWITCH_WIDTH = 22
@@ -639,39 +638,10 @@ object Kit {
         rect(g, x + 17, y - 1, 1, 18, color)
     }
 
-    fun held(g: GuiGraphicsExtractor, x: Int, y: Int, vanilla: Boolean) =
-        slotBorder(g, x, y, if (vanilla) Theme.VANILLA.accent else theme.accent)
-
     fun slotArt(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int, row: Int = 0, opacity: Int = 100) = g.blit(
         RenderPipelines.GUI_TEXTURED, atlas.id, x - 1, y - 1, (cell * SlotArt.SIZE).toFloat(), (row * SlotArt.SIZE).toFloat(), SlotArt.SIZE, SlotArt.SIZE,
         atlas.width, atlas.height, ARGB.white((opacity.coerceIn(0, 100) * 255 + 50) / 100),
     )
-
-    fun slotAt(g: GuiGraphicsExtractor, x: Int, y: Int, alpha: Int = OPAQUE) {
-        if (alpha > 0) g.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, x, y, EMPTY_SLOT_U, EMPTY_SLOT_V, SLOT_SIZE, SLOT_SIZE, 256, 256, ARGB.white(alpha))
-    }
-
-    fun inventoryPanel(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, alpha: Int = OPAQUE) {
-        if (alpha <= 0) return
-        val color = ARGB.white(alpha)
-        val c = PANEL_CORNER
-        val w = width - 2 * c
-        val h = height - 2 * c
-        val right = INVENTORY_WIDTH - c
-        val bottom = INVENTORY_HEIGHT - c
-        fun part(dx: Int, dy: Int, u: Int, v: Int, width: Int, height: Int, regionWidth: Int, regionHeight: Int) = g.blit(
-            RenderPipelines.GUI_TEXTURED, INVENTORY, x + dx, y + dy, u.toFloat(), v.toFloat(), width, height, regionWidth, regionHeight, 256, 256, color,
-        )
-        part(0, 0, 0, 0, c, c, c, c)
-        part(c, 0, c, 0, w, c, 1, c)
-        part(c + w, 0, right, 0, c, c, c, c)
-        part(0, c, 0, c, c, h, c, 1)
-        part(c, c, c, c, w, h, 1, 1)
-        part(c + w, c, right, c, c, h, c, 1)
-        part(0, c + h, 0, bottom, c, c, c, c)
-        part(c, c + h, c, bottom, w, c, 1, c)
-        part(c + w, c + h, right, bottom, c, c, c, c)
-    }
 
     fun slotDim(g: GuiGraphicsExtractor, x: Int, y: Int) = rect(g, x, y, 16, 16, ARGB.color(DIM_ALPHA, theme.well))
 
@@ -776,12 +746,7 @@ object Kit {
     private var slotTexture: DynamicTexture? = null
     private var slotTheme: Theme? = null
 
-    private val INVENTORY = Identifier.withDefaultNamespace("textures/gui/container/inventory.png")
 
-    private const val PANEL_CORNER = 4
-
-    private const val EMPTY_SLOT_U = 151f
-    private const val EMPTY_SLOT_V = 119f
     private const val DARK_BELOW = 90
     private val GOOD = Role.GOOD.argb()
     private val BODY = Role.BODY.argb()
