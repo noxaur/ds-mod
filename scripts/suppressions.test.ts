@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { added, unexplained } from "./suppressions.ts";
+import { added, diffOf, unexplained } from "./suppressions.ts";
 
 const diff = readFileSync(new URL("suppressions.fixture.diff", import.meta.url), "utf8");
 
@@ -56,4 +56,13 @@ test("a suppression is explained by a body line that names where it is and gives
     "mod/L.kt:2",
     "mod/L.kt:3",
   ]);
+});
+
+test("reads the files GitHub lists for a pull request too large for its diff", () => {
+  const files = [
+    { filename: "mod/A.kt", patch: "@@ -1,2 +1,3 @@\n fun a() {\n+    @Suppress(\"X\") val b = 1\n }" },
+    { filename: "web/moved.ts" },
+    { filename: "web/c.ts", patch: "@@ -4,1 +4,2 @@\n const d = 1;\n+// eslint-disable-next-line no-console -- e" },
+  ];
+  assert.deepEqual(added(diffOf(files)), ["mod/A.kt:2", "web/c.ts:5"]);
 });

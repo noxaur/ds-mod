@@ -1,29 +1,29 @@
 {
   "schemaVersion": 1,
-  "id": "dsmod_gametest",
+  "id": "dragen_gametest",
   "version": "${version}",
-  "name": "ds-mod game tests",
+  "name": "Dragen game tests",
   "environment": "client",
   "mixins": [
-    "dsmod_gametest.mixins.json"
+    "dragen_gametest.mixins.json"
   ],
   "entrypoints": {
     "client": [
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.NoVsync"
+        "value": "io.github.noxaur.dragen.gametest.NoVsync"
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.HardExit"
+        "value": "io.github.noxaur.dragen.gametest.HardExit"
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.TestClock"
+        "value": "io.github.noxaur.dragen.gametest.TestClock"
       },
       {
         "adapter": "kotlin",
-        "value": "io.github.noxaur.dsmod.gametest.DarkChestPack"
+        "value": "io.github.noxaur.dragen.gametest.DarkChestPack"
       }
     ]
   }

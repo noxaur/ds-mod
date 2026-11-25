@@ -36,6 +36,10 @@ export function added(diff: string): string[] {
   return found;
 }
 
+export function diffOf(files: { filename: string; patch?: string }[]): string {
+  return files.filter((f) => f.patch !== undefined).map((f) => `diff --git a/${f.filename} b/${f.filename}\n+++ b/${f.filename}\n${f.patch}`).join("\n");
+}
+
 export function unexplained(found: string[], body: string): string[] {
   const lines = body.split("\n");
   return found.filter((at) => {
@@ -47,7 +51,8 @@ export function unexplained(found: string[], body: string): string[] {
 function main() {
   const repo = process.env.GITHUB_REPOSITORY ?? "";
   const pr = process.env.PR ?? "";
-  const diff = execFileSync("gh", ["pr", "diff", pr, "--repo", repo], { encoding: "utf8", maxBuffer: 1 << 28 });
+  const pages = execFileSync("gh", ["api", "--paginate", "--slurp", `repos/${repo}/pulls/${pr}/files?per_page=100`], { encoding: "utf8", maxBuffer: 1 << 28 });
+  const diff = diffOf((JSON.parse(pages) as { filename: string; patch?: string }[][]).flat());
   const found = added(diff);
   if (found.length === 0) return;
   execFileSync("gh", ["api", "--method", "POST", `repos/${repo}/issues/${pr}/labels`, "-f", `labels[]=${label}`]);

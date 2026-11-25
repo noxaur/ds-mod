@@ -2,7 +2,7 @@ config:
   validation: true
   excludes: ['.*>.*>examples', '.*>.*>counterExamples']
 
-dsmod:
+dragen:
   ForbiddenText/area-by-declaration:
     active: true
     includes: ['**/src/main/kotlin/**/core/feature/**']
@@ -51,11 +51,11 @@ dsmod:
   ForbiddenReference/shelves-by-player:
     active: true
     includes: ['**/src/main/kotlin/**/core/feature/**']
-    symbols: ['io.github.noxaur.dsmod.core.overview.Shelf.Companion.of']
+    symbols: ['io.github.noxaur.dragen.core.overview.Shelf.Companion.of']
     reason: 'Read the containers the player saw from `feature.player.containers`, and the one open now from `feature.player.shelf`, which `PlayerData` reads once for every feature.'
     examples:
       - |
-        import io.github.noxaur.dsmod.core.overview.Shelf
+        import io.github.noxaur.dragen.core.overview.Shelf
         fun example(title: String?) = Shelf.of(title)
 
   ForbiddenText/text-by-role:
@@ -288,14 +288,14 @@ dsmod:
     active: true
     includes: ['**/src/test/**']
     excludes: ['**/harness/Harness.kt', '**/core/feature/GameTest.kt']
-    symbols: ['io.github.noxaur.dsmod.core.feature.Game.readouts']
+    symbols: ['io.github.noxaur.dragen.core.feature.Game.readouts']
     reason: 'Extend `Harness` and read a feature''s readout with `readout(feature)`, `hud(feature)` or `rows(feature)`, or the one feature''s with no argument when the harness runs it `alone`.'
     examples:
       - |
-        import io.github.noxaur.dsmod.core.feature.Game
+        import io.github.noxaur.dragen.core.feature.Game
         fun example(game: Game) = game.readouts.single { it.feature.id == "inventory-hud" }.hud
       - |
-        import io.github.noxaur.dsmod.core.feature.Game
+        import io.github.noxaur.dragen.core.feature.Game
         fun example(game: Game) = game.readouts
             .single()
 
@@ -384,15 +384,15 @@ style:
     includes: ['**/src/test/**']
     excludes: ['**/harness/Harness.kt']
     methods:
-      - value: 'io.github.noxaur.dsmod.core.game.ServerText.<init>'
+      - value: 'io.github.noxaur.dragen.core.game.ServerText.<init>'
         reason: 'Build what the server sends with the harness: `text(plain)` or `text(plain, color)` for a line, `text(ServerSpan(..), ServerSpan(..))` for a line in several spans, `text()` for an empty one, `lines(..)` for several lines and `chat(line)` for a chat line.'
     examples:
       - |
-        import io.github.noxaur.dsmod.core.game.ServerSpan
-        import io.github.noxaur.dsmod.core.game.ServerText
+        import io.github.noxaur.dragen.core.game.ServerSpan
+        import io.github.noxaur.dragen.core.game.ServerText
         val line = ServerText(listOf(ServerSpan("RARE DROP!")))
       - |
-        import io.github.noxaur.dsmod.core.game.ServerText
+        import io.github.noxaur.dragen.core.game.ServerText
         val empty = ServerText(emptyList())
 
   ForbiddenMethodCall/resource-by-harness:
@@ -555,19 +555,19 @@ style:
     includes: ['**/src/gametest/**']
     excludes: ['**/gametest/Themes.kt']
     methods:
-      - value: 'io.github.noxaur.dsmod.core.config.DsModConfig.Hud.getTheme'
+      - value: 'io.github.noxaur.dragen.core.config.DragenConfig.Hud.getTheme'
         reason: 'Run a step in a theme with `context.inTheme(Theme.VANILLA) { .. }`, which puts the theme back after it, or take a screenshot in both themes with `context.shotInBothThemes(name)`, from Themes.kt.'
     examples:
       - |
-        import io.github.noxaur.dsmod.core.config.DsModConfig
-        import io.github.noxaur.dsmod.core.ui.Theme
-        fun example(hud: DsModConfig.Hud) {
+        import io.github.noxaur.dragen.core.config.DragenConfig
+        import io.github.noxaur.dragen.core.ui.Theme
+        fun example(hud: DragenConfig.Hud) {
             hud.theme.value = Theme.VANILLA
         }
     counterExamples:
       - |
-        import io.github.noxaur.dsmod.core.config.DsModConfig
-        fun example(hud: DsModConfig.Hud) = hud.scale.value
+        import io.github.noxaur.dragen.core.config.DragenConfig
+        fun example(hud: DragenConfig.Hud) = hud.scale.value
 
   ForbiddenMethodCall/gametest-pixels-by-pixels:
     active: true

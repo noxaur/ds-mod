@@ -1,5 +1,5 @@
 {
-  "name": "dsmod-backend",
+  "name": "dragen-backend",
   "private": true,
   "type": "module",
   "scripts": {

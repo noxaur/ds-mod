@@ -1,97 +1,127 @@
-<img src="assets/icon.svg" width="96" alt="The ds-mod logo: a raised dragon's head in gold, white and blue">
+<h1>Dragen&nbsp;&nbsp;<img src="assets/icon.svg" height="40" align="center" alt="The Dragen logo: a raised dragon's head in gold, white and blue"></h1>
 
-# ds-mod (beta)
+---
 
-A client-side mod for [Dragon Simulator](https://dragsim.co). Open source, built on Fabric.
+[![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/YUZCYAnr7F) [![Ko-fi](https://img.shields.io/badge/Ko--fi-support-FF5E5B?logo=kofi&logoColor=white)](https://ko-fi.com/noxaur) [![GitHub stars](https://img.shields.io/github/stars/noxaur/ds-mod?style=flat&logo=github)](https://github.com/noxaur/ds-mod/stargazers)
 
-I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simulator. Suggestions and contributions are welcome in the [Discord](https://discord.gg/YUZCYAnr7F) or as a [GitHub issue](https://github.com/noxaur/ds-mod/issues). If you can't contribute code, you can support the mod on [Ko-fi](https://ko-fi.com/noxaur) or tell others about it.
+Dragen is a mod for [DragSim](https://dragsim.co/) (Dragon Simulator) that aims to boost your enjoyment of DragSim without going too crazy on modifications. We strive to feel like a seamless addition to the game. Feature requests and contributions are handled as fast and respectfully as we can.
+
+<sub>Dragen is the Norwegian word for "the dragon".</sub>
+
+## Installation guide
+
+Requires Minecraft 26.2, [Fabric Loader](https://fabricmc.net/use/installer/) 0.20.1+, Java 25+, [Fabric API](https://modrinth.com/mod/fabric-api) and [Fabric Language Kotlin](https://modrinth.com/mod/fabric-language-kotlin).
+
+Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases). And add it to your mods using your favorite minecraft client.
 
 ## Features
 
-### General
-- **DragSim Only** – Runs ds-mod only on dragsim.co, until you turn it off.
-- **Ctrl Click** – Keeps Ctrl and a left click a Ctrl click on a Mac.
-- **Auto Click** – Left or right clicks 9.9 times a second while you hold or toggle a key and walk.
+<details>
+<summary><h3>General</h3></summary>
 
-### Camera & Visuals
-- **Fullbright** – Lights caves and nights as brightly as day.
-- **Hide Explosions** – Hides the clouds that explosions throw up.
-- **Animations** – Restyle your swing as 1.7, Exhibition, Spin or Stab, and move or resize your held item.
-- **Player Model** – Resize, tilt, spin and pose your player, or everyone's, with a live preview in the settings.
-- **Third Person** – Set the third-person distance, height and tilt, and which views F5 cycles through.
-- **Free Look** – Hold Left Alt to look around in third person without turning.
-- **Etherwarp Outline** – Boxes the block your Etherwarp will land on, or says why it would fail.
+- **DragSim Only** – Toggles dragen to only run while connected to dragsim.co.
+- **Ctrl Click** ( Mac only )– Makes Ctrl + left click a Ctrl click instead of a right click.
+- **Auto Clicker** – Left and or right clicks 9.9 cps.
 
-### HUD
-- **Ability Cooldowns** – Times every item ability, in a list and on the item's slot.
-- **Equipment Display** – Shows your armor and pet as icons, on the HUD or beside your hotbar.
-- **Performance Stats** – Shows your FPS, your ping and the server's TPS, with a warning color when they lag.
-- **HUD Background** – A dark plate behind the HUD, so it reads over a bright world.
-- **Hide In F3** – Hides the HUD while the F3 debug screen is open.
+</details>
 
-### Chat & Commands
-- **Command Binds** – Send a command with a key, a combo or a sequence. Group, fold and share them.
-- **Profile Viewer** – Type `/pv` and a name to see their skills, slayers, dungeons, pets and items.
-- **Item Overview** – Type `/dsmod items` to search every item you own, from every container, in one screen.
-- **Waypoints** – Save, style and group waypoints, share them in any chat, and click shared coordinates to see them.
-- **Copy Chat** – Select messages and copy them as text, format codes or JSON.
+<details>
+<summary><h3>Camera & Visuals</h3></summary>
+
+- **Fullbright** – Never must you see the darkness, come fourth light.
+- **Hide Explosions** – Hide explosion particles.
+- **Animations** – Use 1.7 animations, and change how your held item swings and sits.
+- **Player Model** – Resize, tilt, spin and pose your or everyone's player.
+- **Third Person** – Set the camera's distance, height and tilt, and which views F5 goes through.
+- **Free Look** – Hold Left Alt to look around in third person without turning your player head.
+- **Etherwarp Outline** – Outlines the block your Etherwarp will land on.
+
+</details>
+
+<details>
+<summary><h3>HUD</h3></summary>
+
+- **Ability Cooldowns** – Shows every item ability's cooldown.
+- **Equipment Display** – Shows your armor and pet on the HUD.
+- **Performance Stats** – Shows your FPS, ping and the server's TPS.
+- **HUD Background** – Puts a dark background behind the HUD.
+- **Hide In F3** – Hides the HUD while F3 is open.
+
+</details>
+
+<details>
+<summary><h3>Chat & Commands</h3></summary>
+
+- **Command Binds** – Sends a command with a key or key combo.
+- **Profile Viewer** – Type `/pv <name>` to see a player's profile.
+- **Item Overview** – Type `/dragen items` to search every item you own.
+- **Waypoints** – Save, style and share waypoints.
+- **Copy Chat** – Right-click a message to copy it.
 - **Hide Cooldown Messages** – Hides the "ability is on cooldown" messages.
 
-### Inventory & Menus
-- **Item Rarity** – Colors each slot by its item's rarity, as a Frame, an Aura or an Underglow, with sparkles if you like.
-- **Slot Lock** – Lock slots and items so a misclick can't move or drop them.
-- **Armor Swap Guard** – Stops a right click from swapping the armor you wear.
-- **Better UI** – Turns the controls the mod adds to menus on or off at once.
-- **Menu Tabs** – Your own command tabs and an item search in every menu.
+</details>
+
+<details>
+<summary><h3>Inventory & Menus</h3></summary>
+
+- **Item Rarity** – Colors each slot by its item's rarity.
+- **Slot Lock** – Locks slots and items so a misclick can't move or drop them.
+- **Armor Swap Guard** – Stops a right click from swapping your armor.
+- **Better UI** – Toggles every button and tab Dragen adds to menus.
+- **Menu Tabs** – Adds an item search and your own command tabs to every menu.
 - **SkyBlock Menu Click** – Clicking the SkyBlock Menu item opens the menu instead of picking it up.
 - **HOTD Button** – Opens the Heart of the Dragon from the Dragon Sim Menu.
-- **Storage Overview** – Hover a Storage page to see its items, or see every page and the Ender Chest at once.
-- **Forge Craft** – Repeat your last forge craft with a key, one click per press.
-- **HOTD Planner** – Marks what to click next in the Heart of the Dragon for the block you mine.
-- **Wardrobe Keys** – Press 1 to 9 in the Wardrobe to click that slot, once the server lets you.
+- **Storage Overview** – Hover a Storage page to see its items.
+- **Forge Craft** – Repeats your last forge craft with a key.
+- **HOTD Planner** – Marks what to unlock next in the Heart of the Dragon.
+- **Wardrobe Keys** – Press 1 to 9 in the Wardrobe to equip that slot.
 - **Pets Menu** – Outlines your active pet in the Pets menu.
-- **Quieter AFK** – Dims the screen and mutes audio inside the /afk menu.
-- **Profile Cooldown** – Shows in Profile Management when you can switch profiles again.
-- **Keep Cursor** – The cursor stays put when one menu opens another.
+- **Quieter AFK** – Dims and mutes the game in the /afk menu.
+- **Profile Cooldown** – Shows when you can switch profiles again.
+- **Keep Cursor** – Keeps the cursor in place when one menu opens another.
 
-### The End
-- **Zealot Tracker** – Eyes, eyes per hour and kills per eye, for the session and all-time.
-- **Dragon Timer** – The egg countdown, the eyes placed and how long the dragon has been alive.
+</details>
+
+<details>
+<summary><h3>The End</h3></summary>
+
+- **Zealot Tracker** – Tracks your Summoning Eyes and zealot kills.
+- **Dragon Timer** – Shows the egg countdown and the eyes placed.
 - **Fireball Alert** – Warns you before a dragon throws fireballs.
-- **Protector Status** – The Endstone Protector's stage and the kills left until it emerges.
-- **Protector Spawn Beam** – A beam where the next Protector will emerge, as soon as the last one dies.
-- **Boss Fight Tracker** – Your placement, damage and loot from every dragon and Protector fight.
-- **Eye Guard** – Stops a second click from taking back the eye you just placed.
+- **Protector Status** – Shows the kills left until the Endstone Protector spawns.
+- **Protector Spawn Beam** – Shows a beam where the next Protector spawns.
+- **Boss Fight Tracker** – Shows your rank, damage and loot after each boss fight.
+- **Eye Guard** – Stops a double click from taking back your Summoning Eye.
 
-### Combat
-- **Damage Numbers** – Shortens damage numbers to 74.5M, shows only crits, or hides them.
-- **Boss Beacon** – A beam over each boss you pick, with its name and distance.
-- **Boss Tracer** – A line from your crosshair to each boss you pick, to follow when you look away.
+</details>
 
-### Slayers & Loot
-- **Slayer Tracker** – Quest progress, the XP to your next level and your average kill time.
-- **Slayer Boss Alert** – A title and a sound when your slayer boss spawns.
-- **Rare Drop Alert** – A title and a sound for drops at or above the rarity you set.
+<details>
+<summary><h3>Combat</h3></summary>
 
-### Contribute
-- **Report Game Data** – Sends game data new to ds-mod to its developers, names removed. Off until you turn it on.
+- **Damage Numbers** – Shortens damage numbers to 74.5M, or hides them.
+- **Boss Beacon** – Shows a beam over the bosses you pick.
+- **Boss Tracer** – Draws a line to the bosses you pick.
 
-Type `/dsmod` to access the settings menu. [feature guide](docs/user/features.md).
+</details>
 
-## Install
+<details>
+<summary><h3>Slayers & Loot</h3></summary>
 
-Download the jar from [Releases](https://github.com/noxaur/ds-mod/releases) and put it in your `mods` folder with [Fabric API](https://modrinth.com/mod/fabric-api) and [Fabric Language Kotlin](https://modrinth.com/mod/fabric-language-kotlin). The [install guide](docs/user/install.md) lists the versions.
+- **Slayer Tracker** – Tracks your slayer XP and average kill time.
+- **Slayer Boss Alert** – Alerts you when your slayer boss spawns.
+- **Rare Drop Alert** – Alerts you when you get a rare drop.
 
-## Contributing
+</details>
 
-Suggest features in the [Discord](https://discord.gg/YUZCYAnr7F) and report bugs in [issues](https://github.com/noxaur/ds-mod/issues). I haven't reached the late game, so recordings of it help the most.
+<details>
+<summary><h3>Contribute</h3></summary>
 
-Reviewing a pull request costs me more time than writing one costs you. Before you open one:
+- **Report Game Data** – Sends new game data to the developers, with names removed. Off by default.
 
-- Read [CONTRIBUTING.md](CONTRIBUTING.md) and run the checks.
-- Test the feature in game yourself, and say what you saw.
-- I recommend using the most capable model you have access to, and reviewing its work with a capable model from another lab (e.g. Opus 5.5 writes the code, Sol 6.1 verifies it).
+</details>
 
-A pull request that skips those takes longer to review than the fix would take me to write.
+## Credits
 
-Made by [noxaur](https://github.com/noxaur). Not affiliated with the Dragon Simulator team. Licensed under [Apache 2.0](LICENSE).
+- [DragsimUtils](https://github.com/RealZones/DragsimUtils)
+- [SkyHanni](https://github.com/SkyHanniStudios/SkyHanni)
+- [SkyOcean](https://github.com/meowdding/SkyOcean)

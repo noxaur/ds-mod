@@ -1,10 +1,10 @@
 # Settings
 
-How ds-mod's own settings screen draws every setting from one tree, and how the settings reach the disk.
+How Dragen's own settings screen draws every setting from one tree, and how the settings reach the disk.
 
 ## The tree is the only schema, and MoulConfig went
 
-ds-mod draws its own settings screen and dropped MoulConfig. MoulConfig's boxes can't build a sidebar beside browser tabs with lists edited in place, its editors are not the kit's, so every control had to be built twice, and its annotations were a second copy of every name and description. So a setting is named, described and given its kind of row in one place, and the jar no longer carries a library.
+Dragen draws its own settings screen and dropped MoulConfig. MoulConfig's boxes can't build a sidebar beside browser tabs with lists edited in place, its editors are not the kit's, so every control had to be built twice, and its annotations were a second copy of every name and description. So a setting is named, described and given its kind of row in one place, and the jar no longer carries a library.
 
 ## A setting is a row, and the screen builds the rest
 
@@ -20,7 +20,7 @@ A feature's folder sits in its group's, and its group's in its section's, and ea
 
 ## The sections follow SkyHanni's order
 
-The sections run from what ds-mod as a whole does, to places and activities, to what works everywhere, with Contribute last, as SkyHanni puts About and GUI first and Dev last. Players come from SkyHanni and SkyOcean, so they look for a setting where those mods keep it. A section for one kind of control, such as Binds or Camera, was rejected because a player looks for what a setting does, not how it is set. A feature that works in every activity, such as Rare Drop Alert, sits in Inventory rather than under the activity it was first built for.
+The sections run from what Dragen as a whole does, to places and activities, to what works everywhere, with Contribute last, as SkyHanni puts About and GUI first and Dev last. Players come from SkyHanni and SkyOcean, so they look for a setting where those mods keep it. A section for one kind of control, such as Binds or Camera, was rejected because a player looks for what a setting does, not how it is set. A feature that works in every activity, such as Rare Drop Alert, sits in Inventory rather than under the activity it was first built for.
 
 ## A small feature is a row in a shared group
 

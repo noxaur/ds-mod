@@ -30,4 +30,4 @@ export class Store extends Context.Service<
     readonly countUnknown: (unknown: Omit<Unknown, "count">, maxRows: number) => Effect.Effect<void>;
     readonly unknowns: Effect.Effect<readonly Unknown[]>;
   }
->()("dsmod/contrib/Store") {}
+>()("dragen/contrib/Store") {}

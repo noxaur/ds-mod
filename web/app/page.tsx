@@ -14,9 +14,9 @@ export default async function Home() {
   );
   return (
     <main>
-      <h1>ds-mod</h1>
+      <h1>Dragen</h1>
       <p>Backend: {up ? "up" : "down"}</p>
-      <p>{session === null ? "Type /dsmod login in game to sign in." : `Signed in as ${session.name}`}</p>
+      <p>{session === null ? "Type /dragen login in game to sign in." : `Signed in as ${session.name}`}</p>
     </main>
   );
 }

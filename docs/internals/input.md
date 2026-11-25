@@ -36,7 +36,7 @@ Only one small layer touches the player's input, approved once by a hash of its 
 
 ## A shared waypoint is plain text, sent only by the player's command
 
-Sharing a waypoint sends one line, its name, coordinates and area as plain words, to the channel the player names, and only when they run the share command. A player without ds-mod can read it. The user rejected a tag carrying the waypoint's color and look, because players without the mod would read it as noise. Coordinates in chat become a click that runs one of ds-mod's own commands on the client. Its coordinates are typed numbers and its name and area are quoted with quotes and backslashes taken out, so a click never reaches the server.
+Sharing a waypoint sends one line, its name, coordinates and area as plain words, to the channel the player names, and only when they run the share command. A player without Dragen can read it. The user rejected a tag carrying the waypoint's color and look, because players without the mod would read it as noise. Coordinates in chat become a click that runs one of Dragen's own commands on the client. Its coordinates are typed numbers and its name and area are quoted with quotes and backslashes taken out, so a click never reaches the server.
 
 ## Forge Craft sends one click per key press
 

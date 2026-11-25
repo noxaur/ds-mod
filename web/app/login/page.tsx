@@ -10,7 +10,7 @@ const mix = (from: number, to: number, at: number) =>
 const hex = (channels: number[]) => "#" + channels.map((channel) => channel.toString(16).padStart(2, "0")).join("");
 
 const stops = [0xffbb00, 0xffffff, 0x6c68ff];
-const name = "[ ds-mod ]";
+const name = "[ Dragen ]";
 const brand = Array.from(name, (char, i) => {
   const at = (i / (name.length - 1)) * (stops.length - 1);
   const from = Math.min(Math.floor(at), stops.length - 2);
@@ -22,7 +22,7 @@ export default function LoginPage() {
   return (
     <main className={`${pixel.className} ${styles.page}`}>
       <header className={styles.bar}>
-        <span className={styles.brand} aria-label="ds-mod">
+        <span className={styles.brand} aria-label="Dragen">
           {brand.map(({ char, color, shadow }, i) => (
             <span key={i} aria-hidden style={{ color, textShadow: `var(--u) var(--u) 0 ${shadow}` }}>
               {char}

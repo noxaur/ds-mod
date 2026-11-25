@@ -5,7 +5,7 @@
 +   3.0s > You hear something falling from the sky.
 +   3.0s > This ability is on cooldown for 4.35s
              (hidden from chat)
-             (chat) Hide Cooldown Messages | Hid a message from the server. Turn off Hide Cooldown Messages under Combat in /dsmod to see them.
+             (chat) Hide Cooldown Messages | Hid a message from the server. Turn off Hide Cooldown Messages under Combat in /dragen to see them.
 +   4.5s > The Endstone Protector has been defeated!
 +   4.5s >                                                                                 
                        ENDSTONE PROTECTOR DOWN!
