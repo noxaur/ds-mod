@@ -3,6 +3,7 @@ package io.github.noxaur.dsmod.edge
 import io.github.noxaur.dsmod.core.feature.menus.quieterafk.QuieterAfk
 import io.github.noxaur.dsmod.edge.ui.Kit
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
+import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.sounds.SoundSource
@@ -34,7 +35,16 @@ object QuieterAfks {
         }
         ScreenHooks.onEveryLayout<AbstractContainerScreen<*>> { screen, _ ->
             ScreenEvents.beforeExtract(screen).register { _, _, mouseX, mouseY, _ ->
-                dimmed = afk.quiet && !afk.lit(System.currentTimeMillis(), mouseX, mouseY)
+                val quiet = afk.quiet
+                dimmed = quiet && !afk.lit(System.currentTimeMillis(), mouseX, mouseY)
+                if (!quiet) return@register
+                // @keep A widget beside the menu, such as a Menu Tab, would show its tooltip above the blackout and still take clicks.
+                val left = screen.containerLeft
+                val top = screen.containerTop
+                for (widget in Screens.getWidgets(screen)) {
+                    val inside = widget.x >= left && widget.y >= top && widget.right <= left + screen.containerWidth && widget.bottom <= top + screen.containerHeight
+                    if (!inside) widget.visible = false
+                }
             }
         }
     }
