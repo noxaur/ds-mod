@@ -18,7 +18,7 @@ import kotlin.math.roundToInt
 import io.github.noxaur.dsmod.core.feature.SlotMarks
 
 class ItemRarity(config: DsModConfig) : HasFeature {
-    override val feature = Feature(config, "item-rarity", Area.ANYWHERE, Store.INVENTORY, "Mark each item's slot in the color of its rarity.", formerly = listOf("rarityMarks"), slots = ::slots)
+    override val feature = Feature(config, "item-rarity", Area.ANYWHERE, Store.INVENTORY, "Color each slot by its item's rarity.", formerly = listOf("rarityMarks"), slots = ::slots)
 
     val inventoryStyle = feature.stored("inventoryLook", SlotStyle())
 
@@ -41,8 +41,8 @@ class ItemRarity(config: DsModConfig) : HasFeature {
                 follows = { null },
                 write = { inventoryStyle.value = it },
                 style = "Pick how the rarity's color fills each slot.",
-                opacity = "Set how solid the marks are.",
-                sparkles = "Add a few glints to each mark, placed differently per slot.",
+                opacity = "Set how solid the colors are.",
+                sparkles = "Add a few sparkles to each slot.",
             )
         }
     }
@@ -66,8 +66,8 @@ class ItemRarity(config: DsModConfig) : HasFeature {
                     hotbarMatches.value = false
                 },
                 style = "Pick how the color fills each hotbar slot.",
-                opacity = "Set how solid the hotbar's marks are.",
-                sparkles = "Add a few glints to each hotbar mark.",
+                opacity = "Set how solid the hotbar's colors are.",
+                sparkles = "Add a few sparkles to each hotbar slot.",
             )
         }
     }

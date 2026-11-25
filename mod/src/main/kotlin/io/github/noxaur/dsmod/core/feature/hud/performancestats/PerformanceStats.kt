@@ -45,7 +45,7 @@ class PerformanceStats(config: DsModConfig) : HasFeature {
 
     val values = feature.order("performanceValues", "Values", "Pick the values to show, and drag them into order.", Stat.entries)
     val layout = feature.choice("performanceLayout", "Layout", "Line the values up in a row or a column.", StatsLayout.ROW)
-    val look = feature.choice("performanceLook", "Look", "Show the values on the plate, or on nothing.", StatsLook.PLATE)
+    val look = feature.choice("performanceLook", "Look", "Show the values on a plate, or on nothing.", StatsLook.PLATE)
 
     private val clock = ServerClock(feature)
     private var fps = -1

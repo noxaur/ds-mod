@@ -9,7 +9,7 @@ import io.github.noxaur.dsmod.core.game.Drop
 import io.github.noxaur.dsmod.core.text.text
 
 class RareDropAlert(config: DsModConfig) : HasFeature {
-    override val feature = Feature(config, "rare-drop-alert", Area.ANYWHERE, Store.LOOT, "Alert you to drops of the chosen tier or better.", formerly = listOf("lootAlerts"))
+    override val feature = Feature(config, "rare-drop-alert", Area.ANYWHERE, Store.LOOT, "Alert you with a title and sound for drops of your tier or higher.", formerly = listOf("lootAlerts"))
 
     enum class LootTier(private val label: String, val word: String) {
         RARE("Rare", "RARE"),
@@ -20,7 +20,7 @@ class RareDropAlert(config: DsModConfig) : HasFeature {
         override fun toString() = label
     }
 
-    val least = feature.choice("lootAlertTier", "Alert Tier", "Pick the lowest drop tier that alerts you.", LootTier.EPIC)
+    val least = feature.choice("lootAlertTier", "Alert Tier", "Pick the lowest tier that alerts you.", LootTier.EPIC)
 
     init {
         feature.line(Drop.head, { line -> Drop.parse(line)?.let { drop -> LootTier.entries.firstOrNull { it.word == drop.tier }?.let { drop to it } } }) { (drop, tier), _ ->

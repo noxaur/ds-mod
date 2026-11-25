@@ -8,6 +8,6 @@ import io.github.noxaur.dsmod.core.game.Area
 
 class HudBackground(config: DsModConfig) : HasFeature {
     override val feature = Feature(
-        config, "hud-background", Area.ANYWHERE, Store.HUD, "Show a dark plate behind the HUD, so it reads over a bright world.", formerly = listOf("background"),
+        config, "hud-background", Area.ANYWHERE, Store.HUD, "Show a dark background behind the HUD, to read it on bright blocks.", formerly = listOf("background"),
     )
 }

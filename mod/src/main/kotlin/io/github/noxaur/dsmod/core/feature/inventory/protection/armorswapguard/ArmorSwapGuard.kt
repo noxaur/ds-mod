@@ -7,5 +7,5 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 
 class ArmorSwapGuard(config: DsModConfig) : HasFeature {
-    override val feature = Feature(config, "armor-swap-guard", Area.ANYWHERE, Store.INVENTORY, "Stop a right click from swapping on armor, unless you sneak.", default = false)
+    override val feature = Feature(config, "armor-swap-guard", Area.ANYWHERE, Store.INVENTORY, "Stop a right click from swapping your armor, unless you sneak.", default = false)
 }

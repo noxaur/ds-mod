@@ -7,5 +7,5 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 
 class HideExplosions(config: DsModConfig) : HasFeature {
-    override val feature = Feature(config, "hide-explosions", Area.ANYWHERE, Store.GENERAL, "Hide the clouds that explosions throw up.", default = false, formerly = listOf("explosionParticleHider"))
+    override val feature = Feature(config, "hide-explosions", Area.ANYWHERE, Store.GENERAL, "Hide explosion particles.", default = false, formerly = listOf("explosionParticleHider"))
 }

@@ -7,5 +7,5 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 
 class EyeGuard(config: DsModConfig) : HasFeature {
-    override val feature = Feature(config, "eye-guard", Area.END, Store.END, "Ignore a quick second click that would take a placed eye back.", formerly = listOf("protectPlacedEyes"))
+    override val feature = Feature(config, "eye-guard", Area.END, Store.END, "Stop a quick second click from taking back an eye you placed.", formerly = listOf("protectPlacedEyes"))
 }

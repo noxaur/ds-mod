@@ -9,7 +9,7 @@ import io.github.noxaur.dsmod.core.game.SlayerLine
 import io.github.noxaur.dsmod.core.text.text
 
 class SlayerBossAlert(config: DsModConfig) : HasFeature {
-    override val feature = Feature(config, "slayer-boss-alert", Area.ANYWHERE, Store.SLAYER, "Alert you when your slayer boss spawns.")
+    override val feature = Feature(config, "slayer-boss-alert", Area.ANYWHERE, Store.SLAYER, "Alert you with a title and sound when your slayer boss spawns.")
 
     init {
         feature.line(SlayerLine.SPAWNED) { feature.alert(text { warning("Boss Spawned") }, text { body("Your slayer boss spawned.") }) }

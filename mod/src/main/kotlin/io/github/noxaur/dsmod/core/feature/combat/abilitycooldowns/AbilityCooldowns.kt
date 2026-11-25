@@ -26,10 +26,10 @@ import io.github.noxaur.dsmod.core.feature.ServerClock
 
 /** @keep A use is the action bar's mana part appearing, `-100 Mana (Giant's Slam)`, which stays up for a few of the server's half-second updates, so only its arrival counts. Some abilities say so in chat instead: `HOWL!` for the Tuba, `Soulcry! +` for a katana, `You used Void Infusion!` for the drill. A charging set bonus, `(4) Every 8s your next hit blinks you`, starts on the player's own hit and a hit while it charges does not restart it, so the server sends nothing for it. */
 class AbilityCooldowns(config: DsModConfig) : HasFeature {
-    override val feature = Feature(config, "ability-cooldowns", Area.ANYWHERE, Store.GENERAL, "Time your item abilities and Riftwalker's charged hit.", hud = ::hud, slots = ::slots)
+    override val feature = Feature(config, "ability-cooldowns", Area.ANYWHERE, Store.GENERAL, "Count down your item abilities and Riftwalker's charged hit.", hud = ::hud, slots = ::slots)
 
     val list = feature.switch("cooldownList", "List", "List the abilities you are waiting on, on the HUD.", default = true)
-    val onItems = feature.switch("cooldownOnItems", "On Items", "Drain a wash over the item and count down its seconds.", default = true)
+    val onItems = feature.switch("cooldownOnItems", "On Items", "Shade the item while it cools down, and show the seconds left.", default = true)
     val shortest = feature.number("cooldownShortest", "Shortest Listed", "List only cooldowns at least this many seconds long.", 2f, 0f..20f, step = 0.5f, unit = "s")
     val readyAlert = feature.switch("cooldownReadyAlert", "Ready Alert", "Alert you when a long cooldown is over.", default = false)
     val alertFrom = feature.number("cooldownAlertFrom", "Alert From", "Alert only for cooldowns at least this many seconds long.", 20f, 1f..120f, step = 1f, unit = "s")

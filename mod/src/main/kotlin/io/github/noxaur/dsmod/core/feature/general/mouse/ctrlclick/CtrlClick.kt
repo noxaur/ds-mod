@@ -7,5 +7,5 @@ import io.github.noxaur.dsmod.core.feature.HasFeature
 import io.github.noxaur.dsmod.core.game.Area
 
 class CtrlClick(config: DsModConfig) : HasFeature {
-    override val feature = Feature(config, "ctrl-click", Area.ANYWHERE, Store.GENERAL, "Keep Ctrl and a left click a Ctrl click, not a right click.")
+    override val feature = Feature(config, "ctrl-click", Area.ANYWHERE, Store.GENERAL, "Make Ctrl + left click a Ctrl click, instead of the Mac's right click.")
 }

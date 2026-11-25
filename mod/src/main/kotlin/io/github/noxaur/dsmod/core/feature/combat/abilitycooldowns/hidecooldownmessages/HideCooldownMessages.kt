@@ -8,7 +8,7 @@ import io.github.noxaur.dsmod.core.game.Abilities
 import io.github.noxaur.dsmod.core.game.Area
 
 class HideCooldownMessages(config: DsModConfig) : HasFeature {
-    override val feature = Feature(config, "hide-cooldown-messages", Area.ANYWHERE, Store.CHAT, "Hide the message that an ability is on cooldown.", formerly = listOf("abilitySpam"))
+    override val feature = Feature(config, "hide-cooldown-messages", Area.ANYWHERE, Store.CHAT, "Hide the chat message that says an ability is on cooldown.", formerly = listOf("abilitySpam"))
 
     init {
         feature.line(Abilities.REFUSAL) { feature.hide() }

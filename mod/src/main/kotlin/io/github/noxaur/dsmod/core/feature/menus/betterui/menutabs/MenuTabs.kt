@@ -9,13 +9,13 @@ import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.ui.TabLayout
 
 class MenuTabs(config: DsModConfig) : HasFeature {
-    override val feature = Feature(config, "menu-tabs", Area.ANYWHERE, Store.BETTER_UI, "Add tabs that send your commands, and a search, to every menu.")
+    override val feature = Feature(config, "menu-tabs", Area.ANYWHERE, Store.BETTER_UI, "Add an item search and your own command tabs to every menu.")
 
     val tabs = feature.stored("tabs", TabLayout.DEFAULT)
 
     init {
         feature.rows {
-            panel(tabs.bind, "Tabs", "Press a place to add a tab there, and drag a tab to move it.", Canvas.MENU_TABS, id = "tabs") {
+            panel(tabs.bind, "Tabs", "Click an empty spot to add a tab, and drag a tab to move it.", Canvas.MENU_TABS, id = "tabs") {
                 if (it.size == 1) "1 tab" else "${it.size} tabs"
             }
         }

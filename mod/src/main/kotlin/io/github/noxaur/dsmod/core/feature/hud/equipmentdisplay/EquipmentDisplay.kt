@@ -64,8 +64,8 @@ class EquipmentDisplay(config: DsModConfig) : HasFeature {
 
     val pieces = feature.order("equipmentPieces", "Pieces", "Pick the pieces to show, and drag them into order.", EquipmentPiece.entries)
     val layout = feature.choice("equipmentLayout", "Layout", "Line the pieces up in a row or a column.", EquipmentLayout.ROW)
-    val look = feature.choice("equipmentLook", "Look", "Show the pieces on the plate, on nothing, or in hotbar slots.", EquipmentLook.PLATE)
-    val placement = feature.placement("equipmentPlacement", "Keep the pieces where you put them, or beside your hotbar.")
+    val look = feature.choice("equipmentLook", "Look", "Show the pieces on a plate, on nothing, or in hotbar slots.", EquipmentLook.PLATE)
+    val placement = feature.placement("equipmentPlacement", "Place the pieces where you dragged them, or beside your hotbar.")
     val petLook = feature.choice("petLook", "Pet Look", "Show your pet as its head, or as its name and level.", PetLook.ICON)
     val petPosition = feature.choice("petPosition", "Pet Position", "Put your pet among the armor, or on a row above or below it.", PetPosition.WITH_ARMOR)
 
